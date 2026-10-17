@@ -42,3 +42,37 @@ test('the page has the containers the renderer fills, and no hand-written risk r
 test('net annual return is stated consistently', () => {
   assert.doesNotMatch(html, /&euro;134M/);
 });
+
+test('agent registry numbers add up', () => {
+  const a = data.agents;
+  const sum = (items, key) => items.reduce((n, item) => n + item[key], 0);
+  assert.equal(sum(a.types, 'count'), a.total, 'agent types must add up to the registry total');
+  assert.equal(sum(a.accessTiers, 'count'), a.production, 'access tiers must add up to production agents');
+  assert.ok(a.production <= a.total);
+  assert.ok(a.discovery.length < a.unregistered, 'listed assets must be fewer than all unregistered assets');
+  assert.ok(sum(a.overprivilegedQueue, 'count') < a.overprivileged, 'queue must leave a remainder for "+ N more"');
+  assert.ok(a.overprivileged <= a.production);
+});
+
+test('risk register agrees with the agent registry', () => {
+  const byId = Object.fromEntries(data.risks.map((risk) => [risk.id, risk]));
+  assert.match(byId.R2.title, new RegExp(`\\(${data.agents.overprivileged}\\)`));
+  assert.match(byId.R3.title, new RegExp(`^${data.agents.unregistered} unregistered`));
+});
+
+test('budget groups are well-formed', () => {
+  assert.ok(data.budget.groups.length > 0);
+  for (const group of data.budget.groups) {
+    assert.ok(Number.isInteger(group.budgetK) && group.budgetK > 0, group.name);
+    assert.ok(Number.isInteger(group.utilisationPct) && group.utilisationPct >= 0, group.name);
+  }
+  assert.ok(data.budget.totalActualM <= data.budget.ceilingM);
+});
+
+test('registry and budget sections are rendered from data, not hand-written', () => {
+  for (const id of ['agent-types', 'discovery-body', 'op-queue', 'access-tiers', 'budget-groups']) {
+    assert.match(html, new RegExp(`id="${id}"`), id);
+  }
+  assert.doesNotMatch(html, /BTP Extension Agent \(prod\)<\/td>/);
+  assert.doesNotMatch(html, /Engineering \(budget &euro;1\.1M\)/);
+});

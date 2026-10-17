@@ -117,5 +117,168 @@
       "tile": "Prompt injection defence 100% complete across all 186 agents",
       "short": "Prompt injection"
     }
-  ]
+  ],
+  "agents": {
+    "total": 186,
+    "production": 125,
+    "unregistered": 47,
+    "overprivileged": 31,
+    "types": [
+      {
+        "key": "autonomous",
+        "label": "Autonomous",
+        "tone": "b",
+        "count": 58,
+        "description": "End-to-end, no HITL. Schedule / event triggered. CISO sign-off required.",
+        "examples": "SAP SPC ticket routers (8) · OData enrichment pipelines (6) · Report gen bots (7) · Shift roster sync (4) · Contract classification (5) · BTP monitoring (5) · +23 more"
+      },
+      {
+        "key": "copilot",
+        "label": "Copilot",
+        "tone": "p",
+        "count": 97,
+        "description": "Assist human in real-time. Draft, suggest, enrich — human approves output.",
+        "examples": "L2C deal advisors (12) · ABAP code assistants (18) · Contract drafters (9) · Presales proposal gen (8) · Fiori UX reviewer (6) · +44 more"
+      },
+      {
+        "key": "orchestrator",
+        "label": "Orchestrator",
+        "tone": "a",
+        "count": 31,
+        "description": "Coordinate multi-agent pipelines. Architecture board review required.",
+        "examples": "L2C pipeline orchestrators (6) · BTP deploy coordinators (5) · n8n workflow builders (8) · Test suite generators (4) · +8 more"
+      }
+    ],
+    "discovery": [
+      {
+        "asset": "BTP Extension Agent (prod)",
+        "source": "SAP BTP",
+        "model": "GPT-4o · Azure OpenAI",
+        "firstSeen": "2026-05-18",
+        "signalTone": "r",
+        "signal": "High — confidential data",
+        "statusTone": "a",
+        "status": "Pending review"
+      },
+      {
+        "asset": "n8n LLM Node (prod pipeline)",
+        "source": "n8n Cloud",
+        "model": "Claude Sonnet 4.6",
+        "firstSeen": "2026-05-20",
+        "signalTone": "a",
+        "signal": "Med — no token cap",
+        "statusTone": "a",
+        "status": "Pending review"
+      },
+      {
+        "asset": "Joule Custom Skill #7",
+        "source": "SAP AI Core",
+        "model": "SAP proprietary",
+        "firstSeen": "2026-05-21",
+        "signalTone": "a",
+        "signal": "Med — unclassified",
+        "statusTone": "a",
+        "status": "Pending review"
+      },
+      {
+        "asset": "Cursor AI Agent batch (6 devs)",
+        "source": "Cursor IDE",
+        "model": "GPT-4.1",
+        "firstSeen": "2026-05-22",
+        "signalTone": "g",
+        "signal": "Low — dev env only",
+        "statusTone": "b",
+        "status": "Auto-register"
+      }
+    ],
+    "discoveryMore": {
+      "note": "Azure ML, Salesforce Einstein, internal Python/OpenAI, LangChain scripts, various n8n flows",
+      "statusTone": "gr",
+      "status": "Queued"
+    },
+    "overprivilegedQueue": [
+      {
+        "severity": "critical",
+        "name": "L2C pipeline orchestrator (3 instances)",
+        "count": 3,
+        "description": "Admin write access to SAP S/4HANA prod. Least-privilege reissue in progress. Owner: Eng Leads."
+      },
+      {
+        "severity": "critical",
+        "name": "Report gen bots (4 instances)",
+        "count": 4,
+        "description": "Admin BTP credentials inherited from setup. Blocking Q1 2027 audit. Reissue escalated."
+      },
+      {
+        "severity": "high",
+        "name": "Contract drafters (Icertis, 3)",
+        "count": 3,
+        "description": "Read all templates, not assigned scope. Access narrowing scheduled Dec 2026."
+      }
+    ],
+    "overprivilegedRest": {
+      "severity": "high",
+      "description": "Various n8n, BTP monitoring, ABAP assist, OData agents. All queued Q1 2027 review."
+    },
+    "accessTiers": [
+      {
+        "label": "Read-only",
+        "count": 74,
+        "color": "green"
+      },
+      {
+        "label": "Read + limited write",
+        "count": 41,
+        "color": "amber"
+      },
+      {
+        "label": "Full write / admin",
+        "count": 10,
+        "color": "red"
+      }
+    ],
+    "accessTierTarget": "Target: 0 full write/admin agents by Q1 2027."
+  },
+  "budget": {
+    "totalActualM": 2.74,
+    "ceilingM": 3.6,
+    "groups": [
+      {
+        "name": "Engineering",
+        "budgetK": 1100,
+        "utilisationPct": 107,
+        "color": "red"
+      },
+      {
+        "name": "Sales & Presales",
+        "budgetK": 560,
+        "utilisationPct": 88,
+        "color": "amber"
+      },
+      {
+        "name": "Product & Design",
+        "budgetK": 420,
+        "utilisationPct": 76,
+        "color": "purple"
+      },
+      {
+        "name": "Operations",
+        "budgetK": 360,
+        "utilisationPct": 62,
+        "color": "green"
+      },
+      {
+        "name": "Finance",
+        "budgetK": 280,
+        "utilisationPct": 104,
+        "color": "red"
+      },
+      {
+        "name": "HR / L&D",
+        "budgetK": 182,
+        "utilisationPct": 46,
+        "color": "green"
+      }
+    ]
+  }
 }

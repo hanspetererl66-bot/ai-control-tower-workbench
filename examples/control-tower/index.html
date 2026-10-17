@@ -1529,13 +1529,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   <div class="card" style="overflow-x:auto">
     <table class="tbl" style="min-width:560px">
       <thead><tr><th>Asset</th><th>Source</th><th>Model / runtime</th><th>First seen</th><th>Risk signal</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="b">BTP Extension Agent (prod)</td><td>SAP BTP</td><td style="font-family:var(--mono);font-size:11px">GPT-4o &middot; Azure OpenAI</td><td style="font-family:var(--mono);font-size:11px">2026-05-18</td><td><span class="tag t-r">High &mdash; confidential data</span></td><td><span class="tag t-a">Pending review</span></td></tr>
-        <tr><td class="b">n8n LLM Node (prod pipeline)</td><td>n8n Cloud</td><td style="font-family:var(--mono);font-size:11px">Claude Sonnet 4.6</td><td style="font-family:var(--mono);font-size:11px">2026-05-20</td><td><span class="tag t-a">Med &mdash; no token cap</span></td><td><span class="tag t-a">Pending review</span></td></tr>
-        <tr><td class="b">Joule Custom Skill #7</td><td>SAP AI Core</td><td style="font-family:var(--mono);font-size:11px">SAP proprietary</td><td style="font-family:var(--mono);font-size:11px">2026-05-21</td><td><span class="tag t-a">Med &mdash; unclassified</span></td><td><span class="tag t-a">Pending review</span></td></tr>
-        <tr><td class="b">Cursor AI Agent batch (6 devs)</td><td>Cursor IDE</td><td style="font-family:var(--mono);font-size:11px">GPT-4.1</td><td style="font-family:var(--mono);font-size:11px">2026-05-22</td><td><span class="tag t-g">Low &mdash; dev env only</span></td><td><span class="tag t-b">Auto-register</span></td></tr>
-        <tr><td class="b">+ 43 more assets</td><td colspan="3" style="color:var(--g500)">Azure ML, Salesforce Einstein, internal Python/OpenAI, LangChain scripts, various n8n flows</td><td></td><td><span class="tag t-gr">Queued</span></td></tr>
-      </tbody>
+      <tbody id="discovery-body"></tbody>
     </table>
   </div>
 
@@ -1544,11 +1538,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     <span class="tag t-g">SAP BTP &#10003;</span><span class="tag t-g">SAP AI Core &#10003;</span><span class="tag t-g">Azure OpenAI &#10003;</span><span class="tag t-g">n8n Cloud &#10003;</span><span class="tag t-g">GitHub Copilot &#10003;</span><span class="tag t-g">Cursor IDE &#10003;</span><span class="tag t-g">Claude Code &#10003;</span><span class="tag t-a">AWS Bedrock &mdash; partial</span><span class="tag t-a">GCP Vertex &mdash; partial</span><span class="tag t-gr">Salesforce Einstein &mdash; Q1 2027</span>
   </div>
 
-  <div class="g3">
-    <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="tag t-b">Autonomous</span><span style="font-size:13px;font-weight:700">58 agents</span></div><div style="font-size:12px;color:var(--g500);margin-bottom:8px">End-to-end, no HITL. Schedule / event triggered. CISO sign-off required.</div><div style="font-size:11px;color:var(--g500);font-family:var(--mono);line-height:1.9">SAP SPC ticket routers (8) &middot; OData enrichment pipelines (6) &middot; Report gen bots (7) &middot; Shift roster sync (4) &middot; Contract classification (5) &middot; BTP monitoring (5) &middot; +23 more</div></div>
-    <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="tag t-p">Copilot</span><span style="font-size:13px;font-weight:700">97 agents</span></div><div style="font-size:12px;color:var(--g500);margin-bottom:8px">Assist human in real-time. Draft, suggest, enrich &mdash; human approves output.</div><div style="font-size:11px;color:var(--g500);font-family:var(--mono);line-height:1.9">L2C deal advisors (12) &middot; ABAP code assistants (18) &middot; Contract drafters (9) &middot; Presales proposal gen (8) &middot; Fiori UX reviewer (6) &middot; +44 more</div></div>
-    <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="tag t-a">Orchestrator</span><span style="font-size:13px;font-weight:700">31 agents</span></div><div style="font-size:12px;color:var(--g500);margin-bottom:8px">Coordinate multi-agent pipelines. Architecture board review required.</div><div style="font-size:11px;color:var(--g500);font-family:var(--mono);line-height:1.9">L2C pipeline orchestrators (6) &middot; BTP deploy coordinators (5) &middot; n8n workflow builders (8) &middot; Test suite generators (4) &middot; +8 more</div></div>
-  </div>
+  <div class="g3" id="agent-types"></div>
 
   <div class="sh">Agent lifecycle governance</div>
   <div class="card">
@@ -1579,20 +1569,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       </div>
     </div>
     <div>
-      <div class="sh">Overprivileged agents (31) &mdash; remediation queue (top 4)</div>
-      <div class="card">
-        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-r">Critical</span></div><div><div class="sname">L2C pipeline orchestrator (3 instances)</div><div class="sdesc">Admin write access to SAP S/4HANA prod. Least-privilege reissue in progress. Owner: Eng Leads.</div></div></div>
-        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-r">Critical</span></div><div><div class="sname">Report gen bots (4 instances)</div><div class="sdesc">Admin BTP credentials inherited from setup. Blocking Q1 2027 audit. Reissue escalated.</div></div></div>
-        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-a">High</span></div><div><div class="sname">Contract drafters (Icertis, 3)</div><div class="sdesc">Read all templates, not assigned scope. Access narrowing scheduled Dec 2026.</div></div></div>
-        <div class="srow" style="border:none"><div style="flex-shrink:0;width:74px"><span class="tag t-a">High</span></div><div><div class="sname">+ 21 more agents</div><div class="sdesc">Various n8n, BTP monitoring, ABAP assist, OData agents. All queued Q1 2027 review.</div></div></div>
-      </div>
-      <div class="sh">Access tier breakdown (125 production agents)</div>
-      <div class="card">
-        <div class="br"><div class="bl bl-n">Read-only</div><div class="bt"><div class="bf" style="width:59%;background:var(--green)"></div></div><div class="bv">74 agents</div></div>
-        <div class="br"><div class="bl bl-n">Read + limited write</div><div class="bt"><div class="bf" style="width:33%;background:var(--amber)"></div></div><div class="bv">41 agents</div></div>
-        <div class="br" style="margin-bottom:0"><div class="bl bl-n">Full write / admin</div><div class="bt"><div class="bf" style="width:8%;background:var(--red)"></div></div><div class="bv">10 agents</div></div>
-        <div style="font-size:11px;color:var(--g500);margin-top:8px">Target: 0 full write/admin agents by Q1 2027.</div>
-      </div>
+      <div class="sh">Overprivileged agents (<span id="op-count"></span>) &mdash; remediation queue (top <span id="op-top"></span>)</div>
+      <div class="card" id="op-queue"></div>
+      <div class="sh">Access tier breakdown (<span id="tier-count"></span> production agents)</div>
+      <div class="card" id="access-tiers"></div>
     </div>
   </div>
 </section>
@@ -1774,15 +1754,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   <div style="font-size:10px;font-weight:700;color:var(--purple);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Market context &mdash; AI Control Tower is now a commercial product category</div>
   <div style="font-size:11px;color:var(--g700);line-height:1.7">Databricks (IDC MarketScape Leader 2025&ndash;2026), Snowflake (Cortex AI Gateway), Microsoft (Agent 365), and Datadog (LLM Observability + AI Agent Monitoring) are all shipping production-grade AI governance platforms. Our bespoke stack delivers equivalent functionality at lower cost today, but commercial platforms will close the feature gap by H1 2027. The competitive advantage of the bespoke approach is <strong style="color:var(--g900)">SAP-ecosystem integration depth</strong> — none of the commercial platforms have native SAP BTP / S/4HANA connectors that match our Joule and ABAP observability coverage. Plan a build-vs-buy evaluation by Q4 2026.</div>
 </div>
-<div class="sh">Budget utilisation by team group (monthly, &euro;2.74M total)</div>
-      <div class="card">
-        <div class="br"><div class="bl bl-n">Engineering (budget &euro;1.1M)</div><div class="bt"><div class="bf" style="width:100%;background:var(--red)"></div></div><div class="bv" style="color:var(--red)">107%</div></div>
-        <div class="br"><div class="bl bl-n">Sales &amp; Presales (&euro;560k)</div><div class="bt"><div class="bf" style="width:88%;background:var(--amber)"></div></div><div class="bv">88%</div></div>
-        <div class="br"><div class="bl bl-n">Product &amp; Design (&euro;420k)</div><div class="bt"><div class="bf" style="width:76%;background:var(--purple)"></div></div><div class="bv">76%</div></div>
-        <div class="br"><div class="bl bl-n">Operations (&euro;360k)</div><div class="bt"><div class="bf" style="width:62%;background:var(--green)"></div></div><div class="bv">62%</div></div>
-        <div class="br"><div class="bl bl-n">Finance (&euro;280k)</div><div class="bt"><div class="bf" style="width:100%;background:var(--red)"></div></div><div class="bv" style="color:var(--red)">104%</div></div>
-        <div class="br" style="margin-bottom:0"><div class="bl bl-n">HR / L&amp;D (&euro;182k)</div><div class="bt"><div class="bf" style="width:46%;background:var(--green)"></div></div><div class="bv">46%</div></div>
-      </div>
+<div class="sh">Budget utilisation by team group (monthly, &euro;<span id="budget-total"></span>M total)</div>
+      <div class="card" id="budget-groups"></div>
       <div class="ns" style="margin-top:12px">
         <div class="ns-title">AI Value Return Ratio (AVRR) &mdash; 5.1&times; this month <span class="tag t-g" style="vertical-align:middle;margin-left:6px">Top-quartile</span></div>
         <div class="ns-why">AVRR measures how many euros of engineering value are recovered for every euro invested in AI tooling. A ratio above 3.5&times; is healthy; above 5&times; is top-quartile for enterprises at this scale. Below 2&times; triggers a cost governance review.</div>
@@ -2334,7 +2307,170 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       "tile": "Prompt injection defence 100% complete across all 186 agents",
       "short": "Prompt injection"
     }
-  ]
+  ],
+  "agents": {
+    "total": 186,
+    "production": 125,
+    "unregistered": 47,
+    "overprivileged": 31,
+    "types": [
+      {
+        "key": "autonomous",
+        "label": "Autonomous",
+        "tone": "b",
+        "count": 58,
+        "description": "End-to-end, no HITL. Schedule / event triggered. CISO sign-off required.",
+        "examples": "SAP SPC ticket routers (8) · OData enrichment pipelines (6) · Report gen bots (7) · Shift roster sync (4) · Contract classification (5) · BTP monitoring (5) · +23 more"
+      },
+      {
+        "key": "copilot",
+        "label": "Copilot",
+        "tone": "p",
+        "count": 97,
+        "description": "Assist human in real-time. Draft, suggest, enrich — human approves output.",
+        "examples": "L2C deal advisors (12) · ABAP code assistants (18) · Contract drafters (9) · Presales proposal gen (8) · Fiori UX reviewer (6) · +44 more"
+      },
+      {
+        "key": "orchestrator",
+        "label": "Orchestrator",
+        "tone": "a",
+        "count": 31,
+        "description": "Coordinate multi-agent pipelines. Architecture board review required.",
+        "examples": "L2C pipeline orchestrators (6) · BTP deploy coordinators (5) · n8n workflow builders (8) · Test suite generators (4) · +8 more"
+      }
+    ],
+    "discovery": [
+      {
+        "asset": "BTP Extension Agent (prod)",
+        "source": "SAP BTP",
+        "model": "GPT-4o · Azure OpenAI",
+        "firstSeen": "2026-05-18",
+        "signalTone": "r",
+        "signal": "High — confidential data",
+        "statusTone": "a",
+        "status": "Pending review"
+      },
+      {
+        "asset": "n8n LLM Node (prod pipeline)",
+        "source": "n8n Cloud",
+        "model": "Claude Sonnet 4.6",
+        "firstSeen": "2026-05-20",
+        "signalTone": "a",
+        "signal": "Med — no token cap",
+        "statusTone": "a",
+        "status": "Pending review"
+      },
+      {
+        "asset": "Joule Custom Skill #7",
+        "source": "SAP AI Core",
+        "model": "SAP proprietary",
+        "firstSeen": "2026-05-21",
+        "signalTone": "a",
+        "signal": "Med — unclassified",
+        "statusTone": "a",
+        "status": "Pending review"
+      },
+      {
+        "asset": "Cursor AI Agent batch (6 devs)",
+        "source": "Cursor IDE",
+        "model": "GPT-4.1",
+        "firstSeen": "2026-05-22",
+        "signalTone": "g",
+        "signal": "Low — dev env only",
+        "statusTone": "b",
+        "status": "Auto-register"
+      }
+    ],
+    "discoveryMore": {
+      "note": "Azure ML, Salesforce Einstein, internal Python/OpenAI, LangChain scripts, various n8n flows",
+      "statusTone": "gr",
+      "status": "Queued"
+    },
+    "overprivilegedQueue": [
+      {
+        "severity": "critical",
+        "name": "L2C pipeline orchestrator (3 instances)",
+        "count": 3,
+        "description": "Admin write access to SAP S/4HANA prod. Least-privilege reissue in progress. Owner: Eng Leads."
+      },
+      {
+        "severity": "critical",
+        "name": "Report gen bots (4 instances)",
+        "count": 4,
+        "description": "Admin BTP credentials inherited from setup. Blocking Q1 2027 audit. Reissue escalated."
+      },
+      {
+        "severity": "high",
+        "name": "Contract drafters (Icertis, 3)",
+        "count": 3,
+        "description": "Read all templates, not assigned scope. Access narrowing scheduled Dec 2026."
+      }
+    ],
+    "overprivilegedRest": {
+      "severity": "high",
+      "description": "Various n8n, BTP monitoring, ABAP assist, OData agents. All queued Q1 2027 review."
+    },
+    "accessTiers": [
+      {
+        "label": "Read-only",
+        "count": 74,
+        "color": "green"
+      },
+      {
+        "label": "Read + limited write",
+        "count": 41,
+        "color": "amber"
+      },
+      {
+        "label": "Full write / admin",
+        "count": 10,
+        "color": "red"
+      }
+    ],
+    "accessTierTarget": "Target: 0 full write/admin agents by Q1 2027."
+  },
+  "budget": {
+    "totalActualM": 2.74,
+    "ceilingM": 3.6,
+    "groups": [
+      {
+        "name": "Engineering",
+        "budgetK": 1100,
+        "utilisationPct": 107,
+        "color": "red"
+      },
+      {
+        "name": "Sales & Presales",
+        "budgetK": 560,
+        "utilisationPct": 88,
+        "color": "amber"
+      },
+      {
+        "name": "Product & Design",
+        "budgetK": 420,
+        "utilisationPct": 76,
+        "color": "purple"
+      },
+      {
+        "name": "Operations",
+        "budgetK": 360,
+        "utilisationPct": 62,
+        "color": "green"
+      },
+      {
+        "name": "Finance",
+        "budgetK": 280,
+        "utilisationPct": 104,
+        "color": "red"
+      },
+      {
+        "name": "HR / L&D",
+        "budgetK": 182,
+        "utilisationPct": 46,
+        "color": "green"
+      }
+    ]
+  }
 }
 </script>
 <script>
@@ -2379,6 +2515,54 @@ function renderRisks(){
   }).join('');
 }
 renderRisks();
+
+function renderAgents(){
+  var A=CT.agents; if(!A) return;
+  var mono='font-family:var(--mono);font-size:11px';
+  document.getElementById('agent-types').innerHTML=A.types.map(function(t){
+    return '<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="tag t-'+esc(t.tone)+'">'+esc(t.label)+'</span><span style="font-size:13px;font-weight:700">'+Number(t.count)+' agents</span></div>'
+      +'<div style="font-size:12px;color:var(--g500);margin-bottom:8px">'+esc(t.description)+'</div>'
+      +'<div style="font-size:11px;color:var(--g500);font-family:var(--mono);line-height:1.9">'+esc(t.examples)+'</div></div>';
+  }).join('');
+
+  var more=A.unregistered-A.discovery.length;
+  document.getElementById('discovery-body').innerHTML=A.discovery.map(function(r){
+    return '<tr><td class="b">'+esc(r.asset)+'</td><td>'+esc(r.source)+'</td><td style="'+mono+'">'+esc(r.model)+'</td><td style="'+mono+'">'+esc(r.firstSeen)+'</td>'
+      +'<td><span class="tag t-'+esc(r.signalTone)+'">'+esc(r.signal)+'</span></td><td><span class="tag t-'+esc(r.statusTone)+'">'+esc(r.status)+'</span></td></tr>';
+  }).join('')+'<tr><td class="b">+ '+more+' more assets</td><td colspan="3" style="color:var(--g500)">'+esc(A.discoveryMore.note)+'</td><td></td><td><span class="tag t-'+esc(A.discoveryMore.statusTone)+'">'+esc(A.discoveryMore.status)+'</span></td></tr>';
+
+  var SEV={critical:['t-r','Critical'],high:['t-a','High']};
+  var listedOp=A.overprivilegedQueue.reduce(function(n,r){return n+r.count;},0);
+  var rows=A.overprivilegedQueue.map(function(r){return {sev:r.severity,name:r.name,desc:r.description};});
+  rows.push({sev:A.overprivilegedRest.severity,name:'+ '+(A.overprivileged-listedOp)+' more agents',desc:A.overprivilegedRest.description});
+  document.getElementById('op-count').textContent=A.overprivileged;
+  document.getElementById('op-top').textContent=rows.length;
+  document.getElementById('op-queue').innerHTML=rows.map(function(r,i){
+    var sv=SEV[r.sev]||SEV.high;
+    return '<div class="srow"'+(i===rows.length-1?' style="border:none"':'')+'><div style="flex-shrink:0;width:74px"><span class="tag '+sv[0]+'">'+sv[1]+'</span></div><div><div class="sname">'+esc(r.name)+'</div><div class="sdesc">'+esc(r.desc)+'</div></div></div>';
+  }).join('');
+
+  document.getElementById('tier-count').textContent=A.production;
+  document.getElementById('access-tiers').innerHTML=A.accessTiers.map(function(t,i){
+    var w=Math.round(t.count/A.production*100);
+    return '<div class="br"'+(i===A.accessTiers.length-1?' style="margin-bottom:0"':'')+'><div class="bl bl-n">'+esc(t.label)+'</div><div class="bt"><div class="bf" style="width:'+w+'%;background:var(--'+esc(t.color)+')"></div></div><div class="bv">'+Number(t.count)+' agents</div></div>';
+  }).join('')+'<div style="font-size:11px;color:var(--g500);margin-top:8px">'+esc(A.accessTierTarget)+'</div>';
+}
+
+function renderBudget(){
+  var B=CT.budget; if(!B) return;
+  function money(k){return k>=1000?'&euro;'+(k/1000).toFixed(1).replace(/\.0$/,'')+'M':'&euro;'+k+'k';}
+  document.getElementById('budget-total').textContent=B.totalActualM;
+  document.getElementById('budget-groups').innerHTML=B.groups.map(function(g,i){
+    var over=g.utilisationPct>100;
+    // the first row carries the word "budget" once, as in the original wording
+    return '<div class="br"'+(i===B.groups.length-1?' style="margin-bottom:0"':'')+'><div class="bl bl-n">'+esc(g.name)+' ('+(i===0?'budget ':'')+money(g.budgetK)+')</div>'
+      +'<div class="bt"><div class="bf" style="width:'+Math.min(100,g.utilisationPct)+'%;background:var(--'+esc(g.color)+')"></div></div>'
+      +'<div class="bv"'+(over?' style="color:var(--red)"':'')+'>'+Number(g.utilisationPct)+'%</div></div>';
+  }).join('');
+}
+renderAgents();
+renderBudget();
 </script>
 <script>
 function go(id,btn){
