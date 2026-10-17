@@ -50,6 +50,17 @@ configured, restarted, or removed. If an install page does not return to the app
 that the Werkbank window is still running, reload the install page, and select
 **Open Werkbank** again.
 
+## AI Control Tower example Space
+
+This fork bundles an AI Control Tower dashboard (illustrative sample data) as a Space.
+Install it into the spaces folder with:
+
+```
+npm run install:control-tower
+```
+
+It then appears in the Spaces list. The source lives in `examples/control-tower/`.
+
 ## Verification
 
 ```sh

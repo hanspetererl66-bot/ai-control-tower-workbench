@@ -10,6 +10,7 @@
     "dev": "vite --port 5273 & electron .",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
+    "install:control-tower": "node scripts/install-example-space.mjs control-tower",
     "check": "npm run typecheck && npm test && npm run build"
   },
   "keywords": ["ai", "desktop", "mcp", "agents", "goose"],
