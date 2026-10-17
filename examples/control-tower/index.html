@@ -858,7 +858,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       <div style="padding:14px;font-size:28px;color:var(--g300);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--g100)">=</div>
       <div style="padding:14px;background:var(--p-dim);border-radius:0 6px 6px 0">
         <div style="font-size:10px;font-weight:700;color:var(--purple);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Net annual return</div>
-        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--purple)">&euro;134M</div>
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--purple)">&euro;135M</div>
         <div style="font-size:11px;color:var(--g500);margin-top:3px">AVRR 5.1&times;</div>
       </div>
     </div>
@@ -2162,28 +2162,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   </div>
 
   <div class="sh">Open risk items &mdash; summary</div>
-  <div class="g4" style="margin-bottom:16px">
-    <div style="background:#fff;border:1px solid var(--r-bd);border-left:4px solid var(--red);border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">
-      <div style="font-size:10px;font-weight:700;color:var(--red);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">High severity</div>
-      <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--red)">4</div>
-      <div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">Instability spike &middot; Overprivileged agents &middot; Unregistered assets &middot; Hallucinations in finance</div>
-    </div>
-    <div style="background:#fff;border:1px solid var(--a-bd);border-left:4px solid var(--amber);border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">
-      <div style="font-size:10px;font-weight:700;color:var(--amber);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Medium severity</div>
-      <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--amber)">2</div>
-      <div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">Shadow AI accounts (89) &middot; EU AI Act assessments outstanding (10/18)</div>
-    </div>
-    <div style="background:#fff;border:1px solid var(--g-bd);border-left:4px solid var(--green);border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">
-      <div style="font-size:10px;font-weight:700;color:var(--green);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Closed / low</div>
-      <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--green)">1</div>
-      <div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">Prompt injection defence 100% complete across all 186 agents</div>
-    </div>
-    <div style="background:#fff;border:1px solid var(--r-bd);border-left:4px solid var(--red);border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">
-      <div style="font-size:10px;font-weight:700;color:var(--red);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Below 40% mitigated</div>
-      <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--red)">4</div>
-      <div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">Instability (20%) &middot; Unregistered assets (26%) &middot; Overprivileged agents (35%) &middot; Shadow AI (45%)</div>
-    </div>
-  </div>
+  <div class="g4" id="risk-summary" style="margin-bottom:16px"></div>
 
   <div class="sh">Risk register &mdash; expanded (owner &middot; ETA &middot; mitigation progress)</div>
   <div class="card" style="padding:0;overflow-x:auto">
@@ -2196,106 +2175,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <th style="width:22%">Mitigation progress</th>
         <th style="width:18%">Current action</th>
       </tr></thead>
-      <tbody>
-        <tr>
-          <td><span class="tag t-r">High</span></td>
-          <td><div class="b" style="font-size:12px">AI-driven instability spike</div><div style="font-size:11px;color:var(--g500);margin-top:2px">CFR 9.1% &#8593;, Rework 12.8% &#8593;. ~1,500 extra failed deploys/month at 30k scale.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">VP Engineering</div><div style="font-size:11px;color:var(--g500)">CTO Office</div></td>
-          <td><span class="tag t-r">Q3 2026</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:20%;height:100%;background:var(--red);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--red);min-width:28px">20%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">Test gate spec done; implementation pending</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">Mandatory AI-PR test gates in design. CFR dashboard alert threshold set at 8%.</td>
-        </tr>
-        <tr>
-          <td><span class="tag t-r">High</span></td>
-          <td><div class="b" style="font-size:12px">Overprivileged agent identities (31)</div><div style="font-size:11px;color:var(--g500);margin-top:2px">10 agents with full admin write to SAP S/4HANA &amp; BTP prod. 21 exceed least-privilege scope.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">CISO</div><div style="font-size:11px;color:var(--g500)">Platform Security</div></td>
-          <td><span class="tag t-r">Jun 2026</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:35%;height:100%;background:var(--amber);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--amber);min-width:28px">35%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">11 of 31 agents re-scoped</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">Weekly remediation sprints. 2 critical (L2C orch + report bot) blocked on SAP API key reissue.</td>
-        </tr>
-        <tr>
-          <td><span class="tag t-r">High</span></td>
-          <td><div class="b" style="font-size:12px">47 unregistered AI assets</div><div style="font-size:11px;color:var(--g500);margin-top:2px">BTP extension agent (confidential data), n8n prod LLM node, Joule skill #7 + 44 more. No owner, no token cap.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">AI Platform Lead</div><div style="font-size:11px;color:var(--g500)">AI Platform Team</div></td>
-          <td><span class="tag t-a">Jul 2026</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:26%;height:100%;background:var(--amber);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--amber);min-width:28px">26%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">12 of 47 triaged; 4 registered; 8 blocked</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">BTP extension agent escalated to CISO. Auto-registration pipeline under review.</td>
-        </tr>
-        <tr>
-          <td><span class="tag t-r">High</span></td>
-          <td><div class="b" style="font-size:12px">Hallucination in financial outputs</div><div style="font-size:11px;color:var(--g500);margin-top:2px">14 incidents/month. AI-generated SAP GL figures used in reports without HITL gate.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">CFO Office</div><div style="font-size:11px;color:var(--g500)">L2C Agent Owner</div></td>
-          <td><span class="tag t-r">Jun 2026</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:58%;height:100%;background:var(--amber);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--amber);min-width:28px">58%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">7 of 12 finance agents gated</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">HITL gate design complete. 7 deployed, 5 pending ServiceNow workflow integration.</td>
-        </tr>
-        <tr>
-          <td><span class="tag t-a">Med</span></td>
-          <td><div class="b" style="font-size:12px">Shadow AI (89 flagged accounts)</div><div style="font-size:11px;color:var(--g500);margin-top:2px">Personal ChatGPT / Claude accounts. Real number estimated 10&times; higher at 30k scale. No auditability.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">CISO / HR</div><div style="font-size:11px;color:var(--g500)">IT Security</div></td>
-          <td><span class="tag t-a">Q2 2026</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:45%;height:100%;background:var(--blue);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--blue);min-width:28px">45%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">SSO enforced for 40 of 89 flagged accounts</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">Acceptable use policy refresh published. Network egress block on personal AI endpoints pending.</td>
-        </tr>
-        <tr>
-          <td><span class="tag t-a">Med</span></td>
-          <td><div class="b" style="font-size:12px">EU AI Act &mdash; 18 high-risk agents</div><div style="font-size:11px;color:var(--g500);margin-top:2px">18 agents require conformity assessment before Aug 2026 audit. 10 outstanding.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">General Counsel</div><div style="font-size:11px;color:var(--g500)">Legal &amp; Compliance</div></td>
-          <td><span class="tag t-b">Aug 2026</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:44%;height:100%;background:var(--purple);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--purple);min-width:28px">44%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">8 of 18 assessments complete</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">External assessor engaged. Remaining 10 scheduled Jun&ndash;Jul. Audit prep kicked off.</td>
-        </tr>
-        <tr>
-          <td><span class="tag t-g">Low</span></td>
-          <td><div class="b" style="font-size:12px">Prompt injection via untrusted content</div><div style="font-size:11px;color:var(--g500);margin-top:2px">Agents reading external emails, docs, web content. 0 confirmed incidents this quarter.</div></td>
-          <td><div style="font-size:12px;font-weight:600;color:var(--g900)">Security Eng.</div><div style="font-size:11px;color:var(--g500)">Platform Security</div></td>
-          <td><span class="tag t-g">Done</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-              <div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;background:var(--green);border-radius:3px"></div></div>
-              <div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--green);min-width:28px">100%</div>
-            </div>
-            <div style="font-size:10px;color:var(--g500)">Content isolation active on all 186 agents</div>
-          </td>
-          <td style="font-size:11px;color:var(--g700)">Monitoring alerts configured. Quarterly red-team exercise scheduled Q3.</td>
-        </tr>
-      </tbody>
+      <tbody id="risk-register-body"></tbody>
     </table>
   </div>
 
@@ -2334,6 +2214,172 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   </div>
 </section>
 
+<script type="application/json" id="ct-data">
+{
+  "meta": {
+    "version": 1,
+    "note": "Illustrative sample data. Source of truth for the AI Control Tower space; embedded into index.html by `npm run sync:control-tower`.",
+    "riskThresholdPct": 40
+  },
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "title": "AI-driven instability spike",
+      "description": "CFR 9.1% ↑, Rework 12.8% ↑. ~1,500 extra failed deploys/month at 30k scale.",
+      "owner": "VP Engineering",
+      "ownerTeam": "CTO Office",
+      "eta": "Q3 2026",
+      "etaTone": "red",
+      "progressPct": 20,
+      "progressColor": "red",
+      "progressNote": "Test gate spec done; implementation pending",
+      "action": "Mandatory AI-PR test gates in design. CFR dashboard alert threshold set at 8%.",
+      "tile": "Instability spike",
+      "short": "Instability"
+    },
+    {
+      "id": "R2",
+      "severity": "high",
+      "title": "Overprivileged agent identities (31)",
+      "description": "10 agents with full admin write to SAP S/4HANA & BTP prod. 21 exceed least-privilege scope.",
+      "owner": "CISO",
+      "ownerTeam": "Platform Security",
+      "eta": "Jun 2026",
+      "etaTone": "red",
+      "progressPct": 35,
+      "progressColor": "amber",
+      "progressNote": "11 of 31 agents re-scoped",
+      "action": "Weekly remediation sprints. 2 critical (L2C orch + report bot) blocked on SAP API key reissue.",
+      "tile": "Overprivileged agents",
+      "short": "Overprivileged agents"
+    },
+    {
+      "id": "R3",
+      "severity": "high",
+      "title": "47 unregistered AI assets",
+      "description": "BTP extension agent (confidential data), n8n prod LLM node, Joule skill #7 + 44 more. No owner, no token cap.",
+      "owner": "AI Platform Lead",
+      "ownerTeam": "AI Platform Team",
+      "eta": "Jul 2026",
+      "etaTone": "amber",
+      "progressPct": 26,
+      "progressColor": "amber",
+      "progressNote": "12 of 47 triaged; 4 registered; 8 blocked",
+      "action": "BTP extension agent escalated to CISO. Auto-registration pipeline under review.",
+      "tile": "Unregistered assets",
+      "short": "Unregistered assets"
+    },
+    {
+      "id": "R4",
+      "severity": "high",
+      "title": "Hallucination in financial outputs",
+      "description": "14 incidents/month. AI-generated SAP GL figures used in reports without HITL gate.",
+      "owner": "CFO Office",
+      "ownerTeam": "L2C Agent Owner",
+      "eta": "Jun 2026",
+      "etaTone": "red",
+      "progressPct": 58,
+      "progressColor": "amber",
+      "progressNote": "7 of 12 finance agents gated",
+      "action": "HITL gate design complete. 7 deployed, 5 pending ServiceNow workflow integration.",
+      "tile": "Hallucinations in finance",
+      "short": "Hallucinations in finance"
+    },
+    {
+      "id": "R5",
+      "severity": "medium",
+      "title": "Shadow AI (89 flagged accounts)",
+      "description": "Personal ChatGPT / Claude accounts. Real number estimated 10× higher at 30k scale. No auditability.",
+      "owner": "CISO / HR",
+      "ownerTeam": "IT Security",
+      "eta": "Q2 2026",
+      "etaTone": "amber",
+      "progressPct": 45,
+      "progressColor": "blue",
+      "progressNote": "SSO enforced for 40 of 89 flagged accounts",
+      "action": "Acceptable use policy refresh published. Network egress block on personal AI endpoints pending.",
+      "tile": "Shadow AI accounts (89)",
+      "short": "Shadow AI"
+    },
+    {
+      "id": "R6",
+      "severity": "medium",
+      "title": "EU AI Act — 18 high-risk agents",
+      "description": "18 agents require conformity assessment before Aug 2026 audit. 10 outstanding.",
+      "owner": "General Counsel",
+      "ownerTeam": "Legal & Compliance",
+      "eta": "Aug 2026",
+      "etaTone": "blue",
+      "progressPct": 44,
+      "progressColor": "purple",
+      "progressNote": "8 of 18 assessments complete",
+      "action": "External assessor engaged. Remaining 10 scheduled Jun–Jul. Audit prep kicked off.",
+      "tile": "EU AI Act assessments outstanding (10/18)",
+      "short": "EU AI Act"
+    },
+    {
+      "id": "R7",
+      "severity": "low",
+      "title": "Prompt injection via untrusted content",
+      "description": "Agents reading external emails, docs, web content. 0 confirmed incidents this quarter.",
+      "owner": "Security Eng.",
+      "ownerTeam": "Platform Security",
+      "eta": "Done",
+      "etaTone": "green",
+      "progressPct": 100,
+      "progressColor": "green",
+      "progressNote": "Content isolation active on all 186 agents",
+      "action": "Monitoring alerts configured. Quarterly red-team exercise scheduled Q3.",
+      "tile": "Prompt injection defence 100% complete across all 186 agents",
+      "short": "Prompt injection"
+    }
+  ]
+}
+</script>
+<script>
+/* Data comes from examples/control-tower/data.json (embedded by `npm run sync:control-tower`). */
+const CT = JSON.parse(document.getElementById('ct-data').textContent);
+function esc(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function renderRisks(){
+  var risks=CT.risks||[], limit=(CT.meta&&CT.meta.riskThresholdPct)||40;
+  var TAG={red:'t-r',amber:'t-a',blue:'t-b',green:'t-g'};
+  var SEV={high:['t-r','High'],medium:['t-a','Med'],low:['t-g','Low']};
+
+  var high=risks.filter(function(r){return r.severity==='high';});
+  var med=risks.filter(function(r){return r.severity==='medium';});
+  var low=risks.filter(function(r){return r.severity==='low';});
+  var weak=risks.filter(function(r){return r.progressPct<limit;}).sort(function(a,b){return a.progressPct-b.progressPct;});
+
+  function tile(label,color,border,count,lines){
+    return '<div style="background:#fff;border:1px solid var(--'+border+');border-left:4px solid var(--'+color+');border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">'
+      +'<div style="font-size:10px;font-weight:700;color:var(--'+color+');font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">'+esc(label)+'</div>'
+      +'<div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--'+color+')">'+count+'</div>'
+      +'<div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">'+lines.map(esc).join(' &middot; ')+'</div></div>';
+  }
+  document.getElementById('risk-summary').innerHTML=
+    tile('High severity','red','r-bd',high.length,high.map(function(r){return r.tile;}))
+   +tile('Medium severity','amber','a-bd',med.length,med.map(function(r){return r.tile;}))
+   +tile('Closed / low','green','g-bd',low.length,low.map(function(r){return r.tile;}))
+   +tile('Below '+limit+'% mitigated','red','r-bd',weak.length,weak.map(function(r){return r.short+' ('+r.progressPct+'%)';}));
+
+  document.getElementById('risk-register-body').innerHTML=risks.map(function(r){
+    var sev=SEV[r.severity]||SEV.low, c=r.progressColor;
+    return '<tr>'
+     +'<td><span class="tag '+sev[0]+'">'+sev[1]+'</span></td>'
+     +'<td><div class="b" style="font-size:12px">'+esc(r.title)+'</div><div style="font-size:11px;color:var(--g500);margin-top:2px">'+esc(r.description)+'</div></td>'
+     +'<td><div style="font-size:12px;font-weight:600;color:var(--g900)">'+esc(r.owner)+'</div><div style="font-size:11px;color:var(--g500)">'+esc(r.ownerTeam)+'</div></td>'
+     +'<td><span class="tag '+(TAG[r.etaTone]||'t-b')+'">'+esc(r.eta)+'</span></td>'
+     +'<td><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+       +'<div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:'+Number(r.progressPct)+'%;height:100%;background:var(--'+c+');border-radius:3px"></div></div>'
+       +'<div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--'+c+');min-width:28px">'+Number(r.progressPct)+'%</div></div>'
+       +'<div style="font-size:10px;color:var(--g500)">'+esc(r.progressNote)+'</div></td>'
+     +'<td style="font-size:11px;color:var(--g700)">'+esc(r.action)+'</td></tr>';
+  }).join('');
+}
+renderRisks();
+</script>
 <script>
 function go(id,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));

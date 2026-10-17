@@ -61,6 +61,10 @@ npm run install:control-tower
 
 It then appears in the Spaces list. The source lives in `examples/control-tower/`.
 
+The risk register is data-driven: edit `examples/control-tower/data.json`, then run
+`npm run sync:control-tower` to embed it into the page (a Space cannot fetch files
+from inside the sandbox). `npm test` fails if the two drift apart.
+
 ## Verification
 
 ```sh
