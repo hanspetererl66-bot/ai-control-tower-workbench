@@ -1,0 +1,13 @@
+Customer Shipment Defects — demo notes
+
+Data status: synthetic, prepared for product demonstration.
+Source: workspace/returns.csv (2024 Q1 through 2026 Q3).
+
+Questions for the review:
+- Which two causes explain most current returns?
+- Which action can reduce return cost within 30 days?
+- What should be personalised before the board deck is sent?
+
+Output requested from the assistant:
+Summarise the evidence, identify any inconsistency with the attached presentation,
+and draft three concise talking points for the meeting.

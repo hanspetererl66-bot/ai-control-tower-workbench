@@ -1,0 +1,46 @@
+{
+  "name": "werkbank",
+  "version": "0.1.0",
+  "description": "A local AI workbench for conversations, files, Spaces, connectors, and skills.",
+  "private": true,
+  "main": "electron/main.mjs",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "phase0": "node --env-file=.env spike.mjs",
+    "dev": "vite --port 5273 & electron .",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": ["ai", "desktop", "mcp", "agents", "goose"],
+  "author": "Marian Zeis",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marianfoo/werkbank.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marianfoo/werkbank/issues"
+  },
+  "homepage": "https://getwerkbank.com/",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "type": "module",
+  "dependencies": {
+    "@aaif/goose-sdk": "^0.20.2",
+    "@agentclientprotocol/sdk": "^0.19.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "electron": "^43.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0"
+  }
+}

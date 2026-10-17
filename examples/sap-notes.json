@@ -1,0 +1,31 @@
+{
+  "command": "node",
+  "args": ["/absolute/path/to/sap-notes/dist/mcp-server.js"],
+  "description": "Search and read SAP Notes and KBAs",
+  "user_config": {
+    "sap_username": {
+      "type": "string",
+      "title": "SAP S-User",
+      "description": "Your SAP support user (S-number).",
+      "required": true
+    },
+    "sap_password": {
+      "type": "string",
+      "title": "SAP Password",
+      "description": "Encrypted via the OS keychain — never written to config.yaml.",
+      "required": true,
+      "sensitive": true
+    },
+    "auth_method": {
+      "type": "string",
+      "title": "Auth method",
+      "description": "Leave as-is unless your server expects something else.",
+      "default": "jwt"
+    }
+  },
+  "env": {
+    "SAP_USERNAME": "${user_config.sap_username}",
+    "SAP_PASSWORD": "${user_config.sap_password}",
+    "AUTH_METHOD": "${user_config.auth_method}"
+  }
+}

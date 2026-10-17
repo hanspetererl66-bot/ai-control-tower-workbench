@@ -1,0 +1,57 @@
+# Local configuration and secrets.
+.env
+.env.*
+!.env.example
+
+# Operating-system and editor metadata.
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+
+# Dependencies, generated output, and local caches.
+node_modules/
+dist/
+out/
+release/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+*.log
+
+# Desktop packaging artifacts.
+*.AppImage
+*.dmg
+*.exe
+*.pkg
+
+# Raw screen recordings and edited video exports.
+video-recordings/
+videos/
+docs/demo-runbook.md
+docs/video-shot-list.md
+scripts/generate-demo-attachments.mjs
+scripts/generate-demo-document.py
+scripts/generate-demo-returns.mjs
+
+# The workspace may contain live SAP, mailbox, and user-selected file data.
+# Only the explicitly curated synthetic fixtures are publishable.
+workspace/*
+!workspace/demo-files/
+workspace/demo-files/*
+!workspace/demo-files/Customer Shipment Defects - Board Brief.pptx
+!workspace/demo-files/Meeting Brief Template.docx
+!workspace/demo-files/board-notes.txt
+!workspace/demo-files/customer-shipment-snapshot.png
+
+# Rendered QA previews for the checked-in demo attachments.
+workspace/demo-files/.qa-*/
+workspace/demo-files/*.inspect.ndjson
+
+# Project-local goose state: sessions, credentials, logs, caches, and downloads.
+# Only the connector wiring is source-controlled.
+goose-home/**
+!goose-home/.config/
+!goose-home/.config/goose/
+!goose-home/.config/goose/config.yaml

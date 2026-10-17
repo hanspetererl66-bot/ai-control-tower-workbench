@@ -1,0 +1,5 @@
+# Project-local Goose config. Werkbank keeps this separate from ~/.config/goose.
+# GOOSE_MODEL and OPENROUTER_API_KEY come from the untracked .env file.
+GOOSE_PROVIDER: openrouter
+
+extensions: {}
