@@ -12,6 +12,7 @@ import {
   isMicrosoft365Backend,
 } from '../connector-presentation';
 import { listSkills } from '../skills';
+import SkillIcon from './SkillIcon';
 import {
   CONTROL_TOWER_CONNECTOR,
   hasControlTowerConnector,
@@ -281,7 +282,7 @@ export default function Composer({
         <div className="picker">
           {matches.map((s) => (
             <button key={s.name} className="picker-item" onClick={() => pickSkill(s.name)}>
-              <span className="picker-name">/{s.name}</span>
+              <span className="picker-name"><SkillIcon name={s.name} />/{s.name}</span>
               <span className="picker-desc">{s.description}</span>
             </button>
           ))}
