@@ -57,6 +57,29 @@ export default function Composer({
   const [skills, setSkills] = useState<{ name: string; description: string }[]>([]);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
+
+  // Both popovers close on Escape or a click anywhere outside them.
+  useEffect(() => {
+    if (!integrationsOpen && !connectorsOpen) return;
+    const close = () => {
+      setIntegrationsOpen(false);
+      setConnectorsOpen(false);
+    };
+    const onPointer = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (target && target instanceof Element && target.closest('.chip-wrap')) return;
+      close();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') close();
+    };
+    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [integrationsOpen, connectorsOpen]);
   // All connectors ever seen this session, plus which are currently active.
   // Removing one drops it from the session list, so we keep the config around
   // to be able to switch it back on.
@@ -354,6 +377,13 @@ export default function Composer({
                 <div
                   key={item.id}
                   className="integration-menu-item"
+                  role="menuitem"
+                  tabIndex={0}
+                  title="Display only in this prototype"
+                  onClick={() => setIntegrationsOpen(false)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') setIntegrationsOpen(false);
+                  }}
                 >
                   <IntegrationItemIcon id={item.id} />
                   <span className="integration-menu-label">{item.label}</span>

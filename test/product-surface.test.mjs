@@ -49,3 +49,10 @@ test('a missing AI Control Tower connector can be installed in one click', () =>
   assert.match(main, /ALLOWED_COMMANDS\.has\(mcp\.command\)/);
   assert.match(main, /pendingInstalls\.set\(id, request\)/);
 });
+
+test('the composer popovers close on Escape and on a click outside', () => {
+  const composer = readFileSync(path.join(root, 'src/ui/Composer.tsx'), 'utf8');
+  assert.match(composer, /event\.key === 'Escape'/);
+  assert.match(composer, /addEventListener\('mousedown', onPointer\)/);
+  assert.match(composer, /onClick=\{\(\) => setIntegrationsOpen\(false\)\}/);
+});
