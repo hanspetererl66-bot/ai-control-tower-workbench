@@ -1,15 +1,17 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = join(ROOT, 'connectors/control-tower');
 const DATA = join(ROOT, 'examples/control-tower/data.json');
+const SUB4ME_PAGE = join(ROOT, 'examples/sub4me/index.html');
 
 /**
- * Build the .mcpb bundle: manifest.json, the server, and a copy of data.json.
+ * Build the .mcpb bundle: manifest.json, the server, and a copy of data.json and the Sub4Me sample data.
  * A .mcpb is a plain zip; Werkbank reads manifest.json and extracts the rest.
  * Returns the path of the bundle.
  */
@@ -21,6 +23,7 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
     cpSync(join(SOURCE, 'server'), join(stage, 'server'), { recursive: true });
     mkdirSync(join(stage, 'data'));
     cpSync(DATA, join(stage, 'data/data.json'));
+    writeFileSync(join(stage, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(SUB4ME_PAGE, 'utf8')), null, 2));
 
     mkdirSync(dirname(out), { recursive: true });
     if (existsSync(out)) rmSync(out);

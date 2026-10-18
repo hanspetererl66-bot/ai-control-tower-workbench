@@ -6,11 +6,12 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
 import { normalizeSupabaseUrl } from '../connectors/control-tower/server/supabase-url.mjs';
+import { SUB4ME_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sub4me.mjs';
 import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
 import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
 
-const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS];
+const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS];
 
 const ROOT = join(import.meta.dirname, '..');
 const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');
@@ -540,4 +541,40 @@ test('the Supabase URL from the connector dialog is forgiven: missing scheme, tr
       }
     }
   );
+});
+
+test('Sub4Me contract tools answer "how many contracts have expired?" from the Space data', async () => {
+  const server = startServer();
+  try {
+    const all = parse(await server.call('list_contracts', {}));
+    assert.equal(all.totalContracts, 6);
+    assert.deepEqual(all.byStatus, { Active: 3, 'Renewal due': 2, Expired: 1 });
+    const expired = parse(await server.call('list_contracts', { status: 'Expired' }));
+    assert.equal(expired.count, 1);
+    assert.equal(expired.contracts[0].id, 'C-2022-0502');
+    assert.equal(expired.annualValueEur, expired.contracts[0].annualEur);
+    assert.deepEqual(expired.view, { space: 'sub4me', tab: 'contracts' });
+    assert.equal((await server.call('list_contracts', { status: 'Gone' })).isError, true);
+
+    const usage = parse(await server.call('get_ai_consumption', {}));
+    assert.equal(usage.allotment, 120000);
+    assert.equal(usage.usedSoFar, 92300);
+    assert.equal(usage.usedPct, 76.9);
+    assert.equal(usage.products.length, 5);
+  } finally {
+    server.stop();
+  }
+});
+
+test('the .mcpb bundle carries the Sub4Me sample data', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ct-bundle-'));
+  try {
+    const bundle = buildControlTowerBundle(join(dir, 'ct.mcpb'));
+    const listing = execFileSync('unzip', ['-Z1', bundle], { encoding: 'utf8' });
+    assert.match(listing, /^data\/sub4me\.json$/m);
+    const json = JSON.parse(execFileSync('unzip', ['-p', bundle, 'data/sub4me.json'], { encoding: 'utf8' }));
+    assert.equal(json.contracts.length, 6);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

@@ -231,3 +231,10 @@ metadata:
   not uploaded until you pass `--variant-of <name>` or `--reason "neu weil …"`; the decision is stored in the profile.
 - **Maturity:** new and changed skills start as `pilot`; curators mark good ones with `npm run skills -- recommend <name>`.
 - The tool dependencies are stored as rows in `skills.skill_tool`; they become the edges of the knowledge graph in stage 2.
+
+### Asking the chat about the Sub4Me Space
+
+The connector `ai-control-tower` (0.6.0) also answers questions about the Sub4Me example Space with `list_contracts`
+(filter by status, for example "Wie viele Verträge sind abgelaufen?") and `get_ai_consumption`. A Space is a sandboxed page, so
+the agent cannot read what a Space shows; it reads the same sample data through these tools (taken from the Space's
+inline JSON in a checkout, and from `data/sub4me.json` inside the `.mcpb`). Rebuild and re-import the connector after updating.
