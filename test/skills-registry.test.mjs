@@ -3,13 +3,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
+import { knownTools, parseSkill, publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const skillText = (name, extra = '') => `---\nname: ${name}\ndescription: Testskill ${name}\n---\n\n# ${name}\n${extra}\n`;
 
 /** Fake of the two read functions; `rows` maps slug -> { text, version }. */
-function fakeRegistry(rows) {
+function fakeRegistry(rows, { similar = [] } = {}) {
   const calls = [];
   const fetchImpl = async (url, init) => {
     const fn = url.split('/rpc/')[1];
@@ -23,6 +23,7 @@ function fakeRegistry(rows) {
       const r = rows[args.p_slug];
       return new Response(JSON.stringify({ slug: args.p_slug, version: r.version, sha256: r.sha ?? sha256(r.text), body: r.text }));
     }
+    if (fn === 'skills_similar') return new Response(JSON.stringify(similar));
     if (fn === 'skills_publish') {
       return new Response(JSON.stringify({ slug: args.p_slug, version: 1, status: 'draft', changed: true }));
     }
@@ -116,7 +117,10 @@ test('the bundled example skills pass publishing validation and publish only as 
   const dirs = ['board-briefing', 'ticket-writer'].map((n) => join(ROOT, 'examples/skills', n));
   const out = await publishSkills({ url: 'https://x.supabase.co', key: 'sk', dirs, fetchImpl: reg.fetchImpl });
   assert.deepEqual(out.map((o) => o.status), ['draft', 'draft']);
-  assert.ok(reg.calls.every((c) => c.fn === 'skills_publish'), 'publishing never calls the status function');
+  assert.ok(reg.calls.every((c) => ['skills_publish', 'skills_similar'].includes(c.fn)), 'publishing never calls the status function');
+  const sent = reg.calls.find((c) => c.fn === 'skills_publish').args;
+  assert.equal(sent.p_meta.domain, 'Governance & Risiko');
+  assert.ok(sent.p_meta.tools.includes('get_risks'));
 });
 
 test('migration 007 exposes only approved reads to anon and keeps writes service-role only', () => {
@@ -125,4 +129,44 @@ test('migration 007 exposes only approved reads to anon and keeps writes service
   assert.match(sql, /grant execute on function public\.skills_publish\(text,text,text,text\), public\.skills_set_status\(text,text\),\s*public\.skills_admin_list\(\) to service_role/);
   assert.equal((sql.match(/status = 'approved'/g) ?? []).length, 2, 'both read functions filter on approved');
   assert.equal((sql.match(/security definer\s+set search_path = ''/g) ?? []).length, 5);
+});
+
+const SIMILAR = [{ slug: 'expense-check', status: 'approved', domain: 'Service & Support', team: 'Finance', sharedTools: ['create_ticket'], similar: true }];
+const ticketDir = join(ROOT, 'examples/skills/ticket-writer');
+
+test('publishing stops when a similar skill exists and no reason or variant is given', async () => {
+  const reg = fakeRegistry({}, { similar: SIMILAR });
+  const [r] = await publishSkills({ url: 'https://x.supabase.co', key: 'sk', dirs: [ticketDir], fetchImpl: reg.fetchImpl });
+  assert.equal(r.blocked, true);
+  assert.equal(r.similar[0].slug, 'expense-check');
+  assert.ok(!reg.calls.some((c) => c.fn === 'skills_publish'), 'nothing was uploaded');
+});
+
+test('a reason or a variant link lets a similar skill through and is sent with the profile', async () => {
+  for (const options of [{ reason: 'anderes Ticketsystem' }, { variantOf: 'expense-check' }]) {
+    const reg = fakeRegistry({}, { similar: SIMILAR });
+    const [r] = await publishSkills({ url: 'https://x.supabase.co', key: 'sk', dirs: [ticketDir], fetchImpl: reg.fetchImpl, ...options });
+    assert.equal(r.blocked, undefined);
+    assert.equal(r.similar.length, 1);
+    const meta = reg.calls.find((c) => c.fn === 'skills_publish').args.p_meta;
+    assert.ok(meta.variant_reason || meta.variant_of);
+  }
+});
+
+test('profile validation rejects unknown domains, data classes and connector tools', () => {
+  const skill = (extra) => `---\nname: a-skill\ndescription: d\nmetadata:\n${extra}\n---\n`;
+  assert.throws(() => validateSkill('a-skill', skill('  domain: Marketing')), /domain/);
+  assert.throws(() => validateSkill('a-skill', skill('  data-class: geheim')), /data-class/);
+  assert.throws(() => validateSkill('a-skill', skill('  tools: get_risks, hack_planet'), { tools: knownTools() }), /hack_planet/);
+  assert.doesNotThrow(() => validateSkill('a-skill', skill('  domain: Finanzen\n  tools: get_risks'), { tools: knownTools() }));
+  assert.deepEqual(parseSkill('---\nname: a\ndescription: d\n---\n').meta, { tools: [] });
+});
+
+test('migration 008 keeps search public-read and similarity and writes service-role only', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261018_008_skills_marketplace_s1.sql'), 'utf8');
+  assert.match(sql, /grant execute on function public\.skills_list\(\), public\.skills_get\(text\), public\.skills_search\(text,integer\)\s+to anon, authenticated, service_role/);
+  assert.match(sql, /grant execute on function public\.skills_publish\(text,text,text,text,jsonb\), public\.skills_similar\(text,text,text,text\[\]\),[\s\S]*?to service_role;/);
+  assert.match(sql, /drop function if exists public\.skills_publish\(text, text, text, text\)/);
+  assert.equal((sql.match(/status = 'approved'/g) ?? []).length, 3, 'list, get and search filter on approved');
+  assert.doesNotMatch(sql, /to anon[^;]*skills_(publish|similar|set_)/);
 });

@@ -1,6 +1,13 @@
 ---
 name: ticket-writer
 description: Macht aus einer kurzen Problembeschreibung ein sauberes Sub4Me-Serviceticket (Titel, Produkt, Priorität, Beschreibung) und legt es nach Bestätigung an. Nutzen bei "Ticket eröffnen", "Störung melden", "Sub4Me Ticket".
+metadata:
+  domain: Service & Support
+  process: Serviceticket anlegen
+  data-class: intern
+  language: de
+  team: AI Programme Office
+  tools: list_tickets, create_ticket
 ---
 
 # Sub4Me-Ticket schreiben
