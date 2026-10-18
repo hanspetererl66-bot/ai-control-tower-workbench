@@ -52,3 +52,15 @@ test('sub4me never relies on a native form submit (Spaces are sandboxed without 
   const html = readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8');
   assert.doesNotMatch(html, /type="submit"|addEventListener\('submit'/);
 });
+
+test('both Spaces embed the current shared design system and use only tokens for colour', async () => {
+  const { SPACE_PAGES, embedDesignSystem } = await import('../scripts/sync-design-system.mjs');
+  const css = readFileSync(join(ROOT, 'examples/shared/design-system.css'), 'utf8');
+  for (const rel of SPACE_PAGES) {
+    const html = readFileSync(join(ROOT, rel), 'utf8');
+    assert.equal(embedDesignSystem(html, css), html, `${rel} is out of sync: run npm run sync:design`);
+    // Dark mode only works if surfaces are tokens, not literal white.
+    assert.doesNotMatch(html.replace(/<script[\s\S]*?<\/script>/g, ''), /background:\s*#fff(?![0-9a-f])/i, rel);
+    assert.match(html, /prefers-color-scheme:dark/);
+  }
+});

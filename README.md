@@ -118,6 +118,13 @@ Supabase URL/key or without a connected agent the Space falls back to page-only 
 You can also ask in the chat: "Eröffne ein Sub4Me-Ticket ...". To clear the tickets you added, see the
 `delete` statement at the end of the migration file.
 
+## Shared visual design
+
+Both example Spaces use one design system: `examples/shared/design-system.css` (tokens for colour,
+type, radius and spacing; light and dark via `prefers-color-scheme`; violet accent). Spaces are
+single-file pages without network access, so the CSS is embedded into each page by
+`npm run sync:design` (a test fails if a page is out of sync). Edit the shared file, then sync.
+
 ## Verification
 
 ```sh
