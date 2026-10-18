@@ -6,7 +6,7 @@
       "description": "Prüft Reisekostenabrechnungen gegen die Reiserichtlinie und markiert Auffälligkeiten.",
       "owner": "M. Weber",
       "version": 3,
-      "maturity": "empfohlen",
+      "maturity": "approved",
       "domain": "Finanzen",
       "process": "Reisekosten prüfen",
       "boardArea": "Finance",
@@ -15,14 +15,23 @@
       "scope": "team",
       "dataClass": "vertraulich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "approvedBy": "Compliance Board",
+      "approvedAt": "2026-09-02",
+      "approvedVersion": 3,
+      "demand": {
+        "installs": 46,
+        "views": 310,
+        "searchHits": 120,
+        "previousScore": 430
+      }
     },
     {
       "name": "invoice-matcher",
       "description": "Gleicht Eingangsrechnungen mit Bestellungen und Wareneingängen ab.",
       "owner": "K. Roth",
       "version": 2,
-      "maturity": "empfohlen",
+      "maturity": "approved",
       "domain": "Finanzen",
       "process": "Rechnungsprüfung",
       "boardArea": "Finance",
@@ -31,7 +40,16 @@
       "scope": "board-area",
       "dataClass": "vertraulich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "approvedBy": "Compliance Board",
+      "approvedAt": "2026-08-19",
+      "approvedVersion": 2,
+      "demand": {
+        "installs": 31,
+        "views": 180,
+        "searchHits": 70,
+        "previousScore": 320
+      }
     },
     {
       "name": "renewal-radar",
@@ -50,7 +68,13 @@
         "list_contracts",
         "list_offers"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 38,
+        "views": 205,
+        "searchHits": 90,
+        "previousScore": 330
+      }
     },
     {
       "name": "quote-drafter",
@@ -69,7 +93,13 @@
         "list_contracts",
         "list_offers"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 4,
+        "views": 40,
+        "searchHits": 25,
+        "previousScore": 55
+      }
     },
     {
       "name": "campaign-brief",
@@ -85,7 +115,13 @@
       "scope": "team",
       "dataClass": "intern",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 9,
+        "views": 60,
+        "searchHits": 22,
+        "previousScore": 100
+      }
     },
     {
       "name": "social-post-checker",
@@ -101,14 +137,20 @@
       "scope": "individual",
       "dataClass": "öffentlich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 2,
+        "views": 18,
+        "searchHits": 8,
+        "previousScore": 30
+      }
     },
     {
       "name": "btp-quota-watch",
       "description": "Überwacht AI-Kontingente auf BTP und eröffnet bei Engpässen ein Ticket.",
       "owner": "P. Vogel",
       "version": 2,
-      "maturity": "empfohlen",
+      "maturity": "approved",
       "domain": "Betrieb",
       "process": "Kapazitätsüberwachung",
       "boardArea": "Engineering",
@@ -120,7 +162,16 @@
         "get_ai_consumption",
         "create_ticket"
       ],
-      "sample": true
+      "sample": true,
+      "approvedBy": "Platform Review Board",
+      "approvedAt": "2026-09-24",
+      "approvedVersion": 2,
+      "demand": {
+        "installs": 27,
+        "views": 150,
+        "searchHits": 64,
+        "previousScore": 180
+      }
     },
     {
       "name": "concur-receipt-audit",
@@ -136,7 +187,13 @@
       "scope": "team",
       "dataClass": "vertraulich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 7,
+        "views": 55,
+        "searchHits": 18,
+        "previousScore": 70
+      }
     },
     {
       "name": "sf-job-text-reviewer",
@@ -152,7 +209,13 @@
       "scope": "team",
       "dataClass": "intern",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 12,
+        "views": 95,
+        "searchHits": 31,
+        "previousScore": 120
+      }
     },
     {
       "name": "release-notes-writer",
@@ -170,7 +233,13 @@
       "tools": [
         "list_tickets"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 22,
+        "views": 170,
+        "searchHits": 66,
+        "previousScore": 240
+      }
     },
     {
       "name": "my-sprint-digest",
@@ -188,7 +257,13 @@
       "tools": [
         "list_tickets"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 1,
+        "views": 12,
+        "searchHits": 4,
+        "previousScore": 15
+      }
     }
   ]
 }

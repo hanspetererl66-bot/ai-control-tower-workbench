@@ -491,7 +491,7 @@ test('skill tools query the registry functions and never return skill text', asy
       try {
         const found = parse(await server.call('search_skills', { query: '  Reisekosten prüfen ' }));
         assert.equal(found.count, 1);
-        assert.deepEqual(bodies.at(-1), { url: '/rest/v1/rpc/skills_search', body: { p_query: 'Reisekosten prüfen', p_limit: 8 } });
+        assert.deepEqual(bodies.find((b) => b.url.endsWith('skills_search')), { url: '/rest/v1/rpc/skills_search', body: { p_query: 'Reisekosten prüfen', p_limit: 8 } });
         const info = await server.call('get_skill_info', { name: 'expense-check' });
         assert.doesNotMatch(info.content[0].text, /SECRET BODY/);
         assert.equal(parse(info).skill.version, 2);
@@ -500,7 +500,11 @@ test('skill tools query the registry functions and never return skill text', asy
           assert.equal((await server.call('search_skills', args)).isError, true);
         }
         assert.equal((await server.call('get_skill_info', { name: '../etc' })).isError, true);
-        assert.ok(bodies.every((b) => /skills_(search|get)$/.test(b.url)), 'only the two read functions are ever called');
+        assert.ok(bodies.every((b) => /skills_(search|get|track)$/.test(b.url)), 'only the two read functions and the usage counter are ever called');
+        const tracks = bodies.filter((b) => b.url.endsWith('skills_track')).map((b) => b.body);
+        assert.deepEqual(tracks.map((t) => [t.p_event, t.p_slugs]), [['search_hit', ['expense-check']], ['view', ['expense-check']]]);
+        assert.match(tracks[0].p_device, /^[0-9a-f]{16}$/, 'an anonymous hash, no readable machine name');
+        assert.equal(tracks[0].p_device, tracks[1].p_device);
       } finally {
         server.stop();
       }
@@ -541,6 +545,66 @@ test('list_skill_catalog counts per board area, LOB, team and reach and filters'
         assert.equal((await server.call('list_skill_catalog', { scope: 'planet' })).isError, true);
         assert.ok(bodies.every((u) => u.endsWith('skills_list')), 'only the approved-only read function is used');
         assert.doesNotMatch(JSON.stringify(all), /body/);
+      } finally {
+        server.stop();
+      }
+    }
+  );
+});
+
+test('a failing usage counter never fails a skill answer', async () => {
+  await withFakeSupabase(
+    (request, response) => {
+      request.resume();
+      request.on('end', () => {
+        if (request.url.endsWith('skills_track')) {
+          response.statusCode = 500;
+          return response.end('boom');
+        }
+        response.setHeader('content-type', 'application/json');
+        response.end(JSON.stringify([{ slug: 'expense-check', score: 1, tools: [] }]));
+      });
+    },
+    async (url) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        assert.equal(parse(await server.call('search_skills', { query: 'Reisekosten' })).count, 1);
+      } finally {
+        server.stop();
+      }
+    }
+  );
+});
+
+test('get_skill_ranking returns the top skills, filters them and explains empty demand', async () => {
+  const row = (slug, score, extra = {}) => ({ slug, description: `d ${slug}`, owner: '', maturity: 'pilot', version: 1, boardArea: '', lob: '', team: '', scope: 'individual', installs: 0, views: 0, searchHits: 0, devices: 0, score, previousScore: 0, trendPct: null, ...extra });
+  let rows = [row('a-top', 30, { boardArea: 'Engineering', lob: 'BTP', maturity: 'approved' }), row('b-mid', 12, { boardArea: 'Finance', team: 'Accounting' }), row('c-low', 1, { boardArea: 'Engineering' })];
+  const asked = [];
+  await withFakeSupabase(
+    (request, response) => {
+      let raw = '';
+      request.on('data', (c) => (raw += c));
+      request.on('end', () => {
+        asked.push({ url: request.url, body: JSON.parse(raw || '{}') });
+        response.setHeader('content-type', 'application/json');
+        response.end(JSON.stringify(rows));
+      });
+    },
+    async (url) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        const top = parse(await server.call('get_skill_ranking', { days: 7, limit: 2 }));
+        assert.deepEqual(top.ranking.map((r) => [r.rank, r.slug]), [[1, 'a-top'], [2, 'b-mid']]);
+        assert.deepEqual(asked[0], { url: '/rest/v1/rpc/skills_ranking', body: { p_days: 7, p_limit: 200 } });
+        assert.deepEqual(top.weights, { install: 3, view: 1, searchHit: 0.5 });
+        const eng = parse(await server.call('get_skill_ranking', { boardArea: 'Engineering' }));
+        assert.deepEqual(eng.ranking.map((r) => r.slug), ['a-top', 'c-low']);
+        assert.deepEqual(parse(await server.call('get_skill_ranking', { team: 'account' })).ranking.map((r) => r.slug), ['b-mid']);
+        for (const args of [{ days: 0 }, { days: 400 }, { limit: 26 }, { boardArea: 'Legal' }, { scope: 'x' }]) {
+          assert.equal((await server.call('get_skill_ranking', args)).isError, true);
+        }
+        rows = [row('a-top', 0), row('b-mid', 0)];
+        assert.match(parse(await server.call('get_skill_ranking', {})).hint, /No usage recorded/);
       } finally {
         server.stop();
       }

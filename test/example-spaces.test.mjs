@@ -108,6 +108,11 @@ test('skill marketplace data is in sync, classified, and marks fictional skills 
     if (s.boardArea) assert.ok(BOARD_AREAS.includes(s.boardArea), `${s.name} board area`);
     if (s.lob) assert.equal(LOBS[s.lob], s.boardArea, `${s.name}: LOB belongs to its board area`);
     if (s.scope === 'team') assert.ok(s.team, `${s.name} needs a team`);
+    assert.ok(['pilot', 'empfohlen', 'approved'].includes(s.maturity), `${s.name} maturity`);
+    if (s.maturity === 'approved' && s.sample) assert.ok(s.approvedBy && s.approvedAt && s.approvedVersion, `${s.name}: approved needs approver, date and version`);
+    assert.ok(s.demand && s.demand.installs >= 0, `${s.name} has demand counters`);
   }
+  assert.ok(data.skills.filter((s) => s.sample && s.demand.installs > 0).length >= 8, 'the ranking has something to show');
+  assert.ok(['pilot', 'empfohlen', 'approved'].every((m) => data.skills.some((s) => s.maturity === m)), 'all three maturity levels appear');
   for (const area of BOARD_AREAS) assert.ok(data.skills.some((s) => s.boardArea === area), `${area} has a skill`);
 });
