@@ -1,0 +1,128 @@
+import assert from 'node:assert/strict';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import test from 'node:test';
+import { publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
+
+const ROOT = join(import.meta.dirname, '..');
+const skillText = (name, extra = '') => `---\nname: ${name}\ndescription: Testskill ${name}\n---\n\n# ${name}\n${extra}\n`;
+
+/** Fake of the two read functions; `rows` maps slug -> { text, version }. */
+function fakeRegistry(rows) {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    const fn = url.split('/rpc/')[1];
+    const args = JSON.parse(init.body);
+    calls.push({ fn, args, key: init.headers.apikey });
+    if (fn === 'skills_list') {
+      const body = Object.entries(rows).map(([slug, r]) => ({ slug, description: `d ${slug}`, owner: '', version: r.version, sha256: r.sha ?? sha256(r.text) }));
+      return new Response(JSON.stringify(body));
+    }
+    if (fn === 'skills_get') {
+      const r = rows[args.p_slug];
+      return new Response(JSON.stringify({ slug: args.p_slug, version: r.version, sha256: r.sha ?? sha256(r.text), body: r.text }));
+    }
+    if (fn === 'skills_publish') {
+      return new Response(JSON.stringify({ slug: args.p_slug, version: 1, status: 'draft', changed: true }));
+    }
+    return new Response('{}', { status: 404 });
+  };
+  return { fetchImpl, calls };
+}
+
+const tmp = () => mkdtempSync(join(tmpdir(), 'werkbank-skillsync-'));
+
+test('sync installs approved skills, then reports unchanged, then updates on a new version', async () => {
+  const dir = tmp();
+  try {
+    const rows = { 'alpha-skill': { text: skillText('alpha-skill'), version: 1 } };
+    const reg = fakeRegistry(rows);
+    let r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: reg.fetchImpl });
+    assert.deepEqual(r.installed, ['alpha-skill@v1']);
+    assert.equal(readFileSync(join(dir, 'alpha-skill/SKILL.md'), 'utf8'), rows['alpha-skill'].text);
+
+    r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: reg.fetchImpl });
+    assert.deepEqual(r.unchanged, ['alpha-skill']);
+    assert.equal(reg.calls.filter((c) => c.fn === 'skills_get').length, 1, 'unchanged skills are not downloaded again');
+
+    rows['alpha-skill'] = { text: skillText('alpha-skill', 'neu'), version: 2 };
+    r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: reg.fetchImpl });
+    assert.deepEqual(r.updated, ['alpha-skill@v2']);
+    assert.match(readFileSync(join(dir, 'alpha-skill/SKILL.md'), 'utf8'), /neu/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('sync removes retired synced skills but never touches local skills', async () => {
+  const dir = tmp();
+  try {
+    mkdirSync(join(dir, 'my-own-skill'));
+    writeFileSync(join(dir, 'my-own-skill/SKILL.md'), skillText('my-own-skill'));
+    const rows = { 'alpha-skill': { text: skillText('alpha-skill'), version: 1 } };
+    await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: fakeRegistry(rows).fetchImpl });
+    delete rows['alpha-skill'];
+    const r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: fakeRegistry(rows).fetchImpl });
+    assert.deepEqual(r.removed, ['alpha-skill']);
+    assert.ok(!existsSync(join(dir, 'alpha-skill')));
+    assert.ok(existsSync(join(dir, 'my-own-skill/SKILL.md')), 'local skill without marker stays');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('sync does not overwrite a local skill of the same name unless forced', async () => {
+  const dir = tmp();
+  try {
+    mkdirSync(join(dir, 'alpha-skill'));
+    writeFileSync(join(dir, 'alpha-skill/SKILL.md'), 'LOCAL');
+    const rows = { 'alpha-skill': { text: skillText('alpha-skill'), version: 1 } };
+    let r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: fakeRegistry(rows).fetchImpl });
+    assert.match(r.skipped[0], /local skill/);
+    assert.equal(readFileSync(join(dir, 'alpha-skill/SKILL.md'), 'utf8'), 'LOCAL');
+    r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: fakeRegistry(rows).fetchImpl, force: true });
+    assert.deepEqual(r.installed, ['alpha-skill@v1']);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('sync rejects checksum mismatches, wrong names and path-like names', async () => {
+  const dir = tmp();
+  try {
+    const rows = {
+      'bad-sum': { text: skillText('bad-sum'), version: 1, sha: 'f'.repeat(64) },
+      'wrong-name': { text: skillText('other-name'), version: 1 },
+      '../evil': { text: skillText('evil'), version: 1 },
+    };
+    const r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: fakeRegistry(rows).fetchImpl });
+    assert.deepEqual(r.installed, []);
+    assert.equal(r.skipped.length, 3);
+    assert.ok(!existsSync(join(dir, '..', 'evil')));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('validateSkill blocks credentials and oversized descriptions', () => {
+  assert.throws(() => validateSkill('a-skill', skillText('a-skill', 'key sb_secret_abcdef')), /credential/);
+  assert.throws(() => validateSkill('a-skill', skillText('b-skill')), /must equal/);
+  assert.throws(() => validateSkill('a-skill', `---\nname: a-skill\ndescription: ${'x'.repeat(241)}\n---\n`), /240/);
+});
+
+test('the bundled example skills pass publishing validation and publish only as drafts', async () => {
+  const reg = fakeRegistry({});
+  const dirs = ['board-briefing', 'ticket-writer'].map((n) => join(ROOT, 'examples/skills', n));
+  const out = await publishSkills({ url: 'https://x.supabase.co', key: 'sk', dirs, fetchImpl: reg.fetchImpl });
+  assert.deepEqual(out.map((o) => o.status), ['draft', 'draft']);
+  assert.ok(reg.calls.every((c) => c.fn === 'skills_publish'), 'publishing never calls the status function');
+});
+
+test('migration 007 exposes only approved reads to anon and keeps writes service-role only', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261018_007_skills_registry.sql'), 'utf8');
+  assert.match(sql, /grant execute on function public\.skills_list\(\), public\.skills_get\(text\) to anon, authenticated, service_role/);
+  assert.match(sql, /grant execute on function public\.skills_publish\(text,text,text,text\), public\.skills_set_status\(text,text\),\s*public\.skills_admin_list\(\) to service_role/);
+  assert.equal((sql.match(/status = 'approved'/g) ?? []).length, 2, 'both read functions filter on approved');
+  assert.equal((sql.match(/security definer\s+set search_path = ''/g) ?? []).length, 5);
+});
