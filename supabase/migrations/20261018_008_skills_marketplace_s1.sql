@@ -216,7 +216,7 @@ as $$
     select *, rank + 0.3 * jsonb_array_length(shared_tools) + (case when same_domain then 0.1 else 0 end) as score,
       (jsonb_array_length(shared_tools) >= 2
         or (jsonb_array_length(shared_tools) >= 1 and same_domain)
-        or rank >= 0.25) as similar
+        or rank >= 0.25) as is_similar
     from scored
     order by score desc, slug
     limit 3
@@ -224,7 +224,7 @@ as $$
   select coalesce(jsonb_agg(jsonb_build_object(
     'slug', slug, 'description', description, 'status', status, 'owner', owner,
     'domain', meta->>'domain', 'team', meta->>'team', 'sharedTools', shared_tools,
-    'textRank', round(rank::numeric, 3), 'score', round(score::numeric, 3), 'similar', similar)
+    'textRank', round(rank::numeric, 3), 'score', round(score::numeric, 3), 'similar', is_similar)
     order by score desc, slug), '[]'::jsonb)
   from ranked where score > 0;
 $$;
