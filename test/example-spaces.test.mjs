@@ -116,3 +116,11 @@ test('skill marketplace data is in sync, classified, and marks fictional skills 
   assert.ok(['pilot', 'empfohlen', 'approved'].every((m) => data.skills.some((s) => s.maturity === m)), 'all three maturity levels appear');
   for (const area of BOARD_AREAS) assert.ok(data.skills.some((s) => s.boardArea === area), `${area} has a skill`);
 });
+
+test('skill marketplace overview can collapse the tree and drill into single skills', () => {
+  const html = readFileSync(join(ROOT, 'examples/skill-marketplace/index.html'), 'utf8');
+  for (const needle of ['aria-expanded', "addEventListener('dblclick'", 'id="expand-all"', 'id="collapse-all"', 'data-open-node', 'data-skill', 'aria-pressed']) {
+    assert.ok(html.includes(needle), `missing ${needle}`);
+  }
+  assert.doesNotMatch(html.replace(/<script[\s\S]*?<\/script>/g, ''), /background:\s*#[0-9a-f]{3,6}\b/i, 'colours come from tokens');
+});
