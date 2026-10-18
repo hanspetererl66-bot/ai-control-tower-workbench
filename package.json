@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "sync:control-tower": "node scripts/sync-control-tower-data.mjs",
     "build:control-tower-mcpb": "node scripts/build-control-tower-mcpb.mjs",
+    "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",
+    "gmail:authorize": "node scripts/gmail-authorize.mjs",
     "install:control-tower": "node scripts/install-example-space.mjs control-tower",
     "check": "npm run typecheck && npm test && npm run build"
   },

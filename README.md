@@ -84,6 +84,24 @@ file and confirm. Ask, for example, "Which risks are below 40% mitigated?". Edit
 the bundled `data.json` apply without restarting the agent. Every result carries a
 `view` field naming the Control Tower tab that shows the same information.
 
+## Gmail connector (read + drafts)
+
+A second bundled MCP connector (`connectors/gmail`) lets the chat search and read your Gmail and
+create **draft** replies. It has four tools (`list_labels`, `search_mail`, `read_mail`, `create_draft`)
+and deliberately no tool that sends or deletes mail; you review and send drafts in Gmail yourself.
+Mail text is treated as untrusted and returned with a notice not to follow instructions inside it.
+Google's `gmail.compose` scope technically also permits sending, so keep the refresh token private.
+
+1. In your own Google Cloud project: enable the Gmail API, configure the OAuth consent screen
+   (External, add yourself as test user), and create an OAuth client of type **Desktop app**.
+2. `GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... npm run gmail:authorize` and sign in; the refresh
+   token is printed to the terminal only.
+3. `npm run build:gmail-mcpb` writes `dist/gmail-drafts.mcpb`. In **Connectors & Skills** choose
+   **Import MCP bundle** and paste client ID, client secret and refresh token into the dialog
+   (stored as secrets). Do not put them in `.env`, the repo or a chat.
+
+Use a personal account, not a work mailbox: mail content is sent to the configured model provider.
+
 ## Verification
 
 ```sh

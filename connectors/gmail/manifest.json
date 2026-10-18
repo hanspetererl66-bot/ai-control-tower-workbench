@@ -1,0 +1,50 @@
+{
+  "manifest_version": "0.2",
+  "name": "gmail-drafts",
+  "display_name": "Gmail (read + drafts)",
+  "version": "0.1.0",
+  "description": "Search and read your Gmail and create draft replies. There is no tool that sends or deletes mail: drafts wait in your Drafts folder until you send them yourself.",
+  "author": { "name": "AI Control Tower workbench" },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.mjs"],
+      "env": {
+        "GOOGLE_CLIENT_ID": "${user_config.google_client_id}",
+        "GOOGLE_CLIENT_SECRET": "${user_config.google_client_secret}",
+        "GOOGLE_REFRESH_TOKEN": "${user_config.google_refresh_token}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "list_labels", "description": "List Gmail labels." },
+    { "name": "search_mail", "description": "Search mail with Gmail query syntax." },
+    { "name": "read_mail", "description": "Read one message (text body, headers)." },
+    { "name": "create_draft", "description": "Create a draft; never sends." }
+  ],
+  "user_config": {
+    "google_client_id": {
+      "type": "string",
+      "title": "Google OAuth client ID",
+      "description": "From your own Google Cloud project (Desktop app client).",
+      "required": true
+    },
+    "google_client_secret": {
+      "type": "string",
+      "title": "Google OAuth client secret",
+      "description": "Stored as a secret.",
+      "sensitive": true,
+      "required": true
+    },
+    "google_refresh_token": {
+      "type": "string",
+      "title": "Google refresh token",
+      "description": "Printed by `npm run gmail:authorize`. Stored as a secret.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

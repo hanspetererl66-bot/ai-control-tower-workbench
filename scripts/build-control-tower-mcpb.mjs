@@ -36,6 +36,27 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && !process.argv.includes('--gmail')) {
   console.log(`Built ${buildControlTowerBundle(process.argv[2])}`);
+}
+
+/** Gmail connector bundle: manifest + server only (no data). */
+export function buildGmailBundle(output = join(ROOT, 'dist/gmail-drafts.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'gmail-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/gmail');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--gmail')) {
+  console.log(`Built ${buildGmailBundle()}`);
 }
