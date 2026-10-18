@@ -483,6 +483,7 @@ export default function App() {
       onModeChange={changeMode}
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
+      starters={empty}
     />
   );
   const disclaimer = (

@@ -12,6 +12,12 @@ import {
   isMicrosoft365Backend,
 } from '../connector-presentation';
 import { listSkills } from '../skills';
+import {
+  CONTROL_TOWER_CONNECTOR,
+  hasControlTowerConnector,
+  type StarterPrompt,
+} from '../starter-prompts';
+import StarterPrompts from './StarterPrompts';
 
 type Props = {
   onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void>;
@@ -24,6 +30,8 @@ type Props = {
   onModeChange: (id: string) => void;
   onCancel: () => void;
   onManageConnectors?: () => void;
+  /** Show suggested Control Tower questions (empty chat only). */
+  starters?: boolean;
 };
 
 export default function Composer({
@@ -35,6 +43,7 @@ export default function Composer({
   onModeChange,
   onCancel,
   onManageConnectors,
+  starters = false,
 }: Props) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
@@ -49,6 +58,9 @@ export default function Composer({
   // to be able to switch it back on.
   const [known, setKnown] = useState<SessionExtension[]>([]);
   const [active, setActive] = useState<Set<string>>(new Set());
+  // True once the installed-connector list has been read, so the suggestions
+  // don't flash "connector missing" while it is still loading.
+  const [connectorsChecked, setConnectorsChecked] = useState(false);
 
   const refreshConnectors = async () => {
     if (!agent) return false;
@@ -85,6 +97,7 @@ export default function Composer({
         (a, b) => connectorDisplayOrder(a.name) - connectorDisplayOrder(b.name)
       );
     });
+    if (configuredReady) setConnectorsChecked(true);
 
     let live: SessionExtension[] = [];
     let sessionReady = false;
@@ -163,15 +176,22 @@ export default function Composer({
   }
 
 
-  async function submit() {
-    const t = text.trim() || (attachments.length ? 'Review the attached files and help me with them.' : '');
+  /**
+   * Send the typed message, or — for a suggested question — `override`, which
+   * leaves whatever the person typed untouched. `override.connector` routes the
+   * question to that connector exactly as typing "Use only <connector>" would,
+   * without putting that instruction into the visible message.
+   */
+  async function submit(override?: { text: string; connector?: string }) {
+    const t = override?.text ?? (text.trim() || (attachments.length ? 'Review the attached files and help me with them.' : ''));
     if (!t || busy || preparingConnector || !agent) return;
+    const routing = override?.connector ? `Use only ${override.connector}` : t;
     setConnectorError('');
     setPreparingConnector(true);
     try {
-      const selection = requestedConnectorIsAlreadyExclusive(t, active)
+      const selection = requestedConnectorIsAlreadyExclusive(routing, active)
         ? null
-        : await applyExclusiveConnectorRequest(agent, t);
+        : await applyExclusiveConnectorRequest(agent, routing);
       if (selection) {
         const configured = selection.configured
           .map((extension) => ({
@@ -194,10 +214,18 @@ export default function Composer({
     }
 
     setPreparingConnector(false);
+    if (override) {
+      void onSend(t, []);
+      return;
+    }
     void onSend(t, attachments);
     setText('');
     setAttachments([]);
     setAttachmentError('');
+  }
+
+  function pickStarter(starter: StarterPrompt) {
+    void submit({ text: starter.prompt, connector: CONTROL_TOWER_CONNECTOR });
   }
 
   async function pickAttachments() {
@@ -413,7 +441,7 @@ export default function Composer({
 
         <button
           className={`send ${busy ? 'send-stop' : ''}`}
-          onClick={busy ? onCancel : submit}
+          onClick={busy ? onCancel : () => void submit()}
           disabled={
             !agent ||
             preparingConnector ||
@@ -426,6 +454,14 @@ export default function Composer({
           {busy ? <StopIcon /> : <SendIcon />}
         </button>
       </div>
+      {starters && (
+        <StarterPrompts
+          available={connectorsChecked ? hasControlTowerConnector(known.map((k) => k.name)) : null}
+          disabled={busy || preparingConnector || !agent}
+          onPick={pickStarter}
+          onSetUp={onManageConnectors}
+        />
+      )}
     </div>
   );
 }
