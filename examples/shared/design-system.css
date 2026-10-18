@@ -127,3 +127,15 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m .months span{border-radius:8px 8px 0 0}
 .s4m .bar{height:6px}
 @media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}

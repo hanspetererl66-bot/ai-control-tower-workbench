@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget) from Supabase or bundled sample data. Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -73,8 +73,12 @@
       "description": "List the Sub4Me demo customer's contracts, filter by status (sample data)."
     },
     {
+      "name": "list_offers",
+      "description": "Offers SAP made to the Sub4Me demo customer: renewals and new products, filter by type or status (sample data)."
+    },
+    {
       "name": "get_ai_consumption",
-      "description": "AI-unit consumption of the Sub4Me demo customer, by product (sample data)."
+      "description": "AI-unit consumption of the Sub4Me demo customer with forecast, by product and month, optional product or month filter (sample data)."
     }
   ],
   "user_config": {

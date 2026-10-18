@@ -175,6 +175,18 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m .months span{border-radius:8px 8px 0 0}
 .s4m .bar{height:6px}
 @media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
 </style>
 </head>
 <body class="s4m">
@@ -192,12 +204,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 </nav>
 <main>
   <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div></section>
-  <section class="pg" id="pg-contracts"><div class="card tbl" id="contracts"></div></section>
+  <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div></section>
   <section class="pg" id="pg-usage">
     <div class="grid" id="usage-kpis"></div>
-    <div class="row"><div class="card"><div class="k">AI units per month (2026)</div><div class="months" id="months"></div></div>
+    <div class="row"><div class="card"><div class="k">AI units per month (2026)</div><div class="months stack" id="months"></div><div class="legend" id="legend"></div></div>
     <div class="card tbl" id="forecast"></div></div>
     <h2>Consumption by product</h2><div class="card tbl" id="products"></div>
+    <div class="card" id="product-detail" aria-live="polite"></div>
   </section>
   <section class="pg" id="pg-tickets">
     <div class="row">
@@ -223,11 +236,11 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     "monthly": [6200, 7100, 8300, 8900, 9800, 10400, 9600, 11200, 12100, 8700]
   },
   "products": [
-    {"name": "Joule copilots", "allotment": 50000, "consumed": 41000},
-    {"name": "BTP AI Core", "allotment": 30000, "consumed": 28300},
-    {"name": "SuccessFactors AI", "allotment": 12000, "consumed": 9800},
-    {"name": "Ariba AI", "allotment": 10000, "consumed": 8200},
-    {"name": "Document AI", "allotment": 18000, "consumed": 5000}
+    {"name": "Joule copilots", "allotment": 50000, "consumed": 41000, "meters": "copilot dialogues and agent runs", "monthly": [3100, 3500, 4050, 4200, 4550, 4700, 3950, 4700, 4850, 3400]},
+    {"name": "BTP AI Core", "allotment": 30000, "consumed": 28300, "meters": "model inference and training hours", "monthly": [2000, 2300, 2600, 2800, 3000, 3100, 2900, 3400, 3800, 2400]},
+    {"name": "SuccessFactors AI", "allotment": 12000, "consumed": 9800, "meters": "generated job texts and talent suggestions", "monthly": [700, 800, 850, 900, 950, 1000, 1000, 1100, 1200, 1300]},
+    {"name": "Ariba AI", "allotment": 10000, "consumed": 8200, "meters": "guided buying and supplier risk checks", "monthly": [400, 500, 600, 700, 800, 900, 950, 1100, 1250, 1000]},
+    {"name": "Document AI", "allotment": 18000, "consumed": 5000, "meters": "processed document pages", "monthly": [0, 0, 200, 300, 500, 700, 800, 900, 1000, 600]}
   ],
   "contracts": [
     {"id": "C-2024-0187", "product": "S/4HANA Cloud Private Edition", "scope": "1,200 users, 3 systems", "start": "2024-01-01", "end": "2028-12-31", "annualEur": 2840000, "status": "Active", "noticeDays": 180},
@@ -236,6 +249,11 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     {"id": "C-2023-0390", "product": "Ariba Procurement", "scope": "250 buyers", "start": "2023-02-01", "end": "2027-01-31", "annualEur": 290000, "status": "Renewal due", "noticeDays": 90},
     {"id": "C-2026-0012", "product": "AI units (Joule, AI Core, Document AI)", "scope": "120,000 units per year", "start": "2026-01-01", "end": "2026-12-31", "annualEur": 360000, "status": "Active", "noticeDays": 60},
     {"id": "C-2022-0502", "product": "Concur Travel", "scope": "900 travellers", "start": "2022-07-01", "end": "2026-06-30", "annualEur": 95000, "status": "Expired", "noticeDays": 90}
+  ],
+  "offers": [
+    {"id": "OFF-2026-0311", "type": "Renewal", "product": "SuccessFactors Employee Central", "contractId": "C-2025-0041", "scope": "4,800 employees, 3-year term", "start": "2027-01-01", "end": "2029-12-31", "annualEur": 438000, "currentAnnualEur": 410000, "validUntil": "2026-11-15", "status": "Open"},
+    {"id": "OFF-2026-0318", "type": "Renewal", "product": "Ariba Procurement", "contractId": "C-2023-0390", "scope": "250 buyers, 2-year term", "start": "2027-02-01", "end": "2029-01-31", "annualEur": 305000, "currentAnnualEur": 290000, "validUntil": "2026-12-04", "status": "Open"},
+    {"id": "OFF-2026-0324", "type": "New product", "product": "Joule Work for Desktop", "contractId": null, "scope": "300 pilot users, Windows and macOS, 1-year term", "start": "2027-01-01", "end": "2027-12-31", "annualEur": 118000, "currentAnnualEur": 0, "validUntil": "2026-11-30", "status": "In negotiation"}
   ],
   "tickets": [
     {"id": "TKT-48213", "title": "Joule skill returns empty result for open purchase orders", "product": "Joule copilots", "priority": "High", "status": "In processing", "created": "2026-10-12", "updated": "2026-10-16"},
@@ -280,6 +298,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       kpi('Active contracts', live.length, 'annual value ' + eur(annual)) +
       kpi('AI units used', pctUsed + '%', n(used) + ' of ' + n(D.aiUnits.allotment)) +
       kpi('Forecast year-end', forecastPct + '%', 'at current run rate (' + n(forecast) + ' units)') +
+      kpi('Open offers', D.offers.filter(function(o){ return o.status === 'Open' || o.status === 'In negotiation'; }).length, 'incl. ' + D.offers.filter(function(o){ return o.type === 'Renewal'; }).length + ' renewals, ' + D.offers.filter(function(o){ return o.type === 'New product'; }).length + ' new product') +
       kpi('Open tickets', openTickets(), 'incl. ' + D.tickets.filter(function(t){ return t.priority === 'Very high' && t.status !== 'Closed'; }).length + ' very high');
     var rows = [];
     D.products.forEach(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); if (pct >= 80) rows.push('<tr><td>' + tag(pct >= 90 ? 'bad' : 'warn', pct + '%') + '</td><td><b>' + esc(p.name) + '</b><div class="s">AI-unit budget nearly used up (' + n(p.consumed) + ' of ' + n(p.allotment) + ')</div></td></tr>'); });
@@ -292,19 +311,72 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       D.contracts.map(function(c){ return '<tr><td>' + esc(c.id) + '</td><td><b>' + esc(c.product) + '</b></td><td>' + esc(c.scope) + '</td><td>' + esc(c.start) + ' → ' + esc(c.end) + '<div class="s">' + (days(c.end) >= 0 ? days(c.end) + ' days left' : 'ended') + '</div></td><td class="num">' + eur(c.annualEur) + '</td><td>' + tag(cls[c.status] || 'n', c.status) + '</td></tr>'; }).join('') +
       '</tbody></table>';
   }
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var SHADES = [1, .78, .58, .42, .28];
+  var selected = 0;
+  function proj(monthly, allot){
+    var d = new Date(D.asOf + 'T00:00:00Z');
+    var dim = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    var left = (dim - d.getUTCDate()) / dim, after = 11 - d.getUTCMonth();
+    var u = monthly.reduce(function(a, b){ return a + b; }, 0);
+    var full = monthly.slice(-4, -1), a = full.reduce(function(x, y){ return x + y; }, 0) / full.length;
+    var f = Math.round(u + a * left + a * after);
+    var run = u + a * left, hit = run >= allot ? d.getUTCMonth() : -1;
+    for (var m = d.getUTCMonth() + 1; hit < 0 && m < 12; m++){ run += a; if (run >= allot) hit = m; }
+    return {used: u, avg: Math.round(a), forecast: f, pct: Math.round(f / allot * 100), hit: f > allot && hit >= 0 ? MONTHS[hit] : null};
+  }
+  function renderDetail(){
+    var p = D.products[selected], r = proj(p.monthly, p.allotment), pct = Math.round(r.used / p.allotment * 100);
+    var max = Math.max.apply(null, p.monthly) || 1;
+    var change = p.monthly.length > 2 && p.monthly[p.monthly.length - 3] ? Math.round((p.monthly[p.monthly.length - 2] / p.monthly[p.monthly.length - 3] - 1) * 100) : 0;
+    $('product-detail').innerHTML = '<div class="k">' + esc(p.name) + '</div><div class="s">Meters ' + esc(p.meters) + '</div>' +
+      '<div class="dgrid">' +
+        '<div><div class="k">Used</div><div class="v">' + n(r.used) + '</div><div class="s">' + pct + '% of ' + n(p.allotment) + '</div></div>' +
+        '<div><div class="k">Remaining</div><div class="v">' + n(p.allotment - r.used) + '</div><div class="s">units in the budget</div></div>' +
+        '<div><div class="k">Average per month</div><div class="v">' + n(r.avg) + '</div><div class="s">last three full months</div></div>' +
+        '<div><div class="k">Year-end forecast</div><div class="v">' + r.pct + '%</div><div class="s">' + n(r.forecast) + ' units</div></div>' +
+        '<div><div class="k">Last full month</div><div class="v">' + (change > 0 ? '+' : '') + change + '%</div><div class="s">vs. the month before</div></div>' +
+      '</div>' +
+      '<div class="months">' + p.monthly.map(function(m, i){ return '<div class="' + (i === p.monthly.length - 1 ? 'cur' : '') + '" title="' + MONTHS[i] + ': ' + n(m) + ' units"><span style="height:' + Math.round(m / max * 100) + '%"></span>' + MONTHS[i] + '</div>'; }).join('') + '</div>' +
+      '<div style="margin-top:12px">' + (r.hit ? tag('bad', 'Budget likely exhausted in ' + r.hit) : r.pct >= 90 ? tag('warn', 'Close to the budget') : tag('ok', 'On track')) + '</div>';
+  }
+  function renderOffers(){
+    var cls = {'Open': 'warn', 'In negotiation': 'n', 'Accepted': 'ok', 'Declined': 'n', 'Expired': 'bad'};
+    $('offers').innerHTML = '<table><thead><tr><th>Offer</th><th>Product</th><th>Type</th><th>Term</th><th class="num">Annual value</th><th class="num">vs. today</th><th>Valid until</th><th>Status</th></tr></thead><tbody>' +
+      D.offers.map(function(o){
+        var diff = o.currentAnnualEur ? ((o.annualEur / o.currentAnnualEur - 1) * 100).toFixed(1).replace(/^(\d)/, '+$1') + '%' : 'new';
+        var left = days(o.validUntil);
+        return '<tr><td>' + esc(o.id) + '</td><td><b>' + esc(o.product) + '</b><div class="s">' + esc(o.scope) + (o.contractId ? ' · renews ' + esc(o.contractId) : '') + '</div></td><td>' + tag(o.type === 'Renewal' ? 'n' : 'ok', o.type) + '</td><td>' + esc(o.start) + ' → ' + esc(o.end) + '</td><td class="num">' + eur(o.annualEur) + '</td><td class="num">' + diff + '</td><td>' + esc(o.validUntil) + '<div class="s">' + (left >= 0 ? left + ' days left' : 'lapsed') + '</div></td><td>' + tag(cls[o.status] || 'n', o.status) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
   function renderUsage(){
     $('usage-kpis').innerHTML =
       kpi('Allotment 2026', n(D.aiUnits.allotment), 'AI units, contract C-2026-0012') +
       kpi('Consumed', n(used), pctUsed + '% of allotment') +
       kpi('Remaining', n(D.aiUnits.allotment - used), (D.aiUnits.allotment - used) < avg * 3 ? 'less than three months at current rate' : 'enough at current rate');
     var max = Math.max.apply(null, D.aiUnits.monthly);
-    var names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
-    $('months').innerHTML = D.aiUnits.monthly.map(function(m, i){ return '<div class="' + (i === D.aiUnits.monthly.length - 1 ? 'cur' : '') + '" title="' + n(m) + ' units"><span style="height:' + Math.round(m / max * 100) + '%"></span>' + names[i] + '</div>'; }).join('');
+    $('months').innerHTML = D.aiUnits.monthly.map(function(m, i){
+      var segs = D.products.map(function(p, k){ return '<i style="height:' + (p.monthly[i] / max * 100) + '%;background:var(--brand);opacity:' + SHADES[k % SHADES.length] + '" title="' + esc(p.name) + ': ' + n(p.monthly[i]) + '"></i>'; }).join('');
+      return '<div class="' + (i === D.aiUnits.monthly.length - 1 ? 'cur' : '') + '" title="' + MONTHS[i] + ': ' + n(m) + ' units in total"><div class="col">' + segs + '</div>' + MONTHS[i] + '</div>';
+    }).join('');
+    $('legend').innerHTML = D.products.map(function(p, k){ return '<span><b style="background:var(--brand);opacity:' + SHADES[k % SHADES.length] + '"></b>' + esc(p.name) + '</span>'; }).join('');
     $('forecast').innerHTML = '<div class="k">Forecast</div><div class="v">' + forecastPct + '%</div><div class="s">Year-end projection ' + n(forecast) + ' of ' + n(D.aiUnits.allotment) + ' units, based on the average of the last three full months (' + n(Math.round(avg)) + ' per month). October is a partial month (as of 18 Oct).</div>' +
       '<div style="margin-top:12px">' + (forecast > D.aiUnits.allotment * 0.95 ? tag('warn', 'Allotment likely exhausted in December') : tag('ok', 'On track')) + '</div>';
-    $('products').innerHTML = '<table><thead><tr><th>Product / service</th><th class="num">Used</th><th class="num">Budget</th><th>Utilisation</th></tr></thead><tbody>' +
-      D.products.map(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); return '<tr><td><b>' + esc(p.name) + '</b></td><td class="num">' + n(p.consumed) + '</td><td class="num">' + n(p.allotment) + '</td><td><div class="bar"><i class="' + tone(pct) + '" style="width:' + Math.min(pct, 100) + '%"></i></div><div class="s">' + pct + '%</div></td></tr>'; }).join('') + '</tbody></table>';
+    $('products').innerHTML = '<table><thead><tr><th>Product / service</th><th class="num">Used</th><th class="num">Budget</th><th class="num">Remaining</th><th class="num">Share</th><th>Utilisation</th><th class="num">Forecast</th><th>Outlook</th></tr></thead><tbody>' +
+      D.products.map(function(p, i){
+        var r = proj(p.monthly, p.allotment), pct = Math.round(r.used / p.allotment * 100);
+        return '<tr tabindex="0" data-i="' + i + '" aria-selected="' + (i === selected) + '"><td><b>' + esc(p.name) + '</b><div class="s">' + esc(p.meters) + '</div></td><td class="num">' + n(r.used) + '</td><td class="num">' + n(p.allotment) + '</td><td class="num">' + n(p.allotment - r.used) + '</td><td class="num">' + Math.round(r.used / used * 100) + '%</td><td><div class="bar"><i class="' + tone(pct) + '" style="width:' + Math.min(pct, 100) + '%"></i></div><div class="s">' + pct + '%</div></td><td class="num">' + r.pct + '%</td><td>' + (r.hit ? tag('bad', 'Empty in ' + r.hit) : r.pct >= 90 ? tag('warn', 'Tight') : tag('ok', 'On track')) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+    renderDetail();
   }
+  function selectProduct(tr){
+    if (!tr || tr.dataset.i === undefined) return;
+    selected = Number(tr.dataset.i);
+    Array.prototype.forEach.call($('products').querySelectorAll('tbody tr'), function(row){ row.setAttribute('aria-selected', String(row === tr)); });
+    renderDetail();
+  }
+  $('products').addEventListener('click', function(e){ selectProduct(e.target.closest('tr')); });
+  $('products').addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectProduct(e.target.closest('tr')); } });
   var prio = {'Very high': 'bad', 'High': 'warn', 'Medium': 'n', 'Low': 'n'};
   var stat = {'Closed': 'ok', 'Solution provided': 'ok', 'Waiting for customer': 'warn', 'In processing': 'n', 'New': 'n'};
   function renderTickets(){
@@ -383,7 +455,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       toast('Could not store the ticket in the database (' + String(d.message).slice(0, 120) + '). It was added on this page only.', true);
     }
   });
-  renderOverview(); renderContracts(); renderUsage(); renderTickets();
+  renderOverview(); renderContracts(); renderOffers(); renderUsage(); renderTickets();
   loadRemote();
 })();
 </script>
