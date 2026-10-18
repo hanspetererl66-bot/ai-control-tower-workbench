@@ -18,6 +18,7 @@ import {
   type StarterPrompt,
 } from '../starter-prompts';
 import StarterPrompts from './StarterPrompts';
+import { PRODUCT_NAME } from '../product';
 
 type Props = {
   onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void>;
@@ -302,7 +303,7 @@ export default function Composer({
       )}
       <textarea
         className="composer-input"
-        placeholder={agent ? 'Message Werkbank…' : 'Connecting…'}
+        placeholder={agent ? `Message ${PRODUCT_NAME}…` : 'Connecting…'}
         rows={1}
         autoFocus
         value={text}

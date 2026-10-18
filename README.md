@@ -1,10 +1,14 @@
-# Werkbank
+# Joule - Diamond Edition
 
-Werkbank is a local desktop workbench for AI-assisted conversations, file context,
+Joule - Diamond Edition (a private prototype, based on the open-source [Werkbank](https://github.com/marianfoo/werkbank) by marianfoo) is a local desktop workbench for AI-assisted conversations, file context,
 persistent Spaces, MCP connectors, and reusable agent skills. The renderer talks to
 a project-local [Goose](https://block.github.io/goose/) process through the Agent
 Client Protocol; connector configuration and generated work stay in the local project
 workspace.
+
+> **Not affiliated with SAP.** "Joule" is the name of an SAP product. This is an independent prototype in a similar style; it is not
+> SAP software and is not endorsed by SAP. Internal identifiers (the `werkbank://` link scheme, storage keys, package name) keep
+> the original name so existing links and data keep working.
 
 ## What works
 

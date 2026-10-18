@@ -134,14 +134,22 @@ const HANDLERS = {
       approvedCeilingM: b.ceilingM,
       headroomM: Number((b.ceilingM - b.totalActualM).toFixed(2)),
       groups,
-      // The team rows do not add up to the stated totals. Reported, not hidden.
-      reconciliation: {
-        sumOfTeamBudgetsK: sumBudgetK,
-        sumOfTeamActualsK: sumActualK,
-        ceilingMinusTeamBudgetsK: Math.round(b.ceilingM * 1000) - sumBudgetK,
-        statedActualMinusTeamActualsK: Math.round(b.totalActualM * 1000) - sumActualK,
-        note: 'Team-level rows do not add up to the stated totals; the source data does not explain the difference.',
-      },
+      // Reported either way, so a mismatch in the source data is never hidden.
+      reconciliation: (() => {
+        const ceilingMinusTeamBudgetsK = Math.round(b.ceilingM * 1000) - sumBudgetK;
+        const statedActualMinusTeamActualsK = Math.round(b.totalActualM * 1000) - sumActualK;
+        const reconciles = ceilingMinusTeamBudgetsK === 0 && statedActualMinusTeamActualsK === 0;
+        return {
+          sumOfTeamBudgetsK: sumBudgetK,
+          sumOfTeamActualsK: sumActualK,
+          ceilingMinusTeamBudgetsK,
+          statedActualMinusTeamActualsK,
+          reconciles,
+          note: reconciles
+            ? 'Team rows add up to the stated ceiling and actual.'
+            : 'Team-level rows do not add up to the stated totals; the source data does not explain the difference.',
+        };
+      })(),
       view: view('gov'),
     };
   },

@@ -1,1 +1,3 @@
-This project is based on Werkbank by marianfoo (https://github.com/marianfoo/werkbank), licensed under Apache-2.0.
+Joule - Diamond Edition is based on Werkbank by marianfoo (https://github.com/marianfoo/werkbank), licensed under Apache-2.0.
+Modifications: AI Control Tower example Space, MCP connector, Supabase read path, suggested questions and dashboard links.
+Not affiliated with or endorsed by SAP.

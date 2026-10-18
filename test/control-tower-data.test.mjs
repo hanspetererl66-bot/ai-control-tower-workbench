@@ -76,3 +76,41 @@ test('registry and budget sections are rendered from data, not hand-written', ()
   assert.doesNotMatch(html, /BTP Extension Agent \(prod\)<\/td>/);
   assert.doesNotMatch(html, /Engineering \(budget &euro;1\.1M\)/);
 });
+
+test('budget team rows add up to the stated ceiling and actual', () => {
+  const { groups, ceilingM, totalActualM } = data.budget;
+  const budgetK = groups.reduce((sum, group) => sum + group.budgetK, 0);
+  const actualK = groups.reduce((sum, group) => sum + Math.round((group.budgetK * group.utilisationPct) / 100), 0);
+  assert.equal(budgetK, Math.round(ceilingM * 1000));
+  assert.equal(actualK, Math.round(totalActualM * 1000));
+  assert.equal(new Set(groups.map((group) => group.name)).size, groups.length);
+});
+
+test('every data-bound fact in the page shows its current value without scripts', () => {
+  const resolve = (path) =>
+    path === 'derived.highRisks'
+      ? data.risks.filter((risk) => risk.severity === 'high').length
+      : path.split('.').reduce((value, key) => value?.[key], data);
+  const markup = html.replace(/<script[\s\S]*?<\/script>/g, '');
+  const bound = [...markup.matchAll(/<span data-ct="([\w.]+)">([^<]*)<\/span>/g)];
+  assert.ok(bound.length >= 40, `only ${bound.length} bound facts`);
+  for (const [, path, text] of bound) {
+    const value = resolve(path);
+    assert.notEqual(value, undefined, `unknown path ${path}`);
+    assert.equal(text.replaceAll('&nbsp;', ' ').replaceAll('&lsquo;', "'"), String(value), path);
+  }
+});
+
+test('the EU AI Act audit is on 12 Dec 2026 everywhere, and its counts agree', () => {
+  const { euAiAct } = data.compliance;
+  assert.equal(euAiAct.auditDate, '2026-12-12');
+  assert.equal(euAiAct.complete + euAiAct.outstanding, euAiAct.total);
+  const r6 = data.risks.find((risk) => risk.id === 'R6');
+  assert.match(r6.eta, /12 Dec 2026/);
+  assert.match(r6.description, new RegExp(`${euAiAct.total} agents`));
+  assert.match(r6.description, new RegExp(`${euAiAct.outstanding} outstanding`));
+  const text = html.replace(/<script type="application\/json"[\s\S]*?<\/script>/, '');
+  for (const stale of [/February/, /Feb 2027/, /Feb&nbsp;&lsquo;27/, /Feb&nbsp;'27/, /end of January/]) {
+    assert.doesNotMatch(text, stale, String(stale));
+  }
+});

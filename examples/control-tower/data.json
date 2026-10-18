@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "note": "Illustrative sample data. Source of truth for the AI Control Tower space; embedded into index.html by `npm run sync:control-tower`.",
+    "note": "Illustrative sample data. Source of truth for the AI Control Tower space; embedded into index.html by `npm run sync:control-tower`. The budget rows for Data & AI Platform and Legal & Compliance are assumed values added so that team rows add up to the stated ceiling and actual.",
     "riskThresholdPct": 40
   },
   "risks": [
@@ -89,15 +89,15 @@
       "id": "R6",
       "severity": "medium",
       "title": "EU AI Act — 18 high-risk agents",
-      "description": "18 agents require conformity assessment before Feb 2027 audit. 10 outstanding.",
+      "description": "18 agents require conformity assessment before the 12 Dec 2026 audit. 10 outstanding.",
       "owner": "General Counsel",
       "ownerTeam": "Legal & Compliance",
-      "eta": "Feb 2027",
-      "etaTone": "blue",
+      "eta": "12 Dec 2026",
+      "etaTone": "amber",
       "progressPct": 44,
       "progressColor": "purple",
       "progressNote": "8 of 18 assessments complete",
-      "action": "External assessor engaged. Remaining 10 scheduled Dec–Jan. Audit prep kicked off.",
+      "action": "External assessor engaged. Remaining 10 scheduled Nov–early Dec. Audit prep kicked off.",
       "tile": "EU AI Act assessments outstanding (10/18)",
       "short": "EU AI Act"
     },
@@ -278,7 +278,29 @@
         "budgetK": 182,
         "utilisationPct": 46,
         "color": "green"
+      },
+      {
+        "name": "Data & AI Platform",
+        "budgetK": 600,
+        "utilisationPct": 19,
+        "color": "purple"
+      },
+      {
+        "name": "Legal & Compliance",
+        "budgetK": 98,
+        "utilisationPct": 40,
+        "color": "green"
       }
     ]
+  },
+  "compliance": {
+    "euAiAct": {
+      "auditDate": "2026-12-12",
+      "auditLabel": "12 Dec 2026",
+      "auditShort": "Dec '26",
+      "total": 18,
+      "complete": 8,
+      "outstanding": 10
+    }
   }
 }

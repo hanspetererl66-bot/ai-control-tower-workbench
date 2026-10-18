@@ -153,7 +153,7 @@ test('agent tools agree with the registry in data.json', async () => {
   }
 });
 
-test('get_budget flags overspend and reports that team rows do not reconcile', async () => {
+test('get_budget flags overspend and reports that team rows add up to the stated totals', async () => {
   const server = startServer();
   try {
     const budget = parse(await server.call('get_budget', {}));
@@ -163,9 +163,11 @@ test('get_budget flags overspend and reports that team rows do not reconcile', a
     assert.equal(status['Sales & Presales'], 'near limit');
     assert.equal(status['HR / L&D'], 'within budget');
     assert.equal(budget.headroomM, 0.86);
-    assert.equal(budget.reconciliation.sumOfTeamBudgetsK, 2902);
-    assert.equal(budget.reconciliation.ceilingMinusTeamBudgetsK, 698);
-    assert.equal(budget.reconciliation.statedActualMinusTeamActualsK, 153);
+    assert.equal(budget.reconciliation.sumOfTeamBudgetsK, 3600);
+    assert.equal(budget.reconciliation.sumOfTeamActualsK, 2740);
+    assert.equal(budget.reconciliation.ceilingMinusTeamBudgetsK, 0);
+    assert.equal(budget.reconciliation.statedActualMinusTeamActualsK, 0);
+    assert.equal(budget.reconciliation.reconciles, true);
   } finally {
     server.stop();
   }
@@ -355,4 +357,21 @@ test('manifest declares the Supabase key as a sensitive, optional field', () => 
   assert.notEqual(key.required, true);
   assert.equal(manifest.user_config.supabase_url.sensitive, undefined);
   assert.equal(manifest.server.mcp_config.env.SUPABASE_SECRET_KEY, '${user_config.supabase_secret_key}');
+});
+
+test('a mismatch in the budget source data is still reported', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ct-budget-'));
+  const file = join(dir, 'data.json');
+  const groups = data.budget.groups.filter((group) => group.name !== 'Legal & Compliance');
+  writeFileSync(file, JSON.stringify({ ...data, budget: { ...data.budget, groups } }));
+  const server = startServer(SERVER, { CONTROL_TOWER_DATA: file });
+  try {
+    const { reconciliation } = parse(await server.call('get_budget', {}));
+    assert.equal(reconciliation.reconciles, false);
+    assert.equal(reconciliation.ceilingMinusTeamBudgetsK, 98);
+    assert.match(reconciliation.note, /do not add up/);
+  } finally {
+    server.stop();
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

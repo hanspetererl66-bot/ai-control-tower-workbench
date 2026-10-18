@@ -30,6 +30,7 @@ import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
+import { PRODUCT_NAME } from './product';
 
 const WORKDIR = window.host?.workspacePath ?? '';
 
@@ -489,7 +490,7 @@ export default function App() {
   );
   const disclaimer = (
     <p className="disclaimer">
-      Werkbank uses AI. Verify results. <a href="#">AI Guidance</a>
+      {PRODUCT_NAME} uses AI. Verify results. <a href="#">AI Guidance</a>
     </p>
   );
   const space = spaces.find((s) => s.slug === selectedSpace) ?? null;

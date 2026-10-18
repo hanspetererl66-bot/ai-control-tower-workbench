@@ -374,7 +374,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       <div style="font-size:14px;color:var(--g700);line-height:1.65;margin-bottom:10px">Accountable for specific agents in production. Ensures agents stay within risk classification, maintain HITL gates, and perform correctly. Reviews agent logs and HITL interventions weekly. First escalation point when an agent fails or behaves unexpectedly.</div>
       <div style="font-size:13px;color:var(--g500);padding-top:8px;border-top:1px solid var(--g100);line-height:1.7">
         <strong style="color:var(--g700)">Profile:</strong> Domain expert with technical AI knowledge; often a Senior Developer or Tech Lead who built the agent. Governance responsibility is additive to their existing role (not full-time).<br>
-        <strong style="color:var(--g700)">For 30k org:</strong> ~9 dedicated Agent Owners for the 186-agent registry
+        <strong style="color:var(--g700)">For 30k org:</strong> ~9 dedicated Agent Owners for the <span data-ct="agents.total">186</span>-agent registry
       </div>
     </div>
 
@@ -513,9 +513,9 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:8px 14px"><div style="font-size:18px;font-weight:700;color:var(--green);font-family:var(--mono)">5.1&times;</div><div style="font-size:10px;color:var(--g500)">ROI (AVRR)</div></div>
-      <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:8px 14px"><div style="font-size:18px;font-weight:700;color:var(--red);font-family:var(--mono)">4</div><div style="font-size:10px;color:var(--g500)">High risks</div></div>
+      <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:8px 14px"><div style="font-size:18px;font-weight:700;color:var(--red);font-family:var(--mono)"><span data-ct="derived.highRisks">4</span></div><div style="font-size:10px;color:var(--g500)">High risks</div></div>
       <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:8px 14px"><div style="font-size:18px;font-weight:700;color:var(--purple);font-family:var(--mono)">&euro;135M</div><div style="font-size:10px;color:var(--g500)">Net / year</div></div>
-      <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:8px 14px"><div style="font-size:18px;font-weight:700;color:var(--amber);font-family:var(--mono)">Feb&nbsp;'27</div><div style="font-size:10px;color:var(--g500)">EU AI Act</div></div>
+      <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:8px 14px"><div style="font-size:18px;font-weight:700;color:var(--amber);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditShort">Dec&nbsp;'26</span></div><div style="font-size:10px;color:var(--g500)">EU AI Act</div></div>
     </div>
   </div>
 
@@ -537,7 +537,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <span class="tag t-gr" style="font-size:9px">08 Compute</span>
       </div>
       <div style="font-size:10px;font-weight:700;color:var(--g500);font-family:var(--mono);margin-bottom:5px">KEY SIGNALS</div>
-      <div style="font-size:11px;color:var(--g900);font-family:var(--mono);line-height:2">186 agents<br>47 unregistered<br>3 providers<br>7/10 sources</div>
+      <div style="font-size:11px;color:var(--g900);font-family:var(--mono);line-height:2"><span data-ct="agents.total">186</span> agents<br><span data-ct="agents.unregistered">47</span> unregistered<br>3 providers<br>7/10 sources</div>
     </div>
 
     <!-- OBSERVE -->
@@ -578,7 +578,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <span class="tag t-gr" style="font-size:9px">08 Compute</span>
       </div>
       <div style="font-size:10px;font-weight:700;color:var(--g500);font-family:var(--mono);margin-bottom:5px">KEY SIGNALS</div>
-      <div style="font-size:11px;color:var(--g900);font-family:var(--mono);line-height:2">31 overpriv.<br>4 DPAs signed<br>EU &#10003; residency<br>94% comply</div>
+      <div style="font-size:11px;color:var(--g900);font-family:var(--mono);line-height:2"><span data-ct="agents.overprivileged">31</span> overpriv.<br>4 DPAs signed<br>EU &#10003; residency<br>94% comply</div>
     </div>
 
     <!-- MEASURE -->
@@ -634,7 +634,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <tr>
           <td><div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">&#128269;</span><strong>Discover</strong></div></td>
           <td><span class="tag t-gr" style="font-size:10px">04 Agent Repo</span> <span class="tag t-gr" style="font-size:10px">08 Compute</span></td>
-          <td style="font-size:11px;color:var(--g500)">186 agents registered &middot; 47 unregistered &middot; 3 providers &middot; 7/10 discovery sources</td>
+          <td style="font-size:11px;color:var(--g500)"><span data-ct="agents.total">186</span> agents registered &middot; <span data-ct="agents.unregistered">47</span> unregistered &middot; 3 providers &middot; 7/10 discovery sources</td>
           <td><span class="tag t-a">Partial &mdash; 7/10 sources</span></td>
           <td style="font-size:11px;color:var(--g700)">AWS Bedrock + GCP Vertex + Salesforce scanning &rarr; Q1 2027</td>
         </tr>
@@ -655,7 +655,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <tr>
           <td><div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">&#128274;</span><strong>Secure</strong></div></td>
           <td><span class="tag t-gr" style="font-size:10px">07 Risk</span> <span class="tag t-gr" style="font-size:10px">04 Repo (NHI)</span> <span class="tag t-gr" style="font-size:10px">08 Compute</span></td>
-          <td style="font-size:11px;color:var(--g500)">31 overpriv. NHIs &middot; 4 High risks &middot; 94% policy comply &middot; EU &#10003; residency &middot; 4/6 DPAs</td>
+          <td style="font-size:11px;color:var(--g500)"><span data-ct="agents.overprivileged">31</span> overpriv. NHIs &middot; <span data-ct="derived.highRisks">4</span> High risks &middot; 94% policy comply &middot; EU &#10003; residency &middot; 4/6 DPAs</td>
           <td><span class="tag t-a">In progress</span></td>
           <td style="font-size:11px;color:var(--g700)">Agent remediation &rarr; Dec &middot; n8n DPA &rarr; Q1 2027 &middot; JIT access &rarr; Q2 2027</td>
         </tr>
@@ -742,11 +742,11 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <div style="font-size:10px;color:var(--g500);margin-top:2px">ROI (AVRR)</div>
       </div>
       <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:10px 16px">
-        <div style="font-size:22px;font-weight:700;color:var(--red);font-family:var(--mono)">4</div>
+        <div style="font-size:22px;font-weight:700;color:var(--red);font-family:var(--mono)"><span data-ct="derived.highRisks">4</span></div>
         <div style="font-size:10px;color:var(--g500);margin-top:2px">High risks open</div>
       </div>
       <div style="text-align:center;background:#fff;border:1px solid var(--g200);border-radius:5px;padding:10px 16px">
-        <div style="font-size:22px;font-weight:700;color:var(--purple);font-family:var(--mono)">Feb&nbsp;&lsquo;27</div>
+        <div style="font-size:22px;font-weight:700;color:var(--purple);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditShort">Dec&nbsp;'26</span></div>
         <div style="font-size:10px;color:var(--g500);margin-top:2px">EU AI Act audit</div>
       </div>
     </div>
@@ -820,15 +820,15 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#9888; Compliance gap</div>
       </div>
       <div style="font-size:22px;font-weight:700;color:var(--amber);font-family:var(--mono);margin-bottom:6px">10/18 pending</div>
-      <div style="font-size:12px;color:var(--g700);line-height:1.6;margin-bottom:10px">EU AI Act external audit: February 2027. 10 of 18 high-risk agent conformity assessments still outstanding. General Counsel is lead. Risk: audit delay if not resolved by January.</div>
+      <div style="font-size:12px;color:var(--g700);line-height:1.6;margin-bottom:10px">EU AI Act external audit: <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>. <span data-ct="compliance.euAiAct.outstanding">10</span> of <span data-ct="compliance.euAiAct.total">18</span> high-risk agent conformity assessments still outstanding. General Counsel is lead. Risk: audit delay if not resolved by 30 November.</div>
       <div style="font-size:11px;color:var(--g500);padding-top:8px;border-top:1px solid var(--g100);line-height:1.7">
         Board action: confirm Legal &amp; Compliance resourcing<br>
-        31 overprivileged agents &mdash; CISO to remediate<br>
+        <span data-ct="agents.overprivileged">31</span> overprivileged agents &mdash; CISO to remediate<br>
         Policy compliance: 94% (target 100%)
       </div>
       <div style="font-size:11px;color:var(--g700);line-height:1.7;margin-top:10px;padding-top:10px;border-top:1px solid var(--g100)">
         <strong style="color:var(--g900)">Financial stakes of non-compliance:</strong> EU AI Act Article 71 penalties reach up to &euro;35M or 7% of worldwide annual turnover, whichever is higher. A major audit finding also triggers a mandatory remediation order &mdash; pausing deployment of affected agents and requiring board-level sign-off on resumption. The 10 outstanding assessments cover agents handling SAP financial and HR data: the highest-risk categories under Annex III of the Act.<br><br>
-        <strong style="color:var(--g900)">Timeline risk analysis:</strong> The external assessor is engaged and methodology is agreed. The risk is purely execution speed: at the current rate of 1.2 assessments per week, completing all 10 by January 31 is achievable but without buffer. Any resourcing constraint must be escalated this week. Board action: confirm that Legal &amp; Compliance has the bandwidth to hold this timeline &mdash; if not, a dedicated external resource must be commissioned immediately.
+        <strong style="color:var(--g900)">Timeline risk analysis:</strong> The external assessor is engaged and methodology is agreed. The risk is purely execution speed: at the current rate of 1.2 assessments per week, only about 7 of the 10 will be finished by 30 November; the pace must rise to about 1.7 per week to leave time for the document pack before the audit. Any resourcing constraint must be escalated this week. Board action: confirm that Legal &amp; Compliance has the bandwidth to hold this timeline &mdash; if not, a dedicated external resource must be commissioned immediately.
       </div>
     </div>
 
@@ -878,7 +878,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-bottom:1px solid var(--g100)">
       <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">2</div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--g900)">CISO to brief board on 31 overprivileged AI agents</div>
+        <div style="font-size:13px;font-weight:700;color:var(--g900)">CISO to brief board on <span data-ct="agents.overprivileged">31</span> overprivileged AI agents</div>
         <div style="font-size:12px;color:var(--g500);margin-top:3px;line-height:1.6">10 AI agents currently hold admin write access to SAP S/4HANA and BTP production systems. Running 44,800 times per day. A compromised or malfunctioning agent is a material data risk. Remediation at 35% — targeted completion December 2026. <strong>Owner: CISO.</strong></div>
       </div>
       <span class="tag t-r">Urgent</span>
@@ -886,8 +886,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-bottom:1px solid var(--g100)">
       <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--amber);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">3</div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--g900)">Confirm Legal &amp; Compliance resourcing for EU AI Act audit (February 2027)</div>
-        <div style="font-size:12px;color:var(--g500);margin-top:3px;line-height:1.6">10 of 18 high-risk agent conformity assessments outstanding. External assessor engaged. All remaining 10 must complete by end of January to allow audit preparation time. Non-compliance risk: potential fines and mandatory remediation orders under EU AI Act Article 71. <strong>Owner: General Counsel.</strong></div>
+        <div style="font-size:13px;font-weight:700;color:var(--g900)">Confirm Legal &amp; Compliance resourcing for EU AI Act audit (<span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>)</div>
+        <div style="font-size:12px;color:var(--g500);margin-top:3px;line-height:1.6">10 of 18 high-risk agent conformity assessments outstanding. External assessor engaged. All remaining 10 must complete by 30 November to allow audit preparation time. Non-compliance risk: potential fines and mandatory remediation orders under EU AI Act Article 71. <strong>Owner: General Counsel.</strong></div>
       </div>
       <span class="tag t-a">High</span>
     </div>
@@ -914,14 +914,14 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5">HITL gates<br>Finance agents<br>Agent remediation</div>
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
-        <div style="width:14px;height:14px;border-radius:50%;background:var(--amber);border:2px solid #fff;margin:16px auto 8px;box-shadow:0 0 0 2px var(--amber)"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--amber);font-family:var(--mono)">Jan 2027</div>
-        <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5">Step-level audit logs<br>All 18 assessments<br>complete</div>
+        <div style="width:16px;height:16px;border-radius:50%;background:var(--purple);border:2px solid #fff;margin:15px auto 8px;box-shadow:0 0 0 2px var(--purple)"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--purple);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span></div>
+        <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5"><strong>EU AI Act<br>external audit</strong><br>18 high-risk agents</div>
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
-        <div style="width:16px;height:16px;border-radius:50%;background:var(--purple);border:2px solid #fff;margin:15px auto 8px;box-shadow:0 0 0 2px var(--purple)"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--purple);font-family:var(--mono)">Feb 2027</div>
-        <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5"><strong>EU AI Act<br>external audit</strong><br>18 high-risk agents</div>
+        <div style="width:14px;height:14px;border-radius:50%;background:var(--amber);border:2px solid #fff;margin:16px auto 8px;box-shadow:0 0 0 2px var(--amber)"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--amber);font-family:var(--mono)">Jan 2027</div>
+        <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5">Step-level audit logs<br>All 186 agents</div>
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
         <div style="width:14px;height:14px;border-radius:50%;background:var(--blue);border:2px solid #fff;margin:16px auto 8px;box-shadow:0 0 0 2px var(--blue)"></div>
@@ -1050,10 +1050,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono);margin-bottom:3px">Management question</div>
         <div style="font-size:12px;font-weight:600;color:var(--g900)">"Do we know what AI agents are running in our organisation, who owns them, and are they operating within safe boundaries?"</div>
       </div>
-      <div style="font-size:12px;color:var(--g700);line-height:1.7;margin-bottom:10px">The governance registry for all 186 registered AI agents (autonomous, copilot, orchestrator types). Tracks the agent lifecycle from proposal to retirement, EU AI Act risk classification, non-human identity (NHI) controls, and the auto-discovery scan that surfaces unregistered shadow agents running outside governance.</div>
+      <div style="font-size:12px;color:var(--g700);line-height:1.7;margin-bottom:10px">The governance registry for all <span data-ct="agents.total">186</span> registered AI agents (autonomous, copilot, orchestrator types). Tracks the agent lifecycle from proposal to retirement, EU AI Act risk classification, non-human identity (NHI) controls, and the auto-discovery scan that surfaces unregistered shadow agents running outside governance.</div>
       <div style="font-size:11px;color:var(--g500);line-height:1.8;padding-top:8px;border-top:1px solid var(--g100)">
-        <span style="font-weight:700;color:var(--g900)">Why it matters:</span> At 30,000 engineers, new AI agents are being created faster than governance can track. 47 unregistered agents were discovered in the last scan. 31 production agents have more system access than they need. An uncontrolled agent with admin access to SAP S/4HANA is a board-level risk.<br>
-        <span style="font-weight:700;color:var(--purple)">Key signal:</span> 47 unregistered discovered &#9888; &middot; 31 overprivileged NHIs &#9888; &middot; 10 full-admin agents
+        <span style="font-weight:700;color:var(--g900)">Why it matters:</span> At 30,000 engineers, new AI agents are being created faster than governance can track. <span data-ct="agents.unregistered">47</span> unregistered agents were discovered in the last scan. 31 production agents have more system access than they need. An uncontrolled agent with admin access to SAP S/4HANA is a board-level risk.<br>
+        <span style="font-weight:700;color:var(--purple)">Key signal:</span> <span data-ct="agents.unregistered">47</span> unregistered discovered &#9888; &middot; <span data-ct="agents.overprivileged">31</span> overprivileged NHIs &#9888; &middot; 10 full-admin agents
       </div>
     </div>
 
@@ -1099,12 +1099,12 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       </div>
       <div style="background:var(--p-dim);border-radius:4px;padding:8px 10px;margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono);margin-bottom:3px">Management question</div>
-        <div style="font-size:12px;font-weight:600;color:var(--g900)">"What are our biggest AI risks right now, who is accountable for fixing them, how far along are we, and will we be ready for the EU AI Act audit in February?"</div>
+        <div style="font-size:12px;font-weight:600;color:var(--g900)">"What are our biggest AI risks right now, who is accountable for fixing them, how far along are we, and will we be ready for the EU AI Act audit on 12 December?"</div>
       </div>
       <div style="font-size:12px;color:var(--g700);line-height:1.7;margin-bottom:10px">The accountability layer. An expanded risk register with named owners, ETAs, and visual mitigation progress bars for 7 open risks. Includes the ServiceNow AI Control Tower 5-dimension alignment assessment (Discover/Observe/Govern/Secure/Measure), security controls checklist, EU AI Act compliance milestones, and the hallucination incident log.</div>
       <div style="font-size:11px;color:var(--g500);line-height:1.8;padding-top:8px;border-top:1px solid var(--g100)">
-        <span style="font-weight:700;color:var(--g900)">Why it matters:</span> The EU AI Act audit is in February 2027. 10 of 18 high-risk agent assessments are still outstanding. 3 High risks have mitigation below 40% completion. This tab is the escalation surface for the CISO, General Counsel, and CFO Office.<br>
-        <span style="font-weight:700;color:var(--purple)">Key signal:</span> 3 High risks &lt;40% mitigated &middot; 10 EU AI Act assessments outstanding &middot; Feb 2027 audit
+        <span style="font-weight:700;color:var(--g900)">Why it matters:</span> The EU AI Act audit is on <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>. <span data-ct="compliance.euAiAct.outstanding">10</span> of <span data-ct="compliance.euAiAct.total">18</span> high-risk agent assessments are still outstanding. 3 High risks have mitigation below 40% completion. This tab is the escalation surface for the CISO, General Counsel, and CFO Office.<br>
+        <span style="font-weight:700;color:var(--purple)">Key signal:</span> 3 High risks &lt;40% mitigated &middot; <span data-ct="compliance.euAiAct.outstanding">10</span> EU AI Act assessments outstanding &middot; <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span> audit
       </div>
     </div>
 
@@ -1481,15 +1481,15 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   <div id="repo-mr" class="mr">
     <div class="mc">
       <div class="ml">Registered agents</div>
-      <div class="mv">186</div>
+      <div class="mv"><span data-ct="agents.total">186</span></div>
       <div class="md inf">&#8593;44 this quarter</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">186 agents in the governance registry &mdash; 58 autonomous, 97 copilot-type, 31 orchestrators. Growth: +44 this quarter (+31% QoQ). <strong style="color:var(--g700)">Industry context:</strong> MCP server deployments grew &gt;400% YoY (MCP Institute 2026); public MCP repos on GitHub: 12,000+ (from 2,000 in Jan 2025). Gartner: 40% of enterprise apps will integrate AI agents by end of 2026. Only 21% of organisations have mature agentic AI governance (Deloitte 2026, n=3,235 leaders). At 30k engineers the creation rate (~15 agents/month) will exceed manual governance capacity within 2 quarters. <strong style='color:var(--g700)'>An automated registration pipeline with pre-screening (security scan, token cap check, owner assignment) is the structural fix &mdash; planned Q1 2027.</strong></div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)"><span data-ct="agents.total">186</span> agents in the governance registry &mdash; 58 autonomous, 97 copilot-type, 31 orchestrators. Growth: +44 this quarter (+31% QoQ). <strong style="color:var(--g700)">Industry context:</strong> MCP server deployments grew &gt;400% YoY (MCP Institute 2026); public MCP repos on GitHub: 12,000+ (from 2,000 in Jan 2025). Gartner: 40% of enterprise apps will integrate AI agents by end of 2026. Only 21% of organisations have mature agentic AI governance (Deloitte 2026, n=3,235 leaders). At 30k engineers the creation rate (~15 agents/month) will exceed manual governance capacity within 2 quarters. <strong style='color:var(--g700)'>An automated registration pipeline with pre-screening (security scan, token cap check, owner assignment) is the structural fix &mdash; planned Q1 2027.</strong></div>
     </div>
     <div class="mc">
       <div class="ml">Production agents</div>
-      <div class="mv">125</div>
+      <div class="mv"><span data-ct="agents.production">125</span></div>
       <div class="md inf">67% of registry</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">125 of 186 registered agents are live in production &mdash; each reviewed, risk-classified, with a named owner and scoped NHI identity. The remaining 61: 28 pending review + 33 retired. 67% production rate is healthy for a programme at this growth stage. Target: maintain &gt;65% production ratio while tightening the review cycle below 14 days (current: 18 days avg).</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)"><span data-ct="agents.production">125</span> of <span data-ct="agents.total">186</span> registered agents are live in production &mdash; each reviewed, risk-classified, with a named owner and scoped NHI identity. The remaining 61: 28 pending review + 33 retired. 67% production rate is healthy for a programme at this growth stage. Target: maintain &gt;65% production ratio while tightening the review cycle below 14 days (current: 18 days avg).</div>
     </div>
     <div class="mc">
       <div class="ml">Pending review</div>
@@ -1499,15 +1499,15 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     </div>
     <div class="mc">
       <div class="ml">Auto-discovered (unreg.)</div>
-      <div class="mv">47</div>
+      <div class="mv"><span data-ct="agents.unregistered">47</span></div>
       <div class="md dn">action required</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">47 AI assets found outside the registry in the last scan &mdash; BTP extensions, n8n LLM nodes, Cursor batch scripts, custom Python/OpenAI integrations. At 30k engineers shadow AI is mathematically inevitable. <strong style='color:var(--g700)'>Critical signal: 47 this scan vs 38 last scan = +24% growth in 4 weeks.</strong> 1 asset (BTP extension) is handling confidential SAP data with no owner or token cap &mdash; escalated to CISO. Scans run every 6h across 7 integrations.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)"><span data-ct="agents.unregistered">47</span> AI assets found outside the registry in the last scan &mdash; BTP extensions, n8n LLM nodes, Cursor batch scripts, custom Python/OpenAI integrations. At 30k engineers shadow AI is mathematically inevitable. <strong style='color:var(--g700)'>Critical signal: 47 this scan vs 38 last scan = +24% growth in 4 weeks.</strong> 1 asset (BTP extension) is handling confidential SAP data with no owner or token cap &mdash; escalated to CISO. Scans run every 6h across 7 integrations.</div>
     </div>
     <div class="mc">
       <div class="ml">Overprivileged NHIs</div>
-      <div class="mv">31</div>
+      <div class="mv"><span data-ct="agents.overprivileged">31</span></div>
       <div class="md dn">exceed least-privilege</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">31 production agents hold permissions beyond what their function requires &mdash; 10 with full admin write to SAP S/4HANA or BTP production. Remediation at 35% (11 rescoped). <strong style="color:var(--g700)">Industry context:</strong> IBM 2025: 97% of AI-related breach victims lacked proper access controls. ITECS 2026: NHIs now outnumber humans 144:1 in enterprise environments (↑56% from 2024), and 97% hold excessive privileges. The 10 full-admin agents running 44,800×/day represent a board-level risk: a compromised admin agent could modify production SAP data at scale. <strong style="color:var(--g700)">Hard deadline: Feb 2027. CISO accountable.</strong></div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)"><span data-ct="agents.overprivileged">31</span> production agents hold permissions beyond what their function requires &mdash; 10 with full admin write to SAP S/4HANA or BTP production. Remediation at 35% (11 rescoped). <strong style="color:var(--g700)">Industry context:</strong> IBM 2025: 97% of AI-related breach victims lacked proper access controls. ITECS 2026: NHIs now outnumber humans 144:1 in enterprise environments (↑56% from 2024), and 97% hold excessive privileges. The 10 full-admin agents running 44,800×/day represent a board-level risk: a compromised admin agent could modify production SAP data at scale. <strong style="color:var(--g700)">Hard deadline: <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>. CISO accountable.</strong></div>
     </div>
     <div class="mc">
       <div class="ml">Retired / archived</div>
@@ -1520,8 +1520,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   <div class="ab ab-w">
     <div class="aico">&#9888;</div>
     <div>
-      <div class="atit" style="color:var(--amber)">Auto-discovery: 47 unregistered AI assets detected &mdash; ServiceNow ACT &lsquo;Discover&rsquo; dimension</div>
-      <div class="abod">At 30k engineers, shadow AI sprawl accelerates. Scanners found 47 agents and model integrations across SAP BTP, Azure OpenAI, n8n, and internal Python scripts running outside the governance registry. None have token caps, risk scores, or documented owners. This is expected at scale &mdash; the governance process must be faster than engineer creativity.</div>
+      <div class="atit" style="color:var(--amber)">Auto-discovery: <span data-ct="agents.unregistered">47</span> unregistered AI assets detected &mdash; ServiceNow ACT &lsquo;Discover&rsquo; dimension</div>
+      <div class="abod">At 30k engineers, shadow AI sprawl accelerates. Scanners found <span data-ct="agents.unregistered">47</span> agents and model integrations across SAP BTP, Azure OpenAI, n8n, and internal Python scripts running outside the governance registry. None have token caps, risk scores, or documented owners. This is expected at scale &mdash; the governance process must be faster than engineer creativity.</div>
     </div>
   </div>
 
@@ -1560,9 +1560,9 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       <div class="sh">Agent identity controls (ServiceNow ACT: Secure)</div>
       <div class="card">
         <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">Dedicated service account (NHI) per agent<div class="cs">No shared credentials. Identity isolated in production.</div></div></div>
-        <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">Scoped API keys &mdash; not admin keys<div class="cs">Read-only where write not required. Verified 125/125 prod agents.</div></div></div>
+        <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">Scoped API keys &mdash; not admin keys<div class="cs">Read-only where write not required. Verified <span data-ct="agents.production">125</span>/<span data-ct="agents.production">125</span> prod agents.</div></div></div>
         <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">Token budget + rate limit per agent identity<div class="cs">TPM/RPM caps enforced at API gateway.</div></div></div>
-        <div class="ci"><div class="cico c-pt">~</div><div class="ct">Access graph &mdash; what each agent can reach<div class="cs">Manual. Automated graph needed at 186 agents. Planned Q1 2027.</div></div></div>
+        <div class="ci"><div class="cico c-pt">~</div><div class="ct">Access graph &mdash; what each agent can reach<div class="cs">Manual. Automated graph needed at <span data-ct="agents.total">186</span> agents. Planned Q1 2027.</div></div></div>
         <div class="ci"><div class="cico c-pt">~</div><div class="ct">Credential rotation (90-day)<div class="cs">Enforced for 94/125 prod agents. 31 on manual rotation.</div></div></div>
         <div class="ci"><div class="cico c-no">&#10007;</div><div class="ct">Real-time access anomaly detection<div class="cs">Critical at 44,800 runs/day. No alert on abnormal access patterns.</div></div></div>
         <div class="ci"><div class="cico c-no">&#10007;</div><div class="ct">Just-in-time (JIT) privilege elevation<div class="cs">Agents hold standing permissions. JIT roadmap Q2 2027.</div></div></div>
@@ -1584,7 +1584,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       <div class="ml">Executions / day</div>
       <div class="mv">44,800</div>
       <div class="md up">&#8593; 31% MoM</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">44,800 individual agent runs per day across 125 production agents &mdash; average 358 runs/agent/day, ranging from ~13 for niche orchestrators to ~1,600 for SPC ticket routers. 31% month-on-month growth. At this velocity a 10% failure rate = ~4,480 failed runs/day requiring manual triage or HITL intervention. Growth trajectory: projected 65,000 runs/day by Q4 2026 if agent count continues at +15/month.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">44,800 individual agent runs per day across <span data-ct="agents.production">125</span> production agents &mdash; average 358 runs/agent/day, ranging from ~13 for niche orchestrators to ~1,600 for SPC ticket routers. 31% month-on-month growth. At this velocity a 10% failure rate = ~4,480 failed runs/day requiring manual triage or HITL intervention. Growth trajectory: projected 65,000 runs/day by Q4 2026 if agent count continues at +15/month.</div>
     </div>
     <div class="mc">
       <div class="ml">Avg steps / run</div>
@@ -1620,7 +1620,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       <div class="ml">Cost / agent / week (avg)</div>
       <div class="mv">&euro;405</div>
       <div class="md inf">&euro;50.6k/wk total &middot; <span class='src s-acn'>ACN est.</span></div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">Blended average across 125 production agents. By type: Orchestrators &euro;789/agent/wk (highest &mdash; coordinate sub-agents, longer runs) &middot; Autonomous &euro;324/agent/wk &middot; Copilot &euro;318/agent/wk. Total weekly agent execution cost: &euro;50.6k = &euro;2.63M/year = 8% of total AI spend. Cost is derived from runs/agent/day &times; tokens/run by type &times; blended &euro;/token &mdash; not directly metered. LangFuse/LangSmith would replace this estimate with per-agent telemetry.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">Blended average across <span data-ct="agents.production">125</span> production agents. By type: Orchestrators &euro;789/agent/wk (highest &mdash; coordinate sub-agents, longer runs) &middot; Autonomous &euro;324/agent/wk &middot; Copilot &euro;318/agent/wk. Total weekly agent execution cost: &euro;50.6k = &euro;2.63M/year = 8% of total AI spend. Cost is derived from runs/agent/day &times; tokens/run by type &times; blended &euro;/token &mdash; not directly metered. LangFuse/LangSmith would replace this estimate with per-agent telemetry.</div>
     </div>
   </div>
 
@@ -1672,7 +1672,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 
   <div class="g2">
     <div>
-      <div class="sh">Cost / agent / week &mdash; by type (125 production agents)</div>
+      <div class="sh">Cost / agent / week &mdash; by type (<span data-ct="agents.production">125</span> production agents)</div>
       <div class="card">
         <div class="br"><div class="bl bl-n">Orchestrator (21 agents)</div><div class="bt"><div class="bf" style="width:100%;background:var(--amber)"></div></div><div class="bv">&euro;789</div></div>
         <div class="br"><div class="bl bl-n">Autonomous (39 agents)</div><div class="bt"><div class="bf" style="width:41%;background:var(--blue)"></div></div><div class="bv">&euro;324</div></div>
@@ -1683,8 +1683,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     <div>
       <div class="sh">Blended summary</div>
       <div class="card">
-        <div class="krow"><div style="flex:1"><div class="kname">Average across all production agents</div><div class="kdesc">Total weekly agent execution cost &divide; 125 agents</div></div><div style="text-align:right"><div class="kval" style="color:var(--purple)">&euro;405</div><div class="ktgt">per agent / week</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">Total weekly agent execution cost</div><div class="kdesc">Across all 125 production agents, all types</div></div><div style="text-align:right"><div class="kval">&euro;50.6k</div><div class="ktgt">per week</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Average across all production agents</div><div class="kdesc">Total weekly agent execution cost &divide; <span data-ct="agents.production">125</span> agents</div></div><div style="text-align:right"><div class="kval" style="color:var(--purple)">&euro;405</div><div class="ktgt">per agent / week</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Total weekly agent execution cost</div><div class="kdesc">Across all <span data-ct="agents.production">125</span> production agents, all types</div></div><div style="text-align:right"><div class="kval">&euro;50.6k</div><div class="ktgt">per week</div></div></div>
         <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Annualised</div><div class="kdesc">52 weeks &times; weekly total</div></div><div style="text-align:right"><div class="kval">&euro;2.63M</div><div class="ktgt">per year</div></div></div>
       </div>
     </div>
@@ -1701,7 +1701,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <tr><td class="b">L2C deal advisors</td><td><span class="tag t-p">Copilot</span></td><td class="r">12</td><td class="r">567</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;643</td><td class="r b">&euro;7.7k</td></tr>
         <tr><td class="b">Contract drafters</td><td><span class="tag t-p">Copilot</span></td><td class="r">9</td><td class="r">356</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;404</td><td class="r b">&euro;3.6k</td></tr>
         <tr><td class="b">ABAP code assists</td><td><span class="tag t-p">Copilot</span></td><td class="r">18</td><td class="r">244</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;277</td><td class="r b">&euro;5.0k</td></tr>
-        <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="6">Total / week (all 125 production agents)</td><td class="r b" style="color:var(--purple)">&euro;50.6k</td></tr>
+        <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="6">Total / week (all <span data-ct="agents.production">125</span> production agents)</td><td class="r b" style="color:var(--purple)">&euro;50.6k</td></tr>
       </tbody>
     </table>
   </div>
@@ -2100,7 +2100,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       <div class="ml">Policy compliance</div>
       <div class="mv">94%</div>
       <div class="md up">&#8593; 2pp MoM</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">94% of engineers have completed mandatory acceptable use training and operate within documented policy. The remaining 6% (~1,800) are either newly onboarded (30-day grace period) or flagged for follow-up. Up 2pp month-on-month. <strong style='color:var(--g700)'>Target: 98% by February audit.</strong> The 2% gap between now and target requires a targeted nudge campaign to the remaining engineers &mdash; L&amp;D has a list; scheduled for December.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">94% of engineers have completed mandatory acceptable use training and operate within documented policy. The remaining 6% (~1,800) are either newly onboarded (30-day grace period) or flagged for follow-up. Up 2pp month-on-month. <strong style='color:var(--g700)'>Target: 98% by the December audit.</strong> The 2% gap between now and target requires a targeted nudge campaign to the remaining engineers &mdash; L&amp;D has a list; scheduled for November.</div>
     </div>
     <div class="mc">
       <div class="ml">Open risk items</div>
@@ -2111,8 +2111,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     <div class="mc">
       <div class="ml">EU AI Act status</div>
       <div class="mv">On track</div>
-      <div class="md up">Audit Feb 2027</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)"><strong style="color:var(--g700)">EU AI Act &mdash; Two distinct deadlines (Digital Omnibus, Jun 16 2026):</strong><br><strong>&#9679; Aug 2, 2026 (ACTIVE NOW):</strong> Transparency duties + GPAI model enforcement active. All AI systems interacting with humans must disclose AI nature. GPAI providers must maintain technical documentation. <em>Applies to all Joule interactions and customer-facing agents.</em><br><strong>&#9679; Dec 2, 2027 (EXTENDED):</strong> High-risk standalone Annex III agent conformity assessments. Original Aug 2026 deadline pushed 15 months. Finance, HR, and presales agents under Annex III now have structured runway to Dec 2027.<br>8 of 18 assessments complete. Remaining 10 now plan for Dec 2027. <strong style="color:var(--g700)">Programme pivot: from audit sprint to embedded compliance process. Urgency reduced but not eliminated &mdash; Dec 2027 is 16 months away.</strong></div>
+      <div class="md up">Audit <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span></div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)"><strong style="color:var(--g700)">EU AI Act &mdash; Two distinct deadlines (Digital Omnibus, Jun 16 2026):</strong><br><strong>&#9679; Aug 2, 2026 (ACTIVE NOW):</strong> Transparency duties + GPAI model enforcement active. All AI systems interacting with humans must disclose AI nature. GPAI providers must maintain technical documentation. <em>Applies to all Joule interactions and customer-facing agents.</em><br><strong>&#9679; Dec 2, 2027 (EXTENDED):</strong> High-risk standalone Annex III agent conformity assessments. Original Aug 2026 deadline pushed 15 months. Finance, HR, and presales agents under Annex III now have structured runway to Dec 2027.<br>8 of 18 assessments complete. The remaining 10 are targeted before the 12 Dec 2026 external audit; the Dec 2027 statutory deadline is the fallback. <strong style="color:var(--g700)">Programme pivot: from audit sprint to embedded compliance process. The external audit on 12 Dec 2026 stays the nearest hard date; the statutory deadline gives a safety net, not a reason to slow down.</strong></div>
     </div>
     <div class="mc">
       <div class="ml">Data residency</div>
@@ -2161,7 +2161,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">EU data residency &mdash; BTP + Azure EU regions</div></div>
         <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">No Anthropic training on company data</div></div>
         <div class="ci"><div class="cico c-ok">&#10003;</div><div class="ct">Prompt injection defence (content isolation)</div></div>
-        <div class="ci"><div class="cico c-pt">~</div><div class="ct">Access graph per agent<div class="cs">Manual at 186 agents. Automated graph Q1 2027.</div></div></div>
+        <div class="ci"><div class="cico c-pt">~</div><div class="ct">Access graph per agent<div class="cs">Manual at <span data-ct="agents.total">186</span> agents. Automated graph Q1 2027.</div></div></div>
         <div class="ci"><div class="cico c-pt">~</div><div class="ct">Step-level agent audit log<div class="cs">Session-level only. Full logs needed at 44,800 runs/day.</div></div></div>
         <div class="ci"><div class="cico c-no">&#10007;</div><div class="ct">Real-time access anomaly detection<div class="cs">Critical gap at 44,800 runs/day. Q1 2027 priority.</div></div></div>
         <div class="ci"><div class="cico c-no">&#10007;</div><div class="ct">JIT privilege elevation<div class="cs">Agents hold standing permissions. JIT roadmap Q2 2027.</div></div></div>
@@ -2171,10 +2171,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     <div>
       <div class="sh">Compliance milestones</div>
       <div class="card">
-        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-a">Dec 2026</span></div><div><div class="sname">HITL gates &mdash; all finance agents</div><div class="sdesc">Mandatory. Blocks Q1 2027 EU AI Act submission. Escalated.</div></div></div>
-        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-a">Dec 2026</span></div><div><div class="sname">Overprivileged agent remediation (31 agents)</div><div class="sdesc">All scoped to least-privilege. CISO sign-off required.</div></div></div>
-        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-a">Jan 2027</span></div><div><div class="sname">Step-level audit log (all 186 agents)</div><div class="sdesc">Required for high-risk conformity assessment.</div></div></div>
-        <div class="srow" style="border:none"><div style="flex-shrink:0;width:74px"><span class="tag t-b">Feb 2027</span></div><div><div class="sname">EU AI Act external audit (18 high-risk)</div><div class="sdesc">CISO + Legal lead. Target: no major findings.</div></div></div>
+        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-a">Dec 2026</span></div><div><div class="sname">HITL gates &mdash; all finance agents</div><div class="sdesc">Mandatory. Blocks the 12 Dec 2026 EU AI Act audit. Escalated.</div></div></div>
+        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-a">Dec 2026</span></div><div><div class="sname">Overprivileged agent remediation (<span data-ct="agents.overprivileged">31</span> agents)</div><div class="sdesc">All scoped to least-privilege. CISO sign-off required.</div></div></div>
+        <div class="srow"><div style="flex-shrink:0;width:74px"><span class="tag t-b">12 Dec</span></div><div><div class="sname">EU AI Act external audit (18 high-risk)</div><div class="sdesc">CISO + Legal lead. Target: no major findings.</div></div></div>
+        <div class="srow" style="border:none"><div style="flex-shrink:0;width:74px"><span class="tag t-a">Jan 2027</span></div><div><div class="sname">Step-level audit log (all <span data-ct="agents.total">186</span> agents)</div><div class="sdesc">Follows the audit; required for ongoing conformity.</div></div></div>
       </div>
 
       <div class="sh">Hallucination incident log (last 30 days, 14 total)</div>
@@ -2191,7 +2191,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 {
   "meta": {
     "version": 1,
-    "note": "Illustrative sample data. Source of truth for the AI Control Tower space; embedded into index.html by `npm run sync:control-tower`.",
+    "note": "Illustrative sample data. Source of truth for the AI Control Tower space; embedded into index.html by `npm run sync:control-tower`. The budget rows for Data & AI Platform and Legal & Compliance are assumed values added so that team rows add up to the stated ceiling and actual.",
     "riskThresholdPct": 40
   },
   "risks": [
@@ -2279,15 +2279,15 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
       "id": "R6",
       "severity": "medium",
       "title": "EU AI Act — 18 high-risk agents",
-      "description": "18 agents require conformity assessment before Feb 2027 audit. 10 outstanding.",
+      "description": "18 agents require conformity assessment before the 12 Dec 2026 audit. 10 outstanding.",
       "owner": "General Counsel",
       "ownerTeam": "Legal & Compliance",
-      "eta": "Feb 2027",
-      "etaTone": "blue",
+      "eta": "12 Dec 2026",
+      "etaTone": "amber",
       "progressPct": 44,
       "progressColor": "purple",
       "progressNote": "8 of 18 assessments complete",
-      "action": "External assessor engaged. Remaining 10 scheduled Dec–Jan. Audit prep kicked off.",
+      "action": "External assessor engaged. Remaining 10 scheduled Nov–early Dec. Audit prep kicked off.",
       "tile": "EU AI Act assessments outstanding (10/18)",
       "short": "EU AI Act"
     },
@@ -2468,8 +2468,30 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
         "budgetK": 182,
         "utilisationPct": 46,
         "color": "green"
+      },
+      {
+        "name": "Data & AI Platform",
+        "budgetK": 600,
+        "utilisationPct": 19,
+        "color": "purple"
+      },
+      {
+        "name": "Legal & Compliance",
+        "budgetK": 98,
+        "utilisationPct": 40,
+        "color": "green"
       }
     ]
+  },
+  "compliance": {
+    "euAiAct": {
+      "auditDate": "2026-12-12",
+      "auditLabel": "12 Dec 2026",
+      "auditShort": "Dec '26",
+      "total": 18,
+      "complete": 8,
+      "outstanding": 10
+    }
   }
 }
 </script>
@@ -2561,8 +2583,20 @@ function renderBudget(){
       +'<div class="bv"'+(over?' style="color:var(--red)"':'')+'>'+Number(g.utilisationPct)+'%</div></div>';
   }).join('');
 }
+// Facts that appear in running text: <span data-ct="path">…</span> is filled from the embedded data.
+function resolveCT(path){
+  if(path==='derived.highRisks') return CT.risks.filter(function(r){return r.severity==='high';}).length;
+  return path.split('.').reduce(function(o,k){return o==null?o:o[k];},CT);
+}
+function bindFacts(){
+  document.querySelectorAll('[data-ct]').forEach(function(el){
+    var v=resolveCT(el.getAttribute('data-ct'));
+    if(v!==undefined&&v!==null) el.textContent=String(v);
+  });
+}
 renderAgents();
 renderBudget();
+bindFacts();
 </script>
 <script>
 function go(id,btn){
@@ -2710,7 +2744,7 @@ wireExpandGrid('dim-cards-grid', 1, 'rgba(161,0,255,0.18)');
       <div class="ml">Policies published</div>
       <div class="mv">3/8</div>
       <div class="md warn">5 in draft or not started</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">3 of 8 planned AI governance policies fully published: AI Acceptable Use Policy, Data Classification Policy (AI), and AI Model Access Policy. Remaining 5: EU AI Act Compliance Framework (60% complete &mdash; critical path to February audit) &middot; AI Incident Response Procedure (draft) &middot; Third-Party AI Vendor Policy (draft) &middot; AI Ethics Framework (not started) &middot; AI Audit &amp; Review Policy (not started). Full policy suite target: Q2 2027.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">3 of 8 planned AI governance policies fully published: AI Acceptable Use Policy, Data Classification Policy (AI), and AI Model Access Policy. Remaining 5: EU AI Act Compliance Framework (60% complete &mdash; critical path to December audit) &middot; AI Incident Response Procedure (draft) &middot; Third-Party AI Vendor Policy (draft) &middot; AI Ethics Framework (not started) &middot; AI Audit &amp; Review Policy (not started). Full policy suite target: Q2 2027.</div>
     </div>
     <div class="mc">
       <div class="ml">Vendor DPAs signed</div>
@@ -2722,7 +2756,7 @@ wireExpandGrid('dim-cards-grid', 1, 'rgba(161,0,255,0.18)');
       <div class="ml">Training completion</div>
       <div class="mv">67%</div>
       <div class="md warn">mandatory AI basics course</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">67% of licensed engineers completed the mandatory Prompt Engineering Basics course (2h). By course: Acceptable Use 84% &middot; Prompt Engineering 67% &middot; EU AI Act Awareness 58% &middot; Agent Safety &amp; Governance 41%. <strong style="color:var(--g700)">Agent Safety at 41% is critically below target &mdash; 600 agent developers must reach 90% before the February EU AI Act audit.</strong> At current pace (12%/month) we reach 68% by audit date. Escalation required to L&amp;D and team leads.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">67% of licensed engineers completed the mandatory Prompt Engineering Basics course (2h). By course: Acceptable Use 84% &middot; Prompt Engineering 67% &middot; EU AI Act Awareness 58% &middot; Agent Safety &amp; Governance 41%. <strong style="color:var(--g700)">Agent Safety at 41% is critically below target &mdash; 600 agent developers must reach 90% before the 12 December EU AI Act audit.</strong> At current pace (12%/month) we reach 63% by audit date. Escalation required to L&amp;D and team leads.</div>
     </div>
     <div class="mc">
       <div class="ml">RACI defined</div>
@@ -2738,9 +2772,9 @@ wireExpandGrid('dim-cards-grid', 1, 'rgba(161,0,255,0.18)');
     </div>
     <div class="mc">
       <div class="ml">Next audit</div>
-      <div class="mv">Feb 2027</div>
+      <div class="mv"><span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span></div>
       <div class="md dn">EU AI Act &mdash; external</div>
-      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">EU AI Act external audit covers 18 high-risk agents, conformity assessment documentation, training records and governance policy evidence. Prep timeline: 10 outstanding assessments complete by end of January &rarr; document pack ready 1 February &rarr; audit starts second week of February. <strong style="color:var(--g700)">Non-compliance: mandatory remediation orders + potential fines under Article 71 + reputational risk for the SAP partnership.</strong> Board must be briefed no later than January.</div>
+      <div style="font-size:11px;color:var(--g500);line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid var(--g100)">EU AI Act external audit covers 18 high-risk agents, conformity assessment documentation, training records and governance policy evidence. Prep timeline: 10 outstanding assessments complete by 30 November &rarr; document pack ready 4 December &rarr; audit on 12 December. <strong style="color:var(--g700)">Non-compliance: mandatory remediation orders + potential fines under Article 71 + reputational risk for the SAP partnership.</strong> Board must be briefed no later than mid-November.</div>
     </div>
   </div>
 
@@ -2770,8 +2804,8 @@ wireExpandGrid('dim-cards-grid', 1, 'rgba(161,0,255,0.18)');
         <tr>
           <td class="b">EU AI Act Compliance Framework</td><td style="font-size:11px">Legal / Compliance</td>
           <td><span class="tag t-a">In progress — 60%</span></td>
-          <td style="font-family:var(--mono);font-size:11px">—</td><td style="font-family:var(--mono);font-size:11px">Jan 2027</td>
-          <td style="font-size:11px;color:var(--g500)">Risk classification complete. Conformity assessment process in drafting. Blocks Feb audit.</td>
+          <td style="font-family:var(--mono);font-size:11px">—</td><td style="font-family:var(--mono);font-size:11px">Nov 2026</td>
+          <td style="font-size:11px;color:var(--g500)">Risk classification complete. Conformity assessment process in drafting. Blocks the December audit.</td>
         </tr>
         <tr>
           <td class="b">AI Incident Response Procedure</td><td style="font-size:11px">CISO</td>
