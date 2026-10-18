@@ -9,6 +9,7 @@ type Props = {
   onNew: () => void;
   onArchive: (id: string) => void;
   onRestore: (id: string) => void;
+  onDelete: (id: string) => void;
 };
 
 type ContextMenu = { id: string; archived: boolean; x: number; y: number };
@@ -21,12 +22,18 @@ export default function ConversationList({
   onNew,
   onArchive,
   onRestore,
+  onDelete,
 }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [menu, setMenu] = useState<ContextMenu | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const active = conversations.filter((conversation) => !conversation.archived);
   const archived = conversations.filter((conversation) => conversation.archived);
+
+  useEffect(() => {
+    setConfirmDelete(false);
+  }, [menu]);
 
   useEffect(() => {
     if (!menu) return;
@@ -50,7 +57,7 @@ export default function ConversationList({
       id: conversation.id,
       archived: conversation.archived,
       x: Math.min(x, window.innerWidth - 202),
-      y: Math.min(y, window.innerHeight - 62),
+      y: Math.min(y, window.innerHeight - 100),
     });
   }
 
@@ -152,6 +159,20 @@ export default function ConversationList({
             }}
           >
             {menu.archived ? 'Restore conversation' : 'Archive conversation'}
+          </button>
+          <button
+            className={`context-menu-item ${confirmDelete ? 'context-menu-item-danger' : ''}`}
+            role="menuitem"
+            onClick={() => {
+              if (!confirmDelete) {
+                setConfirmDelete(true);
+                return;
+              }
+              onDelete(menu.id);
+              setMenu(null);
+            }}
+          >
+            {confirmDelete ? 'Click again to delete for good' : 'Delete conversation'}
           </button>
         </div>
       )}

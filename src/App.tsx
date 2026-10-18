@@ -9,6 +9,7 @@ import {
 import type { ChatAttachment } from './attachments';
 import {
   archiveConversation as archiveConversationState,
+  deleteConversation as deleteConversationState,
   createConversation,
   loadConversationState,
   restoreConversation as restoreConversationState,
@@ -556,6 +557,20 @@ export default function App() {
     }
   }
 
+  function deleteConversation(id: string) {
+    if (busy) return;
+    const replacement = createConversation();
+    const deletingSelected = id === conversationState.selectedId;
+    const nextSelected = conversationState.items.find(
+      (conversation) => conversation.id !== id && !conversation.archived
+    ) ?? replacement;
+    setConversationState((state) => deleteConversationState(state, id, replacement));
+    if (deletingSelected) {
+      needsHistoryGrounding.current = true;
+      resetConversationSurface(nextSelected.files);
+    }
+  }
+
   function restoreConversation(id: string) {
     if (busy) return;
     const conversation = conversationState.items.find((item) => item.id === id);
@@ -586,6 +601,7 @@ export default function App() {
           onNew={newConversation}
           onArchive={archiveConversation}
           onRestore={restoreConversation}
+          onDelete={deleteConversation}
         />
       )}
       {view === 'spaces' && (
@@ -600,6 +616,7 @@ export default function App() {
           onNew={newConversation}
           onArchive={archiveConversation}
           onRestore={restoreConversation}
+          onDelete={deleteConversation}
         />
       )}
 
