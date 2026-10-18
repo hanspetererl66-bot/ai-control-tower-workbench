@@ -91,3 +91,23 @@ test('example skills have valid frontmatter, use only real connector tools, and 
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('skill marketplace data is in sync, classified, and marks fictional skills as samples', async () => {
+  const { embeddedData, embedData, repoSkills, buildCatalog, taxonomy } = await import('../scripts/sync-skill-marketplace.mjs');
+  const { LOBS, SCOPES, BOARD_AREAS } = await import('../scripts/skills-registry.mjs');
+  const html = readFileSync(join(ROOT, 'examples/skill-marketplace/index.html'), 'utf8');
+  const samples = JSON.parse(readFileSync(join(ROOT, 'examples/skill-marketplace/sample-skills.json'), 'utf8')).skills;
+  const data = embeddedData(html);
+  const next = buildCatalog({ registered: repoSkills(), samples, source: 'repository', asOf: data.asOf });
+  assert.equal(embedData(html, next), html, 'run npm run sync:skill-marketplace');
+  assert.deepEqual(data.taxonomy, JSON.parse(JSON.stringify(taxonomy())));
+  assert.equal(data.skills.filter((s) => !s.sample).length, 3);
+  assert.ok(data.skills.filter((s) => s.sample).length >= 8);
+  for (const s of data.skills) {
+    assert.ok(SCOPES.includes(s.scope), `${s.name} scope`);
+    if (s.boardArea) assert.ok(BOARD_AREAS.includes(s.boardArea), `${s.name} board area`);
+    if (s.lob) assert.equal(LOBS[s.lob], s.boardArea, `${s.name}: LOB belongs to its board area`);
+    if (s.scope === 'team') assert.ok(s.team, `${s.name} needs a team`);
+  }
+  for (const area of BOARD_AREAS) assert.ok(data.skills.some((s) => s.boardArea === area), `${area} has a skill`);
+});

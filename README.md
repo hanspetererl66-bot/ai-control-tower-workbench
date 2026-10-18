@@ -232,6 +232,23 @@ metadata:
 - **Maturity:** new and changed skills start as `pilot`; curators mark good ones with `npm run skills -- recommend <name>`.
 - The tool dependencies are stored as rows in `skills.skill_tool`; they become the edges of the knowledge graph in stage 2.
 
+### Skill marketplace overview: board areas, LOBs, teams, individual
+
+Every skill profile can carry a classification in the `metadata:` block of its `SKILL.md`:
+`board-area` (Finance, Sales, Marketing, Engineering), `lob` (BTP, Concur, SuccessFactors; all belong to Engineering),
+`team` (free text) and `scope`, the reach of the skill: `individual` → `team` → `lob` → `board-area` → `company`.
+A skill without a scope counts as `individual`; a team scope needs a team, a LOB scope a LOB. Apply migration `009`
+(only function bodies change) before publishing skills with the new fields; changed skills go back to draft and need
+`npm run skills -- approve <name>` again.
+
+- **Space "Skill Marketplace":** `npm run install:skill-marketplace` installs it (overview by board area, LOB and team, catalog with filters,
+  hints on possible duplicates and gaps). `npm run sync:skill-marketplace` embeds the example skills of the repository;
+  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` embeds the approved skills of the registry.
+  Skills tagged **Sample** are fictional and only show the structure.
+- **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
+- **Knowledge graph later:** board area, LOB, team, scope and the tool rows in `skills.skill_tool` are the nodes and edges of stage 2;
+  nothing here has to be migrated away.
+
 ### Asking the chat about the Sub4Me Space
 
 The connector `ai-control-tower` (0.7.0) also answers questions about the Sub4Me example Space with `list_contracts`

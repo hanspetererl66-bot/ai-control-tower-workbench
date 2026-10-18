@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Skill Marketplace</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font)}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.02em}.logo b{color:var(--brand)}
+.cust{margin-left:auto;text-align:right;font-size:12px;color:var(--mut)}.cust strong{display:block;color:var(--ink);font-size:13px}
+.demo{background:var(--warn-dim);color:var(--warn);font-size:12px;padding:6px 20px;border-bottom:1px solid var(--line)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--mut);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--brand)}
+main{padding:20px;max-width:1180px;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+.k{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.v{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.s{font-size:12px;color:var(--mut)}
+h2{font-size:15px;margin:22px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.t-ok{background:var(--ok-dim);color:var(--ok)}.t-warn{background:var(--warn-dim);color:var(--warn)}.t-bad{background:var(--bad-dim);color:var(--bad)}.t-n{background:var(--brand-dim);color:var(--brand)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.bar i.warn{background:var(--warn)}.bar i.bad{background:var(--bad)}
+.months{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:10px}
+.months div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%;font-size:11px;color:var(--mut)}
+.months span{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
+.months div.cur span{opacity:.55}
+form{display:grid;gap:10px;max-width:640px}
+label{font-size:12px;font-weight:600;color:var(--mut);display:grid;gap:4px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;justify-self:start}
+.toast{margin:12px 0;padding:10px 12px;border-radius:6px;background:var(--ok-dim);color:var(--ok);display:none}
+.toast.on{display:block}
+.row{display:flex;gap:14px;flex-wrap:wrap}.row>*{flex:1 1 320px}
+@media(max-width:600px){main{padding:14px}}
+</style>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme; colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+@media (prefers-color-scheme:dark){:root{
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){button.primary{color:#1a0a2b}}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+</style>
+<style id="sm-page">
+.s4m .tools{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.s4m .chip{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--line-2);color:var(--muted)}
+.s4m .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center}
+.s4m .filters input[type=search]{flex:1 1 220px;min-width:160px}
+.s4m .filters label.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.s4m .skills{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.s4m .skills .card h3{margin:0 0 4px;font-size:14px;font-weight:600}
+.s4m .skills .card p{margin:8px 0 0;color:var(--ink);line-height:1.55}
+.s4m .skills .card .trail{font-size:12px;color:var(--muted)}
+.s4m .skills .card .row2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.s4m .tree td.l1{padding-left:34px}.s4m .tree td.l2{padding-left:58px}
+.s4m .tree tr.top td{font-weight:600}
+.s4m .ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.s4m .ladder>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.s4m .ladder .v{font-size:20px;margin:0}
+.s4m .empty{padding:18px;color:var(--muted)}
+.s4m .hint{padding:12px 0;border-bottom:1px solid var(--line-2)}
+.s4m .hint:last-child{border-bottom:0}
+@media(max-width:640px){.s4m .ladder{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+</head>
+<body class="s4m">
+<header>
+  <div class="logo">Skill <b>Marketplace</b></div>
+  <div class="s">Shared skill registry &middot; board areas, LOBs, teams, individual</div>
+  <div class="cust"><strong id="hdr-count"></strong><span id="hdr-meta"></span></div>
+</header>
+<div class="demo">Demo data: skills marked <b>Sample</b> are fictional and only illustrate the structure. <span id="source-note"></span></div>
+<nav role="tablist" id="tabs">
+  <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+  <button role="tab" data-tab="catalog" aria-selected="false">Catalog</button>
+  <button role="tab" data-tab="hints" aria-selected="false">Hints</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-overview">
+    <div class="grid" id="kpis"></div>
+    <h2>Reach: from individual to company-wide</h2><div class="card" id="ladder"></div>
+    <h2>By board area, LOB and team</h2><div class="card tbl" id="tree"></div>
+    <h2>Individual skills by owner</h2><div class="card tbl" id="individual"></div>
+  </section>
+  <section class="pg" id="pg-catalog">
+    <div class="filters">
+      <input type="search" id="f-q" placeholder="Search name, description, tool" aria-label="Search">
+      <select id="f-area" aria-label="Board area"></select>
+      <select id="f-lob" aria-label="LOB"></select>
+      <select id="f-team" aria-label="Team"></select>
+      <select id="f-scope" aria-label="Reach"></select>
+      <label class="chk"><input type="checkbox" id="f-sample" checked> Show sample skills</label>
+    </div>
+    <div class="s" id="catalog-count" style="margin-bottom:12px"></div>
+    <div class="skills" id="skills"></div>
+  </section>
+  <section class="pg" id="pg-hints">
+    <div class="card" id="hints"></div>
+  </section>
+</main>
+<script type="application/json" id="sm-data">
+{
+  "asOf": "2026-10-18",
+  "source": "repository",
+  "taxonomy": {
+    "boardAreas": [
+      "Finance",
+      "Sales",
+      "Marketing",
+      "Engineering"
+    ],
+    "lobs": {
+      "BTP": "Engineering",
+      "Concur": "Engineering",
+      "SuccessFactors": "Engineering"
+    },
+    "scopes": [
+      "individual",
+      "team",
+      "lob",
+      "board-area",
+      "company"
+    ]
+  },
+  "skills": [
+    {
+      "name": "board-briefing",
+      "description": "Erstellt ein einseitiges Board-Briefing auf Deutsch aus den AI-Control-Tower-Daten (Risiken, Agenten, Budget, EU-AI-Act-Audit). Nutzen bei \"Board-Briefing\", \"Management Summary\", \"Lagebild AI Control Tower\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Governance & Risiko",
+      "process": "Board-Reporting",
+      "boardArea": "",
+      "lob": "",
+      "team": "AI Programme Office",
+      "scope": "company",
+      "dataClass": "intern",
+      "tools": [
+        "get_risks",
+        "get_agent_overview",
+        "get_overprivileged_agents",
+        "get_budget",
+        "list_agents"
+      ],
+      "sample": false
+    },
+    {
+      "name": "skill-finder",
+      "description": "Prüft vor dem Bauen eines neuen Skills, ob es im gemeinsamen Skill-Register schon einen passenden gibt. Nutzen bei \"gibt es einen Skill für\", \"Skill bauen\", \"neuen Skill entwickeln\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Entwicklung",
+      "process": "Skill-Entwicklung",
+      "boardArea": "",
+      "lob": "",
+      "team": "AI Programme Office",
+      "scope": "company",
+      "dataClass": "öffentlich",
+      "tools": [
+        "search_skills",
+        "get_skill_info"
+      ],
+      "sample": false
+    },
+    {
+      "name": "ticket-writer",
+      "description": "Macht aus einer kurzen Problembeschreibung ein sauberes Sub4Me-Serviceticket (Titel, Produkt, Priorität, Beschreibung) und legt es nach Bestätigung an. Nutzen bei \"Ticket eröffnen\", \"Störung melden\", \"Sub4Me Ticket\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Service & Support",
+      "process": "Serviceticket anlegen",
+      "boardArea": "Engineering",
+      "lob": "SuccessFactors",
+      "team": "AI Programme Office",
+      "scope": "lob",
+      "dataClass": "intern",
+      "tools": [
+        "list_tickets",
+        "create_ticket"
+      ],
+      "sample": false
+    },
+    {
+      "name": "expense-check",
+      "description": "Prüft Reisekostenabrechnungen gegen die Reiserichtlinie und markiert Auffälligkeiten.",
+      "owner": "M. Weber",
+      "version": 3,
+      "maturity": "empfohlen",
+      "domain": "Finanzen",
+      "process": "Reisekosten prüfen",
+      "boardArea": "Finance",
+      "lob": "",
+      "team": "Group Accounting",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [],
+      "sample": true
+    },
+    {
+      "name": "invoice-matcher",
+      "description": "Gleicht Eingangsrechnungen mit Bestellungen und Wareneingängen ab.",
+      "owner": "K. Roth",
+      "version": 2,
+      "maturity": "empfohlen",
+      "domain": "Finanzen",
+      "process": "Rechnungsprüfung",
+      "boardArea": "Finance",
+      "lob": "",
+      "team": "Accounts Payable",
+      "scope": "board-area",
+      "dataClass": "vertraulich",
+      "tools": [],
+      "sample": true
+    },
+    {
+      "name": "renewal-radar",
+      "description": "Zeigt anstehende Vertragsverlängerungen und offene Angebote mit Fristen.",
+      "owner": "A. Hoffmann",
+      "version": 2,
+      "maturity": "empfohlen",
+      "domain": "Service & Support",
+      "process": "Renewal-Management",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Account Management",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [
+        "list_contracts",
+        "list_offers"
+      ],
+      "sample": true
+    },
+    {
+      "name": "quote-drafter",
+      "description": "Entwirft Angebotstexte aus Vertrags- und Angebotsdaten.",
+      "owner": "J. Becker",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Service & Support",
+      "process": "Angebotserstellung",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "",
+      "scope": "individual",
+      "dataClass": "intern",
+      "tools": [
+        "list_contracts",
+        "list_offers"
+      ],
+      "sample": true
+    },
+    {
+      "name": "campaign-brief",
+      "description": "Erstellt aus Stichpunkten ein Kampagnen-Briefing mit Zielgruppe und Kernbotschaft.",
+      "owner": "L. Neumann",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Sonstiges",
+      "process": "Kampagnenplanung",
+      "boardArea": "Marketing",
+      "lob": "",
+      "team": "Content Team",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [],
+      "sample": true
+    },
+    {
+      "name": "social-post-checker",
+      "description": "Prüft Beiträge auf Tonalität und Markenrichtlinien vor der Veröffentlichung.",
+      "owner": "S. Lang",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Sonstiges",
+      "process": "Content-Freigabe",
+      "boardArea": "Marketing",
+      "lob": "",
+      "team": "",
+      "scope": "individual",
+      "dataClass": "öffentlich",
+      "tools": [],
+      "sample": true
+    },
+    {
+      "name": "btp-quota-watch",
+      "description": "Überwacht AI-Kontingente auf BTP und eröffnet bei Engpässen ein Ticket.",
+      "owner": "P. Vogel",
+      "version": 2,
+      "maturity": "empfohlen",
+      "domain": "Betrieb",
+      "process": "Kapazitätsüberwachung",
+      "boardArea": "Engineering",
+      "lob": "BTP",
+      "team": "Platform Operations",
+      "scope": "lob",
+      "dataClass": "intern",
+      "tools": [
+        "get_ai_consumption",
+        "create_ticket"
+      ],
+      "sample": true
+    },
+    {
+      "name": "concur-receipt-audit",
+      "description": "Stichprobenprüfung von Belegen in Concur auf fehlende Angaben.",
+      "owner": "H. Schulz",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Finanzen",
+      "process": "Belegprüfung",
+      "boardArea": "Engineering",
+      "lob": "Concur",
+      "team": "Concur Delivery",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [],
+      "sample": true
+    },
+    {
+      "name": "sf-job-text-reviewer",
+      "description": "Prüft Stellenausschreibungen aus SuccessFactors auf Sprache und Inklusivität.",
+      "owner": "E. Braun",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "HR",
+      "process": "Stellenausschreibung",
+      "boardArea": "Engineering",
+      "lob": "SuccessFactors",
+      "team": "SF Talent Squad",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [],
+      "sample": true
+    },
+    {
+      "name": "release-notes-writer",
+      "description": "Schreibt Release Notes aus Commit-Historie und Tickets.",
+      "owner": "D. Krüger",
+      "version": 4,
+      "maturity": "empfohlen",
+      "domain": "Entwicklung",
+      "process": "Release-Kommunikation",
+      "boardArea": "Engineering",
+      "lob": "",
+      "team": "Developer Experience",
+      "scope": "board-area",
+      "dataClass": "öffentlich",
+      "tools": [
+        "list_tickets"
+      ],
+      "sample": true
+    },
+    {
+      "name": "my-sprint-digest",
+      "description": "Fasst den Sprintstand für die tägliche Abstimmung zusammen.",
+      "owner": "T. Klein",
+      "version": 1,
+      "maturity": "pilot",
+      "domain": "Entwicklung",
+      "process": "Sprint-Reporting",
+      "boardArea": "Engineering",
+      "lob": "BTP",
+      "team": "",
+      "scope": "individual",
+      "dataClass": "intern",
+      "tools": [
+        "list_tickets"
+      ],
+      "sample": true
+    }
+  ]
+}
+</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('sm-data').textContent);
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var tag = function(cls, text){ return '<span class="tag t-' + cls + '">' + esc(text) + '</span>'; };
+  var SCOPE_LABEL = {'individual': 'Individual', 'team': 'Team', 'lob': 'LOB', 'board-area': 'Board area', 'company': 'Company'};
+  var UNSORTED = 'Not classified';
+  var showSample = true;
+  var pool = function(){ return D.skills.filter(function(s){ return showSample || !s.sample; }); };
+  var count = function(list, fn){ return list.filter(fn).length; };
+
+  $('hdr-count').textContent = D.skills.filter(function(s){ return !s.sample; }).length + ' registered skills';
+  $('hdr-meta').textContent = D.source === 'registry' ? 'live from the registry · ' + D.asOf : 'repository profiles · ' + D.asOf;
+  $('source-note').textContent = D.source === 'registry' ? 'Registered skills come from the shared registry (approved only).' : 'Registered skills are read from the example skills in the repository.';
+
+  function renderOverview(){
+    var list = pool();
+    $('kpis').innerHTML = [
+      ['Skills', list.length, count(list, function(s){ return s.maturity === 'empfohlen'; }) + ' recommended'],
+      ['Company-wide', count(list, function(s){ return s.scope === 'company'; }), 'available to everyone'],
+      ['Team, LOB or board area', count(list, function(s){ return ['team', 'lob', 'board-area'].indexOf(s.scope) >= 0; }), 'shared inside the organisation'],
+      ['Individual', count(list, function(s){ return s.scope === 'individual'; }), 'not yet promoted']
+    ].map(function(k){ return '<div class="card"><div class="k">' + k[0] + '</div><div class="v">' + k[1] + '</div><div class="s">' + k[2] + '</div></div>'; }).join('');
+    $('ladder').innerHTML = '<div class="s">A skill starts as individual. Promotion to the next level needs a review by that level.</div><div class="ladder">' +
+      D.taxonomy.scopes.map(function(sc){ return '<div><div class="k">' + SCOPE_LABEL[sc] + '</div><div class="v">' + count(list, function(s){ return s.scope === sc; }) + '</div></div>'; }).join('') + '</div>';
+
+    var rows = [];
+    D.taxonomy.boardAreas.concat([UNSORTED]).forEach(function(area){
+      var inArea = list.filter(function(s){ return (s.boardArea || UNSORTED) === area && s.scope !== 'company'; });
+      if (area === UNSORTED && !inArea.length) return;
+      rows.push('<tr class="top"><td>' + esc(area) + '</td><td class="num">' + inArea.length + '</td><td>' + (inArea.length ? '' : tag('n', 'no skills')) + '</td></tr>');
+      var lobs = Object.keys(D.taxonomy.lobs).filter(function(l){ return D.taxonomy.lobs[l] === area; });
+      lobs.forEach(function(lob){
+        var inLob = inArea.filter(function(s){ return s.lob === lob; });
+        rows.push('<tr><td class="l1">' + esc(lob) + '</td><td class="num">' + inLob.length + '</td><td>' + (inLob.length ? '' : tag('n', 'no skills')) + '</td></tr>');
+        var teams = {}; inLob.forEach(function(s){ if (s.team) teams[s.team] = (teams[s.team] || 0) + 1; });
+        Object.keys(teams).sort().forEach(function(t){ rows.push('<tr><td class="l2">' + esc(t) + '</td><td class="num">' + teams[t] + '</td><td></td></tr>'); });
+      });
+      var rest = inArea.filter(function(s){ return !s.lob; }), teams2 = {};
+      rest.forEach(function(s){ if (s.team) teams2[s.team] = (teams2[s.team] || 0) + 1; });
+      Object.keys(teams2).sort().forEach(function(t){ rows.push('<tr><td class="l1">' + esc(t) + '</td><td class="num">' + teams2[t] + '</td><td></td></tr>'); });
+    });
+    var company = list.filter(function(s){ return s.scope === 'company'; });
+    rows.push('<tr class="top"><td>Company-wide</td><td class="num">' + company.length + '</td><td></td></tr>');
+    $('tree').innerHTML = '<table class="tree"><thead><tr><th>Board area / LOB / team</th><th class="num">Skills</th><th></th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+
+    var owners = {}; list.filter(function(s){ return s.scope === 'individual'; }).forEach(function(s){ var o = s.owner || 'unknown'; (owners[o] = owners[o] || []).push(s.name); });
+    var keys = Object.keys(owners).sort();
+    $('individual').innerHTML = keys.length ? '<table><thead><tr><th>Owner</th><th class="num">Skills</th><th>Skills</th></tr></thead><tbody>' + keys.map(function(o){ return '<tr><td><b>' + esc(o) + '</b></td><td class="num">' + owners[o].length + '</td><td>' + owners[o].map(function(n){ return '<span class="chip">' + esc(n) + '</span>'; }).join(' ') + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">No individual skills.</div>';
+  }
+
+  function opts(sel, label, values){ sel.innerHTML = '<option value="">' + label + '</option>' + values.map(function(v){ return '<option value="' + esc(v[0]) + '">' + esc(v[1]) + '</option>'; }).join(''); }
+  function setupFilters(){
+    opts($('f-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
+    opts($('f-lob'), 'All LOBs', Object.keys(D.taxonomy.lobs).map(function(l){ return [l, l]; }));
+    var teams = {}; D.skills.forEach(function(s){ if (s.team) teams[s.team] = 1; });
+    opts($('f-team'), 'All teams', Object.keys(teams).sort().map(function(t){ return [t, t]; }));
+    opts($('f-scope'), 'All reach levels', D.taxonomy.scopes.map(function(s){ return [s, SCOPE_LABEL[s]]; }));
+    ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
+    $('f-sample').addEventListener('change', function(){ showSample = $('f-sample').checked; renderAll(); });
+  }
+  function renderCatalog(){
+    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value;
+    var list = pool().filter(function(s){
+      return (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) &&
+        (!q || (s.name + ' ' + s.description + ' ' + s.process + ' ' + s.tools.join(' ')).toLowerCase().indexOf(q) >= 0);
+    });
+    $('catalog-count').textContent = list.length + ' of ' + pool().length + ' skills';
+    $('skills').innerHTML = list.length ? list.map(function(s){
+      var trail = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' › ');
+      return '<div class="card"><h3>' + esc(s.name) + '</h3><div class="trail">' + esc(trail) + '</div>' +
+        '<div class="row2">' + tag(s.scope === 'individual' ? 'n' : 'ok', SCOPE_LABEL[s.scope] || s.scope) + (s.maturity === 'empfohlen' ? tag('ok', 'Recommended') : tag('n', 'Pilot')) + (s.sample ? tag('warn', 'Sample') : '') + '</div>' +
+        '<p>' + esc(s.description) + '</p>' +
+        '<div class="s" style="margin-top:8px">' + esc(s.domain || '') + (s.process ? ' · ' + esc(s.process) : '') + (s.dataClass ? ' · ' + esc(s.dataClass) : '') + '</div>' +
+        '<div class="s">Owner ' + esc(s.owner || '–') + ' · v' + esc(s.version || 1) + '</div>' +
+        (s.tools.length ? '<div class="tools">' + s.tools.map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' : '') + '</div>';
+    }).join('') : '<div class="card empty">No skill matches these filters.</div>';
+  }
+
+  function renderHints(){
+    var list = pool(), out = [];
+    for (var i = 0; i < list.length; i++){ for (var j = i + 1; j < list.length; j++){
+      var shared = list[i].tools.filter(function(t){ return list[j].tools.indexOf(t) >= 0; });
+      if (shared.length >= 2) out.push({tone: 'warn', title: 'Possible duplicate: ' + list[i].name + ' and ' + list[j].name, text: 'Both use ' + shared.join(', ') + '. Check whether one of them can be a variant of the other.'});
+    } }
+    D.taxonomy.boardAreas.forEach(function(a){ if (!list.some(function(s){ return s.boardArea === a; })) out.push({tone: 'n', title: 'Gap: ' + a, text: 'No skill is registered for this board area yet.'}); });
+    Object.keys(D.taxonomy.lobs).forEach(function(l){ if (!list.some(function(s){ return s.lob === l; })) out.push({tone: 'n', title: 'Gap: LOB ' + l, text: 'No skill is registered for this LOB yet.'}); });
+    list.filter(function(s){ return !s.boardArea && s.scope !== 'company'; }).forEach(function(s){ out.push({tone: 'warn', title: 'Not classified: ' + s.name, text: 'Add board-area, lob or a company-wide reach to the skill profile.'}); });
+    list.filter(function(s){ return s.scope === 'individual' && s.maturity === 'empfohlen'; }).forEach(function(s){ out.push({tone: 'ok', title: 'Ready to promote: ' + s.name, text: 'Recommended, but still individual. Propose it to the team.'}); });
+    $('hints').innerHTML = out.length ? out.map(function(h){ return '<div class="hint">' + tag(h.tone, h.tone === 'ok' ? 'Promote' : h.tone === 'warn' ? 'Check' : 'Gap') + ' <b>' + esc(h.title) + '</b><div class="s" style="margin-top:4px">' + esc(h.text) + '</div></div>'; }).join('') : '<div class="empty">Nothing to flag.</div>';
+  }
+  function renderAll(){ renderOverview(); renderCatalog(); renderHints(); }
+
+  var tabs = document.querySelectorAll('#tabs button');
+  function go(name){
+    Array.prototype.forEach.call(tabs, function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + name); });
+  }
+  Array.prototype.forEach.call(tabs, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });
+  setupFilters(); renderAll();
+})();
+</script>
+</body>
+</html>
