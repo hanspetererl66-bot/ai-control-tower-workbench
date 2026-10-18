@@ -118,12 +118,35 @@ const HANDLERS = {
       .filter((a) => args.overprivileged === undefined || a.overprivileged === args.overprivileged)
       .filter((a) => search === undefined || `${a.id} ${a.name} ${a.owner} ${a.platform} ${a.model}`.toLowerCase().includes(search))
       .sort((a, b) => b.runsPerDay - a.runsPerDay || a.id.localeCompare(b.id));
+    const countBy = (key) =>
+      Object.entries(
+        matches.reduce((acc, a) => {
+          acc[a[key]] = (acc[a[key]] ?? 0) + 1;
+          return acc;
+        }, {})
+      )
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([label, count]) => ({ label, count }));
+    // Compact rows by default: 125 full records are ~65 KB, which an agent can silently lose.
+    const compact = (a) => ({
+      id: a.id,
+      name: a.name,
+      type: a.type,
+      lifecycle: a.lifecycle,
+      platform: a.platform,
+      ownerTeam: a.ownerTeam,
+      accessTier: a.accessTier,
+      overprivileged: a.overprivileged,
+      runsPerDay: a.runsPerDay,
+    });
     return {
       registrySize: registry.length,
       matched: matches.length,
       returned: Math.min(limit, matches.length),
       sortedBy: 'runsPerDay (descending)',
-      agents: matches.slice(0, limit),
+      summary: { byType: countBy('type'), byPlatform: countBy('platform'), byOwnerTeam: countBy('ownerTeam'), byFamily: countBy('family') },
+      agents: matches.slice(0, limit).map((a) => (args.detail === true ? a : compact(a))),
+      note: matches.length > limit ? `Showing the ${limit} busiest of ${matches.length}; raise "limit" (max 200) or filter to see more. Set detail=true for all fields.` : undefined,
       view: view('repo'),
     };
   },
@@ -228,7 +251,7 @@ export const TOOL_DEFINITIONS = [
   {
     name: 'list_agents',
     description:
-      'List agents from the mock registry (186 agents) with type, lifecycle, platform, owner, access tier, EU AI Act status, runs per day and weekly cost. Filter by lifecycle, type, owner team, overprivileged or free text; default 15 rows, busiest first.',
+      'Which agents exist / are in production? Lists agents from the agent registry (186 sample agents) with a summary by type, platform, owner team and family. Filter by lifecycle (production = live agents), type, owner team, overprivileged or free text; default 15 rows, busiest first, compact fields (detail=true adds owner, model, EU AI Act status, cost).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -238,6 +261,7 @@ export const TOOL_DEFINITIONS = [
         overprivileged: { type: 'boolean' },
         search: { type: 'string', description: 'Matches id, name, owner, platform or model.' },
         limit: { type: 'number', description: 'Maximum rows (1-200, default 15).' },
+        detail: { type: 'boolean', description: 'Return every field per agent (larger answer).' },
       },
       additionalProperties: false,
     },
