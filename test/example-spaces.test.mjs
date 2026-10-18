@@ -124,3 +124,22 @@ test('skill marketplace overview can collapse the tree and drill into single ski
   }
   assert.doesNotMatch(html.replace(/<script[\s\S]*?<\/script>/g, ''), /background:\s*#[0-9a-f]{3,6}\b/i, 'colours come from tokens');
 });
+
+test('live registry sync writes only into the installed Space and leaves the repository page untouched', async () => {
+  const { installLive, embeddedData } = await import('../scripts/sync-skill-marketplace.mjs');
+  const { readFileSync: read, mkdtempSync: mk, rmSync: rm } = await import('node:fs');
+  const dir = mk(join(tmpdir(), 'werkbank-live-'));
+  const repoPage = join(ROOT, 'examples/skill-marketplace/index.html');
+  const before = read(repoPage, 'utf8');
+  try {
+    const registered = [{ name: 'live-skill', description: 'from the registry', owner: 'x', version: 2, maturity: 'approved', approvedBy: 'Chef', domain: '', process: '', boardArea: 'Finance', lob: '', team: '', scope: 'company', dataClass: '', tools: [], demand: { installs: 1, views: 0, searchHits: 0, previousScore: 0 }, sample: false }];
+    const page = installLive({ registered, samples: [], root: ROOT, spacesDir: dir, asOf: '2026-10-18' });
+    assert.ok(page.startsWith(dir), 'written below the spaces folder');
+    const data = embeddedData(read(page, 'utf8'));
+    assert.equal(data.source, 'registry');
+    assert.deepEqual(data.skills.map((s) => s.name), ['live-skill']);
+    assert.equal(read(repoPage, 'utf8'), before, 'the tracked page is unchanged');
+  } finally {
+    rm(dir, { recursive: true, force: true });
+  }
+});

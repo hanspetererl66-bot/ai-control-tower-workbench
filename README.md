@@ -262,7 +262,8 @@ A skill without a scope counts as `individual`; a team scope needs a team, a LOB
 
 - **Space "Skill Marketplace":** `npm run install:skill-marketplace` installs it (overview by board area, LOB and team, catalog with filters,
   hints on possible duplicates and gaps). `npm run sync:skill-marketplace` embeds the example skills of the repository;
-  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` embeds the published skills of the registry.
+  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
+  registry into the installed copy only (`workspace/spaces/`), so files tracked by Git stay unchanged and `git pull` never conflicts.
   Skills tagged **Sample** are fictional and only show the structure.
 - **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
 - **Knowledge graph later:** board area, LOB, team, scope and the tool rows in `skills.skill_tool` are the nodes and edges of stage 2;
