@@ -28,6 +28,10 @@ export const STARTER_PROMPTS: StarterPrompt[] = [
     prompt: 'Wie viele Agenten sind in Produktion, und wie viele davon sind überprivilegiert?',
   },
   {
+    label: 'Top-Agenten nach Runs',
+    prompt: 'Liste die 12 Produktions-Agenten mit den meisten Runs pro Tag.',
+  },
+  {
     label: 'Unregistrierte KI-Assets',
     prompt: 'Welche unregistrierten KI-Assets hat der Discovery-Scan gefunden?',
   },

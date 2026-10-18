@@ -124,3 +124,33 @@ test('the explanation tabs are gone and every tab button has exactly one page', 
   assert.equal(html.match(/<section id="page-\w+" class="pg on"/g)?.length, 1); // one default page
   assert.match(html, /class="tb on"\s+onclick="go\('board'/);
 });
+
+test('agent registry matches every headline number on the dashboard', () => {
+  const data = JSON.parse(readFileSync(join(DIR, 'data.json'), 'utf8'));
+  const reg = data.agents.registry;
+  const count = (fn) => reg.filter(fn).length;
+  const prod = (a) => a.lifecycle === 'production';
+  assert.equal(reg.length, data.agents.total);
+  assert.equal(new Set(reg.map((a) => a.id)).size, reg.length);
+  for (const t of data.agents.types) assert.equal(count((a) => a.type === t.key), t.count, t.key);
+  assert.equal(count(prod), data.agents.production);
+  assert.equal(count((a) => a.lifecycle === 'pending_review'), 28);
+  assert.equal(count((a) => a.lifecycle === 'retired'), data.agents.total - data.agents.production - 28);
+  for (const tier of data.agents.accessTiers) assert.equal(count((a) => prod(a) && a.accessTier === tier.label), tier.count, tier.label);
+  assert.equal(count((a) => a.overprivileged), data.agents.overprivileged);
+  assert.ok(reg.filter((a) => a.overprivileged).every(prod));
+  const eu = data.compliance.euAiAct;
+  assert.equal(count((a) => a.euRisk === 'high'), eu.total);
+  assert.equal(count((a) => a.euAssessment === 'complete'), eu.complete);
+  assert.equal(count((a) => a.euAssessment === 'outstanding'), eu.outstanding);
+  assert.equal(reg.filter(prod).reduce((s, a) => s + a.runsPerDay, 0), 44800);
+  assert.equal(reg.filter(prod).reduce((s, a) => s + a.costPerWeekEur, 0), 50600);
+  assert.equal(count((a) => a.registeredOn >= '2026-04-01'), 44);
+  assert.ok(reg.filter((a) => !prod(a)).every((a) => a.runsPerDay === 0 && a.costPerWeekEur === 0));
+});
+
+test('agent generator is deterministic and the registry in data.json is its output', async () => {
+  const { generate } = await import('../scripts/generate-control-tower-agents.mjs');
+  const data = JSON.parse(readFileSync(join(DIR, 'data.json'), 'utf8'));
+  assert.deepEqual(generate(), data.agents.registry);
+});

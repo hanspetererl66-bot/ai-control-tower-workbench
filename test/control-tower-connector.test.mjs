@@ -375,3 +375,26 @@ test('a mismatch in the budget source data is still reported', async () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('list_agents filters the registry, sorts by runs and validates arguments', async () => {
+  const server = startServer();
+  try {
+    const top = parse(await server.call('list_agents', { lifecycle: 'production', limit: 12 }));
+    assert.equal(top.registrySize, 186);
+    assert.equal(top.matched, 125);
+    assert.equal(top.returned, 12);
+    assert.deepEqual(top.agents.map((a) => a.runsPerDay), [...top.agents.map((a) => a.runsPerDay)].sort((a, b) => b - a));
+    assert.deepEqual(top.view, { space: 'ai-control-tower', tab: 'repo' });
+
+    const over = parse(await server.call('list_agents', { overprivileged: true, limit: 200 }));
+    assert.equal(over.matched, 31);
+    assert.equal(parse(await server.call('list_agents', {})).returned, 15);
+    assert.equal(parse(await server.call('list_agents', { lifecycle: 'retired', limit: 200 })).matched, 33);
+
+    const bad = await server.call('list_agents', { lifecycle: 'paused' });
+    assert.equal(bad.isError, true);
+    assert.equal((await server.call('list_agents', { limit: 0 })).isError, true);
+  } finally {
+    server.stop();
+  }
+});

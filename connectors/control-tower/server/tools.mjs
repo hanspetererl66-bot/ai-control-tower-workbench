@@ -95,6 +95,39 @@ const HANDLERS = {
     };
   },
 
+  list_agents(data, args) {
+    const registry = data.agents.registry;
+    if (!Array.isArray(registry)) throw new ToolError('The data source has no agent registry (run Supabase migration 005).');
+    const oneOf = (key, allowed) => {
+      const value = optionalString(args, key)?.toLowerCase();
+      if (value !== undefined && !allowed.includes(value)) throw new ToolError(`${key} must be one of: ${allowed.join(', ')}`);
+      return value;
+    };
+    const lifecycle = oneOf('lifecycle', ['production', 'pending_review', 'retired']);
+    const type = oneOf('type', ['autonomous', 'copilot', 'orchestrator']);
+    const team = optionalString(args, 'owner_team')?.toLowerCase();
+    const search = optionalString(args, 'search')?.toLowerCase();
+    if (args.overprivileged !== undefined && typeof args.overprivileged !== 'boolean') {
+      throw new ToolError('overprivileged must be true or false');
+    }
+    const limit = optionalNumber(args, 'limit', 1, 200) ?? 15;
+    const matches = registry
+      .filter((a) => lifecycle === undefined || a.lifecycle === lifecycle)
+      .filter((a) => type === undefined || a.type === type)
+      .filter((a) => team === undefined || a.ownerTeam.toLowerCase().includes(team))
+      .filter((a) => args.overprivileged === undefined || a.overprivileged === args.overprivileged)
+      .filter((a) => search === undefined || `${a.id} ${a.name} ${a.owner} ${a.platform} ${a.model}`.toLowerCase().includes(search))
+      .sort((a, b) => b.runsPerDay - a.runsPerDay || a.id.localeCompare(b.id));
+    return {
+      registrySize: registry.length,
+      matched: matches.length,
+      returned: Math.min(limit, matches.length),
+      sortedBy: 'runsPerDay (descending)',
+      agents: matches.slice(0, limit),
+      view: view('repo'),
+    };
+  },
+
   get_unregistered_assets(data) {
     const a = data.agents;
     return {
@@ -191,6 +224,23 @@ export const TOOL_DEFINITIONS = [
     description:
       'Summary of the AI agent registry: total and production agents, agent types, access tiers, and counts of unregistered and overprivileged agents.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
+    name: 'list_agents',
+    description:
+      'List agents from the mock registry (186 agents) with type, lifecycle, platform, owner, access tier, EU AI Act status, runs per day and weekly cost. Filter by lifecycle, type, owner team, overprivileged or free text; default 15 rows, busiest first.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        lifecycle: { type: 'string', enum: ['production', 'pending_review', 'retired'] },
+        type: { type: 'string', enum: ['autonomous', 'copilot', 'orchestrator'] },
+        owner_team: { type: 'string', description: 'Part of the owner team name, e.g. "Finance".' },
+        overprivileged: { type: 'boolean' },
+        search: { type: 'string', description: 'Matches id, name, owner, platform or model.' },
+        limit: { type: 'number', description: 'Maximum rows (1-200, default 15).' },
+      },
+      additionalProperties: false,
+    },
   },
   {
     name: 'get_unregistered_assets',

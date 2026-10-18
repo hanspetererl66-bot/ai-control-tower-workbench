@@ -12,6 +12,7 @@ export const TOOL_TABS: Record<string, string> = {
   get_risks: 'risk',
   get_risk: 'risk',
   get_agent_overview: 'repo',
+  list_agents: 'repo',
   get_unregistered_assets: 'repo',
   get_overprivileged_agents: 'repo',
   get_budget: 'gov',

@@ -40,7 +40,7 @@ test('only completed Control Tower tool calls produce a view', () => {
 });
 
 test('views are de-duplicated and keep first-use order', () => {
-  const tools = ['get_risks', 'get_agent_overview', 'get_risk', 'get_overprivileged_agents', 'get_budget'].map(
+  const tools = ['get_risks', 'get_agent_overview', 'list_agents', 'get_risk', 'get_overprivileged_agents', 'get_budget'].map(
     (name) => ({ status: 'completed', toolName: `ai-control-tower__${name}` })
   );
   assert.deepEqual(controlTowerViews(tools).map((view) => view.tab), ['risk', 'repo', 'gov']);
