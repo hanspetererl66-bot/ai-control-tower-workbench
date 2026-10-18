@@ -2610,3 +2610,24 @@ button {
 .card-dragging { opacity: 0.45; }
 .card-drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
 .card-drop-after { box-shadow: 0 3px 0 0 var(--accent); }
+/* Small icon next to a skill title */
+.skill-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.skill-icon-ticket { color: #b45309; background: color-mix(in srgb, #f59e0b 16%, transparent); }
+.skill-icon-search { color: #0f766e; background: color-mix(in srgb, #14b8a6 16%, transparent); }
+.skill-icon-rocket { color: #be185d; background: color-mix(in srgb, #ec4899 14%, transparent); }
+.skill-icon-chart { color: var(--accent); }
+.row-title-skill,
+.picker-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

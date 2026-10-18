@@ -7,6 +7,7 @@ import {
   isMicrosoft365Backend,
 } from '../connector-presentation';
 import { listSkills, type Skill } from '../skills';
+import SkillIcon from './SkillIcon';
 import SkillInstallDialog, { type InstallRequest } from './SkillInstallDialog';
 
 const LOOKS_SECRET = /password|secret|token|api[-_]?key|authorization|cookie|credential/i;
@@ -300,7 +301,7 @@ export default function ManageView({
         {skills.map((s) => (
           <div key={s.dir} className="row">
             <div className="row-main">
-              <span className="row-title">{s.name}</span>
+              <span className="row-title row-title-skill"><SkillIcon name={s.name} />{s.name}</span>
               <span className="row-detail">{s.description}</span>
             </div>
             <div className="row-actions">

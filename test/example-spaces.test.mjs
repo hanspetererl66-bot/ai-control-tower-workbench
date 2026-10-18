@@ -71,7 +71,8 @@ test('example skills have valid frontmatter, use only real connector tools, and 
   const { TICKET_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tickets.mjs');
   const { SKILL_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skills.mjs');
   const { parseSkill, knownTools } = await import('../scripts/skills-registry.mjs');
-  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS].map((t) => t.name));
+  const { SUB4ME_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/sub4me.mjs');
+  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS].map((t) => t.name));
   for (const tool of real) assert.ok(knownTools().has(tool), `manifest lists ${tool}`);
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
   try {
