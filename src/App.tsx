@@ -31,6 +31,7 @@ import SpacesList from './ui/SpacesList';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
+import CoverSheet from './ui/CoverSheet';
 
 const WORKDIR = window.host?.workspacePath ?? '';
 
@@ -115,6 +116,7 @@ export default function App() {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
+  const [coverOpen, setCoverOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [appearance, setAppearance] = useState<AppearancePreference>(() =>
     readAppearance(window.localStorage)
@@ -474,6 +476,17 @@ export default function App() {
     }
   }
 
+  /** One click: stage the bundled connector and show the usual approve dialog (URL and key are optional there). */
+  async function installControlTowerConnector() {
+    const result: any = await window.host?.prepareControlTowerConnector?.();
+    if (!result || result.error) {
+      setToast(result?.error ?? 'The connector can only be installed from the desktop app.');
+      setTimeout(() => setToast(null), 6000);
+      return;
+    }
+    setSkillRequest(result as unknown as InstallRequest);
+  }
+
   const empty = messages.length === 0;
   const composer = (
     <Composer
@@ -485,6 +498,7 @@ export default function App() {
       onModeChange={changeMode}
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
+      onInstallConnector={installControlTowerConnector}
       starters={empty}
     />
   );
@@ -555,6 +569,7 @@ export default function App() {
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenCover={() => setCoverOpen(true)}
         onView={(v) => {
           setView(v);
           if (v === 'spaces') refreshSpaces();
@@ -685,6 +700,8 @@ export default function App() {
       )}
 
       {permission && <PermissionDialog request={permission} onChoose={choosePermission} />}
+
+      {coverOpen && <CoverSheet onClose={() => setCoverOpen(false)} />}
 
       {settingsOpen && (
         <SettingsDialog

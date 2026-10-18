@@ -31,6 +31,8 @@ type Props = {
   onModeChange: (id: string) => void;
   onCancel: () => void;
   onManageConnectors?: () => void;
+  /** Stage the bundled AI Control Tower connector for installation. */
+  onInstallConnector?: () => void;
   /** Show suggested Control Tower questions (empty chat only). */
   starters?: boolean;
 };
@@ -44,6 +46,7 @@ export default function Composer({
   onModeChange,
   onCancel,
   onManageConnectors,
+  onInstallConnector,
   starters = false,
 }: Props) {
   const [text, setText] = useState('');
@@ -460,7 +463,8 @@ export default function Composer({
           available={connectorsChecked ? hasControlTowerConnector(known.map((k) => k.name)) : null}
           disabled={busy || preparingConnector || !agent}
           onPick={pickStarter}
-          onSetUp={onManageConnectors}
+          onInstall={onInstallConnector}
+          onManage={onManageConnectors}
         />
       )}
     </div>

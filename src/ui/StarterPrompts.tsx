@@ -5,20 +5,28 @@ type Props = {
   available: boolean | null;
   disabled: boolean;
   onPick: (prompt: StarterPrompt) => void;
-  onSetUp?: () => void;
+  /** Stage the bundled connector for installation (opens the approve dialog). */
+  onInstall?: () => void;
+  /** Open the connector management view. */
+  onManage?: () => void;
 };
 
 /** Suggested Control Tower questions below the composer on an empty chat. */
-export default function StarterPrompts({ available, disabled, onPick, onSetUp }: Props) {
+export default function StarterPrompts({ available, disabled, onPick, onInstall, onManage }: Props) {
   if (available === null) return null;
 
   if (!available) {
     return (
       <div className="starters starters-hint">
-        <span>Ask about risks, agents and budget once the AI Control Tower connector is installed.</span>
-        {onSetUp && (
-          <button className="starters-link" onClick={onSetUp}>
-            Set up connector
+        <span>Der Connector „AI Control Tower“ fehlt oder ist nicht verbunden.</span>
+        {onInstall && (
+          <button className="starters-link" onClick={onInstall}>
+            Jetzt installieren
+          </button>
+        )}
+        {onManage && (
+          <button className="starters-link" onClick={onManage}>
+            Connectors verwalten
           </button>
         )}
       </div>

@@ -6,16 +6,18 @@ export default function Rail({
   view,
   onView,
   onOpenSettings,
+  onOpenCover,
 }: {
   view: View;
   onView: (v: View) => void;
   onOpenSettings: () => void;
+  onOpenCover: () => void;
 }) {
   return (
     <nav className="rail">
-      <div className="rail-logo">
+      <button className="rail-logo" onClick={onOpenCover} title="About this prototype" aria-label="About this prototype">
         <WerkbankMark size={24} />
-      </div>
+      </button>
 
       <div className="rail-nav">
         <button

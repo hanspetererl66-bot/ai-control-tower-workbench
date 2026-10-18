@@ -138,3 +138,12 @@ budget → Model Governance). The Space only accepts a `ct:open-tab` message fro
 only for tab ids that exist on the page. After pulling, run `npm run install:control-tower` once so the
 installed Space contains the updated page.
 
+### Cover sheet and one-click connector
+
+- Clicking the diamond at the top of the left rail opens a full-screen cover sheet:
+  "Joule - Diamond Edition · Prototype · Built by Accenture · Demo only". Click anywhere outside the
+  text, "Close" or Esc to dismiss it.
+- If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
+  **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
+  dialog; the Supabase URL and key fields can stay empty to use the sample data. No `.mcpb` file is needed.
+
