@@ -35,6 +35,7 @@ import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
 import CoverSheet from './ui/CoverSheet';
+import N8nView from './ui/N8nView';
 import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
 
 const WORKDIR = window.host?.workspacePath ?? '';
@@ -659,7 +660,15 @@ export default function App() {
         />
       )}
 
-      {view === 'manage' ? (
+      {view === 'n8n' ? (
+        <N8nView
+          visible={!settingsOpen && !coverOpen && !skillRequest && !permission}
+          onRestartAgent={async () => {
+            await window.host?.restartAgent?.();
+            reconnectAgent();
+          }}
+        />
+      ) : view === 'manage' ? (
         <ManageView
           agent={agent}
           onBack={() => setView('chat')}

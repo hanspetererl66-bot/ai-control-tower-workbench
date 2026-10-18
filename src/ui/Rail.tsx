@@ -1,6 +1,6 @@
 import WerkbankMark from './WerkbankMark';
 
-export type View = 'chat' | 'spaces' | 'manage';
+export type View = 'chat' | 'spaces' | 'manage' | 'n8n';
 
 export default function Rail({
   view,
@@ -47,6 +47,15 @@ export default function Rail({
         >
           <ConnectorIcon />
         </button>
+        <button
+          className={`rail-btn ${view === 'n8n' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('n8n')}
+          title="n8n Automation"
+          aria-label="n8n Automation"
+          aria-pressed={view === 'n8n'}
+        >
+          <WorkflowIcon />
+        </button>
       </div>
 
       <div className="rail-foot">
@@ -64,6 +73,17 @@ export default function Rail({
         </button>
       </div>
     </nav>
+  );
+}
+
+function WorkflowIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="4.5" cy="10" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="15.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="15.5" cy="15" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M6.3 9.2 13.7 5.8M6.3 10.8l7.4 3.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
   );
 }
 

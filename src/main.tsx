@@ -58,6 +58,15 @@ declare global {
         values: Record<string, string>,
         config?: unknown
       ) => Promise<{ ok: boolean; detail?: string }>;
+      n8n?: {
+        getSettings: () => Promise<{ url: string; chatConnected: boolean }>;
+        saveSettings: (url: string) => Promise<{ ok: boolean; url?: string; chatConnected?: boolean; detail?: string }>;
+        show: (bounds: { x: number; y: number; width: number; height: number }) => Promise<{ ok: boolean }>;
+        hide: () => Promise<{ ok: boolean }>;
+        reload: () => Promise<{ ok: boolean }>;
+        connectChat: () => Promise<{ ok: boolean; detail?: string }>;
+        disconnectChat: () => Promise<{ ok: boolean; detail?: string }>;
+      };
       voice?: {
         getSettings: () => Promise<VoiceSettings>;
         saveSettings: (
