@@ -1,13 +1,16 @@
 /**
  * Embeds the skill catalog into the Skill Marketplace Space (a sandboxed page cannot fetch data).
  * Default source: the example skills in the repository, so it works without Supabase.
- * With --registry the approved skills are read from the shared registry (SUPABASE_URL, SUPABASE_KEY = publishable key).
+ * With --registry the published skills are read from the shared registry (SUPABASE_URL, SUPABASE_KEY = publishable key)
+ * and written into the INSTALLED copy of the Space (workspace/spaces/skill-marketplace); the files in the repository
+ * stay untouched, so a later `git pull` never conflicts.
  * Fictional sample skills from sample-skills.json are always added and marked "sample".
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOARD_AREAS, LOBS, SCOPES, parseSkill, rpc } from './skills-registry.mjs';
+import { installExampleSpace } from './install-example-space.mjs';
 import { catalogEntry } from '../connectors/control-tower/server/skills.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -50,6 +53,14 @@ export async function registrySkills({ url, key, fetchImpl = fetch }) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Install the Space and write live registry data into the installed copy only. Returns the installed page path. */
+export function installLive({ registered, samples, root = ROOT, spacesDir = join(root, 'workspace/spaces'), asOf = new Date().toISOString().slice(0, 10) }) {
+  const dest = installExampleSpace('skill-marketplace', { root, spacesDir });
+  const page = join(dest, 'index.html');
+  writeFileSync(page, embedData(readFileSync(page, 'utf8'), buildCatalog({ registered, samples, source: 'registry', asOf })));
+  return page;
+}
+
 export function buildCatalog({ registered, samples, source, asOf }) {
   const names = new Set(registered.map((s) => s.name));
   return { asOf, source, taxonomy: taxonomy(), skills: [...registered, ...samples.filter((s) => !names.has(s.name))] };
@@ -61,19 +72,23 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const samples = JSON.parse(readFileSync(join(DIR, 'sample-skills.json'), 'utf8')).skills;
   const useRegistry = process.argv.includes('--registry');
   const check = process.argv.includes('--check');
-  const registered = useRegistry
-    ? await registrySkills({ url: process.env.SUPABASE_URL, key: process.env.SUPABASE_KEY })
-    : repoSkills();
-  const asOf = check ? embeddedData(html).asOf : new Date().toISOString().slice(0, 10);
-  const next = embedData(html, buildCatalog({ registered, samples, source: useRegistry ? 'registry' : 'repository', asOf }));
-  if (check) {
-    if (next !== html) {
-      console.error('Skill Marketplace data is out of sync — run: npm run sync:skill-marketplace');
-      process.exit(1);
-    }
-    console.log('Skill Marketplace data is in sync.');
+  if (useRegistry) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) throw new Error('Set SUPABASE_URL and SUPABASE_KEY (publishable key) first.');
+    const registered = await registrySkills({ url: process.env.SUPABASE_URL, key: process.env.SUPABASE_KEY });
+    console.log(`Wrote ${registered.length} registered and ${samples.length} sample skills (registry) to ${installLive({ registered, samples })}`);
   } else {
-    writeFileSync(htmlPath, next);
-    console.log(`Embedded ${registered.length} registered and ${samples.length} sample skills (${useRegistry ? 'registry' : 'repository'}).`);
+    const registered = repoSkills();
+    const asOf = check ? embeddedData(html).asOf : new Date().toISOString().slice(0, 10);
+    const next = embedData(html, buildCatalog({ registered, samples, source: 'repository', asOf }));
+    if (check) {
+      if (next !== html) {
+        console.error('Skill Marketplace data is out of sync — run: npm run sync:skill-marketplace');
+        process.exit(1);
+      }
+      console.log('Skill Marketplace data is in sync.');
+    } else {
+      writeFileSync(htmlPath, next);
+      console.log(`Embedded ${registered.length} registered and ${samples.length} sample skills (repository).`);
+    }
   }
 }
