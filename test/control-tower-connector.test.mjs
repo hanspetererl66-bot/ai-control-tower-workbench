@@ -391,6 +391,13 @@ test('list_agents filters the registry, sorts by runs and validates arguments', 
     assert.equal(top.returned, 12);
     assert.deepEqual(top.agents.map((a) => a.runsPerDay), [...top.agents.map((a) => a.runsPerDay)].sort((a, b) => b - a));
     assert.deepEqual(top.view, { space: 'ai-control-tower', tab: 'repo' });
+    assert.equal(top.summary.byType.reduce((n, t) => n + t.count, 0), 125);
+    assert.equal(top.agents[0].model, undefined, 'compact rows by default');
+    assert.ok(top.note.includes('125'));
+    const full = parse(await server.call('list_agents', { lifecycle: 'production', limit: 200 }));
+    assert.equal(full.agents.length, 125);
+    assert.ok(JSON.stringify(full).length < 40_000, 'all production agents fit in a small answer');
+    assert.ok(parse(await server.call('list_agents', { limit: 1, detail: true })).agents[0].model);
 
     const over = parse(await server.call('list_agents', { overprivileged: true, limit: 200 }));
     assert.equal(over.matched, 31);
