@@ -28,6 +28,7 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
+import { SUB4ME_EXTENSION, SUB4ME_SPACE } from './sub4me-bridge';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
@@ -615,6 +616,8 @@ export default function App() {
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
             tabRequest={space.slug === 'ai-control-tower' ? spaceTab : null}
+            bridgeEnabled={space.slug === SUB4ME_SPACE}
+            bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
           <main className="main">

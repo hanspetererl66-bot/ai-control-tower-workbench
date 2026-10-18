@@ -106,9 +106,17 @@ Use a personal account, not a work mailbox: mail content is sent to the configur
 
 `examples/sub4me` is a second bundled Space: a fictional customer portal with contracts, AI-unit
 consumption per product (with year-end forecast) and service tickets. All data is fictional and the
-page says it is not affiliated with any vendor. New tickets live only on the page and are not stored
-or sent. Install with `npm run install:sub4me` (or `npm run install:examples` for both Spaces), then
-restart or refresh the app.
+page says it is not affiliated with any vendor. Install with `npm run install:sub4me` (or
+`npm run install:examples` for both Spaces), then restart or refresh the app.
+
+**Tickets in Supabase (temporary demo storage).** Spaces have no network access, so the Space asks the
+app by `postMessage`, and the app calls two fixed tools of the Control Tower connector
+(`list_tickets`, `create_ticket`) over the agent session, which read/insert rows through
+`public.sub4me_tickets()` / `public.sub4me_create_ticket()` (migration `006`, server-side key only).
+Creating a ticket is the only write the connector can do; it cannot edit or delete rows. Without the
+Supabase URL/key or without a connected agent the Space falls back to page-only tickets and says so.
+You can also ask in the chat: "Eröffne ein Sub4Me-Ticket ...". To clear the tickets you added, see the
+`delete` statement at the end of the migration file.
 
 ## Verification
 

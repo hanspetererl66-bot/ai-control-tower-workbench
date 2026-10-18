@@ -47,3 +47,8 @@ test('sub4me sample data is internally consistent', () => {
   assert.match(html, /not affiliated/i);
   assert.doesNotMatch(html, /\bfetch\(|XMLHttpRequest|localStorage/);
 });
+
+test('sub4me never relies on a native form submit (Spaces are sandboxed without allow-forms)', () => {
+  const html = readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8');
+  assert.doesNotMatch(html, /type="submit"|addEventListener\('submit'/);
+});

@@ -5,7 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
-import { TOOL_DEFINITIONS } from '../connectors/control-tower/server/tools.mjs';
+import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
+import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
+
+const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS];
 
 const ROOT = join(import.meta.dirname, '..');
 const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');
@@ -402,4 +405,59 @@ test('list_agents filters the registry, sorts by runs and validates arguments', 
 test('electron main imports ALLOWED_COMMANDS (it is used by the connector install paths)', () => {
   const main = readFileSync(join(import.meta.dirname, '..', 'electron/main.mjs'), 'utf8');
   assert.match(main, /import \{[^}]*\bALLOWED_COMMANDS\b[^}]*\} from '\.\/install-deep-link\.mjs'/);
+});
+
+test('ticket tools call the Sub4Me RPC functions with validated arguments', async () => {
+  const bodies = [];
+  await withFakeSupabase(
+    (request, response) => {
+      let raw = '';
+      request.on('data', (c) => (raw += c));
+      request.on('end', () => {
+        const body = JSON.parse(raw || '{}');
+        bodies.push({ url: request.url, body });
+        response.setHeader('content-type', 'application/json');
+        if (request.url.endsWith('sub4me_tickets')) {
+          return response.end(JSON.stringify([
+            { id: 'TKT-2', status: 'New', title: 'b' }, { id: 'TKT-1', status: 'Closed', title: 'a' },
+          ]));
+        }
+        response.end(JSON.stringify({ id: 'TKT-48214', status: 'New', ...body }));
+      });
+    },
+    async (url) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        assert.equal(parse(await server.call('list_tickets', {})).count, 2);
+        assert.equal(parse(await server.call('list_tickets', { status: 'Closed' })).tickets[0].id, 'TKT-1');
+        const created = parse(await server.call('create_ticket', { title: '  Login broken ', product: 'BTP AI Core', priority: 'High' }));
+        assert.equal(created.ticket.id, 'TKT-48214');
+        assert.deepEqual(bodies.at(-1), {
+          url: '/rest/v1/rpc/sub4me_create_ticket',
+          body: { p_title: 'Login broken', p_product: 'BTP AI Core', p_priority: 'High', p_description: '' },
+        });
+        for (const args of [
+          { product: 'x', priority: 'High' },
+          { title: 'x', product: 'y', priority: 'Urgent' },
+          { title: 'x'.repeat(121), product: 'y', priority: 'Low' },
+          { title: 'x', product: 'y', priority: 'Low', description: 'd'.repeat(2001) },
+        ]) assert.equal((await server.call('create_ticket', args)).isError, true);
+        assert.equal((await server.call('list_tickets', { status: 'Nope' })).isError, true);
+        assert.equal(bodies.filter((b) => b.url.endsWith('sub4me_create_ticket')).length, 1); // rejected calls never reached Supabase
+      } finally {
+        server.stop();
+      }
+    }
+  );
+});
+
+test('ticket tools explain that Supabase is needed when it is not configured', async () => {
+  const server = startServer(SERVER, { SUPABASE_URL: '', SUPABASE_SECRET_KEY: '' });
+  try {
+    const result = await server.call('create_ticket', { title: 'x', product: 'y', priority: 'Low' });
+    assert.equal(result.isError, true);
+    assert.match(result.content[0].text, /Supabase/);
+  } finally {
+    server.stop();
+  }
 });

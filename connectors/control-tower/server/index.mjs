@@ -7,9 +7,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import { TOOL_DEFINITIONS, callTool } from './tools.mjs';
+import { TICKET_TOOL_DEFINITIONS, createTicketHandlers } from './tickets.mjs';
+import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.2.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.4.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
@@ -33,24 +34,43 @@ function loadFile() {
 
 const SUPABASE_TIMEOUT_MS = 8000;
 
-/** Read-only snapshot from Supabase (public.control_tower_snapshot), server-side key only. */
-async function loadSupabase(url, key) {
-  const endpoint = new URL('/rest/v1/rpc/control_tower_snapshot', url);
+/** Call a public RPC function on Supabase with the server-side key. */
+async function supabaseRpc(fn, body, url, key) {
+  const endpoint = new URL(`/rest/v1/rpc/${fn}`, url);
   const local = ['localhost', '127.0.0.1'].includes(endpoint.hostname);
   if (endpoint.protocol !== 'https:' && !local) throw new Error('SUPABASE_URL must be https');
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: '{}',
+    body: JSON.stringify(body),
     signal: AbortSignal.timeout(SUPABASE_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error(`Supabase answered HTTP ${response.status}`);
-  const data = await response.json();
+  return response.json();
+}
+
+/** Read-only snapshot from Supabase (public.control_tower_snapshot), server-side key only. */
+async function loadSupabase(url, key) {
+  const data = await supabaseRpc('control_tower_snapshot', {}, url, key);
   if (!data || !Array.isArray(data.risks) || !data.agents || !data.budget) {
     throw new Error('Supabase snapshot has an unexpected shape');
   }
   return data;
 }
+
+const ticketRpc = () => {
+  const url = process.env.SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim();
+  if (!url || !key) return null;
+  return async (fn, body) => {
+    try {
+      return await supabaseRpc(fn, body, url, key);
+    } catch (error) {
+      console.error('supabase ticket call failed:', error.message);
+      throw new ToolError(`Supabase ticket call failed: ${error.message}`);
+    }
+  };
+};
 
 /**
  * Supabase when SUPABASE_URL and SUPABASE_SECRET_KEY are set, otherwise the bundled
@@ -100,14 +120,23 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: TOOL_DEFINITIONS });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
+        const ticketHandlers = createTicketHandlers(ticketRpc());
+        if (Object.hasOwn(ticketHandlers, params?.name)) {
+          const args = params.arguments ?? {};
+          if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');
+          const result = await ticketHandlers[params.name](args);
+          reply(id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] });
+          return;
+        }
         const { data, source } = await loadData();
         reply(id, callTool(params?.name, params?.arguments, data, source));
       } catch (error) {
-        if (error instanceof RangeError) fail(id, -32602, error.message);
+        if (error instanceof ToolError) reply(id, { content: [{ type: 'text', text: error.message }], isError: true });
+        else if (error instanceof RangeError) fail(id, -32602, error.message);
         else fail(id, -32603, `Internal error: ${error.message}`);
       }
       return;

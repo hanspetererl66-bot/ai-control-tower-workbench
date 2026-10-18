@@ -60,7 +60,7 @@ button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;pad
   <div class="s">Customer portal &middot; subscriptions, consumption, support</div>
   <div class="cust"><strong id="cust-name"></strong><span id="cust-meta"></span></div>
 </header>
-<div class="demo">Demo / mock-up with fictional sample data. Not affiliated with any software vendor. Tickets you open here stay in this page and are not sent anywhere.</div>
+<div class="demo">Demo / mock-up with fictional sample data. Not affiliated with any software vendor. <span id="storage-note">Tickets you open here stay in this page and are not sent anywhere.</span></div>
 <nav role="tablist" id="tabs">
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="contracts" aria-selected="false">Contracts</button>
@@ -79,12 +79,12 @@ button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;pad
   <section class="pg" id="pg-tickets">
     <div class="row">
       <div class="card"><div class="k" style="margin-bottom:10px">Open a ticket</div>
-        <form id="ticket-form">
+        <form id="ticket-form" onsubmit="return false">
           <label>Product<select name="product" id="f-product"></select></label>
           <label>Priority<select name="priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Very high</option></select></label>
           <label>Title<input name="title" required maxlength="120" placeholder="Short summary of the issue"></label>
           <label>Description<textarea name="desc" rows="4" maxlength="2000" placeholder="What happened, since when, impact"></textarea></label>
-          <button class="primary" type="submit">Create ticket</button>
+          <button class="primary" type="button" id="create-ticket">Create ticket</button>
         </form>
         <div class="toast" id="toast" role="status"></div></div>
       <div class="card tbl" style="flex:2 1 460px"><div class="k" style="margin-bottom:6px">My tickets</div><div id="tickets"></div></div>
@@ -190,17 +190,44 @@ button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;pad
   }
   $('f-product').innerHTML = D.contracts.filter(function(c){ return c.status !== 'Expired'; }).map(function(c){ return '<option>' + esc(c.product) + '</option>'; }).join('') + D.products.map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
   var seq = 48214;
-  $('ticket-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    var f = e.target;
+  var pending = {};
+  var reqCount = 0;
+  function setStorage(remote){
+    $('storage-note').textContent = remote ? 'Tickets are stored in the demo database (Supabase).' : 'Tickets you open here stay in this page and are not sent anywhere.';
+  }
+  function toast(text, bad){
+    var t = $('toast'); t.textContent = text; t.className = 'toast on'; t.style.background = bad ? 'var(--warn-dim)' : ''; t.style.color = bad ? 'var(--warn)' : '';
+  }
+  function addLocal(f, title){
+    var t = {id: 'TKT-L' + (seq++), title: title, product: f.product.value, priority: f.priority.value, status: 'New', created: D.asOf, updated: D.asOf};
+    D.tickets.unshift(t); renderTickets(); renderOverview();
+    return t;
+  }
+  var remote = false, bridgeTimer = null;
+  function askParent(msg){ if (window.parent !== window) window.parent.postMessage(msg, '*'); }
+  function loadRemote(){
+    bridgeTimer = setTimeout(function(){ remote = false; setStorage(false); }, 4000);
+    askParent({type: 's4m:tickets-request'});
+  }
+  // The Space is sandboxed without allow-forms, so a real form submit is blocked: use a button click.
+  $('create-ticket').addEventListener('click', function(){
+    var f = $('ticket-form');
     var title = f.title.value.trim();
     if (!title) return;
-    var t = {id: 'TKT-' + (seq++), title: title, product: f.product.value, priority: f.priority.value, status: 'New', created: D.asOf, updated: D.asOf};
-    D.tickets.unshift(t);
-    renderTickets(); renderOverview();
-    $('toast').textContent = 'Ticket ' + t.id + ' created (demo: it exists only on this page).';
-    $('toast').className = 'toast on';
+    if (!remote) {
+      var t = addLocal(f, title);
+      toast('Ticket ' + t.id + ' created (demo: it exists only on this page).');
+      f.reset();
+      return;
+    }
+    var id = 'r' + (++reqCount) + '-' + Date.now();
+    pending[id] = {title: title, product: f.product.value, priority: f.priority.value};
+    toast('Saving ticket...');
+    askParent({type: 's4m:create-ticket', requestId: id, title: title, product: f.product.value, priority: f.priority.value, description: f.desc.value});
     f.reset();
+    setTimeout(function(){
+      if (pending[id]) { delete pending[id]; toast('No answer from the database; ticket was not saved.', true); }
+    }, 20000);
   });
 
   var tabs = Array.prototype.slice.call(document.querySelectorAll('#tabs button'));
@@ -211,10 +238,30 @@ button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;pad
   tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
   window.addEventListener('message', function(e){
     var d = e.data;
-    if (e.source !== window.parent || !d || d.type !== 'ct:open-tab' || typeof d.tab !== 'string') return;
-    if (/^[a-z]+$/.test(d.tab) && document.getElementById('pg-' + d.tab)) show(d.tab);
+    if (e.source !== window.parent || !d || typeof d.type !== 'string') return;
+    if (d.type === 'ct:open-tab' && typeof d.tab === 'string') {
+      if (/^[a-z]+$/.test(d.tab) && document.getElementById('pg-' + d.tab)) show(d.tab);
+    } else if (d.type === 's4m:tickets' && Array.isArray(d.tickets)) {
+      clearTimeout(bridgeTimer); remote = true; setStorage(true);
+      D.tickets = d.tickets.map(function(t){ return {id: String(t.id), title: String(t.title), product: String(t.product), priority: String(t.priority), status: String(t.status), created: String(t.created), updated: String(t.updated)}; });
+      renderTickets(); renderOverview();
+    } else if (d.type === 's4m:error' && !d.requestId) {
+      clearTimeout(bridgeTimer); remote = false; setStorage(false);
+    } else if (d.type === 's4m:ticket-created' && d.requestId && pending[d.requestId] && d.ticket) {
+      delete pending[d.requestId];
+      var k = d.ticket;
+      D.tickets.unshift({id: String(k.id), title: String(k.title), product: String(k.product), priority: String(k.priority), status: String(k.status), created: String(k.created), updated: String(k.updated)});
+      renderTickets(); renderOverview();
+      toast('Ticket ' + k.id + ' created and stored in the demo database.');
+    } else if (d.type === 's4m:error' && d.requestId && pending[d.requestId]) {
+      var p = pending[d.requestId]; delete pending[d.requestId];
+      D.tickets.unshift({id: 'TKT-L' + (seq++), title: p.title, product: p.product, priority: p.priority, status: 'New', created: D.asOf, updated: D.asOf});
+      renderTickets(); renderOverview();
+      toast('Could not store the ticket in the database (' + String(d.message).slice(0, 120) + '). It was added on this page only.', true);
+    }
   });
   renderOverview(); renderContracts(); renderUsage(); renderTickets();
+  loadRemote();
 })();
 </script>
 </body>
