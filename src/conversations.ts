@@ -131,3 +131,18 @@ export function restoreConversation(state: ConversationState, id: string): Conve
     ),
   };
 }
+
+/** Remove a conversation for good. If it was selected, the next active one (or a fresh one) takes over. */
+export function deleteConversation(
+  state: ConversationState,
+  id: string,
+  replacement = createConversation()
+): ConversationState {
+  if (!state.items.some((conversation) => conversation.id === id)) return state;
+  const items = state.items.filter((conversation) => conversation.id !== id);
+  if (state.selectedId !== id) return { ...state, items };
+
+  const next = items.find((conversation) => !conversation.archived);
+  if (next) return { items, selectedId: next.id };
+  return { items: [replacement, ...items], selectedId: replacement.id };
+}

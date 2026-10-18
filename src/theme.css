@@ -439,6 +439,11 @@
   background: #222630;
   color: #b59cff;
 }
+.context-menu-item-danger,
+.context-menu-item-danger:hover {
+  color: #c0392b;
+  font-weight: 600;
+}
 
 :root[data-theme="dark"] .menu-head,
 :root[data-theme="dark"] .picker-head,
