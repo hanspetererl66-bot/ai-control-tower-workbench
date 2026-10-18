@@ -221,6 +221,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 <nav role="tablist" id="tabs">
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="catalog" aria-selected="false">Catalog</button>
+  <button role="tab" data-tab="ranking" aria-selected="false">Ranking</button>
   <button role="tab" data-tab="hints" aria-selected="false">Hints</button>
 </nav>
 <main>
@@ -237,10 +238,18 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       <select id="f-lob" aria-label="LOB"></select>
       <select id="f-team" aria-label="Team"></select>
       <select id="f-scope" aria-label="Reach"></select>
+      <select id="f-mat" aria-label="Maturity"></select>
       <label class="chk"><input type="checkbox" id="f-sample" checked> Show sample skills</label>
     </div>
     <div class="s" id="catalog-count" style="margin-bottom:12px"></div>
     <div class="skills" id="skills"></div>
+  </section>
+  <section class="pg" id="pg-ranking">
+    <div class="filters">
+      <select id="r-area" aria-label="Board area"></select>
+      <span class="s">Top 10 by demand in the last 30 days: install 3, view 1, search hit 0.5. Counts only, no personal data.</span>
+    </div>
+    <div class="card tbl" id="ranking"></div>
   </section>
   <section class="pg" id="pg-hints">
     <div class="card" id="hints"></div>
@@ -277,6 +286,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "owner": "",
       "version": 1,
       "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
       "domain": "Governance & Risiko",
       "process": "Board-Reporting",
       "boardArea": "",
@@ -291,6 +303,12 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "get_budget",
         "list_agents"
       ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
       "sample": false
     },
     {
@@ -299,6 +317,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "owner": "",
       "version": 1,
       "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
       "domain": "Entwicklung",
       "process": "Skill-Entwicklung",
       "boardArea": "",
@@ -310,6 +331,12 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "search_skills",
         "get_skill_info"
       ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
       "sample": false
     },
     {
@@ -318,6 +345,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "owner": "",
       "version": 1,
       "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
       "domain": "Service & Support",
       "process": "Serviceticket anlegen",
       "boardArea": "Engineering",
@@ -329,6 +359,12 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "list_tickets",
         "create_ticket"
       ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
       "sample": false
     },
     {
@@ -336,7 +372,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "description": "Prüft Reisekostenabrechnungen gegen die Reiserichtlinie und markiert Auffälligkeiten.",
       "owner": "M. Weber",
       "version": 3,
-      "maturity": "empfohlen",
+      "maturity": "approved",
       "domain": "Finanzen",
       "process": "Reisekosten prüfen",
       "boardArea": "Finance",
@@ -345,14 +381,23 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "scope": "team",
       "dataClass": "vertraulich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "approvedBy": "Compliance Board",
+      "approvedAt": "2026-09-02",
+      "approvedVersion": 3,
+      "demand": {
+        "installs": 46,
+        "views": 310,
+        "searchHits": 120,
+        "previousScore": 430
+      }
     },
     {
       "name": "invoice-matcher",
       "description": "Gleicht Eingangsrechnungen mit Bestellungen und Wareneingängen ab.",
       "owner": "K. Roth",
       "version": 2,
-      "maturity": "empfohlen",
+      "maturity": "approved",
       "domain": "Finanzen",
       "process": "Rechnungsprüfung",
       "boardArea": "Finance",
@@ -361,7 +406,16 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "scope": "board-area",
       "dataClass": "vertraulich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "approvedBy": "Compliance Board",
+      "approvedAt": "2026-08-19",
+      "approvedVersion": 2,
+      "demand": {
+        "installs": 31,
+        "views": 180,
+        "searchHits": 70,
+        "previousScore": 320
+      }
     },
     {
       "name": "renewal-radar",
@@ -380,7 +434,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "list_contracts",
         "list_offers"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 38,
+        "views": 205,
+        "searchHits": 90,
+        "previousScore": 330
+      }
     },
     {
       "name": "quote-drafter",
@@ -399,7 +459,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "list_contracts",
         "list_offers"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 4,
+        "views": 40,
+        "searchHits": 25,
+        "previousScore": 55
+      }
     },
     {
       "name": "campaign-brief",
@@ -415,7 +481,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "scope": "team",
       "dataClass": "intern",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 9,
+        "views": 60,
+        "searchHits": 22,
+        "previousScore": 100
+      }
     },
     {
       "name": "social-post-checker",
@@ -431,14 +503,20 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "scope": "individual",
       "dataClass": "öffentlich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 2,
+        "views": 18,
+        "searchHits": 8,
+        "previousScore": 30
+      }
     },
     {
       "name": "btp-quota-watch",
       "description": "Überwacht AI-Kontingente auf BTP und eröffnet bei Engpässen ein Ticket.",
       "owner": "P. Vogel",
       "version": 2,
-      "maturity": "empfohlen",
+      "maturity": "approved",
       "domain": "Betrieb",
       "process": "Kapazitätsüberwachung",
       "boardArea": "Engineering",
@@ -450,7 +528,16 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "get_ai_consumption",
         "create_ticket"
       ],
-      "sample": true
+      "sample": true,
+      "approvedBy": "Platform Review Board",
+      "approvedAt": "2026-09-24",
+      "approvedVersion": 2,
+      "demand": {
+        "installs": 27,
+        "views": 150,
+        "searchHits": 64,
+        "previousScore": 180
+      }
     },
     {
       "name": "concur-receipt-audit",
@@ -466,7 +553,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "scope": "team",
       "dataClass": "vertraulich",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 7,
+        "views": 55,
+        "searchHits": 18,
+        "previousScore": 70
+      }
     },
     {
       "name": "sf-job-text-reviewer",
@@ -482,7 +575,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "scope": "team",
       "dataClass": "intern",
       "tools": [],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 12,
+        "views": 95,
+        "searchHits": 31,
+        "previousScore": 120
+      }
     },
     {
       "name": "release-notes-writer",
@@ -500,7 +599,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "tools": [
         "list_tickets"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 22,
+        "views": 170,
+        "searchHits": 66,
+        "previousScore": 240
+      }
     },
     {
       "name": "my-sprint-digest",
@@ -518,7 +623,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "tools": [
         "list_tickets"
       ],
-      "sample": true
+      "sample": true,
+      "demand": {
+        "installs": 1,
+        "views": 12,
+        "searchHits": 4,
+        "previousScore": 15
+      }
     }
   ]
 }
@@ -530,7 +641,10 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var tag = function(cls, text){ return '<span class="tag t-' + cls + '">' + esc(text) + '</span>'; };
   var SCOPE_LABEL = {'individual': 'Individual', 'team': 'Team', 'lob': 'LOB', 'board-area': 'Board area', 'company': 'Company'};
+  var MAT_LABEL = {'pilot': 'Pilot', 'empfohlen': 'Recommended', 'approved': 'Approved'};
+  var MAT_TONE = {'pilot': 'warn', 'empfohlen': 'n', 'approved': 'ok'};
   var UNSORTED = 'Not classified';
+  var demandScore = function(s){ var d = s.demand || {}; return 3 * (d.installs || 0) + (d.views || 0) + 0.5 * (d.searchHits || 0); };
   var showSample = true;
   var pool = function(){ return D.skills.filter(function(s){ return showSample || !s.sample; }); };
   var count = function(list, fn){ return list.filter(fn).length; };
@@ -542,7 +656,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   function renderOverview(){
     var list = pool();
     $('kpis').innerHTML = [
-      ['Skills', list.length, count(list, function(s){ return s.maturity === 'empfohlen'; }) + ' recommended'],
+      ['Skills', list.length, count(list, function(s){ return s.maturity === 'approved'; }) + ' approved · ' + count(list, function(s){ return s.maturity === 'empfohlen'; }) + ' recommended'],
       ['Company-wide', count(list, function(s){ return s.scope === 'company'; }), 'available to everyone'],
       ['Team, LOB or board area', count(list, function(s){ return ['team', 'lob', 'board-area'].indexOf(s.scope) >= 0; }), 'shared inside the organisation'],
       ['Individual', count(list, function(s){ return s.scope === 'individual'; }), 'not yet promoted']
@@ -582,22 +696,26 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     var teams = {}; D.skills.forEach(function(s){ if (s.team) teams[s.team] = 1; });
     opts($('f-team'), 'All teams', Object.keys(teams).sort().map(function(t){ return [t, t]; }));
     opts($('f-scope'), 'All reach levels', D.taxonomy.scopes.map(function(s){ return [s, SCOPE_LABEL[s]]; }));
-    ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
+    opts($('f-mat'), 'All maturity levels', ['pilot', 'empfohlen', 'approved'].map(function(m){ return [m, MAT_LABEL[m]]; }));
+    opts($('r-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
+    $('r-area').addEventListener('change', renderRanking);
+    ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope', 'f-mat'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
     $('f-sample').addEventListener('change', function(){ showSample = $('f-sample').checked; renderAll(); });
   }
   function renderCatalog(){
-    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value;
+    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value, mat = $('f-mat').value;
     var list = pool().filter(function(s){
-      return (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) &&
+      return (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) && (!mat || s.maturity === mat) &&
         (!q || (s.name + ' ' + s.description + ' ' + s.process + ' ' + s.tools.join(' ')).toLowerCase().indexOf(q) >= 0);
     });
     $('catalog-count').textContent = list.length + ' of ' + pool().length + ' skills';
     $('skills').innerHTML = list.length ? list.map(function(s){
       var trail = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' › ');
       return '<div class="card"><h3>' + esc(s.name) + '</h3><div class="trail">' + esc(trail) + '</div>' +
-        '<div class="row2">' + tag(s.scope === 'individual' ? 'n' : 'ok', SCOPE_LABEL[s.scope] || s.scope) + (s.maturity === 'empfohlen' ? tag('ok', 'Recommended') : tag('n', 'Pilot')) + (s.sample ? tag('warn', 'Sample') : '') + '</div>' +
+        '<div class="row2">' + tag(s.scope === 'individual' ? 'n' : 'ok', SCOPE_LABEL[s.scope] || s.scope) + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity] || s.maturity) + (s.sample ? tag('warn', 'Sample') : '') + '</div>' +
         '<p>' + esc(s.description) + '</p>' +
         '<div class="s" style="margin-top:8px">' + esc(s.domain || '') + (s.process ? ' · ' + esc(s.process) : '') + (s.dataClass ? ' · ' + esc(s.dataClass) : '') + '</div>' +
+        (s.maturity === 'approved' && s.approvedBy ? '<div class="s">Approved by ' + esc(s.approvedBy) + (s.approvedAt ? ' on ' + esc(String(s.approvedAt).slice(0, 10)) : '') + (s.approvedVersion ? ' (v' + esc(s.approvedVersion) + ')' : '') + '</div>' : '') +
         '<div class="s">Owner ' + esc(s.owner || '–') + ' · v' + esc(s.version || 1) + '</div>' +
         (s.tools.length ? '<div class="tools">' + s.tools.map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' : '') + '</div>';
     }).join('') : '<div class="card empty">No skill matches these filters.</div>';
@@ -612,10 +730,24 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     D.taxonomy.boardAreas.forEach(function(a){ if (!list.some(function(s){ return s.boardArea === a; })) out.push({tone: 'n', title: 'Gap: ' + a, text: 'No skill is registered for this board area yet.'}); });
     Object.keys(D.taxonomy.lobs).forEach(function(l){ if (!list.some(function(s){ return s.lob === l; })) out.push({tone: 'n', title: 'Gap: LOB ' + l, text: 'No skill is registered for this LOB yet.'}); });
     list.filter(function(s){ return !s.boardArea && s.scope !== 'company'; }).forEach(function(s){ out.push({tone: 'warn', title: 'Not classified: ' + s.name, text: 'Add board-area, lob or a company-wide reach to the skill profile.'}); });
-    list.filter(function(s){ return s.scope === 'individual' && s.maturity === 'empfohlen'; }).forEach(function(s){ out.push({tone: 'ok', title: 'Ready to promote: ' + s.name, text: 'Recommended, but still individual. Propose it to the team.'}); });
+    list.filter(function(s){ return s.scope === 'individual' && (s.maturity === 'empfohlen' || s.maturity === 'approved'); }).forEach(function(s){ out.push({tone: 'ok', title: 'Ready to promote: ' + s.name, text: MAT_LABEL[s.maturity] + ', but still individual. Propose it to the team.'}); });
     $('hints').innerHTML = out.length ? out.map(function(h){ return '<div class="hint">' + tag(h.tone, h.tone === 'ok' ? 'Promote' : h.tone === 'warn' ? 'Check' : 'Gap') + ' <b>' + esc(h.title) + '</b><div class="s" style="margin-top:4px">' + esc(h.text) + '</div></div>'; }).join('') : '<div class="empty">Nothing to flag.</div>';
   }
-  function renderAll(){ renderOverview(); renderCatalog(); renderHints(); }
+  function renderRanking(){
+    var area = $('r-area').value;
+    var list = pool().filter(function(s){ return !area || s.boardArea === area; }).map(function(s){ return {s: s, score: demandScore(s)}; })
+      .sort(function(a, b){ return b.score - a.score || a.s.name.localeCompare(b.s.name); }).slice(0, 10);
+    var max = list.length ? Math.max(list[0].score, 1) : 1;
+    if (!list.length) { $('ranking').innerHTML = '<div class="empty">No skills in this board area.</div>'; return; }
+    $('ranking').innerHTML = '<table><thead><tr><th class="num">#</th><th>Skill</th><th>Where</th><th>Maturity</th><th class="num">Installs</th><th class="num">Views</th><th class="num">Hits</th><th class="num">Score</th><th>Trend</th></tr></thead><tbody>' +
+      list.map(function(row, i){
+        var s = row.s, d = s.demand || {}, prev = d.previousScore || 0;
+        var trend = prev > 0 ? Math.round((row.score - prev) / prev * 100) : null;
+        var tr = trend === null ? tag('n', 'new') : tag(trend > 0 ? 'ok' : trend < 0 ? 'bad' : 'n', (trend > 0 ? '+' : '') + trend + '%');
+        return '<tr><td class="num">' + (i + 1) + '</td><td><b>' + esc(s.name) + '</b>' + (s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + esc(s.description) + '</div></td><td>' + esc([s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' › ')) + '</td><td>' + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity] || s.maturity) + '</td><td class="num">' + (d.installs || 0) + '</td><td class="num">' + (d.views || 0) + '</td><td class="num">' + (d.searchHits || 0) + '</td><td class="num"><b>' + row.score + '</b><div class="bar"><i style="width:' + Math.round(row.score / max * 100) + '%"></i></div></td><td>' + tr + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  function renderAll(){ renderOverview(); renderCatalog(); renderRanking(); renderHints(); }
 
   var tabs = document.querySelectorAll('#tabs button');
   function go(name){

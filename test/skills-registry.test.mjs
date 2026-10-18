@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { BOARD_AREAS, LOBS, SCOPES, knownTools, parseSkill, publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
+import { BOARD_AREAS, LOBS, MATURITIES, SCOPES, knownTools, parseSkill, publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const skillText = (name, extra = '') => `---\nname: ${name}\ndescription: Testskill ${name}\n---\n\n# ${name}\n${extra}\n`;
@@ -22,6 +22,10 @@ function fakeRegistry(rows, { similar = [] } = {}) {
     if (fn === 'skills_get') {
       const r = rows[args.p_slug];
       return new Response(JSON.stringify({ slug: args.p_slug, version: r.version, sha256: r.sha ?? sha256(r.text), body: r.text }));
+    }
+    if (fn === 'skills_track') {
+      if (init.failTrack) return new Response('no', { status: 500 });
+      return new Response(JSON.stringify({ recorded: args.p_slugs.length }));
     }
     if (fn === 'skills_similar') return new Response(JSON.stringify(similar));
     if (fn === 'skills_publish') {
@@ -51,6 +55,28 @@ test('sync installs approved skills, then reports unchanged, then updates on a n
     r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: reg.fetchImpl });
     assert.deepEqual(r.updated, ['alpha-skill@v2']);
     assert.match(readFileSync(join(dir, 'alpha-skill/SKILL.md'), 'utf8'), /neu/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('sync counts installs and updates (not unchanged skills) and survives a failing counter', async () => {
+  const dir = tmp();
+  try {
+    const rows = { 'alpha-skill': { text: skillText('alpha-skill'), version: 1 } };
+    const reg = fakeRegistry(rows);
+    await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: reg.fetchImpl });
+    await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir, fetchImpl: reg.fetchImpl });
+    const tracks = reg.calls.filter((c) => c.fn === 'skills_track');
+    assert.equal(tracks.length, 1, 'the unchanged second sync reports nothing');
+    assert.deepEqual([tracks[0].args.p_event, tracks[0].args.p_slugs], ['install', ['alpha-skill']]);
+    assert.match(tracks[0].args.p_device, /^[0-9a-f]{16}$/);
+
+    const dir2 = tmp();
+    const failing = async (url, init) => (url.endsWith('skills_track') ? new Response('no', { status: 500 }) : reg.fetchImpl(url, init));
+    const r = await syncSkills({ url: 'https://x.supabase.co', key: 'pk', skillsDir: dir2, fetchImpl: failing });
+    assert.deepEqual(r.installed, ['alpha-skill@v1']);
+    rmSync(dir2, { recursive: true, force: true });
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -201,4 +227,34 @@ test('the example skills carry a classification the registry accepts', () => {
     const { meta } = validateSkill(name, text, { tools: knownTools() });
     assert.ok(SCOPES.includes(meta.scope), `${name} has a scope`);
   }
+});
+
+test('migration 010: published status, approval only via skills_approve, usage counters and ranking', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261018_010_skills_maturity_ranking.sql'), 'utf8');
+  const code = sql.replace(/--.*/g, '');
+  assert.match(code, /check \(status in \('draft','published','retired'\)\)/);
+  assert.match(code, /check \(maturity in \('pilot','empfohlen','approved'\)\)/);
+  assert.equal((code.match(/status = 'published'/g) ?? []).length >= 4, true, 'list, get, search and ranking filter on published');
+  assert.doesNotMatch(code.replace(/update skills\.skill set status = 'published' where status = 'approved'/, ''), /status = 'approved'/);
+  assert.match(code, /grant execute on function public\.skills_approve\(text,text\),[\s\S]*?to service_role;/);
+  assert.doesNotMatch(code, /to anon[^;]*skills_(approve|publish|set_)/);
+  assert.match(code, /grant execute on function[^;]*skills_ranking\(integer,integer\), public\.skills_track\(text\[\],text,text\)\s+to anon, authenticated, service_role/);
+  assert.match(code, /revoke all on skills\.event from anon, authenticated/);
+  assert.match(code, /approved_by = '', approved_at = null, approved_version = null/, 'a new version clears the approval');
+  assert.deepEqual(MATURITIES, ['pilot', 'empfohlen', 'approved']);
+});
+
+test('CLI: approve needs an approver, release and approve are different commands', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const run = (...args) => {
+    try {
+      execFileSync('node', [join(ROOT, 'scripts/skills-registry.mjs'), ...args], { env: { ...process.env, SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SECRET_KEY: 'sb_secret_x', SKILL_APPROVER: '' }, encoding: 'utf8', stdio: 'pipe' });
+      return '';
+    } catch (error) {
+      return String(error.stderr);
+    }
+  };
+  assert.match(run('approve', 'alpha-skill'), /--by/);
+  assert.match(run('approve', '--by', 'Chef'), /Usage: skills approve/);
+  assert.match(run('bogus'), /release\|retire/);
 });

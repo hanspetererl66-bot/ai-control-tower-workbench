@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { hostname, userInfo } from 'node:os';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,11 +14,31 @@ export const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest
 
 export const DOMAINS = ['Governance & Risiko', 'Service & Support', 'Finanzen', 'HR', 'Entwicklung', 'Betrieb', 'Sonstiges'];
 export const DATA_CLASSES = ['öffentlich', 'intern', 'vertraulich'];
+/** Quality ladder shown in the catalog. 'approved' is the official review and is only set with `approve --by`. */
+export const MATURITIES = ['pilot', 'empfohlen', 'approved'];
 export const BOARD_AREAS = ['Finance', 'Sales', 'Marketing', 'Engineering'];
 /** LOB -> board area it belongs to. */
 export const LOBS = { BTP: 'Engineering', Concur: 'Engineering', SuccessFactors: 'Engineering' };
 /** Reach of a skill, narrow to wide. A skill starts as 'individual' and is promoted by review. */
 export const SCOPES = ['individual', 'team', 'lob', 'board-area', 'company'];
+
+/** Anonymous id of this machine for the usage counters (hash only, no name or address leaves the machine). */
+export function deviceId() {
+  let user = '';
+  try { user = userInfo().username; } catch { /* no user database */ }
+  return sha256(`werkbank|${hostname()}|${user}`).slice(0, 16);
+}
+
+/** Best-effort usage counter; never fails the caller. */
+export async function trackSkills({ url, key, slugs, event, device = deviceId(), fetchImpl = fetch }) {
+  if (!slugs.length) return false;
+  try {
+    await rpc({ url, key, fn: 'skills_track', args: { p_slugs: slugs, p_event: event, p_device: device }, fetchImpl });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /** Names of all tools the bundled connectors offer (from their manifests). */
 export function knownTools(root = ROOT) {
@@ -91,7 +112,7 @@ export async function rpc({ url, key, fn, args = {}, fetchImpl = fetch }) {
 }
 
 /**
- * Pull approved skills into the agent's skills folder.
+ * Pull published skills into the agent's skills folder.
  * Only folders carrying a .synced.json marker are ever updated or removed; local skills are left alone
  * unless force is set.
  */
@@ -99,7 +120,7 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
   const list = await rpc({ url, key, fn: 'skills_list', fetchImpl });
   const result = { installed: [], updated: [], unchanged: [], skipped: [], removed: [] };
   mkdirSync(skillsDir, { recursive: true });
-  const approved = new Set();
+  const published = new Set();
 
   for (const entry of list) {
     const { slug } = entry;
@@ -107,7 +128,7 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
       result.skipped.push(`${slug} (invalid name)`);
       continue;
     }
-    approved.add(slug);
+    published.add(slug);
     const dir = join(skillsDir, slug);
     const markerPath = join(dir, MARKER);
     const marker = existsSync(markerPath) ? JSON.parse(readFileSync(markerPath, 'utf8')) : null;
@@ -136,10 +157,11 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
     (marker ? result.updated : result.installed).push(`${slug}@v${full.version}`);
     log(`${slug} v${full.version}`);
   }
+  await trackSkills({ url, key, slugs: [...result.installed, ...result.updated].map((entry) => entry.split('@')[0]), event: 'install', fetchImpl });
 
-  // Remove synced skills that are no longer approved (retired or unpublished). Local skills have no marker.
+  // Remove synced skills that are no longer published (retired or withdrawn). Local skills have no marker.
   for (const dirent of readdirSync(skillsDir, { withFileTypes: true })) {
-    if (!dirent.isDirectory() || approved.has(dirent.name)) continue;
+    if (!dirent.isDirectory() || published.has(dirent.name)) continue;
     if (existsSync(join(skillsDir, dirent.name, MARKER))) {
       rmSync(join(skillsDir, dirent.name), { recursive: true, force: true });
       result.removed.push(dirent.name);
@@ -183,6 +205,9 @@ export async function publishSkills({ url, key, dirs, owner = '', reason = '', v
 export const setMaturity = ({ url, key, slug, maturity, fetchImpl = fetch }) =>
   rpc({ url, key, fn: 'skills_set_maturity', args: { p_slug: slug, p_maturity: maturity }, fetchImpl });
 
+export const approveSkill = ({ url, key, slug, by, fetchImpl = fetch }) =>
+  rpc({ url, key, fn: 'skills_approve', args: { p_slug: slug, p_by: by }, fetchImpl });
+
 export const setStatus = ({ url, key, slug, status, fetchImpl = fetch }) =>
   rpc({ url, key, fn: 'skills_set_status', args: { p_slug: slug, p_status: status }, fetchImpl });
 
@@ -203,7 +228,7 @@ async function main(argv) {
     const skillsDir = process.env.SKILLS_DIR || join(ROOT, 'goose-home/.agents/skills');
     const r = await syncSkills({ url, key: env('SUPABASE_KEY', 'SUPABASE_PUBLISHABLE_KEY'), skillsDir, force });
     for (const [label, items] of Object.entries(r)) if (items.length) console.log(`${label}: ${items.join(', ')}`);
-    if (Object.values(r).every((items) => !items.length)) console.log('No approved skills in the registry yet.');
+    if (Object.values(r).every((items) => !items.length)) console.log('No published skills in the registry yet.');
     return;
   }
   const key = env('SUPABASE_SECRET_KEY');
@@ -232,18 +257,23 @@ async function main(argv) {
       if (r.blocked) console.log(`  Prüfe, ob du den Skill erweitern kannst. Sonst: --variant-of <name> oder --reason "neu weil …"`);
     }
     if (blocked) process.exitCode = 2;
-  } else if (cmd === 'approve' || cmd === 'retire') {
+  } else if (cmd === 'release' || cmd === 'retire') {
     if (!rest[0]) throw new Error(`Usage: skills ${cmd} <name>`);
-    const r = await setStatus({ url, key, slug: rest[0], status: cmd === 'approve' ? 'approved' : 'retired' });
+    const r = await setStatus({ url, key, slug: rest[0], status: cmd === 'release' ? 'published' : 'retired' });
     console.log(`${r.slug}: ${r.status}`);
+  } else if (cmd === 'approve') {
+    const by = rest.includes('--by') ? rest[rest.indexOf('--by') + 1] : process.env.SKILL_APPROVER;
+    if (!rest[0] || rest[0].startsWith('--') || !by) throw new Error('Usage: skills approve <name> --by "Name" (or set SKILL_APPROVER). The skill must be published (release) first.');
+    const r = await approveSkill({ url, key, slug: rest[0], by });
+    console.log(`${r.slug}: approved by ${r.approvedBy} (v${r.version})`);
   } else if (cmd === 'recommend' || cmd === 'unrecommend') {
     if (!rest[0]) throw new Error(`Usage: skills ${cmd} <name>`);
     const r = await setMaturity({ url, key, slug: rest[0], maturity: cmd === 'recommend' ? 'empfohlen' : 'pilot' });
     console.log(`${r.slug}: ${r.maturity}`);
   } else if (cmd === 'list') {
-    for (const s of await adminList({ url, key })) console.log(`${s.slug}\tv${s.version}\t${s.status}\t${s.maturity}\t${s.domain ?? ''}`);
+    for (const s of await adminList({ url, key })) console.log(`${s.slug}\tv${s.version}\t${s.status}\t${s.maturity}${s.approvedBy ? ` (${s.approvedBy})` : ''}\t${s.domain ?? ''}`);
   } else {
-    throw new Error('Usage: skills-registry.mjs sync [--force] | publish [name…] [--variant-of x] [--reason y] | approve|retire|recommend|unrecommend <name> | list');
+    throw new Error('Usage: skills-registry.mjs sync [--force] | publish [name…] [--variant-of x] [--reason y] | release|retire|recommend|unrecommend <name> | approve <name> --by "Name" | list');
   }
 }
 

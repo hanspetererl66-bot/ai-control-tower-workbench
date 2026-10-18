@@ -193,20 +193,20 @@ installed Space contains the updated page.
 ## Shared skills registry (Supabase)
 
 Skills can be shared with colleagues through the same Supabase project (migration `007`). The Goose agent
-reads skills from files, so colleagues **sync** approved skills into their local `goose-home/.agents/skills/`.
+reads skills from files, so colleagues **sync** published skills into their local `goose-home/.agents/skills/`.
 
-- **Read (everyone):** the publishable key can call `skills_list` / `skills_get`, which only return `approved` skills.
-- **Write (maintainer):** the secret key publishes drafts and approves them; the agent has no tool for this.
+- **Read (everyone):** the publishable key can call `skills_list` / `skills_get`, which only return `published` skills.
+- **Write (maintainer):** the secret key uploads drafts and releases them (`release`); the agent has no tool for this.
 - **Safety:** every version is checksummed (SHA-256, verified on sync); names must equal the folder name;
   skills that look like they contain credentials are refused; local skills are never overwritten (`--force` to replace).
 
 ```bash
-# Colleague: pull approved skills (then restart the agent)
+# Colleague: pull published skills (then restart the agent)
 SUPABASE_URL=https://<ref>.supabase.co SUPABASE_KEY=<publishable key> npm run skills:sync
 
 # Maintainer
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills:publish            # upload examples/skills/* as drafts
-SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- approve board-briefing
+SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- release board-briefing
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- retire board-briefing
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- list
 ```
@@ -226,11 +226,30 @@ metadata:
 ```
 
 - **Search before building:** the connector tools `search_skills` and `get_skill_info`, and the skill `skill-finder`,
-  look up approved skills by task description (German full-text search plus shared tools).
+  look up published skills by task description (German full-text search plus shared tools).
 - **Duplicate check on publish:** `npm run skills:publish` looks up similar skills first. If one is similar, the skill is
   not uploaded until you pass `--variant-of <name>` or `--reason "neu weil …"`; the decision is stored in the profile.
-- **Maturity:** new and changed skills start as `pilot`; curators mark good ones with `npm run skills -- recommend <name>`.
+- **Maturity** (see below): new and changed skills start as `pilot`.
 - The tool dependencies are stored as rows in `skills.skill_tool`; they become the edges of the knowledge graph in stage 2.
+
+### Maturity, approval and ranking
+
+Two separate things describe a skill:
+
+- **Publication status:** `draft` → `published` → `retired`. Only published skills are visible, searchable and synced
+  (`npm run skills -- release <name>` / `retire <name>`). This was called `approved` before migration `010`.
+- **Maturity:** `pilot` → `empfohlen` (recommended) → `approved`. `recommend` / `unrecommend` switch between the first two.
+  **Approved** is the official review and records who approved which version and when:
+  `npm run skills -- approve <name> --by "Name"` (or `SKILL_APPROVER`); the skill has to be released first.
+  Any new version of a skill falls back to `pilot` and clears the approval.
+
+**Demand ranking.** Installs (by `skills:sync`), views (`get_skill_info`) and search hits (`search_skills`) are counted per
+anonymous machine hash, with no name or address. One machine counts once per skill and event within a day (install) or
+ten minutes (view, search hit). Score = 3 × installs + 1 × views + 0.5 × search hits over the last 30 days, with the trend against
+the 30 days before. The Space has a **Ranking** tab (top 10, filter by board area); the chat answers
+"Welche Skills sind am stärksten nachgefragt?" with `get_skill_ranking` (connector 0.9.0). The counters are best-effort
+and can be inflated by anyone holding the publishable key, so treat the numbers as a signal, not as proof. The skill itself
+does not report its use yet.
 
 ### Skill marketplace overview: board areas, LOBs, teams, individual
 
@@ -239,11 +258,11 @@ Every skill profile can carry a classification in the `metadata:` block of its `
 `team` (free text) and `scope`, the reach of the skill: `individual` → `team` → `lob` → `board-area` → `company`.
 A skill without a scope counts as `individual`; a team scope needs a team, a LOB scope a LOB. Apply migration `009`
 (only function bodies change) before publishing skills with the new fields; changed skills go back to draft and need
-`npm run skills -- approve <name>` again.
+`npm run skills -- release <name>` again.
 
 - **Space "Skill Marketplace":** `npm run install:skill-marketplace` installs it (overview by board area, LOB and team, catalog with filters,
   hints on possible duplicates and gaps). `npm run sync:skill-marketplace` embeds the example skills of the repository;
-  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` embeds the approved skills of the registry.
+  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` embeds the published skills of the registry.
   Skills tagged **Sample** are fictional and only show the structure.
 - **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
 - **Knowledge graph later:** board area, LOB, team, scope and the tool rows in `skills.skill_tool` are the nodes and edges of stage 2;

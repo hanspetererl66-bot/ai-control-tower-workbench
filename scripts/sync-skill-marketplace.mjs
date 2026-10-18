@@ -36,14 +36,18 @@ export function repoSkills(root = ROOT) {
     .filter((e) => e.isDirectory())
     .map((e) => {
       const { name, description, meta } = parseSkill(readFileSync(join(dir, e.name, 'SKILL.md'), 'utf8'));
-      return { ...catalogEntry({ slug: name, description, owner: '', version: 1, maturity: 'pilot', meta }), sample: false };
+      return { ...catalogEntry({ slug: name, description, owner: '', version: 1, maturity: 'pilot', meta }), demand: { installs: 0, views: 0, searchHits: 0, previousScore: 0 }, sample: false };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function registrySkills({ url, key, fetchImpl = fetch }) {
   const rows = await rpc({ url, key, fn: 'skills_list', fetchImpl });
-  return rows.map((row) => ({ ...catalogEntry(row), sample: false })).sort((a, b) => a.name.localeCompare(b.name));
+  const ranking = await rpc({ url, key, fn: 'skills_ranking', args: { p_days: 30, p_limit: 200 }, fetchImpl });
+  const demand = new Map(ranking.map((r) => [r.slug, { installs: r.installs, views: r.views, searchHits: r.searchHits, previousScore: r.previousScore }]));
+  return rows
+    .map((row) => ({ ...catalogEntry(row), demand: demand.get(row.slug) ?? { installs: 0, views: 0, searchHits: 0, previousScore: 0 }, sample: false }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function buildCatalog({ registered, samples, source, asOf }) {
