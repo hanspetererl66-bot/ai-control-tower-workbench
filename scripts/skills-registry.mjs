@@ -13,6 +13,11 @@ export const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest
 
 export const DOMAINS = ['Governance & Risiko', 'Service & Support', 'Finanzen', 'HR', 'Entwicklung', 'Betrieb', 'Sonstiges'];
 export const DATA_CLASSES = ['öffentlich', 'intern', 'vertraulich'];
+export const BOARD_AREAS = ['Finance', 'Sales', 'Marketing', 'Engineering'];
+/** LOB -> board area it belongs to. */
+export const LOBS = { BTP: 'Engineering', Concur: 'Engineering', SuccessFactors: 'Engineering' };
+/** Reach of a skill, narrow to wide. A skill starts as 'individual' and is promoted by review. */
+export const SCOPES = ['individual', 'team', 'lob', 'board-area', 'company'];
 
 /** Names of all tools the bundled connectors offer (from their manifests). */
 export function knownTools(root = ROOT) {
@@ -58,6 +63,15 @@ export function validateSkill(slug, text, { tools } = {}) {
   if (SECRET_LIKE.test(text)) throw new Error(`${slug}: contains something that looks like a credential`);
   if (meta.domain && !DOMAINS.includes(meta.domain)) throw new Error(`${slug}: domain must be one of ${DOMAINS.join(', ')}`);
   if (meta.data_class && !DATA_CLASSES.includes(meta.data_class)) throw new Error(`${slug}: data-class must be one of ${DATA_CLASSES.join(', ')}`);
+  if (meta.board_area && !BOARD_AREAS.includes(meta.board_area)) throw new Error(`${slug}: board-area must be one of ${BOARD_AREAS.join(', ')}`);
+  if (meta.lob) {
+    if (!LOBS[meta.lob]) throw new Error(`${slug}: lob must be one of ${Object.keys(LOBS).join(', ')}`);
+    if (meta.board_area && meta.board_area !== LOBS[meta.lob]) throw new Error(`${slug}: lob ${meta.lob} belongs to ${LOBS[meta.lob]}, not ${meta.board_area}`);
+  }
+  if (meta.scope && !SCOPES.includes(meta.scope)) throw new Error(`${slug}: scope must be one of ${SCOPES.join(', ')}`);
+  if (meta.scope === 'team' && !meta.team) throw new Error(`${slug}: scope team needs a team`);
+  if (meta.scope === 'lob' && !meta.lob) throw new Error(`${slug}: scope lob needs a lob`);
+  if (meta.scope === 'board-area' && !meta.board_area && !meta.lob) throw new Error(`${slug}: scope board-area needs a board-area`);
   if (tools) {
     const unknown = meta.tools.filter((t) => !tools.has(t));
     if (unknown.length) throw new Error(`${slug}: unknown connector tool(s): ${unknown.join(', ')}`);

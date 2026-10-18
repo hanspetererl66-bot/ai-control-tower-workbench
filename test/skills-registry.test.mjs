@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { knownTools, parseSkill, publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
+import { BOARD_AREAS, LOBS, SCOPES, knownTools, parseSkill, publishSkills, sha256, syncSkills, validateSkill } from '../scripts/skills-registry.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const skillText = (name, extra = '') => `---\nname: ${name}\ndescription: Testskill ${name}\n---\n\n# ${name}\n${extra}\n`;
@@ -169,4 +169,36 @@ test('migration 008 keeps search public-read and similarity and writes service-r
   assert.match(sql, /drop function if exists public\.skills_publish\(text, text, text, text\)/);
   assert.equal((sql.match(/status = 'approved'/g) ?? []).length, 3, 'list, get and search filter on approved');
   assert.doesNotMatch(sql, /to anon[^;]*skills_(publish|similar|set_)/);
+});
+
+test('classification: board area, LOB and scope are validated and must be consistent', () => {
+  const skill = (extra) => `---\nname: a-skill\ndescription: d\nmetadata:\n${extra}\n---\n`;
+  assert.doesNotThrow(() => validateSkill('a-skill', skill('  board-area: Engineering\n  lob: BTP\n  scope: lob')));
+  assert.doesNotThrow(() => validateSkill('a-skill', skill('  lob: Concur\n  scope: team\n  team: Delivery')));
+  assert.throws(() => validateSkill('a-skill', skill('  board-area: Legal')), /board-area/);
+  assert.throws(() => validateSkill('a-skill', skill('  lob: Retail')), /lob/);
+  assert.throws(() => validateSkill('a-skill', skill('  board-area: Finance\n  lob: BTP')), /belongs to Engineering/);
+  assert.throws(() => validateSkill('a-skill', skill('  scope: planet')), /scope/);
+  assert.throws(() => validateSkill('a-skill', skill('  scope: team')), /needs a team/);
+  assert.throws(() => validateSkill('a-skill', skill('  scope: lob')), /needs a lob/);
+  assert.throws(() => validateSkill('a-skill', skill('  scope: board-area')), /needs a board-area/);
+  assert.deepEqual(parseSkill(skill('  board-area: Sales\n  scope: team\n  team: AM')).meta.board_area, 'Sales');
+});
+
+test('migration 009 uses the same taxonomy as the script and changes only function bodies', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261018_009_skills_classification.sql'), 'utf8');
+  const list = (re) => [...re.exec(sql)[1].matchAll(/'([A-Za-z-]+)'/g)].map((m) => m[1]);
+  assert.deepEqual(list(/ba not in \(([^)]*)\)/), BOARD_AREAS);
+  assert.deepEqual(list(/lob not in \(([^)]*)\)/), Object.keys(LOBS));
+  assert.deepEqual(list(/sc not in \(([^)]*)\)/), SCOPES);
+  assert.doesNotMatch(sql.replace(/--.*/g, ''), /\b(drop|alter table|create table|grant|revoke)\b/i, 'no schema or permission change');
+  assert.match(sql, /'boardArea'/);
+});
+
+test('the example skills carry a classification the registry accepts', () => {
+  for (const name of ['board-briefing', 'ticket-writer', 'skill-finder']) {
+    const text = readFileSync(join(ROOT, 'examples/skills', name, 'SKILL.md'), 'utf8');
+    const { meta } = validateSkill(name, text, { tools: knownTools() });
+    assert.ok(SCOPES.includes(meta.scope), `${name} has a scope`);
+  }
 });

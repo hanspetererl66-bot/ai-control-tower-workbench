@@ -508,6 +508,46 @@ test('skill tools query the registry functions and never return skill text', asy
   );
 });
 
+test('list_skill_catalog counts per board area, LOB, team and reach and filters', async () => {
+  const row = (slug, owner, meta) => ({ slug, description: `d ${slug}`, owner, version: 1, maturity: 'pilot', meta: { tools: [], ...meta } });
+  const rows = [
+    row('a-one', 'Anna', { board_area: 'Engineering', lob: 'BTP', team: 'Platform Ops', scope: 'lob' }),
+    row('b-two', 'Ben', { board_area: 'Finance', team: 'Accounting', scope: 'team' }),
+    row('c-three', 'Cem', { scope: 'company' }),
+    { slug: 'd-old', description: 'old', owner: '', version: 1, maturity: 'pilot', meta: { domain: 'Finanzen' } },
+  ];
+  const bodies = [];
+  await withFakeSupabase(
+    (request, response) => {
+      bodies.push(request.url);
+      response.setHeader('content-type', 'application/json');
+      response.end(JSON.stringify(rows));
+    },
+    async (url) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        const all = parse(await server.call('list_skill_catalog', {}));
+        assert.equal(all.total, 4);
+        assert.deepEqual(all.byBoardArea, { Engineering: 1, Finance: 1, 'Nicht eingeordnet': 2 });
+        assert.deepEqual(all.byLob, { BTP: 1 });
+        assert.deepEqual(all.byScope, { lob: 1, team: 1, company: 1, individual: 1 }, 'skills without a scope count as individual');
+        const eng = parse(await server.call('list_skill_catalog', { boardArea: 'Engineering' }));
+        assert.deepEqual(eng.skills.map((s) => s.name), ['a-one']);
+        assert.equal(eng.total, 4, 'totals stay unfiltered');
+        const team = parse(await server.call('list_skill_catalog', { team: 'accounting' }));
+        assert.deepEqual(team.skills.map((s) => s.name), ['b-two']);
+        assert.equal(parse(await server.call('list_skill_catalog', { owner: 'cem' })).count, 1);
+        assert.equal((await server.call('list_skill_catalog', { boardArea: 'Legal' })).isError, true);
+        assert.equal((await server.call('list_skill_catalog', { scope: 'planet' })).isError, true);
+        assert.ok(bodies.every((u) => u.endsWith('skills_list')), 'only the approved-only read function is used');
+        assert.doesNotMatch(JSON.stringify(all), /body/);
+      } finally {
+        server.stop();
+      }
+    }
+  );
+});
+
 test('skill tools explain that Supabase is needed when it is not configured', async () => {
   const server = startServer(SERVER, { SUPABASE_URL: '', SUPABASE_SECRET_KEY: '' });
   try {
