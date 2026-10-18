@@ -796,28 +796,12 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 <!-- ═══════════ 03 · KPIs + DORA ═══════════ -->
 <section id="page-kpis" class="pg">
 
-  <div class="ab ab-i" style="margin-bottom:20px">
-    <div class="aico" style="color:var(--purple)">&#128202;</div>
-    <div>
-      <div class="atit" style="color:var(--purple)">DORA 2025 central finding: AI improves throughput &mdash; but still increases instability <span class="src s-dora">DORA 2025 n&asymp;5,000</span></div>
-      <div class="abod">For the first time since 2024, AI adoption shows a <strong>positive effect on deployment frequency and lead time</strong>. However, it <strong>continues to raise Change Failure Rate and Rework Rate</strong>. At 30k engineers, a 3.3pp CFR increase means roughly 1,500 more failed deployments per month than the non-AI baseline. This is the primary risk requiring governance investment.</div>
-    </div>
-  </div>
-
   <div class="sh">DORA metrics &mdash; AI-assisted cohort (18,000 engineers) vs non-AI baseline</div>
   <div class="g4" style="margin-bottom:20px">
     <div class="dtier on"><div class="dm">Deployment Freq</div><div class="dv" style="color:var(--purple)">Daily</div><div class="ds"><span class="tag t-p">High tier</span></div><div style="font-size:10px;color:var(--g500);margin-top:6px">Baseline: weekly &middot; <span style="color:var(--green);font-weight:600">+1 tier</span> with AI</div></div>
     <div class="dtier on"><div class="dm">Lead Time for Changes</div><div class="dv" style="color:var(--purple)">1.9d</div><div class="ds"><span class="tag t-p">High tier</span></div><div style="font-size:10px;color:var(--g500);margin-top:6px">Baseline: 4.1d &middot; <span style="color:var(--green);font-weight:600">-54%</span></div></div>
     <div class="dtier"><div class="dm">Change Failure Rate</div><div class="dv" style="color:var(--amber)">9.1%</div><div class="ds"><span class="tag t-a">Medium tier &#9650;</span></div><div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">&#8593;3.3pp from 5.8% baseline</div></div>
     <div class="dtier"><div class="dm">Rework Rate</div><div class="dv" style="color:var(--amber)">12.8%</div><div class="ds"><span class="tag t-a">Medium &#9650;</span></div><div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">&#8593;6.3pp from 6.5% baseline</div></div>
-  </div>
-
-  <div class="ab ab-w">
-    <div class="aico">&#9889;</div>
-    <div>
-      <div class="atit" style="color:var(--amber)">Scale impact: CFR 9.1% on 30k engineers = ~1,500 extra failed deployments / month vs baseline</div>
-      <div class="abod">At 30k engineers deploying daily, even a 3.3pp CFR increase at this scale is a significant operational load. DORA 2025 confirms: <em>AI amplifies existing weaknesses</em>. Required: (1) mandatory automated test gates on all AI-generated PRs, (2) HITL review for production-adjacent code, (3) model-version locking to prevent silent regressions. The rework rate of 12.8% also translates to roughly 12,800 hours of unplanned rework per week across the org.</div>
-    </div>
   </div>
 
   <div class="g2" style="margin-bottom:20px">
