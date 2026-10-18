@@ -180,7 +180,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
     </div>
   </div>
   <div class="hdr-right">
-    <div><div class="hdr-stat-val" id="htime">&mdash;</div><div class="hdr-stat-lbl">Local time</div></div>
+    <div><div class="hdr-stat-val" id="htime">&mdash;</div><div class="hdr-stat-lbl" id="hdate">Local time</div></div>
     <div class="live"><div class="live-dot"></div>Live</div>
   </div>
 </header>
@@ -6007,6 +6007,8 @@ window.addEventListener('message',function(e){
 function tick(){
   const el=document.getElementById('htime');
   if(el)el.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var dl=document.getElementById('hdate');
+  if(dl)dl.textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 }
 tick();setInterval(tick,1000);
 
