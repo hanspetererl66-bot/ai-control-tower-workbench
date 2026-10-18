@@ -35,6 +35,7 @@ import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
 import CoverSheet from './ui/CoverSheet';
+import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
 
 const WORKDIR = window.host?.workspacePath ?? '';
 
@@ -122,6 +123,20 @@ export default function App() {
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
+  const speaker = useRef<ReplySpeaker | null>(null);
+  const voiceRef = useRef(voice);
+  voiceRef.current = voice;
+  useEffect(() => {
+    void window.host?.voice?.getSettings().then(setVoice).catch(() => undefined);
+    return () => speaker.current?.stop();
+  }, []);
+  async function saveVoice(patch: Partial<Omit<VoiceSettings, 'hasKey'>> & { key?: string }) {
+    const result = await window.host?.voice?.saveSettings(patch);
+    if (result?.ok && result.settings) setVoice(result.settings);
+    if (!patch.speak) speaker.current?.stop();
+    return result;
+  }
   const [appearance, setAppearance] = useState<AppearancePreference>(() =>
     readAppearance(window.localStorage)
   );
@@ -247,6 +262,7 @@ export default function App() {
     const handlers = {
       onChunk: (t: string) => {
         draft.current += t;
+        speaker.current?.feed(t);
         flush();
       },
       onToolCall: (tc: ToolCall) => {
@@ -310,6 +326,8 @@ export default function App() {
     }
     draft.current = '';
     tools.current = [];
+    speaker.current?.stop();
+    speaker.current = voiceRef.current.speak ? new ReplySpeaker(voiceRef.current.language) : null;
     setMessages((prev) => [
       ...prev,
       {
@@ -429,6 +447,7 @@ export default function App() {
         flush();
       }
     } finally {
+      speaker.current?.finish();
       setBusy(false);
       const nextSpaces = await refreshSpaces();
       const spaceResult = wantsSpace(text)
@@ -455,6 +474,7 @@ export default function App() {
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
+    speaker.current?.stop();
     try {
       await agent.cancel();
     } catch (e: any) {
@@ -504,6 +524,9 @@ export default function App() {
       onManageConnectors={() => setView('manage')}
       onInstallConnector={installControlTowerConnector}
       starters={empty}
+      voice={voice}
+      onOpenSettings={() => setSettingsOpen(true)}
+      onStopSpeaking={() => speaker.current?.stop()}
     />
   );
   const disclaimer = (
@@ -744,6 +767,8 @@ export default function App() {
           appearance={appearance}
           resolvedTheme={resolvedTheme}
           onChange={setAppearance}
+          voice={voice}
+          onVoiceChange={saveVoice}
           onClose={() => setSettingsOpen(false)}
         />
       )}

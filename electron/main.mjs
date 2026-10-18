@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } from 'electron';
 import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments } from './attachments.mjs';
+import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1189,8 +1190,52 @@ if (!app.requestSingleInstanceLock()) {
   });
 }
 
+/* ---------------- voice input ----------------
+ * Key + settings live in their own encrypted file (not the connector store, which goosed inherits as env).
+ * The microphone is granted to the app's own page only; Spaces (sandboxed iframes) never get it. */
+const voiceStore = createVoiceStore({ file: join(ROOT, 'goose-home', 'voice.enc'), safeStorage });
+
+ipcMain.handle('voice-get-settings', () => voiceStore.getPublic());
+ipcMain.handle('voice-save-settings', (_event, patch) => {
+  try {
+    return { ok: true, settings: voiceStore.save(patch && typeof patch === 'object' ? patch : {}) };
+  } catch (error) {
+    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
+  }
+});
+ipcMain.handle('voice-transcribe', async (_event, { audio, mimeType } = {}) => {
+  try {
+    const settings = voiceStore.getPublic();
+    const text = await transcribeWithDeepgram({
+      audio: Buffer.from(audio ?? []),
+      mimeType,
+      key: voiceStore.getKey(),
+      language: settings.language,
+    });
+    return { ok: true, text };
+  } catch (error) {
+    const known = error instanceof VoiceError;
+    return { ok: false, code: known ? error.code : 'unknown', detail: known ? error.message : 'Spracherkennung fehlgeschlagen.' };
+  }
+});
+
+function allowOnlyAppMicrophone() {
+  const appOrigin = new URL(DEV_URL).origin;
+  const ses = session.defaultSession;
+  ses.setPermissionRequestHandler((_wc, permission, callback, details) => {
+    // Everything except the microphone keeps Electron's default (granted) so existing behaviour is unchanged.
+    callback(permission === 'media' ? isAppAudioRequest({ permission, details, appOrigin }) : true);
+  });
+  ses.setPermissionCheckHandler((_wc, permission, requestingOrigin, details) =>
+    permission === 'media'
+      ? isAppAudioRequest({ permission, details, appOrigin, requestingUrl: details?.requestingUrl ?? requestingOrigin })
+      : true
+  );
+}
+
 app.whenReady().then(() => {
   startGoosed();
+  allowOnlyAppMicrophone();
   createWindow();
   const cold = process.argv.find((a) => a.startsWith('werkbank://'));
   if (cold) handleDeepLink(cold);

@@ -1,6 +1,8 @@
 import { PRODUCT_NAME } from '../product';
 import { useEffect } from 'react';
+import { useState } from 'react';
 import type { AppearancePreference, ResolvedTheme } from '../appearance';
+import { speechSupported, type VoiceSettings } from '../voice';
 
 const OPTIONS: Array<{
   id: AppearancePreference;
@@ -16,11 +18,17 @@ export default function SettingsDialog({
   appearance,
   resolvedTheme,
   onChange,
+  voice,
+  onVoiceChange,
   onClose,
 }: {
   appearance: AppearancePreference;
   resolvedTheme: ResolvedTheme;
   onChange: (preference: AppearancePreference) => void;
+  voice?: VoiceSettings;
+  onVoiceChange?: (
+    patch: Partial<Omit<VoiceSettings, 'hasKey'>> & { key?: string }
+  ) => Promise<{ ok: boolean; detail?: string } | undefined>;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -81,7 +89,89 @@ export default function SettingsDialog({
             ))}
           </div>
         </div>
+        {voice && onVoiceChange && <VoiceSection voice={voice} onVoiceChange={onVoiceChange} />}
       </section>
+    </div>
+  );
+}
+
+function VoiceSection({
+  voice,
+  onVoiceChange,
+}: {
+  voice: VoiceSettings;
+  onVoiceChange: NonNullable<Parameters<typeof SettingsDialog>[0]['onVoiceChange']>;
+}) {
+  const [key, setKey] = useState('');
+  const [message, setMessage] = useState('');
+
+  async function run(patch: Parameters<typeof onVoiceChange>[0], done?: string) {
+    const result = await onVoiceChange(patch);
+    setMessage(result?.ok === false ? (result.detail ?? 'Speichern fehlgeschlagen.') : (done ?? ''));
+  }
+
+  return (
+    <div className="settings-section settings-voice">
+      <div className="settings-section-copy">
+        <h4>Sprache</h4>
+        <p>
+          Spracheingabe sendet die Aufnahme an Deepgram (EU-Endpunkt) und fügt den erkannten Text in das
+          Eingabefeld ein. Gespeichert wird nur Text, kein Audio. Der Key liegt verschlüsselt im Schlüsselbund
+          dieses Rechners.
+        </p>
+      </div>
+      <div className="voice-row">
+        <input
+          type="password"
+          className="voice-key"
+          value={key}
+          placeholder={voice.hasKey ? 'Key gespeichert — zum Ersetzen neuen Key einfügen' : 'Deepgram API-Key'}
+          autoComplete="off"
+          spellCheck={false}
+          onChange={(event) => setKey(event.target.value)}
+          aria-label="Deepgram API key"
+        />
+        <button
+          className="ghost-btn"
+          disabled={!key.trim()}
+          onClick={async () => {
+            await run({ key }, 'Key gespeichert.');
+            setKey('');
+          }}
+        >
+          Speichern
+        </button>
+        {voice.hasKey && (
+          <button className="ghost-btn" onClick={() => run({ key: '' }, 'Key entfernt.')}>
+            Entfernen
+          </button>
+        )}
+      </div>
+      <label className="voice-option">
+        <span>Sprache der Eingabe</span>
+        <select value={voice.language} onChange={(event) => run({ language: event.target.value as 'de' | 'en' })}>
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <label className="voice-option">
+        <input
+          type="checkbox"
+          checked={voice.autoSend}
+          onChange={(event) => run({ autoSend: event.target.checked })}
+        />
+        <span>Erkannten Text sofort senden</span>
+      </label>
+      <label className="voice-option">
+        <input
+          type="checkbox"
+          checked={voice.speak}
+          disabled={!speechSupported()}
+          onChange={(event) => run({ speak: event.target.checked })}
+        />
+        <span>Antworten vorlesen (Systemstimme, Code und Tabellen werden übersprungen)</span>
+      </label>
+      {message && <p className="voice-message" role="status">{message}</p>}
     </div>
   );
 }
