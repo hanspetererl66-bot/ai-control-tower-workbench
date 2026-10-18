@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget) from Supabase or bundled sample data. Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -67,6 +67,10 @@
     {
       "name": "get_skill_info",
       "description": "Profile of one approved skill from the shared registry (no skill text)."
+    },
+    {
+      "name": "list_skill_catalog",
+      "description": "Skill marketplace overview: counts per board area, LOB, team and reach, with the skills; filterable."
     },
     {
       "name": "list_contracts",

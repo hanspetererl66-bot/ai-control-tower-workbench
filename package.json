@@ -12,11 +12,13 @@
     "typecheck": "tsc --noEmit",
     "sync:design": "node scripts/sync-design-system.mjs",
     "sync:control-tower": "node scripts/sync-control-tower-data.mjs",
+    "sync:skill-marketplace": "node scripts/sync-skill-marketplace.mjs",
     "build:control-tower-mcpb": "node scripts/build-control-tower-mcpb.mjs",
     "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",
     "gmail:authorize": "node scripts/gmail-authorize.mjs",
     "install:control-tower": "node scripts/install-example-space.mjs control-tower",
     "install:sub4me": "node scripts/install-example-space.mjs sub4me",
+    "install:skill-marketplace": "node scripts/install-example-space.mjs skill-marketplace",
     "install:skills": "node scripts/install-example-skills.mjs",
     "skills": "node scripts/skills-registry.mjs",
     "skills:sync": "node scripts/skills-registry.mjs sync",
@@ -24,7 +26,13 @@
     "install:examples": "node scripts/install-example-space.mjs",
     "check": "npm run typecheck && npm test && npm run build"
   },
-  "keywords": ["ai", "desktop", "mcp", "agents", "goose"],
+  "keywords": [
+    "ai",
+    "desktop",
+    "mcp",
+    "agents",
+    "goose"
+  ],
   "author": "Marian Zeis",
   "license": "Apache-2.0",
   "repository": {

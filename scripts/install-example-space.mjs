@@ -8,6 +8,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const EXAMPLE_SPACES = {
   'control-tower': 'ai-control-tower',
   sub4me: 'sub4me',
+  'skill-marketplace': 'skill-marketplace',
 };
 
 /**

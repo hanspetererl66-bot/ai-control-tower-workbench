@@ -1,0 +1,10 @@
+{
+  "title": "Skill Marketplace",
+  "description": "Overview of the shared skill registry: skills by board area, LOB, team and reach, with a searchable catalog and hints on duplicates and gaps.",
+  "insights": [
+    "Skills are classified by board area (Finance, Sales, Marketing, Engineering), LOB (BTP, Concur, SuccessFactors), team and reach.",
+    "A skill starts as individual and is promoted step by step: team, LOB, board area, company.",
+    "Skills marked Sample are fictional and only illustrate the structure; registered skills come from the registry."
+  ],
+  "prompt": "Bundled example: Skill Marketplace overview (static, data embedded by npm run sync:skill-marketplace)."
+}

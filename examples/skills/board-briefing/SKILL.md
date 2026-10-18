@@ -6,6 +6,7 @@ metadata:
   process: Board-Reporting
   data-class: intern
   language: de
+  scope: company
   team: AI Programme Office
   tools: get_risks, get_agent_overview, get_overprivileged_agents, get_budget, list_agents
 ---

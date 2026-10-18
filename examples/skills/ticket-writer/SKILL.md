@@ -6,6 +6,9 @@ metadata:
   process: Serviceticket anlegen
   data-class: intern
   language: de
+  board-area: Engineering
+  lob: SuccessFactors
+  scope: lob
   team: AI Programme Office
   tools: list_tickets, create_ticket
 ---

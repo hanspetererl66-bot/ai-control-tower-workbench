@@ -6,6 +6,7 @@ metadata:
   process: Skill-Entwicklung
   data-class: öffentlich
   language: de
+  scope: company
   team: AI Programme Office
   tools: search_skills, get_skill_info
 ---
