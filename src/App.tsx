@@ -28,7 +28,7 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
-import SpaceViewer from './ui/SpaceViewer';
+import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
 
 const WORKDIR = window.host?.workspacePath ?? '';
@@ -113,6 +113,7 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
+  const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [appearance, setAppearance] = useState<AppearancePreference>(() =>
     readAppearance(window.localStorage)
@@ -594,7 +595,11 @@ export default function App() {
         />
       ) : view === 'spaces' ? (
         space ? (
-          <SpaceViewer key={`${space.slug}-${space.updatedAt}`} space={space} />
+          <SpaceViewer
+            key={`${space.slug}-${space.updatedAt}`}
+            space={space}
+            tabRequest={space.slug === 'ai-control-tower' ? spaceTab : null}
+          />
         ) : (
           <main className="main">
             <div className="empty">
@@ -645,6 +650,16 @@ export default function App() {
                 busy={busy}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
+                  setView('spaces');
+                }}
+                onOpenView={(target) => {
+                  if (!spaces.some((candidate) => candidate.slug === target.space)) {
+                    setToast('The AI Control Tower space is not installed yet (npm run install:control-tower).');
+                    setTimeout(() => setToast(null), 6000);
+                    return;
+                  }
+                  setSelectedSpace(target.space);
+                  setSpaceTab({ tab: target.tab, nonce: Date.now() });
                   setView('spaces');
                 }}
               />

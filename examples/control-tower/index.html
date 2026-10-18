@@ -2571,6 +2571,15 @@ function go(id,btn){
   document.getElementById('page-'+id).classList.add('on');
   btn.classList.add('on');
 }
+// The host (Werkbank chat) can ask this page to show a tab. Only the parent window
+// is listened to, and only ids that exist as tabs on this page are accepted.
+window.addEventListener('message',function(e){
+  if(e.source!==window.parent)return;
+  var d=e.data;
+  if(!d||d.type!=='ct:open-tab'||typeof d.tab!=='string'||!/^[a-z]+$/.test(d.tab))return;
+  var btn=document.querySelector('.tb[onclick^="go(\''+d.tab+'\'"]');
+  if(btn&&document.getElementById('page-'+d.tab))go(d.tab,btn);
+});
 function tick(){
   const el=document.getElementById('htime');
   if(el)el.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});

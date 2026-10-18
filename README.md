@@ -125,3 +125,12 @@ carries a `dataSource` field saying which one was used.
   so never put it in the repo; Werkbank stores it as a secret.
 - Read-only: the connector has no write tools. `data.json` stays the source for the embedded dashboard.
 
+### Chat → dashboard
+
+After an answer that used the Control Tower connector, the chat shows a button such as
+"Im Control Tower ansehen: Risk & Compliance". It opens the Space and switches to the tab that shows the
+same information (`src/control-tower-views.ts`: risks → Risk & Compliance, agents → Agent Repository,
+budget → Model Governance). The Space only accepts a `ct:open-tab` message from its parent window and
+only for tab ids that exist on the page. After pulling, run `npm run install:control-tower` once so the
+installed Space contains the updated page.
+

@@ -2489,3 +2489,26 @@ button {
   cursor: pointer;
   text-decoration: underline;
 }
+
+/* "Open in dashboard" buttons under Control Tower answers. */
+.view-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.view-link {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.view-link:hover {
+  border-color: var(--accent);
+}
