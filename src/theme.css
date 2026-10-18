@@ -2604,6 +2604,12 @@ button {
   color: var(--muted);
 }
 
+/* Drag and drop of Spaces in the left list */
+.card[draggable='true'] { cursor: grab; }
+.card[draggable='true']:active { cursor: grabbing; }
+.card-dragging { opacity: 0.45; }
+.card-drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
+.card-drop-after { box-shadow: 0 3px 0 0 var(--accent); }
 /* Small icon next to a skill title */
 .skill-icon {
   display: inline-grid;

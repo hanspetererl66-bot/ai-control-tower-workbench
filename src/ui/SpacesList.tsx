@@ -1,3 +1,4 @@
+import { useState, type DragEvent, type KeyboardEvent } from 'react';
 import { PRODUCT_NAME } from '../product';
 import { relativeTime, type Space } from '../spaces';
 
@@ -5,9 +6,48 @@ type Props = {
   spaces: Space[];
   selected: string | null;
   onSelect: (slug: string) => void;
+  /** Drop `from` before `to`, or after it when `after` is set. */
+  onReorder?: (from: string, to: string, after: boolean) => void;
+  /** Alt+Arrow keys: move one step up or down. */
+  onNudge?: (slug: string, direction: -1 | 1) => void;
 };
 
-export default function SpacesList({ spaces, selected, onSelect }: Props) {
+type DropMark = { slug: string; after: boolean };
+
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge }: Props) {
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [mark, setMark] = useState<DropMark | null>(null);
+
+  function overCard(event: DragEvent<HTMLButtonElement>, slug: string) {
+    if (!dragging) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const box = event.currentTarget.getBoundingClientRect();
+    const after = event.clientY > box.top + box.height / 2;
+    setMark((current) => (current?.slug === slug && current.after === after ? current : { slug, after }));
+  }
+
+  function endDrag() {
+    setDragging(null);
+    setMark(null);
+  }
+
+  function dropOn(event: DragEvent<HTMLButtonElement>, slug: string) {
+    event.preventDefault();
+    const from = dragging ?? event.dataTransfer.getData('text/plain');
+    const after = mark?.slug === slug ? mark.after : false;
+    endDrag();
+    if (from && onReorder) onReorder(from, slug, after);
+  }
+
+  function keyDown(event: KeyboardEvent<HTMLButtonElement>, slug: string) {
+    if (!event.altKey || !onNudge) return;
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      onNudge(slug, event.key === 'ArrowUp' ? -1 : 1);
+    }
+  }
+
   return (
     <aside className="list">
       <div className="list-head">
@@ -28,8 +68,24 @@ export default function SpacesList({ spaces, selected, onSelect }: Props) {
         spaces.map((s) => (
           <button
             key={s.slug}
-            className={`card ${selected === s.slug ? 'card-on' : ''}`}
+            className={[
+              'card',
+              selected === s.slug ? 'card-on' : '',
+              dragging === s.slug ? 'card-dragging' : '',
+              mark?.slug === s.slug && dragging !== s.slug ? (mark.after ? 'card-drop-after' : 'card-drop-before') : '',
+            ].filter(Boolean).join(' ')}
+            draggable={Boolean(onReorder)}
+            title={onReorder ? 'Drag to reorder (or Alt+↑ / Alt+↓)' : undefined}
             onClick={() => onSelect(s.slug)}
+            onDragStart={(event) => {
+              event.dataTransfer.effectAllowed = 'move';
+              event.dataTransfer.setData('text/plain', s.slug);
+              setDragging(s.slug);
+            }}
+            onDragOver={(event) => overCard(event, s.slug)}
+            onDrop={(event) => dropOn(event, s.slug)}
+            onDragEnd={endDrag}
+            onKeyDown={(event) => keyDown(event, s.slug)}
           >
             <span className="card-head">
               <span className="card-icon"><SpaceIcon /></span>

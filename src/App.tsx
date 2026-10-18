@@ -29,6 +29,7 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
+import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE } from './sub4me-bridge';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
@@ -116,6 +117,7 @@ export default function App() {
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [spaceOrder, setSpaceOrder] = useState<string[]>(() => loadSpaceOrder(window.localStorage));
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
@@ -510,6 +512,14 @@ export default function App() {
     </p>
   );
   const space = spaces.find((s) => s.slug === selectedSpace) ?? null;
+  const orderedSpaces = orderSpaces(spaces, spaceOrder);
+
+  /** Reorder starting from what is on screen, so Spaces without a saved position get one too. */
+  function changeSpaceOrder(change: (slugs: string[]) => string[]) {
+    const next = change(orderedSpaces.map((item) => item.slug));
+    setSpaceOrder(next);
+    saveSpaceOrder(window.localStorage, next);
+  }
   const showDetails = detailsOpen && view === 'chat';
 
   function resetConversationSurface(conversationFiles: GeneratedFile[] = []) {
@@ -605,7 +615,13 @@ export default function App() {
         />
       )}
       {view === 'spaces' && (
-        <SpacesList spaces={spaces} selected={selectedSpace} onSelect={setSelectedSpace} />
+        <SpacesList
+          spaces={orderedSpaces}
+          selected={selectedSpace}
+          onSelect={setSelectedSpace}
+          onReorder={(from, to, after) => changeSpaceOrder((current) => moveSpace(current, from, to, after))}
+          onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
+        />
       )}
       {view === 'manage' && (
         <ConversationList
