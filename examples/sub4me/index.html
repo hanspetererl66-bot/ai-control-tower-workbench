@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sub4Me</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--ink:#16202e;--mut:#5d6b7e;--line:#e1e6ed;--brand:#0a5fd0;--brand-dim:#e8f0fc;
+  --ok:#0a7a4f;--ok-dim:#e4f5ed;--warn:#a85c00;--warn-dim:#fdf0dc;--bad:#c0281b;--bad-dim:#fbe7e5;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b;--panel:#171e28;--ink:#e8edf4;--mut:#93a1b5;--line:#2a3441;--brand:#5aa0ff;--brand-dim:#16294a;
+  --ok:#4cc38a;--ok-dim:#12301f;--warn:#f0b04d;--warn-dim:#3a2b10;--bad:#ff7b6e;--bad-dim:#3d1a17;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font)}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.02em}.logo b{color:var(--brand)}
+.cust{margin-left:auto;text-align:right;font-size:12px;color:var(--mut)}.cust strong{display:block;color:var(--ink);font-size:13px}
+.demo{background:var(--warn-dim);color:var(--warn);font-size:12px;padding:6px 20px;border-bottom:1px solid var(--line)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--mut);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--brand)}
+main{padding:20px;max-width:1180px;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+.k{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.v{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.s{font-size:12px;color:var(--mut)}
+h2{font-size:15px;margin:22px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.t-ok{background:var(--ok-dim);color:var(--ok)}.t-warn{background:var(--warn-dim);color:var(--warn)}.t-bad{background:var(--bad-dim);color:var(--bad)}.t-n{background:var(--brand-dim);color:var(--brand)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.bar i.warn{background:var(--warn)}.bar i.bad{background:var(--bad)}
+.months{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:10px}
+.months div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%;font-size:11px;color:var(--mut)}
+.months span{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
+.months div.cur span{opacity:.55}
+form{display:grid;gap:10px;max-width:640px}
+label{font-size:12px;font-weight:600;color:var(--mut);display:grid;gap:4px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;justify-self:start}
+.toast{margin:12px 0;padding:10px 12px;border-radius:6px;background:var(--ok-dim);color:var(--ok);display:none}
+.toast.on{display:block}
+.row{display:flex;gap:14px;flex-wrap:wrap}.row>*{flex:1 1 320px}
+@media(max-width:600px){main{padding:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Sub<b>4</b>Me</div>
+  <div class="s">Customer portal &middot; subscriptions, consumption, support</div>
+  <div class="cust"><strong id="cust-name"></strong><span id="cust-meta"></span></div>
+</header>
+<div class="demo">Demo / mock-up with fictional sample data. Not affiliated with any software vendor. Tickets you open here stay in this page and are not sent anywhere.</div>
+<nav role="tablist" id="tabs">
+  <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+  <button role="tab" data-tab="contracts" aria-selected="false">Contracts</button>
+  <button role="tab" data-tab="usage" aria-selected="false">AI units &amp; products</button>
+  <button role="tab" data-tab="tickets" aria-selected="false">Tickets</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div></section>
+  <section class="pg" id="pg-contracts"><div class="card tbl" id="contracts"></div></section>
+  <section class="pg" id="pg-usage">
+    <div class="grid" id="usage-kpis"></div>
+    <div class="row"><div class="card"><div class="k">AI units per month (2026)</div><div class="months" id="months"></div></div>
+    <div class="card tbl" id="forecast"></div></div>
+    <h2>Consumption by product</h2><div class="card tbl" id="products"></div>
+  </section>
+  <section class="pg" id="pg-tickets">
+    <div class="row">
+      <div class="card"><div class="k" style="margin-bottom:10px">Open a ticket</div>
+        <form id="ticket-form">
+          <label>Product<select name="product" id="f-product"></select></label>
+          <label>Priority<select name="priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Very high</option></select></label>
+          <label>Title<input name="title" required maxlength="120" placeholder="Short summary of the issue"></label>
+          <label>Description<textarea name="desc" rows="4" maxlength="2000" placeholder="What happened, since when, impact"></textarea></label>
+          <button class="primary" type="submit">Create ticket</button>
+        </form>
+        <div class="toast" id="toast" role="status"></div></div>
+      <div class="card tbl" style="flex:2 1 460px"><div class="k" style="margin-bottom:6px">My tickets</div><div id="tickets"></div></div>
+    </div>
+  </section>
+</main>
+<script type="application/json" id="s4m-data">
+{
+  "asOf": "2026-10-18",
+  "customer": {"name": "Muster Industrie AG", "number": "100-482-117", "contact": "A. Beispiel", "country": "Germany"},
+  "aiUnits": {
+    "periodStart": "2026-01-01", "periodEnd": "2026-12-31", "allotment": 120000,
+    "monthly": [6200, 7100, 8300, 8900, 9800, 10400, 9600, 11200, 12100, 8700]
+  },
+  "products": [
+    {"name": "Joule copilots", "allotment": 50000, "consumed": 41000},
+    {"name": "BTP AI Core", "allotment": 30000, "consumed": 28300},
+    {"name": "SuccessFactors AI", "allotment": 12000, "consumed": 9800},
+    {"name": "Ariba AI", "allotment": 10000, "consumed": 8200},
+    {"name": "Document AI", "allotment": 18000, "consumed": 5000}
+  ],
+  "contracts": [
+    {"id": "C-2024-0187", "product": "S/4HANA Cloud Private Edition", "scope": "1,200 users, 3 systems", "start": "2024-01-01", "end": "2028-12-31", "annualEur": 2840000, "status": "Active", "noticeDays": 180},
+    {"id": "C-2024-0233", "product": "Business Technology Platform", "scope": "CPEA, 600k capacity units", "start": "2024-04-01", "end": "2027-03-31", "annualEur": 640000, "status": "Active", "noticeDays": 90},
+    {"id": "C-2025-0041", "product": "SuccessFactors Employee Central", "scope": "4,800 employees", "start": "2025-01-01", "end": "2026-12-31", "annualEur": 410000, "status": "Renewal due", "noticeDays": 90},
+    {"id": "C-2023-0390", "product": "Ariba Procurement", "scope": "250 buyers", "start": "2023-02-01", "end": "2027-01-31", "annualEur": 290000, "status": "Renewal due", "noticeDays": 90},
+    {"id": "C-2026-0012", "product": "AI units (Joule, AI Core, Document AI)", "scope": "120,000 units per year", "start": "2026-01-01", "end": "2026-12-31", "annualEur": 360000, "status": "Active", "noticeDays": 60},
+    {"id": "C-2022-0502", "product": "Concur Travel", "scope": "900 travellers", "start": "2022-07-01", "end": "2026-06-30", "annualEur": 95000, "status": "Expired", "noticeDays": 90}
+  ],
+  "tickets": [
+    {"id": "TKT-48213", "title": "Joule skill returns empty result for open purchase orders", "product": "Joule copilots", "priority": "High", "status": "In processing", "created": "2026-10-12", "updated": "2026-10-16"},
+    {"id": "TKT-48107", "title": "BTP AI Core deployment quota exceeded in eu10", "product": "BTP AI Core", "priority": "Very high", "status": "Waiting for customer", "created": "2026-10-08", "updated": "2026-10-15"},
+    {"id": "TKT-47888", "title": "Ariba approval workflow not triggering for cost centre 4711", "product": "Ariba AI", "priority": "Medium", "status": "In processing", "created": "2026-09-29", "updated": "2026-10-10"},
+    {"id": "TKT-47410", "title": "SuccessFactors AI job description suggestions in wrong language", "product": "SuccessFactors AI", "priority": "Low", "status": "Solution provided", "created": "2026-09-14", "updated": "2026-09-22"},
+    {"id": "TKT-46955", "title": "Request: increase Document AI quota for invoice backlog", "product": "Document AI", "priority": "Medium", "status": "Closed", "created": "2026-08-30", "updated": "2026-09-05"}
+  ]
+}
+</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('s4m-data').textContent);
+  var AS_OF = new Date(D.asOf + 'T00:00:00Z');
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var n = function(v){ return v.toLocaleString('en-US'); };
+  var eur = function(v){ return '€' + (v >= 1e6 ? (v/1e6).toFixed(2) + 'M' : n(v)); };
+  var days = function(iso){ return Math.round((new Date(iso + 'T00:00:00Z') - AS_OF) / 864e5); };
+  var tone = function(pct){ return pct >= 90 ? 'bad' : pct >= 80 ? 'warn' : ''; };
+  var tag = function(cls, text){ return '<span class="tag t-' + cls + '">' + esc(text) + '</span>'; };
+
+  $('cust-name').textContent = D.customer.name;
+  $('cust-meta').textContent = 'Customer no. ' + D.customer.number + ' · ' + D.customer.country + ' · as of ' + D.asOf;
+
+  var used = D.aiUnits.monthly.reduce(function(a, b){ return a + b; }, 0);
+  var pctUsed = Math.round(used / D.aiUnits.allotment * 100);
+  var fullMonths = D.aiUnits.monthly.slice(-4, -1);
+  var avg = fullMonths.reduce(function(a, b){ return a + b; }, 0) / fullMonths.length;
+  var remainingOct = (31 - 18) / 31;
+  var forecast = Math.round(used + avg * remainingOct + avg * 2);
+  var forecastPct = Math.round(forecast / D.aiUnits.allotment * 100);
+
+  var live = D.contracts.filter(function(c){ return c.status !== 'Expired'; });
+  var annual = live.reduce(function(a, c){ return a + c.annualEur; }, 0);
+  var renewals = live.filter(function(c){ return days(c.end) <= 180 && days(c.end) >= 0; });
+  var openTickets = function(){ return D.tickets.filter(function(t){ return t.status !== 'Closed' && t.status !== 'Solution provided'; }).length; };
+
+  function kpi(k, v, s){ return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; }
+  function renderOverview(){
+    $('kpis').innerHTML =
+      kpi('Active contracts', live.length, 'annual value ' + eur(annual)) +
+      kpi('AI units used', pctUsed + '%', n(used) + ' of ' + n(D.aiUnits.allotment)) +
+      kpi('Forecast year-end', forecastPct + '%', 'at current run rate (' + n(forecast) + ' units)') +
+      kpi('Open tickets', openTickets(), 'incl. ' + D.tickets.filter(function(t){ return t.priority === 'Very high' && t.status !== 'Closed'; }).length + ' very high');
+    var rows = [];
+    D.products.forEach(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); if (pct >= 80) rows.push('<tr><td>' + tag(pct >= 90 ? 'bad' : 'warn', pct + '%') + '</td><td><b>' + esc(p.name) + '</b><div class="s">AI-unit budget nearly used up (' + n(p.consumed) + ' of ' + n(p.allotment) + ')</div></td></tr>'); });
+    renewals.forEach(function(c){ rows.push('<tr><td>' + tag('warn', days(c.end) + ' days') + '</td><td><b>' + esc(c.product) + '</b><div class="s">Contract ' + esc(c.id) + ' ends ' + esc(c.end) + ', notice period ' + c.noticeDays + ' days' + (function(){ var nd = new Date(new Date(c.end + 'T00:00:00Z') - c.noticeDays * 864e5).toISOString().slice(0, 10); return days(nd) < 0 ? ' (notice date ' + nd + ' has passed)' : ' (notice by ' + nd + ')'; })() + '</div></td></tr>'); });
+    $('attention').innerHTML = '<table><tbody>' + rows.join('') + '</tbody></table>';
+  }
+  function renderContracts(){
+    var cls = {'Active': 'ok', 'Renewal due': 'warn', 'Expired': 'bad'};
+    $('contracts').innerHTML = '<table><thead><tr><th>Contract</th><th>Product</th><th>Scope</th><th>Term</th><th class="num">Annual value</th><th>Status</th></tr></thead><tbody>' +
+      D.contracts.map(function(c){ return '<tr><td>' + esc(c.id) + '</td><td><b>' + esc(c.product) + '</b></td><td>' + esc(c.scope) + '</td><td>' + esc(c.start) + ' → ' + esc(c.end) + '<div class="s">' + (days(c.end) >= 0 ? days(c.end) + ' days left' : 'ended') + '</div></td><td class="num">' + eur(c.annualEur) + '</td><td>' + tag(cls[c.status] || 'n', c.status) + '</td></tr>'; }).join('') +
+      '</tbody></table>';
+  }
+  function renderUsage(){
+    $('usage-kpis').innerHTML =
+      kpi('Allotment 2026', n(D.aiUnits.allotment), 'AI units, contract C-2026-0012') +
+      kpi('Consumed', n(used), pctUsed + '% of allotment') +
+      kpi('Remaining', n(D.aiUnits.allotment - used), (D.aiUnits.allotment - used) < avg * 3 ? 'less than three months at current rate' : 'enough at current rate');
+    var max = Math.max.apply(null, D.aiUnits.monthly);
+    var names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+    $('months').innerHTML = D.aiUnits.monthly.map(function(m, i){ return '<div class="' + (i === D.aiUnits.monthly.length - 1 ? 'cur' : '') + '" title="' + n(m) + ' units"><span style="height:' + Math.round(m / max * 100) + '%"></span>' + names[i] + '</div>'; }).join('');
+    $('forecast').innerHTML = '<div class="k">Forecast</div><div class="v">' + forecastPct + '%</div><div class="s">Year-end projection ' + n(forecast) + ' of ' + n(D.aiUnits.allotment) + ' units, based on the average of the last three full months (' + n(Math.round(avg)) + ' per month). October is a partial month (as of 18 Oct).</div>' +
+      '<div style="margin-top:12px">' + (forecast > D.aiUnits.allotment * 0.95 ? tag('warn', 'Allotment likely exhausted in December') : tag('ok', 'On track')) + '</div>';
+    $('products').innerHTML = '<table><thead><tr><th>Product / service</th><th class="num">Used</th><th class="num">Budget</th><th>Utilisation</th></tr></thead><tbody>' +
+      D.products.map(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); return '<tr><td><b>' + esc(p.name) + '</b></td><td class="num">' + n(p.consumed) + '</td><td class="num">' + n(p.allotment) + '</td><td><div class="bar"><i class="' + tone(pct) + '" style="width:' + Math.min(pct, 100) + '%"></i></div><div class="s">' + pct + '%</div></td></tr>'; }).join('') + '</tbody></table>';
+  }
+  var prio = {'Very high': 'bad', 'High': 'warn', 'Medium': 'n', 'Low': 'n'};
+  var stat = {'Closed': 'ok', 'Solution provided': 'ok', 'Waiting for customer': 'warn', 'In processing': 'n', 'New': 'n'};
+  function renderTickets(){
+    $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Updated</th></tr></thead><tbody>' +
+      D.tickets.map(function(t){ return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div></td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + esc(t.updated) + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
+  $('f-product').innerHTML = D.contracts.filter(function(c){ return c.status !== 'Expired'; }).map(function(c){ return '<option>' + esc(c.product) + '</option>'; }).join('') + D.products.map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
+  var seq = 48214;
+  $('ticket-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target;
+    var title = f.title.value.trim();
+    if (!title) return;
+    var t = {id: 'TKT-' + (seq++), title: title, product: f.product.value, priority: f.priority.value, status: 'New', created: D.asOf, updated: D.asOf};
+    D.tickets.unshift(t);
+    renderTickets(); renderOverview();
+    $('toast').textContent = 'Ticket ' + t.id + ' created (demo: it exists only on this page).';
+    $('toast').className = 'toast on';
+    f.reset();
+  });
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('#tabs button'));
+  function show(id){
+    tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === id)); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + id); });
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
+  window.addEventListener('message', function(e){
+    var d = e.data;
+    if (e.source !== window.parent || !d || d.type !== 'ct:open-tab' || typeof d.tab !== 'string') return;
+    if (/^[a-z]+$/.test(d.tab) && document.getElementById('pg-' + d.tab)) show(d.tab);
+  });
+  renderOverview(); renderContracts(); renderUsage(); renderTickets();
+})();
+</script>
+</body>
+</html>

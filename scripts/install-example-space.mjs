@@ -7,6 +7,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** Bundled example spaces: source folder under examples/ -> slug under workspace/spaces/. */
 export const EXAMPLE_SPACES = {
   'control-tower': 'ai-control-tower',
+  sub4me: 'sub4me',
 };
 
 /**

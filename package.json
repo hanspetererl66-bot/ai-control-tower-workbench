@@ -15,6 +15,8 @@
     "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",
     "gmail:authorize": "node scripts/gmail-authorize.mjs",
     "install:control-tower": "node scripts/install-example-space.mjs control-tower",
+    "install:sub4me": "node scripts/install-example-space.mjs sub4me",
+    "install:examples": "node scripts/install-example-space.mjs",
     "check": "npm run typecheck && npm test && npm run build"
   },
   "keywords": ["ai", "desktop", "mcp", "agents", "goose"],

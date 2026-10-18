@@ -102,6 +102,14 @@ Google's `gmail.compose` scope technically also permits sending, so keep the ref
 
 Use a personal account, not a work mailbox: mail content is sent to the configured model provider.
 
+## Sub4Me example Space (customer portal mock-up)
+
+`examples/sub4me` is a second bundled Space: a fictional customer portal with contracts, AI-unit
+consumption per product (with year-end forecast) and service tickets. All data is fictional and the
+page says it is not affiliated with any vendor. New tickets live only on the page and are not stored
+or sent. Install with `npm run install:sub4me` (or `npm run install:examples` for both Spaces), then
+restart or refresh the app.
+
 ## Verification
 
 ```sh

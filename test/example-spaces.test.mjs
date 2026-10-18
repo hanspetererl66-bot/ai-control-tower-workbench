@@ -36,3 +36,14 @@ for (const [name, slug] of Object.entries(EXAMPLE_SPACES)) {
 test('installing an unknown example space fails clearly', () => {
   assert.throws(() => installExampleSpace('nope'), /unknown example space/);
 });
+
+test('sub4me sample data is internally consistent', () => {
+  const html = readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8');
+  const data = JSON.parse(/<script type="application\/json" id="s4m-data">([\s\S]*?)<\/script>/.exec(html)[1]);
+  const used = data.aiUnits.monthly.reduce((a, b) => a + b, 0);
+  assert.equal(data.products.reduce((a, p) => a + p.consumed, 0), used);
+  assert.equal(data.products.reduce((a, p) => a + p.allotment, 0), data.aiUnits.allotment);
+  assert.equal(new Set(data.tickets.map((t) => t.id)).size, data.tickets.length);
+  assert.match(html, /not affiliated/i);
+  assert.doesNotMatch(html, /\bfetch\(|XMLHttpRequest|localStorage/);
+});
