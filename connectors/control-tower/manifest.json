@@ -1,0 +1,26 @@
+{
+  "manifest_version": "0.2",
+  "name": "ai-control-tower",
+  "display_name": "AI Control Tower",
+  "version": "0.1.0",
+  "description": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget.",
+  "author": { "name": "AI Control Tower workbench" },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.mjs"],
+      "env": { "CONTROL_TOWER_DATA": "${__dirname}/data/data.json" }
+    }
+  },
+  "tools": [
+    { "name": "get_risks", "description": "List open AI governance risks, optionally filtered by severity, progress or owner." },
+    { "name": "get_risk", "description": "Get one risk by id." },
+    { "name": "get_agent_overview", "description": "Summary of the AI agent registry." },
+    { "name": "get_unregistered_assets", "description": "Unregistered AI assets found by the discovery scan." },
+    { "name": "get_overprivileged_agents", "description": "Remediation queue for overprivileged agents." },
+    { "name": "get_budget", "description": "Monthly AI budget by team group with reconciliation." }
+  ]
+}

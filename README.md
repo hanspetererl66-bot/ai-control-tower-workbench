@@ -65,6 +65,21 @@ The risk register is data-driven: edit `examples/control-tower/data.json`, then 
 `npm run sync:control-tower` to embed it into the page (a Space cannot fetch files
 from inside the sandbox). `npm test` fails if the two drift apart.
 
+### Control Tower connector (MCP)
+
+`connectors/control-tower/` is a small, dependency-free MCP server that lets the chat
+query the same `data.json` the Space renders: risks, agent registry, unregistered
+assets, overprivileged agents and the AI budget. All tools are read-only.
+
+```
+npm run build:control-tower-mcpb     # writes dist/ai-control-tower.mcpb
+```
+
+Then in Werkbank open **Connectors & Skills**, choose **Import MCP bundle**, pick the
+file and confirm. Ask, for example, "Which risks are below 40% mitigated?". Edits to
+the bundled `data.json` apply without restarting the agent. Every result carries a
+`view` field naming the Control Tower tab that shows the same information.
+
 ## Verification
 
 ```sh
