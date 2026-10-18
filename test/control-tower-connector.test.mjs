@@ -398,3 +398,8 @@ test('list_agents filters the registry, sorts by runs and validates arguments', 
     server.stop();
   }
 });
+
+test('electron main imports ALLOWED_COMMANDS (it is used by the connector install paths)', () => {
+  const main = readFileSync(join(import.meta.dirname, '..', 'electron/main.mjs'), 'utf8');
+  assert.match(main, /import \{[^}]*\bALLOWED_COMMANDS\b[^}]*\} from '\.\/install-deep-link\.mjs'/);
+});

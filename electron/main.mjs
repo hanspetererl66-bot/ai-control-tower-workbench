@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron';
 import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments } from './attachments.mjs';
-import { parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
+import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEV_URL = 'http://localhost:5273';
