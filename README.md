@@ -1,6 +1,6 @@
-# Joule - Diamond Edition
+# Joule Work X - Next Gen
 
-Joule - Diamond Edition (a private prototype, based on the open-source [Werkbank](https://github.com/marianfoo/werkbank) by marianfoo) is a local desktop workbench for AI-assisted conversations, file context,
+Joule Work X - Next Gen (a private prototype, based on the open-source [Werkbank](https://github.com/marianfoo/werkbank) by marianfoo) is a local desktop workbench for AI-assisted conversations, file context,
 persistent Spaces, MCP connectors, and reusable agent skills. The renderer talks to
 a project-local [Goose](https://block.github.io/goose/) process through the Agent
 Client Protocol; connector configuration and generated work stay in the local project
@@ -182,7 +182,7 @@ installed Space contains the updated page.
 ### Cover sheet and one-click connector
 
 - Clicking the diamond at the top of the left rail opens a full-screen cover sheet:
-  "Joule - Diamond Edition · Prototype · Built by Accenture · Demo only". Click anywhere outside the
+  "Joule Work X - Next Gen · Prototype · Built by Accenture · Demo only". Click anywhere outside the
   text, "Close" or Esc to dismiss it.
 - If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
   **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
