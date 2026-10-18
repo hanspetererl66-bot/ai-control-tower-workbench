@@ -561,6 +561,39 @@ test('Sub4Me contract tools answer "how many contracts have expired?" from the S
     assert.equal(usage.usedSoFar, 92300);
     assert.equal(usage.usedPct, 76.9);
     assert.equal(usage.products.length, 5);
+    assert.equal(usage.remaining, 27700);
+    assert.equal(usage.forecastYearEnd, 118832);
+    assert.equal(usage.productsConsumedTotal, usage.usedSoFar, 'product split adds up to the total');
+    for (let i = 0; i < usage.monthly.length; i += 1) {
+      assert.equal(usage.products.reduce((a, p) => a + p.monthly[i], 0), usage.monthly[i], `month ${i + 1} adds up`);
+    }
+    const btp = parse(await server.call('get_ai_consumption', { product: 'ai core' }));
+    assert.equal(btp.products.length, 1);
+    assert.equal(btp.products[0].name, 'BTP AI Core');
+    assert.equal(btp.products[0].exhaustedIn, 'November');
+    const sept = parse(await server.call('get_ai_consumption', { month: 9 }));
+    assert.equal(sept.month.unitsTotal, 12100);
+    assert.equal(sept.month.partial, false);
+    assert.equal((await server.call('get_ai_consumption', { product: 'nope' })).isError, true);
+    assert.equal((await server.call('get_ai_consumption', { month: 13 })).isError, true);
+  } finally {
+    server.stop();
+  }
+});
+
+test('Sub4Me offer tool lists two renewals and one new product', async () => {
+  const server = startServer();
+  try {
+    const all = parse(await server.call('list_offers', {}));
+    assert.equal(all.totalOffers, 3);
+    assert.deepEqual(all.byType, { Renewal: 2, 'New product': 1 });
+    const fresh = parse(await server.call('list_offers', { type: 'New product' }));
+    assert.equal(fresh.offers[0].product, 'Joule Work for Desktop');
+    assert.equal(fresh.offers[0].changeVsTodayPct, null);
+    const ariba = all.offers.find((o) => o.contractId === 'C-2023-0390');
+    assert.equal(ariba.changeVsTodayPct, 5.2);
+    assert.deepEqual(all.view, { space: 'sub4me', tab: 'contracts' });
+    assert.equal((await server.call('list_offers', { type: 'Gift' })).isError, true);
   } finally {
     server.stop();
   }

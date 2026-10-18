@@ -234,7 +234,9 @@ metadata:
 
 ### Asking the chat about the Sub4Me Space
 
-The connector `ai-control-tower` (0.6.0) also answers questions about the Sub4Me example Space with `list_contracts`
-(filter by status, for example "Wie viele Verträge sind abgelaufen?") and `get_ai_consumption`. A Space is a sandboxed page, so
+The connector `ai-control-tower` (0.7.0) also answers questions about the Sub4Me example Space with `list_contracts`
+(filter by status, for example "Wie viele Verträge sind abgelaufen?"), `list_offers` (renewal offers and offers for new
+products such as Joule Work for Desktop, for example "Welche Angebote liegen vor?") and `get_ai_consumption` (forecast and split by
+product and month; optional `product` or `month`, for example "Wann ist das BTP-AI-Core-Budget aufgebraucht?"). A Space is a sandboxed page, so
 the agent cannot read what a Space shows; it reads the same sample data through these tools (taken from the Space's
 inline JSON in a checkout, and from `data/sub4me.json` inside the `.mcpb`). Rebuild and re-import the connector after updating.
