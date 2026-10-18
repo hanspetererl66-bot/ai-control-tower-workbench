@@ -210,3 +210,24 @@ SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- approve board-briefin
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- retire board-briefing
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- list
 ```
+
+### Skills marketplace, stage 1: profile, search, duplicate check
+
+Every skill carries a profile in the `metadata:` block of its `SKILL.md` (migration `008`):
+
+```yaml
+metadata:
+  domain: Finanzen            # Governance & Risiko | Service & Support | Finanzen | HR | Entwicklung | Betrieb | Sonstiges
+  process: Reisekosten prüfen
+  data-class: intern          # öffentlich | intern | vertraulich
+  language: de
+  team: Finance
+  tools: create_ticket, list_tickets   # must be real connector tools (checked on publish)
+```
+
+- **Search before building:** the connector tools `search_skills` and `get_skill_info`, and the skill `skill-finder`,
+  look up approved skills by task description (German full-text search plus shared tools).
+- **Duplicate check on publish:** `npm run skills:publish` looks up similar skills first. If one is similar, the skill is
+  not uploaded until you pass `--variant-of <name>` or `--reason "neu weil …"`; the decision is stored in the profile.
+- **Maturity:** new and changed skills start as `pilot`; curators mark good ones with `npm run skills -- recommend <name>`.
+- The tool dependencies are stored as rows in `skills.skill_tool`; they become the edges of the knowledge graph in stage 2.

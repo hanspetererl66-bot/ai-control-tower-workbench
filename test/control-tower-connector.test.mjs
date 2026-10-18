@@ -5,10 +5,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
+import { normalizeSupabaseUrl } from '../connectors/control-tower/server/supabase-url.mjs';
+import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
 import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
 
-const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS];
+const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS];
 
 const ROOT = join(import.meta.dirname, '..');
 const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');
@@ -460,4 +462,82 @@ test('ticket tools explain that Supabase is needed when it is not configured', a
   } finally {
     server.stop();
   }
+});
+
+test('skill tools query the registry functions and never return skill text', async () => {
+  const bodies = [];
+  await withFakeSupabase(
+    (request, response) => {
+      let raw = '';
+      request.on('data', (c) => (raw += c));
+      request.on('end', () => {
+        const body = JSON.parse(raw || '{}');
+        bodies.push({ url: request.url, body });
+        response.setHeader('content-type', 'application/json');
+        if (request.url.endsWith('skills_search')) {
+          return response.end(JSON.stringify([{ slug: 'expense-check', score: 0.9, tools: ['list_tickets'] }]));
+        }
+        if (request.url.endsWith('skills_get')) {
+          return response.end(JSON.stringify(body.p_slug === 'expense-check'
+            ? { slug: 'expense-check', version: 2, body: 'SECRET BODY', meta: { domain: 'Finanzen' } }
+            : null));
+        }
+        response.end('{}');
+      });
+    },
+    async (url) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        const found = parse(await server.call('search_skills', { query: '  Reisekosten prüfen ' }));
+        assert.equal(found.count, 1);
+        assert.deepEqual(bodies.at(-1), { url: '/rest/v1/rpc/skills_search', body: { p_query: 'Reisekosten prüfen', p_limit: 8 } });
+        const info = await server.call('get_skill_info', { name: 'expense-check' });
+        assert.doesNotMatch(info.content[0].text, /SECRET BODY/);
+        assert.equal(parse(info).skill.version, 2);
+        assert.equal((await server.call('get_skill_info', { name: 'missing-one' })).isError, true);
+        for (const args of [{}, { query: '' }, { query: 'x'.repeat(201) }, { query: 'ok', limit: 0 }, { query: 'ok', limit: 26 }]) {
+          assert.equal((await server.call('search_skills', args)).isError, true);
+        }
+        assert.equal((await server.call('get_skill_info', { name: '../etc' })).isError, true);
+        assert.ok(bodies.every((b) => /skills_(search|get)$/.test(b.url)), 'only the two read functions are ever called');
+      } finally {
+        server.stop();
+      }
+    }
+  );
+});
+
+test('skill tools explain that Supabase is needed when it is not configured', async () => {
+  const server = startServer(SERVER, { SUPABASE_URL: '', SUPABASE_SECRET_KEY: '' });
+  try {
+    const result = await server.call('search_skills', { query: 'Reisekosten' });
+    assert.equal(result.isError, true);
+    assert.match(result.content[0].text, /Supabase/);
+  } finally {
+    server.stop();
+  }
+});
+
+test('the Supabase URL from the connector dialog is forgiven: missing scheme, trailing slash, pasted API path', async () => {
+  assert.equal(normalizeSupabaseUrl('abcdefgh.supabase.co'), 'https://abcdefgh.supabase.co');
+  assert.equal(normalizeSupabaseUrl('  https://abcdefgh.supabase.co/ '), 'https://abcdefgh.supabase.co');
+  assert.equal(normalizeSupabaseUrl('https://abcdefgh.supabase.co/rest/v1'), 'https://abcdefgh.supabase.co');
+  assert.equal(normalizeSupabaseUrl('127.0.0.1:54321'), 'http://127.0.0.1:54321');
+  for (const bad of ['', '   ', 'nur-ein-wort', 'https://']) assert.throws(() => normalizeSupabaseUrl(bad), /Supabase project URL/);
+
+  await withFakeSupabase(
+    (request, response) => {
+      response.setHeader('content-type', 'application/json');
+      response.end(request.url.endsWith('sub4me_tickets') ? '[]' : '{}');
+    },
+    async (url) => {
+      const sloppy = `${url.replace('http://', '')}/rest/v1/`; // no scheme, with API path and trailing slash
+      const server = startServer(SERVER, { SUPABASE_URL: sloppy, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        assert.equal(parse(await server.call('list_tickets', {})).count, 0);
+      } finally {
+        server.stop();
+      }
+    }
+  );
 });

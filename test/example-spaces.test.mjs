@@ -69,18 +69,22 @@ test('example skills have valid frontmatter, use only real connector tools, and 
   const { installExampleSkills } = await import('../scripts/install-example-skills.mjs');
   const { TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tools.mjs');
   const { TICKET_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tickets.mjs');
-  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS].map((t) => t.name));
+  const { SKILL_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skills.mjs');
+  const { parseSkill, knownTools } = await import('../scripts/skills-registry.mjs');
+  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS].map((t) => t.name));
+  for (const tool of real) assert.ok(knownTools().has(tool), `manifest lists ${tool}`);
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
   try {
     const names = installExampleSkills({ root: ROOT, skillsDir: dir });
-    assert.deepEqual(names.sort(), ['board-briefing', 'ticket-writer']);
+    assert.deepEqual(names.sort(), ['board-briefing', 'skill-finder', 'ticket-writer']);
     for (const name of names) {
       const text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8');
-      const front = /^---\nname: (.+)\ndescription: (.+)\n---\n/.exec(text);
-      assert.ok(front, `${name}: frontmatter`);
-      assert.equal(front[1], name);
-      assert.ok(front[2].length <= 240, `${name}: description fits the skill picker`);
-      for (const [, tool] of text.matchAll(/`((?:get|list|create)_[a-z_]+)`/g)) assert.ok(real.has(tool), `${name} mentions unknown tool ${tool}`);
+      const front = parseSkill(text);
+      assert.equal(front.name, name);
+      assert.ok(front.description.length <= 240, `${name}: description fits the skill picker`);
+      assert.ok(front.meta.domain && front.meta.process && front.meta.team, `${name}: profile is filled in`);
+      assert.ok(front.meta.tools.length > 0 && front.meta.tools.every((t) => real.has(t)), `${name}: profile tools are real`);
+      for (const [, tool] of text.matchAll(/`((?:get|list|create|search)_[a-z_]+)`/g)) assert.ok(real.has(tool), `${name} mentions unknown tool ${tool}`);
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

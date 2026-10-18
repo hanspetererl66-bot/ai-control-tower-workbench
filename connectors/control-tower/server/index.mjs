@@ -8,9 +8,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { TICKET_TOOL_DEFINITIONS, createTicketHandlers } from './tickets.mjs';
+import { normalizeSupabaseUrl } from './supabase-url.mjs';
+import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.4.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.5.1' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
@@ -36,7 +38,7 @@ const SUPABASE_TIMEOUT_MS = 8000;
 
 /** Call a public RPC function on Supabase with the server-side key. */
 async function supabaseRpc(fn, body, url, key) {
-  const endpoint = new URL(`/rest/v1/rpc/${fn}`, url);
+  const endpoint = new URL(`/rest/v1/rpc/${fn}`, normalizeSupabaseUrl(url));
   const local = ['localhost', '127.0.0.1'].includes(endpoint.hostname);
   if (endpoint.protocol !== 'https:' && !local) throw new Error('SUPABASE_URL must be https');
   const response = await fetch(endpoint, {
@@ -66,8 +68,8 @@ const ticketRpc = () => {
     try {
       return await supabaseRpc(fn, body, url, key);
     } catch (error) {
-      console.error('supabase ticket call failed:', error.message);
-      throw new ToolError(`Supabase ticket call failed: ${error.message}`);
+      console.error('supabase call failed:', error.message);
+      throw new ToolError(`Supabase call failed: ${error.message}`);
     }
   };
 };
@@ -120,11 +122,12 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
-        const ticketHandlers = createTicketHandlers(ticketRpc());
+        const rpcCall = ticketRpc();
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall) };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');

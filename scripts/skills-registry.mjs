@@ -11,25 +11,58 @@ const SECRET_LIKE = /(sb_secret_|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVA
 
 export const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
+export const DOMAINS = ['Governance & Risiko', 'Service & Support', 'Finanzen', 'HR', 'Entwicklung', 'Betrieb', 'Sonstiges'];
+export const DATA_CLASSES = ['öffentlich', 'intern', 'vertraulich'];
+
+/** Names of all tools the bundled connectors offer (from their manifests). */
+export function knownTools(root = ROOT) {
+  const dir = join(root, 'connectors');
+  const names = new Set();
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const manifest = join(dir, entry.name, 'manifest.json');
+    if (entry.isDirectory() && existsSync(manifest)) {
+      for (const tool of JSON.parse(readFileSync(manifest, 'utf8')).tools ?? []) names.add(tool.name);
+    }
+  }
+  return names;
+}
+
+/** Reads name, description and the optional `metadata:` block (one level, "key: value" lines). */
 export function parseSkill(text) {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
   if (!match) throw new Error('SKILL.md needs a frontmatter block');
-  const field = (key) => new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(match[1])?.[1].trim();
+  const field = (key) => new RegExp(`^${key}:[ \\t]*(.+)$`, 'm').exec(match[1])?.[1].trim();
   const name = field('name');
   const description = field('description');
   if (!name || !description) throw new Error('frontmatter needs name and description');
-  return { name, description };
+  const raw = {};
+  const block = /^metadata:[ \t]*\r?\n((?:[ \t]+.*(?:\r?\n|$))+)/m.exec(match[1]);
+  if (block) {
+    for (const line of block[1].split(/\r?\n/)) {
+      const kv = /^[ \t]+([a-z-]+):[ \t]*(.*)$/.exec(line);
+      if (kv) raw[kv[1].replace(/-/g, '_')] = kv[2].trim();
+    }
+  }
+  const meta = { ...raw };
+  meta.tools = raw.tools ? raw.tools.split(',').map((t) => t.trim()).filter(Boolean) : [];
+  return { name, description, meta };
 }
 
 /** Throws unless the SKILL.md is safe and consistent enough to publish or install. */
-export function validateSkill(slug, text) {
+export function validateSkill(slug, text, { tools } = {}) {
   if (!SLUG.test(slug)) throw new Error(`invalid skill name "${slug}"`);
-  const { name, description } = parseSkill(text);
+  const { name, description, meta } = parseSkill(text);
   if (name !== slug) throw new Error(`frontmatter name "${name}" must equal the folder name "${slug}"`);
   if (description.length > 240) throw new Error(`${slug}: description is longer than 240 characters`);
   if (text.length > 20000) throw new Error(`${slug}: SKILL.md is longer than 20000 characters`);
   if (SECRET_LIKE.test(text)) throw new Error(`${slug}: contains something that looks like a credential`);
-  return { description };
+  if (meta.domain && !DOMAINS.includes(meta.domain)) throw new Error(`${slug}: domain must be one of ${DOMAINS.join(', ')}`);
+  if (meta.data_class && !DATA_CLASSES.includes(meta.data_class)) throw new Error(`${slug}: data-class must be one of ${DATA_CLASSES.join(', ')}`);
+  if (tools) {
+    const unknown = meta.tools.filter((t) => !tools.has(t));
+    if (unknown.length) throw new Error(`${slug}: unknown connector tool(s): ${unknown.join(', ')}`);
+  }
+  return { description, meta };
 }
 
 export async function rpc({ url, key, fn, args = {}, fetchImpl = fetch }) {
@@ -101,21 +134,40 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
   return result;
 }
 
-/** Upload skill folders as drafts (unchanged ones create no new version). Never approves anything. */
-export async function publishSkills({ url, key, dirs, owner = '', fetchImpl = fetch }) {
+/**
+ * Upload skill folders as drafts (unchanged ones create no new version). Never approves anything.
+ * Before uploading, similar existing skills are looked up; if one is similar the author must say why
+ * a new skill is needed (`reason`) or mark it as a variant (`variantOf`), otherwise the skill is not uploaded.
+ */
+export async function publishSkills({ url, key, dirs, owner = '', reason = '', variantOf = '', tools = knownTools(), fetchImpl = fetch }) {
   const out = [];
   for (const dir of dirs) {
     const slug = dir.replace(/\/+$/, '').split('/').pop();
     const text = readFileSync(join(dir, 'SKILL.md'), 'utf8');
-    const { description } = validateSkill(slug, text);
+    const { description, meta } = validateSkill(slug, text, { tools });
+    const effective = { ...meta };
+    if (variantOf) effective.variant_of = variantOf;
+    if (reason) effective.variant_reason = reason;
+    const similar = await rpc({
+      url, key, fn: 'skills_similar', fetchImpl,
+      args: { p_slug: slug, p_description: description, p_domain: effective.domain || 'Sonstiges', p_tools: effective.tools },
+    });
+    const close = similar.filter((entry) => entry.similar);
+    if (close.length && !effective.variant_of && !effective.variant_reason) {
+      out.push({ slug, blocked: true, similar: close });
+      continue;
+    }
     const res = await rpc({
       url, key, fn: 'skills_publish', fetchImpl,
-      args: { p_slug: slug, p_description: description, p_owner: owner, p_body: text },
+      args: { p_slug: slug, p_description: description, p_owner: owner, p_body: text, p_meta: effective },
     });
-    out.push(res);
+    out.push(close.length ? { ...res, similar: close } : res);
   }
   return out;
 }
+
+export const setMaturity = ({ url, key, slug, maturity, fetchImpl = fetch }) =>
+  rpc({ url, key, fn: 'skills_set_maturity', args: { p_slug: slug, p_maturity: maturity }, fetchImpl });
 
 export const setStatus = ({ url, key, slug, status, fetchImpl = fetch }) =>
   rpc({ url, key, fn: 'skills_set_status', args: { p_slug: slug, p_status: status }, fetchImpl });
@@ -143,19 +195,41 @@ async function main(argv) {
   const key = env('SUPABASE_SECRET_KEY');
   if (cmd === 'publish') {
     const base = join(ROOT, 'examples/skills');
-    const names = rest.filter((a) => !a.startsWith('--'));
+    const flag = (name) => {
+      const i = rest.indexOf(`--${name}`);
+      return i >= 0 ? rest[i + 1] ?? '' : '';
+    };
+    const valueIdx = new Set(['--reason', '--variant-of'].flatMap((f) => (rest.includes(f) ? [rest.indexOf(f) + 1] : [])));
+    const names = rest.filter((a, i) => !a.startsWith('--') && !valueIdx.has(i));
     const dirs = (names.length ? names : readdirSync(base)).map((n) => (n.includes('/') ? n : join(base, n)));
-    for (const r of await publishSkills({ url, key, dirs, owner: process.env.SKILL_OWNER || '' })) {
-      console.log(`${r.slug}: v${r.version} (${r.status})${r.changed ? '' : ' unchanged'}`);
+    const results = await publishSkills({ url, key, dirs, owner: process.env.SKILL_OWNER || '', reason: flag('reason'), variantOf: flag('variant-of') });
+    let blocked = 0;
+    for (const r of results) {
+      if (r.blocked) {
+        blocked += 1;
+        console.log(`${r.slug}: NOT published. Similar skills already exist:`);
+      } else {
+        console.log(`${r.slug}: v${r.version} (${r.status})${r.changed ? '' : ' unchanged'}`);
+        if (r.similar) console.log('  note: similar skills exist, published with your reason:');
+      }
+      for (const s of r.similar ?? []) {
+        console.log(`  - ${s.slug} (${s.status}, ${s.domain || 'ohne Domäne'}, ${s.team || 'ohne Team'}) gemeinsame Werkzeuge: ${s.sharedTools.join(', ') || 'keine'}`);
+      }
+      if (r.blocked) console.log(`  Prüfe, ob du den Skill erweitern kannst. Sonst: --variant-of <name> oder --reason "neu weil …"`);
     }
+    if (blocked) process.exitCode = 2;
   } else if (cmd === 'approve' || cmd === 'retire') {
     if (!rest[0]) throw new Error(`Usage: skills ${cmd} <name>`);
     const r = await setStatus({ url, key, slug: rest[0], status: cmd === 'approve' ? 'approved' : 'retired' });
     console.log(`${r.slug}: ${r.status}`);
+  } else if (cmd === 'recommend' || cmd === 'unrecommend') {
+    if (!rest[0]) throw new Error(`Usage: skills ${cmd} <name>`);
+    const r = await setMaturity({ url, key, slug: rest[0], maturity: cmd === 'recommend' ? 'empfohlen' : 'pilot' });
+    console.log(`${r.slug}: ${r.maturity}`);
   } else if (cmd === 'list') {
-    for (const s of await adminList({ url, key })) console.log(`${s.slug}\tv${s.version}\t${s.status}`);
+    for (const s of await adminList({ url, key })) console.log(`${s.slug}\tv${s.version}\t${s.status}\t${s.maturity}\t${s.domain ?? ''}`);
   } else {
-    throw new Error('Usage: skills-registry.mjs sync [--force] | publish [name…] | approve <name> | retire <name> | list');
+    throw new Error('Usage: skills-registry.mjs sync [--force] | publish [name…] [--variant-of x] [--reason y] | approve|retire|recommend|unrecommend <name> | list');
   }
 }
 
