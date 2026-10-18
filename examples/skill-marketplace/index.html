@@ -189,35 +189,103 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
 </style>
 <style id="sm-page">
-.s4m .tools{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
-.s4m .chip{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--line-2);color:var(--muted)}
-.s4m .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center}
+.s4m main{max-width:1180px}
+.s4m button{font:inherit}
+/* summary strip */
+.s4m .sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.s4m .sum>div{padding:20px 24px;border-right:1px solid var(--line)}
+.s4m .sum>div:last-child{border-right:0}
+.s4m .sum .n{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.s4m .sum .l{font-size:12px;color:var(--muted);margin-top:4px}
+.s4m .mixbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--line-2);margin-top:12px}
+.s4m .mixbar i,.s4m .mix i{display:block;height:100%}
+.s4m .m-approved{background:var(--green)}.s4m .m-empfohlen{background:var(--purple)}.s4m .m-pilot{background:var(--amber)}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:11px;color:var(--muted)}
+.s4m .legend span:before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;background:var(--c)}
+/* reach steps */
+.s4m .steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin-top:14px}
+.s4m .step{position:relative;text-align:left;border:1px solid var(--line);background:var(--surface);padding:14px 16px 16px 22px;cursor:pointer;color:var(--ink);margin-left:-1px}
+.s4m .step:first-child{border-radius:var(--radius-s) 0 0 var(--radius-s);margin-left:0}
+.s4m .step:last-child{border-radius:0 var(--radius-s) var(--radius-s) 0}
+.s4m .step:hover{background:var(--wash)}
+.s4m .step[aria-pressed="true"]{background:var(--purple-dim);border-color:var(--purple-border);z-index:1}
+.s4m .step .n{font-size:20px;font-weight:600}
+.s4m .step .l{font-size:12px;color:var(--muted)}
+.s4m .step .fill{height:4px;border-radius:99px;background:var(--line-2);margin-top:10px;overflow:hidden}
+.s4m .step .fill i{display:block;height:100%;background:var(--purple)}
+.s4m .reach{margin-top:12px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);min-height:64px}
+.s4m .reach .hd{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.s4m .reach .hd b{font-size:13px}
+.s4m .reach .hd .s{flex:1}
+.s4m .pill{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:5px 12px;font-size:12px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+.s4m .pill:hover{border-color:var(--purple-border);background:var(--purple-dim)}
+.s4m .pill i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.s4m .pills{display:flex;flex-wrap:wrap;gap:8px}
+.s4m .lnk{border:0;background:none;color:var(--purple);cursor:pointer;font-size:12px;font-weight:500;padding:4px 6px;border-radius:6px}
+.s4m .lnk:hover{background:var(--purple-dim)}
+/* org tree */
+.s4m .bar-tools{display:flex;gap:6px;justify-content:flex-end;margin:-6px 0 10px}
+.s4m .tree,.s4m .tree ul{list-style:none;margin:0;padding:0}
+.s4m .tree>li{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin-bottom:10px;overflow:hidden}
+.s4m .nrow{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
+.s4m .nrow:hover{background:var(--wash)}
+.s4m .nrow:focus-visible,.s4m .lbtn:focus-visible,.s4m .step:focus-visible,.s4m .pill:focus-visible,.s4m .lnk:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+.s4m .chev{width:16px;height:16px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);transition:transform .15s}
+.s4m .chev:before{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg)}
+.s4m [aria-expanded="true"]>.chev{transform:rotate(90deg)}
+.s4m .nrow .nm{font-weight:600;font-size:14px}
+.s4m .tree ul .nrow .nm{font-weight:500;font-size:13px}
+.s4m .nrow .kd{font-size:11px;color:var(--muted)}
+.s4m .nrow .sp{flex:1}
+.s4m .mix{display:flex;width:110px;height:6px;border-radius:99px;overflow:hidden;background:var(--line-2);flex:none}
+.s4m .cnt{min-width:24px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+.s4m .tree ul{border-top:1px solid var(--line-2)}
+.s4m .tree ul[hidden]{display:none}
+.s4m .tree ul .nrow{padding-left:calc(18px + var(--d,1)*22px);padding-top:10px;padding-bottom:10px}
+.s4m .tree ul li+li{border-top:1px solid var(--line-2)}
+.s4m .leaf{display:block}
+.s4m .lbtn{width:100%;display:flex;gap:12px;align-items:baseline;text-align:left;border:0;background:none;color:var(--ink);cursor:pointer;padding:9px 18px 9px calc(18px + var(--d,1)*22px + 28px)}
+.s4m .lbtn:hover{background:var(--purple-dim)}
+.s4m .lbtn .dot{width:8px;height:8px;border-radius:50%;flex:none;align-self:center}
+.s4m .lbtn b{font-weight:500;font-size:13px}
+.s4m .lbtn .ds{flex:1;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s4m .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:1px 8px;white-space:nowrap}
+/* catalog */
+.s4m .filters{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;margin:-4px 0 16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
 .s4m .filters input[type=search]{flex:1 1 220px;min-width:160px}
+.s4m .filters select{max-width:170px}
 .s4m .filters label.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
-.s4m .skills{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
-.s4m .skills .card h3{margin:0 0 4px;font-size:14px;font-weight:600}
-.s4m .skills .card p{margin:8px 0 0;color:var(--ink);line-height:1.55}
-.s4m .skills .card .trail{font-size:12px;color:var(--muted)}
-.s4m .skills .card .row2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.s4m .tree td.l1{padding-left:34px}.s4m .tree td.l2{padding-left:58px}
-.s4m .tree tr.top td{font-weight:600}
-.s4m .ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
-.s4m .ladder>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
-.s4m .ladder .v{font-size:20px;margin:0}
-.s4m .empty{padding:18px;color:var(--muted)}
-.s4m .hint{padding:12px 0;border-bottom:1px solid var(--line-2)}
+.s4m .skills{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.s4m .sk{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:18px 20px 16px 24px;overflow:hidden}
+.s4m .sk:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--line))}
+.s4m .sk.m-approved{--c:var(--green)}.s4m .sk.m-empfohlen{--c:var(--purple)}.s4m .sk.m-pilot{--c:var(--amber)}
+.s4m .sk h3{margin:0;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.s4m .sk .path{font-size:12px;color:var(--muted);margin-top:3px}
+.s4m .sk p{margin:10px 0 0;line-height:1.55;flex:1}
+.s4m .sk .facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.s4m .sk .foot{margin-top:12px;padding-top:10px;border-top:1px solid var(--line-2);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.s4m .chip{font-size:11px;padding:1px 8px;border-radius:6px;background:var(--line-2);color:var(--ink-2)}
+.s4m .status{font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.s4m .status i{width:8px;height:8px;border-radius:50%}
+.s4m .empty{padding:22px;color:var(--muted);text-align:center}
+/* ranking */
+.s4m .rank td:first-child{width:40px;font-weight:600;color:var(--muted)}
+.s4m .rank tr:nth-child(-n+3) td:first-child{color:var(--purple)}
+/* hints */
+.s4m .hint{display:flex;gap:14px;align-items:flex-start;padding:14px 4px;border-bottom:1px solid var(--line-2)}
 .s4m .hint:last-child{border-bottom:0}
-@media(max-width:640px){.s4m .ladder{grid-template-columns:repeat(2,1fr)}}
+.s4m .hint .tag{flex:none;margin-top:1px}
+@media(max-width:860px){.s4m .sum{grid-template-columns:repeat(2,1fr)}.s4m .sum>div:nth-child(2){border-right:0}.s4m .sum>div:nth-child(-n+2){border-bottom:1px solid var(--line)}.s4m .steps{grid-template-columns:1fr;gap:6px}.s4m .step,.s4m .step:first-child,.s4m .step:last-child{border-radius:var(--radius-s);margin-left:0}.s4m .mix{display:none}}
+@media(prefers-reduced-motion:reduce){.s4m .chev{transition:none}}
 </style>
-
 </head>
 <body class="s4m">
 <header>
   <div class="logo">Skill <b>Marketplace</b></div>
-  <div class="s">Shared skill registry &middot; board areas, LOBs, teams, individual</div>
+  <div class="s">Shared skill registry by board area, LOB, team and individual</div>
   <div class="cust"><strong id="hdr-count"></strong><span id="hdr-meta"></span></div>
 </header>
-<div class="demo">Demo data: skills marked <b>Sample</b> are fictional and only illustrate the structure. <span id="source-note"></span></div>
+<div class="demo">Skills marked <b>Sample</b> are fictional and only show the structure. <span id="source-note"></span></div>
 <nav role="tablist" id="tabs">
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="catalog" aria-selected="false">Catalog</button>
@@ -226,20 +294,25 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 </nav>
 <main>
   <section class="pg on" id="pg-overview">
-    <div class="grid" id="kpis"></div>
-    <h2>Reach: from individual to company-wide</h2><div class="card" id="ladder"></div>
-    <h2>By board area, LOB and team</h2><div class="card tbl" id="tree"></div>
-    <h2>Individual skills by owner</h2><div class="card tbl" id="individual"></div>
+    <div class="sum" id="sum"></div>
+    <h2>Reach</h2>
+    <div class="s">A skill starts as individual and is promoted one level at a time. Select a level to see its skills, double-click to open it in the catalog.</div>
+    <div class="steps" id="steps"></div>
+    <div class="reach" id="reach"></div>
+    <h2>Organisation</h2>
+    <div class="bar-tools"><button class="lnk" id="expand-all">Expand all</button><button class="lnk" id="collapse-all">Collapse all</button></div>
+    <ul class="tree" id="tree"></ul>
   </section>
   <section class="pg" id="pg-catalog">
     <div class="filters">
-      <input type="search" id="f-q" placeholder="Search name, description, tool" aria-label="Search">
+      <input type="search" id="f-q" placeholder="Search name, description or tool" aria-label="Search">
       <select id="f-area" aria-label="Board area"></select>
       <select id="f-lob" aria-label="LOB"></select>
       <select id="f-team" aria-label="Team"></select>
       <select id="f-scope" aria-label="Reach"></select>
       <select id="f-mat" aria-label="Maturity"></select>
-      <label class="chk"><input type="checkbox" id="f-sample" checked> Show sample skills</label>
+      <label class="chk"><input type="checkbox" id="f-sample" checked> Sample skills</label>
+      <button class="lnk" id="f-clear">Clear filters</button>
     </div>
     <div class="s" id="catalog-count" style="margin-bottom:12px"></div>
     <div class="skills" id="skills"></div>
@@ -247,7 +320,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   <section class="pg" id="pg-ranking">
     <div class="filters">
       <select id="r-area" aria-label="Board area"></select>
-      <span class="s">Top 10 by demand in the last 30 days: install 3, view 1, search hit 0.5. Counts only, no personal data.</span>
+      <span class="s">Top 10 by demand in the last 30 days. Install counts 3, view 1, search hit 0.5. Counts only, no personal data.</span>
     </div>
     <div class="card tbl" id="ranking"></div>
   </section>
@@ -641,54 +714,140 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var tag = function(cls, text){ return '<span class="tag t-' + cls + '">' + esc(text) + '</span>'; };
   var SCOPE_LABEL = {'individual': 'Individual', 'team': 'Team', 'lob': 'LOB', 'board-area': 'Board area', 'company': 'Company'};
+  var MAT = ['approved', 'empfohlen', 'pilot'];
   var MAT_LABEL = {'pilot': 'Pilot', 'empfohlen': 'Recommended', 'approved': 'Approved'};
   var MAT_TONE = {'pilot': 'warn', 'empfohlen': 'n', 'approved': 'ok'};
   var UNSORTED = 'Not classified';
+  var showSample = true, reachLevel = 'company';
+  var open = {};
   var demandScore = function(s){ var d = s.demand || {}; return 3 * (d.installs || 0) + (d.views || 0) + 0.5 * (d.searchHits || 0); };
-  var showSample = true;
   var pool = function(){ return D.skills.filter(function(s){ return showSample || !s.sample; }); };
   var count = function(list, fn){ return list.filter(fn).length; };
+  var mixbar = function(list, cls){
+    var n = list.length || 1;
+    return '<span class="' + cls + '">' + MAT.map(function(m){ var c = count(list, function(s){ return s.maturity === m; }); return c ? '<i class="m-' + m + '" style="width:' + (c / n * 100) + '%" title="' + c + ' ' + MAT_LABEL[m] + '"></i>' : ''; }).join('') + '</span>';
+  };
 
   $('hdr-count').textContent = D.skills.filter(function(s){ return !s.sample; }).length + ' registered skills';
-  $('hdr-meta').textContent = D.source === 'registry' ? 'live from the registry · ' + D.asOf : 'repository profiles · ' + D.asOf;
-  $('source-note').textContent = D.source === 'registry' ? 'Registered skills come from the shared registry (approved only).' : 'Registered skills are read from the example skills in the repository.';
+  $('hdr-meta').textContent = (D.source === 'registry' ? 'Live from the registry on ' : 'Repository profiles on ') + D.asOf;
+  $('source-note').textContent = D.source === 'registry' ? 'Registered skills come from the shared registry.' : 'Registered skills are read from the example skills in the repository.';
 
-  function renderOverview(){
-    var list = pool();
-    $('kpis').innerHTML = [
-      ['Skills', list.length, count(list, function(s){ return s.maturity === 'approved'; }) + ' approved · ' + count(list, function(s){ return s.maturity === 'empfohlen'; }) + ' recommended'],
-      ['Company-wide', count(list, function(s){ return s.scope === 'company'; }), 'available to everyone'],
-      ['Team, LOB or board area', count(list, function(s){ return ['team', 'lob', 'board-area'].indexOf(s.scope) >= 0; }), 'shared inside the organisation'],
-      ['Individual', count(list, function(s){ return s.scope === 'individual'; }), 'not yet promoted']
-    ].map(function(k){ return '<div class="card"><div class="k">' + k[0] + '</div><div class="v">' + k[1] + '</div><div class="s">' + k[2] + '</div></div>'; }).join('');
-    $('ladder').innerHTML = '<div class="s">A skill starts as individual. Promotion to the next level needs a review by that level.</div><div class="ladder">' +
-      D.taxonomy.scopes.map(function(sc){ return '<div><div class="k">' + SCOPE_LABEL[sc] + '</div><div class="v">' + count(list, function(s){ return s.scope === sc; }) + '</div></div>'; }).join('') + '</div>';
-
-    var rows = [];
-    D.taxonomy.boardAreas.concat([UNSORTED]).forEach(function(area){
-      var inArea = list.filter(function(s){ return (s.boardArea || UNSORTED) === area && s.scope !== 'company'; });
-      if (area === UNSORTED && !inArea.length) return;
-      rows.push('<tr class="top"><td>' + esc(area) + '</td><td class="num">' + inArea.length + '</td><td>' + (inArea.length ? '' : tag('n', 'no skills')) + '</td></tr>');
-      var lobs = Object.keys(D.taxonomy.lobs).filter(function(l){ return D.taxonomy.lobs[l] === area; });
-      lobs.forEach(function(lob){
-        var inLob = inArea.filter(function(s){ return s.lob === lob; });
-        rows.push('<tr><td class="l1">' + esc(lob) + '</td><td class="num">' + inLob.length + '</td><td>' + (inLob.length ? '' : tag('n', 'no skills')) + '</td></tr>');
-        var teams = {}; inLob.forEach(function(s){ if (s.team) teams[s.team] = (teams[s.team] || 0) + 1; });
-        Object.keys(teams).sort().forEach(function(t){ rows.push('<tr><td class="l2">' + esc(t) + '</td><td class="num">' + teams[t] + '</td><td></td></tr>'); });
-      });
-      var rest = inArea.filter(function(s){ return !s.lob; }), teams2 = {};
-      rest.forEach(function(s){ if (s.team) teams2[s.team] = (teams2[s.team] || 0) + 1; });
-      Object.keys(teams2).sort().forEach(function(t){ rows.push('<tr><td class="l1">' + esc(t) + '</td><td class="num">' + teams2[t] + '</td><td></td></tr>'); });
-    });
-    var company = list.filter(function(s){ return s.scope === 'company'; });
-    rows.push('<tr class="top"><td>Company-wide</td><td class="num">' + company.length + '</td><td></td></tr>');
-    $('tree').innerHTML = '<table class="tree"><thead><tr><th>Board area / LOB / team</th><th class="num">Skills</th><th></th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
-
-    var owners = {}; list.filter(function(s){ return s.scope === 'individual'; }).forEach(function(s){ var o = s.owner || 'unknown'; (owners[o] = owners[o] || []).push(s.name); });
-    var keys = Object.keys(owners).sort();
-    $('individual').innerHTML = keys.length ? '<table><thead><tr><th>Owner</th><th class="num">Skills</th><th>Skills</th></tr></thead><tbody>' + keys.map(function(o){ return '<tr><td><b>' + esc(o) + '</b></td><td class="num">' + owners[o].length + '</td><td>' + owners[o].map(function(n){ return '<span class="chip">' + esc(n) + '</span>'; }).join(' ') + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">No individual skills.</div>';
+  /* ---------- navigation helpers ---------- */
+  var tabs = document.querySelectorAll('#tabs button');
+  function go(name){
+    Array.prototype.forEach.call(tabs, function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + name); });
+    window.scrollTo(0, 0);
+  }
+  function openCatalog(f){
+    $('f-q').value = f.q || ''; $('f-area').value = f.area || ''; $('f-lob').value = f.lob || ''; $('f-team').value = f.team || '';
+    $('f-scope').value = f.scope || ''; $('f-mat').value = f.mat || '';
+    renderCatalog(); go('catalog');
   }
 
+  /* ---------- overview ---------- */
+  function renderSummary(list){
+    var shared = count(list, function(s){ return s.scope !== 'individual' && s.scope !== 'company'; });
+    $('sum').innerHTML =
+      '<div><div class="n">' + list.length + '</div><div class="l">skills in the marketplace</div>' + mixbar(list, 'mixbar') +
+        '<div class="legend">' + MAT.map(function(m){ return '<span style="--c:var(--' + (m === 'approved' ? 'green' : m === 'empfohlen' ? 'purple' : 'amber') + ')">' + count(list, function(s){ return s.maturity === m; }) + ' ' + MAT_LABEL[m] + '</span>'; }).join('') + '</div></div>' +
+      '<div><div class="n">' + count(list, function(s){ return s.scope === 'company'; }) + '</div><div class="l">available company-wide</div></div>' +
+      '<div><div class="n">' + shared + '</div><div class="l">shared by team, LOB or board area</div></div>' +
+      '<div><div class="n">' + count(list, function(s){ return s.scope === 'individual'; }) + '</div><div class="l">individual, not yet promoted</div></div>';
+  }
+  function renderReach(list){
+    var at = list.filter(function(s){ return s.scope === reachLevel; });
+    $('reach').innerHTML = '<div class="hd"><b>' + SCOPE_LABEL[reachLevel] + ' (' + at.length + ')</b><span class="s"></span><button class="lnk" data-open-scope="' + reachLevel + '">Open in catalog</button></div>' +
+      (at.length ? '<div class="pills">' + at.map(function(s){ return '<button class="pill" data-skill="' + esc(s.name) + '"><i class="m-' + s.maturity + '"></i>' + esc(s.name) + '</button>'; }).join('') + '</div>' : '<div class="s">No skills at this level.</div>');
+  }
+  function renderSteps(list){
+    var max = Math.max.apply(null, D.taxonomy.scopes.map(function(sc){ return count(list, function(s){ return s.scope === sc; }); }).concat([1]));
+    $('steps').innerHTML = D.taxonomy.scopes.map(function(sc){
+      var c = count(list, function(s){ return s.scope === sc; });
+      return '<button class="step" data-scope="' + sc + '" aria-pressed="' + (sc === reachLevel) + '"><div class="n">' + c + '</div><div class="l">' + SCOPE_LABEL[sc] + '</div><div class="fill"><i style="width:' + Math.round(c / max * 100) + '%"></i></div></button>';
+    }).join('');
+    renderReach(list);
+  }
+
+  function buildTree(list){
+    var roots = {};
+    function node(map, key, kind){ return map[key] || (map[key] = {key: key, kind: kind, skills: [], kids: {}, all: []}); }
+    list.forEach(function(s){
+      if (s.scope === 'company') { var c = node(roots, 'Company-wide', 'reach'); c.skills.push(s); c.all.push(s); return; }
+      var area = node(roots, s.boardArea || UNSORTED, 'area'); area.all.push(s);
+      var cur = area;
+      if (s.lob) { cur = node(cur.kids, s.lob, 'lob'); cur.all.push(s); }
+      if (s.team) { cur = node(cur.kids, s.team, 'team'); cur.all.push(s); }
+      cur.skills.push(s);
+    });
+    return roots;
+  }
+  var KIND = {area: 'Board area', lob: 'LOB', team: 'Team', reach: ''};
+  function nodeHtml(n, path, depth){
+    var id = path.join('|'), isOpen = !!open[id];
+    var kids = Object.keys(n.kids).sort().map(function(k){ return nodeHtml(n.kids[k], path.concat(k), depth + 1); }).join('');
+    var leaves = n.skills.sort(function(a, b){ return a.name.localeCompare(b.name); }).map(function(s){
+      return '<li class="leaf" style="--d:' + depth + '"><button class="lbtn" data-skill="' + esc(s.name) + '"><i class="dot m-' + s.maturity + '"></i><b>' + esc(s.name) + '</b><span class="ds">' + esc(s.description) + '</span>' + (s.sample ? tag('warn', 'Sample') : '') + '<span class="badge">' + SCOPE_LABEL[s.scope] + '</span></button></li>';
+    }).join('');
+    return '<li><div class="nrow" role="button" tabindex="0" aria-expanded="' + isOpen + '" data-path="' + esc(id) + '" data-kind="' + n.kind + '" data-key="' + esc(n.key) + '" style="--d:' + depth + '"><span class="chev"></span><span class="nm">' + esc(n.key) + '</span><span class="kd">' + KIND[n.kind] + '</span><span class="sp"></span>' +
+      mixbar(n.all, 'mix') + '<span class="cnt">' + n.all.length + '</span><button class="lnk" data-open-node="' + esc(id) + '" title="Show in catalog">Catalog</button></div>' +
+      '<ul' + (isOpen ? '' : ' hidden') + '>' + kids + leaves + '</ul></li>';
+  }
+  function renderTree(list){
+    var roots = buildTree(list);
+    var order = D.taxonomy.boardAreas.concat(['Company-wide', UNSORTED]);
+    $('tree').innerHTML = order.filter(function(k){ return roots[k]; }).concat(order.filter(function(k){ return !roots[k] && D.taxonomy.boardAreas.indexOf(k) >= 0; })).map(function(k){
+      return roots[k] ? nodeHtml(roots[k], [k], 1) : '<li><div class="nrow" style="cursor:default"><span class="chev" style="visibility:hidden"></span><span class="nm">' + esc(k) + '</span><span class="kd">Board area</span><span class="sp"></span>' + tag('n', 'no skills') + '<span class="cnt">0</span></div></li>';
+    }).join('');
+  }
+  function renderOverview(){ var list = pool(); renderSummary(list); renderSteps(list); renderTree(list); }
+
+  function setOpen(all){
+    Array.prototype.forEach.call($('tree').querySelectorAll('.nrow[data-path]'), function(r){ open[r.dataset.path] = all; });
+    renderOverview();
+  }
+  function toggle(row){
+    var id = row.dataset.path; open[id] = !open[id];
+    row.setAttribute('aria-expanded', String(open[id]));
+    var ul = row.nextElementSibling; if (ul) ul.hidden = !open[id];
+  }
+  function drillNode(id){
+    var parts = id.split('|'), f = {};
+    if (parts[0] === 'Company-wide') f.scope = 'company';
+    else if (parts[0] !== UNSORTED) f.area = parts[0];
+    var row = $('tree').querySelector('.nrow[data-path="' + id.replace(/"/g, '\\"') + '"]');
+    var kind = row ? row.dataset.kind : 'area', key = row ? row.dataset.key : parts[parts.length - 1];
+    if (kind === 'lob') f.lob = key;
+    if (kind === 'team') { f.team = key; if (parts.length > 2 && parts[1] && D.taxonomy.lobs[parts[1]]) f.lob = parts[1]; }
+    openCatalog(f);
+  }
+  $('tree').addEventListener('click', function(e){
+    var b = e.target.closest('[data-open-node]'); if (b) { e.stopPropagation(); drillNode(b.dataset.openNode); return; }
+    var l = e.target.closest('[data-skill]'); if (l) { openCatalog({q: l.dataset.skill}); return; }
+    var r = e.target.closest('.nrow[data-path]'); if (r) toggle(r);
+  });
+  $('tree').addEventListener('dblclick', function(e){
+    var r = e.target.closest('.nrow[data-path]'); if (r && !e.target.closest('[data-open-node]')) drillNode(r.dataset.path);
+  });
+  $('tree').addEventListener('keydown', function(e){
+    var r = e.target.closest('.nrow[data-path]');
+    if (r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(r); }
+  });
+  $('steps').addEventListener('click', function(e){
+    var b = e.target.closest('.step'); if (!b) return;
+    reachLevel = b.dataset.scope;
+    Array.prototype.forEach.call($('steps').children, function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+    renderReach(pool());
+  });
+  $('steps').addEventListener('dblclick', function(e){ var b = e.target.closest('.step'); if (b) openCatalog({scope: b.dataset.scope}); });
+  $('reach').addEventListener('click', function(e){
+    var p = e.target.closest('[data-skill]'); if (p) { openCatalog({q: p.dataset.skill}); return; }
+    var o = e.target.closest('[data-open-scope]'); if (o) openCatalog({scope: o.dataset.openScope});
+  });
+  $('expand-all').addEventListener('click', function(){ setOpen(true); });
+  $('collapse-all').addEventListener('click', function(){ setOpen(false); });
+
+  /* ---------- catalog ---------- */
   function opts(sel, label, values){ sel.innerHTML = '<option value="">' + label + '</option>' + values.map(function(v){ return '<option value="' + esc(v[0]) + '">' + esc(v[1]) + '</option>'; }).join(''); }
   function setupFilters(){
     opts($('f-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
@@ -696,10 +855,11 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     var teams = {}; D.skills.forEach(function(s){ if (s.team) teams[s.team] = 1; });
     opts($('f-team'), 'All teams', Object.keys(teams).sort().map(function(t){ return [t, t]; }));
     opts($('f-scope'), 'All reach levels', D.taxonomy.scopes.map(function(s){ return [s, SCOPE_LABEL[s]]; }));
-    opts($('f-mat'), 'All maturity levels', ['pilot', 'empfohlen', 'approved'].map(function(m){ return [m, MAT_LABEL[m]]; }));
+    opts($('f-mat'), 'All maturity levels', ['approved', 'empfohlen', 'pilot'].map(function(m){ return [m, MAT_LABEL[m]]; }));
     opts($('r-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
     $('r-area').addEventListener('change', renderRanking);
     ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope', 'f-mat'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
+    $('f-clear').addEventListener('click', function(){ openCatalog({}); });
     $('f-sample').addEventListener('change', function(){ showSample = $('f-sample').checked; renderAll(); });
   }
   function renderCatalog(){
@@ -710,51 +870,50 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     });
     $('catalog-count').textContent = list.length + ' of ' + pool().length + ' skills';
     $('skills').innerHTML = list.length ? list.map(function(s){
-      var trail = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' › ');
-      return '<div class="card"><h3>' + esc(s.name) + '</h3><div class="trail">' + esc(trail) + '</div>' +
-        '<div class="row2">' + tag(s.scope === 'individual' ? 'n' : 'ok', SCOPE_LABEL[s.scope] || s.scope) + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity] || s.maturity) + (s.sample ? tag('warn', 'Sample') : '') + '</div>' +
+      var path = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).map(esc).join(' <span style="color:var(--faint)">/</span> ');
+      var approval = s.maturity === 'approved' && s.approvedBy ? 'Approved by ' + esc(s.approvedBy) + (s.approvedAt ? ' on ' + esc(String(s.approvedAt).slice(0, 10)) : '') + (s.approvedVersion ? ', v' + esc(s.approvedVersion) : '') : '';
+      return '<article class="sk m-' + s.maturity + '"><h3>' + esc(s.name) + (s.sample ? tag('warn', 'Sample') : '') + '</h3><div class="path">' + path + '</div>' +
         '<p>' + esc(s.description) + '</p>' +
-        '<div class="s" style="margin-top:8px">' + esc(s.domain || '') + (s.process ? ' · ' + esc(s.process) : '') + (s.dataClass ? ' · ' + esc(s.dataClass) : '') + '</div>' +
-        (s.maturity === 'approved' && s.approvedBy ? '<div class="s">Approved by ' + esc(s.approvedBy) + (s.approvedAt ? ' on ' + esc(String(s.approvedAt).slice(0, 10)) : '') + (s.approvedVersion ? ' (v' + esc(s.approvedVersion) + ')' : '') + '</div>' : '') +
-        '<div class="s">Owner ' + esc(s.owner || '–') + ' · v' + esc(s.version || 1) + '</div>' +
-        (s.tools.length ? '<div class="tools">' + s.tools.map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' : '') + '</div>';
-    }).join('') : '<div class="card empty">No skill matches these filters.</div>';
+        '<div class="facts"><span class="status"><i class="m-' + s.maturity + '"></i>' + MAT_LABEL[s.maturity] + '</span><span class="badge">' + (SCOPE_LABEL[s.scope] || s.scope) + '</span>' +
+          [s.domain, s.process, s.dataClass].filter(Boolean).map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' +
+        (s.tools.length ? '<div class="facts">' + s.tools.map(function(t){ return '<span class="chip" style="font-family:var(--mono)">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        '<div class="foot"><span>Owner ' + esc(s.owner || 'not set') + ', v' + esc(s.version || 1) + '</span><span>' + approval + '</span></div></article>';
+    }).join('') : '<div class="card empty" style="grid-column:1/-1">No skill matches these filters. Clear a filter to see more.</div>';
   }
 
-  function renderHints(){
-    var list = pool(), out = [];
-    for (var i = 0; i < list.length; i++){ for (var j = i + 1; j < list.length; j++){
-      var shared = list[i].tools.filter(function(t){ return list[j].tools.indexOf(t) >= 0; });
-      if (shared.length >= 2) out.push({tone: 'warn', title: 'Possible duplicate: ' + list[i].name + ' and ' + list[j].name, text: 'Both use ' + shared.join(', ') + '. Check whether one of them can be a variant of the other.'});
-    } }
-    D.taxonomy.boardAreas.forEach(function(a){ if (!list.some(function(s){ return s.boardArea === a; })) out.push({tone: 'n', title: 'Gap: ' + a, text: 'No skill is registered for this board area yet.'}); });
-    Object.keys(D.taxonomy.lobs).forEach(function(l){ if (!list.some(function(s){ return s.lob === l; })) out.push({tone: 'n', title: 'Gap: LOB ' + l, text: 'No skill is registered for this LOB yet.'}); });
-    list.filter(function(s){ return !s.boardArea && s.scope !== 'company'; }).forEach(function(s){ out.push({tone: 'warn', title: 'Not classified: ' + s.name, text: 'Add board-area, lob or a company-wide reach to the skill profile.'}); });
-    list.filter(function(s){ return s.scope === 'individual' && (s.maturity === 'empfohlen' || s.maturity === 'approved'); }).forEach(function(s){ out.push({tone: 'ok', title: 'Ready to promote: ' + s.name, text: MAT_LABEL[s.maturity] + ', but still individual. Propose it to the team.'}); });
-    $('hints').innerHTML = out.length ? out.map(function(h){ return '<div class="hint">' + tag(h.tone, h.tone === 'ok' ? 'Promote' : h.tone === 'warn' ? 'Check' : 'Gap') + ' <b>' + esc(h.title) + '</b><div class="s" style="margin-top:4px">' + esc(h.text) + '</div></div>'; }).join('') : '<div class="empty">Nothing to flag.</div>';
-  }
+  /* ---------- ranking and hints ---------- */
   function renderRanking(){
     var area = $('r-area').value;
     var list = pool().filter(function(s){ return !area || s.boardArea === area; }).map(function(s){ return {s: s, score: demandScore(s)}; })
       .sort(function(a, b){ return b.score - a.score || a.s.name.localeCompare(b.s.name); }).slice(0, 10);
     var max = list.length ? Math.max(list[0].score, 1) : 1;
     if (!list.length) { $('ranking').innerHTML = '<div class="empty">No skills in this board area.</div>'; return; }
-    $('ranking').innerHTML = '<table><thead><tr><th class="num">#</th><th>Skill</th><th>Where</th><th>Maturity</th><th class="num">Installs</th><th class="num">Views</th><th class="num">Hits</th><th class="num">Score</th><th>Trend</th></tr></thead><tbody>' +
+    $('ranking').innerHTML = '<table class="rank"><thead><tr><th class="num">#</th><th>Skill</th><th>Where</th><th>Maturity</th><th class="num">Installs</th><th class="num">Views</th><th class="num">Hits</th><th class="num">Score</th><th>Trend</th></tr></thead><tbody>' +
       list.map(function(row, i){
         var s = row.s, d = s.demand || {}, prev = d.previousScore || 0;
         var trend = prev > 0 ? Math.round((row.score - prev) / prev * 100) : null;
         var tr = trend === null ? tag('n', 'new') : tag(trend > 0 ? 'ok' : trend < 0 ? 'bad' : 'n', (trend > 0 ? '+' : '') + trend + '%');
-        return '<tr><td class="num">' + (i + 1) + '</td><td><b>' + esc(s.name) + '</b>' + (s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + esc(s.description) + '</div></td><td>' + esc([s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' › ')) + '</td><td>' + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity] || s.maturity) + '</td><td class="num">' + (d.installs || 0) + '</td><td class="num">' + (d.views || 0) + '</td><td class="num">' + (d.searchHits || 0) + '</td><td class="num"><b>' + row.score + '</b><div class="bar"><i style="width:' + Math.round(row.score / max * 100) + '%"></i></div></td><td>' + tr + '</td></tr>';
+        return '<tr><td class="num">' + (i + 1) + '</td><td><b>' + esc(s.name) + '</b>' + (s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + esc(s.description) + '</div></td><td>' + esc([s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' / ')) + '</td><td><span class="status"><i class="m-' + s.maturity + '"></i>' + MAT_LABEL[s.maturity] + '</span></td><td class="num">' + (d.installs || 0) + '</td><td class="num">' + (d.views || 0) + '</td><td class="num">' + (d.searchHits || 0) + '</td><td class="num"><b>' + row.score + '</b><div class="bar"><i style="width:' + Math.round(row.score / max * 100) + '%"></i></div></td><td>' + tr + '</td></tr>';
       }).join('') + '</tbody></table>';
+  }
+  function renderHints(){
+    var list = pool(), out = [];
+    for (var i = 0; i < list.length; i++){ for (var j = i + 1; j < list.length; j++){
+      var shared = list[i].tools.filter(function(t){ return list[j].tools.indexOf(t) >= 0; });
+      if (shared.length >= 2) out.push({tone: 'warn', label: 'Check', title: list[i].name + ' and ' + list[j].name + ' may overlap', text: 'Both use ' + shared.join(' and ') + '. Check whether one can be a variant of the other.'});
+    } }
+    D.taxonomy.boardAreas.forEach(function(a){ if (!list.some(function(s){ return s.boardArea === a; })) out.push({tone: 'n', label: 'Gap', title: 'No skill for ' + a, text: 'Nothing is registered for this board area yet.'}); });
+    Object.keys(D.taxonomy.lobs).forEach(function(l){ if (!list.some(function(s){ return s.lob === l; })) out.push({tone: 'n', label: 'Gap', title: 'No skill for LOB ' + l, text: 'Nothing is registered for this LOB yet.'}); });
+    list.filter(function(s){ return !s.boardArea && s.scope !== 'company'; }).forEach(function(s){ out.push({tone: 'warn', label: 'Check', title: s.name + ' is not classified', text: 'Add a board area or LOB, or make it company-wide.'}); });
+    list.filter(function(s){ return s.scope === 'individual' && (s.maturity === 'empfohlen' || s.maturity === 'approved'); }).forEach(function(s){ out.push({tone: 'ok', label: 'Promote', title: s.name + ' can be shared wider', text: MAT_LABEL[s.maturity] + ', but still individual. Propose it to the team.'}); });
+    $('hints').innerHTML = out.length ? out.map(function(h){ return '<div class="hint">' + tag(h.tone, h.label) + '<div><b>' + esc(h.title) + '</b><div class="s" style="margin-top:3px">' + esc(h.text) + '</div></div></div>'; }).join('') : '<div class="empty">Nothing to flag.</div>';
   }
   function renderAll(){ renderOverview(); renderCatalog(); renderRanking(); renderHints(); }
 
-  var tabs = document.querySelectorAll('#tabs button');
-  function go(name){
-    Array.prototype.forEach.call(tabs, function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
-    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + name); });
-  }
   Array.prototype.forEach.call(tabs, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });
+  D.taxonomy.boardAreas.forEach(function(a){ open[a] = true; });
+  Object.keys(D.taxonomy.lobs).forEach(function(l){ open[D.taxonomy.lobs[l] + '|' + l] = true; });
+  open['Company-wide'] = true;
   setupFilters(); renderAll();
 })();
 </script>
