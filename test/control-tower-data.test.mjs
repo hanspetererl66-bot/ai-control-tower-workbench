@@ -93,7 +93,7 @@ test('every data-bound fact in the page shows its current value without scripts'
       : path.split('.').reduce((value, key) => value?.[key], data);
   const markup = html.replace(/<script[\s\S]*?<\/script>/g, '');
   const bound = [...markup.matchAll(/<span data-ct="([\w.]+)">([^<]*)<\/span>/g)];
-  assert.ok(bound.length >= 40, `only ${bound.length} bound facts`);
+  assert.ok(bound.length >= 25, `only ${bound.length} bound facts`);
   for (const [, path, text] of bound) {
     const value = resolve(path);
     assert.notEqual(value, undefined, `unknown path ${path}`);
@@ -113,4 +113,14 @@ test('the EU AI Act audit is on 12 Dec 2026 everywhere, and its counts agree', (
   for (const stale of [/February/, /Feb 2027/, /Feb&nbsp;&lsquo;27/, /Feb&nbsp;'27/, /end of January/]) {
     assert.doesNotMatch(text, stale, String(stale));
   }
+});
+
+test('the explanation tabs are gone and every tab button has exactly one page', () => {
+  const buttons = [...html.matchAll(/onclick="go\('(\w+)',this\)"/g)].map((match) => match[1]);
+  const pages = [...html.matchAll(/<section id="page-(\w+)" class="pg/g)].map((match) => match[1]);
+  assert.deepEqual(buttons, pages);
+  for (const removed of ['primer', 'model', 'intro']) assert.ok(!pages.includes(removed), removed);
+  assert.ok(!/Tab Explanation|Model on a page/.test(html));
+  assert.equal(html.match(/<section id="page-\w+" class="pg on"/g)?.length, 1); // one default page
+  assert.match(html, /class="tb on"\s+onclick="go\('board'/);
 });
