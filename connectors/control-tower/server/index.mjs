@@ -8,10 +8,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { TICKET_TOOL_DEFINITIONS, createTicketHandlers } from './tickets.mjs';
+import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.5.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.5.1' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
@@ -37,7 +38,7 @@ const SUPABASE_TIMEOUT_MS = 8000;
 
 /** Call a public RPC function on Supabase with the server-side key. */
 async function supabaseRpc(fn, body, url, key) {
-  const endpoint = new URL(`/rest/v1/rpc/${fn}`, url);
+  const endpoint = new URL(`/rest/v1/rpc/${fn}`, normalizeSupabaseUrl(url));
   const local = ['localhost', '127.0.0.1'].includes(endpoint.hostname);
   if (endpoint.protocol !== 'https:' && !local) throw new Error('SUPABASE_URL must be https');
   const response = await fetch(endpoint, {

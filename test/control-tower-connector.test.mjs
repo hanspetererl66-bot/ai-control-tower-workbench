@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
+import { normalizeSupabaseUrl } from '../connectors/control-tower/server/supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
 import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
@@ -515,4 +516,28 @@ test('skill tools explain that Supabase is needed when it is not configured', as
   } finally {
     server.stop();
   }
+});
+
+test('the Supabase URL from the connector dialog is forgiven: missing scheme, trailing slash, pasted API path', async () => {
+  assert.equal(normalizeSupabaseUrl('abcdefgh.supabase.co'), 'https://abcdefgh.supabase.co');
+  assert.equal(normalizeSupabaseUrl('  https://abcdefgh.supabase.co/ '), 'https://abcdefgh.supabase.co');
+  assert.equal(normalizeSupabaseUrl('https://abcdefgh.supabase.co/rest/v1'), 'https://abcdefgh.supabase.co');
+  assert.equal(normalizeSupabaseUrl('127.0.0.1:54321'), 'http://127.0.0.1:54321');
+  for (const bad of ['', '   ', 'nur-ein-wort', 'https://']) assert.throws(() => normalizeSupabaseUrl(bad), /Supabase project URL/);
+
+  await withFakeSupabase(
+    (request, response) => {
+      response.setHeader('content-type', 'application/json');
+      response.end(request.url.endsWith('sub4me_tickets') ? '[]' : '{}');
+    },
+    async (url) => {
+      const sloppy = `${url.replace('http://', '')}/rest/v1/`; // no scheme, with API path and trailing slash
+      const server = startServer(SERVER, { SUPABASE_URL: sloppy, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        assert.equal(parse(await server.call('list_tickets', {})).count, 0);
+      } finally {
+        server.stop();
+      }
+    }
+  );
 });
