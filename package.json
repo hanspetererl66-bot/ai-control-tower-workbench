@@ -17,6 +17,10 @@
     "gmail:authorize": "node scripts/gmail-authorize.mjs",
     "install:control-tower": "node scripts/install-example-space.mjs control-tower",
     "install:sub4me": "node scripts/install-example-space.mjs sub4me",
+    "install:skills": "node scripts/install-example-skills.mjs",
+    "skills": "node scripts/skills-registry.mjs",
+    "skills:sync": "node scripts/skills-registry.mjs sync",
+    "skills:publish": "node scripts/skills-registry.mjs publish",
     "install:examples": "node scripts/install-example-space.mjs",
     "check": "npm run typecheck && npm test && npm run build"
   },

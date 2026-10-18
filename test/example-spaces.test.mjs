@@ -64,3 +64,25 @@ test('both Spaces embed the current shared design system and use only tokens for
     assert.match(html, /prefers-color-scheme:dark/);
   }
 });
+
+test('example skills have valid frontmatter, use only real connector tools, and install', async () => {
+  const { installExampleSkills } = await import('../scripts/install-example-skills.mjs');
+  const { TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tools.mjs');
+  const { TICKET_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tickets.mjs');
+  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS].map((t) => t.name));
+  const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
+  try {
+    const names = installExampleSkills({ root: ROOT, skillsDir: dir });
+    assert.deepEqual(names.sort(), ['board-briefing', 'ticket-writer']);
+    for (const name of names) {
+      const text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8');
+      const front = /^---\nname: (.+)\ndescription: (.+)\n---\n/.exec(text);
+      assert.ok(front, `${name}: frontmatter`);
+      assert.equal(front[1], name);
+      assert.ok(front[2].length <= 240, `${name}: description fits the skill picker`);
+      for (const [, tool] of text.matchAll(/`((?:get|list|create)_[a-z_]+)`/g)) assert.ok(real.has(tool), `${name} mentions unknown tool ${tool}`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

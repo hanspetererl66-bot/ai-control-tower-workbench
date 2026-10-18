@@ -189,3 +189,24 @@ installed Space contains the updated page.
   **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
   dialog; the Supabase URL and key fields can stay empty to use the sample data. No `.mcpb` file is needed.
 
+
+## Shared skills registry (Supabase)
+
+Skills can be shared with colleagues through the same Supabase project (migration `007`). The Goose agent
+reads skills from files, so colleagues **sync** approved skills into their local `goose-home/.agents/skills/`.
+
+- **Read (everyone):** the publishable key can call `skills_list` / `skills_get`, which only return `approved` skills.
+- **Write (maintainer):** the secret key publishes drafts and approves them; the agent has no tool for this.
+- **Safety:** every version is checksummed (SHA-256, verified on sync); names must equal the folder name;
+  skills that look like they contain credentials are refused; local skills are never overwritten (`--force` to replace).
+
+```bash
+# Colleague: pull approved skills (then restart the agent)
+SUPABASE_URL=https://<ref>.supabase.co SUPABASE_KEY=<publishable key> npm run skills:sync
+
+# Maintainer
+SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills:publish            # upload examples/skills/* as drafts
+SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- approve board-briefing
+SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- retire board-briefing
+SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills -- list
+```
