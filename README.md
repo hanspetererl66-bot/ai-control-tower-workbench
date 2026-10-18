@@ -1,4 +1,5 @@
 # Joule Work X - Next Gen
+# Werkbank - Extebded by some more capabilities to showcase possible busines scenarios
 
 Joule Work X - Next Gen (a private prototype, based on the open-source [Werkbank](https://github.com/marianfoo/werkbank) by marianfoo) is a local desktop workbench for AI-assisted conversations, file context,
 persistent Spaces, MCP connectors, and reusable agent skills. The renderer talks to
