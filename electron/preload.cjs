@@ -42,4 +42,11 @@ contextBridge.exposeInMainWorld('host', {
     ipcRenderer.invoke('set-connector-enabled', { name, enabled }),
   removeConnector: (name) => ipcRenderer.invoke('remove-connector', name),
   restartAgent: () => ipcRenderer.invoke('restart-agent'),
+
+  // Voice input: the key never reaches the renderer, only hasKey.
+  voice: {
+    getSettings: () => ipcRenderer.invoke('voice-get-settings'),
+    saveSettings: (patch) => ipcRenderer.invoke('voice-save-settings', patch),
+    transcribe: (audio, mimeType) => ipcRenderer.invoke('voice-transcribe', { audio, mimeType }),
+  },
 });

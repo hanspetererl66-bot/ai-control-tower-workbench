@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Agent, SessionExtension } from '../acp';
 import { formatFileSize, type ChatAttachment } from '../attachments';
 import {
@@ -20,6 +20,7 @@ import {
 } from '../starter-prompts';
 import StarterPrompts from './StarterPrompts';
 import { PRODUCT_NAME } from '../product';
+import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
 type Props = {
   onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void>;
@@ -36,6 +37,11 @@ type Props = {
   onInstallConnector?: () => void;
   /** Show suggested Control Tower questions (empty chat only). */
   starters?: boolean;
+  voice?: VoiceSettings;
+  /** Opens the settings dialog (where the voice key is entered). */
+  onOpenSettings?: () => void;
+  /** Stop reading the reply aloud as soon as the user starts talking. */
+  onStopSpeaking?: () => void;
 };
 
 export default function Composer({
@@ -49,10 +55,69 @@ export default function Composer({
   onManageConnectors,
   onInstallConnector,
   starters = false,
+  voice,
+  onOpenSettings,
+  onStopSpeaking,
 }: Props) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
+  const [micState, setMicState] = useState<'idle' | 'recording' | 'transcribing'>('idle');
+  const [micError, setMicError] = useState('');
+  const recording = useRef<Recording | null>(null);
+  const textRef = useRef(text);
+  textRef.current = text;
+  useEffect(() => () => recording.current?.cancel(), []);
+
+  async function toggleMic() {
+    setMicError('');
+    if (micState === 'transcribing') return;
+    if (micState === 'recording') {
+      const current = recording.current;
+      recording.current = null;
+      if (!current) return;
+      setMicState('transcribing');
+      try {
+        const { audio, mimeType } = await current.stop();
+        const result = await window.host?.voice?.transcribe(audio, mimeType);
+        if (!result?.ok) throw new Error(result?.detail ?? 'Spracherkennung nicht verfügbar.');
+        const heard = (result.text ?? '').trim();
+        if (!heard) throw new Error('Nichts verstanden — bitte noch einmal sprechen.');
+        const combined = [textRef.current.trim(), heard].filter(Boolean).join(' ');
+        if (voice?.autoSend) {
+          setText('');
+          void submit({ text: combined });
+        } else {
+          setText(combined);
+        }
+      } catch (error: any) {
+        setMicError(error?.message ?? String(error));
+      } finally {
+        setMicState('idle');
+      }
+      return;
+    }
+    if (!voice?.hasKey) {
+      setMicError('Für Spracheingabe zuerst den Deepgram-Key in den Einstellungen eintragen.');
+      onOpenSettings?.();
+      return;
+    }
+    try {
+      onStopSpeaking?.();
+      recording.current = await startRecording(() => void toggleMicRef.current());
+      setMicState('recording');
+    } catch (error: any) {
+      setMicError(
+        error?.name === 'NotAllowedError'
+          ? 'Mikrofon nicht erlaubt — bitte in den Systemeinstellungen freigeben.'
+          : error?.name === 'NotFoundError'
+            ? 'Kein Mikrofon gefunden.'
+            : (error?.message ?? String(error))
+      );
+    }
+  }
+  const toggleMicRef = useRef(toggleMic);
+  toggleMicRef.current = toggleMic;
   const [connectorError, setConnectorError] = useState('');
   const [preparingConnector, setPreparingConnector] = useState(false);
   const [skills, setSkills] = useState<{ name: string; description: string }[]>([]);
@@ -474,6 +539,25 @@ export default function Composer({
 
         <span className="composer-spacer" />
 
+        {window.host?.voice && (
+          <button
+            className={`mic mic-${micState}`}
+            onClick={() => void toggleMic()}
+            disabled={!agent || busy || micState === 'transcribing'}
+            aria-pressed={micState === 'recording'}
+            aria-label={micState === 'recording' ? 'Aufnahme beenden' : 'Spracheingabe'}
+            title={
+              micState === 'recording'
+                ? 'Aufnahme beenden'
+                : micState === 'transcribing'
+                  ? 'Wird erkannt …'
+                  : 'Spracheingabe'
+            }
+          >
+            {micState === 'transcribing' ? <span className="mic-spinner" aria-hidden="true" /> : <MicIcon />}
+          </button>
+        )}
+
         <button
           className={`send ${busy ? 'send-stop' : ''}`}
           onClick={busy ? onCancel : () => void submit()}
@@ -489,6 +573,11 @@ export default function Composer({
           {busy ? <StopIcon /> : <SendIcon />}
         </button>
       </div>
+      {(micState === 'recording' || micError) && (
+        <p className={`mic-note ${micError ? 'mic-note-error' : ''}`} role={micError ? 'alert' : 'status'}>
+          {micError || 'Ich höre zu … zum Beenden das Mikrofon erneut anklicken.'}
+        </p>
+      )}
       {starters && (
         <StarterPrompts
           available={connectorsChecked ? hasControlTowerConnector(known.map((k) => k.name)) : null}
@@ -614,6 +703,15 @@ function PlugIcon() {
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="2.5" y="2.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
       <rect x="6.5" y="6.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+function MicIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
     </svg>
   );
 }

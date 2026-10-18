@@ -2631,3 +2631,86 @@ button {
   align-items: center;
   gap: 8px;
 }
+
+/* Voice input */
+.mic {
+  width: 32px;
+  height: 32px;
+  margin-right: 6px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+}
+.mic:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--hover, rgb(127 127 127 / 14%));
+}
+.mic:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.mic-recording {
+  color: #fff;
+  background: #d92d20;
+  animation: mic-pulse 1.4s ease-in-out infinite;
+}
+.mic-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes mic-pulse {
+  50% {
+    box-shadow: 0 0 0 5px rgb(217 45 32 / 22%);
+  }
+}
+.mic-note {
+  margin: 6px 4px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.mic-note-error {
+  color: #d92d20;
+}
+.settings-voice {
+  border-top: 1px solid var(--line, rgb(127 127 127 / 25%));
+  display: grid;
+  gap: 12px;
+}
+.voice-row {
+  display: flex;
+  gap: 8px;
+}
+.voice-key {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--line, rgb(127 127 127 / 35%));
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+.voice-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+}
+.voice-message {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mic-recording {
+    animation: none;
+  }
+}

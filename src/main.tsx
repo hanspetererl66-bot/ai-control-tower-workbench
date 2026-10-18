@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import type { AttachmentPickerResult } from './attachments';
+import type { VoiceSettings } from './voice';
 import './theme.css';
 
 declare global {
@@ -57,6 +58,16 @@ declare global {
         values: Record<string, string>,
         config?: unknown
       ) => Promise<{ ok: boolean; detail?: string }>;
+      voice?: {
+        getSettings: () => Promise<VoiceSettings>;
+        saveSettings: (
+          patch: Partial<Omit<VoiceSettings, 'hasKey'>> & { key?: string }
+        ) => Promise<{ ok: boolean; settings?: VoiceSettings; detail?: string }>;
+        transcribe: (
+          audio: ArrayBuffer,
+          mimeType: string
+        ) => Promise<{ ok: boolean; text?: string; code?: string; detail?: string }>;
+      };
       removeSkill?: (name: string) => Promise<{ ok: boolean; detail?: string }>;
       forgetSecrets?: (name: string) => Promise<{ ok: boolean; detail?: string }>;
       setConnectorEnabled?: (
