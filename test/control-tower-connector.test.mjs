@@ -264,3 +264,95 @@ test('a risk exactly at the threshold is not "below" it', async () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+/** Stand-in for Supabase's /rest/v1/rpc/control_tower_snapshot endpoint. */
+async function withFakeSupabase(handler, run) {
+  const { createServer } = await import('node:http');
+  const seen = [];
+  const http = createServer((request, response) => {
+    seen.push({ method: request.method, url: request.url, apikey: request.headers.apikey, auth: request.headers.authorization });
+    handler(request, response);
+  });
+  await new Promise((resolve) => http.listen(0, '127.0.0.1', resolve));
+  try {
+    await run(`http://127.0.0.1:${http.address().port}`, seen);
+  } finally {
+    http.close();
+  }
+}
+
+test('reads from Supabase when configured, using the secret key, and reports the source', async () => {
+  const remote = { ...data, agents: { ...data.agents, total: 999 } };
+  await withFakeSupabase(
+    (request, response) => {
+      response.setHeader('content-type', 'application/json');
+      response.end(JSON.stringify(remote));
+    },
+    async (url, seen) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        const overview = parse(await server.call('get_agent_overview', {}));
+        assert.equal(overview.totalAgents, 999);
+        assert.equal(overview.dataSource, 'supabase');
+        assert.deepEqual(seen[0], {
+          method: 'POST',
+          url: '/rest/v1/rpc/control_tower_snapshot',
+          apikey: 'sb_secret_test',
+          auth: 'Bearer sb_secret_test',
+        });
+      } finally {
+        server.stop();
+      }
+    }
+  );
+});
+
+test('falls back to data.json when Supabase fails, says so, and never leaks the key', async () => {
+  for (const handler of [
+    (request, response) => { response.statusCode = 500; response.end('boom sb_secret_test'); },
+    (request, response) => { response.end('{"unexpected":true}'); },
+    (request, response) => { response.end('not json'); },
+  ]) {
+    await withFakeSupabase(handler, async (url) => {
+      const server = startServer(SERVER, { SUPABASE_URL: url, SUPABASE_SECRET_KEY: 'sb_secret_test' });
+      try {
+        const result = await server.call('get_agent_overview', {});
+        assert.notEqual(result.isError, true);
+        const overview = parse(result);
+        assert.equal(overview.totalAgents, 186); // bundled sample data
+        assert.match(overview.dataSource, /^data\.json \(Supabase unavailable: /);
+        assert.ok(!result.content[0].text.includes('sb_secret_test'));
+      } finally {
+        server.stop();
+      }
+    });
+  }
+});
+
+test('without Supabase settings the file is used and labelled', async () => {
+  const server = startServer(SERVER, { SUPABASE_URL: '', SUPABASE_SECRET_KEY: '' });
+  try {
+    assert.equal(parse(await server.call('get_budget', {})).dataSource, 'data.json (Supabase not configured)');
+  } finally {
+    server.stop();
+  }
+});
+
+test('a non-https Supabase URL (other than localhost) is refused and falls back', async () => {
+  const server = startServer(SERVER, { SUPABASE_URL: 'http://example.com', SUPABASE_SECRET_KEY: 'k' });
+  try {
+    const overview = parse(await server.call('get_agent_overview', {}));
+    assert.match(overview.dataSource, /must be https/);
+    assert.equal(overview.totalAgents, 186);
+  } finally {
+    server.stop();
+  }
+});
+
+test('manifest declares the Supabase key as a sensitive, optional field', () => {
+  const key = manifest.user_config.supabase_secret_key;
+  assert.equal(key.sensitive, true);
+  assert.notEqual(key.required, true);
+  assert.equal(manifest.user_config.supabase_url.sensitive, undefined);
+  assert.equal(manifest.server.mcp_config.env.SUPABASE_SECRET_KEY, '${user_config.supabase_secret_key}');
+});

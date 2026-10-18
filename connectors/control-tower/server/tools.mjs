@@ -203,7 +203,7 @@ export const TOOL_DEFINITIONS = [
 ];
 
 /** Run a tool and shape the result the way MCP expects. */
-export function callTool(name, args, data) {
+export function callTool(name, args, data, source) {
   const handler = HANDLERS[name];
   if (!handler) throw new RangeError(`Unknown tool: ${name}`);
   if (args === undefined || args === null) args = {};
@@ -211,7 +211,9 @@ export function callTool(name, args, data) {
     return { content: [{ type: 'text', text: 'arguments must be an object' }], isError: true };
   }
   try {
-    return { content: [{ type: 'text', text: JSON.stringify(handler(data, args), null, 2) }] };
+    const result = handler(data, args);
+    const payload = source === undefined ? result : { ...result, dataSource: source };
+    return { content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }] };
   } catch (error) {
     if (error instanceof ToolError) return { content: [{ type: 'text', text: error.message }], isError: true };
     throw error;

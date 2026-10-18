@@ -111,3 +111,17 @@ downloads.
 ## License
 
 [Apache License 2.0](LICENSE)
+
+### Supabase as data source (optional)
+
+The connector reads the sample data from Supabase when `Supabase project URL` and
+`Supabase secret key` are filled in on import; otherwise it uses the bundled `data.json`.
+If Supabase is configured but unreachable, it falls back to `data.json` and every result
+carries a `dataSource` field saying which one was used.
+
+- `supabase/migrations/` creates the `control_tower` schema (RLS on, no access for `anon`/`authenticated`),
+  seeds it from `data.json`, and adds `public.control_tower_snapshot()`, executable only by the server-side key.
+- Use a **secret** key (`sb_secret_…`) of a project that holds only this sample data. It bypasses RLS,
+  so never put it in the repo; Werkbank stores it as a secret.
+- Read-only: the connector has no write tools. `data.json` stays the source for the embedded dashboard.
+
