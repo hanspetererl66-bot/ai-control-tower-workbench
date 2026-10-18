@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '../product';
 import { useEffect } from 'react';
 import type { AppearancePreference, ResolvedTheme } from '../appearance';
 
@@ -47,7 +48,7 @@ export default function SettingsDialog({
         <header className="settings-head">
           <div>
             <h3 id="settings-title" className="dialog-title">Settings</h3>
-            <p className="dialog-body">Personalise how Werkbank looks on this Mac.</p>
+            <p className="dialog-body">Personalise how {PRODUCT_NAME} looks on this Mac.</p>
           </div>
           <button className="icon-btn settings-close" onClick={onClose} aria-label="Close settings">
             <CloseIcon />

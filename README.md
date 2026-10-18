@@ -1,10 +1,15 @@
+# Joule Work X - Next Gen
 # Werkbank - Extebded by some more capabilities to showcase possible busines scenarios
 
-Werkbank is a local desktop workbench for AI-assisted conversations, file context,
+Joule Work X - Next Gen (a private prototype, based on the open-source [Werkbank](https://github.com/marianfoo/werkbank) by marianfoo) is a local desktop workbench for AI-assisted conversations, file context,
 persistent Spaces, MCP connectors, and reusable agent skills. The renderer talks to
 a project-local [Goose](https://block.github.io/goose/) process through the Agent
 Client Protocol; connector configuration and generated work stay in the local project
 workspace.
+
+> **Not affiliated with SAP.** "Joule" is the name of an SAP product. This is an independent prototype in a similar style; it is not
+> SAP software and is not endorsed by SAP. Internal identifiers (the `werkbank://` link scheme, storage keys, package name) keep
+> the original name so existing links and data keep working.
 
 ## What works
 
@@ -50,6 +55,77 @@ configured, restarted, or removed. If an install page does not return to the app
 that the Werkbank window is still running, reload the install page, and select
 **Open Werkbank** again.
 
+## AI Control Tower example Space
+
+This fork bundles an AI Control Tower dashboard (illustrative sample data) as a Space.
+Install it into the spaces folder with:
+
+```
+npm run install:control-tower
+```
+
+It then appears in the Spaces list. The source lives in `examples/control-tower/`.
+
+The risk register is data-driven: edit `examples/control-tower/data.json`, then run
+`npm run sync:control-tower` to embed it into the page (a Space cannot fetch files
+from inside the sandbox). `npm test` fails if the two drift apart.
+
+### Control Tower connector (MCP)
+
+`connectors/control-tower/` is a small, dependency-free MCP server that lets the chat
+query the same `data.json` the Space renders: risks, agent registry, unregistered
+assets, overprivileged agents and the AI budget. All tools are read-only.
+
+```
+npm run build:control-tower-mcpb     # writes dist/ai-control-tower.mcpb
+```
+
+Then in Werkbank open **Connectors & Skills**, choose **Import MCP bundle**, pick the
+file and confirm. Ask, for example, "Which risks are below 40% mitigated?". Edits to
+the bundled `data.json` apply without restarting the agent. Every result carries a
+`view` field naming the Control Tower tab that shows the same information.
+
+## Gmail connector (read + drafts)
+
+A second bundled MCP connector (`connectors/gmail`) lets the chat search and read your Gmail and
+create **draft** replies. It has four tools (`list_labels`, `search_mail`, `read_mail`, `create_draft`)
+and deliberately no tool that sends or deletes mail; you review and send drafts in Gmail yourself.
+Mail text is treated as untrusted and returned with a notice not to follow instructions inside it.
+Google's `gmail.compose` scope technically also permits sending, so keep the refresh token private.
+
+1. In your own Google Cloud project: enable the Gmail API, configure the OAuth consent screen
+   (External, add yourself as test user), and create an OAuth client of type **Desktop app**.
+2. `GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... npm run gmail:authorize` and sign in; the refresh
+   token is printed to the terminal only.
+3. `npm run build:gmail-mcpb` writes `dist/gmail-drafts.mcpb`. In **Connectors & Skills** choose
+   **Import MCP bundle** and paste client ID, client secret and refresh token into the dialog
+   (stored as secrets). Do not put them in `.env`, the repo or a chat.
+
+Use a personal account, not a work mailbox: mail content is sent to the configured model provider.
+
+## Sub4Me example Space (customer portal mock-up)
+
+`examples/sub4me` is a second bundled Space: a fictional customer portal with contracts, AI-unit
+consumption per product (with year-end forecast) and service tickets. All data is fictional and the
+page says it is not affiliated with any vendor. Install with `npm run install:sub4me` (or
+`npm run install:examples` for both Spaces), then restart or refresh the app.
+
+**Tickets in Supabase (temporary demo storage).** Spaces have no network access, so the Space asks the
+app by `postMessage`, and the app calls two fixed tools of the Control Tower connector
+(`list_tickets`, `create_ticket`) over the agent session, which read/insert rows through
+`public.sub4me_tickets()` / `public.sub4me_create_ticket()` (migration `006`, server-side key only).
+Creating a ticket is the only write the connector can do; it cannot edit or delete rows. Without the
+Supabase URL/key or without a connected agent the Space falls back to page-only tickets and says so.
+You can also ask in the chat: "Eröffne ein Sub4Me-Ticket ...". To clear the tickets you added, see the
+`delete` statement at the end of the migration file.
+
+## Shared visual design
+
+Both example Spaces use one design system: `examples/shared/design-system.css` (tokens for colour,
+type, radius and spacing; light and dark via `prefers-color-scheme`; violet accent). Spaces are
+single-file pages without network access, so the CSS is embedded into each page by
+`npm run sync:design` (a test fails if a page is out of sync). Edit the shared file, then sync.
+
 ## Verification
 
 ```sh
@@ -81,3 +157,35 @@ downloads.
 ## License
 
 [Apache License 2.0](LICENSE)
+
+### Supabase as data source (optional)
+
+The connector reads the sample data from Supabase when `Supabase project URL` and
+`Supabase secret key` are filled in on import; otherwise it uses the bundled `data.json`.
+If Supabase is configured but unreachable, it falls back to `data.json` and every result
+carries a `dataSource` field saying which one was used.
+
+- `supabase/migrations/` creates the `control_tower` schema (RLS on, no access for `anon`/`authenticated`),
+  seeds it from `data.json`, and adds `public.control_tower_snapshot()`, executable only by the server-side key.
+- Use a **secret** key (`sb_secret_…`) of a project that holds only this sample data. It bypasses RLS,
+  so never put it in the repo; Werkbank stores it as a secret.
+- Read-only: the connector has no write tools. `data.json` stays the source for the embedded dashboard.
+
+### Chat → dashboard
+
+After an answer that used the Control Tower connector, the chat shows a button such as
+"Im Control Tower ansehen: Risk & Compliance". It opens the Space and switches to the tab that shows the
+same information (`src/control-tower-views.ts`: risks → Risk & Compliance, agents → Agent Repository,
+budget → Model Governance). The Space only accepts a `ct:open-tab` message from its parent window and
+only for tab ids that exist on the page. After pulling, run `npm run install:control-tower` once so the
+installed Space contains the updated page.
+
+### Cover sheet and one-click connector
+
+- Clicking the diamond at the top of the left rail opens a full-screen cover sheet:
+  "Joule Work X - Next Gen · Prototype · Built by Accenture · Demo only". Click anywhere outside the
+  text, "Close" or Esc to dismiss it.
+- If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
+  **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
+  dialog; the Supabase URL and key fields can stay empty to use the sample data. No `.mcpb` file is needed.
+

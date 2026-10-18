@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import type { ToolCall } from '../acp';
 import type { MessageAttachment } from '../attachments';
 import type { Space } from '../spaces';
+import { controlTowerViews, type ControlTowerView } from '../control-tower-views';
 
 export type Message = {
   role: 'user' | 'agent';
@@ -18,10 +19,12 @@ export default function Chat({
   messages,
   busy,
   onOpenSpace,
+  onOpenView,
 }: {
   messages: Message[];
   busy: boolean;
   onOpenSpace: (slug: string) => void;
+  onOpenView?: (view: ControlTowerView) => void;
 }) {
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -60,6 +63,7 @@ export default function Chat({
                 <div className="msg-text">
                   <ReactMarkdown>{m.text}</ReactMarkdown>
                 </div>
+                {onOpenView && <ViewLinks tools={m.tools} onOpen={onOpenView} />}
                 <MessageActions text={m.text} tools={m.tools} />
               </>
             ) : (
@@ -110,6 +114,21 @@ function TaskBlock({
           {tools.map((tool) => <ToolRow key={tool.id} tool={tool} />)}
         </div>
       )}
+    </div>
+  );
+}
+
+/** "Open in dashboard" buttons for Control Tower answers. Shown, not forced: the chat answer stays visible. */
+function ViewLinks({ tools, onOpen }: { tools: ToolCall[]; onOpen: (view: ControlTowerView) => void }) {
+  const views = controlTowerViews(tools);
+  if (views.length === 0) return null;
+  return (
+    <div className="view-links">
+      {views.map((view) => (
+        <button key={view.tab} className="view-link" onClick={() => onOpen(view)}>
+          Im Control Tower ansehen: {view.label} <span aria-hidden="true">›</span>
+        </button>
+      ))}
     </div>
   );
 }

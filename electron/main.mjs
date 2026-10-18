@@ -1,12 +1,12 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron';
 import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments } from './attachments.mjs';
-import { parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
+import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEV_URL = 'http://localhost:5273';
@@ -470,6 +470,47 @@ ipcMain.handle('import-mcpb', async () => {
   const id = nextInstallId++;
   pendingInstalls.set(id, request);
   return { id, ...request };
+});
+
+/**
+ * The AI Control Tower connector ships inside the repository. Stage it the way an
+ * extracted .mcpb would look and register it for the normal approve→install dialog,
+ * so nobody has to build or find a bundle file first. Supabase URL/key stay optional.
+ */
+ipcMain.handle('prepare-control-tower-connector', () => {
+  try {
+    const source = join(ROOT, 'connectors/control-tower');
+    const manifest = JSON.parse(readFileSync(join(source, 'manifest.json'), 'utf8'));
+    const mcp = manifest?.server?.mcp_config;
+    if (!mcp?.command || !ALLOWED_COMMANDS.has(mcp.command)) {
+      return { error: 'the bundled connector manifest is invalid' };
+    }
+    const name = String(manifest.name ?? 'ai-control-tower').replace(/[^A-Za-z0-9._-]/g, '-');
+    const target = join(BUNDLES_DIR, name);
+    rmSync(target, { recursive: true, force: true });
+    mkdirSync(join(target, 'data'), { recursive: true });
+    cpSync(join(source, 'manifest.json'), join(target, 'manifest.json'));
+    cpSync(join(source, 'server'), join(target, 'server'), { recursive: true });
+    cpSync(join(ROOT, 'examples/control-tower/data.json'), join(target, 'data/data.json'));
+
+    const sub = (s) => String(s).replace(/\$\{__dirname\}/g, target);
+    const request = {
+      kind: 'mcp',
+      name,
+      source: 'mcpb',
+      remote: false,
+      command: mcp.command,
+      args: (mcp.args ?? []).map(sub),
+      env: Object.fromEntries(Object.entries(mcp.env ?? {}).map(([k, v]) => [k, sub(v)])),
+      fields: fieldsFromUserConfig(manifest.user_config),
+      description: manifest.display_name ?? manifest.description ?? '',
+    };
+    const id = nextInstallId++;
+    pendingInstalls.set(id, request);
+    return { id, ...request };
+  } catch (e) {
+    return { error: `could not prepare the connector: ${e?.message ?? e}` };
+  }
 });
 
 const LOOKS_SECRET = /password|secret|token|api[-_]?key|authorization|cookie|credential/i;

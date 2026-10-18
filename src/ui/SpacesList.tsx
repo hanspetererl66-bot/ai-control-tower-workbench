@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '../product';
 import { relativeTime, type Space } from '../spaces';
 
 type Props = {
@@ -21,7 +22,7 @@ export default function SpacesList({ spaces, selected, onSelect }: Props) {
 
       {spaces.length === 0 ? (
         <p className="list-empty">
-          No Spaces yet. Ask Werkbank to create a dashboard from grounded data.
+          No Spaces yet. Ask {PRODUCT_NAME} to create a dashboard from grounded data.
         </p>
       ) : (
         spaces.map((s) => (

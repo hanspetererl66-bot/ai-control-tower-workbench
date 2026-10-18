@@ -40,7 +40,7 @@ export function parseSkillUrl(raw) {
   return { slug: `${repoMatch[1]}/${repoMatch[2]}`, name, origin: origin.slice(0, 100) };
 }
 
-const ALLOWED_COMMANDS = new Set(['npx', 'uvx', 'node', 'python3', 'bunx', 'deno']);
+export const ALLOWED_COMMANDS = new Set(['npx', 'uvx', 'node', 'python3', 'bunx', 'deno']);
 
 export function parseMcpUrl(raw) {
   let url;

@@ -50,6 +50,7 @@ declare global {
       decideSkillInstall?: (id: number, approved: boolean, values?: Record<string, string>) => void;
       listSkills?: () => Promise<{ name: string; description: string; dir: string }[]>;
       importMcpb?: () => Promise<Record<string, unknown> | null>;
+      prepareControlTowerConnector?: () => Promise<Record<string, unknown> | null>;
       getConnectorSpec?: (name: string) => Promise<Record<string, unknown> | null>;
       saveConnectorConfig?: (
         name: string,

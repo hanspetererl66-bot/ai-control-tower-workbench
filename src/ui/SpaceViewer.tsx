@@ -1,7 +1,47 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
+import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
 
-export default function SpaceViewer({ space }: { space: Space }) {
+/** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
+export type SpaceTabRequest = { tab: string; nonce: number };
+
+export default function SpaceViewer({
+  space,
+  tabRequest,
+  bridge,
+  bridgeEnabled = false,
+}: {
+  space: Space;
+  tabRequest?: SpaceTabRequest | null;
+  /** Connector calls for spaces that need them (Sub4Me tickets). */
+  bridge?: BridgeCall;
+  bridgeEnabled?: boolean;
+}) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const loaded = useRef(false);
+  const postTab = () => {
+    if (!tabRequest || !loaded.current) return;
+    // The frame has an opaque origin, so '*' is the only possible target; the
+    // message carries a tab id and nothing else.
+    frame.current?.contentWindow?.postMessage({ type: 'ct:open-tab', tab: tabRequest.tab }, '*');
+  };
+  useEffect(postTab, [tabRequest?.tab, tabRequest?.nonce]);
+
+  const bridgeRef = useRef(bridge);
+  bridgeRef.current = bridge;
+  useEffect(() => {
+    if (!bridgeEnabled) return;
+    const onMessage = (event: MessageEvent) => {
+      // Only the frame of this space may talk to the bridge.
+      if (!frame.current || event.source !== frame.current.contentWindow) return;
+      void handleSub4meMessage(event.data, bridgeRef.current).then((reply) => {
+        if (reply) frame.current?.contentWindow?.postMessage(reply, '*');
+      });
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [bridgeEnabled]);
+
   const [bust, setBust] = useState(space.updatedAt);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [html, setHtml] = useState<string | null>(null);
@@ -62,6 +102,11 @@ export default function SpaceViewer({ space }: { space: Space }) {
         <div className="banner-error">Could not load this space: {loadError}</div>
       ) : (
         <iframe
+          ref={frame}
+          onLoad={() => {
+            loaded.current = true;
+            postTab();
+          }}
           key={`${space.slug}-${bust}-${html?.length ?? 0}`}
           className="space-frame"
           title={space.title}

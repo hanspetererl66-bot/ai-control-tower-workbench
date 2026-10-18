@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sub4Me</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font)}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.02em}.logo b{color:var(--brand)}
+.cust{margin-left:auto;text-align:right;font-size:12px;color:var(--mut)}.cust strong{display:block;color:var(--ink);font-size:13px}
+.demo{background:var(--warn-dim);color:var(--warn);font-size:12px;padding:6px 20px;border-bottom:1px solid var(--line)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--mut);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--brand)}
+main{padding:20px;max-width:1180px;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+.k{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.v{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.s{font-size:12px;color:var(--mut)}
+h2{font-size:15px;margin:22px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.t-ok{background:var(--ok-dim);color:var(--ok)}.t-warn{background:var(--warn-dim);color:var(--warn)}.t-bad{background:var(--bad-dim);color:var(--bad)}.t-n{background:var(--brand-dim);color:var(--brand)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.bar i.warn{background:var(--warn)}.bar i.bad{background:var(--bad)}
+.months{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:10px}
+.months div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%;font-size:11px;color:var(--mut)}
+.months span{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
+.months div.cur span{opacity:.55}
+form{display:grid;gap:10px;max-width:640px}
+label{font-size:12px;font-weight:600;color:var(--mut);display:grid;gap:4px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;justify-self:start}
+.toast{margin:12px 0;padding:10px 12px;border-radius:6px;background:var(--ok-dim);color:var(--ok);display:none}
+.toast.on{display:block}
+.row{display:flex;gap:14px;flex-wrap:wrap}.row>*{flex:1 1 320px}
+@media(max-width:600px){main{padding:14px}}
+</style>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme; colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+@media (prefers-color-scheme:dark){:root{
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){button.primary{color:#1a0a2b}}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px 32px}
+.s4m .logo{font-size:20px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 28px}
+.s4m nav button{padding:16px 14px 14px;font-weight:500}
+.s4m nav button[aria-selected=true]{font-weight:600}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body class="s4m">
+<header>
+  <div class="logo">Sub<b>4</b>Me</div>
+  <div class="s">Customer portal &middot; subscriptions, consumption, support</div>
+  <div class="cust"><strong id="cust-name"></strong><span id="cust-meta"></span></div>
+</header>
+<div class="demo">Demo / mock-up with fictional sample data. Not affiliated with any software vendor. <span id="storage-note">Tickets you open here stay in this page and are not sent anywhere.</span></div>
+<nav role="tablist" id="tabs">
+  <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+  <button role="tab" data-tab="contracts" aria-selected="false">Contracts</button>
+  <button role="tab" data-tab="usage" aria-selected="false">AI units &amp; products</button>
+  <button role="tab" data-tab="tickets" aria-selected="false">Tickets</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div></section>
+  <section class="pg" id="pg-contracts"><div class="card tbl" id="contracts"></div></section>
+  <section class="pg" id="pg-usage">
+    <div class="grid" id="usage-kpis"></div>
+    <div class="row"><div class="card"><div class="k">AI units per month (2026)</div><div class="months" id="months"></div></div>
+    <div class="card tbl" id="forecast"></div></div>
+    <h2>Consumption by product</h2><div class="card tbl" id="products"></div>
+  </section>
+  <section class="pg" id="pg-tickets">
+    <div class="row">
+      <div class="card"><div class="k" style="margin-bottom:10px">Open a ticket</div>
+        <form id="ticket-form" onsubmit="return false">
+          <label>Product<select name="product" id="f-product"></select></label>
+          <label>Priority<select name="priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Very high</option></select></label>
+          <label>Title<input name="title" required maxlength="120" placeholder="Short summary of the issue"></label>
+          <label>Description<textarea name="desc" rows="4" maxlength="2000" placeholder="What happened, since when, impact"></textarea></label>
+          <button class="primary" type="button" id="create-ticket">Create ticket</button>
+        </form>
+        <div class="toast" id="toast" role="status"></div></div>
+      <div class="card tbl" style="flex:2 1 460px"><div class="k" style="margin-bottom:6px">My tickets</div><div id="tickets"></div></div>
+    </div>
+  </section>
+</main>
+<script type="application/json" id="s4m-data">
+{
+  "asOf": "2026-10-18",
+  "customer": {"name": "Muster Industrie AG", "number": "100-482-117", "contact": "A. Beispiel", "country": "Germany"},
+  "aiUnits": {
+    "periodStart": "2026-01-01", "periodEnd": "2026-12-31", "allotment": 120000,
+    "monthly": [6200, 7100, 8300, 8900, 9800, 10400, 9600, 11200, 12100, 8700]
+  },
+  "products": [
+    {"name": "Joule copilots", "allotment": 50000, "consumed": 41000},
+    {"name": "BTP AI Core", "allotment": 30000, "consumed": 28300},
+    {"name": "SuccessFactors AI", "allotment": 12000, "consumed": 9800},
+    {"name": "Ariba AI", "allotment": 10000, "consumed": 8200},
+    {"name": "Document AI", "allotment": 18000, "consumed": 5000}
+  ],
+  "contracts": [
+    {"id": "C-2024-0187", "product": "S/4HANA Cloud Private Edition", "scope": "1,200 users, 3 systems", "start": "2024-01-01", "end": "2028-12-31", "annualEur": 2840000, "status": "Active", "noticeDays": 180},
+    {"id": "C-2024-0233", "product": "Business Technology Platform", "scope": "CPEA, 600k capacity units", "start": "2024-04-01", "end": "2027-03-31", "annualEur": 640000, "status": "Active", "noticeDays": 90},
+    {"id": "C-2025-0041", "product": "SuccessFactors Employee Central", "scope": "4,800 employees", "start": "2025-01-01", "end": "2026-12-31", "annualEur": 410000, "status": "Renewal due", "noticeDays": 90},
+    {"id": "C-2023-0390", "product": "Ariba Procurement", "scope": "250 buyers", "start": "2023-02-01", "end": "2027-01-31", "annualEur": 290000, "status": "Renewal due", "noticeDays": 90},
+    {"id": "C-2026-0012", "product": "AI units (Joule, AI Core, Document AI)", "scope": "120,000 units per year", "start": "2026-01-01", "end": "2026-12-31", "annualEur": 360000, "status": "Active", "noticeDays": 60},
+    {"id": "C-2022-0502", "product": "Concur Travel", "scope": "900 travellers", "start": "2022-07-01", "end": "2026-06-30", "annualEur": 95000, "status": "Expired", "noticeDays": 90}
+  ],
+  "tickets": [
+    {"id": "TKT-48213", "title": "Joule skill returns empty result for open purchase orders", "product": "Joule copilots", "priority": "High", "status": "In processing", "created": "2026-10-12", "updated": "2026-10-16"},
+    {"id": "TKT-48107", "title": "BTP AI Core deployment quota exceeded in eu10", "product": "BTP AI Core", "priority": "Very high", "status": "Waiting for customer", "created": "2026-10-08", "updated": "2026-10-15"},
+    {"id": "TKT-47888", "title": "Ariba approval workflow not triggering for cost centre 4711", "product": "Ariba AI", "priority": "Medium", "status": "In processing", "created": "2026-09-29", "updated": "2026-10-10"},
+    {"id": "TKT-47410", "title": "SuccessFactors AI job description suggestions in wrong language", "product": "SuccessFactors AI", "priority": "Low", "status": "Solution provided", "created": "2026-09-14", "updated": "2026-09-22"},
+    {"id": "TKT-46955", "title": "Request: increase Document AI quota for invoice backlog", "product": "Document AI", "priority": "Medium", "status": "Closed", "created": "2026-08-30", "updated": "2026-09-05"}
+  ]
+}
+</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('s4m-data').textContent);
+  var AS_OF = new Date(D.asOf + 'T00:00:00Z');
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var n = function(v){ return v.toLocaleString('en-US'); };
+  var eur = function(v){ return '€' + (v >= 1e6 ? (v/1e6).toFixed(2) + 'M' : n(v)); };
+  var days = function(iso){ return Math.round((new Date(iso + 'T00:00:00Z') - AS_OF) / 864e5); };
+  var tone = function(pct){ return pct >= 90 ? 'bad' : pct >= 80 ? 'warn' : ''; };
+  var tag = function(cls, text){ return '<span class="tag t-' + cls + '">' + esc(text) + '</span>'; };
+
+  $('cust-name').textContent = D.customer.name;
+  $('cust-meta').textContent = 'Customer no. ' + D.customer.number + ' · ' + D.customer.country + ' · as of ' + D.asOf;
+
+  var used = D.aiUnits.monthly.reduce(function(a, b){ return a + b; }, 0);
+  var pctUsed = Math.round(used / D.aiUnits.allotment * 100);
+  var fullMonths = D.aiUnits.monthly.slice(-4, -1);
+  var avg = fullMonths.reduce(function(a, b){ return a + b; }, 0) / fullMonths.length;
+  var remainingOct = (31 - 18) / 31;
+  var forecast = Math.round(used + avg * remainingOct + avg * 2);
+  var forecastPct = Math.round(forecast / D.aiUnits.allotment * 100);
+
+  var live = D.contracts.filter(function(c){ return c.status !== 'Expired'; });
+  var annual = live.reduce(function(a, c){ return a + c.annualEur; }, 0);
+  var renewals = live.filter(function(c){ return days(c.end) <= 180 && days(c.end) >= 0; });
+  var openTickets = function(){ return D.tickets.filter(function(t){ return t.status !== 'Closed' && t.status !== 'Solution provided'; }).length; };
+
+  function kpi(k, v, s){ return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; }
+  function renderOverview(){
+    $('kpis').innerHTML =
+      kpi('Active contracts', live.length, 'annual value ' + eur(annual)) +
+      kpi('AI units used', pctUsed + '%', n(used) + ' of ' + n(D.aiUnits.allotment)) +
+      kpi('Forecast year-end', forecastPct + '%', 'at current run rate (' + n(forecast) + ' units)') +
+      kpi('Open tickets', openTickets(), 'incl. ' + D.tickets.filter(function(t){ return t.priority === 'Very high' && t.status !== 'Closed'; }).length + ' very high');
+    var rows = [];
+    D.products.forEach(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); if (pct >= 80) rows.push('<tr><td>' + tag(pct >= 90 ? 'bad' : 'warn', pct + '%') + '</td><td><b>' + esc(p.name) + '</b><div class="s">AI-unit budget nearly used up (' + n(p.consumed) + ' of ' + n(p.allotment) + ')</div></td></tr>'); });
+    renewals.forEach(function(c){ rows.push('<tr><td>' + tag('warn', days(c.end) + ' days') + '</td><td><b>' + esc(c.product) + '</b><div class="s">Contract ' + esc(c.id) + ' ends ' + esc(c.end) + ', notice period ' + c.noticeDays + ' days' + (function(){ var nd = new Date(new Date(c.end + 'T00:00:00Z') - c.noticeDays * 864e5).toISOString().slice(0, 10); return days(nd) < 0 ? ' (notice date ' + nd + ' has passed)' : ' (notice by ' + nd + ')'; })() + '</div></td></tr>'); });
+    $('attention').innerHTML = '<table><tbody>' + rows.join('') + '</tbody></table>';
+  }
+  function renderContracts(){
+    var cls = {'Active': 'ok', 'Renewal due': 'warn', 'Expired': 'bad'};
+    $('contracts').innerHTML = '<table><thead><tr><th>Contract</th><th>Product</th><th>Scope</th><th>Term</th><th class="num">Annual value</th><th>Status</th></tr></thead><tbody>' +
+      D.contracts.map(function(c){ return '<tr><td>' + esc(c.id) + '</td><td><b>' + esc(c.product) + '</b></td><td>' + esc(c.scope) + '</td><td>' + esc(c.start) + ' → ' + esc(c.end) + '<div class="s">' + (days(c.end) >= 0 ? days(c.end) + ' days left' : 'ended') + '</div></td><td class="num">' + eur(c.annualEur) + '</td><td>' + tag(cls[c.status] || 'n', c.status) + '</td></tr>'; }).join('') +
+      '</tbody></table>';
+  }
+  function renderUsage(){
+    $('usage-kpis').innerHTML =
+      kpi('Allotment 2026', n(D.aiUnits.allotment), 'AI units, contract C-2026-0012') +
+      kpi('Consumed', n(used), pctUsed + '% of allotment') +
+      kpi('Remaining', n(D.aiUnits.allotment - used), (D.aiUnits.allotment - used) < avg * 3 ? 'less than three months at current rate' : 'enough at current rate');
+    var max = Math.max.apply(null, D.aiUnits.monthly);
+    var names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+    $('months').innerHTML = D.aiUnits.monthly.map(function(m, i){ return '<div class="' + (i === D.aiUnits.monthly.length - 1 ? 'cur' : '') + '" title="' + n(m) + ' units"><span style="height:' + Math.round(m / max * 100) + '%"></span>' + names[i] + '</div>'; }).join('');
+    $('forecast').innerHTML = '<div class="k">Forecast</div><div class="v">' + forecastPct + '%</div><div class="s">Year-end projection ' + n(forecast) + ' of ' + n(D.aiUnits.allotment) + ' units, based on the average of the last three full months (' + n(Math.round(avg)) + ' per month). October is a partial month (as of 18 Oct).</div>' +
+      '<div style="margin-top:12px">' + (forecast > D.aiUnits.allotment * 0.95 ? tag('warn', 'Allotment likely exhausted in December') : tag('ok', 'On track')) + '</div>';
+    $('products').innerHTML = '<table><thead><tr><th>Product / service</th><th class="num">Used</th><th class="num">Budget</th><th>Utilisation</th></tr></thead><tbody>' +
+      D.products.map(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); return '<tr><td><b>' + esc(p.name) + '</b></td><td class="num">' + n(p.consumed) + '</td><td class="num">' + n(p.allotment) + '</td><td><div class="bar"><i class="' + tone(pct) + '" style="width:' + Math.min(pct, 100) + '%"></i></div><div class="s">' + pct + '%</div></td></tr>'; }).join('') + '</tbody></table>';
+  }
+  var prio = {'Very high': 'bad', 'High': 'warn', 'Medium': 'n', 'Low': 'n'};
+  var stat = {'Closed': 'ok', 'Solution provided': 'ok', 'Waiting for customer': 'warn', 'In processing': 'n', 'New': 'n'};
+  function renderTickets(){
+    $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Updated</th></tr></thead><tbody>' +
+      D.tickets.map(function(t){ return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div></td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + esc(t.updated) + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
+  $('f-product').innerHTML = D.contracts.filter(function(c){ return c.status !== 'Expired'; }).map(function(c){ return '<option>' + esc(c.product) + '</option>'; }).join('') + D.products.map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
+  var seq = 48214;
+  var pending = {};
+  var reqCount = 0;
+  function setStorage(remote){
+    $('storage-note').textContent = remote ? 'Tickets are stored in the demo database (Supabase).' : 'Tickets you open here stay in this page and are not sent anywhere.';
+  }
+  function toast(text, bad){
+    var t = $('toast'); t.textContent = text; t.className = 'toast on'; t.style.background = bad ? 'var(--warn-dim)' : ''; t.style.color = bad ? 'var(--warn)' : '';
+  }
+  function addLocal(f, title){
+    var t = {id: 'TKT-L' + (seq++), title: title, product: f.product.value, priority: f.priority.value, status: 'New', created: D.asOf, updated: D.asOf};
+    D.tickets.unshift(t); renderTickets(); renderOverview();
+    return t;
+  }
+  var remote = false, bridgeTimer = null;
+  function askParent(msg){ if (window.parent !== window) window.parent.postMessage(msg, '*'); }
+  function loadRemote(){
+    bridgeTimer = setTimeout(function(){ remote = false; setStorage(false); }, 4000);
+    askParent({type: 's4m:tickets-request'});
+  }
+  // The Space is sandboxed without allow-forms, so a real form submit is blocked: use a button click.
+  $('create-ticket').addEventListener('click', function(){
+    var f = $('ticket-form');
+    var title = f.title.value.trim();
+    if (!title) return;
+    if (!remote) {
+      var t = addLocal(f, title);
+      toast('Ticket ' + t.id + ' created (demo: it exists only on this page).');
+      f.reset();
+      return;
+    }
+    var id = 'r' + (++reqCount) + '-' + Date.now();
+    pending[id] = {title: title, product: f.product.value, priority: f.priority.value};
+    toast('Saving ticket...');
+    askParent({type: 's4m:create-ticket', requestId: id, title: title, product: f.product.value, priority: f.priority.value, description: f.desc.value});
+    f.reset();
+    setTimeout(function(){
+      if (pending[id]) { delete pending[id]; toast('No answer from the database; ticket was not saved.', true); }
+    }, 20000);
+  });
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('#tabs button'));
+  function show(id){
+    tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === id)); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + id); });
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
+  window.addEventListener('message', function(e){
+    var d = e.data;
+    if (e.source !== window.parent || !d || typeof d.type !== 'string') return;
+    if (d.type === 'ct:open-tab' && typeof d.tab === 'string') {
+      if (/^[a-z]+$/.test(d.tab) && document.getElementById('pg-' + d.tab)) show(d.tab);
+    } else if (d.type === 's4m:tickets' && Array.isArray(d.tickets)) {
+      clearTimeout(bridgeTimer); remote = true; setStorage(true);
+      D.tickets = d.tickets.map(function(t){ return {id: String(t.id), title: String(t.title), product: String(t.product), priority: String(t.priority), status: String(t.status), created: String(t.created), updated: String(t.updated)}; });
+      renderTickets(); renderOverview();
+    } else if (d.type === 's4m:error' && !d.requestId) {
+      clearTimeout(bridgeTimer); remote = false; setStorage(false);
+    } else if (d.type === 's4m:ticket-created' && d.requestId && pending[d.requestId] && d.ticket) {
+      delete pending[d.requestId];
+      var k = d.ticket;
+      D.tickets.unshift({id: String(k.id), title: String(k.title), product: String(k.product), priority: String(k.priority), status: String(k.status), created: String(k.created), updated: String(k.updated)});
+      renderTickets(); renderOverview();
+      toast('Ticket ' + k.id + ' created and stored in the demo database.');
+    } else if (d.type === 's4m:error' && d.requestId && pending[d.requestId]) {
+      var p = pending[d.requestId]; delete pending[d.requestId];
+      D.tickets.unshift({id: 'TKT-L' + (seq++), title: p.title, product: p.product, priority: p.priority, status: 'New', created: D.asOf, updated: D.asOf});
+      renderTickets(); renderOverview();
+      toast('Could not store the ticket in the database (' + String(d.message).slice(0, 120) + '). It was added on this page only.', true);
+    }
+  });
+  renderOverview(); renderContracts(); renderUsage(); renderTickets();
+  loadRemote();
+})();
+</script>
+</body>
+</html>

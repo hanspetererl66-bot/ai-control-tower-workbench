@@ -1,0 +1,11 @@
+{
+  "title": "Sub4Me",
+  "description": "Customer portal mock-up: contracts, AI-unit consumption per product and service tickets for a fictional enterprise customer.",
+  "insights": [
+    "77% of the yearly AI-unit allotment is used after 9.5 months; at the current run rate the allotment is used up by December.",
+    "BTP AI Core is at 94% of its own AI-unit budget and needs a top-up or throttling.",
+    "Four contracts end within 180 days; the notice date for SuccessFactors Employee Central has already passed.",
+    "Customer, contracts, consumption and tickets are fictional sample data; Sub4Me is a demo and not affiliated with any software vendor."
+  ],
+  "prompt": "Bundled example: Sub4Me customer portal mock-up (static, not agent-generated)."
+}

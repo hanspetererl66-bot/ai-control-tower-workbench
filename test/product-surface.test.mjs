@@ -9,12 +9,43 @@ const composer = readFileSync(path.join(root, 'src/ui/Composer.tsx'), 'utf8');
 const manage = readFileSync(path.join(root, 'src/ui/ManageView.tsx'), 'utf8');
 const spaces = readFileSync(path.join(root, 'src/spaces.ts'), 'utf8');
 
-test('the public product surface uses Werkbank branding', () => {
-  assert.match(app, /Werkbank uses AI/);
-  assert.match(composer, /Message Werkbank/);
+test('the public product surface uses the Joule Work X - Next Gen name', () => {
+  const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
+  assert.match(product, /PRODUCT_NAME = 'Joule Work X - Next Gen'/);
+  assert.match(app, /\{PRODUCT_NAME\} uses AI/);
+  assert.match(composer, /Message \$\{PRODUCT_NAME\}/);
+  assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen<\/title>/);
 });
 
 test('connector import and all generated Spaces are available in the product surface', () => {
   assert.match(manage, /Import \.mcpb/);
   assert.doesNotMatch(spaces, /FEATURED_SPACE_SLUG|visibleSpaces/);
+});
+
+test('clicking the logo opens the cover sheet with the prototype wording', () => {
+  const rail = readFileSync(path.join(root, 'src/ui/Rail.tsx'), 'utf8');
+  const cover = readFileSync(path.join(root, 'src/ui/CoverSheet.tsx'), 'utf8');
+  assert.match(rail, /<button className="rail-logo" onClick=\{onOpenCover\}/);
+  assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
+  assert.match(app, /\{coverOpen && <CoverSheet/);
+  assert.match(cover, /\{PRODUCT_NAME\}/);
+  assert.match(cover, />Prototype</);
+  assert.match(cover, /Built by Accenture/);
+  assert.match(cover, /Demo only/);
+  assert.match(cover, /Escape/); // closable from the keyboard
+});
+
+test('a missing AI Control Tower connector can be installed in one click', () => {
+  const starters = readFileSync(path.join(root, 'src/ui/StarterPrompts.tsx'), 'utf8');
+  const preload = readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
+  const main = readFileSync(path.join(root, 'electron/main.mjs'), 'utf8');
+  assert.match(starters, /fehlt oder ist nicht verbunden/);
+  assert.match(starters, /Jetzt installieren/);
+  assert.match(composer, /onInstall=\{onInstallConnector\}/);
+  assert.match(app, /onInstallConnector=\{installControlTowerConnector\}/);
+  assert.match(preload, /prepareControlTowerConnector: \(\) => ipcRenderer\.invoke\('prepare-control-tower-connector'\)/);
+  // The staged request goes through the same approve→install path as any .mcpb.
+  assert.match(main, /ipcMain\.handle\('prepare-control-tower-connector'/);
+  assert.match(main, /ALLOWED_COMMANDS\.has\(mcp\.command\)/);
+  assert.match(main, /pendingInstalls\.set\(id, request\)/);
 });
