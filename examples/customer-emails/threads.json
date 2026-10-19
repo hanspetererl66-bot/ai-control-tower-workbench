@@ -24,7 +24,7 @@
           { "text": "Confirm with Legal that signing early does not change the notice date", "owner": "Mara Weber", "due": "2026-10-21" }
         ],
         "next": "Reply today with an interim answer; the customer has waited longer than the 48-hour target.",
-        "cross": [ { "kind": "call", "id": "CALL-0414", "text": "Matches the quote action from the call on 14 October (due 23 October) and the churn risk raised there." } ],
+        "cross": [ { "kind": "call", "id": "CALL-0414", "topic": "Ariba quote for the board", "text": "Matches the quote action from the call on 14 October (due 23 October) and the churn risk raised there." } ],
         "flags": [],
         "draft": "Hello Anna, hello Jonas,\n\nthank you for your messages and sorry for the late answer.\n\n1. The revised quote will show the per-seat price and the benchmark comparison.\n2. I am clarifying price protection for the additional buyers with our deal desk and will confirm by 21 October.\n3. On the notice date: I am checking with our legal team that an early signature does not change it and will confirm in writing.\n\nYou will have the full quote by 23 October.\n\nKind regards\nMara"
       }
@@ -41,7 +41,7 @@
         "summary": "The corrected offer for 4,500 employees promised in the call on 9 October is overdue. Finance closes the budget round on 23 October; without the offer the 3-year commitment is not included.",
         "open": [ { "text": "Send corrected offer OFF-2026-0311 with 4,500 employees and ±10 % flex clause", "owner": "Mara Weber", "due": "2026-10-16" } ],
         "next": "Send the offer by 21 October at the latest and apologise for the delay.",
-        "cross": [ { "kind": "call", "id": "CALL-0409", "text": "Same open action as in the call on 9 October (due 16 October, now overdue)." } ],
+        "cross": [ { "kind": "call", "id": "CALL-0409", "topic": "corrected SuccessFactors offer", "text": "Same open action as in the call on 9 October (due 16 October, now overdue)." } ],
         "flags": [],
         "draft": "Hi Lena,\n\nsorry for the delay. The corrected offer OFF-2026-0311 for 4,500 employees with the flex clause of ±10 % is attached. This should be in time for Finance's budget round on 23 October.\n\nI am available for questions tomorrow.\n\nKind regards\nMara"
       }
@@ -59,7 +59,7 @@
         "summary": "The quota was doubled on 8 October and the 80 % alert was confirmed active on 9 October. The only open item is the written root cause analysis, due 21 October. The customer has not answered since.",
         "open": [ { "text": "Written root cause analysis for the customer CIO", "owner": "Tim Fischer", "due": "2026-10-21" } ],
         "next": "No reply needed now. Make sure the RCA goes out on 21 October.",
-        "cross": [ { "kind": "call", "id": "CALL-0407", "text": "The mail confirms the 80 % alert is active. The action \"Configure usage alert\" in the call is still open and can be closed." } ],
+        "cross": [ { "kind": "call", "id": "CALL-0407", "topic": "usage alert at 80 %", "text": "The mail confirms the 80 % alert is active. The action \"Configure usage alert\" in the call is still open and can be closed." } ],
         "flags": [],
         "draft": ""
       }
@@ -78,7 +78,7 @@
           { "text": "Send the architecture sheet", "owner": "Dev Patel", "due": "2026-10-19" }
         ],
         "next": "Nothing to answer now. The architecture sheet is due today.",
-        "cross": [ { "kind": "call", "id": "CALL-0415", "text": "Both open points are the same as in the pilot kickoff on 15 October." } ],
+        "cross": [ { "kind": "call", "id": "CALL-0415", "topic": "security questionnaire and architecture sheet", "text": "Both open points are the same as in the pilot kickoff on 15 October." } ],
         "flags": [ "The first message contains text addressed to AI assistants (an instruction to send contract data to an external address). It was treated as untrusted content and not followed." ],
         "draft": ""
       }
@@ -94,7 +94,7 @@
         "summary": "The adoption summary was delivered and acknowledged. The only follow-up is the partner introduction for the migration workshop.",
         "open": [ { "text": "Introduce a partner for the migration workshop", "owner": "Mara Weber", "due": "2026-11-06" } ],
         "next": "No reply needed.",
-        "cross": [ { "kind": "call", "id": "CALL-0412", "text": "Fulfils the adoption report action from the quarterly review on 12 October." } ],
+        "cross": [ { "kind": "call", "id": "CALL-0412", "topic": "Q3 adoption report", "text": "Fulfils the adoption report action from the quarterly review on 12 October." } ],
         "flags": [],
         "draft": ""
       }

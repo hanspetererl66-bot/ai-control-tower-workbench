@@ -32,7 +32,7 @@ test('graph is consistent: known types, resolvable edges, no duplicates, no isol
 });
 
 test('tours point at existing nodes and have titles and texts', () => {
-  assert.deepEqual(graph.tours.map((t) => t.id), ['ariba', 'governance']);
+  assert.deepEqual(graph.tours.map((t) => t.id), ['ariba', 'governance', 'communication']);
   for (const t of graph.tours) {
     assert.ok(t.title && t.summary && t.steps.length >= 5, t.id);
     for (const s of t.steps) { assert.ok(graph.nodes.some((n) => n.id === s.node), s.node); assert.ok(s.title && s.text); }
@@ -82,4 +82,28 @@ test('input errors are ToolErrors', () => {
   assert.throws(() => h.get_graph_neighbors({ node: 'R' }), /ambiguous/);
   assert.throws(() => h.analyze_graph_impact({ node: 'R2', depth: 9 }), ToolError);
   assert.throws(() => h.find_graph_path({ from: 'R2' }), ToolError);
+});
+
+test('communication: calls and e-mail conversations are linked to contract, offer, ticket and each other', () => {
+  const edge = (a, b, type) => graph.edges.some((e) => e.source === a && e.target === b && (!type || e.type === type));
+  assert.equal(graph.nodes.filter((n) => n.type === 'call').length, 5);
+  assert.equal(graph.nodes.filter((n) => n.type === 'thread').length, 5);
+  assert.ok(edge('call:CALL-0414', 'contract:C-2023-0390', 'DISCUSSES') && edge('call:CALL-0414', 'offer:OFF-2026-0318') && edge('call:CALL-0414', 'ticket:TKT-48213'));
+  assert.ok(edge('thread:T-101', 'contract:C-2023-0390', 'DISCUSSES') && edge('thread:T-101', 'call:CALL-0414', 'FOLLOWS_UP'));
+  assert.ok(edge('thread:T-103', 'call:CALL-0407', 'FOLLOWS_UP'), 'the mail that closes a call action');
+  assert.ok(edge('thread:T-104', 'risk:R7', 'RELATES_TO_RISK'), 'the flagged mail is tied to the prompt-injection risk');
+  assert.ok(edge('call:CALL-0412', 'customer:nordwind-handel-gmbh', 'WITH_CUSTOMER'));
+  assert.equal(graph.nodes.find((n) => n.id === 'call:CALL-0409').meta['Open actions'], '1 (1 overdue)');
+});
+
+test('communication tools: search, neighbours and impact include calls and mails', () => {
+  assert.ok(h.search_graph({ query: 'ariba', type: 'call' }).nodes.some((n) => n.id === 'call:CALL-0414'));
+  const nb = h.get_graph_neighbors({ node: 'T-101' });
+  assert.match(JSON.stringify(nb), /follows up on/);
+  assert.match(JSON.stringify(nb), /CALL-0414/);
+  const impact = h.analyze_graph_impact({ node: 'C-2023-0390', depth: 2, types: ['call', 'thread'] });
+  assert.match(JSON.stringify(impact), /CALL-0414/);
+  assert.match(JSON.stringify(impact), /T-101/);
+  assert.match(JSON.stringify(h.find_graph_path({ from: 'T-104', to: 'R7' })), /prompt injection/i);
+  assert.throws(() => h.search_graph({ query: 'x1', type: 'mail' }), ToolError);
 });

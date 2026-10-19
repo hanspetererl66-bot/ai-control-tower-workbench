@@ -303,6 +303,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   "contract": "Contract",
   "offer": "Offer",
   "ticket": "Ticket",
+  "call": "Call",
+  "thread": "E-mail conversation",
   "skill": "Skill",
   "risk": "Risk",
   "agent": "Agent family",
@@ -423,6 +425,18 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   "USES": {
    "verb": "uses",
    "inverse": "used by"
+  },
+  "WITH_CUSTOMER": {
+   "verb": "was held with",
+   "inverse": "has conversations"
+  },
+  "DISCUSSES": {
+   "verb": "discusses",
+   "inverse": "discussed in"
+  },
+  "FOLLOWS_UP": {
+   "verb": "follows up on",
+   "inverse": "followed up by"
   }
  },
  "nodes": [
@@ -2516,6 +2530,214 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "space": "automation-dashboard",
     "tab": "workflows"
    }
+  },
+  {
+   "id": "call:CALL-0415",
+   "type": "call",
+   "label": "CALL-0415",
+   "meta": {
+    "Title": "Joule Work for Desktop: pilot kickoff",
+    "Customer": "Muster Industrie AG",
+    "Date": "2026-10-15",
+    "Duration": "45 min",
+    "Mood": "positive",
+    "Participants": "Felix Brandt, Sarah Lindqvist, Mara Weber, Dev Patel",
+    "Open actions": "3",
+    "Decisions": "1",
+    "Highest risk": "medium"
+   },
+   "view": {
+    "space": "call-transcripts",
+    "tab": "calls"
+   }
+  },
+  {
+   "id": "call:CALL-0414",
+   "type": "call",
+   "label": "CALL-0414",
+   "meta": {
+    "Title": "Ariba renewal: check-in before the notice date",
+    "Customer": "Muster Industrie AG",
+    "Date": "2026-10-14",
+    "Duration": "38 min",
+    "Mood": "mixed",
+    "Participants": "Anna Beispiel, Jonas Reuter, Mara Weber",
+    "Open actions": "3",
+    "Decisions": "1",
+    "Highest risk": "high"
+   },
+   "view": {
+    "space": "call-transcripts",
+    "tab": "calls"
+   }
+  },
+  {
+   "id": "call:CALL-0412",
+   "type": "call",
+   "label": "CALL-0412",
+   "meta": {
+    "Title": "Quarterly business review",
+    "Customer": "Nordwind Handel GmbH",
+    "Date": "2026-10-12",
+    "Duration": "41 min",
+    "Mood": "neutral",
+    "Participants": "Petra Vogel, Mara Weber",
+    "Open actions": "1",
+    "Decisions": "1",
+    "Highest risk": "low"
+   },
+   "view": {
+    "space": "call-transcripts",
+    "tab": "calls"
+   }
+  },
+  {
+   "id": "customer:nordwind-handel-gmbh",
+   "type": "customer",
+   "label": "Nordwind Handel GmbH",
+   "meta": {
+    "Note": "Not part of the Sub4Me sample data"
+   },
+   "view": {
+    "space": "call-transcripts",
+    "tab": "calls"
+   }
+  },
+  {
+   "id": "call:CALL-0409",
+   "type": "call",
+   "label": "CALL-0409",
+   "meta": {
+    "Title": "SuccessFactors: scope and term for 2027",
+    "Customer": "Muster Industrie AG",
+    "Date": "2026-10-09",
+    "Duration": "52 min",
+    "Mood": "positive",
+    "Participants": "Lena Hoffmann, Mara Weber, Dev Patel",
+    "Open actions": "1 (1 overdue)",
+    "Decisions": "2",
+    "Highest risk": "medium"
+   },
+   "view": {
+    "space": "call-transcripts",
+    "tab": "calls"
+   }
+  },
+  {
+   "id": "call:CALL-0407",
+   "type": "call",
+   "label": "CALL-0407",
+   "meta": {
+    "Title": "Escalation: AI Core quota exceeded in eu10",
+    "Customer": "Muster Industrie AG",
+    "Date": "2026-10-07",
+    "Duration": "27 min",
+    "Mood": "negative",
+    "Participants": "Felix Brandt, Mara Weber, Tim Fischer",
+    "Open actions": "2 (1 overdue)",
+    "Decisions": "2",
+    "Highest risk": "high"
+   },
+   "view": {
+    "space": "call-transcripts",
+    "tab": "calls"
+   }
+  },
+  {
+   "id": "thread:T-101",
+   "type": "thread",
+   "label": "T-101",
+   "meta": {
+    "Subject": "AW: Ariba renewal: revised quote and price benchmark",
+    "Customer": "Muster Industrie AG",
+    "Status": "waiting us",
+    "Intent": "Renewal",
+    "Mood": "mixed",
+    "Messages": "3",
+    "Last message": "2026-10-17",
+    "Open points": "3"
+   },
+   "view": {
+    "space": "customer-emails",
+    "tab": "inbox"
+   }
+  },
+  {
+   "id": "thread:T-102",
+   "type": "thread",
+   "label": "T-102",
+   "meta": {
+    "Subject": "SuccessFactors: corrected offer for 4,500 employees",
+    "Customer": "Muster Industrie AG",
+    "Status": "waiting us",
+    "Intent": "Offer",
+    "Mood": "mixed",
+    "Messages": "3",
+    "Last message": "2026-10-16",
+    "Open points": "1"
+   },
+   "view": {
+    "space": "customer-emails",
+    "tab": "inbox"
+   }
+  },
+  {
+   "id": "thread:T-103",
+   "type": "thread",
+   "label": "T-103",
+   "meta": {
+    "Subject": "URGENT: AI Core quota eu10: alert and RCA",
+    "Customer": "Muster Industrie AG",
+    "Status": "waiting customer",
+    "Intent": "Escalation",
+    "Mood": "negative",
+    "Messages": "4",
+    "Last message": "2026-10-09",
+    "Open points": "1"
+   },
+   "view": {
+    "space": "customer-emails",
+    "tab": "inbox"
+   }
+  },
+  {
+   "id": "thread:T-104",
+   "type": "thread",
+   "label": "T-104",
+   "meta": {
+    "Subject": "Joule Work pilot: security questionnaire",
+    "Customer": "Muster Industrie AG",
+    "Status": "waiting customer",
+    "Intent": "Security",
+    "Mood": "positive",
+    "Messages": "2",
+    "Last message": "2026-10-17",
+    "Open points": "2",
+    "Flag": "Contains instructions aimed at AI assistants (not followed)"
+   },
+   "view": {
+    "space": "customer-emails",
+    "tab": "inbox"
+   }
+  },
+  {
+   "id": "thread:T-105",
+   "type": "thread",
+   "label": "T-105",
+   "meta": {
+    "Subject": "QBR follow-up: adoption report Q3",
+    "Customer": "Nordwind Handel GmbH",
+    "Status": "closed",
+    "Intent": "Reporting",
+    "Mood": "neutral",
+    "Messages": "2",
+    "Last message": "2026-10-13",
+    "Open points": "1"
+   },
+   "view": {
+    "space": "customer-emails",
+    "tab": "inbox"
+   }
   }
  ],
  "edges": [
@@ -4091,6 +4313,166 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_APP"
   },
   {
+   "source": "call:CALL-0415",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "call:CALL-0415",
+   "target": "offer:OFF-2026-0324",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0414",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "call:CALL-0414",
+   "target": "contract:C-2023-0390",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0414",
+   "target": "offer:OFF-2026-0318",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0414",
+   "target": "ticket:TKT-48213",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0412",
+   "target": "customer:nordwind-handel-gmbh",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "call:CALL-0409",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "call:CALL-0409",
+   "target": "contract:C-2025-0041",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0409",
+   "target": "offer:OFF-2026-0311",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0407",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "call:CALL-0407",
+   "target": "contract:C-2026-0012",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0407",
+   "target": "offer:OFF-2026-0324",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "call:CALL-0407",
+   "target": "ticket:TKT-48107",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-101",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "thread:T-101",
+   "target": "contract:C-2023-0390",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-101",
+   "target": "offer:OFF-2026-0318",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-101",
+   "target": "call:CALL-0414",
+   "type": "FOLLOWS_UP",
+   "label": "Ariba quote for the board"
+  },
+  {
+   "source": "thread:T-102",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "thread:T-102",
+   "target": "contract:C-2025-0041",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-102",
+   "target": "offer:OFF-2026-0311",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-102",
+   "target": "call:CALL-0409",
+   "type": "FOLLOWS_UP",
+   "label": "corrected SuccessFactors offer"
+  },
+  {
+   "source": "thread:T-103",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "thread:T-103",
+   "target": "contract:C-2026-0012",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-103",
+   "target": "ticket:TKT-48107",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-103",
+   "target": "call:CALL-0407",
+   "type": "FOLLOWS_UP",
+   "label": "usage alert at 80 %"
+  },
+  {
+   "source": "thread:T-104",
+   "target": "customer:muster-industrie-ag",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "thread:T-104",
+   "target": "offer:OFF-2026-0324",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-104",
+   "target": "call:CALL-0415",
+   "type": "FOLLOWS_UP",
+   "label": "security questionnaire and architecture sheet"
+  },
+  {
+   "source": "thread:T-105",
+   "target": "customer:nordwind-handel-gmbh",
+   "type": "WITH_CUSTOMER"
+  },
+  {
+   "source": "thread:T-105",
+   "target": "call:CALL-0412",
+   "type": "FOLLOWS_UP",
+   "label": "Q3 adoption report"
+  },
+  {
    "source": "workflow:btp-service-health-check",
    "target": "product:business-technology-platform",
    "type": "MONITORS"
@@ -4179,6 +4561,12 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "source": "risk:R5",
    "target": "agent:meeting-summarizer",
    "type": "AFFECTS"
+  },
+  {
+   "source": "thread:T-104",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK",
+   "label": "mail footer with instructions for AI assistants"
   }
  ],
  "tours": [
@@ -4252,6 +4640,44 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
      "text": "board-briefing turns risks, agents and budget into a one-page briefing and is linked to the EU AI Act risk. access-review-prep depends on it, so the chain ends with a decision-ready summary."
     }
    ]
+  },
+  {
+   "id": "communication",
+   "title": "Customer communication",
+   "summary": "Calls and mails around one renewal, and where they meet.",
+   "steps": [
+    {
+     "node": "customer:muster-industrie-ag",
+     "impact": true,
+     "title": "Everything said to one customer",
+     "text": "Impact mode now reaches past contracts and tickets: the calls and e-mail conversations with Muster Industrie hang off the same customer node."
+    },
+    {
+     "node": "contract:C-2023-0390",
+     "title": "The Ariba contract in conversation",
+     "text": "The Ariba contract ends on 31 Jan 2027 with a notice date of 2 Nov. One call and one mail conversation discuss it; the customer sees a benchmark about 8 % below the offer."
+    },
+    {
+     "node": "call:CALL-0414",
+     "title": "The renewal call",
+     "text": "On 14 Oct the customer asked for a revised quote by 23 Oct, with a 3-year option and a price for about 40 more buyers. The call carries a high churn risk and three open actions."
+    },
+    {
+     "node": "thread:T-101",
+     "title": "The mail that follows up",
+     "text": "The mail conversation picks up the same quote and has waited for our answer since 15 Oct, longer than the 48-hour target. The edge to the call is the shared open action."
+    },
+    {
+     "node": "call:CALL-0407",
+     "title": "Where a mail closes a call action",
+     "text": "The escalation call about the AI Core quota listed an 80 % usage alert. The mail conversation T-103 confirms it is active, so that action can be closed. Two sources, one fact."
+    },
+    {
+     "node": "thread:T-104",
+     "title": "A mail with an instruction for the AI",
+     "text": "The pilot's security questionnaire arrived with a hidden footer addressed to AI assistants. It is flagged, never followed, and linked to risk R7 (prompt injection)."
+    }
+   ]
   }
  ]
 }
@@ -4268,11 +4694,11 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ST = {
   system:{c:'purple',s:'hex',r:13}, connector:{c:'muted',s:'hex',r:10}, customer:{c:'purple',s:'star',r:17},
   family:{c:'teal',s:'round',r:11}, product:{c:'teal',s:'circle',r:8}, contract:{c:'blue',s:'square',r:9},
-  offer:{c:'green',s:'square',r:8}, ticket:{c:'amber',s:'tri',r:7}, skill:{c:'purple',s:'circle',r:8},
+  offer:{c:'green',s:'square',r:8}, ticket:{c:'amber',s:'tri',r:7}, call:{c:'teal',s:'hex',r:8}, thread:{c:'blue',s:'diamond',r:8}, skill:{c:'purple',s:'circle',r:8},
   tool:{c:'muted',s:'circle',r:4.5}, risk:{c:'red',s:'diamond',r:10}, agent:{c:'amber',s:'diamond',r:8},
   workflow:{c:'green',s:'circle',r:8}, app:{c:'blue',s:'round',r:6}, person:{c:'ink2',s:'circle',r:5},
 };
-const ORDER = ['customer','contract','offer','product','family','ticket','skill','tool','agent','risk','workflow','app','person'];
+const ORDER = ['customer','contract','offer','product','family','ticket','call','thread','skill','tool','agent','risk','workflow','app','person'];
 const HUB = new Set(['system','connector']);
 let C = {};
 function readColors() {
@@ -4687,7 +5113,7 @@ function renderPanel() {
     h += `<div class="conn"><button data-go="${esc(S.pathA.id)}">${esc(S.pathA.label)}<small>start</small></button></div>`;
   }
   if (!n && S.mode !== 'path' && S.tour < 0) {
-    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
+    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, calls and e-mails, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
     const top = [...nodes].sort((a, b) => b.deg - a.deg).filter((x) => !HUB.has(x.type)).slice(0, 8);
     h += `<h3>Best connected</h3><div class="conn">${top.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])} · ${x.deg} relations</small></button>`).join('')}</div>`;
   }

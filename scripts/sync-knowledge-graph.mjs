@@ -23,6 +23,10 @@ export function sourcesFromRepo() {
     controlTower: JSON.parse(read('examples/control-tower/data.json')),
     automation: extractAutomationData(read('examples/automation-dashboard/index.html')),
     links: JSON.parse(read('examples/knowledge-graph/links.json')),
+    communication: {
+      calls: JSON.parse(read('examples/call-transcripts/calls.json')).calls.map((c) => ({ ...c, asOf: JSON.parse(read('examples/call-transcripts/calls.json')).asOf })),
+      threads: JSON.parse(read('examples/customer-emails/threads.json')).threads,
+    },
   };
 }
 

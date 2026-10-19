@@ -22,6 +22,8 @@ export const NODE_TYPES = {
   contract: 'Contract',
   offer: 'Offer',
   ticket: 'Ticket',
+  call: 'Call',
+  thread: 'E-mail conversation',
   skill: 'Skill',
   risk: 'Risk',
   agent: 'Agent family',
@@ -59,6 +61,9 @@ export const EDGE_TYPES = {
   INTEGRATES: { verb: 'integrates', inverse: 'integrated by' },
   WRITES_TO: { verb: 'writes to', inverse: 'written by' },
   USES: { verb: 'uses', inverse: 'used by' },
+  WITH_CUSTOMER: { verb: 'was held with', inverse: 'has conversations' },
+  DISCUSSES: { verb: 'discusses', inverse: 'discussed in' },
+  FOLLOWS_UP: { verb: 'follows up on', inverse: 'followed up by' },
 };
 
 export const slug = (text) => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -98,8 +103,8 @@ export function extractGraph(html) {
   return JSON.parse(match[1]);
 }
 
-/** sources: { sub4me, portfolio?, marketplace, controlTower, automation, links } */
-export function buildGraph({ sub4me, marketplace, controlTower, automation, links }) {
+/** sources: { sub4me, marketplace, controlTower, automation, links, communication? } (communication = { calls, threads } mockup data) */
+export function buildGraph({ sub4me, marketplace, controlTower, automation, links, communication }) {
   const nodes = new Map();
   const edges = [];
   const seen = new Set();
@@ -247,6 +252,44 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
     }
   }
 
+  /* Communication: call transcripts and customer e-mail conversations (mockup data) */
+  if (communication) {
+    const { calls = [], threads = [] } = communication;
+    const customerNode = (name) => {
+      const id = `customer:${slug(name)}`;
+      if (!nodes.has(id)) addNode(id, 'customer', name, { Note: 'Not part of the Sub4Me sample data' }, { space: 'call-transcripts', tab: 'calls' });
+      return id;
+    };
+    const link = (from, links) => {
+      if (links.contract) addEdge(from, `contract:${links.contract}`, 'DISCUSSES');
+      if (links.offer) addEdge(from, `offer:${links.offer}`, 'DISCUSSES');
+      if (links.ticket) addEdge(from, `ticket:${links.ticket}`, 'DISCUSSES');
+    };
+    for (const c of calls) {
+      const open = c.actions.filter((a) => a.status !== 'done');
+      const overdue = open.filter((a) => a.due < c.asOf);
+      const top = ['high', 'medium', 'low'].find((l) => c.risks.some((r) => r.level === l));
+      addNode(`call:${c.id}`, 'call', c.id, {
+        Title: c.title, Customer: c.customer, Date: c.date, Duration: `${c.minutes} min`, Mood: c.mood,
+        Participants: c.people.map((p) => p.name).join(', '), 'Open actions': `${open.length}${overdue.length ? ` (${overdue.length} overdue)` : ''}`,
+        Decisions: String(c.decisions.length), ...(top ? { 'Highest risk': top } : {}),
+      }, { space: 'call-transcripts', tab: 'calls' });
+      addEdge(`call:${c.id}`, customerNode(c.customer), 'WITH_CUSTOMER');
+      link(`call:${c.id}`, c.links);
+    }
+    for (const t of threads) {
+      const last = t.messages[t.messages.length - 1];
+      addNode(`thread:${t.id}`, 'thread', t.id, {
+        Subject: t.subject, Customer: t.customer, Status: t.status.replace('-', ' '), Intent: t.intent, Mood: t.mood, Messages: String(t.messages.length),
+        'Last message': last.at.slice(0, 10), 'Open points': String(t.ai.open.length),
+        ...(t.ai.flags.length ? { Flag: 'Contains instructions aimed at AI assistants (not followed)' } : {}),
+      }, { space: 'customer-emails', tab: 'inbox' });
+      addEdge(`thread:${t.id}`, customerNode(t.customer), 'WITH_CUSTOMER');
+      link(`thread:${t.id}`, t.links);
+      for (const x of t.ai.cross) if (x.kind === 'call') addEdge(`thread:${t.id}`, `call:${x.id}`, 'FOLLOWS_UP', x.topic);
+    }
+  }
+
   /* curated links */
   const missing = [];
   for (const l of links?.links ?? []) if (!addEdge(l.from, l.to, l.type, l.label)) missing.push(l);
@@ -276,13 +319,13 @@ export const GRAPH_TOOL_DEFINITIONS = [
   {
     name: 'get_graph_overview',
     description:
-      'Overview of the knowledge graph that connects the Sub4Me customer (contracts, offers, products, tickets), the Skill Marketplace (skills, tools), the Control Tower (risks, agent families) and n8n (workflows, apps): counts by node and relation type, the best-connected nodes and nodes without connections. Use it first to see what the graph contains. Sample data.',
+      'Overview of the knowledge graph that connects the Sub4Me customer (contracts, offers, products, tickets), the Skill Marketplace (skills, tools), the Control Tower (risks, agent families), n8n (workflows, apps) and the customer communication (call transcripts, e-mail conversations): counts by node and relation type, the best-connected nodes and nodes without connections. Use it first to see what the graph contains. Sample data.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
     name: 'search_graph',
     description:
-      'Find nodes in the knowledge graph by name or text, optionally of one type (customer, contract, offer, product, family, ticket, skill, tool, risk, agent, workflow, app, person, system, connector). Returns ids to use with the other graph tools. Sample data.',
+      'Find nodes in the knowledge graph by name or text, optionally of one type (customer, contract, offer, product, family, ticket, call, thread, skill, tool, risk, agent, workflow, app, person, system, connector). Returns ids to use with the other graph tools. Sample data.',
     inputSchema: {
       type: 'object',
       properties: {
