@@ -1,0 +1,230 @@
+{
+  "name": "Demo 1 (simple): contract notice check",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Simple demo: contract notice check\nOne trigger, one Code node with fictional sample contracts, one IF.\n**Run it:** click *Execute workflow*. Contracts whose notice deadline is within 30 days (or already passed) go to the *Alert* branch.\nNo credentials needed.",
+        "height": 170,
+        "width": 640,
+        "color": 4
+      },
+      "id": "2118b033-4c35-5cf4-a266-aae95309750a",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "54a1034d-54da-53bc-9097-1711b2a14eef",
+      "name": "Run demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sample data (fictional, from the Sub4Me example). The reference date is fixed so the demo gives the same result every day.\nconst asOf = '2026-10-19';\nconst contracts = [\n  { id: 'C-2023-0390', product: 'Ariba Procurement', end: '2027-01-31', noticeDays: 90 },\n  { id: 'C-2025-0041', product: 'SuccessFactors Employee Central', end: '2026-12-31', noticeDays: 90 },\n  { id: 'C-2026-0012', product: 'AI units (Joule, AI Core, Document AI)', end: '2026-12-31', noticeDays: 60 },\n  { id: 'C-2024-0233', product: 'Business Technology Platform', end: '2027-03-31', noticeDays: 90 },\n  { id: 'C-2024-0187', product: 'S/4HANA Cloud Private Edition', end: '2028-12-31', noticeDays: 180 },\n];\nreturn contracts.map((c) => ({ json: { ...c, asOf } }));"
+      },
+      "id": "5038e8ca-0ca6-5d71-80fc-c9b4b18bf540",
+      "name": "Sample contracts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "171b6ec4-b8b2-5ae4-85e9-15afce5a9337",
+              "name": "noticeDeadline",
+              "value": "={{ DateTime.fromISO($json.end).minus({ days: $json.noticeDays }).toISODate() }}",
+              "type": "string"
+            },
+            {
+              "id": "f8be0f87-bae9-56e9-af73-3c6b273dc472",
+              "name": "daysLeft",
+              "value": "={{ Math.round(DateTime.fromISO($json.end).minus({ days: $json.noticeDays }).diff(DateTime.fromISO($json.asOf), 'days').days) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "8e36fa4e-fb9f-50a3-a82d-d650641e5b8b",
+      "name": "Notice deadline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9f368440-6d9b-50ac-be54-8732239fcc1d",
+              "leftValue": "={{ $json.daysLeft }}",
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              },
+              "rightValue": 30
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c4652322-d0fb-5548-8cde-3f8fab125fee",
+      "name": "Due within 30 days?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "63c993fa-1e6e-56ad-b808-8e6e2c1064bc",
+              "name": "message",
+              "value": "={{ $json.daysLeft < 0 ? 'Notice date passed ' + (-$json.daysLeft) + ' days ago' : 'Notice date in ' + $json.daysLeft + ' days' }}: {{ $json.product }} ({{ $json.id }}), deadline {{ $json.noticeDeadline }}",
+              "type": "string"
+            },
+            {
+              "id": "46d6bc2f-2b1a-58c6-97e8-d405a24f290b",
+              "name": "status",
+              "value": "alert",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4bddec55-eb44-5c27-b645-44a8398baba3",
+      "name": "Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a70f01f7-c9ec-5d62-88b9-49c373d3380b",
+              "name": "message",
+              "value": "={{ $json.product }} ({{ $json.id }}): notice deadline {{ $json.noticeDeadline }}, nothing to do now",
+              "type": "string"
+            },
+            {
+              "id": "9daecf53-5762-5559-89b1-050b27d628ec",
+              "name": "status",
+              "value": "ok",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "bec8af71-d925-5b06-af6b-e74e2e0004b2",
+      "name": "No action",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Run demo": {
+      "main": [
+        [
+          {
+            "node": "Sample contracts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample contracts": {
+      "main": [
+        [
+          {
+            "node": "Notice deadline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notice deadline": {
+      "main": [
+        [
+          {
+            "node": "Due within 30 days?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Due within 30 days?": {
+      "main": [
+        [
+          {
+            "node": "Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

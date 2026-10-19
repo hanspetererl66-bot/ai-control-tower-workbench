@@ -56,3 +56,15 @@ test('the composer popovers close on Escape and on a click outside', () => {
   assert.match(composer, /addEventListener\('mousedown', onPointer\)/);
   assert.match(composer, /onClick=\{\(\) => setIntegrationsOpen\(false\)\}/);
 });
+
+test('the cover sheet is set in the bundled SAP 72 typeface', async () => {
+  const { existsSync } = await import('node:fs');
+  const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
+  for (const weight of ['Light', 'Regular', 'Semibold', 'Bold', 'Black']) {
+    assert.ok(existsSync(path.join(root, `src/assets/fonts/72/72-${weight}.woff2`)), `72-${weight}.woff2`);
+    assert.match(css, new RegExp(`72-${weight}\\.woff2`));
+  }
+  assert.ok(existsSync(path.join(root, 'src/assets/fonts/72/LICENSE.txt')));
+  assert.match(css, /\.cover \{[^}]*font-family: '72'/);
+  assert.match(readFileSync(path.join(root, 'NOTICE'), 'utf8'), /"72" typeface/);
+});
