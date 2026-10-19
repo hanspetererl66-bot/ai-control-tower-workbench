@@ -330,3 +330,7 @@ Install it with `npm run install:knowledge-graph` (or `npm run install:examples 
 In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact** (what hangs on a node, depth 1–4, animated by distance), **Path** (shortest connection between two nodes), two guided tours (Ariba renewal, AI governance), type filters, pinning (double-click), minimap and keyboard controls (`+`/`-`, arrows, `0`, `Esc`). Hub nodes (systems, connector) are not followed in Impact and Path, so results stay about business relations.
 
 The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.
+
+## Tables in chat answers
+
+Chat answers are rendered as GitHub-flavoured Markdown (`remark-gfm`), so Markdown tables become real tables, styled in `src/theme.css` (`.md-table`): header row, soft row separators, hover, light and dark. Numeric columns (numbers, amounts, percentages) are right-aligned automatically, ids and single words stay on one line, and wide tables scroll inside the message. The helpers live in `src/markdown-table.ts`, the component in `src/ui/ChatMarkdown.tsx`.
