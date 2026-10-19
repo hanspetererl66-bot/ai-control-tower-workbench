@@ -1,0 +1,174 @@
+{
+  "asOf": "2026-10-19",
+  "calls": [
+    {
+      "id": "CALL-0415", "title": "Joule Work for Desktop: pilot kickoff", "customer": "Muster Industrie AG",
+      "date": "2026-10-15", "time": "14:00", "minutes": 45, "mood": "positive", "tags": ["Pilot", "Security", "Works council"],
+      "links": { "contract": null, "offer": "OFF-2026-0324", "ticket": null },
+      "people": [
+        { "name": "Felix Brandt", "role": "Head of Platform", "side": "customer" },
+        { "name": "Sarah Lindqvist", "role": "Security Officer", "side": "customer" },
+        { "name": "Mara Weber", "role": "Account Manager", "side": "us" },
+        { "name": "Dev Patel", "role": "Solution Consultant", "side": "us" }
+      ],
+      "summary": [
+        "Pilot with 300 users on Windows and macOS starts on 1 January 2027; 120 volunteers have already signed up, mostly from procurement and finance.",
+        "Security wants to know where prompts and files are processed and has a 62-question questionnaire that is due before the works council meeting on 5 November.",
+        "The works council will ask about monitoring; usage data is aggregated by default and the options need to be documented."
+      ],
+      "decisions": [ { "text": "Go ahead with the pilot plan and the security review in parallel", "turn": 0 } ],
+      "actions": [
+        { "id": "A-1", "text": "Send architecture sheet (where prompts and files are processed)", "owner": "Dev Patel", "due": "2026-10-19", "status": "open", "turn": 3 },
+        { "id": "A-2", "text": "Complete security questionnaire (62 questions)", "owner": "Dev Patel", "due": "2026-10-30", "status": "open", "turn": 4 },
+        { "id": "A-3", "text": "Short briefing paper for the works council", "owner": "Mara Weber", "due": "2026-10-30", "status": "open", "turn": 7 }
+      ],
+      "risks": [ { "text": "Works council approval gates the pilot start; they will ask about individual monitoring", "level": "medium", "turn": 5 } ],
+      "turns": [
+        { "t": "00:00", "who": "Mara Weber", "s": 1, "text": "Welcome, everyone. The pilot is 300 users on Windows and macOS for one year, starting on 1 January. Today we align on the plan and the open security topics." },
+        { "t": "04:20", "who": "Felix Brandt", "s": 1, "text": "IT is excited. We already have 120 volunteers, mostly from procurement and finance." },
+        { "t": "08:35", "who": "Sarah Lindqvist", "s": 0, "text": "From the security side I need to know where prompts and files are processed, and whether local files ever leave the device." },
+        { "t": "12:50", "who": "Dev Patel", "s": 0, "text": "Files stay local unless the user attaches them to a request. Prompts are processed in the EU region. I will send you the architecture sheet." },
+        { "t": "19:15", "who": "Sarah Lindqvist", "s": 0, "text": "Then please complete our security questionnaire. It has 62 questions and I need it before the works council meeting on 5 November." },
+        { "t": "27:40", "who": "Felix Brandt", "s": 0, "text": "Speaking of the works council: they will ask about monitoring. Can you confirm that usage data is not tied to individuals?" },
+        { "t": "31:10", "who": "Dev Patel", "s": 1, "text": "Usage is aggregated by default. I will document the available options so you can show them to the works council." },
+        { "t": "40:05", "who": "Mara Weber", "s": 1, "text": "Next steps: the security questionnaire and a short paper for the works council, both by 30 October." }
+      ]
+    },
+    {
+      "id": "CALL-0414", "title": "Ariba renewal: check-in before the notice date", "customer": "Muster Industrie AG",
+      "date": "2026-10-14", "time": "10:00", "minutes": 38, "mood": "mixed", "tags": ["Renewal", "Pricing", "Churn risk"],
+      "links": { "contract": "C-2023-0390", "offer": "OFF-2026-0318", "ticket": "TKT-48213" },
+      "people": [
+        { "name": "Anna Beispiel", "role": "Head of Procurement IT", "side": "customer" },
+        { "name": "Jonas Reuter", "role": "Finance", "side": "customer" },
+        { "name": "Mara Weber", "role": "Account Manager", "side": "us" }
+      ],
+      "summary": [
+        "The customer is broadly satisfied with Ariba, but a price benchmark puts comparable suites about 8 % below the offer (OFF-2026-0318, 305,000 EUR per year).",
+        "A 3-year term is possible if about 40 additional buyers from the Polish subsidiary can be added without renegotiation.",
+        "The procurement board meets on 28 October, so the revised quote is needed by 23 October. The notice date of the current contract is 2 November."
+      ],
+      "decisions": [ { "text": "Prepare a revised quote with a 3-year option and a price for 40 extra buyers", "turn": 6 } ],
+      "actions": [
+        { "id": "A-1", "text": "Revised Ariba quote (3-year option, +40 buyers, per-seat price)", "owner": "Mara Weber", "due": "2026-10-23", "status": "open", "turn": 6 },
+        { "id": "A-2", "text": "Get deal desk approval for a multi-year discount", "owner": "Mara Weber", "due": "2026-10-21", "status": "open", "turn": 3 },
+        { "id": "A-3", "text": "Status update on TKT-48213 (Joule, open purchase orders) to the customer", "owner": "Tim Fischer", "due": "2026-10-22", "status": "open", "turn": 8 }
+      ],
+      "risks": [
+        { "text": "Churn risk: the customer would look at alternatives if the board sees no price movement", "level": "high", "turn": 9 },
+        { "text": "The open Joule ticket TKT-48213 weakens the renewal case", "level": "medium", "turn": 7 }
+      ],
+      "turns": [
+        { "t": "00:00", "who": "Mara Weber", "s": 0, "text": "Thanks for making time. The goal today: where do we stand on the Ariba renewal before the notice date on 2 November?" },
+        { "t": "01:10", "who": "Anna Beispiel", "s": 0, "text": "We are broadly happy. Adoption among the 250 buyers is good. But Jonas has a benchmark that shows lower prices elsewhere." },
+        { "t": "03:40", "who": "Jonas Reuter", "s": -1, "text": "Our benchmark puts comparable procurement suites about 8 percent below your offer of 305,000 euros. I need a justification, or a better number." },
+        { "t": "06:05", "who": "Mara Weber", "s": 0, "text": "Understood. The offer is for two years. If you commit to three years I can look at a multi-year discount, but I have to check with the deal desk." },
+        { "t": "09:20", "who": "Anna Beispiel", "s": 1, "text": "Three years is possible if the contract lets us add buyers without a new negotiation. We plan to onboard about 40 more buyers from the Poland subsidiary next year." },
+        { "t": "12:45", "who": "Jonas Reuter", "s": 0, "text": "And I need the revised quote in writing by 23 October, otherwise we cannot take it to the procurement board on 28 October." },
+        { "t": "15:30", "who": "Mara Weber", "s": 1, "text": "Noted, 23 October. I will include a price for the extra 40 buyers as an option." },
+        { "t": "21:10", "who": "Anna Beispiel", "s": -1, "text": "One more thing: the Joule ticket on purchase order results is still open. It would help if that is fixed before the board meets." },
+        { "t": "24:00", "who": "Mara Weber", "s": 0, "text": "I will ask support for the status of TKT-48213 and send you an update together with the quote." },
+        { "t": "31:40", "who": "Jonas Reuter", "s": -1, "text": "If the numbers work we have no reason to switch. But we would have to look at alternatives if the board sees no movement." },
+        { "t": "36:20", "who": "Mara Weber", "s": 1, "text": "To recap: revised quote by 23 October with a 3-year option and a price for 40 extra buyers, plus an update on the ticket." }
+      ]
+    },
+    {
+      "id": "CALL-0412", "title": "Quarterly business review", "customer": "Nordwind Handel GmbH",
+      "date": "2026-10-12", "time": "09:30", "minutes": 41, "mood": "neutral", "tags": ["QBR", "Adoption"],
+      "links": { "contract": null, "offer": null, "ticket": null },
+      "people": [
+        { "name": "Petra Vogel", "role": "IT Director", "side": "customer" },
+        { "name": "Mara Weber", "role": "Account Manager", "side": "us" }
+      ],
+      "summary": [
+        "Adoption is stable; the customer wants the Q3 adoption report in a format the management team can read without a walkthrough.",
+        "A migration workshop with a partner is of interest, but no new commitments will be made after 30 November because the budget cycle closes."
+      ],
+      "decisions": [ { "text": "Plan a migration workshop for early December, without a purchase commitment", "turn": 4 } ],
+      "actions": [
+        { "id": "A-1", "text": "Send Q3 adoption report as a one-page summary", "owner": "Mara Weber", "due": "2026-10-16", "status": "done", "turn": 2 },
+        { "id": "A-2", "text": "Introduce a partner for the migration workshop", "owner": "Mara Weber", "due": "2026-11-06", "status": "open", "turn": 4 }
+      ],
+      "risks": [ { "text": "Budget cycle closes on 30 November; anything not agreed by then slips into next year", "level": "low", "turn": 5 } ],
+      "turns": [
+        { "t": "00:00", "who": "Mara Weber", "s": 0, "text": "Thanks, Petra. Let us start with the numbers for Q3 and then talk about what is next." },
+        { "t": "05:10", "who": "Petra Vogel", "s": 0, "text": "Usage looks stable. For my management team I need it on one page, they will not read a long deck." },
+        { "t": "11:30", "who": "Mara Weber", "s": 1, "text": "I will send a one-page summary this week." },
+        { "t": "20:45", "who": "Petra Vogel", "s": 1, "text": "We are thinking about moving the remaining on-premise reports. A workshop with a partner could help." },
+        { "t": "27:15", "who": "Mara Weber", "s": 1, "text": "I can introduce a partner. Early December would work for a first session." },
+        { "t": "33:50", "who": "Petra Vogel", "s": 0, "text": "Please keep in mind our budget closes at the end of November, so no new commitments after that." }
+      ]
+    },
+    {
+      "id": "CALL-0409", "title": "SuccessFactors: scope and term for 2027", "customer": "Muster Industrie AG",
+      "date": "2026-10-09", "time": "11:00", "minutes": 52, "mood": "positive", "tags": ["Renewal", "Right-sizing", "Data residency"],
+      "links": { "contract": "C-2025-0041", "offer": "OFF-2026-0311", "ticket": null },
+      "people": [
+        { "name": "Lena Hoffmann", "role": "HR IT Lead", "side": "customer" },
+        { "name": "Mara Weber", "role": "Account Manager", "side": "us" },
+        { "name": "Dev Patel", "role": "Solution Consultant", "side": "us" }
+      ],
+      "summary": [
+        "After the restructuring the customer expects about 4,500 employees instead of 4,800, so the renewal should be right-sized with a flex clause of plus or minus 10 %.",
+        "The 7 % price increase in OFF-2026-0311 was criticised; at 4,500 employees the increase shrinks and a corrected offer is needed.",
+        "Employee data must stay in the EU; written confirmation and data centre documentation were requested."
+      ],
+      "decisions": [
+        { "text": "Quote 4,500 employees for 3 years with a ±10 % flex clause", "turn": 4 },
+        { "text": "Defer the Time Tracking module until after Q2 (budget freeze)", "turn": 3 }
+      ],
+      "actions": [
+        { "id": "A-1", "text": "Corrected offer OFF-2026-0311 for 4,500 employees with flex clause", "owner": "Mara Weber", "due": "2026-10-16", "status": "open", "turn": 6 },
+        { "id": "A-2", "text": "Send EU data residency documentation", "owner": "Dev Patel", "due": "2026-10-14", "status": "done", "turn": 8 }
+      ],
+      "risks": [ { "text": "The announced 7 % price increase is a sticking point for Finance", "level": "medium", "turn": 5 } ],
+      "turns": [
+        { "t": "00:00", "who": "Mara Weber", "s": 0, "text": "Today we want to settle scope and term for Employee Central for 2027." },
+        { "t": "02:15", "who": "Lena Hoffmann", "s": 0, "text": "The biggest change: after the restructuring we expect about 4,500 employees, not 4,800. We do not want to pay for seats we will not use." },
+        { "t": "05:30", "who": "Dev Patel", "s": 1, "text": "Technically no problem to right-size. The new Time Tracking module could also replace your separate timesheet tool." },
+        { "t": "09:50", "who": "Lena Hoffmann", "s": 0, "text": "Interesting, but not this year. The budget is frozen until Q2." },
+        { "t": "14:10", "who": "Mara Weber", "s": 1, "text": "Then let us quote 4,500 employees for three years, with a flex clause of plus or minus 10 percent." },
+        { "t": "18:40", "who": "Lena Hoffmann", "s": -1, "text": "The flex clause is exactly what Finance wants. But the current offer shows a 7 percent price increase. How do you justify that?" },
+        { "t": "22:05", "who": "Mara Weber", "s": 0, "text": "Part of it comes from the 4,800 base. At 4,500 the increase drops. I will send a corrected offer." },
+        { "t": "30:30", "who": "Lena Hoffmann", "s": 0, "text": "Good. Also data residency: all employee data must stay in the EU. Please confirm that in writing." },
+        { "t": "41:15", "who": "Dev Patel", "s": 1, "text": "Confirmed in principle. I will send the data centre documentation." },
+        { "t": "49:00", "who": "Lena Hoffmann", "s": 1, "text": "Fine. If the corrected offer arrives next week, we can sign before year end." }
+      ]
+    },
+    {
+      "id": "CALL-0407", "title": "Escalation: AI Core quota exceeded in eu10", "customer": "Muster Industrie AG",
+      "date": "2026-10-07", "time": "16:00", "minutes": 27, "mood": "negative", "tags": ["Escalation", "AI Core", "Alerting"],
+      "links": { "contract": "C-2026-0012", "offer": "OFF-2026-0324", "ticket": "TKT-48107" },
+      "people": [
+        { "name": "Felix Brandt", "role": "Head of Platform", "side": "customer" },
+        { "name": "Mara Weber", "role": "Account Manager", "side": "us" },
+        { "name": "Tim Fischer", "role": "Support Lead", "side": "us" }
+      ],
+      "summary": [
+        "The document pipeline was down for about six hours after the AI Core deployment quota in eu10 was exceeded by the invoice scanning batch.",
+        "The customer was not warned before the limit and wants a usage alert plus a written root cause analysis for their CIO.",
+        "A repeat would put the Joule Work for Desktop pilot (OFF-2026-0324) at risk."
+      ],
+      "decisions": [
+        { "text": "Temporarily double the eu10 quota within two working days", "turn": 4 },
+        { "text": "Set usage alerts at 80 % of quota", "turn": 6 }
+      ],
+      "actions": [
+        { "id": "A-1", "text": "Request temporary quota increase in eu10", "owner": "Tim Fischer", "due": "2026-10-09", "status": "done", "turn": 4 },
+        { "id": "A-2", "text": "Written root cause analysis to the customer CIO", "owner": "Tim Fischer", "due": "2026-10-21", "status": "open", "turn": 5 },
+        { "id": "A-3", "text": "Configure usage alert at 80 % of quota", "owner": "Tim Fischer", "due": "2026-10-14", "status": "open", "turn": 6 }
+      ],
+      "risks": [ { "text": "A repeat incident puts the Joule Work pilot and the AI units contract at risk", "level": "high", "turn": 5 } ],
+      "turns": [
+        { "t": "00:00", "who": "Felix Brandt", "s": -1, "text": "Our document pipeline stopped yesterday. AI Core hit the quota in eu10 and nothing was processed for six hours." },
+        { "t": "02:30", "who": "Tim Fischer", "s": 0, "text": "I can see ticket TKT-48107. A deployment quota was exceeded after a spike from the invoice scanning batch." },
+        { "t": "05:00", "who": "Felix Brandt", "s": -1, "text": "Nobody warned us. We pay 360,000 euros a year for AI units and have no alert before we hit the limit." },
+        { "t": "08:20", "who": "Mara Weber", "s": 0, "text": "That is a fair point. Let us look at a temporary quota increase and a usage alert." },
+        { "t": "12:10", "who": "Tim Fischer", "s": 1, "text": "I can request a temporary increase to double the capacity within two working days. The root cause analysis follows by 21 October." },
+        { "t": "16:45", "who": "Felix Brandt", "s": -1, "text": "Fine, but I need a written RCA for our CIO. If this repeats, the Joule Work pilot is at risk." },
+        { "t": "21:30", "who": "Mara Weber", "s": 1, "text": "Understood. I will make sure the CIO gets the RCA directly, and we set the alerts at 80 percent." },
+        { "t": "25:40", "who": "Felix Brandt", "s": 0, "text": "OK. Please keep me informed daily until the quota is raised." }
+      ]
+    }
+  ]
+}

@@ -147,3 +147,27 @@ test('live registry sync writes only into the installed Space and leaves the rep
     rm(dir, { recursive: true, force: true });
   }
 });
+
+test('mockup Spaces: embedded data is in sync, fictional, internally consistent and safe to render', async () => {
+  const { MOCKUPS, embedMockupData } = await import('../scripts/sync-mockup-spaces.mjs');
+  for (const { page, data } of MOCKUPS) {
+    const html = readFileSync(join(ROOT, page), 'utf8');
+    assert.equal(embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8'))), html, `${page}: run npm run sync:mockups`);
+    assert.match(html, /Mockup with fictional data/);
+    assert.doesNotMatch(html.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage|type="submit"/);
+  }
+  const calls = JSON.parse(readFileSync(join(ROOT, 'examples/call-transcripts/calls.json'), 'utf8')).calls;
+  assert.equal(new Set(calls.map((c) => c.id)).size, calls.length);
+  for (const c of calls) {
+    const inRange = (n) => Number.isInteger(n) && n >= 0 && n < c.turns.length;
+    for (const x of [...c.decisions, ...c.actions, ...c.risks]) assert.ok(inRange(x.turn), `${c.id}: turn reference ${x.turn}`);
+    assert.ok(c.turns.every((t) => c.people.some((p) => p.name === t.who)), `${c.id}: every speaker is a participant`);
+  }
+  const threads = JSON.parse(readFileSync(join(ROOT, 'examples/customer-emails/threads.json'), 'utf8')).threads;
+  const callIds = new Set(calls.map((c) => c.id));
+  assert.ok(threads.some((t) => t.ai.flags.length && t.messages.some((m) => m.untrusted)), 'one conversation demonstrates the untrusted-content flag');
+  for (const t of threads) {
+    assert.ok(t.messages.every((m) => !m.email.includes('@') || /\.example$/.test(m.email.split('@')[1])), `${t.id}: only reserved .example domains`);
+    for (const x of t.ai.cross) assert.ok(callIds.has(x.id), `${t.id}: references an existing call`);
+  }
+});

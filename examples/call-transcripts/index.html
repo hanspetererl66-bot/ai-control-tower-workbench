@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Call Transcripts</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 var(--font)}
+.demo{background:var(--amber-dim);color:var(--amber);font-size:12px;padding:7px 20px;border-bottom:1px solid var(--line)}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:750;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--purple)}
+.asof{margin-left:auto;font-size:12px;color:var(--muted)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;color:var(--muted);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent}
+nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
+main{padding:20px;max-width:1260px;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi .k{font-size:12px;color:var(--muted)}.kpi .v{font-size:26px;font-weight:650;letter-spacing:-.02em}
+.kpi.bad .v{color:var(--red)}.kpi.warn .v{color:var(--amber)}
+.split{display:grid;gap:16px;grid-template-columns:minmax(260px,330px) 1fr;align-items:start}
+@media(max-width:860px){.split{grid-template-columns:1fr}}
+.list{display:flex;flex-direction:column;gap:8px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:99px;padding:4px 11px;font:inherit;font-size:12px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.item{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;cursor:pointer;font:inherit;color:inherit}
+.item[aria-current=true]{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+.item .t{font-weight:600}.item .m{font-size:12px;color:var(--muted);margin-top:2px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:6px;background:var(--faint)}
+.dot.positive{background:var(--green)}.dot.negative{background:var(--red)}.dot.mixed{background:var(--amber)}.dot.neutral{background:var(--blue)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+.panel h3{margin:14px 0 6px;font-size:13px;color:var(--muted);font-weight:600}
+.head h1{margin:0;font-size:19px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--ink-2);background:var(--wash);margin:2px 4px 2px 0}
+.tag.green{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.tag.amber{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
+.tag.red{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.tag.blue{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue)}
+.tag.purple{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.ppl{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.who{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:var(--wash)}
+.who.us{border-color:var(--purple-border);background:var(--purple-dim)}
+.two{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:1000px){.two{grid-template-columns:1fr}}
+ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
+.ref{border:0;background:none;color:var(--purple);cursor:pointer;font:inherit;font-size:12px;padding:0 0 0 6px;text-decoration:underline}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.nw{white-space:nowrap}
+.over{color:var(--red);font-weight:600}
+.timeline{display:flex;gap:2px;height:22px;margin:6px 0 2px}
+.timeline button{flex:1;border:0;border-radius:3px;cursor:pointer;background:var(--faint);padding:0}
+.timeline button.p{background:var(--green)}.timeline button.n{background:var(--red)}.timeline button.z{background:var(--line)}
+.legend{font-size:12px;color:var(--muted)}
+.search{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--wash);color:var(--ink);font:inherit;margin:8px 0}
+.tr{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-s);padding:4px 14px;background:var(--wash)}
+.turn{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:10px 6px;border-bottom:1px solid var(--line-2);border-left:3px solid transparent}
+.turn:last-child{border-bottom:0}
+.turn .ts{font-size:12px;color:var(--muted)}
+.turn .sp{font-weight:600;font-size:13px}.turn .sp.us{color:var(--purple)}
+.turn.flash{background:var(--purple-dim);border-left-color:var(--purple)}
+.turn.dim{opacity:.35}
+mark{background:var(--amber-dim);color:var(--ink);border-radius:3px;padding:0 2px;box-shadow:0 0 0 1px var(--amber-border)}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.btn{border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple);border-radius:var(--radius-s);padding:6px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.empty{color:var(--muted);padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="demo">Mockup with fictional data. Nothing is recorded, transcribed or stored; no real call platform is connected. Customer names are made up.</div>
+<header>
+  <div class="logo">Call <b>Transcripts</b></div>
+  <span class="tag purple">Mockup</span>
+  <div class="asof" id="asof"></div>
+</header>
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calls">Calls</button>
+  <button role="tab" aria-selected="false" data-tab="actions">Action items</button>
+  <button role="tab" aria-selected="false" data-tab="how">How it would work</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-calls">
+    <div class="kpis" id="kpis"></div>
+    <div class="split">
+      <div>
+        <div class="filters" id="filters"></div>
+        <div class="list" id="list"></div>
+      </div>
+      <div id="detail"></div>
+    </div>
+  </section>
+  <section class="pg" id="pg-actions"><div class="card" style="padding:18px 20px" id="actions"></div></section>
+  <section class="pg" id="pg-how"><div class="card" style="padding:18px 20px" id="how"></div></section>
+</main>
+<script type="application/json" id="data">{"asOf":"2026-10-19","calls":[{"id":"CALL-0415","title":"Joule Work for Desktop: pilot kickoff","customer":"Muster Industrie AG","date":"2026-10-15","time":"14:00","minutes":45,"mood":"positive","tags":["Pilot","Security","Works council"],"links":{"contract":null,"offer":"OFF-2026-0324","ticket":null},"people":[{"name":"Felix Brandt","role":"Head of Platform","side":"customer"},{"name":"Sarah Lindqvist","role":"Security Officer","side":"customer"},{"name":"Mara Weber","role":"Account Manager","side":"us"},{"name":"Dev Patel","role":"Solution Consultant","side":"us"}],"summary":["Pilot with 300 users on Windows and macOS starts on 1 January 2027; 120 volunteers have already signed up, mostly from procurement and finance.","Security wants to know where prompts and files are processed and has a 62-question questionnaire that is due before the works council meeting on 5 November.","The works council will ask about monitoring; usage data is aggregated by default and the options need to be documented."],"decisions":[{"text":"Go ahead with the pilot plan and the security review in parallel","turn":0}],"actions":[{"id":"A-1","text":"Send architecture sheet (where prompts and files are processed)","owner":"Dev Patel","due":"2026-10-19","status":"open","turn":3},{"id":"A-2","text":"Complete security questionnaire (62 questions)","owner":"Dev Patel","due":"2026-10-30","status":"open","turn":4},{"id":"A-3","text":"Short briefing paper for the works council","owner":"Mara Weber","due":"2026-10-30","status":"open","turn":7}],"risks":[{"text":"Works council approval gates the pilot start; they will ask about individual monitoring","level":"medium","turn":5}],"turns":[{"t":"00:00","who":"Mara Weber","s":1,"text":"Welcome, everyone. The pilot is 300 users on Windows and macOS for one year, starting on 1 January. Today we align on the plan and the open security topics."},{"t":"04:20","who":"Felix Brandt","s":1,"text":"IT is excited. We already have 120 volunteers, mostly from procurement and finance."},{"t":"08:35","who":"Sarah Lindqvist","s":0,"text":"From the security side I need to know where prompts and files are processed, and whether local files ever leave the device."},{"t":"12:50","who":"Dev Patel","s":0,"text":"Files stay local unless the user attaches them to a request. Prompts are processed in the EU region. I will send you the architecture sheet."},{"t":"19:15","who":"Sarah Lindqvist","s":0,"text":"Then please complete our security questionnaire. It has 62 questions and I need it before the works council meeting on 5 November."},{"t":"27:40","who":"Felix Brandt","s":0,"text":"Speaking of the works council: they will ask about monitoring. Can you confirm that usage data is not tied to individuals?"},{"t":"31:10","who":"Dev Patel","s":1,"text":"Usage is aggregated by default. I will document the available options so you can show them to the works council."},{"t":"40:05","who":"Mara Weber","s":1,"text":"Next steps: the security questionnaire and a short paper for the works council, both by 30 October."}]},{"id":"CALL-0414","title":"Ariba renewal: check-in before the notice date","customer":"Muster Industrie AG","date":"2026-10-14","time":"10:00","minutes":38,"mood":"mixed","tags":["Renewal","Pricing","Churn risk"],"links":{"contract":"C-2023-0390","offer":"OFF-2026-0318","ticket":"TKT-48213"},"people":[{"name":"Anna Beispiel","role":"Head of Procurement IT","side":"customer"},{"name":"Jonas Reuter","role":"Finance","side":"customer"},{"name":"Mara Weber","role":"Account Manager","side":"us"}],"summary":["The customer is broadly satisfied with Ariba, but a price benchmark puts comparable suites about 8 % below the offer (OFF-2026-0318, 305,000 EUR per year).","A 3-year term is possible if about 40 additional buyers from the Polish subsidiary can be added without renegotiation.","The procurement board meets on 28 October, so the revised quote is needed by 23 October. The notice date of the current contract is 2 November."],"decisions":[{"text":"Prepare a revised quote with a 3-year option and a price for 40 extra buyers","turn":6}],"actions":[{"id":"A-1","text":"Revised Ariba quote (3-year option, +40 buyers, per-seat price)","owner":"Mara Weber","due":"2026-10-23","status":"open","turn":6},{"id":"A-2","text":"Get deal desk approval for a multi-year discount","owner":"Mara Weber","due":"2026-10-21","status":"open","turn":3},{"id":"A-3","text":"Status update on TKT-48213 (Joule, open purchase orders) to the customer","owner":"Tim Fischer","due":"2026-10-22","status":"open","turn":8}],"risks":[{"text":"Churn risk: the customer would look at alternatives if the board sees no price movement","level":"high","turn":9},{"text":"The open Joule ticket TKT-48213 weakens the renewal case","level":"medium","turn":7}],"turns":[{"t":"00:00","who":"Mara Weber","s":0,"text":"Thanks for making time. The goal today: where do we stand on the Ariba renewal before the notice date on 2 November?"},{"t":"01:10","who":"Anna Beispiel","s":0,"text":"We are broadly happy. Adoption among the 250 buyers is good. But Jonas has a benchmark that shows lower prices elsewhere."},{"t":"03:40","who":"Jonas Reuter","s":-1,"text":"Our benchmark puts comparable procurement suites about 8 percent below your offer of 305,000 euros. I need a justification, or a better number."},{"t":"06:05","who":"Mara Weber","s":0,"text":"Understood. The offer is for two years. If you commit to three years I can look at a multi-year discount, but I have to check with the deal desk."},{"t":"09:20","who":"Anna Beispiel","s":1,"text":"Three years is possible if the contract lets us add buyers without a new negotiation. We plan to onboard about 40 more buyers from the Poland subsidiary next year."},{"t":"12:45","who":"Jonas Reuter","s":0,"text":"And I need the revised quote in writing by 23 October, otherwise we cannot take it to the procurement board on 28 October."},{"t":"15:30","who":"Mara Weber","s":1,"text":"Noted, 23 October. I will include a price for the extra 40 buyers as an option."},{"t":"21:10","who":"Anna Beispiel","s":-1,"text":"One more thing: the Joule ticket on purchase order results is still open. It would help if that is fixed before the board meets."},{"t":"24:00","who":"Mara Weber","s":0,"text":"I will ask support for the status of TKT-48213 and send you an update together with the quote."},{"t":"31:40","who":"Jonas Reuter","s":-1,"text":"If the numbers work we have no reason to switch. But we would have to look at alternatives if the board sees no movement."},{"t":"36:20","who":"Mara Weber","s":1,"text":"To recap: revised quote by 23 October with a 3-year option and a price for 40 extra buyers, plus an update on the ticket."}]},{"id":"CALL-0412","title":"Quarterly business review","customer":"Nordwind Handel GmbH","date":"2026-10-12","time":"09:30","minutes":41,"mood":"neutral","tags":["QBR","Adoption"],"links":{"contract":null,"offer":null,"ticket":null},"people":[{"name":"Petra Vogel","role":"IT Director","side":"customer"},{"name":"Mara Weber","role":"Account Manager","side":"us"}],"summary":["Adoption is stable; the customer wants the Q3 adoption report in a format the management team can read without a walkthrough.","A migration workshop with a partner is of interest, but no new commitments will be made after 30 November because the budget cycle closes."],"decisions":[{"text":"Plan a migration workshop for early December, without a purchase commitment","turn":4}],"actions":[{"id":"A-1","text":"Send Q3 adoption report as a one-page summary","owner":"Mara Weber","due":"2026-10-16","status":"done","turn":2},{"id":"A-2","text":"Introduce a partner for the migration workshop","owner":"Mara Weber","due":"2026-11-06","status":"open","turn":4}],"risks":[{"text":"Budget cycle closes on 30 November; anything not agreed by then slips into next year","level":"low","turn":5}],"turns":[{"t":"00:00","who":"Mara Weber","s":0,"text":"Thanks, Petra. Let us start with the numbers for Q3 and then talk about what is next."},{"t":"05:10","who":"Petra Vogel","s":0,"text":"Usage looks stable. For my management team I need it on one page, they will not read a long deck."},{"t":"11:30","who":"Mara Weber","s":1,"text":"I will send a one-page summary this week."},{"t":"20:45","who":"Petra Vogel","s":1,"text":"We are thinking about moving the remaining on-premise reports. A workshop with a partner could help."},{"t":"27:15","who":"Mara Weber","s":1,"text":"I can introduce a partner. Early December would work for a first session."},{"t":"33:50","who":"Petra Vogel","s":0,"text":"Please keep in mind our budget closes at the end of November, so no new commitments after that."}]},{"id":"CALL-0409","title":"SuccessFactors: scope and term for 2027","customer":"Muster Industrie AG","date":"2026-10-09","time":"11:00","minutes":52,"mood":"positive","tags":["Renewal","Right-sizing","Data residency"],"links":{"contract":"C-2025-0041","offer":"OFF-2026-0311","ticket":null},"people":[{"name":"Lena Hoffmann","role":"HR IT Lead","side":"customer"},{"name":"Mara Weber","role":"Account Manager","side":"us"},{"name":"Dev Patel","role":"Solution Consultant","side":"us"}],"summary":["After the restructuring the customer expects about 4,500 employees instead of 4,800, so the renewal should be right-sized with a flex clause of plus or minus 10 %.","The 7 % price increase in OFF-2026-0311 was criticised; at 4,500 employees the increase shrinks and a corrected offer is needed.","Employee data must stay in the EU; written confirmation and data centre documentation were requested."],"decisions":[{"text":"Quote 4,500 employees for 3 years with a ±10 % flex clause","turn":4},{"text":"Defer the Time Tracking module until after Q2 (budget freeze)","turn":3}],"actions":[{"id":"A-1","text":"Corrected offer OFF-2026-0311 for 4,500 employees with flex clause","owner":"Mara Weber","due":"2026-10-16","status":"open","turn":6},{"id":"A-2","text":"Send EU data residency documentation","owner":"Dev Patel","due":"2026-10-14","status":"done","turn":8}],"risks":[{"text":"The announced 7 % price increase is a sticking point for Finance","level":"medium","turn":5}],"turns":[{"t":"00:00","who":"Mara Weber","s":0,"text":"Today we want to settle scope and term for Employee Central for 2027."},{"t":"02:15","who":"Lena Hoffmann","s":0,"text":"The biggest change: after the restructuring we expect about 4,500 employees, not 4,800. We do not want to pay for seats we will not use."},{"t":"05:30","who":"Dev Patel","s":1,"text":"Technically no problem to right-size. The new Time Tracking module could also replace your separate timesheet tool."},{"t":"09:50","who":"Lena Hoffmann","s":0,"text":"Interesting, but not this year. The budget is frozen until Q2."},{"t":"14:10","who":"Mara Weber","s":1,"text":"Then let us quote 4,500 employees for three years, with a flex clause of plus or minus 10 percent."},{"t":"18:40","who":"Lena Hoffmann","s":-1,"text":"The flex clause is exactly what Finance wants. But the current offer shows a 7 percent price increase. How do you justify that?"},{"t":"22:05","who":"Mara Weber","s":0,"text":"Part of it comes from the 4,800 base. At 4,500 the increase drops. I will send a corrected offer."},{"t":"30:30","who":"Lena Hoffmann","s":0,"text":"Good. Also data residency: all employee data must stay in the EU. Please confirm that in writing."},{"t":"41:15","who":"Dev Patel","s":1,"text":"Confirmed in principle. I will send the data centre documentation."},{"t":"49:00","who":"Lena Hoffmann","s":1,"text":"Fine. If the corrected offer arrives next week, we can sign before year end."}]},{"id":"CALL-0407","title":"Escalation: AI Core quota exceeded in eu10","customer":"Muster Industrie AG","date":"2026-10-07","time":"16:00","minutes":27,"mood":"negative","tags":["Escalation","AI Core","Alerting"],"links":{"contract":"C-2026-0012","offer":"OFF-2026-0324","ticket":"TKT-48107"},"people":[{"name":"Felix Brandt","role":"Head of Platform","side":"customer"},{"name":"Mara Weber","role":"Account Manager","side":"us"},{"name":"Tim Fischer","role":"Support Lead","side":"us"}],"summary":["The document pipeline was down for about six hours after the AI Core deployment quota in eu10 was exceeded by the invoice scanning batch.","The customer was not warned before the limit and wants a usage alert plus a written root cause analysis for their CIO.","A repeat would put the Joule Work for Desktop pilot (OFF-2026-0324) at risk."],"decisions":[{"text":"Temporarily double the eu10 quota within two working days","turn":4},{"text":"Set usage alerts at 80 % of quota","turn":6}],"actions":[{"id":"A-1","text":"Request temporary quota increase in eu10","owner":"Tim Fischer","due":"2026-10-09","status":"done","turn":4},{"id":"A-2","text":"Written root cause analysis to the customer CIO","owner":"Tim Fischer","due":"2026-10-21","status":"open","turn":5},{"id":"A-3","text":"Configure usage alert at 80 % of quota","owner":"Tim Fischer","due":"2026-10-14","status":"open","turn":6}],"risks":[{"text":"A repeat incident puts the Joule Work pilot and the AI units contract at risk","level":"high","turn":5}],"turns":[{"t":"00:00","who":"Felix Brandt","s":-1,"text":"Our document pipeline stopped yesterday. AI Core hit the quota in eu10 and nothing was processed for six hours."},{"t":"02:30","who":"Tim Fischer","s":0,"text":"I can see ticket TKT-48107. A deployment quota was exceeded after a spike from the invoice scanning batch."},{"t":"05:00","who":"Felix Brandt","s":-1,"text":"Nobody warned us. We pay 360,000 euros a year for AI units and have no alert before we hit the limit."},{"t":"08:20","who":"Mara Weber","s":0,"text":"That is a fair point. Let us look at a temporary quota increase and a usage alert."},{"t":"12:10","who":"Tim Fischer","s":1,"text":"I can request a temporary increase to double the capacity within two working days. The root cause analysis follows by 21 October."},{"t":"16:45","who":"Felix Brandt","s":-1,"text":"Fine, but I need a written RCA for our CIO. If this repeats, the Joule Work pilot is at risk."},{"t":"21:30","who":"Mara Weber","s":1,"text":"Understood. I will make sure the CIO gets the RCA directly, and we set the alerts at 80 percent."},{"t":"25:40","who":"Felix Brandt","s":0,"text":"OK. Please keep me informed daily until the quota is raised."}]}]}</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MOOD = { positive: ['Positive', 'green'], mixed: ['Mixed', 'amber'], negative: ['Negative', 'red'], neutral: ['Neutral', 'blue'] };
+const LEVEL = { high: 'red', medium: 'amber', low: 'blue' };
+const state = { sel: DATA.calls[0].id, customer: 'All', q: '' };
+const fmtDate = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const isOver = (a) => a.status !== 'done' && a.due < DATA.asOf;
+const allActions = () => DATA.calls.flatMap((c) => c.actions.map((a) => ({ ...a, call: c })));
+
+function kpis() {
+  const acts = allActions();
+  const open = acts.filter((a) => a.status !== 'done');
+  const risky = DATA.calls.filter((c) => c.risks.some((r) => r.level === 'high')).length;
+  const mins = DATA.calls.reduce((s, c) => s + c.minutes, 0);
+  $('#kpis').innerHTML = [
+    ['Calls analysed', DATA.calls.length, ''],
+    ['Minutes of conversation', mins, ''],
+    ['Open action items', open.length, ''],
+    ['Overdue', open.filter(isOver).length, open.some(isOver) ? 'bad' : ''],
+    ['Calls with a high risk', risky, risky ? 'warn' : '']
+  ].map(([k, v, c]) => `<div class="kpi ${c}"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+}
+
+function filters() {
+  const names = ['All', ...new Set(DATA.calls.map((c) => c.customer))];
+  $('#filters').innerHTML = names.map((n) => `<button class="chip" data-c="${esc(n)}" aria-pressed="${state.customer === n}">${esc(n)}</button>`).join('');
+}
+
+function list() {
+  const rows = DATA.calls.filter((c) => state.customer === 'All' || c.customer === state.customer);
+  $('#list').innerHTML = rows.map((c) => `<button class="item" data-id="${c.id}" aria-current="${c.id === state.sel}">
+    <div class="t"><span class="dot ${c.mood}"></span>${esc(c.title)}</div>
+    <div class="m">${esc(c.customer)} · ${fmtDate(c.date)} · ${c.minutes} min</div></button>`).join('') || '<div class="empty">No calls</div>';
+}
+
+function link(label, v) { return v ? `<span class="tag blue">${label} ${esc(v)}</span>` : ''; }
+
+function detail() {
+  const c = DATA.calls.find((x) => x.id === state.sel) || DATA.calls[0];
+  const [moodLabel, moodTone] = MOOD[c.mood];
+  const ref = (n) => `<button class="ref" data-turn="${n}">in transcript ${esc(c.turns[n].t)}</button>`;
+  const q = state.q.trim().toLowerCase();
+  const hit = (t) => !q || t.text.toLowerCase().includes(q) || t.who.toLowerCase().includes(q);
+  const rx = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi') : null;
+  const mark = (s) => { const e = esc(s); return rx ? e.replace(rx, (m) => `<mark>${m}</mark>`) : e; };
+  $('#detail').innerHTML = `
+  <div class="panel head">
+    <h1>${esc(c.title)}</h1>
+    <div class="sub">${esc(c.customer)} · ${fmtDate(c.date)}, ${c.time} · ${c.minutes} min · ${c.id}</div>
+    <div style="margin-top:8px"><span class="tag ${moodTone}">${moodLabel}</span>${c.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}${link('Contract', c.links.contract)}${link('Offer', c.links.offer)}${link('Ticket', c.links.ticket)}</div>
+    <div class="ppl">${c.people.map((p) => `<span class="who ${p.side}"><b>${esc(p.name)}</b> · ${esc(p.role)}</span>`).join('')}</div>
+  </div>
+  <div class="panel"><h2>Summary</h2><ul class="pts">${c.summary.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+    <div class="note">Generated summary (mockup). Every item below links to the passage it came from.</div></div>
+  <div class="two">
+    <div class="panel"><h2>Decisions</h2><ul class="pts">${c.decisions.map((d) => `<li>${esc(d.text)}${ref(d.turn)}</li>`).join('')}</ul>
+      <h3>Risks</h3><ul class="pts">${c.risks.map((r) => `<li><span class="tag ${LEVEL[r.level]}">${r.level}</span> ${esc(r.text)}${ref(r.turn)}</li>`).join('')}</ul></div>
+    <div class="panel"><h2>Action items</h2><table><thead><tr><th>Action</th><th>Owner</th><th>Due</th></tr></thead><tbody>
+      ${c.actions.map((a) => `<tr><td>${a.status === 'done' ? '<span class="tag green">done</span> ' : ''}${esc(a.text)}${ref(a.turn)}</td><td class="nw">${esc(a.owner)}</td><td class="nw ${isOver(a) ? 'over' : ''}">${fmtDate(a.due)}${isOver(a) ? ' · overdue' : ''}</td></tr>`).join('')}</tbody></table></div>
+  </div>
+  <div class="panel"><h2>Mood over the conversation</h2>
+    <div class="timeline">${c.turns.map((t, i) => `<button class="${t.s > 0 ? 'p' : t.s < 0 ? 'n' : 'z'}" data-turn="${i}" title="${esc(t.t + ' ' + t.who)}" aria-label="Jump to ${esc(t.t)}"></button>`).join('')}</div>
+    <div class="legend">Green: constructive · Red: concern or pressure · Grey: neutral. Click a segment to jump to the passage.</div>
+    <h3>Transcript</h3>
+    <input class="search" id="q" placeholder="Search this transcript" value="${esc(state.q)}" aria-label="Search this transcript">
+    ${q ? `<div class="note" style="margin:0 0 6px">${c.turns.filter(hit).length} of ${c.turns.length} passages match in this call</div>` : ''}<div class="tr" id="tr">${c.turns.map((t, i) => `<div class="turn ${q && !hit(t) ? 'dim' : ''}" id="turn-${i}"><div class="ts">${t.t}</div><div><div class="sp ${c.people.find((p) => p.name === t.who)?.side === 'us' ? 'us' : ''}">${esc(t.who)}</div><div>${mark(t.text)}</div></div></div>`).join('')}</div>
+    <div class="note">Fictional transcript, speaker labels as a call platform would deliver them.</div>
+  </div>`;
+}
+
+function jump(n) {
+  const el = document.getElementById('turn-' + n);
+  if (!el) return;
+  const box = $('#tr');
+  box.scrollTop = el.offsetTop - box.offsetTop - 8;
+  document.querySelectorAll('.turn.flash').forEach((x) => x.classList.remove('flash'));
+  el.classList.add('flash');
+  box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function actions() {
+  const rows = allActions().sort((a, b) => (a.status === 'done') - (b.status === 'done') || a.due.localeCompare(b.due));
+  $('#actions').innerHTML = `<h2 style="margin:0 0 6px;font-size:16px">All action items across calls</h2>
+  <div class="sub" style="margin-bottom:10px">One list for the account team instead of notes scattered across calls.</div>
+  <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Action</th><th>Owner</th><th>Due</th><th>Customer</th><th>From</th></tr></thead><tbody>
+  ${rows.map((a) => `<tr><td>${a.status === 'done' ? '<span class="tag green">done</span>' : isOver(a) ? '<span class="tag red">overdue</span>' : '<span class="tag amber">open</span>'}</td><td>${esc(a.text)}</td><td class="nw">${esc(a.owner)}</td><td class="nw">${fmtDate(a.due)}</td><td class="nw">${esc(a.call.customer)}</td><td class="nw"><button class="ref" data-open="${a.call.id}">${a.call.id}</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function how() {
+  $('#how').innerHTML = `<h2 style="margin:0 0 6px;font-size:16px">How a real version would work</h2>
+  <div class="sub">This page is a design mockup. The numbered steps describe the concept, nothing here runs.</div>
+  <ol class="pts" style="margin-top:12px">
+    <li><b>Source.</b> A transcript file from the call platform (Teams, Zoom, Meet) or an exported text or VTT file. Only calls you attended, only with consent of the participants.</li>
+    <li><b>Evaluation.</b> A skill turns the transcript into the structure you see here: summary, decisions, action items with owner and due date, risks, mood, and a pointer to the passage.</li>
+    <li><b>Link.</b> Customer, contract, offer and ticket are matched to the Sub4Me data, so the call appears in the Knowledge Graph next to the Ariba contract or the open ticket.</li>
+    <li><b>Keep little.</b> Only the structured result is kept, the raw transcript stays in the source system. Retention period and deletion belong in the design from the start.</li>
+    <li><b>Use.</b> Customer call preparation shows the last decisions and open actions; overdue actions surface in the weekly review.</li>
+  </ol>
+  <div class="note">Transcripts are untrusted text: instructions inside a transcript are never followed.</div>`;
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.tab) { document.querySelectorAll('nav button').forEach((b) => b.setAttribute('aria-selected', b === t)); document.querySelectorAll('.pg').forEach((p) => p.classList.toggle('on', p.id === 'pg-' + t.dataset.tab)); return; }
+  if (t.dataset.c) { state.customer = t.dataset.c; const first = DATA.calls.find((c) => state.customer === 'All' || c.customer === state.customer); if (first) state.sel = first.id; filters(); list(); detail(); return; }
+  if (t.dataset.id) { state.sel = t.dataset.id; state.q = ''; list(); detail(); return; }
+  if (t.dataset.turn !== undefined) { jump(+t.dataset.turn); return; }
+  if (t.dataset.open) { state.sel = t.dataset.open; state.customer = 'All'; state.q = ''; document.querySelector('[data-tab=calls]').click(); filters(); list(); detail(); }
+});
+document.addEventListener('input', (e) => { if (e.target.id === 'q') { state.q = e.target.value; const pos = e.target.selectionStart; detail(); const i = $('#q'); i.focus(); i.setSelectionRange(pos, pos); } });
+
+$('#asof').textContent = 'As of ' + fmtDate(DATA.asOf) + ' · fictional data';
+kpis(); filters(); list(); detail(); actions(); how();
+</script>
+</body>
+</html>

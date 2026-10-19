@@ -11,6 +11,8 @@ export const EXAMPLE_SPACES = {
   'skill-marketplace': 'skill-marketplace',
   'automation-dashboard': 'automation-dashboard',
   'knowledge-graph': 'knowledge-graph',
+  'call-transcripts': 'call-transcripts',
+  'customer-emails': 'customer-emails',
 };
 
 /**

@@ -331,6 +331,14 @@ In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact**
 
 The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.
 
+## Mockup Spaces: call transcripts and customer e-mails
+
+Two design mockups for additional sources, with fictional data only and no real connection (no mailbox, no call platform, nothing recorded, read, stored or sent):
+
+- **Call Transcripts** (`examples/call-transcripts`): calls with summary, decisions, risks, action items (owner, due date, overdue), a mood timeline and a searchable transcript. Every decision, risk and action jumps to the passage it came from; a second tab collects all action items across calls.
+- **Customer E-Mails** (`examples/customer-emails`): conversations with summary, open points, response times against a 48-hour target, a draft reply (mock, never sent), weekly volume, and a page on rules and privacy. One message contains instructions aimed at AI assistants; it is flagged and shown as plain text. Open points are matched with the calls (for example a mail that confirms an action still open after a call).
+
+Install with `npm run install:call-transcripts` and `npm run install:customer-emails`. The sample data lives in `calls.json` and `threads.json` next to each page; `npm run sync:mockups` embeds it (`-- --check` fails when stale).
 ## Tables in chat answers
 
 Chat answers are rendered as GitHub-flavoured Markdown (`remark-gfm`), so Markdown tables become real tables, styled in `src/theme.css` (`.md-table`): header row, soft row separators, hover, light and dark. Numeric columns (numbers, amounts, percentages) are right-aligned automatically, ids and single words stay on one line, and wide tables scroll inside the message. The helpers live in `src/markdown-table.ts`, the component in `src/ui/ChatMarkdown.tsx`.
