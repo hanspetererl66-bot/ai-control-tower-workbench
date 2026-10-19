@@ -2,6 +2,7 @@ import { PRODUCT_NAME } from '../product';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import type { AppearancePreference, ResolvedTheme } from '../appearance';
+import { SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { speechSupported, type VoiceSettings } from '../voice';
 
 const OPTIONS: Array<{
@@ -18,6 +19,8 @@ export default function SettingsDialog({
   appearance,
   resolvedTheme,
   onChange,
+  spaceScale,
+  onSpaceScaleChange,
   voice,
   onVoiceChange,
   onClose,
@@ -25,6 +28,8 @@ export default function SettingsDialog({
   appearance: AppearancePreference;
   resolvedTheme: ResolvedTheme;
   onChange: (preference: AppearancePreference) => void;
+  spaceScale?: SpaceScale;
+  onSpaceScaleChange?: (scale: SpaceScale) => void;
   voice?: VoiceSettings;
   onVoiceChange?: (
     patch: Partial<Omit<VoiceSettings, 'hasKey'>> & { key?: string }
@@ -89,6 +94,27 @@ export default function SettingsDialog({
             ))}
           </div>
         </div>
+        {spaceScale !== undefined && onSpaceScaleChange && (
+          <div className="settings-section settings-voice">
+            <div className="settings-section-copy">
+              <h4>Text size in Spaces</h4>
+              <p>Scales text and layout of every Space, including ones the agent builds. Default is 115%.</p>
+            </div>
+            <div className="scale-options" role="radiogroup" aria-label="Text size in Spaces">
+              {SPACE_SCALES.map((scale) => (
+                <button
+                  key={scale}
+                  className={`ghost-btn ${spaceScale === scale ? 'ghost-btn-on' : ''}`}
+                  role="radio"
+                  aria-checked={spaceScale === scale}
+                  onClick={() => onSpaceScaleChange(scale)}
+                >
+                  {Math.round(scale * 100)}%
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {voice && onVoiceChange && <VoiceSection voice={voice} onVoiceChange={onVoiceChange} />}
       </section>
     </div>
