@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import type { ConversationRecord } from '../conversations';
+import { CONVERSATION_RANGES, filterConversations, type ConversationRange, type ConversationRecord } from '../conversations';
 
 type Props = {
   conversations: ConversationRecord[];
@@ -28,8 +28,41 @@ export default function ConversationList({
   const [menu, setMenu] = useState<ContextMenu | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const active = conversations.filter((conversation) => !conversation.archived);
-  const archived = conversations.filter((conversation) => conversation.archived);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [range, setRange] = useState<ConversationRange>('all');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const filtered = filterConversations(conversations, { query, range });
+  const filtering = query.trim() !== '' || range !== 'all';
+  const active = filtered.filter((conversation) => !conversation.archived);
+  const archived = filtered.filter((conversation) => conversation.archived);
+
+  useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!filterOpen) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!filterRef.current?.contains(event.target as Node)) setFilterOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFilterOpen(false);
+    };
+    window.addEventListener('pointerdown', closeOutside);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      window.removeEventListener('pointerdown', closeOutside);
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [filterOpen]);
+
+  function toggleSearch() {
+    if (searchOpen) setQuery('');
+    setSearchOpen((open) => !open);
+  }
 
   useEffect(() => {
     setConfirmDelete(false);
@@ -108,22 +141,92 @@ export default function ConversationList({
     <aside className="list">
       <div className="list-head">
         <span className="list-title">Conversations</span>
-        <button className="icon-btn" title="Search" aria-label="Search">
+        <button
+          className={`icon-btn ${searchOpen || query ? 'icon-btn-on' : ''}`}
+          title="Search conversations"
+          aria-label="Search conversations"
+          aria-pressed={searchOpen}
+          onClick={toggleSearch}
+        >
           <SearchIcon />
         </button>
-        <button className="icon-btn" title="Filter" aria-label="Filter">
-          <FilterIcon />
-        </button>
+        <div className="list-filter" ref={filterRef}>
+          <button
+            className={`icon-btn ${range !== 'all' ? 'icon-btn-on' : ''}`}
+            title="Filter conversations"
+            aria-label="Filter conversations"
+            aria-haspopup="menu"
+            aria-expanded={filterOpen}
+            onClick={() => setFilterOpen((open) => !open)}
+          >
+            <FilterIcon />
+          </button>
+          {filterOpen && (
+            <div className="context-menu list-filter-menu" role="menu">
+              {CONVERSATION_RANGES.map((option) => (
+                <button
+                  key={option.id}
+                  className={`context-menu-item ${range === option.id ? 'context-menu-item-on' : ''}`}
+                  role="menuitemradio"
+                  aria-checked={range === option.id}
+                  onClick={() => {
+                    setRange(option.id);
+                    setFilterOpen(false);
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button className="icon-btn list-new" title="New conversation" aria-label="New conversation" disabled={disabled} onClick={onNew}>
           +
         </button>
       </div>
 
+      {searchOpen && (
+        <input
+          ref={searchRef}
+          className="list-search"
+          type="search"
+          value={query}
+          placeholder="Search titles and messages"
+          aria-label="Search conversations"
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setQuery('');
+              setSearchOpen(false);
+            }
+          }}
+        />
+      )}
+      {filtering && (
+        <p className="conversation-empty list-filter-note">
+          {active.length + archived.length} of {conversations.length} shown
+          {range !== 'all' ? ` · ${CONVERSATION_RANGES.find((r) => r.id === range)?.label.toLowerCase()}` : ''}
+          <button
+            className="list-filter-clear"
+            onClick={() => {
+              setQuery('');
+              setRange('all');
+            }}
+          >
+            Clear
+          </button>
+        </p>
+      )}
+
       <div className="list-section">
         <span>Active Conversations</span>
         <ChevronIcon />
       </div>
-      <div className="conversation-items">{active.map(conversationButton)}</div>
+      <div className="conversation-items">
+        {active.length > 0 ? active.map(conversationButton) : filtering ? (
+          <p className="conversation-empty">No matching conversations</p>
+        ) : null}
+      </div>
 
       <button
         className="list-section list-section-muted list-section-button"
@@ -134,7 +237,7 @@ export default function ConversationList({
         <span className="list-section-count">{archived.length || ''}</span>
         <ChevronIcon right={!archivedOpen} />
       </button>
-      {archivedOpen && (
+      {(archivedOpen || (filtering && archived.length > 0)) && (
         <div className="conversation-items conversation-items-archived">
           {archived.length > 0 ? archived.map(conversationButton) : (
             <p className="conversation-empty">No archived conversations</p>
