@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ToolError } from './tools.mjs';
+import { summarise } from './rating-math.mjs';
 
 const here = (path) => join(dirname(fileURLToPath(import.meta.url)), path);
 const BOARD_AREAS = ['Finance', 'Sales', 'Marketing', 'Engineering'];
@@ -99,6 +100,20 @@ export const SKILL_PROFILE_TOOL_DEFINITIONS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'recommend_skill_workflow',
+    description:
+      'Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role "Account Manager", goal "Kundentermin und Verlängerung" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for "In welcher Reihenfolge nutze ich welche Skills …?". Sample playbooks.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        role: { type: 'string', description: 'Role, for example "Account Manager"; partial names work.' },
+        goal: { type: 'string', description: 'What the person wants to get done, in a few words.' },
+        limit: { type: 'integer', minimum: 1, maximum: 5, description: 'How many workflows (default 2).' },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 const round1 = (v) => Math.round(v * 10) / 10;
@@ -159,6 +174,7 @@ export function createSkillProfileHandlers(load = loadMarketplaceData, rpc = nul
     return { skill, profile };
   };
   const head = (s) => ({ name: s.name, description: s.description, maturity: s.maturity, boardArea: s.boardArea, lob: s.lob, team: s.team, owner: s.owner, sample: Boolean(s.sample) });
+  const ratingOf = (d, name) => summarise(d.ratings?.skills?.[name]?.distribution, d.ratings?.settings).label;
   const rows = (d) => d.skills.filter((s) => d.profiles[s.name]).map((s) => ({ skill: s, profile: d.profiles[s.name] }));
   const checkArea = (boardArea) => {
     if (boardArea !== undefined && !BOARD_AREAS.includes(boardArea)) throw new ToolError(`boardArea must be one of: ${BOARD_AREAS.join(', ')}`);
@@ -283,6 +299,50 @@ export function createSkillProfileHandlers(load = loadMarketplaceData, rpc = nul
       };
     },
 
+    async recommend_skill_workflow(args = {}) {
+      const { d, dataSource } = await data();
+      const role = String(args.role ?? '').trim();
+      const goal = String(args.goal ?? '').trim();
+      if (!role && !goal) throw new ToolError('Give a role, a goal, or both.');
+      const limit = args.limit === undefined ? 2 : args.limit;
+      if (!Number.isInteger(limit) || limit < 1 || limit > 5) throw new ToolError('limit must be an integer between 1 and 5');
+      const words = goal.toLowerCase().split(/[^a-zäöüß0-9-]+/).filter((w) => w.length > 3);
+      const scored = (d.playbooks ?? []).map((pb) => {
+        let score = 0;
+        if (role && pb.roles.some((r) => has(r, role) || has(role, r))) score += 5;
+        const text = [pb.title, pb.goal, ...pb.tags].join(' ').toLowerCase();
+        for (const w of words) if (text.includes(w)) score += 2;
+        return { pb, score };
+      }).filter((r) => r.score >= 2).sort((a, b) => b.score - a.score || a.pb.id.localeCompare(b.pb.id)).slice(0, limit);
+      const workflows = scored.map(({ pb }) => ({
+        id: pb.id,
+        title: pb.title,
+        goal: pb.goal,
+        roles: pb.roles,
+        steps: pb.steps.map((st, i) => {
+          const skill = d.skills.find((s) => s.name === st.skill);
+          const profile = d.profiles[st.skill];
+          const warnings = [];
+          if (!skill) warnings.push('not in the registry');
+          else if (skill.sample) warnings.push('sample skill, not published');
+          if (skill && skill.maturity === 'pilot') warnings.push('pilot');
+          if (profile?.lifecycle.replacedBy) warnings.push(`replaced by ${profile.lifecycle.replacedBy}`);
+          if (profile?.lifecycle.sunsetDate) warnings.push(`sunset ${profile.lifecycle.sunsetDate}`);
+          if (profile && daysUntil(d, profile.governance.nextReview) < 0) warnings.push('review overdue');
+          return { step: i + 1, skill: st.skill, why: st.why, input: st.input, output: st.output, maturity: skill?.maturity, aiActRisk: profile?.governance.aiActRisk, rating: ratingOf(d, st.skill), examplePrompt: profile?.discovery.examplePrompts[0], ...(warnings.length ? { warnings } : {}) };
+        }),
+      }));
+      return {
+        role: role || undefined,
+        goal: goal || undefined,
+        count: workflows.length,
+        workflows,
+        hint: workflows.length ? 'Steps are in the order they are usually used. A step can be skipped when its output already exists.' : 'No workflow matches. Use recommend_skills for single skills or find_skill_gaps for missing ones.',
+        view: { space: 'skill-marketplace', tab: 'catalog' },
+        dataSource,
+      };
+    },
+
     async recommend_skills(args = {}) {
       const { d, dataSource } = await data();
       const role = String(args.role ?? '').trim();
@@ -304,7 +364,7 @@ export function createSkillProfileHandlers(load = loadMarketplaceData, rpc = nul
         role: role || undefined,
         task: task || undefined,
         count: scored.length,
-        skills: scored.map(({ skill, profile }) => ({ ...head(skill), aiActRisk: profile.governance.aiActRisk, examplePrompts: profile.discovery.examplePrompts, demoFlow: profile.discovery.demoFlow, prerequisites: profile.discovery.prerequisites, related: profile.discovery.related, recommendedFor: profile.discovery.recommendedFor, favorites: profile.discovery.favorites })),
+        skills: scored.map(({ skill, profile }) => ({ ...head(skill), aiActRisk: profile.governance.aiActRisk, rating: ratingOf(d, skill.name), examplePrompts: profile.discovery.examplePrompts, demoFlow: profile.discovery.demoFlow, prerequisites: profile.discovery.prerequisites, related: profile.discovery.related, recommendedFor: profile.discovery.recommendedFor, favorites: profile.discovery.favorites })),
         hint: scored.length ? undefined : 'No skill matches. Look at find_skill_gaps and consider requesting one.',
         view: { space: 'skill-marketplace', tab: 'catalog' },
         dataSource,
