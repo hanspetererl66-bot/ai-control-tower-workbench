@@ -9,6 +9,8 @@ export type ConversationRecord = {
   messages: Message[];
   files: GeneratedFile[];
   archived: boolean;
+  /** Web Search switch of this conversation (on unless switched off). */
+  webSearch?: boolean;
   createdAt: number;
   updatedAt: number;
 };
@@ -32,6 +34,7 @@ export function createConversation(id = makeConversationId(), now = Date.now()):
     messages: [],
     files: [],
     archived: false,
+    webSearch: true,
     createdAt: now,
     updatedAt: now,
   };
@@ -56,6 +59,7 @@ function validConversation(value: unknown): ConversationRecord | null {
       (file): file is GeneratedFile => Boolean(file && typeof file.path === 'string')
     ),
     archived: candidate.archived === true,
+    webSearch: candidate.webSearch !== false,
     createdAt: Number.isFinite(candidate.createdAt) ? Number(candidate.createdAt) : Date.now(),
     updatedAt: Number.isFinite(candidate.updatedAt) ? Number(candidate.updatedAt) : Date.now(),
   };

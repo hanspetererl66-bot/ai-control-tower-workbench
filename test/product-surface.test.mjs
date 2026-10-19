@@ -54,7 +54,9 @@ test('the composer popovers close on Escape and on a click outside', () => {
   const composer = readFileSync(path.join(root, 'src/ui/Composer.tsx'), 'utf8');
   assert.match(composer, /event\.key === 'Escape'/);
   assert.match(composer, /addEventListener\('mousedown', onPointer\)/);
-  assert.match(composer, /onClick=\{\(\) => setIntegrationsOpen\(false\)\}/);
+  // The Integrations menu stays open while a switch is flipped; Web Search is a real, per-conversation switch.
+  assert.match(composer, /onClick=\{\(\) => onWebSearchChange\?\.\(!webSearch\)\}/);
+  assert.doesNotMatch(composer, /Display only in this prototype|Work Calendar|'Charts'/);
 });
 
 test('the cover sheet is set in the bundled SAP 72 typeface', async () => {
