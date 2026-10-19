@@ -70,3 +70,11 @@ test('the cover sheet is set in the bundled SAP 72 typeface', async () => {
   assert.match(css, /\.cover \{[^}]*font-family: '72'/);
   assert.match(readFileSync(path.join(root, 'NOTICE'), 'utf8'), /"72" typeface/);
 });
+
+test('rail foot offers a profile menu and help instead of the placeholder badge and sidebar toggle', () => {
+  const rail = readFileSync(path.join(root, 'src/ui/Rail.tsx'), 'utf8');
+  assert.doesNotMatch(rail, /rail-avatar|MZ|Toggle sidebar/);
+  assert.match(rail, /aria-label="Profile"/);
+  assert.match(rail, /aria-label="Help and shortcuts"/);
+  assert.match(rail, /onAppearance\(value\)/);
+});

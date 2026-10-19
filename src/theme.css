@@ -722,18 +722,6 @@ button {
   cursor: default;
 }
 
-.rail-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  display: grid;
-  place-items: center;
-}
-
 /* ---------- conversation list ---------- */
 
 .list {
@@ -1710,8 +1698,116 @@ button {
   background: #fbfbfd;
 }
 
-.rail-foot .rail-btn:last-child {
-  margin-top: 2px;
+.rail-foot {
+  position: relative;
+}
+
+.rail-popover {
+  position: absolute;
+  left: calc(100% + 10px);
+  bottom: 0;
+  width: 264px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 14px 40px rgba(20, 20, 40, 0.16);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  -webkit-app-region: no-drag;
+}
+
+.rail-pop-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rail-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+}
+
+.rail-seg button {
+  padding: 5px 0;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.rail-seg button.rail-seg-on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.rail-pop-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 2px;
+}
+
+.rail-pop-value {
+  color: var(--muted);
+}
+
+.rail-pop-item {
+  text-align: left;
+  padding: 7px 8px;
+  border-radius: 8px;
+  color: inherit;
+}
+
+.rail-pop-item:hover {
+  background: #f2f0fb;
+  color: var(--accent);
+}
+
+.rail-keys {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 10px;
+  margin: 0;
+}
+
+.rail-keys dt {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.rail-keys dd {
+  margin: 0;
+}
+
+.rail-tips {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .rail-popover {
+  border-color: #343944;
+  background: #13161c;
+  color: #eceef2;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.48);
+}
+
+:root[data-theme="dark"] .rail-pop-item:hover {
+  background: #222630;
+  color: #b59cff;
 }
 
 /* ---------- skill install ---------- */
