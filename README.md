@@ -305,3 +305,8 @@ Connector 0.10.0 adds, next to the Control Tower tools:
 - Starting or changing workflows is not part of these tools. That is what "Mit Chat verbinden" in the n8n view provides (n8n's own MCP server, only for workflows marked "Available in MCP").
 
 Examples: "Wie läuft unsere n8n-Automatisierung?", "Welche Workflows sind in den letzten Tagen fehlgeschlagen?", "Gib mir das Gesamtbild zu unserem Testkunden", "Wann muss der Ariba-Vertrag gekündigt werden?".
+
+### Sub4Me: contract and offer details
+
+`examples/sub4me/portfolio.json` is the single source for the contracts and offers of the Sub4Me test customer, each with about 25 fictional attributes (contract type, billing and payment terms, SLA, data centre, contacts, licensed vs. used units, invoicing, auto-renewal, termination; for offers list price, discount, stage, win probability, approval, competitor, next step, conditions) and line items.
+`npm run sync:sub4me` embeds it into the Space (click a row in **Contracts** for the detail view) and writes `supabase/migrations/20261019_011_sub4me_contracts_offers.sql`. Run that file once in the Supabase SQL editor; it is re-runnable. The chat connector then reads contracts and offers live from Supabase (`public.sub4me_portfolio()`, secret key only) and falls back to the embedded copy.

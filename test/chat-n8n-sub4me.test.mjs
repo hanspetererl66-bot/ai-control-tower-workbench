@@ -50,10 +50,10 @@ test('product, contract, offer and search views', async () => {
   assert.ok(Array.isArray(c.renewalOffers) && c.renewalOffers.every((o) => o.contractId === 'C-2025-0041'));
   await assert.rejects(h.get_contract({ id: 'X' }), /Known ids/);
 
-  const offer = h.get_offer({ id: 'OFF-2026-0311' });
+  const offer = await h.get_offer({ id: 'OFF-2026-0311' });
   assert.equal(offer.renewsContract.id, offer.offer.contractId);
   assert.equal(offer.offer.daysUntilExpiry, 28);
-  assert.throws(() => h.get_offer({ id: '' }), /id is required/);
+  await assert.rejects(async () => h.get_offer({ id: '' }), /id is required/);
 
   const found = await h.search_sub4me({ query: 'joule' });
   assert.ok(found.products.includes('Joule copilots') && found.tickets.length > 0 && found.offers.length > 0);
@@ -176,4 +176,33 @@ test('the bundle carries the sample data and category rules the tools need', () 
 test('the app prepares the same data files when it stages the connector itself', () => {
   const main = readFileSync(join(ROOT, 'electron/main.mjs'), 'utf8');
   assert.ok(main.includes("'data/sub4me.json'") && main.includes("'data/n8n-categories.json'"));
+});
+
+test('contracts and offers carry the extended attributes and come live from Supabase when connected', async () => {
+  const embedded = createSub4MeHandlers();
+  const c = await embedded.get_contract({ id: 'C-2024-0187' });
+  assert.equal(c.contract.sla.tier, 'Premium Plus');
+  assert.equal(c.contract.paymentTerms, '30 days net');
+  assert.ok(c.contract.lines.length >= 3);
+  const list = await embedded.list_contracts({});
+  assert.ok(list.contracts.every((x) => !('lines' in x) && x.lineCount > 0), 'lists stay compact');
+  const o = await embedded.get_offer({ id: 'OFF-2026-0324' });
+  assert.equal(o.offer.stage, 'Negotiation');
+  assert.ok(o.offer.lines.length === 3 && o.offer.owner.name);
+
+  const calls = [];
+  const live = createSub4MeHandlers(undefined, async (fn) => {
+    calls.push(fn);
+    if (fn === 'sub4me_portfolio') return { contracts: [{ id: 'C-LIVE-1', product: 'Live Product', status: 'Active', start: '2026-01-01', end: '2027-01-01', annualEur: 1000, noticeDays: 30, lines: [] }], offers: [] };
+    return [];
+  });
+  const lc = await live.list_contracts({});
+  assert.equal(lc.contracts[0].id, 'C-LIVE-1');
+  assert.match(lc.dataSource, /supabase/);
+  assert.ok(calls.includes('sub4me_portfolio'));
+
+  const broken = createSub4MeHandlers(undefined, async () => { throw new Error('function does not exist'); });
+  const fallback = await broken.list_contracts({});
+  assert.equal(fallback.totalContracts, 6);
+  assert.match(fallback.dataSource, /sample data/);
 });
