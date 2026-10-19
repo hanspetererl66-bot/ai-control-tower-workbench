@@ -72,12 +72,14 @@ test('example skills have valid frontmatter, use only real connector tools, and 
   const { SKILL_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skills.mjs');
   const { parseSkill, knownTools } = await import('../scripts/skills-registry.mjs');
   const { SUB4ME_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/sub4me.mjs');
-  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS].map((t) => t.name));
+  const { N8N_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/n8n.mjs');
+  const { SKILL_PROFILE_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skill-profiles.mjs');
+  const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS].map((t) => t.name));
   for (const tool of real) assert.ok(knownTools().has(tool), `manifest lists ${tool}`);
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
   try {
     const names = installExampleSkills({ root: ROOT, skillsDir: dir });
-    assert.deepEqual(names.sort(), ['board-briefing', 'skill-finder', 'ticket-writer']);
+    assert.deepEqual(names.sort(), ['access-review-prep', 'automation-health-check', 'board-briefing', 'customer-call-prep', 'skill-finder', 'ticket-writer']);
     for (const name of names) {
       const text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8');
       const front = parseSkill(text);
@@ -101,7 +103,7 @@ test('skill marketplace data is in sync, classified, and marks fictional skills 
   const next = buildCatalog({ registered: repoSkills(), samples, source: 'repository', asOf: data.asOf });
   assert.equal(embedData(html, next), html, 'run npm run sync:skill-marketplace');
   assert.deepEqual(data.taxonomy, JSON.parse(JSON.stringify(taxonomy())));
-  assert.equal(data.skills.filter((s) => !s.sample).length, 3);
+  assert.equal(data.skills.filter((s) => !s.sample).length, 6);
   assert.ok(data.skills.filter((s) => s.sample).length >= 8);
   for (const s of data.skills) {
     assert.ok(SCOPES.includes(s.scope), `${s.name} scope`);
