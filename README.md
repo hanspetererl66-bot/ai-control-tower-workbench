@@ -330,3 +330,12 @@ Install it with `npm run install:knowledge-graph` (or `npm run install:examples 
 In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact** (what hangs on a node, depth 1–4, animated by distance), **Path** (shortest connection between two nodes), two guided tours (Ariba renewal, AI governance), type filters, pinning (double-click), minimap and keyboard controls (`+`/`-`, arrows, `0`, `Esc`). Hub nodes (systems, connector) are not followed in Impact and Path, so results stay about business relations.
 
 The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.
+
+## Mockup Spaces: call transcripts and customer e-mails
+
+Two design mockups for additional sources, with fictional data only and no real connection (no mailbox, no call platform, nothing recorded, read, stored or sent):
+
+- **Call Transcripts** (`examples/call-transcripts`): calls with summary, decisions, risks, action items (owner, due date, overdue), a mood timeline and a searchable transcript. Every decision, risk and action jumps to the passage it came from; a second tab collects all action items across calls.
+- **Customer E-Mails** (`examples/customer-emails`): conversations with summary, open points, response times against a 48-hour target, a draft reply (mock, never sent), weekly volume, and a page on rules and privacy. One message contains instructions aimed at AI assistants; it is flagged and shown as plain text. Open points are matched with the calls (for example a mail that confirms an action still open after a call).
+
+Install with `npm run install:call-transcripts` and `npm run install:customer-emails`. The sample data lives in `calls.json` and `threads.json` next to each page; `npm run sync:mockups` embeds it (`-- --check` fails when stale).
