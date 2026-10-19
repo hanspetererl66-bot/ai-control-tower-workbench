@@ -9,11 +9,12 @@ import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { TICKET_TOOL_DEFINITIONS, createTicketHandlers } from './tickets.mjs';
 import { SUB4ME_TOOL_DEFINITIONS, createSub4MeHandlers } from './sub4me.mjs';
+import { N8N_TOOL_DEFINITIONS, createN8nHandlers } from './n8n.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.6.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.10.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
@@ -97,6 +98,8 @@ const send = (message) => process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0
 const reply = (id, result) => send({ id, result });
 const fail = (id, code, message) => send({ id, error: { code, message } });
 
+const n8nHandlers = createN8nHandlers();
+
 async function handle(message) {
   const { id, method, params } = message;
   const isRequest = id !== undefined && id !== null;
@@ -123,12 +126,12 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
         const rpcCall = ticketRpc();
-        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...createSub4MeHandlers() };
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...createSub4MeHandlers(undefined, rpcCall), ...n8nHandlers };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');

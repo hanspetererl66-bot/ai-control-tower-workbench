@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.9.1",
-  "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget) from Supabase or bundled sample data. Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
+  "version": "0.10.0",
+  "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) and your n8n Cloud automation. Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -19,7 +19,9 @@
       "env": {
         "CONTROL_TOWER_DATA": "${__dirname}/data/data.json",
         "SUPABASE_URL": "${user_config.supabase_url}",
-        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}"
+        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}",
+        "N8N_URL": "${user_config.n8n_url}",
+        "N8N_API_KEY": "${user_config.n8n_api_key}"
       }
     }
   },
@@ -87,6 +89,46 @@
     {
       "name": "get_ai_consumption",
       "description": "AI-unit consumption of the Sub4Me demo customer with forecast, by product and month, optional product or month filter (sample data)."
+    },
+    {
+      "name": "get_customer_overview",
+      "description": "Everything about the Sub4Me test customer in one answer: master data, contracts, offers, AI units, tickets and highlights (sample data)."
+    },
+    {
+      "name": "get_product_overview",
+      "description": "One Sub4Me product with its contracts, offers, consumption and tickets (sample data)."
+    },
+    {
+      "name": "get_contract",
+      "description": "One Sub4Me contract by id with notice deadline, renewal offers, consumption and tickets (sample data)."
+    },
+    {
+      "name": "get_offer",
+      "description": "One SAP offer to the Sub4Me customer by id with the contract it renews (sample data)."
+    },
+    {
+      "name": "search_sub4me",
+      "description": "Free-text search across Sub4Me products, contracts, offers and tickets."
+    },
+    {
+      "name": "get_n8n_overview",
+      "description": "n8n Cloud automation overview of the last 14 days: workflows, executions, success rate, categories, needs attention."
+    },
+    {
+      "name": "list_n8n_workflows",
+      "description": "List n8n workflows with category, trigger, apps and run statistics; filter by text, category, active or failing."
+    },
+    {
+      "name": "get_n8n_workflow",
+      "description": "One n8n workflow in detail by id or name, with runs per day and latest executions."
+    },
+    {
+      "name": "list_n8n_executions",
+      "description": "Recent n8n executions, filter by status, workflow or category (no execution contents)."
+    },
+    {
+      "name": "list_n8n_categories",
+      "description": "The categories n8n workflows are sorted into by tag, with their workflows and the uncategorized ones."
     }
   ],
   "user_config": {
@@ -100,6 +142,19 @@
       "type": "string",
       "title": "Supabase secret key",
       "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "n8n_url": {
+      "type": "string",
+      "title": "n8n Cloud address",
+      "description": "Optional. Example: https://firma.app.n8n.cloud. Needed for the n8n questions in the chat.",
+      "required": false
+    },
+    "n8n_api_key": {
+      "type": "string",
+      "title": "n8n API key",
+      "description": "Optional. Created in n8n under Settings, n8n API. Read access to workflows and executions. Stored as a secret, never written to config files.",
       "sensitive": true,
       "required": false
     }

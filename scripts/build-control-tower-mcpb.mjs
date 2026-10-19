@@ -23,6 +23,7 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
     cpSync(join(SOURCE, 'server'), join(stage, 'server'), { recursive: true });
     mkdirSync(join(stage, 'data'));
     cpSync(DATA, join(stage, 'data/data.json'));
+    cpSync(join(ROOT, 'examples/automation-dashboard/categories.json'), join(stage, 'data/n8n-categories.json'));
     writeFileSync(join(stage, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(SUB4ME_PAGE, 'utf8')), null, 2));
 
     mkdirSync(dirname(out), { recursive: true });
