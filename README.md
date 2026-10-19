@@ -331,6 +331,9 @@ In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact**
 
 The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.
 
+## Tables in chat answers
+
+Chat answers are rendered as GitHub-flavoured Markdown (`remark-gfm`), so Markdown tables become real tables, styled in `src/theme.css` (`.md-table`): header row, soft row separators, hover, light and dark. Numeric columns (numbers, amounts, percentages) are right-aligned automatically, ids and single words stay on one line, and wide tables scroll inside the message. The helpers live in `src/markdown-table.ts`, the component in `src/ui/ChatMarkdown.tsx`.
 ### Skill ratings (stars)
 
 Skills can be rated with 1 to 5 stars and an optional comment (max 280 characters), anonymously and once per person and skill; rating again replaces the earlier rating. The Skill Marketplace shows the stars in the catalog and the impact table, can sort by best rated or most ratings, and has a *Ratings* card in the skill detail (average, distribution, latest comments). Skills with fewer than 5 ratings show as "new"; the ranking uses a damped average so two five-star votes do not beat forty votes at 4.6.
