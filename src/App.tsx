@@ -7,6 +7,7 @@ import {
   type AppearancePreference,
 } from './appearance';
 import type { ChatAttachment } from './attachments';
+import { isWebTool, webSearchNote, WEB_SEARCH_BLOCKED_NOTE } from './web-search';
 import {
   archiveConversation as archiveConversationState,
   deleteConversation as deleteConversationState,
@@ -64,6 +65,7 @@ export default function App() {
   const messages = selectedConversation?.messages ?? [];
   const title = selectedConversation?.title ?? 'New Conversation';
   const files = selectedConversation?.files ?? [];
+  const webSearch = selectedConversation?.webSearch !== false;
   const setMessages = useCallback(
     (update: Message[] | ((previous: Message[]) => Message[])) => {
       setConversationState((state) => ({
@@ -161,6 +163,9 @@ export default function App() {
   const paths = useRef(new Set<string>());
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
+  const webSearchRef = useRef(true);
+  const blockedWebTool = useRef(false);
+  const agentRef = useRef<Agent | null>(null);
   const lastGroundedCsvPath = useRef<string | null>(null);
   const lastGroundedCsvName = useRef<string | null>(null);
   const needsHistoryGrounding = useRef(Boolean(selectedConversation?.messages.length));
@@ -273,6 +278,11 @@ export default function App() {
         flush();
       },
       onToolCall: (tc: ToolCall) => {
+        if (!webSearchRef.current && isWebTool(tc)) {
+          // Web Search is off for this conversation: stop the turn as soon as a web tool is announced.
+          blockedWebTool.current = true;
+          void agentRef.current?.cancel().catch(() => undefined);
+        }
         if (tc.toolName) toolNames.current.set(tc.id, tc.toolName);
         tools.current = [...tools.current, tc];
         recordFiles(tc.id, tc);
@@ -298,6 +308,7 @@ export default function App() {
           handlers
         );
         if (cancelled) return;
+        agentRef.current = nextAgent;
         setAgent(nextAgent);
         setMode(nextAgent.currentMode);
         setError(null);
@@ -317,6 +328,19 @@ export default function App() {
       if (retryTimer) clearTimeout(retryTimer);
     };
   }, [flush, recordFiles, agentEpoch]);
+
+  useEffect(() => {
+    webSearchRef.current = webSearch;
+  }, [webSearch]);
+
+  function changeWebSearch(enabled: boolean) {
+    setConversationState((state) => ({
+      ...state,
+      items: state.items.map((conversation) =>
+        conversation.id === state.selectedId ? { ...conversation, webSearch: enabled } : conversation
+      ),
+    }));
+  }
 
   function reconnectAgent() {
     setAgent(null);
@@ -362,7 +386,8 @@ export default function App() {
             .join('\n\n')
             .slice(-12_000)}`
         : '';
-      const prompt = [historyGrounding, text, grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      blockedWebTool.current = false;
+      const prompt = [historyGrounding, text, webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -455,6 +480,11 @@ export default function App() {
       }
     } finally {
       speaker.current?.finish();
+      if (blockedWebTool.current) {
+        blockedWebTool.current = false;
+        if (!cancelledByUser.current) draft.current += WEB_SEARCH_BLOCKED_NOTE;
+        flush();
+      }
       setBusy(false);
       const nextSpaces = await refreshSpaces();
       const spaceResult = wantsSpace(text)
@@ -527,6 +557,8 @@ export default function App() {
       workdir={WORKDIR}
       mode={mode}
       onModeChange={changeMode}
+      webSearch={webSearch}
+      onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
       onInstallConnector={installControlTowerConnector}

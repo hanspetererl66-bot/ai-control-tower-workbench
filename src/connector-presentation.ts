@@ -8,10 +8,7 @@ export const BUILT_IN_WORK_SOURCES = ['Work Email', 'Work Calendar'] as const;
 
 export const INTEGRATION_MENU_ITEMS = [
   { id: 'model', label: 'Model', trailing: 'submenu' },
-  { id: 'web-search', label: 'Web Search', trailing: 'check' },
-  { id: 'work-email', label: 'Work Email', trailing: 'check' },
-  { id: 'charts', label: 'Charts', trailing: 'check' },
-  { id: 'work-calendar', label: 'Work Calendar', trailing: 'check' },
+  { id: 'web-search', label: 'Web Search', trailing: 'switch' },
 ] as const;
 
 function normalized(name: string): string {

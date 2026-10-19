@@ -369,3 +369,12 @@ Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workfl
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.
+
+## Integrations menu: Web Search and Model
+
+The sparkle icon next to **+** in the composer opens a menu with two entries (the earlier placeholder entries Work Email, Charts and Work Calendar are gone; the connectors stay under the plug button):
+
+- **Web Search** is a real switch **per conversation** (on by default, stored with the conversation). Every turn carries an instruction that tells the assistant whether it may use the web, and while the switch is off a web tool that the agent announces (for example `web_scrape` or a search MCP) stops the turn with a note. The stop is a safeguard, the instruction is what normally prevents the lookup.
+- **Model** shows **OpenRouter** with the model that is actually running (`GOOSE_MODEL` in `.env`). SAP Generative AI Hub, Azure OpenAI, Anthropic and Google Gemini are listed in light grey as “not connected”; switching the provider is not part of the prototype yet.
+
+The logic lives in `src/web-search.ts`.
