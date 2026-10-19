@@ -13,6 +13,7 @@
     "sync:design": "node scripts/sync-design-system.mjs",
     "sync:control-tower": "node scripts/sync-control-tower-data.mjs",
     "sync:skill-marketplace": "node scripts/sync-skill-marketplace.mjs",
+    "sync:skill-ratings": "node scripts/sync-skill-ratings.mjs",
     "sync:skill-profiles": "node scripts/sync-skill-profiles.mjs",
     "sync:sub4me": "node scripts/sync-sub4me.mjs",
     "sync:knowledge-graph": "node scripts/sync-knowledge-graph.mjs",
@@ -62,6 +63,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "yaml": "^2.9.0"
   },
   "devDependencies": {

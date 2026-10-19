@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ToolError } from './tools.mjs';
 import { economics } from './skill-profiles.mjs';
+import { summarise } from './rating-math.mjs';
 
 const here = (path) => join(dirname(fileURLToPath(import.meta.url)), path);
 
@@ -211,6 +212,8 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
   for (const s of marketplace.skills) {
     const p = profiles[s.name];
     const meta = { Maturity: s.maturity, 'Board area': s.boardArea || 'not classified', Reach: s.scope, ...(s.team ? { Team: s.team } : {}), ...(s.sample ? { Note: 'sample skill' } : {}) };
+    const rated = marketplace.ratings?.skills?.[s.name];
+    if (rated) meta.Rating = summarise(rated.distribution, marketplace.ratings.settings).label;
     if (p) {
       const e = economics(p, rate);
       Object.assign(meta, { 'EU AI Act': p.governance.aiActRisk, 'Next review': p.governance.nextReview, 'Value last full month': money(e.valueEur), 'Runs last full month': String(e.runsLastFullMonth) });

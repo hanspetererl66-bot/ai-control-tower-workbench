@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { ChatMarkdown } from './ChatMarkdown';
 import type { ToolCall } from '../acp';
 import type { MessageAttachment } from '../attachments';
 import type { Space } from '../spaces';
@@ -60,9 +60,7 @@ export default function Chat({
             {m.spaceResult && <SpaceResultCard space={m.spaceResult} onOpen={onOpenSpace} />}
             {m.text ? (
               <>
-                <div className="msg-text">
-                  <ReactMarkdown>{m.text}</ReactMarkdown>
-                </div>
+                <ChatMarkdown text={m.text} />
                 {onOpenView && <ViewLinks tools={m.tools} onOpen={onOpenView} />}
                 <MessageActions text={m.text} tools={m.tools} />
               </>

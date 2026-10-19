@@ -1,0 +1,441 @@
+{
+  "note": "Fictional sample ratings (anonymous). Distribution = number of 1 to 5 star ratings per skill; comments are a few examples. Source for the stars in the Skill Marketplace and for migration 013.",
+  "settings": {
+    "priorMean": 3.8,
+    "priorWeight": 5,
+    "minRatings": 5
+  },
+  "skills": {
+    "board-briefing": {
+      "distribution": [
+        0,
+        2,
+        3,
+        4,
+        32
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Spart mir vor jedem Board-Termin eine Stunde. Die Zahlen stimmen mit dem Control Tower überein.",
+          "version": 1,
+          "date": "2026-10-12"
+        },
+        {
+          "stars": 4,
+          "text": "Sehr gut, nur die EU-AI-Act-Zeile dürfte etwas ausführlicher sein.",
+          "version": 1,
+          "date": "2026-09-30"
+        }
+      ]
+    },
+    "skill-finder": {
+      "distribution": [
+        0,
+        3,
+        3,
+        5,
+        22
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Hat mir einen doppelten Skill erspart. Der Hinweis auf den Ansprechpartner ist Gold wert.",
+          "version": 1,
+          "date": "2026-10-08"
+        },
+        {
+          "stars": 4,
+          "text": "Findet zuverlässig, bei sehr kurzen Suchbegriffen etwas ungenau.",
+          "version": 1,
+          "date": "2026-09-22"
+        }
+      ]
+    },
+    "ticket-writer": {
+      "distribution": [
+        0,
+        3,
+        4,
+        5,
+        15
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Aus drei Stichworten wird ein sauberes Ticket, das der Support direkt versteht.",
+          "version": 1,
+          "date": "2026-10-10"
+        },
+        {
+          "stars": 3,
+          "text": "Gut, aber die Priorität schlägt er manchmal zu hoch vor.",
+          "version": 1,
+          "date": "2026-09-18"
+        }
+      ]
+    },
+    "expense-check": {
+      "distribution": [
+        0,
+        9,
+        10,
+        11,
+        34
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Findet die meisten Richtlinienverstöße. Bei Auslandsreisen fehlen noch Sonderregeln.",
+          "version": 1,
+          "date": "2026-10-05"
+        },
+        {
+          "stars": 3,
+          "text": "Nützlich, aber zu viele Hinweise bei Kleinbeträgen.",
+          "version": 1,
+          "date": "2026-09-15"
+        }
+      ]
+    },
+    "invoice-matcher": {
+      "distribution": [
+        0,
+        6,
+        6,
+        6,
+        34
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Abweichungen zur Bestellung werden sauber aufgelistet, das spart Rückfragen.",
+          "version": 1,
+          "date": "2026-10-09"
+        },
+        {
+          "stars": 4,
+          "text": "Arbeitet gut mit expense-check zusammen.",
+          "version": 1,
+          "date": "2026-09-27"
+        }
+      ]
+    },
+    "renewal-radar": {
+      "distribution": [
+        0,
+        1,
+        1,
+        1,
+        16
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Endlich sehe ich Kündigungsfristen, bevor sie drücken.",
+          "version": 1,
+          "date": "2026-10-14"
+        },
+        {
+          "stars": 5,
+          "text": "Perfekt für die Wochenplanung im Account-Team.",
+          "version": 1,
+          "date": "2026-10-02"
+        }
+      ]
+    },
+    "quote-drafter": {
+      "distribution": [
+        0,
+        1,
+        2,
+        3,
+        2
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Der Entwurf ist ein guter Start, Konditionen muss ich noch selbst prüfen.",
+          "version": 1,
+          "date": "2026-10-01"
+        },
+        {
+          "stars": 3,
+          "text": "Preisaufschläge werden nicht immer berücksichtigt.",
+          "version": 1,
+          "date": "2026-09-20"
+        }
+      ]
+    },
+    "campaign-brief": {
+      "distribution": [
+        0,
+        2,
+        2,
+        2,
+        6
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Strukturiertes Briefing, spart Abstimmungsrunden.",
+          "version": 1,
+          "date": "2026-09-29"
+        },
+        {
+          "stars": 3,
+          "text": "Zielgruppe bleibt manchmal zu allgemein.",
+          "version": 1,
+          "date": "2026-09-12"
+        }
+      ]
+    },
+    "social-post-checker": {
+      "distribution": [
+        0,
+        3,
+        3,
+        2,
+        13
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Findet Formulierungen, die gegen unsere Richtlinien verstoßen.",
+          "version": 1,
+          "date": "2026-10-06"
+        },
+        {
+          "stars": 4,
+          "text": "Hilfreich, die Korrekturvorschläge sind meist brauchbar.",
+          "version": 1,
+          "date": "2026-09-24"
+        }
+      ]
+    },
+    "btp-quota-watch": {
+      "distribution": [
+        0,
+        1,
+        1,
+        2,
+        11
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Warnt rechtzeitig, bevor ein Subaccount sein Kontingent reißt.",
+          "version": 1,
+          "date": "2026-10-11"
+        },
+        {
+          "stars": 4,
+          "text": "Gut, die Prognose könnte den Monatsanfang besser treffen.",
+          "version": 1,
+          "date": "2026-09-28"
+        }
+      ]
+    },
+    "concur-receipt-audit": {
+      "distribution": [
+        0,
+        2,
+        2,
+        1,
+        5
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Auffällige Belege sind schnell gefunden.",
+          "version": 1,
+          "date": "2026-10-03"
+        },
+        {
+          "stars": 3,
+          "text": "Einige Fehlalarme bei Bewirtungsbelegen.",
+          "version": 1,
+          "date": "2026-09-17"
+        }
+      ]
+    },
+    "sf-job-text-reviewer": {
+      "distribution": [
+        0,
+        1,
+        2,
+        2,
+        4
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Macht Stellenanzeigen inklusiver, ohne den Ton zu verbiegen.",
+          "version": 1,
+          "date": "2026-10-04"
+        },
+        {
+          "stars": 4,
+          "text": "Hinweise sind nachvollziehbar begründet.",
+          "version": 1,
+          "date": "2026-09-25"
+        }
+      ]
+    },
+    "release-notes-writer": {
+      "distribution": [
+        0,
+        2,
+        2,
+        4,
+        15
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Release-Notes in zehn Minuten statt in einer Stunde.",
+          "version": 1,
+          "date": "2026-10-13"
+        },
+        {
+          "stars": 4,
+          "text": "Gut, bei Breaking Changes schaue ich noch einmal drüber.",
+          "version": 1,
+          "date": "2026-09-26"
+        }
+      ]
+    },
+    "my-sprint-digest": {
+      "distribution": [
+        0,
+        1,
+        1,
+        1,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Kompakte Zusammenfassung, genau richtig für die Retro.",
+          "version": 1,
+          "date": "2026-10-07"
+        },
+        {
+          "stars": 3,
+          "text": "Wäre noch besser mit Verweis auf offene Blocker.",
+          "version": 1,
+          "date": "2026-09-23"
+        }
+      ]
+    },
+    "customer-call-prep": {
+      "distribution": [
+        0,
+        1,
+        1,
+        2,
+        10
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Ein Blick und ich kenne Verträge, Fristen und offene Angebote.",
+          "version": 1,
+          "date": "2026-10-15"
+        },
+        {
+          "stars": 4,
+          "text": "Sehr gut für den Einstieg ins Gespräch, Tickets könnten weiter oben stehen.",
+          "version": 1,
+          "date": "2026-10-03"
+        }
+      ]
+    },
+    "automation-health-check": {
+      "distribution": [
+        0,
+        1,
+        1,
+        1,
+        6
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Zeigt mir sofort, welche Workflows Aufmerksamkeit brauchen.",
+          "version": 1,
+          "date": "2026-10-16"
+        },
+        {
+          "stars": 4,
+          "text": "Klare Zusammenfassung, ich hätte gern eine Wochenübersicht.",
+          "version": 1,
+          "date": "2026-10-06"
+        }
+      ]
+    },
+    "access-review-prep": {
+      "distribution": [
+        0,
+        0,
+        1,
+        1,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Spart das Zusammensuchen der Agenten mit zu vielen Rechten.",
+          "version": 1,
+          "date": "2026-10-17"
+        },
+        {
+          "stars": 5,
+          "text": "Gute Prüfliste, noch Pilot, aber vielversprechend.",
+          "version": 1,
+          "date": "2026-10-08"
+        }
+      ]
+    },
+    "skill-search": {
+      "distribution": [
+        0,
+        0,
+        1,
+        2,
+        8
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Ich musste keinen Skill kennen und bekam trotzdem die richtige Reihenfolge.",
+          "version": 1,
+          "date": "2026-10-18"
+        },
+        {
+          "stars": 4,
+          "text": "Der Vergleich der besten drei ist genau, was ich brauchte.",
+          "version": 1,
+          "date": "2026-10-12"
+        }
+      ]
+    },
+    "rate-skill": {
+      "distribution": [
+        0,
+        0,
+        0,
+        1,
+        2
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Zwei Sätze im Chat, fertig. Die Rückfrage vor dem Speichern ist gut.",
+          "version": 1,
+          "date": "2026-10-19"
+        }
+      ]
+    }
+  }
+}

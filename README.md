@@ -314,7 +314,7 @@ Every skill has a profile in four fields, plus the marketplace knows process gap
 - **Lifecycle** and **Discovery**: open a skill (click a row or a catalog card) for change log, dependencies, tests, sunset, deputy, example prompts, demo flow, related skills and recommended roles. The catalog has a role filter.
 - **Gaps** (tab *Gaps*): processes without a skill and requests from the teams.
 
-`npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills` (connector 0.11.0; live from Supabase when connected, otherwise the embedded sample data).
+`npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills`, and `recommend_skill_workflow` (an ordered chain of skills for a role and goal, from the `playbooks` in `profiles.json`, for example Account Manager: customer-call-prep → renewal-radar → quote-drafter → ticket-writer; connector 0.13.0; live from Supabase when connected, otherwise the embedded sample data).
 
 ### Sub4Me: contract and offer details
 
@@ -339,3 +339,13 @@ Two design mockups for additional sources, with fictional data only and no real 
 - **Customer E-Mails** (`examples/customer-emails`): conversations with summary, open points, response times against a 48-hour target, a draft reply (mock, never sent), weekly volume, and a page on rules and privacy. One message contains instructions aimed at AI assistants; it is flagged and shown as plain text. Open points are matched with the calls (for example a mail that confirms an action still open after a call).
 
 Install with `npm run install:call-transcripts` and `npm run install:customer-emails`. The sample data lives in `calls.json` and `threads.json` next to each page; `npm run sync:mockups` embeds it (`-- --check` fails when stale).
+## Tables in chat answers
+
+Chat answers are rendered as GitHub-flavoured Markdown (`remark-gfm`), so Markdown tables become real tables, styled in `src/theme.css` (`.md-table`): header row, soft row separators, hover, light and dark. Numeric columns (numbers, amounts, percentages) are right-aligned automatically, ids and single words stay on one line, and wide tables scroll inside the message. The helpers live in `src/markdown-table.ts`, the component in `src/ui/ChatMarkdown.tsx`.
+### Skill ratings (stars)
+
+Skills can be rated with 1 to 5 stars and an optional comment (max 280 characters), anonymously and once per person and skill; rating again replaces the earlier rating. The Skill Marketplace shows the stars in the catalog and the impact table, can sort by best rated or most ratings, and has a *Ratings* card in the skill detail (average, distribution, latest comments). Skills with fewer than 5 ratings show as "new"; the ranking uses a damped average so two five-star votes do not beat forty votes at 4.6.
+
+- **Sample data:** `examples/skill-marketplace/ratings.json` (fictional), embedded by `npm run sync:skill-marketplace`.
+- **Supabase:** `npm run sync:skill-ratings` writes `supabase/migrations/20261019_013_skill_ratings.sql`. Run it once in the Supabase SQL editor after 012 (safe to run again; it only refreshes the sample rows). It creates `skills.skill_rating` (RLS on, no access for anon/authenticated) and two functions that only the server-side secret key may call: `skills_ratings()` and `skills_rate()`. Only skills in the registry (`skills.skill`, not retired) can be rated.
+- **Chat (connector 0.14.0):** `get_skill_ratings` (ranking, or one skill with distribution and comments) and `rate_skill`; the skill `rate-skill` asks for the stars and confirms before saving. `recommend_skills` and `recommend_skill_workflow` show the rating too. The rater is a hash of the local user and host (override with the env var `SKILL_RATER_ID`); no names are stored. Without a Supabase connection nothing is saved.
