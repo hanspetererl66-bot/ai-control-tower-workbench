@@ -1,0 +1,10 @@
+{
+  "title": "Automation Dashboard",
+  "description": "n8n automation at a glance: workflow health, executions per day, failing workflows and recent runs.",
+  "insights": [
+    "Shows the last 14 days of n8n executions: success rate, errors per day, slowest and most failing workflows.",
+    "Sample data is fictional and marked as such; live data comes from your n8n Cloud instance via npm run sync:automation -- --live.",
+    "Only ids, names, tags, status and timings are read from n8n; execution payloads are never loaded."
+  ],
+  "prompt": "Bundled example: Automation Dashboard for n8n (static, data embedded by npm run sync:automation)."
+}

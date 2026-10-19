@@ -9,6 +9,7 @@ export const EXAMPLE_SPACES = {
   'control-tower': 'ai-control-tower',
   sub4me: 'sub4me',
   'skill-marketplace': 'skill-marketplace',
+  'automation-dashboard': 'automation-dashboard',
 };
 
 /**

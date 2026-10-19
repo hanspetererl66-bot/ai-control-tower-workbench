@@ -2714,3 +2714,47 @@ button {
     animation: none;
   }
 }
+
+/* n8n view: spans list + main columns, the native view sits in .n8n-slot */
+.n8n-main {
+  grid-column: 2 / -1;
+}
+.n8n-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(var(--titlebar) - 6px) 16px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.n8n-host {
+  color: var(--muted);
+  font-size: 12px;
+}
+.n8n-slot {
+  flex: 1;
+  min-height: 0;
+}
+.n8n-message {
+  margin: 0;
+  padding: 8px 16px;
+  color: var(--muted);
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.n8n-setup {
+  max-width: 520px;
+  padding: 28px 24px;
+  display: grid;
+  gap: 12px;
+}
+.n8n-setup h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+}
+.n8n-setup p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}

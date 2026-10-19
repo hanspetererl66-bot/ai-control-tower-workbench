@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Automation Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font)}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--brand)}
+.meta{margin-left:auto;text-align:right;font-size:12px;color:var(--mut)}.meta strong{display:block;color:var(--ink);font-size:13px}
+.demo{background:var(--warn-dim);color:var(--warn);font-size:12px;padding:6px 20px;border-bottom:1px solid var(--line)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--mut);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--brand)}
+main{padding:20px;max-width:1180px;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.k{font-size:12px;color:var(--mut)}
+.v{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.s{font-size:12px;color:var(--mut)}
+h2{font-size:15px;margin:22px 0 10px}
+.row{display:flex;gap:14px;flex-wrap:wrap}.row>*{flex:1 1 360px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:12px;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--line);font-weight:500}
+td{padding:10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.t-ok{background:var(--ok-dim);color:var(--ok)}.t-warn{background:var(--warn-dim);color:var(--warn)}.t-bad{background:var(--bad-dim);color:var(--bad)}.t-n{background:var(--brand-dim);color:var(--brand)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.bar{height:8px;background:var(--line-2);border-radius:99px;overflow:hidden;min-width:90px;display:flex}
+.bar i{display:block;height:100%}
+.i-ok{background:var(--ok)}.i-bad{background:var(--bad)}.i-mut{background:var(--faint)}
+.days{display:flex;align-items:flex-end;gap:6px;height:170px;margin-top:10px}
+.day{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;height:100%;min-width:0}
+.day .stack{display:flex;flex-direction:column-reverse;border-radius:5px 5px 0 0;overflow:hidden;min-height:2px}
+.day .stack i{display:block}
+.day small{font-size:10px;color:var(--mut);text-align:center;margin-top:4px;white-space:nowrap;overflow:hidden}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:10px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+input[type=search]{min-width:240px;flex:1 1 240px}
+.empty{color:var(--mut);padding:18px 4px}
+.hint{display:grid;gap:8px;max-width:760px}
+.hint p{margin:0;color:var(--ink-2)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--line-2);padding:1px 5px;border-radius:5px}
+@media(max-width:600px){main{padding:14px}.meta{margin-left:0;text-align:left}}
+</style>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme; colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+@media (prefers-color-scheme:dark){:root{
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){button.primary{color:#1a0a2b}}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Automation <b>Dashboard</b></div>
+  <div class="meta"><strong id="instance"></strong><span id="asof"></span></div>
+</header>
+<div class="demo" id="sample" hidden>Sample data: fictional workflows and executions that only illustrate the layout. See "About" for how to load your n8n data.</div>
+<nav role="tablist" aria-label="Automation Dashboard">
+  <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+  <button role="tab" data-tab="workflows" aria-selected="false">Workflows</button>
+  <button role="tab" data-tab="runs" aria-selected="false">Executions</button>
+  <button role="tab" data-tab="about" aria-selected="false">About</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-overview">
+    <div class="grid" id="kpis"></div>
+    <div class="card">
+      <div class="k">Executions per day</div>
+      <div class="days" id="days" role="img" aria-label="Executions per day, successful and failed"></div>
+      <div class="legend"><span style="--c:var(--ok)">Success</span><span style="--c:var(--bad)">Error</span><span style="--c:var(--faint)">Running, waiting or canceled</span></div>
+    </div>
+    <div class="row">
+      <div><h2>Needs attention</h2><div class="card tbl" id="attention"></div></div>
+      <div><h2>Busiest workflows</h2><div class="card tbl" id="busiest"></div></div>
+    </div>
+  </section>
+
+  <section class="pg" id="pg-workflows">
+    <div class="tools">
+      <input type="search" id="wf-search" placeholder="Search workflows or tags" aria-label="Search workflows">
+      <select id="wf-state" aria-label="Filter by state">
+        <option value="">All workflows</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="failing">With errors</option>
+      </select>
+    </div>
+    <div class="card tbl" id="wf-table"></div>
+  </section>
+
+  <section class="pg" id="pg-runs">
+    <div class="tools">
+      <select id="run-status" aria-label="Filter by status">
+        <option value="">All statuses</option><option value="success">Success</option><option value="error">Error</option><option value="running">Running or waiting</option><option value="canceled">Canceled</option>
+      </select>
+    </div>
+    <div class="card tbl" id="run-table"></div>
+  </section>
+
+  <section class="pg" id="pg-about">
+    <div class="card hint">
+      <p><strong>Where the data comes from.</strong> The page cannot reach n8n itself, so the numbers are embedded into it. Without setup you see fictional sample data.</p>
+      <p><strong>Load your n8n Cloud data.</strong> In n8n create an API key (Settings, n8n API) and run in the project folder:</p>
+      <p><code>N8N_URL=https://firma.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- --live</code></p>
+      <p>Then reopen this Space. The key only lives in that command; it is not stored anywhere.</p>
+      <p><strong>What is read.</strong> Workflow names, tags and active state, plus status, mode and duration of the last 14 days of executions. No execution payloads.</p>
+      <p><strong>Ask in the chat.</strong> After connecting n8n to the chat (n8n view, "Mit Chat verbinden"), the chat can search and run workflows that are enabled for MCP in n8n.</p>
+    </div>
+  </section>
+</main>
+<script type="application/json" id="aut-data">
+{
+  "source": "sample",
+  "instance": "sample",
+  "asOf": "2026-10-18",
+  "windowDays": 14,
+  "days": [
+    {
+      "date": "2026-10-05",
+      "success": 115,
+      "error": 8,
+      "other": 0
+    },
+    {
+      "date": "2026-10-06",
+      "success": 113,
+      "error": 8,
+      "other": 0
+    },
+    {
+      "date": "2026-10-07",
+      "success": 116,
+      "error": 5,
+      "other": 0
+    },
+    {
+      "date": "2026-10-08",
+      "success": 132,
+      "error": 3,
+      "other": 0
+    },
+    {
+      "date": "2026-10-09",
+      "success": 122,
+      "error": 6,
+      "other": 0
+    },
+    {
+      "date": "2026-10-10",
+      "success": 36,
+      "error": 3,
+      "other": 0
+    },
+    {
+      "date": "2026-10-11",
+      "success": 35,
+      "error": 4,
+      "other": 0
+    },
+    {
+      "date": "2026-10-12",
+      "success": 124,
+      "error": 5,
+      "other": 0
+    },
+    {
+      "date": "2026-10-13",
+      "success": 126,
+      "error": 7,
+      "other": 0
+    },
+    {
+      "date": "2026-10-14",
+      "success": 128,
+      "error": 7,
+      "other": 0
+    },
+    {
+      "date": "2026-10-15",
+      "success": 117,
+      "error": 3,
+      "other": 0
+    },
+    {
+      "date": "2026-10-16",
+      "success": 112,
+      "error": 6,
+      "other": 0
+    },
+    {
+      "date": "2026-10-17",
+      "success": 38,
+      "error": 2,
+      "other": 0
+    },
+    {
+      "date": "2026-10-18",
+      "success": 37,
+      "error": 0,
+      "other": 0
+    }
+  ],
+  "workflows": [
+    {
+      "id": "s7",
+      "name": "BTP service health check",
+      "active": true,
+      "tags": [
+        "SAP",
+        "Engineering"
+      ],
+      "executions": 550,
+      "success": 546,
+      "error": 4,
+      "lastRun": "2026-10-18T12:57:08.947Z",
+      "lastStatus": "success",
+      "avgSeconds": 0.9
+    },
+    {
+      "id": "s2",
+      "name": "Invoice intake and OCR routing",
+      "active": true,
+      "tags": [
+        "Finance",
+        "Concur"
+      ],
+      "executions": 343,
+      "success": 307,
+      "error": 36,
+      "lastRun": "2026-10-18T15:35:08.428Z",
+      "lastStatus": "success",
+      "avgSeconds": 11.7
+    },
+    {
+      "id": "s1",
+      "name": "Lead-to-Cash: Quote to Order sync",
+      "active": true,
+      "tags": [
+        "Lead-to-Cash",
+        "SAP"
+      ],
+      "executions": 251,
+      "success": 243,
+      "error": 8,
+      "lastRun": "2026-10-18T14:12:11.826Z",
+      "lastStatus": "success",
+      "avgSeconds": 6.2
+    },
+    {
+      "id": "s4",
+      "name": "Ticket triage to Sub4Me",
+      "active": true,
+      "tags": [
+        "Service"
+      ],
+      "executions": 186,
+      "success": 173,
+      "error": 13,
+      "lastRun": "2026-10-18T12:47:08.187Z",
+      "lastStatus": "success",
+      "avgSeconds": 2.1
+    },
+    {
+      "id": "s3",
+      "name": "New hire onboarding checklist",
+      "active": true,
+      "tags": [
+        "HR",
+        "SuccessFactors"
+      ],
+      "executions": 44,
+      "success": 44,
+      "error": 0,
+      "lastRun": "2026-10-18T15:14:45.267Z",
+      "lastStatus": "success",
+      "avgSeconds": 3.5
+    },
+    {
+      "id": "s6",
+      "name": "Contract renewal reminder",
+      "active": true,
+      "tags": [
+        "Sales"
+      ],
+      "executions": 34,
+      "success": 29,
+      "error": 5,
+      "lastRun": "2026-10-18T09:40:41.281Z",
+      "lastStatus": "success",
+      "avgSeconds": 1.7
+    },
+    {
+      "id": "s9",
+      "name": "Marketing campaign digest",
+      "active": true,
+      "tags": [
+        "Marketing"
+      ],
+      "executions": 10,
+      "success": 9,
+      "error": 1,
+      "lastRun": "2026-10-16T23:00:44.962Z",
+      "lastStatus": "success",
+      "avgSeconds": 8.5
+    },
+    {
+      "id": "s8",
+      "name": "CRM contact enrichment (paused)",
+      "active": false,
+      "tags": [
+        "Sales"
+      ],
+      "executions": 0,
+      "success": 0,
+      "error": 0,
+      "lastRun": null,
+      "lastStatus": null,
+      "avgSeconds": null
+    },
+    {
+      "id": "s5",
+      "name": "Weekly AI consumption report",
+      "active": true,
+      "tags": [
+        "Reporting"
+      ],
+      "executions": 0,
+      "success": 0,
+      "error": 0,
+      "lastRun": null,
+      "lastStatus": null,
+      "avgSeconds": null
+    }
+  ],
+  "executions": [
+    {
+      "id": "42388",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-18T15:35:08.428Z",
+      "seconds": 11.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42396",
+      "workflowId": "s3",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T15:14:45.267Z",
+      "seconds": 2.4,
+      "workflowName": "New hire onboarding checklist"
+    },
+    {
+      "id": "42389",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T14:23:49.724Z",
+      "seconds": 8.6,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42386",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T14:12:11.826Z",
+      "seconds": 7.5,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42390",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T13:21:05.355Z",
+      "seconds": 16,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42394",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T13:09:18.355Z",
+      "seconds": 7.1,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42409",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T12:57:08.947Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42398",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-18T12:47:08.187Z",
+      "seconds": 2.6,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42417",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T12:06:59.262Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42408",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T12:00:35.133Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42412",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T11:53:59.807Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42399",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T11:06:00.465Z",
+      "seconds": 2.8,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42407",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T11:05:10.663Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42382",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T10:37:47.108Z",
+      "seconds": 8.3,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42395",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T10:34:37.375Z",
+      "seconds": 13.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42415",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T09:52:38.907Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42401",
+      "workflowId": "s6",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T09:40:41.281Z",
+      "seconds": 1.7,
+      "workflowName": "Contract renewal reminder"
+    },
+    {
+      "id": "42411",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T08:51:52.507Z",
+      "seconds": 1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42404",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T08:33:11.071Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42413",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T08:22:56.440Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42406",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T08:21:56.313Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42397",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T07:50:03.957Z",
+      "seconds": 2.4,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42384",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T07:47:28.757Z",
+      "seconds": 6.2,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42393",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T07:35:45.579Z",
+      "seconds": 8.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42392",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T07:22:29.937Z",
+      "seconds": 11.5,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42391",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T06:58:49.702Z",
+      "seconds": 9.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42418",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-18T06:12:07.353Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42383",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T05:43:06.499Z",
+      "seconds": 8.3,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42405",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T05:35:07.501Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42416",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T05:00:00.233Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42414",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T04:10:25.383Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42402",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T03:58:13.929Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42410",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T03:02:08.261Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42387",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T01:30:39.100Z",
+      "seconds": 5,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42403",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T01:09:56.124Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42385",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T01:08:40.935Z",
+      "seconds": 6.8,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42400",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-18T00:15:05.239Z",
+      "seconds": 1.3,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42351",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T23:48:25.172Z",
+      "seconds": 11.1,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42362",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T23:30:51.523Z",
+      "seconds": 1.4,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42366",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T21:37:32.780Z",
+      "seconds": 2.1,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42380",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-17T19:38:54.260Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42359",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T19:05:04.429Z",
+      "seconds": 12.6,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42356",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T19:04:38.378Z",
+      "seconds": 9.8,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42360",
+      "workflowId": "s3",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T17:23:59.425Z",
+      "seconds": 3.1,
+      "workflowName": "New hire onboarding checklist"
+    },
+    {
+      "id": "42373",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T17:19:26.082Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42374",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T16:35:10.777Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42350",
+      "workflowId": "s2",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T16:08:51.913Z",
+      "seconds": 9.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42353",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T15:05:03.305Z",
+      "seconds": 10,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42352",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T14:42:52.688Z",
+      "seconds": 8.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42357",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T14:30:21.861Z",
+      "seconds": 8.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42361",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T14:24:47.043Z",
+      "seconds": 1.8,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42371",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T14:18:38.466Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42375",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T13:34:47.027Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42344",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T13:10:57.395Z",
+      "seconds": 4.3,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42377",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T13:03:35.329Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42345",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T12:26:23.795Z",
+      "seconds": 3.8,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42355",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T12:17:01.004Z",
+      "seconds": 11,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42343",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T11:33:16.633Z",
+      "seconds": 6,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42378",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T11:24:26.170Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42358",
+      "workflowId": "s2",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-10-17T10:48:20.166Z",
+      "seconds": 11.7,
+      "workflowName": "Invoice intake and OCR routing"
+    }
+  ]
+}
+</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('aut-data').textContent);
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var n = function(v){ return v.toLocaleString('en-US'); };
+  var pct = function(a, b){ return b ? Math.round(a / b * 100) : null; };
+  var STATUS = { success: ['t-ok', 'Success'], error: ['t-bad', 'Error'], running: ['t-warn', 'Running'], canceled: ['t-n', 'Canceled'] };
+  var statusTag = function(s){ var t = STATUS[s]; return t ? '<span class="tag ' + t[0] + '">' + t[1] + '</span>' : '<span class="s">No runs</span>'; };
+  var when = function(iso){ return iso ? iso.slice(0, 10) + ' ' + iso.slice(11, 16) + ' UTC' : 'Never'; };
+  var secs = function(v){ return v === null || v === undefined ? '–' : v + ' s'; };
+  var table = function(head, rows, emptyText){
+    if (!rows.length) return '<div class="empty">' + esc(emptyText) + '</div>';
+    return '<table><thead><tr>' + head.map(function(h){ return '<th' + (h[1] ? ' class="num"' : '') + '>' + esc(h[0]) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+  };
+  var chips = function(tags){ return '<span class="chips">' + tags.map(function(t){ return '<span class="tag t-n">' + esc(t) + '</span>'; }).join('') + '</span>'; };
+
+  $('instance').textContent = D.source === 'n8n' ? D.instance : 'Sample instance';
+  $('asof').textContent = 'Last ' + D.windowDays + ' days until ' + D.asOf;
+  $('sample').hidden = D.source !== 'sample';
+
+  /* Overview */
+  var total = 0, ok = 0, bad = 0;
+  D.workflows.forEach(function(w){ total += w.executions; ok += w.success; bad += w.error; });
+  var active = D.workflows.filter(function(w){ return w.active; }).length;
+  var finished = ok + bad;
+  var rate = pct(ok, finished);
+  var timed = D.workflows.filter(function(w){ return w.avgSeconds !== null && w.executions; });
+  var avg = timed.length ? Math.round(timed.reduce(function(s, w){ return s + w.avgSeconds * w.executions; }, 0) / timed.reduce(function(s, w){ return s + w.executions; }, 0) * 10) / 10 : null;
+  var kpi = function(k, v, s){ return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; };
+  $('kpis').innerHTML =
+    kpi('Active workflows', n(active), 'of ' + n(D.workflows.length) + ' workflows') +
+    kpi('Executions', n(total), 'last ' + D.windowDays + ' days') +
+    kpi('Success rate', rate === null ? '–' : rate + '%', n(ok) + ' ok, ' + n(bad) + ' failed') +
+    kpi('Failed runs', n(bad), bad ? 'check the list below' : 'nothing failed') +
+    kpi('Average duration', secs(avg), 'weighted by runs');
+
+  var peak = Math.max.apply(null, D.days.map(function(d){ return d.success + d.error + d.other; }).concat([1]));
+  $('days').innerHTML = D.days.map(function(d){
+    var sum = d.success + d.error + d.other;
+    var seg = function(c, v){ return v ? '<i class="' + c + '" style="height:' + (v / peak * 130) + 'px"></i>' : ''; };
+    return '<div class="day" title="' + esc(d.date) + ': ' + sum + ' executions, ' + d.error + ' failed"><div class="stack">' + seg('i-ok', d.success) + seg('i-bad', d.error) + seg('i-mut', d.other) + '</div><small>' + esc(d.date.slice(8)) + '</small></div>';
+  }).join('');
+
+  var attention = D.workflows.filter(function(w){ return w.error > 0; })
+    .sort(function(a, b){ return (b.error / b.executions) - (a.error / a.executions) || b.error - a.error; }).slice(0, 6);
+  $('attention').innerHTML = table([['Workflow'], ['Errors', 1], ['Error rate', 1]], attention.map(function(w){
+    return '<tr><td>' + esc(w.name) + '</td><td class="num">' + n(w.error) + '</td><td class="num">' + pct(w.error, w.executions) + '%</td></tr>';
+  }), 'No failed executions in this period.');
+  $('busiest').innerHTML = table([['Workflow'], ['Runs', 1], ['Share']], D.workflows.filter(function(w){ return w.executions; }).slice(0, 6).map(function(w){
+    var okW = pct(w.success, w.executions) || 0, badW = pct(w.error, w.executions) || 0;
+    return '<tr><td>' + esc(w.name) + '</td><td class="num">' + n(w.executions) + '</td><td><div class="bar" title="' + okW + '% ok"><i class="i-ok" style="width:' + okW + '%"></i><i class="i-bad" style="width:' + badW + '%"></i></div></td></tr>';
+  }), 'No executions in this period.');
+
+  /* Workflows */
+  function renderWorkflows(){
+    var q = $('wf-search').value.trim().toLowerCase(), state = $('wf-state').value;
+    var rows = D.workflows.filter(function(w){
+      if (state === 'active' && !w.active) return false;
+      if (state === 'inactive' && w.active) return false;
+      if (state === 'failing' && !w.error) return false;
+      return !q || (w.name + ' ' + w.tags.join(' ')).toLowerCase().indexOf(q) >= 0;
+    });
+    $('wf-table').innerHTML = table([['Workflow'], ['State'], ['Tags'], ['Runs', 1], ['Success', 1], ['Avg', 1], ['Last run'], ['Last status']], rows.map(function(w){
+      var r = pct(w.success, w.success + w.error);
+      return '<tr><td>' + esc(w.name) + '</td><td>' + (w.active ? '<span class="tag t-ok">Active</span>' : '<span class="tag t-n">Inactive</span>') + '</td><td>' + chips(w.tags) + '</td><td class="num">' + n(w.executions) + '</td><td class="num">' + (r === null ? '–' : r + '%') + '</td><td class="num">' + secs(w.avgSeconds) + '</td><td>' + esc(when(w.lastRun)) + '</td><td>' + statusTag(w.lastStatus) + '</td></tr>';
+    }), 'No workflow matches.');
+  }
+  $('wf-search').addEventListener('input', renderWorkflows);
+  $('wf-state').addEventListener('change', renderWorkflows);
+  renderWorkflows();
+
+  /* Executions */
+  function renderRuns(){
+    var s = $('run-status').value;
+    var rows = D.executions.filter(function(e){ return !s || e.status === s; });
+    $('run-table').innerHTML = table([['Started'], ['Workflow'], ['Status'], ['Mode'], ['Duration', 1], ['Id']], rows.map(function(e){
+      return '<tr><td>' + esc(when(e.startedAt)) + '</td><td>' + esc(e.workflowName) + '</td><td>' + statusTag(e.status) + '</td><td>' + esc(e.mode) + '</td><td class="num">' + secs(e.seconds) + '</td><td class="s">' + esc(e.id) + '</td></tr>';
+    }), 'No executions with this status among the latest ' + D.executions.length + '.');
+  }
+  $('run-status').addEventListener('change', renderRuns);
+  renderRuns();
+
+  /* Tabs */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('nav button'));
+  function show(name){
+    tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + name); });
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
+})();
+</script>
+</body>
+</html>

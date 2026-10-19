@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
 import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments } from './attachments.mjs';
+import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
@@ -1216,6 +1217,122 @@ ipcMain.handle('voice-transcribe', async (_event, { audio, mimeType } = {}) => {
   } catch (error) {
     const known = error instanceof VoiceError;
     return { ok: false, code: known ? error.code : 'unknown', detail: known ? error.message : 'Spracherkennung fehlgeschlagen.' };
+  }
+});
+
+/* ---------------- n8n (Cloud) ----------------
+ * 1) The n8n UI in its own native view with its own session (cookies stay apart from the app and the Spaces).
+ * 2) The chat reaches n8n through n8n's instance-level MCP server; goose runs the OAuth login itself,
+ *    so no token is written to config.yaml or any store of ours. */
+const n8nStore = createN8nStore(join(ROOT, 'goose-home', 'n8n.json'));
+let n8nView = null;
+let n8nViewOrigin = '';
+
+function ensureN8nView(origin) {
+  if (n8nView && n8nViewOrigin === origin) return n8nView;
+  closeN8nView();
+  const ses = session.fromPartition('persist:n8n');
+  ses.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
+  ses.setPermissionCheckHandler(() => false);
+  const view = new WebContentsView({
+    webPreferences: { session: ses, contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  const contents = view.webContents;
+  contents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedNavigation(url, origin)) setImmediate(() => contents.loadURL(url));
+    else if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  contents.on('will-navigate', (event, url) => {
+    if (isAllowedNavigation(url, origin)) return;
+    event.preventDefault();
+    if (/^https:\/\//i.test(url)) shell.openExternal(url);
+  });
+  mainWindow?.contentView.addChildView(view);
+  view.setVisible(false);
+  contents.loadURL(origin).catch(() => undefined);
+  n8nView = view;
+  n8nViewOrigin = origin;
+  return view;
+}
+
+function closeN8nView() {
+  if (!n8nView) return;
+  try {
+    mainWindow?.contentView.removeChildView(n8nView);
+    n8nView.webContents.close();
+  } catch {
+    // window already gone
+  }
+  n8nView = null;
+  n8nViewOrigin = '';
+}
+
+function n8nChatConnected() {
+  try {
+    const doc = parseDocument(readFileSync(join(ROOT, 'goose-home/.config/goose/config.yaml'), 'utf8'));
+    return doc.hasIn(['extensions', N8N_EXTENSION]);
+  } catch {
+    return false;
+  }
+}
+
+ipcMain.handle('n8n-get-settings', () => ({ url: n8nStore.getUrl(), chatConnected: n8nChatConnected() }));
+
+ipcMain.handle('n8n-save-settings', (_event, raw) => {
+  try {
+    const url = n8nStore.saveUrl(raw);
+    if (!url || url !== n8nViewOrigin) closeN8nView();
+    return { ok: true, url, chatConnected: n8nChatConnected() };
+  } catch (error) {
+    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('n8n-show', (_event, bounds) => {
+  const origin = n8nStore.getUrl();
+  if (!origin || !mainWindow) return { ok: false };
+  const number = (value) => (Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0);
+  const view = ensureN8nView(origin);
+  view.setBounds({ x: number(bounds?.x), y: number(bounds?.y), width: number(bounds?.width), height: number(bounds?.height) });
+  view.setVisible(true);
+  return { ok: true };
+});
+
+ipcMain.handle('n8n-hide', () => {
+  n8nView?.setVisible(false);
+  return { ok: true };
+});
+
+ipcMain.handle('n8n-reload', () => {
+  n8nView?.webContents.reload();
+  return { ok: true };
+});
+
+/** Adds n8n as a goose extension. The user finishes with the OAuth consent in n8n on first use. */
+ipcMain.handle('n8n-connect-chat', () => {
+  const origin = n8nStore.getUrl();
+  if (!origin) return { ok: false, detail: 'Zuerst die n8n-Adresse speichern.' };
+  try {
+    const path = join(ROOT, 'goose-home/.config/goose/config.yaml');
+    const doc = parseDocument(readFileSync(path, 'utf8'));
+    doc.setIn(['extensions', N8N_EXTENSION], n8nExtensionEntry(origin));
+    writeFileSync(path, doc.toString(), 'utf8');
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('n8n-disconnect-chat', () => {
+  try {
+    const path = join(ROOT, 'goose-home/.config/goose/config.yaml');
+    const doc = parseDocument(readFileSync(path, 'utf8'));
+    doc.deleteIn(['extensions', N8N_EXTENSION]);
+    writeFileSync(path, doc.toString(), 'utf8');
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
   }
 });
 

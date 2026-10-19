@@ -43,6 +43,17 @@ contextBridge.exposeInMainWorld('host', {
   removeConnector: (name) => ipcRenderer.invoke('remove-connector', name),
   restartAgent: () => ipcRenderer.invoke('restart-agent'),
 
+  // n8n Cloud: embedded UI + chat connection. Only the instance URL crosses this bridge.
+  n8n: {
+    getSettings: () => ipcRenderer.invoke('n8n-get-settings'),
+    saveSettings: (url) => ipcRenderer.invoke('n8n-save-settings', url),
+    show: (bounds) => ipcRenderer.invoke('n8n-show', bounds),
+    hide: () => ipcRenderer.invoke('n8n-hide'),
+    reload: () => ipcRenderer.invoke('n8n-reload'),
+    connectChat: () => ipcRenderer.invoke('n8n-connect-chat'),
+    disconnectChat: () => ipcRenderer.invoke('n8n-disconnect-chat'),
+  },
+
   // Voice input: the key never reaches the renderer, only hasKey.
   voice: {
     getSettings: () => ipcRenderer.invoke('voice-get-settings'),

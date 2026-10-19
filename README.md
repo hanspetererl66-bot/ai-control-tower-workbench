@@ -277,3 +277,17 @@ products such as Joule Work for Desktop, for example "Welche Angebote liegen vor
 product and month; optional `product` or `month`, for example "Wann ist das BTP-AI-Core-Budget aufgebraucht?"). A Space is a sandboxed page, so
 the agent cannot read what a Space shows; it reads the same sample data through these tools (taken from the Space's
 inline JSON in a checkout, and from `data/sub4me.json` inside the `.mcpb`). Rebuild and re-import the connector after updating.
+
+## n8n Cloud: sidebar, chat and Automation Dashboard
+
+**Sidebar.** The workflow icon in the rail opens your n8n Cloud instance inside the app. Enter the address once (for example `firma.app.n8n.cloud`); the page runs in its own session, separate from the app and the Spaces, and can only navigate within your instance and `n8n.cloud` (anything else opens in the browser). Login happens at n8n; the app stores no password or token, only the instance address in `goose-home/n8n.json`.
+
+**Chat.** "Mit Chat verbinden" in that view adds n8n's instance-level MCP server (`https://<instance>/mcp-server/http`) as a connector named `n8n` and restarts the agent. goose runs the OAuth login itself on first use, so no token is written to `config.yaml`. In n8n, enable *Settings → Instance-level MCP* and switch on *Available in MCP* for each workflow the chat may find and run. Without that switch a workflow stays invisible to the chat. Every connected client sees all MCP-enabled workflows of that user, so enable only what the chat should be allowed to start.
+
+**Automation Dashboard (Space).** `npm run install:automation` installs the Space with fictional sample data (marked "Sample"). For real data create an API key in n8n (*Settings → n8n API*) and run:
+
+```bash
+N8N_URL=https://firma.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- --live
+```
+
+It reads workflows (name, tags, active) and the last 14 days of executions (status, mode, duration; never payloads) and writes them only into the installed copy under `workspace/spaces/automation-dashboard`, so `git pull` never conflicts. The key lives only in that command.
