@@ -1,6 +1,6 @@
 ---
 name: skill-search
-description: Durchsucht den Skill-Marketplace nach Aufgabe, Rolle oder Bereich, vergleicht die besten Treffer (Reife, Risiko, Nutzen) und empfiehlt einen. Nutzen bei "welcher Skill hilft bei", "Skills für meine Rolle", "Skill-Suche".
+description: Findet im Skill-Marketplace passende Skills und die Reihenfolge, in der man sie nutzt (z. B. als Account Manager), vergleicht Reife, Risiko, Nutzen. Nutzen bei "welcher Skill", "Skills für meine Rolle", "in welcher Reihenfolge".
 metadata:
   domain: Skill-Management
   process: Skill-Suche
@@ -8,7 +8,7 @@ metadata:
   language: de
   scope: company
   team: AI Programme Office
-  tools: recommend_skills, search_skills, list_skill_catalog, get_skill_ranking, get_skill_info, get_skill_governance, get_skill_impact, get_skill_lifecycle, find_skill_gaps, search_graph, get_graph_neighbors
+  tools: recommend_skill_workflow, recommend_skills, search_skills, list_skill_catalog, get_skill_ranking, get_skill_info, get_skill_governance, get_skill_impact, get_skill_lifecycle, find_skill_gaps, search_graph, get_graph_neighbors
 ---
 
 # Skill-Suche: den passenden Skill im Dschungel finden
@@ -19,6 +19,7 @@ Nutze nur den Connector `ai-control-tower`. Der Skill `skill-finder` ist für di
 
 1. **Einstieg klären.** Frage höchstens einmal nach, wenn weder Aufgabe noch Rolle noch Bereich erkennbar sind. Ein Satz reicht ("Was willst du erledigen, oder in welcher Rolle?").
 2. **Treffer sammeln.**
+   - Mehrere Schritte oder ein ganzer Ablauf ("Ich bin Account Manager und bereite einen Kundentermin samt Verlängerung vor", "Was nutze ich in welcher Reihenfolge?"): zuerst `recommend_skill_workflow` mit Rolle und Ziel. Das liefert die Skills in Reihenfolge, je mit Zweck, Eingabe und Ergebnis. Der Person muss dafür keiner der Skills bekannt sein.
    - Aufgabe oder Rolle genannt: `recommend_skills` (Rolle und/oder Aufgabe) und `search_skills` mit der Aufgabe. Wenn nichts Passendes kommt, noch einmal mit zwei bis drei anderen Schlagwörtern.
    - Überblick gewünscht ("Was gibt es in Engineering?", "Was hat Team X gebaut?"): `list_skill_catalog` mit den passenden Filtern.
    - "Was ist beliebt?": `get_skill_ranking`.
@@ -28,7 +29,9 @@ Nutze nur den Connector `ai-control-tower`. Der Skill `skill-finder` ist für di
 
 ## Antwort
 
-Kurze Vergleichstabelle der besten drei: Name, Passung (hoch, mittel, gering mit einem Satz Begründung), Reifegrad, Risikoklasse, Nutzen, Hinweis. Darunter eine klare Empfehlung und ein Beispiel-Prompt zum Ausprobieren, wenn das Profil eines liefert.
+Bei einem Ablauf: nummerierte Liste der Schritte. Je Schritt der Skill, wozu er dient, was hineingeht, was herauskommt, ein Beispiel-Prompt und Warnungen (Pilot, Beispiel-Skill, Review überfällig, ersetzt). Sage, dass sich ein Schritt überspringen lässt, wenn sein Ergebnis schon vorliegt. Bei Warnungen "Beispiel-Skill, nicht veröffentlicht" nenne ehrlich, dass dieser Schritt heute noch nicht im Register verfügbar ist.
+
+Sonst: kurze Vergleichstabelle der besten drei: Name, Passung (hoch, mittel, gering mit einem Satz Begründung), Reifegrad, Risikoklasse, Nutzen, Hinweis. Darunter eine klare Empfehlung und ein Beispiel-Prompt zum Ausprobieren, wenn das Profil eines liefert.
 
 ## Regeln
 

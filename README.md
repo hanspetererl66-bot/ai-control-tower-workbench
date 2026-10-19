@@ -314,7 +314,7 @@ Every skill has a profile in four fields, plus the marketplace knows process gap
 - **Lifecycle** and **Discovery**: open a skill (click a row or a catalog card) for change log, dependencies, tests, sunset, deputy, example prompts, demo flow, related skills and recommended roles. The catalog has a role filter.
 - **Gaps** (tab *Gaps*): processes without a skill and requests from the teams.
 
-`npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills` (connector 0.11.0; live from Supabase when connected, otherwise the embedded sample data).
+`npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills`, and `recommend_skill_workflow` (an ordered chain of skills for a role and goal, from the `playbooks` in `profiles.json`, for example Account Manager: customer-call-prep → renewal-radar → quote-drafter → ticket-writer; connector 0.13.0; live from Supabase when connected, otherwise the embedded sample data).
 
 ### Sub4Me: contract and offer details
 

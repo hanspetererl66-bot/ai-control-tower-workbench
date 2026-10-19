@@ -32,8 +32,8 @@ export function embedData(html, data) {
 
 /** Impact, governance, lifecycle and discovery profiles per skill, process gaps and skill requests (fictional). */
 export function loadProfiles(root = ROOT) {
-  const { profiles, processGaps, requests, assumptions } = JSON.parse(readFileSync(join(root, 'examples/skill-marketplace/profiles.json'), 'utf8'));
-  return { assumptions, profiles, processGaps, requests };
+  const { profiles, processGaps, requests, assumptions, playbooks } = JSON.parse(readFileSync(join(root, 'examples/skill-marketplace/profiles.json'), 'utf8'));
+  return { assumptions, profiles, processGaps, requests, playbooks };
 }
 
 export const taxonomy = () => ({ boardAreas: BOARD_AREAS, lobs: LOBS, scopes: SCOPES });
