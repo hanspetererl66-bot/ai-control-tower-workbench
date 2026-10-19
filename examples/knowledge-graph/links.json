@@ -90,6 +90,12 @@
       "from": "risk:R5",
       "to": "agent:meeting-summarizer",
       "type": "AFFECTS"
+    },
+    {
+      "from": "thread:T-104",
+      "to": "risk:R7",
+      "type": "RELATES_TO_RISK",
+      "label": "mail footer with instructions for AI assistants"
     }
   ],
   "tours": [
@@ -161,6 +167,44 @@
           "node": "skill:board-briefing",
           "title": "From findings to the board",
           "text": "board-briefing turns risks, agents and budget into a one-page briefing and is linked to the EU AI Act risk. access-review-prep depends on it, so the chain ends with a decision-ready summary."
+        }
+      ]
+    },
+    {
+      "id": "communication",
+      "title": "Customer communication",
+      "summary": "Calls and mails around one renewal, and where they meet.",
+      "steps": [
+        {
+          "node": "customer:muster-industrie-ag",
+          "impact": true,
+          "title": "Everything said to one customer",
+          "text": "Impact mode now reaches past contracts and tickets: the calls and e-mail conversations with Muster Industrie hang off the same customer node."
+        },
+        {
+          "node": "contract:C-2023-0390",
+          "title": "The Ariba contract in conversation",
+          "text": "The Ariba contract ends on 31 Jan 2027 with a notice date of 2 Nov. One call and one mail conversation discuss it; the customer sees a benchmark about 8 % below the offer."
+        },
+        {
+          "node": "call:CALL-0414",
+          "title": "The renewal call",
+          "text": "On 14 Oct the customer asked for a revised quote by 23 Oct, with a 3-year option and a price for about 40 more buyers. The call carries a high churn risk and three open actions."
+        },
+        {
+          "node": "thread:T-101",
+          "title": "The mail that follows up",
+          "text": "The mail conversation picks up the same quote and has waited for our answer since 15 Oct, longer than the 48-hour target. The edge to the call is the shared open action."
+        },
+        {
+          "node": "call:CALL-0407",
+          "title": "Where a mail closes a call action",
+          "text": "The escalation call about the AI Core quota listed an 80 % usage alert. The mail conversation T-103 confirms it is active, so that action can be closed. Two sources, one fact."
+        },
+        {
+          "node": "thread:T-104",
+          "title": "A mail with an instruction for the AI",
+          "text": "The pilot's security questionnaire arrived with a hidden footer addressed to AI assistants. It is flagged, never followed, and linked to risk R7 (prompt injection)."
         }
       ]
     }
