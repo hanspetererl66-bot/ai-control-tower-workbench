@@ -86,7 +86,7 @@ export const SUB4ME_TOOL_DEFINITIONS = [
   {
     name: 'get_contract',
     description:
-      'One Sub4Me contract by id (for example "C-2025-0041"): terms, days until the end, the last day to give notice, linked renewal offers, consumption of the product and its service tickets. Sample data from the Sub4Me example Space.',
+      'One Sub4Me contract by id (for example "C-2025-0041"): all details - contract type, signing date, billing cycle, payment terms, PO number, cost centre, discount, price uplift cap, auto-renewal and termination terms, service level (tier, availability, support hours, response time), data centre, deployment, SAP and customer contacts, licensed versus used units, invoicing and payment status, line items - plus days until the end, the last day to give notice, linked renewal offers, consumption of the product and its service tickets. Read from Supabase when connected, otherwise sample data from the Sub4Me example Space.',
     inputSchema: {
       type: 'object',
       properties: { id: { type: 'string', description: 'Contract id.' } },
@@ -97,7 +97,7 @@ export const SUB4ME_TOOL_DEFINITIONS = [
   {
     name: 'get_offer',
     description:
-      'One SAP offer to the Sub4Me customer by id: type, term, annual value versus today, validity, status and the contract it renews. Sample data from the Sub4Me example Space.',
+      'One SAP offer to the Sub4Me customer by id: type, term, annual value versus today, list price and discount, billing and payment terms, price guarantee and uplift cap, stage and win probability, approval status, competitor, next step, conditions, SAP owner, line items, validity, status and the contract it renews. Read from Supabase when connected, otherwise sample data from the Sub4Me example Space.',
     inputSchema: {
       type: 'object',
       properties: { id: { type: 'string', description: 'Offer id.' } },
@@ -180,6 +180,27 @@ async function ticketsOf(d, rpc) {
   return { list: d.tickets ?? [], dataSource: 'sample data (Supabase not connected)' };
 }
 
+/**
+ * Contracts and offers with all their attributes live in Supabase (public.sub4me_portfolio, migration 011).
+ * Without a connection, or when the function is not installed yet, the copy embedded in the Space is used.
+ */
+async function withPortfolio(d, rpc) {
+  if (rpc) {
+    try {
+      const live = await rpc('sub4me_portfolio', {});
+      if (live && Array.isArray(live.contracts) && Array.isArray(live.offers) && live.contracts.length) {
+        return { d: { ...d, contracts: live.contracts, offers: live.offers }, dataSource: 'supabase' };
+      }
+    } catch {
+      // fall back to the embedded sample data below
+    }
+  }
+  return { d, dataSource: 'sample data (Sub4Me example Space)' };
+}
+
+/** Lists stay compact: the line items are only returned for a single contract or offer. */
+const withoutLines = ({ lines, ...rest }) => ({ ...rest, lineCount: Array.isArray(lines) ? lines.length : 0 });
+
 export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
   const data = () => {
     try {
@@ -189,13 +210,17 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
     }
   };
   const source = 'sample data (Sub4Me example Space)';
+  const portfolio = async () => {
+    const { d, dataSource } = await withPortfolio(data(), rpc);
+    return { d, source: dataSource === 'supabase' ? 'supabase (contracts and offers)' : source };
+  };
   const self = {
-    list_contracts(args) {
+    async list_contracts(args) {
       const { status } = args;
       if (status !== undefined && !CONTRACT_STATUSES.includes(status)) {
         throw new ToolError(`status must be one of: ${CONTRACT_STATUSES.join(', ')}`);
       }
-      const d = data();
+      const { d, source } = await portfolio();
       const all = d.contracts;
       const list = status ? all.filter((c) => c.status === status) : all;
       const byStatus = Object.fromEntries(CONTRACT_STATUSES.map((s) => [s, all.filter((c) => c.status === s).length]));
@@ -206,22 +231,23 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
         totalContracts: all.length,
         byStatus,
         annualValueEur: list.reduce((sum, c) => sum + c.annualEur, 0),
-        contracts: list,
+        contracts: list.map(withoutLines),
+        note: 'Use get_contract with an id for payment terms, SLA, contacts, invoicing and line items.',
         view: { space: 'sub4me', tab: 'contracts' },
         dataSource: source,
       };
     },
-    list_offers(args = {}) {
+    async list_offers(args = {}) {
       const { type, status } = args;
       if (type !== undefined && !OFFER_TYPES.includes(type)) throw new ToolError(`type must be one of: ${OFFER_TYPES.join(', ')}`);
       if (status !== undefined && !OFFER_STATUSES.includes(status)) throw new ToolError(`status must be one of: ${OFFER_STATUSES.join(', ')}`);
-      const d = data();
+      const { d, source } = await portfolio();
       const all = d.offers ?? [];
       const asOf = new Date(`${d.asOf}T00:00:00Z`);
       const list = all
         .filter((o) => (!type || o.type === type) && (!status || o.status === status))
         .map((o) => ({
-          ...o,
+          ...withoutLines(o),
           changeVsTodayPct: o.currentAnnualEur ? Math.round((o.annualEur / o.currentAnnualEur - 1) * 1000) / 10 : null,
           daysUntilExpiry: Math.round((new Date(`${o.validUntil}T00:00:00Z`) - asOf) / 864e5),
         }));
@@ -234,6 +260,7 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
         byStatus: Object.fromEntries(OFFER_STATUSES.map((st) => [st, all.filter((o) => o.status === st).length])),
         annualValueEur: sum(list.map((o) => o.annualEur)),
         offers: list,
+        note: 'Use get_offer with an id for price details, deal status, conditions and line items.',
         view: { space: 'sub4me', tab: 'contracts' },
         dataSource: source,
       };
@@ -300,7 +327,7 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
 
     /* ---- 360 degree views: built from the same sample data as the tools above ---- */
     async get_customer_overview() {
-      const d = data();
+      const { d, source } = await portfolio();
       const asOf = new Date(`${d.asOf}T00:00:00Z`);
       const days = (iso) => Math.round((new Date(`${iso}T00:00:00Z`) - asOf) / 864e5);
       const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
@@ -357,7 +384,7 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
       };
     },
     async get_product_overview(args = {}) {
-      const d = data();
+      const { d, source } = await portfolio();
       const match = matchProduct(d, args.product);
       const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
       const consumption = self.get_ai_consumption({ product: match.name });
@@ -366,15 +393,15 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
         asOf: d.asOf,
         product: match.name,
         consumption: consumption.products[0],
-        contracts: d.contracts.filter((c) => sameProduct(c.product, match.name)),
-        offers: (d.offers ?? []).filter((o) => sameProduct(o.product, match.name)),
+        contracts: d.contracts.filter((c) => sameProduct(c.product, match.name)).map(withoutLines),
+        offers: (d.offers ?? []).filter((o) => sameProduct(o.product, match.name)).map(withoutLines),
         tickets: tickets.filter((t) => sameProduct(t.product, match.name)),
         view: { space: 'sub4me', tab: 'usage' },
         dataSource: `${source}; tickets: ${ticketSource}`,
       };
     },
     async get_contract(args = {}) {
-      const d = data();
+      const { d, source } = await portfolio();
       const id = String(args.id ?? '').trim().toLowerCase();
       if (!id) throw new ToolError('id is required');
       const contract = d.contracts.find((c) => c.id.toLowerCase() === id);
@@ -390,15 +417,15 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
           daysUntilEnd: Math.round((new Date(`${contract.end}T00:00:00Z`) - asOf) / 864e5),
           noticeDeadline: noticeDeadline(contract),
         },
-        renewalOffers: (d.offers ?? []).filter((o) => o.contractId === contract.id),
+        renewalOffers: (d.offers ?? []).filter((o) => o.contractId === contract.id).map(withoutLines),
         consumption,
         tickets: tickets.filter((t) => sameProduct(t.product, contract.product)),
         view: { space: 'sub4me', tab: 'contracts' },
         dataSource: `${source}; tickets: ${ticketSource}`,
       };
     },
-    get_offer(args = {}) {
-      const d = data();
+    async get_offer(args = {}) {
+      const { d, source } = await portfolio();
       const id = String(args.id ?? '').trim().toLowerCase();
       if (!id) throw new ToolError('id is required');
       const offers = d.offers ?? [];
@@ -421,15 +448,15 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
     async search_sub4me(args = {}) {
       const query = String(args.query ?? '').trim().toLowerCase();
       if (query.length < 2) throw new ToolError('query must be at least 2 characters');
-      const d = data();
+      const { d, source } = await portfolio();
       const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
       const hit = (item) => Object.values(item).some((v) => typeof v === 'string' && v.toLowerCase().includes(query));
       const cap = (list) => list.slice(0, 10);
       return {
         query: args.query,
         products: cap(d.products.filter((p) => p.name.toLowerCase().includes(query)).map((p) => p.name)),
-        contracts: cap(d.contracts.filter(hit)),
-        offers: cap((d.offers ?? []).filter(hit)),
+        contracts: cap(d.contracts.filter(hit)).map(withoutLines),
+        offers: cap((d.offers ?? []).filter(hit)).map(withoutLines),
         tickets: cap(tickets.filter(hit)),
         dataSource: `${source}; tickets: ${ticketSource}`,
       };

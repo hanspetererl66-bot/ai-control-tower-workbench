@@ -315,3 +315,8 @@ Every skill has a profile in four fields, plus the marketplace knows process gap
 - **Gaps** (tab *Gaps*): processes without a skill and requests from the teams.
 
 `npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills` (connector 0.11.0; live from Supabase when connected, otherwise the embedded sample data).
+
+### Sub4Me: contract and offer details
+
+`examples/sub4me/portfolio.json` is the single source for the contracts and offers of the Sub4Me test customer, each with about 25 fictional attributes (contract type, billing and payment terms, SLA, data centre, contacts, licensed vs. used units, invoicing, auto-renewal, termination; for offers list price, discount, stage, win probability, approval, competitor, next step, conditions) and line items.
+`npm run sync:sub4me` embeds it into the Space (click a row in **Contracts** for the detail view) and writes `supabase/migrations/20261019_011_sub4me_contracts_offers.sql`. Run that file once in the Supabase SQL editor; it is re-runnable. The chat connector then reads contracts and offers live from Supabase (`public.sub4me_portfolio()`, secret key only) and falls back to the embedded copy.

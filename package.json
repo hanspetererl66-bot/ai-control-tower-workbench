@@ -14,6 +14,7 @@
     "sync:control-tower": "node scripts/sync-control-tower-data.mjs",
     "sync:skill-marketplace": "node scripts/sync-skill-marketplace.mjs",
     "sync:skill-profiles": "node scripts/sync-skill-profiles.mjs",
+    "sync:sub4me": "node scripts/sync-sub4me.mjs",
     "sync:automation": "node scripts/sync-automation-dashboard.mjs",
     "build:control-tower-mcpb": "node scripts/build-control-tower-mcpb.mjs",
     "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",

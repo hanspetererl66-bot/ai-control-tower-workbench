@@ -197,6 +197,20 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m #products tbody tr{cursor:pointer}
 .s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
 .s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
 .s4m #product-detail{margin-top:16px}
 .s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
 .s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
@@ -238,7 +252,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 </nav>
 <main>
   <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div></section>
-  <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div></section>
+  <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><div class="card detail" id="contract-detail" aria-live="polite"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div><div class="card detail" id="offer-detail" aria-live="polite"></div></section>
   <section class="pg" id="pg-usage">
     <div class="grid" id="usage-kpis"></div>
     <div class="row"><div class="card"><div class="k">AI units per month (2026)</div><div class="months stack" id="months"></div><div class="legend" id="legend"></div></div>
@@ -264,37 +278,840 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 <script type="application/json" id="s4m-data">
 {
   "asOf": "2026-10-18",
-  "customer": {"name": "Muster Industrie AG", "number": "100-482-117", "contact": "A. Beispiel", "country": "Germany"},
+  "customer": {
+    "name": "Muster Industrie AG",
+    "number": "100-482-117",
+    "contact": "A. Beispiel",
+    "country": "Germany"
+  },
   "aiUnits": {
-    "periodStart": "2026-01-01", "periodEnd": "2026-12-31", "allotment": 120000,
-    "monthly": [6200, 7100, 8300, 8900, 9800, 10400, 9600, 11200, 12100, 8700]
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-12-31",
+    "allotment": 120000,
+    "monthly": [
+      6200,
+      7100,
+      8300,
+      8900,
+      9800,
+      10400,
+      9600,
+      11200,
+      12100,
+      8700
+    ]
   },
   "products": [
-    {"name": "Joule copilots", "allotment": 50000, "consumed": 41000, "meters": "copilot dialogues and agent runs", "monthly": [3100, 3500, 4050, 4200, 4550, 4700, 3950, 4700, 4850, 3400]},
-    {"name": "BTP AI Core", "allotment": 30000, "consumed": 28300, "meters": "model inference and training hours", "monthly": [2000, 2300, 2600, 2800, 3000, 3100, 2900, 3400, 3800, 2400]},
-    {"name": "SuccessFactors AI", "allotment": 12000, "consumed": 9800, "meters": "generated job texts and talent suggestions", "monthly": [700, 800, 850, 900, 950, 1000, 1000, 1100, 1200, 1300]},
-    {"name": "Ariba AI", "allotment": 10000, "consumed": 8200, "meters": "guided buying and supplier risk checks", "monthly": [400, 500, 600, 700, 800, 900, 950, 1100, 1250, 1000]},
-    {"name": "Document AI", "allotment": 18000, "consumed": 5000, "meters": "processed document pages", "monthly": [0, 0, 200, 300, 500, 700, 800, 900, 1000, 600]}
+    {
+      "name": "Joule copilots",
+      "allotment": 50000,
+      "consumed": 41000,
+      "meters": "copilot dialogues and agent runs",
+      "monthly": [
+        3100,
+        3500,
+        4050,
+        4200,
+        4550,
+        4700,
+        3950,
+        4700,
+        4850,
+        3400
+      ]
+    },
+    {
+      "name": "BTP AI Core",
+      "allotment": 30000,
+      "consumed": 28300,
+      "meters": "model inference and training hours",
+      "monthly": [
+        2000,
+        2300,
+        2600,
+        2800,
+        3000,
+        3100,
+        2900,
+        3400,
+        3800,
+        2400
+      ]
+    },
+    {
+      "name": "SuccessFactors AI",
+      "allotment": 12000,
+      "consumed": 9800,
+      "meters": "generated job texts and talent suggestions",
+      "monthly": [
+        700,
+        800,
+        850,
+        900,
+        950,
+        1000,
+        1000,
+        1100,
+        1200,
+        1300
+      ]
+    },
+    {
+      "name": "Ariba AI",
+      "allotment": 10000,
+      "consumed": 8200,
+      "meters": "guided buying and supplier risk checks",
+      "monthly": [
+        400,
+        500,
+        600,
+        700,
+        800,
+        900,
+        950,
+        1100,
+        1250,
+        1000
+      ]
+    },
+    {
+      "name": "Document AI",
+      "allotment": 18000,
+      "consumed": 5000,
+      "meters": "processed document pages",
+      "monthly": [
+        0,
+        0,
+        200,
+        300,
+        500,
+        700,
+        800,
+        900,
+        1000,
+        600
+      ]
+    }
   ],
   "contracts": [
-    {"id": "C-2024-0187", "product": "S/4HANA Cloud Private Edition", "scope": "1,200 users, 3 systems", "start": "2024-01-01", "end": "2028-12-31", "annualEur": 2840000, "status": "Active", "noticeDays": 180},
-    {"id": "C-2024-0233", "product": "Business Technology Platform", "scope": "CPEA, 600k capacity units", "start": "2024-04-01", "end": "2027-03-31", "annualEur": 640000, "status": "Active", "noticeDays": 90},
-    {"id": "C-2025-0041", "product": "SuccessFactors Employee Central", "scope": "4,800 employees", "start": "2025-01-01", "end": "2026-12-31", "annualEur": 410000, "status": "Renewal due", "noticeDays": 90},
-    {"id": "C-2023-0390", "product": "Ariba Procurement", "scope": "250 buyers", "start": "2023-02-01", "end": "2027-01-31", "annualEur": 290000, "status": "Renewal due", "noticeDays": 90},
-    {"id": "C-2026-0012", "product": "AI units (Joule, AI Core, Document AI)", "scope": "120,000 units per year", "start": "2026-01-01", "end": "2026-12-31", "annualEur": 360000, "status": "Active", "noticeDays": 60},
-    {"id": "C-2022-0502", "product": "Concur Travel", "scope": "900 travellers", "start": "2022-07-01", "end": "2026-06-30", "annualEur": 95000, "status": "Expired", "noticeDays": 90}
+    {
+      "id": "C-2024-0187",
+      "product": "S/4HANA Cloud Private Edition",
+      "scope": "1,200 users, 3 systems",
+      "start": "2024-01-01",
+      "end": "2028-12-31",
+      "annualEur": 2840000,
+      "status": "Active",
+      "noticeDays": 180,
+      "contractType": "Subscription (RISE with SAP)",
+      "signedOn": "2023-11-24",
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "30 days net",
+      "poNumber": "PO-4500187231",
+      "costCenter": "CC-1100 IT Operations",
+      "legalEntity": "Muster Industrie AG, Mannheim",
+      "governingLaw": "German law",
+      "autoRenew": false,
+      "renewalTermMonths": 12,
+      "priceUpliftCapPct": 3,
+      "discountPct": 18,
+      "sapOwner": {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      "csm": {
+        "name": "Jonas Weber",
+        "role": "Customer Success Manager, SAP",
+        "email": "jonas.weber@example.com"
+      },
+      "customerOwner": {
+        "name": "Dr. Anja Berger",
+        "role": "CIO",
+        "email": "dr.anja.berger@muster-industrie.example"
+      },
+      "sla": {
+        "tier": "Premium Plus",
+        "availabilityPct": 99.9,
+        "supportHours": "24/7",
+        "responseVeryHighMin": 30
+      },
+      "dataCenter": "Frankfurt (EU, DE)",
+      "deployment": "Private cloud, hyperscaler Azure",
+      "licensedUnits": 1200,
+      "usedUnits": 1086,
+      "unit": "users",
+      "invoicing": {
+        "nextInvoiceOn": "2027-01-01",
+        "openInvoices": 0,
+        "openAmountEur": 0,
+        "paymentStatus": "Paid"
+      },
+      "termination": "Termination for convenience excluded in the initial term; extraordinary termination for cause with 30 days cure period.",
+      "notes": "Three systems: development, quality, production. Carbon-neutral hosting option included.",
+      "lines": [
+        {
+          "component": "S/4HANA Cloud Private Edition, production",
+          "quantity": 1200,
+          "unit": "users",
+          "annualEur": 2160000,
+          "unitPriceEur": 1800
+        },
+        {
+          "component": "Non-production systems (DEV, QAS)",
+          "quantity": 2,
+          "unit": "systems",
+          "annualEur": 340000,
+          "unitPriceEur": 170000
+        },
+        {
+          "component": "Premium Plus support and operations",
+          "quantity": 1,
+          "unit": "service",
+          "annualEur": 190000,
+          "unitPriceEur": 190000
+        },
+        {
+          "component": "Data volume 12 TB",
+          "quantity": 12,
+          "unit": "TB",
+          "annualEur": 150000,
+          "unitPriceEur": 12500
+        }
+      ],
+      "currency": "EUR"
+    },
+    {
+      "id": "C-2024-0233",
+      "product": "Business Technology Platform",
+      "scope": "CPEA, 600k capacity units",
+      "start": "2024-04-01",
+      "end": "2027-03-31",
+      "annualEur": 640000,
+      "status": "Active",
+      "noticeDays": 90,
+      "contractType": "Consumption (CPEA)",
+      "signedOn": "2024-02-27",
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "30 days net",
+      "poNumber": "PO-4500233908",
+      "costCenter": "CC-1120 Integration",
+      "legalEntity": "Muster Industrie AG, Mannheim",
+      "governingLaw": "German law",
+      "autoRenew": true,
+      "renewalTermMonths": 12,
+      "priceUpliftCapPct": 2.5,
+      "discountPct": 22,
+      "sapOwner": {
+        "name": "Mira Hoffmann",
+        "role": "BTP Solution Advisor, SAP",
+        "email": "mira.hoffmann@example.com"
+      },
+      "csm": {
+        "name": "Jonas Weber",
+        "role": "Customer Success Manager, SAP",
+        "email": "jonas.weber@example.com"
+      },
+      "customerOwner": {
+        "name": "Tobias Kraus",
+        "role": "Head of Integration",
+        "email": "tobias.kraus@muster-industrie.example"
+      },
+      "sla": {
+        "tier": "Premium",
+        "availabilityPct": 99.7,
+        "supportHours": "24/5",
+        "responseVeryHighMin": 60
+      },
+      "dataCenter": "Frankfurt (eu10)",
+      "deployment": "Multi-cloud public",
+      "licensedUnits": 600000,
+      "usedUnits": 412000,
+      "unit": "cloud credits",
+      "invoicing": {
+        "nextInvoiceOn": "2027-04-01",
+        "openInvoices": 0,
+        "openAmountEur": 0,
+        "paymentStatus": "Paid"
+      },
+      "termination": "Unused capacity units expire at the end of each contract year; no refund.",
+      "notes": "Capacity units can be moved between BTP services without notice. Includes AI Core in the eu10 region.",
+      "lines": [
+        {
+          "component": "Integration Suite",
+          "quantity": 220000,
+          "unit": "capacity units",
+          "annualEur": 210000,
+          "unitPriceEur": 0.95
+        },
+        {
+          "component": "Build and extension services",
+          "quantity": 160000,
+          "unit": "capacity units",
+          "annualEur": 170000,
+          "unitPriceEur": 1.06
+        },
+        {
+          "component": "Data and analytics services",
+          "quantity": 140000,
+          "unit": "capacity units",
+          "annualEur": 150000,
+          "unitPriceEur": 1.07
+        },
+        {
+          "component": "AI Core and Generative AI Hub",
+          "quantity": 80000,
+          "unit": "capacity units",
+          "annualEur": 110000,
+          "unitPriceEur": 1.38
+        }
+      ],
+      "currency": "EUR"
+    },
+    {
+      "id": "C-2025-0041",
+      "product": "SuccessFactors Employee Central",
+      "scope": "4,800 employees",
+      "start": "2025-01-01",
+      "end": "2026-12-31",
+      "annualEur": 410000,
+      "status": "Renewal due",
+      "noticeDays": 90,
+      "contractType": "Subscription (SaaS)",
+      "signedOn": "2024-11-18",
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "45 days net",
+      "poNumber": "PO-4500412870",
+      "costCenter": "CC-2100 HR",
+      "legalEntity": "Muster Industrie AG, Mannheim",
+      "governingLaw": "German law",
+      "autoRenew": false,
+      "renewalTermMonths": 36,
+      "priceUpliftCapPct": 4,
+      "discountPct": 12,
+      "sapOwner": {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      "csm": {
+        "name": "Sabine Roth",
+        "role": "Customer Success Manager, SAP",
+        "email": "sabine.roth@example.com"
+      },
+      "customerOwner": {
+        "name": "Claudia Neumann",
+        "role": "Head of HR Systems",
+        "email": "claudia.neumann@muster-industrie.example"
+      },
+      "sla": {
+        "tier": "Standard",
+        "availabilityPct": 99.7,
+        "supportHours": "24/5",
+        "responseVeryHighMin": 120
+      },
+      "dataCenter": "Walldorf (EU, DE)",
+      "deployment": "Public cloud (SAP data centre)",
+      "licensedUnits": 4800,
+      "usedUnits": 4650,
+      "unit": "employees",
+      "invoicing": {
+        "nextInvoiceOn": "2027-01-01",
+        "openInvoices": 0,
+        "openAmountEur": 0,
+        "paymentStatus": "Paid"
+      },
+      "termination": "Ends without notice on the end date; renewal requires a new order.",
+      "notes": "Renewal offer OFF-2026-0311 is open. Headcount grew by 2.1% since signing.",
+      "lines": [
+        {
+          "component": "Employee Central core",
+          "quantity": 4800,
+          "unit": "employees",
+          "annualEur": 288000,
+          "unitPriceEur": 60
+        },
+        {
+          "component": "Employee Central Payroll interface",
+          "quantity": 4800,
+          "unit": "employees",
+          "annualEur": 62000,
+          "unitPriceEur": 12.92
+        },
+        {
+          "component": "Onboarding module",
+          "quantity": 4800,
+          "unit": "employees",
+          "annualEur": 60000,
+          "unitPriceEur": 12.5
+        }
+      ],
+      "currency": "EUR"
+    },
+    {
+      "id": "C-2023-0390",
+      "product": "Ariba Procurement",
+      "scope": "250 buyers",
+      "start": "2023-02-01",
+      "end": "2027-01-31",
+      "annualEur": 290000,
+      "status": "Renewal due",
+      "noticeDays": 90,
+      "contractType": "Subscription (SaaS)",
+      "signedOn": "2022-12-12",
+      "billingCycle": "Quarterly in advance",
+      "paymentTerms": "30 days net",
+      "poNumber": "PO-4500390456",
+      "costCenter": "CC-3300 Procurement",
+      "legalEntity": "Muster Industrie AG, Mannheim",
+      "governingLaw": "German law",
+      "autoRenew": false,
+      "renewalTermMonths": 24,
+      "priceUpliftCapPct": 3.5,
+      "discountPct": 15,
+      "sapOwner": {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      "csm": {
+        "name": "Jonas Weber",
+        "role": "Customer Success Manager, SAP",
+        "email": "jonas.weber@example.com"
+      },
+      "customerOwner": {
+        "name": "Markus Engel",
+        "role": "Chief Procurement Officer",
+        "email": "markus.engel@muster-industrie.example"
+      },
+      "sla": {
+        "tier": "Standard",
+        "availabilityPct": 99.5,
+        "supportHours": "24/5",
+        "responseVeryHighMin": 120
+      },
+      "dataCenter": "Amsterdam (EU, NL)",
+      "deployment": "Public cloud (SAP data centre)",
+      "licensedUnits": 250,
+      "usedUnits": 231,
+      "unit": "buyers",
+      "invoicing": {
+        "nextInvoiceOn": "2026-11-01",
+        "openInvoices": 1,
+        "openAmountEur": 72500,
+        "paymentStatus": "Invoice open"
+      },
+      "termination": "Notice of 90 days before the end of the term, otherwise the contract ends and must be re-ordered.",
+      "notes": "Notice deadline 2026-11-02. Supplier network fees are billed separately.",
+      "lines": [
+        {
+          "component": "Ariba Sourcing and Contracts",
+          "quantity": 250,
+          "unit": "buyers",
+          "annualEur": 150000,
+          "unitPriceEur": 600
+        },
+        {
+          "component": "Ariba Buying and Invoicing",
+          "quantity": 250,
+          "unit": "buyers",
+          "annualEur": 100000,
+          "unitPriceEur": 400
+        },
+        {
+          "component": "Supplier risk module",
+          "quantity": 1,
+          "unit": "module",
+          "annualEur": 40000,
+          "unitPriceEur": 40000
+        }
+      ],
+      "currency": "EUR"
+    },
+    {
+      "id": "C-2026-0012",
+      "product": "AI units (Joule, AI Core, Document AI)",
+      "scope": "120,000 units per year",
+      "start": "2026-01-01",
+      "end": "2026-12-31",
+      "annualEur": 360000,
+      "status": "Active",
+      "noticeDays": 60,
+      "contractType": "Consumption (AI units)",
+      "signedOn": "2025-12-09",
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "30 days net",
+      "poNumber": "PO-4500601774",
+      "costCenter": "CC-1130 Digital Innovation",
+      "legalEntity": "Muster Industrie AG, Mannheim",
+      "governingLaw": "German law",
+      "autoRenew": true,
+      "renewalTermMonths": 12,
+      "priceUpliftCapPct": 0,
+      "discountPct": 10,
+      "sapOwner": {
+        "name": "Mira Hoffmann",
+        "role": "BTP Solution Advisor, SAP",
+        "email": "mira.hoffmann@example.com"
+      },
+      "csm": {
+        "name": "Jonas Weber",
+        "role": "Customer Success Manager, SAP",
+        "email": "jonas.weber@example.com"
+      },
+      "customerOwner": {
+        "name": "Dr. Anja Berger",
+        "role": "CIO",
+        "email": "dr.anja.berger@muster-industrie.example"
+      },
+      "sla": {
+        "tier": "Premium",
+        "availabilityPct": 99.7,
+        "supportHours": "24/5",
+        "responseVeryHighMin": 60
+      },
+      "dataCenter": "Frankfurt (eu10)",
+      "deployment": "Public cloud",
+      "licensedUnits": 120000,
+      "usedUnits": 93400,
+      "unit": "AI units",
+      "invoicing": {
+        "nextInvoiceOn": "2027-01-01",
+        "openInvoices": 0,
+        "openAmountEur": 0,
+        "paymentStatus": "Paid"
+      },
+      "termination": "Unused AI units do not carry over; top-up at the contract unit price of EUR 3.00 until 2026-12-31.",
+      "notes": "Covers Joule copilots, BTP AI Core, SuccessFactors AI, Ariba AI and Document AI.",
+      "lines": [
+        {
+          "component": "Joule copilots",
+          "quantity": 50000,
+          "unit": "AI units",
+          "annualEur": 150000,
+          "unitPriceEur": 3
+        },
+        {
+          "component": "BTP AI Core",
+          "quantity": 30000,
+          "unit": "AI units",
+          "annualEur": 90000,
+          "unitPriceEur": 3
+        },
+        {
+          "component": "Document AI",
+          "quantity": 18000,
+          "unit": "AI units",
+          "annualEur": 54000,
+          "unitPriceEur": 3
+        },
+        {
+          "component": "SuccessFactors AI",
+          "quantity": 12000,
+          "unit": "AI units",
+          "annualEur": 36000,
+          "unitPriceEur": 3
+        },
+        {
+          "component": "Ariba AI",
+          "quantity": 10000,
+          "unit": "AI units",
+          "annualEur": 30000,
+          "unitPriceEur": 3
+        }
+      ],
+      "currency": "EUR"
+    },
+    {
+      "id": "C-2022-0502",
+      "product": "Concur Travel",
+      "scope": "900 travellers",
+      "start": "2022-07-01",
+      "end": "2026-06-30",
+      "annualEur": 95000,
+      "status": "Expired",
+      "noticeDays": 90,
+      "contractType": "Subscription (SaaS)",
+      "signedOn": "2022-05-20",
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "30 days net",
+      "poNumber": "PO-4500502119",
+      "costCenter": "CC-4100 Travel",
+      "legalEntity": "Muster Industrie AG, Mannheim",
+      "governingLaw": "German law",
+      "autoRenew": false,
+      "renewalTermMonths": 12,
+      "priceUpliftCapPct": 3,
+      "discountPct": 8,
+      "sapOwner": {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      "csm": {
+        "name": "Sabine Roth",
+        "role": "Customer Success Manager, SAP",
+        "email": "sabine.roth@example.com"
+      },
+      "customerOwner": {
+        "name": "Petra Vogel",
+        "role": "Travel Manager",
+        "email": "petra.vogel@muster-industrie.example"
+      },
+      "sla": {
+        "tier": "Standard",
+        "availabilityPct": 99.5,
+        "supportHours": "24/5",
+        "responseVeryHighMin": 240
+      },
+      "dataCenter": "Dublin (EU, IE)",
+      "deployment": "Public cloud",
+      "licensedUnits": 900,
+      "usedUnits": 0,
+      "unit": "travellers",
+      "invoicing": {
+        "nextInvoiceOn": null,
+        "openInvoices": 0,
+        "openAmountEur": 0,
+        "paymentStatus": "Closed"
+      },
+      "termination": "Expired on 2026-06-30 without renewal. Data deleted 90 days after the end.",
+      "notes": "Not renewed after the travel policy review. Archive export was delivered.",
+      "lines": [
+        {
+          "component": "Concur Travel",
+          "quantity": 900,
+          "unit": "travellers",
+          "annualEur": 70000,
+          "unitPriceEur": 77.78
+        },
+        {
+          "component": "Concur Expense interface",
+          "quantity": 900,
+          "unit": "travellers",
+          "annualEur": 25000,
+          "unitPriceEur": 27.78
+        }
+      ],
+      "currency": "EUR"
+    }
   ],
   "offers": [
-    {"id": "OFF-2026-0311", "type": "Renewal", "product": "SuccessFactors Employee Central", "contractId": "C-2025-0041", "scope": "4,800 employees, 3-year term", "start": "2027-01-01", "end": "2029-12-31", "annualEur": 438000, "currentAnnualEur": 410000, "validUntil": "2026-11-15", "status": "Open"},
-    {"id": "OFF-2026-0318", "type": "Renewal", "product": "Ariba Procurement", "contractId": "C-2023-0390", "scope": "250 buyers, 2-year term", "start": "2027-02-01", "end": "2029-01-31", "annualEur": 305000, "currentAnnualEur": 290000, "validUntil": "2026-12-04", "status": "Open"},
-    {"id": "OFF-2026-0324", "type": "New product", "product": "Joule Work for Desktop", "contractId": null, "scope": "300 pilot users, Windows and macOS, 1-year term", "start": "2027-01-01", "end": "2027-12-31", "annualEur": 118000, "currentAnnualEur": 0, "validUntil": "2026-11-30", "status": "In negotiation"}
+    {
+      "id": "OFF-2026-0311",
+      "type": "Renewal",
+      "product": "SuccessFactors Employee Central",
+      "contractId": "C-2025-0041",
+      "scope": "4,800 employees, 3-year term",
+      "start": "2027-01-01",
+      "end": "2029-12-31",
+      "annualEur": 438000,
+      "currentAnnualEur": 410000,
+      "validUntil": "2026-11-15",
+      "status": "Open",
+      "createdOn": "2026-09-22",
+      "owner": {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      "stage": "Proposal sent",
+      "probabilityPct": 70,
+      "listPriceEur": 497727,
+      "discountPct": 12,
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "45 days net",
+      "termMonths": 36,
+      "autoRenew": false,
+      "upliftCapPct": 4,
+      "priceGuaranteeMonths": 36,
+      "approval": "Deal desk approved",
+      "competitor": "None",
+      "nextStep": "Customer review with HR leadership by 2026-11-06",
+      "conditions": "Price valid for signature by the validity date; headcount true-up annually.",
+      "lines": [
+        {
+          "component": "Employee Central core",
+          "quantity": 4800,
+          "unit": "employees",
+          "annualEur": 312000,
+          "unitPriceEur": 65
+        },
+        {
+          "component": "Employee Central Payroll interface",
+          "quantity": 4800,
+          "unit": "employees",
+          "annualEur": 64000,
+          "unitPriceEur": 13.33
+        },
+        {
+          "component": "Onboarding module",
+          "quantity": 4800,
+          "unit": "employees",
+          "annualEur": 62000,
+          "unitPriceEur": 12.92
+        }
+      ]
+    },
+    {
+      "id": "OFF-2026-0318",
+      "type": "Renewal",
+      "product": "Ariba Procurement",
+      "contractId": "C-2023-0390",
+      "scope": "250 buyers, 2-year term",
+      "start": "2027-02-01",
+      "end": "2029-01-31",
+      "annualEur": 305000,
+      "currentAnnualEur": 290000,
+      "validUntil": "2026-12-04",
+      "status": "Open",
+      "createdOn": "2026-10-01",
+      "owner": {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      "stage": "Proposal sent",
+      "probabilityPct": 60,
+      "listPriceEur": 358824,
+      "discountPct": 15,
+      "billingCycle": "Quarterly in advance",
+      "paymentTerms": "30 days net",
+      "termMonths": 24,
+      "autoRenew": false,
+      "upliftCapPct": 3.5,
+      "priceGuaranteeMonths": 24,
+      "approval": "Deal desk approved",
+      "competitor": "Coupa (customer evaluating)",
+      "nextStep": "Workshop on supplier risk module on 2026-10-29",
+      "conditions": "Notice deadline of the current contract is 2026-11-02; offer must be accepted before.",
+      "lines": [
+        {
+          "component": "Ariba Sourcing and Contracts",
+          "quantity": 250,
+          "unit": "buyers",
+          "annualEur": 158000,
+          "unitPriceEur": 632
+        },
+        {
+          "component": "Ariba Buying and Invoicing",
+          "quantity": 250,
+          "unit": "buyers",
+          "annualEur": 104000,
+          "unitPriceEur": 416
+        },
+        {
+          "component": "Supplier risk module",
+          "quantity": 1,
+          "unit": "module",
+          "annualEur": 43000,
+          "unitPriceEur": 43000
+        }
+      ]
+    },
+    {
+      "id": "OFF-2026-0324",
+      "type": "New product",
+      "product": "Joule Work for Desktop",
+      "contractId": null,
+      "scope": "300 pilot users, Windows and macOS, 1-year term",
+      "start": "2027-01-01",
+      "end": "2027-12-31",
+      "annualEur": 118000,
+      "currentAnnualEur": 0,
+      "validUntil": "2026-11-30",
+      "status": "In negotiation",
+      "createdOn": "2026-09-10",
+      "owner": {
+        "name": "Lukas Fischer",
+        "role": "Joule Specialist, SAP",
+        "email": "lukas.fischer@example.com"
+      },
+      "stage": "Negotiation",
+      "probabilityPct": 45,
+      "listPriceEur": 140000,
+      "discountPct": 15.7,
+      "billingCycle": "Annual in advance",
+      "paymentTerms": "30 days net",
+      "termMonths": 12,
+      "autoRenew": true,
+      "upliftCapPct": 0,
+      "priceGuaranteeMonths": 12,
+      "approval": "Pending deal desk (discount above 15%)",
+      "competitor": "Microsoft Copilot (pilot running)",
+      "nextStep": "Security review with the customer CISO by 2026-11-10",
+      "conditions": "Pilot with 300 users on Windows and macOS; option to scale to 1,500 users at the same unit price.",
+      "lines": [
+        {
+          "component": "Joule Work for Desktop licences",
+          "quantity": 300,
+          "unit": "users",
+          "annualEur": 96000,
+          "unitPriceEur": 320
+        },
+        {
+          "component": "Onboarding and change enablement",
+          "quantity": 1,
+          "unit": "service",
+          "annualEur": 14000,
+          "unitPriceEur": 14000
+        },
+        {
+          "component": "Premium support",
+          "quantity": 1,
+          "unit": "service",
+          "annualEur": 8000,
+          "unitPriceEur": 8000
+        }
+      ]
+    }
   ],
   "tickets": [
-    {"id": "TKT-48213", "title": "Joule skill returns empty result for open purchase orders", "product": "Joule copilots", "priority": "High", "status": "In processing", "created": "2026-10-12", "updated": "2026-10-16"},
-    {"id": "TKT-48107", "title": "BTP AI Core deployment quota exceeded in eu10", "product": "BTP AI Core", "priority": "Very high", "status": "Waiting for customer", "created": "2026-10-08", "updated": "2026-10-15"},
-    {"id": "TKT-47888", "title": "Ariba approval workflow not triggering for cost centre 4711", "product": "Ariba AI", "priority": "Medium", "status": "In processing", "created": "2026-09-29", "updated": "2026-10-10"},
-    {"id": "TKT-47410", "title": "SuccessFactors AI job description suggestions in wrong language", "product": "SuccessFactors AI", "priority": "Low", "status": "Solution provided", "created": "2026-09-14", "updated": "2026-09-22"},
-    {"id": "TKT-46955", "title": "Request: increase Document AI quota for invoice backlog", "product": "Document AI", "priority": "Medium", "status": "Closed", "created": "2026-08-30", "updated": "2026-09-05"}
+    {
+      "id": "TKT-48213",
+      "title": "Joule skill returns empty result for open purchase orders",
+      "product": "Joule copilots",
+      "priority": "High",
+      "status": "In processing",
+      "created": "2026-10-12",
+      "updated": "2026-10-16"
+    },
+    {
+      "id": "TKT-48107",
+      "title": "BTP AI Core deployment quota exceeded in eu10",
+      "product": "BTP AI Core",
+      "priority": "Very high",
+      "status": "Waiting for customer",
+      "created": "2026-10-08",
+      "updated": "2026-10-15"
+    },
+    {
+      "id": "TKT-47888",
+      "title": "Ariba approval workflow not triggering for cost centre 4711",
+      "product": "Ariba AI",
+      "priority": "Medium",
+      "status": "In processing",
+      "created": "2026-09-29",
+      "updated": "2026-10-10"
+    },
+    {
+      "id": "TKT-47410",
+      "title": "SuccessFactors AI job description suggestions in wrong language",
+      "product": "SuccessFactors AI",
+      "priority": "Low",
+      "status": "Solution provided",
+      "created": "2026-09-14",
+      "updated": "2026-09-22"
+    },
+    {
+      "id": "TKT-46955",
+      "title": "Request: increase Document AI quota for invoice backlog",
+      "product": "Document AI",
+      "priority": "Medium",
+      "status": "Closed",
+      "created": "2026-08-30",
+      "updated": "2026-09-05"
+    }
   ]
 }
 </script>
@@ -339,11 +1156,75 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     renewals.forEach(function(c){ rows.push('<tr><td>' + tag('warn', days(c.end) + ' days') + '</td><td><b>' + esc(c.product) + '</b><div class="s">Contract ' + esc(c.id) + ' ends ' + esc(c.end) + ', notice period ' + c.noticeDays + ' days' + (function(){ var nd = new Date(new Date(c.end + 'T00:00:00Z') - c.noticeDays * 864e5).toISOString().slice(0, 10); return days(nd) < 0 ? ' (notice date ' + nd + ' has passed)' : ' (notice by ' + nd + ')'; })() + '</div></td></tr>'); });
     $('attention').innerHTML = '<table><tbody>' + rows.join('') + '</tbody></table>';
   }
+  var selContract = 0, selOffer = 0;
+  var val = function(v, fallback){ return v === null || v === undefined || v === '' ? (fallback || '–') : esc(v); };
+  var pctv = function(v){ return v === null || v === undefined ? '–' : v + ' %'; };
+  var yesno = function(v){ return v ? 'Yes' : 'No'; };
+  var person = function(x){ return x ? '<b>' + esc(x.name) + '</b><br><span class="s">' + esc(x.role) + '</span>' : '–'; };
+  function dl(rows){ return '<dl>' + rows.map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>'; }
+  function sec(title, rows){ return '<div><h3>' + title + '</h3>' + dl(rows) + '</div>'; }
+  function lineTable(lines){
+    if (!lines || !lines.length) return '';
+    return '<div class="lines tbl"><h3>Line items</h3><table><thead><tr><th>Component</th><th class="num">Quantity</th><th>Unit</th><th class="num">Unit price p.a.</th><th class="num">Annual value</th></tr></thead><tbody>' +
+      lines.map(function(l){ return '<tr><td>' + esc(l.component) + '</td><td class="num">' + n(l.quantity) + '</td><td>' + esc(l.unit) + '</td><td class="num">€' + l.unitPriceEur.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td><td class="num">' + eur(l.annualEur) + '</td></tr>'; }).join('') +
+      '<tr><td><b>Total</b></td><td></td><td></td><td></td><td class="num"><b>' + eur(lines.reduce(function(a, l){ return a + l.annualEur; }, 0)) + '</b></td></tr></tbody></table></div>';
+  }
+  function bar(part, whole, mode){ var plain = mode === 'prob'; var pc = whole ? Math.round(part / whole * 100) : 0; return '<div class="bar"><i class="' + (mode ? '' : tone(pc)) + '" style="width:' + Math.min(pc, 100) + '%"></i></div><div class="s">' + pc + '%' + (plain ? '' : ' (' + n(part) + ' of ' + n(whole) + ')') + '</div>'; }
+  function renderContractDetail(){
+    var c = D.contracts[selContract];
+    if (!c){ $('contract-detail').innerHTML = ''; return; }
+    var cls = {'Active': 'ok', 'Renewal due': 'warn', 'Expired': 'bad'};
+    var left = days(c.end);
+    var notice = new Date(Date.parse(c.end + 'T00:00:00Z') - (c.noticeDays || 0) * 864e5).toISOString().slice(0, 10);
+    var noticeLeft = days(notice);
+    var inv = c.invoicing || {};
+    var sla = c.sla || {};
+    $('contract-detail').innerHTML =
+      '<div class="head"><span class="t">' + esc(c.id) + ' · ' + esc(c.product) + '</span>' + tag(cls[c.status] || 'n', c.status) + '</div>' +
+      '<div class="s hint">' + esc(c.contractType) + ' · ' + esc(c.scope) + '</div>' +
+      '<div class="secs">' +
+        sec('Commercials', [['Annual value', eur(c.annualEur)], ['Discount', pctv(c.discountPct)], ['Billing', val(c.billingCycle)], ['Payment terms', val(c.paymentTerms)], ['Price uplift cap', pctv(c.priceUpliftCapPct)], ['Purchase order', val(c.poNumber)], ['Cost centre', val(c.costCenter)]]) +
+        sec('Term and renewal', [['Signed', val(c.signedOn)], ['Term', esc(c.start) + ' → ' + esc(c.end)], ['Remaining', left >= 0 ? left + ' days' : 'ended'], ['Notice period', c.noticeDays + ' days'], ['Last day to give notice', esc(notice) + (c.status !== 'Expired' ? ' (' + (noticeLeft >= 0 ? noticeLeft + ' days left' : 'passed') + ')' : '')], ['Auto-renewal', yesno(c.autoRenew) + (c.autoRenew ? ' (' + c.renewalTermMonths + ' months)' : ' · re-order needed')], ['Termination', val(c.termination)]]) +
+        sec('Service', [['Service level', val(sla.tier)], ['Availability', sla.availabilityPct ? pctv(sla.availabilityPct) : '–'], ['Support hours', val(sla.supportHours)], ['Response "Very high"', sla.responseVeryHighMin ? sla.responseVeryHighMin + ' min' : '–'], ['Data centre', val(c.dataCenter)], ['Deployment', val(c.deployment)]]) +
+        sec('Contacts', [['SAP account', person(c.sapOwner)], ['Customer success', person(c.csm)], ['Customer owner', person(c.customerOwner)]]) +
+        sec('Usage and billing', [['Licensed', c.licensedUnits ? n(c.licensedUnits) + ' ' + esc(c.unit) : '–'], ['In use', c.licensedUnits && c.status !== 'Expired' ? bar(c.usedUnits, c.licensedUnits, 'neutral') : '–'], ['Payment status', val(inv.paymentStatus)], ['Open invoices', inv.openInvoices ? inv.openInvoices + ' · ' + eur(inv.openAmountEur) : 'none'], ['Next invoice', val(inv.nextInvoiceOn)]]) +
+        sec('Legal', [['Contracting entity', val(c.legalEntity)], ['Governing law', val(c.governingLaw)], ['Currency', val(c.currency)]]) +
+      '</div>' + lineTable(c.lines) + (c.notes ? '<div class="note">' + esc(c.notes) + '</div>' : '');
+  }
+  function renderOfferDetail(){
+    var o = D.offers[selOffer];
+    if (!o){ $('offer-detail').innerHTML = ''; return; }
+    var cls = {'Open': 'warn', 'In negotiation': 'n', 'Accepted': 'ok', 'Declined': 'n', 'Expired': 'bad'};
+    var left = days(o.validUntil);
+    var diff = o.currentAnnualEur ? ((o.annualEur / o.currentAnnualEur - 1) * 100).toFixed(1).replace(/^(\d)/, '+$1') + '% vs. today (' + eur(o.currentAnnualEur) + ')' : 'new product';
+    $('offer-detail').innerHTML =
+      '<div class="head"><span class="t">' + esc(o.id) + ' · ' + esc(o.product) + '</span>' + tag(cls[o.status] || 'n', o.status) + '</div>' +
+      '<div class="s hint">' + esc(o.type) + ' · ' + esc(o.scope) + (o.contractId ? ' · renews ' + esc(o.contractId) : '') + '</div>' +
+      '<div class="secs">' +
+        sec('Price', [['Annual value', eur(o.annualEur)], ['List price', o.listPriceEur ? eur(o.listPriceEur) : '–'], ['Discount', pctv(o.discountPct)], ['Compared to today', diff], ['Billing', val(o.billingCycle)], ['Payment terms', val(o.paymentTerms)]]) +
+        sec('Term', [['Term', esc(o.start) + ' → ' + esc(o.end) + ' (' + o.termMonths + ' months)'], ['Valid until', esc(o.validUntil) + ' (' + (left >= 0 ? left + ' days left' : 'lapsed') + ')'], ['Auto-renewal', yesno(o.autoRenew)], ['Price guarantee', o.priceGuaranteeMonths ? o.priceGuaranteeMonths + ' months' : '–'], ['Price uplift cap', pctv(o.upliftCapPct)]]) +
+        sec('Deal status', [['Stage', val(o.stage)], ['Win probability', o.probabilityPct === null || o.probabilityPct === undefined ? '–' : bar(o.probabilityPct, 100, 'prob')], ['Approval', val(o.approval)], ['Competitor', val(o.competitor)], ['Next step', val(o.nextStep)], ['Created', val(o.createdOn)]]) +
+        sec('Contact', [['SAP owner', person(o.owner)]]) +
+      '</div>' + lineTable(o.lines) + (o.conditions ? '<div class="note"><b>Conditions:</b> ' + esc(o.conditions) + '</div>' : '');
+  }
+  function pick(root, kind, e){
+    var tr = e.target.closest('tr');
+    if (!tr || tr.dataset.i === undefined) return;
+    if (kind === 'c') selContract = Number(tr.dataset.i); else selOffer = Number(tr.dataset.i);
+    Array.prototype.forEach.call($(root).querySelectorAll('tbody tr'), function(row){ row.setAttribute('aria-selected', String(row === tr)); });
+    if (kind === 'c') renderContractDetail(); else renderOfferDetail();
+  }
+  ['contracts', 'offers'].forEach(function(root){
+    var kind = root === 'contracts' ? 'c' : 'o';
+    $(root).addEventListener('click', function(e){ pick(root, kind, e); });
+    $(root).addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(root, kind, e); } });
+  });
   function renderContracts(){
     var cls = {'Active': 'ok', 'Renewal due': 'warn', 'Expired': 'bad'};
     $('contracts').innerHTML = '<table><thead><tr><th>Contract</th><th>Product</th><th>Scope</th><th>Term</th><th class="num">Annual value</th><th>Status</th></tr></thead><tbody>' +
-      D.contracts.map(function(c){ return '<tr><td>' + esc(c.id) + '</td><td><b>' + esc(c.product) + '</b></td><td>' + esc(c.scope) + '</td><td>' + esc(c.start) + ' → ' + esc(c.end) + '<div class="s">' + (days(c.end) >= 0 ? days(c.end) + ' days left' : 'ended') + '</div></td><td class="num">' + eur(c.annualEur) + '</td><td>' + tag(cls[c.status] || 'n', c.status) + '</td></tr>'; }).join('') +
+      D.contracts.map(function(c, i){ return '<tr tabindex="0" data-i="' + i + '" aria-selected="' + (i === selContract) + '"><td>' + esc(c.id) + '</td><td><b>' + esc(c.product) + '</b></td><td>' + esc(c.scope) + '</td><td>' + esc(c.start) + ' → ' + esc(c.end) + '<div class="s">' + (days(c.end) >= 0 ? days(c.end) + ' days left' : 'ended') + '</div></td><td class="num">' + eur(c.annualEur) + '</td><td>' + tag(cls[c.status] || 'n', c.status) + '</td></tr>'; }).join('') +
       '</tbody></table>';
+    renderContractDetail();
   }
   var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var SHADES = [1, .78, .58, .42, .28];
@@ -377,11 +1258,12 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   function renderOffers(){
     var cls = {'Open': 'warn', 'In negotiation': 'n', 'Accepted': 'ok', 'Declined': 'n', 'Expired': 'bad'};
     $('offers').innerHTML = '<table><thead><tr><th>Offer</th><th>Product</th><th>Type</th><th>Term</th><th class="num">Annual value</th><th class="num">vs. today</th><th>Valid until</th><th>Status</th></tr></thead><tbody>' +
-      D.offers.map(function(o){
+      D.offers.map(function(o, i){
         var diff = o.currentAnnualEur ? ((o.annualEur / o.currentAnnualEur - 1) * 100).toFixed(1).replace(/^(\d)/, '+$1') + '%' : 'new';
         var left = days(o.validUntil);
-        return '<tr><td>' + esc(o.id) + '</td><td><b>' + esc(o.product) + '</b><div class="s">' + esc(o.scope) + (o.contractId ? ' · renews ' + esc(o.contractId) : '') + '</div></td><td>' + tag(o.type === 'Renewal' ? 'n' : 'ok', o.type) + '</td><td>' + esc(o.start) + ' → ' + esc(o.end) + '</td><td class="num">' + eur(o.annualEur) + '</td><td class="num">' + diff + '</td><td>' + esc(o.validUntil) + '<div class="s">' + (left >= 0 ? left + ' days left' : 'lapsed') + '</div></td><td>' + tag(cls[o.status] || 'n', o.status) + '</td></tr>';
+        return '<tr tabindex="0" data-i="' + i + '" aria-selected="' + (i === selOffer) + '"><td>' + esc(o.id) + '</td><td><b>' + esc(o.product) + '</b><div class="s">' + esc(o.scope) + (o.contractId ? ' · renews ' + esc(o.contractId) : '') + '</div></td><td>' + tag(o.type === 'Renewal' ? 'n' : 'ok', o.type) + '</td><td>' + esc(o.start) + ' → ' + esc(o.end) + '</td><td class="num">' + eur(o.annualEur) + '</td><td class="num">' + diff + '</td><td>' + esc(o.validUntil) + '<div class="s">' + (left >= 0 ? left + ' days left' : 'lapsed') + '</div></td><td>' + tag(cls[o.status] || 'n', o.status) + '</td></tr>';
       }).join('') + '</tbody></table>';
+    renderOfferDetail();
   }
   function renderUsage(){
     $('usage-kpis').innerHTML =
