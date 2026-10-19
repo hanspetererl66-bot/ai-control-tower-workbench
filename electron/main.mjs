@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
 import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments } from './attachments.mjs';
+import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
@@ -494,6 +495,9 @@ ipcMain.handle('prepare-control-tower-connector', () => {
     cpSync(join(source, 'manifest.json'), join(target, 'manifest.json'));
     cpSync(join(source, 'server'), join(target, 'server'), { recursive: true });
     cpSync(join(ROOT, 'examples/control-tower/data.json'), join(target, 'data/data.json'));
+    // Sample data the tools read; without these the bundle would look for the repository's examples/ folder, which is not next to it.
+    writeFileSync(join(target, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8')), null, 2));
+    cpSync(join(ROOT, 'examples/automation-dashboard/categories.json'), join(target, 'data/n8n-categories.json'));
 
     const sub = (s) => String(s).replace(/\$\{__dirname\}/g, target);
     const request = {

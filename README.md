@@ -295,3 +295,13 @@ It reads workflows (name, tags, active) and the last 14 days of executions (stat
 **Categories.** The Automation Dashboard sorts workflows into categories by their n8n tags (rules and assumed minutes per run in `examples/automation-dashboard/categories.json`, first match wins). A workflow can be pinned with the n8n tag `cat:<Category name>`. Trigger and connected apps are derived from the workflow's node types. The Categories tab shows the rules, per-category figures and the workflows that are not categorized yet. Time saved is an estimate (successful runs x assumed minutes), not a measurement.
 
 **Text size in Spaces.** All Spaces render 15% larger by default. Settings → "Text size in Spaces" offers 100%, 115% and 130%. The app injects one `zoom` rule into the page it hands to the Space frame, so it also applies to Spaces the agent builds and needs no change inside a Space.
+
+### Asking the chat about n8n and the Sub4Me test customer
+
+Connector 0.10.0 adds, next to the Control Tower tools:
+
+- **Sub4Me 360°:** `get_customer_overview` (master data, contracts, offers, AI units, tickets, highlights), `get_product_overview`, `get_contract`, `get_offer`, `search_sub4me`. Contracts, offers and consumption are the sample data of the Sub4Me Space; tickets come from Supabase when connected, otherwise the sample tickets.
+- **n8n Cloud:** `get_n8n_overview`, `list_n8n_workflows`, `get_n8n_workflow`, `list_n8n_executions`, `list_n8n_categories`. They read the n8n public API (last 14 days, status, mode, duration, tags, node types; never execution contents) and use the same categories as the Automation Dashboard. For this, import the connector again ("Import .mcpb…" or the Control Tower connector entry) and fill in the two new fields: the n8n address and an n8n API key. The key is stored as a secret.
+- Starting or changing workflows is not part of these tools. That is what "Mit Chat verbinden" in the n8n view provides (n8n's own MCP server, only for workflows marked "Available in MCP").
+
+Examples: "Wie läuft unsere n8n-Automatisierung?", "Welche Workflows sind in den letzten Tagen fehlgeschlagen?", "Gib mir das Gesamtbild zu unserem Testkunden", "Wann muss der Ariba-Vertrag gekündigt werden?".

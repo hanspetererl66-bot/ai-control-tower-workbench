@@ -66,6 +66,56 @@ export const SUB4ME_TOOL_DEFINITIONS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'get_customer_overview',
+    description:
+      'Everything about the Sub4Me test customer (Muster Industrie AG) in one answer: master data (name, customer number, contact, country), contracts by status with annual value and those ending soon, open offers, AI-unit consumption with forecast, service tickets by status and priority, plus highlights that need attention (renewals due, offers about to expire, products forecast to exceed their allotment). Use it for broad questions such as "give me the full picture of the customer". Sample data from the Sub4Me example Space; tickets come from Supabase when connected.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
+    name: 'get_product_overview',
+    description:
+      'Everything about one Sub4Me product in one answer: its contracts, offers (renewal or new), AI-unit consumption with forecast, and service tickets. Partial product names work (for example "ariba", "Joule"). Sample data from the Sub4Me example Space.',
+    inputSchema: {
+      type: 'object',
+      properties: { product: { type: 'string', description: 'Product name, case-insensitive, partial names work.' } },
+      required: ['product'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'get_contract',
+    description:
+      'One Sub4Me contract by id (for example "C-2025-0041"): terms, days until the end, the last day to give notice, linked renewal offers, consumption of the product and its service tickets. Sample data from the Sub4Me example Space.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: { type: 'string', description: 'Contract id.' } },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'get_offer',
+    description:
+      'One SAP offer to the Sub4Me customer by id: type, term, annual value versus today, validity, status and the contract it renews. Sample data from the Sub4Me example Space.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: { type: 'string', description: 'Offer id.' } },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'search_sub4me',
+    description:
+      'Free-text search across everything of the Sub4Me customer: products, contracts, offers and service tickets (ids, titles, products, status). Use it when the person names something and it is unclear what it is.',
+    inputSchema: {
+      type: 'object',
+      properties: { query: { type: 'string', description: 'Search text, at least 2 characters.' } },
+      required: ['query'],
+      additionalProperties: false,
+    },
+  },
 ];
 
 const pct = (part, whole) => (whole ? Math.round((part / whole) * 1000) / 10 : 0);
@@ -101,7 +151,36 @@ export function projectUnits(monthly, allotment, asOf) {
   };
 }
 
-export function createSub4MeHandlers(load = loadSub4MeData) {
+const countBy = (list, key) => list.reduce((acc, item) => ({ ...acc, [item[key]]: (acc[item[key]] ?? 0) + 1 }), {});
+const sameProduct = (a, b) => {
+  const x = String(a ?? '').toLowerCase();
+  const y = String(b ?? '').toLowerCase();
+  return Boolean(x && y) && (x.includes(y) || y.includes(x));
+};
+const noticeDeadline = (contract) => new Date(Date.parse(`${contract.end}T00:00:00Z`) - (contract.noticeDays ?? 0) * 864e5).toISOString().slice(0, 10);
+
+function matchProduct(d, name) {
+  const needle = String(name ?? '').trim().toLowerCase();
+  if (!needle) throw new ToolError('product is required');
+  const match = d.products.find((p) => p.name.toLowerCase() === needle) ?? d.products.find((p) => p.name.toLowerCase().includes(needle));
+  if (!match) throw new ToolError(`Unknown product "${name}". Known: ${d.products.map((p) => p.name).join(', ')}`);
+  return match;
+}
+
+/** Real tickets live in Supabase; without a connection (or on an error) the sample tickets of the Space are used. */
+async function ticketsOf(d, rpc) {
+  if (rpc) {
+    try {
+      const list = await rpc('sub4me_tickets', {});
+      if (Array.isArray(list)) return { list, dataSource: 'supabase' };
+    } catch {
+      // fall back to the sample tickets below
+    }
+  }
+  return { list: d.tickets ?? [], dataSource: 'sample data (Supabase not connected)' };
+}
+
+export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
   const data = () => {
     try {
       return load();
@@ -110,7 +189,7 @@ export function createSub4MeHandlers(load = loadSub4MeData) {
     }
   };
   const source = 'sample data (Sub4Me example Space)';
-  return {
+  const self = {
     list_contracts(args) {
       const { status } = args;
       if (status !== undefined && !CONTRACT_STATUSES.includes(status)) {
@@ -218,5 +297,143 @@ export function createSub4MeHandlers(load = loadSub4MeData) {
       }
       return result;
     },
+
+    /* ---- 360 degree views: built from the same sample data as the tools above ---- */
+    async get_customer_overview() {
+      const d = data();
+      const asOf = new Date(`${d.asOf}T00:00:00Z`);
+      const days = (iso) => Math.round((new Date(`${iso}T00:00:00Z`) - asOf) / 864e5);
+      const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
+      const consumption = self.get_ai_consumption({});
+      const contracts = d.contracts;
+      const offers = d.offers ?? [];
+      const openOffers = offers.filter((o) => o.status === 'Open' || o.status === 'In negotiation');
+      const endingSoon = contracts.filter((c) => c.status !== 'Expired' && days(c.end) >= 0 && days(c.end) <= 120).map((c) => ({ id: c.id, product: c.product, end: c.end, daysUntilEnd: days(c.end), noticeDeadline: noticeDeadline(c) }));
+      const closed = (t) => t.status === 'Closed' || t.status === 'Solution provided';
+      const atRisk = consumption.products.filter((p) => p.forecastYearEnd > p.allotment).map((p) => ({ name: p.name, forecastPct: p.forecastPct, exhaustedIn: p.exhaustedIn }));
+      const expiringOffers = openOffers.filter((o) => days(o.validUntil) <= 30).map((o) => ({ id: o.id, product: o.product, validUntil: o.validUntil, daysLeft: days(o.validUntil) }));
+      const highlights = [];
+      for (const c of endingSoon) highlights.push(`Contract ${c.id} (${c.product}) ends in ${c.daysUntilEnd} days; notice deadline ${c.noticeDeadline}${c.noticeDeadline < d.asOf ? ' (already passed)' : ''}.`);
+      for (const o of expiringOffers) highlights.push(`Offer ${o.id} (${o.product}) is valid for ${o.daysLeft} more days.`);
+      for (const p of atRisk) highlights.push(`${p.name} is forecast to use ${p.forecastPct}% of its AI-unit allotment${p.exhaustedIn ? `, exhausted in ${p.exhaustedIn}` : ''}.`);
+      const expired = contracts.filter((c) => c.status === 'Expired');
+      if (expired.length) highlights.push(`${expired.length} contract(s) expired: ${expired.map((c) => c.id).join(', ')}.`);
+      return {
+        customer: d.customer,
+        asOf: d.asOf,
+        products: d.products.map((p) => p.name),
+        contracts: {
+          total: contracts.length,
+          byStatus: Object.fromEntries(CONTRACT_STATUSES.map((st) => [st, contracts.filter((c) => c.status === st).length])),
+          annualValueEur: sum(contracts.filter((c) => c.status !== 'Expired').map((c) => c.annualEur)),
+          endingWithin120Days: endingSoon,
+        },
+        offers: {
+          total: offers.length,
+          byStatus: Object.fromEntries(OFFER_STATUSES.map((st) => [st, offers.filter((o) => o.status === st).length])),
+          open: openOffers.map((o) => ({ id: o.id, type: o.type, product: o.product, annualEur: o.annualEur, validUntil: o.validUntil })),
+          openValueEur: sum(openOffers.map((o) => o.annualEur)),
+        },
+        aiUnits: {
+          allotment: consumption.allotment,
+          usedSoFar: consumption.usedSoFar,
+          usedPct: consumption.usedPct,
+          remaining: consumption.remaining,
+          forecastYearEnd: consumption.forecastYearEnd,
+          forecastPct: consumption.forecastPct,
+          exhaustedIn: consumption.exhaustedIn,
+          productsForecastOverAllotment: atRisk,
+        },
+        tickets: {
+          total: tickets.length,
+          open: tickets.filter((t) => !closed(t)).length,
+          byStatus: countBy(tickets, 'status'),
+          byPriority: countBy(tickets, 'priority'),
+          latest: tickets.slice(0, 5),
+        },
+        highlights,
+        view: { space: 'sub4me', tab: 'overview' },
+        dataSource: `${source}; tickets: ${ticketSource}`,
+      };
+    },
+    async get_product_overview(args = {}) {
+      const d = data();
+      const match = matchProduct(d, args.product);
+      const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
+      const consumption = self.get_ai_consumption({ product: match.name });
+      return {
+        customer: d.customer?.name,
+        asOf: d.asOf,
+        product: match.name,
+        consumption: consumption.products[0],
+        contracts: d.contracts.filter((c) => sameProduct(c.product, match.name)),
+        offers: (d.offers ?? []).filter((o) => sameProduct(o.product, match.name)),
+        tickets: tickets.filter((t) => sameProduct(t.product, match.name)),
+        view: { space: 'sub4me', tab: 'usage' },
+        dataSource: `${source}; tickets: ${ticketSource}`,
+      };
+    },
+    async get_contract(args = {}) {
+      const d = data();
+      const id = String(args.id ?? '').trim().toLowerCase();
+      if (!id) throw new ToolError('id is required');
+      const contract = d.contracts.find((c) => c.id.toLowerCase() === id);
+      if (!contract) throw new ToolError(`No contract with id "${args.id}". Known ids: ${d.contracts.map((c) => c.id).join(', ')}`);
+      const asOf = new Date(`${d.asOf}T00:00:00Z`);
+      const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
+      const consumption = d.products.some((p) => sameProduct(p.name, contract.product)) ? self.get_ai_consumption({ product: contract.product }).products[0] : null;
+      return {
+        customer: d.customer?.name,
+        asOf: d.asOf,
+        contract: {
+          ...contract,
+          daysUntilEnd: Math.round((new Date(`${contract.end}T00:00:00Z`) - asOf) / 864e5),
+          noticeDeadline: noticeDeadline(contract),
+        },
+        renewalOffers: (d.offers ?? []).filter((o) => o.contractId === contract.id),
+        consumption,
+        tickets: tickets.filter((t) => sameProduct(t.product, contract.product)),
+        view: { space: 'sub4me', tab: 'contracts' },
+        dataSource: `${source}; tickets: ${ticketSource}`,
+      };
+    },
+    get_offer(args = {}) {
+      const d = data();
+      const id = String(args.id ?? '').trim().toLowerCase();
+      if (!id) throw new ToolError('id is required');
+      const offers = d.offers ?? [];
+      const offer = offers.find((o) => o.id.toLowerCase() === id);
+      if (!offer) throw new ToolError(`No offer with id "${args.id}". Known ids: ${offers.map((o) => o.id).join(', ')}`);
+      const asOf = new Date(`${d.asOf}T00:00:00Z`);
+      return {
+        customer: d.customer?.name,
+        asOf: d.asOf,
+        offer: {
+          ...offer,
+          changeVsTodayPct: offer.currentAnnualEur ? Math.round((offer.annualEur / offer.currentAnnualEur - 1) * 1000) / 10 : null,
+          daysUntilExpiry: Math.round((new Date(`${offer.validUntil}T00:00:00Z`) - asOf) / 864e5),
+        },
+        renewsContract: offer.contractId ? d.contracts.find((c) => c.id === offer.contractId) ?? null : null,
+        view: { space: 'sub4me', tab: 'contracts' },
+        dataSource: source,
+      };
+    },
+    async search_sub4me(args = {}) {
+      const query = String(args.query ?? '').trim().toLowerCase();
+      if (query.length < 2) throw new ToolError('query must be at least 2 characters');
+      const d = data();
+      const { list: tickets, dataSource: ticketSource } = await ticketsOf(d, rpc);
+      const hit = (item) => Object.values(item).some((v) => typeof v === 'string' && v.toLowerCase().includes(query));
+      const cap = (list) => list.slice(0, 10);
+      return {
+        query: args.query,
+        products: cap(d.products.filter((p) => p.name.toLowerCase().includes(query)).map((p) => p.name)),
+        contracts: cap(d.contracts.filter(hit)),
+        offers: cap((d.offers ?? []).filter(hit)),
+        tickets: cap(tickets.filter(hit)),
+        dataSource: `${source}; tickets: ${ticketSource}`,
+      };
+    },
   };
+  return self;
 }

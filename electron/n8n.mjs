@@ -9,21 +9,8 @@ import { dirname } from 'node:path';
 
 export const N8N_EXTENSION = 'n8n';
 
-/** Accepts "acme.app.n8n.cloud" or a full https URL; returns the bare origin. Throws a readable error otherwise. */
-export function normalizeInstanceUrl(raw) {
-  const text = String(raw ?? '').trim();
-  if (!text) throw new Error('Bitte die n8n-Adresse eintragen, z. B. https://firma.app.n8n.cloud');
-  let url;
-  try {
-    url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`);
-  } catch {
-    throw new Error('Die n8n-Adresse ist keine gültige URL.');
-  }
-  if (url.protocol !== 'https:') throw new Error('Die n8n-Adresse muss mit https:// beginnen.');
-  if (url.username || url.password) throw new Error('Die n8n-Adresse darf keine Zugangsdaten enthalten.');
-  if (!url.hostname.includes('.')) throw new Error('Die n8n-Adresse braucht einen vollständigen Hostnamen.');
-  return url.origin;
-}
+import { normalizeInstanceUrl } from '../connectors/control-tower/server/n8n.mjs';
+export { normalizeInstanceUrl };
 
 /** Endpoint of n8n's instance-level MCP server (Settings → Instance-level MCP). */
 export function mcpUrl(origin) {
