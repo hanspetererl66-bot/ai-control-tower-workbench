@@ -67,7 +67,6 @@ export default function Rail({
         >
           <GearIcon />
         </button>
-        <div className="rail-avatar">MZ</div>
         <button className="rail-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
           <PanelIcon />
         </button>
