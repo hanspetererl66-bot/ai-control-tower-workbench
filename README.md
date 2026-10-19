@@ -327,6 +327,6 @@ One interactive graph over the other examples: the Sub4Me customer with contract
 
 Install it with `npm run install:knowledge-graph` (or `npm run install:examples knowledge-graph`).
 
-In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact** (what hangs on a node, depth 1–4, animated by distance), **Path** (shortest connection between two nodes), a guided tour that follows the Ariba contract, type filters, pinning (double-click), minimap and keyboard controls (`+`/`-`, arrows, `0`, `Esc`). Hub nodes (systems, connector) are not followed in Impact and Path, so results stay about business relations.
+In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact** (what hangs on a node, depth 1–4, animated by distance), **Path** (shortest connection between two nodes), two guided tours (Ariba renewal, AI governance), type filters, pinning (double-click), minimap and keyboard controls (`+`/`-`, arrows, `0`, `Esc`). Hub nodes (systems, connector) are not followed in Impact and Path, so results stay about business relations.
 
 The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.

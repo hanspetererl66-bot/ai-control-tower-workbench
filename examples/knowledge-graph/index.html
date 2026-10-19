@@ -3803,37 +3803,77 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "AFFECTS"
   }
  ],
- "tour": [
+ "tours": [
   {
-   "node": "customer:muster-industrie-ag",
-   "title": "One customer",
-   "text": "Muster Industrie AG is the centre of the Sub4Me data: contracts, offers, tickets and AI-unit consumption hang off it."
+   "id": "ariba",
+   "title": "Ariba renewal",
+   "summary": "From one customer to a contract, its offer, automation, skills and governance.",
+   "steps": [
+    {
+     "node": "customer:muster-industrie-ag",
+     "title": "One customer",
+     "text": "Muster Industrie AG is the centre of the Sub4Me data: contracts, offers, tickets and AI-unit consumption hang off it."
+    },
+    {
+     "node": "contract:C-2023-0390",
+     "title": "A contract that ends soon",
+     "text": "Ariba Procurement runs until 2027-01-31 and the notice deadline is close. Everything around it lights up when you ask for the impact.",
+     "impact": true
+    },
+    {
+     "node": "offer:OFF-2026-0318",
+     "title": "The renewal offer",
+     "text": "SAP offered a two-year renewal. The offer renews the contract and is tied to the same product."
+    },
+    {
+     "node": "workflow:contract-renewal-reminder",
+     "title": "Automation that watches it",
+     "text": "An n8n workflow reminds the account team about renewals, so a change here also touches automation."
+    },
+    {
+     "node": "skill:renewal-radar",
+     "title": "Skills that read the data",
+     "text": "Skills such as renewal-radar and customer-call-prep use the Sub4Me tools and serve the same customer."
+    },
+    {
+     "node": "risk:R2",
+     "title": "Governance on the other side",
+     "text": "Switch the view and the same graph shows risks and agents: overprivileged agents are tied to risk R2 and to the access review skill."
+    }
+   ]
   },
   {
-   "node": "contract:C-2023-0390",
-   "title": "A contract that ends soon",
-   "text": "Ariba Procurement runs until 2027-01-31 and the notice deadline is close. Everything around it lights up when you ask for the impact.",
-   "impact": true
-  },
-  {
-   "node": "offer:OFF-2026-0318",
-   "title": "The renewal offer",
-   "text": "SAP offered a two-year renewal. The offer renews the contract and is tied to the same product."
-  },
-  {
-   "node": "workflow:contract-renewal-reminder",
-   "title": "Automation that watches it",
-   "text": "An n8n workflow reminds the account team about renewals, so a change here also touches automation."
-  },
-  {
-   "node": "skill:renewal-radar",
-   "title": "Skills that read the data",
-   "text": "Skills such as renewal-radar and customer-call-prep use the Sub4Me tools and serve the same customer."
-  },
-  {
-   "node": "risk:R2",
-   "title": "Governance on the other side",
-   "text": "Switch the view and the same graph shows risks and agents: overprivileged agents are tied to risk R2 and to the access review skill."
+   "id": "governance",
+   "title": "AI governance",
+   "summary": "Two risks, one agent that sits in both, and the skills that help.",
+   "steps": [
+    {
+     "node": "risk:R2",
+     "impact": true,
+     "title": "Risk R2: overprivileged agents",
+     "text": "The CISO owns this high risk (progress 35%, due Dec 2026). Impact mode shows the seven agent families whose identities hold more rights than they need."
+    },
+    {
+     "node": "agent:contract-drafter",
+     "title": "One agent, two risks",
+     "text": "Contract Drafter is tied to R2 and to the EU AI Act risk. Where risks overlap, one fix pays twice, and one miss hurts twice."
+    },
+    {
+     "node": "risk:R6",
+     "title": "Risk R6: EU AI Act",
+     "text": "General Counsel owns this one (progress 44%, due 12 Dec 2026). It touches the agents that classify contracts, draft replies and run onboarding or rosters."
+    },
+    {
+     "node": "skill:access-review-prep",
+     "title": "A skill that closes the gap",
+     "text": "access-review-prep reads the overprivileged-agent data through the connector tools and is linked to R2 and R7. It is still a pilot and owned by Platform Security."
+    },
+    {
+     "node": "skill:board-briefing",
+     "title": "From findings to the board",
+     "text": "board-briefing turns risks, agents and budget into a one-page briefing and is linked to the EU AI Act risk. access-review-prep depends on it, so the chain ends with a decision-ready summary."
+    }
+   ]
   }
  ]
 }
@@ -3978,7 +4018,7 @@ function sentence(from, s) {
 }
 
 /* ---------- state ---------- */
-const S = { mode: 'explore', sel: null, hover: null, depth: 2, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false };
+const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false };
 let foc = null; // { level: Map id->level, edges: Set }
 function computeFocus() {
   foc = null;
@@ -4241,8 +4281,8 @@ function renderPanel() {
   const n = S.sel;
   let h = '';
   if (S.tour >= 0) {
-    const st = D.tour[S.tour];
-    h += `<div class="card"><span class="pill">Step ${S.tour + 1} of ${D.tour.length}</span><h2 style="margin-top:8px">${esc(st.title)}</h2><p>${esc(st.text)}</p><div class="row"><button class="btn" id="t-prev"${S.tour === 0 ? ' disabled' : ''}>◀ Back</button><button class="btn" id="t-next">${S.tour === D.tour.length - 1 ? 'Finish' : 'Next ▶'}</button><button class="btn" id="t-end">End tour</button></div></div>`;
+    const st = S.tourSet.steps[S.tour];
+    h += `<div class="card"><span class="pill">${esc(S.tourSet.title)} · step ${S.tour + 1} of ${S.tourSet.steps.length}</span><h2 style="margin-top:8px">${esc(st.title)}</h2><p>${esc(st.text)}</p><div class="row"><button class="btn" id="t-prev"${S.tour === 0 ? ' disabled' : ''}>◀ Back</button><button class="btn" id="t-next">${S.tour === S.tourSet.steps.length - 1 ? 'Finish' : 'Next ▶'}</button><button class="btn" id="t-end">End tour</button></div></div>`;
   }
   if (S.mode === 'path') {
     h += `<h2>Path</h2><p style="color:var(--mut);margin:4px 0 8px">${!S.pathA ? 'Click a start node.' : !S.steps ? `Start: <b>${esc(S.pathA.label)}</b>. Now click the target node.` : ''}</p>`;
@@ -4269,7 +4309,7 @@ function renderPanel() {
     h += `<div class="conn"><button data-go="${esc(S.pathA.id)}">${esc(S.pathA.label)}<small>start</small></button></div>`;
   }
   if (!n && S.mode !== 'path' && S.tour < 0) {
-    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p><div class="row"><button class="btn" id="a-tour">▶ Start guided tour</button></div>`;
+    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
     const top = [...nodes].sort((a, b) => b.deg - a.deg).filter((x) => !HUB.has(x.type)).slice(0, 8);
     h += `<h3>Best connected</h3><div class="conn">${top.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])} · ${x.deg} relations</small></button>`).join('')}</div>`;
   }
@@ -4279,8 +4319,11 @@ function renderPanel() {
   on('#a-impact', () => { const keep = S.sel; setMode('impact'); setSel(keep); });
   on('#a-path', () => { const keep = S.sel; setMode('path'); S.pathA = keep; S.sel = keep; computeFocus(); renderPanel(); });
   on('#a-unpin', () => { n.pin = false; renderPanel(); });
-  on('#a-tour', () => startTour());
+  panel.querySelectorAll('[data-tour]').forEach((b) => (b.onclick = () => startTour(Number(b.dataset.tour))));
   on('#t-prev', () => tourGo(S.tour - 1)); on('#t-next', () => tourGo(S.tour + 1)); on('#t-end', endTour);
+}
+function tourButtons() {
+  return `<div class="conn">${D.tours.map((t, i) => `<button data-tour="${i}">▶ ${esc(t.title)}<small>${esc(t.summary)}</small></button>`).join('')}</div>`;
 }
 function showHover(n) { if (n && !S.sel) $('#hint').textContent = `${D.nodeTypes[n.type]}: ${n.label} · ${n.deg} relations`; else if (!n) $('#hint').textContent = S.mode === 'path' ? 'Path mode: click a start node, then a target node' : S.mode === 'impact' ? 'Impact mode: click a node to see everything that hangs on it' : 'Drag to move · scroll to zoom · double-click a node to pin it'; }
 
@@ -4305,10 +4348,10 @@ q.addEventListener('keydown', (e) => {
 document.addEventListener('click', (e) => { if (!e.target.closest('.search')) res.hidden = true; });
 
 /* ---------- guided tour ---------- */
-function startTour() { if (!D.tour.length) return; setMode('explore'); tourGo(0); }
+function startTour(ti = 0) { if (!D.tours[ti]) return; setMode('explore'); S.tourSet = D.tours[ti]; tourGo(0); }
 function tourGo(i) {
-  if (i < 0) return; if (i >= D.tour.length) return endTour();
-  const st = D.tour[i], n = byId.get(st.node); if (!n) return endTour();
+  if (i < 0) return; if (i >= S.tourSet.steps.length) return endTour();
+  const st = S.tourSet.steps[i], n = byId.get(st.node); if (!n) return endTour();
   S.mode = st.impact ? 'impact' : 'explore';
   for (const k of ['explore', 'impact', 'path']) $('#m-' + k).setAttribute('aria-pressed', String(k === S.mode));
   $('#depth-l').hidden = S.mode !== 'impact';
@@ -4317,7 +4360,11 @@ function tourGo(i) {
   flyTo(n, 1.25); renderPanel();
 }
 function endTour() { S.tour = -1; S.sel = null; setMode('explore'); fit(); }
-$('#tour').onclick = () => (S.tour >= 0 ? endTour() : startTour());
+$('#tour').onclick = () => {
+  if (S.tour >= 0) return endTour();
+  if (D.tours.length === 1) return startTour(0);
+  setMode('explore'); S.sel = null; computeFocus(); renderPanel(); panel.scrollTop = 0;
+};
 
 /* ---------- theme + boot ---------- */
 readColors();

@@ -254,7 +254,7 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
     edgeTypes: EDGE_TYPES,
     nodes: [...nodes.values()],
     edges,
-    tour: links?.tour ?? [],
+    tours: links?.tours ?? [],
     ...(missing.length ? { unresolvedLinks: missing } : {}),
   };
 }

@@ -92,37 +92,77 @@
       "type": "AFFECTS"
     }
   ],
-  "tour": [
+  "tours": [
     {
-      "node": "customer:muster-industrie-ag",
-      "title": "One customer",
-      "text": "Muster Industrie AG is the centre of the Sub4Me data: contracts, offers, tickets and AI-unit consumption hang off it."
+      "id": "ariba",
+      "title": "Ariba renewal",
+      "summary": "From one customer to a contract, its offer, automation, skills and governance.",
+      "steps": [
+        {
+          "node": "customer:muster-industrie-ag",
+          "title": "One customer",
+          "text": "Muster Industrie AG is the centre of the Sub4Me data: contracts, offers, tickets and AI-unit consumption hang off it."
+        },
+        {
+          "node": "contract:C-2023-0390",
+          "title": "A contract that ends soon",
+          "text": "Ariba Procurement runs until 2027-01-31 and the notice deadline is close. Everything around it lights up when you ask for the impact.",
+          "impact": true
+        },
+        {
+          "node": "offer:OFF-2026-0318",
+          "title": "The renewal offer",
+          "text": "SAP offered a two-year renewal. The offer renews the contract and is tied to the same product."
+        },
+        {
+          "node": "workflow:contract-renewal-reminder",
+          "title": "Automation that watches it",
+          "text": "An n8n workflow reminds the account team about renewals, so a change here also touches automation."
+        },
+        {
+          "node": "skill:renewal-radar",
+          "title": "Skills that read the data",
+          "text": "Skills such as renewal-radar and customer-call-prep use the Sub4Me tools and serve the same customer."
+        },
+        {
+          "node": "risk:R2",
+          "title": "Governance on the other side",
+          "text": "Switch the view and the same graph shows risks and agents: overprivileged agents are tied to risk R2 and to the access review skill."
+        }
+      ]
     },
     {
-      "node": "contract:C-2023-0390",
-      "title": "A contract that ends soon",
-      "text": "Ariba Procurement runs until 2027-01-31 and the notice deadline is close. Everything around it lights up when you ask for the impact.",
-      "impact": true
-    },
-    {
-      "node": "offer:OFF-2026-0318",
-      "title": "The renewal offer",
-      "text": "SAP offered a two-year renewal. The offer renews the contract and is tied to the same product."
-    },
-    {
-      "node": "workflow:contract-renewal-reminder",
-      "title": "Automation that watches it",
-      "text": "An n8n workflow reminds the account team about renewals, so a change here also touches automation."
-    },
-    {
-      "node": "skill:renewal-radar",
-      "title": "Skills that read the data",
-      "text": "Skills such as renewal-radar and customer-call-prep use the Sub4Me tools and serve the same customer."
-    },
-    {
-      "node": "risk:R2",
-      "title": "Governance on the other side",
-      "text": "Switch the view and the same graph shows risks and agents: overprivileged agents are tied to risk R2 and to the access review skill."
+      "id": "governance",
+      "title": "AI governance",
+      "summary": "Two risks, one agent that sits in both, and the skills that help.",
+      "steps": [
+        {
+          "node": "risk:R2",
+          "impact": true,
+          "title": "Risk R2: overprivileged agents",
+          "text": "The CISO owns this high risk (progress 35%, due Dec 2026). Impact mode shows the seven agent families whose identities hold more rights than they need."
+        },
+        {
+          "node": "agent:contract-drafter",
+          "title": "One agent, two risks",
+          "text": "Contract Drafter is tied to R2 and to the EU AI Act risk. Where risks overlap, one fix pays twice, and one miss hurts twice."
+        },
+        {
+          "node": "risk:R6",
+          "title": "Risk R6: EU AI Act",
+          "text": "General Counsel owns this one (progress 44%, due 12 Dec 2026). It touches the agents that classify contracts, draft replies and run onboarding or rosters."
+        },
+        {
+          "node": "skill:access-review-prep",
+          "title": "A skill that closes the gap",
+          "text": "access-review-prep reads the overprivileged-agent data through the connector tools and is linked to R2 and R7. It is still a pilot and owned by Platform Security."
+        },
+        {
+          "node": "skill:board-briefing",
+          "title": "From findings to the board",
+          "text": "board-briefing turns risks, agents and budget into a one-page briefing and is linked to the EU AI Act risk. access-review-prep depends on it, so the chain ends with a decision-ready summary."
+        }
+      ]
     }
   ]
 }
