@@ -320,3 +320,13 @@ Every skill has a profile in four fields, plus the marketplace knows process gap
 
 `examples/sub4me/portfolio.json` is the single source for the contracts and offers of the Sub4Me test customer, each with about 25 fictional attributes (contract type, billing and payment terms, SLA, data centre, contacts, licensed vs. used units, invoicing, auto-renewal, termination; for offers list price, discount, stage, win probability, approval, competitor, next step, conditions) and line items.
 `npm run sync:sub4me` embeds it into the Space (click a row in **Contracts** for the detail view) and writes `supabase/migrations/20261019_011_sub4me_contracts_offers.sql`. Run that file once in the Supabase SQL editor; it is re-runnable. The chat connector then reads contracts and offers live from Supabase (`public.sub4me_portfolio()`, secret key only) and falls back to the embedded copy.
+
+## Knowledge Graph example Space
+
+One interactive graph over the other examples: the Sub4Me customer with contracts, offers, products and tickets, the Skill Marketplace (skills and the tools they use), the Control Tower (risks, agent families) and n8n (workflows, apps). Nothing is stored separately: `npm run sync:knowledge-graph` derives the graph from those sources plus `examples/knowledge-graph/links.json` (curated links and the guided tour) and embeds it into the Space (`-- --check` fails when it is stale). Everything is fictional sample data.
+
+Install it with `npm run install:knowledge-graph` (or `npm run install:examples knowledge-graph`).
+
+In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact** (what hangs on a node, depth 1–4, animated by distance), **Path** (shortest connection between two nodes), a guided tour that follows the Ariba contract, type filters, pinning (double-click), minimap and keyboard controls (`+`/`-`, arrows, `0`, `Esc`). Hub nodes (systems, connector) are not followed in Impact and Path, so results stay about business relations.
+
+The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.

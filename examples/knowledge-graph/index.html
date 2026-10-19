@@ -1,0 +1,4333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Knowledge Graph</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font)}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--brand)}
+.meta{margin-left:auto;text-align:right;font-size:12px;color:var(--mut)}.meta strong{display:block;color:var(--ink);font-size:13px}
+.demo{background:var(--warn-dim);color:var(--warn);font-size:12px;padding:6px 18px;border-bottom:1px solid var(--line)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:none;color:var(--mut);padding:7px 12px;font:inherit;font-weight:600;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--brand-dim);color:var(--brand)}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--brand)}.btn[aria-pressed=true]{background:var(--brand-dim);color:var(--brand);border-color:var(--brand)}
+button:focus-visible,input:focus-visible,select:focus-visible,canvas:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.search{position:relative;flex:1;min-width:180px;max-width:320px}
+.search input{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--wash);color:var(--ink);font:inherit}
+.results{position:absolute;z-index:5;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;max-height:300px;overflow:auto;box-shadow:0 8px 24px var(--backdrop)}
+.results[hidden]{display:none}
+.results button{width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:6px 8px;border-radius:6px;font:inherit;cursor:pointer;display:flex;gap:8px;align-items:center}
+.results button:hover,.results button[aria-selected=true]{background:var(--brand-dim)}
+.results small{color:var(--mut);margin-left:auto}
+label.depth{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
+label.depth select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0;height:calc(100vh - 150px);min-height:520px}
+.wrap{position:relative;min-width:0;background:var(--bg);overflow:hidden}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#cv.drag{cursor:grabbing}#cv.hit{cursor:pointer}
+.legend{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;opacity:.94;max-height:calc(100% - 24px);overflow:auto}
+.legend button{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);padding:3px 8px;border-radius:6px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
+.legend button:hover{background:var(--brand-dim)}.legend button[aria-pressed=false]{opacity:.4;text-decoration:line-through}
+.legend em{margin-left:auto;font-style:normal;color:var(--mut);padding-left:10px}
+#mini{position:absolute;right:12px;bottom:12px;width:150px;height:100px;border:1px solid var(--line);border-radius:10px;background:var(--panel);opacity:.92;cursor:pointer}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px}
+.zoom .btn{padding:4px 10px;width:34px}
+.hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:12px;color:var(--mut);background:var(--panel);border:1px solid var(--line);padding:4px 12px;border-radius:999px;pointer-events:none;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
+aside{border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:16px}
+aside h2{margin:0 0 4px;font-size:17px;letter-spacing:-.01em;overflow-wrap:anywhere}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:12px 0;font-size:13px}.kv dt{color:var(--mut)}.kv dd{margin:0;overflow-wrap:anywhere}
+aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:16px 0 6px}
+.conn{display:flex;flex-direction:column;gap:2px}
+.conn button{border:0;background:none;color:var(--ink);text-align:left;padding:5px 8px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer;display:flex;flex-direction:column}
+.conn button:hover{background:var(--brand-dim)}.conn small{color:var(--mut)}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.card{border:1px solid var(--line);background:var(--wash);border-radius:12px;padding:12px;margin:10px 0}
+.card p{margin:4px 0 0;color:var(--ink-2)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--brand-dim);color:var(--brand);font-size:12px;font-weight:700}
+.steps{counter-reset:s;list-style:none;margin:6px 0;padding:0}.steps li{counter-increment:s;padding:4px 0 4px 26px;position:relative;font-size:13px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:18px;height:18px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:700;text-align:center;line-height:18px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:860px){.stage{grid-template-columns:1fr;height:auto}.wrap{height:62vh;min-height:380px}aside{border-left:0;border-top:1px solid var(--line)}.legend{max-height:40%}#mini{display:none}.hint{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Knowledge <b>Graph</b></div>
+  <div class="meta"><strong id="stats"></strong><span id="asof"></span></div>
+</header>
+<div class="demo">Fictional sample data. The graph is derived from Sub4Me, Skill Marketplace, Control Tower and n8n plus a few curated links.</div>
+<div class="bar" role="toolbar" aria-label="Graph controls">
+  <div class="search">
+    <input id="q" type="search" placeholder="Search nodes: ariba, R2, renewal-radar…" aria-label="Search nodes" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="res">
+    <ul class="results" id="res" role="listbox" hidden></ul>
+  </div>
+  <div class="seg" role="group" aria-label="Mode">
+    <button id="m-explore" aria-pressed="true" title="Click a node to see its neighbours">Explore</button>
+    <button id="m-impact" aria-pressed="false" title="Select a node to see what depends on it">Impact</button>
+    <button id="m-path" aria-pressed="false" title="Pick two nodes to see how they connect">Path</button>
+  </div>
+  <label class="depth" id="depth-l" hidden>Depth <select id="depth"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+  <button class="btn" id="tour">▶ Guided tour</button>
+  <button class="btn" id="labels" aria-pressed="false">Labels</button>
+  <button class="btn" id="pause" aria-pressed="false">Pause</button>
+  <button class="btn" id="reset">Reset</button>
+</div>
+<div class="stage">
+  <div class="wrap" id="wrap">
+    <canvas id="cv" tabindex="0" role="application" aria-label="Interactive knowledge graph. Use the search box or the lists in the side panel to navigate by keyboard. Plus and minus zoom, arrow keys pan, Escape clears the selection."></canvas>
+    <div class="legend" id="legend" role="group" aria-label="Node types (toggle to show or hide)"></div>
+    <div class="zoom"><button class="btn" id="zin" aria-label="Zoom in">+</button><button class="btn" id="zout" aria-label="Zoom out">−</button><button class="btn" id="zfit" aria-label="Fit graph" title="Fit">⤢</button></div>
+    <canvas id="mini" aria-hidden="true" width="300" height="200"></canvas>
+    <div class="hint" id="hint">Drag to move · scroll to zoom · double-click a node to pin it</div>
+  </div>
+  <aside id="panel" aria-live="polite"></aside>
+</div>
+<script type="application/json" id="kg-data">
+{
+ "asOf": "2026-10-18",
+ "nodeTypes": {
+  "system": "System",
+  "connector": "Connector",
+  "tool": "Tool",
+  "customer": "Customer",
+  "family": "Product family",
+  "product": "Product",
+  "contract": "Contract",
+  "offer": "Offer",
+  "ticket": "Ticket",
+  "skill": "Skill",
+  "risk": "Risk",
+  "agent": "Agent family",
+  "workflow": "Workflow",
+  "app": "App",
+  "person": "Person / role"
+ },
+ "edgeTypes": {
+  "HAS_CONTRACT": {
+   "verb": "has contract",
+   "inverse": "contract of"
+  },
+  "COVERS": {
+   "verb": "covers",
+   "inverse": "covered by"
+  },
+  "OFFERED_FOR": {
+   "verb": "offers",
+   "inverse": "offered in"
+  },
+  "RENEWS": {
+   "verb": "renews",
+   "inverse": "renewed by"
+  },
+  "ABOUT": {
+   "verb": "concerns",
+   "inverse": "has ticket"
+  },
+  "IN_FAMILY": {
+   "verb": "belongs to",
+   "inverse": "includes"
+  },
+  "USES_TOOL": {
+   "verb": "uses tool",
+   "inverse": "used by"
+  },
+  "PROVIDED_BY": {
+   "verb": "provided by",
+   "inverse": "provides",
+   "weak": true
+  },
+  "READS": {
+   "verb": "reads from",
+   "inverse": "read by",
+   "weak": true
+  },
+  "DEPENDS_ON": {
+   "verb": "depends on",
+   "inverse": "needed by"
+  },
+  "REPLACED_BY": {
+   "verb": "replaced by",
+   "inverse": "replaces"
+  },
+  "RELATES_TO_RISK": {
+   "verb": "relates to risk",
+   "inverse": "risk of"
+  },
+  "OBSERVES_AGENT": {
+   "verb": "works with",
+   "inverse": "worked with by"
+  },
+  "AFFECTS": {
+   "verb": "affects",
+   "inverse": "affected by"
+  },
+  "MANAGES": {
+   "verb": "manages",
+   "inverse": "managed by"
+  },
+  "OWNS": {
+   "verb": "owns",
+   "inverse": "owned by"
+  },
+  "SERVES": {
+   "verb": "serves",
+   "inverse": "served by"
+  },
+  "USES_APP": {
+   "verb": "uses app",
+   "inverse": "used in"
+  },
+  "RUNS_IN": {
+   "verb": "runs in",
+   "inverse": "runs",
+   "weak": true
+  },
+  "LISTED_IN": {
+   "verb": "listed in",
+   "inverse": "lists",
+   "weak": true
+  },
+  "MANAGED_IN": {
+   "verb": "managed in",
+   "inverse": "manages",
+   "weak": true
+  },
+  "WATCHES": {
+   "verb": "watches",
+   "inverse": "watched by"
+  },
+  "MONITORS": {
+   "verb": "monitors",
+   "inverse": "monitored by"
+  },
+  "REPORTS_ON": {
+   "verb": "reports on",
+   "inverse": "reported by"
+  },
+  "INTEGRATES": {
+   "verb": "integrates",
+   "inverse": "integrated by"
+  },
+  "WRITES_TO": {
+   "verb": "writes to",
+   "inverse": "written by"
+  },
+  "USES": {
+   "verb": "uses",
+   "inverse": "used by"
+  }
+ },
+ "nodes": [
+  {
+   "id": "system:sub4me",
+   "type": "system",
+   "label": "Sub4Me",
+   "meta": {
+    "Role": "Customer portal: contracts, offers, AI units, tickets"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "system:n8n",
+   "type": "system",
+   "label": "n8n Cloud",
+   "meta": {
+    "Role": "Workflow automation"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "system:control-tower",
+   "type": "system",
+   "label": "AI Control Tower",
+   "meta": {
+    "Role": "Risks, agent registry, budget"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "system:marketplace",
+   "type": "system",
+   "label": "Skill Marketplace",
+   "meta": {
+    "Role": "Shared skill registry"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "connector:ai-control-tower",
+   "type": "connector",
+   "label": "ai-control-tower",
+   "meta": {
+    "Role": "MCP connector with all chat tools"
+   }
+  },
+  {
+   "id": "customer:muster-industrie-ag",
+   "type": "customer",
+   "label": "Muster Industrie AG",
+   "meta": {
+    "Customer no.": "100-482-117",
+    "Country": "Germany",
+    "Contact": "A. Beispiel"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "product:joule-copilots",
+   "type": "product",
+   "label": "Joule copilots",
+   "meta": {
+    "AI-unit allotment": "50,000",
+    "Consumed so far": "41,000",
+    "Meters": "copilot dialogues and agent runs"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "usage"
+   }
+  },
+  {
+   "id": "family:joule",
+   "type": "family",
+   "label": "Joule",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:btp-ai-core",
+   "type": "product",
+   "label": "BTP AI Core",
+   "meta": {
+    "AI-unit allotment": "30,000",
+    "Consumed so far": "28,300",
+    "Meters": "model inference and training hours"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "usage"
+   }
+  },
+  {
+   "id": "family:btp",
+   "type": "family",
+   "label": "BTP",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:successfactors-ai",
+   "type": "product",
+   "label": "SuccessFactors AI",
+   "meta": {
+    "AI-unit allotment": "12,000",
+    "Consumed so far": "9,800",
+    "Meters": "generated job texts and talent suggestions"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "usage"
+   }
+  },
+  {
+   "id": "family:successfactors",
+   "type": "family",
+   "label": "SuccessFactors",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:ariba-ai",
+   "type": "product",
+   "label": "Ariba AI",
+   "meta": {
+    "AI-unit allotment": "10,000",
+    "Consumed so far": "8,200",
+    "Meters": "guided buying and supplier risk checks"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "usage"
+   }
+  },
+  {
+   "id": "family:ariba",
+   "type": "family",
+   "label": "Ariba",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:document-ai",
+   "type": "product",
+   "label": "Document AI",
+   "meta": {
+    "AI-unit allotment": "18,000",
+    "Consumed so far": "5,000",
+    "Meters": "processed document pages"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "usage"
+   }
+  },
+  {
+   "id": "family:document-ai",
+   "type": "family",
+   "label": "Document AI",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:s-4hana-cloud-private-edition",
+   "type": "product",
+   "label": "S/4HANA Cloud Private Edition",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "family:s-4hana",
+   "type": "family",
+   "label": "S/4HANA",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:business-technology-platform",
+   "type": "product",
+   "label": "Business Technology Platform",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "product:successfactors-employee-central",
+   "type": "product",
+   "label": "SuccessFactors Employee Central",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "product:ariba-procurement",
+   "type": "product",
+   "label": "Ariba Procurement",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "product:ai-units-joule-ai-core-document-ai",
+   "type": "product",
+   "label": "AI units (Joule, AI Core, Document AI)",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "product:concur-travel",
+   "type": "product",
+   "label": "Concur Travel",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "family:concur",
+   "type": "family",
+   "label": "Concur",
+   "meta": {
+    "Role": "Product family"
+   }
+  },
+  {
+   "id": "product:joule-work-for-desktop",
+   "type": "product",
+   "label": "Joule Work for Desktop",
+   "meta": {},
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "contract:C-2024-0187",
+   "type": "contract",
+   "label": "C-2024-0187",
+   "meta": {
+    "Product": "S/4HANA Cloud Private Edition",
+    "Status": "Active",
+    "Annual value": "€2,840,000",
+    "Term": "2024-01-01 → 2028-12-31",
+    "Notice period": "180 days",
+    "Service level": "Premium Plus",
+    "Payment terms": "30 days net"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "person:katrin-lindner",
+   "type": "person",
+   "label": "Katrin Lindner",
+   "meta": {
+    "Role": "Account Executive, SAP"
+   }
+  },
+  {
+   "id": "person:jonas-weber",
+   "type": "person",
+   "label": "Jonas Weber",
+   "meta": {
+    "Role": "Customer Success Manager, SAP"
+   }
+  },
+  {
+   "id": "person:dr-anja-berger",
+   "type": "person",
+   "label": "Dr. Anja Berger",
+   "meta": {
+    "Role": "CIO"
+   }
+  },
+  {
+   "id": "contract:C-2024-0233",
+   "type": "contract",
+   "label": "C-2024-0233",
+   "meta": {
+    "Product": "Business Technology Platform",
+    "Status": "Active",
+    "Annual value": "€640,000",
+    "Term": "2024-04-01 → 2027-03-31",
+    "Notice period": "90 days",
+    "Service level": "Premium",
+    "Payment terms": "30 days net"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "person:mira-hoffmann",
+   "type": "person",
+   "label": "Mira Hoffmann",
+   "meta": {
+    "Role": "BTP Solution Advisor, SAP"
+   }
+  },
+  {
+   "id": "person:tobias-kraus",
+   "type": "person",
+   "label": "Tobias Kraus",
+   "meta": {
+    "Role": "Head of Integration"
+   }
+  },
+  {
+   "id": "contract:C-2025-0041",
+   "type": "contract",
+   "label": "C-2025-0041",
+   "meta": {
+    "Product": "SuccessFactors Employee Central",
+    "Status": "Renewal due",
+    "Annual value": "€410,000",
+    "Term": "2025-01-01 → 2026-12-31",
+    "Notice period": "90 days",
+    "Service level": "Standard",
+    "Payment terms": "45 days net"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "person:sabine-roth",
+   "type": "person",
+   "label": "Sabine Roth",
+   "meta": {
+    "Role": "Customer Success Manager, SAP"
+   }
+  },
+  {
+   "id": "person:claudia-neumann",
+   "type": "person",
+   "label": "Claudia Neumann",
+   "meta": {
+    "Role": "Head of HR Systems"
+   }
+  },
+  {
+   "id": "contract:C-2023-0390",
+   "type": "contract",
+   "label": "C-2023-0390",
+   "meta": {
+    "Product": "Ariba Procurement",
+    "Status": "Renewal due",
+    "Annual value": "€290,000",
+    "Term": "2023-02-01 → 2027-01-31",
+    "Notice period": "90 days",
+    "Service level": "Standard",
+    "Payment terms": "30 days net"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "person:markus-engel",
+   "type": "person",
+   "label": "Markus Engel",
+   "meta": {
+    "Role": "Chief Procurement Officer"
+   }
+  },
+  {
+   "id": "contract:C-2026-0012",
+   "type": "contract",
+   "label": "C-2026-0012",
+   "meta": {
+    "Product": "AI units (Joule, AI Core, Document AI)",
+    "Status": "Active",
+    "Annual value": "€360,000",
+    "Term": "2026-01-01 → 2026-12-31",
+    "Notice period": "60 days",
+    "Service level": "Premium",
+    "Payment terms": "30 days net"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "contract:C-2022-0502",
+   "type": "contract",
+   "label": "C-2022-0502",
+   "meta": {
+    "Product": "Concur Travel",
+    "Status": "Expired",
+    "Annual value": "€95,000",
+    "Term": "2022-07-01 → 2026-06-30",
+    "Notice period": "90 days",
+    "Service level": "Standard",
+    "Payment terms": "30 days net"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "person:petra-vogel",
+   "type": "person",
+   "label": "Petra Vogel",
+   "meta": {
+    "Role": "Travel Manager"
+   }
+  },
+  {
+   "id": "offer:OFF-2026-0311",
+   "type": "offer",
+   "label": "OFF-2026-0311",
+   "meta": {
+    "Type": "Renewal",
+    "Product": "SuccessFactors Employee Central",
+    "Annual value": "€438,000",
+    "Valid until": "2026-11-15",
+    "Status": "Open",
+    "Stage": "Proposal sent",
+    "Win probability": "70%"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "offer:OFF-2026-0318",
+   "type": "offer",
+   "label": "OFF-2026-0318",
+   "meta": {
+    "Type": "Renewal",
+    "Product": "Ariba Procurement",
+    "Annual value": "€305,000",
+    "Valid until": "2026-12-04",
+    "Status": "Open",
+    "Stage": "Proposal sent",
+    "Win probability": "60%"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "offer:OFF-2026-0324",
+   "type": "offer",
+   "label": "OFF-2026-0324",
+   "meta": {
+    "Type": "New product",
+    "Product": "Joule Work for Desktop",
+    "Annual value": "€118,000",
+    "Valid until": "2026-11-30",
+    "Status": "In negotiation",
+    "Stage": "Negotiation",
+    "Win probability": "45%"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "contracts"
+   }
+  },
+  {
+   "id": "person:lukas-fischer",
+   "type": "person",
+   "label": "Lukas Fischer",
+   "meta": {
+    "Role": "Joule Specialist, SAP"
+   }
+  },
+  {
+   "id": "ticket:TKT-48213",
+   "type": "ticket",
+   "label": "TKT-48213",
+   "meta": {
+    "Title": "Joule skill returns empty result for open purchase orders",
+    "Priority": "High",
+    "Status": "In processing",
+    "Created": "2026-10-12"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "tickets"
+   }
+  },
+  {
+   "id": "ticket:TKT-48107",
+   "type": "ticket",
+   "label": "TKT-48107",
+   "meta": {
+    "Title": "BTP AI Core deployment quota exceeded in eu10",
+    "Priority": "Very high",
+    "Status": "Waiting for customer",
+    "Created": "2026-10-08"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "tickets"
+   }
+  },
+  {
+   "id": "ticket:TKT-47888",
+   "type": "ticket",
+   "label": "TKT-47888",
+   "meta": {
+    "Title": "Ariba approval workflow not triggering for cost centre 4711",
+    "Priority": "Medium",
+    "Status": "In processing",
+    "Created": "2026-09-29"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "tickets"
+   }
+  },
+  {
+   "id": "ticket:TKT-47410",
+   "type": "ticket",
+   "label": "TKT-47410",
+   "meta": {
+    "Title": "SuccessFactors AI job description suggestions in wrong language",
+    "Priority": "Low",
+    "Status": "Solution provided",
+    "Created": "2026-09-14"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "tickets"
+   }
+  },
+  {
+   "id": "ticket:TKT-46955",
+   "type": "ticket",
+   "label": "TKT-46955",
+   "meta": {
+    "Title": "Request: increase Document AI quota for invoice backlog",
+    "Priority": "Medium",
+    "Status": "Closed",
+    "Created": "2026-08-30"
+   },
+   "view": {
+    "space": "sub4me",
+    "tab": "tickets"
+   }
+  },
+  {
+   "id": "risk:R1",
+   "type": "risk",
+   "label": "R1 Instability",
+   "meta": {
+    "Title": "AI-driven instability spike",
+    "Severity": "high",
+    "Owner": "VP Engineering",
+    "ETA": "Q1 2027",
+    "Progress": "20%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:vp-engineering",
+   "type": "person",
+   "label": "VP Engineering",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "risk:R2",
+   "type": "risk",
+   "label": "R2 Overprivileged agents",
+   "meta": {
+    "Title": "Overprivileged agent identities (31)",
+    "Severity": "high",
+    "Owner": "CISO",
+    "ETA": "Dec 2026",
+    "Progress": "35%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:ciso",
+   "type": "person",
+   "label": "CISO",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "risk:R3",
+   "type": "risk",
+   "label": "R3 Unregistered assets",
+   "meta": {
+    "Title": "47 unregistered AI assets",
+    "Severity": "high",
+    "Owner": "AI Platform Lead",
+    "ETA": "Jan 2027",
+    "Progress": "26%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:ai-platform-lead",
+   "type": "person",
+   "label": "AI Platform Lead",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "risk:R4",
+   "type": "risk",
+   "label": "R4 Hallucinations in finance",
+   "meta": {
+    "Title": "Hallucination in financial outputs",
+    "Severity": "high",
+    "Owner": "CFO Office",
+    "ETA": "Dec 2026",
+    "Progress": "58%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:cfo-office",
+   "type": "person",
+   "label": "CFO Office",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "risk:R5",
+   "type": "risk",
+   "label": "R5 Shadow AI",
+   "meta": {
+    "Title": "Shadow AI (89 flagged accounts)",
+    "Severity": "medium",
+    "Owner": "CISO / HR",
+    "ETA": "Q4 2026",
+    "Progress": "45%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:ciso-hr",
+   "type": "person",
+   "label": "CISO / HR",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "risk:R6",
+   "type": "risk",
+   "label": "R6 EU AI Act",
+   "meta": {
+    "Title": "EU AI Act — 18 high-risk agents",
+    "Severity": "medium",
+    "Owner": "General Counsel",
+    "ETA": "12 Dec 2026",
+    "Progress": "44%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:general-counsel",
+   "type": "person",
+   "label": "General Counsel",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "risk:R7",
+   "type": "risk",
+   "label": "R7 Prompt injection",
+   "meta": {
+    "Title": "Prompt injection via untrusted content",
+    "Severity": "low",
+    "Owner": "Security Eng.",
+    "ETA": "Done",
+    "Progress": "100%"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "risks"
+   }
+  },
+  {
+   "id": "person:security-eng",
+   "type": "person",
+   "label": "Security Eng.",
+   "meta": {
+    "Role": "Risk owner"
+   }
+  },
+  {
+   "id": "agent:abap-code-assistant",
+   "type": "agent",
+   "label": "ABAP Code Assistant",
+   "meta": {
+    "Agents": "18",
+    "In production": "12",
+    "Overprivileged": "6",
+    "Platform": "Anthropic API",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:odata-enrichment-pipeline",
+   "type": "agent",
+   "label": "OData Enrichment Pipeline",
+   "meta": {
+    "Agents": "6",
+    "In production": "6",
+    "Overprivileged": "6",
+    "Platform": "SAP AI Core",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:n8n-workflow-builder",
+   "type": "agent",
+   "label": "n8n Workflow Builder",
+   "meta": {
+    "Agents": "8",
+    "In production": "6",
+    "Overprivileged": "5",
+    "Platform": "n8n Cloud",
+    "Type": "orchestrator"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:btp-monitor",
+   "type": "agent",
+   "label": "BTP Monitor",
+   "meta": {
+    "Agents": "5",
+    "In production": "5",
+    "Overprivileged": "4",
+    "Platform": "SAP AI Core, SAP BTP",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:report-generation-bot",
+   "type": "agent",
+   "label": "Report Generation Bot",
+   "meta": {
+    "Agents": "7",
+    "In production": "6",
+    "Overprivileged": "4",
+    "Platform": "SAP BTP, SAP AI Core",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:contract-drafter",
+   "type": "agent",
+   "label": "Contract Drafter",
+   "meta": {
+    "Agents": "9",
+    "In production": "9",
+    "Overprivileged": "3",
+    "Platform": "Azure OpenAI",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:l2c-pipeline-orchestrator",
+   "type": "agent",
+   "label": "L2C Pipeline Orchestrator",
+   "meta": {
+    "Agents": "6",
+    "In production": "5",
+    "Overprivileged": "3",
+    "Platform": "SAP AI Core, SAP BTP",
+    "Type": "orchestrator"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:contract-classifier",
+   "type": "agent",
+   "label": "Contract Classifier",
+   "meta": {
+    "Agents": "5",
+    "In production": "4",
+    "Overprivileged": "0",
+    "Platform": "Azure OpenAI",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:support-reply-drafter",
+   "type": "agent",
+   "label": "Support Reply Drafter",
+   "meta": {
+    "Agents": "9",
+    "In production": "6",
+    "Overprivileged": "0",
+    "Platform": "Azure OpenAI",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:onboarding-orchestrator",
+   "type": "agent",
+   "label": "Onboarding Orchestrator",
+   "meta": {
+    "Agents": "4",
+    "In production": "3",
+    "Overprivileged": "0",
+    "Platform": "Azure OpenAI",
+    "Type": "orchestrator"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:shift-roster-sync",
+   "type": "agent",
+   "label": "Shift Roster Sync",
+   "meta": {
+    "Agents": "4",
+    "In production": "2",
+    "Overprivileged": "0",
+    "Platform": "Internal Python",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "skill:access-review-prep",
+   "type": "skill",
+   "label": "access-review-prep",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "team",
+    "Team": "Platform Security",
+    "EU AI Act": "Limited",
+    "Next review": "2027-01-19",
+    "Value last full month": "€425",
+    "Runs last full month": "5"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:get_overprivileged_agents",
+   "type": "tool",
+   "label": "get_overprivileged_agents",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:list_agents",
+   "type": "tool",
+   "label": "list_agents",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:get_risk",
+   "type": "tool",
+   "label": "get_risk",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "skill:automation-health-check",
+   "type": "skill",
+   "label": "automation-health-check",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "team",
+    "Team": "AI Programme Office",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-10-19",
+    "Value last full month": "€808",
+    "Runs last full month": "19"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:get_n8n_overview",
+   "type": "tool",
+   "label": "get_n8n_overview",
+   "meta": {
+    "System": "n8n Cloud"
+   }
+  },
+  {
+   "id": "tool:list_n8n_workflows",
+   "type": "tool",
+   "label": "list_n8n_workflows",
+   "meta": {
+    "System": "n8n Cloud"
+   }
+  },
+  {
+   "id": "tool:get_n8n_workflow",
+   "type": "tool",
+   "label": "get_n8n_workflow",
+   "meta": {
+    "System": "n8n Cloud"
+   }
+  },
+  {
+   "id": "tool:list_n8n_executions",
+   "type": "tool",
+   "label": "list_n8n_executions",
+   "meta": {
+    "System": "n8n Cloud"
+   }
+  },
+  {
+   "id": "tool:list_n8n_categories",
+   "type": "tool",
+   "label": "list_n8n_categories",
+   "meta": {
+    "System": "n8n Cloud"
+   }
+  },
+  {
+   "id": "skill:board-briefing",
+   "type": "skill",
+   "label": "board-briefing",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "not classified",
+    "Reach": "company",
+    "Team": "AI Programme Office",
+    "EU AI Act": "Limited",
+    "Next review": "2026-12-12",
+    "Value last full month": "€4,052",
+    "Runs last full month": "52"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:get_risks",
+   "type": "tool",
+   "label": "get_risks",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:get_agent_overview",
+   "type": "tool",
+   "label": "get_agent_overview",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:get_budget",
+   "type": "tool",
+   "label": "get_budget",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "skill:customer-call-prep",
+   "type": "skill",
+   "label": "customer-call-prep",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Account Management",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-04-19",
+    "Value last full month": "€1,658",
+    "Runs last full month": "26"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:get_customer_overview",
+   "type": "tool",
+   "label": "get_customer_overview",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:get_product_overview",
+   "type": "tool",
+   "label": "get_product_overview",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:get_contract",
+   "type": "tool",
+   "label": "get_contract",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:get_offer",
+   "type": "tool",
+   "label": "get_offer",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:search_sub4me",
+   "type": "tool",
+   "label": "search_sub4me",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "skill:skill-finder",
+   "type": "skill",
+   "label": "skill-finder",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "not classified",
+    "Reach": "company",
+    "Team": "AI Programme Office",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-05-20",
+    "Value last full month": "€1,452",
+    "Runs last full month": "41"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:search_skills",
+   "type": "tool",
+   "label": "search_skills",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_info",
+   "type": "tool",
+   "label": "get_skill_info",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "skill:ticket-writer",
+   "type": "skill",
+   "label": "ticket-writer",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "lob",
+    "Team": "AI Programme Office",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-07-03",
+    "Value last full month": "€383",
+    "Runs last full month": "30"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:list_tickets",
+   "type": "tool",
+   "label": "list_tickets",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:create_ticket",
+   "type": "tool",
+   "label": "create_ticket",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "skill:expense-check",
+   "type": "skill",
+   "label": "expense-check",
+   "meta": {
+    "Maturity": "approved",
+    "Board area": "Finance",
+    "Reach": "team",
+    "Team": "Group Accounting",
+    "Note": "sample skill",
+    "EU AI Act": "Limited",
+    "Next review": "2027-03-02",
+    "Value last full month": "€1,870",
+    "Runs last full month": "220"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:m-weber",
+   "type": "person",
+   "label": "M. Weber",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:invoice-matcher",
+   "type": "skill",
+   "label": "invoice-matcher",
+   "meta": {
+    "Maturity": "approved",
+    "Board area": "Finance",
+    "Reach": "board-area",
+    "Team": "Accounts Payable",
+    "Note": "sample skill",
+    "EU AI Act": "Limited",
+    "Next review": "2027-02-19",
+    "Value last full month": "€2,323",
+    "Runs last full month": "410"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:k-roth",
+   "type": "person",
+   "label": "K. Roth",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:renewal-radar",
+   "type": "skill",
+   "label": "renewal-radar",
+   "meta": {
+    "Maturity": "empfohlen",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Account Management",
+    "Note": "sample skill",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-08-01",
+    "Value last full month": "€2,182",
+    "Runs last full month": "44"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:a-hoffmann",
+   "type": "person",
+   "label": "A. Hoffmann",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "tool:list_contracts",
+   "type": "tool",
+   "label": "list_contracts",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:list_offers",
+   "type": "tool",
+   "label": "list_offers",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "skill:quote-drafter",
+   "type": "skill",
+   "label": "quote-drafter",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "individual",
+    "Note": "sample skill",
+    "EU AI Act": "Limited",
+    "Next review": "2026-10-20",
+    "Value last full month": "€1,077",
+    "Runs last full month": "19"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:j-becker",
+   "type": "person",
+   "label": "J. Becker",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:campaign-brief",
+   "type": "skill",
+   "label": "campaign-brief",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Marketing",
+    "Reach": "team",
+    "Team": "Content Team",
+    "Note": "sample skill",
+    "EU AI Act": "Limited",
+    "Next review": "2026-12-02",
+    "Value last full month": "€765",
+    "Runs last full month": "18"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:l-neumann",
+   "type": "person",
+   "label": "L. Neumann",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:social-post-checker",
+   "type": "skill",
+   "label": "social-post-checker",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Marketing",
+    "Reach": "individual",
+    "Note": "sample skill",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-05-18",
+    "Value last full month": "€411",
+    "Runs last full month": "58"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:s-lang",
+   "type": "person",
+   "label": "S. Lang",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:btp-quota-watch",
+   "type": "skill",
+   "label": "btp-quota-watch",
+   "meta": {
+    "Maturity": "approved",
+    "Board area": "Engineering",
+    "Reach": "lob",
+    "Team": "Platform Operations",
+    "Note": "sample skill",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-08-10",
+    "Value last full month": "€1,360",
+    "Runs last full month": "80"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:p-vogel",
+   "type": "person",
+   "label": "P. Vogel",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "tool:get_ai_consumption",
+   "type": "tool",
+   "label": "get_ai_consumption",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "skill:concur-receipt-audit",
+   "type": "skill",
+   "label": "concur-receipt-audit",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "team",
+    "Team": "Concur Delivery",
+    "Note": "sample skill",
+    "EU AI Act": "Limited",
+    "Next review": "2026-11-04",
+    "Value last full month": "€446",
+    "Runs last full month": "45"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:h-schulz",
+   "type": "person",
+   "label": "H. Schulz",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:sf-job-text-reviewer",
+   "type": "skill",
+   "label": "sf-job-text-reviewer",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "team",
+    "Team": "SF Talent Squad",
+    "Note": "sample skill",
+    "EU AI Act": "High",
+    "Next review": "2026-11-25",
+    "Value last full month": "€555",
+    "Runs last full month": "28"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:e-braun",
+   "type": "person",
+   "label": "E. Braun",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:release-notes-writer",
+   "type": "skill",
+   "label": "release-notes-writer",
+   "meta": {
+    "Maturity": "empfohlen",
+    "Board area": "Engineering",
+    "Reach": "board-area",
+    "Team": "Developer Experience",
+    "Note": "sample skill",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-07-08",
+    "Value last full month": "€873",
+    "Runs last full month": "22"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:d-kr-ger",
+   "type": "person",
+   "label": "D. Krüger",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "skill:my-sprint-digest",
+   "type": "skill",
+   "label": "my-sprint-digest",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "individual",
+    "Note": "sample skill",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-05-30",
+    "Value last full month": "€340",
+    "Runs last full month": "24"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "person:t-klein",
+   "type": "person",
+   "label": "T. Klein",
+   "meta": {
+    "Role": "Skill owner"
+   }
+  },
+  {
+   "id": "agent:access-review-collector",
+   "type": "agent",
+   "label": "Access Review Collector",
+   "meta": {
+    "Agents": "4",
+    "In production": "4",
+    "Overprivileged": "0",
+    "Platform": "Internal Python",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:log-anomaly-triage",
+   "type": "agent",
+   "label": "Log Anomaly Triage",
+   "meta": {
+    "Agents": "4",
+    "In production": "1",
+    "Overprivileged": "0",
+    "Platform": "Internal Python",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:l2c-deal-advisor",
+   "type": "agent",
+   "label": "L2C Deal Advisor",
+   "meta": {
+    "Agents": "12",
+    "In production": "7",
+    "Overprivileged": "0",
+    "Platform": "Azure OpenAI",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:knowledge-base-search",
+   "type": "agent",
+   "label": "Knowledge Base Search",
+   "meta": {
+    "Agents": "8",
+    "In production": "4",
+    "Overprivileged": "0",
+    "Platform": "SAP AI Core, SAP BTP",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:sap-spc-ticket-router",
+   "type": "agent",
+   "label": "SAP SPC Ticket Router",
+   "meta": {
+    "Agents": "8",
+    "In production": "4",
+    "Overprivileged": "0",
+    "Platform": "SAP AI Core, SAP BTP",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:invoice-matcher",
+   "type": "agent",
+   "label": "Invoice Matcher",
+   "meta": {
+    "Agents": "6",
+    "In production": "5",
+    "Overprivileged": "0",
+    "Platform": "Azure OpenAI",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:presales-proposal-generator",
+   "type": "agent",
+   "label": "Presales Proposal Generator",
+   "meta": {
+    "Agents": "8",
+    "In production": "4",
+    "Overprivileged": "0",
+    "Platform": "Anthropic API",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:meeting-summarizer",
+   "type": "agent",
+   "label": "Meeting Summarizer",
+   "meta": {
+    "Agents": "10",
+    "In production": "6",
+    "Overprivileged": "0",
+    "Platform": "Azure OpenAI",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:btp-deploy-coordinator",
+   "type": "agent",
+   "label": "BTP Deploy Coordinator",
+   "meta": {
+    "Agents": "5",
+    "In production": "3",
+    "Overprivileged": "0",
+    "Platform": "SAP AI Core, SAP BTP",
+    "Type": "orchestrator"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:release-train-coordinator",
+   "type": "agent",
+   "label": "Release Train Coordinator",
+   "meta": {
+    "Agents": "4",
+    "In production": "2",
+    "Overprivileged": "0",
+    "Platform": "Anthropic API",
+    "Type": "orchestrator"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "workflow:btp-service-health-check",
+   "type": "workflow",
+   "label": "BTP service health check",
+   "meta": {
+    "Category": "Platform & Monitoring",
+    "Trigger": "Schedule",
+    "Runs (14 days)": "538",
+    "Errors": "8",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:http",
+   "type": "app",
+   "label": "HTTP",
+   "meta": {}
+  },
+  {
+   "id": "app:slack",
+   "type": "app",
+   "label": "Slack",
+   "meta": {}
+  },
+  {
+   "id": "workflow:invoice-intake-and-ocr-routing",
+   "type": "workflow",
+   "label": "Invoice intake and OCR routing",
+   "meta": {
+    "Category": "Finance & Procurement",
+    "Trigger": "App event",
+    "Runs (14 days)": "358",
+    "Errors": "20",
+    "Nodes": "6"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:gmail",
+   "type": "app",
+   "label": "Gmail",
+   "meta": {}
+  },
+  {
+   "id": "app:concur",
+   "type": "app",
+   "label": "Concur",
+   "meta": {}
+  },
+  {
+   "id": "workflow:lead-to-cash-quote-to-order-sync",
+   "type": "workflow",
+   "label": "Lead-to-Cash: Quote to Order sync",
+   "meta": {
+    "Category": "Lead-to-Cash",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "259",
+    "Errors": "12",
+    "Nodes": "6"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:sap",
+   "type": "app",
+   "label": "SAP",
+   "meta": {}
+  },
+  {
+   "id": "app:salesforce",
+   "type": "app",
+   "label": "Salesforce",
+   "meta": {}
+  },
+  {
+   "id": "workflow:ticket-triage-to-sub4me",
+   "type": "workflow",
+   "label": "Ticket triage to Sub4Me",
+   "meta": {
+    "Category": "Service & Support",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "192",
+    "Errors": "12",
+    "Nodes": "5"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:openai",
+   "type": "app",
+   "label": "OpenAI",
+   "meta": {}
+  },
+  {
+   "id": "workflow:new-hire-onboarding-checklist",
+   "type": "workflow",
+   "label": "New hire onboarding checklist",
+   "meta": {
+    "Category": "HR & People",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "43",
+    "Errors": "1",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:successfactors",
+   "type": "app",
+   "label": "SuccessFactors",
+   "meta": {}
+  },
+  {
+   "id": "app:microsoft-teams",
+   "type": "app",
+   "label": "Microsoft Teams",
+   "meta": {}
+  },
+  {
+   "id": "workflow:contract-renewal-reminder",
+   "type": "workflow",
+   "label": "Contract renewal reminder",
+   "meta": {
+    "Category": "Sales & Marketing",
+    "Trigger": "Schedule",
+    "Runs (14 days)": "35",
+    "Errors": "2",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "workflow:vendor-onboarding-checks",
+   "type": "workflow",
+   "label": "Vendor onboarding checks",
+   "meta": {
+    "Category": "Finance & Procurement",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "24",
+    "Errors": "1",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "workflow:daily-ai-consumption-report",
+   "type": "workflow",
+   "label": "Daily AI consumption report",
+   "meta": {
+    "Category": "Reporting",
+    "Trigger": "Schedule",
+    "Runs (14 days)": "10",
+    "Errors": "0",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "workflow:marketing-campaign-digest",
+   "type": "workflow",
+   "label": "Marketing campaign digest",
+   "meta": {
+    "Category": "Sales & Marketing",
+    "Trigger": "Schedule",
+    "Runs (14 days)": "10",
+    "Errors": "2",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:google-analytics",
+   "type": "app",
+   "label": "Google Analytics",
+   "meta": {}
+  },
+  {
+   "id": "workflow:research-notes-archiver",
+   "type": "workflow",
+   "label": "Research notes archiver",
+   "meta": {
+    "Category": "Uncategorized",
+    "Trigger": "Schedule",
+    "Runs (14 days)": "10",
+    "Errors": "0",
+    "Nodes": "3"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:notion",
+   "type": "app",
+   "label": "Notion",
+   "meta": {}
+  },
+  {
+   "id": "app:google-drive",
+   "type": "app",
+   "label": "Google Drive",
+   "meta": {}
+  },
+  {
+   "id": "workflow:crm-contact-enrichment-paused",
+   "type": "workflow",
+   "label": "CRM contact enrichment (paused)",
+   "meta": {
+    "Category": "Sales & Marketing",
+    "Trigger": "Manual",
+    "Runs (14 days)": "0",
+    "Errors": "0",
+    "Nodes": "3"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "system:sub4me",
+   "type": "MANAGED_IN"
+  },
+  {
+   "source": "product:joule-copilots",
+   "target": "family:joule",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:btp-ai-core",
+   "target": "family:btp",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:successfactors-ai",
+   "target": "family:successfactors",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:ariba-ai",
+   "target": "family:ariba",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:document-ai",
+   "target": "family:document-ai",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:s-4hana-cloud-private-edition",
+   "target": "family:s-4hana",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:business-technology-platform",
+   "target": "family:btp",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:successfactors-employee-central",
+   "target": "family:successfactors",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:ariba-procurement",
+   "target": "family:ariba",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:ai-units-joule-ai-core-document-ai",
+   "target": "family:joule",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:concur-travel",
+   "target": "family:concur",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "product:joule-work-for-desktop",
+   "target": "family:joule",
+   "type": "IN_FAMILY"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2024-0187",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "contract:C-2024-0187",
+   "target": "product:s-4hana-cloud-private-edition",
+   "type": "COVERS"
+  },
+  {
+   "source": "person:katrin-lindner",
+   "target": "contract:C-2024-0187",
+   "type": "MANAGES",
+   "label": "SAP account owner"
+  },
+  {
+   "source": "person:jonas-weber",
+   "target": "contract:C-2024-0187",
+   "type": "MANAGES",
+   "label": "Customer success"
+  },
+  {
+   "source": "person:dr-anja-berger",
+   "target": "contract:C-2024-0187",
+   "type": "MANAGES",
+   "label": "Customer owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2024-0233",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "contract:C-2024-0233",
+   "target": "product:business-technology-platform",
+   "type": "COVERS"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "contract:C-2024-0233",
+   "type": "MANAGES",
+   "label": "SAP account owner"
+  },
+  {
+   "source": "person:jonas-weber",
+   "target": "contract:C-2024-0233",
+   "type": "MANAGES",
+   "label": "Customer success"
+  },
+  {
+   "source": "person:tobias-kraus",
+   "target": "contract:C-2024-0233",
+   "type": "MANAGES",
+   "label": "Customer owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2025-0041",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "contract:C-2025-0041",
+   "target": "product:successfactors-employee-central",
+   "type": "COVERS"
+  },
+  {
+   "source": "person:katrin-lindner",
+   "target": "contract:C-2025-0041",
+   "type": "MANAGES",
+   "label": "SAP account owner"
+  },
+  {
+   "source": "person:sabine-roth",
+   "target": "contract:C-2025-0041",
+   "type": "MANAGES",
+   "label": "Customer success"
+  },
+  {
+   "source": "person:claudia-neumann",
+   "target": "contract:C-2025-0041",
+   "type": "MANAGES",
+   "label": "Customer owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2023-0390",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "contract:C-2023-0390",
+   "target": "product:ariba-procurement",
+   "type": "COVERS"
+  },
+  {
+   "source": "person:katrin-lindner",
+   "target": "contract:C-2023-0390",
+   "type": "MANAGES",
+   "label": "SAP account owner"
+  },
+  {
+   "source": "person:jonas-weber",
+   "target": "contract:C-2023-0390",
+   "type": "MANAGES",
+   "label": "Customer success"
+  },
+  {
+   "source": "person:markus-engel",
+   "target": "contract:C-2023-0390",
+   "type": "MANAGES",
+   "label": "Customer owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2026-0012",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "contract:C-2026-0012",
+   "target": "product:ai-units-joule-ai-core-document-ai",
+   "type": "COVERS"
+  },
+  {
+   "source": "contract:C-2026-0012",
+   "target": "product:joule-copilots",
+   "type": "COVERS",
+   "label": "Joule copilots"
+  },
+  {
+   "source": "contract:C-2026-0012",
+   "target": "product:btp-ai-core",
+   "type": "COVERS",
+   "label": "BTP AI Core"
+  },
+  {
+   "source": "contract:C-2026-0012",
+   "target": "product:document-ai",
+   "type": "COVERS",
+   "label": "Document AI"
+  },
+  {
+   "source": "contract:C-2026-0012",
+   "target": "product:successfactors-ai",
+   "type": "COVERS",
+   "label": "SuccessFactors AI"
+  },
+  {
+   "source": "contract:C-2026-0012",
+   "target": "product:ariba-ai",
+   "type": "COVERS",
+   "label": "Ariba AI"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "contract:C-2026-0012",
+   "type": "MANAGES",
+   "label": "SAP account owner"
+  },
+  {
+   "source": "person:jonas-weber",
+   "target": "contract:C-2026-0012",
+   "type": "MANAGES",
+   "label": "Customer success"
+  },
+  {
+   "source": "person:dr-anja-berger",
+   "target": "contract:C-2026-0012",
+   "type": "MANAGES",
+   "label": "Customer owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2022-0502",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "contract:C-2022-0502",
+   "target": "product:concur-travel",
+   "type": "COVERS"
+  },
+  {
+   "source": "person:katrin-lindner",
+   "target": "contract:C-2022-0502",
+   "type": "MANAGES",
+   "label": "SAP account owner"
+  },
+  {
+   "source": "person:sabine-roth",
+   "target": "contract:C-2022-0502",
+   "type": "MANAGES",
+   "label": "Customer success"
+  },
+  {
+   "source": "person:petra-vogel",
+   "target": "contract:C-2022-0502",
+   "type": "MANAGES",
+   "label": "Customer owner"
+  },
+  {
+   "source": "offer:OFF-2026-0311",
+   "target": "product:successfactors-employee-central",
+   "type": "OFFERED_FOR"
+  },
+  {
+   "source": "offer:OFF-2026-0311",
+   "target": "contract:C-2025-0041",
+   "type": "RENEWS"
+  },
+  {
+   "source": "person:katrin-lindner",
+   "target": "offer:OFF-2026-0311",
+   "type": "MANAGES",
+   "label": "SAP owner"
+  },
+  {
+   "source": "offer:OFF-2026-0318",
+   "target": "product:ariba-procurement",
+   "type": "OFFERED_FOR"
+  },
+  {
+   "source": "offer:OFF-2026-0318",
+   "target": "contract:C-2023-0390",
+   "type": "RENEWS"
+  },
+  {
+   "source": "person:katrin-lindner",
+   "target": "offer:OFF-2026-0318",
+   "type": "MANAGES",
+   "label": "SAP owner"
+  },
+  {
+   "source": "offer:OFF-2026-0324",
+   "target": "product:joule-work-for-desktop",
+   "type": "OFFERED_FOR"
+  },
+  {
+   "source": "person:lukas-fischer",
+   "target": "offer:OFF-2026-0324",
+   "type": "MANAGES",
+   "label": "SAP owner"
+  },
+  {
+   "source": "ticket:TKT-48213",
+   "target": "product:joule-copilots",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-48107",
+   "target": "product:btp-ai-core",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-47888",
+   "target": "product:ariba-ai",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-47410",
+   "target": "product:successfactors-ai",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-46955",
+   "target": "product:document-ai",
+   "type": "ABOUT"
+  },
+  {
+   "source": "person:vp-engineering",
+   "target": "risk:R1",
+   "type": "OWNS"
+  },
+  {
+   "source": "person:ciso",
+   "target": "risk:R2",
+   "type": "OWNS"
+  },
+  {
+   "source": "person:ai-platform-lead",
+   "target": "risk:R3",
+   "type": "OWNS"
+  },
+  {
+   "source": "person:cfo-office",
+   "target": "risk:R4",
+   "type": "OWNS"
+  },
+  {
+   "source": "person:ciso-hr",
+   "target": "risk:R5",
+   "type": "OWNS"
+  },
+  {
+   "source": "person:general-counsel",
+   "target": "risk:R6",
+   "type": "OWNS"
+  },
+  {
+   "source": "person:security-eng",
+   "target": "risk:R7",
+   "type": "OWNS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:abap-code-assistant",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:odata-enrichment-pipeline",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:n8n-workflow-builder",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:btp-monitor",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:report-generation-bot",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:contract-drafter",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R2",
+   "target": "agent:l2c-pipeline-orchestrator",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R6",
+   "target": "agent:contract-classifier",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R6",
+   "target": "agent:support-reply-drafter",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R6",
+   "target": "agent:onboarding-orchestrator",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R6",
+   "target": "agent:shift-roster-sync",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R6",
+   "target": "agent:contract-drafter",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:get_overprivileged_agents",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_overprivileged_agents",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "tool:get_overprivileged_agents",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_agents",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_agents",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "tool:list_agents",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_risk",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_risk",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "tool:get_risk",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:get_n8n_overview",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_n8n_overview",
+   "target": "system:n8n",
+   "type": "READS"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "tool:get_n8n_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_n8n_workflows",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_n8n_workflows",
+   "target": "system:n8n",
+   "type": "READS"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "tool:list_n8n_workflows",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_n8n_workflow",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_n8n_workflow",
+   "target": "system:n8n",
+   "type": "READS"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "tool:get_n8n_workflow",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_n8n_executions",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_n8n_executions",
+   "target": "system:n8n",
+   "type": "READS"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "tool:list_n8n_executions",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_n8n_categories",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_n8n_categories",
+   "target": "system:n8n",
+   "type": "READS"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "tool:list_n8n_categories",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:get_risks",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_risks",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "tool:get_risks",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_agent_overview",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_agent_overview",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "tool:get_agent_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "tool:get_overprivileged_agents",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_budget",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_budget",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "tool:get_budget",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "tool:list_agents",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:get_customer_overview",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_customer_overview",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:get_customer_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_product_overview",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_product_overview",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:get_product_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_contract",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_contract",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:get_contract",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_offer",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_offer",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:get_offer",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:search_sub4me",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_sub4me",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:search_sub4me",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:skill-finder",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:search_skills",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_skills",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-finder",
+   "target": "tool:search_skills",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_info",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_info",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-finder",
+   "target": "tool:get_skill_info",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:ticket-writer",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:list_tickets",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_tickets",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ticket-writer",
+   "target": "tool:list_tickets",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:create_ticket",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:create_ticket",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ticket-writer",
+   "target": "tool:create_ticket",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:ticket-writer",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:expense-check",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:m-weber",
+   "target": "skill:expense-check",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:invoice-matcher",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:k-roth",
+   "target": "skill:invoice-matcher",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:a-hoffmann",
+   "target": "skill:renewal-radar",
+   "type": "OWNS"
+  },
+  {
+   "source": "tool:list_contracts",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_contracts",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "tool:list_contracts",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_offers",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_offers",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:quote-drafter",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:j-becker",
+   "target": "skill:quote-drafter",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:quote-drafter",
+   "target": "tool:list_contracts",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:quote-drafter",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:quote-drafter",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:campaign-brief",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:l-neumann",
+   "target": "skill:campaign-brief",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:social-post-checker",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:s-lang",
+   "target": "skill:social-post-checker",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:p-vogel",
+   "target": "skill:btp-quota-watch",
+   "type": "OWNS"
+  },
+  {
+   "source": "tool:get_ai_consumption",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_ai_consumption",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "tool:get_ai_consumption",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "tool:create_ticket",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:concur-receipt-audit",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:h-schulz",
+   "target": "skill:concur-receipt-audit",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:sf-job-text-reviewer",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:e-braun",
+   "target": "skill:sf-job-text-reviewer",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:release-notes-writer",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:d-kr-ger",
+   "target": "skill:release-notes-writer",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:release-notes-writer",
+   "target": "tool:list_tickets",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:release-notes-writer",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:my-sprint-digest",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "person:t-klein",
+   "target": "skill:my-sprint-digest",
+   "type": "OWNS"
+  },
+  {
+   "source": "skill:my-sprint-digest",
+   "target": "tool:list_tickets",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:my-sprint-digest",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "skill:board-briefing",
+   "type": "DEPENDS_ON"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "risk:R2",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:access-review-prep",
+   "target": "agent:access-review-collector",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "risk:R5",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "agent:n8n-workflow-builder",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:automation-health-check",
+   "target": "agent:log-anomaly-triage",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "risk:R6",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:board-briefing",
+   "target": "agent:report-generation-bot",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "agent:l2c-deal-advisor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:skill-finder",
+   "target": "risk:R5",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:skill-finder",
+   "target": "agent:knowledge-base-search",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:ticket-writer",
+   "target": "agent:sap-spc-ticket-router",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:expense-check",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:expense-check",
+   "target": "agent:invoice-matcher",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:invoice-matcher",
+   "target": "skill:expense-check",
+   "type": "DEPENDS_ON"
+  },
+  {
+   "source": "skill:invoice-matcher",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:invoice-matcher",
+   "target": "agent:invoice-matcher",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "skill:quote-drafter",
+   "type": "DEPENDS_ON"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "agent:contract-classifier",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:renewal-radar",
+   "target": "agent:l2c-deal-advisor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:quote-drafter",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:quote-drafter",
+   "target": "agent:presales-proposal-generator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:campaign-brief",
+   "target": "risk:R5",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:campaign-brief",
+   "target": "agent:meeting-summarizer",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "skill:ticket-writer",
+   "type": "DEPENDS_ON"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "risk:R1",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "agent:btp-monitor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:btp-quota-watch",
+   "target": "agent:btp-deploy-coordinator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:concur-receipt-audit",
+   "target": "skill:expense-check",
+   "type": "DEPENDS_ON"
+  },
+  {
+   "source": "skill:concur-receipt-audit",
+   "target": "skill:expense-check",
+   "type": "REPLACED_BY"
+  },
+  {
+   "source": "skill:concur-receipt-audit",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:concur-receipt-audit",
+   "target": "risk:R6",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:concur-receipt-audit",
+   "target": "agent:invoice-matcher",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:sf-job-text-reviewer",
+   "target": "risk:R6",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:sf-job-text-reviewer",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:sf-job-text-reviewer",
+   "target": "agent:onboarding-orchestrator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:release-notes-writer",
+   "target": "risk:R1",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:release-notes-writer",
+   "target": "agent:release-train-coordinator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "workflow:btp-service-health-check",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:btp-service-health-check",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:btp-service-health-check",
+   "target": "app:slack",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:invoice-intake-and-ocr-routing",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:invoice-intake-and-ocr-routing",
+   "target": "app:gmail",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:invoice-intake-and-ocr-routing",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:invoice-intake-and-ocr-routing",
+   "target": "app:concur",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:lead-to-cash-quote-to-order-sync",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:lead-to-cash-quote-to-order-sync",
+   "target": "app:sap",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:lead-to-cash-quote-to-order-sync",
+   "target": "app:salesforce",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:lead-to-cash-quote-to-order-sync",
+   "target": "app:slack",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:ticket-triage-to-sub4me",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:ticket-triage-to-sub4me",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:ticket-triage-to-sub4me",
+   "target": "app:openai",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:ticket-triage-to-sub4me",
+   "target": "app:slack",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:new-hire-onboarding-checklist",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:new-hire-onboarding-checklist",
+   "target": "app:successfactors",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:new-hire-onboarding-checklist",
+   "target": "app:microsoft-teams",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:contract-renewal-reminder",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:contract-renewal-reminder",
+   "target": "app:salesforce",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:contract-renewal-reminder",
+   "target": "app:gmail",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:vendor-onboarding-checks",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:vendor-onboarding-checks",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:vendor-onboarding-checks",
+   "target": "app:microsoft-teams",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:daily-ai-consumption-report",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:daily-ai-consumption-report",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:daily-ai-consumption-report",
+   "target": "app:gmail",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:marketing-campaign-digest",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:marketing-campaign-digest",
+   "target": "app:google-analytics",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:marketing-campaign-digest",
+   "target": "app:gmail",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:research-notes-archiver",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:research-notes-archiver",
+   "target": "app:notion",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:research-notes-archiver",
+   "target": "app:google-drive",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:crm-contact-enrichment-paused",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:crm-contact-enrichment-paused",
+   "target": "app:salesforce",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:crm-contact-enrichment-paused",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:btp-service-health-check",
+   "target": "product:business-technology-platform",
+   "type": "MONITORS"
+  },
+  {
+   "source": "workflow:invoice-intake-and-ocr-routing",
+   "target": "product:document-ai",
+   "type": "USES"
+  },
+  {
+   "source": "workflow:ticket-triage-to-sub4me",
+   "target": "system:sub4me",
+   "type": "WRITES_TO"
+  },
+  {
+   "source": "workflow:new-hire-onboarding-checklist",
+   "target": "product:successfactors-employee-central",
+   "type": "USES"
+  },
+  {
+   "source": "workflow:contract-renewal-reminder",
+   "target": "contract:C-2023-0390",
+   "type": "WATCHES"
+  },
+  {
+   "source": "workflow:contract-renewal-reminder",
+   "target": "contract:C-2025-0041",
+   "type": "WATCHES"
+  },
+  {
+   "source": "workflow:vendor-onboarding-checks",
+   "target": "product:ariba-procurement",
+   "type": "USES"
+  },
+  {
+   "source": "workflow:daily-ai-consumption-report",
+   "target": "contract:C-2026-0012",
+   "type": "REPORTS_ON"
+  },
+  {
+   "source": "workflow:lead-to-cash-quote-to-order-sync",
+   "target": "family:s-4hana",
+   "type": "USES"
+  },
+  {
+   "source": "app:concur",
+   "target": "product:concur-travel",
+   "type": "INTEGRATES"
+  },
+  {
+   "source": "app:successfactors",
+   "target": "product:successfactors-employee-central",
+   "type": "INTEGRATES"
+  },
+  {
+   "source": "app:sap",
+   "target": "product:s-4hana-cloud-private-edition",
+   "type": "INTEGRATES"
+  },
+  {
+   "source": "risk:R1",
+   "target": "agent:abap-code-assistant",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R1",
+   "target": "agent:release-train-coordinator",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R4",
+   "target": "agent:invoice-matcher",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R4",
+   "target": "agent:report-generation-bot",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R7",
+   "target": "agent:knowledge-base-search",
+   "type": "AFFECTS"
+  },
+  {
+   "source": "risk:R5",
+   "target": "agent:meeting-summarizer",
+   "type": "AFFECTS"
+  }
+ ],
+ "tour": [
+  {
+   "node": "customer:muster-industrie-ag",
+   "title": "One customer",
+   "text": "Muster Industrie AG is the centre of the Sub4Me data: contracts, offers, tickets and AI-unit consumption hang off it."
+  },
+  {
+   "node": "contract:C-2023-0390",
+   "title": "A contract that ends soon",
+   "text": "Ariba Procurement runs until 2027-01-31 and the notice deadline is close. Everything around it lights up when you ask for the impact.",
+   "impact": true
+  },
+  {
+   "node": "offer:OFF-2026-0318",
+   "title": "The renewal offer",
+   "text": "SAP offered a two-year renewal. The offer renews the contract and is tied to the same product."
+  },
+  {
+   "node": "workflow:contract-renewal-reminder",
+   "title": "Automation that watches it",
+   "text": "An n8n workflow reminds the account team about renewals, so a change here also touches automation."
+  },
+  {
+   "node": "skill:renewal-radar",
+   "title": "Skills that read the data",
+   "text": "Skills such as renewal-radar and customer-call-prep use the Sub4Me tools and serve the same customer."
+  },
+  {
+   "node": "risk:R2",
+   "title": "Governance on the other side",
+   "text": "Switch the view and the same graph shows risks and agents: overprivileged agents are tied to risk R2 and to the access review skill."
+  }
+ ]
+}
+</script>
+<script>
+(() => {
+'use strict';
+const D = JSON.parse(document.getElementById('kg-data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- style per node type (colour via design tokens, shape carries meaning too) ---------- */
+const ST = {
+  system:{c:'purple',s:'hex',r:13}, connector:{c:'muted',s:'hex',r:10}, customer:{c:'purple',s:'star',r:17},
+  family:{c:'teal',s:'round',r:11}, product:{c:'teal',s:'circle',r:8}, contract:{c:'blue',s:'square',r:9},
+  offer:{c:'green',s:'square',r:8}, ticket:{c:'amber',s:'tri',r:7}, skill:{c:'purple',s:'circle',r:8},
+  tool:{c:'muted',s:'circle',r:4.5}, risk:{c:'red',s:'diamond',r:10}, agent:{c:'amber',s:'diamond',r:8},
+  workflow:{c:'green',s:'circle',r:8}, app:{c:'blue',s:'round',r:6}, person:{c:'ink2',s:'circle',r:5},
+};
+const ORDER = ['customer','contract','offer','product','family','ticket','skill','tool','agent','risk','workflow','app','person'];
+const HUB = new Set(['system','connector']);
+let C = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = (n) => cs.getPropertyValue(n).trim();
+  C = { bg:g('--canvas'), panel:g('--surface'), ink:g('--ink'), mut:g('--muted'), line:g('--line'), brand:g('--purple') };
+  for (const k of ['purple','green','amber','red','blue','teal','muted']) C[k] = g('--' + k);
+  C.ink2 = g('--ink-2');
+}
+
+/* ---------- model ---------- */
+const nodes = D.nodes.map((n) => ({ ...n, x:0, y:0, vx:0, vy:0, deg:0, pin:false, nb:[] }));
+const byId = new Map(nodes.map((n) => [n.id, n]));
+const edges = D.edges.map((e, i) => ({ ...e, a: byId.get(e.source), b: byId.get(e.target), i, weak: !!(D.edgeTypes[e.type] || {}).weak }));
+for (const e of edges) { e.a.deg++; e.b.deg++; e.a.nb.push({ n: e.b, e, out: true }); e.b.nb.push({ n: e.a, e, out: false }); }
+for (const n of nodes) n.r = ST[n.type].r + Math.min(9, Math.sqrt(n.deg) * 0.9);
+const hidden = new Set();
+const count = {}; nodes.forEach((n) => (count[n.type] = (count[n.type] || 0) + 1));
+$('#stats').textContent = `${nodes.length} nodes · ${edges.length} relations`;
+$('#asof').textContent = D.asOf ? `as of ${D.asOf}` : '';
+
+/* ---------- layout: type sectors on a ring + force simulation ---------- */
+const ring = 360;
+nodes.forEach((n, i) => {
+  const k = ORDER.indexOf(n.type);
+  const ang = k < 0 ? 0 : (k / ORDER.length) * Math.PI * 2 - Math.PI / 2;
+  const rr = k < 0 ? 90 : ring;
+  n.ax = Math.cos(ang) * rr; n.ay = Math.sin(ang) * rr; n.as = n.type === 'person' ? 0.004 : k < 0 ? 0.02 : 0.016;
+  const j = (i * 2654435761 % 1000) / 1000 * Math.PI * 2;
+  n.x = n.ax + Math.cos(j) * 80; n.y = n.ay + Math.sin(j) * 80;
+});
+let alpha = 1;
+function tick() {
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j]; let dx = a.x - b.x, dy = a.y - b.y; const d2 = dx * dx + dy * dy + 0.5;
+      if (d2 > 160000) continue;
+      const f = (2600 / d2) * alpha, d = Math.sqrt(d2); dx /= d; dy /= d;
+      a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
+    }
+  }
+  for (const e of edges) {
+    const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y, d = Math.sqrt(dx * dx + dy * dy) + 0.01;
+    const L = e.weak ? 150 : 62, f = (d - L) * (e.weak ? 0.006 : 0.045) * alpha, fx = (dx / d) * f, fy = (dy / d) * f;
+    e.a.vx += fx; e.a.vy += fy; e.b.vx -= fx; e.b.vy -= fy;
+  }
+  for (const n of nodes) {
+    n.vx += (n.ax - n.x) * n.as * alpha; n.vy += (n.ay - n.y) * n.as * alpha;
+    n.vx -= n.x * 0.0008 * alpha; n.vy -= n.y * 0.0008 * alpha;
+    if (n.pin || n === drag.node) { n.vx = n.vy = 0; continue; }
+    n.vx *= 0.8; n.vy *= 0.8; n.x += n.vx; n.y += n.vy;
+  }
+  alpha = Math.max(alpha * 0.985, reduced ? 0 : 0.012);
+}
+const drag = { node: null };
+for (let i = 0; i < 380; i++) tick();
+alpha = reduced ? 0 : 0.05;
+
+/* ---------- canvas, camera ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d'), mini = $('#mini'), mctx = mini.getContext('2d'), wrap = $('#wrap');
+let W = 800, H = 600, dpr = 1;
+const cam = { k: 1, x: 0, y: 0 }, tgt = { k: 1, x: 0, y: 0 };
+function resize() {
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = cv.clientWidth || 800; H = cv.clientHeight || 600;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+}
+new ResizeObserver(() => { resize(); }).observe(wrap);
+const vis = (n) => !hidden.has(n.type);
+function bounds(list) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const n of list) { x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x); y1 = Math.max(y1, n.y); }
+  return { x0, y0, x1, y1 };
+}
+function fit(list = nodes.filter(vis), instant) {
+  if (!list.length) return;
+  const b = bounds(list), pad = 70;
+  const k = Math.min((W - pad * 2) / Math.max(40, b.x1 - b.x0), (H - pad * 2) / Math.max(40, b.y1 - b.y0), 2.2);
+  tgt.k = k; tgt.x = W / 2 - ((b.x0 + b.x1) / 2) * k; tgt.y = H / 2 - ((b.y0 + b.y1) / 2) * k;
+  if (instant || reduced) Object.assign(cam, tgt);
+}
+function flyTo(n, k) {
+  tgt.k = k || Math.max(cam.k, 1.5); tgt.x = W / 2 - n.x * tgt.k; tgt.y = H / 2 - n.y * tgt.k;
+  if (reduced) Object.assign(cam, tgt);
+}
+const sx = (x) => x * cam.k + cam.x, sy = (y) => y * cam.k + cam.y;
+function pointer(ev) {
+  const r = cv.getBoundingClientRect();
+  return { x: (ev.clientX - r.left) * (cv.clientWidth / (r.width || 1)), y: (ev.clientY - r.top) * (cv.clientHeight / (r.height || 1)) };
+}
+function zoomAt(p, f) {
+  const k = Math.max(0.2, Math.min(5, tgt.k * f));
+  tgt.x = p.x - ((p.x - tgt.x) / tgt.k) * k; tgt.y = p.y - ((p.y - tgt.y) / tgt.k) * k; tgt.k = k;
+  if (reduced) Object.assign(cam, tgt);
+}
+
+/* ---------- graph queries (same rules as the chat tools: hubs are not followed) ---------- */
+function impact(start, depth) {
+  const dist = new Map([[start.id, 0]]), q = [start];
+  while (q.length) {
+    const c = q.shift(), d = dist.get(c.id);
+    if (d >= depth) continue;
+    for (const s of c.nb) { if (dist.has(s.n.id) || HUB.has(s.n.type) || !vis(s.n)) continue; dist.set(s.n.id, d + 1); q.push(s.n); }
+  }
+  return dist;
+}
+function pathBetween(a, b) {
+  const prev = new Map([[a.id, null]]), q = [a];
+  while (q.length && !prev.has(b.id)) {
+    const c = q.shift();
+    for (const s of c.nb) { if (prev.has(s.n.id) || (HUB.has(s.n.type) && s.n !== b)) continue; prev.set(s.n.id, { from: c, s }); q.push(s.n); }
+  }
+  if (!prev.has(b.id)) return null;
+  const steps = []; for (let at = b.id; prev.get(at); at = prev.get(at).from.id) steps.unshift(prev.get(at));
+  return steps;
+}
+function sentence(from, s) {
+  const spec = D.edgeTypes[s.e.type] || { verb: s.e.type.toLowerCase(), inverse: s.e.type.toLowerCase() };
+  return `${from.label} ${s.out ? spec.verb : spec.inverse} ${s.n.label}${s.e.label ? ` (${s.e.label})` : ''}`;
+}
+
+/* ---------- state ---------- */
+const S = { mode: 'explore', sel: null, hover: null, depth: 2, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false };
+let foc = null; // { level: Map id->level, edges: Set }
+function computeFocus() {
+  foc = null;
+  const base = S.sel || (S.mode === 'explore' && S.hover);
+  if (S.mode === 'path' && S.steps) {
+    foc = { level: new Map([...S.pathIds].map((id, i) => [id, [...S.pathIds].indexOf(id)])), edges: S.pathEdges, path: true };
+  } else if (S.mode === 'impact' && S.sel) {
+    S.dist = impact(S.sel, S.depth);
+    const edgesIn = new Set(edges.filter((e) => S.dist.has(e.a.id) && S.dist.has(e.b.id) && Math.abs(S.dist.get(e.a.id) - S.dist.get(e.b.id)) <= 1 && !(HUB.has(e.a.type) || HUB.has(e.b.type))));
+    foc = { level: S.dist, edges: edgesIn, impact: true };
+  } else if (base) {
+    const level = new Map([[base.id, 0]]), es = new Set();
+    for (const s of base.nb) { level.set(s.n.id, 1); es.add(s.e); }
+    foc = { level, edges: es };
+  }
+}
+function setSel(n, opts = {}) {
+  if (S.mode === 'path' && n && !opts.fromPanel) {
+    if (!S.pathA || S.steps) { S.pathA = n; S.steps = null; S.pathIds = new Set(); S.pathEdges = new Set(); S.sel = n; }
+    else if (n !== S.pathA) {
+      const steps = pathBetween(S.pathA, n);
+      S.sel = n;
+      if (steps) { S.steps = steps; S.pathIds = new Set([S.pathA.id, ...steps.map((st) => st.s.n.id)]); S.pathEdges = new Set(steps.map((st) => st.s.e)); S.pathB = n; }
+      else { S.steps = []; S.pathB = n; }
+    }
+  } else S.sel = n;
+  S.t0 = performance.now();
+  computeFocus(); renderPanel();
+  if (n && !opts.noFly) flyTo(S.steps && S.steps.length ? centre([...S.pathIds].map((i) => byId.get(i))) : n, S.mode === 'impact' ? 1.1 : undefined);
+  if (S.steps && S.steps.length) fit([...S.pathIds].map((i) => byId.get(i)));
+}
+function centre(list) { const b = bounds(list); return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }; }
+function setMode(m) {
+  S.mode = m; S.pathA = null; S.steps = null; S.pathIds = new Set(); S.pathEdges = new Set(); S.tour = -1;
+  for (const k of ['explore', 'impact', 'path']) $('#m-' + k).setAttribute('aria-pressed', String(k === m));
+  $('#depth-l').hidden = m !== 'impact';
+  if (m === 'path') S.sel = null;
+  $('#hint').textContent = m === 'path' ? 'Path mode: click a start node, then a target node' : m === 'impact' ? 'Impact mode: click a node to see everything that hangs on it' : 'Drag to move · scroll to zoom · double-click a node to pin it';
+  S.t0 = performance.now(); computeFocus(); renderPanel();
+}
+
+/* ---------- drawing ---------- */
+function shapePath(c, s, x, y, r) {
+  c.beginPath();
+  if (s === 'circle') c.arc(x, y, r, 0, Math.PI * 2);
+  else if (s === 'round') c.roundRect(x - r, y - r, r * 2, r * 2, r * 0.45);
+  else if (s === 'square') c.rect(x - r * 0.9, y - r * 0.9, r * 1.8, r * 1.8);
+  else {
+    const pts = s === 'hex' ? 6 : s === 'diamond' ? 4 : s === 'tri' ? 3 : 10, rot = s === 'hex' ? 0 : -Math.PI / 2;
+    for (let i = 0; i < pts; i++) {
+      const rr = s === 'star' ? (i % 2 ? r * 0.55 : r * 1.15) : s === 'diamond' ? r * 1.2 : r;
+      const a = rot + (i / pts) * Math.PI * 2; c[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+    c.closePath();
+  }
+}
+const col = (n) => C[ST[n.type].c];
+function quad(e) {
+  const mx = (e.a.x + e.b.x) / 2, my = (e.a.y + e.b.y) / 2, dx = e.b.x - e.a.x, dy = e.b.y - e.a.y, s = (e.i % 2 ? 1 : -1) * 0.12;
+  return { cx: mx - dy * s, cy: my + dx * s };
+}
+function qpt(e, q, t) {
+  const u = 1 - t;
+  return { x: u * u * e.a.x + 2 * u * t * q.cx + t * t * e.b.x, y: u * u * e.a.y + 2 * u * t * q.cy + t * t * e.b.y };
+}
+function reveal(id, now) { // impact ripple: hop d appears after d*380ms
+  if (!foc || !foc.impact || reduced) return 1;
+  const d = foc.level.get(id); if (d === undefined) return 0;
+  return Math.max(0, Math.min(1, (now - S.t0 - d * 380) / 260));
+}
+function draw(now) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(sx(0), sy(0), 10, sx(0), sy(0), Math.max(W, H) * 0.7);
+  g.addColorStop(0, C.purple); g.addColorStop(1, C.bg);
+  ctx.globalAlpha = 0.09; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+  // faint grid of sector guides
+  ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(sx(0), sy(0), ring * cam.k, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+
+  const t = now * 0.00035;
+  for (const e of edges) {
+    if (!vis(e.a) || !vis(e.b)) continue;
+    const inF = foc && foc.edges.has(e);
+    let al = foc ? (inF ? 0.95 : 0.04) : e.weak ? 0.07 : 0.24;
+    if (inF && foc.impact) al *= Math.min(reveal(e.a.id, now), reveal(e.b.id, now));
+    if (al < 0.01) continue;
+    const q = quad(e);
+    ctx.globalAlpha = al; ctx.lineWidth = inF ? (foc.path ? 3 : 1.8) : 1;
+    ctx.strokeStyle = inF ? (foc.path ? C.amber : C.purple) : C.mut;
+    ctx.beginPath(); ctx.moveTo(sx(e.a.x), sy(e.a.y)); ctx.quadraticCurveTo(sx(q.cx), sy(q.cy), sx(e.b.x), sy(e.b.y)); ctx.stroke();
+    if (inF && !reduced) {
+      ctx.fillStyle = foc.path ? C.amber : C.purple; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8;
+      for (let k = 0; k < 2; k++) { const p = qpt(e, q, (t * 1.4 + e.i * 0.137 + k * 0.5) % 1); ctx.beginPath(); ctx.arc(sx(p.x), sy(p.y), 2.2, 0, Math.PI * 2); ctx.fill(); }
+      ctx.shadowBlur = 0;
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // ripple around the impact origin
+  if (foc && foc.impact && S.sel && !reduced) {
+    const el = now - S.t0, span = (S.depth + 1) * 380;
+    for (const off of [0, 260]) {
+      const p = el - off; if (p < 0 || p > span) continue;
+      ctx.globalAlpha = 0.5 * (1 - p / span); ctx.strokeStyle = C.red; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(sx(S.sel.x), sy(S.sel.y), (p / 380) * 62 * cam.k, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  const labelAll = S.labels || cam.k > 1.5;
+  const lab = [];
+  const order = nodes.filter(vis).sort((a, b) => (foc ? (foc.level.has(a.id) ? 1 : 0) - (foc.level.has(b.id) ? 1 : 0) : 0));
+  for (const n of order) {
+    const lv = foc ? foc.level.get(n.id) : undefined;
+    let al = foc ? (lv === undefined ? 0.1 : 1) : 1;
+    if (foc && foc.impact && lv !== undefined) al = reveal(n.id, now);
+    if (foc && foc.impact && lv !== undefined && al < 1) al = Math.max(al, 0.1);
+    const x = sx(n.x), y = sy(n.y);
+    if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
+    const r = n.r * Math.min(1.6, Math.max(0.55, cam.k));
+    const lift = (foc && lv !== undefined) || n === S.hover;
+    const colr = foc && foc.impact && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : col(n);
+    ctx.globalAlpha = al; ctx.fillStyle = colr; ctx.strokeStyle = C.bg; ctx.lineWidth = 1.6;
+    if (lift) { ctx.shadowColor = colr; ctx.shadowBlur = n === S.sel ? 26 : 14; }
+    shapePath(ctx, ST[n.type].s, x, y, r); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+    if (n.pin) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
+    if (n === S.sel) { ctx.strokeStyle = C.ink; ctx.lineWidth = 2; shapePath(ctx, ST[n.type].s, x, y, r + 5); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    if (al > 0.5 && (lift || labelAll || n.deg >= 9 || HUB.has(n.type) || n.type === 'customer')) lab.push({ n, x, y: y + r + 11, strong: lift || n === S.sel });
+  }
+  ctx.font = '11px ' + getComputedStyle(document.body).fontFamily; ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+  const placed = [];
+  lab.sort((a, b) => (b.strong ? 1 : 0) - (a.strong ? 1 : 0) || b.n.deg - a.n.deg);
+  for (const l of lab) {
+    const w = ctx.measureText(l.n.label).width, box = [l.x - w / 2, l.y - 9, l.x + w / 2, l.y + 3];
+    if (!l.strong && placed.some((p) => box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1])) continue;
+    placed.push(box);
+    ctx.lineWidth = 3.5; ctx.strokeStyle = C.bg; ctx.strokeText(l.n.label, l.x, l.y);
+    ctx.fillStyle = l.strong ? C.ink : C.ink2; ctx.fillText(l.n.label, l.x, l.y);
+  }
+  drawMini();
+}
+function drawMini() {
+  const mw = mini.width, mh = mini.height; mctx.clearRect(0, 0, mw, mh);
+  const list = nodes.filter(vis); if (!list.length) return;
+  const b = bounds(list), s = Math.min((mw - 16) / (b.x1 - b.x0 || 1), (mh - 16) / (b.y1 - b.y0 || 1));
+  const ox = (mw - (b.x1 - b.x0) * s) / 2 - b.x0 * s, oy = (mh - (b.y1 - b.y0) * s) / 2 - b.y0 * s;
+  mini._m = { s, ox, oy };
+  for (const n of list) { mctx.globalAlpha = foc && !foc.level.has(n.id) ? 0.2 : 0.9; mctx.fillStyle = col(n); mctx.fillRect(n.x * s + ox - 1.5, n.y * s + oy - 1.5, 3, 3); }
+  mctx.globalAlpha = 1; mctx.strokeStyle = C.ink; mctx.lineWidth = 1.5;
+  mctx.strokeRect((-cam.x / cam.k) * s + ox, (-cam.y / cam.k) * s + oy, (W / cam.k) * s, (H / cam.k) * s);
+}
+function frame(now) {
+  if (!S.paused && alpha > 0.0101 && !reduced) tick();
+  else if (!S.paused && !reduced) { alpha = 0.012; tick(); }
+  for (const k of ['k', 'x', 'y']) cam[k] += (tgt[k] - cam[k]) * (reduced ? 1 : 0.14);
+  draw(now);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- interaction ---------- */
+function hit(p) {
+  let best = null, bd = 1e9;
+  for (const n of nodes) {
+    if (!vis(n)) continue;
+    const d = Math.hypot(sx(n.x) - p.x, sy(n.y) - p.y), r = n.r * Math.min(1.6, Math.max(0.55, cam.k)) + 6;
+    if (d < r && d < bd) { best = n; bd = d; }
+  }
+  return best;
+}
+let down = null;
+cv.addEventListener('pointerdown', (ev) => {
+  cv.setPointerCapture(ev.pointerId); const p = pointer(ev), n = hit(p);
+  down = { p, n, moved: false, cx: cam.x, cy: cam.y, tx: tgt.x, ty: tgt.y };
+  if (n) { drag.node = n; } cv.classList.add('drag');
+});
+cv.addEventListener('pointermove', (ev) => {
+  const p = pointer(ev);
+  if (down) {
+    const dx = p.x - down.p.x, dy = p.y - down.p.y;
+    if (Math.hypot(dx, dy) > 4) down.moved = true;
+    if (down.moved) {
+      if (down.n) { down.n.x = (p.x - cam.x) / cam.k; down.n.y = (p.y - cam.y) / cam.k; down.n.pin = true; alpha = Math.max(alpha, 0.25); }
+      else { tgt.x = cam.x = down.cx + dx; tgt.y = cam.y = down.cy + dy; }
+    }
+    return;
+  }
+  const n = hit(p); cv.classList.toggle('hit', !!n);
+  if (n !== S.hover) { S.hover = n; if (!S.sel && S.mode === 'explore') computeFocus(); showHover(n); }
+});
+cv.addEventListener('pointerup', (ev) => {
+  const d = down; down = null; drag.node = null; cv.classList.remove('drag');
+  if (!d) return;
+  if (!d.moved) { const n = d.n; if (n) setSel(n); else if (S.mode !== 'path') { S.sel = null; computeFocus(); renderPanel(); } }
+});
+cv.addEventListener('dblclick', (ev) => { const n = hit(pointer(ev)); if (n) { n.pin = !n.pin; alpha = Math.max(alpha, 0.1); } });
+cv.addEventListener('pointerleave', () => { if (!down && S.hover) { S.hover = null; if (!S.sel) computeFocus(); showHover(null); } });
+cv.addEventListener('wheel', (ev) => { ev.preventDefault(); zoomAt(pointer(ev), Math.exp(-ev.deltaY * 0.0015)); }, { passive: false });
+cv.addEventListener('keydown', (ev) => {
+  const step = 60;
+  if (ev.key === '+' || ev.key === '=') zoomAt({ x: W / 2, y: H / 2 }, 1.25);
+  else if (ev.key === '-') zoomAt({ x: W / 2, y: H / 2 }, 0.8);
+  else if (ev.key === '0') fit();
+  else if (ev.key === 'ArrowLeft') tgt.x += step; else if (ev.key === 'ArrowRight') tgt.x -= step;
+  else if (ev.key === 'ArrowUp') tgt.y += step; else if (ev.key === 'ArrowDown') tgt.y -= step;
+  else if (ev.key === 'Escape') { S.sel = null; computeFocus(); renderPanel(); }
+  else return;
+  ev.preventDefault();
+});
+mini.addEventListener('click', (ev) => {
+  const r = mini.getBoundingClientRect(), m = mini._m; if (!m) return;
+  const mx = (ev.clientX - r.left) * (mini.width / r.width), my = (ev.clientY - r.top) * (mini.height / r.height);
+  const wx = (mx - m.ox) / m.s, wy = (my - m.oy) / m.s;
+  tgt.x = W / 2 - wx * tgt.k; tgt.y = H / 2 - wy * tgt.k;
+});
+$('#zin').onclick = () => zoomAt({ x: W / 2, y: H / 2 }, 1.3);
+$('#zout').onclick = () => zoomAt({ x: W / 2, y: H / 2 }, 0.77);
+$('#zfit').onclick = () => fit();
+$('#m-explore').onclick = () => setMode('explore');
+$('#m-impact').onclick = () => setMode('impact');
+$('#m-path').onclick = () => setMode('path');
+$('#depth').onchange = (e) => { S.depth = Number(e.target.value); S.t0 = performance.now(); computeFocus(); renderPanel(); };
+$('#labels').onclick = (e) => { S.labels = !S.labels; e.currentTarget.setAttribute('aria-pressed', String(S.labels)); };
+$('#pause').onclick = (e) => { S.paused = !S.paused; e.currentTarget.setAttribute('aria-pressed', String(S.paused)); e.currentTarget.textContent = S.paused ? 'Resume' : 'Pause'; };
+$('#reset').onclick = () => { hidden.clear(); renderLegend(); nodes.forEach((n) => (n.pin = false)); setMode('explore'); S.sel = null; computeFocus(); renderPanel(); alpha = 0.6; fit(); };
+
+/* ---------- legend ---------- */
+function svgShape(type) {
+  const st = ST[type], r = 7, c = 10; let inner;
+  if (st.s === 'circle') inner = `<circle cx="${c}" cy="${c}" r="${r}"/>`;
+  else if (st.s === 'round') inner = `<rect x="${c - r}" y="${c - r}" width="${r * 2}" height="${r * 2}" rx="3"/>`;
+  else if (st.s === 'square') inner = `<rect x="${c - r + 1}" y="${c - r + 1}" width="${r * 2 - 2}" height="${r * 2 - 2}"/>`;
+  else {
+    const pts = st.s === 'hex' ? 6 : st.s === 'diamond' ? 4 : st.s === 'tri' ? 3 : 10, rot = st.s === 'hex' ? 0 : -Math.PI / 2, a = [];
+    for (let i = 0; i < pts; i++) { const rr = st.s === 'star' ? (i % 2 ? r * 0.55 : r * 1.15) : r; const an = rot + (i / pts) * Math.PI * 2; a.push((c + Math.cos(an) * rr).toFixed(1) + ',' + (c + Math.sin(an) * rr).toFixed(1)); }
+    inner = `<polygon points="${a.join(' ')}"/>`;
+  }
+  return `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="fill:var(--${st.c === 'ink2' ? 'ink-2' : st.c})">${inner}</svg>`;
+}
+function renderLegend() {
+  const el = $('#legend');
+  el.innerHTML = Object.keys(D.nodeTypes).filter((t) => count[t]).map((t) => `<button data-t="${t}" aria-pressed="${!hidden.has(t)}">${svgShape(t)}${esc(D.nodeTypes[t])}<em>${count[t]}</em></button>`).join('');
+  el.querySelectorAll('button').forEach((b) => (b.onclick = () => {
+    const t = b.dataset.t; hidden.has(t) ? hidden.delete(t) : hidden.add(t);
+    if (S.sel && hidden.has(S.sel.type)) S.sel = null;
+    b.setAttribute('aria-pressed', String(!hidden.has(t))); computeFocus(); renderPanel();
+  }));
+}
+
+/* ---------- side panel ---------- */
+const panel = $('#panel');
+const chipOf = (n) => `<span class="chip">${svgShape(n.type)}${esc(D.nodeTypes[n.type])}</span>`;
+function connList(n) {
+  const groups = {};
+  for (const s of n.nb) (groups[s.n.type] ||= []).push(s);
+  return Object.keys(D.nodeTypes).filter((t) => groups[t]).map((t) => `<h3>${esc(D.nodeTypes[t])} (${groups[t].length})</h3><div class="conn">${groups[t].map((s) => `<button data-go="${esc(s.n.id)}">${esc(s.n.label)}<small>${esc(sentence(n, s))}</small></button>`).join('')}</div>`).join('');
+}
+function renderPanel() {
+  const n = S.sel;
+  let h = '';
+  if (S.tour >= 0) {
+    const st = D.tour[S.tour];
+    h += `<div class="card"><span class="pill">Step ${S.tour + 1} of ${D.tour.length}</span><h2 style="margin-top:8px">${esc(st.title)}</h2><p>${esc(st.text)}</p><div class="row"><button class="btn" id="t-prev"${S.tour === 0 ? ' disabled' : ''}>◀ Back</button><button class="btn" id="t-next">${S.tour === D.tour.length - 1 ? 'Finish' : 'Next ▶'}</button><button class="btn" id="t-end">End tour</button></div></div>`;
+  }
+  if (S.mode === 'path') {
+    h += `<h2>Path</h2><p style="color:var(--mut);margin:4px 0 8px">${!S.pathA ? 'Click a start node.' : !S.steps ? `Start: <b>${esc(S.pathA.label)}</b>. Now click the target node.` : ''}</p>`;
+    if (S.steps && S.steps.length) {
+      h += `<span class="pill">${S.steps.length} step${S.steps.length > 1 ? 's' : ''}</span><ol class="steps">${S.steps.map((st) => `<li>${esc(sentence(st.from, st.s))}</li>`).join('')}</ol>`;
+    } else if (S.steps) h += '<p>No connection without going through a system or connector hub.</p>';
+  }
+  if (n && S.mode !== 'path') {
+    h += `${chipOf(n)}<h2>${esc(n.label)}</h2>`;
+    const meta = Object.entries(n.meta || {});
+    if (meta.length) h += `<dl class="kv">${meta.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`;
+    if (S.mode === 'impact' && S.dist) {
+      const byHop = {}; for (const [id, d] of S.dist) if (d > 0) (byHop[d] ||= []).push(byId.get(id));
+      const total = Object.values(byHop).reduce((a, l) => a + l.length, 0);
+      h += `<div class="card"><span class="pill">${total} affected within ${S.depth} step${S.depth > 1 ? 's' : ''}</span>`;
+      for (const d of Object.keys(byHop)) {
+        const types = {}; byHop[d].forEach((x) => (types[x.type] = (types[x.type] || 0) + 1));
+        h += `<p><b>Step ${d}:</b> ${Object.entries(types).map(([t, c]) => `${c} ${esc(D.nodeTypes[t].toLowerCase())}`).join(', ')}</p><div class="conn">${byHop[d].map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])}</small></button>`).join('')}</div>`;
+      }
+      h += '</div>';
+    } else h += `<div class="row"><button class="btn" id="a-impact">Show impact</button><button class="btn" id="a-path">Path from here</button>${n.pin ? '<button class="btn" id="a-unpin">Unpin</button>' : ''}</div>` + connList(n);
+    if (n.view) h += `<p style="color:var(--mut);font-size:12px;margin-top:14px">Details live in the “${esc(n.view.space)}” Space.</p>`;
+  } else if (S.mode === 'path' && S.pathA && !S.steps) {
+    h += `<div class="conn"><button data-go="${esc(S.pathA.id)}">${esc(S.pathA.label)}<small>start</small></button></div>`;
+  }
+  if (!n && S.mode !== 'path' && S.tour < 0) {
+    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p><div class="row"><button class="btn" id="a-tour">▶ Start guided tour</button></div>`;
+    const top = [...nodes].sort((a, b) => b.deg - a.deg).filter((x) => !HUB.has(x.type)).slice(0, 8);
+    h += `<h3>Best connected</h3><div class="conn">${top.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])} · ${x.deg} relations</small></button>`).join('')}</div>`;
+  }
+  panel.innerHTML = h;
+  panel.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => { const x = byId.get(b.dataset.go); if (x) { if (S.mode === 'path') { flyTo(x); } else setSel(x, { fromPanel: true }); } }));
+  const on = (id, fn) => { const e = panel.querySelector(id); if (e) e.onclick = fn; };
+  on('#a-impact', () => { const keep = S.sel; setMode('impact'); setSel(keep); });
+  on('#a-path', () => { const keep = S.sel; setMode('path'); S.pathA = keep; S.sel = keep; computeFocus(); renderPanel(); });
+  on('#a-unpin', () => { n.pin = false; renderPanel(); });
+  on('#a-tour', () => startTour());
+  on('#t-prev', () => tourGo(S.tour - 1)); on('#t-next', () => tourGo(S.tour + 1)); on('#t-end', endTour);
+}
+function showHover(n) { if (n && !S.sel) $('#hint').textContent = `${D.nodeTypes[n.type]}: ${n.label} · ${n.deg} relations`; else if (!n) $('#hint').textContent = S.mode === 'path' ? 'Path mode: click a start node, then a target node' : S.mode === 'impact' ? 'Impact mode: click a node to see everything that hangs on it' : 'Drag to move · scroll to zoom · double-click a node to pin it'; }
+
+/* ---------- search ---------- */
+const q = $('#q'), res = $('#res'); let hits = [], hi = -1;
+function search() {
+  const t = q.value.trim().toLowerCase();
+  hits = t.length < 2 ? [] : nodes.filter((n) => n.label.toLowerCase().includes(t) || n.id.toLowerCase().includes(t) || Object.values(n.meta || {}).some((v) => String(v).toLowerCase().includes(t)))
+    .sort((a, b) => (b.label.toLowerCase().startsWith(t) ? 1 : 0) - (a.label.toLowerCase().startsWith(t) ? 1 : 0) || b.deg - a.deg).slice(0, 9);
+  hi = hits.length ? 0 : -1;
+  res.hidden = !hits.length; q.setAttribute('aria-expanded', String(!!hits.length));
+  res.innerHTML = hits.map((n, i) => `<li><button type="button" role="option" data-i="${i}" aria-selected="${i === hi}">${svgShape(n.type)}${esc(n.label)}<small>${esc(D.nodeTypes[n.type])}</small></button></li>`).join('');
+  res.querySelectorAll('button').forEach((b) => (b.onclick = () => pick(hits[Number(b.dataset.i)])));
+}
+function pick(n) { if (!n) return; hidden.delete(n.type); renderLegend(); res.hidden = true; q.value = ''; setSel(n); }
+q.addEventListener('input', search);
+q.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!hits.length) return; hi = (hi + (e.key === 'ArrowDown' ? 1 : hits.length - 1)) % hits.length; res.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-selected', String(i === hi))); }
+  else if (e.key === 'Enter') pick(hits[Math.max(0, hi)]);
+  else if (e.key === 'Escape') { res.hidden = true; }
+});
+document.addEventListener('click', (e) => { if (!e.target.closest('.search')) res.hidden = true; });
+
+/* ---------- guided tour ---------- */
+function startTour() { if (!D.tour.length) return; setMode('explore'); tourGo(0); }
+function tourGo(i) {
+  if (i < 0) return; if (i >= D.tour.length) return endTour();
+  const st = D.tour[i], n = byId.get(st.node); if (!n) return endTour();
+  S.mode = st.impact ? 'impact' : 'explore';
+  for (const k of ['explore', 'impact', 'path']) $('#m-' + k).setAttribute('aria-pressed', String(k === S.mode));
+  $('#depth-l').hidden = S.mode !== 'impact';
+  hidden.delete(n.type); renderLegend();
+  S.tour = i; S.sel = n; S.t0 = performance.now(); computeFocus();
+  flyTo(n, 1.25); renderPanel();
+}
+function endTour() { S.tour = -1; S.sel = null; setMode('explore'); fit(); }
+$('#tour').onclick = () => (S.tour >= 0 ? endTour() : startTour());
+
+/* ---------- theme + boot ---------- */
+readColors();
+new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style', 'class'] });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+renderLegend(); renderPanel(); resize(); fit(nodes, true);
+requestAnimationFrame(frame);
+// test hook (read-only inspection, no network)
+window.__kg = { nodes, edges, S, setSel, byId, setMode, startTour, tourGo, cam };
+})();
+</script>
+</body>
+</html>
