@@ -331,12 +331,12 @@ In the Space: search with fly-to, **Explore** (neighbours of a node), **Impact**
 
 The same graph is available in chat through five connector tools (connector 0.12.0): `get_graph_overview`, `search_graph`, `get_graph_neighbors`, `find_graph_path` and `analyze_graph_impact`, for example “Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?” or “Wie hängt Risiko R2 mit dem Kunden zusammen?”. After updating, re-import the connector in the app so the new tools appear.
 
-## Mockup Spaces: call transcripts and customer e-mails
+## Mockup Spaces: call transcripts and e-mail communication
 
 Two design mockups for additional sources, with fictional data only and no real connection (no mailbox, no call platform, nothing recorded, read, stored or sent):
 
 - **Call Transcripts** (`examples/call-transcripts`): calls with summary, decisions, risks, action items (owner, due date, overdue), a mood timeline and a searchable transcript. Every decision, risk and action jumps to the passage it came from; a second tab collects all action items across calls.
-- **Customer E-Mails** (`examples/customer-emails`): conversations with summary, open points, response times against a 48-hour target, a draft reply (mock, never sent), weekly volume, and a page on rules and privacy. One message contains instructions aimed at AI assistants; it is flagged and shown as plain text. Open points are matched with the calls (for example a mail that confirms an action still open after a call).
+- **E-Mail-Communication - Kunde: Muster Industrie AG** (`examples/customer-emails`, formerly “Customer E-Mails”): the mail conversations with one customer, with summary, open points, response times against a 48-hour target, a draft reply (mock, never sent), weekly volume, and a page on rules and privacy. One message contains instructions aimed at AI assistants; it is flagged and shown as plain text. Open points are matched with the calls (for example a mail that confirms an action still open after a call).
 
 Install with `npm run install:call-transcripts` and `npm run install:customer-emails`. The sample data lives in `calls.json` and `threads.json` next to each page; `npm run sync:mockups` embeds it (`-- --check` fails when stale).
 ## Tables in chat answers
@@ -357,3 +357,15 @@ The mockup data of the two Spaces above is part of the graph: **Call** and **E-m
 ## Conversation search and filter
 
 In the **Conversations** list the magnifier opens a search field (titles and message text, case-insensitive, `Esc` clears and closes) and the funnel opens a filter menu: all conversations, updated today, last 7 days, or with files. Both combine, the list shows “x of y shown” with a **Clear** link, and archived conversations that match appear automatically. Filtering is in `filterConversations` (`src/conversations.ts`).
+## n8n demo workflows (simple and complex)
+
+Two importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
+
+- `01-simple-contract-notice-check.json`: manual trigger, sample contracts, notice deadline per contract, IF “due within 30 days?” → alert or no action. Good for explaining the basic building blocks.
+- `02-complex-communication-digest.json`: manual or weekday-morning trigger, a Switch that splits mails and call action items, a **guardrail** that quarantines mail text containing instructions aimed at AI assistants (the same case as in the E-Mail-Communication Space), intent and 48-hour response target, overdue check, three Merge nodes and one digest per customer that ends in “create a draft, never send”. 20 nodes, two branches, IF, Switch, Merge, Code.
+
+Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workflow**. The workflows stay inactive; the Code nodes use a fixed reference date (19 Oct 2026) so the result is the same every day. `test/n8n-demo-workflows.test.mjs` checks the structure and runs the Code nodes.
+
+## Cover sheet typeface
+
+The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.

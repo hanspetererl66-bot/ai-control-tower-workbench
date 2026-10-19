@@ -1,3 +1,5 @@
 Joule Work X - Next Gen is based on Werkbank by marianfoo (https://github.com/marianfoo/werkbank), licensed under Apache-2.0.
 Modifications: AI Control Tower example Space, MCP connector, Supabase read path, suggested questions and dashboard links.
 Not affiliated with or endorsed by SAP.
+
+The cover sheet uses the "72" typeface from @sap-theming/theming-base-content (Apache-2.0, license in src/assets/fonts/72/LICENSE.txt). The font is used as a typeface only; this project is not SAP software.
