@@ -194,6 +194,16 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
 .s4m .smx-list li{margin:3px 0}
 .s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
 </style>
 <style>
 *{box-sizing:border-box}
@@ -1352,6 +1362,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Engineering",
     "Reach": "team",
     "Team": "Platform Security",
+    "Rating": "4.4 of 5 (5 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2027-01-19",
     "Value last full month": "€425",
@@ -1395,6 +1406,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Engineering",
     "Reach": "team",
     "Team": "AI Programme Office",
+    "Rating": "4.3 of 5 (9 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-10-19",
     "Value last full month": "€808",
@@ -1454,6 +1466,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "not classified",
     "Reach": "company",
     "Team": "AI Programme Office",
+    "Rating": "4.6 of 5 (41 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2026-12-12",
     "Value last full month": "€4,052",
@@ -1497,6 +1510,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Sales",
     "Reach": "team",
     "Team": "Account Management",
+    "Rating": "4.5 of 5 (14 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-04-19",
     "Value last full month": "€1,658",
@@ -1548,6 +1562,50 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "skill:rate-skill",
+   "type": "skill",
+   "label": "rate-skill",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "not classified",
+    "Reach": "company",
+    "Team": "AI Programme Office",
+    "Rating": "new (3 ratings)",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-04-19",
+    "Value last full month": "€38",
+    "Runs last full month": "9"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:rate_skill",
+   "type": "tool",
+   "label": "rate_skill",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_ratings",
+   "type": "tool",
+   "label": "get_skill_ratings",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_info",
+   "type": "tool",
+   "label": "get_skill_info",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
    "id": "skill:skill-finder",
    "type": "skill",
    "label": "skill-finder",
@@ -1556,6 +1614,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "not classified",
     "Reach": "company",
     "Team": "AI Programme Office",
+    "Rating": "4.4 of 5 (33 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-05-20",
     "Value last full month": "€1,452",
@@ -1575,14 +1634,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
-   "id": "tool:get_skill_info",
-   "type": "tool",
-   "label": "get_skill_info",
-   "meta": {
-    "System": "Skill Marketplace"
-   }
-  },
-  {
    "id": "skill:skill-search",
    "type": "skill",
    "label": "skill-search",
@@ -1591,6 +1642,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "not classified",
     "Reach": "company",
     "Team": "AI Programme Office",
+    "Rating": "4.6 of 5 (11 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-04-19",
     "Value last full month": "€791",
@@ -1599,6 +1651,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "skill-marketplace",
     "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:recommend_skill_workflow",
+   "type": "tool",
+   "label": "recommend_skill_workflow",
+   "meta": {
+    "System": "Skill Marketplace"
    }
   },
   {
@@ -1682,6 +1742,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Engineering",
     "Reach": "lob",
     "Team": "AI Programme Office",
+    "Rating": "4.2 of 5 (27 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-07-03",
     "Value last full month": "€383",
@@ -1718,6 +1779,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "team",
     "Team": "Group Accounting",
     "Note": "sample skill",
+    "Rating": "4.1 of 5 (64 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2027-03-02",
     "Value last full month": "€1,870",
@@ -1746,6 +1808,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "board-area",
     "Team": "Accounts Payable",
     "Note": "sample skill",
+    "Rating": "4.3 of 5 (52 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2027-02-19",
     "Value last full month": "€2,323",
@@ -1774,6 +1837,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "team",
     "Team": "Account Management",
     "Note": "sample skill",
+    "Rating": "4.7 of 5 (19 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-08-01",
     "Value last full month": "€2,182",
@@ -1817,6 +1881,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Sales",
     "Reach": "individual",
     "Note": "sample skill",
+    "Rating": "3.8 of 5 (8 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2026-10-20",
     "Value last full month": "€1,077",
@@ -1845,6 +1910,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "team",
     "Team": "Content Team",
     "Note": "sample skill",
+    "Rating": "4.0 of 5 (12 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2026-12-02",
     "Value last full month": "€765",
@@ -1872,6 +1938,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Marketing",
     "Reach": "individual",
     "Note": "sample skill",
+    "Rating": "4.2 of 5 (21 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-05-18",
     "Value last full month": "€411",
@@ -1900,6 +1967,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "lob",
     "Team": "Platform Operations",
     "Note": "sample skill",
+    "Rating": "4.5 of 5 (15 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-08-10",
     "Value last full month": "€1,360",
@@ -1936,6 +2004,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "team",
     "Team": "Concur Delivery",
     "Note": "sample skill",
+    "Rating": "3.9 of 5 (10 ratings)",
     "EU AI Act": "Limited",
     "Next review": "2026-11-04",
     "Value last full month": "€446",
@@ -1964,6 +2033,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "team",
     "Team": "SF Talent Squad",
     "Note": "sample skill",
+    "Rating": "4.0 of 5 (9 ratings)",
     "EU AI Act": "High",
     "Next review": "2026-11-25",
     "Value last full month": "€555",
@@ -1992,6 +2062,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Reach": "board-area",
     "Team": "Developer Experience",
     "Note": "sample skill",
+    "Rating": "4.4 of 5 (23 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-07-08",
     "Value last full month": "€873",
@@ -2019,6 +2090,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Board area": "Engineering",
     "Reach": "individual",
     "Note": "sample skill",
+    "Rating": "4.0 of 5 (6 ratings)",
     "EU AI Act": "Minimal",
     "Next review": "2027-05-30",
     "Value last full month": "€340",
@@ -3149,6 +3221,56 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "SERVES"
   },
   {
+   "source": "skill:rate-skill",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:rate_skill",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:rate_skill",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:rate-skill",
+   "target": "tool:rate_skill",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_ratings",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_ratings",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:rate-skill",
+   "target": "tool:get_skill_ratings",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_info",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_info",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:rate-skill",
+   "target": "tool:get_skill_info",
+   "type": "USES_TOOL"
+  },
+  {
    "source": "skill:skill-finder",
    "target": "system:marketplace",
    "type": "LISTED_IN"
@@ -3169,16 +3291,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
-   "source": "tool:get_skill_info",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:get_skill_info",
-   "target": "system:marketplace",
-   "type": "READS"
-  },
-  {
    "source": "skill:skill-finder",
    "target": "tool:get_skill_info",
    "type": "USES_TOOL"
@@ -3187,6 +3299,21 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "source": "skill:skill-search",
    "target": "system:marketplace",
    "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:recommend_skill_workflow",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:recommend_skill_workflow",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:recommend_skill_workflow",
+   "type": "USES_TOOL"
   },
   {
    "source": "tool:recommend_skills",
