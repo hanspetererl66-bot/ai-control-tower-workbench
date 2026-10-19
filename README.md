@@ -293,3 +293,5 @@ N8N_URL=https://firma.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- -
 It reads workflows (name, tags, active) and the last 14 days of executions (status, mode, duration; never payloads) and writes them only into the installed copy under `workspace/spaces/automation-dashboard`, so `git pull` never conflicts. The key lives only in that command.
 
 **Categories.** The Automation Dashboard sorts workflows into categories by their n8n tags (rules and assumed minutes per run in `examples/automation-dashboard/categories.json`, first match wins). A workflow can be pinned with the n8n tag `cat:<Category name>`. Trigger and connected apps are derived from the workflow's node types. The Categories tab shows the rules, per-category figures and the workflows that are not categorized yet. Time saved is an estimate (successful runs x assumed minutes), not a measurement.
+
+**Text size in Spaces.** All Spaces render 15% larger by default. Settings → "Text size in Spaces" offers 100%, 115% and 130%. The app injects one `zoom` rule into the page it hands to the Space frame, so it also applies to Spaces the agent builds and needs no change inside a Space.

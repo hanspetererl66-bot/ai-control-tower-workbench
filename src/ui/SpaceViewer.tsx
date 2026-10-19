@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
+import { applySpaceScale, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
 export type SpaceTabRequest = { tab: string; nonce: number };
@@ -10,12 +11,15 @@ export default function SpaceViewer({
   tabRequest,
   bridge,
   bridgeEnabled = false,
+  textScale = DEFAULT_SPACE_SCALE,
 }: {
   space: Space;
   tabRequest?: SpaceTabRequest | null;
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
   bridgeEnabled?: boolean;
+  /** Text size of the page inside the frame (1 = as authored). */
+  textScale?: SpaceScale;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const loaded = useRef(false);
@@ -107,10 +111,10 @@ export default function SpaceViewer({
             loaded.current = true;
             postTab();
           }}
-          key={`${space.slug}-${bust}-${html?.length ?? 0}`}
+          key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}`}
           className="space-frame"
           title={space.title}
-          srcDoc={html ?? ''}
+          srcDoc={applySpaceScale(html ?? '', textScale)}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

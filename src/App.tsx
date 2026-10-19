@@ -36,6 +36,7 @@ import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
 import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
+import { readSpaceScale, writeSpaceScale, type SpaceScale } from './space-scale';
 import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
 
 const WORKDIR = window.host?.workspacePath ?? '';
@@ -124,6 +125,11 @@ export default function App() {
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [spaceScale, setSpaceScale] = useState<SpaceScale>(() => readSpaceScale(window.localStorage));
+  function changeSpaceScale(scale: SpaceScale) {
+    setSpaceScale(scale);
+    writeSpaceScale(scale, window.localStorage);
+  }
   const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
   const speaker = useRef<ReplySpeaker | null>(null);
   const voiceRef = useRef(voice);
@@ -681,6 +687,7 @@ export default function App() {
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
             tabRequest={space.slug === 'ai-control-tower' ? spaceTab : null}
+            textScale={spaceScale}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
@@ -776,6 +783,8 @@ export default function App() {
           appearance={appearance}
           resolvedTheme={resolvedTheme}
           onChange={setAppearance}
+          spaceScale={spaceScale}
+          onSpaceScaleChange={changeSpaceScale}
           voice={voice}
           onVoiceChange={saveVoice}
           onClose={() => setSettingsOpen(false)}
