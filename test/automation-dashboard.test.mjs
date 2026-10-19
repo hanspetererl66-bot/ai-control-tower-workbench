@@ -97,5 +97,10 @@ test('page: tokens only, escapes data, labels sample data', () => {
   assert.ok(!/background:\s*#[0-9a-f]{3,8}/i.test(css) && !/background:\s*rgb/i.test(css), 'no literal backgrounds');
   assert.ok(page.includes('id="sample"') && page.includes('Sample data'));
   assert.ok(/esc\(w\.name\)/.test(page) && /esc\(e\.workflowName\)/.test(page));
-  assert.ok(!/<script src=|https?:\/\/(?!n8n)/.test(page.replace(/placeholder="https:\/\/firma[^"]*"/g, '').replace(/N8N_URL=https:\/\/firma\.app\.n8n\.cloud/g, '')), 'no external resources');
+  assert.ok(!/<script src=|https?:\/\/(?!n8n)/.test(page.replace(/placeholder="https:\/\/firma[^"]*"/g, '').replace(/N8N_URL=https:\/\/firma\.app\.n8n\.cloud/g, '').replace('xmlns="http://www.w3.org/2000/svg"', '')), 'no external resources');
+});
+
+test('the supplied n8n logo is embedded unchanged on a dark badge', () => {
+  assert.ok(page.includes('class="n8n-logo"') && page.includes('fill="#EA4B71"'), 'logo with its original colours');
+  assert.ok(page.includes('fill="white"') && /\.badge\{[^}]*background:var\(--logo-bg\)/.test(page), 'white letters need the dark badge');
 });
