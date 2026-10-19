@@ -6,7 +6,7 @@
 <title>Automation Dashboard</title>
 <style>
 *{box-sizing:border-box}
-:root{--logo-bg:#171322}
+:root{--logo-bg:#171322;--backdrop:rgba(10,8,16,.45)}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font)}
 header{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .logo{font-weight:800;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--brand)}
@@ -17,23 +17,32 @@ header{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 
 nav{display:flex;gap:2px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
 nav button{border:0;background:none;color:var(--mut);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
 nav button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--brand)}
-main{padding:20px;max-width:1180px;margin:0 auto}
+main{padding:20px;max-width:1220px;margin:0 auto}
 .pg{display:none}.pg.on{display:block}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:18px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:18px}
+.cats{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+button.cat{text-align:left;font:inherit;color:inherit;cursor:pointer;display:grid;gap:8px}
+button.cat:hover{border-color:var(--purple-border)}
+.cat h3{margin:0;font-size:14px}
+.cat .line{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--mut)}
+.cat .line b{color:var(--ink);font-weight:600}
 .k{font-size:12px;color:var(--mut)}
 .v{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
 .s{font-size:12px;color:var(--mut)}
 h2{font-size:15px;margin:22px 0 10px}
 .row{display:flex;gap:14px;flex-wrap:wrap}.row>*{flex:1 1 360px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-size:12px;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--line);font-weight:500}
+th{text-align:left;font-size:12px;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap}
 td{padding:10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .tbl{overflow-x:auto}
-.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
-.t-ok{background:var(--ok-dim);color:var(--ok)}.t-warn{background:var(--warn-dim);color:var(--warn)}.t-bad{background:var(--bad-dim);color:var(--bad)}.t-n{background:var(--brand-dim);color:var(--brand)}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.t-ok{background:var(--ok-dim);color:var(--ok)}.t-warn{background:var(--warn-dim);color:var(--warn)}.t-bad{background:var(--bad-dim);color:var(--bad)}.t-n{background:var(--brand-dim);color:var(--brand)}.t-m{background:var(--line-2);color:var(--ink-2)}
 .chips{display:flex;gap:4px;flex-wrap:wrap}
+.sub{margin-top:4px}
+button.link{border:0;background:none;padding:0;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
+button.link:hover{color:var(--brand);text-decoration:underline}
 .bar{height:8px;background:var(--line-2);border-radius:99px;overflow:hidden;min-width:90px;display:flex}
 .bar i{display:block;height:100%}
 .i-ok{background:var(--ok)}.i-bad{background:var(--bad)}.i-mut{background:var(--faint)}
@@ -42,8 +51,16 @@ td{padding:10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
 .day .stack{display:flex;flex-direction:column-reverse;border-radius:5px 5px 0 0;overflow:hidden;min-height:2px}
 .day .stack i{display:block}
 .day small{font-size:10px;color:var(--mut);text-align:center;margin-top:4px;white-space:nowrap;overflow:hidden}
+.spark{display:flex;align-items:flex-end;gap:2px;height:22px;min-width:84px}
+.spark span{flex:1;display:flex;flex-direction:column-reverse;justify-content:flex-start}
+.spark i{display:block;border-radius:1px}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:10px;flex-wrap:wrap}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.heat{display:grid;gap:3px;align-items:center;font-size:12px}
+.heat .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px}
+.heat .cell{height:18px;border-radius:4px;background:var(--line-2)}
+.heat .c-ok{background:var(--ok)}.heat .c-warn{background:var(--warn)}.heat .c-bad{background:var(--bad)}
+.heat .hd{font-size:10px;color:var(--mut);text-align:center}
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
 input[type=search]{min-width:240px;flex:1 1 240px}
@@ -51,6 +68,16 @@ input[type=search]{min-width:240px;flex:1 1 240px}
 .hint{display:grid;gap:8px;max-width:760px}
 .hint p{margin:0;color:var(--ink-2)}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--line-2);padding:1px 5px;border-radius:5px}
+.scrim{position:fixed;inset:0;background:var(--backdrop);display:none;z-index:10}
+.scrim.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:20px;z-index:11;display:none}
+.drawer.on{display:block}
+.drawer h2{margin:0 0 6px;font-size:17px}
+.drawer .head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.drawer .mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+.drawer .mini .card{padding:12px}.drawer .mini .v{font-size:22px}
+.drawer h3{font-size:13px;margin:18px 0 8px}
+.x{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:4px 10px;font:inherit;cursor:pointer}
 @media(max-width:600px){main{padding:14px}.meta{margin-left:0;text-align:left}}
 </style>
 <style id="design-system">
@@ -219,6 +246,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 <nav role="tablist" aria-label="Automation Dashboard">
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="workflows" aria-selected="false">Workflows</button>
+  <button role="tab" data-tab="categories" aria-selected="false">Categories</button>
   <button role="tab" data-tab="runs" aria-selected="false">Executions</button>
   <button role="tab" data-tab="about" aria-selected="false">About</button>
 </nav>
@@ -230,15 +258,18 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       <div class="days" id="days" role="img" aria-label="Executions per day, successful and failed"></div>
       <div class="legend"><span style="--c:var(--ok)">Success</span><span style="--c:var(--bad)">Error</span><span style="--c:var(--faint)">Running, waiting or canceled</span></div>
     </div>
+    <h2>By category</h2>
+    <div class="cats" id="cat-cards"></div>
     <div class="row">
       <div><h2>Needs attention</h2><div class="card tbl" id="attention"></div></div>
-      <div><h2>Busiest workflows</h2><div class="card tbl" id="busiest"></div></div>
+      <div><h2>Reliability by day</h2><div class="card" id="heat"></div><div class="legend"><span style="--c:var(--ok)">All ok</span><span style="--c:var(--warn)">Up to 15% failed</span><span style="--c:var(--bad)">More than 15% failed</span><span style="--c:var(--line-2)">No runs</span></div></div>
     </div>
   </section>
 
   <section class="pg" id="pg-workflows">
     <div class="tools">
-      <input type="search" id="wf-search" placeholder="Search workflows or tags" aria-label="Search workflows">
+      <input type="search" id="wf-search" placeholder="Search workflows, tags or apps" aria-label="Search workflows">
+      <select id="wf-cat" aria-label="Filter by category"></select>
       <select id="wf-state" aria-label="Filter by state">
         <option value="">All workflows</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="failing">With errors</option>
       </select>
@@ -246,11 +277,24 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     <div class="card tbl" id="wf-table"></div>
   </section>
 
+  <section class="pg" id="pg-categories">
+    <div class="card tbl" id="cat-table"></div>
+    <h2>Not categorized yet</h2>
+    <div class="card tbl" id="uncat"></div>
+    <h2>How categorization works</h2>
+    <div class="card hint">
+      <p>Each workflow is sorted by its n8n tags. The first category whose tags match wins, so the order in the table is the priority.</p>
+      <p>To pin a workflow, give it the n8n tag <code>cat:Finance &amp; Procurement</code> (any category name). Pinned workflows ignore the rules.</p>
+      <p>The rules live in <code>examples/automation-dashboard/categories.json</code>. Time saved is an estimate: successful runs times the minutes per run assumed for the category.</p>
+    </div>
+  </section>
+
   <section class="pg" id="pg-runs">
     <div class="tools">
       <select id="run-status" aria-label="Filter by status">
         <option value="">All statuses</option><option value="success">Success</option><option value="error">Error</option><option value="running">Running or waiting</option><option value="canceled">Canceled</option>
       </select>
+      <select id="run-cat" aria-label="Filter by category"></select>
     </div>
     <div class="card tbl" id="run-table"></div>
   </section>
@@ -259,107 +303,320 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     <div class="card hint">
       <p><strong>Where the data comes from.</strong> The page cannot reach n8n itself, so the numbers are embedded into it. Without setup you see fictional sample data.</p>
       <p><strong>Load your n8n Cloud data.</strong> In n8n create an API key (Settings, n8n API) and run in the project folder:</p>
-      <p><code>N8N_URL=https://firma.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- --live</code></p>
+      <p><code>N8N_URL=https://your-instance.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- --live</code></p>
       <p>Then reopen this Space. The key only lives in that command; it is not stored anywhere.</p>
-      <p><strong>What is read.</strong> Workflow names, tags and active state, plus status, mode and duration of the last 14 days of executions. No execution payloads.</p>
+      <p><strong>What is read.</strong> Workflow names, tags, active state and node types (to show trigger and connected apps), plus status, mode and duration of the last 14 days of executions. No execution payloads.</p>
       <p><strong>Ask in the chat.</strong> After connecting n8n to the chat (n8n view, "Mit Chat verbinden"), the chat can search and run workflows that are enabled for MCP in n8n.</p>
     </div>
   </section>
 </main>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title" aria-hidden="true"></aside>
 <script type="application/json" id="aut-data">
 {
   "source": "sample",
   "instance": "sample",
-  "asOf": "2026-10-18",
+  "asOf": "2026-10-19",
   "windowDays": 14,
   "days": [
     {
-      "date": "2026-10-05",
-      "success": 115,
-      "error": 8,
-      "other": 0
-    },
-    {
       "date": "2026-10-06",
-      "success": 113,
-      "error": 8,
-      "other": 0
-    },
-    {
-      "date": "2026-10-07",
-      "success": 116,
-      "error": 5,
-      "other": 0
-    },
-    {
-      "date": "2026-10-08",
-      "success": 132,
+      "success": 119,
       "error": 3,
       "other": 0
     },
     {
+      "date": "2026-10-07",
+      "success": 130,
+      "error": 4,
+      "other": 0
+    },
+    {
+      "date": "2026-10-08",
+      "success": 125,
+      "error": 8,
+      "other": 0
+    },
+    {
       "date": "2026-10-09",
-      "success": 122,
+      "success": 136,
       "error": 6,
       "other": 0
     },
     {
       "date": "2026-10-10",
-      "success": 36,
-      "error": 3,
+      "success": 40,
+      "error": 0,
       "other": 0
     },
     {
       "date": "2026-10-11",
-      "success": 35,
-      "error": 4,
+      "success": 39,
+      "error": 1,
       "other": 0
     },
     {
       "date": "2026-10-12",
-      "success": 124,
+      "success": 112,
       "error": 5,
       "other": 0
     },
     {
       "date": "2026-10-13",
-      "success": 126,
-      "error": 7,
+      "success": 121,
+      "error": 6,
       "other": 0
     },
     {
       "date": "2026-10-14",
-      "success": 128,
+      "success": 136,
       "error": 7,
       "other": 0
     },
     {
       "date": "2026-10-15",
-      "success": 117,
-      "error": 3,
-      "other": 0
-    },
-    {
-      "date": "2026-10-16",
-      "success": 112,
+      "success": 137,
       "error": 6,
       "other": 0
     },
     {
+      "date": "2026-10-16",
+      "success": 128,
+      "error": 3,
+      "other": 0
+    },
+    {
       "date": "2026-10-17",
-      "success": 38,
-      "error": 2,
+      "success": 35,
+      "error": 1,
       "other": 0
     },
     {
       "date": "2026-10-18",
-      "success": 37,
-      "error": 0,
+      "success": 40,
+      "error": 1,
       "other": 0
+    },
+    {
+      "date": "2026-10-19",
+      "success": 123,
+      "error": 7,
+      "other": 0
+    }
+  ],
+  "categories": [
+    {
+      "name": "Lead-to-Cash",
+      "tags": [
+        "lead-to-cash",
+        "l2c",
+        "order",
+        "quote"
+      ],
+      "minutesPerRun": 12
+    },
+    {
+      "name": "Finance & Procurement",
+      "tags": [
+        "finance",
+        "concur",
+        "invoice",
+        "procurement"
+      ],
+      "minutesPerRun": 8
+    },
+    {
+      "name": "HR & People",
+      "tags": [
+        "hr",
+        "successfactors",
+        "onboarding"
+      ],
+      "minutesPerRun": 20
+    },
+    {
+      "name": "Service & Support",
+      "tags": [
+        "service",
+        "support",
+        "ticket",
+        "sub4me"
+      ],
+      "minutesPerRun": 5
+    },
+    {
+      "name": "Sales & Marketing",
+      "tags": [
+        "sales",
+        "marketing",
+        "crm"
+      ],
+      "minutesPerRun": 6
+    },
+    {
+      "name": "Platform & Monitoring",
+      "tags": [
+        "sap",
+        "btp",
+        "engineering",
+        "monitoring"
+      ],
+      "minutesPerRun": 3
+    },
+    {
+      "name": "Reporting",
+      "tags": [
+        "reporting",
+        "report"
+      ],
+      "minutesPerRun": 30
+    },
+    {
+      "name": "Uncategorized",
+      "tags": [],
+      "minutesPerRun": 5
     }
   ],
   "workflows": [
     {
+      "trigger": "Schedule",
+      "apps": [
+        "HTTP",
+        "Slack"
+      ],
+      "nodeCount": 4,
+      "category": "Platform & Monitoring",
+      "daily": [
+        {
+          "success": 48,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 50,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 39,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 49,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 13,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 15,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 38,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 43,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 49,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 56,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 50,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 14,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 17,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 49,
+          "error": 1,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 1590,
+      "recent": [
+        {
+          "id": "42462",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T16:47:26.942Z",
+          "seconds": 0.9
+        },
+        {
+          "id": "42469",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-19T16:41:45.261Z",
+          "seconds": 0.9
+        },
+        {
+          "id": "42454",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T16:15:41.114Z",
+          "seconds": 0.7
+        },
+        {
+          "id": "42461",
+          "status": "error",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T16:10:43.881Z",
+          "seconds": 1.1
+        },
+        {
+          "id": "42446",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-19T15:33:15.116Z",
+          "seconds": 0.7
+        },
+        {
+          "id": "42444",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:46:57.069Z",
+          "seconds": 0.6
+        },
+        {
+          "id": "42434",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:19:34.267Z",
+          "seconds": 0.7
+        },
+        {
+          "id": "42441",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:13:47.695Z",
+          "seconds": 0.8
+        }
+      ],
       "id": "s7",
       "name": "BTP service health check",
       "active": true,
@@ -367,14 +624,153 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "SAP",
         "Engineering"
       ],
-      "executions": 550,
-      "success": 546,
-      "error": 4,
-      "lastRun": "2026-10-18T12:57:08.947Z",
+      "executions": 538,
+      "success": 530,
+      "error": 8,
+      "lastRun": "2026-10-19T16:47:26.942Z",
       "lastStatus": "success",
       "avgSeconds": 0.9
     },
     {
+      "trigger": "App event",
+      "apps": [
+        "Gmail",
+        "HTTP",
+        "Concur"
+      ],
+      "nodeCount": 6,
+      "category": "Finance & Procurement",
+      "daily": [
+        {
+          "success": 26,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 34,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 34,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 34,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 11,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 9,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 29,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 27,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 34,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 33,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 26,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 7,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 10,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 24,
+          "error": 3,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 2704,
+      "recent": [
+        {
+          "id": "42392",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T16:17:11.169Z",
+          "seconds": 12.8
+        },
+        {
+          "id": "42397",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-19T15:16:28.483Z",
+          "seconds": 13.4
+        },
+        {
+          "id": "42398",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:50:22.310Z",
+          "seconds": 12.9
+        },
+        {
+          "id": "42391",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:04:55.070Z",
+          "seconds": 9.5
+        },
+        {
+          "id": "42376",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-19T13:01:18.131Z",
+          "seconds": 10.8
+        },
+        {
+          "id": "42394",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T11:58:07.525Z",
+          "seconds": 15.9
+        },
+        {
+          "id": "42380",
+          "status": "error",
+          "mode": "manual",
+          "startedAt": "2026-10-19T11:27:53.330Z",
+          "seconds": 13.6
+        },
+        {
+          "id": "42387",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T11:19:24.302Z",
+          "seconds": 11.2
+        }
+      ],
       "id": "s2",
       "name": "Invoice intake and OCR routing",
       "active": true,
@@ -382,14 +778,153 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "Finance",
         "Concur"
       ],
-      "executions": 343,
-      "success": 307,
-      "error": 36,
-      "lastRun": "2026-10-18T15:35:08.428Z",
+      "executions": 358,
+      "success": 338,
+      "error": 20,
+      "lastRun": "2026-10-19T16:17:11.169Z",
       "lastStatus": "success",
       "avgSeconds": 11.7
     },
     {
+      "trigger": "Webhook",
+      "apps": [
+        "SAP",
+        "Salesforce",
+        "Slack"
+      ],
+      "nodeCount": 6,
+      "category": "Lead-to-Cash",
+      "daily": [
+        {
+          "success": 19,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 21,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 25,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 25,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 7,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 6,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 21,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 26,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 21,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 23,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 21,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 6,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 6,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 20,
+          "error": 2,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 2964,
+      "recent": [
+        {
+          "id": "42362",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T16:18:49.672Z",
+          "seconds": 8.5
+        },
+        {
+          "id": "42371",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:57:30.626Z",
+          "seconds": 4.2
+        },
+        {
+          "id": "42368",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:47:43.298Z",
+          "seconds": 3.7
+        },
+        {
+          "id": "42370",
+          "status": "error",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:43:58.833Z",
+          "seconds": 6.6
+        },
+        {
+          "id": "42358",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:51:05.981Z",
+          "seconds": 8.4
+        },
+        {
+          "id": "42351",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:25:41.011Z",
+          "seconds": 8.3
+        },
+        {
+          "id": "42353",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T13:49:00.777Z",
+          "seconds": 6.1
+        },
+        {
+          "id": "42357",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T13:40:04.213Z",
+          "seconds": 6
+        }
+      ],
       "id": "s1",
       "name": "Lead-to-Cash: Quote to Order sync",
       "active": true,
@@ -397,28 +932,305 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "Lead-to-Cash",
         "SAP"
       ],
-      "executions": 251,
-      "success": 243,
-      "error": 8,
-      "lastRun": "2026-10-18T14:12:11.826Z",
+      "executions": 259,
+      "success": 247,
+      "error": 12,
+      "lastRun": "2026-10-19T16:18:49.672Z",
       "lastStatus": "success",
       "avgSeconds": 6.2
     },
     {
+      "trigger": "Webhook",
+      "apps": [
+        "HTTP",
+        "OpenAI",
+        "Slack"
+      ],
+      "nodeCount": 5,
+      "category": "Service & Support",
+      "daily": [
+        {
+          "success": 14,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 14,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 17,
+          "error": 3,
+          "other": 0
+        },
+        {
+          "success": 16,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 6,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 6,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 14,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 13,
+          "error": 3,
+          "other": 0
+        },
+        {
+          "success": 19,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 14,
+          "error": 2,
+          "other": 0
+        },
+        {
+          "success": 18,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 5,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 5,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 19,
+          "error": 1,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 900,
+      "recent": [
+        {
+          "id": "42402",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:52:29.873Z",
+          "seconds": 2.7
+        },
+        {
+          "id": "42418",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:51:17.124Z",
+          "seconds": 2.2
+        },
+        {
+          "id": "42407",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:10:42.126Z",
+          "seconds": 2.4
+        },
+        {
+          "id": "42419",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:00:07.887Z",
+          "seconds": 2
+        },
+        {
+          "id": "42409",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T14:11:25.760Z",
+          "seconds": 2.3
+        },
+        {
+          "id": "42414",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T13:50:29.074Z",
+          "seconds": 2.3
+        },
+        {
+          "id": "42404",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T12:33:04.930Z",
+          "seconds": 1.9
+        },
+        {
+          "id": "42415",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T10:23:03.993Z",
+          "seconds": 1.5
+        }
+      ],
       "id": "s4",
       "name": "Ticket triage to Sub4Me",
       "active": true,
       "tags": [
         "Service"
       ],
-      "executions": 186,
-      "success": 173,
-      "error": 13,
-      "lastRun": "2026-10-18T12:47:08.187Z",
+      "executions": 192,
+      "success": 180,
+      "error": 12,
+      "lastRun": "2026-10-19T15:52:29.873Z",
       "lastStatus": "success",
       "avgSeconds": 2.1
     },
     {
+      "trigger": "Webhook",
+      "apps": [
+        "SuccessFactors",
+        "Microsoft Teams"
+      ],
+      "nodeCount": 4,
+      "category": "HR & People",
+      "daily": [
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 5,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 840,
+      "recent": [
+        {
+          "id": "42401",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T06:34:00.676Z",
+          "seconds": 2.5
+        },
+        {
+          "id": "42399",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T03:43:22.618Z",
+          "seconds": 3.3
+        },
+        {
+          "id": "42400",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T01:42:52.602Z",
+          "seconds": 2.5
+        },
+        {
+          "id": "42325",
+          "status": "error",
+          "mode": "trigger",
+          "startedAt": "2026-10-18T06:11:33.968Z",
+          "seconds": 3.9
+        },
+        {
+          "id": "42287",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-17T17:38:28.760Z",
+          "seconds": 3
+        },
+        {
+          "id": "42193",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T18:38:25.208Z",
+          "seconds": 2.7
+        },
+        {
+          "id": "42194",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T08:44:35.766Z",
+          "seconds": 2.1
+        },
+        {
+          "id": "42195",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T01:14:34.924Z",
+          "seconds": 4.7
+        }
+      ],
       "id": "s3",
       "name": "New hire onboarding checklist",
       "active": true,
@@ -426,28 +1238,609 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "HR",
         "SuccessFactors"
       ],
-      "executions": 44,
-      "success": 44,
-      "error": 0,
-      "lastRun": "2026-10-18T15:14:45.267Z",
+      "executions": 43,
+      "success": 42,
+      "error": 1,
+      "lastRun": "2026-10-19T06:34:00.676Z",
       "lastStatus": "success",
-      "avgSeconds": 3.5
+      "avgSeconds": 3.3
     },
     {
+      "trigger": "Schedule",
+      "apps": [
+        "Salesforce",
+        "Gmail"
+      ],
+      "nodeCount": 4,
+      "category": "Sales & Marketing",
+      "daily": [
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 198,
+      "recent": [
+        {
+          "id": "42424",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T15:54:10.216Z",
+          "seconds": 1.7
+        },
+        {
+          "id": "42425",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T13:28:56.521Z",
+          "seconds": 1.8
+        },
+        {
+          "id": "42423",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T07:58:11.055Z",
+          "seconds": 1.2
+        },
+        {
+          "id": "42331",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-18T23:05:33.689Z",
+          "seconds": 2.3
+        },
+        {
+          "id": "42293",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-17T16:07:30.915Z",
+          "seconds": 1.8
+        },
+        {
+          "id": "42216",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-16T18:21:32.343Z",
+          "seconds": 1.2
+        },
+        {
+          "id": "42215",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-16T04:26:50.427Z",
+          "seconds": 2.4
+        },
+        {
+          "id": "42218",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-16T03:58:41.554Z",
+          "seconds": 2.1
+        }
+      ],
       "id": "s6",
       "name": "Contract renewal reminder",
       "active": true,
       "tags": [
         "Sales"
       ],
-      "executions": 34,
-      "success": 29,
-      "error": 5,
-      "lastRun": "2026-10-18T09:40:41.281Z",
+      "executions": 35,
+      "success": 33,
+      "error": 2,
+      "lastRun": "2026-10-19T15:54:10.216Z",
       "lastStatus": "success",
       "avgSeconds": 1.7
     },
     {
+      "trigger": "Webhook",
+      "apps": [
+        "HTTP",
+        "Microsoft Teams"
+      ],
+      "nodeCount": 4,
+      "category": "Finance & Procurement",
+      "daily": [
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 184,
+      "recent": [
+        {
+          "id": "42478",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T07:31:03.310Z",
+          "seconds": 6.7
+        },
+        {
+          "id": "42477",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T01:29:02.609Z",
+          "seconds": 4.6
+        },
+        {
+          "id": "42349",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-18T14:24:19.517Z",
+          "seconds": 5
+        },
+        {
+          "id": "42308",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-17T19:30:19.389Z",
+          "seconds": 6.6
+        },
+        {
+          "id": "42270",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T19:04:22.888Z",
+          "seconds": 4.3
+        },
+        {
+          "id": "42271",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T13:24:12.035Z",
+          "seconds": 6.5
+        },
+        {
+          "id": "42140",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-15T10:08:14.480Z",
+          "seconds": 5.7
+        },
+        {
+          "id": "42139",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-15T09:10:30.498Z",
+          "seconds": 3.8
+        }
+      ],
+      "id": "s10",
+      "name": "Vendor onboarding checks",
+      "active": true,
+      "tags": [
+        "Procurement",
+        "cat:Finance & Procurement"
+      ],
+      "executions": 24,
+      "success": 23,
+      "error": 1,
+      "lastRun": "2026-10-19T07:31:03.310Z",
+      "lastStatus": "success",
+      "avgSeconds": 5.3
+    },
+    {
+      "trigger": "Schedule",
+      "apps": [
+        "HTTP",
+        "Gmail"
+      ],
+      "nodeCount": 4,
+      "category": "Reporting",
+      "daily": [
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 300,
+      "recent": [
+        {
+          "id": "42422",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T12:32:38.925Z",
+          "seconds": 29.2
+        },
+        {
+          "id": "42214",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T13:37:58.520Z",
+          "seconds": 20
+        },
+        {
+          "id": "42078",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-15T07:16:55.180Z",
+          "seconds": 29.7
+        },
+        {
+          "id": "41940",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-14T21:02:43.884Z",
+          "seconds": 22.8
+        },
+        {
+          "id": "41804",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-13T11:36:44.166Z",
+          "seconds": 19.1
+        },
+        {
+          "id": "41682",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-12T20:04:38.927Z",
+          "seconds": 33.2
+        },
+        {
+          "id": "41473",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-09T06:34:02.570Z",
+          "seconds": 15.9
+        },
+        {
+          "id": "41342",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-08T17:03:39.860Z",
+          "seconds": 17.9
+        }
+      ],
+      "id": "s5",
+      "name": "Daily AI consumption report",
+      "active": true,
+      "tags": [
+        "Reporting"
+      ],
+      "executions": 10,
+      "success": 10,
+      "error": 0,
+      "lastRun": "2026-10-19T12:32:38.925Z",
+      "lastStatus": "success",
+      "avgSeconds": 23.6
+    },
+    {
+      "trigger": "Schedule",
+      "apps": [
+        "Google Analytics",
+        "Gmail"
+      ],
+      "nodeCount": 4,
+      "category": "Sales & Marketing",
+      "daily": [
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 1,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 48,
+      "recent": [
+        {
+          "id": "42476",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T06:52:02.244Z",
+          "seconds": 5.2
+        },
+        {
+          "id": "42269",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-16T08:49:12.042Z",
+          "seconds": 5.3
+        },
+        {
+          "id": "42138",
+          "status": "error",
+          "mode": "trigger",
+          "startedAt": "2026-10-15T17:29:10.617Z",
+          "seconds": 5.2
+        },
+        {
+          "id": "41995",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-14T14:22:24.593Z",
+          "seconds": 9.9
+        },
+        {
+          "id": "41852",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-13T16:05:07.337Z",
+          "seconds": 5.2
+        },
+        {
+          "id": "41725",
+          "status": "error",
+          "mode": "manual",
+          "startedAt": "2026-10-12T04:15:27.730Z",
+          "seconds": 11.3
+        },
+        {
+          "id": "41528",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-09T11:37:20.040Z",
+          "seconds": 10.9
+        },
+        {
+          "id": "41386",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-08T04:57:37.731Z",
+          "seconds": 5.1
+        }
+      ],
       "id": "s9",
       "name": "Marketing campaign digest",
       "active": true,
@@ -455,13 +1848,246 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "Marketing"
       ],
       "executions": 10,
-      "success": 9,
-      "error": 1,
-      "lastRun": "2026-10-16T23:00:44.962Z",
+      "success": 8,
+      "error": 2,
+      "lastRun": "2026-10-19T06:52:02.244Z",
       "lastStatus": "success",
-      "avgSeconds": 8.5
+      "avgSeconds": 7.2
     },
     {
+      "trigger": "Schedule",
+      "apps": [
+        "Notion",
+        "Google Drive"
+      ],
+      "nodeCount": 3,
+      "category": "Uncategorized",
+      "daily": [
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 50,
+      "recent": [
+        {
+          "id": "42479",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-19T13:01:57.921Z",
+          "seconds": 4.7
+        },
+        {
+          "id": "42272",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-16T05:56:37.977Z",
+          "seconds": 2.9
+        },
+        {
+          "id": "42141",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-15T19:35:58.285Z",
+          "seconds": 4.9
+        },
+        {
+          "id": "41998",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-14T06:29:36.909Z",
+          "seconds": 2.9
+        },
+        {
+          "id": "41855",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-10-13T07:25:29.379Z",
+          "seconds": 3.6
+        },
+        {
+          "id": "41728",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-12T23:27:04.888Z",
+          "seconds": 4.3
+        },
+        {
+          "id": "41531",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-09T23:50:08.736Z",
+          "seconds": 3.3
+        },
+        {
+          "id": "41389",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-10-08T01:21:26.829Z",
+          "seconds": 5.9
+        }
+      ],
+      "id": "s11",
+      "name": "Research notes archiver",
+      "active": true,
+      "tags": [
+        "Knowledge"
+      ],
+      "executions": 10,
+      "success": 10,
+      "error": 0,
+      "lastRun": "2026-10-19T13:01:57.921Z",
+      "lastStatus": "success",
+      "avgSeconds": 4
+    },
+    {
+      "trigger": "Manual",
+      "apps": [
+        "Salesforce",
+        "HTTP"
+      ],
+      "nodeCount": 3,
+      "category": "Sales & Marketing",
+      "daily": [
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0
+        }
+      ],
+      "minutesSaved": 0,
+      "recent": [],
       "id": "s8",
       "name": "CRM contact enrichment (paused)",
       "active": false,
@@ -474,561 +2100,547 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "lastRun": null,
       "lastStatus": null,
       "avgSeconds": null
-    },
-    {
-      "id": "s5",
-      "name": "Weekly AI consumption report",
-      "active": true,
-      "tags": [
-        "Reporting"
-      ],
-      "executions": 0,
-      "success": 0,
-      "error": 0,
-      "lastRun": null,
-      "lastStatus": null,
-      "avgSeconds": null
     }
   ],
   "executions": [
     {
-      "id": "42388",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-10-18T15:35:08.428Z",
-      "seconds": 11.9,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42396",
-      "workflowId": "s3",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T15:14:45.267Z",
-      "seconds": 2.4,
-      "workflowName": "New hire onboarding checklist"
-    },
-    {
-      "id": "42389",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T14:23:49.724Z",
-      "seconds": 8.6,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42386",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T14:12:11.826Z",
-      "seconds": 7.5,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42390",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T13:21:05.355Z",
-      "seconds": 16,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42394",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T13:09:18.355Z",
-      "seconds": 7.1,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42409",
+      "id": "42462",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-18T12:57:08.947Z",
-      "seconds": 0.7,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42398",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-10-18T12:47:08.187Z",
-      "seconds": 2.6,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42417",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T12:06:59.262Z",
+      "startedAt": "2026-10-19T16:47:26.942Z",
       "seconds": 0.9,
       "workflowName": "BTP service health check"
     },
     {
-      "id": "42408",
+      "id": "42469",
       "workflowId": "s7",
       "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T12:00:35.133Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42412",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T11:53:59.807Z",
-      "seconds": 0.6,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42399",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T11:06:00.465Z",
-      "seconds": 2.8,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42407",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T11:05:10.663Z",
-      "seconds": 0.6,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42382",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T10:37:47.108Z",
-      "seconds": 8.3,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42395",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T10:34:37.375Z",
-      "seconds": 13.9,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42415",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T09:52:38.907Z",
-      "seconds": 0.6,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42401",
-      "workflowId": "s6",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T09:40:41.281Z",
-      "seconds": 1.7,
-      "workflowName": "Contract renewal reminder"
-    },
-    {
-      "id": "42411",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T08:51:52.507Z",
-      "seconds": 1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42404",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T08:33:11.071Z",
+      "mode": "manual",
+      "startedAt": "2026-10-19T16:41:45.261Z",
       "seconds": 0.9,
       "workflowName": "BTP service health check"
     },
     {
-      "id": "42413",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T08:22:56.440Z",
-      "seconds": 0.7,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42406",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T08:21:56.313Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42397",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T07:50:03.957Z",
-      "seconds": 2.4,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42384",
+      "id": "42362",
       "workflowId": "s1",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-18T07:47:28.757Z",
-      "seconds": 6.2,
+      "startedAt": "2026-10-19T16:18:49.672Z",
+      "seconds": 8.5,
       "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42393",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T07:35:45.579Z",
-      "seconds": 8.9,
-      "workflowName": "Invoice intake and OCR routing"
     },
     {
       "id": "42392",
       "workflowId": "s2",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-18T07:22:29.937Z",
-      "seconds": 11.5,
+      "startedAt": "2026-10-19T16:17:11.169Z",
+      "seconds": 12.8,
       "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42454",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T16:15:41.114Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42461",
+      "workflowId": "s7",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T16:10:43.881Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42371",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:57:30.626Z",
+      "seconds": 4.2,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42424",
+      "workflowId": "s6",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:54:10.216Z",
+      "seconds": 1.7,
+      "workflowName": "Contract renewal reminder"
+    },
+    {
+      "id": "42402",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:52:29.873Z",
+      "seconds": 2.7,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42418",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:51:17.124Z",
+      "seconds": 2.2,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42368",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:47:43.298Z",
+      "seconds": 3.7,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42370",
+      "workflowId": "s1",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:43:58.833Z",
+      "seconds": 6.6,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42446",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-19T15:33:15.116Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42397",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-19T15:16:28.483Z",
+      "seconds": 13.4,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42407",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:10:42.126Z",
+      "seconds": 2.4,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42419",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T15:00:07.887Z",
+      "seconds": 2,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42358",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:51:05.981Z",
+      "seconds": 8.4,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42398",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:50:22.310Z",
+      "seconds": 12.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42444",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:46:57.069Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42351",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:25:41.011Z",
+      "seconds": 8.3,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42434",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:19:34.267Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42441",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:13:47.695Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42409",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T14:11:25.760Z",
+      "seconds": 2.3,
+      "workflowName": "Ticket triage to Sub4Me"
     },
     {
       "id": "42391",
       "workflowId": "s2",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-18T06:58:49.702Z",
-      "seconds": 9.9,
+      "startedAt": "2026-10-19T14:04:55.070Z",
+      "seconds": 9.5,
       "workflowName": "Invoice intake and OCR routing"
     },
     {
-      "id": "42418",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-10-18T06:12:07.353Z",
-      "seconds": 0.9,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42383",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T05:43:06.499Z",
-      "seconds": 8.3,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42405",
+      "id": "42475",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-18T05:35:07.501Z",
-      "seconds": 0.7,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42416",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T05:00:00.233Z",
-      "seconds": 0.6,
+      "startedAt": "2026-10-19T13:56:57.635Z",
+      "seconds": 1.2,
       "workflowName": "BTP service health check"
     },
     {
       "id": "42414",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T04:10:25.383Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42402",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T03:58:13.929Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42410",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T03:02:08.261Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42387",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T01:30:39.100Z",
-      "seconds": 5,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42403",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T01:09:56.124Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42385",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-18T01:08:40.935Z",
-      "seconds": 6.8,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42400",
       "workflowId": "s4",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-18T00:15:05.239Z",
-      "seconds": 1.3,
+      "startedAt": "2026-10-19T13:50:29.074Z",
+      "seconds": 2.3,
       "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42351",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T23:48:25.172Z",
-      "seconds": 11.1,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42362",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T23:30:51.523Z",
-      "seconds": 1.4,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42366",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T21:37:32.780Z",
-      "seconds": 2.1,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42380",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-10-17T19:38:54.260Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42359",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T19:05:04.429Z",
-      "seconds": 12.6,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42356",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T19:04:38.378Z",
-      "seconds": 9.8,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42360",
-      "workflowId": "s3",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T17:23:59.425Z",
-      "seconds": 3.1,
-      "workflowName": "New hire onboarding checklist"
-    },
-    {
-      "id": "42373",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T17:19:26.082Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42374",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T16:35:10.777Z",
-      "seconds": 0.6,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42350",
-      "workflowId": "s2",
-      "status": "error",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T16:08:51.913Z",
-      "seconds": 9.9,
-      "workflowName": "Invoice intake and OCR routing"
     },
     {
       "id": "42353",
-      "workflowId": "s2",
+      "workflowId": "s1",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-17T15:05:03.305Z",
-      "seconds": 10,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42352",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T14:42:52.688Z",
-      "seconds": 8.9,
-      "workflowName": "Invoice intake and OCR routing"
+      "startedAt": "2026-10-19T13:49:00.777Z",
+      "seconds": 6.1,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
     },
     {
       "id": "42357",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T14:30:21.861Z",
-      "seconds": 8.9,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42361",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T14:24:47.043Z",
-      "seconds": 1.8,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42371",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T14:18:38.466Z",
-      "seconds": 0.8,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42375",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T13:34:47.027Z",
-      "seconds": 0.8,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42344",
       "workflowId": "s1",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-17T13:10:57.395Z",
-      "seconds": 4.3,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42377",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T13:03:35.329Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42345",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T12:26:23.795Z",
-      "seconds": 3.8,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42355",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T12:17:01.004Z",
-      "seconds": 11,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42343",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-10-17T11:33:16.633Z",
+      "startedAt": "2026-10-19T13:40:04.213Z",
       "seconds": 6,
       "workflowName": "Lead-to-Cash: Quote to Order sync"
     },
     {
-      "id": "42378",
+      "id": "42425",
+      "workflowId": "s6",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T13:28:56.521Z",
+      "seconds": 1.8,
+      "workflowName": "Contract renewal reminder"
+    },
+    {
+      "id": "42479",
+      "workflowId": "s11",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T13:01:57.921Z",
+      "seconds": 4.7,
+      "workflowName": "Research notes archiver"
+    },
+    {
+      "id": "42376",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-10-19T13:01:18.131Z",
+      "seconds": 10.8,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42467",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-10-17T11:24:26.170Z",
+      "startedAt": "2026-10-19T12:41:03.158Z",
       "seconds": 1.1,
       "workflowName": "BTP service health check"
     },
     {
-      "id": "42358",
+      "id": "42404",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T12:33:04.930Z",
+      "seconds": 1.9,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42422",
+      "workflowId": "s5",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T12:32:38.925Z",
+      "seconds": 29.2,
+      "workflowName": "Daily AI consumption report"
+    },
+    {
+      "id": "42452",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T12:10:46.905Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42445",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T12:04:14.229Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42394",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:58:07.525Z",
+      "seconds": 15.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42459",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:31:06.113Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42380",
+      "workflowId": "s2",
+      "status": "error",
+      "mode": "manual",
+      "startedAt": "2026-10-19T11:27:53.330Z",
+      "seconds": 13.6,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42453",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:26:48.342Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42361",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:21:32.985Z",
+      "seconds": 3.7,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42447",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:20:46.740Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42387",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:19:24.302Z",
+      "seconds": 11.2,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42474",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:13:26.816Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42390",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:11:34.586Z",
+      "seconds": 13,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42471",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T11:00:02.512Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42456",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T10:56:28.491Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42440",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T10:34:27.872Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42415",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T10:23:03.993Z",
+      "seconds": 1.5,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42464",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T10:16:27.212Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42436",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T10:08:24.044Z",
+      "seconds": 1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42417",
+      "workflowId": "s4",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T10:07:10.025Z",
+      "seconds": 1.5,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42396",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T09:47:07.619Z",
+      "seconds": 11.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42365",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T09:44:22.743Z",
+      "seconds": 6.2,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42383",
       "workflowId": "s2",
       "status": "error",
       "mode": "trigger",
-      "startedAt": "2026-10-17T10:48:20.166Z",
-      "seconds": 11.7,
+      "startedAt": "2026-10-19T09:21:06.300Z",
+      "seconds": 7.5,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42406",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T09:07:47.446Z",
+      "seconds": 2.9,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42439",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T09:07:43.494Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42408",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T09:06:17.388Z",
+      "seconds": 2.4,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42352",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T09:04:54.370Z",
+      "seconds": 6.4,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42386",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-10-19T08:53:35.597Z",
+      "seconds": 7.1,
       "workflowName": "Invoice intake and OCR routing"
     }
   ]
@@ -1041,6 +2653,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var n = function(v){ return v.toLocaleString('en-US'); };
   var pct = function(a, b){ return b ? Math.round(a / b * 100) : null; };
+  var hours = function(min){ return min >= 600 ? n(Math.round(min / 60)) + ' h' : (Math.round(min / 6) / 10) + ' h'; };
   var STATUS = { success: ['t-ok', 'Success'], error: ['t-bad', 'Error'], running: ['t-warn', 'Running'], canceled: ['t-n', 'Canceled'] };
   var statusTag = function(s){ var t = STATUS[s]; return t ? '<span class="tag ' + t[0] + '">' + t[1] + '</span>' : '<span class="s">No runs</span>'; };
   var when = function(iso){ return iso ? iso.slice(0, 10) + ' ' + iso.slice(11, 16) + ' UTC' : 'Never'; };
@@ -1049,27 +2662,40 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     if (!rows.length) return '<div class="empty">' + esc(emptyText) + '</div>';
     return '<table><thead><tr>' + head.map(function(h){ return '<th' + (h[1] ? ' class="num"' : '') + '>' + esc(h[0]) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table>';
   };
-  var chips = function(tags){ return '<span class="chips">' + tags.map(function(t){ return '<span class="tag t-n">' + esc(t) + '</span>'; }).join('') + '</span>'; };
+  var chips = function(list, cls){ return '<span class="chips">' + list.map(function(t){ return '<span class="tag ' + (cls || 't-m') + '">' + esc(t) + '</span>'; }).join('') + '</span>'; };
+  var byId = {}; D.workflows.forEach(function(w){ byId[w.id] = w; });
+  var catNames = D.categories.map(function(c){ return c.name; });
+  var catOf = function(id){ return byId[id] ? byId[id].category : ''; };
+  var rateOf = function(list){ var ok = 0, bad = 0; list.forEach(function(w){ ok += w.success; bad += w.error; }); return { ok: ok, bad: bad, rate: pct(ok, ok + bad) }; };
+  var avgOf = function(list){
+    var timed = list.filter(function(w){ return w.avgSeconds !== null && w.executions; });
+    var runs = timed.reduce(function(s, w){ return s + w.executions; }, 0);
+    return runs ? Math.round(timed.reduce(function(s, w){ return s + w.avgSeconds * w.executions; }, 0) / runs * 10) / 10 : null;
+  };
+  var spark = function(w){
+    var peak = Math.max.apply(null, w.daily.map(function(d){ return d.success + d.error + d.other; }).concat([1]));
+    return '<span class="spark" aria-hidden="true">' + w.daily.map(function(d){
+      var part = function(c, v){ return v ? '<i class="' + c + '" style="height:' + Math.max(2, v / peak * 22) + 'px"></i>' : ''; };
+      return '<span>' + part('i-ok', d.success) + part('i-bad', d.error) + part('i-mut', d.other) + '</span>';
+    }).join('') + '</span>';
+  };
+  var catOptions = function(sel, all){ sel.innerHTML = '<option value="">' + all + '</option>' + catNames.map(function(c){ return '<option>' + esc(c) + '</option>'; }).join(''); };
 
   $('instance').textContent = D.source === 'n8n' ? D.instance : 'Sample instance';
   $('asof').textContent = 'Last ' + D.windowDays + ' days until ' + D.asOf;
   $('sample').hidden = D.source !== 'sample';
 
-  /* Overview */
-  var total = 0, ok = 0, bad = 0;
-  D.workflows.forEach(function(w){ total += w.executions; ok += w.success; bad += w.error; });
-  var active = D.workflows.filter(function(w){ return w.active; }).length;
-  var finished = ok + bad;
-  var rate = pct(ok, finished);
-  var timed = D.workflows.filter(function(w){ return w.avgSeconds !== null && w.executions; });
-  var avg = timed.length ? Math.round(timed.reduce(function(s, w){ return s + w.avgSeconds * w.executions; }, 0) / timed.reduce(function(s, w){ return s + w.executions; }, 0) * 10) / 10 : null;
+  /* ---------- Overview ---------- */
+  var all = rateOf(D.workflows), total = D.workflows.reduce(function(s, w){ return s + w.executions; }, 0);
+  var minutes = D.workflows.reduce(function(s, w){ return s + w.minutesSaved; }, 0);
   var kpi = function(k, v, s){ return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; };
   $('kpis').innerHTML =
-    kpi('Active workflows', n(active), 'of ' + n(D.workflows.length) + ' workflows') +
+    kpi('Active workflows', n(D.workflows.filter(function(w){ return w.active; }).length), 'of ' + n(D.workflows.length) + ' workflows') +
     kpi('Executions', n(total), 'last ' + D.windowDays + ' days') +
-    kpi('Success rate', rate === null ? '–' : rate + '%', n(ok) + ' ok, ' + n(bad) + ' failed') +
-    kpi('Failed runs', n(bad), bad ? 'check the list below' : 'nothing failed') +
-    kpi('Average duration', secs(avg), 'weighted by runs');
+    kpi('Success rate', all.rate === null ? '–' : all.rate + '%', n(all.ok) + ' ok, ' + n(all.bad) + ' failed') +
+    kpi('Failed runs', n(all.bad), all.bad ? 'see Needs attention' : 'nothing failed') +
+    kpi('Average duration', secs(avgOf(D.workflows)), 'weighted by runs') +
+    kpi('Time saved (estimate)', hours(minutes), 'successful runs x assumed minutes');
 
   var peak = Math.max.apply(null, D.days.map(function(d){ return d.success + d.error + d.other; }).concat([1]));
   $('days').innerHTML = D.days.map(function(d){
@@ -1078,46 +2704,126 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     return '<div class="day" title="' + esc(d.date) + ': ' + sum + ' executions, ' + d.error + ' failed"><div class="stack">' + seg('i-ok', d.success) + seg('i-bad', d.error) + seg('i-mut', d.other) + '</div><small>' + esc(d.date.slice(8)) + '</small></div>';
   }).join('');
 
+  $('cat-cards').innerHTML = D.categories.map(function(c){
+    var list = D.workflows.filter(function(w){ return w.category === c.name; });
+    if (!list.length) return '';
+    var r = rateOf(list), runs = list.reduce(function(s, w){ return s + w.executions; }, 0);
+    var okW = r.rate || 0, badW = r.ok + r.bad ? 100 - okW : 0;
+    return '<button class="card cat" data-cat="' + esc(c.name) + '" title="Show these workflows"><h3>' + esc(c.name) + '</h3>' +
+      '<div class="line"><span><b>' + list.length + '</b> workflows</span><span><b>' + n(runs) + '</b> runs</span></div>' +
+      '<div class="bar" title="' + okW + '% ok"><i class="i-ok" style="width:' + okW + '%"></i><i class="i-bad" style="width:' + badW + '%"></i></div>' +
+      '<div class="line"><span>' + (r.rate === null ? 'No runs' : r.rate + '% success') + '</span><span>' + hours(list.reduce(function(s, w){ return s + w.minutesSaved; }, 0)) + ' saved</span></div></button>';
+  }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('button.cat'), function(b){
+    b.addEventListener('click', function(){ $('wf-cat').value = b.dataset.cat; renderWorkflows(); show('workflows'); });
+  });
+
   var attention = D.workflows.filter(function(w){ return w.error > 0; })
     .sort(function(a, b){ return (b.error / b.executions) - (a.error / a.executions) || b.error - a.error; }).slice(0, 6);
   $('attention').innerHTML = table([['Workflow'], ['Errors', 1], ['Error rate', 1]], attention.map(function(w){
-    return '<tr><td>' + esc(w.name) + '</td><td class="num">' + n(w.error) + '</td><td class="num">' + pct(w.error, w.executions) + '%</td></tr>';
+    return '<tr><td><button class="link" data-wf="' + esc(w.id) + '">' + esc(w.name) + '</button><div class="s">' + esc(w.category) + '</div></td><td class="num">' + n(w.error) + '</td><td class="num">' + pct(w.error, w.executions) + '%</td></tr>';
   }), 'No failed executions in this period.');
-  $('busiest').innerHTML = table([['Workflow'], ['Runs', 1], ['Share']], D.workflows.filter(function(w){ return w.executions; }).slice(0, 6).map(function(w){
-    var okW = pct(w.success, w.executions) || 0, badW = pct(w.error, w.executions) || 0;
-    return '<tr><td>' + esc(w.name) + '</td><td class="num">' + n(w.executions) + '</td><td><div class="bar" title="' + okW + '% ok"><i class="i-ok" style="width:' + okW + '%"></i><i class="i-bad" style="width:' + badW + '%"></i></div></td></tr>';
-  }), 'No executions in this period.');
 
-  /* Workflows */
+  var top = D.workflows.filter(function(w){ return w.executions; }).slice(0, 8);
+  var cols = D.days.length;
+  $('heat').innerHTML = '<div class="heat" style="grid-template-columns:minmax(120px,1.4fr) repeat(' + cols + ',1fr)"><span></span>' +
+    D.days.map(function(d){ return '<span class="hd">' + esc(d.date.slice(8)) + '</span>'; }).join('') +
+    top.map(function(w){
+      return '<span class="name" title="' + esc(w.name) + '">' + esc(w.name) + '</span>' + w.daily.map(function(d, i){
+        var runs = d.success + d.error + d.other, share = runs ? d.error / runs : 0;
+        var cls = !runs ? '' : share === 0 ? 'c-ok' : share <= 0.15 ? 'c-warn' : 'c-bad';
+        return '<span class="cell ' + cls + '" title="' + esc(w.name) + ', ' + esc(D.days[i].date) + ': ' + runs + ' runs, ' + d.error + ' failed"></span>';
+      }).join('');
+    }).join('') + '</div>';
+
+  /* ---------- Workflows ---------- */
+  catOptions($('wf-cat'), 'All categories');
   function renderWorkflows(){
-    var q = $('wf-search').value.trim().toLowerCase(), state = $('wf-state').value;
+    var q = $('wf-search').value.trim().toLowerCase(), state = $('wf-state').value, cat = $('wf-cat').value;
     var rows = D.workflows.filter(function(w){
+      if (cat && w.category !== cat) return false;
       if (state === 'active' && !w.active) return false;
       if (state === 'inactive' && w.active) return false;
       if (state === 'failing' && !w.error) return false;
-      return !q || (w.name + ' ' + w.tags.join(' ')).toLowerCase().indexOf(q) >= 0;
+      return !q || (w.name + ' ' + w.tags.join(' ') + ' ' + w.apps.join(' ') + ' ' + w.category).toLowerCase().indexOf(q) >= 0;
     });
-    $('wf-table').innerHTML = table([['Workflow'], ['State'], ['Tags'], ['Runs', 1], ['Success', 1], ['Avg', 1], ['Last run'], ['Last status']], rows.map(function(w){
+    $('wf-table').innerHTML = table([['Workflow'], ['Category'], ['Trigger'], ['Apps'], ['Runs', 1], ['Success', 1], ['Trend'], ['Last status']], rows.map(function(w){
       var r = pct(w.success, w.success + w.error);
-      return '<tr><td>' + esc(w.name) + '</td><td>' + (w.active ? '<span class="tag t-ok">Active</span>' : '<span class="tag t-n">Inactive</span>') + '</td><td>' + chips(w.tags) + '</td><td class="num">' + n(w.executions) + '</td><td class="num">' + (r === null ? '–' : r + '%') + '</td><td class="num">' + secs(w.avgSeconds) + '</td><td>' + esc(when(w.lastRun)) + '</td><td>' + statusTag(w.lastStatus) + '</td></tr>';
+      return '<tr><td><button class="link" data-wf="' + esc(w.id) + '">' + esc(w.name) + '</button>' + (w.active ? '' : ' <span class="tag t-m">Inactive</span>') + '<div class="sub">' + chips(w.tags) + '</div></td>' +
+        '<td><span class="tag t-n">' + esc(w.category) + '</span></td><td>' + esc(w.trigger) + '</td><td>' + chips(w.apps) + '</td>' +
+        '<td class="num">' + n(w.executions) + '</td><td class="num">' + (r === null ? '–' : r + '%') + '</td><td>' + spark(w) + '</td><td>' + statusTag(w.lastStatus) + '</td></tr>';
     }), 'No workflow matches.');
   }
   $('wf-search').addEventListener('input', renderWorkflows);
   $('wf-state').addEventListener('change', renderWorkflows);
+  $('wf-cat').addEventListener('change', renderWorkflows);
   renderWorkflows();
 
-  /* Executions */
+  /* ---------- Categories ---------- */
+  $('cat-table').innerHTML = table([['Category'], ['Matching tags'], ['Workflows', 1], ['Active', 1], ['Runs', 1], ['Success', 1], ['Errors', 1], ['Avg', 1], ['Time saved', 1]], D.categories.map(function(c){
+    var list = D.workflows.filter(function(w){ return w.category === c.name; });
+    var r = rateOf(list);
+    return '<tr><td><button class="link" data-cat="' + esc(c.name) + '">' + esc(c.name) + '</button></td><td>' + (c.tags.length ? chips(c.tags) : '<span class="s">no matching tag</span>') + '</td>' +
+      '<td class="num">' + list.length + '</td><td class="num">' + list.filter(function(w){ return w.active; }).length + '</td><td class="num">' + n(list.reduce(function(s, w){ return s + w.executions; }, 0)) + '</td>' +
+      '<td class="num">' + (r.rate === null ? '–' : r.rate + '%') + '</td><td class="num">' + n(r.bad) + '</td><td class="num">' + secs(avgOf(list)) + '</td><td class="num">' + hours(list.reduce(function(s, w){ return s + w.minutesSaved; }, 0)) + '</td></tr>';
+  }), 'No categories.');
+  Array.prototype.forEach.call($('cat-table').querySelectorAll('button.link'), function(b){
+    b.addEventListener('click', function(){ $('wf-cat').value = b.dataset.cat; renderWorkflows(); show('workflows'); });
+  });
+  var fallback = D.categories[D.categories.length - 1].name;
+  $('uncat').innerHTML = table([['Workflow'], ['Tags']], D.workflows.filter(function(w){ return w.category === fallback; }).map(function(w){
+    return '<tr><td><button class="link" data-wf="' + esc(w.id) + '">' + esc(w.name) + '</button></td><td>' + (w.tags.length ? chips(w.tags) : '<span class="s">no tags</span>') + '</td></tr>';
+  }), 'Every workflow is categorized.');
+
+  /* ---------- Executions ---------- */
+  catOptions($('run-cat'), 'All categories');
   function renderRuns(){
-    var s = $('run-status').value;
-    var rows = D.executions.filter(function(e){ return !s || e.status === s; });
-    $('run-table').innerHTML = table([['Started'], ['Workflow'], ['Status'], ['Mode'], ['Duration', 1], ['Id']], rows.map(function(e){
-      return '<tr><td>' + esc(when(e.startedAt)) + '</td><td>' + esc(e.workflowName) + '</td><td>' + statusTag(e.status) + '</td><td>' + esc(e.mode) + '</td><td class="num">' + secs(e.seconds) + '</td><td class="s">' + esc(e.id) + '</td></tr>';
-    }), 'No executions with this status among the latest ' + D.executions.length + '.');
+    var s = $('run-status').value, c = $('run-cat').value;
+    var rows = D.executions.filter(function(e){ return (!s || e.status === s) && (!c || catOf(e.workflowId) === c); });
+    $('run-table').innerHTML = table([['Started'], ['Workflow'], ['Category'], ['Status'], ['Mode'], ['Duration', 1], ['Id']], rows.map(function(e){
+      return '<tr><td>' + esc(when(e.startedAt)) + '</td><td><button class="link" data-wf="' + esc(e.workflowId) + '">' + esc(e.workflowName) + '</button></td><td>' + esc(catOf(e.workflowId) || '–') + '</td><td>' + statusTag(e.status) + '</td><td>' + esc(e.mode) + '</td><td class="num">' + secs(e.seconds) + '</td><td class="s">' + esc(e.id) + '</td></tr>';
+    }), 'No executions match among the latest ' + D.executions.length + '.');
   }
   $('run-status').addEventListener('change', renderRuns);
+  $('run-cat').addEventListener('change', renderRuns);
   renderRuns();
 
-  /* Tabs */
+  /* ---------- Workflow detail ---------- */
+  var opener = null;
+  function openDrawer(id){
+    var w = byId[id]; if (!w) return;
+    opener = document.activeElement;
+    var r = pct(w.success, w.success + w.error);
+    var mini = function(k, v){ return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; };
+    var peakW = Math.max.apply(null, w.daily.map(function(d){ return d.success + d.error + d.other; }).concat([1]));
+    var bars = w.daily.map(function(d, i){
+      var seg = function(c, v){ return v ? '<i class="' + c + '" style="height:' + (v / peakW * 80) + 'px"></i>' : ''; };
+      return '<div class="day" title="' + esc(D.days[i].date) + ': ' + (d.success + d.error + d.other) + ' runs, ' + d.error + ' failed"><div class="stack">' + seg('i-ok', d.success) + seg('i-bad', d.error) + seg('i-mut', d.other) + '</div><small>' + esc(D.days[i].date.slice(8)) + '</small></div>';
+    }).join('');
+    $('drawer').innerHTML =
+      '<div class="head"><div><h2 id="dr-title">' + esc(w.name) + '</h2><span class="tag t-n">' + esc(w.category) + '</span> ' + (w.active ? '<span class="tag t-ok">Active</span>' : '<span class="tag t-m">Inactive</span>') + '</div><button class="x" id="dr-close" aria-label="Close">Close</button></div>' +
+      '<div class="mini">' + mini('Runs', n(w.executions)) + mini('Success rate', r === null ? '–' : r + '%') + mini('Average duration', secs(w.avgSeconds)) + mini('Time saved (estimate)', hours(w.minutesSaved)) + '</div>' +
+      '<h3>Runs per day</h3><div class="days" style="height:110px">' + bars + '</div>' +
+      '<h3>Setup</h3><p class="s">Trigger: <b>' + esc(w.trigger) + '</b> &middot; ' + n(w.nodeCount) + ' nodes</p><div>' + (w.apps.length ? chips(w.apps) : '<span class="s">No app nodes</span>') + '</div>' +
+      '<h3>Tags</h3>' + (w.tags.length ? chips(w.tags) : '<span class="s">No tags</span>') +
+      '<h3>Latest executions</h3><div class="tbl">' + table([['Started'], ['Status'], ['Mode'], ['Duration', 1]], w.recent.map(function(e){
+        return '<tr><td>' + esc(when(e.startedAt)) + '</td><td>' + statusTag(e.status) + '</td><td>' + esc(e.mode) + '</td><td class="num">' + secs(e.seconds) + '</td></tr>';
+      }), 'No executions in this period.') + '</div>';
+    $('scrim').classList.add('on'); $('drawer').classList.add('on'); $('drawer').setAttribute('aria-hidden', 'false');
+    $('dr-close').addEventListener('click', closeDrawer); $('dr-close').focus();
+  }
+  function closeDrawer(){
+    $('scrim').classList.remove('on'); $('drawer').classList.remove('on'); $('drawer').setAttribute('aria-hidden', 'true');
+    if (opener && opener.focus) opener.focus();
+  }
+  $('scrim').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && $('drawer').classList.contains('on')) closeDrawer(); });
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('button[data-wf]');
+    if (b) openDrawer(b.dataset.wf);
+  });
+
+  /* ---------- Tabs ---------- */
   var tabs = Array.prototype.slice.call(document.querySelectorAll('nav button'));
   function show(name){
     tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });

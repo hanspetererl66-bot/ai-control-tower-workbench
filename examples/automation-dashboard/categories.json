@@ -1,0 +1,14 @@
+{
+  "note": "Workflows are sorted into categories by their n8n tags. The first category that matches wins, so the order is the priority. Pin a workflow explicitly by giving it the n8n tag \"cat:<Category name>\", for example \"cat:Finance & Procurement\". minutesPerRun is an assumption used for the time-saved estimate, not a measurement.",
+  "fallback": "Uncategorized",
+  "fallbackMinutesPerRun": 5,
+  "categories": [
+    { "name": "Lead-to-Cash", "tags": ["lead-to-cash", "l2c", "order", "quote"], "minutesPerRun": 12 },
+    { "name": "Finance & Procurement", "tags": ["finance", "concur", "invoice", "procurement"], "minutesPerRun": 8 },
+    { "name": "HR & People", "tags": ["hr", "successfactors", "onboarding"], "minutesPerRun": 20 },
+    { "name": "Service & Support", "tags": ["service", "support", "ticket", "sub4me"], "minutesPerRun": 5 },
+    { "name": "Sales & Marketing", "tags": ["sales", "marketing", "crm"], "minutesPerRun": 6 },
+    { "name": "Platform & Monitoring", "tags": ["sap", "btp", "engineering", "monitoring"], "minutesPerRun": 3 },
+    { "name": "Reporting", "tags": ["reporting", "report"], "minutesPerRun": 30 }
+  ]
+}
