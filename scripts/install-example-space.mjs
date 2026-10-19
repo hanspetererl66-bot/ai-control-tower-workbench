@@ -10,6 +10,7 @@ export const EXAMPLE_SPACES = {
   sub4me: 'sub4me',
   'skill-marketplace': 'skill-marketplace',
   'automation-dashboard': 'automation-dashboard',
+  'knowledge-graph': 'knowledge-graph',
 };
 
 /**

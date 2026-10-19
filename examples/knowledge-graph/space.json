@@ -1,0 +1,10 @@
+{
+  "title": "Knowledge Graph",
+  "description": "One interactive graph over customer, contracts, offers, products, skills, tools, risks, agents and n8n workflows: explore neighbours, follow impact, find paths.",
+  "insights": [
+    "Derived from the Sub4Me, Skill Marketplace, Control Tower and n8n sample data plus a few curated links; nothing is stored separately.",
+    "Impact mode shows what hangs on a node (for example the Ariba contract), Path mode shows how two nodes connect.",
+    "The same graph answers chat questions through the get_graph_overview, search_graph, get_graph_neighbors, find_graph_path and analyze_graph_impact tools."
+  ],
+  "prompt": "Bundled example: Knowledge Graph (static, data embedded by npm run sync:knowledge-graph)."
+}

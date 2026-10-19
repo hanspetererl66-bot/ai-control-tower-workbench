@@ -1,0 +1,128 @@
+{
+  "note": "Curated links that cannot be derived from the source data: which n8n workflows touch which contracts and products, which apps integrate which product, which risks affect which agent families. Everything else in the graph is derived from the Sub4Me, Skill Marketplace, Control Tower and n8n sample data. Fictional.",
+  "links": [
+    {
+      "from": "workflow:btp-service-health-check",
+      "to": "product:business-technology-platform",
+      "type": "MONITORS"
+    },
+    {
+      "from": "workflow:invoice-intake-and-ocr-routing",
+      "to": "product:document-ai",
+      "type": "USES"
+    },
+    {
+      "from": "workflow:ticket-triage-to-sub4me",
+      "to": "system:sub4me",
+      "type": "WRITES_TO"
+    },
+    {
+      "from": "workflow:new-hire-onboarding-checklist",
+      "to": "product:successfactors-employee-central",
+      "type": "USES"
+    },
+    {
+      "from": "workflow:contract-renewal-reminder",
+      "to": "contract:C-2023-0390",
+      "type": "WATCHES"
+    },
+    {
+      "from": "workflow:contract-renewal-reminder",
+      "to": "contract:C-2025-0041",
+      "type": "WATCHES"
+    },
+    {
+      "from": "workflow:vendor-onboarding-checks",
+      "to": "product:ariba-procurement",
+      "type": "USES"
+    },
+    {
+      "from": "workflow:daily-ai-consumption-report",
+      "to": "contract:C-2026-0012",
+      "type": "REPORTS_ON"
+    },
+    {
+      "from": "workflow:lead-to-cash-quote-to-order-sync",
+      "to": "family:s-4hana",
+      "type": "USES"
+    },
+    {
+      "from": "app:concur",
+      "to": "product:concur-travel",
+      "type": "INTEGRATES"
+    },
+    {
+      "from": "app:successfactors",
+      "to": "product:successfactors-employee-central",
+      "type": "INTEGRATES"
+    },
+    {
+      "from": "app:sap",
+      "to": "product:s-4hana-cloud-private-edition",
+      "type": "INTEGRATES"
+    },
+    {
+      "from": "risk:R1",
+      "to": "agent:abap-code-assistant",
+      "type": "AFFECTS"
+    },
+    {
+      "from": "risk:R1",
+      "to": "agent:release-train-coordinator",
+      "type": "AFFECTS"
+    },
+    {
+      "from": "risk:R4",
+      "to": "agent:invoice-matcher",
+      "type": "AFFECTS"
+    },
+    {
+      "from": "risk:R4",
+      "to": "agent:report-generation-bot",
+      "type": "AFFECTS"
+    },
+    {
+      "from": "risk:R7",
+      "to": "agent:knowledge-base-search",
+      "type": "AFFECTS"
+    },
+    {
+      "from": "risk:R5",
+      "to": "agent:meeting-summarizer",
+      "type": "AFFECTS"
+    }
+  ],
+  "tour": [
+    {
+      "node": "customer:muster-industrie-ag",
+      "title": "One customer",
+      "text": "Muster Industrie AG is the centre of the Sub4Me data: contracts, offers, tickets and AI-unit consumption hang off it."
+    },
+    {
+      "node": "contract:C-2023-0390",
+      "title": "A contract that ends soon",
+      "text": "Ariba Procurement runs until 2027-01-31 and the notice deadline is close. Everything around it lights up when you ask for the impact.",
+      "impact": true
+    },
+    {
+      "node": "offer:OFF-2026-0318",
+      "title": "The renewal offer",
+      "text": "SAP offered a two-year renewal. The offer renews the contract and is tied to the same product."
+    },
+    {
+      "node": "workflow:contract-renewal-reminder",
+      "title": "Automation that watches it",
+      "text": "An n8n workflow reminds the account team about renewals, so a change here also touches automation."
+    },
+    {
+      "node": "skill:renewal-radar",
+      "title": "Skills that read the data",
+      "text": "Skills such as renewal-radar and customer-call-prep use the Sub4Me tools and serve the same customer."
+    },
+    {
+      "node": "risk:R2",
+      "title": "Governance on the other side",
+      "text": "Switch the view and the same graph shows risks and agents: overprivileged agents are tied to risk R2 and to the access review skill."
+    }
+  ]
+}
