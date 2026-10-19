@@ -658,6 +658,8 @@ export default function App() {
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenCover={() => setCoverOpen(true)}
+        appearance={appearance}
+        onAppearance={setAppearance}
         onView={(v) => {
           setView(v);
           if (v === 'spaces') refreshSpaces();

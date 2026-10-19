@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
+import type { AppearancePreference } from '../appearance';
+import { MODEL_PROVIDERS } from '../web-search';
 import WerkbankMark from './WerkbankMark';
 
 export type View = 'chat' | 'spaces' | 'manage' | 'n8n';
@@ -7,12 +10,37 @@ export default function Rail({
   onView,
   onOpenSettings,
   onOpenCover,
+  appearance,
+  onAppearance,
 }: {
   view: View;
   onView: (v: View) => void;
   onOpenSettings: () => void;
   onOpenCover: () => void;
+  appearance: AppearancePreference;
+  onAppearance: (value: AppearancePreference) => void;
 }) {
+  const [popover, setPopover] = useState<'profile' | 'help' | null>(null);
+  const footRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!popover) return;
+    const onDown = (event: MouseEvent) => {
+      if (!footRef.current?.contains(event.target as Node)) setPopover(null);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setPopover(null);
+    };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [popover]);
+
+  const model = MODEL_PROVIDERS.find((provider) => provider.available) ?? MODEL_PROVIDERS[0];
+
   return (
     <nav className="rail">
       <button className="rail-logo" onClick={onOpenCover} title="About this prototype" aria-label="About this prototype">
@@ -58,7 +86,78 @@ export default function Rail({
         </button>
       </div>
 
-      <div className="rail-foot">
+      <div className="rail-foot" ref={footRef}>
+        {popover === 'profile' && (
+          <div className="rail-popover" role="menu" aria-label="Profile">
+            <div className="rail-pop-title">Appearance</div>
+            <div className="rail-seg" role="group" aria-label="Appearance">
+              {(['system', 'light', 'dark'] as const).map((value) => (
+                <button
+                  key={value}
+                  className={appearance === value ? 'rail-seg-on' : ''}
+                  aria-pressed={appearance === value}
+                  onClick={() => onAppearance(value)}
+                >
+                  {value === 'system' ? 'System' : value === 'light' ? 'Light' : 'Dark'}
+                </button>
+              ))}
+            </div>
+            <div className="rail-pop-row">
+              <span>Model</span>
+              <span className="rail-pop-value">{model.label}</span>
+            </div>
+            <button
+              className="rail-pop-item"
+              role="menuitem"
+              onClick={() => {
+                setPopover(null);
+                onOpenCover();
+              }}
+            >
+              About this prototype
+            </button>
+            <button
+              className="rail-pop-item"
+              role="menuitem"
+              onClick={() => {
+                setPopover(null);
+                onOpenSettings();
+              }}
+            >
+              Settings…
+            </button>
+          </div>
+        )}
+        {popover === 'help' && (
+          <div className="rail-popover" role="dialog" aria-label="Help and shortcuts">
+            <div className="rail-pop-title">Shortcuts</div>
+            <dl className="rail-keys">
+              <dt>Enter</dt>
+              <dd>Send message</dd>
+              <dt>Shift + Enter</dt>
+              <dd>New line in the message</dd>
+              <dt>Esc</dt>
+              <dd>Close dialog, menu or cover sheet</dd>
+              <dt>↑ / ↓</dt>
+              <dd>Reorder a focused Space in the Spaces list</dd>
+            </dl>
+            <div className="rail-pop-title">Tips</div>
+            <ul className="rail-tips">
+              <li>The sparkle icon in the composer holds Web Search and the Model.</li>
+              <li>The magnifier and filter above the conversation list search by title and content.</li>
+              <li>Click the logo at the top for the cover sheet.</li>
+            </ul>
+          </div>
+        )}
+        <button
+          className={`rail-btn ${popover === 'help' ? 'rail-btn-on' : ''}`}
+          onClick={() => setPopover(popover === 'help' ? null : 'help')}
+          title="Help and shortcuts"
+          aria-label="Help and shortcuts"
+          aria-expanded={popover === 'help'}
+        >
+          <HelpIcon />
+        </button>
         <button
           className="rail-btn"
           onClick={onOpenSettings}
@@ -67,8 +166,14 @@ export default function Rail({
         >
           <GearIcon />
         </button>
-        <button className="rail-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
-          <PanelIcon />
+        <button
+          className={`rail-btn ${popover === 'profile' ? 'rail-btn-on' : ''}`}
+          onClick={() => setPopover(popover === 'profile' ? null : 'profile')}
+          title="Profile"
+          aria-label="Profile"
+          aria-expanded={popover === 'profile'}
+        >
+          <ProfileIcon />
         </button>
       </div>
     </nav>
@@ -117,11 +222,21 @@ function LayersIcon() {
   );
 }
 
-function PanelIcon() {
+function ProfileIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M8 4v12" stroke="currentColor" strokeWidth="1.4" />
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="7.3" r="3" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3.8 16.4c.8-3 3.2-4.6 6.2-4.6s5.4 1.6 6.2 4.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function HelpIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M7.9 8c.1-1.2 1-2 2.2-2 1.3 0 2.1.8 2.1 1.8 0 1.5-2.1 1.6-2.1 3.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="10.1" cy="14" r=".9" fill="currentColor" />
     </svg>
   );
 }
