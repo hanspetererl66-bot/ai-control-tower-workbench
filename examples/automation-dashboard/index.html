@@ -236,6 +236,26 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
 .s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
 .s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
 </style>
 </head>
 <body>

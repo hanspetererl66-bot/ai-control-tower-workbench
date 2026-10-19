@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.10.0",
-  "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) and your n8n Cloud automation. Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
+  "version": "0.11.0",
+  "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -129,6 +129,26 @@
     {
       "name": "list_n8n_categories",
       "description": "The categories n8n workflows are sorted into by tag, with their workflows and the uncategorized ones."
+    },
+    {
+      "name": "get_skill_impact",
+      "description": "Skill impact: runs, success, time saved, value and run cost per skill (sample data)."
+    },
+    {
+      "name": "get_skill_governance",
+      "description": "Skill governance: EU AI Act class, DPIA, reviews due, linked risks and agents (sample data)."
+    },
+    {
+      "name": "get_skill_lifecycle",
+      "description": "Skill lifecycle: change log, dependencies, tests, sunset, deputy; who depends on what (sample data)."
+    },
+    {
+      "name": "find_skill_gaps",
+      "description": "Processes without a skill and skill requests from the teams, with potential hours (sample data)."
+    },
+    {
+      "name": "recommend_skills",
+      "description": "Recommend skills for a role and/or a task with example prompts and demo flow."
     }
   ],
   "user_config": {

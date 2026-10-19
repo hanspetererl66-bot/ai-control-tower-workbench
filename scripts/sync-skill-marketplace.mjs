@@ -30,6 +30,12 @@ export function embedData(html, data) {
   return html.replace(BLOCK, (_m, open, _body, close) => `${open}\n${serialise(data)}\n${close}`);
 }
 
+/** Impact, governance, lifecycle and discovery profiles per skill, process gaps and skill requests (fictional). */
+export function loadProfiles(root = ROOT) {
+  const { profiles, processGaps, requests, assumptions } = JSON.parse(readFileSync(join(root, 'examples/skill-marketplace/profiles.json'), 'utf8'));
+  return { assumptions, profiles, processGaps, requests };
+}
+
 export const taxonomy = () => ({ boardAreas: BOARD_AREAS, lobs: LOBS, scopes: SCOPES });
 
 /** Registered skills as the Space shows them, read from the repository example skills. */
@@ -61,9 +67,9 @@ export function installLive({ registered, samples, root = ROOT, spacesDir = join
   return page;
 }
 
-export function buildCatalog({ registered, samples, source, asOf }) {
+export function buildCatalog({ registered, samples, source, asOf, extras = loadProfiles() }) {
   const names = new Set(registered.map((s) => s.name));
-  return { asOf, source, taxonomy: taxonomy(), skills: [...registered, ...samples.filter((s) => !names.has(s.name))] };
+  return { asOf, source, taxonomy: taxonomy(), skills: [...registered, ...samples.filter((s) => !names.has(s.name))], ...extras };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

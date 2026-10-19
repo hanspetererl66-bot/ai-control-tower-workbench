@@ -201,6 +201,26 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
 .s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
 .s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
 </style>
 <style id="sm-page">
 .s4m main{max-width:1180px}
@@ -304,6 +324,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="catalog" aria-selected="false">Catalog</button>
   <button role="tab" data-tab="ranking" aria-selected="false">Ranking</button>
+  <button role="tab" data-tab="impact" aria-selected="false">Impact</button>
+  <button role="tab" data-tab="governance" aria-selected="false">Governance</button>
+  <button role="tab" data-tab="gaps" aria-selected="false">Gaps</button>
   <button role="tab" data-tab="hints" aria-selected="false">Hints</button>
 </nav>
 <main>
@@ -325,6 +348,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       <select id="f-team" aria-label="Team"></select>
       <select id="f-scope" aria-label="Reach"></select>
       <select id="f-mat" aria-label="Maturity"></select>
+      <select id="f-role" aria-label="Recommended for role"></select>
       <label class="chk"><input type="checkbox" id="f-sample" checked> Sample skills</label>
       <button class="lnk" id="f-clear">Clear filters</button>
     </div>
@@ -338,13 +362,33 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     </div>
     <div class="card tbl" id="ranking"></div>
   </section>
+  <section class="pg" id="pg-impact">
+    <div class="smx-kpis" id="impact-kpis"></div>
+    <div class="s" id="impact-note" style="margin:6px 0 12px"></div>
+    <div class="card tbl" id="impact"></div>
+  </section>
+  <section class="pg" id="pg-governance">
+    <div class="smx-kpis" id="gov-kpis"></div>
+    <div class="card tbl" id="governance"></div>
+  </section>
+  <section class="pg" id="pg-gaps">
+    <div class="smx-kpis" id="gap-kpis"></div>
+    <h2>Processes without a skill</h2>
+    <div class="card tbl" id="gaps"></div>
+    <h2>Skill requests from the teams</h2>
+    <div class="card tbl" id="requests"></div>
+  </section>
+  <section class="pg" id="pg-detail">
+    <button class="lnk" id="detail-back">&larr; Back</button>
+    <div id="detail"></div>
+  </section>
   <section class="pg" id="pg-hints">
     <div class="card" id="hints"></div>
   </section>
 </main>
 <script type="application/json" id="sm-data">
 {
-  "asOf": "2026-10-18",
+  "asOf": "2026-10-19",
   "source": "repository",
   "taxonomy": {
     "boardAreas": [
@@ -718,6 +762,1716 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "previousScore": 15
       }
     }
+  ],
+  "assumptions": {
+    "hourlyRateEur": 85,
+    "period": "2026-05 to 2026-10 (October partial, as of 2026-10-18)",
+    "months": [
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct"
+    ]
+  },
+  "profiles": {
+    "board-briefing": {
+      "impact": {
+        "runsPerMonth": [
+          22,
+          31,
+          38,
+          44,
+          52,
+          33
+        ],
+        "successRatePct": 96,
+        "avgRating": 4.6,
+        "ratings": 41,
+        "minutesSavedPerRun": 55,
+        "errorRatePct": 2.1,
+        "avgSeconds": 48,
+        "costPerRunEur": 0.42,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5",
+          "GPT-5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-06-12",
+        "nextReview": "2026-12-12",
+        "linkedRisks": [
+          "R6"
+        ],
+        "linkedAgents": [
+          "Report Generation Bot"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-05-04",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          },
+          {
+            "date": "2026-06-12",
+            "version": 2,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-05-04",
+            "summary": "First version: one-page briefing from risks, agents and budget."
+          },
+          {
+            "version": 2,
+            "date": "2026-06-12",
+            "summary": "Added EU AI Act audit block and list_agents for production questions."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_risks",
+            "get_agent_overview",
+            "get_overprivileged_agents",
+            "get_budget",
+            "list_agents"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 14,
+          "passed": 14,
+          "lastRun": "2026-10-12"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Erstelle das Board-Briefing für die nächste Sitzung.",
+          "Lagebild AI Control Tower als Management Summary."
+        ],
+        "demoFlow": [
+          "Skill installieren",
+          "Connector ai-control-tower verbinden",
+          "\"Board-Briefing\" im Chat eingeben",
+          "Einseitigen Text prüfen und exportieren"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower",
+          "Lesezugriff auf das Register"
+        ],
+        "tags": [
+          "Reporting",
+          "Governance",
+          "Board"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "skill-finder"
+        ],
+        "recommendedFor": [
+          "AI Programme Manager",
+          "Compliance Officer",
+          "Executive"
+        ],
+        "favorites": 18
+      }
+    },
+    "skill-finder": {
+      "impact": {
+        "runsPerMonth": [
+          12,
+          19,
+          27,
+          35,
+          41,
+          29
+        ],
+        "successRatePct": 98,
+        "avgRating": 4.4,
+        "ratings": 33,
+        "minutesSavedPerRun": 25,
+        "errorRatePct": 1,
+        "avgSeconds": 12,
+        "costPerRunEur": 0.06,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5",
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-05-20",
+        "nextReview": "2027-05-20",
+        "linkedRisks": [
+          "R5"
+        ],
+        "linkedAgents": [
+          "Knowledge Base Search"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-05-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-05-20",
+            "summary": "Search the registry before building a new skill."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "search_skills",
+            "get_skill_info"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-12"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Gibt es einen Skill für Reisekostenprüfung?",
+          "Ich will einen Skill für Rechnungsabgleich bauen, gibt es das schon?"
+        ],
+        "demoFlow": [
+          "Aufgabe in einem Satz beschreiben",
+          "Treffer mit Eigentümer und Reifegrad ansehen",
+          "Passenden Skill installieren oder Eigentümer fragen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower mit Supabase"
+        ],
+        "tags": [
+          "Registry",
+          "Wiederverwendung"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "board-briefing"
+        ],
+        "recommendedFor": [
+          "Platform Engineer",
+          "AI Programme Manager",
+          "Product Manager"
+        ],
+        "favorites": 22
+      }
+    },
+    "ticket-writer": {
+      "impact": {
+        "runsPerMonth": [
+          8,
+          14,
+          21,
+          26,
+          30,
+          19
+        ],
+        "successRatePct": 93,
+        "avgRating": 4.2,
+        "ratings": 27,
+        "minutesSavedPerRun": 9,
+        "errorRatePct": 4,
+        "avgSeconds": 22,
+        "costPerRunEur": 0.09,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-07-03",
+        "nextReview": "2027-07-03",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "SAP SPC Ticket Router"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-07-03",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-07-03",
+            "summary": "Turns a short problem description into a Sub4Me demo ticket."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_tickets",
+            "create_ticket"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "J. Weber",
+        "supportChannel": "#sub4me-demo",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 9,
+          "passed": 8,
+          "lastRun": "2026-10-10"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Eröffne ein Ticket: Joule liefert leere Bestellliste.",
+          "Störung melden für BTP AI Core."
+        ],
+        "demoFlow": [
+          "Problem in zwei Sätzen schildern",
+          "Vorschlag für Titel, Produkt und Priorität prüfen",
+          "Mit \"ja\" bestätigen, Ticket wird angelegt"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower mit Supabase (für echte Demo-Tickets)"
+        ],
+        "tags": [
+          "Service",
+          "Tickets",
+          "Sub4Me"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "renewal-radar"
+        ],
+        "recommendedFor": [
+          "Support Engineer",
+          "Platform Engineer"
+        ],
+        "favorites": 11
+      }
+    },
+    "expense-check": {
+      "impact": {
+        "runsPerMonth": [
+          160,
+          175,
+          190,
+          205,
+          220,
+          128
+        ],
+        "successRatePct": 91,
+        "avgRating": 4.1,
+        "ratings": 64,
+        "minutesSavedPerRun": 6,
+        "errorRatePct": 5.5,
+        "avgSeconds": 35,
+        "costPerRunEur": 0.18,
+        "model": "GPT-5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Completed",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "GPT-5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-09-02",
+        "nextReview": "2027-03-02",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Invoice Matcher"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-05-11",
+            "version": 2,
+            "by": "Compliance Board",
+            "decision": "Approved"
+          },
+          {
+            "date": "2026-09-02",
+            "version": 3,
+            "by": "Compliance Board",
+            "decision": "Approved"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-03-02",
+            "summary": "Pilot with Group Accounting."
+          },
+          {
+            "version": 2,
+            "date": "2026-05-11",
+            "summary": "Added per-diem rules for DACH."
+          },
+          {
+            "version": 3,
+            "date": "2026-09-02",
+            "summary": "Flags duplicate receipts across months."
+          }
+        ],
+        "dependencies": {
+          "tools": [],
+          "connectors": [],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "P. Vogel",
+        "supportChannel": "#finance-ai",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 42,
+          "passed": 40,
+          "lastRun": "2026-10-14"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe diese Reisekostenabrechnung gegen die Richtlinie.",
+          "Welche Belege sind auffällig?"
+        ],
+        "demoFlow": [
+          "Abrechnung hochladen",
+          "Auffälligkeiten mit Regelverweis ansehen",
+          "Freigabe oder Rückfrage an Einreicher"
+        ],
+        "prerequisites": [
+          "Reiserichtlinie als Dokument"
+        ],
+        "tags": [
+          "Reisekosten",
+          "Compliance",
+          "Prüfung"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "invoice-matcher",
+          "concur-receipt-audit"
+        ],
+        "recommendedFor": [
+          "Controller",
+          "Accounts Payable Clerk",
+          "Travel Manager"
+        ],
+        "favorites": 29
+      }
+    },
+    "invoice-matcher": {
+      "impact": {
+        "runsPerMonth": [
+          310,
+          340,
+          365,
+          390,
+          410,
+          245
+        ],
+        "successRatePct": 94,
+        "avgRating": 4.3,
+        "ratings": 52,
+        "minutesSavedPerRun": 4,
+        "errorRatePct": 3.8,
+        "avgSeconds": 9,
+        "costPerRunEur": 0.05,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Completed",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5",
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-08-19",
+        "nextReview": "2027-02-19",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Invoice Matcher"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-04-22",
+            "version": 1,
+            "by": "Compliance Board",
+            "decision": "Approved"
+          },
+          {
+            "date": "2026-08-19",
+            "version": 2,
+            "by": "Compliance Board",
+            "decision": "Approved"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-04-22",
+            "summary": "Three-way match: invoice, order, goods receipt."
+          },
+          {
+            "version": 2,
+            "date": "2026-08-19",
+            "summary": "Tolerance rules per vendor group."
+          }
+        ],
+        "dependencies": {
+          "tools": [],
+          "connectors": [],
+          "skills": [
+            "expense-check"
+          ]
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#finance-ai",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 36,
+          "passed": 36,
+          "lastRun": "2026-10-14"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Gleiche die Rechnungen von heute mit den Bestellungen ab.",
+          "Welche Rechnungen weichen über die Toleranz ab?"
+        ],
+        "demoFlow": [
+          "Rechnungsliste laden",
+          "Abweichungen ansehen",
+          "Klärfälle an Einkauf weitergeben"
+        ],
+        "prerequisites": [
+          "Zugriff auf Bestell- und Wareneingangsdaten"
+        ],
+        "tags": [
+          "Rechnungsprüfung",
+          "Procure-to-Pay"
+        ],
+        "industries": [
+          "Manufacturing",
+          "Retail"
+        ],
+        "related": [
+          "expense-check"
+        ],
+        "recommendedFor": [
+          "Accounts Payable Clerk",
+          "Controller"
+        ],
+        "favorites": 24
+      }
+    },
+    "renewal-radar": {
+      "impact": {
+        "runsPerMonth": [
+          18,
+          22,
+          30,
+          36,
+          44,
+          31
+        ],
+        "successRatePct": 97,
+        "avgRating": 4.7,
+        "ratings": 19,
+        "minutesSavedPerRun": 35,
+        "errorRatePct": 1.5,
+        "avgSeconds": 18,
+        "costPerRunEur": 0.11,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-08-01",
+        "nextReview": "2027-08-01",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "Contract Classifier",
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-08-01",
+            "version": 2,
+            "by": "Compliance Board",
+            "decision": "Recommended"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-06-15",
+            "summary": "Upcoming renewals with deadlines."
+          },
+          {
+            "version": 2,
+            "date": "2026-08-01",
+            "summary": "Open offers and notice deadlines in one list."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_contracts",
+            "list_offers"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": [
+            "quote-drafter"
+          ]
+        },
+        "replacedBy": null,
+        "deputy": "C. Schmid",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 11,
+          "passed": 11,
+          "lastRun": "2026-10-09"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Welche Verträge laufen in den nächsten 120 Tagen aus?",
+          "Was kostet die Verlängerung von Ariba?"
+        ],
+        "demoFlow": [
+          "Kunden wählen",
+          "Fristen und Angebote ansehen",
+          "Angebot mit quote-drafter vorbereiten"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Verlängerung",
+          "Verträge",
+          "Sub4Me"
+        ],
+        "industries": [
+          "Software"
+        ],
+        "related": [
+          "quote-drafter",
+          "ticket-writer"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Sales Operations"
+        ],
+        "favorites": 17
+      }
+    },
+    "quote-drafter": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          4,
+          9,
+          14,
+          19,
+          14
+        ],
+        "successRatePct": 82,
+        "avgRating": 3.8,
+        "ratings": 8,
+        "minutesSavedPerRun": 40,
+        "errorRatePct": 9,
+        "avgSeconds": 70,
+        "costPerRunEur": 0.55,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "In progress",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 3,
+        "lastReview": "2026-07-20",
+        "nextReview": "2026-10-20",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Presales Proposal Generator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-07-20",
+            "version": 1,
+            "by": "Team lead",
+            "decision": "Pilot started"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-07-20",
+            "summary": "Drafts a quote from an existing offer."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_contracts",
+            "list_offers"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 12,
+          "passed": 9,
+          "lastRun": "2026-10-08"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Entwirf ein Angebot für die Verlängerung von SuccessFactors."
+        ],
+        "demoFlow": [
+          "Vertrag wählen",
+          "Entwurf prüfen",
+          "Rabatt gegen Freigabegrenze prüfen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower",
+          "Rabattrichtlinie"
+        ],
+        "tags": [
+          "Angebot",
+          "Pricing"
+        ],
+        "industries": [
+          "Software"
+        ],
+        "related": [
+          "renewal-radar"
+        ],
+        "recommendedFor": [
+          "Account Executive"
+        ],
+        "favorites": 5
+      }
+    },
+    "campaign-brief": {
+      "impact": {
+        "runsPerMonth": [
+          6,
+          9,
+          12,
+          15,
+          18,
+          11
+        ],
+        "successRatePct": 88,
+        "avgRating": 4,
+        "ratings": 12,
+        "minutesSavedPerRun": 30,
+        "errorRatePct": 6,
+        "avgSeconds": 55,
+        "costPerRunEur": 0.3,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-06-02",
+        "nextReview": "2026-12-02",
+        "linkedRisks": [
+          "R5"
+        ],
+        "linkedAgents": [
+          "Meeting Summarizer"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-06-02",
+            "version": 1,
+            "by": "Team lead",
+            "decision": "Pilot started"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-06-02",
+            "summary": "Campaign brief from goal, audience and budget."
+          },
+          {
+            "version": 2,
+            "date": "2026-09-09",
+            "summary": "Adds channel mix suggestion."
+          }
+        ],
+        "dependencies": {
+          "tools": [],
+          "connectors": [],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "N. Keller",
+        "supportChannel": "#marketing-ai",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 10,
+          "passed": 9,
+          "lastRun": "2026-10-05"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Briefing für die Herbstkampagne mit 40.000 Euro Budget."
+        ],
+        "demoFlow": [
+          "Ziel und Zielgruppe nennen",
+          "Briefing prüfen",
+          "An Agentur senden"
+        ],
+        "prerequisites": [],
+        "tags": [
+          "Kampagne",
+          "Briefing"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "social-post-checker"
+        ],
+        "recommendedFor": [
+          "Marketing Manager",
+          "Content Creator"
+        ],
+        "favorites": 9
+      }
+    },
+    "social-post-checker": {
+      "impact": {
+        "runsPerMonth": [
+          40,
+          46,
+          52,
+          49,
+          58,
+          36
+        ],
+        "successRatePct": 95,
+        "avgRating": 4.2,
+        "ratings": 21,
+        "minutesSavedPerRun": 5,
+        "errorRatePct": 2.5,
+        "avgSeconds": 8,
+        "costPerRunEur": 0.03,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-05-18",
+        "nextReview": "2027-05-18",
+        "linkedRisks": [],
+        "linkedAgents": [],
+        "approvalHistory": [
+          {
+            "date": "2026-05-18",
+            "version": 1,
+            "by": "Team lead",
+            "decision": "Pilot started"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-05-18",
+            "summary": "Checks tone, claims and hashtags before posting."
+          }
+        ],
+        "dependencies": {
+          "tools": [],
+          "connectors": [],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "",
+        "supportChannel": "#marketing-ai",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 6,
+          "passed": 6,
+          "lastRun": "2026-10-05"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe diesen LinkedIn-Post auf Markenton und Aussagen."
+        ],
+        "demoFlow": [
+          "Entwurf einfügen",
+          "Hinweise ansehen",
+          "Überarbeitung übernehmen"
+        ],
+        "prerequisites": [],
+        "tags": [
+          "Social Media",
+          "Marke"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "campaign-brief"
+        ],
+        "recommendedFor": [
+          "Content Creator",
+          "Marketing Manager"
+        ],
+        "favorites": 13
+      }
+    },
+    "btp-quota-watch": {
+      "impact": {
+        "runsPerMonth": [
+          60,
+          62,
+          70,
+          74,
+          80,
+          48
+        ],
+        "successRatePct": 99,
+        "avgRating": 4.5,
+        "ratings": 15,
+        "minutesSavedPerRun": 12,
+        "errorRatePct": 0.8,
+        "avgSeconds": 6,
+        "costPerRunEur": 0.02,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-08-10",
+        "nextReview": "2027-08-10",
+        "linkedRisks": [
+          "R1"
+        ],
+        "linkedAgents": [
+          "BTP Monitor",
+          "BTP Deploy Coordinator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-08-10",
+            "version": 1,
+            "by": "Compliance Board",
+            "decision": "Approved"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-08-10",
+            "summary": "Warns when AI-unit consumption heads for the allotment and opens a ticket."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_ai_consumption",
+            "create_ticket"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": [
+            "ticket-writer"
+          ]
+        },
+        "replacedBy": null,
+        "deputy": "T. Kraus",
+        "supportChannel": "#btp-platform",
+        "languages": [
+          "en"
+        ],
+        "tests": {
+          "total": 18,
+          "passed": 18,
+          "lastRun": "2026-10-13"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Reicht das AI-Unit-Budget bis Jahresende?",
+          "Warnung vor Quota-Überschreitung in eu10."
+        ],
+        "demoFlow": [
+          "Verbrauch abfragen",
+          "Prognose und Erschöpfungsmonat ansehen",
+          "Ticket mit Vorschlag anlegen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "BTP",
+          "Verbrauch",
+          "Monitoring"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "ticket-writer",
+          "my-sprint-digest"
+        ],
+        "recommendedFor": [
+          "Platform Engineer",
+          "Engineering Manager"
+        ],
+        "favorites": 14
+      }
+    },
+    "concur-receipt-audit": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          20,
+          34,
+          45,
+          30
+        ],
+        "successRatePct": 86,
+        "avgRating": 3.9,
+        "ratings": 10,
+        "minutesSavedPerRun": 7,
+        "errorRatePct": 7.5,
+        "avgSeconds": 28,
+        "costPerRunEur": 0.2,
+        "model": "GPT-5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Required, not started",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "GPT-5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 3,
+        "lastReview": "2026-08-04",
+        "nextReview": "2026-11-04",
+        "linkedRisks": [
+          "R4",
+          "R6"
+        ],
+        "linkedAgents": [
+          "Invoice Matcher"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-08-04",
+            "version": 1,
+            "by": "Team lead",
+            "decision": "Pilot started"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-08-04",
+            "summary": "Matches Concur receipts to expense lines."
+          }
+        ],
+        "dependencies": {
+          "tools": [],
+          "connectors": [],
+          "skills": [
+            "expense-check"
+          ]
+        },
+        "replacedBy": "expense-check",
+        "deputy": "",
+        "supportChannel": "#concur-guild",
+        "languages": [
+          "en"
+        ],
+        "tests": {
+          "total": 12,
+          "passed": 8,
+          "lastRun": "2026-10-07"
+        },
+        "sunsetDate": "2027-03-31"
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe die Belege dieser Concur-Abrechnung."
+        ],
+        "demoFlow": [
+          "Concur-Export laden",
+          "Fehlende oder doppelte Belege ansehen"
+        ],
+        "prerequisites": [
+          "Concur-Export"
+        ],
+        "tags": [
+          "Concur",
+          "Belege"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "expense-check"
+        ],
+        "recommendedFor": [
+          "Travel Manager",
+          "Accounts Payable Clerk"
+        ],
+        "favorites": 4
+      }
+    },
+    "sf-job-text-reviewer": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          8,
+          15,
+          24,
+          28,
+          17
+        ],
+        "successRatePct": 90,
+        "avgRating": 4,
+        "ratings": 9,
+        "minutesSavedPerRun": 14,
+        "errorRatePct": 5,
+        "avgSeconds": 20,
+        "costPerRunEur": 0.12,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "High",
+        "dpia": "In progress",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 3,
+        "lastReview": "2026-08-25",
+        "nextReview": "2026-11-25",
+        "linkedRisks": [
+          "R6",
+          "R7"
+        ],
+        "linkedAgents": [
+          "Onboarding Orchestrator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-08-25",
+            "version": 1,
+            "by": "Team lead",
+            "decision": "Pilot started, EU AI Act high-risk (recruiting) review open"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-08-25",
+            "summary": "Reviews job texts for bias and clarity."
+          }
+        ],
+        "dependencies": {
+          "tools": [],
+          "connectors": [],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#hr-ai",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 15,
+          "passed": 13,
+          "lastRun": "2026-10-06"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe diese Stellenanzeige auf unbewusste Voreingenommenheit."
+        ],
+        "demoFlow": [
+          "Stellentext einfügen",
+          "Hinweise zu Sprache und Anforderungen ansehen"
+        ],
+        "prerequisites": [
+          "Freigabe durch HR-Leitung"
+        ],
+        "tags": [
+          "Recruiting",
+          "Fairness",
+          "SuccessFactors"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [],
+        "recommendedFor": [
+          "HR Specialist"
+        ],
+        "favorites": 7
+      }
+    },
+    "release-notes-writer": {
+      "impact": {
+        "runsPerMonth": [
+          14,
+          16,
+          18,
+          20,
+          22,
+          13
+        ],
+        "successRatePct": 96,
+        "avgRating": 4.4,
+        "ratings": 23,
+        "minutesSavedPerRun": 28,
+        "errorRatePct": 2,
+        "avgSeconds": 30,
+        "costPerRunEur": 0.15,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-07-08",
+        "nextReview": "2027-07-08",
+        "linkedRisks": [
+          "R1"
+        ],
+        "linkedAgents": [
+          "Release Train Coordinator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-07-08",
+            "version": 1,
+            "by": "Compliance Board",
+            "decision": "Recommended"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-04-14",
+            "summary": "Release notes from closed tickets."
+          },
+          {
+            "version": 2,
+            "date": "2026-07-08",
+            "summary": "Groups changes by customer impact."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_tickets"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "L. Fischer",
+        "supportChannel": "#eng-enablement",
+        "languages": [
+          "en",
+          "de"
+        ],
+        "tests": {
+          "total": 20,
+          "passed": 20,
+          "lastRun": "2026-10-11"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Release Notes für die Version 2026.4 aus den geschlossenen Tickets."
+        ],
+        "demoFlow": [
+          "Zeitraum wählen",
+          "Entwurf ansehen",
+          "Veröffentlichen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Release",
+          "Dokumentation"
+        ],
+        "industries": [
+          "Software"
+        ],
+        "related": [
+          "my-sprint-digest",
+          "ticket-writer"
+        ],
+        "recommendedFor": [
+          "Product Manager",
+          "Engineering Manager"
+        ],
+        "favorites": 16
+      }
+    },
+    "my-sprint-digest": {
+      "impact": {
+        "runsPerMonth": [
+          20,
+          20,
+          22,
+          24,
+          24,
+          15
+        ],
+        "successRatePct": 97,
+        "avgRating": 4.1,
+        "ratings": 6,
+        "minutesSavedPerRun": 10,
+        "errorRatePct": 1.2,
+        "avgSeconds": 14,
+        "costPerRunEur": 0.05,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-05-30",
+        "nextReview": "2027-05-30",
+        "linkedRisks": [],
+        "linkedAgents": [],
+        "approvalHistory": [
+          {
+            "date": "2026-05-30",
+            "version": 1,
+            "by": "Owner",
+            "decision": "Personal use"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-05-30",
+            "summary": "Personal digest of my tickets for the sprint review."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_tickets"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "",
+        "supportChannel": "",
+        "languages": [
+          "en"
+        ],
+        "tests": {
+          "total": 3,
+          "passed": 3,
+          "lastRun": "2026-09-30"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Mein Sprint-Digest für Freitag."
+        ],
+        "demoFlow": [
+          "Digest anfordern",
+          "Prüfen und in die Review mitnehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Sprint",
+          "Persönlich"
+        ],
+        "industries": [
+          "Software"
+        ],
+        "related": [
+          "release-notes-writer",
+          "btp-quota-watch"
+        ],
+        "recommendedFor": [
+          "Engineering Manager",
+          "Platform Engineer"
+        ],
+        "favorites": 3
+      }
+    }
+  },
+  "processGaps": [
+    {
+      "id": "GAP-01",
+      "process": "Bestellfreigabe prüfen",
+      "boardArea": "Finance",
+      "team": "Procurement",
+      "priority": "High",
+      "painLevel": 4,
+      "minutesPerMonth": 5400,
+      "status": "Skill requested",
+      "note": "Heute manuell im Einkauf, hohe Fehlerquote bei Schwellenwerten."
+    },
+    {
+      "id": "GAP-02",
+      "process": "Lieferantenrisiko bewerten",
+      "boardArea": "Finance",
+      "team": "Procurement",
+      "priority": "Medium",
+      "painLevel": 3,
+      "minutesPerMonth": 2400,
+      "status": "No skill",
+      "note": "Ariba-Risikodaten liegen vor, keine Auswertung."
+    },
+    {
+      "id": "GAP-03",
+      "process": "Kundengespräch vorbereiten",
+      "boardArea": "Sales",
+      "team": "Account Management",
+      "priority": "High",
+      "painLevel": 4,
+      "minutesPerMonth": 6000,
+      "status": "Skill in build",
+      "note": "Zusammenfassung aus Vertrag, Tickets und Nutzung (Sub4Me 360-Grad)."
+    },
+    {
+      "id": "GAP-04",
+      "process": "Ausschreibung beantworten (RFP)",
+      "boardArea": "Sales",
+      "team": "Presales",
+      "priority": "Medium",
+      "painLevel": 5,
+      "minutesPerMonth": 4800,
+      "status": "No skill",
+      "note": "Wiederkehrende Fragen, Antworten aus früheren RFPs."
+    },
+    {
+      "id": "GAP-05",
+      "process": "Webinar-Nachbereitung",
+      "boardArea": "Marketing",
+      "team": "Demand Generation",
+      "priority": "Low",
+      "painLevel": 2,
+      "minutesPerMonth": 900,
+      "status": "No skill",
+      "note": "Follow-up-Mails und Lead-Scoring-Hinweise."
+    },
+    {
+      "id": "GAP-06",
+      "process": "Incident-Post-Mortem schreiben",
+      "boardArea": "Engineering",
+      "team": "Platform Engineering",
+      "priority": "Medium",
+      "painLevel": 3,
+      "minutesPerMonth": 1800,
+      "status": "No skill",
+      "note": "Vorlage vorhanden, Zeitachse aus Logs fehlt."
+    },
+    {
+      "id": "GAP-07",
+      "process": "Berechtigungsreview vorbereiten",
+      "boardArea": "Engineering",
+      "team": "Platform Security",
+      "priority": "High",
+      "painLevel": 4,
+      "minutesPerMonth": 3600,
+      "status": "Skill requested",
+      "note": "Verknüpft mit Risiko R2 (überprivilegierte Agenten)."
+    },
+    {
+      "id": "GAP-08",
+      "process": "Monatsabschluss-Abstimmung",
+      "boardArea": "Finance",
+      "team": "Group Accounting",
+      "priority": "High",
+      "painLevel": 5,
+      "minutesPerMonth": 7200,
+      "status": "No skill",
+      "note": "Größter manueller Aufwand im Abschluss."
+    }
+  ],
+  "requests": [
+    {
+      "id": "REQ-101",
+      "title": "Bestellfreigabe gegen Schwellenwerte prüfen",
+      "requester": "Procurement",
+      "boardArea": "Finance",
+      "votes": 14,
+      "status": "Open",
+      "createdOn": "2026-09-28",
+      "note": "Passt zu invoice-matcher; gleiche Datenbasis."
+    },
+    {
+      "id": "REQ-102",
+      "title": "Berechtigungsreview mit Agent-Register abgleichen",
+      "requester": "Platform Security",
+      "boardArea": "Engineering",
+      "votes": 11,
+      "status": "Planned",
+      "createdOn": "2026-10-02",
+      "note": "Quelle: get_overprivileged_agents."
+    },
+    {
+      "id": "REQ-103",
+      "title": "Kundengespräch-Vorbereitung (360-Grad)",
+      "requester": "Account Management",
+      "boardArea": "Sales",
+      "votes": 9,
+      "status": "In build",
+      "createdOn": "2026-09-15",
+      "note": "Nutzt get_customer_overview."
+    },
+    {
+      "id": "REQ-104",
+      "title": "RFP-Antworten aus früheren Ausschreibungen",
+      "requester": "Presales",
+      "boardArea": "Sales",
+      "votes": 7,
+      "status": "Open",
+      "createdOn": "2026-10-09",
+      "note": ""
+    },
+    {
+      "id": "REQ-105",
+      "title": "Monatsabschluss: Konten abstimmen",
+      "requester": "Group Accounting",
+      "boardArea": "Finance",
+      "votes": 6,
+      "status": "Open",
+      "createdOn": "2026-10-12",
+      "note": "Hohe Vertraulichkeit, DPIA nötig."
+    }
   ]
 }
 </script>
@@ -755,7 +2509,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   }
   function openCatalog(f){
     $('f-q').value = f.q || ''; $('f-area').value = f.area || ''; $('f-lob').value = f.lob || ''; $('f-team').value = f.team || '';
-    $('f-scope').value = f.scope || ''; $('f-mat').value = f.mat || '';
+    $('f-scope').value = f.scope || ''; $('f-mat').value = f.mat || ''; $('f-role').value = f.role || '';
     renderCatalog(); go('catalog');
   }
 
@@ -870,28 +2624,31 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     opts($('f-team'), 'All teams', Object.keys(teams).sort().map(function(t){ return [t, t]; }));
     opts($('f-scope'), 'All reach levels', D.taxonomy.scopes.map(function(s){ return [s, SCOPE_LABEL[s]]; }));
     opts($('f-mat'), 'All maturity levels', ['approved', 'empfohlen', 'pilot'].map(function(m){ return [m, MAT_LABEL[m]]; }));
+    var roles = {}; D.skills.forEach(function(s){ ((D.profiles[s.name] || {}).discovery || {recommendedFor: []}).recommendedFor.forEach(function(r){ roles[r] = 1; }); });
+    opts($('f-role'), 'Recommended for any role', Object.keys(roles).sort().map(function(r){ return [r, r]; }));
     opts($('r-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
     $('r-area').addEventListener('change', renderRanking);
-    ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope', 'f-mat'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
+    ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope', 'f-mat', 'f-role'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
     $('f-clear').addEventListener('click', function(){ openCatalog({}); });
     $('f-sample').addEventListener('change', function(){ showSample = $('f-sample').checked; renderAll(); });
   }
   function renderCatalog(){
-    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value, mat = $('f-mat').value;
+    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value, mat = $('f-mat').value, role = $('f-role').value;
     var list = pool().filter(function(s){
-      return (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) && (!mat || s.maturity === mat) &&
-        (!q || (s.name + ' ' + s.description + ' ' + s.process + ' ' + s.tools.join(' ')).toLowerCase().indexOf(q) >= 0);
+      var rf = ((D.profiles[s.name] || {}).discovery || {}).recommendedFor || [];
+      return (!role || rf.indexOf(role) >= 0) && (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) && (!mat || s.maturity === mat) &&
+        (!q || (s.name + ' ' + s.description + ' ' + s.process + ' ' + s.tools.join(' ') + ' ' + (((D.profiles[s.name] || {}).discovery || {}).tags || []).join(' ')).toLowerCase().indexOf(q) >= 0);
     });
     $('catalog-count').textContent = list.length + ' of ' + pool().length + ' skills';
     $('skills').innerHTML = list.length ? list.map(function(s){
       var path = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).map(esc).join(' <span style="color:var(--faint)">/</span> ');
       var approval = s.maturity === 'approved' && s.approvedBy ? 'Approved by ' + esc(s.approvedBy) + (s.approvedAt ? ' on ' + esc(String(s.approvedAt).slice(0, 10)) : '') + (s.approvedVersion ? ', v' + esc(s.approvedVersion) : '') : '';
-      return '<article class="sk m-' + s.maturity + '"><h3>' + esc(s.name) + (s.sample ? tag('warn', 'Sample') : '') + '</h3><div class="path">' + path + '</div>' +
+      return '<article class="sk m-' + s.maturity + '" tabindex="0" data-skill="' + esc(s.name) + '"><h3>' + esc(s.name) + (s.sample ? tag('warn', 'Sample') : '') + '</h3><div class="path">' + path + '</div>' +
         '<p>' + esc(s.description) + '</p>' +
         '<div class="facts"><span class="status"><i class="m-' + s.maturity + '"></i>' + MAT_LABEL[s.maturity] + '</span><span class="badge">' + (SCOPE_LABEL[s.scope] || s.scope) + '</span>' +
           [s.domain, s.process, s.dataClass].filter(Boolean).map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' +
         (s.tools.length ? '<div class="facts">' + s.tools.map(function(t){ return '<span class="chip" style="font-family:var(--mono)">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
-        '<div class="foot"><span>Owner ' + esc(s.owner || 'not set') + ', v' + esc(s.version || 1) + '</span><span>' + approval + '</span></div></article>';
+        '<div class="foot"><span>Owner ' + esc(s.owner || 'not set') + ', v' + esc(s.version || 1) + '</span><span>' + approval + '</span></div>' + (D.profiles[s.name] ? '<div class="s" style="margin-top:8px">Open for impact, governance, lifecycle and discovery &rarr;</div>' : '') + '</article>';
     }).join('') : '<div class="card empty" style="grid-column:1/-1">No skill matches these filters. Clear a filter to see more.</div>';
   }
 
@@ -922,7 +2679,108 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     list.filter(function(s){ return s.scope === 'individual' && (s.maturity === 'empfohlen' || s.maturity === 'approved'); }).forEach(function(s){ out.push({tone: 'ok', label: 'Promote', title: s.name + ' can be shared wider', text: MAT_LABEL[s.maturity] + ', but still individual. Propose it to the team.'}); });
     $('hints').innerHTML = out.length ? out.map(function(h){ return '<div class="hint">' + tag(h.tone, h.label) + '<div><b>' + esc(h.title) + '</b><div class="s" style="margin-top:3px">' + esc(h.text) + '</div></div></div>'; }).join('') : '<div class="empty">Nothing to flag.</div>';
   }
-  function renderAll(){ renderOverview(); renderCatalog(); renderRanking(); renderHints(); }
+
+  /* ---------- profiles: impact, governance, lifecycle, discovery, gaps ---------- */
+  var AS_OF = new Date(D.asOf + 'T00:00:00Z');
+  var daysTo = function(iso){ return Math.round((new Date(iso + 'T00:00:00Z') - AS_OF) / 864e5); };
+  var A = D.assumptions || {hourlyRateEur: 85, months: []};
+  var LAST_FULL = 4;
+  var eur = function(v){ return '€' + Math.round(v).toLocaleString('en-US'); };
+  var num = function(v){ return Math.round(v).toLocaleString('en-US'); };
+  var prof = function(s){ return D.profiles[s.name] || null; };
+  var withProfile = function(){ return pool().filter(prof); };
+  function econ(s){
+    var i = prof(s).impact, runs = i.runsPerMonth[LAST_FULL] || 0;
+    var hours = runs * i.minutesSavedPerRun / 60, value = hours * A.hourlyRateEur, cost = runs * i.costPerRunEur;
+    var total = i.runsPerMonth.reduce(function(a, b){ return a + b; }, 0);
+    var before = i.runsPerMonth[LAST_FULL - 1] || 0;
+    return {runs: runs, hours: hours, value: value, cost: cost, net: value - cost, roi: cost ? value / cost : 0, total: total, change: before ? Math.round((runs / before - 1) * 100) : null, i: i};
+  }
+  var pctTag = function(v, good, warn){ return tag(v >= good ? 'ok' : v >= warn ? 'warn' : 'bad', v + '%'); };
+  var RISK_TONE = {'Minimal': 'ok', 'Limited': 'warn', 'High': 'bad'};
+  var DPIA_TONE = {'Completed': 'ok', 'Not required': 'n', 'In progress': 'warn', 'Required, not started': 'bad'};
+  function reviewTag(g){
+    var d = daysTo(g.nextReview);
+    return d < 0 ? tag('bad', 'overdue ' + (-d) + ' d') : d <= 30 ? tag('bad', 'in ' + d + ' d') : d <= 90 ? tag('warn', 'in ' + d + ' d') : tag('ok', 'in ' + d + ' d');
+  }
+  function spark(values){
+    var max = Math.max.apply(null, values) || 1;
+    return '<span class="smx-spark" aria-hidden="true">' + values.map(function(v, i){ return '<i class="' + (i === values.length - 1 ? 'cur' : '') + '" style="height:' + Math.max(6, Math.round(v / max * 100)) + '%" title="' + esc((A.months || [])[i] || '') + ': ' + v + ' runs"></i>'; }).join('') + '</span>';
+  }
+  function skillLink(name){ return D.skills.some(function(x){ return x.name === name; }) ? '<button class="lnk" data-skill="' + esc(name) + '">' + esc(name) + '</button>' : esc(name); }
+  function kpiBox(k, v, sub){ return '<div class="card"><div class="k">' + esc(k) + '</div><div class="v">' + v + '</div><div class="s">' + sub + '</div></div>'; }
+
+  function renderImpact(){
+    var list = withProfile().map(function(s){ return {s: s, e: econ(s)}; }).sort(function(a, b){ return b.e.net - a.e.net; });
+    var sum = function(f){ return list.reduce(function(a, r){ return a + f(r); }, 0); };
+    var runs = sum(function(r){ return r.e.runs; }), hours = sum(function(r){ return r.e.hours; }), value = sum(function(r){ return r.e.value; }), cost = sum(function(r){ return r.e.cost; });
+    var weighted = runs ? sum(function(r){ return r.e.i.successRatePct * r.e.runs; }) / runs : 0;
+    $('impact-kpis').innerHTML = kpiBox('Runs in September', num(runs), 'across ' + list.length + ' skills') + kpiBox('Time saved', num(hours) + ' h', 'in September, estimated') +
+      kpiBox('Value', eur(value), 'at ' + eur(A.hourlyRateEur) + ' per hour') + kpiBox('Run cost', eur(cost), 'model usage, September') + kpiBox('Success rate', Math.round(weighted * 10) / 10 + '%', 'weighted by runs');
+    $('impact-note').textContent = 'Last full month (September) as of ' + D.asOf + '. Minutes saved per run are the owners’ estimates; value = hours saved × hourly rate. Fictional sample figures.';
+    var idle = withProfile().filter(function(s){ return econ(s).total < 30; });
+    $('impact').innerHTML = '<table><thead><tr><th>Skill</th><th>Runs per month</th><th class="num">Sept.</th><th class="num">Success</th><th class="num">Rating</th><th class="num">Min / run</th><th class="num">Hours saved</th><th class="num">Value</th><th class="num">Run cost</th><th class="num">Net value</th></tr></thead><tbody>' +
+      list.map(function(r){ var i = r.e.i; return '<tr tabindex="0" data-skill="' + esc(r.s.name) + '"><td><b>' + esc(r.s.name) + '</b>' + (r.s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + esc(i.model) + '</div></td><td>' + spark(i.runsPerMonth) + '</td><td class="num">' + r.e.runs + (r.e.change === null ? '' : '<div class="s">' + (r.e.change > 0 ? '+' : '') + r.e.change + '%</div>') + '</td><td class="num">' + pctTag(i.successRatePct, 95, 88) + '</td><td class="num">' + i.avgRating.toFixed(1) + '<div class="s">' + i.ratings + ' ratings</div></td><td class="num">' + i.minutesSavedPerRun + '</td><td class="num">' + num(r.e.hours) + '</td><td class="num"><b>' + eur(r.e.value) + '</b></td><td class="num">' + eur(r.e.cost) + '</td><td class="num">' + eur(r.e.net) + '</td></tr>'; }).join('') + '</tbody></table>' +
+      (idle.length ? '<div class="s" style="margin-top:10px">Little use so far (under 30 runs in six months): ' + idle.map(function(s){ return esc(s.name); }).join(', ') + '</div>' : '');
+  }
+  function renderGovernance(){
+    var list = withProfile().sort(function(a, b){ return daysTo(prof(a).governance.nextReview) - daysTo(prof(b).governance.nextReview); });
+    var high = list.filter(function(s){ return prof(s).governance.aiActRisk === 'High'; }).length;
+    var dpia = list.filter(function(s){ var d = prof(s).governance.dpia; return d === 'In progress' || d === 'Required, not started'; }).length;
+    var due = list.filter(function(s){ return daysTo(prof(s).governance.nextReview) <= 30; }).length;
+    var linked = list.filter(function(s){ return prof(s).governance.linkedRisks.length; }).length;
+    $('gov-kpis').innerHTML = kpiBox('High-risk skills', high, 'EU AI Act class High') + kpiBox('DPIA open', dpia, 'in progress or not started') + kpiBox('Review due', due, 'within 30 days or overdue') + kpiBox('Linked to risks', linked, 'of ' + list.length + ' skills have a Control Tower risk');
+    $('governance').innerHTML = '<table><thead><tr><th>Skill</th><th>EU AI Act</th><th>DPIA</th><th>Allowed data</th><th>Models and region</th><th>Last review</th><th>Next review</th><th>Control Tower</th></tr></thead><tbody>' +
+      list.map(function(s){ var g = prof(s).governance; return '<tr tabindex="0" data-skill="' + esc(s.name) + '"><td><b>' + esc(s.name) + '</b>' + (s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + MAT_LABEL[s.maturity] + ', every ' + g.reviewIntervalMonths + ' months</div></td><td>' + tag(RISK_TONE[g.aiActRisk] || 'n', g.aiActRisk) + '</td><td>' + tag(DPIA_TONE[g.dpia] || 'n', g.dpia) + '</td><td>' + g.allowedDataClasses.map(function(c){ return '<span class="chip">' + esc(c) + '</span>'; }).join(' ') + '</td><td>' + esc(g.approvedModels.join(', ')) + '<div class="s">' + esc(g.region) + '</div></td><td>' + esc(g.lastReview) + '</td><td>' + esc(g.nextReview) + ' ' + reviewTag(g) + '</td><td>' + (g.linkedRisks.length ? g.linkedRisks.map(function(r){ return tag('n', r); }).join(' ') : '<span class="s">no risk</span>') + (g.linkedAgents.length ? '<div class="s">' + esc(g.linkedAgents.join(', ')) + '</div>' : '') + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
+  var GAP_TONE = {'High': 'bad', 'Medium': 'warn', 'Low': 'n'};
+  var GAP_STATUS = {'No skill': 'bad', 'Skill requested': 'warn', 'Skill in build': 'ok'};
+  function renderGaps(){
+    var gaps = (D.processGaps || []).slice().sort(function(a, b){ return b.minutesPerMonth - a.minutesPerMonth; });
+    var reqs = (D.requests || []).slice().sort(function(a, b){ return b.votes - a.votes; });
+    var hours = gaps.reduce(function(a, g){ return a + g.minutesPerMonth / 60; }, 0);
+    $('gap-kpis').innerHTML = kpiBox('Processes without a skill', gaps.filter(function(g){ return g.status === 'No skill'; }).length, 'of ' + gaps.length + ' known gaps') + kpiBox('Potential', num(hours) + ' h', 'manual effort per month') + kpiBox('Open requests', reqs.filter(function(r){ return r.status === 'Open'; }).length, 'of ' + reqs.length + ' requests') + kpiBox('Votes', reqs.reduce(function(a, r){ return a + r.votes; }, 0), 'asks from the teams');
+    $('gaps').innerHTML = '<table><thead><tr><th>Process</th><th>Where</th><th>Priority</th><th class="num">Pain (1-5)</th><th class="num">Hours per month</th><th>Status</th></tr></thead><tbody>' +
+      gaps.map(function(g){ return '<tr><td><b>' + esc(g.process) + '</b><div class="s">' + esc(g.note) + '</div></td><td>' + esc(g.boardArea) + ' / ' + esc(g.team) + '</td><td>' + tag(GAP_TONE[g.priority] || 'n', g.priority) + '</td><td class="num">' + g.painLevel + '</td><td class="num"><b>' + num(g.minutesPerMonth / 60) + '</b></td><td>' + tag(GAP_STATUS[g.status] || 'n', g.status) + '</td></tr>'; }).join('') + '</tbody></table>';
+    $('requests').innerHTML = '<table><thead><tr><th>Request</th><th>From</th><th class="num">Votes</th><th>Status</th><th>Created</th></tr></thead><tbody>' +
+      reqs.map(function(r){ return '<tr><td><b>' + esc(r.title) + '</b>' + (r.note ? '<div class="s">' + esc(r.note) + '</div>' : '') + '</td><td>' + esc(r.requester) + '<div class="s">' + esc(r.boardArea) + '</div></td><td class="num"><b>' + r.votes + '</b></td><td>' + tag(r.status === 'In build' ? 'ok' : r.status === 'Planned' ? 'n' : 'warn', r.status) + '</td><td>' + esc(r.createdOn) + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
+
+  /* ---------- skill detail: the four themes ---------- */
+  var backTab = 'catalog';
+  function dl(rows){ return '<dl class="smx-dl">' + rows.map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>'; }
+  function list(items){ return items && items.length ? '<ul class="smx-list">' + items.map(function(i){ return '<li>' + i + '</li>'; }).join('') + '</ul>' : '<span class="s">none</span>'; }
+  function chips(items){ return items && items.length ? items.map(function(i){ return '<span class="chip">' + esc(i) + '</span>'; }).join(' ') : '<span class="s">none</span>'; }
+  function openSkill(name){
+    var s = D.skills.filter(function(x){ return x.name === name; })[0];
+    if (!s) return;
+    var p = prof(s), current = document.querySelector('.pg.on');
+    if (current && current.id !== 'pg-detail') backTab = current.id.replace('pg-', '');
+    var head = '<div class="smx-head"><span class="smx-title">' + esc(s.name) + '</span>' + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity]) + (s.sample ? tag('warn', 'Sample') : '') + '</div><p class="s" style="margin:4px 0 0">' + esc(s.description) + '</p><div class="s">' + esc([s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' / ')) + ' · owner ' + esc(s.owner || 'not set') + ' · v' + esc(s.version || 1) + '</div>';
+    if (!p){ $('detail').innerHTML = '<div class="card">' + head + '<p class="s">No impact, governance, lifecycle or discovery profile yet for this skill.</p></div>'; go('detail'); return; }
+    var e = econ(s), i = p.impact, g = p.governance, l = p.lifecycle, d = p.discovery;
+    var tests = l.tests.total ? Math.round(l.tests.passed / l.tests.total * 100) : 0;
+    var impact = '<div class="card"><h3>1 · Impact</h3>' + spark(i.runsPerMonth) + '<div class="s">Runs per month, May to October (October partial)</div>' + dl([['Runs in September', e.runs + (e.change === null ? '' : ' (' + (e.change > 0 ? '+' : '') + e.change + '%)')], ['Success rate', pctTag(i.successRatePct, 95, 88)], ['Error rate', i.errorRatePct + '%'], ['Rating', i.avgRating.toFixed(1) + ' of 5 (' + i.ratings + ')'], ['Saved per run', i.minutesSavedPerRun + ' min'], ['Time saved', num(e.hours) + ' h in September'], ['Value', eur(e.value)], ['Run cost', eur(e.cost) + ' (€' + i.costPerRunEur.toFixed(2) + ' per run)'], ['Response time', i.avgSeconds + ' s'], ['Model', esc(i.model)]]) + '</div>';
+    var gov = '<div class="card"><h3>2 · Governance</h3>' + dl([['EU AI Act', tag(RISK_TONE[g.aiActRisk] || 'n', g.aiActRisk)], ['DPIA', tag(DPIA_TONE[g.dpia] || 'n', g.dpia)], ['Allowed data', chips(g.allowedDataClasses)], ['Approved models', esc(g.approvedModels.join(', '))], ['Region', esc(g.region)], ['Review cycle', 'every ' + g.reviewIntervalMonths + ' months'], ['Last review', esc(g.lastReview)], ['Next review', esc(g.nextReview) + ' ' + reviewTag(g)], ['Control Tower risks', g.linkedRisks.length ? g.linkedRisks.map(function(r){ return tag('n', r); }).join(' ') : 'none'], ['Agents in the register', chips(g.linkedAgents)]]) +
+      '<h3 style="margin-top:12px">Approval history</h3>' + list(g.approvalHistory.map(function(h){ return esc(h.date) + ' · v' + esc(h.version) + ' · ' + esc(h.decision) + ' by ' + esc(h.by); })) + '</div>';
+    var life = '<div class="card"><h3>3 · Lifecycle</h3>' + dl([['Tests', l.tests.passed + ' of ' + l.tests.total + ' passed ' + tag(tests >= 95 ? 'ok' : tests >= 80 ? 'warn' : 'bad', tests + '%') + '<div class="s">last run ' + esc(l.tests.lastRun) + '</div>'], ['Needs tools', chips(l.dependencies.tools)], ['Needs connectors', chips(l.dependencies.connectors)], ['Needs skills', l.dependencies.skills.length ? l.dependencies.skills.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Replaced by', l.replacedBy ? skillLink(l.replacedBy) : 'not planned'], ['Sunset', l.sunsetDate ? tag('warn', l.sunsetDate) : 'none'], ['Deputy owner', l.deputy ? esc(l.deputy) : tag('warn', 'not set')], ['Support', l.supportChannel ? esc(l.supportChannel) : '<span class="s">not set</span>'], ['Languages', esc(l.languages.join(', '))]]) +
+      '<h3 style="margin-top:12px">Changes</h3>' + list(l.changelog.slice().reverse().map(function(c){ return '<b>v' + esc(c.version) + '</b> · ' + esc(c.date) + ' · ' + esc(c.summary); })) + '</div>';
+    var used = D.skills.filter(function(x){ var q = prof(x); return q && (q.lifecycle.dependencies.skills.indexOf(s.name) >= 0); }).map(function(x){ return x.name; });
+    var disc = '<div class="card"><h3>4 · Discovery</h3><div class="s">Try asking</div>' + list(d.examplePrompts.map(function(x){ return '“' + esc(x) + '”'; })) + '<div class="s" style="margin-top:10px">Demo flow</div><ol class="smx-list">' + d.demoFlow.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' + dl([['Prerequisites', d.prerequisites.length ? esc(d.prerequisites.join('; ')) : 'none'], ['Tags', chips(d.tags)], ['Industries', chips(d.industries)], ['Recommended for', chips(d.recommendedFor)], ['Related skills', d.related.length ? d.related.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Used by skills', used.length ? used.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Favourites', String(d.favorites)]]) + '</div>';
+    $('detail').innerHTML = '<div class="card">' + head + '</div><div class="smx-grid">' + impact + gov + life + disc + '</div>';
+    go('detail');
+  }
+  $('detail-back').addEventListener('click', function(){ go(backTab); });
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-skill]');
+    if (t && !e.target.closest('#detail-back')) openSkill(t.getAttribute('data-skill'));
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var t = e.target.closest && e.target.closest('tr[data-skill], article[data-skill]');
+    if (t){ e.preventDefault(); openSkill(t.getAttribute('data-skill')); }
+  });
+  function renderAll(){ renderOverview(); renderCatalog(); renderRanking(); renderImpact(); renderGovernance(); renderGaps(); renderHints(); }
 
   Array.prototype.forEach.call(tabs, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });
   D.taxonomy.boardAreas.forEach(function(a){ open[a] = true; });

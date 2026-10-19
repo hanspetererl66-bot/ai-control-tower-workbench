@@ -305,3 +305,13 @@ Connector 0.10.0 adds, next to the Control Tower tools:
 - Starting or changing workflows is not part of these tools. That is what "Mit Chat verbinden" in the n8n view provides (n8n's own MCP server, only for workflows marked "Available in MCP").
 
 Examples: "Wie läuft unsere n8n-Automatisierung?", "Welche Workflows sind in den letzten Tagen fehlgeschlagen?", "Gib mir das Gesamtbild zu unserem Testkunden", "Wann muss der Ariba-Vertrag gekündigt werden?".
+
+### Skill Marketplace: impact, governance, lifecycle, discovery
+
+Every skill has a profile in four fields, plus the marketplace knows process gaps and skill requests. Source: `examples/skill-marketplace/profiles.json` (fictional).
+- **Impact** (tab *Impact*): runs per month, success and error rate, rating, minutes saved, hours and value (hours × hourly rate), run cost.
+- **Governance** (tab *Governance*): EU AI Act class, DPIA, allowed data classes, approved models, review cycle, linked Control Tower risks and agents.
+- **Lifecycle** and **Discovery**: open a skill (click a row or a catalog card) for change log, dependencies, tests, sunset, deputy, example prompts, demo flow, related skills and recommended roles. The catalog has a role filter.
+- **Gaps** (tab *Gaps*): processes without a skill and requests from the teams.
+
+`npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills` (connector 0.11.0; live from Supabase when connected, otherwise the embedded sample data).
