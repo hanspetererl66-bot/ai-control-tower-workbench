@@ -13,7 +13,8 @@ import { normalizeInstanceUrl } from '../electron/n8n.mjs';
 import { installExampleSpace } from './install-example-space.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PAGE = join(ROOT, 'examples/automation-dashboard/index.html');
+const DIR = join(ROOT, 'examples/automation-dashboard');
+const PAGE = join(DIR, 'index.html');
 const BLOCK = /(<script type="application\/json" id="aut-data">)([\s\S]*?)(<\/script>)/;
 const DAY = 864e5;
 export const WINDOW_DAYS = 14;
@@ -33,6 +34,31 @@ export function embedData(html, data) {
   return html.replace(BLOCK, (_m, open, _body, close) => `${open}\n${serialise(data)}\n${close}`);
 }
 
+export const loadCategories = (dir = DIR) => JSON.parse(readFileSync(join(dir, 'categories.json'), 'utf8'));
+
+/** Explicit pin "cat:<name>" wins; otherwise the first category (in file order) with a matching tag; otherwise the fallback. */
+export function categorize(tags, config) {
+  const pinned = tags.map((tag) => /^cat:\s*(.+)$/i.exec(tag)?.[1]?.trim()).find(Boolean);
+  if (pinned) return config.categories.find((c) => c.name.toLowerCase() === pinned.toLowerCase())?.name ?? pinned;
+  const lower = new Set(tags.map((tag) => tag.toLowerCase()));
+  return config.categories.find((c) => c.tags.some((tag) => lower.has(tag.toLowerCase())))?.name ?? config.fallback;
+}
+
+const GENERIC_NODES = new Set(['set', 'if', 'switch', 'merge', 'code', 'function', 'functionitem', 'noop', 'stickynote', 'wait', 'splitinbatches', 'respondtowebhook', 'executeworkflow', 'executeworkflowtrigger', 'filter', 'aggregate', 'splitout', 'sort', 'limit', 'removeduplicates', 'datetime', 'editfields', 'comparedatasets', 'summarize', 'itemlists']);
+
+const APP_NAMES = { sap: 'SAP', openAi: 'OpenAI', httpRequest: 'HTTP', successFactors: 'SuccessFactors', concur: 'Concur', salesforce: 'Salesforce', gmail: 'Gmail', slack: 'Slack', notion: 'Notion', emailReadImap: 'Email (IMAP)' };
+const prettyApp = (type) => APP_NAMES[type] ?? type.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+
+/** Trigger kind and connected apps from the node types (what the public API returns with each workflow). */
+export function deriveNodes(nodes = []) {
+  const types = nodes.map((node) => String(node.type ?? '').split('.').pop());
+  const triggerType = types.find((type) => /trigger|webhook|cron|schedule/i.test(type));
+  const trigger = !triggerType ? 'Unknown' : /manual/i.test(triggerType) ? 'Manual' : /schedule|cron/i.test(triggerType) ? 'Schedule' : /webhook/i.test(triggerType) ? 'Webhook' : 'App event';
+  const plainTrigger = (type) => /^(webhook|cron|schedule|scheduletrigger|manualtrigger|workflowtrigger|executeworkflowtrigger)$/i.test(type);
+  const apps = [...new Set(types.filter((type) => type && !GENERIC_NODES.has(type.toLowerCase()) && !plainTrigger(type)).map((type) => prettyApp(type.replace(/(Trigger|Tool)$/, ''))))];
+  return { trigger, apps: apps.slice(0, 6), nodeCount: nodes.length };
+}
+
 /** n8n statuses -> success | error | running | canceled */
 export function normalizeStatus(status) {
   const value = String(status ?? '').toLowerCase();
@@ -45,7 +71,7 @@ export function normalizeStatus(status) {
 const dateKey = (ms) => new Date(ms).toISOString().slice(0, 10);
 
 /** Pure aggregation: raw n8n workflows + executions -> the shape the Space renders. */
-export function buildDashboardData({ workflows, executions, asOf, source, instance, windowDays = WINDOW_DAYS }) {
+export function buildDashboardData({ workflows, executions, asOf, source, instance, windowDays = WINDOW_DAYS, categories = loadCategories() }) {
   const end = Date.parse(`${asOf}T00:00:00Z`) + DAY; // exclusive: the whole of asOf counts
   const start = end - windowDays * DAY;
   const days = Array.from({ length: windowDays }, (_, i) => ({ date: dateKey(start + i * DAY), success: 0, error: 0, other: 0 }));
@@ -80,13 +106,26 @@ export function buildDashboardData({ workflows, executions, asOf, source, instan
   const stats = workflows.map((workflow) => {
     const mine = inWindow.filter((execution) => execution.workflowId === String(workflow.id));
     const finished = mine.filter((execution) => execution.seconds !== null && execution.status !== 'running');
+    const tags = (workflow.tags ?? []).map((tag) => (typeof tag === 'string' ? tag : tag.name)).filter(Boolean);
+    const category = categorize(tags, categories);
+    const rule = categories.categories.find((c) => c.name === category);
+    const daily = days.map((day) => {
+      const ofDay = mine.filter((execution) => dateKey(execution.started) === day.date);
+      return { success: ofDay.filter((e) => e.status === 'success').length, error: ofDay.filter((e) => e.status === 'error').length, other: ofDay.filter((e) => e.status !== 'success' && e.status !== 'error').length };
+    });
+    const success = mine.filter((execution) => execution.status === 'success').length;
     return {
+      ...deriveNodes(workflow.nodes),
+      category,
+      daily,
+      minutesSaved: Math.round(success * (rule?.minutesPerRun ?? categories.fallbackMinutesPerRun)),
+      recent: mine.slice(0, 8).map(({ id, status, mode, startedAt, seconds }) => ({ id, status, mode, startedAt, seconds })),
       id: String(workflow.id),
       name: workflow.name,
       active: workflow.active === true,
-      tags: (workflow.tags ?? []).map((tag) => (typeof tag === 'string' ? tag : tag.name)).filter(Boolean),
+      tags,
       executions: mine.length,
-      success: mine.filter((execution) => execution.status === 'success').length,
+      success,
       error: mine.filter((execution) => execution.status === 'error').length,
       lastRun: mine[0]?.startedAt ?? null,
       lastStatus: mine[0]?.status ?? null,
@@ -100,6 +139,7 @@ export function buildDashboardData({ workflows, executions, asOf, source, instan
     asOf,
     windowDays,
     days,
+    categories: categories.categories.map(({ name, tags: ruleTags, minutesPerRun }) => ({ name, tags: ruleTags, minutesPerRun })).concat([{ name: categories.fallback, tags: [], minutesPerRun: categories.fallbackMinutesPerRun }]),
     workflows: stats.sort((a, b) => b.executions - a.executions || a.name.localeCompare(b.name)),
     executions: inWindow.slice(0, RECENT).map(({ started: _started, ...execution }) => ({
       ...execution,
@@ -131,7 +171,7 @@ async function getAll({ origin, key, path, params, fetchImpl, stop }) {
   return rows;
 }
 
-export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays = WINDOW_DAYS }) {
+export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays = WINDOW_DAYS, categories = loadCategories() }) {
   if (!key) throw new Error('Set N8N_API_KEY first (n8n: Settings -> n8n API).');
   const origin = normalizeInstanceUrl(url);
   const start = Date.parse(`${asOf}T00:00:00Z`) + DAY - windowDays * DAY;
@@ -145,7 +185,7 @@ export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays =
     fetchImpl,
     stop: (rows) => rows.length > 0 && rows.every((row) => Date.parse(row.startedAt) < start),
   });
-  return buildDashboardData({ workflows, executions, asOf, source: 'n8n', instance: new URL(origin).host, windowDays });
+  return buildDashboardData({ workflows, executions, asOf, source: 'n8n', instance: new URL(origin).host, windowDays, categories });
 }
 
 /* ---------------- fictional sample data ---------------- */
@@ -158,16 +198,19 @@ function seeded(seed) {
   };
 }
 
+const node = (type) => ({ type: `n8n-nodes-base.${type}` });
 const SAMPLE_WORKFLOWS = [
-  { id: 's1', name: 'Lead-to-Cash: Quote to Order sync', active: true, tags: ['Lead-to-Cash', 'SAP'], perDay: 22, errorRate: 0.04, seconds: 6.2 },
-  { id: 's2', name: 'Invoice intake and OCR routing', active: true, tags: ['Finance', 'Concur'], perDay: 31, errorRate: 0.09, seconds: 11.8 },
-  { id: 's3', name: 'New hire onboarding checklist', active: true, tags: ['HR', 'SuccessFactors'], perDay: 4, errorRate: 0.02, seconds: 3.4 },
-  { id: 's4', name: 'Ticket triage to Sub4Me', active: true, tags: ['Service'], perDay: 17, errorRate: 0.06, seconds: 2.1 },
-  { id: 's5', name: 'Weekly AI consumption report', active: true, tags: ['Reporting'], perDay: 0.15, errorRate: 0, seconds: 24.5 },
-  { id: 's6', name: 'Contract renewal reminder', active: true, tags: ['Sales'], perDay: 3, errorRate: 0.12, seconds: 1.7 },
-  { id: 's7', name: 'BTP service health check', active: true, tags: ['SAP', 'Engineering'], perDay: 48, errorRate: 0.01, seconds: 0.9 },
-  { id: 's8', name: 'CRM contact enrichment (paused)', active: false, tags: ['Sales'], perDay: 0, errorRate: 0, seconds: 0 },
-  { id: 's9', name: 'Marketing campaign digest', active: true, tags: ['Marketing'], perDay: 1, errorRate: 0.2, seconds: 8.3 },
+  { id: 's1', name: 'Lead-to-Cash: Quote to Order sync', active: true, tags: ['Lead-to-Cash', 'SAP'], nodes: ['webhook', 'sap', 'salesforce', 'if', 'set', 'slack'], perDay: 22, errorRate: 0.04, seconds: 6.2 },
+  { id: 's2', name: 'Invoice intake and OCR routing', active: true, tags: ['Finance', 'Concur'], nodes: ['gmailTrigger', 'httpRequest', 'code', 'concur', 'set', 'if'], perDay: 31, errorRate: 0.09, seconds: 11.8 },
+  { id: 's3', name: 'New hire onboarding checklist', active: true, tags: ['HR', 'SuccessFactors'], nodes: ['webhook', 'successFactors', 'microsoftTeams', 'set'], perDay: 4, errorRate: 0.02, seconds: 3.4 },
+  { id: 's4', name: 'Ticket triage to Sub4Me', active: true, tags: ['Service'], nodes: ['webhook', 'httpRequest', 'openAi', 'switch', 'slack'], perDay: 17, errorRate: 0.06, seconds: 2.1 },
+  { id: 's5', name: 'Daily AI consumption report', active: true, tags: ['Reporting'], nodes: ['scheduleTrigger', 'httpRequest', 'code', 'gmail'], perDay: 1, errorRate: 0, seconds: 24.5 },
+  { id: 's6', name: 'Contract renewal reminder', active: true, tags: ['Sales'], nodes: ['scheduleTrigger', 'salesforce', 'if', 'gmail'], perDay: 3, errorRate: 0.12, seconds: 1.7 },
+  { id: 's7', name: 'BTP service health check', active: true, tags: ['SAP', 'Engineering'], nodes: ['scheduleTrigger', 'httpRequest', 'if', 'slack'], perDay: 48, errorRate: 0.01, seconds: 0.9 },
+  { id: 's8', name: 'CRM contact enrichment (paused)', active: false, tags: ['Sales'], nodes: ['manualTrigger', 'salesforce', 'httpRequest'], perDay: 0, errorRate: 0, seconds: 0 },
+  { id: 's9', name: 'Marketing campaign digest', active: true, tags: ['Marketing'], nodes: ['scheduleTrigger', 'googleAnalytics', 'code', 'gmail'], perDay: 1, errorRate: 0.2, seconds: 8.3 },
+  { id: 's10', name: 'Vendor onboarding checks', active: true, tags: ['Procurement', 'cat:Finance & Procurement'], nodes: ['webhook', 'httpRequest', 'if', 'microsoftTeams'], perDay: 2, errorRate: 0.05, seconds: 5.1 },
+  { id: 's11', name: 'Research notes archiver', active: true, tags: ['Knowledge'], nodes: ['scheduleTrigger', 'notion', 'googleDrive'], perDay: 1, errorRate: 0.03, seconds: 4.4 },
 ];
 
 export function sampleData(asOf) {
@@ -195,7 +238,7 @@ export function sampleData(asOf) {
     }
   }
   return buildDashboardData({
-    workflows: SAMPLE_WORKFLOWS.map(({ id: wid, name, active, tags }) => ({ id: wid, name, active, tags: tags.map((tag) => ({ name: tag })) })),
+    workflows: SAMPLE_WORKFLOWS.map(({ id: wid, name, active, tags, nodes }) => ({ id: wid, name, active, tags: tags.map((tag) => ({ name: tag })), nodes: nodes.map(node) })),
     executions,
     asOf,
     source: 'sample',

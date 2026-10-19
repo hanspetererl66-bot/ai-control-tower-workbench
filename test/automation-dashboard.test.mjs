@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { buildDashboardData, embeddedData, fetchN8n, installLive, normalizeStatus, sampleData } from '../scripts/sync-automation-dashboard.mjs';
+import { buildDashboardData, categorize, deriveNodes, embeddedData, fetchN8n, installLive, loadCategories, normalizeStatus, sampleData } from '../scripts/sync-automation-dashboard.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const page = readFileSync(join(ROOT, 'examples/automation-dashboard/index.html'), 'utf8');
@@ -44,6 +44,7 @@ test('sample data is deterministic and the embedded page data is in sync with th
   assert.equal(embedded.source, 'sample');
   assert.deepEqual(embedded, sampleData(embedded.asOf));
   assert.ok(embedded.workflows.length >= 8 && embedded.days.length === 14);
+  assert.ok(embedded.workflows.every((w) => w.category && w.daily.length === 14 && Array.isArray(w.apps)));
 });
 
 function fakeN8n({ status = 200 } = {}) {
@@ -97,10 +98,48 @@ test('page: tokens only, escapes data, labels sample data', () => {
   assert.ok(!/background:\s*#[0-9a-f]{3,8}/i.test(css) && !/background:\s*rgb/i.test(css), 'no literal backgrounds');
   assert.ok(page.includes('id="sample"') && page.includes('Sample data'));
   assert.ok(/esc\(w\.name\)/.test(page) && /esc\(e\.workflowName\)/.test(page));
-  assert.ok(!/<script src=|https?:\/\/(?!n8n)/.test(page.replace(/placeholder="https:\/\/firma[^"]*"/g, '').replace(/N8N_URL=https:\/\/firma\.app\.n8n\.cloud/g, '').replace('xmlns="http://www.w3.org/2000/svg"', '')), 'no external resources');
+  assert.ok(!/<script src=|https?:\/\/(?!n8n)/.test(page.replace(/placeholder="https:\/\/firma[^"]*"/g, '').replace(/N8N_URL=https:\/\/your-instance\.app\.n8n\.cloud/g, '').replace('xmlns="http://www.w3.org/2000/svg"', '')), 'no external resources');
 });
 
 test('the supplied n8n logo is embedded unchanged on a dark badge', () => {
   assert.ok(page.includes('class="n8n-logo"') && page.includes('fill="#EA4B71"'), 'logo with its original colours');
   assert.ok(page.includes('fill="white"') && /\.badge\{[^}]*background:var\(--logo-bg\)/.test(page), 'white letters need the dark badge');
+});
+
+test('categories: first matching rule wins, cat: tag pins, unknown tags fall back', () => {
+  const config = loadCategories();
+  assert.equal(categorize(['SAP', 'Lead-to-Cash'], config), 'Lead-to-Cash', 'order is the priority, not tag order');
+  assert.equal(categorize(['sap'], config), 'Platform & Monitoring');
+  assert.equal(categorize(['Procurement', 'cat:Reporting'], config), 'Reporting', 'pin beats rules');
+  assert.equal(categorize(['cat: finance & procurement'], config), 'Finance & Procurement', 'pin is case-insensitive and canonicalised');
+  assert.equal(categorize(['cat:Something new'], config), 'Something new', 'unknown pin is kept as its own label');
+  assert.equal(categorize(['Knowledge'], config), 'Uncategorized');
+  assert.equal(categorize([], config), 'Uncategorized');
+  assert.ok(config.categories.every((c) => c.name && c.tags.length && c.minutesPerRun > 0));
+});
+
+test('trigger and apps are derived from node types', () => {
+  const t = (...types) => deriveNodes(types.map((type) => ({ type: `n8n-nodes-base.${type}` })));
+  assert.deepEqual(t('webhook', 'salesforce', 'if', 'set', 'httpRequest'), { trigger: 'Webhook', apps: ['Salesforce', 'HTTP'], nodeCount: 5 });
+  assert.equal(t('scheduleTrigger', 'slack').trigger, 'Schedule');
+  assert.equal(t('manualTrigger').trigger, 'Manual');
+  assert.deepEqual(t('gmailTrigger', 'concur'), { trigger: 'App event', apps: ['Gmail', 'Concur'], nodeCount: 2 });
+  assert.deepEqual(deriveNodes(undefined), { trigger: 'Unknown', apps: [], nodeCount: 0 });
+});
+
+test('time saved uses the category assumption and only counts successful runs', () => {
+  const data = buildDashboardData({
+    asOf: '2026-10-18', source: 'n8n', instance: 'x', windowDays: 2,
+    workflows: [{ id: 1, name: 'A', active: true, tags: [{ name: 'finance' }] }],
+    executions: [
+      { id: 1, workflowId: 1, status: 'success', startedAt: '2026-10-18T10:00:00.000Z', stoppedAt: '2026-10-18T10:00:01.000Z' },
+      { id: 2, workflowId: 1, status: 'success', startedAt: '2026-10-18T11:00:00.000Z', stoppedAt: '2026-10-18T11:00:01.000Z' },
+      { id: 3, workflowId: 1, status: 'error', startedAt: '2026-10-18T12:00:00.000Z', stoppedAt: '2026-10-18T12:00:01.000Z' },
+    ],
+  });
+  assert.equal(data.workflows[0].category, 'Finance & Procurement');
+  assert.equal(data.workflows[0].minutesSaved, 16);
+  assert.equal(data.categories.at(-1).name, 'Uncategorized');
+  assert.deepEqual(data.workflows[0].daily.map((d) => [d.success, d.error]), [[0, 0], [2, 1]]);
+  assert.equal(data.workflows[0].recent.length, 3);
 });
