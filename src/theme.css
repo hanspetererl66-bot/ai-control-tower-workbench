@@ -845,6 +845,59 @@ button {
   color: var(--ink);
 }
 
+.icon-btn-on {
+  color: var(--accent);
+}
+
+/* Conversation search and filter */
+.list-filter {
+  position: relative;
+}
+
+.list-filter .list-filter-menu {
+  position: absolute;
+  top: 34px;
+  right: 0;
+  min-width: 190px;
+  z-index: 30;
+}
+
+.context-menu-item-on {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.list-search {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.list-search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.list-filter-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.list-filter-clear {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 12px;
+}
+
 /* ---------- empty state ---------- */
 
 .empty {
@@ -2423,6 +2476,69 @@ button {
 .connector-name {
   min-width: 0;
   flex: 1;
+}
+
+.integration-menu-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.integration-submenu {
+  margin: 2px 0 4px 29px;
+  padding: 4px 0 4px 8px;
+  border-left: 2px solid var(--line);
+}
+
+.integration-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.integration-sub-disabled {
+  color: var(--faint, #b4b0c4);
+  cursor: not-allowed;
+}
+
+.integration-sub-disabled .integration-menu-sub {
+  color: inherit;
+}
+
+.switch {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  border-radius: 99px;
+  background: var(--line);
+  transition: background 0.15s;
+}
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 99px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+
+.switch-on {
+  background: var(--accent);
+}
+
+.switch-on .switch-knob {
+  transform: translateX(14px);
 }
 
 .integration-chevron,

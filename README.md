@@ -354,6 +354,9 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 
 The mockup data of the two Spaces above is part of the graph: **Call** and **E-mail conversation** nodes connect to the customer and to the contract, offer and ticket they discuss. A mail is linked to a call (`follows up on`) where both concern the same open action, for example the mail that confirms an alert still open after the escalation call. The mail with the instruction aimed at AI assistants is linked to risk R7 (prompt injection). The graph tools understand the new types (`type: "call"` or `"thread"`), so chat can answer “Was wurde zum Ariba-Vertrag besprochen und geschrieben?” via `analyze_graph_impact`. The third tour, “Customer communication”, walks through this. `npm run sync:knowledge-graph` rebuilds the graph from `calls.json` and `threads.json`.
 
+## Conversation search and filter
+
+In the **Conversations** list the magnifier opens a search field (titles and message text, case-insensitive, `Esc` clears and closes) and the funnel opens a filter menu: all conversations, updated today, last 7 days, or with files. Both combine, the list shows “x of y shown” with a **Clear** link, and archived conversations that match appear automatically. Filtering is in `filterConversations` (`src/conversations.ts`).
 ## n8n demo workflows (simple and complex)
 
 Two importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
@@ -370,3 +373,11 @@ The cover sheet (click the logo in the left rail) is set in the SAP “72” typ
 ## Cover sheet animation
 
 Behind the product name the cover sheet shows a big rectangle of small squares: mostly grey and softly shimmering with a wave travelling across, and now and then a cube lights up in a random colour and fades out again (sometimes two next to each other). Cubes near the mouse pointer brighten. It is a single canvas (`src/ui/CoverGrid.tsx`, helpers in `src/cover-grid.ts`), follows light and dark mode, stops when the sheet is closed and shows a still picture when the system asks for reduced motion.
+## Integrations menu: Web Search and Model
+
+The sparkle icon next to **+** in the composer opens a menu with two entries (the earlier placeholder entries Work Email, Charts and Work Calendar are gone; the connectors stay under the plug button):
+
+- **Web Search** is a real switch **per conversation** (on by default, stored with the conversation). Every turn carries an instruction that tells the assistant whether it may use the web, and while the switch is off a web tool that the agent announces (for example `web_scrape` or a search MCP) stops the turn with a note. The stop is a safeguard, the instruction is what normally prevents the lookup.
+- **Model** shows **OpenRouter** with the model that is actually running (`GOOSE_MODEL` in `.env`). SAP Generative AI Hub, Azure OpenAI, Anthropic and Google Gemini are listed in light grey as “not connected”; switching the provider is not part of the prototype yet.
+
+The logic lives in `src/web-search.ts`.

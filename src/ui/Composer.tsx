@@ -20,6 +20,7 @@ import {
 } from '../starter-prompts';
 import StarterPrompts from './StarterPrompts';
 import { PRODUCT_NAME } from '../product';
+import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
 type Props = {
@@ -31,6 +32,9 @@ type Props = {
    *  empty state, so local mode state would silently reset to the default. */
   mode: string;
   onModeChange: (id: string) => void;
+  /** Web Search switch of the current conversation. */
+  webSearch?: boolean;
+  onWebSearchChange?: (enabled: boolean) => void;
   onCancel: () => void;
   onManageConnectors?: () => void;
   /** Stage the bundled AI Control Tower connector for installation. */
@@ -51,6 +55,8 @@ export default function Composer({
   workdir,
   mode,
   onModeChange,
+  webSearch = true,
+  onWebSearchChange,
   onCancel,
   onManageConnectors,
   onInstallConnector,
@@ -123,6 +129,7 @@ export default function Composer({
   const [skills, setSkills] = useState<{ name: string; description: string }[]>([]);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
+  const [modelOpen, setModelOpen] = useState(false);
 
   // Both popovers close on Escape or a click anywhere outside them.
   useEffect(() => {
@@ -427,11 +434,12 @@ export default function Composer({
         <div className="chip-wrap">
           <button
             className={`chip chip-icon integrations-trigger ${integrationsOpen ? 'chip-on' : ''}`}
-            title="Integrations"
+            title={`Integrations · Web Search ${webSearch ? 'on' : 'off'}`}
             aria-label="Integrations"
             aria-expanded={integrationsOpen}
             onClick={() => {
               setIntegrationsOpen((value) => !value);
+              setModelOpen(false);
               setConnectorsOpen(false);
             }}
           >
@@ -439,23 +447,73 @@ export default function Composer({
           </button>
           {integrationsOpen && (
             <div className="menu integration-menu" aria-label="Integrations menu">
-              {INTEGRATION_MENU_ITEMS.map((item) => (
-                <div
-                  key={item.id}
-                  className="integration-menu-item"
-                  role="menuitem"
-                  tabIndex={0}
-                  title="Display only in this prototype"
-                  onClick={() => setIntegrationsOpen(false)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') setIntegrationsOpen(false);
-                  }}
-                >
-                  <IntegrationItemIcon id={item.id} />
-                  <span className="integration-menu-label">{item.label}</span>
-                  {item.trailing === 'check' ? <CheckIcon /> : <ChevronRightIcon />}
-                </div>
-              ))}
+              {INTEGRATION_MENU_ITEMS.map((item) =>
+                item.id === 'model' ? (
+                  <div key={item.id}>
+                    <div
+                      className="integration-menu-item"
+                      role="menuitem"
+                      aria-expanded={modelOpen}
+                      tabIndex={0}
+                      onClick={() => setModelOpen((open) => !open)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') setModelOpen((open) => !open);
+                      }}
+                    >
+                      <IntegrationItemIcon id={item.id} />
+                      <span className="integration-menu-label">
+                        Model
+                        <small className="integration-menu-sub">OpenRouter{agent?.currentModel ? ` · ${agent.currentModel}` : ''}</small>
+                      </span>
+                      <ChevronRightIcon />
+                    </div>
+                    {modelOpen && (
+                      <div className="integration-submenu" role="menu" aria-label="Model provider">
+                        {MODEL_PROVIDERS.map((provider) => (
+                          <div
+                            key={provider.id}
+                            className={`integration-sub-item ${provider.available ? '' : 'integration-sub-disabled'}`}
+                            role="menuitemradio"
+                            aria-checked={provider.available}
+                            aria-disabled={!provider.available}
+                            title={provider.available ? 'Active provider' : 'Not connected in this prototype'}
+                          >
+                            <span className="integration-menu-label">
+                              {provider.label}
+                              {provider.available && agent?.currentModel && <small className="integration-menu-sub">{agent.currentModel}</small>}
+                              {!provider.available && <small className="integration-menu-sub">not connected</small>}
+                            </span>
+                            {provider.available && <CheckIcon />}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    key={item.id}
+                    className="integration-menu-item"
+                    role="menuitemcheckbox"
+                    aria-checked={webSearch}
+                    tabIndex={0}
+                    title="Allow the assistant to search the web in this conversation"
+                    onClick={() => onWebSearchChange?.(!webSearch)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onWebSearchChange?.(!webSearch);
+                      }
+                    }}
+                  >
+                    <IntegrationItemIcon id={item.id} />
+                    <span className="integration-menu-label">
+                      Web Search
+                      <small className="integration-menu-sub">{webSearch ? 'On for this conversation' : 'Off for this conversation'}</small>
+                    </span>
+                    <span className={`switch ${webSearch ? 'switch-on' : ''}`} aria-hidden="true"><span className="switch-knob" /></span>
+                  </div>
+                )
+              )}
             </div>
           )}
         </div>
@@ -657,33 +715,7 @@ function IntegrationItemIcon({ id }: { id: IntegrationItemId }) {
       </svg>
     );
   }
-  if (id === 'work-email') {
-    return (
-      <svg className="integration-item-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <rect x="2.5" y="4.5" width="15" height="11" rx="2" fill="currentColor" opacity=".15" />
-        <rect x="3.5" y="5.4" width="13" height="9.2" rx="1.5" stroke="currentColor" strokeWidth="1.45" />
-        <path d="m4.4 6.5 5.6 4.2 5.6-4.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (id === 'charts') {
-    return (
-      <svg className="integration-item-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <rect x="3" y="11" width="3" height="6" rx=".7" fill="currentColor" opacity=".55" />
-        <rect x="8.5" y="7.5" width="3" height="9.5" rx=".7" fill="currentColor" opacity=".78" />
-        <rect x="14" y="3.5" width="3" height="13.5" rx=".7" fill="currentColor" />
-      </svg>
-    );
-  }
-  return (
-    <svg className="integration-item-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect x="3" y="4.5" width="14" height="13" rx="2" fill="currentColor" opacity=".14" />
-      <rect x="3.7" y="5.2" width="12.6" height="11.6" rx="1.4" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M4.2 8.5h11.6M7 3.2v3.6M13 3.2v3.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <rect x="6.2" y="10.3" width="2" height="2" rx=".3" fill="currentColor" />
-      <rect x="9" y="10.3" width="2" height="2" rx=".3" fill="currentColor" />
-    </svg>
-  );
+  return null;
 }
 
 function FolderIcon() {

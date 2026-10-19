@@ -14,10 +14,7 @@ test('uses the expected product-facing connector labels', () => {
     INTEGRATION_MENU_ITEMS.map(({ label, trailing }) => [label, trailing]),
     [
       ['Model', 'submenu'],
-      ['Web Search', 'check'],
-      ['Work Email', 'check'],
-      ['Charts', 'check'],
-      ['Work Calendar', 'check'],
+      ['Web Search', 'switch'],
     ]
   );
   assert.equal(connectorDisplayName('sap-notes'), 'Knowledge@SAP');
