@@ -412,6 +412,66 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   },
   "skills": [
     {
+      "name": "access-review-prep",
+      "description": "Bereitet den Berechtigungsreview vor: überprivilegierte Agenten mit Zugriffsstufe, Eigentümer, Frist und Reihenfolge der Bereinigung. Nutzen bei \"Berechtigungsreview\", \"überprivilegierte Agenten\", \"Least Privilege prüfen\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Sicherheit & Zugriff",
+      "process": "Berechtigungsreview",
+      "boardArea": "Engineering",
+      "lob": "",
+      "team": "Platform Security",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [
+        "get_overprivileged_agents",
+        "list_agents",
+        "get_risk"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "automation-health-check",
+      "description": "Erstellt ein Lagebild der n8n-Automatisierung: Workflows, Läufe, Erfolgsquote, Kategorien und was Aufmerksamkeit braucht. Nutzen bei \"n8n Lagebild\", \"Automation Health Check\", \"welche Workflows schlagen fehl\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Automatisierung",
+      "process": "n8n-Betrieb überwachen",
+      "boardArea": "Engineering",
+      "lob": "",
+      "team": "AI Programme Office",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [
+        "get_n8n_overview",
+        "list_n8n_workflows",
+        "get_n8n_workflow",
+        "list_n8n_executions",
+        "list_n8n_categories"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
       "name": "board-briefing",
       "description": "Erstellt ein einseitiges Board-Briefing auf Deutsch aus den AI-Control-Tower-Daten (Risiken, Agenten, Budget, EU-AI-Act-Audit). Nutzen bei \"Board-Briefing\", \"Management Summary\", \"Lagebild AI Control Tower\".",
       "owner": "",
@@ -433,6 +493,37 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "get_overprivileged_agents",
         "get_budget",
         "list_agents"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "customer-call-prep",
+      "description": "Bereitet ein Kundengespräch mit dem Sub4Me-Testkunden vor: Verträge, Fristen, offene Angebote, AI-Unit-Verbrauch und Tickets auf einer Seite. Nutzen bei \"Kundengespräch vorbereiten\", \"Kundentermin\", \"Account-Briefing\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Kundengespräch vorbereiten",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Account Management",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [
+        "get_customer_overview",
+        "get_product_overview",
+        "get_contract",
+        "get_offer",
+        "search_sub4me"
       ],
       "demand": {
         "installs": 0,
@@ -2329,6 +2420,350 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         ],
         "favorites": 3
       }
+    },
+    "customer-call-prep": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          6,
+          16,
+          26,
+          17
+        ],
+        "successRatePct": 94,
+        "avgRating": 4.5,
+        "ratings": 14,
+        "minutesSavedPerRun": 45,
+        "errorRatePct": 3,
+        "avgSeconds": 40,
+        "costPerRunEur": 0.38,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-19",
+        "nextReview": "2027-04-19",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-19",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-19",
+            "summary": "One-page briefing from the Sub4Me customer overview, with contract and offer details."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_customer_overview",
+            "get_product_overview",
+            "get_contract",
+            "get_offer",
+            "search_sub4me"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "C. Schmid",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 10,
+          "passed": 10,
+          "lastRun": "2026-10-19"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Bereite das Gespräch mit Muster Industrie AG vor.",
+          "Was muss ich vor dem Termin zur Ariba-Verlängerung wissen?"
+        ],
+        "demoFlow": [
+          "Kunden oder Produkt nennen",
+          "Briefing mit Fristen, Angeboten und Verbrauch prüfen",
+          "Gesprächsziele und Fragen übernehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Kundentermin",
+          "Account-Briefing",
+          "Sub4Me"
+        ],
+        "industries": [
+          "Software"
+        ],
+        "related": [
+          "renewal-radar",
+          "quote-drafter"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Sales Operations",
+          "Executive"
+        ],
+        "favorites": 6
+      }
+    },
+    "automation-health-check": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          8,
+          19,
+          14
+        ],
+        "successRatePct": 97,
+        "avgRating": 4.4,
+        "ratings": 9,
+        "minutesSavedPerRun": 30,
+        "errorRatePct": 1.5,
+        "avgSeconds": 25,
+        "costPerRunEur": 0.21,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5",
+          "Claude Haiku 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-10-19",
+        "nextReview": "2027-10-19",
+        "linkedRisks": [
+          "R5"
+        ],
+        "linkedAgents": [
+          "n8n Workflow Builder",
+          "Log Anomaly Triage"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-19",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-19",
+            "summary": "Status report on n8n workflows, failures and categories (read-only)."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_n8n_overview",
+            "list_n8n_workflows",
+            "get_n8n_workflow",
+            "list_n8n_executions",
+            "list_n8n_categories"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "T. Kraus",
+        "supportChannel": "#automation-guild",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-19"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Wie steht es um unsere n8n-Workflows?",
+          "Welche Workflows sind in den letzten zwei Wochen fehlgeschlagen?"
+        ],
+        "demoFlow": [
+          "n8n-Verbindung im Connector eintragen",
+          "Lagebild anfordern",
+          "Fehlerhafte Workflows und Kategorien prüfen"
+        ],
+        "prerequisites": [
+          "n8n-Adresse und API-Schlüssel im Connector"
+        ],
+        "tags": [
+          "n8n",
+          "Monitoring",
+          "Automatisierung"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "btp-quota-watch",
+          "my-sprint-digest"
+        ],
+        "recommendedFor": [
+          "Platform Engineer",
+          "Engineering Manager",
+          "AI Programme Manager"
+        ],
+        "favorites": 8
+      }
+    },
+    "access-review-prep": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          5,
+          6
+        ],
+        "successRatePct": 92,
+        "avgRating": 4.3,
+        "ratings": 5,
+        "minutesSavedPerRun": 60,
+        "errorRatePct": 4,
+        "avgSeconds": 55,
+        "costPerRunEur": 0.47,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 3,
+        "lastReview": "2026-10-19",
+        "nextReview": "2027-01-19",
+        "linkedRisks": [
+          "R2",
+          "R7"
+        ],
+        "linkedAgents": [
+          "Access Review Collector"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-19",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-19",
+            "summary": "Prepares the access review from the overprivileged-agent queue (risk R2)."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_overprivileged_agents",
+            "list_agents",
+            "get_risk"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": [
+            "board-briefing"
+          ]
+        },
+        "replacedBy": null,
+        "deputy": "",
+        "supportChannel": "#platform-security",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 9,
+          "passed": 9,
+          "lastRun": "2026-10-19"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Bereite den Berechtigungsreview vor.",
+          "Welche überprivilegierten Agenten zuerst bereinigen?"
+        ],
+        "demoFlow": [
+          "Review-Vorlage anfordern",
+          "Reihenfolge und Rückfragen prüfen",
+          "Entscheidungen ins Gremium mitnehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Berechtigungen",
+          "Least Privilege",
+          "R2"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "board-briefing"
+        ],
+        "recommendedFor": [
+          "Platform Engineer",
+          "Compliance Officer",
+          "AI Programme Manager"
+        ],
+        "favorites": 4
+      }
     }
   },
   "processGaps": [
@@ -2353,17 +2788,6 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "minutesPerMonth": 2400,
       "status": "No skill",
       "note": "Ariba-Risikodaten liegen vor, keine Auswertung."
-    },
-    {
-      "id": "GAP-03",
-      "process": "Kundengespräch vorbereiten",
-      "boardArea": "Sales",
-      "team": "Account Management",
-      "priority": "High",
-      "painLevel": 4,
-      "minutesPerMonth": 6000,
-      "status": "Skill in build",
-      "note": "Zusammenfassung aus Vertrag, Tickets und Nutzung (Sub4Me 360-Grad)."
     },
     {
       "id": "GAP-04",
@@ -2399,17 +2823,6 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "note": "Vorlage vorhanden, Zeitachse aus Logs fehlt."
     },
     {
-      "id": "GAP-07",
-      "process": "Berechtigungsreview vorbereiten",
-      "boardArea": "Engineering",
-      "team": "Platform Security",
-      "priority": "High",
-      "painLevel": 4,
-      "minutesPerMonth": 3600,
-      "status": "Skill requested",
-      "note": "Verknüpft mit Risiko R2 (überprivilegierte Agenten)."
-    },
-    {
       "id": "GAP-08",
       "process": "Monatsabschluss-Abstimmung",
       "boardArea": "Finance",
@@ -2438,9 +2851,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "requester": "Platform Security",
       "boardArea": "Engineering",
       "votes": 11,
-      "status": "Planned",
+      "status": "Done",
       "createdOn": "2026-10-02",
-      "note": "Quelle: get_overprivileged_agents."
+      "note": "Umgesetzt als access-review-prep."
     },
     {
       "id": "REQ-103",
@@ -2448,9 +2861,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "requester": "Account Management",
       "boardArea": "Sales",
       "votes": 9,
-      "status": "In build",
+      "status": "Done",
       "createdOn": "2026-09-15",
-      "note": "Nutzt get_customer_overview."
+      "note": "Umgesetzt als customer-call-prep."
     },
     {
       "id": "REQ-104",
