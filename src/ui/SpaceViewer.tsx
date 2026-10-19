@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
-import { applySpaceScale, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
+import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
 export type SpaceTabRequest = { tab: string; nonce: number };
@@ -12,6 +12,7 @@ export default function SpaceViewer({
   bridge,
   bridgeEnabled = false,
   textScale = DEFAULT_SPACE_SCALE,
+  theme = 'light',
 }: {
   space: Space;
   tabRequest?: SpaceTabRequest | null;
@@ -20,6 +21,8 @@ export default function SpaceViewer({
   bridgeEnabled?: boolean;
   /** Text size of the page inside the frame (1 = as authored). */
   textScale?: SpaceScale;
+  /** The app's resolved theme; the Space follows it instead of the operating system. */
+  theme?: 'light' | 'dark';
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const loaded = useRef(false);
@@ -111,10 +114,10 @@ export default function SpaceViewer({
             loaded.current = true;
             postTab();
           }}
-          key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}`}
+          key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScale(html ?? '', textScale)}
+          srcDoc={applySpaceScale(applySpaceTheme(html ?? '', theme), textScale)}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

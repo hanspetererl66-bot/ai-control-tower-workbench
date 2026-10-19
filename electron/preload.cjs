@@ -50,6 +50,7 @@ contextBridge.exposeInMainWorld('host', {
     show: (bounds) => ipcRenderer.invoke('n8n-show', bounds),
     hide: () => ipcRenderer.invoke('n8n-hide'),
     reload: () => ipcRenderer.invoke('n8n-reload'),
+    setTheme: (theme) => ipcRenderer.invoke('n8n-set-theme', theme),
     connectChat: () => ipcRenderer.invoke('n8n-connect-chat'),
     disconnectChat: () => ipcRenderer.invoke('n8n-disconnect-chat'),
   },

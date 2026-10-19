@@ -41,3 +41,14 @@ export function applySpaceScale(html: string, scale: SpaceScale): string {
   if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (open) => `${open}${rule}`);
   return rule + html;
 }
+
+/**
+ * Pins the page to the app's theme. Spaces are sandboxed pages that only see the operating system's colour scheme,
+ * so without this a Space stays dark when the app is set to Light. The design system reads data-theme on <html>.
+ */
+export function applySpaceTheme(html: string, theme: 'light' | 'dark'): string {
+  const attr = `data-theme="${theme}"`;
+  if (/<html\b[^>]*\sdata-theme=/i.test(html)) return html.replace(/(<html\b[^>]*\s)data-theme="[^"]*"/i, `$1${attr}`);
+  if (/<html\b/i.test(html)) return html.replace(/<html\b/i, `<html ${attr}`);
+  return html;
+}
