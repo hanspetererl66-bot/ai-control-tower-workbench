@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -149,6 +149,10 @@
     {
       "name": "recommend_skills",
       "description": "Recommend skills for a role and/or a task with example prompts and demo flow."
+    },
+    {
+      "name": "recommend_skill_workflow",
+      "description": "Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role \"Account Manager\", goal \"Kundentermin und Verlängerung\" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for \"In welcher Reihenfolge nutze ich welche Skills …?\". Sample playbooks."
     },
     {
       "name": "get_graph_overview",

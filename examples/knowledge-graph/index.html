@@ -1602,6 +1602,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "tool:recommend_skill_workflow",
+   "type": "tool",
+   "label": "recommend_skill_workflow",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
    "id": "tool:recommend_skills",
    "type": "tool",
    "label": "recommend_skills",
@@ -3187,6 +3195,21 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "source": "skill:skill-search",
    "target": "system:marketplace",
    "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:recommend_skill_workflow",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:recommend_skill_workflow",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:recommend_skill_workflow",
+   "type": "USES_TOOL"
   },
   {
    "source": "tool:recommend_skills",

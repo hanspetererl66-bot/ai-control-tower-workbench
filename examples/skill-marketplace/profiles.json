@@ -1963,11 +1963,12 @@
           {
             "version": 1,
             "date": "2026-10-19",
-            "summary": "Search, compare and recommend skills across the marketplace, with governance, impact and graph context."
+            "summary": "Search, compare and recommend skills across the marketplace, with governance, impact and graph context. Includes ordered workflows per role."
           }
         ],
         "dependencies": {
           "tools": [
+            "recommend_skill_workflow",
             "recommend_skills",
             "search_skills",
             "list_skill_catalog",
@@ -2154,6 +2155,226 @@
       "status": "Open",
       "createdOn": "2026-10-12",
       "note": "Hohe Vertraulichkeit, DPIA nötig."
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "PB-01",
+      "title": "Vom Kundentermin zur Verlängerung",
+      "roles": [
+        "Account Manager",
+        "Account Executive",
+        "Sales Operations"
+      ],
+      "goal": "Ein Kundengespräch vorbereiten, die Verlängerung absichern und offene Punkte nachverfolgen.",
+      "tags": [
+        "Kundentermin",
+        "Verlängerung",
+        "Renewal",
+        "Angebot",
+        "Kunde"
+      ],
+      "steps": [
+        {
+          "skill": "customer-call-prep",
+          "why": "Verschafft vor dem Termin den Überblick über Verträge, Fristen, Angebote, Verbrauch und Tickets.",
+          "input": "Kunde oder Produkt",
+          "output": "Einseitiges Briefing"
+        },
+        {
+          "skill": "renewal-radar",
+          "why": "Zeigt, welche Verträge bald auslaufen und wo die Kündigungsfrist drückt.",
+          "input": "Briefing, Fristen",
+          "output": "Liste der Verlängerungen mit Priorität"
+        },
+        {
+          "skill": "quote-drafter",
+          "why": "Erstellt aus der Verlängerung den Angebotsentwurf.",
+          "input": "Vertrag und Angebotsdaten",
+          "output": "Angebotsentwurf"
+        },
+        {
+          "skill": "ticket-writer",
+          "why": "Macht aus offenen Kundenthemen sauber beschriebene Serviceanfragen.",
+          "input": "Kurze Problembeschreibung",
+          "output": "Serviceticket nach Bestätigung"
+        }
+      ]
+    },
+    {
+      "id": "PB-02",
+      "title": "Kunde mit Problemen: Eskalation vorbereiten",
+      "roles": [
+        "Account Manager",
+        "Account Executive",
+        "Support Engineer"
+      ],
+      "goal": "Ein Kundenproblem sauber aufnehmen, den Vertragsrahmen kennen und die Verlängerung nicht gefährden.",
+      "tags": [
+        "Eskalation",
+        "Ticket",
+        "Beschwerde",
+        "Kunde"
+      ],
+      "steps": [
+        {
+          "skill": "ticket-writer",
+          "why": "Hält das Problem als vollständiges Serviceticket fest.",
+          "input": "Problembeschreibung",
+          "output": "Serviceticket"
+        },
+        {
+          "skill": "customer-call-prep",
+          "why": "Zeigt Vertrag, Service-Level, Tickets und Verbrauch für das Gespräch.",
+          "input": "Kunde",
+          "output": "Einseitiges Briefing"
+        },
+        {
+          "skill": "renewal-radar",
+          "why": "Prüft, ob das Problem eine anstehende Verlängerung berührt.",
+          "input": "Briefing",
+          "output": "Betroffene Verlängerungen"
+        }
+      ]
+    },
+    {
+      "id": "PB-03",
+      "title": "Spesen und Rechnungen prüfen",
+      "roles": [
+        "Controller",
+        "Accounts Payable Clerk",
+        "Travel Manager"
+      ],
+      "goal": "Spesenbelege prüfen und Rechnungen gegen Bestellung und Regeln abgleichen.",
+      "tags": [
+        "Spesen",
+        "Rechnung",
+        "Beleg",
+        "Abgleich",
+        "Finance"
+      ],
+      "steps": [
+        {
+          "skill": "expense-check",
+          "why": "Prüft Spesen gegen die Reiserichtlinie.",
+          "input": "Spesenbelege",
+          "output": "Befunde je Beleg"
+        },
+        {
+          "skill": "concur-receipt-audit",
+          "why": "Findet auffällige Belege in Concur.",
+          "input": "Concur-Belege",
+          "output": "Liste auffälliger Belege"
+        },
+        {
+          "skill": "invoice-matcher",
+          "why": "Gleicht Rechnungen mit Bestellung und Wareneingang ab.",
+          "input": "Rechnungen",
+          "output": "Abweichungsliste"
+        }
+      ]
+    },
+    {
+      "id": "PB-04",
+      "title": "Sprint abschließen und Release melden",
+      "roles": [
+        "Engineering Manager",
+        "Product Manager",
+        "Platform Engineer"
+      ],
+      "goal": "Den Sprint zusammenfassen, Release-Notes schreiben und Kontingente im Blick behalten.",
+      "tags": [
+        "Sprint",
+        "Release",
+        "Notes",
+        "Engineering"
+      ],
+      "steps": [
+        {
+          "skill": "my-sprint-digest",
+          "why": "Fasst zusammen, was im Sprint passiert ist.",
+          "input": "Sprint",
+          "output": "Sprint-Zusammenfassung"
+        },
+        {
+          "skill": "release-notes-writer",
+          "why": "Macht daraus Release-Notes.",
+          "input": "Zusammenfassung",
+          "output": "Release-Notes"
+        },
+        {
+          "skill": "btp-quota-watch",
+          "why": "Prüft, ob BTP-Kontingente für das Release reichen.",
+          "input": "Subaccounts",
+          "output": "Kontingent-Warnungen"
+        }
+      ]
+    },
+    {
+      "id": "PB-05",
+      "title": "KI-Governance für den Vorstand",
+      "roles": [
+        "Compliance Officer",
+        "AI Programme Manager",
+        "Executive"
+      ],
+      "goal": "Agenten mit zu vielen Rechten prüfen und das Ergebnis als Board-Briefing aufbereiten.",
+      "tags": [
+        "Governance",
+        "Risiko",
+        "EU AI Act",
+        "Agenten",
+        "Board"
+      ],
+      "steps": [
+        {
+          "skill": "access-review-prep",
+          "why": "Sammelt Agenten mit zu vielen Rechten für die Zugriffsprüfung.",
+          "input": "Agentenregister",
+          "output": "Prüfliste"
+        },
+        {
+          "skill": "automation-health-check",
+          "why": "Zeigt, ob die dahinterliegenden Automatisierungen gesund laufen.",
+          "input": "n8n-Workflows",
+          "output": "Gesundheitsbericht"
+        },
+        {
+          "skill": "board-briefing",
+          "why": "Fasst Risiken, Agenten und Budget auf einer Seite zusammen.",
+          "input": "Ergebnisse der Schritte davor",
+          "output": "Einseitiges Board-Briefing"
+        }
+      ]
+    },
+    {
+      "id": "PB-06",
+      "title": "Kampagne planen und prüfen",
+      "roles": [
+        "Marketing Manager",
+        "Content Creator"
+      ],
+      "goal": "Eine Kampagne konzipieren und die Posts vor der Veröffentlichung prüfen.",
+      "tags": [
+        "Kampagne",
+        "Marketing",
+        "Social",
+        "Post"
+      ],
+      "steps": [
+        {
+          "skill": "campaign-brief",
+          "why": "Erstellt das Kampagnen-Briefing.",
+          "input": "Ziel und Zielgruppe",
+          "output": "Briefing"
+        },
+        {
+          "skill": "social-post-checker",
+          "why": "Prüft Posts gegen Richtlinien.",
+          "input": "Entwurf der Posts",
+          "output": "Befunde und Korrekturen"
+        }
+      ]
     }
   ]
 }

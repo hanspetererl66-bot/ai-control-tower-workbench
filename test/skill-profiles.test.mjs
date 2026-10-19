@@ -103,3 +103,23 @@ test('profiles come live from Supabase when connected and fall back otherwise', 
   assert.match(fb.dataSource, /sample data/);
   assert.equal(fb.skills, page.skills.length);
 });
+
+test('playbooks reference real skills, say why, and are found by role and goal', async () => {
+  const names = new Set(page.skills.map((s) => s.name));
+  assert.ok(page.playbooks.length >= 5);
+  for (const pb of page.playbooks) {
+    assert.ok(pb.steps.length >= 2 && pb.roles.length && pb.goal, pb.id);
+    for (const st of pb.steps) { assert.ok(names.has(st.skill), `${pb.id} -> ${st.skill}`); assert.ok(st.why && st.input && st.output, `${pb.id} ${st.skill}`); }
+    assert.equal(new Set(pb.steps.map((s) => s.skill)).size, pb.steps.length, `${pb.id} has no repeated skill`);
+  }
+  const h = createSkillProfileHandlers(() => page);
+  const r = await h.recommend_skill_workflow({ role: 'Account Manager', goal: 'Kundentermin und Verlängerung' });
+  assert.equal(r.workflows[0].id, 'PB-01');
+  assert.deepEqual(r.workflows[0].steps.map((s) => s.skill), ['customer-call-prep', 'renewal-radar', 'quote-drafter', 'ticket-writer']);
+  assert.ok(r.workflows[0].steps.every((s, i) => s.step === i + 1 && s.why));
+  assert.ok(r.workflows[0].steps.find((s) => s.skill === 'renewal-radar').warnings.includes('sample skill, not published'));
+  const none = await h.recommend_skill_workflow({ role: 'Zahnarzt' });
+  assert.equal(none.count, 0);
+  await assert.rejects(h.recommend_skill_workflow({}), /role, a goal/);
+  await assert.rejects(h.recommend_skill_workflow({ role: 'x', limit: 9 }), /limit/);
+});
