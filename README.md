@@ -366,3 +366,7 @@ Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workfl
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.
+
+## Cover sheet animation
+
+Behind the product name the cover sheet shows a big rectangle of small squares: mostly grey and softly shimmering with a wave travelling across, and now and then a cube lights up in a random colour and fades out again (sometimes two next to each other). Cubes near the mouse pointer brighten. It is a single canvas (`src/ui/CoverGrid.tsx`, helpers in `src/cover-grid.ts`), follows light and dark mode, stops when the sheet is closed and shows a still picture when the system asks for reduced motion.
