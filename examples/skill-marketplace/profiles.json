@@ -1476,7 +1476,7 @@
           15
         ],
         "successRatePct": 97,
-        "avgRating": 4.1,
+        "avgRating": 4,
         "ratings": 6,
         "minutesSavedPerRun": 10,
         "errorRatePct": 1.2,
@@ -1581,7 +1581,7 @@
         "avgRating": 4.5,
         "ratings": 14,
         "minutesSavedPerRun": 45,
-        "errorRatePct": 3.0,
+        "errorRatePct": 3,
         "avgSeconds": 40,
         "costPerRunEur": 0.38,
         "model": "Claude Sonnet 5.5"
@@ -1690,7 +1690,7 @@
           14
         ],
         "successRatePct": 97,
-        "avgRating": 4.4,
+        "avgRating": 4.3,
         "ratings": 9,
         "minutesSavedPerRun": 30,
         "errorRatePct": 1.5,
@@ -1807,10 +1807,10 @@
           6
         ],
         "successRatePct": 92,
-        "avgRating": 4.3,
+        "avgRating": 4.4,
         "ratings": 5,
         "minutesSavedPerRun": 60,
-        "errorRatePct": 4.0,
+        "errorRatePct": 4,
         "avgSeconds": 55,
         "costPerRunEur": 0.47,
         "model": "Claude Sonnet 5.5"
@@ -1925,7 +1925,7 @@
         "avgRating": 4.6,
         "ratings": 11,
         "minutesSavedPerRun": 18,
-        "errorRatePct": 2.0,
+        "errorRatePct": 2,
         "avgSeconds": 35,
         "costPerRunEur": 0.31,
         "model": "Claude Haiku 5.5"
@@ -2034,6 +2034,117 @@
           "Executive"
         ],
         "favorites": 9
+      }
+    },
+    "rate-skill": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          3,
+          9,
+          6
+        ],
+        "successRatePct": 97,
+        "avgRating": 4.7,
+        "ratings": 3,
+        "minutesSavedPerRun": 3,
+        "errorRatePct": 1.0,
+        "avgSeconds": 18,
+        "costPerRunEur": 0.12,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5",
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-10-19",
+        "nextReview": "2027-04-19",
+        "linkedRisks": [],
+        "linkedAgents": [],
+        "approvalHistory": [
+          {
+            "date": "2026-10-19",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-19",
+            "summary": "Rate a skill with 1 to 5 stars and an optional comment, after confirmation."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "rate_skill",
+            "get_skill_ratings",
+            "get_skill_info"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-19"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Bewerte customer-call-prep mit 4 Sternen.",
+          "Wie gut ist ticket-writer bewertet, und kann ich selbst bewerten?"
+        ],
+        "demoFlow": [
+          "Skill und Sterne nennen",
+          "Kommentar optional ergänzen",
+          "Bestätigen und neuen Stand sehen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Bewertung",
+          "Sterne",
+          "Feedback"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "skill-search"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Controller",
+          "Platform Engineer",
+          "Executive"
+        ],
+        "favorites": 3
       }
     }
   },
