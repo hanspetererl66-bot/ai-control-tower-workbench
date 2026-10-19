@@ -2600,6 +2600,13 @@ button {
   border-color: var(--accent);
 }
 
+/* The SAP "72" typeface (Apache-2.0, from @sap-theming/theming-base-content) is used on the cover sheet only. */
+@font-face { font-family: '72'; src: url('./assets/fonts/72/72-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: '72'; src: url('./assets/fonts/72/72-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: '72'; src: url('./assets/fonts/72/72-Semibold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: '72'; src: url('./assets/fonts/72/72-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: '72'; src: url('./assets/fonts/72/72-Black.woff2') format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
+
 /* Cover sheet behind the rail logo. */
 .cover {
   position: fixed;
@@ -2610,6 +2617,7 @@ button {
   justify-content: center;
   background: var(--bg);
   cursor: pointer;
+  font-family: '72', '72full', Arial, Helvetica, sans-serif;
 }
 
 .cover-body {
@@ -2629,14 +2637,16 @@ button {
 .cover-title {
   margin: 0;
   font-size: clamp(34px, 6vw, 64px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
 
 .cover-kind {
   margin: 4px 0 0;
   font-size: clamp(16px, 2.2vw, 24px);
+  font-weight: 300;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--accent);
@@ -2645,6 +2655,7 @@ button {
 .cover-by {
   margin: 22px 0 0;
   font-size: clamp(18px, 2.6vw, 28px);
+  font-weight: 400;
   color: var(--ink);
 }
 
@@ -2662,6 +2673,7 @@ button {
   border-radius: 8px;
   padding: 8px 18px;
   font: inherit;
+  font-weight: 600;
   cursor: pointer;
 }
 

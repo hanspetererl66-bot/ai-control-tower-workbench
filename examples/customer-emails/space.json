@@ -1,10 +1,10 @@
 {
-  "title": "Customer E-Mails",
-  "description": "Mockup: customer e-mail communication as conversations with summary, open points, response times, a draft reply and a flag for suspicious content.",
+  "title": "E-Mail-Communication - Kunde: Muster Industrie AG",
+  "description": "Mockup: the e-mail communication with the customer Muster Industrie AG as conversations with summary, open points, response times, a draft reply and a flag for suspicious content.",
   "insights": [
     "Design mockup with fictional customers and mails; no mailbox is connected and nothing is read, stored or sent.",
     "Open points are matched with the call transcripts, for example a mail that confirms an action still open after a call.",
     "A message that contains instructions for AI assistants is flagged and shown as plain text; replies are only ever drafts."
   ],
-  "prompt": "Bundled example: Customer E-Mails (static mockup, data embedded by npm run sync:mockups)."
+  "prompt": "Bundled example: E-Mail-Communication (customer Muster Industrie AG) (static mockup, data embedded by npm run sync:mockups)."
 }
