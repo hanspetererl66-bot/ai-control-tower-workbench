@@ -31,9 +31,18 @@ test('graph is consistent: known types, resolvable edges, no duplicates, no isol
   assert.ok(graph.nodes.length > 120 && graph.edges.length > 200);
 });
 
-test('tour steps point at existing nodes', () => {
-  assert.ok(graph.tour.length >= 5);
-  for (const s of graph.tour) assert.ok(graph.nodes.some((n) => n.id === s.node), s.node);
+test('tours point at existing nodes and have titles and texts', () => {
+  assert.deepEqual(graph.tours.map((t) => t.id), ['ariba', 'governance']);
+  for (const t of graph.tours) {
+    assert.ok(t.title && t.summary && t.steps.length >= 5, t.id);
+    for (const s of t.steps) { assert.ok(graph.nodes.some((n) => n.id === s.node), s.node); assert.ok(s.title && s.text); }
+  }
+});
+
+test('governance tour facts match the graph', () => {
+  const edge = (a, b) => graph.edges.some((e) => e.source === a && e.target === b);
+  assert.ok(edge('risk:R2', 'agent:contract-drafter') && edge('risk:R6', 'agent:contract-drafter'));
+  assert.ok(edge('skill:access-review-prep', 'risk:R2') && edge('skill:access-review-prep', 'skill:board-briefing') && edge('skill:board-briefing', 'risk:R6'));
 });
 
 test('the Space page reads no network and no storage', () => {
