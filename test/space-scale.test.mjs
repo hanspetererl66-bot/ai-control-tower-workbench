@@ -30,3 +30,10 @@ test('the rule is injected once into the head, or in front of a page without hea
   assert.ok(applySpaceScale('<p>fragment</p>', 1.3).startsWith('<style id="werkbank-space-scale">html{zoom:1.3}</style>'));
   assert.ok(applySpaceScale('<HEAD lang="de"><title>x</title>', 1.15).includes('<HEAD lang="de"><style'));
 });
+
+import { applySpaceTheme } from '../src/space-scale.ts';
+test('the app theme is pinned on <html>, replacing an existing value', () => {
+  assert.ok(applySpaceTheme('<!doctype html><html lang="en"><head></head></html>', 'light').includes('<html data-theme="light" lang="en">'));
+  assert.ok(applySpaceTheme('<html data-theme="dark" lang="en">', 'light').includes('data-theme="light"'));
+  assert.equal(applySpaceTheme('<p>fragment</p>', 'dark'), '<p>fragment</p>');
+});

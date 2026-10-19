@@ -8,10 +8,13 @@ type Settings = { url: string; chatConnected: boolean };
  */
 export default function N8nView({
   visible,
+  theme,
   onRestartAgent,
 }: {
   /** False while a dialog is open: a native view would paint over it. */
   visible: boolean;
+  /** The app's resolved theme; n8n is shown in the same one. */
+  theme: 'light' | 'dark';
   /** Called after the chat connection changed, so goose reloads its extensions. */
   onRestartAgent: () => Promise<void> | void;
 }) {
@@ -26,6 +29,10 @@ export default function N8nView({
   useEffect(() => {
     void host?.getSettings().then(setSettings).catch(() => setSettings({ url: '', chatConnected: false }));
   }, [host]);
+
+  useEffect(() => {
+    void host?.setTheme(theme);
+  }, [host, theme]);
 
   const showing = Boolean(host && settings?.url && !editing && visible);
 

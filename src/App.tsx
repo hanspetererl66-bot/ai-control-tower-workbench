@@ -668,6 +668,7 @@ export default function App() {
 
       {view === 'n8n' ? (
         <N8nView
+          theme={resolvedTheme}
           visible={!settingsOpen && !coverOpen && !skillRequest && !permission}
           onRestartAgent={async () => {
             await window.host?.restartAgent?.();
@@ -688,6 +689,7 @@ export default function App() {
             space={space}
             tabRequest={space.slug === 'ai-control-tower' ? spaceTab : null}
             textScale={spaceScale}
+            theme={resolvedTheme}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />

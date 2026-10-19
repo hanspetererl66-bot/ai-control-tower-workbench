@@ -1231,6 +1231,21 @@ ipcMain.handle('voice-transcribe', async (_event, { audio, mimeType } = {}) => {
 const n8nStore = createN8nStore(join(ROOT, 'goose-home', 'n8n.json'));
 let n8nView = null;
 let n8nViewOrigin = '';
+let n8nTheme = 'light';
+
+/** Makes n8n render in the app's theme: its own light/dark follows prefers-color-scheme, which is emulated here. */
+async function applyN8nTheme(view) {
+  if (!view) return;
+  const white = n8nTheme === 'light';
+  try {
+    view.setBackgroundColor(white ? '#ffffff' : '#171320');
+    const contents = view.webContents;
+    if (!contents.debugger.isAttached()) contents.debugger.attach('1.3');
+    await contents.debugger.sendCommand('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: n8nTheme }] });
+  } catch {
+    // Emulation is cosmetic: with DevTools attached or on an older build the page simply follows the system.
+  }
+}
 
 function ensureN8nView(origin) {
   if (n8nView && n8nViewOrigin === origin) return n8nView;
@@ -1254,7 +1269,9 @@ function ensureN8nView(origin) {
   });
   mainWindow?.contentView.addChildView(view);
   view.setVisible(false);
+  contents.once('did-start-loading', () => void applyN8nTheme(view));
   contents.loadURL(origin).catch(() => undefined);
+  void applyN8nTheme(view);
   n8nView = view;
   n8nViewOrigin = origin;
   return view;
@@ -1264,6 +1281,7 @@ function closeN8nView() {
   if (!n8nView) return;
   try {
     mainWindow?.contentView.removeChildView(n8nView);
+    if (n8nView.webContents.debugger.isAttached()) n8nView.webContents.debugger.detach();
     n8nView.webContents.close();
   } catch {
     // window already gone
@@ -1305,6 +1323,12 @@ ipcMain.handle('n8n-show', (_event, bounds) => {
 
 ipcMain.handle('n8n-hide', () => {
   n8nView?.setVisible(false);
+  return { ok: true };
+});
+
+ipcMain.handle('n8n-set-theme', async (_event, theme) => {
+  n8nTheme = theme === 'dark' ? 'dark' : 'light';
+  await applyN8nTheme(n8nView);
   return { ok: true };
 });
 

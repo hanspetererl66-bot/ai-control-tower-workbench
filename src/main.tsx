@@ -64,6 +64,7 @@ declare global {
         show: (bounds: { x: number; y: number; width: number; height: number }) => Promise<{ ok: boolean }>;
         hide: () => Promise<{ ok: boolean }>;
         reload: () => Promise<{ ok: boolean }>;
+        setTheme: (theme: 'light' | 'dark') => Promise<{ ok: boolean }>;
         connectChat: () => Promise<{ ok: boolean; detail?: string }>;
         disconnectChat: () => Promise<{ ok: boolean; detail?: string }>;
       };
