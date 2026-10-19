@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ToolError } from './tools.mjs';
+import { summarise } from './rating-math.mjs';
 
 const here = (path) => join(dirname(fileURLToPath(import.meta.url)), path);
 const BOARD_AREAS = ['Finance', 'Sales', 'Marketing', 'Engineering'];
@@ -173,6 +174,7 @@ export function createSkillProfileHandlers(load = loadMarketplaceData, rpc = nul
     return { skill, profile };
   };
   const head = (s) => ({ name: s.name, description: s.description, maturity: s.maturity, boardArea: s.boardArea, lob: s.lob, team: s.team, owner: s.owner, sample: Boolean(s.sample) });
+  const ratingOf = (d, name) => summarise(d.ratings?.skills?.[name]?.distribution, d.ratings?.settings).label;
   const rows = (d) => d.skills.filter((s) => d.profiles[s.name]).map((s) => ({ skill: s, profile: d.profiles[s.name] }));
   const checkArea = (boardArea) => {
     if (boardArea !== undefined && !BOARD_AREAS.includes(boardArea)) throw new ToolError(`boardArea must be one of: ${BOARD_AREAS.join(', ')}`);
@@ -327,7 +329,7 @@ export function createSkillProfileHandlers(load = loadMarketplaceData, rpc = nul
           if (profile?.lifecycle.replacedBy) warnings.push(`replaced by ${profile.lifecycle.replacedBy}`);
           if (profile?.lifecycle.sunsetDate) warnings.push(`sunset ${profile.lifecycle.sunsetDate}`);
           if (profile && daysUntil(d, profile.governance.nextReview) < 0) warnings.push('review overdue');
-          return { step: i + 1, skill: st.skill, why: st.why, input: st.input, output: st.output, maturity: skill?.maturity, aiActRisk: profile?.governance.aiActRisk, examplePrompt: profile?.discovery.examplePrompts[0], ...(warnings.length ? { warnings } : {}) };
+          return { step: i + 1, skill: st.skill, why: st.why, input: st.input, output: st.output, maturity: skill?.maturity, aiActRisk: profile?.governance.aiActRisk, rating: ratingOf(d, st.skill), examplePrompt: profile?.discovery.examplePrompts[0], ...(warnings.length ? { warnings } : {}) };
         }),
       }));
       return {
@@ -362,7 +364,7 @@ export function createSkillProfileHandlers(load = loadMarketplaceData, rpc = nul
         role: role || undefined,
         task: task || undefined,
         count: scored.length,
-        skills: scored.map(({ skill, profile }) => ({ ...head(skill), aiActRisk: profile.governance.aiActRisk, examplePrompts: profile.discovery.examplePrompts, demoFlow: profile.discovery.demoFlow, prerequisites: profile.discovery.prerequisites, related: profile.discovery.related, recommendedFor: profile.discovery.recommendedFor, favorites: profile.discovery.favorites })),
+        skills: scored.map(({ skill, profile }) => ({ ...head(skill), aiActRisk: profile.governance.aiActRisk, rating: ratingOf(d, skill.name), examplePrompts: profile.discovery.examplePrompts, demoFlow: profile.discovery.demoFlow, prerequisites: profile.discovery.prerequisites, related: profile.discovery.related, recommendedFor: profile.discovery.recommendedFor, favorites: profile.discovery.favorites })),
         hint: scored.length ? undefined : 'No skill matches. Look at find_skill_gaps and consider requesting one.',
         view: { space: 'skill-marketplace', tab: 'catalog' },
         dataSource,
