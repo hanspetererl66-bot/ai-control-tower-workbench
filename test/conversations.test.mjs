@@ -6,6 +6,7 @@ import {
   archiveConversation,
   createConversation,
   deleteConversation,
+  filterConversations,
   loadConversationState,
   restoreConversation,
   saveConversationState,
@@ -86,4 +87,25 @@ test('deleting a conversation removes it for good and keeps a valid selection', 
   assert.equal(deleteConversation(state, 'nope'), state);
   const archivedGone = deleteConversation(state, 'c');
   assert.deepEqual(archivedGone.items.map(({ id }) => id), ['a', 'b']);
+});
+
+test('conversation search covers titles and message text, filters narrow by time and files', () => {
+  const day = 24 * 60 * 60 * 1000;
+  const now = new Date(2026, 9, 19, 15, 0, 0).getTime();
+  const base = (id, title, updatedAt, extra = {}) => ({ ...createConversation(id, updatedAt), title, updatedAt, ...extra });
+  const items = [
+    base('a', 'Ariba renewal', now - 60_000, { messages: [{ role: 'user', text: 'Wie steht der Vertrag?' }] }),
+    base('b', 'Skills overview', now - 3 * day, { messages: [{ role: 'agent', text: 'Der Skill renewal-radar prüft Verträge.' }], files: [{ path: '/x/report.html' }] }),
+    base('c', 'Old topic', now - 30 * day),
+  ];
+  const ids = (list) => list.map((c) => c.id);
+  assert.deepEqual(ids(filterConversations(items)), ['a', 'b', 'c']);
+  assert.deepEqual(ids(filterConversations(items, { query: '  ARIBA ' })), ['a'], 'title, case-insensitive, trimmed');
+  assert.deepEqual(ids(filterConversations(items, { query: 'renewal' })), ['a', 'b'], 'title and message text');
+  assert.deepEqual(ids(filterConversations(items, { query: 'vertrag' })), ['a', 'b'].filter((id) => id === 'a'), 'message text of a user message');
+  assert.deepEqual(ids(filterConversations(items, { range: 'today' }, now)), ['a']);
+  assert.deepEqual(ids(filterConversations(items, { range: 'week' }, now)), ['a', 'b']);
+  assert.deepEqual(ids(filterConversations(items, { range: 'files' }, now)), ['b']);
+  assert.deepEqual(ids(filterConversations(items, { query: 'renewal', range: 'files' }, now)), ['b'], 'search and filter combine');
+  assert.deepEqual(ids(filterConversations(items, { query: 'nothing like this' })), []);
 });

@@ -146,3 +146,32 @@ export function deleteConversation(
   if (next) return { items, selectedId: next.id };
   return { items: [replacement, ...items], selectedId: replacement.id };
 }
+
+export type ConversationRange = 'all' | 'today' | 'week' | 'files';
+export const CONVERSATION_RANGES: { id: ConversationRange; label: string }[] = [
+  { id: 'all', label: 'All conversations' },
+  { id: 'today', label: 'Updated today' },
+  { id: 'week', label: 'Last 7 days' },
+  { id: 'files', label: 'With files' },
+];
+
+/** Search (title and message text, case-insensitive) and filter (time range or files) for the conversation list. */
+export function filterConversations(
+  items: ConversationRecord[],
+  { query = '', range = 'all' }: { query?: string; range?: ConversationRange } = {},
+  now = Date.now()
+): ConversationRecord[] {
+  const needle = query.trim().toLowerCase();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  return items.filter((conversation) => {
+    if (range === 'today' && conversation.updatedAt < startOfToday.getTime()) return false;
+    if (range === 'week' && conversation.updatedAt < now - 7 * 24 * 60 * 60 * 1000) return false;
+    if (range === 'files' && conversation.files.length === 0) return false;
+    if (!needle) return true;
+    return (
+      conversation.title.toLowerCase().includes(needle) ||
+      conversation.messages.some((message) => typeof message.text === 'string' && message.text.toLowerCase().includes(needle))
+    );
+  });
+}

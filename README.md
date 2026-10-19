@@ -353,3 +353,7 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 ### Calls and e-mails in the Knowledge Graph
 
 The mockup data of the two Spaces above is part of the graph: **Call** and **E-mail conversation** nodes connect to the customer and to the contract, offer and ticket they discuss. A mail is linked to a call (`follows up on`) where both concern the same open action, for example the mail that confirms an alert still open after the escalation call. The mail with the instruction aimed at AI assistants is linked to risk R7 (prompt injection). The graph tools understand the new types (`type: "call"` or `"thread"`), so chat can answer “Was wurde zum Ariba-Vertrag besprochen und geschrieben?” via `analyze_graph_impact`. The third tour, “Customer communication”, walks through this. `npm run sync:knowledge-graph` rebuilds the graph from `calls.json` and `threads.json`.
+
+## Conversation search and filter
+
+In the **Conversations** list the magnifier opens a search field (titles and message text, case-insensitive, `Esc` clears and closes) and the funnel opens a filter menu: all conversations, updated today, last 7 days, or with files. Both combine, the list shows “x of y shown” with a **Clear** link, and archived conversations that match appear automatically. Filtering is in `filterConversations` (`src/conversations.ts`).
