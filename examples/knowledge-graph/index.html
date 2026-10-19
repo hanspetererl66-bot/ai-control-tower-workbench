@@ -1583,6 +1583,97 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "skill:skill-search",
+   "type": "skill",
+   "label": "skill-search",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "not classified",
+    "Reach": "company",
+    "Team": "AI Programme Office",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-04-19",
+    "Value last full month": "€791",
+    "Runs last full month": "31"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:recommend_skills",
+   "type": "tool",
+   "label": "recommend_skills",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:list_skill_catalog",
+   "type": "tool",
+   "label": "list_skill_catalog",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_ranking",
+   "type": "tool",
+   "label": "get_skill_ranking",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_governance",
+   "type": "tool",
+   "label": "get_skill_governance",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_impact",
+   "type": "tool",
+   "label": "get_skill_impact",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_lifecycle",
+   "type": "tool",
+   "label": "get_skill_lifecycle",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:find_skill_gaps",
+   "type": "tool",
+   "label": "find_skill_gaps",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:search_graph",
+   "type": "tool",
+   "label": "search_graph",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:get_graph_neighbors",
+   "type": "tool",
+   "label": "get_graph_neighbors",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
    "id": "skill:ticket-writer",
    "type": "skill",
    "label": "ticket-writer",
@@ -3093,6 +3184,156 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
+   "source": "skill:skill-search",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:recommend_skills",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:recommend_skills",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:recommend_skills",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:search_skills",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_skill_catalog",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_skill_catalog",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:list_skill_catalog",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_ranking",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_ranking",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:get_skill_ranking",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:get_skill_info",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_governance",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_governance",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:get_skill_governance",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_impact",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_impact",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:get_skill_impact",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_lifecycle",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_lifecycle",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:get_skill_lifecycle",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:find_skill_gaps",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:find_skill_gaps",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:find_skill_gaps",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:search_graph",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_graph",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:search_graph",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_graph_neighbors",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_graph_neighbors",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "tool:get_graph_neighbors",
+   "type": "USES_TOOL"
+  },
+  {
    "source": "skill:ticket-writer",
    "target": "system:marketplace",
    "type": "LISTED_IN"
@@ -3394,6 +3635,16 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   },
   {
    "source": "skill:skill-finder",
+   "target": "agent:knowledge-base-search",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:skill-search",
+   "target": "skill:skill-finder",
+   "type": "DEPENDS_ON"
+  },
+  {
+   "source": "skill:skill-search",
    "target": "agent:knowledge-base-search",
    "type": "OBSERVES_AGENT"
   },

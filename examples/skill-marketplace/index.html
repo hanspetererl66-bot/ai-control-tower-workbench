@@ -576,6 +576,43 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "sample": false
     },
     {
+      "name": "skill-search",
+      "description": "Durchsucht den Skill-Marketplace nach Aufgabe, Rolle oder Bereich, vergleicht die besten Treffer (Reife, Risiko, Nutzen) und empfiehlt einen. Nutzen bei \"welcher Skill hilft bei\", \"Skills für meine Rolle\", \"Skill-Suche\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Skill-Management",
+      "process": "Skill-Suche",
+      "boardArea": "",
+      "lob": "",
+      "team": "AI Programme Office",
+      "scope": "company",
+      "dataClass": "intern",
+      "tools": [
+        "recommend_skills",
+        "search_skills",
+        "list_skill_catalog",
+        "get_skill_ranking",
+        "get_skill_info",
+        "get_skill_governance",
+        "get_skill_impact",
+        "get_skill_lifecycle",
+        "find_skill_gaps",
+        "search_graph",
+        "get_graph_neighbors"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
       "name": "ticket-writer",
       "description": "Macht aus einer kurzen Problembeschreibung ein sauberes Sub4Me-Serviceticket (Titel, Produkt, Priorität, Beschreibung) und legt es nach Bestätigung an. Nutzen bei \"Ticket eröffnen\", \"Störung melden\", \"Sub4Me Ticket\".",
       "owner": "",
@@ -2777,6 +2814,130 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
           "AI Programme Manager"
         ],
         "favorites": 4
+      }
+    },
+    "skill-search": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          4,
+          14,
+          31,
+          24
+        ],
+        "successRatePct": 96,
+        "avgRating": 4.6,
+        "ratings": 11,
+        "minutesSavedPerRun": 18,
+        "errorRatePct": 2,
+        "avgSeconds": 35,
+        "costPerRunEur": 0.31,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5",
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-10-19",
+        "nextReview": "2027-04-19",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "Knowledge Base Search"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-19",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-19",
+            "summary": "Search, compare and recommend skills across the marketplace, with governance, impact and graph context."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "recommend_skills",
+            "search_skills",
+            "list_skill_catalog",
+            "get_skill_ranking",
+            "get_skill_info",
+            "get_skill_governance",
+            "get_skill_impact",
+            "get_skill_lifecycle",
+            "find_skill_gaps",
+            "search_graph",
+            "get_graph_neighbors"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": [
+            "skill-finder"
+          ]
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 12,
+          "passed": 12,
+          "lastRun": "2026-10-19"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Welcher Skill hilft mir beim Abgleich von Rechnungen?",
+          "Zeig mir die Skills für einen Platform Engineer und vergleiche die besten drei."
+        ],
+        "demoFlow": [
+          "Aufgabe oder Rolle nennen",
+          "Vergleich der besten drei mit Risiko und Nutzen ansehen",
+          "Empfehlung und Beispiel-Prompt übernehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Skill-Suche",
+          "Vergleich",
+          "Empfehlung"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "skill-finder",
+          "board-briefing"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Controller",
+          "Platform Engineer",
+          "Executive"
+        ],
+        "favorites": 9
       }
     }
   },
