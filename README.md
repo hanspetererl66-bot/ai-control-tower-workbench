@@ -277,6 +277,10 @@ Nine new skills cover the stages, all in `examples/skills/` with domain *Vertrie
 
 Database: the domain list was out of date (four example skills could not be published). `supabase/migrations/20261020_014_skill_domains.sql` adds Vertrieb, Automatisierung, Sicherheit & Zugriff and Skill-Management. The sample data migrations 012 (profiles) and 013 (ratings) were regenerated with the new skills; both are upserts, so running them again is safe.
 
+Six more skills close the gaps for an account executive: `discovery-meddpicc`, `competitive-battlecard`, `business-case-builder`, `security-questionnaire-helper`, `handover-onboarding-plan` and `call-followup` (23 registered skills in total). They sit in the capability *Sales pipeline* and in the collections PB-12 (Opportunity absichern), PB-13 (Sicherheit und Übergabe) and PB-14 (Nach dem Kundengespräch). None of them sends mail or writes to a CRM; `handover-onboarding-plan` creates a ticket only after confirmation.
+
+The Sales Space has two more tabs. **Forecast** shows commit, best case and pipeline by close month with weighted totals and target coverage (category rule: probability 70 % or more and a cleared discount is commit, 50 to 69 % best case, below 50 % pipeline). **Meetings** lists upcoming meetings with a brief, questions and flags, and finished calls with proposed CRM changes, actions from the call and a follow-up mail that is only a draft. Data is in `examples/sales/pipeline.json` (`closeDate`, `category`, `forecast`, `meetings`); a test keeps it consistent with the call transcripts, e-mail threads and Sub4Me data. After a pull run `npm run sync:mockups`, `npm run sync:skill-marketplace` and `npm run install:sales`.
+
 ### Skill Marketplace as a control surface for business users
 
 The Space is now organised for business users instead of a flat list. Navigation: **Discover** (search with live hits, skills by business
