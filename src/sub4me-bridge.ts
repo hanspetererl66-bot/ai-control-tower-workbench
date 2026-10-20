@@ -1,7 +1,8 @@
 /**
  * Bridge between the sandboxed Sub4Me Space and the connector.
  * The Space has no network, so it asks the app by postMessage; the app answers by calling
- * two fixed tools of the bundled connector. Nothing else can be reached through here.
+ * three fixed tools of the bundled connector (list_tickets, create_ticket, enrich_ticket).
+ * Nothing else can be reached through here.
  */
 export const SUB4ME_SPACE = 'sub4me';
 export const SUB4ME_EXTENSION = 'ai-control-tower';
@@ -10,6 +11,29 @@ export type BridgeCall = (tool: string, args: Record<string, unknown>) => Promis
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Very high'];
 const REQUEST_ID = /^[A-Za-z0-9_-]{1,40}$/;
+const TICKET_ID = /^TKT-[A-Za-z0-9-]{1,20}$/;
+
+const strings = (value: unknown, max = 12): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string').slice(0, max) : [];
+
+/** Only the fields the Space renders; everything else the connector returned stays here. */
+export function pickEnrichment(raw: unknown): Record<string, unknown> | null {
+  if (!isObject(raw) || !isObject(raw.ticket)) return null;
+  const tower = isObject(raw.controlTower) ? raw.controlTower : {};
+  return {
+    ticketId: String(raw.ticket.id ?? ''),
+    product: String(raw.ticket.product ?? ''),
+    assessment: strings(raw.assessment),
+    nextSteps: strings(raw.nextSteps),
+    risks: (Array.isArray(tower.risks) ? tower.risks : []).filter(isObject).slice(0, 8).map((r) => ({
+      id: String(r.id ?? ''),
+      title: String(r.title ?? ''),
+      owner: String(r.owner ?? ''),
+      progressPct: typeof r.progressPct === 'number' ? r.progressPct : null,
+    })),
+    note: typeof raw.note === 'string' ? raw.note : '',
+  };
+}
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -55,6 +79,20 @@ export async function handleSub4meMessage(data: unknown, call: BridgeCall | unde
     try {
       const { ticket } = parseToolResult(await call('create_ticket', { title, product, priority, description }));
       return isObject(ticket) ? { type: 's4m:ticket-created', requestId, ticket } : fail('unexpected answer');
+    } catch (error) {
+      return fail(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  if (data.type === 's4m:enrich-request') {
+    const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
+    if (!requestId) return null;
+    const fail = (message: string) => ({ type: 's4m:error', requestId, message });
+    if (!call) return fail('The agent is not connected yet.');
+    if (typeof data.ticketId !== 'string' || !TICKET_ID.test(data.ticketId)) return fail('invalid ticket id');
+    try {
+      const enrichment = pickEnrichment(parseToolResult(await call('enrich_ticket', { ticket_id: data.ticketId })));
+      return enrichment ? { type: 's4m:enrichment', requestId, enrichment } : fail('unexpected answer');
     } catch (error) {
       return fail(error instanceof Error ? error.message : String(error));
     }
