@@ -174,7 +174,8 @@ test('mockup Spaces: embedded data is in sync, fictional, internally consistent 
 
 test('Sales Space: offers and contracts match the Sub4Me sample data, gates and links are consistent', () => {
   const sales = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
-  const sub = JSON.parse(/id="s4m-data">([\s\S]*?)<\/script>/.exec(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8'))[1]);
+  const subAll = JSON.parse(/id="s4m-data">([\s\S]*?)<\/script>/.exec(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8'))[1]);
+  const sub = { offers: [subAll, ...subAll.otherCustomers].flatMap((r) => r.offers), contracts: [subAll, ...subAll.otherCustomers].flatMap((r) => r.contracts) };
   const calls = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/call-transcripts/calls.json'), 'utf8')).calls.map((c) => c.id));
   const threads = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/customer-emails/threads.json'), 'utf8')).threads.map((t) => t.id));
   const skills = new Set(readdirSync(join(ROOT, 'examples/skills')));
@@ -290,12 +291,15 @@ test('Sales Space: evidence, inbox and briefing context point to real mails, cal
   const { extractSub4MeData } = await import('../connectors/control-tower/server/sub4me.mjs');
   const sales = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
   const sub = extractSub4MeData(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8'));
+  sub.otherCustomers ??= [];
   const calls = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/call-transcripts/calls.json'), 'utf8')).calls.map((c) => c.id));
   const threads = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/customer-emails/threads.json'), 'utf8')).threads.map((t) => t.id));
+  const recs = [{ ...sub, id: sub.customer.id }, ...sub.otherCustomers];
+  const all = (k) => recs.flatMap((r) => r[k]);
   const ids = {
     mail: threads, call: calls,
-    ticket: new Set(sub.tickets.map((t) => t.id)), invoice: new Set(sub.invoices.map((i) => i.id)),
-    contract: new Set(sub.contracts.map((c) => c.id)), offer: new Set(sub.offers.map((o) => o.id)),
+    ticket: new Set(all('tickets').map((t) => t.id)), invoice: new Set(all('invoices').map((i) => i.id)),
+    contract: new Set(all('contracts').map((c) => c.id)), offer: new Set(all('offers').map((o) => o.id)),
     crm: new Set(sales.deals.map((d) => d.id)),
   };
   const check = (b, where) => assert.ok(ids[b.kind]?.has(b.ref), `${where}: ${b.kind} ${b.ref} exists`);
@@ -316,8 +320,8 @@ test('Sales Space: evidence, inbox and briefing context point to real mails, cal
   }
   assert.ok(inbox.some((x) => x.policy === 'never' && /instruction/i.test(x.summary)), 'an instruction in customer text is blocked');
   // the Sub4Me rows quoted in the briefings equal the Sub4Me data
-  for (const t of sales.sub4me.tickets) { const s = sub.tickets.find((k) => k.id === t.id); assert.deepEqual({ ...t }, { id: s.id, title: s.title, product: s.product, priority: s.priority, status: s.status }); }
-  for (const i of sales.sub4me.invoices) { const s = sub.invoices.find((k) => k.id === i.id); assert.deepEqual({ ...i }, { id: s.id, contractId: s.contractId, status: s.status, due: s.due, grossEur: s.grossEur }); }
+  for (const t of sales.sub4me.tickets) { const s = all('tickets').find((k) => k.id === t.id); assert.deepEqual({ ...t }, { id: s.id, title: s.title, product: s.product, priority: s.priority, status: s.status, customer: recs.find((r) => r.tickets.includes(s)).id }); }
+  for (const i of sales.sub4me.invoices) { const s = all('invoices').find((k) => k.id === i.id); assert.deepEqual({ ...i }, { id: s.id, contractId: s.contractId, status: s.status, due: s.due, grossEur: s.grossEur, customer: recs.find((r) => r.invoices.includes(s)).id }); }
   for (const m of sales.meetings) {
     const c = m.prep?.context; if (!c) continue;
     for (const id of c.tickets) assert.ok(sales.sub4me.tickets.some((t) => t.id === id), `${m.id}: ticket ${id} is in the data`);

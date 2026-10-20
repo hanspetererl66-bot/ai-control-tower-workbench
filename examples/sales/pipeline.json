@@ -1,7 +1,7 @@
 {
   "asOf": "2026-10-19",
   "me": "Mara Weber",
-  "customerNote": "Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG. Interest, lead and opportunity are made up.",
+  "customerNote": "Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Interest, lead and opportunity are made up.",
   "discountThresholdPct": 15,
   "stages": [
     {
@@ -1153,6 +1153,496 @@
           "ref": "CALL-0414"
         }
       ]
+    },
+    {
+      "id": "INT-205",
+      "stage": "interest",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "Joule for the store network",
+      "value": null,
+      "score": null,
+      "owner": "Sven Albrecht",
+      "source": "Event",
+      "existing": true,
+      "met": [
+        true,
+        true,
+        false
+      ],
+      "next": {
+        "text": "Check duplicates and log the contact from the e-commerce round table",
+        "due": "2026-10-22",
+        "skill": "interest-logger",
+        "prompt": "Erfasse: Julia Westphal (Head of E-Commerce, Hanse Handelsgruppe AG) hat beim Kundentermin nach Joule für das Filialnetz gefragt."
+      },
+      "contact": "Julia Westphal, Head of E-Commerce",
+      "strength": "medium",
+      "risks": [],
+      "timeline": [
+        {
+          "date": "2026-10-14",
+          "kind": "note",
+          "text": "Question about Joule in the store network at the e-commerce round table."
+        }
+      ]
+    },
+    {
+      "id": "LEAD-304",
+      "stage": "lead",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "Document AI for the shared service centre",
+      "value": 85000,
+      "score": 66,
+      "owner": "Mira Hoffmann",
+      "source": "Ticket",
+      "existing": true,
+      "breakdown": [
+        [
+          "ICP fit",
+          24,
+          30,
+          "Retail group, existing customer, 18,400 employees"
+        ],
+        [
+          "Budget",
+          12,
+          20,
+          "Platform budget exists, not confirmed for this"
+        ],
+        [
+          "Decision maker",
+          12,
+          20,
+          "Head of Accounts Payable involved"
+        ],
+        [
+          "Need",
+          13,
+          20,
+          "VAT ID and invoice date are missing on scanned invoices (TKT-47932)"
+        ],
+        [
+          "Timing",
+          5,
+          10,
+          "No date named"
+        ]
+      ],
+      "met": [
+        true,
+        true,
+        false
+      ],
+      "next": {
+        "text": "Ask two questions: budget owner and rollout date",
+        "due": "2026-10-26",
+        "skill": "lead-qualifier",
+        "prompt": "Bewerte den Lead Hanse Handelsgruppe, Document AI für das Shared Service Center, und nenne die zwei Fragen, die den Score am meisten ändern."
+      },
+      "contact": "Ines Carstens, Head of Accounts Payable",
+      "risks": [
+        "The open ticket TKT-47932 shapes the first impression of Document AI."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-12",
+          "kind": "note",
+          "text": "Ticket TKT-47932: VAT ID not extracted from scanned invoices."
+        },
+        {
+          "date": "2026-10-19",
+          "kind": "skill",
+          "text": "Score 66: follow up with two questions."
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "Lead score 66 of 100",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "ticket",
+              "ref": "TKT-47932",
+              "text": "Customer reports empty VAT ID fields on scanned multi-page invoices: a clear need."
+            },
+            {
+              "kind": "crm",
+              "ref": "LEAD-304",
+              "text": "Score is a suggestion: fit, budget, decision maker, need and timing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "OPP-404",
+      "stage": "opportunity",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "Ariba supplier risk for all 3,800 suppliers",
+      "value": 150000,
+      "score": 45,
+      "owner": "Sven Albrecht",
+      "source": "Contract",
+      "existing": true,
+      "met": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "next": {
+        "text": "Account plan with the category review as the anchor",
+        "due": "2026-10-28",
+        "skill": "opportunity-planner",
+        "prompt": "Erstelle den Account-Plan für die Opportunity Hanse Handelsgruppe, Ariba Supplier Risk für alle Lieferanten."
+      },
+      "contact": "Mirko Sander, Head of Procurement",
+      "risks": [
+        "Risk scores have not been updated since 1 October (TKT-48041): trust in the module is low right now."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-06",
+          "kind": "note",
+          "text": "Ticket TKT-48041: risk scores not updated since 1 October."
+        },
+        {
+          "date": "2026-10-15",
+          "kind": "note",
+          "text": "Procurement wants the category review with all suppliers in scope."
+        }
+      ],
+      "closeDate": "2027-02-12",
+      "category": "pipeline",
+      "prev": null,
+      "changeWhy": {
+        "text": "Opened this week from the category review request.",
+        "ref": "CRM"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 45 %, pipeline",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2025-0458",
+              "text": "Ariba Procurement and Supplier Risk runs until 2028-06-30."
+            },
+            {
+              "kind": "ticket",
+              "ref": "TKT-48041",
+              "text": "Scores for 3,800 suppliers show 2026-10-01: the open ticket is the main risk."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "OFF-2026-0402",
+      "stage": "sell",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "SAP Commerce Cloud: renewal",
+      "value": 405000,
+      "score": 55,
+      "owner": "Sven Albrecht",
+      "source": "Renewal",
+      "existing": true,
+      "offerId": "OFF-2026-0402",
+      "contractId": "C-2024-0611",
+      "met": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "discountPct": 12,
+      "approval": "Deal desk approved",
+      "competitor": "Shopify Plus (evaluation)",
+      "valid": "2026-11-20",
+      "stageLabel": "Proposal sent",
+      "next": {
+        "text": "Resolve the search ticket before the renewal decision",
+        "due": "2026-10-30",
+        "skill": "deal-risk-check",
+        "prompt": "Wie riskant ist das Angebot OFF-2026-0402?"
+      },
+      "contact": "Julia Westphal, Head of E-Commerce",
+      "risks": [
+        "Shopify Plus is being evaluated.",
+        "Storefront search is empty since the catalog import (TKT-48166, High)."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-10",
+          "kind": "note",
+          "text": "Ticket TKT-48166: storefront search returns no results after the catalog import."
+        },
+        {
+          "date": "2026-10-16",
+          "kind": "note",
+          "text": "Renewal proposal sent; the customer names Shopify Plus as an alternative."
+        }
+      ],
+      "closeDate": "2026-11-20",
+      "category": "best",
+      "prev": {
+        "score": 60,
+        "category": "best",
+        "value": 405000,
+        "closeDate": "2026-11-20"
+      },
+      "changeWhy": {
+        "text": "The customer is evaluating Shopify Plus; the open search ticket weighs on the renewal.",
+        "ref": "TKT-48166"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 55 %, best case (down from 60 %)",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "offer",
+              "ref": "OFF-2026-0402",
+              "text": "Competitor in the offer: Shopify Plus (evaluation). Discount 12 %, deal desk approved."
+            },
+            {
+              "kind": "ticket",
+              "ref": "TKT-48166",
+              "text": "Open High ticket: storefront search empty after the catalog import."
+            }
+          ]
+        },
+        {
+          "claim": "Renewal is due: the contract ends on 31 December 2026",
+          "confidence": "high",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2024-0611",
+              "text": "Term ends 2026-12-31 with a 60-day notice period."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "OFF-2026-0407",
+      "stage": "sell",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "Integration Suite: renewal",
+      "value": 190000,
+      "score": 40,
+      "owner": "Mira Hoffmann",
+      "source": "Renewal",
+      "existing": true,
+      "offerId": "OFF-2026-0407",
+      "contractId": "C-2023-0215",
+      "met": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "discountPct": 10,
+      "approval": "Deal desk approved",
+      "competitor": "None",
+      "valid": "2026-12-15",
+      "stageLabel": "Proposal sent",
+      "next": {
+        "text": "Confirm the scope of the lapsed Integration Suite with the platform lead",
+        "due": "2026-11-04",
+        "skill": "deal-risk-check",
+        "prompt": "Wie riskant ist das Angebot OFF-2026-0407?"
+      },
+      "contact": "Tom Ahlers, Platform Lead",
+      "risks": [
+        "The contract C-2023-0215 expired on 30 April 2026; the platform runs without a valid term."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-09",
+          "kind": "note",
+          "text": "Renewal offer for the expired Integration Suite contract sent."
+        }
+      ],
+      "closeDate": "2026-12-15",
+      "category": "pipeline",
+      "prev": {
+        "score": 40,
+        "category": "pipeline",
+        "value": 190000,
+        "closeDate": "2026-12-15"
+      },
+      "changeWhy": {
+        "text": "No change this week.",
+        "ref": null
+      },
+      "evidence": [
+        {
+          "claim": "Probability 40 %, pipeline",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2023-0215",
+              "text": "Contract expired on 2026-04-30; the offer replaces it."
+            },
+            {
+              "kind": "offer",
+              "ref": "OFF-2026-0407",
+              "text": "Discount 10 %, deal desk approved, valid until 2026-12-15."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "OFF-2026-0415",
+      "stage": "sell",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "AI units top-up and Joule for Procurement",
+      "value": 126000,
+      "score": 65,
+      "owner": "Mira Hoffmann",
+      "source": "Offer",
+      "existing": true,
+      "offerId": "OFF-2026-0415",
+      "contractId": "C-2026-0044",
+      "met": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "discountPct": 8,
+      "approval": "Pending deal desk (non-standard top-up terms)",
+      "competitor": "None",
+      "valid": "2026-11-30",
+      "stageLabel": "Negotiation",
+      "next": {
+        "text": "Deal desk decision on the non-standard top-up terms",
+        "due": "2026-10-27",
+        "skill": "pricing-guard",
+        "prompt": "Prüfe das Angebot OFF-2026-0415 auf Preise und Rabatt."
+      },
+      "contact": "Tom Ahlers, Platform Lead",
+      "risks": [
+        "Non-standard top-up terms need the deal desk."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-13",
+          "kind": "note",
+          "text": "Customer asks for a top-up and Joule for Procurement in one offer."
+        }
+      ],
+      "closeDate": "2026-11-30",
+      "category": "best",
+      "prev": {
+        "score": 50,
+        "category": "best",
+        "value": 126000,
+        "closeDate": "2026-11-30"
+      },
+      "changeWhy": {
+        "text": "The customer accepted the structure of the top-up; only the non-standard terms are open.",
+        "ref": "OFF-2026-0415"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 65 %, best case (up from 50 %)",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2026-0044",
+              "text": "Allotment 240k; consumption is forecast to use most of it by year-end."
+            },
+            {
+              "kind": "offer",
+              "ref": "OFF-2026-0415",
+              "text": "In negotiation, discount 8 %; the top-up terms are non-standard and pending the deal desk."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C-2024-0611",
+      "stage": "contract",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "SAP Commerce Cloud",
+      "value": 380000,
+      "score": null,
+      "owner": "Sven Albrecht",
+      "source": "Contract",
+      "existing": true,
+      "contractId": "C-2024-0611",
+      "met": [
+        true,
+        false,
+        false,
+        true
+      ],
+      "end": "2026-12-31",
+      "noticeDays": 60,
+      "autoRenew": false,
+      "next": {
+        "text": "Renewal due: notice period ends 2026-11-01",
+        "due": "2026-11-01",
+        "skill": "renewal-radar",
+        "prompt": "Welche Fristen laufen beim Vertrag C-2024-0611?"
+      },
+      "contact": "Julia Westphal, Head of E-Commerce",
+      "risks": [
+        "The renewal offer OFF-2026-0402 is open and the last day to give notice is close."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-16",
+          "kind": "note",
+          "text": "Renewal proposal OFF-2026-0402 sent."
+        }
+      ]
+    },
+    {
+      "id": "C-2026-0044",
+      "stage": "contract",
+      "account": "Hanse Handelsgruppe AG",
+      "title": "AI units (Joule, AI Core, Document AI, Ariba AI)",
+      "value": 240000,
+      "score": null,
+      "owner": "Mira Hoffmann",
+      "source": "Contract",
+      "existing": true,
+      "contractId": "C-2026-0044",
+      "met": [
+        true,
+        false,
+        false,
+        true
+      ],
+      "end": "2026-12-31",
+      "noticeDays": 60,
+      "autoRenew": true,
+      "next": {
+        "text": "AI units contract ends; notice period ends 2026-11-01",
+        "due": "2026-11-01",
+        "skill": "renewal-radar",
+        "prompt": "Welche Fristen laufen beim Vertrag C-2026-0044?"
+      },
+      "contact": "Tom Ahlers, Platform Lead",
+      "risks": [
+        "The top-up offer OFF-2026-0415 is still in negotiation."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-13",
+          "kind": "note",
+          "text": "Top-up requested."
+        }
+      ]
     }
   ],
   "automation": {
@@ -1197,8 +1687,8 @@
         "rule": "Probability below 50 %."
       }
     ],
-    "quotaEur": 900000,
-    "quotaNote": "Fictional target for Q4 2026 and Q1 2027 closes.",
+    "quotaEur": 1500000,
+    "quotaNote": "Fictional target for Q4 2026 and Q1 2027 closes, both accounts.",
     "previousAsOf": "2026-10-12"
   },
   "meetings": [
@@ -1593,31 +2083,147 @@
           "sent": false
         }
       }
+    },
+    {
+      "id": "M-506",
+      "date": "2026-10-27",
+      "time": "10:00",
+      "minutes": 45,
+      "title": "Commerce renewal: search issue and Shopify evaluation",
+      "kind": "customer",
+      "dealId": "OFF-2026-0402",
+      "people": [
+        {
+          "name": "Julia Westphal",
+          "side": "customer"
+        },
+        {
+          "name": "Tom Ahlers",
+          "side": "customer"
+        },
+        {
+          "name": "Sven Albrecht",
+          "side": "us"
+        }
+      ],
+      "skill": "customer-call-prep",
+      "prep": {
+        "brief": [
+          "Commerce Cloud renewal 405k, discount 12 %, deal desk approved; valid until 20 November.",
+          "The customer names Shopify Plus as an alternative.",
+          "The contract ends on 31 December; the last day to give notice is 1 November."
+        ],
+        "questions": [
+          "What would the customer need to see to stay on Commerce Cloud?",
+          "Is the search issue the main reason for the evaluation?"
+        ],
+        "flags": [
+          "Do not promise a fix date for the search issue before Support confirms"
+        ],
+        "context": {
+          "tickets": [
+            "TKT-48166"
+          ],
+          "invoices": [],
+          "note": "The open High ticket is about the storefront search of the same product: the customer will raise it."
+        }
+      }
+    },
+    {
+      "id": "M-507",
+      "date": "2026-11-03",
+      "time": "14:30",
+      "minutes": 45,
+      "title": "AI units top-up and Joule for Procurement",
+      "kind": "customer",
+      "dealId": "OFF-2026-0415",
+      "people": [
+        {
+          "name": "Tom Ahlers",
+          "side": "customer"
+        },
+        {
+          "name": "Mirko Sander",
+          "side": "customer"
+        },
+        {
+          "name": "Mira Hoffmann",
+          "side": "us"
+        }
+      ],
+      "skill": "customer-call-prep",
+      "prep": {
+        "brief": [
+          "Top-up and Joule for Procurement 126k, discount 8 %, in negotiation.",
+          "The non-standard top-up terms are with the deal desk.",
+          "AI-unit consumption is forecast to use most of the 240k allotment by year-end."
+        ],
+        "questions": [
+          "Which workloads drive the extra units?",
+          "Who in Procurement owns the Joule use case?"
+        ],
+        "flags": [
+          "Do not confirm the top-up terms before the deal desk has decided"
+        ],
+        "context": {
+          "tickets": [
+            "TKT-47932"
+          ],
+          "invoices": [],
+          "note": "Document AI is part of the AI-unit pool and has an open ticket on scanned invoices."
+        }
+      }
     }
   ],
   "sub4me": {
-    "customer": "Muster Industrie AG",
     "tickets": [
       {
         "id": "TKT-48107",
         "title": "BTP AI Core deployment quota exceeded in eu10",
         "product": "BTP AI Core",
         "priority": "Very high",
-        "status": "Waiting for customer"
+        "status": "Waiting for customer",
+        "customer": "muster"
       },
       {
         "id": "TKT-48213",
         "title": "Joule skill returns empty result for open purchase orders",
         "product": "Joule copilots",
         "priority": "High",
-        "status": "In processing"
+        "status": "In processing",
+        "customer": "muster"
       },
       {
         "id": "TKT-47888",
         "title": "Ariba approval workflow not triggering for cost centre 4711",
         "product": "Ariba AI",
         "priority": "Medium",
-        "status": "In processing"
+        "status": "In processing",
+        "customer": "muster"
+      },
+      {
+        "id": "TKT-48166",
+        "title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
+        "product": "SAP Commerce Cloud",
+        "priority": "High",
+        "status": "In processing",
+        "customer": "hanse"
+      },
+      {
+        "id": "TKT-47932",
+        "title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
+        "product": "Document AI",
+        "priority": "High",
+        "status": "In processing",
+        "customer": "hanse"
+      },
+      {
+        "id": "TKT-48041",
+        "title": "Ariba Supplier Risk: risk scores not updated since 2026-10-01",
+        "product": "Ariba Procurement and Supplier Risk",
+        "priority": "Medium",
+        "status": "Waiting for customer",
+        "customer": "hanse"
       }
     ],
     "invoices": [
@@ -1626,15 +2232,37 @@
         "contractId": "C-2023-0390",
         "status": "Overdue",
         "due": "2026-08-31",
-        "grossEur": 86275
+        "grossEur": 86275,
+        "customer": "muster"
       },
       {
         "id": "CN-2026-00231",
         "contractId": "C-2025-0041",
         "status": "Settled",
         "due": "2026-03-12",
-        "grossEur": -14756
+        "grossEur": -14756,
+        "customer": "muster"
+      },
+      {
+        "id": "INV-2026-30411",
+        "contractId": "C-2025-0458",
+        "status": "Open",
+        "due": "2026-10-31",
+        "grossEur": 124593.0,
+        "customer": "hanse"
+      },
+      {
+        "id": "INV-2026-30077",
+        "contractId": "C-2024-0702",
+        "status": "Open",
+        "due": "2026-10-31",
+        "grossEur": 261502.5,
+        "customer": "hanse"
       }
+    ],
+    "customers": [
+      "Muster Industrie AG",
+      "Hanse Handelsgruppe AG"
     ]
   },
   "inbox": [
@@ -1775,6 +2403,41 @@
       "policy": "never",
       "status": "blocked",
       "blockedBecause": "Instructions inside customer text are data, never commands. Flagged for Security."
+    },
+    {
+      "id": "S-09",
+      "kind": "risk",
+      "dealId": "OFF-2026-0402",
+      "summary": "Open High ticket threatens the renewal",
+      "field": "Risk",
+      "from": "none noted",
+      "to": "Storefront search empty since the catalog import (TKT-48166)",
+      "source": {
+        "kind": "ticket",
+        "ref": "TKT-48166",
+        "text": "High priority, in processing since 10 October."
+      },
+      "confidence": "high",
+      "policy": "suggest",
+      "status": "pending"
+    },
+    {
+      "id": "S-10",
+      "kind": "deal",
+      "dealId": "OFF-2026-0415",
+      "summary": "Top-up terms are non-standard",
+      "field": "Top-up terms",
+      "from": "standard",
+      "to": "non-standard, needs approval",
+      "source": {
+        "kind": "offer",
+        "ref": "OFF-2026-0415",
+        "text": "Approval status: pending deal desk (non-standard top-up terms)."
+      },
+      "confidence": "high",
+      "policy": "approve",
+      "status": "pending",
+      "approver": "Deal desk"
     }
   ],
   "governance": {
