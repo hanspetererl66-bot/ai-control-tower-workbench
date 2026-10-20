@@ -276,6 +276,7 @@ test('MCP Marketplace Space: data is in sync, sourced, and the built-in entries 
   }
   const arc = d.servers.find((s) => s.id === 'arc-1');
   assert.equal(arc.tools.length, 12);
+  assert.deepEqual(d.servers.find((s) => s.id === 'sap-notes').tools.map((t) => t.name), ['search', 'fetch']);
   assert.ok(arc.switches.some((w) => w.name === 'SAP_ALLOW_FREE_SQL' && w.default === 'false'));
   for (const [id, dir] of [['ai-control-tower', 'control-tower'], ['gmail-drafts', 'gmail']]) {
     const m = JSON.parse(readFileSync(join(ROOT, 'connectors', dir, 'manifest.json'), 'utf8'));
