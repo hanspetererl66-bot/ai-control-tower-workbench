@@ -281,6 +281,10 @@ Six more skills close the gaps for an account executive: `discovery-meddpicc`, `
 
 The Sales Space has two more tabs. **Forecast** shows commit, best case and pipeline by close month with weighted totals and target coverage (category rule: probability 70 % or more and a cleared discount is commit, 50 to 69 % best case, below 50 % pipeline). **Meetings** lists upcoming meetings with a brief, questions and flags, and finished calls with proposed CRM changes, actions from the call and a follow-up mail that is only a draft. Data is in `examples/sales/pipeline.json` (`closeDate`, `category`, `forecast`, `meetings`); a test keeps it consistent with the call transcripts, e-mail threads and Sub4Me data. After a pull run `npm run sync:mockups`, `npm run sync:skill-marketplace` and `npm run install:sales`.
 
+### MCP Marketplace
+
+A Space **MCP Marketplace** (`npm run install:mcp-marketplace`) is a governed catalog of MCP servers. Each entry shows what the server can do (tools classed as reads only, can change the system, can read business data), which switches are off by default, authentication, install options, our assessment, a pilot plan and the checks still open. First candidate: **ARC-1** (`arc-mcp/arc-1`, ABAP development over ADT, MIT, read-only by default). The two built-in connectors appear as reference entries and a test keeps their tool lists equal to the manifests. Facts about ARC-1 come from its public README on 2026-10-20 and were not run by us; the page says so. The Space lists and assesses only: installation stays with Connectors & Skills and its in-app review dialog. Data lives in `examples/mcp-marketplace/servers.json` (embedded by `npm run sync:mockups`).
+
 ### Skill Marketplace as a control surface for business users
 
 The Space is now organised for business users instead of a flat list. Navigation: **Discover** (search with live hits, skills by business
