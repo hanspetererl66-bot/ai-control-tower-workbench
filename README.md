@@ -350,6 +350,7 @@ Ideas taken from AI-native CRMs (sourced reasoning, auto-capture, governed agent
 - **Why? Sources** in the deal drawer: each statement (probability, value, notice date) lists the mail, call, contract, ticket, invoice or offer it comes from, with a confidence. A test checks that every reference exists.
 - **Inbox:** suggestions captured from mails and calls (new stakeholder, risk, next step, closing an open action). Nothing reaches a deal until you accept; accepted and rejected items can be undone. A discount question cannot be accepted here and goes to the deal desk; an instruction hidden in a customer mail is blocked and flagged.
 - **Governance:** four levels (does it itself, you confirm, needs an approver, never) and an audit log of every decision, including undo.
+- **Two accounts:** the pipeline now also carries Hanse Handelsgruppe AG (interest, lead, opportunity, three offers, two contracts) built from the Sub4Me data; its briefs and evidence use tickets, offers, contracts and invoices (there are no sample calls or mails for Hanse). The forecast target is raised to 1.5M for both accounts.
 - **Forecast changes** since the previous week (category, probability, value, close date, each with its reason) and a **customer context** block in the meeting brief: open tickets, invoices and forecast changes from the Sub4Me data. The skill `customer-call-prep` now does the same through `list_tickets` and `list_invoices` and names a source for every statement.
 
 ### Sub4Me: second customer, invoices and the ticket check
