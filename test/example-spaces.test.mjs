@@ -255,3 +255,32 @@ test('Sales Space: forecast categories follow the stated rules and meetings link
   assert.match(html, /data-tab="forecast"/); assert.match(html, /data-tab="meetings"/);
   assert.match(html, /nothing is written to a CRM and nothing is sent/);
 });
+
+test('MCP Marketplace Space: data is in sync, sourced, and the built-in entries match the connector manifests', async () => {
+  const { CATALOGS, embedMockupData } = await import('../scripts/sync-mockup-spaces.mjs');
+  for (const { page, data } of CATALOGS) {
+    const html = readFileSync(join(ROOT, page), 'utf8');
+    assert.equal(embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8'))), html, `${page}: run npm run sync:mockups`);
+    assert.doesNotMatch(html.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage|type="submit"/);
+  }
+  const d = JSON.parse(readFileSync(join(ROOT, 'examples/mcp-marketplace/servers.json'), 'utf8'));
+  assert.equal(new Set(d.servers.map((s) => s.id)).size, d.servers.length);
+  for (const s of d.servers) {
+    assert.ok(s.tools.length && s.tools.every((t) => d.classes[t.class]), `${s.id}: every tool has a known class`);
+    assert.equal(new Set(s.tools.map((t) => t.name)).size, s.tools.length, `${s.id}: unique tools`);
+    if (s.status === 'candidate') {
+      assert.match(s.source, /^https:\/\//); assert.ok(s.assessment.checks.length, `${s.id}: open checks are listed`);
+      assert.ok(s.tools.filter((t) => t.class !== 'read').every((t) => t.default === 'off'), `${s.id}: nothing that can change or read data is on by default`);
+      assert.match(d.note, /not run by us/);
+    }
+  }
+  const arc = d.servers.find((s) => s.id === 'arc-1');
+  assert.equal(arc.tools.length, 12);
+  assert.ok(arc.switches.some((w) => w.name === 'SAP_ALLOW_FREE_SQL' && w.default === 'false'));
+  for (const [id, dir] of [['ai-control-tower', 'control-tower'], ['gmail-drafts', 'gmail']]) {
+    const m = JSON.parse(readFileSync(join(ROOT, 'connectors', dir, 'manifest.json'), 'utf8'));
+    const s = d.servers.find((x) => x.id === id);
+    assert.deepEqual(s.tools.map((t) => t.name), m.tools.map((t) => t.name), `${id}: tools equal the manifest`);
+    assert.equal(s.version, m.version);
+  }
+});

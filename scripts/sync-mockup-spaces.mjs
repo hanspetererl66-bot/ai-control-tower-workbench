@@ -13,6 +13,10 @@ export const MOCKUPS = [
   { page: 'examples/customer-emails/index.html', data: 'examples/customer-emails/threads.json' },
   { page: 'examples/sales/index.html', data: 'examples/sales/pipeline.json' },
 ];
+/** Catalog Spaces: real, sourced facts (not fictional), embedded the same way. */
+export const CATALOGS = [
+  { page: 'examples/mcp-marketplace/index.html', data: 'examples/mcp-marketplace/servers.json' },
+];
 const BLOCK = /<script type="application\/json" id="data">[\s\S]*?<\/script>/;
 
 export function embedMockupData(html, data) {
@@ -25,7 +29,7 @@ export function embedMockupData(html, data) {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const check = process.argv.includes('--check');
   let stale = false;
-  for (const { page, data } of MOCKUPS) {
+  for (const { page, data } of [...MOCKUPS, ...CATALOGS]) {
     const html = readFileSync(join(ROOT, page), 'utf8');
     const next = embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8')));
     if (next !== html) { stale = true; if (!check) writeFileSync(join(ROOT, page), next); }
