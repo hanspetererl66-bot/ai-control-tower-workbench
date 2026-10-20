@@ -11,7 +11,15 @@ export type BridgeCall = (tool: string, args: Record<string, unknown>) => Promis
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Very high'];
 const REQUEST_ID = /^[A-Za-z0-9_-]{1,40}$/;
-const TICKET_ID = /^TKT-[A-Za-z0-9-]{1,20}$/;
+const CUSTOMER_ID = /^[a-z0-9-]{1,30}$/;
+const TICKET_ID = /^[A-Za-z0-9-]{1,40}$/;
+
+/** Tickets of another customer that this customer follows arrive masked: only id, product and status are shown. */
+function forPortal(ticket: any): Record<string, unknown> {
+  if (!isObject(ticket)) return {};
+  if (ticket.shared) return { ...ticket, title: 'Same issue as ' + String(ticket.id), description: '', followsId: ticket.id };
+  return ticket;
+}
 
 const strings = (value: unknown, max = 12): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string').slice(0, max) : [];
@@ -58,8 +66,9 @@ export async function handleSub4meMessage(data: unknown, call: BridgeCall | unde
   if (data.type === 's4m:tickets-request') {
     if (!call) return { type: 's4m:error', message: 'The agent is not connected yet.' };
     try {
-      const { tickets } = parseToolResult(await call('list_tickets', {}));
-      return Array.isArray(tickets) ? { type: 's4m:tickets', tickets } : { type: 's4m:error', message: 'unexpected ticket list' };
+      const customer = typeof data.customer === 'string' && CUSTOMER_ID.test(data.customer) ? data.customer : undefined;
+      const { tickets } = parseToolResult(await call('list_tickets', customer ? { customer } : {}));
+      return Array.isArray(tickets) ? { type: 's4m:tickets', ...(customer ? { customer } : {}), tickets: tickets.map(forPortal) } : { type: 's4m:error', message: 'unexpected ticket list' };
     } catch (error) {
       return { type: 's4m:error', message: error instanceof Error ? error.message : String(error) };
     }
@@ -76,9 +85,27 @@ export async function handleSub4meMessage(data: unknown, call: BridgeCall | unde
       return fail('invalid ticket');
     }
     if (!PRIORITIES.includes(priority)) return fail('invalid priority');
+    const customer = typeof data.customer === 'string' && CUSTOMER_ID.test(data.customer) ? data.customer : undefined;
+    const mode = data.mode === undefined ? 'new' : data.mode;
+    if (mode !== 'new' && mode !== 'follow' && mode !== 'related') return fail('invalid mode');
+    const targetId = typeof data.targetId === 'string' && TICKET_ID.test(data.targetId) ? data.targetId : undefined;
+    if (mode !== 'new' && !targetId) return fail('invalid target ticket');
+    const who = customer ? { customer } : {};
     try {
-      const { ticket } = parseToolResult(await call('create_ticket', { title, product, priority, description }));
-      return isObject(ticket) ? { type: 's4m:ticket-created', requestId, ticket } : fail('unexpected answer');
+      if (mode === 'follow') {
+        // Join the existing ticket: no new ticket is opened.
+        parseToolResult(await call('link_ticket', { ticket: targetId, kind: 'follows', ...who }));
+        const { tickets } = parseToolResult(await call('list_tickets', who));
+        const joined = Array.isArray(tickets) ? tickets.find((t) => isObject(t) && t.id === targetId) : undefined;
+        return joined ? { type: 's4m:ticket-created', requestId, ticket: forPortal({ ...joined, shared: true }) } : fail('ticket not found after linking');
+      }
+      const { ticket } = parseToolResult(await call('create_ticket', { title, product, priority, description, ...who }));
+      if (!isObject(ticket)) return fail('unexpected answer');
+      if (mode === 'related') {
+        parseToolResult(await call('link_ticket', { ticket: targetId, kind: 'related', newTicket: ticket.id, ...who }));
+        return { type: 's4m:ticket-created', requestId, ticket: { ...ticket, relatedTo: targetId } };
+      }
+      return { type: 's4m:ticket-created', requestId, ticket };
     } catch (error) {
       return fail(error instanceof Error ? error.message : String(error));
     }

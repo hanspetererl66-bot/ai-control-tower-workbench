@@ -63,6 +63,14 @@
       "description": "Open a Sub4Me demo ticket (the only write; demo table)."
     },
     {
+      "name": "find_similar_tickets",
+      "description": "Before opening a ticket: find a note with a solution and the same issue in open tickets of any customer."
+    },
+    {
+      "name": "link_ticket",
+      "description": "Let a customer follow an existing ticket or link a new ticket to it (demo link table)."
+    },
+    {
       "name": "search_skills",
       "description": "Search the shared skill registry (approved skills) before building a new skill."
     },
@@ -77,6 +85,14 @@
     {
       "name": "get_skill_ranking",
       "description": "Top skills by demand (installs, views, search hits), filterable by board area, LOB, team or reach."
+    },
+    {
+      "name": "list_customers",
+      "description": "List the fictional Sub4Me customers with ids (Muster Industrie AG, Hanse Handelsgruppe AG)."
+    },
+    {
+      "name": "list_invoices",
+      "description": "Invoices and credit notes of a Sub4Me customer (sample data)."
     },
     {
       "name": "list_contracts",

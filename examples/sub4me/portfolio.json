@@ -671,5 +671,1312 @@
         }
       ]
     }
-  ]
+  ],
+  "profile": {
+    "industry": "Industrial manufacturing (machinery)",
+    "employees": 11500,
+    "headquarters": "Mannheim, Germany",
+    "customerSince": 2014,
+    "segment": "Large enterprise",
+    "fiscalYearEnd": "12-31",
+    "legalEntities": [
+      "Muster Industrie AG, Mannheim",
+      "Muster Industrie Services GmbH, Heilbronn"
+    ],
+    "accountTeam": [
+      {
+        "name": "Katrin Lindner",
+        "role": "Account Executive, SAP",
+        "email": "katrin.lindner@example.com"
+      },
+      {
+        "name": "Mira Hoffmann",
+        "role": "Account Executive Platform, SAP",
+        "email": "mira.hoffmann@example.com"
+      },
+      {
+        "name": "Jonas Weber",
+        "role": "Customer Success Manager, SAP",
+        "email": "jonas.weber@example.com"
+      },
+      {
+        "name": "Lukas Fischer",
+        "role": "Solution Consultant, SAP",
+        "email": "lukas.fischer@example.com"
+      }
+    ],
+    "contacts": [
+      {
+        "name": "Anna Beispiel",
+        "role": "Head of IT Procurement",
+        "email": "a.beispiel@muster-industrie.example"
+      },
+      {
+        "name": "Dr. Anja Berger",
+        "role": "CIO",
+        "email": "dr.anja.berger@muster-industrie.example"
+      },
+      {
+        "name": "Lena Hoffmann",
+        "role": "Platform Lead",
+        "email": "l.hoffmann@muster-industrie.example"
+      },
+      {
+        "name": "Felix Brandt",
+        "role": "Head of IT Security",
+        "email": "f.brandt@muster-industrie.example"
+      }
+    ],
+    "landscape": [
+      "S/4HANA Cloud Private Edition (DEV, QAS, PRD)",
+      "Business Technology Platform in eu10",
+      "SuccessFactors Employee Central",
+      "Ariba Procurement",
+      "Joule, AI Core and Document AI under one AI-unit contract"
+    ],
+    "notes": "Reference customer for the platform. Renewals of SuccessFactors and Ariba fall into the next 120 days."
+  },
+  "invoices": [
+    {
+      "id": "INV-2026-10412",
+      "contractId": "C-2024-0187",
+      "type": "Invoice",
+      "period": "2026-01-01 to 2026-12-31",
+      "issued": "2026-01-01",
+      "due": "2026-01-31",
+      "netEur": 2840000,
+      "vatPct": 19,
+      "grossEur": 3379600.0,
+      "status": "Paid",
+      "paidOn": "2026-01-28",
+      "poNumber": "PO-4500187231",
+      "description": "S/4HANA Cloud Private Edition, annual in advance"
+    },
+    {
+      "id": "INV-2026-10655",
+      "contractId": "C-2024-0233",
+      "type": "Invoice",
+      "period": "2026-04-01 to 2027-03-31",
+      "issued": "2026-04-01",
+      "due": "2026-05-01",
+      "netEur": 640000,
+      "vatPct": 19,
+      "grossEur": 761600.0,
+      "status": "Paid",
+      "paidOn": "2026-04-27",
+      "poNumber": "PO-4500233908",
+      "description": "Business Technology Platform, annual in advance"
+    },
+    {
+      "id": "INV-2026-10398",
+      "contractId": "C-2025-0041",
+      "type": "Invoice",
+      "period": "2026-01-01 to 2026-12-31",
+      "issued": "2026-01-01",
+      "due": "2026-02-15",
+      "netEur": 410000,
+      "vatPct": 19,
+      "grossEur": 487900.0,
+      "status": "Paid",
+      "paidOn": "2026-02-10",
+      "poNumber": "PO-4500412870",
+      "description": "SuccessFactors Employee Central, annual in advance"
+    },
+    {
+      "id": "CN-2026-00231",
+      "contractId": "C-2025-0041",
+      "type": "Credit note",
+      "period": "2026-01-01 to 2026-12-31",
+      "issued": "2026-03-12",
+      "due": "2026-03-12",
+      "netEur": -12400,
+      "vatPct": 19,
+      "grossEur": -14756.0,
+      "status": "Settled",
+      "paidOn": "2026-03-12",
+      "poNumber": "PO-4500412870",
+      "description": "Headcount true-up: 190 employees fewer than invoiced"
+    },
+    {
+      "id": "INV-2026-10501",
+      "contractId": "C-2023-0390",
+      "type": "Invoice",
+      "period": "quarter starting 2026-02-01",
+      "issued": "2026-02-01",
+      "due": "2026-03-03",
+      "netEur": 72500,
+      "vatPct": 19,
+      "grossEur": 86275.0,
+      "status": "Paid",
+      "paidOn": "2026-02-27",
+      "poNumber": "PO-4500390456",
+      "description": "Ariba Procurement, quarterly in advance"
+    },
+    {
+      "id": "INV-2026-10561",
+      "contractId": "C-2023-0390",
+      "type": "Invoice",
+      "period": "quarter starting 2026-05-01",
+      "issued": "2026-05-01",
+      "due": "2026-05-31",
+      "netEur": 72500,
+      "vatPct": 19,
+      "grossEur": 86275.0,
+      "status": "Paid",
+      "paidOn": "2026-05-28",
+      "poNumber": "PO-4500390456",
+      "description": "Ariba Procurement, quarterly in advance"
+    },
+    {
+      "id": "INV-2026-10621",
+      "contractId": "C-2023-0390",
+      "type": "Invoice",
+      "period": "quarter starting 2026-08-01",
+      "issued": "2026-08-01",
+      "due": "2026-08-31",
+      "netEur": 72500,
+      "vatPct": 19,
+      "grossEur": 86275.0,
+      "status": "Overdue",
+      "paidOn": null,
+      "poNumber": "PO-4500390456",
+      "description": "Ariba Procurement, quarterly in advance"
+    },
+    {
+      "id": "INV-2026-10389",
+      "contractId": "C-2026-0012",
+      "type": "Invoice",
+      "period": "2026-01-01 to 2026-12-31",
+      "issued": "2026-01-01",
+      "due": "2026-01-31",
+      "netEur": 360000,
+      "vatPct": 19,
+      "grossEur": 428400.0,
+      "status": "Paid",
+      "paidOn": "2026-01-30",
+      "poNumber": "PO-4500601774",
+      "description": "AI units 2026, annual in advance"
+    },
+    {
+      "id": "INV-2025-20871",
+      "contractId": "C-2022-0502",
+      "type": "Invoice",
+      "period": "2025-07-01 to 2026-06-30",
+      "issued": "2025-07-01",
+      "due": "2025-07-31",
+      "netEur": 95000,
+      "vatPct": 19,
+      "grossEur": 113050.0,
+      "status": "Paid",
+      "paidOn": "2025-07-25",
+      "poNumber": "PO-4500502119",
+      "description": "Concur Travel, annual in advance"
+    }
+  ],
+  "otherCustomers": [
+    {
+      "id": "hanse",
+      "asOf": "2026-10-18",
+      "customer": {
+        "id": "hanse",
+        "name": "Hanse Handelsgruppe AG",
+        "number": "100-731-904",
+        "contact": "M. Sander",
+        "country": "Germany"
+      },
+      "profile": {
+        "industry": "Retail (food and household goods)",
+        "employees": 6200,
+        "headquarters": "Hamburg, Germany",
+        "customerSince": 2019,
+        "segment": "Large enterprise",
+        "fiscalYearEnd": "12-31",
+        "legalEntities": [
+          "Hanse Handelsgruppe AG, Hamburg",
+          "Hanse Logistik GmbH, Bremen"
+        ],
+        "accountTeam": [
+          {
+            "name": "Sven Albrecht",
+            "role": "Account Executive, SAP",
+            "email": "sven.albrecht@example.com"
+          },
+          {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          {
+            "name": "Lukas Fischer",
+            "role": "Solution Consultant, SAP",
+            "email": "lukas.fischer@example.com"
+          }
+        ],
+        "contacts": [
+          {
+            "name": "Mirko Sander",
+            "role": "Head of Procurement",
+            "email": "m.sander@hanse-handel.example"
+          },
+          {
+            "name": "Dr. Henrik Lorenz",
+            "role": "CIO",
+            "email": "h.lorenz@hanse-handel.example"
+          },
+          {
+            "name": "Julia Westphal",
+            "role": "Head of E-Commerce",
+            "email": "j.westphal@hanse-handel.example"
+          },
+          {
+            "name": "Tom Ahlers",
+            "role": "Platform Lead",
+            "email": "t.ahlers@hanse-handel.example"
+          },
+          {
+            "name": "Ines Carstens",
+            "role": "Head of Accounts Payable",
+            "email": "i.carstens@hanse-handel.example"
+          }
+        ],
+        "landscape": [
+          "S/4HANA Cloud Public Edition for 140 stores and 3 distribution centres",
+          "Ariba with Supplier Risk for 3,800 suppliers",
+          "SAP Commerce Cloud with three storefronts",
+          "SAP Analytics Cloud planning",
+          "AI units for Document AI (invoices), Joule and AI Core in eu10"
+        ],
+        "notes": "Retail group with strong seasonality. Commerce Cloud renewal and the Document AI volume are the topics this quarter."
+      },
+      "aiUnits": {
+        "periodStart": "2026-01-01",
+        "periodEnd": "2026-12-31",
+        "allotment": 80000,
+        "monthly": [
+          2600,
+          3200,
+          4100,
+          4800,
+          5700,
+          6400,
+          6050,
+          7100,
+          7700,
+          5300
+        ]
+      },
+      "products": [
+        {
+          "name": "Joule copilots",
+          "allotment": 25000,
+          "consumed": 12400,
+          "meters": "copilot dialogues and agent runs",
+          "monthly": [
+            600,
+            700,
+            900,
+            1100,
+            1300,
+            1500,
+            1400,
+            1700,
+            1900,
+            1300
+          ]
+        },
+        {
+          "name": "BTP AI Core",
+          "allotment": 20000,
+          "consumed": 15800,
+          "meters": "model inference and training hours",
+          "monthly": [
+            1200,
+            1300,
+            1500,
+            1500,
+            1700,
+            1800,
+            1600,
+            1900,
+            2000,
+            1300
+          ]
+        },
+        {
+          "name": "Document AI",
+          "allotment": 25000,
+          "consumed": 18000,
+          "meters": "processed document pages",
+          "monthly": [
+            500,
+            800,
+            1200,
+            1600,
+            2000,
+            2300,
+            2200,
+            2600,
+            2800,
+            2000
+          ]
+        },
+        {
+          "name": "Ariba AI",
+          "allotment": 10000,
+          "consumed": 6750,
+          "meters": "guided buying and supplier risk checks",
+          "monthly": [
+            300,
+            400,
+            500,
+            600,
+            700,
+            800,
+            850,
+            900,
+            1000,
+            700
+          ]
+        }
+      ],
+      "contracts": [
+        {
+          "id": "C-2025-0310",
+          "product": "S/4HANA Cloud Public Edition",
+          "scope": "800 users, 1 tenant set",
+          "start": "2025-04-01",
+          "end": "2030-03-31",
+          "annualEur": 1260000,
+          "status": "Active",
+          "noticeDays": 180,
+          "contractType": "Subscription (RISE with SAP)",
+          "signedOn": "2025-02-14",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-7700310045",
+          "costCenter": "CC-2000 Finance and IT",
+          "legalEntity": "Hanse Handelsgruppe AG, Hamburg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 14,
+          "sapOwner": {
+            "name": "Sven Albrecht",
+            "role": "Account Executive, SAP",
+            "email": "sven.albrecht@example.com"
+          },
+          "csm": {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Henrik Lorenz",
+            "role": "CIO",
+            "email": "h.lorenz@hanse-handel.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.7,
+            "supportHours": "Mon-Fri 7-19 CET, P1 24/7",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud, multi-tenant",
+          "licensedUnits": 800,
+          "usedUnits": 742,
+          "unit": "users",
+          "invoicing": {
+            "nextInvoiceOn": "2027-04-01",
+            "openInvoices": 0,
+            "openAmountEur": 0,
+            "paymentStatus": "Paid"
+          },
+          "termination": "No termination for convenience in the first 36 months; extraordinary termination for cause with 30 days cure period.",
+          "notes": "Fit-to-standard rollout across 140 stores finished in March 2026.",
+          "lines": [
+            {
+              "component": "S/4HANA Cloud Public Edition, core",
+              "quantity": 800,
+              "unit": "users",
+              "annualEur": 920000,
+              "unitPriceEur": 1150
+            },
+            {
+              "component": "Extension and integration packages",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 180000,
+              "unitPriceEur": 180000
+            },
+            {
+              "component": "Premium support",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 160000,
+              "unitPriceEur": 160000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0458",
+          "product": "Ariba Procurement and Supplier Risk",
+          "scope": "450 buyers, 3,800 suppliers",
+          "start": "2025-07-01",
+          "end": "2028-06-30",
+          "annualEur": 418800,
+          "status": "Active",
+          "noticeDays": 120,
+          "contractType": "Subscription",
+          "signedOn": "2025-05-20",
+          "billingCycle": "Quarterly in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-7700458112",
+          "costCenter": "CC-3100 Procurement",
+          "legalEntity": "Hanse Handelsgruppe AG, Hamburg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 10,
+          "sapOwner": {
+            "name": "Sven Albrecht",
+            "role": "Account Executive, SAP",
+            "email": "sven.albrecht@example.com"
+          },
+          "csm": {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          "customerOwner": {
+            "name": "Mirko Sander",
+            "role": "Head of Procurement",
+            "email": "m.sander@hanse-handel.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 7-19 CET",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Amsterdam (EU, NL)",
+          "deployment": "Public cloud",
+          "licensedUnits": 3800,
+          "usedUnits": 3410,
+          "unit": "suppliers",
+          "invoicing": {
+            "nextInvoiceOn": "2027-01-01",
+            "openInvoices": 1,
+            "openAmountEur": 104700,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at end of term with 120 days notice.",
+          "notes": "Supplier Risk scores feed the weekly category review.",
+          "lines": [
+            {
+              "component": "Ariba Buying and Invoicing",
+              "quantity": 450,
+              "unit": "buyers",
+              "annualEur": 234000,
+              "unitPriceEur": 520
+            },
+            {
+              "component": "Supplier Risk module",
+              "quantity": 3800,
+              "unit": "suppliers",
+              "annualEur": 136800,
+              "unitPriceEur": 36
+            },
+            {
+              "component": "Guided onboarding and catalog content",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 48000,
+              "unitPriceEur": 48000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2024-0611",
+          "product": "SAP Commerce Cloud",
+          "scope": "3 storefronts, 28 million page views a month",
+          "start": "2024-01-01",
+          "end": "2026-12-31",
+          "annualEur": 380000,
+          "status": "Renewal due",
+          "noticeDays": 60,
+          "contractType": "Subscription",
+          "signedOn": "2023-11-09",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-7700611320",
+          "costCenter": "CC-4400 E-Commerce",
+          "legalEntity": "Hanse Handelsgruppe AG, Hamburg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 4,
+          "discountPct": 11,
+          "sapOwner": {
+            "name": "Sven Albrecht",
+            "role": "Account Executive, SAP",
+            "email": "sven.albrecht@example.com"
+          },
+          "csm": {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          "customerOwner": {
+            "name": "Julia Westphal",
+            "role": "Head of E-Commerce",
+            "email": "j.westphal@hanse-handel.example"
+          },
+          "sla": {
+            "tier": "Premium Plus",
+            "availabilityPct": 99.9,
+            "supportHours": "24/7",
+            "responseVeryHighMin": 30
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 3,
+          "usedUnits": 3,
+          "unit": "storefronts",
+          "invoicing": {
+            "nextInvoiceOn": "2027-01-01",
+            "openInvoices": 0,
+            "openAmountEur": 0,
+            "paymentStatus": "Paid"
+          },
+          "termination": "Termination at the end of the term with 60 days notice; no automatic renewal.",
+          "notes": "Black Friday traffic peaks at three times the average. Customer evaluates alternatives for the next term.",
+          "lines": [
+            {
+              "component": "Commerce Cloud, B2C storefronts",
+              "quantity": 3,
+              "unit": "storefronts",
+              "annualEur": 234000,
+              "unitPriceEur": 78000
+            },
+            {
+              "component": "Traffic block (28 million page views a month)",
+              "quantity": 28,
+              "unit": "million views",
+              "annualEur": 84000,
+              "unitPriceEur": 3000
+            },
+            {
+              "component": "Premium support and managed services",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 62000,
+              "unitPriceEur": 62000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2024-0702",
+          "product": "SAP Analytics Cloud",
+          "scope": "650 users",
+          "start": "2024-11-01",
+          "end": "2027-10-31",
+          "annualEur": 219750,
+          "status": "Active",
+          "noticeDays": 90,
+          "contractType": "Subscription",
+          "signedOn": "2024-09-18",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-7700702004",
+          "costCenter": "CC-2000 Finance and IT",
+          "legalEntity": "Hanse Handelsgruppe AG, Hamburg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 8,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          "customerOwner": {
+            "name": "Ines Carstens",
+            "role": "Head of Accounts Payable",
+            "email": "i.carstens@hanse-handel.example"
+          },
+          "sla": {
+            "tier": "Standard",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 8-18 CET",
+            "responseVeryHighMin": 120
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 650,
+          "usedUnits": 588,
+          "unit": "users",
+          "invoicing": {
+            "nextInvoiceOn": null,
+            "openInvoices": 1,
+            "openAmountEur": 219750,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of term with 90 days notice.",
+          "notes": "Planning for store assortment and staffing.",
+          "lines": [
+            {
+              "component": "Analytics Cloud, planning users",
+              "quantity": 120,
+              "unit": "users",
+              "annualEur": 168000,
+              "unitPriceEur": 1400
+            },
+            {
+              "component": "Analytics Cloud, viewers",
+              "quantity": 530,
+              "unit": "users",
+              "annualEur": 39750,
+              "unitPriceEur": 75
+            },
+            {
+              "component": "Predictive scenarios",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 12000,
+              "unitPriceEur": 12000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2026-0044",
+          "product": "AI units (Joule, AI Core, Document AI, Ariba AI)",
+          "scope": "80,000 AI units, calendar year 2026",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "annualEur": 240000,
+          "status": "Active",
+          "noticeDays": 60,
+          "contractType": "Consumption (prepaid)",
+          "signedOn": "2025-12-04",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-7700044871",
+          "costCenter": "CC-2000 Finance and IT",
+          "legalEntity": "Hanse Handelsgruppe AG, Hamburg",
+          "governingLaw": "German law",
+          "autoRenew": true,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 5,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          "customerOwner": {
+            "name": "Tom Ahlers",
+            "role": "Platform Lead",
+            "email": "t.ahlers@hanse-handel.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 7-19 CET",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 80000,
+          "usedUnits": 52950,
+          "unit": "AI units",
+          "invoicing": {
+            "nextInvoiceOn": "2027-01-01",
+            "openInvoices": 0,
+            "openAmountEur": 0,
+            "paymentStatus": "Paid"
+          },
+          "termination": "Termination at the end of term with 60 days notice. Unused units do not carry over.",
+          "notes": "Document AI drives the usage: invoice and delivery-note processing in the shared service centre.",
+          "lines": [
+            {
+              "component": "AI units, yearly allotment",
+              "quantity": 80000,
+              "unit": "units",
+              "annualEur": 240000,
+              "unitPriceEur": 3
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2023-0215",
+          "product": "Integration Suite",
+          "scope": "15 million messages a year",
+          "start": "2023-05-01",
+          "end": "2026-04-30",
+          "annualEur": 135000,
+          "status": "Expired",
+          "noticeDays": 90,
+          "contractType": "Subscription",
+          "signedOn": "2023-03-10",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-7700215630",
+          "costCenter": "CC-2000 Finance and IT",
+          "legalEntity": "Hanse Handelsgruppe AG, Hamburg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 6,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Nina Kessler",
+            "role": "Customer Success Manager, SAP",
+            "email": "nina.kessler@example.com"
+          },
+          "customerOwner": {
+            "name": "Tom Ahlers",
+            "role": "Platform Lead",
+            "email": "t.ahlers@hanse-handel.example"
+          },
+          "sla": {
+            "tier": "Standard",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 8-18 CET",
+            "responseVeryHighMin": 120
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 15,
+          "usedUnits": 15,
+          "unit": "million messages",
+          "invoicing": {
+            "nextInvoiceOn": null,
+            "openInvoices": 0,
+            "openAmountEur": 0,
+            "paymentStatus": "Closed"
+          },
+          "termination": "Expired. Integrations still run on a trial tenant.",
+          "notes": "Expired in April; the customer asked for a reactivation offer.",
+          "lines": [
+            {
+              "component": "Integration Suite, message volume",
+              "quantity": 15,
+              "unit": "million messages",
+              "annualEur": 120000,
+              "unitPriceEur": 8000
+            },
+            {
+              "component": "Premium support",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 15000,
+              "unitPriceEur": 15000
+            }
+          ],
+          "currency": "EUR"
+        }
+      ],
+      "offers": [
+        {
+          "id": "OFF-2026-0402",
+          "type": "Renewal",
+          "product": "SAP Commerce Cloud",
+          "contractId": "C-2024-0611",
+          "scope": "3 storefronts, 32 million page views a month, 3-year term",
+          "start": "2027-01-01",
+          "end": "2029-12-31",
+          "annualEur": 405000,
+          "currentAnnualEur": 380000,
+          "validUntil": "2026-11-20",
+          "status": "Open",
+          "createdOn": "2026-09-30",
+          "owner": {
+            "name": "Sven Albrecht",
+            "role": "Account Executive, SAP",
+            "email": "sven.albrecht@example.com"
+          },
+          "stage": "Proposal sent",
+          "probabilityPct": 55,
+          "listPriceEur": 460227,
+          "discountPct": 12,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 36,
+          "autoRenew": false,
+          "upliftCapPct": 4,
+          "priceGuaranteeMonths": 36,
+          "approval": "Deal desk approved",
+          "competitor": "Shopify Plus (evaluation)",
+          "nextStep": "Workshop with E-Commerce on the traffic block by 2026-11-05",
+          "conditions": "Price valid for signature by the validity date; traffic true-up annually.",
+          "lines": [
+            {
+              "component": "Commerce Cloud, B2C storefronts",
+              "quantity": 3,
+              "unit": "storefronts",
+              "annualEur": 240000,
+              "unitPriceEur": 80000
+            },
+            {
+              "component": "Traffic block (32 million page views a month)",
+              "quantity": 32,
+              "unit": "million views",
+              "annualEur": 96000,
+              "unitPriceEur": 3000
+            },
+            {
+              "component": "Premium support and managed services",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 69000,
+              "unitPriceEur": 69000
+            }
+          ]
+        },
+        {
+          "id": "OFF-2026-0407",
+          "type": "Renewal",
+          "product": "Integration Suite",
+          "contractId": "C-2023-0215",
+          "scope": "20 million messages a year, 3-year term",
+          "start": "2026-12-01",
+          "end": "2029-11-30",
+          "annualEur": 190000,
+          "currentAnnualEur": 135000,
+          "validUntil": "2026-12-15",
+          "status": "Open",
+          "createdOn": "2026-10-06",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Proposal sent",
+          "probabilityPct": 40,
+          "listPriceEur": 211111,
+          "discountPct": 10,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 36,
+          "autoRenew": false,
+          "upliftCapPct": 3,
+          "priceGuaranteeMonths": 24,
+          "approval": "Deal desk approved",
+          "competitor": "None",
+          "nextStep": "Technical review with the platform team by 2026-11-12",
+          "conditions": "Replaces the expired contract; integrations are migrated from the trial tenant.",
+          "lines": [
+            {
+              "component": "Integration Suite, message volume",
+              "quantity": 20,
+              "unit": "million messages",
+              "annualEur": 170000,
+              "unitPriceEur": 8500
+            },
+            {
+              "component": "Premium support",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 20000,
+              "unitPriceEur": 20000
+            }
+          ]
+        },
+        {
+          "id": "OFF-2026-0415",
+          "type": "New product",
+          "product": "AI units top-up and Joule for Procurement",
+          "contractId": "C-2026-0044",
+          "scope": "30,000 additional AI units until 2026-12-31 and Joule skills for Ariba",
+          "start": "2026-11-15",
+          "end": "2026-12-31",
+          "annualEur": 126000,
+          "currentAnnualEur": 0,
+          "validUntil": "2026-11-30",
+          "status": "In negotiation",
+          "createdOn": "2026-10-12",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Negotiation",
+          "probabilityPct": 65,
+          "listPriceEur": 136957,
+          "discountPct": 8,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 2,
+          "autoRenew": false,
+          "upliftCapPct": 0,
+          "priceGuaranteeMonths": 0,
+          "approval": "Pending deal desk (non-standard top-up terms)",
+          "competitor": "None",
+          "nextStep": "Usage forecast review with the platform lead by 2026-10-27",
+          "conditions": "Top-up units expire with the main allotment; Joule skills continue in the renewal.",
+          "lines": [
+            {
+              "component": "AI units, top-up",
+              "quantity": 30000,
+              "unit": "units",
+              "annualEur": 90000,
+              "unitPriceEur": 3
+            },
+            {
+              "component": "Joule for Procurement skills",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 36000,
+              "unitPriceEur": 36000
+            }
+          ]
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-30118",
+          "contractId": "C-2025-0310",
+          "type": "Invoice",
+          "period": "2026-04-01 to 2027-03-31",
+          "issued": "2026-04-01",
+          "due": "2026-05-01",
+          "netEur": 1260000,
+          "vatPct": 19,
+          "grossEur": 1499400.0,
+          "status": "Paid",
+          "paidOn": "2026-04-24",
+          "poNumber": "PO-7700310045",
+          "description": "S/4HANA Cloud Public Edition, annual in advance"
+        },
+        {
+          "id": "INV-2026-30201",
+          "contractId": "C-2025-0458",
+          "type": "Invoice",
+          "period": "quarter starting 2026-01-01",
+          "issued": "2026-01-01",
+          "due": "2026-01-31",
+          "netEur": 104700,
+          "vatPct": 19,
+          "grossEur": 124593.0,
+          "status": "Paid",
+          "paidOn": "2026-01-29",
+          "poNumber": "PO-7700458112",
+          "description": "Ariba Procurement and Supplier Risk, quarterly in advance"
+        },
+        {
+          "id": "INV-2026-30271",
+          "contractId": "C-2025-0458",
+          "type": "Invoice",
+          "period": "quarter starting 2026-04-01",
+          "issued": "2026-04-01",
+          "due": "2026-05-01",
+          "netEur": 104700,
+          "vatPct": 19,
+          "grossEur": 124593.0,
+          "status": "Paid",
+          "paidOn": "2026-04-28",
+          "poNumber": "PO-7700458112",
+          "description": "Ariba Procurement and Supplier Risk, quarterly in advance"
+        },
+        {
+          "id": "INV-2026-30341",
+          "contractId": "C-2025-0458",
+          "type": "Invoice",
+          "period": "quarter starting 2026-07-01",
+          "issued": "2026-07-01",
+          "due": "2026-07-31",
+          "netEur": 104700,
+          "vatPct": 19,
+          "grossEur": 124593.0,
+          "status": "Paid",
+          "paidOn": "2026-07-30",
+          "poNumber": "PO-7700458112",
+          "description": "Ariba Procurement and Supplier Risk, quarterly in advance"
+        },
+        {
+          "id": "INV-2026-30411",
+          "contractId": "C-2025-0458",
+          "type": "Invoice",
+          "period": "quarter starting 2026-10-01",
+          "issued": "2026-10-01",
+          "due": "2026-10-31",
+          "netEur": 104700,
+          "vatPct": 19,
+          "grossEur": 124593.0,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-7700458112",
+          "description": "Ariba Procurement and Supplier Risk, quarterly in advance"
+        },
+        {
+          "id": "INV-2026-30044",
+          "contractId": "C-2024-0611",
+          "type": "Invoice",
+          "period": "2026-01-01 to 2026-12-31",
+          "issued": "2026-01-01",
+          "due": "2026-01-31",
+          "netEur": 380000,
+          "vatPct": 19,
+          "grossEur": 452200.0,
+          "status": "Paid",
+          "paidOn": "2026-01-27",
+          "poNumber": "PO-7700611320",
+          "description": "SAP Commerce Cloud, annual in advance"
+        },
+        {
+          "id": "CN-2026-00418",
+          "contractId": "C-2024-0611",
+          "type": "Credit note",
+          "period": "2026-01-01 to 2026-12-31",
+          "issued": "2026-06-15",
+          "due": "2026-06-15",
+          "netEur": -9800,
+          "vatPct": 19,
+          "grossEur": -11662.0,
+          "status": "Settled",
+          "paidOn": "2026-06-15",
+          "poNumber": "PO-7700611320",
+          "description": "Credit for the storefront outage on 2026-05-18 (SLA 99.9 %)"
+        },
+        {
+          "id": "INV-2025-30871",
+          "contractId": "C-2024-0702",
+          "type": "Invoice",
+          "period": "2025-11-01 to 2026-10-31",
+          "issued": "2025-11-01",
+          "due": "2025-12-01",
+          "netEur": 219750,
+          "vatPct": 19,
+          "grossEur": 261502.5,
+          "status": "Paid",
+          "paidOn": "2025-11-26",
+          "poNumber": "PO-7700702004",
+          "description": "SAP Analytics Cloud, annual in advance"
+        },
+        {
+          "id": "INV-2026-30009",
+          "contractId": "C-2026-0044",
+          "type": "Invoice",
+          "period": "2026-01-01 to 2026-12-31",
+          "issued": "2026-01-01",
+          "due": "2026-01-31",
+          "netEur": 240000,
+          "vatPct": 19,
+          "grossEur": 285600.0,
+          "status": "Paid",
+          "paidOn": "2026-01-30",
+          "poNumber": "PO-7700044871",
+          "description": "AI units 2026, annual in advance"
+        },
+        {
+          "id": "INV-2026-30077",
+          "contractId": "C-2024-0702",
+          "type": "Invoice",
+          "period": "2026-11-01 to 2027-10-31",
+          "issued": "2026-10-01",
+          "due": "2026-10-31",
+          "netEur": 219750,
+          "vatPct": 19,
+          "grossEur": 261502.5,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-7700702004",
+          "description": "SAP Analytics Cloud, annual in advance (issued one month ahead)"
+        },
+        {
+          "id": "INV-2025-30412",
+          "contractId": "C-2023-0215",
+          "type": "Invoice",
+          "period": "2025-05-01 to 2026-04-30",
+          "issued": "2025-05-01",
+          "due": "2025-05-31",
+          "netEur": 135000,
+          "vatPct": 19,
+          "grossEur": 160650.0,
+          "status": "Paid",
+          "paidOn": "2025-05-26",
+          "poNumber": "PO-7700215630",
+          "description": "Integration Suite, annual in advance"
+        }
+      ],
+      "tickets": [
+        {
+          "id": "TKT-48166",
+          "title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
+          "product": "SAP Commerce Cloud",
+          "priority": "High",
+          "status": "In processing",
+          "description": "After the nightly catalog import on 2026-10-09 the storefront search for the hanse-nord shop returns no hits. The index shows 0 documents.",
+          "created": "2026-10-10",
+          "updated": "2026-10-16"
+        },
+        {
+          "id": "TKT-48041",
+          "title": "Ariba Supplier Risk: risk scores not updated since 2026-10-01",
+          "product": "Ariba Procurement and Supplier Risk",
+          "priority": "Medium",
+          "status": "Waiting for customer",
+          "description": "Scores for 3,800 suppliers show the date 2026-10-01. We need the list of suppliers with changed scores for the category review.",
+          "created": "2026-10-06",
+          "updated": "2026-10-14"
+        },
+        {
+          "id": "TKT-47932",
+          "title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
+          "product": "Document AI",
+          "priority": "High",
+          "status": "In processing",
+          "description": "Invoices from two logistics suppliers come back without the VAT ID field. Other fields are fine.",
+          "created": "2026-10-01",
+          "updated": "2026-10-12"
+        },
+        {
+          "id": "TKT-47777",
+          "title": "S/4HANA Cloud Public Edition: Fiori tile for supplier invoices missing after the upgrade",
+          "product": "S/4HANA Cloud Public Edition",
+          "priority": "Low",
+          "status": "Solution provided",
+          "description": "After the 2608 upgrade the app Manage Supplier Invoices is not in the launchpad for the AP team.",
+          "created": "2026-09-24",
+          "updated": "2026-10-02"
+        },
+        {
+          "id": "TKT-47120",
+          "title": "Request: more Joule copilot agents for the shared service centre",
+          "product": "Joule copilots",
+          "priority": "Medium",
+          "status": "Closed",
+          "description": "We want to run six agents in parallel instead of four.",
+          "created": "2026-08-18",
+          "updated": "2026-08-29"
+        }
+      ]
+    }
+  ],
+  "knowledge": {
+    "note": "Fictional sample notes for the ticket pre-check. They are not SAP Notes and carry no real note numbers. With the SAP Notes MCP connected, the same step searches the real notes.",
+    "sapNotes": [
+      {
+        "id": "SAMPLE-1001",
+        "title": "AI Core: deployment rejected with quota exceeded in region eu10",
+        "product": "BTP AI Core",
+        "component": "AI Core, resource groups",
+        "keywords": "quota exceeded eu10 deployment rejected resource group inference",
+        "description": "New deployments or inference scale-ups fail with a quota error although usage looks moderate. The quota is set per resource group and region.",
+        "solution": "Request a temporary quota increase for the resource group in eu10 through the quota service request, then set a usage alert at 80 percent of the quota. Remove idle deployments that still reserve capacity.",
+        "updated": "2026-09-30"
+      },
+      {
+        "id": "SAMPLE-1002",
+        "title": "Document AI: empty header fields for scanned multi-page invoices",
+        "product": "Document AI",
+        "component": "Document AI, extraction",
+        "keywords": "scanned invoice multi page empty fields vat id extraction header",
+        "description": "Header fields such as the VAT ID or invoice date come back empty for scanned multi-page invoices, while line items are found.",
+        "solution": "Enable page-orientation correction in the extraction schema and add the header fields to the schema version used by the channel. Re-run the affected documents; no new model training is needed.",
+        "updated": "2026-08-21"
+      },
+      {
+        "id": "SAMPLE-1003",
+        "title": "Ariba: approval workflow does not start for a cost centre range",
+        "product": "Ariba AI",
+        "component": "Ariba, approval rules",
+        "keywords": "approval workflow not triggering cost centre approval rule validity",
+        "description": "Requisitions for certain cost centres skip the approval flow or never start it.",
+        "solution": "Check the validity window and the cost centre range of the approval rule; rules copied from a previous year keep their old end date. Activate the corrected rule and resubmit the requisition.",
+        "updated": "2026-07-14"
+      },
+      {
+        "id": "SAMPLE-1004",
+        "title": "Joule skill returns an empty list for open purchase orders",
+        "product": "Joule copilots",
+        "component": "Joule, skills",
+        "keywords": "joule skill empty result purchase orders authorization technical user odata",
+        "description": "A Joule skill that reads purchase orders answers with an empty list or says nothing was found.",
+        "solution": "Check the authorization scope of the technical user behind the skill destination and the date filter of the OData query. After the fix, clear the skill cache and test with a known purchase order.",
+        "updated": "2026-10-02"
+      },
+      {
+        "id": "SAMPLE-1005",
+        "title": "Commerce Cloud: storefront search empty after catalog import",
+        "product": "SAP Commerce Cloud",
+        "component": "Commerce, search and indexing",
+        "keywords": "storefront search no results catalog import index empty",
+        "description": "After a catalog import the storefront search finds nothing and the index shows no documents.",
+        "solution": "Run a full re-index for the affected index type after the import and verify that the import synchronisation job finished with status FINISHED before the index job starts.",
+        "updated": "2026-06-11"
+      }
+    ],
+    "scenarios": [
+      {
+        "customer": "hanse",
+        "label": "Quota error in eu10",
+        "title": "AI Core deployments rejected: quota exceeded in eu10",
+        "product": "BTP AI Core",
+        "priority": "High",
+        "description": "Since this morning new inference deployments in region eu10 are rejected with a quota exceeded error."
+      },
+      {
+        "customer": "hanse",
+        "label": "Empty fields in scanned invoices",
+        "title": "Document AI returns empty header fields for scanned multi-page invoices",
+        "product": "Document AI",
+        "priority": "Medium",
+        "description": "Scanned invoices from the shared service centre come back without VAT ID and invoice date."
+      },
+      {
+        "customer": "hanse",
+        "label": "Export to PDF fails (no match)",
+        "title": "Analytics Cloud story export to PDF fails for large planning stories",
+        "product": "SAP Analytics Cloud",
+        "priority": "Low",
+        "description": "Exporting a planning story with 40 pages stops at page 12 and shows a generic error."
+      },
+      {
+        "customer": "muster",
+        "label": "Open purchase orders in Joule",
+        "title": "Joule skill shows no open purchase orders for the plant Mannheim",
+        "product": "Joule copilots",
+        "priority": "High",
+        "description": "The purchase order skill answers that no open orders exist, but the list in S/4HANA has 40."
+      },
+      {
+        "customer": "muster",
+        "label": "Ariba approvals skipped",
+        "title": "Ariba approval workflow does not start for cost centre 4720",
+        "product": "Ariba AI",
+        "priority": "Medium",
+        "description": "Requisitions for cost centre 4720 skip the approval flow."
+      }
+    ]
+  }
 }

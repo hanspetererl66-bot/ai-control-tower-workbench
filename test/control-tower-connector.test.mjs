@@ -450,7 +450,7 @@ test('ticket tools call the Sub4Me RPC functions with validated arguments', asyn
         assert.equal(created.ticket.id, 'TKT-48214');
         assert.deepEqual(bodies.at(-1), {
           url: '/rest/v1/rpc/sub4me_create_ticket',
-          body: { p_title: 'Login broken', p_product: 'BTP AI Core', p_priority: 'High', p_description: '' },
+          body: { p_title: 'Login broken', p_product: 'BTP AI Core', p_priority: 'High', p_description: '', p_customer: 'muster' },
         });
         for (const args of [
           { product: 'x', priority: 'High' },

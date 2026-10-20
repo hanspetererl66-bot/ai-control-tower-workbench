@@ -29,7 +29,12 @@ export function loadSub4MeData() {
   throw new Error('Sub4Me sample data not found');
 }
 
-export const SUB4ME_TOOL_DEFINITIONS = [
+const CUSTOMER_PROP = {
+  type: 'string',
+  description: 'Customer id (see list_customers), for example "muster" or "hanse". Default: the first customer (Muster Industrie AG).',
+};
+
+const BASE_TOOL_DEFINITIONS = [
   {
     name: 'list_contracts',
     description:
@@ -118,6 +123,48 @@ export const SUB4ME_TOOL_DEFINITIONS = [
   },
 ];
 
+export const SUB4ME_TOOL_DEFINITIONS = [
+  {
+    name: 'list_customers',
+    description:
+      'List the fictional Sub4Me customers (id, name, customer number, country, industry, segment, number of contracts and open tickets). Use it first when the question does not name a customer. Sample data from the Sub4Me example Space.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
+    name: 'list_invoices',
+    description:
+      'List invoices and credit notes of a Sub4Me customer with contract, period, due date, net and gross amount and status (Open, Overdue, Paid, Settled). Optionally filter by status or contract. Answers questions such as "which invoices are overdue?". Sample data from the Sub4Me example Space.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        customer: CUSTOMER_PROP,
+        status: { type: 'string', enum: ['Open', 'Overdue', 'Paid', 'Settled'] },
+        contract: { type: 'string', description: 'Contract id, for example "C-2025-0041".' },
+      },
+      additionalProperties: false,
+    },
+  },
+  ...BASE_TOOL_DEFINITIONS.map((tool) => ({
+    ...tool,
+    inputSchema: { ...tool.inputSchema, properties: { customer: CUSTOMER_PROP, ...(tool.inputSchema.properties ?? {}) } },
+  })),
+];
+
+/** One record per customer: the primary customer is the top level of the data, the others sit in otherCustomers. */
+export function customerRecords(all) {
+  const first = { id: all.customer?.id ?? 'muster', asOf: all.asOf, customer: all.customer, profile: all.profile, aiUnits: all.aiUnits, products: all.products, contracts: all.contracts, offers: all.offers, invoices: all.invoices ?? [], tickets: all.tickets ?? [] };
+  return [first, ...(all.otherCustomers ?? []).map((r) => ({ invoices: [], tickets: [], ...r }))];
+}
+
+function recordOf(all, id) {
+  const records = customerRecords(all);
+  if (id === undefined || id === null || id === '') return records[0];
+  const needle = String(id).toLowerCase();
+  const hit = records.find((r) => r.id.toLowerCase() === needle) ?? records.find((r) => r.customer?.name?.toLowerCase().includes(needle));
+  if (!hit) throw new ToolError(`Unknown customer "${id}". Known: ${records.map((r) => r.id).join(', ')}`);
+  return hit;
+}
+
 const pct = (part, whole) => (whole ? Math.round((part / whole) * 1000) / 10 : 0);
 const sum = (list) => list.reduce((a, b) => a + b, 0);
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -201,7 +248,7 @@ async function withPortfolio(d, rpc) {
 /** Lists stay compact: the line items are only returned for a single contract or offer. */
 const withoutLines = ({ lines, ...rest }) => ({ ...rest, lineCount: Array.isArray(lines) ? lines.length : 0 });
 
-export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
+function createCustomerHandlers(load, rpc) {
   const data = () => {
     try {
       return load();
@@ -463,4 +510,66 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
     },
   };
   return self;
+}
+
+
+/** Handlers for all Sub4Me tools; every call may name a `customer` (default: the first one). */
+export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
+  const all = () => {
+    try {
+      return load();
+    } catch (error) {
+      throw new ToolError(`Sub4Me sample data unavailable: ${error.message}`);
+    }
+  };
+  const forCustomer = (id) => {
+    const record = recordOf(all(), id);
+    const scoped = rpc ? (name, body) => rpc(name, { ...body, p_customer: record.id }) : null;
+    return { record, handlers: createCustomerHandlers(() => record, scoped) };
+  };
+  const result = {
+    async list_customers() {
+      const records = customerRecords(all());
+      const closed = (t) => t.status === 'Closed' || t.status === 'Solution provided';
+      return {
+        count: records.length,
+        customers: records.map((r) => ({
+          id: r.id, name: r.customer?.name, number: r.customer?.number, country: r.customer?.country,
+          industry: r.profile?.industry, segment: r.profile?.segment,
+          contracts: r.contracts.length, invoices: r.invoices.length, openTickets: r.tickets.filter((t) => !closed(t)).length,
+        })),
+        source: 'sample data (Sub4Me example Space)',
+      };
+    },
+    async list_invoices(args) {
+      const { record } = forCustomer(args.customer);
+      const STATUSES = ['Open', 'Overdue', 'Paid', 'Settled'];
+      if (args.status !== undefined && !STATUSES.includes(args.status)) throw new ToolError(`status must be one of: ${STATUSES.join(', ')}`);
+      let list = record.invoices;
+      let dataSource = 'sample data (Sub4Me example Space)';
+      if (rpc) {
+        try {
+          const live = await rpc('sub4me_invoices', { p_customer: record.id });
+          if (Array.isArray(live) && live.length) { list = live; dataSource = 'supabase'; }
+        } catch {
+          // keep the embedded invoices
+        }
+      }
+      if (args.status) list = list.filter((i) => i.status === args.status);
+      if (args.contract) list = list.filter((i) => i.contractId === args.contract);
+      const open = list.filter((i) => i.status === 'Open' || i.status === 'Overdue');
+      return {
+        customer: record.customer?.name, asOf: record.asOf, count: list.length,
+        openGrossEur: open.reduce((a, i) => a + i.grossEur, 0), overdue: list.filter((i) => i.status === 'Overdue').length,
+        invoices: list, source: dataSource, view: { space: 'sub4me', tab: 'invoices' },
+      };
+    },
+  };
+  for (const name of Object.keys(createCustomerHandlers(() => ({}), null))) {
+    result[name] = async (args = {}) => {
+      const { customer, ...rest } = args;
+      return forCustomer(customer).handlers[name](rest);
+    };
+  }
+  return result;
 }

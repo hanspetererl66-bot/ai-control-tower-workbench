@@ -2080,6 +2080,58 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "skill:ticket-triage",
+   "type": "skill",
+   "label": "ticket-triage",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "lob",
+    "Team": "AI Programme Office",
+    "Rating": "4.5 of 5 (6 ratings)",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-10-20",
+    "Value last full month": "€218",
+    "Runs last full month": "11"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:list_customers",
+   "type": "tool",
+   "label": "list_customers",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:find_similar_tickets",
+   "type": "tool",
+   "label": "find_similar_tickets",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:list_tickets",
+   "type": "tool",
+   "label": "list_tickets",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:link_ticket",
+   "type": "tool",
+   "label": "link_ticket",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
    "id": "skill:ticket-writer",
    "type": "skill",
    "label": "ticket-writer",
@@ -2097,14 +2149,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "skill-marketplace",
     "tab": "catalog"
-   }
-  },
-  {
-   "id": "tool:list_tickets",
-   "type": "tool",
-   "label": "list_tickets",
-   "meta": {
-    "System": "Sub4Me"
    }
   },
   {
@@ -4406,9 +4450,39 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
-   "source": "skill:ticket-writer",
+   "source": "skill:ticket-triage",
    "target": "system:marketplace",
    "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:list_customers",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_customers",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "tool:list_customers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:find_similar_tickets",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:find_similar_tickets",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "tool:find_similar_tickets",
+   "type": "USES_TOOL"
   },
   {
    "source": "tool:list_tickets",
@@ -4419,6 +4493,41 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "source": "tool:list_tickets",
    "target": "system:sub4me",
    "type": "READS"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "tool:list_tickets",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "tool:create_ticket",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:link_ticket",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:link_ticket",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "tool:link_ticket",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:ticket-writer",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
   },
   {
    "source": "skill:ticket-writer",
@@ -4823,6 +4932,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   {
    "source": "skill:skill-search",
    "target": "agent:knowledge-base-search",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "agent:sap-spc-ticket-router",
    "type": "OBSERVES_AGENT"
   },
   {

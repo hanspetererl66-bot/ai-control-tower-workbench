@@ -3854,6 +3854,116 @@
         ],
         "favorites": 8
       }
+    },
+    "ticket-triage": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          2,
+          6,
+          11,
+          14
+        ],
+        "successRatePct": 91,
+        "avgRating": 4.5,
+        "ratings": 6,
+        "minutesSavedPerRun": 14,
+        "errorRatePct": 5,
+        "avgSeconds": 30,
+        "costPerRunEur": 0.14,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-10-20",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "SAP SPC Ticket Router"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Checks a planned Sub4Me ticket against notes and open tickets of all customers before it is opened."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_customers",
+            "find_similar_tickets",
+            "list_tickets",
+            "create_ticket",
+            "link_ticket"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "J. Weber",
+        "supportChannel": "#sub4me-demo",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 9,
+          "passed": 8,
+          "lastRun": "2026-10-10"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Eröffne ein Ticket: Joule liefert leere Bestellliste.",
+          "Störung melden für BTP AI Core."
+        ],
+        "demoFlow": [
+          "Problem in zwei Sätzen schildern",
+          "Vorschlag für Titel, Produkt und Priorität prüfen",
+          "Mit \"ja\" bestätigen, Ticket wird angelegt"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower mit Supabase (für echte Demo-Tickets)"
+        ],
+        "tags": [
+          "Service",
+          "Tickets",
+          "Sub4Me"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "renewal-radar"
+        ],
+        "recommendedFor": [
+          "Support Engineer",
+          "Platform Engineer"
+        ],
+        "favorites": 11
+      }
     }
   },
   "processGaps": [
@@ -4498,6 +4608,7 @@
         "customer-call-prep",
         "renewal-radar",
         "quote-drafter",
+        "ticket-triage",
         "ticket-writer"
       ]
     },

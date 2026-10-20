@@ -668,6 +668,23 @@
           "date": "2026-10-20"
         }
       ]
+    },
+    "ticket-triage": {
+      "distribution": [
+        0,
+        0,
+        0,
+        3,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Ein Duplikat weniger pro Woche, und die Note kommt direkt mit.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
     }
   }
 }
