@@ -1,6 +1,6 @@
 {
   "asOf": "2026-10-20",
-  "note": "Facts about ARC-1 come from the public README and docs on 2026-10-20 and were not run by us. The tool classes are our reading of the tool descriptions, not a statement of the publisher.",
+  "note": "Facts about candidates come from public READMEs and docs on 2026-10-20 and were not run by us. The tool classes are our reading of the tool descriptions, not a statement of the publisher.",
   "classes": {
     "read": "Reads only",
     "write": "Can change the system",
@@ -521,6 +521,111 @@
         ],
         "plan": [],
         "checks": []
+      }
+    },
+    {
+      "id": "sap-notes",
+      "name": "SAP Notes",
+      "tagline": "Search and read SAP Notes and KBAs from behind the SAP login",
+      "category": "SAP knowledge",
+      "publisher": "marianfoo (community project)",
+      "license": "Apache-2.0",
+      "status": "candidate",
+      "statusLabel": "Candidate: not installed",
+      "source": "https://github.com/marianfoo/sap-mcp-servers",
+      "docs": "https://github.com/marianfoo/mcp-sap-notes (archived, moved to packages/notes in the repo above)",
+      "package": "npm: sap-note-search-mcp (packages/notes)",
+      "version": "not checked",
+      "summary": "Lets an assistant search SAP Notes by keyword, error code, component or note number and read a full note. It signs in to the SAP Support Portal with an S-user and uses private SAP APIs behind that login. The README tells users to check whether this is allowed under SAP's terms.",
+      "install": [
+        {
+          "label": "Bundle (as linked in this repository's README)",
+          "how": "Release asset sap-notes.mcpb of marianfoo/sap-mcp-servers, tag sap-notes-latest",
+          "note": "In Werkbank: Connectors & Skills, Import MCP bundle. The review dialog appears first. We did not check the release asset."
+        },
+        {
+          "label": "Docker or git (archived repository)",
+          "how": "docker build -t mcp-sap-notes . and pass the credentials as environment variables",
+          "note": "Described in the archived mcp-sap-notes README. The newer repository needs npm install, npm run build and npm run install:browsers (Playwright)."
+        }
+      ],
+      "tools": [
+        {
+          "name": "search",
+          "class": "read",
+          "what": "Find SAP Notes by keyword, error code, component or note number. Parameters: q, lang (EN or DE).",
+          "default": "on"
+        },
+        {
+          "name": "fetch",
+          "class": "read",
+          "what": "Full content and metadata of one note. With includeCorrections (default false) it adds ABAP correction details.",
+          "default": "on"
+        }
+      ],
+      "switches": [
+        {
+          "name": "SAP_USERNAME / SAP_PASSWORD",
+          "default": "none",
+          "effect": "S-user login. The app stores such values in the OS keychain."
+        },
+        {
+          "name": "PFX_PATH / PFX_PASSPHRASE",
+          "default": "none",
+          "effect": "Alternative: SAP Passport certificate (.pfx)."
+        },
+        {
+          "name": "AUTH_METHOD",
+          "default": "auto",
+          "effect": "Auto tries password first, then certificate."
+        },
+        {
+          "name": "MFA_TIMEOUT",
+          "default": "120000 ms",
+          "effect": "How long to wait for a second factor."
+        },
+        {
+          "name": "MAX_JWT_AGE_H",
+          "default": "12 h",
+          "effect": "Maximum age of the cached login token."
+        },
+        {
+          "name": "HEADFUL",
+          "default": "false",
+          "effect": "Shows the login browser window when true."
+        },
+        {
+          "name": "ACCESS_TOKEN",
+          "default": "none",
+          "effect": "Bearer token for the HTTP mode of the server."
+        }
+      ],
+      "auth": [
+        "S-user with access to the SAP Support Portal (me.sap.com), with username and password or an SAP Passport certificate",
+        "Interactive login on first run, a second factor may be asked",
+        "Never commit credentials, .env, *.pfx or token caches (the project's own warning)"
+      ],
+      "assessment": {
+        "verdict": "Useful, but check the terms first",
+        "risk": "medium",
+        "defaultRisk": "medium",
+        "why": [
+          "Two tools, both read content only and nothing in SAP changes.",
+          "Open source under Apache-2.0.",
+          "It answers support questions with the official note text instead of guesses."
+        ],
+        "plan": [
+          "Ask Legal or the SAP contact whether this kind of access fits the SAP terms before anyone uses a named S-user.",
+          "Pilot with one person and a test question list, for example ten known notes.",
+          "Keep the credentials in the OS keychain and out of chats, files and repositories.",
+          "Treat note text as data. A note can contain instructions that must not be followed."
+        ],
+        "checks": [
+          "Terms of use: the project says it uses private SAP APIs behind the login and tells users to check.",
+          "Support status: the author gives no guarantee that it keeps working, and the older repository is archived.",
+          "Release asset: confirm the .mcpb exists, record version and checksum.",
+          "Whose S-user is used, and what the second factor looks like in daily use."
+        ]
       }
     }
   ],
