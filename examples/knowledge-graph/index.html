@@ -1696,6 +1696,30 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "tool:list_customers",
+   "type": "tool",
+   "label": "list_customers",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:list_tickets",
+   "type": "tool",
+   "label": "list_tickets",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:list_invoices",
+   "type": "tool",
+   "label": "list_invoices",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
    "id": "skill:deal-risk-check",
    "type": "skill",
    "label": "deal-risk-check",
@@ -2100,25 +2124,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
-   "id": "tool:list_customers",
-   "type": "tool",
-   "label": "list_customers",
-   "meta": {
-    "System": "Sub4Me"
-   }
-  },
-  {
    "id": "tool:find_similar_tickets",
    "type": "tool",
    "label": "find_similar_tickets",
-   "meta": {
-    "System": "Sub4Me"
-   }
-  },
-  {
-   "id": "tool:list_tickets",
-   "type": "tool",
-   "label": "list_tickets",
    "meta": {
     "System": "Sub4Me"
    }
@@ -3945,6 +3953,51 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
+   "source": "tool:list_customers",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_customers",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:list_customers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_tickets",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_tickets",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:list_tickets",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_invoices",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_invoices",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:customer-call-prep",
+   "target": "tool:list_invoices",
+   "type": "USES_TOOL"
+  },
+  {
    "source": "skill:customer-call-prep",
    "target": "customer:muster-industrie-ag",
    "type": "SERVES"
@@ -4455,16 +4508,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "LISTED_IN"
   },
   {
-   "source": "tool:list_customers",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:list_customers",
-   "target": "system:sub4me",
-   "type": "READS"
-  },
-  {
    "source": "skill:ticket-triage",
    "target": "tool:list_customers",
    "type": "USES_TOOL"
@@ -4483,16 +4526,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "source": "skill:ticket-triage",
    "target": "tool:find_similar_tickets",
    "type": "USES_TOOL"
-  },
-  {
-   "source": "tool:list_tickets",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:list_tickets",
-   "target": "system:sub4me",
-   "type": "READS"
   },
   {
    "source": "skill:ticket-triage",

@@ -738,7 +738,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     },
     {
       "name": "customer-call-prep",
-      "description": "Bereitet ein Kundengespräch mit dem Sub4Me-Testkunden vor: Verträge, Fristen, offene Angebote, AI-Unit-Verbrauch und Tickets auf einer Seite. Nutzen bei \"Kundengespräch vorbereiten\", \"Kundentermin\", \"Account-Briefing\".",
+      "description": "Bereitet ein Kundengespräch vor: Verträge, Fristen, offene Angebote, Verbrauch, Tickets, offene Rechnungen und Forecast-Änderungen auf einer Seite, mit Quellen. Nutzen bei \"Kundengespräch vorbereiten\", \"Kundentermin\", \"Account-Briefing\".",
       "owner": "",
       "version": 1,
       "maturity": "pilot",
@@ -757,7 +757,10 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "get_product_overview",
         "get_contract",
         "get_offer",
-        "search_sub4me"
+        "search_sub4me",
+        "list_customers",
+        "list_tickets",
+        "list_invoices"
       ],
       "demand": {
         "installs": 0,
@@ -3130,7 +3133,10 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
             "get_product_overview",
             "get_contract",
             "get_offer",
-            "search_sub4me"
+            "search_sub4me",
+            "list_customers",
+            "list_tickets",
+            "list_invoices"
           ],
           "connectors": [
             "ai-control-tower"

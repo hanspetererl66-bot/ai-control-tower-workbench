@@ -1626,7 +1626,10 @@
             "get_product_overview",
             "get_contract",
             "get_offer",
-            "search_sub4me"
+            "search_sub4me",
+            "list_customers",
+            "list_tickets",
+            "list_invoices"
           ],
           "connectors": [
             "ai-control-tower"
