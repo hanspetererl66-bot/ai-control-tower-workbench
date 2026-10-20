@@ -46,6 +46,8 @@ type Props = {
   onOpenSettings?: () => void;
   /** Stop reading the reply aloud as soon as the user starts talking. */
   onStopSpeaking?: () => void;
+  /** Spoken text that is a navigation command ("Zeig mir die Risiken"). Return true when handled. */
+  onVoiceCommand?: (text: string) => boolean;
 };
 
 export default function Composer({
@@ -64,6 +66,7 @@ export default function Composer({
   voice,
   onOpenSettings,
   onStopSpeaking,
+  onVoiceCommand,
 }: Props) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
@@ -89,6 +92,7 @@ export default function Composer({
         if (!result?.ok) throw new Error(result?.detail ?? 'Spracherkennung nicht verfügbar.');
         const heard = (result.text ?? '').trim();
         if (!heard) throw new Error('Nichts verstanden — bitte noch einmal sprechen.');
+        if (onVoiceCommand?.(heard)) return;
         const combined = [textRef.current.trim(), heard].filter(Boolean).join(' ');
         if (voice?.autoSend) {
           setText('');

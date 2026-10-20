@@ -4,7 +4,7 @@ import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
 import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
-export type SpaceTabRequest = { tab: string; nonce: number };
+export type SpaceTabRequest = { tab: string; nonce: number; /** Target space; defaults to the AI Control Tower. */ space?: string };
 
 export default function SpaceViewer({
   space,
