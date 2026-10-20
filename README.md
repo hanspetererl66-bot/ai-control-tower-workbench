@@ -269,6 +269,17 @@ A skill without a scope counts as `individual`; a team scope needs a team, a LOB
 - **Knowledge graph later:** board area, LOB, team, scope and the tool rows in `skills.skill_tool` are the nodes and edges of stage 2;
   nothing here has to be migrated away.
 
+### Skill Marketplace as a control surface for business users
+
+The Space is now organised for business users instead of a flat list. Navigation: **Discover** (search with live hits, skills by business
+capability, featured skills, collections), **Collections** (ready-made skill sequences with a role filter), **Catalog** (filters, now also by
+capability), **My skills** (registered skills in this workspace with a "needs attention" list) and **Insights** (overview, ranking, impact,
+governance, gaps, hints). Capabilities are defined in `examples/skill-marketplace/profiles.json` (`capabilities`; a test requires every skill
+to belong to exactly one). Collections are the existing playbooks; each shows per step why, input and output, how many skills are available
+(the Sample switch changes that), summed time saved, highest AI Act risk and lowest maturity. The skill detail page starts with a
+"Trust & fit" strip (maturity, AI Act, DPIA, allowed data, models, region, next review, needs, collections). Sandbox runs, signatures and
+install buttons are not part of this prototype. After a pull run `npm run sync:skill-marketplace` and `npm run install:skill-marketplace`.
+
 ### Asking the chat about the Sub4Me Space
 
 The connector `ai-control-tower` (0.7.0) also answers questions about the Sub4Me example Space with `list_contracts`
