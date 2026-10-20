@@ -343,6 +343,15 @@ Every skill has a profile in four fields, plus the marketplace knows process gap
 
 `npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills`, and `recommend_skill_workflow` (an ordered chain of skills for a role and goal, from the `playbooks` in `profiles.json`, for example Account Manager: customer-call-prep → renewal-radar → quote-drafter → ticket-writer; connector 0.13.0; live from Supabase when connected, otherwise the embedded sample data).
 
+### Sales Space: sources, inbox and governance
+
+Ideas taken from AI-native CRMs (sourced reasoning, auto-capture, governed agents), all mockup data in `examples/sales/pipeline.json`:
+
+- **Why? Sources** in the deal drawer: each statement (probability, value, notice date) lists the mail, call, contract, ticket, invoice or offer it comes from, with a confidence. A test checks that every reference exists.
+- **Inbox:** suggestions captured from mails and calls (new stakeholder, risk, next step, closing an open action). Nothing reaches a deal until you accept; accepted and rejected items can be undone. A discount question cannot be accepted here and goes to the deal desk; an instruction hidden in a customer mail is blocked and flagged.
+- **Governance:** four levels (does it itself, you confirm, needs an approver, never) and an audit log of every decision, including undo.
+- **Forecast changes** since the previous week (category, probability, value, close date, each with its reason) and a **customer context** block in the meeting brief: open tickets, invoices and forecast changes from the Sub4Me data. The skill `customer-call-prep` now does the same through `list_tickets` and `list_invoices` and names a source for every statement.
+
 ### Sub4Me: second customer, invoices and the ticket check
 
 The Sub4Me Space now has a customer switch in the header: **Muster Industrie AG** (industrial, S/4HANA) and **Hanse Handelsgruppe AG** (retail, Commerce Cloud, Ariba, Analytics Cloud). Each has its own profile (industry, account team, contacts, landscape), contracts, offers, AI-unit consumption, tickets and a new **Invoices** tab (invoices, credit notes, open and overdue amounts). All data is fictional and lives in `examples/sub4me/portfolio.json` (`profile`, `invoices`, `otherCustomers`, `knowledge`); `npm run sync:sub4me` embeds it and writes `supabase/migrations/20261021_015_sub4me_customers.sql` (run it once after 006 and 011; it is re-runnable).

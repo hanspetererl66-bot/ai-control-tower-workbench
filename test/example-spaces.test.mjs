@@ -285,3 +285,50 @@ test('MCP Marketplace Space: data is in sync, sourced, and the built-in entries 
     assert.equal(s.version, m.version);
   }
 });
+
+test('Sales Space: evidence, inbox and briefing context point to real mails, calls, tickets, invoices and contracts', async () => {
+  const { extractSub4MeData } = await import('../connectors/control-tower/server/sub4me.mjs');
+  const sales = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
+  const sub = extractSub4MeData(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8'));
+  const calls = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/call-transcripts/calls.json'), 'utf8')).calls.map((c) => c.id));
+  const threads = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/customer-emails/threads.json'), 'utf8')).threads.map((t) => t.id));
+  const ids = {
+    mail: threads, call: calls,
+    ticket: new Set(sub.tickets.map((t) => t.id)), invoice: new Set(sub.invoices.map((i) => i.id)),
+    contract: new Set(sub.contracts.map((c) => c.id)), offer: new Set(sub.offers.map((o) => o.id)),
+    crm: new Set(sales.deals.map((d) => d.id)),
+  };
+  const check = (b, where) => assert.ok(ids[b.kind]?.has(b.ref), `${where}: ${b.kind} ${b.ref} exists`);
+  for (const d of sales.deals) for (const e of d.evidence ?? []) {
+    assert.ok(['high', 'medium', 'low'].includes(e.confidence) && e.basis.length, `${d.id}: evidence is complete`);
+    for (const b of e.basis) check(b, d.id);
+  }
+  const byId = Object.fromEntries(sales.deals.map((d) => [d.id, d]));
+  const inbox = sales.inbox;
+  assert.equal(new Set(inbox.map((x) => x.id)).size, inbox.length);
+  for (const x of inbox) {
+    assert.ok(byId[x.dealId], `${x.id}: deal exists`);
+    check(x.source, x.id);
+    assert.ok(['auto', 'suggest', 'approve', 'never'].includes(x.policy));
+    if (x.policy === 'approve') assert.ok(x.approver, `${x.id}: needs a named approver`);
+    if (x.policy === 'never') assert.equal(x.status, 'blocked');
+    else assert.equal(x.status, 'pending');
+  }
+  assert.ok(inbox.some((x) => x.policy === 'never' && /instruction/i.test(x.summary)), 'an instruction in customer text is blocked');
+  // the Sub4Me rows quoted in the briefings equal the Sub4Me data
+  for (const t of sales.sub4me.tickets) { const s = sub.tickets.find((k) => k.id === t.id); assert.deepEqual({ ...t }, { id: s.id, title: s.title, product: s.product, priority: s.priority, status: s.status }); }
+  for (const i of sales.sub4me.invoices) { const s = sub.invoices.find((k) => k.id === i.id); assert.deepEqual({ ...i }, { id: s.id, contractId: s.contractId, status: s.status, due: s.due, grossEur: s.grossEur }); }
+  for (const m of sales.meetings) {
+    const c = m.prep?.context; if (!c) continue;
+    for (const id of c.tickets) assert.ok(sales.sub4me.tickets.some((t) => t.id === id), `${m.id}: ticket ${id} is in the data`);
+    for (const id of c.invoices) assert.ok(sales.sub4me.invoices.some((t) => t.id === id), `${m.id}: invoice ${id} is in the data`);
+  }
+  // last week's snapshot follows the same category rule as today's data
+  const rule = (s) => (s >= 70 ? 'commit' : s >= 50 ? 'best' : 'pipeline');
+  for (const d of sales.deals) {
+    if (!d.prev) continue;
+    assert.equal(d.prev.category, rule(d.prev.score), `${d.id}: previous category follows the rule`);
+    assert.ok(d.changeWhy?.text, `${d.id}: changes carry a reason`);
+  }
+  assert.ok(sales.governance.audit.length && sales.governance.levels.length === 4);
+});
