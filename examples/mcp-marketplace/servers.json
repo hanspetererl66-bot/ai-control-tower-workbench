@@ -266,6 +266,18 @@
           "default": "on"
         },
         {
+          "name": "find_similar_tickets",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "link_ticket",
+          "class": "write",
+          "what": "",
+          "default": "on"
+        },
+        {
           "name": "search_skills",
           "class": "read",
           "what": "",
@@ -285,6 +297,18 @@
         },
         {
           "name": "get_skill_ranking",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_customers",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_invoices",
           "class": "read",
           "what": "",
           "default": "on"
