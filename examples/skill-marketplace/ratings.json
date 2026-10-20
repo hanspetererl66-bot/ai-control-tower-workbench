@@ -436,6 +436,136 @@
           "date": "2026-10-19"
         }
       ]
+    },
+    "interest-logger": {
+      "distribution": [
+        0,
+        0,
+        1,
+        3,
+        1
+      ],
+      "comments": []
+    },
+    "lead-qualifier": {
+      "distribution": [
+        0,
+        0,
+        1,
+        3,
+        2
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Der Score ist nachvollziehbar, die drei Lücken helfen beim Nachfassen.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "lead-router": {
+      "distribution": [
+        0,
+        0,
+        0,
+        2,
+        1
+      ],
+      "comments": []
+    },
+    "opportunity-planner": {
+      "distribution": [
+        0,
+        0,
+        0,
+        2,
+        2
+      ],
+      "comments": []
+    },
+    "rfp-responder": {
+      "distribution": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Die Statusspalte (belegt, anpassen, offen) spart mir das Sortieren der Fragen.",
+          "version": 1,
+          "date": "2026-10-20"
+        },
+        {
+          "stars": 3,
+          "text": "Ohne gute frühere Antworten bleibt viel offen, das ist aber ehrlich.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "pricing-guard": {
+      "distribution": [
+        0,
+        0,
+        0,
+        2,
+        5
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Die Rechnung steht dabei, so sehe ich sofort, warum der Deal Desk zustimmen muss.",
+          "version": 1,
+          "date": "2026-10-20"
+        },
+        {
+          "stars": 4,
+          "text": "Gut. Würde mir die Preissteigerungsgrenze noch deutlicher hervorgehoben wünschen.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "deal-risk-check": {
+      "distribution": [
+        0,
+        0,
+        1,
+        2,
+        2
+      ],
+      "comments": []
+    },
+    "contract-checker": {
+      "distribution": [
+        0,
+        0,
+        0,
+        2,
+        2
+      ],
+      "comments": [
+        {
+          "stars": 4,
+          "text": "Hilfreiche Vorprüfung vor dem Gespräch mit Legal.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "pipeline-review": {
+      "distribution": [
+        0,
+        0,
+        0,
+        2,
+        2
+      ],
+      "comments": []
     }
   }
 }

@@ -217,7 +217,7 @@ Every skill carries a profile in the `metadata:` block of its `SKILL.md` (migrat
 
 ```yaml
 metadata:
-  domain: Finanzen            # Governance & Risiko | Service & Support | Finanzen | HR | Entwicklung | Betrieb | Sonstiges
+  domain: Finanzen            # Governance & Risiko | Service & Support | Finanzen | Vertrieb | HR | Entwicklung | Betrieb | Automatisierung | Sicherheit & Zugriff | Skill-Management | Sonstiges
   process: Reisekosten prüfen
   data-class: intern          # öffentlich | intern | vertraulich
   language: de
