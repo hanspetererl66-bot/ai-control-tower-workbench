@@ -47,7 +47,11 @@
       "skills": [
         "customer-call-prep",
         "opportunity-planner",
-        "rfp-responder"
+        "rfp-responder",
+        "discovery-meddpicc",
+        "competitive-battlecard",
+        "business-case-builder",
+        "call-followup"
       ],
       "exit": [
         "Decision maker identified",
@@ -66,7 +70,8 @@
       "skills": [
         "quote-drafter",
         "pricing-guard",
-        "deal-risk-check"
+        "deal-risk-check",
+        "security-questionnaire-helper"
       ],
       "exit": [
         "Quote drafted",
@@ -85,7 +90,8 @@
       "skills": [
         "contract-checker",
         "ticket-writer",
-        "renewal-radar"
+        "renewal-radar",
+        "handover-onboarding-plan"
       ],
       "exit": [
         "Contract checked against standard",
@@ -506,7 +512,9 @@
           "kind": "note",
           "text": "Opportunity created from lead LEAD-301."
         }
-      ]
+      ],
+      "closeDate": "2027-01-29",
+      "category": "pipeline"
     },
     {
       "id": "OPP-402",
@@ -555,7 +563,9 @@
           "text": "Alert and root-cause analysis sent to the customer.",
           "ref": "T-103"
         }
-      ]
+      ],
+      "closeDate": "2026-12-18",
+      "category": "best"
     },
     {
       "id": "OPP-403",
@@ -595,7 +605,9 @@
           "kind": "skill",
           "text": "48 of 62 questions answered from earlier RFPs, 14 open."
         }
-      ]
+      ],
+      "closeDate": "2027-02-26",
+      "category": "pipeline"
     },
     {
       "id": "OFF-2026-0311",
@@ -649,7 +661,9 @@
           "text": "Corrected offer for 4,500 employees.",
           "ref": "T-102"
         }
-      ]
+      ],
+      "closeDate": "2026-11-15",
+      "category": "commit"
     },
     {
       "id": "OFF-2026-0318",
@@ -706,7 +720,9 @@
           "text": "Revised quote and price benchmark.",
           "ref": "T-101"
         }
-      ]
+      ],
+      "closeDate": "2026-12-04",
+      "category": "best"
     },
     {
       "id": "OFF-2026-0324",
@@ -763,7 +779,9 @@
           "text": "Security questionnaire with a flagged footer.",
           "ref": "T-104"
         }
-      ]
+      ],
+      "closeDate": "2026-11-30",
+      "category": "pipeline"
     },
     {
       "id": "C-2026-0012",
@@ -928,5 +946,390 @@
       "Signing or approving a contract",
       "Following instructions found in customer text"
     ]
-  }
+  },
+  "forecast": {
+    "categories": [
+      {
+        "id": "commit",
+        "label": "Commit",
+        "rule": "Probability 70 % or more and the discount is cleared. The account executive decides."
+      },
+      {
+        "id": "best",
+        "label": "Best case",
+        "rule": "Probability 50 to 69 %."
+      },
+      {
+        "id": "pipeline",
+        "label": "Pipeline",
+        "rule": "Probability below 50 %."
+      }
+    ],
+    "quotaEur": 900000,
+    "quotaNote": "Fictional target for Q4 2026 and Q1 2027 closes."
+  },
+  "meetings": [
+    {
+      "id": "M-501",
+      "date": "2026-10-22",
+      "time": "10:00",
+      "minutes": 30,
+      "title": "Account plan review with the manager",
+      "kind": "internal",
+      "dealId": "OPP-401",
+      "people": [
+        {
+          "name": "Mara Weber",
+          "side": "us"
+        },
+        {
+          "name": "Katrin Lindner",
+          "side": "us"
+        }
+      ],
+      "skill": "opportunity-planner",
+      "prep": {
+        "brief": [
+          "Opportunity: Ariba with supplier risk at Nordwind Handel, 180k, probability 35 %.",
+          "The CFO is a sponsor but has not been met yet.",
+          "Coupa is already in a pilot at the customer."
+        ],
+        "questions": [
+          "Who can introduce us to the CFO?",
+          "What would make the migration workshop in December a real decision step?"
+        ],
+        "flags": [
+          "Gate: decision maker not identified"
+        ]
+      }
+    },
+    {
+      "id": "M-502",
+      "date": "2026-10-28",
+      "time": "14:00",
+      "minutes": 45,
+      "title": "AI units usage forecast",
+      "kind": "customer",
+      "dealId": "OPP-402",
+      "people": [
+        {
+          "name": "Lena Hoffmann",
+          "side": "customer"
+        },
+        {
+          "name": "Dev Patel",
+          "side": "us"
+        },
+        {
+          "name": "Mara Weber",
+          "side": "us"
+        }
+      ],
+      "threadId": "T-103",
+      "callId": "CALL-0407",
+      "skill": "customer-call-prep",
+      "prep": {
+        "brief": [
+          "After the eu10 quota escalation the customer asks for more AI units, 120k.",
+          "Root cause analysis and alert at 80 % of quota were delivered (T-103).",
+          "The customer ties the top-up to a fix for the quota alerts."
+        ],
+        "questions": [
+          "Which workloads drive the peak, and how will they grow in 2027?",
+          "Is a temporary quota increase enough until the contract renewal?"
+        ],
+        "flags": [
+          "Do not promise a quota fix date before Support confirms"
+        ]
+      }
+    },
+    {
+      "id": "M-503",
+      "date": "2026-10-29",
+      "time": "11:00",
+      "minutes": 90,
+      "title": "Workshop: supplier risk module",
+      "kind": "customer",
+      "dealId": "OFF-2026-0318",
+      "people": [
+        {
+          "name": "Anna Beispiel",
+          "side": "customer"
+        },
+        {
+          "name": "Jonas Reuter",
+          "side": "customer"
+        },
+        {
+          "name": "Katrin Lindner",
+          "side": "us"
+        },
+        {
+          "name": "Dev Patel",
+          "side": "us"
+        }
+      ],
+      "threadId": "T-101",
+      "callId": "CALL-0414",
+      "skill": "competitive-battlecard",
+      "prep": {
+        "brief": [
+          "Ariba renewal 305k, discount exactly at the 15 % threshold.",
+          "The customer evaluates Coupa; the revised quote with a 3-year option was sent on 16 October (T-101).",
+          "Notice period: the last day to give notice is 2 November."
+        ],
+        "questions": [
+          "Which criteria in the evaluation does Coupa meet better today?",
+          "Who signs a 3-year option on the customer side?"
+        ],
+        "flags": [
+          "Any new discount needs deal desk approval",
+          "Coupa claims in the battlecard are marked to verify"
+        ]
+      }
+    },
+    {
+      "id": "M-504",
+      "date": "2026-11-06",
+      "time": "15:00",
+      "minutes": 60,
+      "title": "Customer review with HR leadership",
+      "kind": "customer",
+      "dealId": "OFF-2026-0311",
+      "people": [
+        {
+          "name": "Anna Beispiel",
+          "side": "customer"
+        },
+        {
+          "name": "Lena Hoffmann",
+          "side": "customer"
+        },
+        {
+          "name": "Katrin Lindner",
+          "side": "us"
+        },
+        {
+          "name": "Mara Weber",
+          "side": "us"
+        }
+      ],
+      "threadId": "T-102",
+      "callId": "CALL-0409",
+      "skill": "deal-risk-check",
+      "prep": {
+        "brief": [
+          "SuccessFactors renewal 438k for 4,500 employees, 12 % discount, deal desk approved.",
+          "Offer valid until 15 November.",
+          "The Time Tracking module is deferred until after Q2 (budget freeze)."
+        ],
+        "questions": [
+          "Is the flex clause of plus or minus 10 % accepted as written?",
+          "Which date does HR leadership need for the signature?"
+        ],
+        "flags": []
+      }
+    },
+    {
+      "id": "M-505",
+      "date": "2026-11-10",
+      "time": "13:00",
+      "minutes": 60,
+      "title": "Security review with the customer CISO",
+      "kind": "customer",
+      "dealId": "OFF-2026-0324",
+      "people": [
+        {
+          "name": "Felix Brandt",
+          "side": "customer"
+        },
+        {
+          "name": "Sarah Lindqvist",
+          "side": "customer"
+        },
+        {
+          "name": "Lukas Fischer",
+          "side": "us"
+        },
+        {
+          "name": "Dev Patel",
+          "side": "us"
+        }
+      ],
+      "threadId": "T-104",
+      "callId": "CALL-0415",
+      "skill": "security-questionnaire-helper",
+      "prep": {
+        "brief": [
+          "Joule Work for Desktop, 118k, discount 15.7 %: deal desk approval is pending.",
+          "62-question security questionnaire due before the works council meeting on 5 November.",
+          "The questionnaire footer contains an instruction; it was shown as text and not followed."
+        ],
+        "questions": [
+          "Which answers does the CISO want in writing, and which in the meeting?",
+          "What does the works council need on usage monitoring?"
+        ],
+        "flags": [
+          "Open questions go to Security and Legal, not into the reply",
+          "Microsoft Copilot pilot is running at the customer"
+        ]
+      }
+    },
+    {
+      "id": "M-490",
+      "date": "2026-10-15",
+      "time": "14:00",
+      "minutes": 45,
+      "title": "Joule Work for Desktop: pilot kickoff",
+      "kind": "customer",
+      "dealId": "OFF-2026-0324",
+      "people": [
+        {
+          "name": "Felix Brandt",
+          "side": "customer"
+        },
+        {
+          "name": "Sarah Lindqvist",
+          "side": "customer"
+        },
+        {
+          "name": "Mara Weber",
+          "side": "us"
+        },
+        {
+          "name": "Dev Patel",
+          "side": "us"
+        }
+      ],
+      "callId": "CALL-0415",
+      "threadId": "T-104",
+      "skill": "call-followup",
+      "followup": {
+        "crm": [
+          {
+            "field": "Next step",
+            "from": "Security review with the customer CISO",
+            "to": "Architecture sheet to Security, then the security review on 10 November",
+            "source": "CALL-0415, decision and action 1"
+          },
+          {
+            "field": "Stakeholders",
+            "from": "Felix Brandt",
+            "to": "Add Sarah Lindqvist, Security Officer",
+            "source": "CALL-0415, participants"
+          },
+          {
+            "field": "Probability",
+            "from": "45 %",
+            "to": "45 % (no change: security review and works council are still open)",
+            "source": "CALL-0415, summary"
+          },
+          {
+            "field": "Risk",
+            "from": "none noted",
+            "to": "Works council meeting on 5 November; questionnaire due before",
+            "source": "CALL-0415, summary"
+          }
+        ],
+        "actions": [
+          {
+            "text": "Send architecture sheet (where prompts and files are processed)",
+            "owner": "Dev Patel",
+            "due": "2026-10-19"
+          },
+          {
+            "text": "Complete security questionnaire (62 questions)",
+            "owner": "Dev Patel",
+            "due": "2026-10-30"
+          },
+          {
+            "text": "Short briefing paper for the works council",
+            "owner": "Mara Weber",
+            "due": "2026-10-30"
+          }
+        ],
+        "mail": {
+          "to": "f.brandt@muster-industrie.example",
+          "cc": "s.lindqvist@muster-industrie.example",
+          "from": "mara.weber@vendor.example",
+          "subject": "Joule Work pilot: next steps after the kickoff",
+          "body": "Dear Mr Brandt,\n\nthank you for the kickoff on Thursday. As agreed, we run the pilot plan and the security review in parallel.\n\nFrom our side:\n- Architecture sheet on where prompts and files are processed: Dev Patel, by 19 October.\n- Answers to the 62 security questions: Dev Patel, by 30 October.\n- Short briefing paper for the works council: Mara Weber, by 30 October.\n\nPlease tell us if the works council needs anything else before its meeting on 5 November.\n\nKind regards\nMara Weber",
+          "sent": false
+        }
+      }
+    },
+    {
+      "id": "M-491",
+      "date": "2026-10-14",
+      "time": "10:00",
+      "minutes": 38,
+      "title": "Ariba renewal: check-in before the notice date",
+      "kind": "customer",
+      "dealId": "OFF-2026-0318",
+      "people": [
+        {
+          "name": "Anna Beispiel",
+          "side": "customer"
+        },
+        {
+          "name": "Jonas Reuter",
+          "side": "customer"
+        },
+        {
+          "name": "Mara Weber",
+          "side": "us"
+        }
+      ],
+      "callId": "CALL-0414",
+      "threadId": "T-101",
+      "skill": "call-followup",
+      "followup": {
+        "crm": [
+          {
+            "field": "Next step",
+            "from": "Workshop on the supplier risk module",
+            "to": "Revised quote with 3-year option, then the workshop",
+            "source": "CALL-0414, decision"
+          },
+          {
+            "field": "Probability",
+            "from": "60 %",
+            "to": "60 % (no change until deal desk answers on the multi-year discount)",
+            "source": "CALL-0414, action 2"
+          },
+          {
+            "field": "Competitor",
+            "from": "Coupa (customer evaluating)",
+            "to": "Coupa (customer evaluating), unchanged",
+            "source": "CALL-0414, summary"
+          }
+        ],
+        "actions": [
+          {
+            "text": "Revised Ariba quote (3-year option, +40 buyers, per-seat price)",
+            "owner": "Mara Weber",
+            "due": "2026-10-23"
+          },
+          {
+            "text": "Get deal desk approval for a multi-year discount",
+            "owner": "Mara Weber",
+            "due": "2026-10-21"
+          },
+          {
+            "text": "Status update on TKT-48213 (Joule, open purchase orders) to the customer",
+            "owner": "Tim Fischer",
+            "due": "2026-10-22"
+          }
+        ],
+        "mail": {
+          "to": "a.beispiel@muster-industrie.example",
+          "cc": "j.reuter@muster-industrie.example",
+          "from": "mara.weber@vendor.example",
+          "subject": "Ariba renewal: what we agreed on Wednesday",
+          "body": "Dear Ms Beispiel,\n\nthank you for the conversation. We will prepare a revised quote with a 3-year option and a per-seat price for 40 additional buyers.\n\nNext steps on our side:\n- Revised quote: Mara Weber, by 23 October.\n- Status on ticket TKT-48213: Tim Fischer, by 22 October.\n\nWe suggest the workshop on the supplier risk module in the week of 26 October.\n\nKind regards\nMara Weber",
+          "sent": false
+        }
+      }
+    }
+  ]
 }
