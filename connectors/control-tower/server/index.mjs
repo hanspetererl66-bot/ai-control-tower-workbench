@@ -13,11 +13,12 @@ import { N8N_TOOL_DEFINITIONS, createN8nHandlers } from './n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS, createSkillProfileHandlers } from './skill-profiles.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS, createSkillRatingHandlers } from './skill-ratings.mjs';
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
+import { WHAT_IF_TOOL_DEFINITIONS, createWhatIfHandlers } from './what-if.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.14.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.15.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
@@ -129,12 +130,12 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
         const rpcCall = ticketRpc();
-        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...createSub4MeHandlers(undefined, rpcCall), ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...n8nHandlers };
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...createSub4MeHandlers(undefined, rpcCall), ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createWhatIfHandlers({ loadTower: loadData, ToolError }), ...n8nHandlers };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');

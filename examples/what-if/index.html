@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What-if Simulator</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:20px 24px 48px}
+.demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
+.card{margin-bottom:16px}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+.ctl .big{font-size:40px;font-weight:650;letter-spacing:-.03em;min-width:120px;font-variant-numeric:tabular-nums}
+.ctl .slide{flex:1 1 320px}
+.ctl input[type=range]{width:100%;padding:0;border:0;accent-color:var(--purple);height:28px;background:transparent}
+.ticks{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.presets button,.ask{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:12px;cursor:pointer}
+.presets button:hover,.presets button[aria-pressed=true]{border-color:var(--purple);color:var(--purple)}
+button.ask{border-radius:var(--radius-s);padding:9px 16px}
+.summary{margin:14px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi .v{font-size:22px;font-variant-numeric:tabular-nums}
+.kpi .s{margin-top:2px}
+.kpi.red{border-color:var(--red-border)}.kpi.red .v{color:var(--red)}
+.kpi.amber{border-color:var(--amber-border)}.kpi.amber .v{color:var(--amber)}
+.kpi.green .v{color:var(--green)}
+h2{font-size:15px;font-weight:650;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 14px}
+.team{display:grid;grid-template-columns:150px 1fr 96px;gap:12px;align-items:center;padding:7px 0}
+.team .name{font-weight:550}
+.track{position:relative;height:16px;border-radius:99px;background:var(--line-2)}
+.budget{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--purple-dim);border:1px solid var(--purple-border);transition:width .15s ease}
+.spend{position:absolute;left:0;top:4px;height:8px;border-radius:99px;background:var(--green);transition:width .15s ease}
+.team.tight .spend{background:var(--amber)}.team.over .spend{background:var(--red)}
+.util{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.team.over .util{color:var(--red)}.team.tight .util{color:var(--amber)}
+.thr{grid-column:2 / 4;margin-top:-4px;font-size:11px;color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:8px}
+.legend i{display:inline-block;width:14px;height:8px;border-radius:99px;margin-right:5px;vertical-align:0}
+table{width:100%;border-collapse:collapse}
+th{text-align:left}th.n,td.n{text-align:right;font-variant-numeric:tabular-nums}
+.risk{display:grid;grid-template-columns:34px 1fr auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);align-items:start}
+.risk:last-child{border-bottom:0}
+.risk .id{font-weight:650;color:var(--muted)}
+.risk .why{color:var(--muted);font-size:12px;margin-top:2px}
+.tag.r{color:var(--red);background:var(--red-dim);border:1px solid var(--red-border)}
+.tag.n{color:var(--ink-2);background:var(--line-2);border:1px solid var(--line)}
+details{color:var(--ink-2);line-height:1.55}
+details summary{cursor:pointer;font-weight:600;color:var(--ink)}
+details ul{margin:8px 0 0;padding-left:18px}
+.empty{color:var(--muted);padding:6px 0}
+@media (max-width:640px){main{padding:14px}.team{grid-template-columns:1fr 70px}.team .track{grid-column:1 / 3;order:3}.thr{grid-column:1 / 3}}
+</style>
+</head>
+<body>
+<main>
+  <p class="demo">Beispieldaten und ein offenes Regelmodell, keine Prognose: Die Annahmen stehen unten. Dieselbe Rechnung beantwortet die Frage im Chat („Was passiert, wenn wir die AI-Credits um 30 % kürzen?“).</p>
+  <div class="card">
+    <div class="ctl">
+      <div class="big" id="big" aria-hidden="true">30 %</div>
+      <div class="slide">
+        <label for="cut" class="k">AI-Credits kürzen um</label>
+        <input id="cut" type="range" min="0" max="60" step="1" value="30" aria-describedby="summary">
+        <div class="ticks" aria-hidden="true"><span>0 %</span><span>15 %</span><span>30 %</span><span>45 %</span><span>60 %</span></div>
+        <div class="presets" id="presets"></div>
+      </div>
+      <button class="ask primary" id="ask" type="button">Joule fragen</button>
+    </div>
+    <p class="summary" id="summary" role="status" aria-live="polite"></p>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card">
+    <h2>Teams</h2>
+    <p class="sub">Balken: gekürztes Budget. Grüner/gelber/roter Strich: heutiger Verbrauch.</p>
+    <div id="teams"></div>
+    <div class="legend"><span><i style="background:var(--purple-dim);border:1px solid var(--purple-border)"></i>Budget nach Kürzung</span><span><i style="background:var(--green)"></i>Verbrauch im Budget</span><span><i style="background:var(--amber)"></i>über 90 %</span><span><i style="background:var(--red)"></i>über Budget</span></div>
+  </div>
+  <div class="card">
+    <h2>Betroffene Prozesse</h2>
+    <p class="sub">Agenten-Familien, die weniger Aufrufe ausführen müssen, damit der Verbrauch unter die neue Obergrenze passt.</p>
+    <div id="processes"></div>
+  </div>
+  <div class="card">
+    <h2>Risiken</h2>
+    <p class="sub">Welche Risiken aus dem Risk Register durch die Drosselung steigen (Faustregeln).</p>
+    <div id="risks"></div>
+  </div>
+  <div class="card">
+    <details><summary>Annahmen des Modells</summary><ul id="assumptions"></ul></details>
+  </div>
+</main>
+<script type="application/json" id="wi-data">
+{
+ "ceilingM": 3.6,
+ "actualM": 2.74,
+ "thresholdPct": 40,
+ "groups": [
+  {
+   "name": "Engineering",
+   "budgetK": 1100,
+   "utilisationPct": 107
+  },
+  {
+   "name": "Sales & Presales",
+   "budgetK": 560,
+   "utilisationPct": 88
+  },
+  {
+   "name": "Product & Design",
+   "budgetK": 420,
+   "utilisationPct": 76
+  },
+  {
+   "name": "Operations",
+   "budgetK": 360,
+   "utilisationPct": 62
+  },
+  {
+   "name": "Finance",
+   "budgetK": 280,
+   "utilisationPct": 104
+  },
+  {
+   "name": "HR / L&D",
+   "budgetK": 182,
+   "utilisationPct": 46
+  },
+  {
+   "name": "Data & AI Platform",
+   "budgetK": 600,
+   "utilisationPct": 19
+  },
+  {
+   "name": "Legal & Compliance",
+   "budgetK": 98,
+   "utilisationPct": 40
+  }
+ ],
+ "agents": [
+  {
+   "family": "ABAP Code Assistant",
+   "group": "Engineering",
+   "agents": 12,
+   "runsPerDay": 5016,
+   "costPerWeekEur": 4520,
+   "overprivileged": 6,
+   "euHighRisk": 0
+  },
+  {
+   "family": "BTP Monitor",
+   "group": "Operations",
+   "agents": 5,
+   "runsPerDay": 3848,
+   "costPerWeekEur": 1856,
+   "overprivileged": 4,
+   "euHighRisk": 0
+  },
+  {
+   "family": "OData Enrichment Pipeline",
+   "group": "Engineering",
+   "agents": 6,
+   "runsPerDay": 3760,
+   "costPerWeekEur": 2819,
+   "overprivileged": 6,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Meeting Summarizer",
+   "group": "Operations",
+   "agents": 6,
+   "runsPerDay": 2868,
+   "costPerWeekEur": 2705,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "n8n Workflow Builder",
+   "group": "Operations",
+   "agents": 6,
+   "runsPerDay": 2768,
+   "costPerWeekEur": 4082,
+   "overprivileged": 5,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Contract Drafter",
+   "group": "Legal & Compliance",
+   "agents": 9,
+   "runsPerDay": 2505,
+   "costPerWeekEur": 2652,
+   "overprivileged": 3,
+   "euHighRisk": 3
+  },
+  {
+   "family": "Test Case Suggester",
+   "group": "Engineering",
+   "agents": 7,
+   "runsPerDay": 2365,
+   "costPerWeekEur": 2605,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Invoice Matcher",
+   "group": "Finance",
+   "agents": 5,
+   "runsPerDay": 2331,
+   "costPerWeekEur": 1961,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Test Suite Generator",
+   "group": "Engineering",
+   "agents": 3,
+   "runsPerDay": 2301,
+   "costPerWeekEur": 3177,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Report Generation Bot",
+   "group": "Finance",
+   "agents": 6,
+   "runsPerDay": 1893,
+   "costPerWeekEur": 1652,
+   "overprivileged": 4,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Access Review Collector",
+   "group": "Engineering",
+   "agents": 4,
+   "runsPerDay": 1597,
+   "costPerWeekEur": 1391,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "L2C Deal Advisor",
+   "group": "Sales & Presales",
+   "agents": 7,
+   "runsPerDay": 1557,
+   "costPerWeekEur": 1801,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Release Train Coordinator",
+   "group": "Engineering",
+   "agents": 2,
+   "runsPerDay": 1498,
+   "costPerWeekEur": 2775,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Fiori UX Reviewer",
+   "group": "Engineering",
+   "agents": 4,
+   "runsPerDay": 1366,
+   "costPerWeekEur": 1228,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Knowledge Base Search",
+   "group": "Operations",
+   "agents": 4,
+   "runsPerDay": 1200,
+   "costPerWeekEur": 1490,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "L2C Pipeline Orchestrator",
+   "group": "Sales & Presales",
+   "agents": 5,
+   "runsPerDay": 1179,
+   "costPerWeekEur": 3236,
+   "overprivileged": 3,
+   "euHighRisk": 0
+  },
+  {
+   "family": "BTP Deploy Coordinator",
+   "group": "Engineering",
+   "agents": 3,
+   "runsPerDay": 1096,
+   "costPerWeekEur": 2248,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Presales Proposal Generator",
+   "group": "Sales & Presales",
+   "agents": 4,
+   "runsPerDay": 1062,
+   "costPerWeekEur": 1192,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Contract Classifier",
+   "group": "Legal & Compliance",
+   "agents": 4,
+   "runsPerDay": 1041,
+   "costPerWeekEur": 1174,
+   "overprivileged": 0,
+   "euHighRisk": 4
+  },
+  {
+   "family": "Support Reply Drafter",
+   "group": "Operations",
+   "agents": 6,
+   "runsPerDay": 796,
+   "costPerWeekEur": 1289,
+   "overprivileged": 0,
+   "euHighRisk": 6
+  },
+  {
+   "family": "SQL Query Helper",
+   "group": "Engineering",
+   "agents": 4,
+   "runsPerDay": 655,
+   "costPerWeekEur": 800,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Price List Updater",
+   "group": "Sales & Presales",
+   "agents": 2,
+   "runsPerDay": 552,
+   "costPerWeekEur": 621,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Onboarding Orchestrator",
+   "group": "HR / L&D",
+   "agents": 3,
+   "runsPerDay": 500,
+   "costPerWeekEur": 1840,
+   "overprivileged": 0,
+   "euHighRisk": 3
+  },
+  {
+   "family": "Shift Roster Sync",
+   "group": "HR / L&D",
+   "agents": 2,
+   "runsPerDay": 354,
+   "costPerWeekEur": 402,
+   "overprivileged": 0,
+   "euHighRisk": 2
+  },
+  {
+   "family": "SAP SPC Ticket Router",
+   "group": "Operations",
+   "agents": 4,
+   "runsPerDay": 300,
+   "costPerWeekEur": 568,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Log Anomaly Triage",
+   "group": "Engineering",
+   "agents": 1,
+   "runsPerDay": 264,
+   "costPerWeekEur": 371,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  },
+  {
+   "family": "Master Data Deduplicator",
+   "group": "Operations",
+   "agents": 1,
+   "runsPerDay": 128,
+   "costPerWeekEur": 145,
+   "overprivileged": 0,
+   "euHighRisk": 0
+  }
+ ],
+ "risks": [
+  {
+   "id": "R1",
+   "title": "AI-driven instability spike",
+   "severity": "high",
+   "owner": "VP Engineering",
+   "progressPct": 20
+  },
+  {
+   "id": "R2",
+   "title": "Overprivileged agent identities (31)",
+   "severity": "high",
+   "owner": "CISO",
+   "progressPct": 35
+  },
+  {
+   "id": "R3",
+   "title": "47 unregistered AI assets",
+   "severity": "high",
+   "owner": "AI Platform Lead",
+   "progressPct": 26
+  },
+  {
+   "id": "R4",
+   "title": "Hallucination in financial outputs",
+   "severity": "high",
+   "owner": "CFO Office",
+   "progressPct": 58
+  },
+  {
+   "id": "R5",
+   "title": "Shadow AI (89 flagged accounts)",
+   "severity": "medium",
+   "owner": "CISO / HR",
+   "progressPct": 45
+  },
+  {
+   "id": "R6",
+   "title": "EU AI Act — 18 high-risk agents",
+   "severity": "medium",
+   "owner": "General Counsel",
+   "progressPct": 44
+  },
+  {
+   "id": "R7",
+   "title": "Prompt injection via untrusted content",
+   "severity": "low",
+   "owner": "Security Eng.",
+   "progressPct": 100
+  }
+ ]
+}
+</script>
+<script id="wi-model">
+const UNIT_TO_GROUP = {
+  Engineering: 'Engineering',
+  Security: 'Engineering',
+  Operations: 'Operations',
+  Support: 'Operations',
+  Sales: 'Sales & Presales',
+  Finance: 'Finance',
+  HR: 'HR / L&D',
+  Legal: 'Legal & Compliance',
+};
+
+const ASSUMPTIONS = [
+  'Eine Kürzung senkt das Budget jedes Teams und die Gesamt-Obergrenze um denselben Prozentsatz.',
+  'Die Nachfrage bleibt gleich. Die Gesamt-Obergrenze ist die harte Grenze; einzelne Teams dürfen über ihrem Budget liegen (wie heute Engineering mit 107 %).',
+  'Reicht die gekürzte Obergrenze nicht für den Verbrauch, wird der fehlende Betrag auf die Teams verteilt, die über ihrem gekürzten Budget liegen, im Verhältnis ihrer Überschreitung. Deren produktive Agenten führen gleichmäßig weniger Aufrufe aus, die Kosten sinken im selben Verhältnis.',
+  'Agenten werden über ihre Business Unit einem Budget-Team zugeordnet (Support zu Operations, Security zu Engineering); das ist eine Annahme für die Demo.',
+  'Die Risiko-Effekte sind Faustregeln, keine Prognose. Beispieldaten, keine Live-Messung.',
+];
+
+const round1 = (n) => Math.round(n * 10) / 10;
+const round2 = (n) => Math.round(n * 100) / 100;
+
+/** Control Tower data -> the small model the simulation needs. */
+function prepareWhatIf(tower) {
+  const production = tower.agents.registry.filter((agent) => agent.lifecycle === 'production');
+  const rows = new Map();
+  for (const agent of production) {
+    const group = UNIT_TO_GROUP[agent.businessUnit] ?? agent.businessUnit;
+    const key = `${agent.family}|${group}`;
+    const row = rows.get(key) ?? { family: agent.family, group, agents: 0, runsPerDay: 0, costPerWeekEur: 0, overprivileged: 0, euHighRisk: 0 };
+    row.agents += 1;
+    row.runsPerDay += agent.runsPerDay;
+    row.costPerWeekEur += agent.costPerWeekEur;
+    row.overprivileged += agent.overprivileged ? 1 : 0;
+    row.euHighRisk += agent.euRisk === 'high' ? 1 : 0;
+    rows.set(key, row);
+  }
+  return {
+    ceilingM: tower.budget.ceilingM,
+    actualM: tower.budget.totalActualM,
+    thresholdPct: tower.meta?.riskThresholdPct ?? 40,
+    groups: tower.budget.groups.map((g) => ({ name: g.name, budgetK: g.budgetK, utilisationPct: g.utilisationPct })),
+    agents: [...rows.values()].sort((a, b) => b.runsPerDay - a.runsPerDay || a.family.localeCompare(b.family)),
+    risks: tower.risks.map((r) => ({ id: r.id, title: r.title, severity: r.severity, owner: r.owner, progressPct: r.progressPct })),
+  };
+}
+
+function riskEffects(model, throttledGroups) {
+  const over = new Set(throttledGroups);
+  const rules = [
+    { test: /shadow/i, when: () => over.size > 0, reason: 'Wird offizielle KI-Kapazität gedrosselt, weichen Teams auf nicht freigegebene Tools aus.' },
+    { test: /instability|failed deploy/i, when: () => over.has('Engineering'), reason: 'Engineering-Agenten werden gedrosselt, darunter Test- und Release-Automatisierung; weniger Prüfläufe vor dem Deploy.' },
+    { test: /financial|hallucination/i, when: () => over.has('Finance'), reason: 'Finance-Agenten werden gedrosselt; mehr manuelle Zahlen und Nacharbeit erhöhen die Fehlerchance in Finanzausgaben.' },
+  ];
+  return model.risks.map((risk) => {
+    const hit = rules.find((rule) => rule.test.test(risk.title) && rule.when());
+    return { ...risk, belowThreshold: risk.progressPct < model.thresholdPct, effect: hit ? 'steigt' : 'unverändert', reason: hit ? hit.reason : 'Die Kürzung ändert diese Ursache nicht.' };
+  });
+}
+
+/** `cutPct`: 0 to 100 (percent of the AI credits taken away). */
+function simulateCreditCut(model, cutPct) {
+  const cut = Math.min(100, Math.max(0, Number(cutPct) || 0));
+  const factor = 1 - cut / 100;
+  const ceilingAfter = model.ceilingM * factor;
+
+  const rows = model.groups.map((group) => {
+    const actualK = (group.budgetK * group.utilisationPct) / 100;
+    return { group, actualK, budgetAfter: group.budgetK * factor };
+  });
+  const actualTotalK = rows.reduce((n, row) => n + row.actualK, 0);
+  // Spend that no longer fits under the reduced ceiling, spread over the teams above their reduced budget.
+  const missingK = Math.max(0, actualTotalK - model.ceilingM * 1000 * factor);
+  const overshootTotal = rows.reduce((n, row) => n + Math.max(0, row.actualK - row.budgetAfter), 0);
+  const groups = rows.map(({ group, actualK, budgetAfter }) => {
+    const utilAfter = budgetAfter > 0 ? (actualK / budgetAfter) * 100 : Infinity;
+    const reduceK = overshootTotal > 0 ? (missingK * Math.max(0, actualK - budgetAfter)) / overshootTotal : 0;
+    return {
+      name: group.name,
+      budgetKBefore: group.budgetK,
+      budgetKAfter: round1(budgetAfter),
+      actualK: round1(actualK),
+      utilBeforePct: group.utilisationPct,
+      utilAfterPct: Number.isFinite(utilAfter) ? round1(utilAfter) : null,
+      status: utilAfter > 100 ? 'over' : utilAfter >= 90 ? 'tight' : 'ok',
+      mustReducePct: actualK > 0 ? round1((reduceK / actualK) * 100) : 0,
+    };
+  });
+  const reduceBy = new Map(groups.map((g) => [g.name, g.mustReducePct / 100]));
+
+  const processes = model.agents
+    .map((row) => {
+      const share = reduceBy.get(row.group) ?? 0;
+      return { family: row.family, group: row.group, agents: row.agents, runsPerDayBefore: row.runsPerDay, runsLostPerDay: Math.round(row.runsPerDay * share), lostPct: round1(share * 100), costSavedPerWeekEur: Math.round(row.costPerWeekEur * share), overprivileged: row.overprivileged, euHighRisk: row.euHighRisk };
+    })
+    .filter((row) => row.runsLostPerDay > 0)
+    .sort((a, b) => b.runsLostPerDay - a.runsLostPerDay);
+
+  const runsBefore = model.agents.reduce((n, row) => n + row.runsPerDay, 0);
+  const runsLost = processes.reduce((n, row) => n + row.runsLostPerDay, 0);
+  const throttledGroups = groups.filter((g) => g.mustReducePct > 0).map((g) => g.name);
+  const overBy = round2(Math.max(0, model.actualM - ceilingAfter));
+
+  return {
+    cutPct: round1(cut),
+    ceiling: {
+      beforeM: model.ceilingM,
+      afterM: round2(ceilingAfter),
+      actualM: model.actualM,
+      headroomM: round2(Math.max(0, ceilingAfter - model.actualM)),
+      overByM: overBy,
+      status: overBy > 0 ? 'over' : model.actualM / ceilingAfter >= 0.9 ? 'tight' : 'ok',
+    },
+    breakEvenCutPct: round1((1 - model.actualM / model.ceilingM) * 100),
+    groups,
+    agents: {
+      production: model.agents.reduce((n, row) => n + row.agents, 0),
+      affected: processes.reduce((n, row) => n + row.agents, 0),
+      runsPerDayBefore: runsBefore,
+      runsLostPerDay: runsLost,
+      runsLostPct: runsBefore ? round1((runsLost / runsBefore) * 100) : 0,
+      costSavedPerWeekEur: processes.reduce((n, row) => n + row.costSavedPerWeekEur, 0),
+    },
+    processes: processes.slice(0, 10),
+    risks: riskEffects(model, throttledGroups),
+    assumptions: ASSUMPTIONS,
+  };
+}
+</script>
+<script>
+(function () {
+  'use strict';
+  var model = JSON.parse(document.getElementById('wi-data').textContent);
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var num = function (n, d) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); };
+  var M = function (n) { return num(n, 2) + ' Mio. €'; };
+  var K = function (n) { return num(n) + ' T€'; };
+  var maxBudget = Math.max.apply(null, model.groups.map(function (g) { return g.budgetK; }));
+  var cut = 30;
+
+  $('presets').innerHTML = [0, 10, 20, 30, 40, 50].map(function (p) { return '<button type="button" data-cut="' + p + '">' + p + ' %</button>'; }).join('');
+  $('assumptions').innerHTML = simulateCreditCut(model, 0).assumptions.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('');
+
+  function kpi(label, value, sub, tone) { return '<div class="kpi ' + (tone || '') + '"><div class="k">' + label + '</div><div class="v">' + value + '</div><div class="s">' + sub + '</div></div>'; }
+
+  function render() {
+    var r = simulateCreditCut(model, cut), c = r.ceiling, a = r.agents;
+    $('big').textContent = num(cut) + ' %';
+    $('cut').value = String(cut);
+    Array.prototype.forEach.call($('presets').children, function (b) { b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-cut')) === cut)); });
+
+    var throttled = r.groups.filter(function (g) { return g.mustReducePct > 0; });
+    var sentence = 'Bei ' + num(cut) + ' % weniger AI-Credits sinkt die Obergrenze von ' + M(c.beforeM) + ' auf ' + M(c.afterM) + '. ';
+    if (c.overByM > 0) sentence += 'Der heutige Verbrauch von ' + M(c.actualM) + ' liegt dann ' + M(c.overByM) + ' darüber: ' + throttled.length + (throttled.length === 1 ? ' Team muss' : ' Teams müssen') + ' ihre Agenten drosseln, rund ' + num(a.runsLostPerDay) + ' Aufrufe pro Tag (' + num(a.runsLostPct, 1) + ' %) fallen weg.';
+    else if (cut > 0) sentence += 'Der heutige Verbrauch von ' + M(c.actualM) + ' passt noch darunter, der Spielraum beträgt ' + M(c.headroomM) + '. Ab ' + num(r.breakEvenCutPct, 1) + ' % Kürzung reicht die Obergrenze nicht mehr.';
+    else sentence += 'Ab ' + num(r.breakEvenCutPct, 1) + ' % Kürzung reicht die Obergrenze nicht mehr für den heutigen Verbrauch.';
+    $('summary').textContent = sentence;
+
+    $('kpis').innerHTML =
+      kpi('Obergrenze', M(c.afterM), 'vorher ' + M(c.beforeM)) +
+      kpi(c.overByM > 0 ? 'Über der Obergrenze' : 'Spielraum', c.overByM > 0 ? M(c.overByM) : M(c.headroomM), 'Verbrauch ' + M(c.actualM), c.overByM > 0 ? 'red' : c.status === 'tight' ? 'amber' : 'green') +
+      kpi('Weniger Aufrufe pro Tag', num(a.runsLostPerDay), num(a.runsLostPct, 1) + ' % von ' + num(a.runsPerDayBefore), a.runsLostPerDay > 0 ? 'amber' : 'green') +
+      kpi('Kosten pro Woche gespart', num(a.costSavedPerWeekEur) + ' €', num(a.affected) + ' von ' + num(a.production) + ' Agenten betroffen') +
+      kpi('Break-even', num(r.breakEvenCutPct, 1) + ' %', 'ab hier reicht die Obergrenze nicht mehr');
+
+    $('teams').innerHTML = r.groups.map(function (g) {
+      var w = Math.max(1, g.budgetKAfter / maxBudget * 100), sp = Math.min(100, g.actualK / maxBudget * 100);
+      var util = g.utilAfterPct === null ? '–' : num(g.utilAfterPct) + ' %';
+      var note = g.mustReducePct > 0 ? 'Muss ' + num(g.mustReducePct, 1) + ' % weniger verbrauchen (Agenten gedrosselt)' : g.status === 'over' ? 'Über Budget, aber die Gesamt-Obergrenze trägt es noch' : '';
+      return '<div class="team ' + g.status + '"><div class="name">' + esc(g.name) + '</div><div class="track" role="img" aria-label="Budget ' + K(g.budgetKAfter) + ', Verbrauch ' + K(g.actualK) + '"><div class="budget" style="width:' + w + '%"></div><div class="spend" style="width:' + sp + '%"></div></div><div class="util">' + util + '</div>' + (note ? '<div class="thr">' + esc(note) + '</div>' : '') + '</div>';
+    }).join('');
+
+    $('processes').innerHTML = r.processes.length ?
+      '<table><thead><tr><th>Agenten-Familie</th><th>Team</th><th class="n">Agenten</th><th class="n">Weniger Aufrufe/Tag</th><th class="n">Anteil</th></tr></thead><tbody>' +
+      r.processes.map(function (p) { return '<tr><td><b>' + esc(p.family) + '</b>' + (p.euHighRisk ? ' <span class="tag n">High-Risk</span>' : '') + '</td><td>' + esc(p.group) + '</td><td class="n">' + num(p.agents) + '</td><td class="n">' + num(p.runsLostPerDay) + '</td><td class="n">' + num(p.lostPct, 1) + ' %</td></tr>'; }).join('') + '</tbody></table>' :
+      '<div class="empty">Keine Drosselung nötig: Der Verbrauch passt unter die neue Obergrenze.</div>';
+
+    $('risks').innerHTML = r.risks.map(function (k) {
+      return '<div class="risk"><div class="id">' + esc(k.id) + '</div><div><b>' + esc(k.title) + '</b><div class="why">' + esc(k.reason) + ' · Owner: ' + esc(k.owner) + ', ' + num(k.progressPct) + ' % mitigiert</div></div><span class="tag ' + (k.effect === 'steigt' ? 'r' : 'n') + '">' + (k.effect === 'steigt' ? '↑ steigt' : 'unverändert') + '</span></div>';
+    }).join('');
+  }
+
+  $('cut').addEventListener('input', function () { cut = Number($('cut').value) || 0; render(); });
+  $('presets').addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button'); if (b) { cut = Number(b.getAttribute('data-cut')); render(); } });
+  $('ask').addEventListener('click', function () {
+    if (window.parent === window) return;
+    window.parent.postMessage({ type: 'wb:ask', prompt: 'Was passiert, wenn wir die AI-Credits um ' + cut + ' % kürzen? Nutze die Simulation im AI Control Tower und nenne Budget, betroffene Prozesse und Risiken.' }, '*');
+    $('ask').textContent = 'Frage an Joule gesendet';
+    $('ask').disabled = true;
+    setTimeout(function () { $('ask').textContent = 'Joule fragen'; $('ask').disabled = false; }, 4000);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
