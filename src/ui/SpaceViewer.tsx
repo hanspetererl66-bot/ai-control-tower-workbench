@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
+import { parseAskMessage } from '../space-ask';
 import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
@@ -11,6 +12,7 @@ export default function SpaceViewer({
   tabRequest,
   bridge,
   bridgeEnabled = false,
+  onAsk,
   textScale = DEFAULT_SPACE_SCALE,
   theme = 'light',
 }: {
@@ -19,6 +21,8 @@ export default function SpaceViewer({
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
   bridgeEnabled?: boolean;
+  /** A Space asks Joule a question ("Joule fragen"): the host opens the chat and sends it. */
+  onAsk?: (prompt: string) => void;
   /** Text size of the page inside the frame (1 = as authored). */
   textScale?: SpaceScale;
   /** The app's resolved theme; the Space follows it instead of the operating system. */
@@ -33,6 +37,18 @@ export default function SpaceViewer({
     frame.current?.contentWindow?.postMessage({ type: 'ct:open-tab', tab: tabRequest.tab }, '*');
   };
   useEffect(postTab, [tabRequest?.tab, tabRequest?.nonce]);
+
+  const askRef = useRef(onAsk);
+  askRef.current = onAsk;
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (!frame.current || event.source !== frame.current.contentWindow) return;
+      const prompt = parseAskMessage(event.data);
+      if (prompt) askRef.current?.(prompt);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
 
   const bridgeRef = useRef(bridge);
   bridgeRef.current = bridge;

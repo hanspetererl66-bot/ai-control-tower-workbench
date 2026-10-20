@@ -1,0 +1,10 @@
+{
+  "title": "Agent Activity",
+  "description": "Live-Netz der produktiven Agenten: Modelle, Agenten-Familien und Business-Systeme, mit einem Puls je (simuliertem) Aufruf und einer Erklärung pro Knoten.",
+  "insights": [
+    "Die Aufrufe sind aus runsPerDay der Control-Tower-Registry simuliert, keine Live-Messung; die Links zu den Business-Systemen sind illustrativ.",
+    "Rote Ringe markieren Familien mit überprivilegierten Agenten, gelbe Ringe High-Risk-Agenten nach EU AI Act.",
+    "Ein Klick auf einen Knoten erklärt ihn; „Joule fragen“ stellt dieselbe Frage im Chat mit Zugriff auf den Control Tower."
+  ],
+  "prompt": "Bundled example: Agent Activity (static, data embedded by npm run sync:agent-activity)."
+}
