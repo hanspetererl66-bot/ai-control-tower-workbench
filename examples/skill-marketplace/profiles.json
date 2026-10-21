@@ -2487,5 +2487,68 @@
         }
       ]
     }
+  ],
+  "capabilities": [
+    {
+      "id": "customer-revenue",
+      "label": "Customers & revenue",
+      "blurb": "Prepare customer meetings, secure renewals, draft quotes and raise service tickets.",
+      "skills": [
+        "customer-call-prep",
+        "renewal-radar",
+        "quote-drafter",
+        "ticket-writer"
+      ]
+    },
+    {
+      "id": "finance-checks",
+      "label": "Finance & receipts",
+      "blurb": "Check expenses, receipts and invoices against policy and purchase orders.",
+      "skills": [
+        "expense-check",
+        "invoice-matcher",
+        "concur-receipt-audit"
+      ]
+    },
+    {
+      "id": "governance-risk",
+      "label": "Governance & risk",
+      "blurb": "Board reporting, access reviews and the health of automations.",
+      "skills": [
+        "board-briefing",
+        "access-review-prep",
+        "automation-health-check"
+      ]
+    },
+    {
+      "id": "content-comms",
+      "label": "Content & communication",
+      "blurb": "Campaign briefs, content approval, job texts and release notes.",
+      "skills": [
+        "campaign-brief",
+        "social-post-checker",
+        "sf-job-text-reviewer",
+        "release-notes-writer"
+      ]
+    },
+    {
+      "id": "it-operations",
+      "label": "IT operations & delivery",
+      "blurb": "Watch cloud capacity and keep sprints and releases on track.",
+      "skills": [
+        "btp-quota-watch",
+        "my-sprint-digest"
+      ]
+    },
+    {
+      "id": "skill-management",
+      "label": "Skills & knowledge",
+      "blurb": "Find, build and rate skills in the marketplace itself.",
+      "skills": [
+        "skill-finder",
+        "skill-search",
+        "rate-skill"
+      ]
+    }
   ]
 }

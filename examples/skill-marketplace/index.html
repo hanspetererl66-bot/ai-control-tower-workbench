@@ -335,26 +335,118 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 .s4m .hint .tag{flex:none;margin-top:1px}
 @media(max-width:860px){.s4m .sum{grid-template-columns:repeat(2,1fr)}.s4m .sum>div:nth-child(2){border-right:0}.s4m .sum>div:nth-child(-n+2){border-bottom:1px solid var(--line)}.s4m .steps{grid-template-columns:1fr;gap:6px}.s4m .step,.s4m .step:first-child,.s4m .step:last-child{border-radius:var(--radius-s);margin-left:0}.s4m .mix{display:none}}
 @media(prefers-reduced-motion:reduce){.s4m .chev{transition:none}}
+
+/* Hub: discover, collections, my skills */
+.s4m nav.subnav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 32px;border-bottom:1px solid var(--line);background:var(--wash)}
+.s4m nav.subnav[hidden]{display:none}
+.s4m nav.subnav button{border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--muted);padding:5px 14px;font-size:12px;font-weight:500;cursor:pointer}
+.s4m nav.subnav button:hover{border-color:var(--purple-border);color:var(--ink)}
+.s4m nav.subnav button[aria-pressed="true"]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple);font-weight:600}
+.s4m h2 .lnk{float:right;font-weight:500}
+.s4m .hero{padding:8px 0 4px}
+.s4m .hero h1{margin:0;font-size:26px;font-weight:650;letter-spacing:-.02em}
+.s4m .hero p.s{margin:6px 0 16px;max-width:640px;font-size:13px;line-height:1.55}
+.s4m .hero-search{display:flex;gap:8px;max-width:640px}
+.s4m .hero-search input{flex:1;font-size:14px;padding:12px 14px}
+.s4m .d-live{max-width:640px;margin-top:8px}
+.s4m .d-live .hit{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:8px 10px;border-radius:var(--radius-s);cursor:pointer}
+.s4m .d-live .hit:hover,.s4m .d-live .hit:focus-visible{background:var(--purple-dim);outline:none}
+.s4m .d-live .hit span{color:var(--muted);font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s4m .caps{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.s4m .cap{text-align:left;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.s4m .cap:hover{border-color:var(--purple-border);background:var(--wash)}
+.s4m .cap:focus-visible,.s4m .bundle:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+.s4m .cap b{font-size:14px;font-weight:600}
+.s4m .cap p{margin:0;font-size:12px;color:var(--muted);line-height:1.5;flex:1}
+.s4m .cap .meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+.s4m .bundles{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.s4m .bundle{text-align:left;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:18px 20px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;gap:8px}
+.s4m .bundle:hover{border-color:var(--purple-border);background:var(--wash)}
+.s4m .bundle h3{margin:0;font-size:14px;font-weight:600}
+.s4m .bundle p{margin:0;font-size:13px;line-height:1.55;color:var(--ink-2);flex:1}
+.s4m .bundle .flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:11px;color:var(--muted)}
+.s4m .bundle .flow i{font-style:normal;color:var(--faint)}
+.s4m .bundle .foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line-2);font-size:12px;color:var(--muted)}
+.s4m .trust{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.s4m .steps-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.s4m .bstep{display:grid;grid-template-columns:34px 1fr auto;gap:4px 14px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+.s4m .bstep .no{grid-row:1/3;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--purple-dim);color:var(--purple);font-weight:600;font-size:13px}
+.s4m .bstep.miss .no{background:var(--line-2);color:var(--muted)}
+.s4m .bstep .nm{font-weight:600;font-size:14px;background:none;border:0;color:var(--ink);padding:0;cursor:pointer;text-align:left}
+.s4m .bstep .nm:hover{color:var(--purple)}
+.s4m .bstep .why{grid-column:2/4;font-size:13px;color:var(--ink-2);line-height:1.55}
+.s4m .bstep .io{grid-column:2/4;font-size:12px;color:var(--muted)}
+.s4m .progress{height:8px;border-radius:99px;background:var(--line-2);overflow:hidden;margin-top:10px;max-width:420px}
+.s4m .progress i{display:block;height:100%;background:var(--green)}
+.s4m .trustcard{margin-top:14px}
+.s4m .trustcard .tgrid{display:grid;gap:14px 24px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:10px}
+.s4m .trustcard .tgrid .l{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .trustcard .tgrid .v{margin-top:3px;font-size:13px}
+@media(max-width:640px){.s4m nav.subnav{padding:10px 16px}.s4m .hero-search{flex-direction:column}.s4m .bstep{grid-template-columns:30px 1fr}.s4m .bstep .no{grid-row:1}.s4m .bstep .why,.s4m .bstep .io{grid-column:1/3}}
 </style>
 </head>
 <body class="s4m">
 <header>
   <div class="logo">Skill <b>Marketplace</b></div>
-  <div class="s">Shared skill registry by board area, LOB, team and individual</div>
+  <div class="s">Control surface for business skills: discover, combine and govern</div>
   <div class="cust"><strong id="hdr-count"></strong><span id="hdr-meta"></span></div>
 </header>
 <div class="demo">Skills marked <b>Sample</b> are fictional and only show the structure. <span id="source-note"></span></div>
-<nav role="tablist" id="tabs">
-  <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+<nav role="tablist" id="tabs" aria-label="Marketplace">
+  <button role="tab" data-tab="discover" aria-selected="true">Discover</button>
+  <button role="tab" data-tab="collections" aria-selected="false">Collections</button>
   <button role="tab" data-tab="catalog" aria-selected="false">Catalog</button>
-  <button role="tab" data-tab="ranking" aria-selected="false">Ranking</button>
-  <button role="tab" data-tab="impact" aria-selected="false">Impact</button>
-  <button role="tab" data-tab="governance" aria-selected="false">Governance</button>
-  <button role="tab" data-tab="gaps" aria-selected="false">Gaps</button>
-  <button role="tab" data-tab="hints" aria-selected="false">Hints</button>
+  <button role="tab" data-tab="mine" aria-selected="false">My skills</button>
+  <button role="tab" data-tab="overview" aria-selected="false" data-group="insights">Insights</button>
+</nav>
+<nav class="subnav" id="subtabs" aria-label="Insights" hidden>
+  <button data-tab="overview" aria-pressed="true">Overview</button>
+  <button data-tab="ranking" aria-pressed="false">Ranking</button>
+  <button data-tab="impact" aria-pressed="false">Impact</button>
+  <button data-tab="governance" aria-pressed="false">Governance</button>
+  <button data-tab="gaps" aria-pressed="false">Gaps</button>
+  <button data-tab="hints" aria-pressed="false">Hints</button>
 </nav>
 <main>
-  <section class="pg on" id="pg-overview">
+  <section class="pg on" id="pg-discover">
+    <div class="hero">
+      <h1>What do you want to get done?</h1>
+      <p class="s">Skills for the work of your teams, grouped by business capability. Search, pick a capability or start from a ready-made collection.</p>
+      <form class="hero-search" id="d-form" role="search" onsubmit="return false">
+        <input type="search" id="d-q" placeholder="e.g. renewal, expense report, board briefing" aria-label="Search skills and capabilities" autocomplete="off">
+        <button type="button" class="primary" id="d-go">Search</button>
+      </form>
+      <div class="d-live" id="d-live" aria-live="polite"></div>
+    </div>
+    <h2>Capabilities</h2>
+    <div class="caps" id="caps"></div>
+    <h2>Featured skills <button class="lnk" id="d-all">View all</button></h2>
+    <div class="skills" id="featured"></div>
+    <h2>Collections <button class="lnk" id="d-colls">View all</button></h2>
+    <div class="bundles" id="d-bundles"></div>
+  </section>
+  <section class="pg" id="pg-collections">
+    <div class="filters">
+      <input type="search" id="c-q" placeholder="Search collections, goals or roles" aria-label="Search collections">
+      <select id="c-role" aria-label="Role"></select>
+      <button class="lnk" id="c-clear">Clear filters</button>
+    </div>
+    <div class="s" id="c-count" style="margin-bottom:12px"></div>
+    <div class="bundles" id="bundles"></div>
+  </section>
+  <section class="pg" id="pg-bundle">
+    <button class="lnk" id="bundle-back">&larr; Back</button>
+    <div id="bundle"></div>
+  </section>
+  <section class="pg" id="pg-mine">
+    <div class="smx-kpis" id="mine-kpis"></div>
+    <div class="s" id="mine-note" style="margin:6px 0 12px"></div>
+    <h2>Needs attention</h2>
+    <div class="card tbl" id="mine-attn"></div>
+    <h2>Installed in this workspace</h2>
+    <div class="skills" id="mine"></div>
+  </section>
+  <section class="pg" id="pg-overview">
     <div class="sum" id="sum"></div>
     <h2>Reach</h2>
     <div class="s">A skill starts as individual and is promoted one level at a time. Select a level to see its skills, double-click to open it in the catalog.</div>
@@ -367,6 +459,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   <section class="pg" id="pg-catalog">
     <div class="filters">
       <input type="search" id="f-q" placeholder="Search name, description or tool" aria-label="Search">
+      <select id="f-cap" aria-label="Capability"></select>
       <select id="f-area" aria-label="Board area"></select>
       <select id="f-lob" aria-label="LOB"></select>
       <select id="f-team" aria-label="Team"></select>
@@ -413,7 +506,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 </main>
 <script type="application/json" id="sm-data">
 {
-  "asOf": "2026-10-19",
+  "asOf": "2026-10-20",
   "source": "repository",
   "taxonomy": {
     "boardAreas": [
@@ -3434,6 +3527,69 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       ]
     }
   ],
+  "capabilities": [
+    {
+      "id": "customer-revenue",
+      "label": "Customers & revenue",
+      "blurb": "Prepare customer meetings, secure renewals, draft quotes and raise service tickets.",
+      "skills": [
+        "customer-call-prep",
+        "renewal-radar",
+        "quote-drafter",
+        "ticket-writer"
+      ]
+    },
+    {
+      "id": "finance-checks",
+      "label": "Finance & receipts",
+      "blurb": "Check expenses, receipts and invoices against policy and purchase orders.",
+      "skills": [
+        "expense-check",
+        "invoice-matcher",
+        "concur-receipt-audit"
+      ]
+    },
+    {
+      "id": "governance-risk",
+      "label": "Governance & risk",
+      "blurb": "Board reporting, access reviews and the health of automations.",
+      "skills": [
+        "board-briefing",
+        "access-review-prep",
+        "automation-health-check"
+      ]
+    },
+    {
+      "id": "content-comms",
+      "label": "Content & communication",
+      "blurb": "Campaign briefs, content approval, job texts and release notes.",
+      "skills": [
+        "campaign-brief",
+        "social-post-checker",
+        "sf-job-text-reviewer",
+        "release-notes-writer"
+      ]
+    },
+    {
+      "id": "it-operations",
+      "label": "IT operations & delivery",
+      "blurb": "Watch cloud capacity and keep sprints and releases on track.",
+      "skills": [
+        "btp-quota-watch",
+        "my-sprint-digest"
+      ]
+    },
+    {
+      "id": "skill-management",
+      "label": "Skills & knowledge",
+      "blurb": "Find, build and rate skills in the marketplace itself.",
+      "skills": [
+        "skill-finder",
+        "skill-search",
+        "rate-skill"
+      ]
+    }
+  ],
   "ratings": {
     "settings": {
       "priorMean": 3.8,
@@ -3903,14 +4059,18 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 
   /* ---------- navigation helpers ---------- */
   var tabs = document.querySelectorAll('#tabs button');
+  var INSIGHTS = ['overview', 'ranking', 'impact', 'governance', 'gaps', 'hints'];
   function go(name){
-    Array.prototype.forEach.call(tabs, function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    var group = INSIGHTS.indexOf(name) >= 0 ? 'overview' : name;
+    Array.prototype.forEach.call(tabs, function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === group)); });
+    $('subtabs').hidden = INSIGHTS.indexOf(name) < 0;
+    Array.prototype.forEach.call($('subtabs').children, function(b){ b.setAttribute('aria-pressed', String(b.dataset.tab === name)); });
     Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + name); });
     window.scrollTo(0, 0);
   }
   function openCatalog(f){
     $('f-q').value = f.q || ''; $('f-area').value = f.area || ''; $('f-lob').value = f.lob || ''; $('f-team').value = f.team || '';
-    $('f-scope').value = f.scope || ''; $('f-mat').value = f.mat || ''; $('f-role').value = f.role || '';
+    $('f-cap').value = f.cap || ''; $('f-scope').value = f.scope || ''; $('f-mat').value = f.mat || ''; $('f-role').value = f.role || '';
     renderCatalog(); go('catalog');
   }
 
@@ -4019,6 +4179,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   /* ---------- catalog ---------- */
   function opts(sel, label, values){ sel.innerHTML = '<option value="">' + label + '</option>' + values.map(function(v){ return '<option value="' + esc(v[0]) + '">' + esc(v[1]) + '</option>'; }).join(''); }
   function setupFilters(){
+    opts($('f-cap'), 'All capabilities', capList().map(function(c){ return [c.id, c.label]; }));
     opts($('f-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
     opts($('f-lob'), 'All LOBs', Object.keys(D.taxonomy.lobs).map(function(l){ return [l, l]; }));
     var teams = {}; D.skills.forEach(function(s){ if (s.team) teams[s.team] = 1; });
@@ -4029,31 +4190,185 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     opts($('f-role'), 'Recommended for any role', Object.keys(roles).sort().map(function(r){ return [r, r]; }));
     opts($('r-area'), 'All board areas', D.taxonomy.boardAreas.map(function(a){ return [a, a]; }));
     $('r-area').addEventListener('change', renderRanking);
-    ['f-q', 'f-area', 'f-lob', 'f-team', 'f-scope', 'f-mat', 'f-role', 'f-sort'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
+    ['f-q', 'f-cap', 'f-area', 'f-lob', 'f-team', 'f-scope', 'f-mat', 'f-role', 'f-sort'].forEach(function(id){ $(id).addEventListener(id === 'f-q' ? 'input' : 'change', renderCatalog); });
     $('f-clear').addEventListener('click', function(){ openCatalog({}); });
     $('f-sample').addEventListener('change', function(){ showSample = $('f-sample').checked; renderAll(); });
   }
   function renderCatalog(){
-    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value, mat = $('f-mat').value, role = $('f-role').value;
+    var q = $('f-q').value.trim().toLowerCase(), area = $('f-area').value, lob = $('f-lob').value, team = $('f-team').value, scope = $('f-scope').value, mat = $('f-mat').value, role = $('f-role').value, cap = $('f-cap').value;
     var list = pool().filter(function(s){
       var rf = ((D.profiles[s.name] || {}).discovery || {}).recommendedFor || [];
-      return (!role || rf.indexOf(role) >= 0) && (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) && (!mat || s.maturity === mat) &&
+      return (!role || rf.indexOf(role) >= 0) && (!cap || capOf(s.name).id === cap) && (!area || s.boardArea === area) && (!lob || s.lob === lob) && (!team || s.team === team) && (!scope || s.scope === scope) && (!mat || s.maturity === mat) &&
         (!q || (s.name + ' ' + s.description + ' ' + s.process + ' ' + s.tools.join(' ') + ' ' + (((D.profiles[s.name] || {}).discovery || {}).tags || []).join(' ')).toLowerCase().indexOf(q) >= 0);
     });
     var sort = $('f-sort').value;
     if (sort === 'best') list.sort(function(a, b){ return rating(b.name).score - rating(a.name).score || a.name.localeCompare(b.name); });
     else if (sort === 'most') list.sort(function(a, b){ return rating(b.name).n - rating(a.name).n || a.name.localeCompare(b.name); });
     $('catalog-count').textContent = list.length + ' of ' + pool().length + ' skills';
-    $('skills').innerHTML = list.length ? list.map(function(s){
-      var path = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).map(esc).join(' <span style="color:var(--faint)">/</span> ');
-      var approval = s.maturity === 'approved' && s.approvedBy ? 'Approved by ' + esc(s.approvedBy) + (s.approvedAt ? ' on ' + esc(String(s.approvedAt).slice(0, 10)) : '') + (s.approvedVersion ? ', v' + esc(s.approvedVersion) : '') : '';
-      return '<article class="sk m-' + s.maturity + '" tabindex="0" data-skill="' + esc(s.name) + '"><h3>' + esc(s.name) + (s.sample ? tag('warn', 'Sample') : '') + '</h3><div class="path">' + path + '</div>' + '<div class="smx-line">' + stars(rating(s.name)) + '</div>' +
-        '<p>' + esc(s.description) + '</p>' +
-        '<div class="facts"><span class="status"><i class="m-' + s.maturity + '"></i>' + MAT_LABEL[s.maturity] + '</span><span class="badge">' + (SCOPE_LABEL[s.scope] || s.scope) + '</span>' +
-          [s.domain, s.process, s.dataClass].filter(Boolean).map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' +
-        (s.tools.length ? '<div class="facts">' + s.tools.map(function(t){ return '<span class="chip" style="font-family:var(--mono)">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
-        '<div class="foot"><span>Owner ' + esc(s.owner || 'not set') + ', v' + esc(s.version || 1) + '</span><span>' + approval + '</span></div>' + (D.profiles[s.name] ? '<div class="s" style="margin-top:8px">Open for impact, governance, lifecycle and discovery &rarr;</div>' : '') + '</article>';
-    }).join('') : '<div class="card empty" style="grid-column:1/-1">No skill matches these filters. Clear a filter to see more.</div>';
+    $('skills').innerHTML = list.length ? list.map(function(s){ return skillCard(s); }).join('') : '<div class="card empty" style="grid-column:1/-1">No skill matches these filters. Clear a filter to see more.</div>';
+  }
+
+  /* ---------- hub: capabilities, trust, collections, my skills ---------- */
+  var CAPS = (D.capabilities || []).slice();
+  var OTHER_CAP = {id: 'other', label: 'More skills', blurb: 'Skills that are not assigned to a capability yet.', skills: []};
+  function capOf(name){
+    for (var i = 0; i < CAPS.length; i++) if (CAPS[i].skills.indexOf(name) >= 0) return CAPS[i];
+    return OTHER_CAP;
+  }
+  function capList(){
+    var other = pool().filter(function(s){ return capOf(s.name) === OTHER_CAP; });
+    return CAPS.concat(other.length ? [OTHER_CAP] : []);
+  }
+  function capSkills(cap){ return pool().filter(function(s){ return capOf(s.name).id === cap.id; }); }
+  function trustChips(s){
+    var p = prof(s), out = [];
+    if (!p) return '<div class="trust">' + tag('n', 'No governance profile yet') + '</div>';
+    var g = p.governance;
+    var rd = daysTo(g.nextReview);
+    out.push(tag(RISK_TONE[g.aiActRisk] || 'n', 'EU AI Act: ' + g.aiActRisk), tag(DPIA_TONE[g.dpia] || 'n', 'DPIA: ' + g.dpia), tag(rd < 0 || rd <= 30 ? 'bad' : rd <= 90 ? 'warn' : 'ok', rd < 0 ? 'Review overdue' : 'Review in ' + rd + ' d'));
+    return '<div class="trust">' + out.join('') + '</div>';
+  }
+  function skillCard(s, extra){
+    var path = [s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).map(esc).join(' <span style="color:var(--faint)">/</span> ');
+    var approval = s.maturity === 'approved' && s.approvedBy ? 'Approved by ' + esc(s.approvedBy) + (s.approvedAt ? ' on ' + esc(String(s.approvedAt).slice(0, 10)) : '') + (s.approvedVersion ? ', v' + esc(s.approvedVersion) : '') : '';
+    return '<article class="sk m-' + s.maturity + '" tabindex="0" data-skill="' + esc(s.name) + '"><h3>' + esc(s.name) + (s.sample ? tag('warn', 'Sample') : '') + '</h3><div class="path">' + path + '</div>' + '<div class="smx-line">' + stars(rating(s.name)) + '</div>' +
+      '<p>' + esc(s.description) + '</p>' + (extra || '') +
+      '<div class="facts"><span class="status"><i class="m-' + s.maturity + '"></i>' + MAT_LABEL[s.maturity] + '</span><span class="badge">' + (SCOPE_LABEL[s.scope] || s.scope) + '</span><span class="chip">' + esc(capOf(s.name).label) + '</span>' +
+        [s.process, s.dataClass].filter(Boolean).map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' +
+      (s.tools.length ? '<div class="facts">' + s.tools.map(function(t){ return '<span class="chip" style="font-family:var(--mono)">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+      '<div class="foot"><span>Owner ' + esc(s.owner || 'not set') + ', v' + esc(s.version || 1) + '</span><span>' + approval + '</span></div>' + (D.profiles[s.name] ? '<div class="s" style="margin-top:8px">Open for impact, governance, lifecycle and discovery &rarr;</div>' : '') + '</article>';
+  }
+
+  /* discover */
+  function renderDiscover(){
+    $('caps').innerHTML = capList().map(function(c){
+      var list = capSkills(c);
+      return '<button class="cap" data-cap="' + esc(c.id) + '"><b>' + esc(c.label) + '</b><p>' + esc(c.blurb) + '</p><span class="meta"><span>' + list.length + (list.length === 1 ? ' skill' : ' skills') + '</span>' + mixbar(list, 'mix') + '</span></button>';
+    }).join('');
+    var top = pool().slice().sort(function(a, b){ return demandScore(b) - demandScore(a) || a.name.localeCompare(b.name); }).slice(0, 3);
+    $('featured').innerHTML = top.map(function(s){ return skillCard(s, trustChips(s)); }).join('');
+    $('d-bundles').innerHTML = bundleCards(D.playbooks || []).slice(0, 3).join('');
+    liveSearch();
+  }
+  function matches(q){
+    q = q.trim().toLowerCase();
+    if (!q) return [];
+    return pool().filter(function(s){
+      var tags = ((prof(s) || {}).discovery || {}).tags || [];
+      return (s.name + ' ' + s.description + ' ' + s.process + ' ' + capOf(s.name).label + ' ' + tags.join(' ')).toLowerCase().indexOf(q) >= 0;
+    });
+  }
+  function liveSearch(){
+    var q = $('d-q').value, list = matches(q);
+    $('d-live').innerHTML = !q.trim() ? '' : list.length ? list.slice(0, 5).map(function(s){ return '<button class="hit" data-skill="' + esc(s.name) + '"><b>' + esc(s.name) + '</b><span>' + esc(s.description) + '</span></button>'; }).join('') + (list.length > 5 ? '<button class="lnk" data-more="1">All ' + list.length + ' results in the catalog</button>' : '') : '<div class="s">No skill matches. Try a process, a role or a tool, or <button class="lnk" data-more="1">open the catalog</button>.</div>';
+  }
+  $('d-q').addEventListener('input', liveSearch);
+  $('d-q').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); openCatalog({q: $('d-q').value}); } });
+  $('d-go').addEventListener('click', function(){ openCatalog({q: $('d-q').value}); });
+  $('d-live').addEventListener('click', function(e){ if (e.target.closest('[data-more]')) openCatalog({q: $('d-q').value}); });
+  $('caps').addEventListener('click', function(e){ var c = e.target.closest('[data-cap]'); if (c) openCatalog({cap: c.dataset.cap}); });
+  $('d-all').addEventListener('click', function(){ openCatalog({}); });
+  $('d-colls').addEventListener('click', function(){ go('collections'); });
+
+  /* collections */
+  var stepState = function(name){
+    var s = D.skills.filter(function(x){ return x.name === name; })[0];
+    if (!s) return 'missing';
+    return pool().indexOf(s) >= 0 ? (s.sample ? 'sample' : 'ready') : 'hidden';
+  };
+  function bundleStats(pb){
+    var have = pb.steps.filter(function(st){ var k = stepState(st.skill); return k === 'ready' || k === 'sample'; }).length;
+    var minutes = 0, risk = 0, low = 2, RISK_ORDER = ['Minimal', 'Limited', 'High'];
+    pb.steps.forEach(function(st){
+      var s = D.skills.filter(function(x){ return x.name === st.skill; })[0], p = s && prof(s);
+      if (!s || pool().indexOf(s) < 0) return;
+      if (p) { minutes += p.impact.minutesSavedPerRun; risk = Math.max(risk, RISK_ORDER.indexOf(p.governance.aiActRisk)); }
+      if (s) low = Math.min(low, MAT.indexOf(s.maturity) >= 0 ? 2 - MAT.indexOf(s.maturity) : 0);
+    });
+    return {have: have, total: pb.steps.length, minutes: minutes, risk: RISK_ORDER[risk], maturity: have ? ['pilot', 'empfohlen', 'approved'][low] : null};
+  }
+  function bundleCards(list){
+    return list.map(function(pb){
+      var st = bundleStats(pb);
+      return '<button class="bundle" data-bundle="' + esc(pb.id) + '"><h3>' + esc(pb.title) + '</h3><p>' + esc(pb.goal) + '</p><div class="flow">' +
+        pb.steps.map(function(x){ return esc(x.skill); }).join(' <i>&rarr;</i> ') + '</div><div class="foot"><span>' + esc(pb.roles.slice(0, 2).join(', ')) + '</span><span>' + st.have + ' of ' + st.total + ' skills available' + (st.minutes ? ' · ~' + st.minutes + ' min saved per pass' : '') + '</span></div></button>';
+    });
+  }
+  function renderCollections(){
+    var q = $('c-q').value.trim().toLowerCase(), role = $('c-role').value;
+    var list = (D.playbooks || []).filter(function(pb){
+      return (!role || pb.roles.indexOf(role) >= 0) && (!q || (pb.title + ' ' + pb.goal + ' ' + pb.roles.join(' ') + ' ' + pb.tags.join(' ') + ' ' + pb.steps.map(function(s){ return s.skill; }).join(' ')).toLowerCase().indexOf(q) >= 0);
+    });
+    $('c-count').textContent = list.length + ' of ' + (D.playbooks || []).length + ' collections';
+    $('bundles').innerHTML = list.length ? bundleCards(list).join('') : '<div class="card empty" style="grid-column:1/-1">No collection matches. Clear a filter to see more.</div>';
+  }
+  var bundleBack = 'discover', currentBundle = null;
+  function openBundle(id){
+    var pb = (D.playbooks || []).filter(function(x){ return x.id === id; })[0];
+    if (!pb) return;
+    var cur = document.querySelector('.pg.on');
+    if (cur && cur.id !== 'pg-bundle') bundleBack = cur.id.replace('pg-', '');
+    currentBundle = id;
+    var st = bundleStats(pb), STATE = {ready: tag('ok', 'In workspace'), sample: tag('warn', 'Sample, illustrative'), missing: tag('bad', 'Not in the registry yet'), hidden: tag('n', 'Hidden: samples are off')};
+    var first = D.skills.filter(function(x){ return x.name === pb.steps[0].skill; })[0], ex = first && prof(first) && prof(first).discovery.examplePrompts[0];
+    var missing = pb.steps.filter(function(s){ var k = stepState(s.skill); return k === 'missing' || k === 'hidden'; });
+    $('bundle').innerHTML = '<div class="card"><div class="smx-head"><span class="smx-title">' + esc(pb.title) + '</span>' + tag('n', pb.id) + '</div><p class="s" style="margin:4px 0 0">' + esc(pb.goal) + '</p>' +
+      '<div class="trust">' + pb.roles.map(function(r){ return '<span class="chip">' + esc(r) + '</span>'; }).join('') + pb.tags.map(function(t){ return '<span class="badge">' + esc(t) + '</span>'; }).join('') + '</div></div>' +
+      '<div class="smx-kpis" style="margin-top:14px">' + kpiBox('Skills available', st.have + ' of ' + st.total, '<div class="progress"><i style="width:' + Math.round(st.have / st.total * 100) + '%"></i></div>') +
+        kpiBox('Time saved per pass', st.minutes ? '~' + st.minutes + ' min' : 'n/a', 'Sum of the skills\' average savings per run') +
+        kpiBox('Highest AI Act risk', st.have ? esc(st.risk) : 'n/a', 'Across all skills in the collection') + kpiBox('Lowest maturity', st.maturity ? MAT_LABEL[st.maturity] : 'n/a', 'The collection is as mature as its weakest skill') + '</div>' +
+      (missing.length ? '<div class="demo" style="margin-top:14px;border-radius:var(--radius-s)">' + missing.length + (missing.length === 1 ? ' skill is' : ' skills are') + ' not available yet: ' + missing.map(function(m){ return '<b>' + esc(m.skill) + '</b>'; }).join(', ') + '. Request it in the Gaps view, or switch the Sample skills option on in the catalog.</div>' : '') +
+      '<ol class="steps-list">' + pb.steps.map(function(s, i){
+        var k = stepState(s.skill);
+        return '<li class="bstep' + (k === 'missing' || k === 'hidden' ? ' miss' : '') + '"><span class="no">' + (i + 1) + '</span>' + (k === 'missing' ? '<span class="nm">' + esc(s.skill) + '</span>' : '<button class="nm" data-skill="' + esc(s.skill) + '">' + esc(s.skill) + '</button>') + '<span>' + STATE[k] + '</span><div class="why">' + esc(s.why) + '</div><div class="io">Input: ' + esc(s.input) + ' &rarr; Output: ' + esc(s.output) + '</div></li>';
+      }).join('') + '</ol>' +
+      '<div class="card" style="margin-top:14px"><h3 style="margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">Start in the chat</h3><p class="s" style="margin:0">' + (ex ? 'Ask the first step: “' + esc(ex) + '”' : 'Ask the chat for the first skill, then continue with the next step.') + ' Or ask: “In welcher Reihenfolge nutze ich welche Skills für ' + esc(pb.title) + '?”</p></div>';
+    go('bundle');
+  }
+  $('bundle-back').addEventListener('click', function(){ go(bundleBack); });
+  document.addEventListener('click', function(e){ var b = e.target.closest('[data-bundle]'); if (b) openBundle(b.dataset.bundle); });
+  function setupCollections(){
+    var roles = {}; (D.playbooks || []).forEach(function(pb){ pb.roles.forEach(function(r){ roles[r] = 1; }); });
+    opts($('c-role'), 'All roles', Object.keys(roles).sort().map(function(r){ return [r, r]; }));
+    $('c-q').addEventListener('input', renderCollections); $('c-role').addEventListener('change', renderCollections);
+    $('c-clear').addEventListener('click', function(){ $('c-q').value = ''; $('c-role').value = ''; renderCollections(); });
+  }
+
+  /* my skills */
+  function attention(s){
+    var p = prof(s), out = [];
+    if (!p) return [tag('n', 'No governance profile yet')];
+    var d = daysTo(p.governance.nextReview);
+    if (d < 0) out.push(tag('bad', 'Review overdue ' + (-d) + ' d')); else if (d <= 30) out.push(tag('warn', 'Review in ' + d + ' d'));
+    if (p.lifecycle.sunsetDate) out.push(tag('warn', 'Sunset ' + p.lifecycle.sunsetDate));
+    if (p.lifecycle.replacedBy) out.push(tag('warn', 'Replaced by ' + p.lifecycle.replacedBy));
+    if (!p.lifecycle.deputy) out.push(tag('warn', 'No deputy owner'));
+    if (p.impact.successRatePct < 88) out.push(tag('bad', 'Success rate ' + p.impact.successRatePct + '%'));
+    return out;
+  }
+  function renderMine(){
+    var mine = D.skills.filter(function(s){ return !s.sample; });
+    var flagged = mine.map(function(s){ return {s: s, a: attention(s), p: prof(s)}; }).filter(function(r){ return r.a.length; });
+    var runs = mine.filter(prof).reduce(function(sum, s){ return sum + econ(s).runs; }, 0);
+    $('mine-kpis').innerHTML = kpiBox('Installed', String(mine.length), 'Registered skills in this workspace') + kpiBox('Need attention', String(flagged.length), 'Review, lifecycle or quality flags') + kpiBox('Runs last full month', String(runs), 'Skills with a profile');
+    $('mine-note').textContent = D.source === 'registry' ? 'Registered skills come from the shared registry. Sample skills are not listed here.' : 'Registered skills are read from the example skills in the repository. Sample skills are not listed here.';
+    $('mine-attn').innerHTML = flagged.length ? '<table><thead><tr><th>Skill</th><th>Flags</th></tr></thead><tbody>' + flagged.map(function(r){ return '<tr tabindex="0" data-skill="' + esc(r.s.name) + '"><td><b>' + esc(r.s.name) + '</b><div class="s">' + esc(r.s.process || '') + '</div></td><td>' + r.a.join(' ') + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">Nothing needs attention.</div>';
+    $('mine').innerHTML = mine.length ? mine.map(function(s){ return skillCard(s, trustChips(s)); }).join('') : '<div class="card empty" style="grid-column:1/-1">No registered skills yet. Publish one through the chat.</div>';
+  }
+
+  /* trust and fit strip on the skill detail page */
+  function trustCard(s){
+    var p = prof(s);
+    var inColl = (D.playbooks || []).filter(function(pb){ return pb.steps.some(function(st){ return st.skill === s.name; }); });
+    var cells = [['Maturity', tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity]) + (s.maturity === 'approved' && s.approvedBy ? '<div class="s">' + esc(s.approvedBy) + (s.approvedAt ? ', ' + esc(String(s.approvedAt).slice(0, 10)) : '') + '</div>' : '')],
+      ['Capability', esc(capOf(s.name).label)], ['Reach', esc(SCOPE_LABEL[s.scope] || s.scope)]];
+    if (p){
+      var g = p.governance, l = p.lifecycle;
+      cells.push(['EU AI Act', tag(RISK_TONE[g.aiActRisk] || 'n', g.aiActRisk)], ['DPIA', tag(DPIA_TONE[g.dpia] || 'n', g.dpia)], ['Allowed data', chips(g.allowedDataClasses)], ['Approved models', esc(g.approvedModels.join(', '))], ['Region', esc(g.region)],
+        ['Next review', esc(g.nextReview) + ' ' + reviewTag(g)], ['Needs', chips(l.dependencies.tools.concat(l.dependencies.connectors).concat(l.dependencies.skills))]);
+    }
+    cells.push(['In collections', inColl.length ? inColl.map(function(pb){ return '<button class="lnk" data-bundle="' + esc(pb.id) + '">' + esc(pb.title) + '</button>'; }).join('<br>') : '<span class="s">none</span>']);
+    return '<div class="card trustcard"><h3 style="margin:0;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">Trust &amp; fit</h3><div class="tgrid">' + cells.map(function(c){ return '<div><div class="l">' + c[0] + '</div><div class="v">' + c[1] + '</div></div>'; }).join('') + '</div></div>';
   }
 
   /* ---------- ranking and hints ---------- */
@@ -4182,7 +4497,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     var p = prof(s), current = document.querySelector('.pg.on');
     if (current && current.id !== 'pg-detail') backTab = current.id.replace('pg-', '');
     var head = '<div class="smx-head"><span class="smx-title">' + esc(s.name) + '</span>' + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity]) + (s.sample ? tag('warn', 'Sample') : '') + '</div><p class="s" style="margin:4px 0 0">' + esc(s.description) + '</p><div class="s">' + esc([s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' / ')) + ' · owner ' + esc(s.owner || 'not set') + ' · v' + esc(s.version || 1) + '</div>';
-    if (!p){ $('detail').innerHTML = '<div class="card">' + head + '<p class="s">No impact, governance, lifecycle or discovery profile yet for this skill.</p></div>'; go('detail'); return; }
+    if (!p){ $('detail').innerHTML = '<div class="card">' + head + '<p class="s">No impact, governance, lifecycle or discovery profile yet for this skill.</p></div>' + trustCard(s); go('detail'); return; }
     var e = econ(s), i = p.impact, g = p.governance, l = p.lifecycle, d = p.discovery;
     var tests = l.tests.total ? Math.round(l.tests.passed / l.tests.total * 100) : 0;
     var impact = '<div class="card"><h3>1 · Impact</h3>' + spark(i.runsPerMonth) + '<div class="s">Runs per month, May to October (October partial)</div>' + dl([['Runs in September', e.runs + (e.change === null ? '' : ' (' + (e.change > 0 ? '+' : '') + e.change + '%)')], ['Success rate', pctTag(i.successRatePct, 95, 88)], ['Error rate', i.errorRatePct + '%'], ['Rating', stars(rating(s.name))], ['Saved per run', i.minutesSavedPerRun + ' min'], ['Time saved', num(e.hours) + ' h in September'], ['Value', eur(e.value)], ['Run cost', eur(e.cost) + ' (€' + i.costPerRunEur.toFixed(2) + ' per run)'], ['Response time', i.avgSeconds + ' s'], ['Model', esc(i.model)]]) + '</div>';
@@ -4192,7 +4507,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       '<h3 style="margin-top:12px">Changes</h3>' + list(l.changelog.slice().reverse().map(function(c){ return '<b>v' + esc(c.version) + '</b> · ' + esc(c.date) + ' · ' + esc(c.summary); })) + '</div>';
     var used = D.skills.filter(function(x){ var q = prof(x); return q && (q.lifecycle.dependencies.skills.indexOf(s.name) >= 0); }).map(function(x){ return x.name; });
     var disc = '<div class="card"><h3>4 · Discovery</h3><div class="s">Try asking</div>' + list(d.examplePrompts.map(function(x){ return '“' + esc(x) + '”'; })) + '<div class="s" style="margin-top:10px">Demo flow</div><ol class="smx-list">' + d.demoFlow.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' + dl([['Prerequisites', d.prerequisites.length ? esc(d.prerequisites.join('; ')) : 'none'], ['Tags', chips(d.tags)], ['Industries', chips(d.industries)], ['Recommended for', chips(d.recommendedFor)], ['Related skills', d.related.length ? d.related.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Used by skills', used.length ? used.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Favourites', String(d.favorites)]]) + '</div>';
-    $('detail').innerHTML = '<div class="card">' + head + '</div><div class="smx-grid">' + impact + gov + life + disc + ratingCard(s.name) + '</div>';
+    $('detail').innerHTML = '<div class="card">' + head + '</div>' + trustCard(s) + '<div class="smx-grid">' + impact + gov + life + disc + ratingCard(s.name) + '</div>';
     go('detail');
   }
   $('detail-back').addEventListener('click', function(){ go(backTab); });
@@ -4205,13 +4520,14 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     var t = e.target.closest && e.target.closest('tr[data-skill], article[data-skill]');
     if (t){ e.preventDefault(); openSkill(t.getAttribute('data-skill')); }
   });
-  function renderAll(){ renderOverview(); renderCatalog(); renderRanking(); renderImpact(); renderGovernance(); renderGaps(); renderHints(); }
+  function renderAll(){ renderDiscover(); renderCollections(); renderMine(); renderOverview(); renderCatalog(); renderRanking(); renderImpact(); renderGovernance(); renderGaps(); renderHints(); }
 
   Array.prototype.forEach.call(tabs, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });
+  Array.prototype.forEach.call($('subtabs').children, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });
   D.taxonomy.boardAreas.forEach(function(a){ open[a] = true; });
   Object.keys(D.taxonomy.lobs).forEach(function(l){ open[D.taxonomy.lobs[l] + '|' + l] = true; });
   open['Company-wide'] = true;
-  setupFilters(); renderAll();
+  setupFilters(); setupCollections(); renderAll();
 })();
 </script>
 </body>
