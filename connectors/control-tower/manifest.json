@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -181,6 +181,10 @@
     {
       "name": "rate_skill",
       "description": "Rate a published marketplace skill with 1 to 5 stars and an optional short comment (max 280 characters). One rating per person and skill; rating again replaces the earlier one. Ask the person for the stars first and repeat skill, stars and comment back before calling; never rate on your own. Do not put names, customer data or secrets into the comment. Needs the Supabase connection; sample skills cannot be rated."
+    },
+    {
+      "name": "enrich_ticket",
+      "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
     }
   ],
   "user_config": {
