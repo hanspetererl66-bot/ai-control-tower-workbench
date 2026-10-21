@@ -99,5 +99,28 @@ export function buildBriefing(data: BriefingData, today: Date = new Date()): Bri
     });
   }
 
+  // Always last: the one-page summary for whoever has to report upwards, on demand.
+  cards.push({
+    id: 'board',
+    tone: 'neutral',
+    title: 'Board-Briefing auf Knopfdruck',
+    detail: 'Eine Seite aus Risiken, Agenten, Budget und EU-AI-Act-Stand, direkt aus den Control-Tower-Daten.',
+    actions: [
+      {
+        kind: 'ask',
+        label: 'Im Chat erstellen',
+        connector: CONNECTOR,
+        prompt: 'Erstelle mit dem Skill board-briefing ein einseitiges Board-Briefing aus den AI-Control-Tower-Daten.',
+      },
+      {
+        kind: 'ask',
+        label: 'Als Space anlegen',
+        connector: CONNECTOR,
+        prompt:
+          'Erstelle mit dem Skill board-briefing das einseitige Board-Briefing und lege es als Space „Board Briefing“ an. Nur Zahlen aus den Werkzeugantworten, Datenquelle und Stand auf der Seite nennen.',
+      },
+    ],
+  });
+
   return cards;
 }
