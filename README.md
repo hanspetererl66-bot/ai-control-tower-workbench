@@ -217,7 +217,7 @@ Every skill carries a profile in the `metadata:` block of its `SKILL.md` (migrat
 
 ```yaml
 metadata:
-  domain: Finanzen            # Governance & Risiko | Service & Support | Finanzen | HR | Entwicklung | Betrieb | Sonstiges
+  domain: Finanzen            # Governance & Risiko | Service & Support | Finanzen | Vertrieb | HR | Entwicklung | Betrieb | Automatisierung | Sicherheit & Zugriff | Skill-Management | Sonstiges
   process: Reisekosten prüfen
   data-class: intern          # öffentlich | intern | vertraulich
   language: de
@@ -268,6 +268,25 @@ A skill without a scope counts as `individual`; a team scope needs a team, a LOB
 - **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
 - **Knowledge graph later:** board area, LOB, team, scope and the tool rows in `skills.skill_tool` are the nodes and edges of stage 2;
   nothing here has to be migrated away.
+
+### Sales: interest to contract
+
+A mockup Space **Sales** (`npm run install:sales`) shows the whole process as a funnel and a board: Interest, Lead, Opportunity, Sell, Contract. A click on a deal opens a drawer with the gate checklist for the next stage, the reasons behind a lead score, risks, a timeline that points to the calls and mails of the other Spaces, and the next skill with the sentence to type in the chat. The tabs *Workflow and skills* and *Rules and safeguards* show the exit criteria per stage and what a person decides, what skills prepare and what is never automated. Data: `examples/sales/pipeline.json` (embedded by `npm run sync:mockups`). Offers and contracts mirror the Sub4Me sample data (a test compares them), interest, lead and opportunity are made up. No CRM is connected.
+
+Nine new skills cover the stages, all in `examples/skills/` with domain *Vertrieb*: `interest-logger`, `lead-qualifier`, `lead-router`, `opportunity-planner`, `rfp-responder` (closes the RFP gap), `pricing-guard`, `deal-risk-check`, `contract-checker` and `pipeline-review`. They work with what the person gives in the chat and with the Sub4Me and graph tools; they prepare and check, they never send, price or sign. In the Skill Marketplace they form the capability *Sales pipeline* and the collections PB-07 to PB-11 (the last one walks the whole way). Metrics, ratings and review data of the new skills are fictional samples like the others.
+
+Database: the domain list was out of date (four example skills could not be published). `supabase/migrations/20261020_014_skill_domains.sql` adds Vertrieb, Automatisierung, Sicherheit & Zugriff and Skill-Management. The sample data migrations 012 (profiles) and 013 (ratings) were regenerated with the new skills; both are upserts, so running them again is safe.
+
+### Skill Marketplace as a control surface for business users
+
+The Space is now organised for business users instead of a flat list. Navigation: **Discover** (search with live hits, skills by business
+capability, featured skills, collections), **Collections** (ready-made skill sequences with a role filter), **Catalog** (filters, now also by
+capability), **My skills** (registered skills in this workspace with a "needs attention" list) and **Insights** (overview, ranking, impact,
+governance, gaps, hints). Capabilities are defined in `examples/skill-marketplace/profiles.json` (`capabilities`; a test requires every skill
+to belong to exactly one). Collections are the existing playbooks; each shows per step why, input and output, how many skills are available
+(the Sample switch changes that), summed time saved, highest AI Act risk and lowest maturity. The skill detail page starts with a
+"Trust & fit" strip (maturity, AI Act, DPIA, allowed data, models, region, next review, needs, collections). Sandbox runs, signatures and
+install buttons are not part of this prototype. After a pull run `npm run sync:skill-marketplace` and `npm run install:skill-marketplace`.
 
 ### Asking the chat about the Sub4Me Space
 
@@ -363,6 +382,7 @@ Two importable workflows in `examples/n8n-workflows/`, fictional data only, no c
 
 - `01-simple-contract-notice-check.json`: manual trigger, sample contracts, notice deadline per contract, IF “due within 30 days?” → alert or no action. Good for explaining the basic building blocks.
 - `02-complex-communication-digest.json`: manual or weekday-morning trigger, a Switch that splits mails and call action items, a **guardrail** that quarantines mail text containing instructions aimed at AI assistants (the same case as in the E-Mail-Communication Space), intent and 48-hour response target, overdue check, three Merge nodes and one digest per customer that ends in “create a draft, never send”. 20 nodes, two branches, IF, Switch, Merge, Code.
+- `03-sales-pipeline-digest.json`: six fictional interest signals, a **guardrail** that quarantines text containing instructions aimed at AI assistants, a transparent score (ICP fit, budget, decision maker, need, timing), a Switch that routes to opportunity, nurture or watch, three Merge nodes and a digest that ends in “draft, never send”. 15 nodes, no credentials.
 
 Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workflow**. The workflows stay inactive; the Code nodes use a fixed reference date (19 Oct 2026) so the result is the same every day. `test/n8n-demo-workflows.test.mjs` checks the structure and runs the Code nodes.
 

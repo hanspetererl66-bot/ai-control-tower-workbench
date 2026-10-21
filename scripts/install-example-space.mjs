@@ -7,6 +7,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** Bundled example spaces: source folder under examples/ -> slug under workspace/spaces/. */
 export const EXAMPLE_SPACES = {
   'control-tower': 'ai-control-tower',
+  'agent-activity': 'agent-activity',
   sub4me: 'sub4me',
   'skill-marketplace': 'skill-marketplace',
   'automation-dashboard': 'automation-dashboard',
@@ -14,6 +15,7 @@ export const EXAMPLE_SPACES = {
   'what-if': 'what-if',
   'call-transcripts': 'call-transcripts',
   'customer-emails': 'customer-emails',
+  sales: 'sales',
 };
 
 /**

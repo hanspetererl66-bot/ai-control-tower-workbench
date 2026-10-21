@@ -39,6 +39,7 @@ import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
 import { readSpaceScale, writeSpaceScale, type SpaceScale } from './space-scale';
 import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
+import { parseNavCommand } from './voice-commands';
 
 const WORKDIR = window.host?.workspacePath ?? '';
 
@@ -548,6 +549,41 @@ export default function App() {
     setSkillRequest(result as unknown as InstallRequest);
   }
 
+  /** "Joule fragen" in a Space: switch to the chat and send the question, unless the agent is busy or missing. */
+  function askFromSpace(prompt: string) {
+    if (!agent || busy) {
+      setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.');
+      setTimeout(() => setToast(null), 5000);
+      return;
+    }
+    setView('chat');
+    void send(prompt);
+  /** Open a Space (and optionally one of its tabs); used by spoken commands and briefing cards. */
+  function navigateTo(target: { space: string; tab?: string; label?: string }) {
+    const label = target.label ?? target.space;
+    const notify = (message: string) => {
+      setToast(message);
+      setTimeout(() => setToast(null), 4000);
+    };
+    if (!spaces.some((candidate) => candidate.slug === target.space)) {
+      notify(`${label}: Space ist noch nicht installiert.`);
+      return;
+    }
+    speaker.current?.stop();
+    setSelectedSpace(target.space);
+    setSpaceTab(target.tab ? { tab: target.tab, nonce: Date.now(), space: target.space } : null);
+    setView('spaces');
+    notify(`Öffne ${label}`);
+  }
+
+  /** A spoken "Zeig mir die Risiken" opens the matching Space and tab instead of asking the agent. */
+  function handleVoiceCommand(text: string): boolean {
+    const target = parseNavCommand(text);
+    if (!target) return false;
+    navigateTo(target);
+    return true;
+  }
+
   const empty = messages.length === 0;
   const composer = (
     <Composer
@@ -566,6 +602,8 @@ export default function App() {
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
       onStopSpeaking={() => speaker.current?.stop()}
+      onVoiceCommand={handleVoiceCommand}
+      onNavigate={navigateTo}
     />
   );
   const disclaimer = (
@@ -721,10 +759,11 @@ export default function App() {
           <SpaceViewer
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
-            tabRequest={space.slug === 'ai-control-tower' ? spaceTab : null}
+            tabRequest={spaceTab && (spaceTab.space ?? 'ai-control-tower') === space.slug ? spaceTab : null}
             textScale={spaceScale}
             theme={resolvedTheme}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
+            onAsk={askFromSpace}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (

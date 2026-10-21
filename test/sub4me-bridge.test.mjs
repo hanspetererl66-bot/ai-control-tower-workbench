@@ -52,3 +52,26 @@ test('the Space only talks to its parent and the app only wires the bridge for s
   const viewer = readFileSync(join(import.meta.dirname, '..', 'src/ui/SpaceViewer.tsx'), 'utf8');
   assert.match(viewer, /event\.source !== frame\.current\.contentWindow/);
 });
+
+test('enrich requests call only enrich_ticket and pass on the fields the Space renders', async () => {
+  const calls = [];
+  const call = async (tool, args) => {
+    calls.push([tool, args]);
+    return { content: [{ type: 'text', text: JSON.stringify({ ticket: { id: 'TKT-48213', product: 'Joule copilots', secret: 'x' }, assessment: ['a', 5, 'b'], nextSteps: ['n'], controlTower: { risks: [{ id: 'R4', title: 'T', owner: 'CFO Office', progressPct: 58, hidden: 1 }] }, note: 'heuristic', dataSource: 'internal' }) }] };
+  };
+  const reply = await handleSub4meMessage({ type: 's4m:enrich-request', requestId: 'e1', ticketId: 'TKT-48213' }, call);
+  assert.deepEqual(calls, [['enrich_ticket', { ticket_id: 'TKT-48213' }]]);
+  assert.equal(reply.type, 's4m:enrichment');
+  assert.equal(reply.requestId, 'e1');
+  assert.deepEqual(reply.enrichment.assessment, ['a', 'b']);
+  assert.deepEqual(reply.enrichment.risks, [{ id: 'R4', title: 'T', owner: 'CFO Office', progressPct: 58 }]);
+  assert.equal(JSON.stringify(reply).includes('secret'), false);
+  assert.equal(JSON.stringify(reply).includes('internal'), false);
+});
+
+test('enrich requests reject bad ids, missing request ids and a missing agent', async () => {
+  const call = async () => assert.fail('must not be called');
+  assert.equal((await handleSub4meMessage({ type: 's4m:enrich-request', requestId: 'e1', ticketId: '../x' }, call)).type, 's4m:error');
+  assert.equal(await handleSub4meMessage({ type: 's4m:enrich-request', ticketId: 'TKT-1' }, call), null);
+  assert.match((await handleSub4meMessage({ type: 's4m:enrich-request', requestId: 'e1', ticketId: 'TKT-1' }, undefined)).message, /not connected/);
+});

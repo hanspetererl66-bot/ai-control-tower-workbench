@@ -185,6 +185,8 @@
     {
       "name": "simulate_credit_cut",
       "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % kürzen?\"."
+      "name": "enrich_ticket",
+      "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
     }
   ],
   "user_config": {

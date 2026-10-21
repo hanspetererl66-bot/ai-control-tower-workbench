@@ -78,3 +78,15 @@ test('rail foot offers a profile menu and help instead of the placeholder badge 
   assert.match(rail, /aria-label="Help and shortcuts"/);
   assert.match(rail, /onAppearance\(value\)/);
 });
+
+test('the embedded n8n view offers Back, Forward and Home so a page without a way out is never a dead end', () => {
+  const view = readFileSync(path.join(root, 'src/ui/N8nView.tsx'), 'utf8');
+  const main = readFileSync(path.join(root, 'electron/main.mjs'), 'utf8');
+  const preload = readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
+  for (const name of ['back', 'forward', 'home']) {
+    assert.match(view, new RegExp(`host\\.${name}\\(\\)`));
+    assert.match(preload, new RegExp(`n8n-${name}`));
+    assert.match(main, new RegExp(`ipcMain.handle\\('n8n-${name}'`));
+  }
+  assert.match(main, /n8n-nav-state/);
+});
