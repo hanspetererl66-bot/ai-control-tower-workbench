@@ -549,23 +549,29 @@ export default function App() {
     setSkillRequest(result as unknown as InstallRequest);
   }
 
-  /** A spoken "Zeig mir die Risiken" opens the matching Space and tab instead of asking the agent. */
-  function handleVoiceCommand(text: string): boolean {
-    const target = parseNavCommand(text);
-    if (!target) return false;
+  /** Open a Space (and optionally one of its tabs); used by spoken commands and briefing cards. */
+  function navigateTo(target: { space: string; tab?: string; label?: string }) {
+    const label = target.label ?? target.space;
     const notify = (message: string) => {
       setToast(message);
       setTimeout(() => setToast(null), 4000);
     };
     if (!spaces.some((candidate) => candidate.slug === target.space)) {
-      notify(`${target.label}: Space ist noch nicht installiert.`);
-      return true;
+      notify(`${label}: Space ist noch nicht installiert.`);
+      return;
     }
     speaker.current?.stop();
     setSelectedSpace(target.space);
     setSpaceTab(target.tab ? { tab: target.tab, nonce: Date.now(), space: target.space } : null);
     setView('spaces');
-    notify(`Öffne ${target.label}`);
+    notify(`Öffne ${label}`);
+  }
+
+  /** A spoken "Zeig mir die Risiken" opens the matching Space and tab instead of asking the agent. */
+  function handleVoiceCommand(text: string): boolean {
+    const target = parseNavCommand(text);
+    if (!target) return false;
+    navigateTo(target);
     return true;
   }
 
@@ -588,6 +594,7 @@ export default function App() {
       onOpenSettings={() => setSettingsOpen(true)}
       onStopSpeaking={() => speaker.current?.stop()}
       onVoiceCommand={handleVoiceCommand}
+      onNavigate={navigateTo}
     />
   );
   const disclaimer = (
