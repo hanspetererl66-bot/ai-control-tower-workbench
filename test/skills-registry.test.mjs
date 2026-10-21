@@ -258,3 +258,15 @@ test('CLI: approve needs an approver, release and approve are different commands
   assert.match(run('approve', '--by', 'Chef'), /Usage: skills approve/);
   assert.match(run('bogus'), /release\|retire/);
 });
+
+test('every bundled example skill is valid, and migration 014 accepts exactly the domains the registry code accepts', async () => {
+  const { readdirSync } = await import('node:fs');
+  const { DOMAINS } = await import('../scripts/skills-registry.mjs');
+  const tools = knownTools();
+  for (const name of readdirSync(join(ROOT, 'examples/skills'))) {
+    validateSkill(name, readFileSync(join(ROOT, 'examples/skills', name, 'SKILL.md'), 'utf8'), { tools });
+  }
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261020_014_skill_domains.sql'), 'utf8');
+  const listed = /dom not in \(([^)]*)\)/.exec(sql)[1].split(',').map((s) => s.trim().replace(/^'|'$/g, ''));
+  assert.deepEqual(listed, DOMAINS);
+});

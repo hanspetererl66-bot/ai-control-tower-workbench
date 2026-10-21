@@ -31,6 +31,7 @@
     "install:agent-activity": "node scripts/install-example-space.mjs agent-activity",
     "install:call-transcripts": "node scripts/install-example-space.mjs call-transcripts",
     "install:customer-emails": "node scripts/install-example-space.mjs customer-emails",
+    "install:sales": "node scripts/install-example-space.mjs sales",
     "install:skills": "node scripts/install-example-skills.mjs",
     "skills": "node scripts/skills-registry.mjs",
     "skills:sync": "node scripts/skills-registry.mjs sync",

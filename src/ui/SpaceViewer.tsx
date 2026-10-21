@@ -3,9 +3,10 @@ import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
+import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
-export type SpaceTabRequest = { tab: string; nonce: number };
+export type SpaceTabRequest = { tab: string; nonce: number; /** Target space; defaults to the AI Control Tower. */ space?: string };
 
 export default function SpaceViewer({
   space,
@@ -65,6 +66,43 @@ export default function SpaceViewer({
     return () => window.removeEventListener('message', onMessage);
   }, [bridgeEnabled]);
 
+  // Search and filter: the page script (space-tools.ts) does the work, these are its controls.
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<Record<string, string>>({});
+  const [tools, setTools] = useState<SpaceToolsState>({ searchable: false, count: null, filters: [] });
+  const sendTools = (message: Record<string, unknown>) => frame.current?.contentWindow?.postMessage(message, '*');
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (!frame.current || event.source !== frame.current.contentWindow) return;
+      const data = event.data;
+      if (!data || data.type !== 'sp:state' || !Array.isArray(data.filters)) return;
+      const filters = data.filters
+        .filter((f: any) => f && typeof f.label === 'string' && Array.isArray(f.values))
+        .map((f: any) => ({ label: f.label as string, values: f.values.filter((v: unknown) => typeof v === 'string') as string[] }));
+      setTools({ searchable: Boolean(data.searchable), count: typeof data.count === 'number' ? data.count : null, filters });
+      // A tab without that column no longer offers its filter, so its selection must not keep hiding rows.
+      setSelected((current) => {
+        const kept = Object.fromEntries(Object.entries(current).filter(([label, value]) => filters.some((f: any) => f.label === label && f.values.includes(value))));
+        return Object.keys(kept).length === Object.keys(current).length ? current : kept;
+      });
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => sendTools({ type: 'sp:search', query }), 150);
+    return () => clearTimeout(timer);
+  }, [query]);
+  useEffect(() => {
+    sendTools({ type: 'sp:filter', filters: selected });
+  }, [selected]);
+  const filtersActive = Object.keys(selected).length > 0;
+  function resetTools() {
+    setQuery('');
+    setSelected({});
+    sendTools({ type: 'sp:clear' });
+  }
+
   const [bust, setBust] = useState(space.updatedAt);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [html, setHtml] = useState<string | null>(null);
@@ -91,6 +129,54 @@ export default function SpaceViewer({
         <div className="topbar-stack">
           <h1 className="topbar-title">{space.title}</h1>
           <span className="topbar-sub">Updated {relativeTime(space.updatedAt)}</span>
+        </div>
+
+        <div className="space-tools" role="search">
+          <input
+            className="space-search"
+            type="search"
+            value={query}
+            placeholder="In diesem Space suchen"
+            aria-label="In diesem Space suchen"
+            disabled={!tools.searchable}
+            title={tools.searchable ? undefined : 'Dieser Space hat keine durchsuchbaren Inhalte.'}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => event.key === 'Escape' && resetTools()}
+          />
+          {tools.filters.slice(0, 4).map((filter) => (
+            <select
+              key={filter.label}
+              className={`space-filter ${selected[filter.label] ? 'space-filter-on' : ''}`}
+              aria-label={`Filter: ${filter.label}`}
+              value={selected[filter.label] ?? ''}
+              onChange={(event) => {
+                const value = event.target.value;
+                setSelected((current) => {
+                  const next = { ...current };
+                  if (value) next[filter.label] = value;
+                  else delete next[filter.label];
+                  return next;
+                });
+              }}
+            >
+              <option value="">{filter.label}: alle</option>
+              {filter.values.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          ))}
+          {tools.count !== null && (
+            <span className="space-count" role="status">
+              {tools.count} Treffer
+            </span>
+          )}
+          {(query || filtersActive) && (
+            <button className="ghost-btn" onClick={resetTools} title="Suche und Filter zurücksetzen">
+              Zurücksetzen
+            </button>
+          )}
         </div>
 
         <button
@@ -129,11 +215,13 @@ export default function SpaceViewer({
           onLoad={() => {
             loaded.current = true;
             postTab();
+            if (query) sendTools({ type: 'sp:search', query });
+            if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
           }}
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScale(applySpaceTheme(html ?? '', theme), textScale)}
+          srcDoc={applySpaceTools(applySpaceScale(applySpaceTheme(html ?? '', theme), textScale))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

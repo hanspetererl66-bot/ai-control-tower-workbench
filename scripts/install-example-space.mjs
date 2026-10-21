@@ -14,6 +14,7 @@ export const EXAMPLE_SPACES = {
   'knowledge-graph': 'knowledge-graph',
   'call-transcripts': 'call-transcripts',
   'customer-emails': 'customer-emails',
+  sales: 'sales',
 };
 
 /**
