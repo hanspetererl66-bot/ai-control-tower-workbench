@@ -1595,6 +1595,47 @@ button {
   overflow: hidden;
 }
 
+/* Search and filter in the Space header. */
+.space-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.space-search,
+.space-filter {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font: inherit;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.space-search {
+  width: 200px;
+}
+
+.space-search:disabled {
+  opacity: 0.5;
+}
+
+.space-filter-on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.space-count {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .topbar-stack {
   flex: 1;
   min-width: 0;
