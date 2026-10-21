@@ -64,6 +64,10 @@ declare global {
         show: (bounds: { x: number; y: number; width: number; height: number }) => Promise<{ ok: boolean }>;
         hide: () => Promise<{ ok: boolean }>;
         reload: () => Promise<{ ok: boolean }>;
+        back: () => Promise<{ ok: boolean }>;
+        forward: () => Promise<{ ok: boolean }>;
+        home: () => Promise<{ ok: boolean }>;
+        onNavState: (callback: (state: { canGoBack: boolean; canGoForward: boolean; url: string }) => void) => () => void;
         setTheme: (theme: 'light' | 'dark') => Promise<{ ok: boolean }>;
         connectChat: () => Promise<{ ok: boolean; detail?: string }>;
         disconnectChat: () => Promise<{ ok: boolean; detail?: string }>;

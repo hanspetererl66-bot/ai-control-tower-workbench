@@ -24,11 +24,14 @@ export default function N8nView({
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [nav, setNav] = useState({ canGoBack: false, canGoForward: false });
   const slot = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void host?.getSettings().then(setSettings).catch(() => setSettings({ url: '', chatConnected: false }));
   }, [host]);
+
+  useEffect(() => host?.onNavState(({ canGoBack, canGoForward }) => setNav({ canGoBack, canGoForward })), [host]);
 
   useEffect(() => {
     void host?.setTheme(theme);
@@ -116,6 +119,19 @@ export default function N8nView({
     <main className="main n8n-main">
       <header className="n8n-bar">
         <h1 className="topbar-title">n8n</h1>
+        {settings?.url && !editing && (
+          <>
+            <button className="ghost-btn" disabled={!nav.canGoBack} onClick={() => void host.back()} title="Zurück" aria-label="Zurück">
+              &larr;
+            </button>
+            <button className="ghost-btn" disabled={!nav.canGoForward} onClick={() => void host.forward()} title="Vorwärts" aria-label="Vorwärts">
+              &rarr;
+            </button>
+            <button className="ghost-btn" onClick={() => void host.home()} title="Zur n8n-Startseite">
+              Startseite
+            </button>
+          </>
+        )}
         {settings?.url && !editing && <span className="n8n-host">{new URL(settings.url).host}</span>}
         <span className="composer-spacer" />
         {settings?.url && !editing && (

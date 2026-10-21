@@ -1271,6 +1271,13 @@ function ensureN8nView(origin) {
     event.preventDefault();
     if (/^https:\/\//i.test(url)) shell.openExternal(url);
   });
+  // The page can lead somewhere without a way back (for example a dashboard page): tell the app, so it can offer Back, Forward and Home.
+  const sendNavState = () => {
+    if (contents.isDestroyed()) return;
+    mainWindow?.webContents.send('n8n-nav-state', { canGoBack: contents.navigationHistory.canGoBack(), canGoForward: contents.navigationHistory.canGoForward(), url: contents.getURL() });
+  };
+  contents.on('did-navigate', sendNavState);
+  contents.on('did-navigate-in-page', sendNavState);
   mainWindow?.contentView.addChildView(view);
   view.setVisible(false);
   contents.once('did-start-loading', () => void applyN8nTheme(view));
@@ -1333,6 +1340,24 @@ ipcMain.handle('n8n-hide', () => {
 ipcMain.handle('n8n-set-theme', async (_event, theme) => {
   n8nTheme = theme === 'dark' ? 'dark' : 'light';
   await applyN8nTheme(n8nView);
+  return { ok: true };
+});
+
+ipcMain.handle('n8n-back', () => {
+  const history = n8nView?.webContents.navigationHistory;
+  if (history?.canGoBack()) history.goBack();
+  return { ok: true };
+});
+
+ipcMain.handle('n8n-forward', () => {
+  const history = n8nView?.webContents.navigationHistory;
+  if (history?.canGoForward()) history.goForward();
+  return { ok: true };
+});
+
+/** Back to the start page of the configured instance, whatever page the view is on. */
+ipcMain.handle('n8n-home', () => {
+  if (n8nView && n8nViewOrigin) n8nView.webContents.loadURL(n8nViewOrigin).catch(() => undefined);
   return { ok: true };
 });
 
