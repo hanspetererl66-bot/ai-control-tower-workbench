@@ -1,11 +1,11 @@
 {
   "title": "Infrastructure Operations",
-  "description": "Zertifikate erneuern, VMs patchen oder verschieben, DNS ändern: Vorprüfung, Vier-Augen-Freigabe, simulierte Ausführung und Audit-Beleg. n8n orchestriert, Ansible über AWX führt aus.",
+  "description": "Renew certificates, patch or move VMs, change DNS: pre-check, four-eyes approval, simulated execution and audit evidence. n8n orchestrates, Ansible runs through AWX. Joule can hand a change to n8n in check mode.",
   "insights": [
-    "Der Cloud-Connector-Zertifikat von Nordlicht Logistik ist abgelaufen, das Server-Zertifikat von Beispiel Pharma läuft in 5 Tagen ab.",
-    "Jede Änderung wird gegen Bestand, Freeze-Zeiten, Backup-Alter und Abhängigkeiten geprüft, bevor sie angelegt werden kann.",
-    "In Produktion sind zwei Freigaben aus verschiedenen Rollen nötig; die antragstellende Person darf nicht selbst freigeben.",
-    "Fiktive Beispieldaten und simulierte Ausführung: es wird kein System verändert."
+    "The Cloud Connector certificate of Nordlicht Logistik has expired; the server certificate of Beispiel Pharma expires in 5 days.",
+    "Every change is checked against the inventory, freeze periods, backup age and dependencies before it can be created.",
+    "Production needs two approvals from different roles; the requester cannot approve their own change.",
+    "Fictional sample data and simulated execution. “Submit to n8n” sends a check-mode request only, once a webhook is configured."
   ],
   "prompt": "Bundled example: Infrastructure Operations (static, data and model embedded by npm run sync:infra-ops)."
 }

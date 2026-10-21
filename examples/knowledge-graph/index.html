@@ -2418,9 +2418,25 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {}
   },
   {
-   "id": "workflow:infra-beleg-ablegen-und-kunde-informieren",
+   "id": "workflow:infra-collect-approval-start-playbook",
    "type": "workflow",
-   "label": "Infra: Beleg ablegen und Kunde informieren",
+   "label": "Infra: collect approval, start playbook",
+   "meta": {
+    "Category": "Infrastructure Operations",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "34",
+    "Errors": "0",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "workflow:infra-file-evidence-notify-customer",
+   "type": "workflow",
+   "label": "Infra: file evidence, notify customer",
    "meta": {
     "Category": "Infrastructure Operations",
     "Trigger": "Webhook",
@@ -2440,22 +2456,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {}
   },
   {
-   "id": "workflow:infra-freigabe-einholen-und-playbook-starten",
-   "type": "workflow",
-   "label": "Infra: Freigabe einholen und Playbook starten",
-   "meta": {
-    "Category": "Infrastructure Operations",
-    "Trigger": "Webhook",
-    "Runs (14 days)": "34",
-    "Errors": "0",
-    "Nodes": "4"
-   },
-   "view": {
-    "space": "automation-dashboard",
-    "tab": "workflows"
-   }
-  },
-  {
    "id": "workflow:contract-renewal-reminder",
    "type": "workflow",
    "label": "Contract renewal reminder",
@@ -2472,9 +2472,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
-   "id": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "id": "workflow:infra-certificate-expiring-create-task",
    "type": "workflow",
-   "label": "Infra: Zertifikat läuft ab, Aufgabe anlegen",
+   "label": "Infra: certificate expiring, create task",
    "meta": {
     "Category": "Infrastructure Operations",
     "Trigger": "Schedule",
@@ -4252,33 +4252,33 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_APP"
   },
   {
-   "source": "workflow:infra-beleg-ablegen-und-kunde-informieren",
+   "source": "workflow:infra-collect-approval-start-playbook",
    "target": "system:n8n",
    "type": "RUNS_IN"
   },
   {
-   "source": "workflow:infra-beleg-ablegen-und-kunde-informieren",
-   "target": "app:notion",
-   "type": "USES_APP"
-  },
-  {
-   "source": "workflow:infra-beleg-ablegen-und-kunde-informieren",
-   "target": "app:gmail",
-   "type": "USES_APP"
-  },
-  {
-   "source": "workflow:infra-freigabe-einholen-und-playbook-starten",
-   "target": "system:n8n",
-   "type": "RUNS_IN"
-  },
-  {
-   "source": "workflow:infra-freigabe-einholen-und-playbook-starten",
+   "source": "workflow:infra-collect-approval-start-playbook",
    "target": "app:microsoft-teams",
    "type": "USES_APP"
   },
   {
-   "source": "workflow:infra-freigabe-einholen-und-playbook-starten",
+   "source": "workflow:infra-collect-approval-start-playbook",
    "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-file-evidence-notify-customer",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:infra-file-evidence-notify-customer",
+   "target": "app:notion",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-file-evidence-notify-customer",
+   "target": "app:gmail",
    "type": "USES_APP"
   },
   {
@@ -4297,17 +4297,17 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_APP"
   },
   {
-   "source": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "source": "workflow:infra-certificate-expiring-create-task",
    "target": "system:n8n",
    "type": "RUNS_IN"
   },
   {
-   "source": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "source": "workflow:infra-certificate-expiring-create-task",
    "target": "app:http",
    "type": "USES_APP"
   },
   {
-   "source": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "source": "workflow:infra-certificate-expiring-create-task",
    "target": "app:microsoft-teams",
    "type": "USES_APP"
   },

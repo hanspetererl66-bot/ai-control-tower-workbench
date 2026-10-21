@@ -57,9 +57,9 @@ const SAMPLE_WORKFLOWS = [
   { id: 's9', name: 'Marketing campaign digest', active: true, tags: ['Marketing'], nodes: ['scheduleTrigger', 'googleAnalytics', 'code', 'gmail'], perDay: 1, errorRate: 0.2, seconds: 8.3 },
   { id: 's10', name: 'Vendor onboarding checks', active: true, tags: ['Procurement', 'cat:Finance & Procurement'], nodes: ['webhook', 'httpRequest', 'if', 'microsoftTeams'], perDay: 2, errorRate: 0.05, seconds: 5.1 },
   { id: 's11', name: 'Research notes archiver', active: true, tags: ['Knowledge'], nodes: ['scheduleTrigger', 'notion', 'googleDrive'], perDay: 1, errorRate: 0.03, seconds: 4.4 },
-  { id: 's12', name: 'Infra: Zertifikat läuft ab, Aufgabe anlegen', active: true, tags: ['Infrastruktur', 'cat:Infrastructure Operations'], nodes: ['scheduleTrigger', 'httpRequest', 'if', 'microsoftTeams'], perDay: 2, errorRate: 0.02, seconds: 3.1 },
-  { id: 's13', name: 'Infra: Freigabe einholen und Playbook starten', active: true, tags: ['Infrastruktur', 'cat:Infrastructure Operations'], nodes: ['webhook', 'microsoftTeams', 'if', 'httpRequest'], perDay: 3, errorRate: 0.04, seconds: 8.6 },
-  { id: 's14', name: 'Infra: Beleg ablegen und Kunde informieren', active: true, tags: ['Infrastruktur', 'cat:Infrastructure Operations'], nodes: ['webhook', 'set', 'notion', 'gmail'], perDay: 3, errorRate: 0.01, seconds: 4.7 },
+  { id: 's12', name: 'Infra: certificate expiring, create task', active: true, tags: ['Infrastructure', 'cat:Infrastructure Operations'], nodes: ['scheduleTrigger', 'httpRequest', 'if', 'microsoftTeams'], perDay: 2, errorRate: 0.02, seconds: 3.1 },
+  { id: 's13', name: 'Infra: collect approval, start playbook', active: true, tags: ['Infrastructure', 'cat:Infrastructure Operations'], nodes: ['webhook', 'microsoftTeams', 'if', 'httpRequest'], perDay: 3, errorRate: 0.04, seconds: 8.6 },
+  { id: 's14', name: 'Infra: file evidence, notify customer', active: true, tags: ['Infrastructure', 'cat:Infrastructure Operations'], nodes: ['webhook', 'set', 'notion', 'gmail'], perDay: 3, errorRate: 0.01, seconds: 4.7 },
 ];
 
 export function sampleData(asOf) {

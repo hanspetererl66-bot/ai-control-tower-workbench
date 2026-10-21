@@ -59,7 +59,7 @@
   },
   {
    "id": "eu-west-1",
-   "label": "AWS Irland",
+   "label": "AWS Ireland",
    "hyperscaler": "aws",
    "freePct": 44
   },
@@ -83,7 +83,7 @@
   },
   {
    "id": "europe-west1",
-   "label": "Google Belgien",
+   "label": "Google Belgium",
    "hyperscaler": "gcp",
    "freePct": 41
   }
@@ -92,7 +92,7 @@
   {
    "id": "sa",
    "name": "Sven Albrecht",
-   "role": "Betrieb"
+   "role": "Operations"
   },
   {
    "id": "mo",
@@ -107,7 +107,7 @@
   {
    "id": "lh",
    "name": "Lea Hoffmann",
-   "role": "Betrieb"
+   "role": "Operations"
   },
   {
    "id": "tk",
@@ -125,7 +125,7 @@
    "id": "mi-prd-db01",
    "customer": "mi",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -139,7 +139,7 @@
    "id": "mi-prd-app01",
    "customer": "mi",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -167,7 +167,7 @@
    "id": "mi-qas-db01",
    "customer": "mi",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -181,7 +181,7 @@
    "id": "mi-qas-app01",
    "customer": "mi",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -195,7 +195,7 @@
    "id": "bp-prd-db01",
    "customer": "bp",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -209,7 +209,7 @@
    "id": "bp-prd-app01",
    "customer": "bp",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -237,7 +237,7 @@
    "id": "bp-qas-db01",
    "customer": "bp",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -251,7 +251,7 @@
    "id": "bp-qas-app01",
    "customer": "bp",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -265,7 +265,7 @@
    "id": "nl-prd-db01",
    "customer": "nl",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -279,7 +279,7 @@
    "id": "nl-prd-app01",
    "customer": "nl",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -307,7 +307,7 @@
    "id": "nl-qas-db01",
    "customer": "nl",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -321,7 +321,7 @@
    "id": "nl-qas-app01",
    "customer": "nl",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -335,7 +335,7 @@
    "id": "aw-prd-db01",
    "customer": "aw",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -349,7 +349,7 @@
    "id": "aw-prd-app01",
    "customer": "aw",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -377,7 +377,7 @@
    "id": "aw-qas-db01",
    "customer": "aw",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -391,7 +391,7 @@
    "id": "aw-qas-app01",
    "customer": "aw",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -405,7 +405,7 @@
    "id": "ke-prd-db01",
    "customer": "ke",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -419,7 +419,7 @@
    "id": "ke-prd-app01",
    "customer": "ke",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -447,7 +447,7 @@
    "id": "ke-qas-db01",
    "customer": "ke",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -461,7 +461,7 @@
    "id": "ke-qas-app01",
    "customer": "ke",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -475,7 +475,7 @@
    "id": "hr-prd-db01",
    "customer": "hr",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -489,7 +489,7 @@
    "id": "hr-prd-app01",
    "customer": "hr",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -517,7 +517,7 @@
    "id": "hr-qas-db01",
    "customer": "hr",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -531,7 +531,7 @@
    "id": "hr-qas-app01",
    "customer": "hr",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -546,7 +546,7 @@
   {
    "id": "mi-s4-prd",
    "customer": "mi",
-   "name": "Server-TLS s4.muster-industrie.example",
+   "name": "Server TLS s4.muster-industrie.example",
    "vmIds": [
     "mi-prd-wd01"
    ],
@@ -557,7 +557,7 @@
   {
    "id": "mi-ariba-gw",
    "customer": "mi",
-   "name": "Client-Zertifikat Ariba-Anbindung",
+   "name": "Client certificate Ariba integration",
    "vmIds": [
     "mi-prd-app01"
    ],
@@ -568,7 +568,7 @@
   {
    "id": "bp-s4-prd",
    "customer": "bp",
-   "name": "Server-TLS s4.beispiel-pharma.example",
+   "name": "Server TLS s4.beispiel-pharma.example",
    "vmIds": [
     "bp-prd-wd01"
    ],
@@ -579,18 +579,18 @@
   {
    "id": "bp-saml",
    "customer": "bp",
-   "name": "SAML-Signatur SSO",
+   "name": "SAML signing (SSO)",
    "vmIds": [
     "bp-prd-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 3072",
    "notAfter": "2027-03-10"
   },
   {
    "id": "nl-s4-prd",
    "customer": "nl",
-   "name": "Server-TLS s4.nordlicht-logistik.example",
+   "name": "Server TLS s4.nordlicht-logistik.example",
    "vmIds": [
     "nl-prd-wd01"
    ],
@@ -601,18 +601,18 @@
   {
    "id": "nl-cc",
    "customer": "nl",
-   "name": "Cloud-Connector-Zertifikat",
+   "name": "Cloud Connector certificate",
    "vmIds": [
     "nl-prd-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 2048",
    "notAfter": "2026-10-19"
   },
   {
    "id": "aw-s4-prd",
    "customer": "aw",
-   "name": "Server-TLS s4.alpenwerk.example",
+   "name": "Server TLS s4.alpenwerk.example",
    "vmIds": [
     "aw-prd-wd01"
    ],
@@ -623,18 +623,18 @@
   {
    "id": "aw-s4-qas",
    "customer": "aw",
-   "name": "Server-TLS s4-qas.alpenwerk.example",
+   "name": "Server TLS s4-qas.alpenwerk.example",
    "vmIds": [
     "aw-qas-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 2048",
    "notAfter": "2027-01-24"
   },
   {
    "id": "ke-s4-prd",
    "customer": "ke",
-   "name": "Server-TLS s4.kurpfalz-energie.example",
+   "name": "Server TLS s4.kurpfalz-energie.example",
    "vmIds": [
     "ke-prd-wd01"
    ],
@@ -645,18 +645,18 @@
   {
    "id": "ke-smgw",
    "customer": "ke",
-   "name": "Client-Zertifikat Marktkommunikation",
+   "name": "Client certificate market communication",
    "vmIds": [
     "ke-prd-app01"
    ],
-   "issuer": "Branchen-CA",
+   "issuer": "Industry CA",
    "key": "ECDSA P-256",
    "notAfter": "2026-12-18"
   },
   {
    "id": "hr-s4-prd",
    "customer": "hr",
-   "name": "Server-TLS s4.hanseatic-retail.example",
+   "name": "Server TLS s4.hanseatic-retail.example",
    "vmIds": [
     "hr-prd-wd01"
    ],
@@ -667,11 +667,11 @@
   {
    "id": "hr-pos",
    "customer": "hr",
-   "name": "Kassen-Schnittstelle (POS)",
+   "name": "POS interface",
    "vmIds": [
     "hr-prd-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 2048",
    "notAfter": "2027-09-16"
   }
@@ -818,13 +818,13 @@
    "from": "2026-10-26",
    "to": "2026-10-28",
    "customer": "bp",
-   "reason": "GxP-Audit bei Beispiel Pharma"
+   "reason": "GxP audit at Beispiel Pharma"
   },
   {
    "from": "2026-12-18",
    "to": "2027-01-04",
    "customer": null,
-   "reason": "Jahresend-Freeze"
+   "reason": "Year-end freeze"
   }
  ],
  "tasks": [
@@ -837,7 +837,7 @@
     "2026-10-16T21:00",
     "2026-10-16T23:00"
    ],
-   "state": "erledigt",
+   "state": "done",
    "requester": "lh",
    "approvals": [
     "tk"
@@ -852,7 +852,7 @@
     "2026-10-21T20:00",
     "2026-10-21T21:00"
    ],
-   "state": "im_fenster",
+   "state": "in_window",
    "requester": "sa",
    "approvals": [
     "mo",
@@ -872,7 +872,7 @@
     "2026-10-24T22:00",
     "2026-10-25T02:00"
    ],
-   "state": "freigegeben",
+   "state": "approved",
    "requester": "lh",
    "approvals": [
     "nb",
@@ -888,7 +888,7 @@
     "2026-10-22T22:00",
     "2026-10-23T00:00"
    ],
-   "state": "in_pruefung",
+   "state": "in_review",
    "requester": "sa",
    "approvals": [
     "mo"
@@ -903,7 +903,7 @@
     "2026-10-31T20:00",
     "2026-11-01T02:00"
    ],
-   "state": "in_pruefung",
+   "state": "in_review",
    "requester": "lh",
    "approvals": [],
    "params": {
@@ -919,7 +919,7 @@
     "2026-11-03T22:00",
     "2026-11-04T00:00"
    ],
-   "state": "geplant",
+   "state": "planned",
    "requester": "sa",
    "approvals": []
   },
@@ -932,7 +932,7 @@
     "2026-11-07T21:00",
     "2026-11-08T01:00"
    ],
-   "state": "geplant",
+   "state": "planned",
    "requester": "lh",
    "approvals": []
   }

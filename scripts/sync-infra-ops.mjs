@@ -1,6 +1,6 @@
 /**
  * Infrastructure Operations Space: embeds the sample data (examples/infra-ops/data.json), the planning model
- * (shared/infra-ops.mjs, the part between BEGIN-MODEL and END-MODEL) and the shared design system into the page,
+ * (connectors/control-tower/server/infra-ops.mjs, the part between BEGIN-MODEL and END-MODEL) and the shared design system into the page,
  * so the page and the tests run literally the same rules.
  *   npm run sync:infra-ops            write
  *   npm run sync:infra-ops -- --check fail when the page is out of date
@@ -17,9 +17,9 @@ const MODEL = /(<script id="io-model">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
 /** The model code exactly as the page runs it. */
-export function modelSource(source = read('shared/infra-ops.mjs')) {
+export function modelSource(source = read('connectors/control-tower/server/infra-ops.mjs')) {
   const match = /\/\/ BEGIN-MODEL\n([\s\S]*?)\/\/ END-MODEL/.exec(source);
-  if (!match) throw new Error('shared/infra-ops.mjs has no BEGIN-MODEL / END-MODEL block');
+  if (!match) throw new Error('infra-ops.mjs has no BEGIN-MODEL / END-MODEL block');
   return match[1].trimEnd();
 }
 

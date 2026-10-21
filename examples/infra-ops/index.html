@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -230,10 +230,10 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
 .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
 .todo{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}
 .todo:last-child{border-bottom:0}.todo small{display:block;color:var(--muted)}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--faint)}.dot.rot{background:var(--red)}.dot.gelb{background:var(--amber)}.dot.ok{background:var(--green)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint)}.dot.red{background:var(--red)}.dot.amber{background:var(--amber)}.dot.ok{background:var(--green)}
 .tl{display:grid;grid-template-columns:150px 1fr 70px;gap:10px;align-items:center;padding:5px 0}
 .tl .bar{height:10px;border-radius:99px;background:var(--line-2);position:relative}.tl .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--green)}
-.tl .bar i.bald{background:var(--amber)}.tl .bar i.kritisch,.tl .bar i.abgelaufen{background:var(--red)}.tl .bar i.beobachten{background:var(--blue)}
+.tl .bar i.soon{background:var(--amber)}.tl .bar i.critical,.tl .bar i.expired{background:var(--red)}.tl .bar i.watch{background:var(--blue)}
 .tl .d{text-align:right;font-variant-numeric:tabular-nums}.tl .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .board{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
 .col{background:var(--wash);border:1px solid var(--line);border-radius:var(--radius);padding:10px;min-height:160px}
@@ -241,10 +241,10 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
 .tcard{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}
 .tcard:hover{border-color:var(--purple)}.tcard b{display:block}.tcard small{display:block;color:var(--muted)}
 .tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid var(--line);color:var(--ink-2);background:var(--line-2)}
-.tag.rot,.tag.hoch,.tag.abgelaufen,.tag.fail{color:var(--red);background:var(--red-dim);border-color:var(--red-border)}
-.tag.gelb,.tag.mittel,.tag.bald,.tag.kritisch,.tag.warn{color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border)}
-.tag.ok,.tag.niedrig{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
-.tag.beobachten,.tag.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-border)}
+.tag.red,.tag.high,.tag.expired,.tag.fail{color:var(--red);background:var(--red-dim);border-color:var(--red-border)}
+.tag.amber,.tag.medium,.tag.soon,.tag.critical,.tag.warn{color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border)}
+.tag.ok,.tag.low{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
+.tag.watch,.tag.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-border)}
 .tag.tool{color:var(--purple);background:var(--purple-dim);border-color:var(--purple-border)}
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .tools input{max-width:300px}
@@ -278,6 +278,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 .step i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:block;margin-top:2px}
 .step.done i{background:var(--green);border-color:var(--green)}.step.cur i{border-color:var(--purple)}
 .step small{display:block;color:var(--muted)}
+.steps2{margin:6px 0 0;padding-left:20px;line-height:1.6}.steps2 code,.note code{background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:0 5px;font:12px ui-monospace,Menlo,monospace}
 .run{background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;margin:8px 0}
 .log{font-size:12px;color:var(--ink-2)}.log div{padding:3px 0;border-bottom:1px solid var(--line-2)}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
@@ -286,11 +287,11 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 </head>
 <body>
 <header>
-  <div><div class="logo">Infrastructure <b>Operations</b></div><div class="sub">SAP Private Cloud · Zertifikate, VMs, DNS</div></div>
-  <div class="who"><label for="who">Angemeldet als</label><select id="who" aria-label="Angemeldete Person"></select><button class="btn" id="reset" type="button">Demo zurücksetzen</button></div>
+  <div><div class="logo">Infrastructure <b>Operations</b></div><div class="sub">SAP Private Cloud · Certificates, VMs, DNS</div></div>
+  <div class="who"><label for="who">Signed in as</label><select id="who" aria-label="Signed-in person"></select><button class="btn" id="reset" type="button">Reset demo</button></div>
 </header>
-<div class="demo">Fiktive Beispieldaten, simulierte Ausführung: Es wird kein System verändert. Im Betrieb führt AWX die Ansible-Playbooks aus, n8n orchestriert Freigabe und Meldungen.</div>
-<nav role="tablist" aria-label="Bereiche" id="tabs"></nav>
+<div class="demo">Fictional sample data, simulated execution: no system is changed. In operation AWX runs the Ansible playbooks and n8n orchestrates approvals and notifications.</div>
+<nav role="tablist" aria-label="Sections" id="tabs"></nav>
 <main id="main"></main>
 <div class="drawer" id="drawer"><div class="panel" id="panel" role="dialog" aria-modal="true" aria-label="Details"></div></div>
 <script type="application/json" id="io-data">
@@ -355,7 +356,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   },
   {
    "id": "eu-west-1",
-   "label": "AWS Irland",
+   "label": "AWS Ireland",
    "hyperscaler": "aws",
    "freePct": 44
   },
@@ -379,7 +380,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   },
   {
    "id": "europe-west1",
-   "label": "Google Belgien",
+   "label": "Google Belgium",
    "hyperscaler": "gcp",
    "freePct": 41
   }
@@ -388,7 +389,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "sa",
    "name": "Sven Albrecht",
-   "role": "Betrieb"
+   "role": "Operations"
   },
   {
    "id": "mo",
@@ -403,7 +404,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "lh",
    "name": "Lea Hoffmann",
-   "role": "Betrieb"
+   "role": "Operations"
   },
   {
    "id": "tk",
@@ -421,7 +422,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "mi-prd-db01",
    "customer": "mi",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -435,7 +436,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "mi-prd-app01",
    "customer": "mi",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -463,7 +464,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "mi-qas-db01",
    "customer": "mi",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -477,7 +478,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "mi-qas-app01",
    "customer": "mi",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -491,7 +492,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "bp-prd-db01",
    "customer": "bp",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -505,7 +506,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "bp-prd-app01",
    "customer": "bp",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -533,7 +534,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "bp-qas-db01",
    "customer": "bp",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -547,7 +548,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "bp-qas-app01",
    "customer": "bp",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -561,7 +562,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "nl-prd-db01",
    "customer": "nl",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -575,7 +576,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "nl-prd-app01",
    "customer": "nl",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -603,7 +604,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "nl-qas-db01",
    "customer": "nl",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -617,7 +618,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "nl-qas-app01",
    "customer": "nl",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -631,7 +632,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "aw-prd-db01",
    "customer": "aw",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -645,7 +646,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "aw-prd-app01",
    "customer": "aw",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -673,7 +674,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "aw-qas-db01",
    "customer": "aw",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -687,7 +688,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "aw-qas-app01",
    "customer": "aw",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "aws",
    "region": "eu-central-1",
@@ -701,7 +702,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "ke-prd-db01",
    "customer": "ke",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -715,7 +716,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "ke-prd-app01",
    "customer": "ke",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -743,7 +744,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "ke-qas-db01",
    "customer": "ke",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -757,7 +758,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "ke-qas-app01",
    "customer": "ke",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "azure",
    "region": "westeurope",
@@ -771,7 +772,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "hr-prd-db01",
    "customer": "hr",
    "env": "PRD",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -785,7 +786,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "hr-prd-app01",
    "customer": "hr",
    "env": "PRD",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -813,7 +814,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "hr-qas-db01",
    "customer": "hr",
    "env": "QAS",
-   "role": "HANA-Datenbank",
+   "role": "HANA database",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -827,7 +828,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "id": "hr-qas-app01",
    "customer": "hr",
    "env": "QAS",
-   "role": "Anwendungsserver",
+   "role": "Application server",
    "os": "SLES 15 SP5",
    "hyperscaler": "gcp",
    "region": "europe-west3",
@@ -842,7 +843,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "mi-s4-prd",
    "customer": "mi",
-   "name": "Server-TLS s4.muster-industrie.example",
+   "name": "Server TLS s4.muster-industrie.example",
    "vmIds": [
     "mi-prd-wd01"
    ],
@@ -853,7 +854,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "mi-ariba-gw",
    "customer": "mi",
-   "name": "Client-Zertifikat Ariba-Anbindung",
+   "name": "Client certificate Ariba integration",
    "vmIds": [
     "mi-prd-app01"
    ],
@@ -864,7 +865,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "bp-s4-prd",
    "customer": "bp",
-   "name": "Server-TLS s4.beispiel-pharma.example",
+   "name": "Server TLS s4.beispiel-pharma.example",
    "vmIds": [
     "bp-prd-wd01"
    ],
@@ -875,18 +876,18 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "bp-saml",
    "customer": "bp",
-   "name": "SAML-Signatur SSO",
+   "name": "SAML signing (SSO)",
    "vmIds": [
     "bp-prd-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 3072",
    "notAfter": "2027-03-10"
   },
   {
    "id": "nl-s4-prd",
    "customer": "nl",
-   "name": "Server-TLS s4.nordlicht-logistik.example",
+   "name": "Server TLS s4.nordlicht-logistik.example",
    "vmIds": [
     "nl-prd-wd01"
    ],
@@ -897,18 +898,18 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "nl-cc",
    "customer": "nl",
-   "name": "Cloud-Connector-Zertifikat",
+   "name": "Cloud Connector certificate",
    "vmIds": [
     "nl-prd-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 2048",
    "notAfter": "2026-10-19"
   },
   {
    "id": "aw-s4-prd",
    "customer": "aw",
-   "name": "Server-TLS s4.alpenwerk.example",
+   "name": "Server TLS s4.alpenwerk.example",
    "vmIds": [
     "aw-prd-wd01"
    ],
@@ -919,18 +920,18 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "aw-s4-qas",
    "customer": "aw",
-   "name": "Server-TLS s4-qas.alpenwerk.example",
+   "name": "Server TLS s4-qas.alpenwerk.example",
    "vmIds": [
     "aw-qas-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 2048",
    "notAfter": "2027-01-24"
   },
   {
    "id": "ke-s4-prd",
    "customer": "ke",
-   "name": "Server-TLS s4.kurpfalz-energie.example",
+   "name": "Server TLS s4.kurpfalz-energie.example",
    "vmIds": [
     "ke-prd-wd01"
    ],
@@ -941,18 +942,18 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "ke-smgw",
    "customer": "ke",
-   "name": "Client-Zertifikat Marktkommunikation",
+   "name": "Client certificate market communication",
    "vmIds": [
     "ke-prd-app01"
    ],
-   "issuer": "Branchen-CA",
+   "issuer": "Industry CA",
    "key": "ECDSA P-256",
    "notAfter": "2026-12-18"
   },
   {
    "id": "hr-s4-prd",
    "customer": "hr",
-   "name": "Server-TLS s4.hanseatic-retail.example",
+   "name": "Server TLS s4.hanseatic-retail.example",
    "vmIds": [
     "hr-prd-wd01"
    ],
@@ -963,11 +964,11 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
   {
    "id": "hr-pos",
    "customer": "hr",
-   "name": "Kassen-Schnittstelle (POS)",
+   "name": "POS interface",
    "vmIds": [
     "hr-prd-app01"
    ],
-   "issuer": "Interne CA",
+   "issuer": "Internal CA",
    "key": "RSA 2048",
    "notAfter": "2027-09-16"
   }
@@ -1114,13 +1115,13 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    "from": "2026-10-26",
    "to": "2026-10-28",
    "customer": "bp",
-   "reason": "GxP-Audit bei Beispiel Pharma"
+   "reason": "GxP audit at Beispiel Pharma"
   },
   {
    "from": "2026-12-18",
    "to": "2027-01-04",
    "customer": null,
-   "reason": "Jahresend-Freeze"
+   "reason": "Year-end freeze"
   }
  ],
  "tasks": [
@@ -1133,7 +1134,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-10-16T21:00",
     "2026-10-16T23:00"
    ],
-   "state": "erledigt",
+   "state": "done",
    "requester": "lh",
    "approvals": [
     "tk"
@@ -1148,7 +1149,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-10-21T20:00",
     "2026-10-21T21:00"
    ],
-   "state": "im_fenster",
+   "state": "in_window",
    "requester": "sa",
    "approvals": [
     "mo",
@@ -1168,7 +1169,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-10-24T22:00",
     "2026-10-25T02:00"
    ],
-   "state": "freigegeben",
+   "state": "approved",
    "requester": "lh",
    "approvals": [
     "nb",
@@ -1184,7 +1185,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-10-22T22:00",
     "2026-10-23T00:00"
    ],
-   "state": "in_pruefung",
+   "state": "in_review",
    "requester": "sa",
    "approvals": [
     "mo"
@@ -1199,7 +1200,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-10-31T20:00",
     "2026-11-01T02:00"
    ],
-   "state": "in_pruefung",
+   "state": "in_review",
    "requester": "lh",
    "approvals": [],
    "params": {
@@ -1215,7 +1216,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-11-03T22:00",
     "2026-11-04T00:00"
    ],
-   "state": "geplant",
+   "state": "planned",
    "requester": "sa",
    "approvals": []
   },
@@ -1228,7 +1229,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
     "2026-11-07T21:00",
     "2026-11-08T01:00"
    ],
-   "state": "geplant",
+   "state": "planned",
    "requester": "lh",
    "approvals": []
   }
@@ -1238,25 +1239,25 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 <script id="io-model">
 const DAY_MS = 86400000;
 const PLAYBOOKS = {
-  'renew-certificate': { title: 'Zertifikat erneuern und verteilen', status: 'freigegeben', kind: 'cert', base: 1 },
-  'update-dns-record': { title: 'DNS-Eintrag ändern', status: 'freigegeben', kind: 'dns', base: 1 },
-  'patch-vm': { title: 'VM patchen und neu starten', status: 'freigegeben', kind: 'vm', base: 2 },
-  'move-vm': { title: 'VM in andere Region verschieben', status: 'freigegeben', kind: 'vm', base: 3 },
-  'rotate-secret': { title: 'Geheimnis rotieren', status: 'entwurf', kind: 'vm', base: 2 },
+  'renew-certificate': { title: 'Renew and deploy a certificate', status: 'approved', kind: 'cert', base: 1 },
+  'update-dns-record': { title: 'Change a DNS record', status: 'approved', kind: 'dns', base: 1 },
+  'patch-vm': { title: 'Patch and restart a VM', status: 'approved', kind: 'vm', base: 2 },
+  'move-vm': { title: 'Move a VM to another region', status: 'approved', kind: 'vm', base: 3 },
+  'rotate-secret': { title: 'Rotate a secret', status: 'draft', kind: 'vm', base: 2 },
 };
-const STATES = ['geplant', 'in_pruefung', 'freigegeben', 'im_fenster', 'erledigt'];
+const STATES = ['planned', 'in_review', 'approved', 'in_window', 'done'];
 const ORCHESTRATION = [
-  { id: 'trigger', title: 'Auslöser', tool: 'n8n', detail: 'Webhook oder Zeitplan (zum Beispiel Zertifikat läuft in 30 Tagen ab)' },
-  { id: 'ticket', title: 'Aufgabe und Ticket anlegen', tool: 'n8n', detail: 'Change-Ticket im ITSM, Aufgabe im Space' },
-  { id: 'check', title: 'Vorprüfung im Prüfmodus', tool: 'AWX', detail: 'Playbook mit --check --diff, Abhängigkeiten, Konflikte' },
-  { id: 'approve', title: 'Freigabe (Vier-Augen)', tool: 'n8n', detail: 'Anfrage per Teams an die Freigeber, Antwort startet den nächsten Schritt' },
-  { id: 'window', title: 'Änderungsfenster abwarten', tool: 'n8n', detail: 'Start nur im freigegebenen Fenster' },
-  { id: 'run', title: 'Playbook ausführen', tool: 'AWX', detail: 'Job-Vorlage mit geprüften Parametern, Snapshot vorher' },
-  { id: 'verify', title: 'Verifikation', tool: 'AWX', detail: 'Gesundheits- und Zertifikatsprüfung, bei Fehler Rollback' },
-  { id: 'evidence', title: 'Beleg und Meldung', tool: 'n8n', detail: 'Protokoll ablegen, Kunde und Team informieren' },
+  { id: 'trigger', title: 'Trigger', tool: 'n8n', detail: 'Webhook or schedule (for example: certificate expires in 30 days)' },
+  { id: 'ticket', title: 'Create task and ticket', tool: 'n8n', detail: 'Change ticket in the ITSM, task in the Space' },
+  { id: 'check', title: 'Pre-check in check mode', tool: 'AWX', detail: 'Playbook with --check --diff, dependencies, conflicts' },
+  { id: 'approve', title: 'Approval (four eyes)', tool: 'n8n', detail: 'Request to the approvers in Teams; the answer starts the next step' },
+  { id: 'window', title: 'Wait for the change window', tool: 'n8n', detail: 'Start only inside the approved window' },
+  { id: 'run', title: 'Run the playbook', tool: 'AWX', detail: 'Job template with checked parameters, snapshot first' },
+  { id: 'verify', title: 'Verification', tool: 'AWX', detail: 'Health and certificate checks, rollback on failure' },
+  { id: 'evidence', title: 'Evidence and notification', tool: 'n8n', detail: 'File the log, inform customer and team' },
 ];
 /** How many orchestration steps are done in each task state. */
-const STEPS_DONE = { geplant: 2, in_pruefung: 3, freigegeben: 5, im_fenster: 6, erledigt: 8 };
+const STEPS_DONE = { planned: 2, in_review: 3, approved: 5, in_window: 6, done: 8 };
 
 const toDay = (iso) => String(iso).slice(0, 10);
 const daysBetween = (a, b) => Math.round((Date.parse(toDay(b)) - Date.parse(toDay(a))) / DAY_MS);
@@ -1265,7 +1266,7 @@ const by = (list) => new Map(list.map((x) => [x.id, x]));
 
 function certStatus(cert, asOf) {
   const left = daysBetween(asOf, cert.notAfter);
-  const status = left < 0 ? 'abgelaufen' : left <= 7 ? 'kritisch' : left <= 30 ? 'bald' : left <= 90 ? 'beobachten' : 'ok';
+  const status = left < 0 ? 'expired' : left <= 7 ? 'critical' : left <= 30 ? 'soon' : left <= 90 ? 'watch' : 'ok';
   return { daysLeft: left, status };
 }
 
@@ -1282,18 +1283,17 @@ function dependents(data, vmId) {
 }
 
 function findings(data) {
-  const asOf = data.asOf;
   const out = [];
   for (const c of data.certs) {
-    const s = certStatus(c, asOf);
-    if (s.status === 'abgelaufen') out.push({ severity: 'rot', kind: 'cert', target: c.id, template: 'renew-certificate', title: `${c.name} ist abgelaufen`, detail: `Seit ${-s.daysLeft} Tagen ungültig (${c.notAfter}).` });
-    else if (s.status === 'kritisch' || s.status === 'bald') out.push({ severity: s.status === 'kritisch' ? 'rot' : 'gelb', kind: 'cert', target: c.id, template: 'renew-certificate', title: `${c.name} läuft in ${s.daysLeft} Tagen ab`, detail: `Gültig bis ${c.notAfter}.` });
+    const s = certStatus(c, data.asOf);
+    if (s.status === 'expired') out.push({ severity: 'red', kind: 'cert', target: c.id, template: 'renew-certificate', title: `${c.name} has expired`, detail: `Invalid for ${-s.daysLeft} days (${c.notAfter}).` });
+    else if (s.status === 'critical' || s.status === 'soon') out.push({ severity: s.status === 'critical' ? 'red' : 'amber', kind: 'cert', target: c.id, template: 'renew-certificate', title: `${c.name} expires in ${s.daysLeft} days`, detail: `Valid until ${c.notAfter}.` });
   }
   for (const v of data.vms) {
-    if (v.criticalPatches > 0) out.push({ severity: 'rot', kind: 'vm', target: v.id, template: 'patch-vm', title: `${v.id}: ${v.criticalPatches} kritische Patches offen`, detail: `${v.pendingPatches} Patches insgesamt, letzter Patch ${v.lastPatch}.` });
-    if (daysBetween(v.lastBackup, data.asOf) >= 2) out.push({ severity: 'gelb', kind: 'vm', target: v.id, template: null, title: `${v.id}: Backup ist ${daysBetween(v.lastBackup, data.asOf)} Tage alt`, detail: 'Vor Änderungen ein aktuelles Backup sicherstellen.' });
+    if (v.criticalPatches > 0) out.push({ severity: 'red', kind: 'vm', target: v.id, template: 'patch-vm', title: `${v.id}: ${v.criticalPatches} critical patches open`, detail: `${v.pendingPatches} patches in total, last patch ${v.lastPatch}.` });
+    if (daysBetween(v.lastBackup, data.asOf) >= 2) out.push({ severity: 'amber', kind: 'vm', target: v.id, template: null, title: `${v.id}: backup is ${daysBetween(v.lastBackup, data.asOf)} days old`, detail: 'Make sure there is a fresh backup before any change.' });
   }
-  const rank = { rot: 0, gelb: 1 };
+  const rank = { red: 0, amber: 1 };
   return out.sort((a, b) => rank[a.severity] - rank[b.severity]);
 }
 
@@ -1303,20 +1303,20 @@ function overlaps(a, b) { return a[0] < b[1] && b[0] < a[1]; }
 function planTask(data, req) {
   const errors = [];
   const pb = PLAYBOOKS[req.template];
-  if (!pb) return { ok: false, errors: ['Unbekannte Aufgabenvorlage.'] };
-  if (pb.status !== 'freigegeben') errors.push(`Das Playbook "${req.template}" ist ein Entwurf und für Produktion nicht freigegeben.`);
+  if (!pb) return { ok: false, errors: ['Unknown task template.'] };
+  if (pb.status !== 'approved') errors.push(`The playbook "${req.template}" is a draft and not approved for production.`);
   const inventory = { cert: data.certs, dns: data.dns, vm: data.vms }[pb.kind];
   const target = by(inventory).get(req.target);
-  if (!target) return { ok: false, errors: [...errors, `Ziel "${req.target}" ist nicht im Bestand (nur geprüfte Ziele sind erlaubt).`] };
+  if (!target) return { ok: false, errors: [...errors, `Target "${req.target}" is not in the inventory (only known targets are allowed).`] };
   const vmMap = by(data.vms);
   const customer = by(data.customers).get(target.customer);
   const win = req.window;
-  if (!win || !win[0] || !win[1] || win[0] >= win[1]) errors.push('Das Änderungsfenster ist ungültig.');
+  if (!win || !win[0] || !win[1] || win[0] >= win[1]) errors.push('The change window is invalid.');
   else {
-    if (toDay(win[0]) <= data.asOf && !['im_fenster', 'erledigt'].includes(req.state)) errors.push('Das Fenster muss in der Zukunft liegen.');
-    if (hoursOf(win) > 8) errors.push('Ein Änderungsfenster darf höchstens 8 Stunden dauern.');
+    if (toDay(win[0]) <= data.asOf && !['in_window', 'done'].includes(req.state)) errors.push('The window must be in the future.');
+    if (hoursOf(win) > 8) errors.push('A change window may last 8 hours at most.');
     for (const f of data.freezes) {
-      if ((f.customer === null || f.customer === target.customer) && toDay(win[0]) <= f.to && toDay(win[1]) >= f.from) errors.push(`Das Fenster liegt im Freeze: ${f.reason} (${f.from} bis ${f.to}).`);
+      if ((f.customer === null || f.customer === target.customer) && toDay(win[0]) <= f.to && toDay(win[1]) >= f.from) errors.push(`The window falls into a freeze: ${f.reason} (${f.from} to ${f.to}).`);
     }
   }
   const affectedVmIds = pb.kind === 'cert' ? [...target.vmIds] : pb.kind === 'dns' ? (target.vmId ? [target.vmId] : []) : [target.id];
@@ -1326,71 +1326,71 @@ function planTask(data, req) {
   const diff = [];
   const downtime = { minutes: 0, note: '' };
   const extraSteps = [];
-  let risk = pb.base + (env === 'PRD' ? 1 : 0) + (primaryVm && primaryVm.role === 'HANA-Datenbank' ? 1 : 0);
+  let risk = pb.base + (env === 'PRD' ? 1 : 0) + (primaryVm && primaryVm.role === 'HANA database' ? 1 : 0);
 
   if (pb.kind === 'cert') {
     const s = certStatus(target, data.asOf);
-    checks.push({ label: 'Restlaufzeit', status: s.status === 'ok' ? 'warn' : 'ok', detail: s.daysLeft < 0 ? `Abgelaufen seit ${-s.daysLeft} Tagen.` : `${s.daysLeft} Tage, Erneuerung ${s.status === 'ok' ? 'noch nicht nötig' : 'sinnvoll'}.` });
-    checks.push({ label: 'Zertifikatskette', status: 'ok', detail: `Aussteller ${target.issuer}, Zwischenzertifikate vollständig.` });
-    checks.push({ label: 'Schlüssel', status: 'ok', detail: `Neuer Schlüssel ${target.key}, passt zum Verwendungszweck.` });
+    checks.push({ label: 'Remaining validity', status: s.status === 'ok' ? 'warn' : 'ok', detail: s.daysLeft < 0 ? `Expired ${-s.daysLeft} days ago.` : `${s.daysLeft} days left, renewal ${s.status === 'ok' ? 'not needed yet' : 'makes sense'}.` });
+    checks.push({ label: 'Certificate chain', status: 'ok', detail: `Issuer ${target.issuer}, intermediate certificates complete.` });
+    checks.push({ label: 'Key', status: 'ok', detail: `New key ${target.key}, fits the purpose.` });
     const names = data.dns.filter((d) => affectedVmIds.includes(d.vmId)).map((d) => d.name);
-    checks.push({ label: 'Namen im Zertifikat', status: 'ok', detail: names.length ? `Deckt ${names.join(', ')} ab.` : 'Keine DNS-Namen verknüpft.' });
-    diff.push({ sign: ' ', text: `certificate: ${target.name}` }, { sign: '-', text: `not_after: ${target.notAfter}` }, { sign: '+', text: `not_after: ${new Date(Date.parse(toDay(win && win[0] ? win[0] : data.asOf) + 'T00:00:00Z') + 365 * DAY_MS).toISOString().slice(0, 10)}` }, { sign: ' ', text: `deploy_to: ${affectedVmIds.join(', ')}` }, { sign: '+', text: 'reload: web dispatcher / application server (ohne Neustart)' });
-    downtime.minutes = 0; downtime.note = 'Kein Ausfall: Dienste laden das Zertifikat neu.';
+    checks.push({ label: 'Names in the certificate', status: 'ok', detail: names.length ? `Covers ${names.join(', ')}.` : 'No DNS names linked.' });
+    diff.push({ sign: ' ', text: `certificate: ${target.name}` }, { sign: '-', text: `not_after: ${target.notAfter}` }, { sign: '+', text: `not_after: ${new Date(Date.parse(toDay(win && win[0] ? win[0] : data.asOf) + 'T00:00:00Z') + 365 * DAY_MS).toISOString().slice(0, 10)}` }, { sign: ' ', text: `deploy_to: ${affectedVmIds.join(', ')}` }, { sign: '+', text: 'reload: web dispatcher / application server (no restart)' });
+    downtime.minutes = 0; downtime.note = 'No outage: the services reload the certificate.';
   } else if (pb.kind === 'dns') {
     const nv = req.newValue || (req.params && req.params.newValue) || '';
     const ttl = Number(req.ttl ?? (req.params && req.params.ttl) ?? target.ttl);
-    if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(nv) && target.type === 'A') errors.push('Der neue Wert muss eine gültige IPv4-Adresse sein.');
-    if (!Number.isFinite(ttl) || ttl < 60 || ttl > 86400) errors.push('Die TTL muss zwischen 60 und 86400 Sekunden liegen.');
+    if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(nv) && target.type === 'A') errors.push('The new value must be a valid IPv4 address.');
+    if (!Number.isFinite(ttl) || ttl < 60 || ttl > 86400) errors.push('The TTL must be between 60 and 86400 seconds.');
     const users = data.dns.filter((d) => d.type === 'CNAME' && d.value === target.name);
-    checks.push({ label: 'Nutzer des Namens', status: users.length ? 'warn' : 'ok', detail: users.length ? `${users.length} Alias-Einträge zeigen auf ${target.name}: ${users.map((u) => u.name).join(', ')}.` : 'Keine Alias-Einträge.' });
-    checks.push({ label: 'TTL vor dem Umzug', status: target.ttl > 300 ? 'warn' : 'ok', detail: target.ttl > 300 ? `Aktuelle TTL ${target.ttl} s: Cache-Zeit vorher auf 300 s senken, sonst bleibt die alte Adresse bis zu ${Math.round(target.ttl / 60)} Minuten sichtbar.` : 'TTL ist bereits niedrig.' });
-    diff.push({ sign: ' ', text: `record: ${target.name} (${target.type})` }, { sign: '-', text: `value: ${target.value}   ttl: ${target.ttl}` }, { sign: '+', text: `value: ${nv || '(neu)'}   ttl: ${ttl}` });
-    downtime.minutes = 0; downtime.note = `Namensauflösung wechselt innerhalb von bis zu ${Math.round(target.ttl / 60)} Minuten (TTL).`;
-    if (target.ttl > 300) extraSteps.push({ id: 'ttl', title: 'TTL vorab auf 300 s senken', when: 'mindestens eine TTL vor dem Fenster', playbook: 'update-dns-record' });
+    checks.push({ label: 'Users of the name', status: users.length ? 'warn' : 'ok', detail: users.length ? `${users.length} alias records point to ${target.name}: ${users.map((u) => u.name).join(', ')}.` : 'No alias records.' });
+    checks.push({ label: 'TTL before the switch', status: target.ttl > 300 ? 'warn' : 'ok', detail: target.ttl > 300 ? `Current TTL ${target.ttl} s: lower it to 300 s first, otherwise the old address stays visible for up to ${Math.round(target.ttl / 60)} minutes.` : 'The TTL is already low.' });
+    diff.push({ sign: ' ', text: `record: ${target.name} (${target.type})` }, { sign: '-', text: `value: ${target.value}   ttl: ${target.ttl}` }, { sign: '+', text: `value: ${nv || '(new)'}   ttl: ${ttl}` });
+    downtime.minutes = 0; downtime.note = `Name resolution switches within up to ${Math.round(target.ttl / 60)} minutes (TTL).`;
+    if (target.ttl > 300) extraSteps.push({ id: 'ttl', title: 'Lower the TTL to 300 s beforehand', when: 'at least one TTL before the window', playbook: 'update-dns-record' });
     risk += users.length ? 1 : 0;
   } else if (req.template === 'patch-vm') {
     const backupAge = daysBetween(target.lastBackup, data.asOf);
-    checks.push({ label: 'Backup', status: backupAge >= 2 ? 'fail' : 'ok', detail: backupAge >= 2 ? `Letztes Backup vor ${backupAge} Tagen: vor dem Patchen ein neues Backup erstellen.` : `Letztes Backup ${target.lastBackup}.` });
-    checks.push({ label: 'Offene Patches', status: target.criticalPatches ? 'warn' : 'ok', detail: `${target.pendingPatches} offen, davon ${target.criticalPatches} kritisch.` });
+    checks.push({ label: 'Backup', status: backupAge >= 2 ? 'fail' : 'ok', detail: backupAge >= 2 ? `Last backup ${backupAge} days ago: take a new backup before patching.` : `Last backup ${target.lastBackup}.` });
+    checks.push({ label: 'Open patches', status: target.criticalPatches ? 'warn' : 'ok', detail: `${target.pendingPatches} open, ${target.criticalPatches} of them critical.` });
     const dep = dependents(data, target.id);
-    checks.push({ label: 'Abhängige Systeme', status: dep.length ? 'warn' : 'ok', detail: dep.length ? `Beim Neustart stehen ${dep.join(', ')} still.` : 'Keine abhängigen Systeme.' });
+    checks.push({ label: 'Dependent systems', status: dep.length ? 'warn' : 'ok', detail: dep.length ? `${dep.join(', ')} stop while this VM restarts.` : 'No dependent systems.' });
     diff.push({ sign: ' ', text: `vm: ${target.id} (${target.os})` }, { sign: '-', text: `patches_pending: ${target.pendingPatches}` }, { sign: '+', text: 'patches_pending: 0' }, { sign: '+', text: 'reboot: required' });
-    downtime.minutes = target.role === 'HANA-Datenbank' ? 25 : 10; downtime.note = `Neustart, geschätzt ${downtime.minutes} Minuten${dep.length ? ' (abhängige Systeme betroffen)' : ''}.`;
-    if (backupAge >= 2) errors.push('Backup ist zu alt: Das Playbook läuft nur mit Backup der letzten 24 Stunden.');
+    downtime.minutes = target.role === 'HANA database' ? 25 : 10; downtime.note = `Restart, about ${downtime.minutes} minutes${dep.length ? ' (dependent systems affected)' : ''}.`;
+    if (backupAge >= 2) errors.push('The backup is too old: the playbook only runs with a backup from the last 24 hours.');
   } else {
     const region = by(data.regions).get(req.targetRegion || (req.params && req.params.targetRegion));
-    if (!region) errors.push('Zielregion ist nicht erlaubt (nur Regionen aus der Liste).');
+    if (!region) errors.push('The target region is not allowed (only regions from the list).');
     else {
       const cross = region.hyperscaler !== target.hyperscaler;
-      checks.push({ label: 'Kapazität in der Zielregion', status: region.freePct < 20 ? 'warn' : 'ok', detail: `${region.label}: ${region.freePct} % frei${region.freePct < 20 ? ', knapp' : ''}.` });
-      checks.push({ label: 'Hyperscaler', status: cross ? 'fail' : 'ok', detail: cross ? 'Wechsel des Hyperscalers ist ein Migrationsprojekt, kein Standard-Playbook.' : 'Verschiebung innerhalb desselben Hyperscalers.' });
-      if (cross) errors.push('Ein Wechsel des Hyperscalers ist mit diesem Playbook nicht erlaubt.');
-      if (region.id === target.region) errors.push('Die Zielregion ist identisch mit der aktuellen Region.');
-      diff.push({ sign: ' ', text: `vm: ${target.id}` }, { sign: '-', text: `region: ${target.region}` }, { sign: '+', text: `region: ${region.id}` }, { sign: '+', text: 'snapshot: vor der Änderung' });
+      checks.push({ label: 'Capacity in the target region', status: region.freePct < 20 ? 'warn' : 'ok', detail: `${region.label}: ${region.freePct} % free${region.freePct < 20 ? ', tight' : ''}.` });
+      checks.push({ label: 'Hyperscaler', status: cross ? 'fail' : 'ok', detail: cross ? 'Changing the hyperscaler is a migration project, not a standard playbook.' : 'Move within the same hyperscaler.' });
+      if (cross) errors.push('Changing the hyperscaler is not allowed with this playbook.');
+      if (region.id === target.region) errors.push('The target region is the same as the current region.');
+      diff.push({ sign: ' ', text: `vm: ${target.id}` }, { sign: '-', text: `region: ${target.region}` }, { sign: '+', text: `region: ${region.id}` }, { sign: '+', text: 'snapshot: before the change' });
     }
     const backupAge = daysBetween(target.lastBackup, data.asOf);
-    checks.push({ label: 'Backup', status: backupAge >= 2 ? 'fail' : 'ok', detail: backupAge >= 2 ? `Letztes Backup vor ${backupAge} Tagen.` : `Letztes Backup ${target.lastBackup}.` });
-    if (backupAge >= 2) errors.push('Backup ist zu alt: Das Playbook läuft nur mit Backup der letzten 24 Stunden.');
+    checks.push({ label: 'Backup', status: backupAge >= 2 ? 'fail' : 'ok', detail: backupAge >= 2 ? `Last backup ${backupAge} days ago.` : `Last backup ${target.lastBackup}.` });
+    if (backupAge >= 2) errors.push('The backup is too old: the playbook only runs with a backup from the last 24 hours.');
     const dep = dependents(data, target.id);
-    checks.push({ label: 'Abhängige Systeme', status: dep.length ? 'warn' : 'ok', detail: dep.length ? `${dep.join(', ')} hängen an dieser VM.` : 'Keine abhängigen Systeme.' });
+    checks.push({ label: 'Dependent systems', status: dep.length ? 'warn' : 'ok', detail: dep.length ? `${dep.join(', ')} depend on this VM.` : 'No dependent systems.' });
     const recs = data.dns.filter((d) => d.vmId === target.id);
-    checks.push({ label: 'DNS', status: recs.length ? 'warn' : 'ok', detail: recs.length ? `${recs.map((r) => r.name).join(', ')} müssen nach dem Umzug auf die neue Adresse zeigen.` : 'Keine DNS-Einträge betroffen.' });
-    downtime.minutes = 90; downtime.note = 'Geschätzt 90 Minuten (Snapshot, Umzug, Start, Verifikation).';
+    checks.push({ label: 'DNS', status: recs.length ? 'warn' : 'ok', detail: recs.length ? `${recs.map((r) => r.name).join(', ')} must point to the new address after the move.` : 'No DNS records affected.' });
+    downtime.minutes = 90; downtime.note = 'About 90 minutes (snapshot, move, start, verification).';
     for (const r of recs) {
-      if (r.ttl > 300) extraSteps.push({ id: `ttl-${r.id}`, title: `TTL von ${r.name} vorab auf 300 s senken`, when: 'einen Tag vor dem Fenster', playbook: 'update-dns-record' });
-      extraSteps.push({ id: `dns-${r.id}`, title: `${r.name} nach dem Umzug auf die neue Adresse setzen`, when: 'direkt nach dem Umzug', playbook: 'update-dns-record' });
+      if (r.ttl > 300) extraSteps.push({ id: `ttl-${r.id}`, title: `Lower the TTL of ${r.name} to 300 s beforehand`, when: 'one day before the window', playbook: 'update-dns-record' });
+      extraSteps.push({ id: `dns-${r.id}`, title: `Point ${r.name} to the new address after the move`, when: 'right after the move', playbook: 'update-dns-record' });
     }
   }
 
   // conflicts with other open tasks of the same customer
-  const conflicts = win && win[0] && win[1] ? (data.tasks ?? []).filter((t) => t.id !== req.id && t.customer === target.customer && t.state !== 'erledigt' && overlaps(win, t.window)) : [];
-  checks.push({ label: 'Konflikte im Änderungskalender', status: conflicts.length ? 'warn' : 'ok', detail: conflicts.length ? `Überschneidung mit ${conflicts.map((c) => c.id).join(', ')}.` : 'Keine Überschneidung mit anderen Aufgaben des Kunden.' });
+  const conflicts = win && win[0] && win[1] ? (data.tasks ?? []).filter((t) => t.id !== req.id && t.customer === target.customer && t.state !== 'done' && overlaps(win, t.window)) : [];
+  checks.push({ label: 'Conflicts in the change calendar', status: conflicts.length ? 'warn' : 'ok', detail: conflicts.length ? `Overlaps with ${conflicts.map((c) => c.id).join(', ')}.` : 'No overlap with other tasks of this customer.' });
 
   const affectedVmsAll = [...new Set(affectedVmIds.flatMap((id) => [id, ...(pb.kind === 'cert' || pb.kind === 'dns' ? [] : dependents(data, id))]))];
   const affectedDns = data.dns.filter((d) => affectedVmsAll.includes(d.vmId)).map((d) => d.name);
-  const riskLevel = risk >= 5 ? 'hoch' : risk >= 3 ? 'mittel' : 'niedrig';
-  const approvalsNeeded = env === 'PRD' || riskLevel === 'hoch' ? 2 : 1;
+  const riskLevel = risk >= 5 ? 'high' : risk >= 3 ? 'medium' : 'low';
+  const approvalsNeeded = env === 'PRD' || riskLevel === 'high' ? 2 : 1;
   return {
     ok: errors.length === 0,
     errors,
@@ -1402,7 +1402,7 @@ function planTask(data, req) {
     risk: riskLevel,
     riskScore: risk,
     approvalsNeeded,
-    approvalReason: approvalsNeeded === 2 ? (env === 'PRD' ? 'Produktion: zwei Freigaben (Vier-Augen-Prinzip plus Change Manager).' : 'Hohes Risiko: zwei Freigaben.') : 'Eine Freigabe genügt (kein Produktionssystem, geringes Risiko).',
+    approvalReason: approvalsNeeded === 2 ? (env === 'PRD' ? 'Production: two approvals (four eyes plus change manager).' : 'High risk: two approvals.') : 'One approval is enough (no production system, low risk).',
     checks,
     diff,
     downtime,
@@ -1415,23 +1415,23 @@ function planTask(data, req) {
 /** May this person approve? Technical enforcement of the four-eyes rule. */
 function canApprove(task, personId, data) {
   const person = by(data.people).get(personId);
-  if (!person) return { ok: false, reason: 'Unbekannte Person.' };
-  if (task.state !== 'in_pruefung') return { ok: false, reason: 'Freigabe ist nur in der Phase "In Prüfung" möglich.' };
-  if (task.requester === personId) return { ok: false, reason: 'Die antragstellende Person darf nicht selbst freigeben.' };
-  if ((task.approvals ?? []).includes(personId)) return { ok: false, reason: 'Diese Person hat bereits freigegeben.' };
+  if (!person) return { ok: false, reason: 'Unknown person.' };
+  if (task.state !== 'in_review') return { ok: false, reason: 'Approval is only possible in the "In review" phase.' };
+  if (task.requester === personId) return { ok: false, reason: 'The requester must not approve their own change.' };
+  if ((task.approvals ?? []).includes(personId)) return { ok: false, reason: 'This person has already approved.' };
   const plan = planTask(data, { ...task, ...(task.params ?? {}) });
-  if (!plan.ok) return { ok: false, reason: `Der Plan hat Fehler: ${plan.errors[0]}` };
+  if (!plan.ok) return { ok: false, reason: `The plan has errors: ${plan.errors[0]}` };
   const have = (task.approvals ?? []).map((id) => by(data.people).get(id));
-  if (plan.approvalsNeeded === 2 && have.length === 1 && have[0].role === person.role && person.role !== 'Change Manager') return { ok: false, reason: 'Die zweite Freigabe muss von einer anderen Rolle kommen als die erste, zum Beispiel vom Change Manager.' };
+  if (plan.approvalsNeeded === 2 && have.length === 1 && have[0].role === person.role && person.role !== 'Change Manager') return { ok: false, reason: 'The second approval must come from a different role than the first, for example the change manager.' };
   return { ok: true, reason: '' };
 }
 
 /** A simulated playbook run: Ansible-style output and a recap. No system is touched. */
 function simulateRun(plan) {
   const tasks = plan.diff.filter((d) => d.sign === '+').map((d) => d.text.replace(/\s{2,}/g, ' '));
-  const lines = [`PLAY [${plan.playbook.title}] ${'*'.repeat(20)}`, 'TASK [Snapshot und Gesundheitsprüfung vorher] ok'];
+  const lines = [`PLAY [${plan.playbook.title}] ${'*'.repeat(20)}`, 'TASK [Snapshot and health check before] ok'];
   tasks.forEach((t) => lines.push(`TASK [${t}] changed`));
-  lines.push('TASK [Verifikation nach der Änderung] ok', '', `PLAY RECAP  ok=2  changed=${tasks.length}  failed=0  rolled_back=0`);
+  lines.push('TASK [Verification after the change] ok', '', `PLAY RECAP  ok=2  changed=${tasks.length}  failed=0  rolled_back=0`);
   return { lines, recap: { ok: 2, changed: tasks.length, failed: 0 } };
 }
 </script>
@@ -1442,7 +1442,7 @@ function simulateRun(plan) {
   var $ = function (s) { return document.querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var STATE_LABEL = { geplant: 'Geplant', in_pruefung: 'In Prüfung', freigegeben: 'Freigegeben', im_fenster: 'Im Fenster', erledigt: 'Erledigt' };
+  var STATE_LABEL = { planned: 'Planned', in_review: 'In review', approved: 'Approved', in_window: 'In window', done: 'Done' };
   var person = function (id) { return D.people.filter(function (p) { return p.id === id; })[0]; };
   var customer = function (id) { return D.customers.filter(function (c) { return c.id === id; })[0]; };
   var pname = function (id) { var p = person(id); return p ? p.name + ' (' + p.role + ')' : id; };
@@ -1454,31 +1454,32 @@ function simulateRun(plan) {
     S.tasks = JSON.parse(JSON.stringify(D.tasks));
     S.logs = {}; S.runs = {};
     S.tasks.forEach(function (t) {
-      S.logs[t.id] = ['angelegt von ' + pname(t.requester)].concat((t.approvals || []).map(function (a) { return 'freigegeben von ' + pname(a); }));
-      if (t.state === 'erledigt') S.runs[t.id] = simulateRun(planOf(t));
+      S.logs[t.id] = ['created by ' + pname(t.requester)].concat((t.approvals || []).map(function (a) { return 'approved by ' + pname(a); }));
+      if (t.state === 'done') S.runs[t.id] = simulateRun(planOf(t));
     });
   }
   function planOf(t) { return planTask(D, Object.assign({}, t, t.params || {})); }
   function find(id) { return S.tasks.filter(function (t) { return t.id === id; })[0]; }
   function addLog(t, text) { S.logs[t.id].push(text); }
+  var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : many); };
 
   /* ---------- overview ---------- */
   function overview() {
     var certs = D.certs.map(function (c) { return Object.assign({}, c, certStatus(c, D.asOf)); }).sort(function (a, b) { return a.daysLeft - b.daysLeft; });
-    var soon = certs.filter(function (c) { return c.daysLeft <= 30; }).length, expired = certs.filter(function (c) { return c.daysLeft < 0; }).length;
+    var soon = certs.filter(function (c) { return c.daysLeft >= 0 && c.daysLeft <= 30; }).length, expired = certs.filter(function (c) { return c.daysLeft < 0; }).length;
     var crit = D.vms.filter(function (v) { return v.criticalPatches > 0; }).length;
-    var review = S.tasks.filter(function (t) { return t.state === 'in_pruefung' || t.state === 'freigegeben'; }).length;
-    var next = S.tasks.filter(function (t) { return t.state === 'freigegeben'; }).sort(function (a, b) { return a.window[0] < b.window[0] ? -1 : 1; })[0];
+    var review = S.tasks.filter(function (t) { return t.state === 'in_review' || t.state === 'approved'; }).length;
+    var next = S.tasks.filter(function (t) { return t.state === 'approved'; }).sort(function (a, b) { return a.window[0] < b.window[0] ? -1 : 1; })[0];
     var h = '<div class="kpis">' +
-      kpi(soon, 'Zertifikate laufen in 30 Tagen ab', soon ? 'amber' : '') + kpi(expired, 'Zertifikate abgelaufen', expired ? 'red' : '') +
-      kpi(crit, 'VMs mit kritischen Patches', crit ? 'red' : '') + kpi(review, 'Aufgaben in Prüfung oder freigegeben', '') +
-      kpi(next ? next.window[0].replace('T', ' ') : '–', 'Nächstes freigegebenes Fenster', '') + '</div>';
+      kpi(soon, 'Certificates expire within 30 days', soon ? 'amber' : '') + kpi(expired, 'Certificates expired', expired ? 'red' : '') +
+      kpi(crit, 'VMs with critical patches', crit ? 'red' : '') + kpi(review, 'Tasks in review or approved', '') +
+      kpi(next ? next.window[0].replace('T', ' ') : '–', 'Next approved window', '') + '</div>';
     var f = findings(D).slice(0, 7);
-    h += '<div class="two"><div class="card"><h2>Heute zu tun</h2><p class="note">Vorschläge aus dem Bestand. „Aufgabe vorschlagen“ füllt die Anfrage vor, geändert wird nichts.</p>' +
-      f.map(function (x, i) { return '<div class="todo"><span class="dot ' + x.severity + '"></span><div>' + esc(x.title) + '<small>' + esc(x.detail) + '</small></div>' + (x.template ? '<button class="btn" data-new="' + i + '" type="button">Aufgabe vorschlagen</button>' : '') + '</div>'; }).join('') + '</div>';
-    h += '<div class="card"><h2>Zertifikats-Zeitleiste</h2><p class="note">Restlaufzeit in Tagen (Skala bis 365).</p>' + certs.map(function (c) {
+    h += '<div class="two"><div class="card"><h2>To do today</h2><p class="note">Suggestions from the inventory. “Suggest task” pre-fills the request; nothing is changed.</p>' +
+      f.map(function (x, i) { return '<div class="todo"><span class="dot ' + x.severity + '"></span><div>' + esc(x.title) + '<small>' + esc(x.detail) + '</small></div>' + (x.template ? '<button class="btn" data-new="' + i + '" type="button">Suggest task</button>' : '') + '</div>'; }).join('') + '</div>';
+    h += '<div class="card"><h2>Certificate timeline</h2><p class="note">Days remaining (scale up to 365).</p>' + certs.map(function (c) {
       var w = Math.max(2, Math.min(100, c.daysLeft / 365 * 100));
-      return '<div class="tl"><span class="n" title="' + esc(c.name) + '">' + esc(c.id) + '</span><div class="bar" role="img" aria-label="' + esc(c.id) + ': ' + c.daysLeft + ' Tage"><i class="' + c.status + '" style="width:' + (c.daysLeft < 0 ? 2 : w) + '%"></i></div><span class="d">' + (c.daysLeft < 0 ? 'abgelaufen' : c.daysLeft + ' T') + '</span></div>';
+      return '<div class="tl"><span class="n" title="' + esc(c.name) + '">' + esc(c.id) + '</span><div class="bar" role="img" aria-label="' + esc(c.id) + ': ' + c.daysLeft + ' days"><i class="' + c.status + '" style="width:' + (c.daysLeft < 0 ? 2 : w) + '%"></i></div><span class="d">' + (c.daysLeft < 0 ? 'expired' : c.daysLeft + ' d') + '</span></div>';
     }).join('') + '</div></div>';
     $('#main').innerHTML = h;
     document.querySelectorAll('[data-new]').forEach(function (b) { b.onclick = function () { var x = f[Number(b.dataset.new)]; openNew({ template: x.template, target: x.target }); }; });
@@ -1487,12 +1488,12 @@ function simulateRun(plan) {
 
   /* ---------- tasks ---------- */
   function tasksTab() {
-    var h = '<div class="tools"><h2 style="margin:0">Änderungsaufgaben</h2><button class="btn primary" id="new" type="button" style="margin-left:auto">Neue Aufgabe</button></div><p class="note">Jede Aufgabe durchläuft Vorprüfung, Freigabe, Fenster, Ausführung und Beleg. Klicken für Details.</p><div class="board">';
-    ['geplant', 'in_pruefung', 'freigegeben', 'im_fenster', 'erledigt'].forEach(function (st) {
+    var h = '<div class="tools"><h2 style="margin:0">Change tasks</h2><button class="btn primary" id="new" type="button" style="margin-left:auto">New task</button></div><p class="note">Every task goes through pre-check, approval, window, execution and evidence. Click for details.</p><div class="board">';
+    ['planned', 'in_review', 'approved', 'in_window', 'done'].forEach(function (st) {
       var list = S.tasks.filter(function (t) { return t.state === st; });
       h += '<section class="col" aria-label="' + STATE_LABEL[st] + '"><h3><span>' + STATE_LABEL[st] + '</span><span>' + list.length + '</span></h3>' + list.map(function (t) {
         var p = planOf(t);
-        return '<button class="tcard" data-task="' + esc(t.id) + '" type="button"><b>' + esc(t.id) + ' · ' + esc(PLAYBOOKS[t.template].title) + '</b><small>' + esc(t.target) + ' · ' + esc(customer(t.customer).name) + '</small><small>' + esc(t.window[0].replace('T', ' ')) + '</small><span class="tag ' + p.risk + '">Risiko ' + p.risk + '</span> <span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' Freigaben</span>' + (p.ok ? '' : ' <span class="tag fail">blockiert</span>') + '</button>';
+        return '<button class="tcard" data-task="' + esc(t.id) + '" type="button"><b>' + esc(t.id) + ' · ' + esc(PLAYBOOKS[t.template].title) + '</b><small>' + esc(t.target) + ' · ' + esc(customer(t.customer).name) + '</small><small>' + esc(t.window[0].replace('T', ' ')) + '</small><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span> <span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span>' + (p.ok ? '' : ' <span class="tag fail">blocked</span>') + '</button>';
       }).join('') + '</section>';
     });
     $('#main').innerHTML = h + '</div>';
@@ -1503,20 +1504,20 @@ function simulateRun(plan) {
   /* ---------- inventory ---------- */
   function inventory() {
     var q = S.filter.toLowerCase();
-    var h = '<div class="tools"><div class="seg" role="group" aria-label="Bestand">' + [['certs', 'Zertifikate'], ['vms', 'VMs'], ['dns', 'DNS']].map(function (x) { return '<button type="button" data-inv="' + x[0] + '" aria-pressed="' + (S.inv === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div><input id="flt" type="search" placeholder="Filtern: Kunde, Name, Region …" aria-label="Bestand filtern" value="' + esc(S.filter) + '"></div><div class="card scroll">';
+    var h = '<div class="tools"><div class="seg" role="group" aria-label="Inventory">' + [['certs', 'Certificates'], ['vms', 'VMs'], ['dns', 'DNS']].map(function (x) { return '<button type="button" data-inv="' + x[0] + '" aria-pressed="' + (S.inv === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div><input id="flt" type="search" placeholder="Filter: customer, name, region …" aria-label="Filter inventory" value="' + esc(S.filter) + '"></div><div class="card scroll">';
     var rows = [], head = '';
     if (S.inv === 'certs') {
-      head = '<tr><th>Zertifikat</th><th>Kunde</th><th>Systeme</th><th>Aussteller</th><th>Gültig bis</th><th>Rest</th><th></th></tr>';
-      rows = D.certs.map(function (c) { var s = certStatus(c, D.asOf); return { t: [c.id, c.name, c.customer, c.issuer, customer(c.customer).name].join(' '), h: '<tr><td><b>' + esc(c.id) + '</b><br><small>' + esc(c.name) + '</small></td><td>' + esc(customer(c.customer).name) + '</td><td>' + esc(c.vmIds.join(', ')) + '</td><td>' + esc(c.issuer) + '</td><td>' + esc(c.notAfter) + '</td><td><span class="tag ' + s.status + '">' + (s.daysLeft < 0 ? 'abgelaufen' : s.daysLeft + ' Tage') + '</span></td><td><button class="btn" data-act="renew-certificate|' + esc(c.id) + '" type="button">Erneuern</button></td></tr>' }; });
+      head = '<tr><th>Certificate</th><th>Customer</th><th>Systems</th><th>Issuer</th><th>Valid until</th><th>Left</th><th></th></tr>';
+      rows = D.certs.map(function (c) { var s = certStatus(c, D.asOf); return { t: [c.id, c.name, c.customer, c.issuer, customer(c.customer).name].join(' '), h: '<tr><td><b>' + esc(c.id) + '</b><br><small>' + esc(c.name) + '</small></td><td>' + esc(customer(c.customer).name) + '</td><td>' + esc(c.vmIds.join(', ')) + '</td><td>' + esc(c.issuer) + '</td><td>' + esc(c.notAfter) + '</td><td><span class="tag ' + s.status + '">' + (s.daysLeft < 0 ? 'expired' : plural(s.daysLeft, 'day', 'days')) + '</span></td><td><button class="btn" data-act="renew-certificate|' + esc(c.id) + '" type="button">Renew</button></td></tr>' }; });
     } else if (S.inv === 'vms') {
-      head = '<tr><th>VM</th><th>Kunde</th><th>Rolle</th><th>Region</th><th>Patches</th><th>Backup</th><th></th></tr>';
-      rows = D.vms.map(function (v) { var old = daysBetweenPage(v.lastBackup) >= 2; return { t: [v.id, v.role, v.region, v.env, customer(v.customer).name].join(' '), h: '<tr><td><b>' + esc(v.id) + '</b><br><small>' + esc(v.env) + ' · ' + esc(v.os) + '</small></td><td>' + esc(customer(v.customer).name) + '</td><td>' + esc(v.role) + '</td><td>' + esc(v.region) + '</td><td><span class="tag ' + (v.criticalPatches ? 'rot' : v.pendingPatches ? 'gelb' : 'ok') + '">' + v.pendingPatches + ' offen' + (v.criticalPatches ? ', ' + v.criticalPatches + ' kritisch' : '') + '</span></td><td><span class="tag ' + (old ? 'gelb' : 'ok') + '">' + esc(v.lastBackup) + '</span></td><td><button class="btn" data-act="patch-vm|' + esc(v.id) + '" type="button">Patchen</button> <button class="btn" data-act="move-vm|' + esc(v.id) + '" type="button">Verschieben</button></td></tr>' }; });
+      head = '<tr><th>VM</th><th>Customer</th><th>Role</th><th>Region</th><th>Patches</th><th>Backup</th><th></th></tr>';
+      rows = D.vms.map(function (v) { var old = daysBetweenPage(v.lastBackup) >= 2; return { t: [v.id, v.role, v.region, v.env, customer(v.customer).name].join(' '), h: '<tr><td><b>' + esc(v.id) + '</b><br><small>' + esc(v.env) + ' · ' + esc(v.os) + '</small></td><td>' + esc(customer(v.customer).name) + '</td><td>' + esc(v.role) + '</td><td>' + esc(v.region) + '</td><td><span class="tag ' + (v.criticalPatches ? 'red' : v.pendingPatches ? 'amber' : 'ok') + '">' + v.pendingPatches + ' open' + (v.criticalPatches ? ', ' + v.criticalPatches + ' critical' : '') + '</span></td><td><span class="tag ' + (old ? 'amber' : 'ok') + '">' + esc(v.lastBackup) + '</span></td><td><button class="btn" data-act="patch-vm|' + esc(v.id) + '" type="button">Patch</button> <button class="btn" data-act="move-vm|' + esc(v.id) + '" type="button">Move</button></td></tr>' }; });
     } else {
-      head = '<tr><th>Name</th><th>Typ</th><th>Wert</th><th>TTL</th><th>VM</th><th></th></tr>';
-      rows = D.dns.map(function (d) { return { t: [d.name, d.value, d.vmId, customer(d.customer).name].join(' '), h: '<tr><td><b>' + esc(d.name) + '</b><br><small>' + esc(customer(d.customer).name) + '</small></td><td>' + esc(d.type) + '</td><td>' + esc(d.value) + '</td><td>' + d.ttl + ' s</td><td>' + esc(d.vmId) + '</td><td><button class="btn" data-act="update-dns-record|' + esc(d.id) + '" type="button">Ändern</button></td></tr>' }; });
+      head = '<tr><th>Name</th><th>Type</th><th>Value</th><th>TTL</th><th>VM</th><th></th></tr>';
+      rows = D.dns.map(function (d) { return { t: [d.name, d.value, d.vmId, customer(d.customer).name].join(' '), h: '<tr><td><b>' + esc(d.name) + '</b><br><small>' + esc(customer(d.customer).name) + '</small></td><td>' + esc(d.type) + '</td><td>' + esc(d.value) + '</td><td>' + d.ttl + ' s</td><td>' + esc(d.vmId) + '</td><td><button class="btn" data-act="update-dns-record|' + esc(d.id) + '" type="button">Change</button></td></tr>' }; });
     }
     rows = rows.filter(function (r) { return !q || r.t.toLowerCase().indexOf(q) >= 0; });
-    h += '<table><thead>' + head + '</thead><tbody>' + (rows.map(function (r) { return r.h; }).join('') || '<tr><td colspan="7">Keine Treffer.</td></tr>') + '</tbody></table></div>';
+    h += '<table><thead>' + head + '</thead><tbody>' + (rows.map(function (r) { return r.h; }).join('') || '<tr><td colspan="7">No matches.</td></tr>') + '</tbody></table></div>';
     $('#main').innerHTML = h;
     document.querySelectorAll('[data-inv]').forEach(function (b) { b.onclick = function () { S.inv = b.dataset.inv; S.filter = ''; render(); }; });
     $('#flt').oninput = function (e) { S.filter = e.target.value; var pos = e.target.selectionStart; render(); var f = $('#flt'); f.focus(); f.setSelectionRange(pos, pos); };
@@ -1526,29 +1527,30 @@ function simulateRun(plan) {
 
   /* ---------- playbooks and orchestration ---------- */
   var YAML = {
-    'renew-certificate': '- name: Zertifikat erneuern und verteilen\n  hosts: "{{ target_hosts }}"\n  become: true\n  tasks:\n    - name: Schlüssel und Zertifikatsanforderung erzeugen\n      community.crypto.openssl_csr:\n        path: "/etc/ssl/{{ cert_name }}.csr"\n        privatekey_path: "/etc/ssl/{{ cert_name }}.key"\n        common_name: "{{ common_name }}"\n    - name: Signiertes Zertifikat von der CA abholen\n      ansible.builtin.include_role:\n        name: ca_enroll\n    - name: Kette prüfen\n      community.crypto.x509_certificate_info:\n        path: "/etc/ssl/{{ cert_name }}.crt"\n      register: cert\n      failed_when: cert.not_after is not defined\n    - name: Dienst neu laden (kein Neustart)\n      ansible.builtin.service:\n        name: "{{ service }}"\n        state: reloaded',
-    'patch-vm': '- name: VM patchen und neu starten\n  hosts: "{{ target_hosts }}"\n  become: true\n  serial: 1\n  pre_tasks:\n    - name: Backup der letzten 24 Stunden prüfen\n      ansible.builtin.assert:\n        that: backup_age_hours | int <= 24\n  tasks:\n    - name: Patches einspielen\n      ansible.builtin.package:\n        name: "*"\n        state: latest\n    - name: Neu starten, falls nötig\n      ansible.builtin.reboot:\n        reboot_timeout: 1800\n  post_tasks:\n    - name: Gesundheitsprüfung\n      ansible.builtin.include_role:\n        name: sap_health_check',
-    'move-vm': '- name: VM in andere Region verschieben\n  hosts: localhost\n  vars:\n    allowed_regions: "{{ lookup(\'file\', \'allowed_regions.yml\') }}"\n  tasks:\n    - name: Zielregion gegen Liste prüfen\n      ansible.builtin.assert:\n        that: target_region in allowed_regions\n    - name: Snapshot erstellen\n      ansible.builtin.include_role:\n        name: vm_snapshot\n    - name: VM verschieben\n      ansible.builtin.include_role:\n        name: vm_move\n      vars:\n        region: "{{ target_region }}"\n    - name: Verifikation (Dienste erreichbar)\n      ansible.builtin.uri:\n        url: "{{ health_url }}"\n        status_code: 200',
-    'update-dns-record': '- name: DNS-Eintrag ändern\n  hosts: localhost\n  tasks:\n    - name: Aktuellen Wert festhalten (für Rollback)\n      ansible.builtin.set_fact:\n        previous_value: "{{ lookup(\'community.general.dig\', record_name) }}"\n    - name: Eintrag setzen\n      ansible.builtin.include_role:\n        name: dns_record\n      vars:\n        name: "{{ record_name }}"\n        value: "{{ new_value }}"\n        ttl: "{{ ttl }}"',
-    'rotate-secret': '# ENTWURF (von Joule erzeugt, Pull Request offen)\n- name: Geheimnis rotieren\n  hosts: "{{ target_hosts }}"\n  tasks:\n    - name: Neues Geheimnis erzeugen und ablegen\n      ansible.builtin.debug:\n        msg: "noch nicht implementiert"',
+    'renew-certificate': '- name: Renew and deploy a certificate\n  hosts: "{{ target_hosts }}"\n  become: true\n  tasks:\n    - name: Create the certificate signing request\n      community.crypto.openssl_csr:\n        path: "/etc/ssl/{{ cert_name }}.csr"\n        privatekey_path: "/etc/ssl/{{ cert_name }}.key"\n        common_name: "{{ common_name }}"\n    - name: Fetch the signed certificate from the CA\n      ansible.builtin.include_role:\n        name: ca_enroll\n    - name: Verify the chain\n      community.crypto.x509_certificate_info:\n        path: "/etc/ssl/{{ cert_name }}.crt"\n      register: cert\n      failed_when: cert.not_after is not defined\n    - name: Reload the service (no restart)\n      ansible.builtin.service:\n        name: "{{ service }}"\n        state: reloaded',
+    'patch-vm': '- name: Patch and restart a VM\n  hosts: "{{ target_hosts }}"\n  become: true\n  serial: 1\n  pre_tasks:\n    - name: Require a backup from the last 24 hours\n      ansible.builtin.assert:\n        that: backup_age_hours | int <= 24\n  tasks:\n    - name: Apply patches\n      ansible.builtin.package:\n        name: "*"\n        state: latest\n    - name: Reboot if required\n      ansible.builtin.reboot:\n        reboot_timeout: 1800\n  post_tasks:\n    - name: Health check\n      ansible.builtin.include_role:\n        name: sap_health_check',
+    'move-vm': '- name: Move a VM to another region\n  hosts: localhost\n  vars:\n    allowed_regions: "{{ lookup(\'file\', \'allowed_regions.yml\') }}"\n  tasks:\n    - name: Check the target region against the list\n      ansible.builtin.assert:\n        that: target_region in allowed_regions\n    - name: Create a snapshot\n      ansible.builtin.include_role:\n        name: vm_snapshot\n    - name: Move the VM\n      ansible.builtin.include_role:\n        name: vm_move\n      vars:\n        region: "{{ target_region }}"\n    - name: Verify (services reachable)\n      ansible.builtin.uri:\n        url: "{{ health_url }}"\n        status_code: 200',
+    'update-dns-record': '- name: Change a DNS record\n  hosts: localhost\n  tasks:\n    - name: Remember the current value (for rollback)\n      ansible.builtin.set_fact:\n        previous_value: "{{ lookup(\'community.general.dig\', record_name) }}"\n    - name: Set the record\n      ansible.builtin.include_role:\n        name: dns_record\n      vars:\n        name: "{{ record_name }}"\n        value: "{{ new_value }}"\n        ttl: "{{ ttl }}"',
+    'rotate-secret': '# DRAFT (generated by Joule, pull request open)\n- name: Rotate a secret\n  hosts: "{{ target_hosts }}"\n  tasks:\n    - name: Create and store the new secret\n      ansible.builtin.debug:\n        msg: "not implemented yet"',
   };
   var PB_TEXT = {
-    'renew-certificate': ['Erneuert ein Zertifikat, prüft die Kette und lädt es ohne Neustart auf den Zielsystemen.', 'Ziel (aus dem Bestand), Fenster', 'Rollback: altes Zertifikat bleibt als Sicherung liegen und wird zurückgeladen.'],
-    'patch-vm': ['Spielt Patches ein und startet die VM neu, nur mit Backup der letzten 24 Stunden.', 'Ziel-VM, Fenster', 'Rollback: Wiederherstellung aus dem Snapshot.'],
-    'move-vm': ['Verschiebt eine VM innerhalb desselben Hyperscalers in eine erlaubte Region, mit Snapshot und DNS-Teilaufgaben.', 'Ziel-VM, Zielregion (Liste), Fenster', 'Rollback: VM aus dem Snapshot in der alten Region wiederherstellen, DNS zurücksetzen.'],
-    'update-dns-record': ['Ändert Wert und TTL eines DNS-Eintrags und merkt sich den alten Wert.', 'Eintrag (aus dem Bestand), neuer Wert, TTL 60 bis 86400 s', 'Rollback: alten Wert und alte TTL wieder setzen.'],
-    'rotate-secret': ['Entwurf: rotiert ein Geheimnis auf Zielsystemen. Noch nicht getestet und nicht freigegeben.', 'noch offen', 'noch offen'],
+    'renew-certificate': ['Renews a certificate, verifies the chain and reloads it on the target systems without a restart.', 'Target (from the inventory), window', 'Rollback: the old certificate stays in place as a backup and is reloaded.'],
+    'patch-vm': ['Applies patches and restarts the VM, only with a backup from the last 24 hours.', 'Target VM, window', 'Rollback: restore from the snapshot.'],
+    'move-vm': ['Moves a VM within the same hyperscaler to an allowed region, with a snapshot and DNS follow-up tasks.', 'Target VM, target region (from the list), window', 'Rollback: restore the VM from the snapshot in the old region and reset DNS.'],
+    'update-dns-record': ['Changes the value and TTL of a DNS record and remembers the old value.', 'Record (from the inventory), new value, TTL 60 to 86400 s', 'Rollback: set the old value and the old TTL again.'],
+    'rotate-secret': ['Draft: rotates a secret on the target systems. Not tested yet and not approved.', 'still open', 'still open'],
   };
   function playbooksTab() {
     var ids = Object.keys(PLAYBOOKS);
-    var h = '<div class="pbs"><div><h2>Playbook-Katalog</h2><p class="note">Nur freigegebene Playbooks laufen in Produktion.</p><div class="pblist">' + ids.map(function (id) {
-      return '<button type="button" data-pb="' + id + '" aria-pressed="' + (S.pb === id) + '"><b>' + esc(PLAYBOOKS[id].title) + '</b><small>' + esc(id) + '</small><span class="tag ' + (PLAYBOOKS[id].status === 'freigegeben' ? 'ok' : 'warn') + '">' + (PLAYBOOKS[id].status === 'freigegeben' ? 'freigegeben' : 'Entwurf (PR)') + '</span></button>';
-    }).join('') + '</div></div><div class="card"><h2>' + esc(PLAYBOOKS[S.pb].title) + '</h2><p>' + esc(PB_TEXT[S.pb][0]) + '</p><h3>Parameter</h3><p>' + esc(PB_TEXT[S.pb][1]) + '</p><h3>Rückfall</h3><p>' + esc(PB_TEXT[S.pb][2]) + '</p><h3>Playbook (vereinfachtes Beispiel)</h3><pre class="code">' + esc(YAML[S.pb]) + '</pre>' +
-      (PLAYBOOKS[S.pb].status === 'entwurf' ? '<p class="note">Entwürfe entstehen als Pull Request, durchlaufen ansible-lint, Test und Review und werden erst nach dem Merge für Produktion freigegeben.</p>' : '') + '</div></div>';
+    var h = '<div class="pbs"><div><h2>Playbook catalog</h2><p class="note">Only approved playbooks run in production.</p><div class="pblist">' + ids.map(function (id) {
+      return '<button type="button" data-pb="' + id + '" aria-pressed="' + (S.pb === id) + '"><b>' + esc(PLAYBOOKS[id].title) + '</b><small>' + esc(id) + '</small><span class="tag ' + (PLAYBOOKS[id].status === 'approved' ? 'ok' : 'warn') + '">' + (PLAYBOOKS[id].status === 'approved' ? 'approved' : 'Draft (PR)') + '</span></button>';
+    }).join('') + '</div></div><div class="card"><h2>' + esc(PLAYBOOKS[S.pb].title) + '</h2><p>' + esc(PB_TEXT[S.pb][0]) + '</p><h3>Parameters</h3><p>' + esc(PB_TEXT[S.pb][1]) + '</p><h3>Rollback</h3><p>' + esc(PB_TEXT[S.pb][2]) + '</p><h3>Playbook (simplified example)</h3><pre class="code">' + esc(YAML[S.pb]) + '</pre>' +
+      (PLAYBOOKS[S.pb].status === 'draft' ? '<p class="note">Drafts are created as a pull request, go through ansible-lint, a test and a review, and only become approved for production after the merge.</p>' : '') + '</div></div>';
     var t = S.flowTask ? find(S.flowTask) : null;
     var done = t ? STEPS_DONE[t.state] : 0;
-    h += '<div class="card" style="margin-top:16px"><h2>Orchestrierung: n8n und AWX</h2><p class="note">n8n löst aus, holt Freigaben und meldet. AWX führt das Ansible-Playbook aus. Aufgabe wählen, um den Stand zu sehen.</p><div class="tools"><label for="ft" class="sub">Aufgabe</label><select id="ft" style="width:auto"><option value="">Keine</option>' + S.tasks.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === S.flowTask ? ' selected' : '') + '>' + esc(x.id + ' · ' + x.target + ' · ' + STATE_LABEL[x.state]) + '</option>'; }).join('') + '</select></div><div class="flow">' +
+    h += '<div class="card" style="margin-top:16px"><h2>Orchestration: n8n and AWX</h2><p class="note">n8n triggers, collects approvals and notifies. AWX runs the Ansible playbook. Pick a task to see where it stands.</p><div class="tools"><label for="ft" class="sub">Task</label><select id="ft" style="width:auto"><option value="">None</option>' + S.tasks.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === S.flowTask ? ' selected' : '') + '>' + esc(x.id + ' · ' + x.target + ' · ' + STATE_LABEL[x.state]) + '</option>'; }).join('') + '</select></div><div class="flow">' +
       ORCHESTRATION.map(function (n, i) { return '<div class="node ' + (i < done ? 'done' : i === done && t ? 'cur' : '') + '"><span class="tag tool">' + esc(n.tool) + '</span><b>' + esc(n.title) + '</b><small>' + esc(n.detail) + '</small></div>'; }).join('') + '</div></div>';
+    h += '<div class="card"><h2>n8n connection</h2><p class="note">How the chat reaches n8n. Nothing is executed by the connector.</p><ol class="steps2"><li><b>Import</b> <code>03-infra-change-request.json</code> from the repository folder <code>examples/n8n-workflows</code> into n8n and activate it. It receives the request, runs the playbook in check mode through AWX, asks for approval in Teams and files the evidence.</li><li><b>Configure</b> the production webhook address (and optionally a token) in the connector settings: <code>N8N_INFRA_WEBHOOK_URL</code>, <code>N8N_INFRA_WEBHOOK_TOKEN</code>.</li><li><b>Ask Joule</b> to plan a change (<code>plan_infra_change</code>, read-only). After you confirm, <code>submit_infra_change</code> sends it to n8n, always in check mode. Approval and execution stay in n8n and AWX.</li></ol><p class="note" style="margin-top:8px">Without a webhook address the tool shows the request it would send, so the flow can be tried safely.</p></div>';
     $('#main').innerHTML = h;
     document.querySelectorAll('[data-pb]').forEach(function (b) { b.onclick = function () { S.pb = b.dataset.pb; render(); }; });
     $('#ft').onchange = function (e) { S.flowTask = e.target.value || null; render(); };
@@ -1556,32 +1558,32 @@ function simulateRun(plan) {
 
   /* ---------- drawer ---------- */
   var lastFocus = null;
-  function openDrawer(html) { lastFocus = document.activeElement; $('#panel').innerHTML = '<button class="btn close" id="close" type="button" aria-label="Schließen">Schließen</button>' + html; $('#drawer').classList.add('open'); $('#close').onclick = closeDrawer; $('#close').focus(); }
+  function openDrawer(html) { lastFocus = document.activeElement; $('#panel').innerHTML = '<button class="btn close" id="close" type="button" aria-label="Close">Close</button>' + html; $('#drawer').classList.add('open'); $('#close').onclick = closeDrawer; $('#close').focus(); }
   function closeDrawer() { $('#drawer').classList.remove('open'); S.openTask = null; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   $('#drawer').addEventListener('click', function (e) { if (e.target === $('#drawer')) closeDrawer(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('#drawer').classList.contains('open')) closeDrawer(); });
 
   function checksHtml(p) {
-    return p.checks.map(function (c) { return '<div class="chk"><span class="tag ' + c.status + '">' + (c.status === 'ok' ? 'ok' : c.status === 'warn' ? 'Hinweis' : 'Fehler') + '</span><b>' + esc(c.label) + '</b><small>' + esc(c.detail) + '</small></div>'; }).join('');
+    return p.checks.map(function (c) { return '<div class="chk"><span class="tag ' + c.status + '">' + (c.status === 'ok' ? 'ok' : c.status === 'warn' ? 'Note' : 'Error') + '</span><b>' + esc(c.label) + '</b><small>' + esc(c.detail) + '</small></div>'; }).join('');
   }
   function diffHtml(p) { return '<pre class="code diff">' + p.diff.map(function (d) { return '<span class="' + (d.sign === '+' ? 'p' : d.sign === '-' ? 'm' : '') + '">' + esc(d.sign + ' ' + d.text) + '</span>'; }).join('\n') + '</pre>'; }
-  function errsHtml(p) { return p.errors.length ? '<div class="errs" role="alert"><b>Blockiert:</b><ul>' + p.errors.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul></div>' : ''; }
+  function errsHtml(p) { return p.errors.length ? '<div class="errs" role="alert"><b>Blocked:</b><ul>' + p.errors.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul></div>' : ''; }
 
   function openTask(id) {
     S.openTask = id; var t = find(id); if (!t) return;
     var p = planOf(t), done = STEPS_DONE[t.state];
-    var h = '<h2>' + esc(t.id) + ' · ' + esc(p.playbook.title) + '</h2><p class="note">' + esc(t.target) + ' · ' + esc(p.customer) + ' · ' + esc(t.window[0].replace('T', ' ')) + ' bis ' + esc(t.window[1].replace('T', ' ')) + '</p>' +
-      '<div class="row"><span class="tag ' + p.risk + '">Risiko ' + p.risk + '</span><span class="tag">' + STATE_LABEL[t.state] + '</span><span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' Freigaben</span><span class="tag ' + (p.downtime.minutes ? 'gelb' : 'ok') + '">' + (p.downtime.minutes ? 'Ausfall ca. ' + p.downtime.minutes + ' Min.' : 'kein Ausfall') + '</span></div>' + errsHtml(p);
-    h += '<h3>Vorprüfung (Prüfmodus, nichts wird geändert)</h3>' + checksHtml(p) + '<h3>Geplante Änderung (Diff)</h3>' + diffHtml(p);
-    h += '<h3>Auswirkung</h3><p>' + esc(p.downtime.note) + '</p><p class="sub">Betroffene Systeme: ' + esc(p.blast.vms.join(', ') || 'keine') + '<br>DNS-Namen: ' + esc(p.blast.dns.join(', ') || 'keine') + '</p>';
-    h += '<h3>Ablauf (n8n und AWX)</h3>' + p.steps.map(function (s) {
+    var h = '<h2>' + esc(t.id) + ' · ' + esc(p.playbook.title) + '</h2><p class="note">' + esc(t.target) + ' · ' + esc(p.customer) + ' · ' + esc(t.window[0].replace('T', ' ')) + ' to ' + esc(t.window[1].replace('T', ' ')) + '</p>' +
+      '<div class="row"><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span><span class="tag">' + STATE_LABEL[t.state] + '</span><span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span><span class="tag ' + (p.downtime.minutes ? 'amber' : 'ok') + '">' + (p.downtime.minutes ? 'Outage about ' + p.downtime.minutes + ' min' : 'no outage') + '</span></div>' + errsHtml(p);
+    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
+    h += '<h3>Impact</h3><p>' + esc(p.downtime.note) + '</p><p class="sub">Affected systems: ' + esc(p.blast.vms.join(', ') || 'none') + '<br>DNS names: ' + esc(p.blast.dns.join(', ') || 'none') + '</p>';
+    h += '<h3>Flow (n8n and AWX)</h3>' + p.steps.map(function (s) {
       var oi = ORCHESTRATION.map(function (o) { return o.id; }).indexOf(s.id);
       var cls = oi < 0 ? '' : oi < done ? 'done' : oi === done ? 'cur' : '';
-      return '<div class="step ' + cls + '"><i></i><div>' + esc(s.title) + '<small>' + esc(s.detail || s.when || '') + '</small></div>' + (s.tool ? '<span class="tag tool">' + esc(s.tool) + '</span>' : '<span class="tag">vorab</span>') + '</div>';
+      return '<div class="step ' + cls + '"><i></i><div>' + esc(s.title) + '<small>' + esc(s.detail || s.when || '') + '</small></div>' + (s.tool ? '<span class="tag tool">' + esc(s.tool) + '</span>' : '<span class="tag">upfront</span>') + '</div>';
     }).join('');
     h += '<div id="actions"></div><div id="runbox"></div>';
-    h += '<div class="card" style="margin:14px 0"><span class="tag tool">Joule</span><div class="row"><button class="btn" data-ask="explain" type="button">Änderung erklären</button><button class="btn" data-ask="customer" type="button">Kundenmitteilung entwerfen</button><button class="btn" data-ask="rollback" type="button">Was passiert beim Rollback?</button></div><p class="note" style="margin:0">Joule antwortet im Chat der Desktop-App.</p></div>';
-    h += '<h3>Protokoll</h3><div class="log" id="log"></div><div id="evidence"></div>';
+    h += '<div class="card" style="margin:14px 0"><span class="tag tool">Joule</span><div class="row"><button class="btn" data-ask="explain" type="button">Explain this change</button><button class="btn" data-ask="customer" type="button">Draft customer notice</button><button class="btn" data-ask="rollback" type="button">What happens on rollback?</button><button class="btn" data-ask="n8n" type="button">Submit to n8n</button></div><p class="note" style="margin:0">Joule answers in the chat of the desktop app. “Submit to n8n” plans the change and hands it to the n8n workflow (check mode) after you confirm.</p></div>';
+    h += '<h3>Log</h3><div class="log" id="log"></div><div id="evidence"></div>';
     openDrawer(h);
     renderActions(t, p);
     $('#log').innerHTML = S.logs[t.id].map(function (l) { return '<div>' + esc(l) + '</div>'; }).join('');
@@ -1591,46 +1593,46 @@ function simulateRun(plan) {
   function renderActions(t, p) {
     var box = $('#actions'); if (!box) return;
     var h = '<div class="row">';
-    if (t.state === 'geplant') h += '<button class="btn primary" data-do="submit" type="button"' + (p.ok ? '' : ' disabled') + '>Zur Prüfung einreichen</button>';
-    if (t.state === 'in_pruefung') {
+    if (t.state === 'planned') h += '<button class="btn primary" data-do="submit" type="button"' + (p.ok ? '' : ' disabled') + '>Submit for review</button>';
+    if (t.state === 'in_review') {
       var ok = canApprove(t, S.who, D);
-      h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Freigeben als ' + esc((person(S.who) || {}).name) + '</button>' + (ok.ok ? '' : '<span class="sub" role="status">' + esc(ok.reason) + '</span>');
+      h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Approve as ' + esc((person(S.who) || {}).name) + '</button>' + (ok.ok ? '' : '<span class="sub" role="status">' + esc(ok.reason) + '</span>');
     }
-    if (t.state === 'freigegeben' || t.state === 'im_fenster') h += '<button class="btn primary" data-do="run" type="button"' + (p.ok ? '' : ' disabled') + '>' + (t.state === 'im_fenster' ? 'Ausführung fortsetzen' : 'Im Fenster starten') + ' (Simulation)</button>';
+    if (t.state === 'approved' || t.state === 'in_window') h += '<button class="btn primary" data-do="run" type="button"' + (p.ok ? '' : ' disabled') + '>' + (t.state === 'in_window' ? 'Continue execution' : 'Start in window') + ' (simulation)</button>';
     h += '</div>';
     box.innerHTML = h;
     var b;
-    if ((b = box.querySelector('[data-do=submit]'))) b.onclick = function () { t.state = 'in_pruefung'; addLog(t, 'zur Prüfung eingereicht von ' + pname(S.who)); refresh(t); };
+    if ((b = box.querySelector('[data-do=submit]'))) b.onclick = function () { t.state = 'in_review'; addLog(t, 'submitted for review by ' + pname(S.who)); refresh(t); };
     if ((b = box.querySelector('[data-do=approve]'))) b.onclick = function () {
-      t.approvals = (t.approvals || []).concat([S.who]); addLog(t, 'freigegeben von ' + pname(S.who));
-      if (t.approvals.length >= planOf(t).approvalsNeeded) { t.state = 'freigegeben'; addLog(t, 'alle Freigaben vorhanden, Aufgabe ist freigegeben'); }
+      t.approvals = (t.approvals || []).concat([S.who]); addLog(t, 'approved by ' + pname(S.who));
+      if (t.approvals.length >= planOf(t).approvalsNeeded) { t.state = 'approved'; addLog(t, 'all approvals in place, task is approved'); }
       refresh(t);
     };
     if ((b = box.querySelector('[data-do=run]'))) b.onclick = function () { startRun(t); };
   }
   function refresh(t) { render(); openTask(t.id); }
+  function finish(t) { t.state = 'done'; addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id); }
   function startRun(t) {
     var p = planOf(t), run = simulateRun(p);
-    t.state = 'im_fenster'; addLog(t, 'Ausführung gestartet (Simulation) von ' + pname(S.who));
+    t.state = 'in_window'; addLog(t, 'execution started (simulation) by ' + pname(S.who));
     S.runs[t.id] = run; render(); openTask(t.id);
     var shown = 0;
     function next() {
       shown++; showRun(t, p, shown);
-      if (shown < run.lines.length) S.timers.push(setTimeout(next, reduced ? 0 : 380));
-      else { t.state = 'erledigt'; addLog(t, 'Verifikation erfolgreich, Beleg erzeugt'); render(); if (S.openTask === t.id) openTask(t.id); }
+      if (shown < run.lines.length) S.timers.push(setTimeout(next, reduced ? 0 : 380)); else finish(t);
     }
-    if (reduced) { while (shown < run.lines.length) { shown++; } showRun(t, p, shown); t.state = 'erledigt'; addLog(t, 'Verifikation erfolgreich, Beleg erzeugt'); render(); openTask(t.id); } else next();
+    if (reduced) { showRun(t, p, run.lines.length); finish(t); } else next();
   }
   function showRun(t, p, n) {
     var box = $('#runbox'); if (!box) return;
     var run = S.runs[t.id];
-    box.innerHTML = '<h3>Ausführung (simuliert)</h3><div class="run" aria-live="polite">' + esc(run.lines.slice(0, n).join('\n')) + '</div>';
-    if (t.state === 'erledigt' && n >= run.lines.length) {
-      $('#evidence').innerHTML = '<h3>Audit-Beleg</h3><pre class="code">' + esc([
-        'Aufgabe:        ' + t.id + ' (' + p.playbook.id + ')', 'Ziel:           ' + t.target + ' / ' + p.customer, 'Fenster:        ' + t.window[0] + ' bis ' + t.window[1],
-        'Beantragt von:  ' + pname(t.requester), 'Freigaben:      ' + (t.approvals || []).map(pname).join('; '),
-        'Vorprüfung:     ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' Hinweise',
-        'Ergebnis:       ok=' + run.recap.ok + ' changed=' + run.recap.changed + ' failed=' + run.recap.failed, 'Rückfall:       nicht nötig',
+    box.innerHTML = '<h3>Execution (simulated)</h3><div class="run" aria-live="polite">' + esc(run.lines.slice(0, n).join('\n')) + '</div>';
+    if (t.state === 'done' && n >= run.lines.length) {
+      $('#evidence').innerHTML = '<h3>Audit evidence</h3><pre class="code">' + esc([
+        'Task:         ' + t.id + ' (' + p.playbook.id + ')', 'Target:       ' + t.target + ' / ' + p.customer, 'Window:       ' + t.window[0] + ' to ' + t.window[1],
+        'Requested by: ' + pname(t.requester), 'Approvals:    ' + (t.approvals || []).map(pname).join('; '),
+        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes',
+        'Result:       ok=' + run.recap.ok + ' changed=' + run.recap.changed + ' failed=' + run.recap.failed, 'Rollback:     not needed',
       ].join('\n')) + '</pre>';
     }
   }
@@ -1638,30 +1640,30 @@ function simulateRun(plan) {
   /* ---------- new task ---------- */
   function openNew(pre) {
     var f = { template: pre.template || 'renew-certificate', target: pre.target || '', date: addDays(D.asOf, 10), time: '22:00', hours: 2, newValue: '', ttl: 300, targetRegion: 'europe-west1' };
-    openDrawer('<h2>Neue Aufgabe</h2><p class="note">Die Anfrage wird gegen den Bestand und die Regeln geprüft, bevor sie angelegt werden kann.</p><div class="form" id="form"></div><div id="preview"></div>');
+    openDrawer('<h2>New task</h2><p class="note">The request is checked against the inventory and the rules before it can be created.</p><div class="form" id="form"></div><div id="preview"></div>');
     function targetsFor(tpl) { var k = PLAYBOOKS[tpl].kind; return k === 'cert' ? D.certs.map(function (c) { return [c.id, c.id + ' · ' + c.name]; }) : k === 'dns' ? D.dns.map(function (d) { return [d.id, d.name]; }) : D.vms.map(function (v) { return [v.id, v.id + ' · ' + v.role]; }); }
     function req() {
       var start = f.date + 'T' + f.time, end = new Date(Date.parse(start + ':00Z') + f.hours * 3600000).toISOString().slice(0, 16);
-      return { template: f.template, target: f.target, window: [start, end], newValue: f.newValue, ttl: f.ttl, targetRegion: f.targetRegion, requester: S.who, state: 'geplant' };
+      return { template: f.template, target: f.target, window: [start, end], newValue: f.newValue, ttl: f.ttl, targetRegion: f.targetRegion, requester: S.who, state: 'planned' };
     }
     function paint(full) {
       var list = targetsFor(f.template); if (!list.some(function (x) { return x[0] === f.target; })) f.target = list[0][0];
       if (full) {
-        $('#form').innerHTML = '<label class="full">Playbook<select id="f-tpl">' + Object.keys(PLAYBOOKS).map(function (id) { return '<option value="' + id + '"' + (id === f.template ? ' selected' : '') + '>' + esc(PLAYBOOKS[id].title + (PLAYBOOKS[id].status === 'entwurf' ? ' (Entwurf)' : '')) + '</option>'; }).join('') + '</select></label>' +
-          '<label class="full">Ziel<select id="f-target">' + list.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === f.target ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select></label>' +
-          '<label>Datum<input id="f-date" type="date" value="' + f.date + '"></label><label>Beginn<input id="f-time" type="time" value="' + f.time + '"></label>' +
-          '<label>Dauer<select id="f-hours">' + [2, 4, 8, 10].map(function (h) { return '<option' + (h === f.hours ? ' selected' : '') + ' value="' + h + '">' + h + ' Stunden</option>'; }).join('') + '</select></label>' +
-          (f.template === 'update-dns-record' ? '<label>Neuer Wert<input id="f-val" value="' + esc(f.newValue) + '" placeholder="203.0.113.99"></label><label>TTL (Sekunden)<input id="f-ttl" type="number" value="' + f.ttl + '"></label>' : '') +
-          (f.template === 'move-vm' ? '<label>Zielregion<select id="f-reg">' + D.regions.map(function (r) { return '<option value="' + r.id + '"' + (r.id === f.targetRegion ? ' selected' : '') + '>' + esc(r.label + ' (' + r.freePct + ' % frei)') + '</option>'; }).join('') + '</select></label>' : '');
+        $('#form').innerHTML = '<label class="full">Playbook<select id="f-tpl">' + Object.keys(PLAYBOOKS).map(function (id) { return '<option value="' + id + '"' + (id === f.template ? ' selected' : '') + '>' + esc(PLAYBOOKS[id].title + (PLAYBOOKS[id].status === 'draft' ? ' (draft)' : '')) + '</option>'; }).join('') + '</select></label>' +
+          '<label class="full">Target<select id="f-target">' + list.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === f.target ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select></label>' +
+          '<label>Date<input id="f-date" type="date" value="' + f.date + '"></label><label>Start<input id="f-time" type="time" value="' + f.time + '"></label>' +
+          '<label>Duration<select id="f-hours">' + [2, 4, 8, 10].map(function (h) { return '<option' + (h === f.hours ? ' selected' : '') + ' value="' + h + '">' + h + ' hours</option>'; }).join('') + '</select></label>' +
+          (f.template === 'update-dns-record' ? '<label>New value<input id="f-val" value="' + esc(f.newValue) + '" placeholder="203.0.113.99"></label><label>TTL (seconds)<input id="f-ttl" type="number" value="' + f.ttl + '"></label>' : '') +
+          (f.template === 'move-vm' ? '<label>Target region<select id="f-reg">' + D.regions.map(function (r) { return '<option value="' + r.id + '"' + (r.id === f.targetRegion ? ' selected' : '') + '>' + esc(r.label + ' (' + r.freePct + ' % free)') + '</option>'; }).join('') + '</select></label>' : '');
         var on = function (id, key, num) { var el = $(id); if (el) el.oninput = el.onchange = function () { f[key] = num ? Number(el.value) : el.value; if (key === 'template') { f.target = ''; paint(true); } else paint(false); }; };
         on('#f-tpl', 'template'); on('#f-target', 'target'); on('#f-date', 'date'); on('#f-time', 'time'); on('#f-hours', 'hours', true); on('#f-val', 'newValue'); on('#f-ttl', 'ttl', true); on('#f-reg', 'targetRegion');
       }
       var p = planTask(D, req());
-      $('#preview').innerHTML = (p.errors.length ? errsHtml(p) : '') + (p.checks ? '<h3>Vorprüfung</h3>' + checksHtml(p) + '<h3>Geplante Änderung</h3>' + diffHtml(p) + '<p class="note">Risiko ' + esc(p.risk) + '. ' + esc(p.approvalReason) + '</p>' : '') + '<div class="row"><button class="btn primary" id="create" type="button"' + (p.ok ? '' : ' disabled') + '>Aufgabe anlegen</button></div>';
+      $('#preview').innerHTML = (p.errors.length ? errsHtml(p) : '') + (p.checks ? '<h3>Pre-check</h3>' + checksHtml(p) + '<h3>Planned change</h3>' + diffHtml(p) + '<p class="note">Risk ' + esc(p.risk) + '. ' + esc(p.approvalReason) + '</p>' : '') + '<div class="row"><button class="btn primary" id="create" type="button"' + (p.ok ? '' : ' disabled') + '>Create task</button></div>';
       var c = $('#create');
       if (c) c.onclick = function () {
-        var r = req(), id = 'CHG-' + (1044 + S.tasks.length - D.tasks.length), t = { id: id, template: r.template, target: r.target, customer: p.customer ? D.customers.filter(function (x) { return x.name === p.customer; })[0].id : '', window: r.window, state: 'geplant', requester: S.who, approvals: [], params: { newValue: r.newValue, ttl: r.ttl, targetRegion: r.targetRegion } };
-        S.tasks.push(t); S.logs[id] = ['angelegt von ' + pname(S.who)]; S.tab = 'tasks'; render(); openTask(id);
+        var r = req(), id = 'CHG-' + (1044 + S.tasks.length - D.tasks.length), t = { id: id, template: r.template, target: r.target, customer: p.customer ? D.customers.filter(function (x) { return x.name === p.customer; })[0].id : '', window: r.window, state: 'planned', requester: S.who, approvals: [], params: { newValue: r.newValue, ttl: r.ttl, targetRegion: r.targetRegion } };
+        S.tasks.push(t); S.logs[id] = ['created by ' + pname(S.who)]; S.tab = 'tasks'; render(); openTask(id);
       };
     }
     paint(true);
@@ -1672,17 +1674,21 @@ function simulateRun(plan) {
   function askJoule(prompt, btn) {
     if (window.parent === window) return;
     window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
-    if (btn) { var old = btn.textContent; btn.textContent = 'An Joule gesendet'; btn.disabled = true; setTimeout(function () { btn.textContent = old; btn.disabled = false; }, 3500); }
+    if (btn) { var old = btn.textContent; btn.textContent = 'Sent to Joule'; btn.disabled = true; setTimeout(function () { btn.textContent = old; btn.disabled = false; }, 3500); }
   }
   function promptFor(kind, t, p) {
-    var head = 'Änderung ' + t.id + ': ' + p.playbook.title + ' für ' + t.target + ' (' + p.customer + '), Fenster ' + t.window[0].replace('T', ' ') + ', Risiko ' + p.risk + ', ' + (p.downtime.minutes ? 'Ausfall ca. ' + p.downtime.minutes + ' Min.' : 'kein Ausfall') + '. ';
-    if (kind === 'customer') return head + 'Entwirf eine kurze, sachliche Kundenmitteilung (Was, Wann, Auswirkung, Ansprechpartner). Fiktive Beispieldaten.';
-    if (kind === 'rollback') return head + 'Erkläre Schritt für Schritt, was bei einem Rollback passiert und woran man ihn erkennt.';
-    return head + 'Erkläre die Änderung verständlich für einen Change Manager: Zweck, Ablauf, Risiken, was vor der Freigabe zu prüfen ist.';
+    var head = 'Change ' + t.id + ': ' + p.playbook.title + ' for ' + t.target + ' (' + p.customer + '), window ' + t.window[0].replace('T', ' ') + ', risk ' + p.risk + ', ' + (p.downtime.minutes ? 'outage about ' + p.downtime.minutes + ' min' : 'no outage') + '. ';
+    if (kind === 'customer') return head + 'Draft a short, factual customer notice (what, when, impact, contact). Fictional sample data.';
+    if (kind === 'rollback') return head + 'Explain step by step what happens on a rollback and how to recognise that one is needed.';
+    if (kind === 'n8n') {
+      var x = t.params || {};
+      return 'Submit change ' + t.id + ' to n8n. First call plan_infra_change (template ' + t.template + ', target ' + t.target + ', window_start ' + t.window[0] + ', window_end ' + t.window[1] + (x.newValue ? ', new_value ' + x.newValue : '') + (x.ttl && t.template === 'update-dns-record' ? ', ttl ' + x.ttl : '') + (x.targetRegion && t.template === 'move-vm' ? ', target_region ' + x.targetRegion : '') + ') and show me the result. Only after I confirm, call submit_infra_change with confirm true.';
+    }
+    return head + 'Explain the change for a change manager: purpose, flow, risks and what to check before approving.';
   }
 
   /* ---------- shell ---------- */
-  var TABS = [['overview', 'Übersicht'], ['tasks', 'Aufgaben'], ['inventory', 'Bestand'], ['playbooks', 'Playbooks und Orchestrierung']];
+  var TABS = [['overview', 'Overview'], ['tasks', 'Tasks'], ['inventory', 'Inventory'], ['playbooks', 'Playbooks and orchestration']];
   function render() {
     $('#tabs').innerHTML = TABS.map(function (x) { return '<button role="tab" type="button" data-tab="' + x[0] + '" aria-selected="' + (S.tab === x[0]) + '">' + x[1] + '</button>'; }).join('');
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { S.tab = b.dataset.tab; render(); }; });
