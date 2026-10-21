@@ -9,6 +9,7 @@
     "phase0": "node --env-file=.env spike.mjs",
     "dev": "vite --port 5273 & electron .",
     "build": "vite build",
+    "build:demo": "node scripts/build-demo.mjs",
     "typecheck": "tsc --noEmit",
     "sync:design": "node scripts/sync-design-system.mjs",
     "sync:control-tower": "node scripts/sync-control-tower-data.mjs",
