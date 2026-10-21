@@ -2291,7 +2291,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Category": "Platform & Monitoring",
     "Trigger": "Schedule",
     "Runs (14 days)": "538",
-    "Errors": "8",
+    "Errors": "2",
     "Nodes": "4"
    },
    "view": {
@@ -2318,8 +2318,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {
     "Category": "Finance & Procurement",
     "Trigger": "App event",
-    "Runs (14 days)": "358",
-    "Errors": "20",
+    "Runs (14 days)": "340",
+    "Errors": "26",
     "Nodes": "6"
    },
    "view": {
@@ -2346,8 +2346,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {
     "Category": "Lead-to-Cash",
     "Trigger": "Webhook",
-    "Runs (14 days)": "259",
-    "Errors": "12",
+    "Runs (14 days)": "243",
+    "Errors": "8",
     "Nodes": "6"
    },
    "view": {
@@ -2374,8 +2374,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {
     "Category": "Service & Support",
     "Trigger": "Webhook",
-    "Runs (14 days)": "192",
-    "Errors": "12",
+    "Runs (14 days)": "190",
+    "Errors": "10",
     "Nodes": "5"
    },
    "view": {
@@ -2418,14 +2418,68 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {}
   },
   {
+   "id": "workflow:infra-beleg-ablegen-und-kunde-informieren",
+   "type": "workflow",
+   "label": "Infra: Beleg ablegen und Kunde informieren",
+   "meta": {
+    "Category": "Infrastructure Operations",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "34",
+    "Errors": "1",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "app:notion",
+   "type": "app",
+   "label": "Notion",
+   "meta": {}
+  },
+  {
+   "id": "workflow:infra-freigabe-einholen-und-playbook-starten",
+   "type": "workflow",
+   "label": "Infra: Freigabe einholen und Playbook starten",
+   "meta": {
+    "Category": "Infrastructure Operations",
+    "Trigger": "Webhook",
+    "Runs (14 days)": "34",
+    "Errors": "0",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
    "id": "workflow:contract-renewal-reminder",
    "type": "workflow",
    "label": "Contract renewal reminder",
    "meta": {
     "Category": "Sales & Marketing",
     "Trigger": "Schedule",
-    "Runs (14 days)": "35",
-    "Errors": "2",
+    "Runs (14 days)": "32",
+    "Errors": "1",
+    "Nodes": "4"
+   },
+   "view": {
+    "space": "automation-dashboard",
+    "tab": "workflows"
+   }
+  },
+  {
+   "id": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "type": "workflow",
+   "label": "Infra: Zertifikat läuft ab, Aufgabe anlegen",
+   "meta": {
+    "Category": "Infrastructure Operations",
+    "Trigger": "Schedule",
+    "Runs (14 days)": "23",
+    "Errors": "1",
     "Nodes": "4"
    },
    "view": {
@@ -2440,7 +2494,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {
     "Category": "Finance & Procurement",
     "Trigger": "Webhook",
-    "Runs (14 days)": "24",
+    "Runs (14 days)": "22",
     "Errors": "1",
     "Nodes": "4"
    },
@@ -2473,7 +2527,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Category": "Sales & Marketing",
     "Trigger": "Schedule",
     "Runs (14 days)": "10",
-    "Errors": "2",
+    "Errors": "0",
     "Nodes": "4"
    },
    "view": {
@@ -2502,12 +2556,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "space": "automation-dashboard",
     "tab": "workflows"
    }
-  },
-  {
-   "id": "app:notion",
-   "type": "app",
-   "label": "Notion",
-   "meta": {}
   },
   {
    "id": "app:google-drive",
@@ -4204,6 +4252,36 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_APP"
   },
   {
+   "source": "workflow:infra-beleg-ablegen-und-kunde-informieren",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:infra-beleg-ablegen-und-kunde-informieren",
+   "target": "app:notion",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-beleg-ablegen-und-kunde-informieren",
+   "target": "app:gmail",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-freigabe-einholen-und-playbook-starten",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:infra-freigabe-einholen-und-playbook-starten",
+   "target": "app:microsoft-teams",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-freigabe-einholen-und-playbook-starten",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
    "source": "workflow:contract-renewal-reminder",
    "target": "system:n8n",
    "type": "RUNS_IN"
@@ -4216,6 +4294,21 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   {
    "source": "workflow:contract-renewal-reminder",
    "target": "app:gmail",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "target": "system:n8n",
+   "type": "RUNS_IN"
+  },
+  {
+   "source": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "target": "app:http",
+   "type": "USES_APP"
+  },
+  {
+   "source": "workflow:infra-zertifikat-l-uft-ab-aufgabe-anlegen",
+   "target": "app:microsoft-teams",
    "type": "USES_APP"
   },
   {
