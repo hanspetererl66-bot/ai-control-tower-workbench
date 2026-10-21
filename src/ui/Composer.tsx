@@ -19,6 +19,7 @@ import {
   type StarterPrompt,
 } from '../starter-prompts';
 import StarterPrompts from './StarterPrompts';
+import BriefingCards from './BriefingCards';
 import { PRODUCT_NAME } from '../product';
 import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
@@ -46,6 +47,10 @@ type Props = {
   onOpenSettings?: () => void;
   /** Stop reading the reply aloud as soon as the user starts talking. */
   onStopSpeaking?: () => void;
+  /** Spoken text that is a navigation command ("Zeig mir die Risiken"). Return true when handled. */
+  onVoiceCommand?: (text: string) => boolean;
+  /** Open a Space (and tab) from a briefing card. */
+  onNavigate?: (target: { space: string; tab?: string }) => void;
 };
 
 export default function Composer({
@@ -64,6 +69,8 @@ export default function Composer({
   voice,
   onOpenSettings,
   onStopSpeaking,
+  onVoiceCommand,
+  onNavigate,
 }: Props) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
@@ -89,6 +96,7 @@ export default function Composer({
         if (!result?.ok) throw new Error(result?.detail ?? 'Spracherkennung nicht verfügbar.');
         const heard = (result.text ?? '').trim();
         if (!heard) throw new Error('Nichts verstanden — bitte noch einmal sprechen.');
+        if (onVoiceCommand?.(heard)) return;
         const combined = [textRef.current.trim(), heard].filter(Boolean).join(' ');
         if (voice?.autoSend) {
           setText('');
@@ -635,6 +643,14 @@ export default function Composer({
         <p className={`mic-note ${micError ? 'mic-note-error' : ''}`} role={micError ? 'alert' : 'status'}>
           {micError || 'Ich höre zu … zum Beenden das Mikrofon erneut anklicken.'}
         </p>
+      )}
+      {starters && onNavigate && (
+        <BriefingCards
+          disabled={busy || preparingConnector || !agent}
+          canAsk={connectorsChecked && hasControlTowerConnector(known.map((k) => k.name))}
+          onOpen={onNavigate}
+          onAsk={(prompt, connector) => void submit({ text: prompt, connector })}
+        />
       )}
       {starters && (
         <StarterPrompts

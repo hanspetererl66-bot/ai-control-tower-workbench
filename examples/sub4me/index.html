@@ -42,6 +42,12 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
 button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;justify-self:start}
 .toast{margin:12px 0;padding:10px 12px;border-radius:6px;background:var(--ok-dim);color:var(--ok);display:none}
 .toast.on{display:block}
+.enrich-btn{border:1px solid var(--purple-border);background:transparent;color:var(--purple);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.enrich-btn:hover{background:var(--purple-dim)}
+.enrich-btn:disabled{opacity:.5;cursor:default}
+#enrich ul{margin:6px 0 10px;padding-left:18px}
+#enrich li{margin:3px 0}
+#enrich .k{margin-bottom:4px}
 .row{display:flex;gap:14px;flex-wrap:wrap}.row>*{flex:1 1 320px}
 @media(max-width:600px){main{padding:14px}}
 </style>
@@ -283,6 +289,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         <div class="toast" id="toast" role="status"></div></div>
       <div class="card tbl" style="flex:2 1 460px"><div class="k" style="margin-bottom:6px">My tickets</div><div id="tickets"></div></div>
     </div>
+    <div class="card" id="enrich" aria-live="polite" style="display:none"></div>
   </section>
 </main>
 <script type="application/json" id="s4m-data">
@@ -1306,12 +1313,36 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   var prio = {'Very high': 'bad', 'High': 'warn', 'Medium': 'n', 'Low': 'n'};
   var stat = {'Closed': 'ok', 'Solution provided': 'ok', 'Waiting for customer': 'warn', 'In processing': 'n', 'New': 'n'};
   function renderTickets(){
-    $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Updated</th></tr></thead><tbody>' +
-      D.tickets.map(function(t){ return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div></td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + esc(t.updated) + '</td></tr>'; }).join('') + '</tbody></table>';
+    $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>' +
+      D.tickets.map(function(t){ return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div></td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + esc(t.updated) + '</td><td><button class="enrich-btn" type="button" data-enrich="' + esc(t.id) + '">Analyse with Control Tower</button></td></tr>'; }).join('') + '</tbody></table>';
   }
   $('f-product').innerHTML = D.contracts.filter(function(c){ return c.status !== 'Expired'; }).map(function(c){ return '<option>' + esc(c.product) + '</option>'; }).join('') + D.products.map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
   var seq = 48214;
   var pending = {};
+  var enrichPending = {};
+  function renderEnrichment(e){
+    var list = function(items){ return items.length ? '<ul>' + items.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '<div class="s">Nothing notable.</div>'; };
+    var risks = (e.risks || []).map(function(r){ return r.id + ' ' + r.title + (r.progressPct === null ? '' : ' (' + r.progressPct + ' % mitigated, owner ' + r.owner + ')'); });
+    $('enrich').innerHTML = '<div class="k">' + esc(e.ticketId) + ' · ' + esc(e.product) + ' · with AI Control Tower context</div>' +
+      '<div class="s">What the data says</div>' + list(e.assessment || []) +
+      '<div class="s">Related risks</div>' + list(risks) +
+      '<div class="s">Suggested next steps</div>' + list(e.nextSteps || []) +
+      (e.note ? '<div class="s">' + esc(e.note) + '</div>' : '');
+    $('enrich').style.display = '';
+  }
+  function showEnrichMessage(text){
+    $('enrich').innerHTML = '<div class="s">' + esc(text) + '</div>'; $('enrich').style.display = '';
+  }
+  $('tickets').addEventListener('click', function(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest('[data-enrich]') : null;
+    if (!btn) return;
+    var id = 'e' + Date.now().toString(36);
+    enrichPending[id] = btn.getAttribute('data-enrich');
+    btn.disabled = true;
+    showEnrichMessage('Looking up ' + enrichPending[id] + ' in the AI Control Tower …');
+    askParent({type: 's4m:enrich-request', requestId: id, ticketId: enrichPending[id]});
+    setTimeout(function(){ if (enrichPending[id]) { delete enrichPending[id]; btn.disabled = false; showEnrichMessage('No answer from the agent. Is the AI Control Tower connector connected?'); } }, 15000);
+  });
   var reqCount = 0;
   function setStorage(remote){
     $('storage-note').textContent = remote ? 'Tickets are stored in the demo database (Supabase).' : 'Tickets you open here stay in this page and are not sent anywhere.';
@@ -1362,6 +1393,11 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     if (e.source !== window.parent || !d || typeof d.type !== 'string') return;
     if (d.type === 'ct:open-tab' && typeof d.tab === 'string') {
       if (/^[a-z]+$/.test(d.tab) && document.getElementById('pg-' + d.tab)) show(d.tab);
+    } else if (d.type === 's4m:enrichment' && d.requestId && enrichPending[d.requestId] && d.enrichment) {
+      delete enrichPending[d.requestId]; renderEnrichment(d.enrichment); renderTickets();
+    } else if (d.type === 's4m:error' && d.requestId && enrichPending[d.requestId]) {
+      var ep = enrichPending[d.requestId]; delete enrichPending[d.requestId]; renderTickets();
+      showEnrichMessage('Could not analyse ' + ep + ': ' + String(d.message).slice(0, 160));
     } else if (d.type === 's4m:tickets' && Array.isArray(d.tickets)) {
       clearTimeout(bridgeTimer); remote = true; setStorage(true);
       D.tickets = d.tickets.map(function(t){ return {id: String(t.id), title: String(t.title), product: String(t.product), priority: String(t.priority), status: String(t.status), created: String(t.created), updated: String(t.updated)}; });

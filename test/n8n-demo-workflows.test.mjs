@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const dir = join(import.meta.dirname, '..', 'examples/n8n-workflows');
 const load = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8'));
-const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json'];
+const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json'];
 
 for (const file of FILES) {
   test(`${file} is a valid importable n8n workflow without credentials`, () => {
@@ -69,4 +69,36 @@ test('complex workflow: guardrail quarantines the injected mail, target and over
   assert.equal(digest.json.overdue, 2);
   assert.equal(digest.json.quarantined, 1);
   assert.equal(digest.json.attention, true);
+});
+
+test('sales workflow: injected text is quarantined, scores are transparent, routes and digest add up', async () => {
+  const wf = load(FILES[2]);
+  const run = async (name, items) => {
+    const js = wf.nodes.find((n) => n.name === name).parameters.jsCode;
+    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items } })())];
+  };
+  const signals = await run('Sample signals', []);
+  assert.equal(signals.length, 6);
+  const guarded = await run('Guardrail: untrusted text', signals);
+  const flagged = guarded.filter((i) => i.json.flagged);
+  assert.deepEqual(flagged.map((i) => i.json.id), ['INT-206']);
+  assert.equal(flagged[0].json.text, '[withheld: untrusted content]', 'untrusted text is not passed on');
+  const scored = await run('Score lead', guarded.filter((i) => !i.json.flagged));
+  for (const { json } of scored) assert.equal(json.score, Object.values(json.parts).reduce((a, b) => a + b, 0), `${json.id}: the score is the sum of its parts`);
+  const score = Object.fromEntries(scored.map((i) => [i.json.id, i.json.score]));
+  assert.ok(score['INT-203'] >= 70 && score['INT-204'] >= 70, 'Muster expansion and Nordwind are opportunities');
+  assert.ok(score['INT-201'] >= 40 && score['INT-201'] < 70, 'Kranich is nurtured');
+  assert.ok(score['INT-202'] < 40 && score['INT-205'] < 40, 'weak signals are only watched');
+  const route = (r) => (r >= 70 ? 'Opportunity: plan it' : r >= 40 ? 'Nurture: ask two questions' : 'Watch: no time yet');
+  const routed = scored.map((i) => ({ json: { ...i.json, route: route(i.json.score) } }));
+  const quarantined = flagged.map((i) => ({ json: { ...i.json, route: 'Quarantined', score: 0 } }));
+  const [digest] = await run('Build digest', [...routed, ...quarantined]);
+  assert.equal(digest.json.total, 6);
+  assert.equal(digest.json.opportunity + digest.json.nurture + digest.json.watch + digest.json.quarantined, 6);
+  assert.equal(digest.json.quarantined, 1);
+  assert.equal(digest.json.topAccount, 'Muster Industrie AG');
+  assert.match(digest.json.digest, /nothing is sent/i);
+  // the Switch thresholds in the workflow match the routes used here
+  const rules = wf.nodes.find((n) => n.name === 'Route by score').parameters.rules.values;
+  assert.deepEqual(rules.map((r) => [r.outputKey, r.conditions.conditions[0].operator.operation, r.conditions.conditions[0].rightValue]), [['opportunity', 'gte', 70], ['nurture', 'gte', 40], ['watch', 'lt', 40]]);
 });

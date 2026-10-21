@@ -255,6 +255,16 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
 .steps{counter-reset:s;list-style:none;margin:6px 0;padding:0}.steps li{counter-increment:s;padding:4px 0 4px 26px;position:relative;font-size:13px}
 .steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:18px;height:18px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:700;text-align:center;line-height:18px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+label.depth[hidden]{display:none}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.kpi{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px}
+.kpi b{display:block;font-size:15px;white-space:nowrap;letter-spacing:-.01em;font-variant-numeric:tabular-nums}.kpi span{font-size:11px;color:var(--mut)}
+.kpi.red{border-color:var(--red-border)}.kpi.red b{color:var(--red)}
+.conn button .bar2{display:block;height:4px;border-radius:99px;background:var(--line);margin-top:4px;overflow:hidden}.conn button .bar2 i{display:block;height:100%;background:var(--red)}
+.conn button .bar2 i.m{background:var(--amber)}.conn button .bar2 i.l{background:var(--purple)}
+.joule{border-color:var(--purple-border,var(--line))}
+.joule .note,.note{font-size:12px;color:var(--mut);margin:6px 0 0}
+details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume summary{cursor:pointer;font-weight:700}details.assume ul{margin:6px 0 0;padding-left:18px}
 @media (max-width:860px){.stage{grid-template-columns:1fr;height:auto}.wrap{height:62vh;min-height:380px}aside{border-left:0;border-top:1px solid var(--line)}.legend{max-height:40%}#mini{display:none}.hint{display:none}}
 </style>
 </head>
@@ -272,9 +282,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   <div class="seg" role="group" aria-label="Mode">
     <button id="m-explore" aria-pressed="true" title="Click a node to see its neighbours">Explore</button>
     <button id="m-impact" aria-pressed="false" title="Select a node to see what depends on it">Impact</button>
+    <button id="m-failure" aria-pressed="false" title="Select a node and let it fail: see what breaks and what money is at stake">Failure</button>
     <button id="m-path" aria-pressed="false" title="Pick two nodes to see how they connect">Path</button>
   </div>
   <label class="depth" id="depth-l" hidden>Depth <select id="depth"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+  <label class="depth" id="spread-l" hidden>Spread <select id="spread"><option value="0.5">narrow</option><option value="0.3" selected>normal</option><option value="0.15">wide</option></select></label>
   <button class="btn" id="tour">▶ Guided tour</button>
   <button class="btn" id="labels" aria-pressed="false">Labels</button>
   <button class="btn" id="pause" aria-pressed="false">Pause</button>
@@ -1516,6 +1528,42 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "skill:contract-checker",
+   "type": "skill",
+   "label": "contract-checker",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Sales Operations",
+    "Rating": "new (4 ratings)",
+    "EU AI Act": "Limited",
+    "Next review": "2027-04-20",
+    "Value last full month": "€113",
+    "Runs last full month": "2"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:get_contract",
+   "type": "tool",
+   "label": "get_contract",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:get_offer",
+   "type": "tool",
+   "label": "get_offer",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
    "id": "skill:customer-call-prep",
    "type": "skill",
    "label": "customer-call-prep",
@@ -1552,27 +1600,183 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
-   "id": "tool:get_contract",
-   "type": "tool",
-   "label": "get_contract",
-   "meta": {
-    "System": "Sub4Me"
-   }
-  },
-  {
-   "id": "tool:get_offer",
-   "type": "tool",
-   "label": "get_offer",
-   "meta": {
-    "System": "Sub4Me"
-   }
-  },
-  {
    "id": "tool:search_sub4me",
    "type": "tool",
    "label": "search_sub4me",
    "meta": {
     "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "skill:deal-risk-check",
+   "type": "skill",
+   "label": "deal-risk-check",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Deal Desk",
+    "Rating": "4.2 of 5 (5 ratings)",
+    "EU AI Act": "Limited",
+    "Next review": "2027-04-20",
+    "Value last full month": "€85",
+    "Runs last full month": "2"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:list_offers",
+   "type": "tool",
+   "label": "list_offers",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "tool:search_graph",
+   "type": "tool",
+   "label": "search_graph",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:get_graph_neighbors",
+   "type": "tool",
+   "label": "get_graph_neighbors",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "skill:interest-logger",
+   "type": "skill",
+   "label": "interest-logger",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Sales Development",
+    "Rating": "4.0 of 5 (5 ratings)",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-04-20",
+    "Value last full month": "€45",
+    "Runs last full month": "4"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "skill:lead-qualifier",
+   "type": "skill",
+   "label": "lead-qualifier",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Sales Development",
+    "Rating": "4.2 of 5 (6 ratings)",
+    "EU AI Act": "Limited",
+    "Next review": "2027-04-20",
+    "Value last full month": "€64",
+    "Runs last full month": "3"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:list_contracts",
+   "type": "tool",
+   "label": "list_contracts",
+   "meta": {
+    "System": "Sub4Me"
+   }
+  },
+  {
+   "id": "skill:lead-router",
+   "type": "skill",
+   "label": "lead-router",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Sales Development",
+    "Rating": "new (3 ratings)",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-04-20",
+    "Value last full month": "€17",
+    "Runs last full month": "2"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "skill:opportunity-planner",
+   "type": "skill",
+   "label": "opportunity-planner",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Account Management",
+    "Rating": "new (4 ratings)",
+    "EU AI Act": "Limited",
+    "Next review": "2027-04-20",
+    "Value last full month": "€170",
+    "Runs last full month": "2"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "skill:pipeline-review",
+   "type": "skill",
+   "label": "pipeline-review",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Sales Operations",
+    "Rating": "new (4 ratings)",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-04-20",
+    "Value last full month": "€128",
+    "Runs last full month": "2"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "skill:pricing-guard",
+   "type": "skill",
+   "label": "pricing-guard",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Deal Desk",
+    "Rating": "4.7 of 5 (7 ratings)",
+    "EU AI Act": "Limited",
+    "Next review": "2027-04-20",
+    "Value last full month": "€106",
+    "Runs last full month": "3"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
    }
   },
   {
@@ -1617,6 +1821,26 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "label": "get_skill_info",
    "meta": {
     "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "skill:rfp-responder",
+   "type": "skill",
+   "label": "rfp-responder",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Sales",
+    "Reach": "team",
+    "Team": "Presales",
+    "Rating": "new (3 ratings)",
+    "EU AI Act": "Limited",
+    "Next review": "2027-04-20",
+    "Value last full month": "€255",
+    "Runs last full month": "1"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
    }
   },
   {
@@ -1729,22 +1953,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "label": "find_skill_gaps",
    "meta": {
     "System": "Skill Marketplace"
-   }
-  },
-  {
-   "id": "tool:search_graph",
-   "type": "tool",
-   "label": "search_graph",
-   "meta": {
-    "System": "AI Control Tower"
-   }
-  },
-  {
-   "id": "tool:get_graph_neighbors",
-   "type": "tool",
-   "label": "get_graph_neighbors",
-   "meta": {
-    "System": "AI Control Tower"
    }
   },
   {
@@ -1868,22 +2076,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "label": "A. Hoffmann",
    "meta": {
     "Role": "Skill owner"
-   }
-  },
-  {
-   "id": "tool:list_contracts",
-   "type": "tool",
-   "label": "list_contracts",
-   "meta": {
-    "System": "Sub4Me"
-   }
-  },
-  {
-   "id": "tool:list_offers",
-   "type": "tool",
-   "label": "list_offers",
-   "meta": {
-    "System": "Sub4Me"
    }
   },
   {
@@ -2172,6 +2364,54 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "agent:master-data-deduplicator",
+   "type": "agent",
+   "label": "Master Data Deduplicator",
+   "meta": {
+    "Agents": "5",
+    "In production": "1",
+    "Overprivileged": "0",
+    "Platform": "SAP BTP, SAP AI Core",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:price-list-updater",
+   "type": "agent",
+   "label": "Price List Updater",
+   "meta": {
+    "Agents": "4",
+    "In production": "2",
+    "Overprivileged": "0",
+    "Platform": "SAP AI Core, SAP BTP",
+    "Type": "autonomous"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
+   "id": "agent:presales-proposal-generator",
+   "type": "agent",
+   "label": "Presales Proposal Generator",
+   "meta": {
+    "Agents": "8",
+    "In production": "4",
+    "Overprivileged": "0",
+    "Platform": "Anthropic API",
+    "Type": "copilot"
+   },
+   "view": {
+    "space": "ai-control-tower",
+    "tab": "agents"
+   }
+  },
+  {
    "id": "agent:knowledge-base-search",
    "type": "agent",
    "label": "Knowledge Base Search",
@@ -2213,22 +2453,6 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Overprivileged": "0",
     "Platform": "Azure OpenAI",
     "Type": "autonomous"
-   },
-   "view": {
-    "space": "ai-control-tower",
-    "tab": "agents"
-   }
-  },
-  {
-   "id": "agent:presales-proposal-generator",
-   "type": "agent",
-   "label": "Presales Proposal Generator",
-   "meta": {
-    "Agents": "8",
-    "In production": "4",
-    "Overprivileged": "0",
-    "Platform": "Anthropic API",
-    "Type": "copilot"
    },
    "view": {
     "space": "ai-control-tower",
@@ -3387,6 +3611,46 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
+   "source": "skill:contract-checker",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:get_contract",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_contract",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:contract-checker",
+   "target": "tool:get_contract",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_offer",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_offer",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:contract-checker",
+   "target": "tool:get_offer",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:contract-checker",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
    "source": "skill:customer-call-prep",
    "target": "system:marketplace",
    "type": "LISTED_IN"
@@ -3422,29 +3686,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
-   "source": "tool:get_contract",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:get_contract",
-   "target": "system:sub4me",
-   "type": "READS"
-  },
-  {
    "source": "skill:customer-call-prep",
    "target": "tool:get_contract",
    "type": "USES_TOOL"
-  },
-  {
-   "source": "tool:get_offer",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:get_offer",
-   "target": "system:sub4me",
-   "type": "READS"
   },
   {
    "source": "skill:customer-call-prep",
@@ -3468,6 +3712,221 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   },
   {
    "source": "skill:customer-call-prep",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "tool:get_offer",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_offers",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_offers",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:search_graph",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_graph",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "tool:search_graph",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_graph_neighbors",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_graph_neighbors",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "tool:get_graph_neighbors",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:interest-logger",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:interest-logger",
+   "target": "tool:search_sub4me",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:interest-logger",
+   "target": "tool:get_customer_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:interest-logger",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "tool:get_customer_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:list_contracts",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:list_contracts",
+   "target": "system:sub4me",
+   "type": "READS"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "tool:list_contracts",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:lead-router",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:lead-router",
+   "target": "tool:get_customer_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:lead-router",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:lead-router",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "tool:get_customer_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "tool:search_graph",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "tool:get_graph_neighbors",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:pipeline-review",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:pipeline-review",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:pipeline-review",
+   "target": "tool:list_contracts",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:pipeline-review",
+   "target": "tool:get_customer_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:pipeline-review",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
+  },
+  {
+   "source": "skill:pricing-guard",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:pricing-guard",
+   "target": "tool:get_offer",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:pricing-guard",
+   "target": "tool:list_offers",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:pricing-guard",
+   "target": "tool:get_contract",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:pricing-guard",
    "target": "customer:muster-industrie-ag",
    "type": "SERVES"
   },
@@ -3520,6 +3979,26 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "source": "skill:rate-skill",
    "target": "tool:get_skill_info",
    "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "tool:get_product_overview",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "tool:search_sub4me",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "customer:muster-industrie-ag",
+   "type": "SERVES"
   },
   {
    "source": "skill:skill-finder",
@@ -3682,29 +4161,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "USES_TOOL"
   },
   {
-   "source": "tool:search_graph",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:search_graph",
-   "target": "system:control-tower",
-   "type": "READS"
-  },
-  {
    "source": "skill:skill-search",
    "target": "tool:search_graph",
    "type": "USES_TOOL"
-  },
-  {
-   "source": "tool:get_graph_neighbors",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:get_graph_neighbors",
-   "target": "system:control-tower",
-   "type": "READS"
   },
   {
    "source": "skill:skill-search",
@@ -3782,29 +4241,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "OWNS"
   },
   {
-   "source": "tool:list_contracts",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:list_contracts",
-   "target": "system:sub4me",
-   "type": "READS"
-  },
-  {
    "source": "skill:renewal-radar",
    "target": "tool:list_contracts",
    "type": "USES_TOOL"
-  },
-  {
-   "source": "tool:list_offers",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:list_offers",
-   "target": "system:sub4me",
-   "type": "READS"
   },
   {
    "source": "skill:renewal-radar",
@@ -4002,8 +4441,93 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "OBSERVES_AGENT"
   },
   {
+   "source": "skill:contract-checker",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:contract-checker",
+   "target": "agent:contract-classifier",
+   "type": "OBSERVES_AGENT"
+  },
+  {
    "source": "skill:customer-call-prep",
    "target": "agent:l2c-deal-advisor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:deal-risk-check",
+   "target": "agent:l2c-deal-advisor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:interest-logger",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:interest-logger",
+   "target": "agent:master-data-deduplicator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:lead-qualifier",
+   "target": "agent:l2c-deal-advisor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:lead-router",
+   "target": "agent:l2c-pipeline-orchestrator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:opportunity-planner",
+   "target": "agent:l2c-deal-advisor",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:pipeline-review",
+   "target": "agent:l2c-pipeline-orchestrator",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:pricing-guard",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:pricing-guard",
+   "target": "agent:price-list-updater",
+   "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "risk:R4",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "risk:R7",
+   "type": "RELATES_TO_RISK"
+  },
+  {
+   "source": "skill:rfp-responder",
+   "target": "agent:presales-proposal-generator",
    "type": "OBSERVES_AGENT"
   },
   {
@@ -4745,6 +5269,90 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
  ]
 }
 </script>
+<script id="kg-model">
+const FAILURE_RULES = { strong: 0.7, weak: 0.3, spread: 0.3, maxHops: 5, hubTypes: ['system', 'connector'], leafTypes: ['person', 'tool', 'app', 'customer', 'family'] };
+
+/** "€2,840,000" -> 2840000, "70%" -> 70, anything else -> null. */
+function parseNumber(text) {
+  const digits = String(text ?? '').replace(/[^0-9.]/g, '');
+  return digits && /\d/.test(digits) ? Number(digits) : null;
+}
+
+/** Money attached to a node, in EUR a year: contracts and offers (offers weighted by win probability) and skills (monthly value x 12). */
+function nodeValueEur(node) {
+  const m = node.meta ?? {};
+  if (node.type === 'contract') return parseNumber(m['Annual value']) ?? 0;
+  if (node.type === 'offer') {
+    const p = parseNumber(m['Win probability']);
+    return Math.round((parseNumber(m['Annual value']) ?? 0) * (p === null ? 1 : p / 100));
+  }
+  if (node.type === 'skill') return (parseNumber(m['Value last full month']) ?? 0) * 12;
+  return 0;
+}
+
+function simulateFailure(graph, originId, options = {}) {
+  const rules = { ...FAILURE_RULES, ...options };
+  const byId = new Map(graph.nodes.map((n) => [n.id, n]));
+  const origin = byId.get(originId);
+  if (!origin) throw new Error(`unknown node ${originId}`);
+  const hub = new Set(rules.hubTypes);
+  const leaf = new Set(rules.leafTypes);
+  const adj = new Map(graph.nodes.map((n) => [n.id, []]));
+  for (const e of graph.edges) {
+    const weak = !!(graph.edgeTypes?.[e.type] ?? {}).weak;
+    adj.get(e.source)?.push({ to: e.target, e, weak });
+    adj.get(e.target)?.push({ to: e.source, e, weak });
+  }
+  const best = new Map([[originId, { exposure: 1, hop: 0, via: null }]]);
+  const open = new Set([originId]);
+  while (open.size) {
+    let cur = null;
+    for (const id of open) if (cur === null || best.get(id).exposure > best.get(cur).exposure) cur = id;
+    open.delete(cur);
+    const here = best.get(cur);
+    if (here.hop >= rules.maxHops || (cur !== originId && leaf.has(byId.get(cur).type))) continue;
+    for (const s of adj.get(cur)) {
+      if (hub.has(byId.get(s.to).type)) continue;
+      const exposure = here.exposure * (s.weak ? rules.weak : rules.strong);
+      if (exposure < rules.spread) continue;
+      const known = best.get(s.to);
+      if (known && known.exposure >= exposure) continue;
+      best.set(s.to, { exposure, hop: here.hop + 1, via: { from: cur, edge: s.e } });
+      open.add(s.to);
+    }
+  }
+  const reached = [...best.entries()]
+    .map(([id, b]) => {
+      const n = byId.get(id);
+      return { id, type: n.type, label: n.label, hop: b.hop, exposure: Math.round(b.exposure * 100) / 100, valueEur: nodeValueEur(n), via: b.via ? b.via.from : null, edge: b.via ? b.via.edge : null };
+    })
+    .sort((a, b) => b.exposure - a.exposure || a.hop - b.hop || a.label.localeCompare(b.label));
+  const others = reached.filter((r) => r.id !== originId);
+  const byType = {};
+  for (const r of others) byType[r.type] = (byType[r.type] ?? 0) + 1;
+  const sum = (list, f) => list.reduce((a, r) => a + f(r), 0);
+  const meta = (r) => byId.get(r.id).meta ?? {};
+  return {
+    origin: { id: origin.id, type: origin.type, label: origin.label },
+    spread: rules.spread,
+    reached,
+    affected: others.length,
+    byType,
+    exposedEur: sum(reached, (r) => r.valueEur),
+    atRiskEur: Math.round(sum(reached, (r) => r.valueEur * r.exposure)),
+    agentsInProduction: sum(others.filter((r) => r.type === 'agent'), (r) => parseNumber(meta(r)['In production']) ?? 0),
+    workflowRuns14d: sum(others.filter((r) => r.type === 'workflow'), (r) => parseNumber(meta(r)['Runs (14 days)']) ?? 0),
+    maxHop: reached.reduce((a, r) => Math.max(a, r.hop), 0),
+    assumptions: [
+      'Der Ausfall startet mit Exposition 1 und wird entlang der Beziehungen weitergegeben.',
+      'Eine starke Beziehung behält 70 %, eine schwache (Betrieb, Listing) 30 % der Exposition, die Exposition sinkt also mit jedem Schritt.',
+      `Knoten unter ${Math.round(rules.spread * 100)} % Exposition gelten als nicht betroffen.`,
+      'Systeme und der Connector werden nicht durchlaufen; Personen, Tools, Apps, Kunden und Produktfamilien sind betroffen, geben den Ausfall aber nicht weiter.',
+      'Geld: Jahreswert von Verträgen, Angeboten (gewichtet mit der Gewinnwahrscheinlichkeit) und Skills (Monatswert x 12); "gefährdet" ist der mit der Exposition gewichtete Anteil.',
+    ],
+  };
+}
+</script>
 <script>
 (() => {
 'use strict';
@@ -4885,13 +5493,18 @@ function sentence(from, s) {
 }
 
 /* ---------- state ---------- */
-const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false };
+const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, spread: 0.3, fail: null, failBy: null, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false };
 let foc = null; // { level: Map id->level, edges: Set }
 function computeFocus() {
   foc = null;
   const base = S.sel || (S.mode === 'explore' && S.hover);
   if (S.mode === 'path' && S.steps) {
     foc = { level: new Map([...S.pathIds].map((id, i) => [id, [...S.pathIds].indexOf(id)])), edges: S.pathEdges, path: true };
+  } else if (S.mode === 'failure' && S.sel) {
+    S.fail = simulateFailure(D, S.sel.id, { spread: S.spread });
+    S.failBy = new Map(S.fail.reached.map((r) => [r.id, r]));
+    const keys = new Set(S.fail.reached.filter((r) => r.edge).map((r) => `${r.edge.source}|${r.edge.type}|${r.edge.target}`));
+    foc = { level: new Map(S.fail.reached.map((r) => [r.id, r.hop])), edges: new Set(edges.filter((e) => keys.has(`${e.source}|${e.type}|${e.target}`))), impact: true, failure: true, hops: S.fail.maxHop };
   } else if (S.mode === 'impact' && S.sel) {
     S.dist = impact(S.sel, S.depth);
     const edgesIn = new Set(edges.filter((e) => S.dist.has(e.a.id) && S.dist.has(e.b.id) && Math.abs(S.dist.get(e.a.id) - S.dist.get(e.b.id)) <= 1 && !(HUB.has(e.a.type) || HUB.has(e.b.type))));
@@ -4914,16 +5527,23 @@ function setSel(n, opts = {}) {
   } else S.sel = n;
   S.t0 = performance.now();
   computeFocus(); renderPanel();
-  if (n && !opts.noFly) flyTo(S.steps && S.steps.length ? centre([...S.pathIds].map((i) => byId.get(i))) : n, S.mode === 'impact' ? 1.1 : undefined);
+  if (n && !opts.noFly) flyTo(S.steps && S.steps.length ? centre([...S.pathIds].map((i) => byId.get(i))) : n, S.mode === 'impact' || S.mode === 'failure' ? 1.1 : undefined);
   if (S.steps && S.steps.length) fit([...S.pathIds].map((i) => byId.get(i)));
 }
 function centre(list) { const b = bounds(list); return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }; }
+const MODES = ['explore', 'impact', 'failure', 'path'];
+const HINTS = {
+  explore: 'Drag to move · scroll to zoom · double-click a node to pin it',
+  impact: 'Impact mode: click a node to see everything that hangs on it',
+  failure: 'Failure mode: click a node to let it fail and see what breaks',
+  path: 'Path mode: click a start node, then a target node',
+};
 function setMode(m) {
   S.mode = m; S.pathA = null; S.steps = null; S.pathIds = new Set(); S.pathEdges = new Set(); S.tour = -1;
-  for (const k of ['explore', 'impact', 'path']) $('#m-' + k).setAttribute('aria-pressed', String(k === m));
-  $('#depth-l').hidden = m !== 'impact';
+  for (const k of MODES) $('#m-' + k).setAttribute('aria-pressed', String(k === m));
+  $('#depth-l').hidden = m !== 'impact'; $('#spread-l').hidden = m !== 'failure';
   if (m === 'path') S.sel = null;
-  $('#hint').textContent = m === 'path' ? 'Path mode: click a start node, then a target node' : m === 'impact' ? 'Impact mode: click a node to see everything that hangs on it' : 'Drag to move · scroll to zoom · double-click a node to pin it';
+  $('#hint').textContent = HINTS[m];
   S.t0 = performance.now(); computeFocus(); renderPanel();
 }
 
@@ -4987,7 +5607,7 @@ function draw(now) {
 
   // ripple around the impact origin
   if (foc && foc.impact && S.sel && !reduced) {
-    const el = now - S.t0, span = (S.depth + 1) * 380;
+    const el = now - S.t0, span = ((foc.hops ?? S.depth) + 1) * 380;
     for (const off of [0, 260]) {
       const p = el - off; if (p < 0 || p > span) continue;
       ctx.globalAlpha = 0.5 * (1 - p / span); ctx.strokeStyle = C.red; ctx.lineWidth = 2;
@@ -5008,7 +5628,8 @@ function draw(now) {
     if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
     const r = n.r * Math.min(1.6, Math.max(0.55, cam.k));
     const lift = (foc && lv !== undefined) || n === S.hover;
-    const colr = foc && foc.impact && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : col(n);
+    const fx = foc && foc.failure && lv !== undefined ? S.failBy.get(n.id) : null;
+    const colr = fx ? (fx.exposure >= 0.6 ? C.red : fx.exposure >= 0.4 ? C.amber : C.purple) : foc && foc.impact && !foc.failure && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : col(n);
     ctx.globalAlpha = al; ctx.fillStyle = colr; ctx.strokeStyle = C.bg; ctx.lineWidth = 1.6;
     if (lift) { ctx.shadowColor = colr; ctx.shadowBlur = n === S.sel ? 26 : 14; }
     shapePath(ctx, ST[n.type].s, x, y, r); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
@@ -5107,7 +5728,9 @@ $('#zout').onclick = () => zoomAt({ x: W / 2, y: H / 2 }, 0.77);
 $('#zfit').onclick = () => fit();
 $('#m-explore').onclick = () => setMode('explore');
 $('#m-impact').onclick = () => setMode('impact');
+$('#m-failure').onclick = () => setMode('failure');
 $('#m-path').onclick = () => setMode('path');
+$('#spread').onchange = (e) => { S.spread = Number(e.target.value); S.t0 = performance.now(); computeFocus(); renderPanel(); };
 $('#depth').onchange = (e) => { S.depth = Number(e.target.value); S.t0 = performance.now(); computeFocus(); renderPanel(); };
 $('#labels').onclick = (e) => { S.labels = !S.labels; e.currentTarget.setAttribute('aria-pressed', String(S.labels)); };
 $('#pause').onclick = (e) => { S.paused = !S.paused; e.currentTarget.setAttribute('aria-pressed', String(S.paused)); e.currentTarget.textContent = S.paused ? 'Resume' : 'Pause'; };
@@ -5144,6 +5767,47 @@ function connList(n) {
   for (const s of n.nb) (groups[s.n.type] ||= []).push(s);
   return Object.keys(D.nodeTypes).filter((t) => groups[t]).map((t) => `<h3>${esc(D.nodeTypes[t])} (${groups[t].length})</h3><div class="conn">${groups[t].map((s) => `<button data-go="${esc(s.n.id)}">${esc(s.n.label)}<small>${esc(sentence(n, s))}</small></button>`).join('')}</div>`).join('');
 }
+/* ---------- ask Joule: the host opens the chat and sends the question (needs the desktop app) ---------- */
+const clip = (t, n = 70) => (String(t).length > n ? String(t).slice(0, n - 1) + '…' : String(t));
+const euro = (v) => (v >= 1e6 ? `€${(v / 1e6).toLocaleString('en-US', { maximumFractionDigits: 2 })}M` : `€${Math.round(v / 1000).toLocaleString('en-US')}k`);
+function askJoule(prompt, btn) {
+  if (window.parent === window) return;
+  window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
+  if (btn) { const old = btn.textContent; btn.textContent = 'Sent to Joule'; btn.disabled = true; setTimeout(() => { btn.textContent = old; btn.disabled = false; }, 3500); }
+}
+function promptFor(kind) {
+  const n = S.sel;
+  if (kind === 'path' && S.pathA && S.pathB) return `Explain how "${clip(S.pathA.label)}" and "${clip(S.pathB.label)}" are connected, step by step, with find_graph_path (ids ${S.pathA.id} and ${S.pathB.id}). Say what the connection means for the business.`;
+  if (!n) return '';
+  if (kind === 'fail') {
+    const f = simulateFailure(D, n.id, { spread: S.spread });
+    return `What happens if "${clip(n.label)}" (id ${n.id}) fails? The graph Space shows ${f.affected} affected nodes and about ${euro(f.atRiskEur)} of ${euro(f.exposedEur)} at risk. Check it with analyze_graph_impact, name the most exposed contracts, offers, agents and risks, and say what to do first.`;
+  }
+  return `Explain "${clip(n.label)}" (${D.nodeTypes[n.type]}, id ${n.id}) in the knowledge graph: what it is, how it connects to the rest and why that matters. Use get_graph_neighbors and analyze_graph_impact. Keep it short.`;
+}
+function jouleCard(kinds) {
+  const labels = { node: 'Explain this node', fail: 'What if it fails?', path: 'Explain this path' };
+  return `<div class="card joule"><span class="pill">Ask Joule</span><div class="row">${kinds.map((k) => `<button class="btn" data-ask="${k}">${labels[k]}</button>`).join('')}</div><p class="note">Joule answers in the chat of the desktop app, using the graph tools.</p></div>`;
+}
+function failurePanel(n) {
+  const f = S.fail, others = f.reached.filter((r) => r.id !== n.id);
+  const ranked = others.filter((r) => !['person', 'tool', 'app'].includes(r.type)).sort((a, b) => b.valueEur * b.exposure - a.valueEur * a.exposure || b.exposure - a.exposure).slice(0, 10);
+  const types = Object.entries(f.byType).sort((a, b) => b[1] - a[1]).map(([t, c]) => `${c} ${esc(D.nodeTypes[t].toLowerCase())}`).join(', ');
+  let h = `<div class="card"><span class="pill">If ${esc(clip(n.label, 40))} fails</span>`;
+  h += `<div class="kpis"><div class="kpi${f.atRiskEur ? ' red' : ''}"><b>${euro(f.atRiskEur)}</b><span>at risk a year</span></div><div class="kpi"><b>${f.affected}</b><span>nodes affected</span></div><div class="kpi"><b>${euro(f.exposedEur)}</b><span>exposed in total</span></div></div>`;
+  if (f.agentsInProduction || f.workflowRuns14d) h += `<p>${f.agentsInProduction ? `<b>${f.agentsInProduction}</b> agents in production` : ''}${f.agentsInProduction && f.workflowRuns14d ? ' · ' : ''}${f.workflowRuns14d ? `<b>${f.workflowRuns14d.toLocaleString('en-US')}</b> workflow runs in 14 days` : ''}</p>`;
+  h += `<p>${types || 'Nothing else is affected at this spread.'}</p>`;
+  h += `<div class="row"><button class="btn" id="a-replay">▶ Replay</button><button class="btn" id="a-impact">Show impact</button></div></div>`;
+  if (ranked.length) h += `<h3>Most exposed</h3><div class="conn">${ranked.map((r) => `<button data-go="${esc(r.id)}">${esc(r.label)}<small>${esc(D.nodeTypes[r.type])} · ${Math.round(r.exposure * 100)} % exposed${r.valueEur ? ` · ${euro(r.valueEur)} a year` : ''} · step ${r.hop}</small><span class="bar2" aria-hidden="true"><i class="${r.exposure >= 0.6 ? '' : r.exposure >= 0.4 ? 'm' : 'l'}" style="width:${Math.round(r.exposure * 100)}%"></i></span></button>`).join('')}</div>`;
+  h += jouleCard(['fail', 'node']);
+  h += `<details class="assume"><summary>How this is calculated</summary><ul>${f.assumptions.map((a) => `<li>${esc(a)}</li>`).join('')}</ul></details>`;
+  return h;
+}
+function failureIntro() {
+  const pick = (type, score) => nodes.filter((x) => x.type === type).sort((a, b) => score(b) - score(a))[0];
+  const picks = [pick('contract', (x) => nodeValueEur(x)), pick('risk', (x) => x.deg), pick('agent', (x) => x.deg), pick('ticket', (x) => x.deg)].filter(Boolean);
+  return `<h2>Failure simulation</h2><p style="color:var(--ink-2)">Click a node to let it fail. The failure spreads along the relations and fades with every step. You see which contracts, offers, agents and risks are hit, how much money is at stake, and the order it happens in. Spread controls how far it travels.</p><h3>Try one</h3><div class="conn">${picks.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])}${nodeValueEur(x) ? ` · ${euro(nodeValueEur(x))} a year` : ''}</small></button>`).join('')}</div>`;
+}
 function renderPanel() {
   const n = S.sel;
   let h = '';
@@ -5154,14 +5818,15 @@ function renderPanel() {
   if (S.mode === 'path') {
     h += `<h2>Path</h2><p style="color:var(--mut);margin:4px 0 8px">${!S.pathA ? 'Click a start node.' : !S.steps ? `Start: <b>${esc(S.pathA.label)}</b>. Now click the target node.` : ''}</p>`;
     if (S.steps && S.steps.length) {
-      h += `<span class="pill">${S.steps.length} step${S.steps.length > 1 ? 's' : ''}</span><ol class="steps">${S.steps.map((st) => `<li>${esc(sentence(st.from, st.s))}</li>`).join('')}</ol>`;
+      h += `<span class="pill">${S.steps.length} step${S.steps.length > 1 ? 's' : ''}</span><ol class="steps">${S.steps.map((st) => `<li>${esc(sentence(st.from, st.s))}</li>`).join('')}</ol>` + jouleCard(['path']);
     } else if (S.steps) h += '<p>No connection without going through a system or connector hub.</p>';
   }
   if (n && S.mode !== 'path') {
     h += `${chipOf(n)}<h2>${esc(n.label)}</h2>`;
     const meta = Object.entries(n.meta || {});
     if (meta.length) h += `<dl class="kv">${meta.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`;
-    if (S.mode === 'impact' && S.dist) {
+    if (S.mode === 'failure' && S.fail && S.fail.origin.id === n.id) h += failurePanel(n);
+    else if (S.mode === 'impact' && S.dist) {
       const byHop = {}; for (const [id, d] of S.dist) if (d > 0) (byHop[d] ||= []).push(byId.get(id));
       const total = Object.values(byHop).reduce((a, l) => a + l.length, 0);
       h += `<div class="card"><span class="pill">${total} affected within ${S.depth} step${S.depth > 1 ? 's' : ''}</span>`;
@@ -5170,12 +5835,13 @@ function renderPanel() {
         h += `<p><b>Step ${d}:</b> ${Object.entries(types).map(([t, c]) => `${c} ${esc(D.nodeTypes[t].toLowerCase())}`).join(', ')}</p><div class="conn">${byHop[d].map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])}</small></button>`).join('')}</div>`;
       }
       h += '</div>';
-    } else h += `<div class="row"><button class="btn" id="a-impact">Show impact</button><button class="btn" id="a-path">Path from here</button>${n.pin ? '<button class="btn" id="a-unpin">Unpin</button>' : ''}</div>` + connList(n);
+    } else h += `<div class="row"><button class="btn" id="a-impact">Show impact</button><button class="btn" id="a-fail">Simulate failure</button><button class="btn" id="a-path">Path from here</button>${n.pin ? '<button class="btn" id="a-unpin">Unpin</button>' : ''}</div>` + jouleCard(['node', 'fail']) + connList(n);
     if (n.view) h += `<p style="color:var(--mut);font-size:12px;margin-top:14px">Details live in the “${esc(n.view.space)}” Space.</p>`;
   } else if (S.mode === 'path' && S.pathA && !S.steps) {
     h += `<div class="conn"><button data-go="${esc(S.pathA.id)}">${esc(S.pathA.label)}<small>start</small></button></div>`;
   }
-  if (!n && S.mode !== 'path' && S.tour < 0) {
+  if (!n && S.mode === 'failure' && S.tour < 0) h += failureIntro();
+  else if (!n && S.mode !== 'path' && S.tour < 0) {
     h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, calls and e-mails, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
     const top = [...nodes].sort((a, b) => b.deg - a.deg).filter((x) => !HUB.has(x.type)).slice(0, 8);
     h += `<h3>Best connected</h3><div class="conn">${top.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])} · ${x.deg} relations</small></button>`).join('')}</div>`;
@@ -5184,6 +5850,9 @@ function renderPanel() {
   panel.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => { const x = byId.get(b.dataset.go); if (x) { if (S.mode === 'path') { flyTo(x); } else setSel(x, { fromPanel: true }); } }));
   const on = (id, fn) => { const e = panel.querySelector(id); if (e) e.onclick = fn; };
   on('#a-impact', () => { const keep = S.sel; setMode('impact'); setSel(keep); });
+  on('#a-fail', () => { const keep = S.sel; setMode('failure'); setSel(keep); });
+  on('#a-replay', () => { S.t0 = performance.now(); });
+  panel.querySelectorAll('[data-ask]').forEach((b) => (b.onclick = () => askJoule(promptFor(b.dataset.ask), b)));
   on('#a-path', () => { const keep = S.sel; setMode('path'); S.pathA = keep; S.sel = keep; computeFocus(); renderPanel(); });
   on('#a-unpin', () => { n.pin = false; renderPanel(); });
   panel.querySelectorAll('[data-tour]').forEach((b) => (b.onclick = () => startTour(Number(b.dataset.tour))));
@@ -5192,7 +5861,7 @@ function renderPanel() {
 function tourButtons() {
   return `<div class="conn">${D.tours.map((t, i) => `<button data-tour="${i}">▶ ${esc(t.title)}<small>${esc(t.summary)}</small></button>`).join('')}</div>`;
 }
-function showHover(n) { if (n && !S.sel) $('#hint').textContent = `${D.nodeTypes[n.type]}: ${n.label} · ${n.deg} relations`; else if (!n) $('#hint').textContent = S.mode === 'path' ? 'Path mode: click a start node, then a target node' : S.mode === 'impact' ? 'Impact mode: click a node to see everything that hangs on it' : 'Drag to move · scroll to zoom · double-click a node to pin it'; }
+function showHover(n) { if (n && !S.sel) $('#hint').textContent = `${D.nodeTypes[n.type]}: ${n.label} · ${n.deg} relations`; else if (!n) $('#hint').textContent = HINTS[S.mode]; }
 
 /* ---------- search ---------- */
 const q = $('#q'), res = $('#res'); let hits = [], hi = -1;
@@ -5220,8 +5889,8 @@ function tourGo(i) {
   if (i < 0) return; if (i >= S.tourSet.steps.length) return endTour();
   const st = S.tourSet.steps[i], n = byId.get(st.node); if (!n) return endTour();
   S.mode = st.impact ? 'impact' : 'explore';
-  for (const k of ['explore', 'impact', 'path']) $('#m-' + k).setAttribute('aria-pressed', String(k === S.mode));
-  $('#depth-l').hidden = S.mode !== 'impact';
+  for (const k of MODES) $('#m-' + k).setAttribute('aria-pressed', String(k === S.mode));
+  $('#depth-l').hidden = S.mode !== 'impact'; $('#spread-l').hidden = true;
   hidden.delete(n.type); renderLegend();
   S.tour = i; S.sel = n; S.t0 = performance.now(); computeFocus();
   flyTo(n, 1.25); renderPanel();
@@ -5240,7 +5909,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors
 renderLegend(); renderPanel(); resize(); fit(nodes, true);
 requestAnimationFrame(frame);
 // test hook (read-only inspection, no network)
-window.__kg = { nodes, edges, S, setSel, byId, setMode, startTour, tourGo, cam };
+window.__kg = { nodes, edges, S, setSel, byId, setMode, startTour, tourGo, cam, promptFor };
 })();
 </script>
 </body>

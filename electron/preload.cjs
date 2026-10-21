@@ -50,6 +50,14 @@ contextBridge.exposeInMainWorld('host', {
     show: (bounds) => ipcRenderer.invoke('n8n-show', bounds),
     hide: () => ipcRenderer.invoke('n8n-hide'),
     reload: () => ipcRenderer.invoke('n8n-reload'),
+    back: () => ipcRenderer.invoke('n8n-back'),
+    forward: () => ipcRenderer.invoke('n8n-forward'),
+    home: () => ipcRenderer.invoke('n8n-home'),
+    onNavState: (callback) => {
+      const handler = (_event, state) => callback(state);
+      ipcRenderer.on('n8n-nav-state', handler);
+      return () => ipcRenderer.removeListener('n8n-nav-state', handler);
+    },
     setTheme: (theme) => ipcRenderer.invoke('n8n-set-theme', theme),
     connectChat: () => ipcRenderer.invoke('n8n-connect-chat'),
     disconnectChat: () => ipcRenderer.invoke('n8n-disconnect-chat'),

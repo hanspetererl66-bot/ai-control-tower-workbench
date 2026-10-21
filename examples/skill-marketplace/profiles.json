@@ -2146,6 +2146,1030 @@
         ],
         "favorites": 3
       }
+    },
+    "interest-logger": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          4,
+          9
+        ],
+        "successRatePct": 92,
+        "avgRating": 4.0,
+        "ratings": 5,
+        "minutesSavedPerRun": 8,
+        "errorRatePct": 4,
+        "avgSeconds": 30,
+        "costPerRunEur": 0.28,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "Master Data Deduplicator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Interest signals as structured entries with duplicate check."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "search_sub4me",
+            "get_customer_overview"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "T. Fischer",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Erfasse: Anfrage von Kranich Logistik über das Formular zu Joule.",
+          "Ist Nordwind Handel schon Kunde?"
+        ],
+        "demoFlow": [
+          "Signal einfügen",
+          "Eintrag und Dubletten prüfen",
+          "Nächsten Schritt wählen"
+        ],
+        "prerequisites": [
+          "Text des Signals im Chat"
+        ],
+        "tags": [
+          "Interest",
+          "Lead",
+          "Event",
+          "Formular"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "lead-qualifier",
+          "lead-router"
+        ],
+        "recommendedFor": [
+          "Sales Development",
+          "Account Manager"
+        ],
+        "favorites": 3
+      }
+    },
+    "lead-qualifier": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          3,
+          11
+        ],
+        "successRatePct": 90,
+        "avgRating": 4.2,
+        "ratings": 6,
+        "minutesSavedPerRun": 15,
+        "errorRatePct": 5,
+        "avgSeconds": 35,
+        "costPerRunEur": 0.33,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Explainable lead score (ICP fit and BANT) with recommendation."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_customer_overview",
+            "list_contracts",
+            "list_offers"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "T. Fischer",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Bewerte den Lead Kranich Logistik.",
+          "Lohnt sich Nachfassen bei Bauer & Söhne?"
+        ],
+        "demoFlow": [
+          "Fakten nennen",
+          "Score je Kriterium prüfen",
+          "Empfehlung übernehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Lead",
+          "Score",
+          "BANT",
+          "ICP"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "interest-logger",
+          "lead-router",
+          "opportunity-planner"
+        ],
+        "recommendedFor": [
+          "Sales Development",
+          "Account Manager"
+        ],
+        "favorites": 5
+      }
+    },
+    "lead-router": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          8
+        ],
+        "successRatePct": 95,
+        "avgRating": 4.3,
+        "ratings": 3,
+        "minutesSavedPerRun": 6,
+        "errorRatePct": 3,
+        "avgSeconds": 20,
+        "costPerRunEur": 0.2,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "L2C Pipeline Orchestrator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Lead routing by region, industry and size with rule trace."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_customer_overview",
+            "list_offers"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "T. Fischer",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Wer bekommt den Lead aus der Logistik in Hamburg?",
+          "Weise Nordwind Handel zu."
+        ],
+        "demoFlow": [
+          "Lead nennen",
+          "Regel und Zuständigen prüfen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Lead",
+          "Routing",
+          "Zuweisung"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "lead-qualifier",
+          "interest-logger"
+        ],
+        "recommendedFor": [
+          "Sales Development",
+          "Sales Operations"
+        ],
+        "favorites": 2
+      }
+    },
+    "opportunity-planner": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          7
+        ],
+        "successRatePct": 91,
+        "avgRating": 4.5,
+        "ratings": 4,
+        "minutesSavedPerRun": 60,
+        "errorRatePct": 5,
+        "avgSeconds": 55,
+        "costPerRunEur": 0.52,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "One-page account plan from customer data and the knowledge graph."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_customer_overview",
+            "list_offers",
+            "search_graph",
+            "get_graph_neighbors"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "C. Schmid",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Erstelle den Account-Plan für die Ariba-Opportunity bei Muster Industrie.",
+          "Welche Stakeholder fehlen noch?"
+        ],
+        "demoFlow": [
+          "Kunde und Thema nennen",
+          "Plan mit Quellen prüfen",
+          "Nächste Schritte übernehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Opportunity",
+          "Account-Plan",
+          "Stakeholder"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "customer-call-prep",
+          "rfp-responder",
+          "lead-qualifier"
+        ],
+        "recommendedFor": [
+          "Account Manager",
+          "Account Executive"
+        ],
+        "favorites": 6
+      }
+    },
+    "rfp-responder": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          5
+        ],
+        "successRatePct": 88,
+        "avgRating": 4.0,
+        "ratings": 3,
+        "minutesSavedPerRun": 180,
+        "errorRatePct": 6,
+        "avgSeconds": 90,
+        "costPerRunEur": 0.85,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R4",
+          "R7"
+        ],
+        "linkedAgents": [
+          "Presales Proposal Generator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "RFP answers from earlier responses with status per question (supported, adapt, open)."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_product_overview",
+            "search_sub4me"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "C. Schmid",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 9,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Beantworte den Fragenkatalog im Anhang aus unseren letzten RFPs.",
+          "Welche Fragen sind noch offen?"
+        ],
+        "demoFlow": [
+          "Fragenkatalog und frühere Antworten bereitstellen",
+          "Status je Frage prüfen",
+          "Offene Fragen verteilen"
+        ],
+        "prerequisites": [
+          "Frühere RFP-Antworten als Datei oder Text"
+        ],
+        "tags": [
+          "RFP",
+          "Ausschreibung",
+          "Presales"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "opportunity-planner",
+          "contract-checker"
+        ],
+        "recommendedFor": [
+          "Presales",
+          "Account Executive"
+        ],
+        "favorites": 7
+      }
+    },
+    "pricing-guard": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          3,
+          10
+        ],
+        "successRatePct": 96,
+        "avgRating": 4.7,
+        "ratings": 7,
+        "minutesSavedPerRun": 25,
+        "errorRatePct": 2,
+        "avgSeconds": 30,
+        "costPerRunEur": 0.3,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Price List Updater"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Discount and approval check against the deal desk threshold with the arithmetic shown."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_offer",
+            "list_offers",
+            "get_contract"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe den Rabatt im Angebot OFF-2026-0324.",
+          "Braucht OFF-2026-0318 eine Deal-Desk-Freigabe?"
+        ],
+        "demoFlow": [
+          "Angebot nennen",
+          "Befund und Abweichungen prüfen",
+          "Freigabe anstoßen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Rabatt",
+          "Deal Desk",
+          "Freigabe",
+          "Angebot"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "quote-drafter",
+          "deal-risk-check",
+          "contract-checker"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Deal Desk"
+        ],
+        "favorites": 9
+      }
+    },
+    "deal-risk-check": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          9
+        ],
+        "successRatePct": 90,
+        "avgRating": 4.2,
+        "ratings": 5,
+        "minutesSavedPerRun": 30,
+        "errorRatePct": 4,
+        "avgSeconds": 50,
+        "costPerRunEur": 0.46,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Deal risk from offer, call and e-mail signals; untrusted mail content is flagged, never followed."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_offer",
+            "list_offers",
+            "search_graph",
+            "get_graph_neighbors"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Wie riskant ist das Angebot OFF-2026-0318?",
+          "Welche Warnsignale gibt es bei Joule Work?"
+        ],
+        "demoFlow": [
+          "Angebot nennen",
+          "Signale mit Quelle prüfen",
+          "Gegenmaßnahmen verteilen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Deal-Risiko",
+          "Wettbewerb",
+          "Sell"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "pricing-guard",
+          "opportunity-planner"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Deal Desk",
+          "Sales Operations"
+        ],
+        "favorites": 8
+      }
+    },
+    "contract-checker": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          6
+        ],
+        "successRatePct": 93,
+        "avgRating": 4.5,
+        "ratings": 4,
+        "minutesSavedPerRun": 40,
+        "errorRatePct": 3,
+        "avgSeconds": 40,
+        "costPerRunEur": 0.4,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Contract Classifier"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Pre-check of a contract against standard positions; not legal advice."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_contract",
+            "get_offer"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe den Vertrag C-2023-0390 gegen unseren Standard.",
+          "Welche Abweichungen müssen vor der Unterschrift geklärt werden?"
+        ],
+        "demoFlow": [
+          "Vertrag nennen",
+          "Tabelle der Abweichungen prüfen",
+          "Legal oder Deal Desk einbinden"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Vertrag",
+          "Klauseln",
+          "Contract"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "pricing-guard",
+          "rfp-responder"
+        ],
+        "recommendedFor": [
+          "Sales Operations",
+          "Account Executive"
+        ],
+        "favorites": 6
+      }
+    },
+    "pipeline-review": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          5
+        ],
+        "successRatePct": 94,
+        "avgRating": 4.5,
+        "ratings": 4,
+        "minutesSavedPerRun": 45,
+        "errorRatePct": 3,
+        "avgSeconds": 45,
+        "costPerRunEur": 0.44,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [],
+        "linkedAgents": [
+          "L2C Pipeline Orchestrator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Weekly pipeline summary with weighted forecast and attention points."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "list_offers",
+            "list_contracts",
+            "get_customer_overview"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Mach die Pipeline-Review für diese Woche.",
+          "Welche Angebote brauchen Aufmerksamkeit?"
+        ],
+        "demoFlow": [
+          "Daten laden",
+          "Forecast und Aufmerksamkeitspunkte prüfen",
+          "Entscheidungen für die Runde"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Pipeline",
+          "Forecast",
+          "Wochenrunde"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "deal-risk-check",
+          "renewal-radar"
+        ],
+        "recommendedFor": [
+          "Sales Operations",
+          "Executive"
+        ],
+        "favorites": 7
+      }
     }
   },
   "processGaps": [
@@ -2179,8 +3203,8 @@
       "priority": "Medium",
       "painLevel": 5,
       "minutesPerMonth": 4800,
-      "status": "No skill",
-      "note": "Wiederkehrende Fragen, Antworten aus früheren RFPs."
+      "status": "Skill in build",
+      "note": "Wiederkehrende Fragen, Antworten aus früheren RFPs. Pilot: rfp-responder."
     },
     {
       "id": "GAP-05",
@@ -2253,9 +3277,9 @@
       "requester": "Presales",
       "boardArea": "Sales",
       "votes": 7,
-      "status": "Open",
+      "status": "Done",
       "createdOn": "2026-10-09",
-      "note": ""
+      "note": "Umgesetzt als rfp-responder."
     },
     {
       "id": "REQ-105",
@@ -2485,6 +3509,281 @@
           "input": "Entwurf der Posts",
           "output": "Befunde und Korrekturen"
         }
+      ]
+    },
+    {
+      "id": "PB-07",
+      "title": "Vom Interesse zum Lead",
+      "roles": [
+        "Sales Development",
+        "Account Manager"
+      ],
+      "goal": "Ein neues Signal erfassen, den Lead bewerten und dem richtigen Vertriebsmitarbeiter zuweisen.",
+      "tags": [
+        "Interest",
+        "Lead",
+        "Neukunde",
+        "Event"
+      ],
+      "steps": [
+        {
+          "skill": "interest-logger",
+          "why": "Macht aus Formular, Event oder Mail einen sauberen Eintrag und erkennt Dubletten.",
+          "input": "Text des Signals",
+          "output": "Strukturierter Eintrag"
+        },
+        {
+          "skill": "lead-qualifier",
+          "why": "Bewertet den Lead nachvollziehbar nach ICP-Fit und BANT.",
+          "input": "Eintrag, Kundendaten",
+          "output": "Score mit Begründung"
+        },
+        {
+          "skill": "lead-router",
+          "why": "Weist den Lead nach Regeln zu und nennt die passende Regel.",
+          "input": "Qualifizierter Lead",
+          "output": "Zuständiger mit Begründung"
+        }
+      ]
+    },
+    {
+      "id": "PB-08",
+      "title": "Von der Opportunity zum Plan",
+      "roles": [
+        "Account Manager",
+        "Presales"
+      ],
+      "goal": "Eine Opportunity vorbereiten, Stakeholder und Risiken klären und eine Ausschreibung beantworten.",
+      "tags": [
+        "Opportunity",
+        "Account-Plan",
+        "RFP",
+        "Presales"
+      ],
+      "steps": [
+        {
+          "skill": "customer-call-prep",
+          "why": "Gibt vor dem Gespräch den Überblick über Verträge, Angebote und Tickets.",
+          "input": "Kunde",
+          "output": "Einseitiges Briefing"
+        },
+        {
+          "skill": "opportunity-planner",
+          "why": "Macht daraus einen Plan mit Stakeholdern, Wettbewerb, Risiken und nächsten Schritten.",
+          "input": "Briefing, Graph",
+          "output": "Account-Plan"
+        },
+        {
+          "skill": "rfp-responder",
+          "why": "Beantwortet den Fragenkatalog aus früheren Antworten und markiert Lücken.",
+          "input": "Fragenkatalog, frühere Antworten",
+          "output": "Antwortentwurf mit Status"
+        }
+      ]
+    },
+    {
+      "id": "PB-09",
+      "title": "Vom Angebot zum Abschluss",
+      "roles": [
+        "Account Executive",
+        "Deal Desk"
+      ],
+      "goal": "Ein Angebot erstellen, Preis und Freigabe prüfen und das Risiko des Deals einschätzen.",
+      "tags": [
+        "Sell",
+        "Angebot",
+        "Rabatt",
+        "Deal Desk"
+      ],
+      "steps": [
+        {
+          "skill": "quote-drafter",
+          "why": "Entwirft den Angebotstext aus Vertrags- und Angebotsdaten.",
+          "input": "Vertrag, Angebotsdaten",
+          "output": "Angebotsentwurf"
+        },
+        {
+          "skill": "pricing-guard",
+          "why": "Prüft Rabatt und Freigabe gegen die Deal-Desk-Schwelle.",
+          "input": "Angebotsnummer",
+          "output": "Befund und Abweichungen"
+        },
+        {
+          "skill": "deal-risk-check",
+          "why": "Fasst Warnsignale aus Angebot, Gesprächen und Mails zusammen.",
+          "input": "Angebotsnummer",
+          "output": "Risikoeinschätzung mit Gegenmaßnahmen"
+        }
+      ]
+    },
+    {
+      "id": "PB-10",
+      "title": "Vertrag prüfen und übergeben",
+      "roles": [
+        "Sales Operations",
+        "Account Executive",
+        "Deal Desk"
+      ],
+      "goal": "Den Vertrag gegen den Standard prüfen, an den Service übergeben und die Fristen im Blick behalten.",
+      "tags": [
+        "Contract",
+        "Vertrag",
+        "Übergabe"
+      ],
+      "steps": [
+        {
+          "skill": "contract-checker",
+          "why": "Vergleicht den Vertrag mit den Standardpositionen und listet Abweichungen.",
+          "input": "Vertragsnummer",
+          "output": "Tabelle der Abweichungen"
+        },
+        {
+          "skill": "ticket-writer",
+          "why": "Legt die Übergabe an den Service als sauberes Ticket an.",
+          "input": "Kurze Beschreibung",
+          "output": "Serviceticket nach Bestätigung"
+        },
+        {
+          "skill": "renewal-radar",
+          "why": "Merkt Kündigungsfristen und das Laufzeitende vor.",
+          "input": "Vertragsdaten",
+          "output": "Liste mit Fristen"
+        }
+      ]
+    },
+    {
+      "id": "PB-11",
+      "title": "Interest bis Contract: der ganze Weg",
+      "roles": [
+        "Account Manager",
+        "Sales Operations",
+        "Executive"
+      ],
+      "goal": "Den gesamten Vertriebsprozess vom ersten Interesse bis zum geprüften Vertrag mit Freigaben begleiten.",
+      "tags": [
+        "Interest",
+        "Lead",
+        "Opportunity",
+        "Sell",
+        "Contract",
+        "Pipeline"
+      ],
+      "steps": [
+        {
+          "skill": "interest-logger",
+          "why": "Erfasst das erste Signal und erkennt Dubletten.",
+          "input": "Text des Signals",
+          "output": "Strukturierter Eintrag"
+        },
+        {
+          "skill": "lead-qualifier",
+          "why": "Bewertet den Lead mit erklärbarem Score.",
+          "input": "Eintrag",
+          "output": "Score und Empfehlung"
+        },
+        {
+          "skill": "opportunity-planner",
+          "why": "Plant die Opportunity mit Stakeholdern und Schritten.",
+          "input": "Lead, Kundendaten",
+          "output": "Account-Plan"
+        },
+        {
+          "skill": "pricing-guard",
+          "why": "Prüft Preis, Rabatt und Freigabe des Angebots.",
+          "input": "Angebotsnummer",
+          "output": "Befund"
+        },
+        {
+          "skill": "contract-checker",
+          "why": "Prüft den Vertrag vor der Unterschrift.",
+          "input": "Vertragsnummer",
+          "output": "Abweichungen"
+        },
+        {
+          "skill": "pipeline-review",
+          "why": "Fasst alle Phasen für die Wochenrunde zusammen.",
+          "input": "Angebote und Verträge",
+          "output": "Forecast und Entscheidungen"
+        }
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "customer-revenue",
+      "label": "Customers & revenue",
+      "blurb": "Prepare customer meetings, secure renewals, draft quotes and raise service tickets.",
+      "skills": [
+        "customer-call-prep",
+        "renewal-radar",
+        "quote-drafter",
+        "ticket-writer"
+      ]
+    },
+    {
+      "id": "finance-checks",
+      "label": "Finance & receipts",
+      "blurb": "Check expenses, receipts and invoices against policy and purchase orders.",
+      "skills": [
+        "expense-check",
+        "invoice-matcher",
+        "concur-receipt-audit"
+      ]
+    },
+    {
+      "id": "governance-risk",
+      "label": "Governance & risk",
+      "blurb": "Board reporting, access reviews and the health of automations.",
+      "skills": [
+        "board-briefing",
+        "access-review-prep",
+        "automation-health-check"
+      ]
+    },
+    {
+      "id": "content-comms",
+      "label": "Content & communication",
+      "blurb": "Campaign briefs, content approval, job texts and release notes.",
+      "skills": [
+        "campaign-brief",
+        "social-post-checker",
+        "sf-job-text-reviewer",
+        "release-notes-writer"
+      ]
+    },
+    {
+      "id": "it-operations",
+      "label": "IT operations & delivery",
+      "blurb": "Watch cloud capacity and keep sprints and releases on track.",
+      "skills": [
+        "btp-quota-watch",
+        "my-sprint-digest"
+      ]
+    },
+    {
+      "id": "skill-management",
+      "label": "Skills & knowledge",
+      "blurb": "Find, build and rate skills in the marketplace itself.",
+      "skills": [
+        "skill-finder",
+        "skill-search",
+        "rate-skill"
+      ]
+    },
+    {
+      "id": "sales-pipeline",
+      "label": "Sales pipeline",
+      "blurb": "From first interest to signed contract: log, qualify, plan, price, check and review.",
+      "skills": [
+        "interest-logger",
+        "lead-qualifier",
+        "lead-router",
+        "opportunity-planner",
+        "rfp-responder",
+        "pricing-guard",
+        "deal-risk-check",
+        "contract-checker",
+        "pipeline-review"
       ]
     }
   ]

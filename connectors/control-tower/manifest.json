@@ -191,6 +191,8 @@
     {
       "name": "submit_infra_change",
       "description": "Hand a planned infrastructure change to the n8n workflow (check mode only) after the person confirms. Needs the n8n webhook address."
+      "name": "enrich_ticket",
+      "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
     }
   ],
   "user_config": {
