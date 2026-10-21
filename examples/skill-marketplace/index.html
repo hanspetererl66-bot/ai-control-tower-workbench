@@ -621,6 +621,94 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "sample": false
     },
     {
+      "name": "business-case-builder",
+      "description": "Baut aus Vertrags-, Verbrauchs- und Angebotsdaten einen Business Case (Kosten, Nutzen, Amortisation) mit offenen Annahmen für das Gespräch mit dem CFO. Nutzen bei \"Business Case\", \"ROI\", \"Wirtschaftlichkeit\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Business Case erstellen",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Account Management",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [
+        "get_customer_overview",
+        "get_ai_consumption",
+        "list_contracts",
+        "get_offer"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "call-followup",
+      "description": "Macht aus Gesprächsnotizen oder einem Transkript Vorschläge für das CRM (Phase, Betrag, nächste Schritte) und einen Entwurf für die Nachfass-Mail. Nutzen bei \"Nachbereitung\", \"Follow-up\", \"Call-Notizen ins CRM\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Gespräch nachbereiten",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Account Management",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [
+        "search_graph",
+        "get_graph_neighbors",
+        "get_offer"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "competitive-battlecard",
+      "description": "Erstellt eine Battlecard gegen einen Wettbewerber aus den Angebotsdaten und den Notizen der Person: Stärken, Schwächen, Fragen, Einwände. Nutzen bei \"Wettbewerb\", \"Battlecard\", \"Coupa\", \"Copilot\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Wettbewerb einordnen",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Presales",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [
+        "get_offer",
+        "list_offers",
+        "search_graph"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
       "name": "contract-checker",
       "description": "Prüft einen Vertrag oder Angebotsentwurf gegen Standardpositionen (Laufzeit, Kündigung, Preissteigerung, Service-Level, Zahlung) und listet Abweichungen. Nutzen bei \"Vertrag prüfen\", \"Klauseln\", \"Abweichung vom Standard\".",
       "owner": "",
@@ -700,6 +788,65 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "list_offers",
         "search_graph",
         "get_graph_neighbors"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "discovery-meddpicc",
+      "description": "Bereitet das Discovery-Gespräch vor und prüft eine Opportunity nach MEDDPICC: Lücken, Fragen, Beleg je Kriterium. Nutzen bei \"MEDDPICC\", \"Discovery\", \"Qualifizierung der Opportunity\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Discovery und MEDDPICC",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Account Management",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [
+        "get_customer_overview",
+        "search_graph",
+        "get_graph_neighbors"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "handover-onboarding-plan",
+      "description": "Erstellt nach dem Abschluss einen Übergabe- und Onboarding-Plan an Service und Customer Success: Ansprechpartner, Meilensteine, Verbrauch, erste 90 Tage. Nutzen bei \"Übergabe\", \"Onboarding\", \"Kickoff\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Übergabe und Onboarding",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Sales Operations",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [
+        "get_contract",
+        "get_product_overview",
+        "get_ai_consumption",
+        "create_ticket"
       ],
       "demand": {
         "installs": 0,
@@ -930,6 +1077,34 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       "tools": [
         "get_product_overview",
         "search_sub4me"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "security-questionnaire-helper",
+      "description": "Beantwortet Sicherheits- und Datenschutzfragebögen aus Vertrags- und Produktdaten (Rechenzentrum, Betrieb, Service-Level), markiert offene Fragen für Security und Legal. Nutzen bei \"Security-Fragebogen\", \"CISO\", \"Datenschutz\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Vertrieb",
+      "process": "Sicherheitsfragebogen beantworten",
+      "boardArea": "Sales",
+      "lob": "",
+      "team": "Presales",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [
+        "get_contract",
+        "get_product_overview"
       ],
       "demand": {
         "installs": 0,
@@ -4468,6 +4643,690 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         ],
         "favorites": 7
       }
+    },
+    "business-case-builder": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          4
+        ],
+        "successRatePct": 89,
+        "avgRating": 4.3,
+        "ratings": 6,
+        "minutesSavedPerRun": 90,
+        "errorRatePct": 4,
+        "avgSeconds": 70,
+        "costPerRunEur": 0.62,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Business case with sourced costs, open assumptions and sensitivity."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_customer_overview",
+            "get_ai_consumption",
+            "list_contracts",
+            "get_offer"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Baue den Business Case für Joule bei Muster Industrie.",
+          "Welche Annahmen im Business Case sind am empfindlichsten?"
+        ],
+        "demoFlow": [
+          "Vorhaben und Kunde nennen",
+          "Zahlen und Quellen prüfen",
+          "CFO-Seite übernehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Business Case",
+          "ROI",
+          "CFO"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "opportunity-planner",
+          "pricing-guard"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Presales"
+        ],
+        "favorites": 6
+      }
+    },
+    "discovery-meddpicc": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          6
+        ],
+        "successRatePct": 90,
+        "avgRating": 4.5,
+        "ratings": 6,
+        "minutesSavedPerRun": 35,
+        "errorRatePct": 4,
+        "avgSeconds": 45,
+        "costPerRunEur": 0.42,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "L2C Deal Advisor"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "MEDDPICC check with source per criterion and one question per gap."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_customer_overview",
+            "search_graph",
+            "get_graph_neighbors"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "C. Schmid",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Prüfe die Opportunity Muster Industrie nach MEDDPICC.",
+          "Welche Fragen stelle ich im Discovery-Call?"
+        ],
+        "demoFlow": [
+          "Opportunity nennen",
+          "Belegt, teilweise, offen prüfen",
+          "Fragen ins Gespräch mitnehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "MEDDPICC",
+          "Discovery",
+          "Qualifizierung"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "opportunity-planner",
+          "lead-qualifier"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Account Manager"
+        ],
+        "favorites": 7
+      }
+    },
+    "competitive-battlecard": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          5
+        ],
+        "successRatePct": 88,
+        "avgRating": 4.2,
+        "ratings": 5,
+        "minutesSavedPerRun": 45,
+        "errorRatePct": 5,
+        "avgSeconds": 55,
+        "costPerRunEur": 0.5,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "Presales Proposal Generator"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Battlecard from offer data and call notes; unsupported claims are marked to verify."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_offer",
+            "list_offers",
+            "search_graph"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "C. Schmid",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Erstelle eine Battlecard zum Wettbewerber im Angebot OFF-2026-0318.",
+          "Welche Einwände kommen bei Joule gegen Copilot?"
+        ],
+        "demoFlow": [
+          "Angebot nennen",
+          "Aussagen mit Quelle prüfen",
+          "Fragen an den Kunden übernehmen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Wettbewerb",
+          "Battlecard",
+          "Einwand"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "deal-risk-check",
+          "opportunity-planner"
+        ],
+        "recommendedFor": [
+          "Presales",
+          "Account Executive"
+        ],
+        "favorites": 5
+      }
+    },
+    "security-questionnaire-helper": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          3
+        ],
+        "successRatePct": 85,
+        "avgRating": 3.8,
+        "ratings": 6,
+        "minutesSavedPerRun": 120,
+        "errorRatePct": 7,
+        "avgSeconds": 120,
+        "costPerRunEur": 0.9,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Contract Classifier"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Security questionnaire answered from contract and product data; the rest goes to Security and Legal."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_contract",
+            "get_product_overview"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "T. Fischer",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 9,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Beantworte den Sicherheitsfragebogen von Brauhaus Keller.",
+          "Welche Fragen muss Legal prüfen?"
+        ],
+        "demoFlow": [
+          "Fragebogen bereitstellen",
+          "Status je Frage prüfen",
+          "Offene Fragen verteilen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Security",
+          "Datenschutz",
+          "Fragebogen"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "rfp-responder",
+          "contract-checker"
+        ],
+        "recommendedFor": [
+          "Presales",
+          "Sales Operations"
+        ],
+        "favorites": 4
+      }
+    },
+    "handover-onboarding-plan": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          3
+        ],
+        "successRatePct": 92,
+        "avgRating": 4.6,
+        "ratings": 5,
+        "minutesSavedPerRun": 50,
+        "errorRatePct": 3,
+        "avgSeconds": 60,
+        "costPerRunEur": 0.55,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R4"
+        ],
+        "linkedAgents": [
+          "Contract Classifier"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Handover and 90-day onboarding plan; the service ticket is created only after confirmation."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "get_contract",
+            "get_product_overview",
+            "get_ai_consumption",
+            "create_ticket"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Erstelle den Übergabeplan für Vertrag C-2026-0012.",
+          "Lege die Übergabe als Ticket an."
+        ],
+        "demoFlow": [
+          "Vertrag nennen",
+          "Plan prüfen",
+          "Ticket bestätigen"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Übergabe",
+          "Onboarding",
+          "Kickoff"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "ticket-writer",
+          "renewal-radar"
+        ],
+        "recommendedFor": [
+          "Sales Operations",
+          "Account Manager"
+        ],
+        "favorites": 5
+      }
+    },
+    "call-followup": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          7
+        ],
+        "successRatePct": 91,
+        "avgRating": 4.3,
+        "ratings": 7,
+        "minutesSavedPerRun": 25,
+        "errorRatePct": 3,
+        "avgSeconds": 35,
+        "costPerRunEur": 0.33,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "intern",
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-10-20",
+        "nextReview": "2027-04-20",
+        "linkedRisks": [
+          "R7"
+        ],
+        "linkedAgents": [
+          "Meeting Summarizer"
+        ],
+        "approvalHistory": [
+          {
+            "date": "2026-10-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-10-20",
+            "summary": "Call follow-up: CRM change proposals and a mail draft that is never sent."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "search_graph",
+            "get_graph_neighbors",
+            "get_offer"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "M. Weber",
+        "supportChannel": "#sales-ai",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-20"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Bereite die Nachfassung zum Gespräch CALL-0412 vor.",
+          "Was gehört aus dem Call ins CRM?"
+        ],
+        "demoFlow": [
+          "Notizen oder Transkript geben",
+          "CRM-Vorschläge prüfen",
+          "Mail-Entwurf selbst senden"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower"
+        ],
+        "tags": [
+          "Follow-up",
+          "CRM",
+          "Mail",
+          "Call"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [
+          "customer-call-prep",
+          "deal-risk-check"
+        ],
+        "recommendedFor": [
+          "Account Executive",
+          "Account Manager"
+        ],
+        "favorites": 8
+      }
     }
   },
   "processGaps": [
@@ -5004,6 +5863,103 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
           "output": "Forecast und Entscheidungen"
         }
       ]
+    },
+    {
+      "id": "PB-12",
+      "title": "Opportunity absichern",
+      "roles": [
+        "Account Executive",
+        "Presales"
+      ],
+      "goal": "Eine Opportunity belegen: Qualifizierung nach MEDDPICC, Wettbewerb einordnen und Business Case rechnen.",
+      "tags": [
+        "Opportunity",
+        "MEDDPICC",
+        "Wettbewerb",
+        "Business Case"
+      ],
+      "steps": [
+        {
+          "skill": "discovery-meddpicc",
+          "why": "Zeigt, was belegt ist und was im Discovery-Gespräch fehlt.",
+          "input": "Opportunity",
+          "output": "Lücken und Fragen"
+        },
+        {
+          "skill": "competitive-battlecard",
+          "why": "Ordnet den Wettbewerber ein und liefert Fragen und Einwand-Antworten.",
+          "input": "Angebot, Notizen",
+          "output": "Battlecard"
+        },
+        {
+          "skill": "business-case-builder",
+          "why": "Rechnet Kosten und Amortisation mit offenen Annahmen.",
+          "input": "Vorhaben, Kunde",
+          "output": "Seite für das CFO-Gespräch"
+        }
+      ]
+    },
+    {
+      "id": "PB-13",
+      "title": "Sicherheit und Übergabe",
+      "roles": [
+        "Presales",
+        "Sales Operations"
+      ],
+      "goal": "Den Sicherheitsfragebogen beantworten und nach dem Abschluss sauber an den Service übergeben.",
+      "tags": [
+        "Security",
+        "Übergabe",
+        "Onboarding"
+      ],
+      "steps": [
+        {
+          "skill": "security-questionnaire-helper",
+          "why": "Beantwortet aus Daten, was belegt ist, und leitet den Rest weiter.",
+          "input": "Fragebogen",
+          "output": "Antworttabelle mit Status"
+        },
+        {
+          "skill": "handover-onboarding-plan",
+          "why": "Erstellt Übergabe und 90-Tage-Plan.",
+          "input": "Vertragsnummer",
+          "output": "Onboarding-Plan"
+        },
+        {
+          "skill": "ticket-writer",
+          "why": "Legt die Übergabe als Ticket an.",
+          "input": "Kurze Beschreibung",
+          "output": "Ticket nach Bestätigung"
+        }
+      ]
+    },
+    {
+      "id": "PB-14",
+      "title": "Nach dem Kundengespräch",
+      "roles": [
+        "Account Executive",
+        "Account Manager"
+      ],
+      "goal": "Ein Gespräch nachbereiten: CRM-Vorschläge, Mail-Entwurf und Risiko im Blick.",
+      "tags": [
+        "Call",
+        "Follow-up",
+        "CRM"
+      ],
+      "steps": [
+        {
+          "skill": "call-followup",
+          "why": "Macht Notizen zu CRM-Vorschlägen, Aktionen und Mail-Entwurf.",
+          "input": "Notizen oder Transkript",
+          "output": "Vorschläge und Entwurf"
+        },
+        {
+          "skill": "deal-risk-check",
+          "why": "Prüft, ob sich das Risiko des Deals durch das Gespräch ändert.",
+          "input": "Angebotsnummer",
+          "output": "Risikoeinschätzung"
+        }
+      ]
     }
   ],
   "capabilities": [
@@ -5081,7 +6037,13 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "pricing-guard",
         "deal-risk-check",
         "contract-checker",
-        "pipeline-review"
+        "pipeline-review",
+        "business-case-builder",
+        "discovery-meddpicc",
+        "competitive-battlecard",
+        "security-questionnaire-helper",
+        "handover-onboarding-plan",
+        "call-followup"
       ]
     }
   ],
@@ -5652,6 +6614,108 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
           2
         ],
         "comments": []
+      },
+      "business-case-builder": {
+        "distribution": [
+          0,
+          0,
+          1,
+          2,
+          3
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Die Zahlen mit Quelle sparen mir das Nachfragen beim CFO.",
+            "version": 1,
+            "date": "2026-10-20"
+          }
+        ]
+      },
+      "discovery-meddpicc": {
+        "distribution": [
+          0,
+          0,
+          0,
+          3,
+          3
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Die Lücken-Liste ist ehrlich, das hilft vor dem Call.",
+            "version": 1,
+            "date": "2026-10-20"
+          }
+        ]
+      },
+      "competitive-battlecard": {
+        "distribution": [
+          0,
+          0,
+          1,
+          2,
+          2
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Gut, dass unbelegte Aussagen als zu prüfen markiert werden.",
+            "version": 1,
+            "date": "2026-10-20"
+          }
+        ]
+      },
+      "security-questionnaire-helper": {
+        "distribution": [
+          0,
+          1,
+          1,
+          2,
+          2
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Viele Fragen bleiben offen, aber die Zuordnung zu Security und Legal ist klar.",
+            "version": 1,
+            "date": "2026-10-20"
+          }
+        ]
+      },
+      "handover-onboarding-plan": {
+        "distribution": [
+          0,
+          0,
+          0,
+          2,
+          3
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Der 90-Tage-Plan ist ein guter Start für den Kickoff.",
+            "version": 1,
+            "date": "2026-10-20"
+          }
+        ]
+      },
+      "call-followup": {
+        "distribution": [
+          0,
+          0,
+          1,
+          3,
+          3
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Die CRM-Tabelle mit Quelle im Gespräch ist genau, was ich brauche.",
+            "version": 1,
+            "date": "2026-10-20"
+          }
+        ]
       }
     }
   }

@@ -566,6 +566,108 @@
         2
       ],
       "comments": []
+    },
+    "business-case-builder": {
+      "distribution": [
+        0,
+        0,
+        1,
+        2,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Die Zahlen mit Quelle sparen mir das Nachfragen beim CFO.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "discovery-meddpicc": {
+      "distribution": [
+        0,
+        0,
+        0,
+        3,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Die Lücken-Liste ist ehrlich, das hilft vor dem Call.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "competitive-battlecard": {
+      "distribution": [
+        0,
+        0,
+        1,
+        2,
+        2
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Gut, dass unbelegte Aussagen als zu prüfen markiert werden.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "security-questionnaire-helper": {
+      "distribution": [
+        0,
+        1,
+        1,
+        2,
+        2
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Viele Fragen bleiben offen, aber die Zuordnung zu Security und Legal ist klar.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "handover-onboarding-plan": {
+      "distribution": [
+        0,
+        0,
+        0,
+        2,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Der 90-Tage-Plan ist ein guter Start für den Kickoff.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
+    },
+    "call-followup": {
+      "distribution": [
+        0,
+        0,
+        1,
+        3,
+        3
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Die CRM-Tabelle mit Quelle im Gespräch ist genau, was ich brauche.",
+          "version": 1,
+          "date": "2026-10-20"
+        }
+      ]
     }
   }
 }

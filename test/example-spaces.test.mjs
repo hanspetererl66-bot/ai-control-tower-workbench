@@ -81,7 +81,7 @@ test('example skills have valid frontmatter, use only real connector tools, and 
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
   try {
     const names = installExampleSkills({ root: ROOT, skillsDir: dir });
-    assert.deepEqual(names.sort(), ['access-review-prep', 'automation-health-check', 'board-briefing', 'contract-checker', 'customer-call-prep', 'deal-risk-check', 'interest-logger', 'lead-qualifier', 'lead-router', 'opportunity-planner', 'pipeline-review', 'pricing-guard', 'rate-skill', 'rfp-responder', 'skill-finder', 'skill-search', 'ticket-writer']);
+    assert.deepEqual(names.sort(), ['access-review-prep', 'automation-health-check', 'board-briefing', 'business-case-builder', 'call-followup', 'competitive-battlecard', 'contract-checker', 'customer-call-prep', 'deal-risk-check', 'discovery-meddpicc', 'handover-onboarding-plan', 'interest-logger', 'lead-qualifier', 'lead-router', 'opportunity-planner', 'pipeline-review', 'pricing-guard', 'rate-skill', 'rfp-responder', 'security-questionnaire-helper', 'skill-finder', 'skill-search', 'ticket-writer']);
     for (const name of names) {
       const text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8');
       const front = parseSkill(text);
@@ -105,7 +105,7 @@ test('skill marketplace data is in sync, classified, and marks fictional skills 
   const next = buildCatalog({ registered: repoSkills(), samples, source: 'repository', asOf: data.asOf });
   assert.equal(embedData(html, next), html, 'run npm run sync:skill-marketplace');
   assert.deepEqual(data.taxonomy, JSON.parse(JSON.stringify(taxonomy())));
-  assert.equal(data.skills.filter((s) => !s.sample).length, 17);
+  assert.equal(data.skills.filter((s) => !s.sample).length, 23);
   assert.ok(data.skills.filter((s) => s.sample).length >= 8);
   for (const s of data.skills) {
     assert.ok(SCOPES.includes(s.scope), `${s.name} scope`);
@@ -207,4 +207,51 @@ test('Sales Space: offers and contracts match the Sub4Me sample data, gates and 
   assert.ok(sales.deals.some((d) => d.risks.some((r) => /instruction/i.test(r))), 'the untrusted-content case is visible');
   const html = readFileSync(join(ROOT, 'examples/sales/index.html'), 'utf8');
   assert.match(html, /class="panel card/);
+});
+
+test('Sales Space: forecast categories follow the stated rules and meetings link to real deals, calls and threads', () => {
+  const sales = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
+  const calls = JSON.parse(readFileSync(join(ROOT, 'examples/call-transcripts/calls.json'), 'utf8')).calls;
+  const threads = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/customer-emails/threads.json'), 'utf8')).threads.map((t) => t.id));
+  const skills = new Set(readdirSync(join(ROOT, 'examples/skills')));
+  const byId = Object.fromEntries(sales.deals.map((d) => [d.id, d]));
+  for (const d of sales.deals) {
+    const open = d.stage === 'opportunity' || d.stage === 'sell';
+    assert.equal(Boolean(d.category), open, `${d.id}: only opportunity and sell deals are in the forecast`);
+    if (!open) continue;
+    assert.ok(d.closeDate > sales.asOf, `${d.id}: close date is in the future`);
+    const want = d.score >= 70 ? 'commit' : d.score >= 50 ? 'best' : 'pipeline';
+    assert.equal(d.category, want, `${d.id}: category follows the probability rule`);
+    if (d.category === 'commit') assert.ok(d.discountPct <= sales.discountThresholdPct, `${d.id}: commit needs a cleared discount`);
+  }
+  assert.ok(sales.forecast.quotaEur > 0);
+  const ids = new Set();
+  for (const m of sales.meetings) {
+    assert.ok(!ids.has(m.id), m.id); ids.add(m.id);
+    const d = byId[m.dealId]; assert.ok(d, `${m.id}: deal exists`);
+    assert.ok(skills.has(m.skill) || ['customer-call-prep'].includes(m.skill), `${m.id}: skill exists`);
+    if (m.callId) assert.ok((d.links?.calls ?? []).includes(m.callId), `${m.id}: call is linked to the deal`);
+    if (m.threadId) { assert.ok(threads.has(m.threadId)); assert.ok((d.links?.threads ?? []).includes(m.threadId), `${m.id}: thread is linked to the deal`); }
+    for (const p of m.people) assert.ok(['us', 'customer'].includes(p.side));
+    if (m.date >= sales.asOf) {
+      assert.ok(m.prep?.brief.length && m.prep.questions.length, `${m.id}: upcoming meetings have a brief`);
+      assert.equal(m.followup, undefined);
+    } else {
+      const call = calls.find((c) => c.id === m.callId);
+      assert.ok(call, `${m.id}: a finished meeting is a recorded call`);
+      assert.equal(m.date, call.date); assert.equal(m.time, call.time); assert.equal(m.minutes, call.minutes);
+      assert.deepEqual(m.followup.actions, call.actions.map((a) => ({ text: a.text, owner: a.owner, due: a.due })), `${m.id}: actions equal the call actions`);
+      assert.equal(m.followup.mail.sent, false, `${m.id}: the mail draft is never sent`);
+      assert.match(m.followup.mail.to, /\.example$/); assert.match(m.followup.mail.from, /\.example$/);
+      for (const c of m.followup.crm) {
+        if (c.field === 'Next step') assert.equal(c.from, d.next.text, `${m.id}: CRM next step starts from the deal`);
+        if (c.field === 'Probability') assert.equal(c.from, d.score + ' %', `${m.id}: CRM probability starts from the deal`);
+        if (c.field === 'Competitor') assert.equal(c.from, d.competitor);
+      }
+    }
+  }
+  assert.ok(sales.meetings.some((m) => m.date < sales.asOf) && sales.meetings.some((m) => m.date >= sales.asOf));
+  const html = readFileSync(join(ROOT, 'examples/sales/index.html'), 'utf8');
+  assert.match(html, /data-tab="forecast"/); assert.match(html, /data-tab="meetings"/);
+  assert.match(html, /nothing is written to a CRM and nothing is sent/);
 });
