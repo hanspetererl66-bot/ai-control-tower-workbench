@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
 import { normalizeSupabaseUrl } from '../connectors/control-tower/server/supabase-url.mjs';
+import { WHAT_IF_TOOL_DEFINITIONS } from '../connectors/control-tower/server/what-if.mjs';
 import { SUB4ME_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sub4me.mjs';
 import { N8N_TOOL_DEFINITIONS } from '../connectors/control-tower/server/n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-profiles.mjs';

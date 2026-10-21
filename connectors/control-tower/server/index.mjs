@@ -13,6 +13,7 @@ import { N8N_TOOL_DEFINITIONS, createN8nHandlers } from './n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS, createSkillProfileHandlers } from './skill-profiles.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS, createSkillRatingHandlers } from './skill-ratings.mjs';
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
+import { WHAT_IF_TOOL_DEFINITIONS, createWhatIfHandlers } from './what-if.mjs';
 import { CROSS_SPACE_TOOL_DEFINITIONS, createCrossSpaceHandlers } from './cross-space.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
