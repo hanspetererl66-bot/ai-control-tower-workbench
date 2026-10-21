@@ -14,6 +14,7 @@ import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = 'examples/knowledge-graph/index.html';
 const BLOCK = /(<script type="application\/json" id="kg-data">)([\s\S]*?)(<\/script>)/;
+const MODEL_BLOCK = /(<script id="kg-model">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
 export function sourcesFromRepo() {
@@ -33,9 +34,18 @@ export function sourcesFromRepo() {
 
 export const repoGraph = () => buildGraph(sourcesFromRepo());
 export const serialise = (graph) => JSON.stringify(graph, null, 1).replaceAll('<', '\\u003c');
-export function embedGraph(html, graph) {
+/** The failure model exactly as the page runs it (the part of shared/graph-failure.mjs between BEGIN-MODEL and END-MODEL). */
+export function modelSource(source = read('shared/graph-failure.mjs')) {
+  const match = /\/\/ BEGIN-MODEL\n([\s\S]*?)\/\/ END-MODEL/.exec(source);
+  if (!match) throw new Error('shared/graph-failure.mjs has no BEGIN-MODEL / END-MODEL block');
+  return match[1].trimEnd();
+}
+export function embedGraph(html, graph, source) {
   if (!BLOCK.test(html)) throw new Error(`${PAGE} has no <script id="kg-data"> block`);
-  return html.replace(BLOCK, (_m, open, _body, close) => `${open}\n${serialise(graph)}\n${close}`);
+  if (!MODEL_BLOCK.test(html)) throw new Error(`${PAGE} has no <script id="kg-model"> block`);
+  return html
+    .replace(BLOCK, (_m, open, _body, close) => `${open}\n${serialise(graph)}\n${close}`)
+    .replace(MODEL_BLOCK, (_m, open, _body, close) => `${open}\n${modelSource(source).replaceAll('</script', '<\\/script')}\n${close}`);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
