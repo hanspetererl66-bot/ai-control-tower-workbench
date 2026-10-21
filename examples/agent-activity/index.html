@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Activity</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
+main{max-width:1320px;margin:0 auto;padding:20px 24px 40px}
+.demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.kpi{padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi .v{font-size:22px}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.tools label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.tools select,.tools button{padding:6px 10px;font-size:12px;border-radius:var(--radius-s);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tools button:hover{border-color:var(--purple);color:var(--purple)}
+.tools .grow{flex:1}
+.row{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap}
+.stagecard{flex:3 1 560px;padding:0;margin:0;position:relative;overflow:hidden;min-height:560px}
+.stagecard canvas{display:block;width:100%;height:100%;min-height:560px}
+.stagecard .cols{position:absolute;left:0;right:0;top:10px;display:flex;justify-content:space-between;padding:0 4%;pointer-events:none;font-size:11px;color:var(--muted);font-weight:600}
+.stagecard .cols span{width:30%;text-align:center}
+.legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted);pointer-events:none;background:color-mix(in srgb,var(--surface) 85%,transparent);padding:4px 8px;border-radius:99px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:2px solid var(--muted)}
+.legend i.r{border-color:var(--red)}.legend i.a{border-color:var(--amber)}.legend i.p{background:var(--purple);border-color:var(--purple)}.legend i.t{background:var(--teal);border-color:var(--teal)}
+aside.card{flex:1 1 280px;min-width:260px;max-width:380px;margin:0;padding:18px 20px}
+aside h2{margin:0 0 6px;font-size:16px;font-weight:650}
+aside p{margin:8px 0;line-height:1.5;color:var(--ink-2)}
+aside .facts{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:12px 0;font-size:12px}
+aside .facts dt{color:var(--muted)}aside .facts dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+aside .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+aside .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:3px 9px;border-radius:99px;font-size:11px;cursor:pointer}
+aside .chip:hover{border-color:var(--purple);color:var(--purple)}
+aside .tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.tag.r{color:var(--red);background:var(--red-dim);border:1px solid var(--red-border)}
+.tag.a{color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-border)}
+.tag.n{color:var(--ink-2);background:var(--line-2);border:1px solid var(--line)}
+aside .ask{margin-top:12px;width:100%}
+aside .note{font-size:11px;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:760px){main{padding:14px}.stagecard{min-height:460px}.stagecard canvas{min-height:460px}}
+</style>
+</head>
+<body>
+<main>
+  <p class="demo">Beispieldaten, keine Live-Messung: Die Aufrufe werden aus dem Registry-Feld <b>runsPerDay</b> simuliert, die Verbindungen zu den Business-Systemen sind illustrativ.</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="tools" role="toolbar" aria-label="Steuerung">
+    <button id="play" type="button" aria-pressed="true">Pause</button>
+    <label>Tempo
+      <select id="speed" aria-label="Tempo der Simulation">
+        <option value="1">1× (Echtzeit)</option>
+        <option value="20" selected>20×</option>
+        <option value="100">100×</option>
+      </select>
+    </label>
+    <label>Knoten
+      <select id="pick" aria-label="Knoten auswählen"></select>
+    </label>
+    <button id="clear" type="button">Auswahl aufheben</button>
+    <span class="grow"></span>
+    <span class="s" id="rate" role="status"></span>
+  </div>
+  <div class="row">
+    <div class="card stagecard" id="stage">
+      <canvas id="cv" role="img" aria-label="Netz aus Modellen und Plattformen, Agenten-Familien und Business-Systemen. Über die Auswahl „Knoten“ lässt sich jeder Knoten per Tastatur öffnen."></canvas>
+      <div class="cols" aria-hidden="true"><span>Modelle &amp; Plattformen</span><span>Agenten-Familien</span><span>Business-Systeme</span></div>
+      <div class="legend" aria-hidden="true"><span><i class="r"></i>überprivilegierte Agenten</span><span><i class="a"></i>High-Risk nach EU AI Act</span><span><i class="t"></i>Datenabruf</span><span><i class="p"></i>Modellaufruf</span></div>
+    </div>
+    <aside class="card" id="panel" aria-live="polite"></aside>
+  </div>
+</main>
+<script type="application/json" id="aa-data">
+{
+ "note": "Fictional sample data. Calls in this Space are simulated from the registry field runsPerDay; nothing here is measured live. Links to business systems are illustrative.",
+ "totals": {
+  "productionAgents": 125,
+  "runsPerDay": 44800,
+  "costPerWeekEur": 50600,
+  "pendingReview": 28,
+  "overprivileged": 31,
+  "euHighRisk": 18
+ },
+ "families": [
+  {
+   "id": "abap-code-assistant",
+   "name": "ABAP Code Assistant",
+   "agents": 12,
+   "runsPerDay": 5016,
+   "costPerWeekEur": 4520,
+   "overprivileged": 6,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 12
+   },
+   "platforms": {
+    "Anthropic API": 12
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 12
+   },
+   "systems": [
+    "github",
+    "s4hana"
+   ]
+  },
+  {
+   "id": "btp-monitor",
+   "name": "BTP Monitor",
+   "agents": 5,
+   "runsPerDay": 3848,
+   "costPerWeekEur": 1856,
+   "overprivileged": 4,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 5
+   },
+   "platforms": {
+    "SAP AI Core": 4,
+    "SAP BTP": 1
+   },
+   "teams": [
+    "Platform Eng"
+   ],
+   "dataClasses": {
+    "Internal": 5
+   },
+   "systems": [
+    "s4hana"
+   ]
+  },
+  {
+   "id": "odata-enrichment-pipeline",
+   "name": "OData Enrichment Pipeline",
+   "agents": 6,
+   "runsPerDay": 3760,
+   "costPerWeekEur": 2819,
+   "overprivileged": 6,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 6
+   },
+   "platforms": {
+    "SAP AI Core": 6
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 6
+   },
+   "systems": [
+    "s4hana",
+    "salesforce"
+   ]
+  },
+  {
+   "id": "meeting-summarizer",
+   "name": "Meeting Summarizer",
+   "agents": 6,
+   "runsPerDay": 2868,
+   "costPerWeekEur": 2705,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 6
+   },
+   "platforms": {
+    "Azure OpenAI": 6
+   },
+   "teams": [
+    "Platform Eng"
+   ],
+   "dataClasses": {
+    "Internal": 6
+   },
+   "systems": [
+    "m365"
+   ]
+  },
+  {
+   "id": "n8n-workflow-builder",
+   "name": "n8n Workflow Builder",
+   "agents": 6,
+   "runsPerDay": 2768,
+   "costPerWeekEur": 4082,
+   "overprivileged": 5,
+   "euHighRisk": 0,
+   "types": {
+    "orchestrator": 6
+   },
+   "platforms": {
+    "n8n Cloud": 6
+   },
+   "teams": [
+    "Platform Eng"
+   ],
+   "dataClasses": {
+    "Internal": 6
+   },
+   "systems": [
+    "salesforce",
+    "s4hana"
+   ]
+  },
+  {
+   "id": "contract-drafter",
+   "name": "Contract Drafter",
+   "agents": 9,
+   "runsPerDay": 2505,
+   "costPerWeekEur": 2652,
+   "overprivileged": 3,
+   "euHighRisk": 3,
+   "types": {
+    "copilot": 9
+   },
+   "platforms": {
+    "Azure OpenAI": 9
+   },
+   "teams": [
+    "Legal Tech"
+   ],
+   "dataClasses": {
+    "Restricted": 9
+   },
+   "systems": [
+    "icertis"
+   ]
+  },
+  {
+   "id": "test-case-suggester",
+   "name": "Test Case Suggester",
+   "agents": 7,
+   "runsPerDay": 2365,
+   "costPerWeekEur": 2605,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 7
+   },
+   "platforms": {
+    "Anthropic API": 7
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 7
+   },
+   "systems": [
+    "github"
+   ]
+  },
+  {
+   "id": "invoice-matcher",
+   "name": "Invoice Matcher",
+   "agents": 5,
+   "runsPerDay": 2331,
+   "costPerWeekEur": 1961,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 5
+   },
+   "platforms": {
+    "Azure OpenAI": 5
+   },
+   "teams": [
+    "Finance IT"
+   ],
+   "dataClasses": {
+    "Confidential": 5
+   },
+   "systems": [
+    "s4hana"
+   ]
+  },
+  {
+   "id": "test-suite-generator",
+   "name": "Test Suite Generator",
+   "agents": 3,
+   "runsPerDay": 2301,
+   "costPerWeekEur": 3177,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "orchestrator": 3
+   },
+   "platforms": {
+    "Anthropic API": 3
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 3
+   },
+   "systems": [
+    "github"
+   ]
+  },
+  {
+   "id": "report-generation-bot",
+   "name": "Report Generation Bot",
+   "agents": 6,
+   "runsPerDay": 1893,
+   "costPerWeekEur": 1652,
+   "overprivileged": 4,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 6
+   },
+   "platforms": {
+    "SAP BTP": 2,
+    "SAP AI Core": 4
+   },
+   "teams": [
+    "Finance IT"
+   ],
+   "dataClasses": {
+    "Confidential": 6
+   },
+   "systems": [
+    "s4hana"
+   ]
+  },
+  {
+   "id": "access-review-collector",
+   "name": "Access Review Collector",
+   "agents": 4,
+   "runsPerDay": 1597,
+   "costPerWeekEur": 1391,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 4
+   },
+   "platforms": {
+    "Internal Python": 4
+   },
+   "teams": [
+    "Security Office"
+   ],
+   "dataClasses": {
+    "Confidential": 4
+   },
+   "systems": [
+    "m365",
+    "s4hana"
+   ]
+  },
+  {
+   "id": "l2c-deal-advisor",
+   "name": "L2C Deal Advisor",
+   "agents": 7,
+   "runsPerDay": 1557,
+   "costPerWeekEur": 1801,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 7
+   },
+   "platforms": {
+    "Azure OpenAI": 7
+   },
+   "teams": [
+    "Sales Ops"
+   ],
+   "dataClasses": {
+    "Confidential": 7
+   },
+   "systems": [
+    "salesforce",
+    "icertis"
+   ]
+  },
+  {
+   "id": "release-train-coordinator",
+   "name": "Release Train Coordinator",
+   "agents": 2,
+   "runsPerDay": 1498,
+   "costPerWeekEur": 2775,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "orchestrator": 2
+   },
+   "platforms": {
+    "Anthropic API": 2
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 2
+   },
+   "systems": [
+    "github"
+   ]
+  },
+  {
+   "id": "fiori-ux-reviewer",
+   "name": "Fiori UX Reviewer",
+   "agents": 4,
+   "runsPerDay": 1366,
+   "costPerWeekEur": 1228,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 4
+   },
+   "platforms": {
+    "Anthropic API": 4
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 4
+   },
+   "systems": [
+    "github",
+    "s4hana"
+   ]
+  },
+  {
+   "id": "knowledge-base-search",
+   "name": "Knowledge Base Search",
+   "agents": 4,
+   "runsPerDay": 1200,
+   "costPerWeekEur": 1490,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 4
+   },
+   "platforms": {
+    "SAP AI Core": 3,
+    "SAP BTP": 1
+   },
+   "teams": [
+    "Customer Support"
+   ],
+   "dataClasses": {
+    "Internal": 4
+   },
+   "systems": [
+    "m365"
+   ]
+  },
+  {
+   "id": "l2c-pipeline-orchestrator",
+   "name": "L2C Pipeline Orchestrator",
+   "agents": 5,
+   "runsPerDay": 1179,
+   "costPerWeekEur": 3236,
+   "overprivileged": 3,
+   "euHighRisk": 0,
+   "types": {
+    "orchestrator": 5
+   },
+   "platforms": {
+    "SAP AI Core": 4,
+    "SAP BTP": 1
+   },
+   "teams": [
+    "Sales Ops"
+   ],
+   "dataClasses": {
+    "Confidential": 5
+   },
+   "systems": [
+    "salesforce",
+    "icertis",
+    "s4hana"
+   ]
+  },
+  {
+   "id": "btp-deploy-coordinator",
+   "name": "BTP Deploy Coordinator",
+   "agents": 3,
+   "runsPerDay": 1096,
+   "costPerWeekEur": 2248,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "orchestrator": 3
+   },
+   "platforms": {
+    "SAP AI Core": 1,
+    "SAP BTP": 2
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 3
+   },
+   "systems": [
+    "github"
+   ]
+  },
+  {
+   "id": "presales-proposal-generator",
+   "name": "Presales Proposal Generator",
+   "agents": 4,
+   "runsPerDay": 1062,
+   "costPerWeekEur": 1192,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 4
+   },
+   "platforms": {
+    "Anthropic API": 4
+   },
+   "teams": [
+    "Sales Ops"
+   ],
+   "dataClasses": {
+    "Confidential": 4
+   },
+   "systems": [
+    "salesforce"
+   ]
+  },
+  {
+   "id": "contract-classifier",
+   "name": "Contract Classifier",
+   "agents": 4,
+   "runsPerDay": 1041,
+   "costPerWeekEur": 1174,
+   "overprivileged": 0,
+   "euHighRisk": 4,
+   "types": {
+    "autonomous": 4
+   },
+   "platforms": {
+    "Azure OpenAI": 4
+   },
+   "teams": [
+    "Legal Tech"
+   ],
+   "dataClasses": {
+    "Restricted": 4
+   },
+   "systems": [
+    "icertis"
+   ]
+  },
+  {
+   "id": "support-reply-drafter",
+   "name": "Support Reply Drafter",
+   "agents": 6,
+   "runsPerDay": 796,
+   "costPerWeekEur": 1289,
+   "overprivileged": 0,
+   "euHighRisk": 6,
+   "types": {
+    "copilot": 6
+   },
+   "platforms": {
+    "Azure OpenAI": 6
+   },
+   "teams": [
+    "Customer Support"
+   ],
+   "dataClasses": {
+    "Confidential": 6
+   },
+   "systems": [
+    "salesforce"
+   ]
+  },
+  {
+   "id": "sql-query-helper",
+   "name": "SQL Query Helper",
+   "agents": 4,
+   "runsPerDay": 655,
+   "costPerWeekEur": 800,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "copilot": 4
+   },
+   "platforms": {
+    "Anthropic API": 4
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 4
+   },
+   "systems": [
+    "s4hana"
+   ]
+  },
+  {
+   "id": "price-list-updater",
+   "name": "Price List Updater",
+   "agents": 2,
+   "runsPerDay": 552,
+   "costPerWeekEur": 621,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 2
+   },
+   "platforms": {
+    "SAP AI Core": 1,
+    "SAP BTP": 1
+   },
+   "teams": [
+    "Sales Ops"
+   ],
+   "dataClasses": {
+    "Internal": 2
+   },
+   "systems": [
+    "s4hana",
+    "salesforce"
+   ]
+  },
+  {
+   "id": "onboarding-orchestrator",
+   "name": "Onboarding Orchestrator",
+   "agents": 3,
+   "runsPerDay": 500,
+   "costPerWeekEur": 1840,
+   "overprivileged": 0,
+   "euHighRisk": 3,
+   "types": {
+    "orchestrator": 3
+   },
+   "platforms": {
+    "Azure OpenAI": 3
+   },
+   "teams": [
+    "HR Systems"
+   ],
+   "dataClasses": {
+    "Confidential": 3
+   },
+   "systems": [
+    "successfactors"
+   ]
+  },
+  {
+   "id": "shift-roster-sync",
+   "name": "Shift Roster Sync",
+   "agents": 2,
+   "runsPerDay": 354,
+   "costPerWeekEur": 402,
+   "overprivileged": 0,
+   "euHighRisk": 2,
+   "types": {
+    "autonomous": 2
+   },
+   "platforms": {
+    "Internal Python": 2
+   },
+   "teams": [
+    "HR Systems"
+   ],
+   "dataClasses": {
+    "Confidential": 2
+   },
+   "systems": [
+    "successfactors"
+   ]
+  },
+  {
+   "id": "sap-spc-ticket-router",
+   "name": "SAP SPC Ticket Router",
+   "agents": 4,
+   "runsPerDay": 300,
+   "costPerWeekEur": 568,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 4
+   },
+   "platforms": {
+    "SAP AI Core": 3,
+    "SAP BTP": 1
+   },
+   "teams": [
+    "Platform Eng"
+   ],
+   "dataClasses": {
+    "Internal": 4
+   },
+   "systems": [
+    "s4hana"
+   ]
+  },
+  {
+   "id": "log-anomaly-triage",
+   "name": "Log Anomaly Triage",
+   "agents": 1,
+   "runsPerDay": 264,
+   "costPerWeekEur": 371,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 1
+   },
+   "platforms": {
+    "Internal Python": 1
+   },
+   "teams": [
+    "Eng Leads"
+   ],
+   "dataClasses": {
+    "Internal": 1
+   },
+   "systems": [
+    "s4hana"
+   ]
+  },
+  {
+   "id": "master-data-deduplicator",
+   "name": "Master Data Deduplicator",
+   "agents": 1,
+   "runsPerDay": 128,
+   "costPerWeekEur": 145,
+   "overprivileged": 0,
+   "euHighRisk": 0,
+   "types": {
+    "autonomous": 1
+   },
+   "platforms": {
+    "SAP BTP": 1
+   },
+   "teams": [
+    "Platform Eng"
+   ],
+   "dataClasses": {
+    "Internal": 1
+   },
+   "systems": [
+    "s4hana"
+   ]
+  }
+ ],
+ "platforms": [
+  {
+   "id": "anthropic-api",
+   "name": "Anthropic API",
+   "agents": 36,
+   "runsPerDay": 14263
+  },
+  {
+   "id": "sap-ai-core",
+   "name": "SAP AI Core",
+   "agents": 26,
+   "runsPerDay": 11868
+  },
+  {
+   "id": "azure-openai",
+   "name": "Azure OpenAI",
+   "agents": 40,
+   "runsPerDay": 11598
+  },
+  {
+   "id": "n8n-cloud",
+   "name": "n8n Cloud",
+   "agents": 6,
+   "runsPerDay": 2768
+  },
+  {
+   "id": "internal-python",
+   "name": "Internal Python",
+   "agents": 7,
+   "runsPerDay": 2215
+  },
+  {
+   "id": "sap-btp",
+   "name": "SAP BTP",
+   "agents": 10,
+   "runsPerDay": 2088
+  }
+ ],
+ "systems": [
+  {
+   "id": "s4hana",
+   "name": "SAP S/4HANA",
+   "families": 14,
+   "agents": 65
+  },
+  {
+   "id": "successfactors",
+   "name": "SAP SuccessFactors",
+   "families": 2,
+   "agents": 5
+  },
+  {
+   "id": "salesforce",
+   "name": "Salesforce",
+   "families": 7,
+   "agents": 36
+  },
+  {
+   "id": "icertis",
+   "name": "Icertis",
+   "families": 4,
+   "agents": 25
+  },
+  {
+   "id": "m365",
+   "name": "Microsoft 365",
+   "families": 3,
+   "agents": 14
+  },
+  {
+   "id": "github",
+   "name": "GitHub",
+   "families": 6,
+   "agents": 31
+  }
+ ]
+}
+</script>
+<script>
+(function () {
+  'use strict';
+  var D = JSON.parse(document.getElementById('aa-data').textContent);
+  var fmt = function (n) { return Math.round(n).toLocaleString('de-DE'); };
+  var eur = function (n) { return fmt(n) + ' €'; };
+  var pct = function (part, whole) { return (whole ? Math.round(part / whole * 1000) / 10 : 0).toLocaleString('de-DE'); };
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var T = D.totals;
+
+  // ---- nodes ----
+  var nodes = [], byId = {};
+  function add(kind, o) { o.kind = kind; o.key = kind + ':' + o.id; nodes.push(o); byId[o.key] = o; return o; }
+  D.platforms.forEach(function (p) { add('platform', { id: p.id, name: p.name, agents: p.agents, runs: p.runsPerDay }); });
+  D.families.forEach(function (f) { add('family', { id: f.id, name: f.name, agents: f.agents, runs: f.runsPerDay, f: f }); });
+  D.systems.forEach(function (s) {
+    var runs = 0;
+    D.families.forEach(function (f) { if (f.systems.indexOf(s.id) >= 0) runs += f.runsPerDay; });
+    add('system', { id: s.id, name: s.name, agents: s.agents, runs: runs, families: s.families });
+  });
+  var platformByName = {};
+  D.platforms.forEach(function (p) { platformByName[p.name] = byId['platform:' + p.id]; });
+
+  // edges: system -> family (data read), family -> platform (model call)
+  var edges = [];
+  D.families.forEach(function (f) {
+    var fn = byId['family:' + f.id];
+    f.systems.forEach(function (sid) { edges.push({ from: byId['system:' + sid], to: fn, kind: 'data', w: f.runsPerDay / f.systems.length }); });
+    Object.keys(f.platforms).forEach(function (pn) { edges.push({ from: fn, to: platformByName[pn], kind: 'model', w: f.runsPerDay * f.platforms[pn] / f.agents }); });
+  });
+  var maxEdge = Math.max.apply(null, edges.map(function (e) { return e.w; }));
+
+  // ---- KPIs ----
+  $('kpis').innerHTML = [
+    ['Agenten in Produktion', fmt(T.productionAgents)],
+    ['Aufrufe pro Tag (Beispieldaten)', fmt(T.runsPerDay)],
+    ['Kosten pro Woche', eur(T.costPerWeekEur)],
+    ['Überprivilegiert', fmt(T.overprivileged)],
+    ['High-Risk (EU AI Act)', fmt(T.euHighRisk)]
+  ].map(function (k) { return '<div class="kpi"><div class="k">' + k[0] + '</div><div class="v">' + k[1] + '</div></div>'; }).join('');
+
+  // ---- keyboard-accessible picker ----
+  function option(n) { return '<option value="' + esc(n.key) + '">' + esc(n.name) + '</option>'; }
+  $('pick').innerHTML = '<option value="">– keiner –</option>' +
+    '<optgroup label="Modelle & Plattformen">' + nodes.filter(function (n) { return n.kind === 'platform'; }).map(option).join('') + '</optgroup>' +
+    '<optgroup label="Agenten-Familien">' + nodes.filter(function (n) { return n.kind === 'family'; }).map(option).join('') + '</optgroup>' +
+    '<optgroup label="Business-Systeme">' + nodes.filter(function (n) { return n.kind === 'system'; }).map(option).join('') + '</optgroup>';
+
+  // ---- explanation panel ----
+  var selected = null, hovered = null;
+  function list(obj) { return Object.keys(obj).sort(function (a, b) { return obj[b] - obj[a]; }).map(function (k) { return k + ' ×' + obj[k]; }).join(', '); }
+  function chips(items) { return '<div class="chips">' + items.map(function (n) { return '<button type="button" class="chip" data-key="' + esc(n.key) + '">' + esc(n.name) + '</button>'; }).join('') + '</div>'; }
+  function facts(rows) { return '<dl class="facts">' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>'; }
+
+  function describe(n) {
+    var tags = [], text = [], rows = [], rel = [], prompt = '';
+    if (n.kind === 'family') {
+      var f = n.f;
+      var sys = f.systems.map(function (id) { return byId['system:' + id]; });
+      var pls = Object.keys(f.platforms).map(function (name) { return platformByName[name]; });
+      var types = list(f.types);
+      text.push(f.agents + ' Agenten dieser Familie laufen in Produktion (' + types + ') und führen zusammen rund ' + fmt(f.runsPerDay) + ' Aufrufe pro Tag aus, das sind ' + pct(f.runsPerDay, T.runsPerDay) + ' % aller Aufrufe.');
+      text.push('Sie holen Daten aus ' + sys.map(function (s) { return s.name; }).join(', ') + ' und rufen Modelle über ' + list(f.platforms) + ' auf (×n = Anzahl Agenten). Verantwortlich: ' + f.teams.join(', ') + '.');
+      if (f.overprivileged) { tags.push('<span class="tag r">' + f.overprivileged + ' überprivilegiert</span>'); text.push('Auffällig: ' + f.overprivileged + ' von ' + f.agents + ' Agenten haben mehr Rechte, als ihre Aufgabe braucht. Das sind Kandidaten für die nächste Berechtigungsprüfung.'); }
+      if (f.euHighRisk) { tags.push('<span class="tag a">' + f.euHighRisk + ' High-Risk (EU AI Act)</span>'); text.push('Auffällig: ' + f.euHighRisk + ' Agenten fallen unter High-Risk nach EU AI Act und brauchen eine Konformitätsbewertung vor dem Audit.'); }
+      if (!f.overprivileged && !f.euHighRisk) tags.push('<span class="tag n">keine Auffälligkeiten</span>');
+      rows = [['Agenten', fmt(f.agents)], ['Aufrufe pro Tag', fmt(f.runsPerDay)], ['Kosten pro Woche', eur(f.costPerWeekEur)], ['Kosten pro Aufruf', (f.costPerWeekEur / 7 / f.runsPerDay).toFixed(3).replace('.', ',') + ' €']];
+      rel = sys.concat(pls);
+      prompt = 'Erkläre mir die Agenten-Familie „' + f.name + '“ im AI Control Tower: Wofür wird sie genutzt, welche Risiken und Kosten hat sie, und was würdest du als Nächstes prüfen?';
+    } else if (n.kind === 'platform') {
+      var fams = D.families.filter(function (f) { return f.platforms[n.name]; });
+      text.push(n.name + ' stellt die Modelle für ' + n.agents + ' Agenten in Produktion bereit, die zusammen rund ' + fmt(n.runs) + ' Aufrufe pro Tag ausführen (' + pct(n.runs, T.runsPerDay) + ' % aller Aufrufe).');
+      text.push('Die größten Nutzer: ' + fams.slice(0, 3).map(function (f) { return f.name; }).join(', ') + '.');
+      var priv = fams.reduce(function (s, f) { return s + f.overprivileged; }, 0);
+      tags.push(priv ? '<span class="tag r">' + priv + ' überprivilegierte Agenten</span>' : '<span class="tag n">keine überprivilegierten Agenten</span>');
+      rows = [['Agenten', fmt(n.agents)], ['Aufrufe pro Tag', fmt(n.runs)], ['Familien', fmt(fams.length)]];
+      rel = fams.map(function (f) { return byId['family:' + f.id]; });
+      prompt = 'Welche Agenten laufen auf der Plattform „' + n.name + '“, was kosten sie, und wo siehst du Risiken oder Abhängigkeiten im AI Control Tower?';
+    } else {
+      var users = D.families.filter(function (f) { return f.systems.indexOf(n.id) >= 0; });
+      var hi = users.reduce(function (s, f) { return s + f.euHighRisk; }, 0), pr = users.reduce(function (s, f) { return s + f.overprivileged; }, 0);
+      text.push(n.name + ' wird von ' + n.families + ' Agenten-Familien mit zusammen ' + n.agents + ' Agenten genutzt. Sie lösen rund ' + fmt(n.runs) + ' Aufrufe pro Tag aus, die dort Daten lesen oder schreiben.');
+      text.push('Fällt dieses System aus oder ändert sich seine Schnittstelle, sind diese Familien betroffen: ' + users.map(function (f) { return f.name; }).join(', ') + '.');
+      tags.push(pr ? '<span class="tag r">' + pr + ' überprivilegiert</span>' : '<span class="tag n">keine überprivilegierten Agenten</span>');
+      if (hi) tags.push('<span class="tag a">' + hi + ' High-Risk</span>');
+      rows = [['Familien', fmt(n.families)], ['Agenten', fmt(n.agents)], ['Aufrufe pro Tag', fmt(n.runs)]];
+      rel = users.map(function (f) { return byId['family:' + f.id]; });
+      prompt = 'Welche Agenten greifen auf „' + n.name + '“ zu, und was passiert im AI Control Tower, wenn dieses System ausfällt oder die Schnittstelle sich ändert?';
+    }
+    var label = { family: 'Agenten-Familie', platform: 'Modell & Plattform', system: 'Business-System' }[n.kind];
+    return '<div class="k">' + label + '</div><h2>' + esc(n.name) + '</h2><div class="tags">' + tags.join('') + '</div>' +
+      text.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') + facts(rows) +
+      '<div class="k">Verbunden mit</div>' + chips(rel) +
+      '<button type="button" class="primary ask" id="ask" data-prompt="' + esc(prompt) + '">Joule fragen</button>' +
+      '<p class="note">Beispieldaten; die Erklärung ist aus den Registry-Feldern berechnet. „Joule fragen“ stellt die Frage im Chat mit Live-Zugriff auf den Control Tower.</p>';
+  }
+  function renderPanel() {
+    $('panel').innerHTML = selected ? describe(selected) :
+      '<div class="k">Agent Activity</div><h2>Wer arbeitet womit?</h2>' +
+      '<p>Jeder Punkt ist eine Agenten-Familie, links die Modelle, rechts die Business-Systeme. Jeder Puls ist ein simulierter Aufruf: erst der Datenabruf, dann der Modellaufruf.</p>' +
+      '<p>Klicke einen Knoten an (oder wähle ihn oben aus), um zu sehen, was dahintersteckt, was auffällt und womit er verbunden ist.</p>' +
+      '<p class="note">Rote Ringe markieren überprivilegierte Agenten, gelbe High-Risk-Agenten nach EU AI Act.</p>';
+    $('pick').value = selected ? selected.key : '';
+  }
+  function select(n) { selected = n; renderPanel(); dirty = true; }
+  $('panel').addEventListener('click', function (e) {
+    var chip = e.target.closest && e.target.closest('.chip');
+    if (chip) { select(byId[chip.getAttribute('data-key')]); return; }
+    var ask = e.target.closest && e.target.closest('#ask');
+    if (ask && window.parent !== window) {
+      window.parent.postMessage({ type: 'wb:ask', prompt: ask.getAttribute('data-prompt') }, '*');
+      ask.textContent = 'Frage an Joule gesendet';
+      ask.disabled = true;
+    }
+  });
+  $('pick').addEventListener('change', function () { select($('pick').value ? byId[$('pick').value] : null); });
+  $('clear').addEventListener('click', function () { select(null); });
+
+  // ---- canvas ----
+  var cv = $('cv'), ctx = cv.getContext('2d'), stage = $('stage');
+  var W = 0, H = 0, dpr = 1, colors = {}, colorAge = 0, dirty = true, labelsOn = true;
+  function readColors() {
+    var cs = getComputedStyle(document.documentElement);
+    ['ink', 'ink-2', 'muted', 'line', 'surface', 'purple', 'teal', 'red', 'amber', 'faint'].forEach(function (k) { colors[k] = cs.getPropertyValue('--' + k).trim(); });
+  }
+  function layout() {
+    var r = stage.getBoundingClientRect();
+    W = Math.max(320, Math.round(r.width)); H = Math.max(460, Math.round(r.height));
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    labelsOn = W >= 620;
+    var top = 44, bottom = H - 40;
+    function col(kind, x, w, h) {
+      var list = nodes.filter(function (n) { return n.kind === kind; });
+      var step = (bottom - top) / list.length;
+      list.forEach(function (n, i) { n.x = x; n.y = top + step * (i + 0.5); n.w = w; n.h = h; });
+    }
+    var narrow = W < 620;
+    col('platform', W * (narrow ? 0.14 : 0.13), narrow ? 70 : 118, 26);
+    col('system', W * (narrow ? 0.86 : 0.87), narrow ? 70 : 118, 26);
+    col('family', W * 0.5, 0, 0);
+    nodes.forEach(function (n) {
+      if (n.kind === 'family') n.r = 4 + 7 * Math.sqrt(n.runs / D.families[0].runsPerDay);
+    });
+    dirty = true;
+  }
+  function anchor(n, toward) {
+    if (n.kind === 'family') return { x: n.x, y: n.y };
+    return { x: n.x + (toward.x > n.x ? n.w / 2 : -n.w / 2), y: n.y };
+  }
+  function curve(a, b) {
+    var p = anchor(a, b), q = anchor(b, a), mx = (p.x + q.x) / 2;
+    return { p: p, c1: { x: mx, y: p.y }, c2: { x: mx, y: q.y }, q: q };
+  }
+  function bez(c, t) {
+    var u = 1 - t;
+    return { x: u * u * u * c.p.x + 3 * u * u * t * c.c1.x + 3 * u * t * t * c.c2.x + t * t * t * c.q.x,
+             y: u * u * u * c.p.y + 3 * u * u * t * c.c1.y + 3 * u * t * t * c.c2.y + t * t * t * c.q.y };
+  }
+  function related(n) {
+    var set = {}; set[n.key] = 1;
+    edges.forEach(function (e) { if (e.from === n || e.to === n) { set[e.from.key] = 1; set[e.to.key] = 1; } });
+    return set;
+  }
+
+  // ---- simulation ----
+  var playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var speed = 20, spawnAcc = 0, pulses = [], simulated = 0, last = 0;
+  var weights = D.families.map(function (f) { return f.runsPerDay; }), totalW = weights.reduce(function (a, b) { return a + b; }, 0);
+  function pickFamily() {
+    var r = Math.random() * totalW;
+    for (var i = 0; i < weights.length; i++) { r -= weights[i]; if (r <= 0) return D.families[i]; }
+    return D.families[0];
+  }
+  function pickPlatform(f) {
+    var r = Math.random() * f.agents, names = Object.keys(f.platforms);
+    for (var i = 0; i < names.length; i++) { r -= f.platforms[names[i]]; if (r <= 0) return platformByName[names[i]]; }
+    return platformByName[names[0]];
+  }
+  function spawn() {
+    var f = pickFamily(), fn = byId['family:' + f.id];
+    var sys = byId['system:' + f.systems[Math.floor(Math.random() * f.systems.length)]];
+    var pl = pickPlatform(f);
+    pulses.push({ a: curve(sys, fn), b: curve(fn, pl), fn: fn, sys: sys, pl: pl, t: 0, dur: 1500 });
+    simulated++;
+  }
+  function updateRate() {
+    var perMin = T.runsPerDay / 1440 * speed;
+    $('rate').textContent = playing ? 'Simuliert: ' + fmt(simulated) + ' Aufrufe (' + fmt(perMin) + ' pro Minute bei ' + speed + '×)' : 'Pausiert';
+  }
+  $('play').addEventListener('click', function () {
+    playing = !playing; $('play').textContent = playing ? 'Pause' : 'Abspielen'; $('play').setAttribute('aria-pressed', String(playing)); updateRate(); dirty = true;
+  });
+  $('speed').addEventListener('change', function () { speed = Number($('speed').value) || 20; updateRate(); });
+  $('play').textContent = playing ? 'Pause' : 'Abspielen'; $('play').setAttribute('aria-pressed', String(playing));
+
+  // ---- drawing ----
+  function rr(x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function draw(now) {
+    if (now - colorAge > 800 || !colors.ink) { readColors(); colorAge = now; }
+    ctx.clearRect(0, 0, W, H);
+    var focus = selected || hovered, rel = focus ? related(focus) : null;
+
+    edges.forEach(function (e) {
+      var c = curve(e.from, e.to), active = rel && rel[e.from.key] && rel[e.to.key] && (e.from === focus || e.to === focus);
+      ctx.beginPath(); ctx.moveTo(c.p.x, c.p.y); ctx.bezierCurveTo(c.c1.x, c.c1.y, c.c2.x, c.c2.y, c.q.x, c.q.y);
+      ctx.strokeStyle = e.kind === 'data' ? colors.teal : colors.purple;
+      ctx.globalAlpha = rel ? (active ? 0.75 : 0.05) : 0.16 + 0.22 * Math.sqrt(e.w / maxEdge);
+      ctx.lineWidth = active ? 2 : 0.6 + 1.6 * Math.sqrt(e.w / maxEdge);
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+
+    pulses.forEach(function (p) {
+      var t = p.t, leg = t < 0.5 ? p.a : p.b, local = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+      var pos = bez(leg, local), col = t < 0.5 ? colors.teal : colors.purple;
+      var dim = rel && !(rel[p.fn.key]);
+      ctx.globalAlpha = dim ? 0.1 : 1;
+      ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, 2.6, 0, 6.2832); ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+    ctx.globalAlpha = 1;
+
+    nodes.forEach(function (n) {
+      var dim = rel && !rel[n.key], on = n === selected || n === hovered;
+      ctx.globalAlpha = dim ? 0.25 : 1;
+      var flash = n.flash || 0;
+      if (n.kind === 'family') {
+        var ring = n.f.overprivileged ? colors.red : n.f.euHighRisk ? colors.amber : null;
+        if (flash > 0.02) { ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 3 + flash * 8, 0, 6.2832); ctx.strokeStyle = colors.purple; ctx.globalAlpha = (dim ? 0.1 : 1) * flash * 0.7; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = dim ? 0.25 : 1; }
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, 6.2832); ctx.fillStyle = colors['ink-2']; ctx.fill();
+        if (ring) { ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 2.5, 0, 6.2832); ctx.strokeStyle = ring; ctx.lineWidth = 2; ctx.stroke(); }
+        if (on) { ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 6, 0, 6.2832); ctx.strokeStyle = colors.purple; ctx.lineWidth = 1.5; ctx.stroke(); }
+        if (labelsOn || on) {
+          ctx.font = '11px ' + getComputedStyle(document.body).fontFamily; ctx.textBaseline = 'middle';
+          var label = n.name, tw = ctx.measureText(label).width;
+          ctx.globalAlpha = dim ? 0.2 : 1;
+          ctx.fillStyle = colors.surface; ctx.globalAlpha *= 0.85; ctx.fillRect(n.x + n.r + 5, n.y - 8, tw + 6, 16);
+          ctx.globalAlpha = dim ? 0.3 : 1; ctx.fillStyle = on ? colors.purple : colors.ink; ctx.textAlign = 'left'; ctx.fillText(label, n.x + n.r + 8, n.y + 0.5);
+        }
+      } else {
+        var tone = n.kind === 'platform' ? colors.purple : colors.teal;
+        rr(n.x - n.w / 2, n.y - n.h / 2, n.w, n.h, 9);
+        ctx.fillStyle = colors.surface; ctx.fill();
+        ctx.lineWidth = on ? 2 : 1.2; ctx.strokeStyle = on ? tone : colors.line; ctx.stroke();
+        if (flash > 0.02) { rr(n.x - n.w / 2 - 2, n.y - n.h / 2 - 2, n.w + 4, n.h + 4, 11); ctx.strokeStyle = tone; ctx.globalAlpha = (dim ? 0.1 : 1) * flash; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = dim ? 0.25 : 1; }
+        ctx.font = '600 11px ' + getComputedStyle(document.body).fontFamily; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = on ? tone : colors.ink;
+        ctx.fillText(n.name.replace('Microsoft ', 'MS '), n.x, n.y + 0.5, n.w - 8);
+      }
+    });
+    ctx.globalAlpha = 1;
+  }
+  function tick(now) {
+    var dt = last ? Math.min(100, now - last) : 16; last = now;
+    var animate = playing && !document.hidden;
+    if (animate) {
+      spawnAcc += T.runsPerDay / 86400000 * speed * dt;
+      while (spawnAcc >= 1 && pulses.length < 160) { spawnAcc -= 1; spawn(); }
+      if (spawnAcc > 5) spawnAcc = 0;
+    }
+    var any = pulses.length > 0;
+    pulses.forEach(function (p) {
+      var before = p.t; p.t += dt / p.dur;
+      if (before < 0.5 && p.t >= 0.5) { p.fn.flash = 1; p.sys.flash = Math.max(p.sys.flash || 0, 0.8); }
+      if (before < 1 && p.t >= 1) p.pl.flash = Math.max(p.pl.flash || 0, 0.8);
+    });
+    pulses = pulses.filter(function (p) { return p.t < 1; });
+    nodes.forEach(function (n) { if (n.flash > 0) { n.flash = Math.max(0, n.flash - dt / 700); any = true; } });
+    if (animate || any || dirty) { draw(now); dirty = false; }
+    if (animate && Math.floor(now / 500) !== Math.floor((now - dt) / 500)) updateRate();
+    requestAnimationFrame(tick);
+  }
+
+  // ---- pointer ----
+  function nodeAt(x, y) {
+    var best = null, bestD = 1e9;
+    nodes.forEach(function (n) {
+      var d;
+      if (n.kind === 'family') { d = Math.hypot(n.x - x, n.y - y) - n.r - 4; if (labelsOn && x > n.x && x < n.x + 170 && Math.abs(y - n.y) < 9) d = Math.min(d, 0); }
+      else { d = (Math.abs(n.x - x) < n.w / 2 && Math.abs(n.y - y) < n.h / 2) ? 0 : 1e9; }
+      if (d <= 0 && d < bestD) { best = n; bestD = d; }
+    });
+    return best;
+  }
+  function pos(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  cv.addEventListener('pointermove', function (e) { var p = pos(e), n = nodeAt(p.x, p.y); if (n !== hovered) { hovered = n; cv.style.cursor = n ? 'pointer' : 'default'; dirty = true; } });
+  cv.addEventListener('pointerleave', function () { if (hovered) { hovered = null; dirty = true; } });
+  cv.addEventListener('click', function (e) { var p = pos(e), n = nodeAt(p.x, p.y); select(n === selected ? null : n); });
+
+  window.addEventListener('keydown', function (e) { if (e.key === 'Escape') select(null); });
+  if (window.ResizeObserver) new ResizeObserver(layout).observe(stage); else window.addEventListener('resize', layout);
+  readColors(); layout(); renderPanel(); updateRate();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

@@ -549,6 +549,15 @@ export default function App() {
     setSkillRequest(result as unknown as InstallRequest);
   }
 
+  /** "Joule fragen" in a Space: switch to the chat and send the question, unless the agent is busy or missing. */
+  function askFromSpace(prompt: string) {
+    if (!agent || busy) {
+      setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.');
+      setTimeout(() => setToast(null), 5000);
+      return;
+    }
+    setView('chat');
+    void send(prompt);
   /** Open a Space (and optionally one of its tabs); used by spoken commands and briefing cards. */
   function navigateTo(target: { space: string; tab?: string; label?: string }) {
     const label = target.label ?? target.space;
@@ -754,6 +763,7 @@ export default function App() {
             textScale={spaceScale}
             theme={resolvedTheme}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
+            onAsk={askFromSpace}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
