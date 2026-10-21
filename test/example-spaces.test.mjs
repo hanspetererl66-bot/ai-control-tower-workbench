@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -81,7 +81,7 @@ test('example skills have valid frontmatter, use only real connector tools, and 
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
   try {
     const names = installExampleSkills({ root: ROOT, skillsDir: dir });
-    assert.deepEqual(names.sort(), ['access-review-prep', 'automation-health-check', 'board-briefing', 'customer-call-prep', 'rate-skill', 'skill-finder', 'skill-search', 'ticket-writer']);
+    assert.deepEqual(names.sort(), ['access-review-prep', 'automation-health-check', 'board-briefing', 'contract-checker', 'customer-call-prep', 'deal-risk-check', 'interest-logger', 'lead-qualifier', 'lead-router', 'opportunity-planner', 'pipeline-review', 'pricing-guard', 'rate-skill', 'rfp-responder', 'skill-finder', 'skill-search', 'ticket-writer']);
     for (const name of names) {
       const text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8');
       const front = parseSkill(text);
@@ -105,7 +105,7 @@ test('skill marketplace data is in sync, classified, and marks fictional skills 
   const next = buildCatalog({ registered: repoSkills(), samples, source: 'repository', asOf: data.asOf });
   assert.equal(embedData(html, next), html, 'run npm run sync:skill-marketplace');
   assert.deepEqual(data.taxonomy, JSON.parse(JSON.stringify(taxonomy())));
-  assert.equal(data.skills.filter((s) => !s.sample).length, 8);
+  assert.equal(data.skills.filter((s) => !s.sample).length, 17);
   assert.ok(data.skills.filter((s) => s.sample).length >= 8);
   for (const s of data.skills) {
     assert.ok(SCOPES.includes(s.scope), `${s.name} scope`);
@@ -170,4 +170,41 @@ test('mockup Spaces: embedded data is in sync, fictional, internally consistent 
     assert.ok(t.messages.every((m) => !m.email.includes('@') || /\.example$/.test(m.email.split('@')[1])), `${t.id}: only reserved .example domains`);
     for (const x of t.ai.cross) assert.ok(callIds.has(x.id), `${t.id}: references an existing call`);
   }
+});
+
+test('Sales Space: offers and contracts match the Sub4Me sample data, gates and links are consistent', () => {
+  const sales = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
+  const sub = JSON.parse(/id="s4m-data">([\s\S]*?)<\/script>/.exec(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8'))[1]);
+  const calls = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/call-transcripts/calls.json'), 'utf8')).calls.map((c) => c.id));
+  const threads = new Set(JSON.parse(readFileSync(join(ROOT, 'examples/customer-emails/threads.json'), 'utf8')).threads.map((t) => t.id));
+  const skills = new Set(readdirSync(join(ROOT, 'examples/skills')));
+  const stages = Object.fromEntries(sales.stages.map((s) => [s.id, s]));
+  assert.deepEqual(sales.stages.map((s) => s.id), ['interest', 'lead', 'opportunity', 'sell', 'contract']);
+  assert.equal(new Set(sales.deals.map((d) => d.id)).size, sales.deals.length);
+  for (const d of sales.deals) {
+    const st = stages[d.stage];
+    assert.ok(st, d.id);
+    assert.equal(d.met.length, st.exit.length, `${d.id}: one flag per exit criterion`);
+    assert.ok(skills.has(d.next.skill) || ['customer-call-prep', 'renewal-radar'].includes(d.next.skill), `${d.id}: next skill exists`);
+    const following = sales.stages[sales.stages.indexOf(st) + 1];
+    assert.ok(st.skills.includes(d.next.skill) || following?.skills.includes(d.next.skill), `${d.id}: next skill belongs to this or the next stage`);
+    for (const c of d.links?.calls ?? []) assert.ok(calls.has(c), `${d.id} -> ${c}`);
+    for (const t of d.links?.threads ?? []) assert.ok(threads.has(t), `${d.id} -> ${t}`);
+    if (d.breakdown) assert.equal(d.breakdown.reduce((a, b) => a + b[1], 0), d.score, `${d.id}: the score is the sum of its parts`);
+    if (d.offerId) {
+      const o = sub.offers.find((x) => x.id === d.offerId);
+      assert.ok(o, d.offerId);
+      assert.equal(d.value, o.annualEur); assert.equal(d.discountPct, o.discountPct); assert.equal(d.approval, o.approval);
+      assert.equal(d.competitor, o.competitor); assert.equal(d.valid, o.validUntil); assert.equal(d.owner, o.owner.name);
+      if (o.discountPct > sales.discountThresholdPct) assert.equal(d.met[1], false, `${d.id}: discount above the threshold is not cleared`);
+    }
+    if (d.stage === 'contract') {
+      const c = sub.contracts.find((x) => x.id === d.contractId);
+      assert.ok(c, d.contractId);
+      assert.equal(d.value, c.annualEur); assert.equal(d.end, c.end); assert.equal(d.noticeDays, c.noticeDays); assert.equal(d.autoRenew, c.autoRenew);
+    }
+  }
+  assert.ok(sales.deals.some((d) => d.risks.some((r) => /instruction/i.test(r))), 'the untrusted-content case is visible');
+  const html = readFileSync(join(ROOT, 'examples/sales/index.html'), 'utf8');
+  assert.match(html, /class="panel card/);
 });

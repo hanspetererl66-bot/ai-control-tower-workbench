@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sales: Interest to Contract</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 var(--font)}
+.demo{background:var(--amber-dim);color:var(--amber);font-size:12px;padding:7px 20px;border-bottom:1px solid var(--line)}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:750;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--purple)}
+.asof{margin-left:auto;font-size:12px;color:var(--muted)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;color:var(--muted);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent}
+nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
+main{padding:20px;max-width:1440px;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--ink-2);background:var(--wash);margin:2px 4px 2px 0}
+.tag.green{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.tag.amber{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
+.tag.red{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.tag.blue{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue)}
+.tag.purple{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.tag.teal{background:var(--teal-dim);border-color:var(--line);color:var(--teal)}
+/* stage colours come from tokens only */
+.st-interest{--sc:var(--teal)}.st-lead{--sc:var(--blue)}.st-opportunity{--sc:var(--purple)}.st-sell{--sc:var(--amber)}.st-contract{--sc:var(--green)}
+/* funnel */
+.funnel{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin-bottom:16px;align-items:stretch}
+.fstage{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);padding:14px 16px 14px 18px;cursor:pointer;color:var(--ink);font:inherit;margin-left:-1px;overflow:hidden}
+.fstage:first-child{border-radius:var(--radius) 0 0 var(--radius);margin-left:0}
+.fstage:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.fstage:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--sc)}
+.fstage:hover{background:var(--wash)}
+.fstage[aria-pressed=true]{background:var(--purple-dim);border-color:var(--purple-border);z-index:1}
+.fstage .n{font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.1}
+.fstage .l{font-size:12px;font-weight:600;color:var(--sc)}
+.fstage .v{font-size:12px;color:var(--muted);margin-top:2px}
+.fstage .bar{height:5px;border-radius:99px;background:var(--line-2);margin-top:10px;overflow:hidden}
+.fstage .bar i{display:block;height:100%;background:var(--sc);width:0;transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.fstage .flow{position:absolute;right:-1px;top:0;bottom:0;width:14px;overflow:hidden;pointer-events:none}
+.fstage .flow i{position:absolute;left:-6px;width:5px;height:5px;border-radius:50%;background:var(--sc);opacity:0;animation:drift 3.4s linear infinite}
+.fstage .flow i:nth-child(2){animation-delay:1.1s;top:62%}.fstage .flow i:nth-child(1){top:34%}.fstage .flow i:nth-child(3){animation-delay:2.2s;top:48%}
+@keyframes drift{0%{transform:translateX(0);opacity:0}15%{opacity:.8}100%{transform:translateX(24px);opacity:0}}
+.sumline{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 14px}
+.sumline b{color:var(--ink)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters input,.filters select{font:inherit;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:7px 10px}
+.filters label{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.link{border:0;background:none;color:var(--purple);font:inherit;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:6px}
+.link:hover{background:var(--purple-dim)}
+/* board */
+.board{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:12px;align-items:start;overflow-x:auto;padding-bottom:8px}
+.col{background:var(--wash);border:1px solid var(--line-2);border-radius:var(--radius);padding:10px;min-height:120px}
+.col.dim{opacity:.35}
+.col h3{margin:2px 4px 10px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--sc);display:flex;justify-content:space-between}
+.col h3 span{color:var(--muted)}
+.deal{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:11px 12px;margin-bottom:9px;cursor:pointer;font:inherit;color:inherit;position:relative;transition:transform .15s,box-shadow .15s,border-color .15s}
+.deal:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--purple-border)}
+.deal:focus-visible,.fstage:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+.deal[aria-current=true]{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+.deal .top{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.deal .acc{font-weight:650;font-size:13px}.deal .tt{font-size:12px;color:var(--muted);margin-top:1px}
+.deal .val{font-weight:650;font-size:15px;margin-top:8px;font-variant-numeric:tabular-nums}
+.deal .val.none{font-size:12px;font-weight:500;color:var(--muted)}
+.ring{--p:0;width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:650;background:conic-gradient(var(--sc) calc(var(--p)*1%),var(--line) 0)}
+.ring span{width:26px;height:26px;border-radius:50%;background:var(--surface);display:grid;place-items:center}
+.deal .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px;font-size:11px;color:var(--muted)}
+.av{width:22px;height:22px;border-radius:50%;background:var(--purple-dim);color:var(--purple);display:inline-grid;place-items:center;font-size:10px;font-weight:700;border:1px solid var(--purple-border)}
+.due{font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:var(--wash)}
+.due.late{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.due.soon{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
+.rk{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
+.empty{color:var(--muted);padding:14px;text-align:center;font-size:12px}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(14,12,20,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow-lg);z-index:21;transform:translateX(102%);transition:transform .25s cubic-bezier(.2,.7,.2,1);overflow-y:auto;padding:18px 20px 40px}
+.drawer.on{transform:none}
+.dh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.dh h2{margin:6px 0 0;font-size:18px;letter-spacing:-.01em}.dh .sub{color:var(--muted);font-size:13px}
+.x{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--radius-s);width:32px;height:32px;cursor:pointer;font-size:16px}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}
+.kv>div{border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 10px}.kv .k{font-size:11px;color:var(--muted)}.kv .v{font-weight:650;font-size:14px;overflow-wrap:anywhere}
+.sec{margin-top:16px}.sec h4{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.prog{height:6px;border-radius:99px;background:var(--line-2);overflow:hidden;margin:6px 0 8px}.prog i{display:block;height:100%;background:var(--green)}
+ul.gate{list-style:none;margin:0;padding:0}ul.gate li{display:flex;gap:8px;padding:4px 0;font-size:13px}
+.ck{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--faint);flex:none;margin-top:2px;display:grid;place-items:center;font-size:11px;line-height:1}
+.ck.y{background:var(--green);border-color:var(--green);color:var(--surface)}
+.bd{display:grid;grid-template-columns:110px 1fr 46px;gap:8px;align-items:center;font-size:12px;margin:5px 0}
+.bd i{display:block;height:7px;border-radius:4px;background:var(--line)}.bd i b{display:block;height:100%;border-radius:4px;background:var(--sc)}
+.bd small{display:block;color:var(--muted);grid-column:1/4;margin-top:-2px}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.tl .e{position:relative;margin-bottom:12px;font-size:13px}.tl .e:before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--sc)}
+.tl .d{font-size:11px;color:var(--muted)}
+.risk{border:1px solid var(--red-border);background:var(--red-dim);color:var(--red);border-radius:var(--radius-s);padding:8px 10px;font-size:13px;margin-bottom:6px}
+.next{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:var(--radius-s);padding:12px 14px}
+.prompt{margin-top:8px;border:1px dashed var(--purple-border);border-radius:var(--radius-s);padding:9px 11px;background:var(--surface);font-size:13px}
+.chip{display:inline-block;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:99px;padding:2px 10px;font-size:12px;margin:2px 4px 2px 0}
+.chip.on{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+/* workflow + rules */
+.chain{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:0;overflow-x:auto;padding-bottom:6px}
+.cstage{background:var(--surface);border:1px solid var(--line);padding:14px 16px;margin-left:-1px;position:relative;border-top:4px solid var(--sc)}
+.cstage:first-child{margin-left:0;border-radius:var(--radius) 0 0 var(--radius)}.cstage:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.cstage h3{margin:0;font-size:14px;color:var(--sc)}.cstage .s{font-size:12px;color:var(--muted);margin:2px 0 10px}
+.cstage h5{margin:12px 0 4px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.gatemark{font-size:11px;color:var(--amber);font-weight:600;margin-top:12px}
+.three{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.three{grid-template-columns:1fr}.funnel{grid-template-columns:1fr 1fr}.fstage,.fstage:first-child,.fstage:last-child{border-radius:var(--radius-s);margin-left:0}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
+.pan-h{border-top:3px solid var(--amber)}.pan-a{border-top:3px solid var(--purple)}.pan-n{border-top:3px solid var(--red)}
+@media(prefers-reduced-motion:reduce){.fstage .flow i{animation:none}.fstage .bar i,.drawer,.scrim,.deal{transition:none}}
+</style>
+</head>
+<body>
+<div class="demo">Mockup with fictional data. No CRM is connected and nothing is sent. Offers and contracts mirror the Sub4Me sample data; interest, lead and opportunity are made up. Names and domains are fictional.</div>
+<header>
+  <div class="logo">Sales <b>Pipeline</b></div>
+  <span class="tag blue">Interest to contract</span>
+  <span class="tag purple">Mockup</span>
+  <div class="asof" id="asof"></div>
+</header>
+<nav role="tablist" id="tabs">
+  <button role="tab" aria-selected="true" data-tab="pipeline">Pipeline</button>
+  <button role="tab" aria-selected="false" data-tab="workflow">Workflow and skills</button>
+  <button role="tab" aria-selected="false" data-tab="rules">Rules and safeguards</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-pipeline">
+    <div class="funnel" id="funnel" role="group" aria-label="Pipeline stages"></div>
+    <div class="sumline" id="sumline"></div>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Search account or deal" aria-label="Search deals">
+      <select id="owner" aria-label="Owner"></select>
+      <label><input type="checkbox" id="risk"> At risk only</label>
+      <button class="link" id="clear">Clear filters</button>
+    </div>
+    <div class="board" id="board"></div>
+  </section>
+  <section class="pg" id="pg-workflow"><div class="panel card"><h2>One process, five gates</h2><div class="note" style="margin:0 0 12px">Every stage has exit criteria. A deal moves on when the criteria are met and the person in charge agrees. The skills prepare and check; they never decide.</div><div class="chain" id="chain"></div></div><div class="panel card" id="wf-extra"></div></section>
+  <section class="pg" id="pg-rules"><div class="three" id="rules"></div><div class="panel card" id="rules-more"></div></section>
+</main>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Deal details" aria-hidden="true" tabindex="-1"></aside>
+<script type="application/json" id="data">{"asOf":"2026-10-19","me":"Mara Weber","customerNote":"Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG. Interest, lead and opportunity are made up.","discountThresholdPct":15,"stages":[{"id":"interest","label":"Interest","blurb":"A signal arrives: form, event, mail or call.","tone":"teal","owner":"Sales Development","collection":"PB-07","skills":["interest-logger"],"exit":["Company and contact identified","Source and topic logged","Duplicate check done"]},{"id":"lead","label":"Lead","blurb":"Qualified by fit and need, assigned to an owner.","tone":"blue","owner":"Sales Development","collection":"PB-07","skills":["lead-qualifier","lead-router"],"exit":["ICP fit and BANT scored","Owner assigned","First contact planned"]},{"id":"opportunity","label":"Opportunity","blurb":"A real chance with a plan, stakeholders and a date.","tone":"purple","owner":"Account Management","collection":"PB-08","skills":["customer-call-prep","opportunity-planner","rfp-responder"],"exit":["Decision maker identified","Budget confirmed","Scope agreed","Account plan reviewed"]},{"id":"sell","label":"Sell","blurb":"Offer out, price and risk checked, customer deciding.","tone":"amber","owner":"Account Executive and Deal Desk","collection":"PB-09","skills":["quote-drafter","pricing-guard","deal-risk-check"],"exit":["Quote drafted","Discount within threshold or deal desk approved","Risk check done","Customer review scheduled"]},{"id":"contract","label":"Contract","blurb":"Signed, checked against the standard, handed over.","tone":"green","owner":"Sales Operations","collection":"PB-10","skills":["contract-checker","ticket-writer","renewal-radar"],"exit":["Contract checked against standard","Deviations cleared by Legal","Handover ticket created","Renewal dates tracked"]}],"deals":[{"id":"INT-201","stage":"interest","account":"Kranich Logistik GmbH","title":"Joule for logistics planning","value":null,"score":null,"owner":"Dev Patel","source":"Event","existing":false,"met":[true,true,false],"next":{"text":"Check duplicates and log the booth contact","due":"2026-10-21","skill":"interest-logger","prompt":"Erfasse: Ilse Wagner (Head of Logistics IT, Kranich Logistik GmbH) hat am SAP-TechEd-Stand nach Joule für die Transportplanung gefragt."},"contact":"Ilse Wagner, Head of Logistics IT","strength":"medium","risks":[],"timeline":[{"date":"2026-10-16","kind":"note","text":"Booth conversation at SAP TechEd Berlin: interested in Joule for transport planning."},{"date":"2026-10-17","kind":"note","text":"Business card scanned, no mail exchanged yet."}]},{"id":"INT-202","stage":"interest","account":"Brauhaus Keller AG","title":"Webinar: Ariba for mid-sized breweries","value":null,"score":null,"owner":"Tim Fischer","source":"Webinar","existing":false,"met":[true,true,false],"next":{"text":"Watch only, no contact until a second signal","due":"2026-11-02","skill":"interest-logger","prompt":"Ordne das Signal ein: Moritz Keller (Brauhaus Keller AG) hat die Webinar-Aufzeichnung zu Ariba heruntergeladen."},"contact":"Moritz Keller, Purchasing","strength":"weak","risks":[],"timeline":[{"date":"2026-10-14","kind":"note","text":"Downloaded the webinar recording. No further activity."}]},{"id":"INT-203","stage":"interest","account":"Muster Industrie AG","title":"Joule Work for three more departments","value":null,"score":null,"owner":"Mara Weber","source":"E-mail","existing":true,"met":[true,true,true],"next":{"text":"Qualify as an expansion lead","due":"2026-10-20","skill":"lead-qualifier","prompt":"Bewerte den Lead Muster Industrie AG: Erweiterung von Joule Work auf drei weitere Fachbereiche."},"contact":"Felix Brandt, IT Security","strength":"strong","risks":["The pilot security questionnaire (T-104) contains an instruction in its footer. It is shown as plain text and was not followed."],"links":{"threads":["T-104"],"calls":["CALL-0415"]},"timeline":[{"date":"2026-10-15","kind":"call","text":"Pilot kickoff: the customer asks what a rollout to three more departments would need.","ref":"CALL-0415"},{"date":"2026-10-18","kind":"mail","text":"Security questionnaire for the Joule Work pilot, with a flagged footer.","ref":"T-104"}]},{"id":"INT-204","stage":"interest","account":"Nordwind Handel GmbH","title":"Interest in the supplier risk module","value":null,"score":null,"owner":"Mara Weber","source":"Call","existing":true,"met":[true,true,true],"next":{"text":"Qualify and route","due":"2026-10-20","skill":"lead-qualifier","prompt":"Bewerte den Lead Nordwind Handel GmbH: Interesse am Supplier-Risk-Modul aus dem Quarterly Business Review."},"contact":"Procurement lead","strength":"medium","risks":[],"links":{"calls":["CALL-0412"]},"timeline":[{"date":"2026-10-12","kind":"call","text":"Quarterly business review: the customer asks about supplier risk monitoring.","ref":"CALL-0412"}]},{"id":"LEAD-301","stage":"lead","account":"Nordwind Handel GmbH","title":"Ariba supplier risk","value":180000,"score":74,"owner":"Mara Weber","source":"Call","existing":true,"breakdown":[["ICP fit",24,30,"Retail, DACH, 1,200 employees: matches the ideal customer"],["Budget",14,20,"Procurement budget cycle starts in January"],["Decision maker",16,20,"Head of Procurement is a sponsor"],["Need",14,20,"Supplier incidents in the last quarter"],["Timing",6,10,"Wants a decision before year end"]],"met":[true,true,false],"next":{"text":"Plan the first contact and book a workshop","due":"2026-10-22","skill":"opportunity-planner","prompt":"Erstelle einen Account-Plan für Nordwind Handel GmbH zum Thema Ariba Supplier Risk."},"contact":"Head of Procurement","risks":[],"links":{"calls":["CALL-0412"]},"timeline":[{"date":"2026-10-12","kind":"call","text":"Quarterly business review, supplier risk requested.","ref":"CALL-0412"},{"date":"2026-10-19","kind":"skill","text":"Lead score 74 with reasons (lead-qualifier)."}]},{"id":"LEAD-302","stage":"lead","account":"Kranich Logistik GmbH","title":"Joule for logistics planning","value":90000,"score":61,"owner":"Dev Patel","source":"Event","existing":false,"breakdown":[["ICP fit",22,30,"Logistics, DACH, 800 employees: good fit"],["Budget",10,20,"Budget not confirmed"],["Decision maker",10,20,"Only an IT lead so far"],["Need",13,20,"Manual transport planning in spreadsheets"],["Timing",6,10,"RFP planned for November"]],"met":[true,false,false],"next":{"text":"Ask two questions: budget owner and RFP date","due":"2026-10-23","skill":"lead-qualifier","prompt":"Bewerte den Lead Kranich Logistik GmbH und nenne die zwei Fragen, die den Score am meisten ändern."},"contact":"Ilse Wagner","risks":["No budget owner named yet."],"timeline":[{"date":"2026-10-16","kind":"note","text":"Booth contact at SAP TechEd Berlin."},{"date":"2026-10-19","kind":"skill","text":"Score 61: follow up with two questions."}]},{"id":"LEAD-303","stage":"lead","account":"Bauer & Söhne Maschinenbau GmbH","title":"S/4HANA Cloud","value":null,"score":38,"owner":"Tim Fischer","source":"Referral","existing":false,"breakdown":[["ICP fit",12,30,"Small company, outside the target size"],["Budget",6,20,"Unknown"],["Decision maker",6,20,"Owner-managed, not reached"],["Need",10,20,"General interest only"],["Timing",4,10,"No date"]],"met":[true,false,false],"next":{"text":"Decline politely or keep watching","due":"2026-10-30","skill":"lead-qualifier","prompt":"Bewerte den Lead Bauer & Söhne Maschinenbau und empfiehl Nachfassen oder Ablehnen."},"contact":"Managing director","risks":["Score below 40: recommendation is to watch, not to invest time."],"timeline":[{"date":"2026-10-09","kind":"note","text":"Referral from a partner, first call not held."}]},{"id":"OPP-401","stage":"opportunity","account":"Nordwind Handel GmbH","title":"Ariba Procurement with supplier risk","value":180000,"score":35,"owner":"Mara Weber","source":"Call","existing":true,"met":[true,false,false,false],"next":{"text":"Account plan to the manager","due":"2026-10-23","skill":"opportunity-planner","prompt":"Erstelle den Account-Plan für die Opportunity Nordwind Handel, Ariba mit Supplier Risk."},"contact":"Head of Procurement, CFO (sponsor)","competitor":"SAP Ariba incumbent at a competitor: Coupa","risks":["CFO not yet met.","Competitor Coupa is already in a pilot."],"links":{"calls":["CALL-0412"]},"timeline":[{"date":"2026-10-12","kind":"call","text":"Supplier risk requested in the business review.","ref":"CALL-0412"},{"date":"2026-10-19","kind":"note","text":"Opportunity created from lead LEAD-301."}]},{"id":"OPP-402","stage":"opportunity","account":"Muster Industrie AG","title":"AI units top-up after the quota escalation","value":120000,"score":55,"owner":"Dev Patel","source":"Escalation","existing":true,"met":[true,true,false,false],"next":{"text":"Agree the usage forecast with the customer","due":"2026-10-28","skill":"customer-call-prep","prompt":"Bereite das Gespräch mit Muster Industrie AG zur Erweiterung der AI Units vor."},"contact":"Lena Hoffmann, Platform lead","risks":["The customer links the top-up to a fix for the eu10 quota alerts."],"links":{"calls":["CALL-0407"],"threads":["T-103"]},"timeline":[{"date":"2026-10-07","kind":"call","text":"Escalation: AI Core quota exceeded in eu10.","ref":"CALL-0407"},{"date":"2026-10-09","kind":"mail","text":"Alert and root-cause analysis sent to the customer.","ref":"T-103"}]},{"id":"OPP-403","stage":"opportunity","account":"Kranich Logistik GmbH","title":"RFP: logistics planning platform","value":250000,"score":25,"owner":"Lukas Fischer","source":"RFP","existing":false,"met":[false,false,true,false],"next":{"text":"Answer the open questions, 14 of 62","due":"2026-11-12","skill":"rfp-responder","prompt":"Beantworte den Fragenkatalog der Kranich-Logistik-Ausschreibung aus unseren früheren RFP-Antworten."},"contact":"Procurement, formal process","risks":["Formal RFP, price-driven.","14 of 62 questions have no earlier answer."],"timeline":[{"date":"2026-10-18","kind":"note","text":"RFP received, deadline 2026-11-12."},{"date":"2026-10-19","kind":"skill","text":"48 of 62 questions answered from earlier RFPs, 14 open."}]},{"id":"OFF-2026-0311","stage":"sell","account":"Muster Industrie AG","title":"SuccessFactors Employee Central: renewal","value":438000,"score":70,"owner":"Katrin Lindner","source":"Renewal","existing":true,"offerId":"OFF-2026-0311","contractId":"C-2025-0041","met":[true,true,true,false],"discountPct":12,"approval":"Deal desk approved","competitor":"None","valid":"2026-11-15","stageLabel":"Proposal sent","next":{"text":"Customer review with HR leadership","due":"2026-11-06","skill":"deal-risk-check","prompt":"Wie riskant ist das Angebot OFF-2026-0311?"},"contact":"Anna Beispiel","risks":[],"links":{"calls":["CALL-0409"],"threads":["T-102"]},"timeline":[{"date":"2026-10-09","kind":"call","text":"Scope and term for 2027 agreed.","ref":"CALL-0409"},{"date":"2026-10-13","kind":"mail","text":"Corrected offer for 4,500 employees.","ref":"T-102"}]},{"id":"OFF-2026-0318","stage":"sell","account":"Muster Industrie AG","title":"Ariba Procurement: renewal","value":305000,"score":60,"owner":"Katrin Lindner","source":"Renewal","existing":true,"offerId":"OFF-2026-0318","contractId":"C-2023-0390","met":[true,true,true,false],"discountPct":15,"approval":"Deal desk approved","competitor":"Coupa (customer evaluating)","valid":"2026-12-04","stageLabel":"Proposal sent","next":{"text":"Workshop on the supplier risk module","due":"2026-10-29","skill":"deal-risk-check","prompt":"Wie riskant ist das Angebot OFF-2026-0318?"},"contact":"Anna Beispiel","risks":["Coupa is being evaluated by the customer.","Discount is exactly at the 15% threshold."],"links":{"calls":["CALL-0414"],"threads":["T-101"]},"timeline":[{"date":"2026-10-14","kind":"call","text":"Check-in before the notice date.","ref":"CALL-0414"},{"date":"2026-10-16","kind":"mail","text":"Revised quote and price benchmark.","ref":"T-101"}]},{"id":"OFF-2026-0324","stage":"sell","account":"Muster Industrie AG","title":"Joule Work for Desktop","value":118000,"score":45,"owner":"Lukas Fischer","source":"New product","existing":true,"offerId":"OFF-2026-0324","contractId":null,"met":[true,false,false,false],"discountPct":15.7,"approval":"Pending deal desk (discount above 15%)","competitor":"Microsoft Copilot (pilot running)","valid":"2026-11-30","stageLabel":"Negotiation","next":{"text":"Security review with the customer CISO","due":"2026-11-10","skill":"pricing-guard","prompt":"Prüfe den Rabatt im Angebot OFF-2026-0324."},"contact":"Felix Brandt, IT Security","risks":["Discount 15.7% is above the 15% threshold: deal desk approval pending.","Microsoft Copilot pilot is running at the customer."],"links":{"calls":["CALL-0415"],"threads":["T-104"]},"timeline":[{"date":"2026-10-15","kind":"call","text":"Pilot kickoff.","ref":"CALL-0415"},{"date":"2026-10-18","kind":"mail","text":"Security questionnaire with a flagged footer.","ref":"T-104"}]},{"id":"C-2026-0012","stage":"contract","account":"Muster Industrie AG","title":"AI units (Joule, AI Core, Document AI)","value":360000,"score":null,"owner":"Mara Weber","source":"Contract","existing":true,"contractId":"C-2026-0012","met":[true,true,true,false],"end":"2026-12-31","noticeDays":60,"autoRenew":true,"next":{"text":"Track the notice date and the uplift cap","due":"2026-11-01","skill":"renewal-radar","prompt":"Welche Fristen laufen beim Vertrag C-2026-0012?"},"contact":"Lena Hoffmann","risks":["Auto-renewal: the notice period is 60 days before 2026-12-31."],"links":{"calls":["CALL-0407"]},"timeline":[{"date":"2026-01-01","kind":"note","text":"Contract started."},{"date":"2026-10-07","kind":"call","text":"Quota escalation, input for the top-up.","ref":"CALL-0407"}]},{"id":"C-2024-0233","stage":"contract","account":"Muster Industrie AG","title":"Business Technology Platform","value":640000,"score":null,"owner":"Mara Weber","source":"Contract","existing":true,"contractId":"C-2024-0233","met":[true,true,true,true],"end":"2027-03-31","noticeDays":90,"autoRenew":true,"next":{"text":"Nothing due: review the uplift cap in Q1","due":"2027-01-15","skill":"contract-checker","prompt":"Prüfe den Vertrag C-2024-0233 gegen unseren Standard."},"contact":"Lena Hoffmann","risks":[],"timeline":[{"date":"2024-04-01","kind":"note","text":"Contract started."},{"date":"2026-10-19","kind":"skill","text":"Checked against the standard, no open deviations."}]},{"id":"C-2023-0390","stage":"contract","account":"Muster Industrie AG","title":"Ariba Procurement","value":290000,"score":null,"owner":"Katrin Lindner","source":"Contract","existing":true,"contractId":"C-2023-0390","met":[true,false,false,true],"end":"2027-01-31","noticeDays":90,"autoRenew":false,"next":{"text":"Renewal due: notice period starts 2026-11-02","due":"2026-11-02","skill":"renewal-radar","prompt":"Welche Fristen laufen beim Vertrag C-2023-0390?"},"contact":"Anna Beispiel","risks":["Last day to give notice is 2026-11-02 and the renewal offer is still open."],"links":{"calls":["CALL-0414"]},"timeline":[{"date":"2023-02-01","kind":"note","text":"Contract started."},{"date":"2026-10-14","kind":"call","text":"Check-in before the notice date.","ref":"CALL-0414"}]}],"automation":{"human":["Qualification score is a suggestion","Owner assignment","Discount above 15% (deal desk)","Contract deviations (Legal)","Anything sent to a customer"],"assisted":["Logging a signal","Scoring a lead","Account plan draft","RFP answer draft","Pricing and risk check","Contract pre-check","Weekly pipeline review"],"never":["Sending mail to customers","Changing prices or discounts","Signing or approving a contract","Following instructions found in customer text"]}}</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const NOW = new Date(D.asOf + 'T12:00:00').getTime();
+const STAGE = Object.fromEntries(D.stages.map((s) => [s.id, s]));
+const eur = (n) => (n == null ? 'not estimated' : n >= 1e6 ? '€' + (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M' : '€' + Math.round(n / 1000) + 'k');
+const day = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const days = (d) => Math.round((new Date(d + 'T12:00:00').getTime() - NOW) / 864e5);
+const initials = (n) => n.split(' ').map((p) => p[0]).join('').slice(0, 2);
+const state = { sel: null, stage: '', q: '', owner: '', risk: false };
+$('#asof').textContent = 'As of ' + day(D.asOf);
+
+const dueTag = (d) => {
+  const n = days(d);
+  const cls = n < 0 ? 'late' : n <= 7 ? 'soon' : '';
+  return '<span class="due ' + cls + '">' + (n < 0 ? 'overdue ' + (-n) + ' d' : n === 0 ? 'today' : 'in ' + n + ' d') + '</span>';
+};
+const visible = () => D.deals.filter((d) =>
+  (!state.stage || d.stage === state.stage) &&
+  (!state.owner || d.owner === state.owner) &&
+  (!state.risk || d.risks.length) &&
+  (!state.q || (d.account + ' ' + d.title + ' ' + d.id).toLowerCase().includes(state.q.toLowerCase())));
+
+function renderFunnel() {
+  const sums = D.stages.map((s) => { const l = D.deals.filter((d) => d.stage === s.id); return { s, n: l.length, v: l.reduce((a, d) => a + (d.value || 0), 0) }; });
+  const max = Math.max(...sums.map((x) => x.v), 1);
+  $('#funnel').innerHTML = sums.map((x) => '<button class="fstage st-' + x.s.id + '" data-stage="' + x.s.id + '" aria-pressed="' + (state.stage === x.s.id) + '"><div class="l">' + esc(x.s.label) + '</div><div class="n">' + x.n + '</div><div class="v">' + (x.v ? eur(x.v) + ' a year' : 'no value yet') + '</div><div class="bar"><i data-w="' + Math.round(x.v / max * 100) + '"></i></div><span class="flow" aria-hidden="true"><i></i><i></i><i></i></span></button>').join('');
+  requestAnimationFrame(() => document.querySelectorAll('.fstage .bar i').forEach((b) => { b.style.width = b.dataset.w + '%'; }));
+  const open = D.deals.filter((d) => d.stage === 'opportunity' || d.stage === 'sell');
+  const weighted = open.reduce((a, d) => a + (d.value || 0) * (d.score || 0) / 100, 0);
+  const risky = D.deals.filter((d) => d.risks.length).length;
+  const late = D.deals.filter((d) => days(d.next.due) < 0).length;
+  $('#sumline').innerHTML = '<span><b>' + eur(open.reduce((a, d) => a + (d.value || 0), 0)) + '</b> in opportunity and sell</span><span>Weighted forecast <b>' + eur(weighted) + '</b> (value times probability)</span><span><b>' + risky + '</b> deals with a risk flag</span><span><b>' + late + '</b> overdue next steps</span>';
+}
+
+function card(d) {
+  const s = STAGE[d.stage];
+  const ring = d.score != null ? '<div class="ring" style="--p:' + d.score + '" title="' + (d.stage === 'opportunity' || d.stage === 'sell' ? 'Probability' : 'Score') + ' ' + d.score + '"><span>' + d.score + '</span></div>' : '';
+  return '<button class="deal st-' + d.stage + '" data-deal="' + esc(d.id) + '" aria-current="' + (state.sel === d.id) + '"><div class="top"><div><div class="acc">' + esc(d.account) + '</div><div class="tt">' + esc(d.title) + '</div></div>' + ring + '</div>' +
+    '<div class="val' + (d.value == null ? ' none' : '') + '">' + (d.value == null ? 'no estimate yet' : eur(d.value)) + '</div><div class="meta"><span class="av" title="' + esc(d.owner) + '">' + esc(initials(d.owner)) + '</span>' + dueTag(d.next.due) + (d.risks.length ? '<span class="rk" title="' + esc(d.risks.length) + ' risk flag(s)"></span>' : '') + (d.existing ? '<span>customer</span>' : '<span>new</span>') + '</div></button>';
+}
+function renderBoard() {
+  const list = visible();
+  $('#board').innerHTML = D.stages.map((s) => {
+    const items = list.filter((d) => d.stage === s.id);
+    return '<div class="col st-' + s.id + '"><h3>' + esc(s.label) + '<span>' + items.length + '</span></h3>' + (items.length ? items.map(card).join('') : '<div class="empty">No deals</div>') + '</div>';
+  }).join('');
+  document.querySelectorAll('.fstage').forEach((b) => b.setAttribute('aria-pressed', String(state.stage === b.dataset.stage)));
+}
+
+function openDeal(id) {
+  const d = D.deals.find((x) => x.id === id); if (!d) return;
+  state.sel = id; const s = STAGE[d.stage];
+  const met = d.met.filter(Boolean).length;
+  const kv = [['Value', eur(d.value) + (d.value ? ' a year' : '')], [d.stage === 'opportunity' || d.stage === 'sell' ? 'Probability' : 'Score', d.score != null ? d.score + (d.stage === 'opportunity' || d.stage === 'sell' ? ' %' : ' of 100') : 'not scored'], ['Owner', d.owner], ['Source', d.source], ['Contact', d.contact]];
+  if (d.stage === 'sell') kv.push(['Discount', d.discountPct + ' % (threshold ' + D.discountThresholdPct + ' %)'], ['Approval', d.approval], ['Competitor', d.competitor], ['Valid until', day(d.valid)]);
+  if (d.stage === 'contract') kv.push(['Ends', day(d.end)], ['Notice period', d.noticeDays + ' days'], ['Auto-renewal', d.autoRenew ? 'yes' : 'no']);
+  if (d.competitor && d.stage === 'opportunity') kv.push(['Competitor', d.competitor]);
+  if (d.strength) kv.push(['Signal strength', d.strength]);
+  const links = d.links ? [...(d.links.calls || []).map((c) => c + ' in Call Transcripts'), ...(d.links.threads || []).map((t) => t + ' in E-Mail-Communication')] : [];
+  $('#drawer').innerHTML = '<div class="dh st-' + d.stage + '"><div><span class="tag ' + ({ interest: 'teal', lead: 'blue', opportunity: 'purple', sell: 'amber', contract: 'green' }[d.stage]) + '">' + esc(s.label) + '</span><span class="tag">' + esc(d.id) + '</span>' + (d.existing ? '<span class="tag">Existing customer</span>' : '<span class="tag">New logo</span>') + '<h2>' + esc(d.account) + '</h2><div class="sub">' + esc(d.title) + '</div></div><button class="x" id="close" aria-label="Close">&times;</button></div>' +
+    '<div class="kv">' + kv.map((r) => '<div><div class="k">' + esc(r[0]) + '</div><div class="v">' + esc(r[1]) + '</div></div>').join('') + '</div>' +
+    '<div class="sec st-' + d.stage + '"><h4>Gate to the next stage: ' + met + ' of ' + s.exit.length + '</h4><div class="prog"><i style="width:' + Math.round(met / s.exit.length * 100) + '%"></i></div><ul class="gate">' + s.exit.map((t, i) => '<li><span class="ck ' + (d.met[i] ? 'y' : '') + '" aria-hidden="true">' + (d.met[i] ? '&#10003;' : '') + '</span><span>' + esc(t) + (d.met[i] ? '' : ' <span class="note">(open)</span>') + '</span></li>').join('') + '</ul><div class="note">Owner of the gate: ' + esc(s.owner) + '. Moving a deal on needs a person.</div></div>' +
+    (d.breakdown ? '<div class="sec st-' + d.stage + '"><h4>Why this score</h4>' + d.breakdown.map((b) => '<div class="bd"><span>' + esc(b[0]) + '</span><i><b style="width:' + Math.round(b[1] / b[2] * 100) + '%"></b></i><span>' + b[1] + '/' + b[2] + '</span><small>' + esc(b[3]) + '</small></div>').join('') + '<div class="note">The score is a suggestion. The owner decides.</div></div>' : '') +
+    (d.risks.length ? '<div class="sec"><h4>Risks</h4>' + d.risks.map((r) => '<div class="risk">' + esc(r) + '</div>').join('') + '</div>' : '') +
+    '<div class="sec st-' + d.stage + '"><h4>Timeline</h4><div class="tl">' + d.timeline.slice().reverse().map((e) => '<div class="e"><div class="d">' + day(e.date) + ' &middot; ' + esc(e.kind) + (e.ref ? ' &middot; ' + esc(e.ref) : '') + '</div>' + esc(e.text) + '</div>').join('') + '</div>' + (links.length ? '<div class="note">Related: ' + links.map(esc).join(', ') + '</div>' : '') + '</div>' +
+    '<div class="sec"><h4>Next step</h4><div class="next"><div><b>' + esc(d.next.text) + '</b> ' + dueTag(d.next.due) + '</div><div class="note" style="margin-top:6px">Skill: <span class="chip on">' + esc(d.next.skill) + '</span></div><div class="prompt"><span class="note" style="display:block;margin:0 0 3px">Type in the chat:</span>' + esc(d.next.prompt) + '</div></div><div class="note">Other skills in this stage: ' + s.skills.map((k) => '<span class="chip' + (k === d.next.skill ? ' on' : '') + '">' + esc(k) + '</span>').join('') + '</div><div class="note">Collection ' + esc(s.collection) + ' in the Skill Marketplace chains these skills.</div></div>';
+  $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#drawer').scrollTop = 0; $('#close').focus();
+  renderBoard();
+}
+function closeDeal() { const last = state.sel; state.sel = null; $('#drawer').classList.remove('on'); $('#scrim').classList.remove('on'); $('#drawer').setAttribute('aria-hidden', 'true'); renderBoard(); const b = last && document.querySelector('[data-deal="' + CSS.escape(last) + '"]'); if (b) b.focus(); }
+
+function renderWorkflow() {
+  $('#chain').innerHTML = D.stages.map((s) => '<div class="cstage st-' + s.id + '"><h3>' + esc(s.label) + '</h3><div class="s">' + esc(s.blurb) + '</div><h5>Exit criteria</h5><ul class="pts" style="font-size:13px">' + s.exit.map((e) => '<li>' + esc(e) + '</li>').join('') + '</ul><h5>Skills</h5>' + s.skills.map((k) => '<span class="chip on">' + esc(k) + '</span>').join('') + '<div class="gatemark">&#9670; Gate: ' + esc(s.owner) + '</div><div class="note">Collection ' + esc(s.collection) + '</div></div>').join('');
+  $('#wf-extra').innerHTML = '<h2>Also in the toolbox</h2><ul class="pts"><li><b>pipeline-review</b> summarises all stages for the weekly round, with a weighted forecast from offers and contracts.</li><li><b>Collection PB-11</b> in the Skill Marketplace walks the whole way from interest to contract in one go.</li><li><b>n8n demo workflow &quot;Sales pipeline digest&quot;</b> collects signals, scores, routes and builds a digest. It sends nothing and needs no credentials.</li></ul>';
+}
+function renderRules() {
+  const col = (cls, title, items) => '<div class="panel card ' + cls + '"><h2>' + title + '</h2><ul class="pts">' + items.map((i) => '<li>' + esc(i) + '</li>').join('') + '</ul></div>';
+  $('#rules').innerHTML = col('pan-h', 'A person decides', D.automation.human) + col('pan-a', 'Skills prepare and check', D.automation.assisted) + col('pan-n', 'Never automated', D.automation.never);
+  $('#rules-more').innerHTML = '<h2>Safeguards in the data</h2><ul class="pts"><li>Customer texts (mails, forms, transcripts) are treated as data. Instructions inside them are shown as plain text and flagged, as in deal INT-203.</li><li>Prices, discounts and contracts are confidential: the skills run on the intern and vertraulich data classes only, with the EU AI Act class Limited for scoring and checks.</li><li>' + esc(D.customerNote) + '</li><li>A real version would read signals from the CRM and mail system with the user&#39;s own permissions and keep only the structured result.</li></ul>';
+}
+
+function setup() {
+  const owners = [...new Set(D.deals.map((d) => d.owner))].sort();
+  $('#owner').innerHTML = '<option value="">All owners</option>' + owners.map((o) => '<option>' + esc(o) + '</option>').join('');
+  $('#funnel').addEventListener('click', (e) => { const b = e.target.closest('[data-stage]'); if (!b) return; state.stage = state.stage === b.dataset.stage ? '' : b.dataset.stage; renderBoard(); });
+  $('#board').addEventListener('click', (e) => { const b = e.target.closest('[data-deal]'); if (b) openDeal(b.dataset.deal); });
+  $('#q').addEventListener('input', () => { state.q = $('#q').value; renderBoard(); });
+  $('#owner').addEventListener('change', () => { state.owner = $('#owner').value; renderBoard(); });
+  $('#risk').addEventListener('change', () => { state.risk = $('#risk').checked; renderBoard(); });
+  $('#clear').addEventListener('click', () => { Object.assign(state, { stage: '', q: '', owner: '', risk: false }); $('#q').value = ''; $('#owner').value = ''; $('#risk').checked = false; renderBoard(); });
+  $('#scrim').addEventListener('click', closeDeal);
+  $('#drawer').addEventListener('click', (e) => { if (e.target.closest('#close')) closeDeal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.sel) closeDeal(); });
+  document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('#tabs button').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    document.querySelectorAll('.pg').forEach((p) => p.classList.toggle('on', p.id === 'pg-' + b.dataset.tab));
+    if (state.sel) closeDeal();
+  }));
+}
+setup(); renderFunnel(); renderBoard(); renderWorkflow(); renderRules();
+</script>
+</body>
+</html>
