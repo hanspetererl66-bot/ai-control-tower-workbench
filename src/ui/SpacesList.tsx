@@ -10,11 +10,14 @@ type Props = {
   onReorder?: (from: string, to: string, after: boolean) => void;
   /** Alt+Arrow keys: move one step up or down. */
   onNudge?: (slug: string, direction: -1 | 1) => void;
+  /** Pinned Spaces (kept at the top) and the toggle. */
+  pinned?: string[];
+  onTogglePin?: (slug: string) => void;
 };
 
 type DropMark = { slug: string; after: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin }: Props) {
   const [dragging, setDragging] = useState<string | null>(null);
   const [mark, setMark] = useState<DropMark | null>(null);
 
@@ -93,7 +96,20 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                 <span className="card-title">{s.title}</span>
                 <span className="card-meta">Updated {relativeTime(s.updatedAt)}</span>
               </span>
-              <span className="card-more" aria-hidden="true">···</span>
+              {onTogglePin ? (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className={`pin-btn ${pinned.includes(s.slug) ? 'pin-btn-on' : ''}`}
+                  aria-pressed={pinned.includes(s.slug)}
+                  aria-label={pinned.includes(s.slug) ? `Unpin ${s.title}` : `Pin ${s.title}`}
+                  title={pinned.includes(s.slug) ? 'Unpin' : 'Pin to the top'}
+                  onClick={(event) => { event.stopPropagation(); onTogglePin(s.slug); }}
+                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onTogglePin(s.slug); } }}
+                >{pinned.includes(s.slug) ? '★' : '☆'}</span>
+              ) : (
+                <span className="card-more" aria-hidden="true">···</span>
+              )}
             </span>
             {s.description && <span className="card-desc">{s.description}</span>}
           </button>

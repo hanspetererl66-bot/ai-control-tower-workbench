@@ -12,6 +12,7 @@ import { SUB4ME_TOOL_DEFINITIONS, createSub4MeHandlers } from './sub4me.mjs';
 import { N8N_TOOL_DEFINITIONS, createN8nHandlers } from './n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS, createSkillProfileHandlers } from './skill-profiles.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS, createSkillRatingHandlers } from './skill-ratings.mjs';
+import { PREFERENCE_TOOL_DEFINITIONS, createPreferenceHandlers } from './preferences.mjs';
 import { SAP_HELP_TOOL_DEFINITIONS, createSapHelpHandlers } from './sap-help.mjs';
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
@@ -131,12 +132,12 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
         const rpcCall = ticketRpc();
-        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...createSub4MeHandlers(undefined, rpcCall), ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...n8nHandlers, ...sapHelpHandlers };
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...createSub4MeHandlers(undefined, rpcCall), ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...n8nHandlers, ...sapHelpHandlers, ...createPreferenceHandlers(rpcCall) };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');

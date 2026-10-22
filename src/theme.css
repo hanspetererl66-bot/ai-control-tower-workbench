@@ -778,10 +778,10 @@ button {
 }
 
 .list-item-on {
-  background: #f2effc;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--accent);
   font-weight: 600;
-  box-shadow: inset 0 0 0 1px #e4dcfb;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 /* ---------- main ---------- */
@@ -3082,4 +3082,120 @@ button {
 .scale-options {
   display: flex;
   gap: 8px;
+}
+
+/* ---------- personal settings: density, pins, profiles ---------- */
+
+:root {
+  --dens: 1;
+}
+.list-item {
+  padding: calc(9px * var(--dens)) 10px;
+}
+.chat {
+  gap: calc(16px * var(--dens));
+}
+.msg-user {
+  padding: calc(9px * var(--dens)) 14px;
+}
+.msg-agent {
+  gap: calc(6px * var(--dens));
+}
+.prefs-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.prefs-tab {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.prefs-tab-on {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.prefs-body {
+  max-height: min(62vh, 560px);
+  overflow-y: auto;
+}
+.prefs-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.prefs-row label {
+  font-size: 13px;
+  color: var(--muted);
+  min-width: 110px;
+}
+.prefs-row select,
+.prefs-row input[type="text"],
+.prefs-area {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.prefs-area {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.prefs-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  padding: 0;
+}
+.prefs-swatch-on {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--ink);
+}
+.prefs-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.prefs-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.prefs-list small {
+  color: var(--muted);
+  display: block;
+}
+.prefs-note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.pin-btn {
+  flex: none;
+  font-size: 12px;
+  opacity: 0.55;
+}
+.pin-btn-on {
+  opacity: 1;
+  color: var(--accent);
 }

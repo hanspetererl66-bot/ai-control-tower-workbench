@@ -431,3 +431,15 @@ The sparkle icon next to **+** in the composer opens a menu with two entries (th
 - **Model** shows **OpenRouter** with the model that is actually running (`GOOSE_MODEL` in `.env`). SAP Generative AI Hub, Azure OpenAI, Anthropic and Google Gemini are listed in light grey as “not connected”; switching the provider is not part of the prototype yet.
 
 The logic lives in `src/web-search.ts`.
+
+## Personalisierung
+
+Einstellungen → Tabs **Profile, Look, Work, Assistant, Storage, General**.
+
+- **Look:** Akzentfarbe (wirkt auch in allen Spaces), App- und Space-Textgröße, Schrift, Dichte, hoher Kontrast, weniger Bewegung.
+- **Profile:** fertige Profile (Standard, Vertrieb, Governance, Demo, Barrierearm) und eigene Profile speichern/löschen.
+- **Work:** Start-Ansicht (Chat, letzter Space, fester Space), angeheftete Spaces (★ in der Space-Liste), Lieblings-Skills und eigene Starter-Prompts als Chips, Standard-Connectoren.
+- **Assistant:** Sprache, Länge, Ton und feste Anweisungen; werden jeder Anfrage als „PERSONAL PREFERENCES“-Block mitgegeben.
+- **Storage:** benannte Ablageorte (Zweck → Pfad/URL), Export/Import als Datei und Abgleich mit Supabase (`werkbank.preferences`, Tools `get_preferences` / `save_preferences`; Geheimnisse werden abgelehnt). Migration: `supabase/migrations/20261022_016_werkbank_preferences.sql`.
+
+Lokal liegt alles in `localStorage` (`werkbank.preferences.v1`). Das Modell lässt sich über Goose/ACP nicht umschalten; der Modell-Wunsch ist nur eine Erinnerung.

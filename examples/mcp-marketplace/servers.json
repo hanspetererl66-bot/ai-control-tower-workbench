@@ -480,6 +480,18 @@
           "class": "read",
           "what": "",
           "default": "on"
+        },
+        {
+          "name": "get_preferences",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "save_preferences",
+          "class": "write",
+          "what": "",
+          "default": "on"
         }
       ],
       "switches": [],
