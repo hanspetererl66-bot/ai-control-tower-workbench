@@ -468,6 +468,12 @@
           "class": "read",
           "what": "",
           "default": "on"
+        },
+        {
+          "name": "search_sap_help",
+          "class": "read",
+          "what": "",
+          "default": "on"
         }
       ],
       "switches": [],

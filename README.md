@@ -361,6 +361,10 @@ The Sub4Me Space now has a customer switch in the header: **Muster Industrie AG*
 
 Connector tools: every Sub4Me and ticket tool takes an optional `customer` (`muster`, `hanse`); new are `list_customers`, `list_invoices`, `find_similar_tickets` and `link_ticket`. The knowledge graph, calls, e-mails and Sales Space stay with Muster Industrie. After a pull: `npm run install:sub4me`, run migration 015 in Supabase, `npm run build:control-tower-mcpb`, re-import the connector and restart.
 
+### SAP Help Portal search (no S-user)
+
+The connector tool `search_sap_help` queries the public search of help.sap.com (documentation and support content, no login) and returns title, link, product and an excerpt. It contacts only help.sap.com, drops links to other hosts, strips HTML and tells the model to treat the text as data. It runs on your computer when the connector is called, so it needs internet access there. The response format was taken from public descriptions and is covered by tests with a fake response; it has **not** been checked against the live service from the development environment. The `ticket-triage` skill uses it next to `find_similar_tickets`. After a pull: `npm run build:control-tower-mcpb`, re-import the connector and restart.
+
 ### Sub4Me: contract and offer details
 
 `examples/sub4me/portfolio.json` is the single source for the contracts and offers of the Sub4Me test customer, each with about 25 fictional attributes (contract type, billing and payment terms, SLA, data centre, contacts, licensed vs. used units, invoicing, auto-renewal, termination; for offers list price, discount, stage, win probability, approval, competitor, next step, conditions) and line items.

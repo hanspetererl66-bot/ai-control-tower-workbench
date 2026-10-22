@@ -205,6 +205,10 @@
     {
       "name": "enrich_ticket",
       "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
+    },
+    {
+      "name": "search_sap_help",
+      "description": "Search the public SAP Help Portal (help.sap.com, no login) for documentation and support content. Read only."
     }
   ],
   "user_config": {

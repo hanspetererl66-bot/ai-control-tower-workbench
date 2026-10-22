@@ -2132,6 +2132,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    }
   },
   {
+   "id": "tool:search_sap_help",
+   "type": "tool",
+   "label": "search_sap_help",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
    "id": "tool:link_ticket",
    "type": "tool",
    "label": "link_ticket",
@@ -4525,6 +4533,21 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   {
    "source": "skill:ticket-triage",
    "target": "tool:find_similar_tickets",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:search_sap_help",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_sap_help",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ticket-triage",
+   "target": "tool:search_sap_help",
    "type": "USES_TOOL"
   },
   {
