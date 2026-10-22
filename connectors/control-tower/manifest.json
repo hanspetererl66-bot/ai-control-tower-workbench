@@ -21,7 +21,10 @@
         "SUPABASE_URL": "${user_config.supabase_url}",
         "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}",
         "N8N_URL": "${user_config.n8n_url}",
-        "N8N_API_KEY": "${user_config.n8n_api_key}"
+        "N8N_API_KEY": "${user_config.n8n_api_key}",
+        "ZAMMAD_URL": "${user_config.zammad_url}",
+        "ZAMMAD_TOKEN": "${user_config.zammad_token}",
+        "ZAMMAD_GROUP": "${user_config.zammad_group}"
       }
     }
   },
@@ -228,6 +231,25 @@
       "title": "n8n API key",
       "description": "Optional. Created in n8n under Settings, n8n API. Read access to workflows and executions. Stored as a secret, never written to config files.",
       "sensitive": true,
+      "required": false
+    },
+    "zammad_url": {
+      "type": "string",
+      "title": "Zammad address",
+      "description": "Optional. Example: https://support.firma.de or http://localhost:8080. When set, the ticket tools use Zammad instead of the demo table.",
+      "required": false
+    },
+    "zammad_token": {
+      "type": "string",
+      "title": "Zammad API token",
+      "description": "Optional. Created in Zammad under Profile, Token Access (permission ticket.agent). Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "zammad_group": {
+      "type": "string",
+      "title": "Zammad group",
+      "description": "Optional. Group for new tickets, default Users.",
       "required": false
     }
   }

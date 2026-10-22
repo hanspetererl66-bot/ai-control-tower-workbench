@@ -12,6 +12,7 @@ import { SUB4ME_TOOL_DEFINITIONS, createSub4MeHandlers } from './sub4me.mjs';
 import { N8N_TOOL_DEFINITIONS, createN8nHandlers } from './n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS, createSkillProfileHandlers } from './skill-profiles.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS, createSkillRatingHandlers } from './skill-ratings.mjs';
+import { createZammadRpc, routeTicketCalls } from './zammad.mjs';
 import { SAP_HELP_TOOL_DEFINITIONS, createSapHelpHandlers } from './sap-help.mjs';
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
@@ -66,11 +67,23 @@ async function loadSupabase(url, key) {
   return data;
 }
 
+const zammadRpc = () => {
+  const url = process.env.ZAMMAD_URL?.trim();
+  if (!url) return null;
+  try {
+    return createZammadRpc({ url, token: process.env.ZAMMAD_TOKEN?.trim(), group: process.env.ZAMMAD_GROUP?.trim() || 'Users' });
+  } catch (error) {
+    const failing = async () => { throw new ToolError(`Zammad is configured but not usable: ${error.message}`); };
+    failing.label = 'zammad';
+    failing.handles = new Set(['sub4me_tickets', 'sub4me_create_ticket', 'sub4me_link_ticket']);
+    return failing;
+  }
+};
+
 const ticketRpc = () => {
   const url = process.env.SUPABASE_URL?.trim();
   const key = process.env.SUPABASE_SECRET_KEY?.trim();
-  if (!url || !key) return null;
-  return async (fn, body) => {
+  const supabase = !url || !key ? null : async (fn, body) => {
     try {
       return await supabaseRpc(fn, body, url, key);
     } catch (error) {
@@ -78,6 +91,7 @@ const ticketRpc = () => {
       throw new ToolError(`Supabase call failed: ${error.message}`);
     }
   };
+  return routeTicketCalls(zammadRpc(), supabase);
 };
 
 /**

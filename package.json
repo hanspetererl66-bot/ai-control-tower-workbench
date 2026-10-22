@@ -36,7 +36,8 @@
     "skills:sync": "node scripts/skills-registry.mjs sync",
     "skills:publish": "node scripts/skills-registry.mjs publish",
     "install:examples": "node scripts/install-example-space.mjs",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "seed:zammad": "node scripts/seed-zammad.mjs"
   },
   "keywords": [
     "ai",

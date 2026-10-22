@@ -365,6 +365,15 @@ Connector tools: every Sub4Me and ticket tool takes an optional `customer` (`mus
 
 The connector tool `search_sap_help` queries the public search of help.sap.com (documentation and support content, no login) and returns title, link, product and an excerpt. It contacts only help.sap.com, drops links to other hosts, strips HTML and tells the model to treat the text as data. It runs on your computer when the connector is called, so it needs internet access there. The response format was taken from public descriptions and is covered by tests with a fake response; it has **not** been checked against the live service from the development environment. The `ticket-triage` skill uses it next to `find_similar_tickets`. After a pull: `npm run build:control-tower-mcpb`, re-import the connector and restart.
 
+### Zammad as ticket system (instead of the demo table)
+
+Set `ZAMMAD_URL` and `ZAMMAD_TOKEN` (optional `ZAMMAD_GROUP`, default `Users`) in the connector settings and the ticket tools (`list_tickets`, `create_ticket`, `find_similar_tickets`, `link_ticket`) use [Zammad](https://zammad.com) (open source help desk, AGPL, REST API included) instead of the Supabase demo table. Everything else (invoices, skills, graph) stays as it was. The Sub4Me Space and the ticket check work unchanged because they go through these tools.
+
+- **Setup:** start Zammad (for example with the official `zammad-docker-compose`, then `http://localhost:8080`), create an agent user and an API token under Profile, Token Access with the permission `ticket.agent`, and enter both in the connector. Optional: `ZAMMAD_URL=… ZAMMAD_TOKEN=… npm run seed:zammad` creates the sample tickets of both customers.
+- **Mapping:** ticket id `ZM-<number>`; each demo customer is a Zammad user `<id>@sub4me-demo.example`, created on first use; product, priority, owner, follows and related are tags; "related" is also a Zammad ticket link; "follows" is the tag `follows:<customer>` on the ticket.
+- **Limits:** the sample status is not copied (new tickets start as New); the ticket list reads at most 300 tickets and one extra call per ticket for its tags, which is fine for a demo and slow for a large help desk; the description is not part of the list, so the match uses title and product.
+- **Not verified:** the endpoints follow docs.zammad.org and are covered by tests with an in-memory fake. They have **not** been run against a real Zammad from the development environment.
+
 ### Sub4Me: contract and offer details
 
 `examples/sub4me/portfolio.json` is the single source for the contracts and offers of the Sub4Me test customer, each with about 25 fictional attributes (contract type, billing and payment terms, SLA, data centre, contacts, licensed vs. used units, invoicing, auto-renewal, termination; for offers list price, discount, stage, win probability, approval, competitor, next step, conditions) and line items.

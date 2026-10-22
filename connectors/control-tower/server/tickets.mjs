@@ -116,7 +116,7 @@ export function createTicketHandlers(rpc, load = loadSub4MeData) {
           const live = await rpc('sub4me_tickets', {});
           if (Array.isArray(live) && live.length) {
             pool = live.map((t) => ({ ...t, customerName: records.find((r) => r.id === t.customer)?.customer?.name ?? t.customer }));
-            dataSource = 'supabase';
+            dataSource = rpc.label ?? 'supabase';
           }
         } catch {
           // keep the sample tickets
@@ -151,14 +151,14 @@ export function createTicketHandlers(rpc, load = loadSub4MeData) {
       const newTicket = args.newTicket === undefined ? null : text(args, 'newTicket', 40);
       if (kind === 'related' && !newTicket) throw new ToolError('newTicket is required for kind "related"');
       const link = await need()('sub4me_link_ticket', { p_ticket: ticket, p_customer: customerId(args), p_kind: kind, p_new_ticket: newTicket });
-      return { link, status: kind === 'follows' ? 'customer now follows the ticket, no new ticket opened' : 'tickets linked', dataSource: 'supabase' };
+      return { link, status: kind === 'follows' ? 'customer now follows the ticket, no new ticket opened' : 'tickets linked', dataSource: rpc.label ?? 'supabase' };
     },
     async list_tickets(args) {
       const status = args.status;
       if (status !== undefined && !STATUSES.includes(status)) throw new ToolError(`status must be one of: ${STATUSES.join(', ')}`);
       const tickets = await need()('sub4me_tickets', { p_customer: customerId(args) });
       const list = status ? tickets.filter((t) => t.status === status) : tickets;
-      return { count: list.length, tickets: list, dataSource: 'supabase' };
+      return { count: list.length, tickets: list, dataSource: rpc.label ?? 'supabase' };
     },
     async create_ticket(args) {
       const title = text(args, 'title', 120);
@@ -166,7 +166,7 @@ export function createTicketHandlers(rpc, load = loadSub4MeData) {
       const description = text(args, 'description', 2000, { optional: true });
       if (!PRIORITIES.includes(args.priority)) throw new ToolError(`priority must be one of: ${PRIORITIES.join(', ')}`);
       const ticket = await need()('sub4me_create_ticket', { p_title: title, p_product: product, p_priority: args.priority, p_description: description, p_customer: customerId(args) });
-      return { ticket, status: 'created (demo data, stored in Supabase)', dataSource: 'supabase' };
+      return { ticket, status: rpc.label === 'zammad' ? 'created in Zammad' : 'created (demo data, stored in Supabase)', dataSource: rpc.label ?? 'supabase' };
     },
   };
 }
