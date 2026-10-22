@@ -297,9 +297,9 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
           <label>Priority<select name="priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Very high</option></select></label>
           <label>Title<input name="title" required maxlength="120" placeholder="Short summary of the issue"></label>
           <label>Description<textarea name="desc" rows="4" maxlength="2000" placeholder="What happened, since when, impact"></textarea></label>
-          <button class="primary" type="button" id="create-ticket">Check and create ticket</button>
+          <button class="primary" type="button" id="create-ticket">Check, then send ticket</button>
         </form>
-        <div class="s" style="margin-top:8px">Before a ticket is opened, the portal looks for a note with a solution and for the same issue in open tickets.</div>
+        <div class="s" style="margin-top:8px">Before the ticket is sent, the portal looks for a solution in the SAP Help Portal and the SAP Community and for the same issue in open tickets. You confirm before anything is created.</div>
         <div id="precheck" aria-live="polite"></div>
         <div class="toast" id="toast" role="status"></div><div class="saved s" id="saved"></div></div>
       <div class="card tbl" style="flex:2 1 460px"><div class="k" style="margin-bottom:6px">My tickets</div><div id="tickets"></div></div>
@@ -2697,7 +2697,7 @@ function similarity(a, b) {
 }
 /*match:end*/
   var THRESH = {strong: 0.5, possible: 0.35};
-  var last = null, seq = 48214, pending = {}, reqCount = 0;
+  var last = null, checking = null, seq = 48214, pending = {}, reqCount = 0;
   function rankList(cand, list){
     return list.map(function(x){ return {item: x, score: similarity(cand, x.match || x)}; })
       .filter(function(h){ return h.score >= THRESH.possible; })
@@ -2716,13 +2716,33 @@ function similarity(a, b) {
     return {notes: notes, tickets: rankList(cand, pool)};
   }
   function pct(h){ return Math.round(h.score * 100) + '% match'; }
+  function urlText(u){ return String(u || '').replace(/^https:\/\//, '').slice(0, 90); }
+  function srcChip(label, r){
+    if (!r) return tag('n', label + ': not connected');
+    if (!r.ok) return tag('warn', label + ': not available');
+    return tag(r.results.length ? 'ok' : 'n', label + ': ' + r.results.length + (r.results.length === 1 ? ' hit' : ' hits'));
+  }
+  function webHits(r, kind){
+    if (!r || !r.ok) return '';
+    return r.results.map(function(w){
+      return '<div class="hit"><div class="t">' + esc(w.title) + '</div><div class="s">' + tag(kind === 'help' ? 'ok' : 'n', kind === 'help' ? 'SAP Help Portal' : 'SAP Community, not official') + (w.label ? ' ' + esc(w.label) : '') + '</div>' +
+        (w.excerpt ? '<div class="sol">' + esc(w.excerpt) + '</div>' : '') + '<div class="s">' + esc(urlText(w.url)) + '</div></div>';
+    }).join('');
+  }
+  function renderChecking(){
+    $('precheck').innerHTML = '<div class="pre"><h3>Checking before the ticket is sent</h3><div class="s">Looking for a solution in the SAP Help Portal and the SAP Community, then for the same issue in open tickets. Nothing has been sent yet.</div></div>';
+  }
   function renderPre(cand, res){
-    var h = '<div class="pre"><h3>Before a new ticket is opened</h3><div class="s">Checked against ' + KNOW.sapNotes.length + ' sample notes and the open tickets of all customers.</div>';
-    if (res.notes.length){
-      h += '<h4>A note may already solve this</h4>' + res.notes.map(function(x){
+    var live = res.mode === 'live';
+    var h = '<div class="pre"><h3>Before the ticket is sent</h3><div class="s">Nothing has been sent yet. ' + (live ? 'Checked: ' : 'Checked on this page only: ') + '</div><div class="s">' +
+      srcChip('SAP Help Portal', res.help) + ' ' + srcChip('SAP Community', res.community) + ' ' + tag('n', (res.noteSource || 'sample notes') + ': ' + res.notes.length) + ' ' + tag('n', 'open tickets: ' + res.tickets.length) + '</div>';
+    if (!live || res.reason) h += '<div class="s" style="margin-top:6px">' + esc(res.reason || 'The live search runs in the app. Here only the sample notes and sample tickets are used.') + '</div>';
+    var hasSol = res.notes.length || (res.help && res.help.ok && res.help.results.length) || (res.community && res.community.ok && res.community.results.length);
+    if (hasSol){
+      h += '<h4>A solution may already exist</h4>' + webHits(res.help, 'help') + webHits(res.community, 'community') + res.notes.map(function(x){
         var nt = x.item;
-        return '<div class="hit"><div class="t">' + esc(nt.id) + ' · ' + esc(nt.title) + '</div><div class="s">' + tag(x.strength === 'strong' ? 'ok' : 'n', pct(x)) + ' updated ' + esc(nt.updated) + '</div><div class="sol"><b>Solution:</b> ' + esc(nt.solution) + '</div><div class="btns"><button type="button" class="sec" data-act="solved">This solved it, no ticket needed</button></div></div>';
-      }).join('');
+        return '<div class="hit"><div class="t">' + esc(nt.id) + ' · ' + esc(nt.title) + '</div><div class="s">' + tag(x.strength === 'strong' ? 'ok' : 'n', pct(x)) + ' updated ' + esc(nt.updated) + ' · sample note' + '</div><div class="sol"><b>Solution:</b> ' + esc(nt.solution) + '</div></div>';
+      }).join('') + '<div class="btns"><button type="button" class="sec" data-act="solved">This solved it, no ticket needed</button></div>';
     }
     if (res.tickets.length){
       h += '<h4>The same issue is already open</h4>' + res.tickets.map(function(x, i){
@@ -2733,11 +2753,12 @@ function similarity(a, b) {
         return '<div class="hit"><div class="t">' + esc(t.id) + ' · ' + (t.own ? esc(t.title) : 'Same issue reported by another customer') + '</div><div class="s">' + tag(x.strength === 'strong' ? 'warn' : 'n', pct(x)) + ' ' + who + ' · ' + esc(t.product) + ' · ' + esc(t.status) + ' · opened ' + esc(t.created) + '</div>' + (t.own ? '' : '<div class="s">Details of other customers stay hidden here; SAP sees both tickets and merges them.</div>') + '<div class="btns">' + actions + '</div></div>';
       }).join('');
     }
-    h += '<div class="btns"><button type="button" class="sec" data-act="new">Open a new ticket anyway</button><button type="button" class="sec" data-act="cancel">Cancel</button></div></div>';
+    if (!hasSol && !res.tickets.length) h += '<h4>Result</h4><div class="s">No solution and no open ticket with the same issue were found.</div>';
+    h += '<div class="btns">' + (hasSol || res.tickets.length ? '<button type="button" class="sec" data-act="new">No fit: send as a new ticket</button>' : '<button type="button" class="primary" data-act="new">Send ticket</button>') + '<button type="button" class="sec" data-act="cancel">Cancel</button></div></div>';
     $('precheck').innerHTML = h;
     last = {cand: cand, res: res};
   }
-  function finish(){ $('precheck').innerHTML = ''; last = null; }
+  function finish(){ $('precheck').innerHTML = ''; last = null; checking = null; }
   function setStorage(r){
     $('storage-note').textContent = r ? 'Tickets are stored in the demo database (Supabase).' : 'Tickets you open here stay in this page and are not sent anywhere.';
   }
@@ -2774,9 +2795,16 @@ function similarity(a, b) {
     var title = f.title.value.trim();
     if (!title) return;
     var cand = {title: title, product: f.product.value, priority: f.priority.value, description: f.desc.value};
-    var res = precheck(cand);
-    if (!res.notes.length && !res.tickets.length){ toast('No note or open ticket matches, so a new ticket was opened.'); submit(cand, 'new'); return; }
-    renderPre(cand, res);
+    var local = precheck(cand);
+    local.mode = 'sample'; local.help = null; local.community = null;
+    if (window.parent === window){ renderPre(cand, local); return; }
+    var id = 'c' + (++reqCount) + '-' + Date.now();
+    checking = {id: id, cand: cand, local: local};
+    last = null; renderChecking();
+    askParent({type: 's4m:check-request', requestId: id, customer: D.customer.id, title: cand.title, product: cand.product, description: cand.description});
+    setTimeout(function(){
+      if (checking && checking.id === id){ local.reason = 'The live check did not answer. Only the sample notes and sample tickets were used.'; checking = null; renderPre(cand, local); }
+    }, 25000);
   });
   $('precheck').addEventListener('click', function(e){
     var b = e.target.closest('button[data-act]');
@@ -2793,7 +2821,7 @@ function similarity(a, b) {
     var sc = KNOW.scenarios.filter(function(x){ return x.customer === D.customer.id; })[Number(b.dataset.i)];
     var f = $('ticket-form'); f.title.value = sc.title; f.desc.value = sc.description; f.priority.value = sc.priority;
     if (Array.prototype.some.call(f.product.options, function(o){ return o.value === sc.product; })) f.product.value = sc.product;
-    finish(); toast('Example loaded. Press "Check and create ticket".');
+    finish(); toast('Example loaded. Press "Check, then send ticket".');
   });
 
   // ---- customer switch
@@ -2831,6 +2859,21 @@ function similarity(a, b) {
       clearTimeout(bridgeTimer); remote = true; setStorage(true);
       D.tickets = d.tickets.map(mapT);
       renderTickets(); renderOverview();
+    } else if (d.type === 's4m:check-result' && checking && d.requestId === checking.id) {
+      var ck = checking; checking = null;
+      var dup = d.duplicates || {};
+      var mapW = function(r){ return r && r.ok ? {ok: true, results: (r.results || []).map(function(w){ return {title: String(w.title), url: String(w.url), excerpt: String(w.excerpt || ''), label: String(w.label || '')}; })} : {ok: false}; };
+      var res = {
+        mode: 'live', help: mapW(d.help), community: mapW(d.community),
+        notes: dup.ok ? dup.notes.map(function(n){ return {item: {id: n.id, title: n.title, solution: n.solution, updated: n.updated}, score: n.score, strength: n.strength}; }) : ck.local.notes,
+        noteSource: 'sample notes',
+        tickets: dup.ok ? dup.tickets.map(function(t){ return {item: {id: t.id, title: t.title, product: t.product, status: t.status, created: t.created, own: !!t.sameCustomer}, score: t.score, strength: t.strength}; }) : ck.local.tickets
+      };
+      if (!dup.ok) res.reason = 'The duplicate check could not read the live tickets (' + String(dup.error || '').slice(0, 100) + '). Sample data was used for notes and tickets.';
+      renderPre(ck.cand, res);
+    } else if (d.type === 's4m:error' && d.requestId && checking && d.requestId === checking.id) {
+      var ck2 = checking; checking = null; ck2.local.reason = 'The live check failed (' + String(d.message).slice(0, 100) + '). Only the sample notes and sample tickets were used.';
+      renderPre(ck2.cand, ck2.local);
     } else if (d.type === 's4m:error' && !d.requestId) {
       clearTimeout(bridgeTimer); remote = false; setStorage(false);
     } else if (d.type === 's4m:ticket-created' && d.requestId && pending[d.requestId] && d.ticket) {

@@ -1,7 +1,7 @@
 /**
  * Bridge between the sandboxed Sub4Me Space and the connector.
  * The Space has no network, so it asks the app by postMessage; the app answers by calling
- * two fixed tools of the bundled connector. Nothing else can be reached through here.
+ * a few fixed tools of the bundled connector. Nothing else can be reached through here.
  */
 export const SUB4ME_SPACE = 'sub4me';
 export const SUB4ME_EXTENSION = 'ai-control-tower';
@@ -49,6 +49,51 @@ export async function handleSub4meMessage(data: unknown, call: BridgeCall | unde
     } catch (error) {
       return { type: 's4m:error', message: error instanceof Error ? error.message : String(error) };
     }
+  }
+
+  if (data.type === 's4m:check-request') {
+    // Before a ticket is sent: look for a solution (SAP Help Portal, SAP Community) and for the same issue in open tickets.
+    const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
+    if (!requestId) return null;
+    const fail = (message: string) => ({ type: 's4m:error', requestId, message });
+    if (!call) return fail('The agent is not connected yet.');
+    const { title } = data;
+    const product = typeof data.product === 'string' ? data.product.trim().slice(0, 80) : '';
+    const description = typeof data.description === 'string' ? data.description.slice(0, 2000) : '';
+    if (typeof title !== 'string' || !title.trim() || title.length > 120) return fail('invalid ticket');
+    const customer = typeof data.customer === 'string' && CUSTOMER_ID.test(data.customer) ? data.customer : undefined;
+    const who = customer ? { customer } : {};
+    const query = `${product} ${title.trim()}`.trim().slice(0, 200);
+    const settle = async (tool: string, args: Record<string, unknown>): Promise<{ ok: true; data: any } | { ok: false; error: string }> => {
+      try {
+        return { ok: true, data: parseToolResult(await call(tool, args)) };
+      } catch (error) {
+        return { ok: false, error: error instanceof Error ? error.message : String(error) };
+      }
+    };
+    const [dup, help, community] = await Promise.all([
+      settle('find_similar_tickets', { title: title.trim(), ...(product ? { product } : {}), ...(description ? { description } : {}), ...who }),
+      settle('search_sap_help', { q: query, limit: 3 }),
+      settle('search_sap_community', { q: query, limit: 3 }),
+    ]);
+    const str = (value: unknown, max: number) => (typeof value === 'string' ? value.slice(0, max) : '');
+    const web = (r: typeof help, kind: 'help' | 'community') =>
+      r.ok
+        ? { ok: true, results: (Array.isArray(r.data?.results) ? r.data.results : []).slice(0, 3).filter(isObject).map((h: Record<string, unknown>) => ({ title: str(h.title, 200), url: str(h.url, 400), excerpt: str(h.excerpt, 400), label: kind === 'help' ? str(h.product, 120) : str(h.board, 120) })) }
+        : { ok: false, error: r.error.slice(0, 200) };
+    const duplicates = dup.ok
+      ? {
+          ok: true,
+          notes: (Array.isArray(dup.data?.notes) ? dup.data.notes : []).filter(isObject).map((n: Record<string, unknown>) => ({ id: str(n.id, 40), title: str(n.title, 200), product: str(n.product, 80), solution: str(n.solution, 1000), updated: str(n.updated, 20), score: Number(n.score) || 0, strength: n.strength === 'strong' ? 'strong' : 'possible' })),
+          // Tickets of other customers arrive without title or customer name.
+          tickets: (Array.isArray(dup.data?.tickets) ? dup.data.tickets : []).filter(isObject).map((t: Record<string, unknown>) => ({
+            id: str(t.id, 40), title: t.sameCustomer ? str(t.title, 200) : 'Same issue reported by another customer', product: str(t.product, 80),
+            status: str(t.status, 40), created: str(t.created, 20), sameCustomer: Boolean(t.sameCustomer), score: Number(t.score) || 0, strength: t.strength === 'strong' ? 'strong' : 'possible',
+          })),
+          dataSource: str(dup.data?.dataSource, 40),
+        }
+      : { ok: false, error: dup.error.slice(0, 200) };
+    return { type: 's4m:check-result', requestId, ...(customer ? { customer } : {}), duplicates, help: web(help, 'help'), community: web(community, 'community') };
   }
 
   if (data.type === 's4m:create-ticket') {
