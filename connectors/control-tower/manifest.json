@@ -209,6 +209,10 @@
     {
       "name": "search_sap_help",
       "description": "Search the public SAP Help Portal (help.sap.com, no login) for documentation and support content. Read only."
+    },
+    {
+      "name": "search_sap_community",
+      "description": "Search SAP Community (community.sap.com, no login) for questions, answers and blogs. Read only."
     }
   ],
   "user_config": {

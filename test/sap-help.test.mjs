@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSapHelpHandlers, helpUrl, searchUrl, parseResults, SAP_HELP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sap-help.mjs';
+import { createSapHelpHandlers, helpUrl, searchUrl, parseResults, parseCommunity, communityUrl, COMMUNITY_ORIGIN, SAP_HELP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sap-help.mjs';
 
 const body = {
   data: {
@@ -24,10 +24,11 @@ const fakeFetch = (payload, init = {}) => {
 };
 
 test('tool definition is read only with a required query', () => {
-  const [tool] = SAP_HELP_TOOL_DEFINITIONS;
-  assert.equal(tool.name, 'search_sap_help');
-  assert.deepEqual(tool.inputSchema.required, ['q']);
-  assert.equal(tool.inputSchema.additionalProperties, false);
+  assert.deepEqual(SAP_HELP_TOOL_DEFINITIONS.map((t) => t.name), ['search_sap_help', 'search_sap_community']);
+  for (const tool of SAP_HELP_TOOL_DEFINITIONS) {
+    assert.deepEqual(tool.inputSchema.required, ['q']);
+    assert.equal(tool.inputSchema.additionalProperties, false);
+  }
 });
 
 test('links outside help.sap.com are dropped and html is stripped', () => {
@@ -64,4 +65,26 @@ test('input and error handling', async () => {
   await assert.rejects(h(async () => { throw new Error('offline'); }).search_sap_help({ q: 'x' }), /not reachable: offline/);
   const none = await h(fakeFetch({ data: { results: [] } })).search_sap_help({ q: 'x' });
   assert.equal(none.count, 0);
+});
+
+test('community search keeps only community.sap.com links and strips query syntax', async () => {
+  const body = { data: { items: [
+    { subject: 'Quota <b>exceeded</b> in eu10', view_href: '/t5/technology-q-a/quota/qaq-p/123', board: { title: 'Technology Q&A' }, post_time: '2026-09-01T10:00:00Z', body: '<p>Try  scaling</p>' },
+    { subject: 'Elsewhere', view_href: 'https://evil.example/x' },
+  ] } };
+  const hits = parseCommunity(body, 5);
+  assert.equal(hits.length, 1);
+  assert.deepEqual([hits[0].title, hits[0].board, hits[0].posted, hits[0].excerpt], ['Quota exceeded in eu10', 'Technology Q&A', '2026-09-01', 'Try scaling']);
+  assert.ok(hits[0].url.startsWith(`${COMMUNITY_ORIGIN}/`));
+  const url = new URL(communityUrl({ q: `x' OR 1=1 --"; DROP`, limit: 2 }));
+  assert.equal(url.origin, COMMUNITY_ORIGIN);
+  const liql = url.searchParams.get('q');
+  assert.ok(!/['"`;]\s*(OR|DROP)/.test(liql.replace(/MATCHES '[^']*'/, '')), liql);
+  assert.match(liql, /MATCHES 'x OR 1 1 -- DROP'/);
+  const f = fakeFetch(body);
+  const r = await createSapHelpHandlers({ fetchImpl: f }).search_sap_community({ q: 'AI Core quota', limit: 3 });
+  assert.equal(r.count, 1);
+  assert.equal(new URL(f.calls[0].url).origin, COMMUNITY_ORIGIN);
+  await assert.rejects(createSapHelpHandlers({ fetchImpl: f }).search_sap_community({ q: '!!!' }), /letter or digit/);
+  await assert.rejects(createSapHelpHandlers({ fetchImpl: fakeFetch({}, { ok: false, status: 429 }) }).search_sap_community({ q: 'x' }), /status 429/);
 });
