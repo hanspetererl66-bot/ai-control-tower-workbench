@@ -11,11 +11,12 @@ import { N8N_TOOL_DEFINITIONS } from '../connectors/control-tower/server/n8n.mjs
 import { SKILL_PROFILE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-profiles.mjs';
 import { GRAPH_TOOL_DEFINITIONS } from '../connectors/control-tower/server/graph.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-ratings.mjs';
+import { SAP_HELP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sap-help.mjs';
 import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
 import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
 
-const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS];
+const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS];
 
 const ROOT = join(import.meta.dirname, '..');
 const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');

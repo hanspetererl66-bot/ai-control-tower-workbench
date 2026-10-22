@@ -197,6 +197,10 @@
     {
       "name": "rate_skill",
       "description": "Rate a published marketplace skill with 1 to 5 stars and an optional short comment (max 280 characters). One rating per person and skill; rating again replaces the earlier one. Ask the person for the stars first and repeat skill, stars and comment back before calling; never rate on your own. Do not put names, customer data or secrets into the comment. Needs the Supabase connection; sample skills cannot be rated."
+    },
+    {
+      "name": "search_sap_help",
+      "description": "Search the public SAP Help Portal (help.sap.com, no login) for documentation and support content. Read only."
     }
   ],
   "user_config": {
