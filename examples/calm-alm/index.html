@@ -1,0 +1,2317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAP Cloud ALM</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-size:13px;line-height:1.5}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 22px;background:var(--surface);border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--purple)}
+.sub{color:var(--muted);font-size:12px}
+.hr{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.demo{padding:7px 22px;background:var(--amber-dim);color:var(--amber);border-bottom:1px solid var(--line);font-size:12px}
+nav{display:flex;gap:4px;padding:8px 22px 0;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--muted);padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
+main{max-width:1320px;margin:0 auto;padding:20px 22px 60px}
+button.btn,.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:var(--radius-s);font:inherit;font-weight:600;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--purple)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--purple);border-color:var(--purple);color:var(--surface)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi b{display:block;font-size:24px;letter-spacing:-.02em}.kpi span{color:var(--muted);font-size:12px}
+.kpi.red{border-color:var(--red-border)}.kpi.red b{color:var(--red)}.kpi.amber{border-color:var(--amber-border)}.kpi.amber b{color:var(--amber)}.kpi.green b{color:var(--green)}
+h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:14px 0 6px;color:var(--muted)}
+.note{color:var(--muted);font-size:12px;margin:0 0 12px}
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.todo{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.todo:last-child{border-bottom:0}.todo small{display:block;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint)}.dot.red{background:var(--red)}.dot.amber{background:var(--amber)}.dot.ok{background:var(--green)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid var(--line);color:var(--ink-2);background:var(--line-2);white-space:nowrap}
+.tag.red{color:var(--red);background:var(--red-dim);border-color:var(--red-border)}
+.tag.amber{color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border)}
+.tag.ok{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
+.tag.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-border)}
+.tag.tool{color:var(--purple);background:var(--purple-dim);border-color:var(--purple-border)}
+.bar{height:10px;border-radius:99px;background:var(--line-2);display:flex;overflow:hidden}.bar i{display:block;height:100%}
+.bar .g{background:var(--green)}.bar .r{background:var(--red)}.bar .n{background:var(--faint)}.bar .a{background:var(--amber)}.bar .b{background:var(--blue)}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.pcard dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:10px 0 0}.pcard dt{color:var(--muted)}.pcard dd{margin:0;text-align:right}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tools input{max-width:280px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--radius-s);overflow:hidden}
+.seg button{border:0;background:none;color:var(--muted);padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--purple-dim);color:var(--purple)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;font-size:12px}th,td{padding:7px 8px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--wash)}
+pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;overflow:auto;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;margin:6px 0;color:var(--ink);max-height:260px;white-space:pre-wrap;word-break:break-word}
+.chat{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
+.qlist{display:flex;flex-direction:column;gap:6px}
+.qlist button{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 12px;border-radius:12px;font:inherit;cursor:pointer}
+.qlist button[aria-pressed=true]{border-color:var(--purple);background:var(--purple-dim)}.qlist small{display:block;color:var(--muted)}
+.conv{min-height:320px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:92%;border-radius:14px;padding:10px 13px;border:1px solid var(--line);background:var(--surface)}
+.msg.me{align-self:flex-end;background:var(--purple-dim);border-color:var(--purple-border)}
+.msg.ai{align-self:flex-start}
+.msg p{margin:0 0 6px}.msg p:last-child{margin:0}.msg ul{margin:4px 0 0;padding-left:18px}
+.call{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:12px;padding:8px 12px;max-width:100%}
+.call.err{border-color:var(--red-border);background:var(--red-dim)}
+.call .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.call details summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:4px}
+.flow{display:flex;gap:0;overflow-x:auto;padding:8px 0}
+.node{flex:0 0 190px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;position:relative;margin-right:22px}
+.node:not(:last-child)::after{content:"→";position:absolute;right:-19px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.node b{display:block;font-size:12px;margin:4px 0 2px}.node small{color:var(--muted);font-size:11px;display:block}
+.console{display:grid;grid-template-columns:200px 1fr;gap:10px}
+.console textarea{width:100%;min-height:120px;font:12px/1.5 ui-monospace,Menlo,monospace}
+.drawer{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:20}
+.drawer.open{display:block}
+.drawer .panel{position:absolute;right:0;top:0;bottom:0;width:min(520px,100%);background:var(--surface);border-left:1px solid var(--line);overflow:auto;padding:18px 20px 40px;box-shadow:var(--shadow-lg)}
+.drawer .close{float:right}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.steps2{margin:6px 0 0;padding-left:20px;line-height:1.6}.steps2 code,.note code,td code,.sub code{background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:0 5px;font:12px ui-monospace,Menlo,monospace}
+@media (max-width:900px){.two,.chat,.console{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="logo">SAP Cloud <b>ALM</b></div><div class="sub">via Calm MCP · requirements, stories, defects, tests</div></div>
+  <div class="hr"><span class="tag ok">read-only</span><span class="sub" id="tenant"></span><button class="btn" id="reset" type="button">Reset demo</button></div>
+</header>
+<div class="demo">Mockup with fictional sample data. It mirrors the tools and answers of Calm MCP (github.com/consetto/calmcp) but does not call SAP Cloud ALM. With the real server connected, Joule answers the same questions from your tenant.</div>
+<nav role="tablist" aria-label="Sections" id="tabs"></nav>
+<main id="main"></main>
+<div class="drawer" id="drawer"><div class="panel" id="panel" role="dialog" aria-modal="true" aria-label="Details"></div></div>
+<script type="application/json" id="ca-data">
+{
+ "asOf": "2026-10-21",
+ "tenant": "nordlicht-demo",
+ "region": "eu10",
+ "projects": [
+  {
+   "id": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "S/4HANA Cloud Rollout, Wave 1",
+   "phase": "Realize",
+   "lead": "Katrin Vogel",
+   "go_live": "2027-03-01",
+   "scope": "Finance, Procurement, Sales"
+  },
+  {
+   "id": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Integration Suite Migration",
+   "phase": "Explore",
+   "lead": "Daniel Roth",
+   "go_live": "2027-06-15",
+   "scope": "38 interfaces from PI/PO"
+  },
+  {
+   "id": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Group Reporting Cutover",
+   "phase": "Deploy",
+   "lead": "Elif Demir",
+   "go_live": "2026-11-16",
+   "scope": "Consolidation, Reporting"
+  }
+ ],
+ "timeboxes": [
+  {
+   "id": "tb-1-4",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Sprint 4",
+   "start": "2026-09-14",
+   "end": "2026-09-27",
+   "state": "Closed"
+  },
+  {
+   "id": "tb-1-5",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Sprint 5",
+   "start": "2026-09-28",
+   "end": "2026-10-25",
+   "state": "Active"
+  },
+  {
+   "id": "tb-1-6",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Sprint 6",
+   "start": "2026-10-26",
+   "end": "2026-11-22",
+   "state": "Planned"
+  },
+  {
+   "id": "tb-2-4",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Sprint 4",
+   "start": "2026-09-14",
+   "end": "2026-09-27",
+   "state": "Closed"
+  },
+  {
+   "id": "tb-2-5",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Sprint 5",
+   "start": "2026-09-28",
+   "end": "2026-10-25",
+   "state": "Active"
+  },
+  {
+   "id": "tb-2-6",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Sprint 6",
+   "start": "2026-10-26",
+   "end": "2026-11-22",
+   "state": "Planned"
+  },
+  {
+   "id": "tb-3-4",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Sprint 4",
+   "start": "2026-09-14",
+   "end": "2026-09-27",
+   "state": "Closed"
+  },
+  {
+   "id": "tb-3-5",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Sprint 5",
+   "start": "2026-09-28",
+   "end": "2026-10-25",
+   "state": "Active"
+  },
+  {
+   "id": "tb-3-6",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Sprint 6",
+   "start": "2026-10-26",
+   "end": "2026-11-22",
+   "state": "Planned"
+  }
+ ],
+ "tasks": [
+  {
+   "id": "t-0101",
+   "displayId": "1-101",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMREQU",
+   "status": "CIPREQUINP",
+   "statusText": "In Progress",
+   "title": "Automated payment run with bank statement reconciliation",
+   "assigneeId": "kv",
+   "assigneeName": "Katrin Vogel",
+   "priority": 20,
+   "timeboxId": null,
+   "dueDate": "2026-11-30",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-01"
+  },
+  {
+   "id": "t-0102",
+   "displayId": "1-102",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMREQU",
+   "status": "CIPREQUOPEN",
+   "statusText": "Open",
+   "title": "Three-way match for goods receipt and invoice",
+   "assigneeId": "mb",
+   "assigneeName": "Marco Bianchi",
+   "priority": 20,
+   "timeboxId": null,
+   "dueDate": "2026-12-10",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0103",
+   "displayId": "1-103",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMREQU",
+   "status": "CIPREQUCLOSE",
+   "statusText": "Done",
+   "title": "Intercompany billing for the Austrian subsidiary",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 30,
+   "timeboxId": null,
+   "dueDate": "2026-09-30",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-03"
+  },
+  {
+   "id": "t-0104",
+   "displayId": "1-104",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSINP",
+   "statusText": "In Progress",
+   "title": "As AP clerk I post vendor invoices from a PDF in one step",
+   "assigneeId": "mb",
+   "assigneeName": "Marco Bianchi",
+   "priority": 20,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-23",
+   "team": "Finance",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0105",
+   "displayId": "1-105",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As treasurer I review the proposed payment run before release",
+   "assigneeId": "kv",
+   "assigneeName": "Katrin Vogel",
+   "priority": 10,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-22",
+   "team": "Finance",
+   "tags": [],
+   "featureId": "f-01"
+  },
+  {
+   "id": "t-0106",
+   "displayId": "1-106",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As buyer I see open purchase requisitions by plant",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 30,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-25",
+   "team": "Procurement",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0107",
+   "displayId": "1-107",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSBLK",
+   "statusText": "Blocked",
+   "title": "As controller I reverse an intercompany posting with approval",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 20,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-21",
+   "team": "Finance",
+   "tags": [],
+   "featureId": "f-03"
+  },
+  {
+   "id": "t-0108",
+   "displayId": "1-108",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As sales rep I confirm a delivery date in the order screen",
+   "assigneeId": "pk",
+   "assigneeName": "Priya Kapoor",
+   "priority": 30,
+   "timeboxId": "tb-1-6",
+   "dueDate": "2026-11-06",
+   "team": "Sales",
+   "tags": [],
+   "featureId": "f-04"
+  },
+  {
+   "id": "t-0109",
+   "displayId": "1-109",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As sales rep I see credit exposure before I confirm an order",
+   "assigneeId": "pk",
+   "assigneeName": "Priya Kapoor",
+   "priority": 20,
+   "timeboxId": "tb-1-6",
+   "dueDate": "2026-11-10",
+   "team": "Sales",
+   "tags": [],
+   "featureId": "f-04"
+  },
+  {
+   "id": "t-0110",
+   "displayId": "1-110",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSCLOSE",
+   "statusText": "Done",
+   "title": "As AP clerk I park an invoice for missing data",
+   "assigneeId": "mb",
+   "assigneeName": "Marco Bianchi",
+   "priority": 40,
+   "timeboxId": "tb-1-4",
+   "dueDate": "2026-09-25",
+   "team": "Finance",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0111",
+   "displayId": "1-111",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSCLOSE",
+   "statusText": "Done",
+   "title": "As controller I run the foreign-currency valuation",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 20,
+   "timeboxId": "tb-1-4",
+   "dueDate": "2026-09-26",
+   "team": "Finance",
+   "tags": [],
+   "featureId": "f-03"
+  },
+  {
+   "id": "t-0112",
+   "displayId": "1-112",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMUS",
+   "status": "CIPUSINP",
+   "statusText": "In Progress",
+   "title": "As buyer I release a purchase order with two approvers",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 20,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-24",
+   "team": "Procurement",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0113",
+   "displayId": "1-113",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Payment run skips vendors with a one-time account flag",
+   "assigneeId": "kv",
+   "assigneeName": "Katrin Vogel",
+   "priority": 10,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-22",
+   "team": "Core",
+   "tags": [
+    "payments"
+   ],
+   "featureId": "f-01"
+  },
+  {
+   "id": "t-0114",
+   "displayId": "1-114",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Bank statement import fails on camt.053 with 5 000+ items",
+   "assigneeId": "mb",
+   "assigneeName": "Marco Bianchi",
+   "priority": 10,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-23",
+   "team": "Core",
+   "tags": [
+    "payments",
+    "import"
+   ],
+   "featureId": "f-01"
+  },
+  {
+   "id": "t-0115",
+   "displayId": "1-115",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTINP",
+   "statusText": "In Progress",
+   "title": "Goods receipt posts to the wrong plant for stock transfer",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 20,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-28",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0116",
+   "displayId": "1-116",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Tax code defaults to 0 % in Austrian billing",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 20,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-29",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-03"
+  },
+  {
+   "id": "t-0117",
+   "displayId": "1-117",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Order screen shows delivery date in the wrong time zone",
+   "assigneeId": "pk",
+   "assigneeName": "Priya Kapoor",
+   "priority": 30,
+   "timeboxId": "tb-1-6",
+   "dueDate": "2026-11-12",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-04"
+  },
+  {
+   "id": "t-0118",
+   "displayId": "1-118",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTBLK",
+   "statusText": "Blocked",
+   "title": "Approval workflow loses the second approver after a restart",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 10,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-21",
+   "team": "Core",
+   "tags": [
+    "workflow"
+   ],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0119",
+   "displayId": "1-119",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTDONE",
+   "statusText": "Done",
+   "title": "Vendor search is case sensitive",
+   "assigneeId": "mb",
+   "assigneeName": "Marco Bianchi",
+   "priority": 40,
+   "timeboxId": "tb-1-4",
+   "dueDate": "2026-09-22",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-02"
+  },
+  {
+   "id": "t-0120",
+   "displayId": "1-120",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMDEF",
+   "status": "CIPDFCTDONE",
+   "statusText": "Done",
+   "title": "Dunning letter prints an empty footer",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 40,
+   "timeboxId": "tb-1-4",
+   "dueDate": "2026-09-24",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-03"
+  },
+  {
+   "id": "t-0121",
+   "displayId": "1-121",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMRISK",
+   "status": "CIPRIOPEN",
+   "statusText": "Open",
+   "title": "Key user for Finance is on leave during UAT",
+   "assigneeId": "kv",
+   "assigneeName": "Katrin Vogel",
+   "priority": 20,
+   "timeboxId": null,
+   "dueDate": "2026-11-15",
+   "team": "PMO",
+   "tags": [],
+   "featureId": null
+  },
+  {
+   "id": "t-0122",
+   "displayId": "1-122",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMTASK",
+   "status": "CIPTKINP",
+   "statusText": "In Progress",
+   "title": "Prepare data migration rehearsal 2",
+   "assigneeId": "dr",
+   "assigneeName": "Daniel Roth",
+   "priority": 20,
+   "timeboxId": "tb-1-5",
+   "dueDate": "2026-10-26",
+   "team": "Data",
+   "tags": [],
+   "featureId": null
+  },
+  {
+   "id": "t-0123",
+   "displayId": "1-123",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMTASK",
+   "status": "CIPTKOPEN",
+   "statusText": "Open",
+   "title": "Update authorization concept for AP roles",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 30,
+   "timeboxId": "tb-1-6",
+   "dueDate": "2026-11-04",
+   "team": "Security",
+   "tags": [],
+   "featureId": null
+  },
+  {
+   "id": "t-0124",
+   "displayId": "1-124",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "type": "CALMQGATE",
+   "status": "CIPQGOPEN",
+   "statusText": "Open",
+   "title": "Quality gate: Realize to Deploy",
+   "assigneeId": "kv",
+   "assigneeName": "Katrin Vogel",
+   "priority": 10,
+   "timeboxId": null,
+   "dueDate": "2026-11-20",
+   "team": "PMO",
+   "tags": [],
+   "featureId": null
+  },
+  {
+   "id": "t-0125",
+   "displayId": "2-125",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMREQU",
+   "status": "CIPREQUINP",
+   "statusText": "In Progress",
+   "title": "Replace the PI/PO file interface to the bank with SFTP",
+   "assigneeId": "dr",
+   "assigneeName": "Daniel Roth",
+   "priority": 20,
+   "timeboxId": null,
+   "dueDate": "2026-12-01",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-05"
+  },
+  {
+   "id": "t-0126",
+   "displayId": "2-126",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMREQU",
+   "status": "CIPREQUOPEN",
+   "statusText": "Open",
+   "title": "Monitoring of all migrated interfaces in one dashboard",
+   "assigneeId": "dr",
+   "assigneeName": "Daniel Roth",
+   "priority": 30,
+   "timeboxId": null,
+   "dueDate": "2027-01-15",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-06"
+  },
+  {
+   "id": "t-0127",
+   "displayId": "2-127",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMUS",
+   "status": "CIPUSINP",
+   "statusText": "In Progress",
+   "title": "As integration developer I migrate the invoice IDoc flow",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 20,
+   "timeboxId": "tb-2-5",
+   "dueDate": "2026-10-25",
+   "team": "Integration",
+   "tags": [],
+   "featureId": "f-05"
+  },
+  {
+   "id": "t-0128",
+   "displayId": "2-128",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As integration developer I migrate the master data replication",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 30,
+   "timeboxId": "tb-2-5",
+   "dueDate": "2026-10-24",
+   "team": "Integration",
+   "tags": [],
+   "featureId": "f-05"
+  },
+  {
+   "id": "t-0129",
+   "displayId": "2-129",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As operator I get an alert when a message queue grows",
+   "assigneeId": "pk",
+   "assigneeName": "Priya Kapoor",
+   "priority": 30,
+   "timeboxId": "tb-2-6",
+   "dueDate": "2026-11-08",
+   "team": "Operations",
+   "tags": [],
+   "featureId": "f-06"
+  },
+  {
+   "id": "t-0130",
+   "displayId": "2-130",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMUS",
+   "status": "CIPUSCLOSE",
+   "statusText": "Done",
+   "title": "As developer I create the first iFlow template",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 40,
+   "timeboxId": "tb-2-4",
+   "dueDate": "2026-09-20",
+   "team": "Integration",
+   "tags": [],
+   "featureId": "f-05"
+  },
+  {
+   "id": "t-0131",
+   "displayId": "2-131",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Mapping drops the second order line with a text item",
+   "assigneeId": "tn",
+   "assigneeName": "Tom Nguyen",
+   "priority": 20,
+   "timeboxId": "tb-2-5",
+   "dueDate": "2026-10-27",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-05"
+  },
+  {
+   "id": "t-0132",
+   "displayId": "2-132",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMDEF",
+   "status": "CIPDFCTINP",
+   "statusText": "In Progress",
+   "title": "Retry policy sends duplicates after a 502 from the bank",
+   "assigneeId": "ls",
+   "assigneeName": "Lena Schulz",
+   "priority": 10,
+   "timeboxId": "tb-2-5",
+   "dueDate": "2026-10-22",
+   "team": "Core",
+   "tags": [
+    "bank"
+   ],
+   "featureId": "f-05"
+  },
+  {
+   "id": "t-0133",
+   "displayId": "2-133",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Dashboard shows interfaces twice after a rename",
+   "assigneeId": "pk",
+   "assigneeName": "Priya Kapoor",
+   "priority": 40,
+   "timeboxId": "tb-2-6",
+   "dueDate": "2026-11-20",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-06"
+  },
+  {
+   "id": "t-0134",
+   "displayId": "2-134",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMRISK",
+   "status": "CIPRIOPEN",
+   "statusText": "Open",
+   "title": "Bank certificate expires before cutover",
+   "assigneeId": "dr",
+   "assigneeName": "Daniel Roth",
+   "priority": 10,
+   "timeboxId": null,
+   "dueDate": "2026-11-30",
+   "team": "PMO",
+   "tags": [],
+   "featureId": null
+  },
+  {
+   "id": "t-0135",
+   "displayId": "2-135",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "type": "CALMTASK",
+   "status": "CIPTKOPEN",
+   "statusText": "Open",
+   "title": "Agree the interface freeze with the business",
+   "assigneeId": "dr",
+   "assigneeName": "Daniel Roth",
+   "priority": 30,
+   "timeboxId": "tb-2-5",
+   "dueDate": "2026-10-30",
+   "team": "PMO",
+   "tags": [],
+   "featureId": null
+  },
+  {
+   "id": "t-0136",
+   "displayId": "3-136",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMREQU",
+   "status": "CIPREQUCLOSE",
+   "statusText": "Done",
+   "title": "Consolidation of the group by legal entity and segment",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 20,
+   "timeboxId": null,
+   "dueDate": "2026-08-31",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-07"
+  },
+  {
+   "id": "t-0137",
+   "displayId": "3-137",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMREQU",
+   "status": "CIPREQUINP",
+   "statusText": "In Progress",
+   "title": "Management report with currency translation at average rate",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 20,
+   "timeboxId": null,
+   "dueDate": "2026-11-05",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-08"
+  },
+  {
+   "id": "t-0138",
+   "displayId": "3-138",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMUS",
+   "status": "CIPUSINP",
+   "statusText": "In Progress",
+   "title": "As group controller I run the elimination of intercompany balances",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 10,
+   "timeboxId": "tb-3-5",
+   "dueDate": "2026-10-22",
+   "team": "Reporting",
+   "tags": [],
+   "featureId": "f-07"
+  },
+  {
+   "id": "t-0139",
+   "displayId": "3-139",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMUS",
+   "status": "CIPUSOPEN",
+   "statusText": "Open",
+   "title": "As CFO I open the management report on my phone",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 30,
+   "timeboxId": "tb-3-5",
+   "dueDate": "2026-10-25",
+   "team": "Reporting",
+   "tags": [],
+   "featureId": "f-08"
+  },
+  {
+   "id": "t-0140",
+   "displayId": "3-140",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMUS",
+   "status": "CIPUSCLOSE",
+   "statusText": "Done",
+   "title": "As controller I load the opening balances",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 20,
+   "timeboxId": "tb-3-4",
+   "dueDate": "2026-09-25",
+   "team": "Reporting",
+   "tags": [],
+   "featureId": "f-07"
+  },
+  {
+   "id": "t-0141",
+   "displayId": "3-141",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Elimination leaves a 0.01 difference for JPY entities",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 10,
+   "timeboxId": "tb-3-5",
+   "dueDate": "2026-10-22",
+   "team": "Core",
+   "tags": [
+    "consolidation"
+   ],
+   "featureId": "f-07"
+  },
+  {
+   "id": "t-0142",
+   "displayId": "3-142",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMDEF",
+   "status": "CIPDFCTOPEN",
+   "statusText": "Open",
+   "title": "Report total differs from the consolidation by segment",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 20,
+   "timeboxId": "tb-3-5",
+   "dueDate": "2026-10-26",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-08"
+  },
+  {
+   "id": "t-0143",
+   "displayId": "3-143",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMDEF",
+   "status": "CIPDFCTDONE",
+   "statusText": "Done",
+   "title": "Wrong rounding in the segment report",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 30,
+   "timeboxId": "tb-3-4",
+   "dueDate": "2026-09-23",
+   "team": "Core",
+   "tags": [],
+   "featureId": "f-08"
+  },
+  {
+   "id": "t-0144",
+   "displayId": "3-144",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "type": "CALMQGATE",
+   "status": "CIPQGBLK",
+   "statusText": "Blocked",
+   "title": "Quality gate: Deploy readiness",
+   "assigneeId": "ed",
+   "assigneeName": "Elif Demir",
+   "priority": 10,
+   "timeboxId": null,
+   "dueDate": "2026-11-02",
+   "team": "PMO",
+   "tags": [],
+   "featureId": null
+  }
+ ],
+ "features": [
+  {
+   "id": "f-01",
+   "displayId": "6-101",
+   "title": "Payments",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "status": "In Progress"
+  },
+  {
+   "id": "f-02",
+   "displayId": "6-102",
+   "title": "Procure to Pay",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "status": "In Progress"
+  },
+  {
+   "id": "f-03",
+   "displayId": "6-103",
+   "title": "Intercompany",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "status": "Done"
+  },
+  {
+   "id": "f-04",
+   "displayId": "6-104",
+   "title": "Order to Cash",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "status": "Planned"
+  },
+  {
+   "id": "f-05",
+   "displayId": "6-105",
+   "title": "Interface migration",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "status": "In Progress"
+  },
+  {
+   "id": "f-06",
+   "displayId": "6-106",
+   "title": "Interface monitoring",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "status": "Planned"
+  },
+  {
+   "id": "f-07",
+   "displayId": "6-107",
+   "title": "Consolidation",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "status": "In Progress"
+  },
+  {
+   "id": "f-08",
+   "displayId": "6-108",
+   "title": "Management reporting",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "status": "In Progress"
+  }
+ ],
+ "tests": [
+  {
+   "id": "tc-1",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-2",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-3",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-4",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-5",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-6",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-7",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-8",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-9",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-10",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-11",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-12",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-13",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-14",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-15",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-16",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-17",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Payment run",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-18",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-19",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-20",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-21",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-22",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-23",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-24",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-25",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-26",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-27",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-28",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-29",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-30",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-31",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-32",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-33",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-34",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-35",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-36",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-37",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-38",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-39",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-40",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-41",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-42",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-43",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-44",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-45",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-46",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-47",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Procure to pay",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-48",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-49",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-50",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-51",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-52",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-53",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-54",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-55",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-56",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Order to cash",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-57",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-58",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-59",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-60",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-61",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-62",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-63",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-64",
+   "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+   "name": "Intercompany",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-65",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-66",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-67",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-68",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-69",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-70",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-71",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-72",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-73",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-74",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-75",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-76",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-77",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-78",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-79",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-80",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-81",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-82",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-83",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-84",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-85",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-86",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-87",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-88",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-89",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-90",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-91",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-92",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-93",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-94",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-95",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-96",
+   "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+   "name": "Interfaces",
+   "result": "Not run"
+  },
+  {
+   "id": "tc-97",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-98",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-99",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-100",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-101",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-102",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-103",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-104",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-105",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-106",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-107",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-108",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-109",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-110",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-111",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-112",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-113",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-114",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-115",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-116",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-117",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Consolidation",
+   "result": "Failed"
+  },
+  {
+   "id": "tc-118",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-119",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-120",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-121",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-122",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-123",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-124",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-125",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-126",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-127",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-128",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-129",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Passed"
+  },
+  {
+   "id": "tc-130",
+   "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+   "name": "Reporting",
+   "result": "Not run"
+  }
+ ]
+}
+</script>
+<script id="ca-model">
+const TASK_TYPES = [
+  { code: 'CALMTASK', label: 'Project Task' }, { code: 'CALMUS', label: 'User Story' }, { code: 'CALMREQU', label: 'Requirement' },
+  { code: 'CALMDEF', label: 'Defect' }, { code: 'CALMRISK', label: 'Risk' }, { code: 'CALMQGATE', label: 'Quality Gate' },
+];
+const STATUSES = {
+  CIPTKOPEN: 'Open (Task)', CIPTKINP: 'In Progress (Task)', CIPTKBLK: 'Blocked (Task)', CIPTKCLOSE: 'Done (Task)',
+  CIPUSOPEN: 'Open (User Story)', CIPUSINP: 'In Progress (User Story)', CIPUSBLK: 'Blocked (User Story)', CIPUSCLOSE: 'Done (User Story)',
+  CIPREQUOPEN: 'Open (Requirement)', CIPREQUINP: 'In Progress (Requirement)', CIPREQUCLOSE: 'Done (Requirement)',
+  CIPDFCTOPEN: 'Open (Defect)', CIPDFCTINP: 'In Progress (Defect)', CIPDFCTBLK: 'Blocked (Defect)', CIPDFCTDONE: 'Done (Defect)',
+  CIPRIOPEN: 'Open (Risk)', CIPRIINP: 'In Progress (Risk)', CIPRIDONE: 'Done (Risk)',
+  CIPQGOPEN: 'Open (Quality Gate)', CIPQGBLK: 'Blocked (Quality Gate)', CIPQGDONE: 'Done (Quality Gate)',
+};
+const PRIORITIES = { 10: 'Very High', 20: 'High', 30: 'Medium', 40: 'Low' };
+const ANALYTICS_PROVIDERS = ['Tasks', 'Defects', 'Requirements', 'Tests', 'Projects'];
+const ODATA_STATUS_DIM = { Tasks: 'status', Defects: 'defectStatus', Requirements: 'status', Tests: 'result', Projects: 'phase' };
+const LIST_RESOURCES = ['projects', 'project_timeboxes', 'tasks', 'features'];
+const GET_RESOURCES = ['project', 'task', 'feature'];
+
+const ok = (data) => ({ isError: false, data });
+const err = (message) => ({ isError: true, data: message });
+const pick = (rec, fields) => {
+  if (!fields) return rec;
+  const out = {};
+  for (const f of String(fields).split(',').map((x) => x.trim()).filter(Boolean)) if (f in rec) out[f] = rec[f];
+  return out;
+};
+const tally = (rows, key) => {
+  const m = new Map();
+  for (const r of rows) { const v = String(r[key] ?? '(no value)'); m.set(v, (m.get(v) ?? 0) + 1); }
+  return [...m].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+};
+const GROUP_ALIASES = { timeboxId: 'timeboxId', assignee: 'assigneeName', team: 'team', priority: 'priority', status: 'status', projectName: 'projectName', statusText: 'statusText' };
+
+/** calm_resources: the code lists and recipes a client needs before it queries. */
+function calmResources(data, args = {}) {
+  const topic = args.topic;
+  if (topic === 'Defects' || topic === 'Tasks') return ok({ provider: topic, dimensions: ['projectName', 'statusText', 'priority', 'team', 'assignee'], statusDimension: ODATA_STATUS_DIM[topic], note: 'Analytics providers span the whole tenant; no project_id is needed.' });
+  return ok({
+    listResources: LIST_RESOURCES, getResources: GET_RESOURCES, analyticsProviders: ANALYTICS_PROVIDERS,
+    taskTypes: TASK_TYPES, statuses: STATUSES, priorities: PRIORITIES,
+    recipes: [
+      { question: 'How many open defects are there per project?', steps: ["calm_analytics({ provider: 'Defects', filter: \"defectStatus eq 'CIPDFCTOPEN'\", group_by: 'projectName' })"] },
+      { question: 'Which user stories are open in Sprint 5?', steps: ["calm_list({ resource: 'tasks', project_id, task_type: 'CALMUS', status: 'CIPUSOPEN', timebox_name: 'Sprint 5', fields: 'displayId,title,status,assigneeName,dueDate' })"] },
+    ],
+    writeEnabled: false,
+  });
+}
+
+/** calm_list: list or count one collection. Tasks need a project_id, as in Cloud ALM. */
+function calmList(data, args = {}) {
+  const resource = args.resource;
+  if (!LIST_RESOURCES.includes(resource)) return err(`Unknown resource '${resource}'. Use calm_resources to list valid ones.`);
+  if (resource === 'projects') return ok(args.fields ? data.projects.map((p) => pick(p, args.fields)) : data.projects);
+  if (resource === 'features') return ok((args.fields ? data.features.map((f) => pick(f, args.fields)) : data.features));
+  if (!args.project_id) return err(`Resource '${resource}' needs project_id. Call calm_list({ resource: 'projects' }) first.`);
+  const project = data.projects.find((p) => p.id === args.project_id);
+  if (!project) return err(`Project '${args.project_id}' not found.`);
+  if (resource === 'project_timeboxes') return ok(data.timeboxes.filter((t) => t.projectId === project.id));
+  if (args.timebox_id !== undefined && args.timebox_name !== undefined) return err('Pass either timebox_id or timebox_name, not both.');
+  let rows = data.tasks.filter((t) => t.projectId === project.id);
+  if (args.task_type) rows = rows.filter((t) => t.type === args.task_type);
+  if (args.status) rows = rows.filter((t) => t.status === args.status);
+  if (args.assignee_id) rows = rows.filter((t) => t.assigneeId === args.assignee_id);
+  let tb = args.timebox_id;
+  if (args.timebox_name !== undefined) {
+    const hit = data.timeboxes.find((t) => t.projectId === project.id && t.name.toLowerCase() === String(args.timebox_name).toLowerCase());
+    if (!hit) return err(`No timebox named '${args.timebox_name}' in this project. Known: ${data.timeboxes.filter((t) => t.projectId === project.id).map((t) => t.name).join(', ')}.`);
+    tb = hit.id;
+  }
+  if (tb !== undefined) rows = rows.filter((t) => t.timeboxId === tb);
+  const subject = { resource, project_id: project.id, ...(args.task_type ? { task_type: args.task_type } : {}), ...(args.status ? { status: args.status } : {}) };
+  if (args.group_by !== undefined || args.count_only === true) {
+    if (args.fields !== undefined) return err('fields cannot be combined with count_only or group_by.');
+    const base = { subject, total: rows.length, complete: true, method: 'client-paging', unit: 'entities' };
+    if (args.group_by === undefined) return ok(base);
+    const key = GROUP_ALIASES[args.group_by];
+    if (!key) return err(`Cannot group tasks by '${args.group_by}'.`);
+    return ok({ ...base, groupBy: args.group_by, groups: tally(rows, key) });
+  }
+  const offset = args.offset ?? 0, limit = args.limit ?? 50;
+  const page = rows.slice(offset, offset + limit).map((t) => pick(t, args.fields));
+  if (!page.length) return ok({ records: [], subject, note: 'No records matched. This covers only the resource, parent ids and filters in subject.' });
+  const next = offset + page.length < rows.length ? { nextPage: { offset: offset + page.length } } : {};
+  return ok({ records: page, ...next });
+}
+
+/** calm_get: one entity by id; features also by display id such as 6-123. */
+function calmGet(data, args = {}) {
+  const { resource, id } = args;
+  if (!GET_RESOURCES.includes(resource)) return err(`Unknown resource '${resource}'. Use calm_resources to list valid ones.`);
+  const list = resource === 'project' ? data.projects : resource === 'task' ? data.tasks : data.features;
+  const hit = list.find((x) => x.id === id || (resource !== 'project' && x.displayId === id));
+  return hit ? ok(hit) : err(`${resource} '${id}' not found.`);
+}
+
+/** calm_analytics: tenant-wide aggregation by provider. Only `<field> eq '<value>'` joined by `and` is understood here. */
+function calmAnalytics(data, args = {}) {
+  const provider = args.provider;
+  if (!ANALYTICS_PROVIDERS.includes(provider)) return err(`Unknown provider '${provider}'. Known: ${ANALYTICS_PROVIDERS.join(', ')}.`);
+  const projectName = (id) => (data.projects.find((p) => p.id === id) ?? {}).name;
+  let rows;
+  if (provider === 'Tasks') rows = data.tasks.map((t) => ({ ...t, typeID: t.type, projectName: projectName(t.projectId) }));
+  else if (provider === 'Defects') rows = data.tasks.filter((t) => t.type === 'CALMDEF').map((t) => ({ ...t, defectStatus: t.status, projectName: projectName(t.projectId) }));
+  else if (provider === 'Requirements') rows = data.tasks.filter((t) => t.type === 'CALMREQU').map((t) => ({ ...t, projectName: projectName(t.projectId) }));
+  else if (provider === 'Tests') rows = data.tests.map((t) => ({ ...t, projectName: projectName(t.projectId) }));
+  else rows = data.projects.map((p) => ({ ...p, projectName: p.name }));
+  let applied;
+  if (args.filter) {
+    const parts = String(args.filter).split(/\s+and\s+/i);
+    for (const part of parts) {
+      const m = /^\s*(\w+)\s+eq\s+'([^']*)'\s*$/.exec(part);
+      if (!m) return err(`Cannot read the filter "${part}". Use "<field> eq '<value>'", joined by and.`);
+      if (rows.length && !(m[1] in rows[0])) return err(`The ${provider} provider has no field '${m[1]}'. Call calm_resources({ topic: '${provider}' }) for the fields.`);
+      rows = rows.filter((r) => String(r[m[1]]) === m[2]);
+    }
+    applied = args.filter;
+  }
+  const out = { subject: { provider }, ...(applied ? { filter: applied } : {}), total: rows.length, complete: true, method: 'analytics-measure', unit: 'entities', snapshot: 'daily snapshot, not a live read' };
+  if (args.group_by) {
+    const keys = String(args.group_by).split(',').map((k) => k.trim());
+    const bad = keys.find((k) => rows.length && !(k in rows[0]) && !GROUP_ALIASES[k]);
+    if (bad) return err(`Cannot group ${provider} by '${bad}'.`);
+    const m = new Map();
+    for (const r of rows) { const v = keys.map((k) => String(r[GROUP_ALIASES[k] ?? k] ?? '(no value)')).join(' | '); m.set(v, (m.get(v) ?? 0) + 1); }
+    out.groupBy = args.group_by;
+    out.groups = [...m].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+  }
+  return ok(out);
+}
+
+/** The four read tools, dispatched by their MCP name. calm_create is deliberately absent: the mock is read-only. */
+function callCalm(data, name, args) {
+  if (name === 'calm_resources') return calmResources(data, args);
+  if (name === 'calm_list') return calmList(data, args);
+  if (name === 'calm_get') return calmGet(data, args);
+  if (name === 'calm_analytics') return calmAnalytics(data, args);
+  if (name === 'calm_create') return err('Write access is disabled. Set CALM_WRITE_ENABLED=true to allow calm_create (it can only create documents and library entries).');
+  return err(`Unknown tool '${name}'.`);
+}
+</script>
+<script>
+(function () {
+  'use strict';
+  var D = JSON.parse(document.getElementById('ca-data').textContent);
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var TYPE = { CALMUS: 'User Story', CALMREQU: 'Requirement', CALMDEF: 'Defect', CALMRISK: 'Risk', CALMTASK: 'Task', CALMQGATE: 'Quality Gate' };
+  var PRIO = { 10: 'Very High', 20: 'High', 30: 'Medium', 40: 'Low' };
+  var proj = function (id) { return D.projects.filter(function (p) { return p.id === id; })[0] || {}; };
+  var sprintOf = function (id) { var t = D.timeboxes.filter(function (x) { return x.id === id; })[0]; return t ? t.name : '–'; };
+  var isDone = function (t) { return /(CLOSE|DONE)$/.test(t.status); };
+  var isOpen = function (t) { return !isDone(t); };
+  var S = { tab: 'overview', q: '', fp: '', ft: '', fs: 'open', preset: 0, timers: [], conv: [], console: { tool: 'calm_analytics', args: '{\n  "provider": "Defects",\n  "filter": "defectStatus eq \'CIPDFCTOPEN\'",\n  "group_by": "priority"\n}' } };
+
+  /* ---------- overview ---------- */
+  function overview() {
+    var open = D.tasks.filter(isOpen);
+    var defects = open.filter(function (t) { return t.type === 'CALMDEF'; });
+    var vh = defects.filter(function (t) { return t.priority === 10; });
+    var stories = open.filter(function (t) { return t.type === 'CALMUS'; });
+    var tests = D.tests, pass = tests.filter(function (t) { return t.result === 'Passed'; }).length, failed = tests.filter(function (t) { return t.result === 'Failed'; }).length;
+    var run = pass + failed;
+    var blocked = D.tasks.filter(function (t) { return /BLK$/.test(t.status); });
+    var h = '<div class="kpis">' + kpi(defects.length, 'Defects not done', defects.length ? 'amber' : '') + kpi(vh.length, 'Very high priority, not done', vh.length ? 'red' : '') + kpi(stories.length, 'Open user stories', '') + kpi(blocked.length, 'Blocked items', blocked.length ? 'red' : '') + kpi(run ? Math.round(pass / run * 100) + ' %' : '–', 'Executed tests passed', 'green') + '</div>';
+    h += '<div class="three">' + D.projects.map(function (p) {
+      var ts = D.tasks.filter(function (t) { return t.projectId === p.id; });
+      var d = ts.filter(function (t) { return t.type === 'CALMDEF' && isOpen(t); }).length, us = ts.filter(function (t) { return t.type === 'CALMUS'; });
+      var done = us.filter(isDone).length, prog = us.filter(function (t) { return /INP$/.test(t.status); }).length, blk = us.filter(function (t) { return /BLK$/.test(t.status); }).length, left = us.length - done - prog - blk;
+      var tt = D.tests.filter(function (t) { return t.projectId === p.id; }), tp = tt.filter(function (t) { return t.result === 'Passed'; }).length, tf = tt.filter(function (t) { return t.result === 'Failed'; }).length, tn = tt.length - tp - tf;
+      var pct = function (n, m) { return m ? (n / m * 100).toFixed(1) : 0; };
+      return '<div class="pcard"><h2>' + esc(p.name) + '</h2><div class="sub">' + esc(p.phase) + ' · go-live ' + esc(p.go_live) + ' · ' + esc(p.lead) + '</div>' +
+        '<h3>User stories</h3><div class="bar" role="img" aria-label="' + done + ' done, ' + prog + ' in progress, ' + blk + ' blocked, ' + left + ' open"><i class="g" style="width:' + pct(done, us.length) + '%"></i><i class="b" style="width:' + pct(prog, us.length) + '%"></i><i class="r" style="width:' + pct(blk, us.length) + '%"></i><i class="n" style="width:' + pct(left, us.length) + '%"></i></div>' +
+        '<h3>Tests</h3><div class="bar" role="img" aria-label="' + tp + ' passed, ' + tf + ' failed, ' + tn + ' not run"><i class="g" style="width:' + pct(tp, tt.length) + '%"></i><i class="r" style="width:' + pct(tf, tt.length) + '%"></i><i class="n" style="width:' + pct(tn, tt.length) + '%"></i></div>' +
+        '<dl><dt>Defects not done</dt><dd><span class="tag ' + (d ? 'amber' : 'ok') + '">' + d + '</span></dd><dt>Stories done</dt><dd>' + done + ' of ' + us.length + '</dd><dt>Tests failed / not run</dt><dd>' + tf + ' / ' + tn + '</dd></dl></div>';
+    }).join('') + '</div>';
+    var att = D.tasks.filter(function (t) { return isOpen(t) && (t.priority === 10 || /BLK$/.test(t.status)); }).sort(function (a, b) { return a.priority - b.priority; }).slice(0, 7);
+    h += '<div class="card" style="margin-top:16px"><h2>Needs attention</h2><p class="note">Very high priority or blocked. “Ask Joule” runs the question through Calm MCP when it is connected.</p>' + att.map(function (t) {
+      return '<div class="todo"><span class="dot ' + (t.priority === 10 ? 'red' : 'amber') + '"></span><div>' + esc(t.displayId + ' · ' + t.title) + '<small>' + esc(TYPE[t.type] + ' · ' + proj(t.projectId).name + ' · ' + t.assigneeName + ' · due ' + t.dueDate) + '</small></div><button class="btn" data-open="' + esc(t.id) + '" type="button">Details</button></div>';
+    }).join('') + '</div>';
+    $('#main').innerHTML = h;
+    bindOpen();
+  }
+  function kpi(v, label, tone) { return '<div class="kpi ' + (tone || '') + '"><b>' + esc(v) + '</b><span>' + esc(label) + '</span></div>'; }
+  function bindOpen() { document.querySelectorAll('[data-open]').forEach(function (b) { b.onclick = function () { openItem(b.dataset.open); }; }); }
+
+  /* ---------- backlog ---------- */
+  function backlog() {
+    var q = S.q.toLowerCase();
+    var rows = D.tasks.filter(function (t) {
+      return (!S.fp || t.projectId === S.fp) && (!S.ft || t.type === S.ft) && (S.fs === 'all' || (S.fs === 'open' ? isOpen(t) : isDone(t))) && (!q || (t.displayId + ' ' + t.title + ' ' + t.assigneeName + ' ' + t.tags.join(' ')).toLowerCase().indexOf(q) >= 0);
+    }).sort(function (a, b) { return a.priority - b.priority || (a.dueDate < b.dueDate ? -1 : 1); });
+    var h = '<div class="tools"><input id="q" type="search" placeholder="Search id, title, person, tag …" aria-label="Search backlog" value="' + esc(S.q) + '">' +
+      '<select id="fp" aria-label="Project"><option value="">All projects</option>' + D.projects.map(function (p) { return '<option value="' + p.id + '"' + (S.fp === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + '</select>' +
+      '<select id="ft" aria-label="Type"><option value="">All types</option>' + Object.keys(TYPE).map(function (c) { return '<option value="' + c + '"' + (S.ft === c ? ' selected' : '') + '>' + TYPE[c] + '</option>'; }).join('') + '</select>' +
+      '<div class="seg" role="group" aria-label="State">' + [['open', 'Open'], ['done', 'Done'], ['all', 'All']].map(function (x) { return '<button type="button" data-fs="' + x[0] + '" aria-pressed="' + (S.fs === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div><span class="sub">' + rows.length + ' items</span></div>' +
+      '<div class="card scroll"><table><thead><tr><th>Id</th><th>Title</th><th>Type</th><th>Priority</th><th>Status</th><th>Sprint</th><th>Assignee</th><th>Due</th></tr></thead><tbody>' +
+      (rows.map(function (t) {
+        return '<tr class="click" data-open="' + esc(t.id) + '" tabindex="0"><td><b>' + esc(t.displayId) + '</b></td><td>' + esc(t.title) + '<br><small class="sub">' + esc(proj(t.projectId).name) + '</small></td><td>' + esc(TYPE[t.type]) + '</td><td><span class="tag ' + (t.priority === 10 ? 'red' : t.priority === 20 ? 'amber' : '') + '">' + PRIO[t.priority] + '</span></td><td>' + esc(t.statusText) + '</td><td>' + esc(sprintOf(t.timeboxId)) + '</td><td>' + esc(t.assigneeName) + '</td><td>' + esc(t.dueDate) + '</td></tr>';
+      }).join('') || '<tr><td colspan="8">No matches.</td></tr>') + '</tbody></table></div>';
+    $('#main').innerHTML = h;
+    $('#q').oninput = function (e) { S.q = e.target.value; var p = e.target.selectionStart; backlog(); var f = $('#q'); f.focus(); f.setSelectionRange(p, p); };
+    $('#fp').onchange = function (e) { S.fp = e.target.value; backlog(); };
+    $('#ft').onchange = function (e) { S.ft = e.target.value; backlog(); };
+    document.querySelectorAll('[data-fs]').forEach(function (b) { b.onclick = function () { S.fs = b.dataset.fs; backlog(); }; });
+    document.querySelectorAll('tr[data-open]').forEach(function (r) { r.onkeydown = function (e) { if (e.key === 'Enter') openItem(r.dataset.open); }; });
+    bindOpen();
+  }
+
+  /* ---------- Joule + Calm MCP ---------- */
+  var P1 = function () { return D.projects[0]; };
+  var PRESETS = [
+    { title: 'Open defects per project', hint: 'one analytics call', question: 'How many open defects are there per project?',
+      calls: function () { return [['calm_analytics', { provider: 'Defects', filter: "defectStatus eq 'CIPDFCTOPEN'", group_by: 'projectName' }]]; },
+      answer: function (r) { var g = r[0].data; return ['<p><b>' + g.total + ' defects</b> have status Open across the tenant:</p><ul>' + g.groups.map(function (x) { return '<li>' + esc(x.value) + ': <b>' + x.count + '</b></li>'; }).join('') + '</ul><p class="sub">Daily analytics snapshot, not a live read.</p>']; } },
+    { title: 'Open stories in Sprint 5', hint: 'find the project, then list', question: 'Which user stories are still open in Sprint 5 of the S/4HANA rollout?',
+      calls: function () { return [['calm_list', { resource: 'projects', fields: 'id,name,phase' }], ['calm_list', { resource: 'tasks', project_id: P1().id, task_type: 'CALMUS', status: 'CIPUSOPEN', timebox_name: 'Sprint 5', fields: 'displayId,title,assigneeName,dueDate,priority' }]]; },
+      answer: function (r) { var rec = r[1].data.records || []; return ['<p><b>' + rec.length + ' stories</b> are open in Sprint 5 of “' + esc(P1().name) + '”:</p><ul>' + rec.map(function (x) { return '<li>' + esc(x.displayId + ' ' + x.title) + ' <span class="sub">(' + esc(x.assigneeName) + ', due ' + esc(x.dueDate) + ')</span></li>'; }).join('') + '</ul><p class="sub">Tasks need a project id, so I looked up the project first.</p>']; } },
+    { title: 'Most urgent open defects', hint: 'one call per project, sorted by Joule', question: 'Show me the open defects with very high priority, with owner and due date.',
+      calls: function () { return D.projects.map(function (p) { return ['calm_list', { resource: 'tasks', project_id: p.id, task_type: 'CALMDEF', status: 'CIPDFCTOPEN', fields: 'displayId,title,priority,assigneeName,dueDate' }]; }); },
+      answer: function (r) { var all = []; r.forEach(function (x) { (x.data.records || []).forEach(function (d) { all.push(d); }); }); var vh = all.filter(function (d) { return d.priority === 10; }).sort(function (a, b) { return a.dueDate < b.dueDate ? -1 : 1; }); return ['<p><b>' + vh.length + ' of ' + all.length + '</b> defects with status Open are Very High:</p><ul>' + vh.map(function (d) { return '<li>' + esc(d.displayId + ' ' + d.title) + ' <span class="sub">(' + esc(d.assigneeName) + ', due ' + esc(d.dueDate) + ')</span></li>'; }).join('') + '</ul><p class="sub">Cloud ALM does not sort these lists, so I sorted them by due date myself.</p>']; } },
+    { title: 'What is blocked?', hint: 'count, then fetch one', question: 'What is blocked right now, and who is it waiting on?',
+      calls: function () { var b = D.tasks.filter(function (t) { return /BLK$/.test(t.status); }); return [['calm_analytics', { provider: 'Tasks', filter: "statusText eq 'Blocked'", group_by: 'projectName' }], ['calm_get', { resource: 'task', id: b[0].id }]]; },
+      answer: function (r) { var g = r[0].data, t = r[1].data; return ['<p><b>' + g.total + ' items</b> are blocked: ' + g.groups.map(function (x) { return esc(x.value) + ' (' + x.count + ')'; }).join(', ') + '.</p><p>The most urgent is <b>' + esc(t.displayId + ' ' + t.title) + '</b>, owned by ' + esc(t.assigneeName) + ', due ' + esc(t.dueDate) + '.</p>']; } },
+    { title: 'Cutover readiness', hint: 'tests and quality gate', question: 'Is Group Reporting ready for cutover? Look at tests and the quality gate.',
+      calls: function () { var gr = D.projects[2]; return [['calm_analytics', { provider: 'Tests', filter: "projectName eq '" + gr.name + "'", group_by: 'result' }], ['calm_list', { resource: 'tasks', project_id: gr.id, task_type: 'CALMQGATE', fields: 'displayId,title,statusText,dueDate' }]]; },
+      answer: function (r) { var g = r[0].data, q = (r[1].data.records || [])[0]; return ['<p>Tests: ' + g.groups.map(function (x) { return esc(x.value) + ' <b>' + x.count + '</b>'; }).join(', ') + '.</p><p>Quality gate <b>' + esc(q ? q.displayId + ' ' + q.title : '–') + '</b> is <b>' + esc(q ? q.statusText : '–') + '</b>, due ' + esc(q ? q.dueDate : '–') + '.</p><p><b>Not ready yet:</b> the gate is blocked and failing tests remain. Go-live is planned for ' + esc(D.projects[2].go_live) + '.</p>']; } },
+    { title: 'Create a defect', hint: 'shows the write guard', question: 'Create a defect for the JPY rounding difference.',
+      calls: function () { return [['calm_create', { resource: 'document', title: 'Defect: JPY rounding difference' }]]; },
+      answer: function () { return ['<p>I could not create it: <b>write access is switched off</b>. Calm MCP is read-only by default, and even with <code>CALM_WRITE_ENABLED=true</code> it can only create documents and library entries, not defects or other tasks.</p><p>I can draft the defect text for you to enter in Cloud ALM instead.</p>']; } },
+  ];
+  function prompt(p) { return ('Use the Cloud ALM MCP tools (calm_list, calm_get, calm_analytics) to answer: ' + p.question + ' Show which tool calls you made.').slice(0, 600); }
+
+  function callHtml(name, args, res) {
+    var json = JSON.stringify(res.data, null, 2);
+    return '<div class="call' + (res.isError ? ' err' : '') + '"><div class="h"><span class="tag tool">' + esc(name) + '</span><span class="sub">' + esc(brief(args)) + '</span><span class="tag ' + (res.isError ? 'red' : 'ok') + '">' + (res.isError ? 'error' : 'ok') + '</span></div><details><summary>Arguments and result</summary><pre class="code">' + esc(name + '(' + JSON.stringify(args, null, 2) + ')') + '</pre><pre class="code">' + esc(typeof res.data === 'string' ? res.data : json) + '</pre></details></div>';
+  }
+  function brief(a) { return Object.keys(a).filter(function (k) { return k !== 'fields'; }).map(function (k) { return k + ': ' + a[k]; }).join(', ').slice(0, 120); }
+  function chatTab() {
+    var p = PRESETS[S.preset];
+    var h = '<div class="chat"><div><h2>Ask Joule</h2><p class="note">Pick a question. The mockup shows the Calm MCP calls Joule would make.</p><div class="qlist">' + PRESETS.map(function (x, i) { return '<button type="button" data-pre="' + i + '" aria-pressed="' + (i === S.preset) + '"><b>' + esc(x.title) + '</b><small>' + esc(x.hint) + '</small></button>'; }).join('') + '</div></div>' +
+      '<div class="card"><div class="conv" id="conv" aria-live="polite"></div><div class="row"><button class="btn primary" id="play" type="button">Run in mockup</button><button class="btn" id="live" type="button">Ask the real Joule</button></div><p class="note" style="margin:0">“Ask the real Joule” sends the question to the chat of the desktop app. With the Calm MCP connector installed and connected to your tenant, Joule calls the same tools on live data.</p></div></div>';
+    h += '<div class="card" style="margin-top:16px"><h2>Tool console</h2><p class="note">Call a read tool directly against the sample data, the way a developer would test the server.</p><div class="console"><div><label class="sub" for="ctool">Tool</label><select id="ctool" style="width:100%">' + ['calm_resources', 'calm_list', 'calm_get', 'calm_analytics', 'calm_create'].map(function (t) { return '<option' + (t === S.console.tool ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select><div class="row"><button class="btn primary" id="crun" type="button">Run</button></div></div><div><label class="sub" for="cargs">Arguments (JSON)</label><textarea id="cargs" spellcheck="false">' + esc(S.console.args) + '</textarea></div></div><div id="cout"></div></div>';
+    $('#main').innerHTML = h;
+    document.querySelectorAll('[data-pre]').forEach(function (b) { b.onclick = function () { S.preset = Number(b.dataset.pre); stopTimers(); S.conv = []; chatTab(); play(); }; });
+    $('#play').onclick = play;
+    $('#live').onclick = function () { var b = $('#live'); if (window.parent !== window) window.parent.postMessage({ type: 'wb:ask', prompt: prompt(p) }, '*'); b.textContent = 'Sent to Joule'; b.disabled = true; setTimeout(function () { b.textContent = 'Ask the real Joule'; b.disabled = false; }, 3500); };
+    $('#ctool').onchange = function (e) { S.console.tool = e.target.value; };
+    $('#cargs').oninput = function (e) { S.console.args = e.target.value; };
+    $('#crun').onclick = function () {
+      var out = $('#cout'), args;
+      try { args = JSON.parse($('#cargs').value || '{}'); } catch (e) { out.innerHTML = '<div class="errs call err">The arguments are not valid JSON.</div>'; return; }
+      out.innerHTML = callHtml(S.console.tool, args, callCalm(D, S.console.tool, args)).replace('<details>', '<details open>');
+    };
+    renderConv();
+  }
+  function stopTimers() { S.timers.forEach(clearTimeout); S.timers = []; }
+  function renderConv() {
+    var c = $('#conv'); if (!c) return;
+    c.innerHTML = S.conv.map(function (m) { return m; }).join('') || '<p class="note">Press “Run in mockup”.</p>';
+  }
+  function play() {
+    stopTimers(); var p = PRESETS[S.preset]; S.conv = [];
+    var steps = [];
+    steps.push('<div class="msg me"><p>' + esc(p.question) + '</p></div>');
+    var specs = p.calls(), results = [];
+    specs.forEach(function (c) { var r = callCalm(D, c[0], c[1]); results.push(r); steps.push(callHtml(c[0], c[1], r)); });
+    steps.push('<div class="msg ai">' + (results.some(function (r) { return r.isError; }) && p.title !== 'Create a defect' ? '<p>One call failed: ' + esc(String(results.filter(function (r) { return r.isError; })[0].data)) + '</p>' : p.answer(results).join('')) + '</div>');
+    var i = 0;
+    function next() { S.conv.push(steps[i]); i++; renderConv(); if (i < steps.length) S.timers.push(setTimeout(next, reduced ? 0 : 650)); }
+    next();
+  }
+
+  /* ---------- connection ---------- */
+  function connectionTab() {
+    var h = '<div class="card"><h2>How the pieces fit</h2><p class="note">Nothing is stored in the Space. Joule asks, Calm MCP calls the official Cloud ALM APIs with your service key.</p><div class="flow">' +
+      [['Space', 'This page', 'Shows the same data and sends a question to Joule'], ['Joule', 'Chat in the desktop app', 'Chooses calm_* tools and writes the answer'], ['Calm MCP', 'Local process (stdio) or SAP BTP', 'Read-only by default, five tools'], ['SAP Cloud ALM', 'Official APIs, OAuth2 client credentials', 'Projects, tasks, tests, analytics']].map(function (n) { return '<div class="node"><span class="tag tool">' + esc(n[0]) + '</span><b>' + esc(n[1]) + '</b><small>' + esc(n[2]) + '</small></div>'; }).join('') + '</div></div>';
+    h += '<div class="two" style="margin-top:16px"><div class="card"><h2>Tools</h2><table><tbody>' + [['calm_resources', 'read', 'Code lists, providers and query recipes'], ['calm_list', 'read', 'List or count tasks, projects, features, documents and more'], ['calm_get', 'read', 'One object by id (features also by display id)'], ['calm_analytics', 'read', 'Tenant-wide totals and breakdowns'], ['calm_create', 'write, off', 'Documents and library entries only; needs CALM_WRITE_ENABLED=true']].map(function (t) { return '<tr><td><code>' + t[0] + '</code></td><td><span class="tag ' + (t[1] === 'read' ? 'ok' : 'amber') + '">' + t[1] + '</span></td><td>' + esc(t[2]) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+      '<div class="card"><h2>Connect your tenant</h2><ol class="steps2"><li>Download the <code>.mcpb</code> file from the latest release at github.com/consetto/calmcp.</li><li>In the Werkbank, open Manage and choose <b>Import .mcpb</b>.</li><li>Enter tenant, region, client id and client secret from your Cloud ALM service key.</li><li>Ask Joule one of the questions on the Ask Joule tab. Joule now reads live data.</li></ol><p class="note" style="margin-top:8px">No tenant yet? The server has a sandbox mode with an API key from the SAP Business Accelerator Hub.</p><table><tbody>' + [['CALM_TENANT', D.tenant], ['CALM_REGION', D.region], ['CALM_CLIENT_ID', '(from the service key)'], ['CALM_CLIENT_SECRET', '(stored as a secret)'], ['CALM_WRITE_ENABLED', 'false']].map(function (r) { return '<tr><td><code>' + r[0] + '</code></td><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
+    $('#main').innerHTML = h;
+  }
+
+  /* ---------- drawer ---------- */
+  var lastFocus = null;
+  function openDrawer(html) { lastFocus = document.activeElement; $('#panel').innerHTML = '<button class="btn close" id="close" type="button" aria-label="Close">Close</button>' + html; $('#drawer').classList.add('open'); $('#close').onclick = closeDrawer; $('#close').focus(); }
+  function closeDrawer() { $('#drawer').classList.remove('open'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  $('#drawer').addEventListener('click', function (e) { if (e.target === $('#drawer')) closeDrawer(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('#drawer').classList.contains('open')) closeDrawer(); });
+  function askJoule(text, btn) {
+    if (window.parent !== window) window.parent.postMessage({ type: 'wb:ask', prompt: text.slice(0, 600) }, '*');
+    if (btn) { var old = btn.textContent; btn.textContent = 'Sent to Joule'; btn.disabled = true; setTimeout(function () { btn.textContent = old; btn.disabled = false; }, 3500); }
+  }
+  function openItem(id) {
+    var t = D.tasks.filter(function (x) { return x.id === id; })[0]; if (!t) return;
+    var f = D.features.filter(function (x) { return x.id === t.featureId; })[0];
+    var call = callCalm(D, 'calm_get', { resource: 'task', id: t.id });
+    openDrawer('<h2>' + esc(t.displayId + ' · ' + t.title) + '</h2><p class="note">' + esc(TYPE[t.type] + ' · ' + proj(t.projectId).name) + '</p><div class="row"><span class="tag ' + (t.priority === 10 ? 'red' : t.priority === 20 ? 'amber' : '') + '">' + PRIO[t.priority] + '</span><span class="tag">' + esc(t.statusText) + '</span><span class="tag">' + esc(sprintOf(t.timeboxId)) + '</span></div>' +
+      '<table><tbody><tr><td>Assignee</td><td>' + esc(t.assigneeName) + '</td></tr><tr><td>Due</td><td>' + esc(t.dueDate) + '</td></tr><tr><td>Team</td><td>' + esc(t.team) + '</td></tr><tr><td>Feature</td><td>' + esc(f ? f.displayId + ' ' + f.title : '–') + '</td></tr><tr><td>Tags</td><td>' + esc(t.tags.join(', ') || '–') + '</td></tr></tbody></table>' +
+      '<h3>What Calm MCP returns</h3>' + callHtml('calm_get', { resource: 'task', id: t.id }, call) +
+      '<div class="card" style="margin:14px 0"><span class="tag tool">Joule</span><div class="row"><button class="btn" data-a="sum" type="button">Summarize this item</button><button class="btn" data-a="rel" type="button">What else is affected?</button></div><p class="note" style="margin:0">Joule reads the item and its feature through Calm MCP and answers in the chat.</p></div>');
+    var base = 'Using the Cloud ALM MCP tools: item ' + t.displayId + ' "' + t.title + '" in project "' + proj(t.projectId).name + '" (task id ' + t.id + '). ';
+    document.querySelectorAll('[data-a]').forEach(function (b) { b.onclick = function () { askJoule(base + (b.dataset.a === 'sum' ? 'Summarize it in three sentences for a project manager, with status, owner and the next step.' : 'Which other tasks, defects or tests under the same feature are affected, and what is the risk to the next sprint?'), b); }; });
+  }
+
+  /* ---------- shell ---------- */
+  var TABS = [['overview', 'Overview'], ['backlog', 'Backlog'], ['chat', 'Ask Joule (Calm MCP)'], ['connection', 'Connection']];
+  function render() {
+    $('#tabs').innerHTML = TABS.map(function (x) { return '<button role="tab" type="button" data-tab="' + x[0] + '" aria-selected="' + (S.tab === x[0]) + '">' + x[1] + '</button>'; }).join('');
+    document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { stopTimers(); S.tab = b.dataset.tab; render(); }; });
+    ({ overview: overview, backlog: backlog, chat: function () { chatTab(); if (!S.conv.length) play(); }, connection: connectionTab })[S.tab]();
+  }
+  $('#tenant').textContent = D.tenant + ' · ' + D.region;
+  $('#reset').onclick = function () { stopTimers(); S.q = ''; S.fp = ''; S.ft = ''; S.fs = 'open'; S.preset = 0; S.conv = []; closeDrawer(); render(); };
+  render();
+  window.__ca = { S: S, render: render, play: play, openItem: openItem, PRESETS: PRESETS, prompt: prompt };
+})();
+</script>
+</body>
+</html>

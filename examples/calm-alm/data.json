@@ -1,0 +1,1706 @@
+{
+  "asOf": "2026-10-21",
+  "tenant": "nordlicht-demo",
+  "region": "eu10",
+  "projects": [
+    {
+      "id": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "S/4HANA Cloud Rollout, Wave 1",
+      "phase": "Realize",
+      "lead": "Katrin Vogel",
+      "go_live": "2027-03-01",
+      "scope": "Finance, Procurement, Sales"
+    },
+    {
+      "id": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Integration Suite Migration",
+      "phase": "Explore",
+      "lead": "Daniel Roth",
+      "go_live": "2027-06-15",
+      "scope": "38 interfaces from PI/PO"
+    },
+    {
+      "id": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Group Reporting Cutover",
+      "phase": "Deploy",
+      "lead": "Elif Demir",
+      "go_live": "2026-11-16",
+      "scope": "Consolidation, Reporting"
+    }
+  ],
+  "timeboxes": [
+    {
+      "id": "tb-1-4",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Sprint 4",
+      "start": "2026-09-14",
+      "end": "2026-09-27",
+      "state": "Closed"
+    },
+    {
+      "id": "tb-1-5",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Sprint 5",
+      "start": "2026-09-28",
+      "end": "2026-10-25",
+      "state": "Active"
+    },
+    {
+      "id": "tb-1-6",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Sprint 6",
+      "start": "2026-10-26",
+      "end": "2026-11-22",
+      "state": "Planned"
+    },
+    {
+      "id": "tb-2-4",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Sprint 4",
+      "start": "2026-09-14",
+      "end": "2026-09-27",
+      "state": "Closed"
+    },
+    {
+      "id": "tb-2-5",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Sprint 5",
+      "start": "2026-09-28",
+      "end": "2026-10-25",
+      "state": "Active"
+    },
+    {
+      "id": "tb-2-6",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Sprint 6",
+      "start": "2026-10-26",
+      "end": "2026-11-22",
+      "state": "Planned"
+    },
+    {
+      "id": "tb-3-4",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Sprint 4",
+      "start": "2026-09-14",
+      "end": "2026-09-27",
+      "state": "Closed"
+    },
+    {
+      "id": "tb-3-5",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Sprint 5",
+      "start": "2026-09-28",
+      "end": "2026-10-25",
+      "state": "Active"
+    },
+    {
+      "id": "tb-3-6",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Sprint 6",
+      "start": "2026-10-26",
+      "end": "2026-11-22",
+      "state": "Planned"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t-0101",
+      "displayId": "1-101",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMREQU",
+      "status": "CIPREQUINP",
+      "statusText": "In Progress",
+      "title": "Automated payment run with bank statement reconciliation",
+      "assigneeId": "kv",
+      "assigneeName": "Katrin Vogel",
+      "priority": 20,
+      "timeboxId": null,
+      "dueDate": "2026-11-30",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-01"
+    },
+    {
+      "id": "t-0102",
+      "displayId": "1-102",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMREQU",
+      "status": "CIPREQUOPEN",
+      "statusText": "Open",
+      "title": "Three-way match for goods receipt and invoice",
+      "assigneeId": "mb",
+      "assigneeName": "Marco Bianchi",
+      "priority": 20,
+      "timeboxId": null,
+      "dueDate": "2026-12-10",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0103",
+      "displayId": "1-103",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMREQU",
+      "status": "CIPREQUCLOSE",
+      "statusText": "Done",
+      "title": "Intercompany billing for the Austrian subsidiary",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 30,
+      "timeboxId": null,
+      "dueDate": "2026-09-30",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-03"
+    },
+    {
+      "id": "t-0104",
+      "displayId": "1-104",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSINP",
+      "statusText": "In Progress",
+      "title": "As AP clerk I post vendor invoices from a PDF in one step",
+      "assigneeId": "mb",
+      "assigneeName": "Marco Bianchi",
+      "priority": 20,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-23",
+      "team": "Finance",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0105",
+      "displayId": "1-105",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As treasurer I review the proposed payment run before release",
+      "assigneeId": "kv",
+      "assigneeName": "Katrin Vogel",
+      "priority": 10,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-22",
+      "team": "Finance",
+      "tags": [],
+      "featureId": "f-01"
+    },
+    {
+      "id": "t-0106",
+      "displayId": "1-106",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As buyer I see open purchase requisitions by plant",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 30,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-25",
+      "team": "Procurement",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0107",
+      "displayId": "1-107",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSBLK",
+      "statusText": "Blocked",
+      "title": "As controller I reverse an intercompany posting with approval",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 20,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-21",
+      "team": "Finance",
+      "tags": [],
+      "featureId": "f-03"
+    },
+    {
+      "id": "t-0108",
+      "displayId": "1-108",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As sales rep I confirm a delivery date in the order screen",
+      "assigneeId": "pk",
+      "assigneeName": "Priya Kapoor",
+      "priority": 30,
+      "timeboxId": "tb-1-6",
+      "dueDate": "2026-11-06",
+      "team": "Sales",
+      "tags": [],
+      "featureId": "f-04"
+    },
+    {
+      "id": "t-0109",
+      "displayId": "1-109",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As sales rep I see credit exposure before I confirm an order",
+      "assigneeId": "pk",
+      "assigneeName": "Priya Kapoor",
+      "priority": 20,
+      "timeboxId": "tb-1-6",
+      "dueDate": "2026-11-10",
+      "team": "Sales",
+      "tags": [],
+      "featureId": "f-04"
+    },
+    {
+      "id": "t-0110",
+      "displayId": "1-110",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSCLOSE",
+      "statusText": "Done",
+      "title": "As AP clerk I park an invoice for missing data",
+      "assigneeId": "mb",
+      "assigneeName": "Marco Bianchi",
+      "priority": 40,
+      "timeboxId": "tb-1-4",
+      "dueDate": "2026-09-25",
+      "team": "Finance",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0111",
+      "displayId": "1-111",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSCLOSE",
+      "statusText": "Done",
+      "title": "As controller I run the foreign-currency valuation",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 20,
+      "timeboxId": "tb-1-4",
+      "dueDate": "2026-09-26",
+      "team": "Finance",
+      "tags": [],
+      "featureId": "f-03"
+    },
+    {
+      "id": "t-0112",
+      "displayId": "1-112",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMUS",
+      "status": "CIPUSINP",
+      "statusText": "In Progress",
+      "title": "As buyer I release a purchase order with two approvers",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 20,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-24",
+      "team": "Procurement",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0113",
+      "displayId": "1-113",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Payment run skips vendors with a one-time account flag",
+      "assigneeId": "kv",
+      "assigneeName": "Katrin Vogel",
+      "priority": 10,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-22",
+      "team": "Core",
+      "tags": [
+        "payments"
+      ],
+      "featureId": "f-01"
+    },
+    {
+      "id": "t-0114",
+      "displayId": "1-114",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Bank statement import fails on camt.053 with 5 000+ items",
+      "assigneeId": "mb",
+      "assigneeName": "Marco Bianchi",
+      "priority": 10,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-23",
+      "team": "Core",
+      "tags": [
+        "payments",
+        "import"
+      ],
+      "featureId": "f-01"
+    },
+    {
+      "id": "t-0115",
+      "displayId": "1-115",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTINP",
+      "statusText": "In Progress",
+      "title": "Goods receipt posts to the wrong plant for stock transfer",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 20,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-28",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0116",
+      "displayId": "1-116",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Tax code defaults to 0 % in Austrian billing",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 20,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-29",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-03"
+    },
+    {
+      "id": "t-0117",
+      "displayId": "1-117",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Order screen shows delivery date in the wrong time zone",
+      "assigneeId": "pk",
+      "assigneeName": "Priya Kapoor",
+      "priority": 30,
+      "timeboxId": "tb-1-6",
+      "dueDate": "2026-11-12",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-04"
+    },
+    {
+      "id": "t-0118",
+      "displayId": "1-118",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTBLK",
+      "statusText": "Blocked",
+      "title": "Approval workflow loses the second approver after a restart",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 10,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-21",
+      "team": "Core",
+      "tags": [
+        "workflow"
+      ],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0119",
+      "displayId": "1-119",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTDONE",
+      "statusText": "Done",
+      "title": "Vendor search is case sensitive",
+      "assigneeId": "mb",
+      "assigneeName": "Marco Bianchi",
+      "priority": 40,
+      "timeboxId": "tb-1-4",
+      "dueDate": "2026-09-22",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-02"
+    },
+    {
+      "id": "t-0120",
+      "displayId": "1-120",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMDEF",
+      "status": "CIPDFCTDONE",
+      "statusText": "Done",
+      "title": "Dunning letter prints an empty footer",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 40,
+      "timeboxId": "tb-1-4",
+      "dueDate": "2026-09-24",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-03"
+    },
+    {
+      "id": "t-0121",
+      "displayId": "1-121",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMRISK",
+      "status": "CIPRIOPEN",
+      "statusText": "Open",
+      "title": "Key user for Finance is on leave during UAT",
+      "assigneeId": "kv",
+      "assigneeName": "Katrin Vogel",
+      "priority": 20,
+      "timeboxId": null,
+      "dueDate": "2026-11-15",
+      "team": "PMO",
+      "tags": [],
+      "featureId": null
+    },
+    {
+      "id": "t-0122",
+      "displayId": "1-122",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMTASK",
+      "status": "CIPTKINP",
+      "statusText": "In Progress",
+      "title": "Prepare data migration rehearsal 2",
+      "assigneeId": "dr",
+      "assigneeName": "Daniel Roth",
+      "priority": 20,
+      "timeboxId": "tb-1-5",
+      "dueDate": "2026-10-26",
+      "team": "Data",
+      "tags": [],
+      "featureId": null
+    },
+    {
+      "id": "t-0123",
+      "displayId": "1-123",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMTASK",
+      "status": "CIPTKOPEN",
+      "statusText": "Open",
+      "title": "Update authorization concept for AP roles",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 30,
+      "timeboxId": "tb-1-6",
+      "dueDate": "2026-11-04",
+      "team": "Security",
+      "tags": [],
+      "featureId": null
+    },
+    {
+      "id": "t-0124",
+      "displayId": "1-124",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "type": "CALMQGATE",
+      "status": "CIPQGOPEN",
+      "statusText": "Open",
+      "title": "Quality gate: Realize to Deploy",
+      "assigneeId": "kv",
+      "assigneeName": "Katrin Vogel",
+      "priority": 10,
+      "timeboxId": null,
+      "dueDate": "2026-11-20",
+      "team": "PMO",
+      "tags": [],
+      "featureId": null
+    },
+    {
+      "id": "t-0125",
+      "displayId": "2-125",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMREQU",
+      "status": "CIPREQUINP",
+      "statusText": "In Progress",
+      "title": "Replace the PI/PO file interface to the bank with SFTP",
+      "assigneeId": "dr",
+      "assigneeName": "Daniel Roth",
+      "priority": 20,
+      "timeboxId": null,
+      "dueDate": "2026-12-01",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-05"
+    },
+    {
+      "id": "t-0126",
+      "displayId": "2-126",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMREQU",
+      "status": "CIPREQUOPEN",
+      "statusText": "Open",
+      "title": "Monitoring of all migrated interfaces in one dashboard",
+      "assigneeId": "dr",
+      "assigneeName": "Daniel Roth",
+      "priority": 30,
+      "timeboxId": null,
+      "dueDate": "2027-01-15",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-06"
+    },
+    {
+      "id": "t-0127",
+      "displayId": "2-127",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMUS",
+      "status": "CIPUSINP",
+      "statusText": "In Progress",
+      "title": "As integration developer I migrate the invoice IDoc flow",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 20,
+      "timeboxId": "tb-2-5",
+      "dueDate": "2026-10-25",
+      "team": "Integration",
+      "tags": [],
+      "featureId": "f-05"
+    },
+    {
+      "id": "t-0128",
+      "displayId": "2-128",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As integration developer I migrate the master data replication",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 30,
+      "timeboxId": "tb-2-5",
+      "dueDate": "2026-10-24",
+      "team": "Integration",
+      "tags": [],
+      "featureId": "f-05"
+    },
+    {
+      "id": "t-0129",
+      "displayId": "2-129",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As operator I get an alert when a message queue grows",
+      "assigneeId": "pk",
+      "assigneeName": "Priya Kapoor",
+      "priority": 30,
+      "timeboxId": "tb-2-6",
+      "dueDate": "2026-11-08",
+      "team": "Operations",
+      "tags": [],
+      "featureId": "f-06"
+    },
+    {
+      "id": "t-0130",
+      "displayId": "2-130",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMUS",
+      "status": "CIPUSCLOSE",
+      "statusText": "Done",
+      "title": "As developer I create the first iFlow template",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 40,
+      "timeboxId": "tb-2-4",
+      "dueDate": "2026-09-20",
+      "team": "Integration",
+      "tags": [],
+      "featureId": "f-05"
+    },
+    {
+      "id": "t-0131",
+      "displayId": "2-131",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Mapping drops the second order line with a text item",
+      "assigneeId": "tn",
+      "assigneeName": "Tom Nguyen",
+      "priority": 20,
+      "timeboxId": "tb-2-5",
+      "dueDate": "2026-10-27",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-05"
+    },
+    {
+      "id": "t-0132",
+      "displayId": "2-132",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMDEF",
+      "status": "CIPDFCTINP",
+      "statusText": "In Progress",
+      "title": "Retry policy sends duplicates after a 502 from the bank",
+      "assigneeId": "ls",
+      "assigneeName": "Lena Schulz",
+      "priority": 10,
+      "timeboxId": "tb-2-5",
+      "dueDate": "2026-10-22",
+      "team": "Core",
+      "tags": [
+        "bank"
+      ],
+      "featureId": "f-05"
+    },
+    {
+      "id": "t-0133",
+      "displayId": "2-133",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Dashboard shows interfaces twice after a rename",
+      "assigneeId": "pk",
+      "assigneeName": "Priya Kapoor",
+      "priority": 40,
+      "timeboxId": "tb-2-6",
+      "dueDate": "2026-11-20",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-06"
+    },
+    {
+      "id": "t-0134",
+      "displayId": "2-134",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMRISK",
+      "status": "CIPRIOPEN",
+      "statusText": "Open",
+      "title": "Bank certificate expires before cutover",
+      "assigneeId": "dr",
+      "assigneeName": "Daniel Roth",
+      "priority": 10,
+      "timeboxId": null,
+      "dueDate": "2026-11-30",
+      "team": "PMO",
+      "tags": [],
+      "featureId": null
+    },
+    {
+      "id": "t-0135",
+      "displayId": "2-135",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "type": "CALMTASK",
+      "status": "CIPTKOPEN",
+      "statusText": "Open",
+      "title": "Agree the interface freeze with the business",
+      "assigneeId": "dr",
+      "assigneeName": "Daniel Roth",
+      "priority": 30,
+      "timeboxId": "tb-2-5",
+      "dueDate": "2026-10-30",
+      "team": "PMO",
+      "tags": [],
+      "featureId": null
+    },
+    {
+      "id": "t-0136",
+      "displayId": "3-136",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMREQU",
+      "status": "CIPREQUCLOSE",
+      "statusText": "Done",
+      "title": "Consolidation of the group by legal entity and segment",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 20,
+      "timeboxId": null,
+      "dueDate": "2026-08-31",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-07"
+    },
+    {
+      "id": "t-0137",
+      "displayId": "3-137",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMREQU",
+      "status": "CIPREQUINP",
+      "statusText": "In Progress",
+      "title": "Management report with currency translation at average rate",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 20,
+      "timeboxId": null,
+      "dueDate": "2026-11-05",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-08"
+    },
+    {
+      "id": "t-0138",
+      "displayId": "3-138",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMUS",
+      "status": "CIPUSINP",
+      "statusText": "In Progress",
+      "title": "As group controller I run the elimination of intercompany balances",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 10,
+      "timeboxId": "tb-3-5",
+      "dueDate": "2026-10-22",
+      "team": "Reporting",
+      "tags": [],
+      "featureId": "f-07"
+    },
+    {
+      "id": "t-0139",
+      "displayId": "3-139",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMUS",
+      "status": "CIPUSOPEN",
+      "statusText": "Open",
+      "title": "As CFO I open the management report on my phone",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 30,
+      "timeboxId": "tb-3-5",
+      "dueDate": "2026-10-25",
+      "team": "Reporting",
+      "tags": [],
+      "featureId": "f-08"
+    },
+    {
+      "id": "t-0140",
+      "displayId": "3-140",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMUS",
+      "status": "CIPUSCLOSE",
+      "statusText": "Done",
+      "title": "As controller I load the opening balances",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 20,
+      "timeboxId": "tb-3-4",
+      "dueDate": "2026-09-25",
+      "team": "Reporting",
+      "tags": [],
+      "featureId": "f-07"
+    },
+    {
+      "id": "t-0141",
+      "displayId": "3-141",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Elimination leaves a 0.01 difference for JPY entities",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 10,
+      "timeboxId": "tb-3-5",
+      "dueDate": "2026-10-22",
+      "team": "Core",
+      "tags": [
+        "consolidation"
+      ],
+      "featureId": "f-07"
+    },
+    {
+      "id": "t-0142",
+      "displayId": "3-142",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMDEF",
+      "status": "CIPDFCTOPEN",
+      "statusText": "Open",
+      "title": "Report total differs from the consolidation by segment",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 20,
+      "timeboxId": "tb-3-5",
+      "dueDate": "2026-10-26",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-08"
+    },
+    {
+      "id": "t-0143",
+      "displayId": "3-143",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMDEF",
+      "status": "CIPDFCTDONE",
+      "statusText": "Done",
+      "title": "Wrong rounding in the segment report",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 30,
+      "timeboxId": "tb-3-4",
+      "dueDate": "2026-09-23",
+      "team": "Core",
+      "tags": [],
+      "featureId": "f-08"
+    },
+    {
+      "id": "t-0144",
+      "displayId": "3-144",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "type": "CALMQGATE",
+      "status": "CIPQGBLK",
+      "statusText": "Blocked",
+      "title": "Quality gate: Deploy readiness",
+      "assigneeId": "ed",
+      "assigneeName": "Elif Demir",
+      "priority": 10,
+      "timeboxId": null,
+      "dueDate": "2026-11-02",
+      "team": "PMO",
+      "tags": [],
+      "featureId": null
+    }
+  ],
+  "features": [
+    {
+      "id": "f-01",
+      "displayId": "6-101",
+      "title": "Payments",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "status": "In Progress"
+    },
+    {
+      "id": "f-02",
+      "displayId": "6-102",
+      "title": "Procure to Pay",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "status": "In Progress"
+    },
+    {
+      "id": "f-03",
+      "displayId": "6-103",
+      "title": "Intercompany",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "status": "Done"
+    },
+    {
+      "id": "f-04",
+      "displayId": "6-104",
+      "title": "Order to Cash",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "status": "Planned"
+    },
+    {
+      "id": "f-05",
+      "displayId": "6-105",
+      "title": "Interface migration",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "status": "In Progress"
+    },
+    {
+      "id": "f-06",
+      "displayId": "6-106",
+      "title": "Interface monitoring",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "status": "Planned"
+    },
+    {
+      "id": "f-07",
+      "displayId": "6-107",
+      "title": "Consolidation",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "status": "In Progress"
+    },
+    {
+      "id": "f-08",
+      "displayId": "6-108",
+      "title": "Management reporting",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "status": "In Progress"
+    }
+  ],
+  "tests": [
+    {
+      "id": "tc-1",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-2",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-3",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-4",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-5",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-6",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-7",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-8",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-9",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-10",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-11",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-12",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-13",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-14",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-15",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-16",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-17",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Payment run",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-18",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-19",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-20",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-21",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-22",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-23",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-24",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-25",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-26",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-27",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-28",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-29",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-30",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-31",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-32",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-33",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-34",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-35",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-36",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-37",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-38",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-39",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-40",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-41",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-42",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-43",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-44",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-45",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-46",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-47",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Procure to pay",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-48",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-49",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-50",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-51",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-52",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-53",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-54",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-55",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-56",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Order to cash",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-57",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-58",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-59",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-60",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-61",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-62",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-63",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-64",
+      "projectId": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Intercompany",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-65",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-66",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-67",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-68",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-69",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-70",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-71",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-72",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-73",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-74",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-75",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-76",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-77",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-78",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-79",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-80",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-81",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-82",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-83",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-84",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-85",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-86",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-87",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-88",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-89",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-90",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-91",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-92",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-93",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-94",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-95",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-96",
+      "projectId": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Interfaces",
+      "result": "Not run"
+    },
+    {
+      "id": "tc-97",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-98",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-99",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-100",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-101",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-102",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-103",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-104",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-105",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-106",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-107",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-108",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-109",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-110",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-111",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-112",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-113",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-114",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-115",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-116",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-117",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Consolidation",
+      "result": "Failed"
+    },
+    {
+      "id": "tc-118",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-119",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-120",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-121",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-122",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-123",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-124",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-125",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-126",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-127",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-128",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-129",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Passed"
+    },
+    {
+      "id": "tc-130",
+      "projectId": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Reporting",
+      "result": "Not run"
+    }
+  ]
+}
