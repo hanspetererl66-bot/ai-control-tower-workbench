@@ -147,6 +147,18 @@ bundle URL and title in the link target; the hosted page validates the HTTPS sou
 opens Werkbank's guarded in-app confirmation. See [`site/README.md`](site/README.md) for
 the copyable Markdown.
 
+## Databricks MCP demo (SAP TechEd Berlin)
+
+Three scenarios through the Werkbank: a governed Genie analyst, a pipeline on-call copilot and a PO delay-risk
+flow that posts to a mock SAP system only after approval. It ships a stdio bridge to the Databricks managed MCP
+endpoints, a mock SAP MCP server, seed SQL for a fresh Databricks workspace, three Goose recipes and the matching skills.
+Start with [`examples/databricks-demo/README.md`](examples/databricks-demo/README.md).
+
+```sh
+npm run databricks-demo:load      # seed a workspace (needs DATABRICKS_HOST, a token and a warehouse id)
+npm run install:databricks-demo -- --host https://<workspace-hostname>
+```
+
 ## Publication status
 
 The source, static website, and guarded install handoffs are release-prepared. A signed,

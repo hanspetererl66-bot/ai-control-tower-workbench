@@ -1,0 +1,35 @@
+# The two Goose extensions the Databricks demo needs, in the shape of goose-home/.config/goose/config.yaml.
+#
+# You normally do not copy this by hand:
+#   npm run install:databricks-demo -- --host https://<your-workspace-hostname>
+# merges both entries into the project's Goose config with absolute paths for this checkout.
+# Alternatively import the two .mcpb bundles in Connectors & Skills (npm run build:databricks-bridge-mcpb, build:sap-mock-mcpb).
+#
+# Secrets are NOT written here. Werkbank keeps them in the OS-encrypted store: open Connectors & Skills,
+# choose Configure on "databricks" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).
+# Names that look like secrets are moved out of the file automatically. Never put them in this file, .env or a chat.
+#
+# Replace <REPO> by the absolute path of this checkout, and the host by your workspace address.
+extensions:
+  databricks:
+    type: stdio
+    name: databricks
+    enabled: true
+    cmd: node
+    args:
+      - <REPO>/connectors/databricks-bridge/server/index.mjs
+    envs:
+      DATABRICKS_HOST: https://adb-0000000000000000.0.azuredatabricks.net
+      # Endpoint paths, comma separated. sql and the five functions come from the managed MCP endpoints for
+      # Databricks SQL and Unity Catalog functions. Add your Genie space with genie=<path of its MCP endpoint>.
+      DATABRICKS_MCP_PATHS: "sql=/api/2.0/mcp/sql,fn_delay_risk=/api/2.0/mcp/functions/werkbank_demo/scm/get_delay_risk_pos,fn_po_detail=/api/2.0/mcp/functions/werkbank_demo/scm/get_po_detail,fn_failed_runs=/api/2.0/mcp/functions/werkbank_demo/ops/get_failed_runs,fn_run_diagnosis=/api/2.0/mcp/functions/werkbank_demo/ops/get_run_diagnosis,fn_downstream=/api/2.0/mcp/functions/werkbank_demo/ops/get_downstream_impact"
+    timeout: 120
+  sap-mock:
+    type: stdio
+    name: sap-mock
+    enabled: true
+    cmd: node
+    args:
+      - <REPO>/connectors/sap-mock/server/index.mjs
+    envs: {}
+    timeout: 60

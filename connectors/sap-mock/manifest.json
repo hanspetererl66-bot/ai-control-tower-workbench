@@ -1,0 +1,62 @@
+{
+  "manifest_version": "0.2",
+  "name": "sap-mock",
+  "display_name": "SAP mock (purchasing)",
+  "version": "0.1.0",
+  "description": "Mock SAP purchasing with fictional data for demos: read purchase orders and alternative suppliers, and post expedite requests or supplier inquiries through a two-step gate (draft first, then submit with a confirmation token). In memory only; restart the agent to reset.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "SAP_MOCK_AUDIT_LOG": "${user_config.audit_log_path}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_purchase_orders",
+      "description": "List purchase orders (demo data), filter by buyer, vendor, plant or status."
+    },
+    {
+      "name": "get_purchase_order",
+      "description": "One purchase order with vendor performance and the ZZ_EXPEDITE_FLAG custom field."
+    },
+    {
+      "name": "list_alternative_suppliers",
+      "description": "Qualified alternative suppliers for a material."
+    },
+    {
+      "name": "draft_expedite_request",
+      "description": "Prepare an expedite request. Changes nothing; returns a draft and a confirmation token."
+    },
+    {
+      "name": "draft_supplier_inquiry",
+      "description": "Prepare an inquiry to an alternative supplier. Changes nothing; returns a draft and a confirmation token."
+    },
+    {
+      "name": "submit_draft",
+      "description": "The only write: posts a draft once, after explicit approval. Needs the confirmation token and confirmed=true."
+    },
+    {
+      "name": "get_audit_log",
+      "description": "Every draft, submission and rejection since the server started."
+    }
+  ],
+  "user_config": {
+    "audit_log_path": {
+      "type": "string",
+      "title": "Audit log file",
+      "description": "Optional. Absolute path of a file that receives one JSON line per draft, submission and rejection. Leave empty to keep the log in memory only.",
+      "required": false
+    }
+  }
+}

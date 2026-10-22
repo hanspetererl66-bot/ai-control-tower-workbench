@@ -1,0 +1,77 @@
+{
+  "manifest_version": "0.2",
+  "name": "databricks-bridge",
+  "display_name": "Databricks (MCP bridge)",
+  "version": "0.1.0",
+  "description": "Connects the chat to Databricks-hosted MCP endpoints: Databricks SQL, a Genie space and Unity Catalog functions. One connector, several endpoints; credentials are stored as secrets and never written to config files. Results respect the permissions of the identity you configure.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "DATABRICKS_HOST": "${user_config.databricks_host}",
+        "DATABRICKS_CLIENT_ID": "${user_config.client_id}",
+        "DATABRICKS_CLIENT_SECRET": "${user_config.client_secret}",
+        "DATABRICKS_TOKEN": "${user_config.access_token}",
+        "DATABRICKS_OAUTH_SCOPE": "${user_config.oauth_scope}",
+        "DATABRICKS_MCP_PATHS": "${user_config.mcp_paths}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "(from Databricks)",
+      "description": "The tools are whatever the configured Databricks endpoints expose, for example SQL execution, Genie questions and your Unity Catalog functions."
+    }
+  ],
+  "user_config": {
+    "databricks_host": {
+      "type": "string",
+      "title": "Databricks workspace address",
+      "description": "Example: https://adb-1234567890123456.7.azuredatabricks.net",
+      "required": true
+    },
+    "client_id": {
+      "type": "string",
+      "title": "Service principal client ID",
+      "description": "OAuth machine-to-machine client ID. Leave empty if you use an access token instead.",
+      "required": false
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Service principal client secret",
+      "description": "Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "access_token": {
+      "type": "string",
+      "title": "Access token (alternative)",
+      "description": "Optional. A bearer token you already have. Whether a personal access token is accepted depends on the endpoint; OAuth is the documented path.",
+      "sensitive": true,
+      "required": false
+    },
+    "oauth_scope": {
+      "type": "string",
+      "title": "OAuth scope",
+      "description": "Scope requested for the machine-to-machine token. Default all-apis; narrow it to the scopes of the endpoints you use (for example sql, unity-catalog) once everything works.",
+      "default": "all-apis",
+      "required": false
+    },
+    "mcp_paths": {
+      "type": "string",
+      "title": "MCP endpoint paths",
+      "description": "Comma or line separated, each /path or alias=/path. Add your Genie space as genie=<path of its MCP endpoint> once you have it. See examples/databricks-demo/README.md.",
+      "default": "sql=/api/2.0/mcp/sql,fn_delay_risk=/api/2.0/mcp/functions/werkbank_demo/scm/get_delay_risk_pos,fn_po_detail=/api/2.0/mcp/functions/werkbank_demo/scm/get_po_detail,fn_failed_runs=/api/2.0/mcp/functions/werkbank_demo/ops/get_failed_runs,fn_run_diagnosis=/api/2.0/mcp/functions/werkbank_demo/ops/get_run_diagnosis,fn_downstream=/api/2.0/mcp/functions/werkbank_demo/ops/get_downstream_impact",
+      "required": true
+    }
+  }
+}
