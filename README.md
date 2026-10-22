@@ -373,6 +373,7 @@ Set `ZAMMAD_URL` and `ZAMMAD_TOKEN` (optional `ZAMMAD_GROUP`, default `Users`) i
 - **Mapping:** ticket id `ZM-<number>`; each demo customer is a Zammad user `<id>@sub4me-demo.example`, created on first use; product, priority, owner, follows and related are tags; "related" is also a Zammad ticket link; "follows" is the tag `follows:<customer>` on the ticket.
 - **Limits:** the sample status is not copied (new tickets start as New); the ticket list reads at most 300 tickets and one extra call per ticket for its tags, which is fine for a demo and slow for a large help desk; the description is not part of the list, so the match uses title and product.
 - **Not verified:** the endpoints follow docs.zammad.org and are covered by tests with an in-memory fake. They have **not** been run against a real Zammad from the development environment.
+- **Zammad on Google Cloud:** `deploy/zammad-gcp/create-vm.sh` (run in Cloud Shell) creates a static IP, a firewall rule for ports 80 and 443 only, and an Ubuntu 24.04 VM (`e2-standard-2`, 8 GB RAM, 40 GB disk). Its startup script installs Docker, the official `zammad-docker-compose` and Caddy, which gets the HTTPS certificate (own domain, or `<ip>.sslip.io` by default). The scripts are syntax-checked only and were not run in a Google Cloud project. Run costs accrue while the VM runs; `gcloud compute instances stop zammad` pauses it. Use fictional demo data only and switch on two-factor login in Zammad.
 
 ### Sub4Me: contract and offer details
 
