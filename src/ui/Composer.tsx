@@ -51,6 +51,9 @@ type Props = {
   onVoiceCommand?: (text: string) => boolean;
   /** Open a Space (and tab) from a briefing card. */
   onNavigate?: (target: { space: string; tab?: string }) => void;
+  /** Own starter prompts and favourite skills from the settings. */
+  ownStarters?: StarterPrompt[];
+  favoriteStarters?: StarterPrompt[];
 };
 
 export default function Composer({
@@ -66,6 +69,8 @@ export default function Composer({
   onManageConnectors,
   onInstallConnector,
   starters = false,
+  ownStarters,
+  favoriteStarters,
   voice,
   onOpenSettings,
   onStopSpeaking,
@@ -330,6 +335,10 @@ export default function Composer({
     setText('');
     setAttachments([]);
     setAttachmentError('');
+  }
+
+  function pickOwnStarter(starter: StarterPrompt) {
+    void submit({ text: starter.prompt });
   }
 
   function pickStarter(starter: StarterPrompt) {
@@ -659,6 +668,9 @@ export default function Composer({
           onPick={pickStarter}
           onInstall={onInstallConnector}
           onManage={onManageConnectors}
+          own={ownStarters}
+          favorites={favoriteStarters}
+          onPickOwn={pickOwnStarter}
         />
       )}
     </div>

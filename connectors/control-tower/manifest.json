@@ -213,6 +213,14 @@
     {
       "name": "search_sap_community",
       "description": "Search SAP Community (community.sap.com, no login) for questions, answers and blogs. Read only."
+    },
+    {
+      "name": "get_preferences",
+      "description": "Load the saved personal Werkbank settings from the Supabase table werkbank.preferences."
+    },
+    {
+      "name": "save_preferences",
+      "description": "Save the personal Werkbank settings (one row, settings only, no secrets) to werkbank.preferences."
     }
   ],
   "user_config": {

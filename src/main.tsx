@@ -14,6 +14,7 @@ declare global {
       openFile?: (path: string) => Promise<{ ok: boolean; detail?: string }>;
       revealFile?: (path: string) => void;
       pickChatFiles?: () => Promise<AttachmentPickerResult>;
+      setZoomFactor?: (factor: number) => void;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';
         csvPath?: string;
