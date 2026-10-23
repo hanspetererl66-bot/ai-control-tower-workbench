@@ -74,3 +74,42 @@ test('style: accent, contrast, motion reach app and Spaces', () => {
   assert.equal(applySpacePrefs('<html><head></head></html>', DEFAULT_PREFERENCES).includes('werkbank-space-prefs'), false);
   assert.ok(accentVariants('#ffff00').dark);
 });
+
+import { DEFAULT_DOMAIN, addDomain, assignDomain, deleteDomain, domainNames, domainOf, profileSettingsOf, renameDomain } from '../src/preferences.ts';
+
+test('domains: space.json default, own assignment wins, General is the fallback', () => {
+  const spaces = [{ slug: 'sales', domain: 'Sales' }, { slug: 'calls', domain: 'Sales' }, { slug: 'x' }];
+  const p = DEFAULT_PREFERENCES;
+  assert.equal(domainOf(spaces[0], p), 'Sales');
+  assert.equal(domainOf(spaces[2], p), DEFAULT_DOMAIN);
+  const moved = assignDomain(p, spaces[2], 'My area');
+  assert.equal(domainOf(spaces[2], moved), 'My area');
+  assert.deepEqual(moved.domains, ['My area']);
+  assert.deepEqual(domainNames(spaces, moved), ['My area', 'Sales']);
+  const back = assignDomain(moved, spaces[0], 'Sales');
+  assert.deepEqual(back.spaceDomains, moved.spaceDomains, 'moving back to the own domain stores nothing');
+  assert.equal(assignDomain(p, spaces[0], '   '), p);
+});
+
+test('domains: add, rename and delete keep the assignments consistent', () => {
+  const spaces = [{ slug: 'sales', domain: 'Sales' }, { slug: 'calls', domain: 'Sales' }];
+  let p = addDomain(DEFAULT_PREFERENCES, 'Ops');
+  p = addDomain(p, 'Ops');
+  assert.deepEqual(p.domains, ['Ops']);
+  p = renameDomain(p, spaces, 'Sales', 'Revenue');
+  assert.equal(domainOf(spaces[0], p), 'Revenue');
+  assert.equal(domainOf(spaces[1], p), 'Revenue');
+  assert.ok(p.domains.includes('Revenue'));
+  p = deleteDomain(p, 'Revenue');
+  assert.equal(domainOf(spaces[0], p), 'Sales', 'falls back to the space.json domain');
+  assert.equal(p.domains.includes('Revenue'), false);
+});
+
+test('domains survive sanitising, profiles and export; junk is dropped', () => {
+  const p = sanitizePreferences({ domains: ['A', 'A', '', 'B'.repeat(50)], spaceDomains: { ok: 'A', 'Bad Slug': 'A', also: '' } });
+  assert.equal(p.domains.length, 2);
+  assert.equal(p.domains[1].length, 30);
+  assert.deepEqual(p.spaceDomains, { ok: 'A' });
+  assert.deepEqual(profileSettingsOf(p).domains, p.domains);
+  assert.deepEqual(importPreferences(exportPreferences(p)).spaceDomains, { ok: 'A' });
+});

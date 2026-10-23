@@ -3,6 +3,8 @@ export type Space = {
   title: string;
   description: string;
   insights: string[];
+  /** Optional group named in space.json; the person can override it. */
+  domain?: string;
   cardCount: number;
   updatedAt: number;
 };

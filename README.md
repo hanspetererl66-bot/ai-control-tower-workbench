@@ -439,6 +439,7 @@ Einstellungen → Tabs **Profile, Look, Work, Assistant, Storage, General**.
 - **Look:** Akzentfarbe (wirkt auch in allen Spaces), App- und Space-Textgröße, Schrift, Dichte, hoher Kontrast, weniger Bewegung.
 - **Profile:** fertige Profile (Standard, Vertrieb, Governance, Demo, Barrierearm) und eigene Profile speichern/löschen.
 - **Work:** Start-Ansicht (Chat, letzter Space, fester Space), angeheftete Spaces (★ in der Space-Liste), Lieblings-Skills und eigene Starter-Prompts als Chips, Standard-Connectoren.
+- **Domains (Bereiche):** Die Space-Liste ist nach Bereichen gruppiert. Ein Space nennt seinen Bereich in `space.json` (`"domain": "Sales"`, Standard „General“). Bereiche lassen sich frei anlegen, umbenennen und löschen (leer), Spaces per Drag-and-drop oder über die Auswahl „Domain“ am markierten Space verschieben. Die Zuordnung steckt in den Einstellungen (Export, Profile, Supabase-Sync).
 - **Assistant:** Sprache, Länge, Ton und feste Anweisungen; werden jeder Anfrage als „PERSONAL PREFERENCES“-Block mitgegeben.
 - **Storage:** benannte Ablageorte (Zweck → Pfad/URL), Export/Import als Datei und Abgleich mit Supabase (`werkbank.preferences`, Tools `get_preferences` / `save_preferences`; Geheimnisse werden abgelehnt). Migration: `supabase/migrations/20261022_016_werkbank_preferences.sql`.
 
