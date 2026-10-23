@@ -378,3 +378,27 @@ export function deleteDomain<T extends Preferences>(prefs: T, name: string): T {
   const spaceDomains = Object.fromEntries(Object.entries(prefs.spaceDomains).filter(([, n]) => n !== name));
   return { ...prefs, domains: prefs.domains.filter((n) => n !== name), spaceDomains };
 }
+
+// ---------- back to the original ----------
+
+const LOOK_KEYS = ['appearance', 'accent', 'appScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+
+/** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
+export function resetLook<T extends Preferences>(prefs: T): T {
+  const next = { ...prefs } as Record<string, unknown>;
+  for (const key of LOOK_KEYS) next[key] = DEFAULT_PREFERENCES[key];
+  return next as T;
+}
+
+export function isOriginalLook(prefs: Preferences): boolean {
+  return LOOK_KEYS.every((key) => prefs[key] === DEFAULT_PREFERENCES[key]);
+}
+
+/** Everything back to the original; saved profiles and the Supabase key stay. */
+export function resetAll(prefs: Preferences): Preferences {
+  return { ...DEFAULT_PREFERENCES, profiles: prefs.profiles, sync: prefs.sync };
+}
+
+export function isOriginal(prefs: Preferences): boolean {
+  return JSON.stringify(resetAll(prefs)) === JSON.stringify(prefs);
+}
