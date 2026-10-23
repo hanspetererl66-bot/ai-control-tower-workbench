@@ -1,6 +1,7 @@
 {
   "title": "MCP Marketplace",
   "description": "A governed catalog of MCP servers: what a server can do, which switches are off by default, how to pilot it and how to install it. First entry: ARC-1 for ABAP development.",
+  "domain": "Marketplace",
   "insights": [
     "ARC-1 is a candidate: read-only by default, with explicit switches for writes, transports, Git, table preview and free SQL.",
     "Tool classes (reads only, can change the system, can read business data) are our reading of the tool descriptions.",

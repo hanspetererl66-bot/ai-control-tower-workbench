@@ -1,4 +1,4 @@
-import { useState, type DragEvent, type KeyboardEvent } from 'react';
+import { Fragment, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { PRODUCT_NAME } from '../product';
 import { relativeTime, type Space } from '../spaces';
 
@@ -13,11 +13,49 @@ type Props = {
   /** Pinned Spaces (kept at the top) and the toggle. */
   pinned?: string[];
   onTogglePin?: (slug: string) => void;
+  /** Domains: groups of Spaces. All names are in display order; `domainOf` says where a Space lives. */
+  domains?: string[];
+  domainOf?: (slug: string) => string;
+  onAssign?: (slug: string, domain: string) => void;
+  onAddDomain?: (name: string) => void;
+  onRenameDomain?: (from: string, to: string) => void;
+  onDeleteDomain?: (name: string) => void;
 };
+
+const COLLAPSED_KEY = 'werkbank.collapsedDomains';
+function loadCollapsed(): string[] {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(COLLAPSED_KEY) ?? '[]');
+    return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
 type DropMark = { slug: string; after: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, onAddDomain, onRenameDomain, onDeleteDomain }: Props) {
+  const grouped = Boolean(domains && domainOf);
+  const [collapsed, setCollapsed] = useState<string[]>(loadCollapsed);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [overDomain, setOverDomain] = useState<string | null>(null);
+  function toggleCollapsed(name: string) {
+    setCollapsed((current) => {
+      const next = current.includes(name) ? current.filter((x) => x !== name) : [...current, name];
+      try { window.localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }
+  function dropOnDomain(event: DragEvent<HTMLElement>, name: string) {
+    event.preventDefault();
+    const from = dragging ?? event.dataTransfer.getData('text/plain');
+    endDrag();
+    setOverDomain(null);
+    if (from && onAssign) onAssign(from, name);
+  }
   const [dragging, setDragging] = useState<string | null>(null);
   const [mark, setMark] = useState<DropMark | null>(null);
 
@@ -40,6 +78,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     const from = dragging ?? event.dataTransfer.getData('text/plain');
     const after = mark?.slug === slug ? mark.after : false;
     endDrag();
+    if (from && domainOf && onAssign && domainOf(from) !== domainOf(slug)) onAssign(from, domainOf(slug));
     if (from && onReorder) onReorder(from, slug, after);
   }
 
@@ -51,26 +90,9 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     }
   }
 
-  return (
-    <aside className="list">
-      <div className="list-head">
-        <span className="list-title">Spaces</span>
-        <button className="icon-btn" title="Search" aria-label="Search">
-          <SearchIcon />
-        </button>
-        <button className="icon-btn" title="Filter" aria-label="Filter">
-          <FilterIcon />
-        </button>
-      </div>
-
-      {spaces.length === 0 ? (
-        <p className="list-empty">
-          No Spaces yet. Ask {PRODUCT_NAME} to create a dashboard from grounded data.
-        </p>
-      ) : (
-        spaces.map((s) => (
+  const renderCard = (s: Space) => (
+<Fragment key={s.slug}>
           <button
-            key={s.slug}
             className={[
               'card',
               selected === s.slug ? 'card-on' : '',
@@ -113,7 +135,82 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             </span>
             {s.description && <span className="card-desc">{s.description}</span>}
           </button>
-        ))
+          {grouped && onAssign && selected === s.slug && (
+            <label className="domain-move">
+              <span>Domain</span>
+              <select value={domainOf!(s.slug)} onChange={(event) => onAssign(s.slug, event.target.value)} aria-label={`Domain of ${s.title}`}>
+                {domains!.map((name) => <option key={name} value={name}>{name}</option>)}
+              </select>
+            </label>
+          )}
+        </Fragment>
+  );
+
+  return (
+    <aside className="list">
+      <div className="list-head">
+        <span className="list-title">Spaces</span>
+        <button className="icon-btn" title="Search" aria-label="Search">
+          <SearchIcon />
+        </button>
+        <button className="icon-btn" title="Filter" aria-label="Filter">
+          <FilterIcon />
+        </button>
+      </div>
+
+      {spaces.length === 0 ? (
+        <p className="list-empty">
+          No Spaces yet. Ask {PRODUCT_NAME} to create a dashboard from grounded data.
+        </p>
+      ) : (
+        grouped ? (
+          <>
+            {onAddDomain && (
+              <div className="domain-add">
+                {adding ? (
+                  <form onSubmit={(event) => { event.preventDefault(); if (newName.trim()) onAddDomain(newName); setNewName(''); setAdding(false); }}>
+                    <input autoFocus value={newName} maxLength={30} placeholder="Name of the domain" aria-label="Name of the new domain" onChange={(event) => setNewName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') { setAdding(false); setNewName(''); } }} />
+                  </form>
+                ) : (
+                  <button className="ghost-btn" onClick={() => setAdding(true)}>+ New domain</button>
+                )}
+              </div>
+            )}
+            {domains!.map((name) => {
+              const items = spaces.filter((x) => domainOf!(x.slug) === name);
+              const isCollapsed = collapsed.includes(name);
+              return (
+                <section key={name} className={`domain ${overDomain === name ? 'domain-over' : ''}`} aria-label={`Domain ${name}`}>
+                  <div
+                    className="domain-head"
+                    onDragOver={(event) => { if (dragging) { event.preventDefault(); setOverDomain(name); } }}
+                    onDragLeave={() => setOverDomain((cur) => (cur === name ? null : cur))}
+                    onDrop={(event) => dropOnDomain(event, name)}
+                  >
+                    <button className="domain-toggle" aria-expanded={!isCollapsed} onClick={() => toggleCollapsed(name)}>
+                      <span aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+                      {renaming === name ? null : <span className="domain-name">{name}</span>}
+                      {renaming === name ? null : <span className="domain-count">{items.length}</span>}
+                    </button>
+                    {renaming === name ? (
+                      <form onSubmit={(event) => { event.preventDefault(); if (renameValue.trim() && onRenameDomain) onRenameDomain(name, renameValue); setRenaming(null); }}>
+                        <input autoFocus value={renameValue} maxLength={30} aria-label={`New name for ${name}`} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenaming(null); }} onBlur={() => setRenaming(null)} />
+                      </form>
+                    ) : (
+                      <span className="domain-tools">
+                        {onRenameDomain && <button className="icon-btn" title="Rename domain" aria-label={`Rename ${name}`} onClick={() => { setRenaming(name); setRenameValue(name); }}>✎</button>}
+                        {onDeleteDomain && items.length === 0 && <button className="icon-btn" title="Delete empty domain" aria-label={`Delete ${name}`} onClick={() => onDeleteDomain(name)}>✕</button>}
+                      </span>
+                    )}
+                  </div>
+                  {!isCollapsed && (items.length ? items.map(renderCard) : <div className="domain-empty">Drag a Space here</div>)}
+                </section>
+              );
+            })}
+          </>
+        ) : (
+          spaces.map(renderCard)
+        )
       )}
     </aside>
   );

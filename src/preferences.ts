@@ -58,6 +58,9 @@ export type ProfileSettings = {
   reduceMotion: boolean;
   startView: string;
   pinnedSpaces: string[];
+  /** Own domains (groups of Spaces), in display order, and manual Space → domain assignments. */
+  domains: string[];
+  spaceDomains: Record<string, string>;
   favoriteSkills: string[];
   assistant: Assistant;
 };
@@ -87,6 +90,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   reduceMotion: false,
   startView: 'chat',
   pinnedSpaces: [],
+  domains: [],
+  spaceDomains: {},
   favoriteSkills: [],
   assistant: { ...DEFAULT_ASSISTANT },
   starters: [],
@@ -123,6 +128,10 @@ const SLUG = /^[a-z0-9][a-z0-9-]{0,59}$/;
 const ID = /^[a-z0-9][a-z0-9_-]{0,39}$/;
 const START = /^(chat|last|space:[a-z0-9][a-z0-9-]{0,59})$/;
 
+export const DEFAULT_DOMAIN = 'General';
+export const MAX_DOMAINS = 12;
+const domainName = (value: unknown): string => text(value, 30).replace(/\s+/g, ' ');
+
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const pick = <T extends readonly unknown[]>(list: T, value: unknown, fallback: T[number]): T[number] => (list.includes(value) ? (value as T[number]) : fallback);
 const text = (value: unknown, max: number): string =>
@@ -154,6 +163,15 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (typeof v.reduceMotion === 'boolean') out.reduceMotion = v.reduceMotion;
   if (typeof v.startView === 'string' && START.test(v.startView)) out.startView = v.startView;
   if (Array.isArray(v.pinnedSpaces)) out.pinnedSpaces = list(v.pinnedSpaces, (s) => SLUG.test(s), 20);
+  if (Array.isArray(v.domains)) out.domains = [...new Set(v.domains.map((d) => domainName(d)).filter(Boolean))].slice(0, MAX_DOMAINS);
+  if (isObject(v.spaceDomains)) {
+    const map: Record<string, string> = {};
+    for (const [slug, name] of Object.entries(v.spaceDomains)) {
+      const clean = domainName(name);
+      if (SLUG.test(slug) && clean && Object.keys(map).length < 80) map[slug] = clean;
+    }
+    out.spaceDomains = map;
+  }
   if (Array.isArray(v.favoriteSkills)) out.favoriteSkills = list(v.favoriteSkills, (s) => SLUG.test(s), 12);
   if (isObject(v.assistant)) out.assistant = sanitizeAssistant(v.assistant);
   return out;
@@ -196,8 +214,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, favoriteSkills, assistant } = prefs;
-  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], favoriteSkills: [...favoriteSkills], assistant: { ...assistant } };
+  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, favoriteSkills, assistant } = prefs;
+  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -305,4 +323,58 @@ export function startSpace(prefs: Preferences, slugs: string[], lastSlug: string
     return slugs.includes(slug) ? slug : null;
   }
   return null;
+}
+
+// ---------- domains: groups of Spaces ----------
+
+type DomainSpace = { slug: string; domain?: string };
+
+/** The domain of a Space: the person's own assignment, else the one its space.json names, else General. */
+export function domainOf(space: DomainSpace, prefs: Pick<Preferences, 'spaceDomains'>): string {
+  return prefs.spaceDomains[space.slug] || domainName(space.domain) || DEFAULT_DOMAIN;
+}
+
+/** All domain names in display order: the person's own list first, then others by name, General last unless listed. */
+export function domainNames(spaces: DomainSpace[], prefs: Pick<Preferences, 'domains' | 'spaceDomains'>): string[] {
+  const found = new Set(spaces.map((x) => domainOf(x, prefs)));
+  const own = prefs.domains;
+  const rest = [...found].filter((n) => !own.includes(n) && n !== DEFAULT_DOMAIN).sort((a, b) => a.localeCompare(b));
+  const out = [...own, ...rest];
+  if (!out.includes(DEFAULT_DOMAIN) && found.has(DEFAULT_DOMAIN)) out.push(DEFAULT_DOMAIN);
+  return out;
+}
+
+/** Move a Space into a domain; the domain is added to the list when it is new. */
+export function assignDomain<T extends Preferences>(prefs: T, space: DomainSpace, name: string): T {
+  const clean = domainName(name);
+  if (!clean) return prefs;
+  const spaceDomains = { ...prefs.spaceDomains };
+  if (clean === (domainName(space.domain) || DEFAULT_DOMAIN)) delete spaceDomains[space.slug];
+  else spaceDomains[space.slug] = clean;
+  const domains = prefs.domains.includes(clean) || clean === DEFAULT_DOMAIN ? prefs.domains : [...prefs.domains, clean].slice(0, MAX_DOMAINS);
+  return { ...prefs, spaceDomains, domains };
+}
+
+export function addDomain<T extends Preferences>(prefs: T, name: string): T {
+  const clean = domainName(name);
+  if (!clean || prefs.domains.includes(clean) || prefs.domains.length >= MAX_DOMAINS) return prefs;
+  return { ...prefs, domains: [...prefs.domains, clean] };
+}
+
+/** Rename a domain everywhere, including Spaces that only got it from their space.json. */
+export function renameDomain<T extends Preferences>(prefs: T, spaces: DomainSpace[], from: string, to: string): T {
+  const clean = domainName(to);
+  if (!clean || clean === from) return prefs;
+  const spaceDomains = { ...prefs.spaceDomains };
+  for (const x of spaces) if (domainOf(x, prefs) === from) spaceDomains[x.slug] = clean;
+  for (const slug of Object.keys(spaceDomains)) if (spaceDomains[slug] === from) spaceDomains[slug] = clean;
+  const listed = prefs.domains.includes(from) ? prefs.domains : [...prefs.domains, from];
+  const domains = [...new Set(listed.map((n) => (n === from ? clean : n)))].slice(0, MAX_DOMAINS);
+  return { ...prefs, domains, spaceDomains };
+}
+
+/** Delete a domain: its Spaces fall back to their own domain (space.json) or General. */
+export function deleteDomain<T extends Preferences>(prefs: T, name: string): T {
+  const spaceDomains = Object.fromEntries(Object.entries(prefs.spaceDomains).filter(([, n]) => n !== name));
+  return { ...prefs, domains: prefs.domains.filter((n) => n !== name), spaceDomains };
 }

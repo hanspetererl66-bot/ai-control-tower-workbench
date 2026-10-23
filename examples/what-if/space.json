@@ -1,6 +1,7 @@
 {
   "title": "What-if Simulator",
   "description": "Was passiert, wenn die AI-Credits gekürzt werden? Ein Slider zeigt live Obergrenze, Teams, betroffene Prozesse und steigende Risiken.",
+  "domain": "Governance",
   "insights": [
     "Bei 30 % weniger Credits sinkt die Obergrenze auf 2,52 Mio. € und liegt 0,22 Mio. € unter dem heutigen Verbrauch; Engineering und Finance trifft es am stärksten.",
     "Ab rund 24 % Kürzung reicht die Obergrenze nicht mehr für den heutigen Verbrauch.",

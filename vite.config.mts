@@ -76,6 +76,7 @@ function spacesApi(): Plugin {
                 insights: Array.isArray(meta.insights)
                   ? meta.insights.filter((line): line is string => typeof line === 'string')
                   : [],
+                domain: typeof meta.domain === 'string' ? meta.domain.trim().slice(0, 30) : undefined,
                 cardCount,
                 updatedAt,
               };

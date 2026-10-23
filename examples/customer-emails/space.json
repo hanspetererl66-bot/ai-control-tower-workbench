@@ -1,6 +1,7 @@
 {
   "title": "E-Mail-Communication - Kunde: Muster Industrie AG",
   "description": "Mockup: the e-mail communication with the customer Muster Industrie AG as conversations with summary, open points, response times, a draft reply and a flag for suspicious content.",
+  "domain": "Sales",
   "insights": [
     "Design mockup with fictional customers and mails; no mailbox is connected and nothing is read, stored or sent.",
     "Open points are matched with the call transcripts, for example a mail that confirms an action still open after a call.",
