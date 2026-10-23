@@ -33,6 +33,17 @@ export function buildActivity(tower, links) {
     if (!names.includes(name)) throw new Error(`links.json lists "${name}", which has no production agents`);
   }
 
+  const prices = links.modelPriceEurPerMTok ?? {};
+  const unitGroup = links.budgetGroupOfUnit ?? {};
+  for (const agent of production) {
+    if (!(prices[agent.model] > 0)) throw new Error(`links.json has no price for the model "${agent.model}"`);
+    if (!unitGroup[agent.businessUnit]) throw new Error(`links.json has no budget group for the business unit "${agent.businessUnit}"`);
+  }
+  const groupNames = new Set(tower.budget.groups.map((g) => g.name));
+  for (const [unit, group] of Object.entries(unitGroup)) if (!groupNames.has(group)) throw new Error(`links.json: unknown budget group "${group}" for "${unit}"`);
+  const tokens = (agent) => Math.round((agent.costPerWeekEur / prices[agent.model]) * 1e6);
+  const metrics = (agents) => ({ agents: agents.length, runsPerDay: sum(agents, 'runsPerDay'), costPerWeekEur: sum(agents, 'costPerWeekEur'), tokensPerWeek: agents.reduce((n, agent) => n + tokens(agent), 0) });
+
   const families = names
     .map((name) => {
       const agents = production.filter((agent) => agent.family === name);
@@ -42,6 +53,8 @@ export function buildActivity(tower, links) {
         agents: agents.length,
         runsPerDay: sum(agents, 'runsPerDay'),
         costPerWeekEur: sum(agents, 'costPerWeekEur'),
+        tokensPerWeek: metrics(agents).tokensPerWeek,
+        byPlatform: Object.fromEntries([...new Set(agents.map((agent) => agent.platform))].map((p) => { const m = metrics(agents.filter((agent) => agent.platform === p)); return [p, { runsPerDay: m.runsPerDay, costPerWeekEur: m.costPerWeekEur, tokensPerWeek: m.tokensPerWeek }]; })),
         overprivileged: agents.filter((agent) => agent.overprivileged).length,
         euHighRisk: agents.filter((agent) => agent.euRisk === 'high').length,
         types: count(agents, 'type'),
@@ -54,8 +67,21 @@ export function buildActivity(tower, links) {
     .sort((a, b) => b.runsPerDay - a.runsPerDay || a.name.localeCompare(b.name));
 
   const platforms = Object.entries(count(production, 'platform'))
-    .map(([name, agents]) => ({ id: slug(name), name, agents, runsPerDay: sum(production.filter((a) => a.platform === name), 'runsPerDay') }))
+    .map(([name]) => ({ id: slug(name), name, ...metrics(production.filter((a) => a.platform === name)) }))
     .sort((a, b) => b.runsPerDay - a.runsPerDay);
+  const models = [...new Set(production.map((agent) => agent.model))]
+    .map((name) => ({ name, priceEurPerMTok: prices[name], ...metrics(production.filter((a) => a.model === name)) }))
+    .sort((a, b) => b.costPerWeekEur - a.costPerWeekEur);
+  const WEEKS_PER_YEAR = 52;
+  const units = tower.budget.groups.map((g) => {
+    const agents = production.filter((a) => unitGroup[a.businessUnit] === g.name);
+    const m = metrics(agents);
+    const annualAgentCostK = Math.round((m.costPerWeekEur * WEEKS_PER_YEAR) / 100) / 10;
+    return {
+      group: g.name, businessUnits: Object.keys(unitGroup).filter((u) => unitGroup[u] === g.name), budgetK: g.budgetK, utilisationPct: g.utilisationPct,
+      actualK: Math.round(g.budgetK * g.utilisationPct) / 100, ...m, annualAgentCostK, agentShareOfBudgetPct: Math.round((annualAgentCostK / g.budgetK) * 1000) / 10,
+    };
+  }).sort((a, b) => b.annualAgentCostK - a.annualAgentCostK);
   const systems = links.systems.map((system) => {
     const used = families.filter((family) => family.systems.includes(system.id));
     return { ...system, families: used.length, agents: sum(used, 'agents') };
@@ -67,6 +93,10 @@ export function buildActivity(tower, links) {
       productionAgents: production.length,
       runsPerDay: sum(production, 'runsPerDay'),
       costPerWeekEur: sum(production, 'costPerWeekEur'),
+      tokensPerWeek: metrics(production).tokensPerWeek,
+      budgetActualM: tower.budget.totalActualM,
+      budgetCeilingM: tower.budget.ceilingM,
+      weeksPerYear: WEEKS_PER_YEAR,
       pendingReview: registry.filter((agent) => agent.lifecycle === 'pending_review').length,
       overprivileged: production.filter((agent) => agent.overprivileged).length,
       euHighRisk: production.filter((agent) => agent.euRisk === 'high').length,
@@ -74,6 +104,9 @@ export function buildActivity(tower, links) {
     families,
     platforms,
     systems,
+    models,
+    units,
+    costNote: links.costNote,
   };
 }
 
