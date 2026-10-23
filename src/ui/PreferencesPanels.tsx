@@ -37,7 +37,7 @@ function Choice<T extends string | number>({ label, value, options, onPick, show
   );
 }
 
-const FONT_NAMES: Record<(typeof FONTS)[number], string> = { default: 'Standard', arial: 'Arial', system: 'System', readable: 'Easy to read', mono: 'Monospace' };
+const FONT_NAMES: Record<(typeof FONTS)[number], string> = { default: 'Original', arial: 'Arial', system: 'System', readable: 'Easy to read', mono: 'Monospace' };
 const PURPOSE_NAMES: Record<(typeof PURPOSES)[number], string> = { reports: 'Reports', presentations: 'Presentations', data: 'Data', other: 'Other' };
 
 export function ProfilesPanel({ prefs, update }: Common) {
@@ -97,9 +97,9 @@ export function LookPanel({ prefs, update }: Common) {
           {isOriginalLook(prefs) && <span className="prefs-note" style={{ margin: 0 }}>This is the original look.</span>}
         </div>
       </Section>
-      <Section title="Accent colour" hint="Used for buttons, highlights and in all Spaces. Light colours are darkened so white text stays readable.">
+      <Section title="Accent colour" hint="Original is the colour the app came with. Violet is a brighter purple. Light colours are darkened so white text stays readable; the accent is used for buttons and highlights, and in all Spaces.">
         <div className="prefs-row" role="radiogroup" aria-label="Accent colour">
-          <button className={`ghost-btn ${!prefs.accent ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={!prefs.accent} onClick={() => update((p) => ({ ...p, accent: '' }))}>Default</button>
+          <button className={`ghost-btn ${!prefs.accent ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={!prefs.accent} onClick={() => update((p) => ({ ...p, accent: '' }))}>Original</button>
           {ACCENT_PRESETS.map((a) => (
             <button key={a.id} className={`prefs-swatch ${prefs.accent === a.hex.toUpperCase() ? 'prefs-swatch-on' : ''}`} style={{ background: a.hex }} role="radio" aria-checked={prefs.accent === a.hex.toUpperCase()} aria-label={a.name} title={a.name} onClick={() => update((p) => ({ ...p, accent: a.hex.toUpperCase() }))} />
           ))}
