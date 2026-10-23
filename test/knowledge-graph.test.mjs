@@ -107,3 +107,39 @@ test('communication tools: search, neighbours and impact include calls and mails
   assert.match(JSON.stringify(h.find_graph_path({ from: 'T-104', to: 'R7' })), /prompt injection/i);
   assert.throws(() => h.search_graph({ query: 'x1', type: 'mail' }), ToolError);
 });
+
+test('Sales view: deals carry ACV, TCV, probability and dates; offers and contracts are enriched; ACV matches the pipeline', () => {
+  const pipeline = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
+  const valued = pipeline.deals.filter((d) => d.value);
+  const byId = new Map(graph.nodes.map((n) => [n.id, n]));
+  for (const d of valued) {
+    const id = d.stage === 'sell' ? `offer:${d.id}` : d.stage === 'contract' ? `contract:${d.id}` : `deal:${d.id}`;
+    const n = byId.get(id);
+    assert.ok(n?.sales, `${id} has sales data`);
+    assert.equal(n.sales.acv, d.value);
+    assert.equal(n.sales.tcv, Math.round((d.value * (d.termMonths ?? 12)) / 12), `${id}: TCV is ACV times term in months divided by 12`);
+    assert.equal(n.sales.prob, d.score ?? undefined);
+    if (d.stage !== 'contract') assert.match(n.date, /^\d{4}-\d{2}-\d{2}$/, `${id} has a date for the time slider`);
+  }
+  assert.equal(graph.nodes.filter((n) => n.type === 'deal').length, valued.filter((d) => d.stage === 'lead' || d.stage === 'opportunity').length);
+  assert.ok(graph.nodes.filter((n) => n.type === 'call' || n.type === 'thread').every((n) => n.date), 'calls and mails are dated');
+  assert.ok(graph.asOf >= pipeline.asOf);
+});
+
+test('Stakeholders: customer contacts get a role and a contact strength derived from calls and mails', () => {
+  const people = graph.nodes.filter((n) => n.stake);
+  assert.ok(people.length >= 8);
+  const felix = graph.nodes.find((n) => n.id === 'person:felix-brandt');
+  assert.equal(felix.stake.touches, felix.stake.calls + felix.stake.mails);
+  assert.equal(felix.stake.role, 'Blocker', 'security contacts are blockers');
+  assert.equal(felix.stake.strength, 'strong');
+  assert.ok(people.every((p) => ['Sponsor', 'Decider', 'Blocker', 'Influencer'].includes(p.stake.role)));
+  assert.ok(people.every((p) => (p.stake.touches === 0) === (p.stake.strength === 'none')));
+  assert.ok(graph.edges.some((e) => e.type === 'TOOK_PART_IN') && graph.edges.some((e) => e.type === 'WROTE_IN'));
+});
+
+test('Page: Sales view by default with enablers, value legend, week slider, questions and stakeholder map', () => {
+  for (const id of ['b-enabler', 'b-value', 'b-stake', 't-range', 'ask', 'vleg']) assert.match(page, new RegExp(`id="${id}"`));
+  assert.match(page, /const hidden = new Set\(ENABLER\)/, 'enablers are hidden until switched on');
+  for (const q of ['Which deals hang on a risk?', 'Which contact shows up in calls and e-mails?', 'Where is a skill missing?', 'What changed since last week?', 'Who could block a deal?']) assert.ok(page.includes(q), q);
+});
