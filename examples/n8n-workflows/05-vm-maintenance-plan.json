@@ -1,0 +1,285 @@
+{
+  "name": "Demo 5 (IT infrastructure): VM maintenance plan",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Demo 5 (IT infrastructure): VM maintenance plan\nThe 25 fictional VMs of the IT Infrastructure Space are checked against fixed rules (CPU, memory, disk, backup, security patch, TLS certificate). Every yellow or red reason becomes a **recommended task** (renew certificate, install patch, free up disk space, catch up backup, check an unreachable VM). Tasks that need a restart get a maintenance window, several tasks of one VM are bundled. The result is a **plan proposal**: nothing runs, a person approves.\n\nStart it manually, or POST to `/webhook/vm-maintenance-plan` (optional body `{ \"vms\": [...] }`). Fictional data, no credentials.",
+        "height": 220,
+        "width": 520
+      },
+      "id": "27721cc3-fedc-59c0-a0c1-b33ffccb9619",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -340
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7fbdfe34-0563-5a88-a36d-468e492ae8a2",
+      "name": "Run demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vm-maintenance-plan",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "37a7603d-e33f-5ad0-b14b-5045206e07cc",
+      "name": "Webhook: VMs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "webhookId": "543d3598-a605-5f50-bb92-4ad4220e4646"
+    },
+    {
+      "parameters": {
+        "jsCode": "// VMs from the webhook body, or fictional sample data (the 25 VMs of the IT Infrastructure Space, same result every day).\nconst body = $input.first().json.body;\nif (body && Array.isArray(body.vms) && body.vms.length) {\n  return body.vms.map((v) => ({ json: { env: 'prod', reachable: true, ...v } }));\n}\nconst vms = [{\"id\":\"vm-01\",\"name\":\"sap-prd-app01\",\"role\":\"S/4HANA application server\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"SLES 15\",\"cpuPct\":46,\"memPct\":62,\"diskPct\":58,\"backupAgeHours\":6,\"patchLagDays\":4,\"uptimeDays\":92,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":212},{\"id\":\"vm-02\",\"name\":\"sap-prd-app02\",\"role\":\"S/4HANA application server\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"SLES 15\",\"cpuPct\":41,\"memPct\":59,\"diskPct\":61,\"backupAgeHours\":6,\"patchLagDays\":4,\"uptimeDays\":92,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":212},{\"id\":\"vm-03\",\"name\":\"sap-prd-db01\",\"role\":\"HANA database (primary)\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"SLES 15\",\"cpuPct\":63,\"memPct\":88,\"diskPct\":72,\"backupAgeHours\":5,\"patchLagDays\":6,\"uptimeDays\":140,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":150},{\"id\":\"vm-04\",\"name\":\"sap-prd-db02\",\"role\":\"HANA database (standby)\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"SLES 15\",\"cpuPct\":22,\"memPct\":64,\"diskPct\":70,\"backupAgeHours\":5,\"patchLagDays\":6,\"uptimeDays\":140,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":150},{\"id\":\"vm-05\",\"name\":\"btp-conn-01\",\"role\":\"SAP Cloud Connector\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"RHEL 9\",\"cpuPct\":18,\"memPct\":37,\"diskPct\":44,\"backupAgeHours\":7,\"patchLagDays\":9,\"uptimeDays\":61,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":33},{\"id\":\"vm-06\",\"name\":\"joule-gw-01\",\"role\":\"Joule gateway\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":94,\"memPct\":71,\"diskPct\":49,\"backupAgeHours\":4,\"patchLagDays\":18,\"uptimeDays\":23,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":96},{\"id\":\"vm-07\",\"name\":\"joule-gw-02\",\"role\":\"Joule gateway\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":78,\"memPct\":66,\"diskPct\":47,\"backupAgeHours\":4,\"patchLagDays\":3,\"uptimeDays\":23,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":40},{\"id\":\"vm-08\",\"name\":\"ariba-int-01\",\"role\":\"Ariba integration\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"RHEL 9\",\"cpuPct\":33,\"memPct\":52,\"diskPct\":40,\"backupAgeHours\":8,\"patchLagDays\":5,\"uptimeDays\":75,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":120},{\"id\":\"vm-09\",\"name\":\"n8n-prd-01\",\"role\":\"n8n workflow engine\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":29,\"memPct\":48,\"diskPct\":36,\"backupAgeHours\":9,\"patchLagDays\":7,\"uptimeDays\":34,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":88},{\"id\":\"vm-10\",\"name\":\"n8n-prd-02\",\"role\":\"n8n workflow engine\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":31,\"memPct\":50,\"diskPct\":38,\"backupAgeHours\":9,\"patchLagDays\":21,\"uptimeDays\":34,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":88},{\"id\":\"vm-11\",\"name\":\"sub4me-web-01\",\"role\":\"Sub4Me web\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":38,\"memPct\":55,\"diskPct\":42,\"backupAgeHours\":10,\"patchLagDays\":2,\"uptimeDays\":48,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":24},{\"id\":\"vm-12\",\"name\":\"sub4me-web-02\",\"role\":\"Sub4Me web\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":36,\"memPct\":53,\"diskPct\":41,\"backupAgeHours\":10,\"patchLagDays\":2,\"uptimeDays\":48,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":58},{\"id\":\"vm-13\",\"name\":\"sub4me-db-01\",\"role\":\"Sub4Me database\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"RHEL 9\",\"cpuPct\":57,\"memPct\":69,\"diskPct\":96,\"backupAgeHours\":11,\"patchLagDays\":8,\"uptimeDays\":110,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":175},{\"id\":\"vm-14\",\"name\":\"file-srv-01\",\"role\":\"File server\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Windows Server 2022\",\"cpuPct\":21,\"memPct\":44,\"diskPct\":67,\"backupAgeHours\":30,\"patchLagDays\":10,\"uptimeDays\":82,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":260},{\"id\":\"vm-15\",\"name\":\"ad-dc-01\",\"role\":\"Active Directory domain controller\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Windows Server 2022\",\"cpuPct\":12,\"memPct\":41,\"diskPct\":38,\"backupAgeHours\":12,\"patchLagDays\":6,\"uptimeDays\":88,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":300},{\"id\":\"vm-16\",\"name\":\"ad-dc-02\",\"role\":\"Active Directory domain controller\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Windows Server 2022\",\"cpuPct\":11,\"memPct\":40,\"diskPct\":37,\"backupAgeHours\":12,\"patchLagDays\":6,\"uptimeDays\":88,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":300},{\"id\":\"vm-17\",\"name\":\"mon-prom-01\",\"role\":\"Prometheus monitoring\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":44,\"memPct\":58,\"diskPct\":63,\"backupAgeHours\":13,\"patchLagDays\":5,\"uptimeDays\":57,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":140},{\"id\":\"vm-18\",\"name\":\"mon-graf-01\",\"role\":\"Grafana dashboards\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":14,\"memPct\":33,\"diskPct\":29,\"backupAgeHours\":13,\"patchLagDays\":5,\"uptimeDays\":57,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":140},{\"id\":\"vm-19\",\"name\":\"bkp-veeam-01\",\"role\":\"Backup server\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Windows Server 2022\",\"cpuPct\":35,\"memPct\":60,\"diskPct\":87,\"backupAgeHours\":3,\"patchLagDays\":12,\"uptimeDays\":95,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":205},{\"id\":\"vm-20\",\"name\":\"jump-host-01\",\"role\":\"Admin jump host\",\"env\":\"prod\",\"site\":\"Frankfurt\",\"os\":\"Windows Server 2022\",\"cpuPct\":9,\"memPct\":36,\"diskPct\":31,\"backupAgeHours\":14,\"patchLagDays\":7,\"uptimeDays\":40,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":310},{\"id\":\"vm-21\",\"name\":\"test-s4-01\",\"role\":\"S/4HANA test system\",\"env\":\"test\",\"site\":\"Frankfurt\",\"os\":\"SLES 15\",\"cpuPct\":27,\"memPct\":57,\"diskPct\":52,\"backupAgeHours\":null,\"patchLagDays\":9,\"uptimeDays\":19,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":75},{\"id\":\"vm-22\",\"name\":\"test-s4-02\",\"role\":\"S/4HANA test system\",\"env\":\"test\",\"site\":\"Frankfurt\",\"os\":\"SLES 15\",\"cpuPct\":0,\"memPct\":0,\"diskPct\":0,\"backupAgeHours\":null,\"patchLagDays\":9,\"uptimeDays\":0,\"reachable\":false,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":75},{\"id\":\"vm-23\",\"name\":\"dev-ci-01\",\"role\":\"Build server\",\"env\":\"dev\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":52,\"memPct\":61,\"diskPct\":55,\"backupAgeHours\":null,\"patchLagDays\":4,\"uptimeDays\":12,\"reachable\":true,\"vcpu\":8,\"ramGb\":32,\"certExpiresInDays\":160},{\"id\":\"vm-24\",\"name\":\"dev-ci-02\",\"role\":\"Build server\",\"env\":\"dev\",\"site\":\"Frankfurt\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":48,\"memPct\":59,\"diskPct\":53,\"backupAgeHours\":null,\"patchLagDays\":4,\"uptimeDays\":12,\"reachable\":true,\"vcpu\":16,\"ramGb\":64,\"certExpiresInDays\":160},{\"id\":\"vm-25\",\"name\":\"proxy-edge-01\",\"role\":\"Edge proxy\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":24,\"memPct\":39,\"diskPct\":35,\"backupAgeHours\":9,\"patchLagDays\":16,\"uptimeDays\":66,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":5}];\nreturn vms.map((v) => ({ json: v }));"
+      },
+      "id": "68214d86-fdbd-5c73-8d33-10a09e834a03",
+      "name": "VMs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Status and recommended tasks per VM. Same rules as the IT Infrastructure Space (a test keeps both equal).\nfunction assess(vm, rules) {\n  const reasons = [];\n  const add = (level, text, key) => reasons.push({ level, text, key });\n  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks', 'unreachable');\n  else {\n    const metric = (field, label, unit, key) => {\n      const v = vm[field], r = rules[field];\n      if (v === null || v === undefined) return;\n      if (r.appliesTo && r.appliesTo !== vm.env) return;\n      if (field === 'certExpiresInDays') {\n        if (v <= r.red) add('red', `${label} ${v}${unit} (red up to ${r.red}${unit})`, key);\n        else if (v <= r.yellow) add('yellow', `${label} ${v}${unit} (yellow up to ${r.yellow}${unit})`, key);\n      } else if (v >= r.red) add('red', `${label} ${v}${unit} (red from ${r.red}${unit})`, key);\n      else if (v >= r.yellow) add('yellow', `${label} ${v}${unit} (yellow from ${r.yellow}${unit})`, key);\n    };\n    metric('cpuPct', 'CPU', ' %', 'cpu'); metric('memPct', 'Memory', ' %', 'mem'); metric('diskPct', 'Disk', ' %', 'disk');\n    metric('backupAgeHours', 'Last backup', ' h ago', 'backup'); metric('patchLagDays', 'Security patch missing for', ' days', 'patch');\n    metric('certExpiresInDays', 'TLS certificate expires in', ' days', 'cert');\n  }\n  const status = reasons.some((r) => r.level === 'red') ? 'red' : reasons.length ? 'yellow' : 'green';\n  reasons.sort((a, b) => (a.level === b.level ? 0 : a.level === 'red' ? -1 : 1));\n  return { status, reasons };\n}\nfunction tasksFor(vm, reasons, defs) {\n  return reasons.map((r) => ({ vm: vm.name, key: r.key, title: defs[r.key].title, steps: defs[r.key].steps, reboot: defs[r.key].reboot, approver: defs[r.key].approver, urgency: r.level === 'red' ? 'urgent' : 'planned', because: r.text }));\n}\nfunction plan(vms, rules, defs) {\n  return vms.map((vm) => ({ vm, ...assess(vm, rules) })).filter((x) => x.reasons.length).map((x) => {\n    const tasks = tasksFor(x.vm, x.reasons, defs);\n    return { vm: x.vm.name, status: x.status, tasks, window: tasks.some((t) => t.reboot) ? 'Maintenance window needed (restart)' : 'Can run during operations', bundle: tasks.length > 1 };\n  }).sort((a, b) => (a.status === b.status ? a.vm.localeCompare(b.vm) : a.status === 'red' ? -1 : 1));\n}\n\nconst RULES = {\"cpuPct\":{\"yellow\":75,\"red\":90},\"memPct\":{\"yellow\":85,\"red\":95},\"diskPct\":{\"yellow\":85,\"red\":95},\"backupAgeHours\":{\"yellow\":24,\"red\":48,\"appliesTo\":\"prod\"},\"patchLagDays\":{\"yellow\":14,\"red\":30},\"certExpiresInDays\":{\"yellow\":30,\"red\":7}};\nconst TASKS = {\"cert\":{\"title\":\"Renew TLS certificate\",\"steps\":[\"Create the signing request\",\"Check the chain and the services that use the certificate\",\"Install in the maintenance window after approval\"],\"reboot\":false,\"approver\":\"Security\",\"fix\":{\"certExpiresInDays\":365}},\"patch\":{\"title\":\"Install security patch\",\"steps\":[\"Check maintenance window and redundancy\",\"Patch the twin or standby first\",\"Restart and run the health check\"],\"reboot\":true,\"approver\":\"Change board\",\"fix\":{\"patchLagDays\":0,\"uptimeDays\":0}},\"disk\":{\"title\":\"Free up disk space\",\"steps\":[\"Find the largest directories and old logs\",\"Propose archive, clean-up or resize\",\"Run after approval, then measure again\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"diskPct\":61}},\"backup\":{\"title\":\"Catch up the backup\",\"steps\":[\"Check the backup job and its last error\",\"Start a backup run\",\"Verify the restore point\"],\"reboot\":false,\"approver\":\"Backup owner\",\"fix\":{\"backupAgeHours\":1}},\"unreachable\":{\"title\":\"Check an unreachable VM\",\"steps\":[\"Ping, port and hypervisor status\",\"Look at the console and recent changes\",\"Propose a restart, never restart without approval\"],\"reboot\":true,\"approver\":\"On-call\",\"fix\":{\"reachable\":true,\"cpuPct\":20,\"memPct\":35,\"diskPct\":40,\"uptimeDays\":0}},\"cpu\":{\"title\":\"Analyse the CPU peak\",\"steps\":[\"Find the process behind the peak\",\"Compare with the twin VM\",\"Propose scaling or a fix, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"cpuPct\":45}},\"mem\":{\"title\":\"Check memory pressure\",\"steps\":[\"List the largest memory users\",\"Look for leaks and restart candidates\",\"Propose a restart or more RAM, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"memPct\":60}}};\nconst out = [];\nfor (const item of $input.all()) {\n  const vm = item.json;\n  const a = assess(vm, RULES);\n  const tasks = tasksFor(vm, a.reasons, TASKS);\n  out.push({ json: { vm: vm.name, status: a.status, tasks, taskCount: tasks.length } });\n}\nreturn out;"
+      },
+      "id": "2391daea-9e9b-5e94-b25d-c1b7e6c71e2f",
+      "name": "Assess and recommend tasks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6fd6b9ad-315c-5808-be2b-194e66540fb3",
+              "leftValue": "={{ $json.taskCount }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5c934582-2363-564e-a6c8-8fa7968e0e2c",
+      "name": "Has tasks?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b8111d3-a80e-5be4-851e-d3791c84510b",
+              "name": "route",
+              "value": "No task",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "33d7d3ff-e357-5108-a73f-4d4e45ec7f6d",
+      "name": "No task",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "091a1b82-fd54-5ea2-aa22-3a3d66c61317",
+              "name": "route",
+              "value": "Proposal: needs approval",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "84bfe370-4f52-5cfc-8895-752c2a60796f",
+      "name": "Task proposal",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "19e54041-7f19-5b72-9763-d16a692dcc03",
+      "name": "Everything together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1300,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Maintenance plan: urgent tasks first, one maintenance window per VM when a task needs a restart. Ends in \"proposal only\": a person approves, nothing runs.\nconst items = $input.all().map((i) => i.json);\nconst has = items.filter((i) => i.taskCount > 0);\nconst plan = has.map((x) => ({ vm: x.vm, status: x.status, tasks: x.tasks, window: x.tasks.some((t) => t.reboot) ? 'Maintenance window needed (restart)' : 'Can run during operations', bundle: x.tasks.length > 1 }))\n  .sort((a, b) => (a.status === b.status ? a.vm.localeCompare(b.vm) : a.status === 'red' ? -1 : 1));\nconst urgent = plan.reduce((n, p) => n + p.tasks.filter((t) => t.urgency === 'urgent').length, 0);\nconst total = plan.reduce((n, p) => n + p.tasks.length, 0);\nconst lines = plan.flatMap((p) => [`${p.vm} (${p.status}) - ${p.window}${p.bundle ? ', tasks bundled in one window' : ''}`, ...p.tasks.map((t) => `  - [${t.urgency}] ${t.title} (approver: ${t.approver}) because ${t.because}`)]);\nconst text = [`VM maintenance plan, ${items.length} VMs, ${total} tasks (${urgent} urgent) on ${plan.length} VMs`, ...lines, 'Proposal only. Nothing was run, restarted or changed. The named approver decides.'].join('\\n');\nreturn [{ json: { counts: { vms: items.length, withTasks: plan.length, tasks: total, urgent }, plan, digest: text } }];"
+      },
+      "id": "91e90111-8d2d-593e-896d-c23e52f16d8f",
+      "name": "Build plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        120
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run demo": {
+      "main": [
+        [
+          {
+            "node": "VMs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: VMs": {
+      "main": [
+        [
+          {
+            "node": "VMs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VMs": {
+      "main": [
+        [
+          {
+            "node": "Assess and recommend tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assess and recommend tasks": {
+      "main": [
+        [
+          {
+            "node": "Has tasks?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has tasks?": {
+      "main": [
+        [
+          {
+            "node": "Task proposal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task proposal": {
+      "main": [
+        [
+          {
+            "node": "Everything together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No task": {
+      "main": [
+        [
+          {
+            "node": "Everything together",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Everything together": {
+      "main": [
+        [
+          {
+            "node": "Build plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const dir = join(import.meta.dirname, '..', 'examples/n8n-workflows');
 const load = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8'));
-const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json', '04-it-operations-alert-triage.json'];
+const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json', '04-it-operations-alert-triage.json', '05-vm-maintenance-plan.json'];
 
 for (const file of FILES) {
   test(`${file} is a valid importable n8n workflow without credentials`, () => {

@@ -228,3 +228,23 @@ test('run_it_ops_triage: calls only the fixed webhook path, validates alerts and
   await assert.rejects(() => notFound.run_it_ops_triage({ mode: 'test' }), /Execute workflow/);
   assert.equal(calls.length, 2);
 });
+
+test('run_vm_maintenance_plan: calls only the fixed webhook path, validates VMs and explains missing setup', async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return new Response(JSON.stringify([{ counts: { tasks: 11 }, digest: 'ok' }]), { status: 200 }); };
+  const h = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl });
+  const r = await h.run_vm_maintenance_plan({});
+  assert.equal(calls[0].url, 'https://firma.app.n8n.cloud/webhook/vm-maintenance-plan');
+  assert.deepEqual(calls[0].body, {}, 'no vms: the workflow uses its sample VMs');
+  assert.equal(r.result.digest, 'ok');
+  assert.match(r.note, /Nothing was run/);
+  await h.run_vm_maintenance_plan({ mode: 'test', vms: [{ id: 'x', name: 'web-01', cpuPct: 140, diskPct: 91, certExpiresInDays: 12, backupAgeHours: null, junk: 1 }] });
+  assert.equal(calls[1].url, 'https://firma.app.n8n.cloud/webhook-test/vm-maintenance-plan');
+  assert.deepEqual(calls[1].body.vms[0], { id: 'x', name: 'web-01', role: '', env: 'prod', reachable: true, cpuPct: 100, diskPct: 91, certExpiresInDays: 12, backupAgeHours: null });
+  for (const bad of [{ vms: [] }, { vms: [{ id: 'x' }] }, { vms: [{ id: 'x', name: 'n', env: 'qa' }] }, { mode: 'live' }]) await assert.rejects(() => h.run_vm_maintenance_plan(bad), /vm|mode/);
+  await assert.rejects(() => createN8nHandlers({ env: {}, fetchImpl }).run_vm_maintenance_plan({}), /not connected/);
+  const notFound = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl: async () => new Response('', { status: 404 }) });
+  await assert.rejects(() => notFound.run_vm_maintenance_plan({}), /Import the workflow/);
+  await assert.rejects(() => notFound.run_vm_maintenance_plan({ mode: 'test' }), /Execute workflow/);
+  assert.equal(calls.length, 2);
+});

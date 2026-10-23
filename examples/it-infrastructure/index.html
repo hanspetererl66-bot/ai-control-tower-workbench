@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IT Infrastructure</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:20px 24px 48px}
+.demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
+h2{font-size:15px;font-weight:650;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi .v{font-size:22px}.kpi .k{color:var(--muted);font-size:12px}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
+.kpi.red{border-color:var(--red-border)}.kpi.red .v{color:var(--red)}
+.kpi.amber{border-color:var(--amber-border)}.kpi.amber .v{color:var(--amber)}
+.kpi.green{border-color:var(--green-border)}.kpi.green .v{color:var(--green)}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.filters button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.vm{position:relative;text-align:left;font:inherit;color:var(--ink);cursor:pointer;border-radius:var(--radius-s);padding:10px 10px 9px;border:1.5px solid var(--line);background:var(--surface);min-width:0}
+.vm .n{font-weight:650;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:18px}
+.vm .r{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vm .ic{position:absolute;right:8px;top:8px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.vm.green{background:var(--green-dim);border-color:var(--green-border)}.vm.green .ic{background:var(--green)}
+.vm.yellow{background:var(--amber-dim);border-color:var(--amber-border)}.vm.yellow .ic{background:var(--amber)}
+.vm.red{background:var(--red-dim);border-color:var(--red-border)}.vm.red .ic{background:var(--red)}
+.vm:hover,.vm:focus-visible,.vm[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:1px}
+.vm.dim{opacity:.28}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
+.mini i{display:block;height:4px;border-radius:2px;background:var(--line)}.mini i b{display:block;height:100%;border-radius:2px;background:var(--ink-2)}
+.mini i.warn b{background:var(--amber)}.mini i.crit b{background:var(--red)}
+.tip{position:fixed;z-index:10;max-width:290px;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);box-shadow:var(--shadow-lg);padding:10px 12px;font-size:12px;line-height:1.45}
+.tip[hidden]{display:none}
+.tip h3{margin:0 0 4px;font-size:13px}.tip ul{margin:4px 0 0;padding-left:16px}.tip .lim{color:var(--muted)}
+.tip.red{border-color:var(--red-border)}.tip.yellow{border-color:var(--amber-border)}.tip.green{border-color:var(--green-border)}
+.pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;border:1px solid}
+.pill.green{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.pill.yellow{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
+.pill.red{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.facts{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:10px 0;font-size:12px}.facts dt{color:var(--muted)}.facts dd{margin:0;text-align:right;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;color:var(--ink-2);font-size:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:4px;border:1.5px solid}
+.legend .g{background:var(--green-dim);border-color:var(--green)}.legend .y{background:var(--amber-dim);border-color:var(--amber)}.legend .r{background:var(--red-dim);border-color:var(--red)}
+button.ghost,button.primary{font:inherit;cursor:pointer}
+table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}td{padding:6px 8px;border-bottom:1px solid var(--line-2)}th.n,td.n{text-align:right}
+.note{color:var(--muted);font-size:12px;margin:8px 0 0}
+.guide{border-color:var(--purple-border);background:var(--purple-dim)}
+.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}
+.guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.guide p{margin:4px 0 0;color:var(--ink-2)}
+.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
+.tasks td,.tasks th{vertical-align:top}.tasks .steps{margin:4px 0 0;padding-left:16px;color:var(--muted);font-size:11px}
+.pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.flow{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);flex-wrap:wrap}.flow b{color:var(--ink)}
+.small{font:inherit;font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650;cursor:pointer}
+.small:disabled{opacity:.5;cursor:default}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main>
+  <p class="demo">Fictional virtual machines and measurements, no live monitoring. The colour of every VM is calculated on this page from fixed rules; hover over a VM (or focus it with the keyboard) to see why it is green, yellow or red. Nothing is restarted or changed.</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="card guide" id="guide" aria-live="polite"></div>
+  <div class="layout">
+    <div class="card">
+      <div class="head">
+        <div style="flex:1 1 260px"><h2>25 virtual machines</h2><p class="sub" style="margin:0">Worst check wins: one red reason makes the VM red, otherwise one yellow reason makes it yellow.</p></div>
+        <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="legend" aria-label="Legend"><span><i class="g"></i>Green: all checks within limits</span><span><i class="y"></i>Yellow: warning, plan an action</span><span><i class="r"></i>Red: act now</span><span>Bars: CPU, memory, disk</span></div>
+    </div>
+    <aside class="card" id="detail" aria-live="polite"></aside>
+  </div>
+  <div class="card tasks" id="tasks-card">
+    <div class="head"><div style="flex:1 1 320px"><h2>Maintenance tasks</h2><p class="sub" style="margin:0">Every yellow or red reason becomes a recommended task. Each task runs through the same flow: detect, propose, approve, run, verify. A person approves; here the run is only simulated.</p></div>
+    <button class="primary" id="mkplan" type="button">Create the plan in n8n</button><button class="ghost" id="reset-demo" type="button">Reset demo</button></div>
+    <table><thead><tr><th>VM</th><th>Task</th><th>Urgency</th><th>Window</th><th>Approver</th><th>Flow</th></tr></thead><tbody id="task-rows"></tbody></table>
+    <p class="note" id="plan-note" role="status" aria-live="polite"></p>
+  </div>
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+  <div class="card">
+    <h2>The rules</h2>
+    <p class="sub">One page of rules, the same for every VM. Backup age counts for production VMs only.</p>
+    <table><thead><tr><th>Check</th><th class="n">Yellow</th><th class="n">Red</th></tr></thead><tbody id="rules"></tbody></table>
+    <p class="note">An unreachable VM is always red.</p>
+  </div>
+</main>
+<script type="application/json" id="vm-data">
+{
+ "asOf": "2026-10-19",
+ "note": "Fictional virtual machines and measurements. Nothing is measured live.",
+ "rules": {
+  "cpuPct": {
+   "yellow": 75,
+   "red": 90
+  },
+  "memPct": {
+   "yellow": 85,
+   "red": 95
+  },
+  "diskPct": {
+   "yellow": 85,
+   "red": 95
+  },
+  "backupAgeHours": {
+   "yellow": 24,
+   "red": 48,
+   "appliesTo": "prod"
+  },
+  "patchLagDays": {
+   "yellow": 14,
+   "red": 30
+  },
+  "certExpiresInDays": {
+   "yellow": 30,
+   "red": 7
+  }
+ },
+ "vms": [
+  {
+   "id": "vm-01",
+   "name": "sap-prd-app01",
+   "role": "S/4HANA application server",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "SLES 15",
+   "cpuPct": 46,
+   "memPct": 62,
+   "diskPct": 58,
+   "backupAgeHours": 6,
+   "patchLagDays": 4,
+   "uptimeDays": 92,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 212
+  },
+  {
+   "id": "vm-02",
+   "name": "sap-prd-app02",
+   "role": "S/4HANA application server",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "SLES 15",
+   "cpuPct": 41,
+   "memPct": 59,
+   "diskPct": 61,
+   "backupAgeHours": 6,
+   "patchLagDays": 4,
+   "uptimeDays": 92,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 212
+  },
+  {
+   "id": "vm-03",
+   "name": "sap-prd-db01",
+   "role": "HANA database (primary)",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "SLES 15",
+   "cpuPct": 63,
+   "memPct": 88,
+   "diskPct": 72,
+   "backupAgeHours": 5,
+   "patchLagDays": 6,
+   "uptimeDays": 140,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 150
+  },
+  {
+   "id": "vm-04",
+   "name": "sap-prd-db02",
+   "role": "HANA database (standby)",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "SLES 15",
+   "cpuPct": 22,
+   "memPct": 64,
+   "diskPct": 70,
+   "backupAgeHours": 5,
+   "patchLagDays": 6,
+   "uptimeDays": 140,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 150
+  },
+  {
+   "id": "vm-05",
+   "name": "btp-conn-01",
+   "role": "SAP Cloud Connector",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "RHEL 9",
+   "cpuPct": 18,
+   "memPct": 37,
+   "diskPct": 44,
+   "backupAgeHours": 7,
+   "patchLagDays": 9,
+   "uptimeDays": 61,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 33
+  },
+  {
+   "id": "vm-06",
+   "name": "joule-gw-01",
+   "role": "Joule gateway",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 94,
+   "memPct": 71,
+   "diskPct": 49,
+   "backupAgeHours": 4,
+   "patchLagDays": 18,
+   "uptimeDays": 23,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 96
+  },
+  {
+   "id": "vm-07",
+   "name": "joule-gw-02",
+   "role": "Joule gateway",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 78,
+   "memPct": 66,
+   "diskPct": 47,
+   "backupAgeHours": 4,
+   "patchLagDays": 3,
+   "uptimeDays": 23,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 40
+  },
+  {
+   "id": "vm-08",
+   "name": "ariba-int-01",
+   "role": "Ariba integration",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "RHEL 9",
+   "cpuPct": 33,
+   "memPct": 52,
+   "diskPct": 40,
+   "backupAgeHours": 8,
+   "patchLagDays": 5,
+   "uptimeDays": 75,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 120
+  },
+  {
+   "id": "vm-09",
+   "name": "n8n-prd-01",
+   "role": "n8n workflow engine",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 29,
+   "memPct": 48,
+   "diskPct": 36,
+   "backupAgeHours": 9,
+   "patchLagDays": 7,
+   "uptimeDays": 34,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 88
+  },
+  {
+   "id": "vm-10",
+   "name": "n8n-prd-02",
+   "role": "n8n workflow engine",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 31,
+   "memPct": 50,
+   "diskPct": 38,
+   "backupAgeHours": 9,
+   "patchLagDays": 21,
+   "uptimeDays": 34,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 88
+  },
+  {
+   "id": "vm-11",
+   "name": "sub4me-web-01",
+   "role": "Sub4Me web",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 38,
+   "memPct": 55,
+   "diskPct": 42,
+   "backupAgeHours": 10,
+   "patchLagDays": 2,
+   "uptimeDays": 48,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 24
+  },
+  {
+   "id": "vm-12",
+   "name": "sub4me-web-02",
+   "role": "Sub4Me web",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 36,
+   "memPct": 53,
+   "diskPct": 41,
+   "backupAgeHours": 10,
+   "patchLagDays": 2,
+   "uptimeDays": 48,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 58
+  },
+  {
+   "id": "vm-13",
+   "name": "sub4me-db-01",
+   "role": "Sub4Me database",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "RHEL 9",
+   "cpuPct": 57,
+   "memPct": 69,
+   "diskPct": 96,
+   "backupAgeHours": 11,
+   "patchLagDays": 8,
+   "uptimeDays": 110,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 175
+  },
+  {
+   "id": "vm-14",
+   "name": "file-srv-01",
+   "role": "File server",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Windows Server 2022",
+   "cpuPct": 21,
+   "memPct": 44,
+   "diskPct": 67,
+   "backupAgeHours": 30,
+   "patchLagDays": 10,
+   "uptimeDays": 82,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 260
+  },
+  {
+   "id": "vm-15",
+   "name": "ad-dc-01",
+   "role": "Active Directory domain controller",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Windows Server 2022",
+   "cpuPct": 12,
+   "memPct": 41,
+   "diskPct": 38,
+   "backupAgeHours": 12,
+   "patchLagDays": 6,
+   "uptimeDays": 88,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 300
+  },
+  {
+   "id": "vm-16",
+   "name": "ad-dc-02",
+   "role": "Active Directory domain controller",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "Windows Server 2022",
+   "cpuPct": 11,
+   "memPct": 40,
+   "diskPct": 37,
+   "backupAgeHours": 12,
+   "patchLagDays": 6,
+   "uptimeDays": 88,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 300
+  },
+  {
+   "id": "vm-17",
+   "name": "mon-prom-01",
+   "role": "Prometheus monitoring",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 44,
+   "memPct": 58,
+   "diskPct": 63,
+   "backupAgeHours": 13,
+   "patchLagDays": 5,
+   "uptimeDays": 57,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 140
+  },
+  {
+   "id": "vm-18",
+   "name": "mon-graf-01",
+   "role": "Grafana dashboards",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 14,
+   "memPct": 33,
+   "diskPct": 29,
+   "backupAgeHours": 13,
+   "patchLagDays": 5,
+   "uptimeDays": 57,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 140
+  },
+  {
+   "id": "vm-19",
+   "name": "bkp-veeam-01",
+   "role": "Backup server",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "Windows Server 2022",
+   "cpuPct": 35,
+   "memPct": 60,
+   "diskPct": 87,
+   "backupAgeHours": 3,
+   "patchLagDays": 12,
+   "uptimeDays": 95,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 205
+  },
+  {
+   "id": "vm-20",
+   "name": "jump-host-01",
+   "role": "Admin jump host",
+   "env": "prod",
+   "site": "Frankfurt",
+   "os": "Windows Server 2022",
+   "cpuPct": 9,
+   "memPct": 36,
+   "diskPct": 31,
+   "backupAgeHours": 14,
+   "patchLagDays": 7,
+   "uptimeDays": 40,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 310
+  },
+  {
+   "id": "vm-21",
+   "name": "test-s4-01",
+   "role": "S/4HANA test system",
+   "env": "test",
+   "site": "Frankfurt",
+   "os": "SLES 15",
+   "cpuPct": 27,
+   "memPct": 57,
+   "diskPct": 52,
+   "backupAgeHours": null,
+   "patchLagDays": 9,
+   "uptimeDays": 19,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 75
+  },
+  {
+   "id": "vm-22",
+   "name": "test-s4-02",
+   "role": "S/4HANA test system",
+   "env": "test",
+   "site": "Frankfurt",
+   "os": "SLES 15",
+   "cpuPct": 0,
+   "memPct": 0,
+   "diskPct": 0,
+   "backupAgeHours": null,
+   "patchLagDays": 9,
+   "uptimeDays": 0,
+   "reachable": false,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 75
+  },
+  {
+   "id": "vm-23",
+   "name": "dev-ci-01",
+   "role": "Build server",
+   "env": "dev",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 52,
+   "memPct": 61,
+   "diskPct": 55,
+   "backupAgeHours": null,
+   "patchLagDays": 4,
+   "uptimeDays": 12,
+   "reachable": true,
+   "vcpu": 8,
+   "ramGb": 32,
+   "certExpiresInDays": 160
+  },
+  {
+   "id": "vm-24",
+   "name": "dev-ci-02",
+   "role": "Build server",
+   "env": "dev",
+   "site": "Frankfurt",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 48,
+   "memPct": 59,
+   "diskPct": 53,
+   "backupAgeHours": null,
+   "patchLagDays": 4,
+   "uptimeDays": 12,
+   "reachable": true,
+   "vcpu": 16,
+   "ramGb": 64,
+   "certExpiresInDays": 160
+  },
+  {
+   "id": "vm-25",
+   "name": "proxy-edge-01",
+   "role": "Edge proxy",
+   "env": "prod",
+   "site": "Amsterdam",
+   "os": "Ubuntu 22.04",
+   "cpuPct": 24,
+   "memPct": 39,
+   "diskPct": 35,
+   "backupAgeHours": 9,
+   "patchLagDays": 16,
+   "uptimeDays": 66,
+   "reachable": true,
+   "vcpu": 4,
+   "ramGb": 16,
+   "certExpiresInDays": 5
+  }
+ ],
+ "tasks": {
+  "cert": {
+   "title": "Renew TLS certificate",
+   "steps": [
+    "Create the signing request",
+    "Check the chain and the services that use the certificate",
+    "Install in the maintenance window after approval"
+   ],
+   "reboot": false,
+   "approver": "Security",
+   "fix": {
+    "certExpiresInDays": 365
+   }
+  },
+  "patch": {
+   "title": "Install security patch",
+   "steps": [
+    "Check maintenance window and redundancy",
+    "Patch the twin or standby first",
+    "Restart and run the health check"
+   ],
+   "reboot": true,
+   "approver": "Change board",
+   "fix": {
+    "patchLagDays": 0,
+    "uptimeDays": 0
+   }
+  },
+  "disk": {
+   "title": "Free up disk space",
+   "steps": [
+    "Find the largest directories and old logs",
+    "Propose archive, clean-up or resize",
+    "Run after approval, then measure again"
+   ],
+   "reboot": false,
+   "approver": "Service owner",
+   "fix": {
+    "diskPct": 61
+   }
+  },
+  "backup": {
+   "title": "Catch up the backup",
+   "steps": [
+    "Check the backup job and its last error",
+    "Start a backup run",
+    "Verify the restore point"
+   ],
+   "reboot": false,
+   "approver": "Backup owner",
+   "fix": {
+    "backupAgeHours": 1
+   }
+  },
+  "unreachable": {
+   "title": "Check an unreachable VM",
+   "steps": [
+    "Ping, port and hypervisor status",
+    "Look at the console and recent changes",
+    "Propose a restart, never restart without approval"
+   ],
+   "reboot": true,
+   "approver": "On-call",
+   "fix": {
+    "reachable": true,
+    "cpuPct": 20,
+    "memPct": 35,
+    "diskPct": 40,
+    "uptimeDays": 0
+   }
+  },
+  "cpu": {
+   "title": "Analyse the CPU peak",
+   "steps": [
+    "Find the process behind the peak",
+    "Compare with the twin VM",
+    "Propose scaling or a fix, with approval"
+   ],
+   "reboot": false,
+   "approver": "Service owner",
+   "fix": {
+    "cpuPct": 45
+   }
+  },
+  "mem": {
+   "title": "Check memory pressure",
+   "steps": [
+    "List the largest memory users",
+    "Look for leaks and restart candidates",
+    "Propose a restart or more RAM, with approval"
+   ],
+   "reboot": false,
+   "approver": "Service owner",
+   "fix": {
+    "memPct": 60
+   }
+  }
+ }
+}
+</script>
+<script id="vm-logic">
+/* Status rules and recommended tasks. The data block carries limits and task definitions; the n8n workflow 05-vm-maintenance-plan.json uses the same logic (a test keeps both equal). */
+function assess(vm, rules) {
+  const reasons = [];
+  const add = (level, text, key) => reasons.push({ level, text, key });
+  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks', 'unreachable');
+  else {
+    const metric = (field, label, unit, key) => {
+      const v = vm[field], r = rules[field];
+      if (v === null || v === undefined) return;
+      if (r.appliesTo && r.appliesTo !== vm.env) return;
+      if (field === 'certExpiresInDays') {
+        if (v <= r.red) add('red', `${label} ${v}${unit} (red up to ${r.red}${unit})`, key);
+        else if (v <= r.yellow) add('yellow', `${label} ${v}${unit} (yellow up to ${r.yellow}${unit})`, key);
+      } else if (v >= r.red) add('red', `${label} ${v}${unit} (red from ${r.red}${unit})`, key);
+      else if (v >= r.yellow) add('yellow', `${label} ${v}${unit} (yellow from ${r.yellow}${unit})`, key);
+    };
+    metric('cpuPct', 'CPU', ' %', 'cpu'); metric('memPct', 'Memory', ' %', 'mem'); metric('diskPct', 'Disk', ' %', 'disk');
+    metric('backupAgeHours', 'Last backup', ' h ago', 'backup'); metric('patchLagDays', 'Security patch missing for', ' days', 'patch');
+    metric('certExpiresInDays', 'TLS certificate expires in', ' days', 'cert');
+  }
+  const status = reasons.some((r) => r.level === 'red') ? 'red' : reasons.length ? 'yellow' : 'green';
+  reasons.sort((a, b) => (a.level === b.level ? 0 : a.level === 'red' ? -1 : 1));
+  return { status, reasons };
+}
+function tasksFor(vm, reasons, defs) {
+  return reasons.map((r) => ({ vm: vm.name, key: r.key, title: defs[r.key].title, steps: defs[r.key].steps, reboot: defs[r.key].reboot, approver: defs[r.key].approver, urgency: r.level === 'red' ? 'urgent' : 'planned', because: r.text }));
+}
+function plan(vms, rules, defs) {
+  return vms.map((vm) => ({ vm, ...assess(vm, rules) })).filter((x) => x.reasons.length).map((x) => {
+    const tasks = tasksFor(x.vm, x.reasons, defs);
+    return { vm: x.vm.name, status: x.status, tasks, window: tasks.some((t) => t.reboot) ? 'Maintenance window needed (restart)' : 'Can run during operations', bundle: tasks.length > 1 };
+  }).sort((a, b) => (a.status === b.status ? a.vm.localeCompare(b.vm) : a.status === 'red' ? -1 : 1));
+}
+</script>
+<script>
+(() => {
+'use strict';
+const DATA = JSON.parse(document.getElementById('vm-data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' }, ICON = { green: '✓', yellow: '!', red: '✕' };
+const FLOW = ['Detected', 'Proposed', 'Approved', 'Run (simulated)', 'Verified'];
+const state = { filter: 'all', sel: null, done: {}, approved: {}, proposed: false, step: -1 }; // done/approved keyed by "vm|task"
+let vms = [];
+const tip = $('#tip');
+const taskKey = (t) => `${t.vm}|${t.key}`;
+function recompute() {
+  vms = DATA.vms.map((v) => {
+    const fixed = { ...v };
+    for (const k of Object.keys(state.done)) { const [name, key] = k.split('|'); if (name === v.name) Object.assign(fixed, DATA.tasks[key].fix); }
+    return { ...fixed, ...assess(fixed, DATA.rules) };
+  });
+}
+const bar = (v, key) => { const r = DATA.rules[key]; return `<i class="${v >= r.red ? 'crit' : v >= r.yellow ? 'warn' : ''}" title="${key}"><b style="width:${Math.min(100, v)}%"></b></i>`; };
+function explain(vm) {
+  const head = `<h3>${esc(vm.name)} is <span class="pill ${vm.status}">${LABEL[vm.status]}</span></h3>`;
+  if (!vm.reasons.length) {
+    const r = DATA.rules;
+    return head + `<div>All checks are within their limits:</div><ul><li>CPU ${vm.cpuPct} % <span class="lim">(yellow from ${r.cpuPct.yellow} %)</span></li><li>Memory ${vm.memPct} % <span class="lim">(from ${r.memPct.yellow} %)</span></li><li>Disk ${vm.diskPct} % <span class="lim">(from ${r.diskPct.yellow} %)</span></li>` +
+      (vm.backupAgeHours != null && vm.env === 'prod' ? `<li>Last backup ${vm.backupAgeHours} h ago <span class="lim">(from ${r.backupAgeHours.yellow} h)</span></li>` : '') + `<li>Security patch missing ${vm.patchLagDays} days <span class="lim">(from ${r.patchLagDays.yellow})</span></li><li>TLS certificate valid for ${vm.certExpiresInDays} more days <span class="lim">(warning up to ${r.certExpiresInDays.yellow})</span></li></ul>`;
+  }
+  const why = vm.status === 'red' ? 'Red because of the worst check:' : 'Yellow because:';
+  const rec = vm.reasons.map((x) => DATA.tasks[x.key].title).filter((t, i, a) => a.indexOf(t) === i);
+  return head + `<div>${why}</div><ul>${vm.reasons.map((x) => `<li>${esc(x.text)}${x.level === 'yellow' && vm.status === 'red' ? ' <span class="lim">(also yellow)</span>' : ''}</li>`).join('')}</ul><div class="lim" style="margin-top:6px">Recommended: ${esc(rec.join(', '))}</div>`;
+}
+function place(ev, el) {
+  const r = el.getBoundingClientRect(), pad = 8, w = tip.offsetWidth, h = tip.offsetHeight;
+  const x = ev && ev.clientX ? ev.clientX + 14 : r.right + pad, y = ev && ev.clientY ? ev.clientY + 14 : r.top;
+  tip.style.left = Math.max(pad, Math.min(innerWidth - w - pad, x)) + 'px';
+  tip.style.top = Math.max(pad, Math.min(innerHeight - h - pad, y)) + 'px';
+}
+function showTip(ev, vm, el) { tip.className = 'tip ' + vm.status; tip.innerHTML = explain(vm); tip.hidden = false; place(ev, el); }
+function renderGrid() {
+  $('#grid').innerHTML = vms.map((v) => `<button type="button" class="vm ${v.status}${state.filter !== 'all' && v.status !== state.filter ? ' dim' : ''}" data-id="${v.id}" aria-pressed="${state.sel === v.id}" aria-label="${esc(v.name)}: ${LABEL[v.status]}. ${esc(v.reasons.map((r) => r.text).join('; ') || 'All checks within limits')}">` +
+    `<span class="ic" aria-hidden="true">${ICON[v.status]}</span><div class="n">${esc(v.name)}</div><div class="r">${esc(v.role)}</div>` +
+    (v.reachable ? `<div class="mini">${bar(v.cpuPct, 'cpuPct')}${bar(v.memPct, 'memPct')}${bar(v.diskPct, 'diskPct')}</div>` : '<div class="mini" style="color:var(--red);font-size:11px;display:block">no data</div>') + '</button>').join('');
+  $('#grid').querySelectorAll('.vm').forEach((el) => {
+    const vm = vms.find((x) => x.id === el.dataset.id);
+    el.onmouseenter = (e) => showTip(e, vm, el); el.onmousemove = (e) => place(e, el); el.onmouseleave = () => { tip.hidden = true; };
+    el.onfocus = () => showTip(null, vm, el); el.onblur = () => { tip.hidden = true; };
+    el.onclick = () => { state.sel = state.sel === vm.id ? null : vm.id; renderAll(); };
+  });
+}
+function renderKpis() {
+  const n = (s) => vms.filter((v) => v.status === s).length, prod = vms.filter((v) => v.env === 'prod');
+  const kpi = (k, v, s, tone) => `<div class="kpi ${tone}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  const live = vms.filter((v) => v.reachable), open = plan(vms, DATA.rules, DATA.tasks).reduce((a, p) => a + p.tasks.length, 0);
+  $('#kpis').innerHTML = kpi('Green', n('green'), 'all checks within limits', 'green') + kpi('Yellow', n('yellow'), 'warning, plan an action', 'amber') + kpi('Red', n('red'), 'act now', 'red') +
+    kpi('Open tasks', open, `${Object.keys(state.done).length} verified in this demo`, 'purple') +
+    kpi('Average CPU', Math.round(live.reduce((a, v) => a + v.cpuPct, 0) / live.length) + ' %', `${live.length} reachable VMs`, 'purple');
+}
+function renderFilters() {
+  const c = (s) => (s === 'all' ? vms.length : vms.filter((v) => v.status === s).length);
+  $('#filters').innerHTML = ['all', 'red', 'yellow', 'green'].map((s) => `<button type="button" data-f="${s}" aria-pressed="${state.filter === s}">${s === 'all' ? 'All' : LABEL[s]} ${c(s)}</button>`).join('');
+  $('#filters').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.filter = b.dataset.f; renderAll(); }));
+}
+function renderDetail() {
+  const v = vms.find((x) => x.id === state.sel);
+  if (!v) { $('#detail').innerHTML = '<h2>Details</h2><p class="sub">Click a VM to see its measurements and a question for Joule. Hover over any VM to see why it has its colour.</p>'; return; }
+  $('#detail').innerHTML = `<h2>${esc(v.name)} <span class="pill ${v.status}">${LABEL[v.status]}</span></h2><p class="sub">${esc(v.role)}</p>` +
+    `<dl class="facts"><dt>Environment</dt><dd>${esc(v.env)}</dd><dt>Site</dt><dd>${esc(v.site)}</dd><dt>System</dt><dd>${esc(v.os)}</dd><dt>Size</dt><dd>${v.vcpu} vCPU, ${v.ramGb} GB</dd>` +
+    (v.reachable ? `<dt>CPU</dt><dd>${v.cpuPct} %</dd><dt>Memory</dt><dd>${v.memPct} %</dd><dt>Disk</dt><dd>${v.diskPct} %</dd><dt>Last backup</dt><dd>${v.backupAgeHours == null ? 'not required' : v.backupAgeHours + ' h ago'}</dd><dt>Patch gap</dt><dd>${v.patchLagDays} days</dd><dt>Certificate</dt><dd>${v.certExpiresInDays} days left</dd><dt>Uptime</dt><dd>${v.uptimeDays} days</dd>` : '<dt>State</dt><dd>not reachable</dd>') + '</dl>' +
+    `<div>${explain(v)}</div><p style="margin-top:12px"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button></p>`;
+  $('#ask').onclick = () => send(`Explain the status of the virtual machine ${v.name} (${v.role}, ${v.env}, ${v.site}): ${v.status}${v.reasons.length ? ' because ' + v.reasons.map((r) => r.text).join('; ') : ', all checks are within limits'}. Suggest the first three checks for the on-call engineer. Do not change anything. Please answer in German.`);
+}
+const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt }, '*');
+const stage = (t) => (state.done[taskKey(t)] ? 4 : state.approved[taskKey(t)] ? 2 : state.proposed ? 1 : 0);
+function renderTasks() {
+  const open = plan(DATA.vms.map((v) => vms.find((x) => x.id === v.id)), DATA.rules, DATA.tasks);
+  const doneNow = Object.keys(state.done).map((k) => { const [vm, key] = k.split('|'); return { vm, key, ...DATA.tasks[key], urgency: 'done' }; });
+  const rows = [];
+  for (const p of open) for (const t of p.tasks) rows.push({ t, p });
+  for (const t of doneNow) rows.push({ t, p: { window: '', bundle: false }, done: true });
+  $('#task-rows').innerHTML = rows.map(({ t, p, done }) => {
+    const k = taskKey(t), s = done ? 4 : stage(t);
+    const action = done ? '' : s === 0 ? '<button class="small" data-act="propose" disabled title="Create the plan first">Propose</button>' : s === 1 ? `<button class="small" data-act="approve" data-k="${esc(k)}">Approve</button>` : `<button class="small" data-act="run" data-k="${esc(k)}">Run (simulated)</button>`;
+    return `<tr><td><b>${esc(t.vm)}</b>${p.bundle ? '<div class="why" style="color:var(--muted);font-size:11px">bundled with other tasks of this VM</div>' : ''}</td><td>${esc(t.title)}<ol class="steps">${t.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></td>` +
+      `<td><span class="pill ${t.urgency}">${done ? 'done' : t.urgency}</span></td><td>${esc(p.window || '')}</td><td>${esc(t.approver)}</td>` +
+      `<td><div class="flow">${FLOW.map((f, i) => (i === s ? `<b>${f}</b>` : f)).join(' › ')}</div>${action}</td></tr>`;
+  }).join('') || '<tr><td colspan="6">No open tasks. Every VM is green.</td></tr>';
+  $('#task-rows').querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
+    if (b.dataset.act === 'approve') state.approved[b.dataset.k] = true;
+    if (b.dataset.act === 'run') { state.done[b.dataset.k] = true; delete state.approved[b.dataset.k]; recompute(); }
+    renderAll();
+  }));
+}
+$('#mkplan').onclick = () => {
+  state.proposed = true; renderAll();
+  const p = plan(vms, DATA.rules, DATA.tasks);
+  $('#plan-note').textContent = `Draft plan: ${p.reduce((a, x) => a + x.tasks.length, 0)} tasks on ${p.length} VMs, ${p.filter((x) => x.bundle).length} VMs bundled in one window. Proposal only: nothing runs until a person approves.`;
+  send('Run the n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" with the tool run_vm_maintenance_plan (production mode, sample VMs, omit vms). Summarise the plan: urgent tasks first, which VMs need a maintenance window, which tasks are bundled and who must approve. Do not execute anything. Please answer in German.');
+};
+$('#reset-demo').onclick = () => { state.done = {}; state.approved = {}; state.proposed = false; state.filter = 'all'; state.sel = null; state.step = -1; $('#plan-note').textContent = ''; recompute(); renderAll(); };
+const STEPS = [
+  { t: 'See the wall', x: 'Every VM is green, yellow or red. Red VMs need action now, yellow ones need a plan.', on: () => { state.filter = 'red'; } },
+  { t: 'Why is it red?', x: 'Hover over joule-gw-01: the tooltip shows which checks made it red, with the measured value and the limit.', on: () => { state.filter = 'all'; state.sel = 'vm-06'; } },
+  { t: 'Recommended tasks', x: 'Each reason becomes a task: patch, certificate, disk space, backup. The table below lists them, urgent first.', on: () => { state.sel = null; document.getElementById('tasks-card').scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
+  { t: 'Create the plan', x: '“Create the plan in n8n” asks the chat to run the maintenance-plan workflow. It only proposes; the tasks move to “Proposed”.', on: () => { state.proposed = true; } },
+  { t: 'A person approves', x: 'The approver named in the table approves. We approve the certificate renewal on proxy-edge-01.', on: () => { state.proposed = true; state.approved['proxy-edge-01|cert'] = true; } },
+  { t: 'Run and verify', x: 'The task runs (simulated here), the VM is measured again and its colour changes. Reset the demo to start over.', on: () => { state.proposed = true; delete state.approved['proxy-edge-01|cert']; state.done['proxy-edge-01|cert'] = true; recompute(); state.sel = 'vm-25'; } },
+];
+function renderGuide() {
+  const g = $('#guide');
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Six steps from the status wall to a verified fix: see, understand, plan, approve, run, verify.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  const s = STEPS[state.step];
+  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button"${state.step === 0 ? ' disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
+  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
+}
+function go(i) {
+  state.step = i;
+  state.done = {}; state.approved = {}; state.proposed = false; state.filter = 'all'; state.sel = null; recompute();
+  for (let k = 0; k <= i; k++) STEPS[k].on();
+  recompute(); renderAll();
+}
+function renderAll() { renderKpis(); renderFilters(); renderGrid(); renderDetail(); renderTasks(); renderGuide(); }
+$('#rules').innerHTML = [['CPU', 'cpuPct', ' %', 'from'], ['Memory', 'memPct', ' %', 'from'], ['Disk', 'diskPct', ' %', 'from'], ['Last backup (production)', 'backupAgeHours', ' h', 'from'], ['Security patch missing', 'patchLagDays', ' days', 'from'], ['TLS certificate expires in', 'certExpiresInDays', ' days', 'up to']].map(([l, k, u, w]) => `<tr><td>${l}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].yellow}${u}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].red}${u}</td></tr>`).join('');
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
+recompute(); renderAll();
+window.__vms = () => vms; window.__state = state; window.__go = go;
+})();
+</script>
+</body>
+</html>
