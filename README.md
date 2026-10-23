@@ -408,11 +408,13 @@ The mockup data of the two Spaces above is part of the graph: **Call** and **E-m
 In the **Conversations** list the magnifier opens a search field (titles and message text, case-insensitive, `Esc` clears and closes) and the funnel opens a filter menu: all conversations, updated today, last 7 days, or with files. Both combine, the list shows “x of y shown” with a **Clear** link, and archived conversations that match appear automatically. Filtering is in `filterConversations` (`src/conversations.ts`).
 ## n8n demo workflows (simple and complex)
 
-Two importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
+Importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
 
 - `01-simple-contract-notice-check.json`: manual trigger, sample contracts, notice deadline per contract, IF “due within 30 days?” → alert or no action. Good for explaining the basic building blocks.
 - `02-complex-communication-digest.json`: manual or weekday-morning trigger, a Switch that splits mails and call action items, a **guardrail** that quarantines mail text containing instructions aimed at AI assistants (the same case as in the E-Mail-Communication Space), intent and 48-hour response target, overdue check, three Merge nodes and one digest per customer that ends in “create a draft, never send”. 20 nodes, two branches, IF, Switch, Merge, Code.
 - `03-sales-pipeline-digest.json`: six fictional interest signals, a **guardrail** that quarantines text containing instructions aimed at AI assistants, a transparent score (ICP fit, budget, decision maker, need, timing), a Switch that routes to opportunity, nurture or watch, three Merge nodes and a digest that ends in “draft, never send”. 15 nodes, no credentials.
+
+- `04-it-operations-alert-triage.json`: for the IT operations topic. Start with **Execute workflow** (seven fictional monitoring alerts) or by **POST to `/webhook/it-ops-triage`** with `{"alerts":[{"id","service","severity","impact","customerFacing","repeat24h","text"}]}` (activate the workflow first and use the production URL). A **guardrail** quarantines alert text aimed at AI assistants, a transparent priority (severity, business impact, customer facing, repeats) routes to P1 page on-call, P2 ticket or P3 watch, and the digest ends in “draft, never execute”. 17 nodes, no credentials.
 
 Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workflow**. The workflows stay inactive; the Code nodes use a fixed reference date (19 Oct 2026) so the result is the same every day. `test/n8n-demo-workflows.test.mjs` checks the structure and runs the Code nodes.
 
