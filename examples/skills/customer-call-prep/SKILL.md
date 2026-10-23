@@ -1,6 +1,6 @@
 ---
 name: customer-call-prep
-description: Bereitet ein Kundengespräch vor: Verträge, Fristen, offene Angebote, Verbrauch, Tickets, offene Rechnungen und Forecast-Änderungen auf einer Seite, mit Quellen. Nutzen bei "Kundengespräch vorbereiten", "Kundentermin", "Account-Briefing".
+description: Prepares a customer call: contracts, deadlines, open offers, consumption, tickets, open invoices and forecast changes on one page, with sources. Nutzen bei "Kundengespräch vorbereiten", "Kundentermin", "Account-Briefing".
 metadata:
   domain: Vertrieb
   process: Kundengespräch vorbereiten

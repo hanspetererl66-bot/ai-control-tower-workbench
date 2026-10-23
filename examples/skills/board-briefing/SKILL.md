@@ -1,6 +1,6 @@
 ---
 name: board-briefing
-description: Erstellt ein einseitiges Board-Briefing auf Deutsch aus den AI-Control-Tower-Daten (Risiken, Agenten, Budget, EU-AI-Act-Audit). Nutzen bei "Board-Briefing", "Management Summary", "Lagebild AI Control Tower".
+description: Creates a one-page board briefing in German from the AI Control Tower data (risks, agents, budget, EU AI Act audit). Nutzen bei "Board-Briefing", "Management Summary", "Lagebild AI Control Tower".
 metadata:
   domain: Governance & Risiko
   process: Board-Reporting

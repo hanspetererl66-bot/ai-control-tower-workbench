@@ -1,6 +1,6 @@
 ---
 name: discovery-meddpicc
-description: Bereitet das Discovery-Gespräch vor und prüft eine Opportunity nach MEDDPICC: Lücken, Fragen, Beleg je Kriterium. Nutzen bei "MEDDPICC", "Discovery", "Qualifizierung der Opportunity".
+description: Prepares the discovery call and checks an opportunity against MEDDPICC: gaps, questions, evidence per criterion. Nutzen bei "MEDDPICC", "Discovery", "Qualifizierung der Opportunity".
 metadata:
   domain: Vertrieb
   process: Discovery und MEDDPICC

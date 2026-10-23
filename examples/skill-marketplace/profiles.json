@@ -115,12 +115,12 @@
         "demoFlow": [
           "Skill installieren",
           "Connector ai-control-tower verbinden",
-          "\"Board-Briefing\" im Chat eingeben",
-          "Einseitigen Text prüfen und exportieren"
+          "Type \"Board-Briefing\" in the chat",
+          "Review the one-page text and export it"
         ],
         "prerequisites": [
           "Connector ai-control-tower",
-          "Lesezugriff auf das Register"
+          "Read access to the registry"
         ],
         "tags": [
           "Reporting",
@@ -229,11 +229,11 @@
         ],
         "demoFlow": [
           "Aufgabe in einem Satz beschreiben",
-          "Treffer mit Eigentümer und Reifegrad ansehen",
-          "Passenden Skill installieren oder Eigentümer fragen"
+          "Review the hits with owner and maturity",
+          "Install the matching skill or ask the owner"
         ],
         "prerequisites": [
-          "Connector ai-control-tower mit Supabase"
+          "Connector ai-control-tower with Supabase"
         ],
         "tags": [
           "Registry",
@@ -335,12 +335,12 @@
           "Störung melden für BTP AI Core."
         ],
         "demoFlow": [
-          "Problem in zwei Sätzen schildern",
-          "Vorschlag für Titel, Produkt und Priorität prüfen",
-          "Mit \"ja\" bestätigen, Ticket wird angelegt"
+          "Describe the problem in two sentences",
+          "Review the suggested title, product and priority",
+          "Confirm with \"ja\", the ticket is created"
         ],
         "prerequisites": [
-          "Connector ai-control-tower mit Supabase (für echte Demo-Tickets)"
+          "Connector ai-control-tower with Supabase (for real demo tickets)"
         ],
         "tags": [
           "Service",
@@ -458,8 +458,8 @@
         ],
         "demoFlow": [
           "Abrechnung hochladen",
-          "Auffälligkeiten mit Regelverweis ansehen",
-          "Freigabe oder Rückfrage an Einreicher"
+          "Review anomalies with the rule reference",
+          "Approve or send a question back to the submitter"
         ],
         "prerequisites": [
           "Reiserichtlinie als Dokument"
@@ -467,7 +467,7 @@
         "tags": [
           "Reisekosten",
           "Compliance",
-          "Prüfung"
+          "Review"
         ],
         "industries": [
           "Cross-industry"
@@ -581,13 +581,13 @@
         "demoFlow": [
           "Rechnungsliste laden",
           "Abweichungen ansehen",
-          "Klärfälle an Einkauf weitergeben"
+          "Pass cases that need clarification to Procurement"
         ],
         "prerequisites": [
-          "Zugriff auf Bestell- und Wareneingangsdaten"
+          "Access to purchase order and goods receipt data"
         ],
         "tags": [
-          "Rechnungsprüfung",
+          "Invoice review",
           "Procure-to-Pay"
         ],
         "industries": [
@@ -695,16 +695,16 @@
           "Was kostet die Verlängerung von Ariba?"
         ],
         "demoFlow": [
-          "Kunden wählen",
-          "Fristen und Angebote ansehen",
-          "Angebot mit quote-drafter vorbereiten"
+          "Choose the customer",
+          "Review deadlines and offers",
+          "Prepare the quote with quote-drafter"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
         ],
         "tags": [
-          "Verlängerung",
-          "Verträge",
+          "Renewal",
+          "Contracts",
           "Sub4Me"
         ],
         "industries": [
@@ -804,9 +804,9 @@
           "Entwirf ein Angebot für die Verlängerung von SuccessFactors."
         ],
         "demoFlow": [
-          "Vertrag wählen",
-          "Entwurf prüfen",
-          "Rabatt gegen Freigabegrenze prüfen"
+          "Choose the contract",
+          "Review the draft",
+          "Check the discount against the approval limit"
         ],
         "prerequisites": [
           "Connector ai-control-tower",
@@ -913,8 +913,8 @@
           "Briefing für die Herbstkampagne mit 40.000 Euro Budget."
         ],
         "demoFlow": [
-          "Ziel und Zielgruppe nennen",
-          "Briefing prüfen",
+          "State the goal and target group",
+          "Review the briefing",
           "An Agentur senden"
         ],
         "prerequisites": [],
@@ -1010,9 +1010,9 @@
           "Prüfe diesen LinkedIn-Post auf Markenton und Aussagen."
         ],
         "demoFlow": [
-          "Entwurf einfügen",
+          "Paste the draft",
           "Hinweise ansehen",
-          "Überarbeitung übernehmen"
+          "Accept the revision"
         ],
         "prerequisites": [],
         "tags": [
@@ -1120,8 +1120,8 @@
         ],
         "demoFlow": [
           "Verbrauch abfragen",
-          "Prognose und Erschöpfungsmonat ansehen",
-          "Ticket mit Vorschlag anlegen"
+          "Review the forecast and the month of exhaustion",
+          "Create the ticket from the suggestion"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -1228,7 +1228,7 @@
         ],
         "demoFlow": [
           "Concur-Export laden",
-          "Fehlende oder doppelte Belege ansehen"
+          "Review missing or duplicate receipts"
         ],
         "prerequisites": [
           "Concur-Export"
@@ -1330,8 +1330,8 @@
           "Prüfe diese Stellenanzeige auf unbewusste Voreingenommenheit."
         ],
         "demoFlow": [
-          "Stellentext einfügen",
-          "Hinweise zu Sprache und Anforderungen ansehen"
+          "Paste the job posting",
+          "Review the notes on language and requirements"
         ],
         "prerequisites": [
           "Freigabe durch HR-Leitung"
@@ -1440,9 +1440,9 @@
           "Release Notes für die Version 2026.4 aus den geschlossenen Tickets."
         ],
         "demoFlow": [
-          "Zeitraum wählen",
+          "Choose the period",
           "Entwurf ansehen",
-          "Veröffentlichen"
+          "Publish"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -1544,14 +1544,14 @@
         ],
         "demoFlow": [
           "Digest anfordern",
-          "Prüfen und in die Review mitnehmen"
+          "Check and take it into the review"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
         ],
         "tags": [
           "Sprint",
-          "Persönlich"
+          "Personal"
         ],
         "industries": [
           "Software"
@@ -1655,9 +1655,9 @@
           "Was muss ich vor dem Termin zur Ariba-Verlängerung wissen?"
         ],
         "demoFlow": [
-          "Kunden oder Produkt nennen",
-          "Briefing mit Fristen, Angeboten und Verbrauch prüfen",
-          "Gesprächsziele und Fragen übernehmen"
+          "Name the customer or product",
+          "Review the briefing with deadlines, offers and consumption",
+          "Take over the call goals and questions"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -1772,12 +1772,12 @@
           "Welche Workflows sind in den letzten zwei Wochen fehlgeschlagen?"
         ],
         "demoFlow": [
-          "n8n-Verbindung im Connector eintragen",
+          "Enter the n8n connection in the connector",
           "Lagebild anfordern",
-          "Fehlerhafte Workflows und Kategorien prüfen"
+          "Review failing workflows and categories"
         ],
         "prerequisites": [
-          "n8n-Adresse und API-Schlüssel im Connector"
+          "n8n address and API key in the connector"
         ],
         "tags": [
           "n8n",
@@ -1889,7 +1889,7 @@
         ],
         "demoFlow": [
           "Review-Vorlage anfordern",
-          "Reihenfolge und Rückfragen prüfen",
+          "Review the sequence and open questions",
           "Entscheidungen ins Gremium mitnehmen"
         ],
         "prerequisites": [
@@ -2011,9 +2011,9 @@
           "Zeig mir die Skills für einen Platform Engineer und vergleiche die besten drei."
         ],
         "demoFlow": [
-          "Aufgabe oder Rolle nennen",
-          "Vergleich der besten drei mit Risiko und Nutzen ansehen",
-          "Empfehlung und Beispiel-Prompt übernehmen"
+          "Name the task or role",
+          "Review the comparison of the top three with risk and benefit",
+          "Take over the recommendation and example prompt"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -2123,9 +2123,9 @@
           "Wie gut ist ticket-writer bewertet, und kann ich selbst bewerten?"
         ],
         "demoFlow": [
-          "Skill und Sterne nennen",
-          "Kommentar optional ergänzen",
-          "Bestätigen und neuen Stand sehen"
+          "Name the skill and the stars",
+          "Add a comment (optional)",
+          "Confirm and see the new rating"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -2234,12 +2234,12 @@
           "Ist Nordwind Handel schon Kunde?"
         ],
         "demoFlow": [
-          "Signal einfügen",
-          "Eintrag und Dubletten prüfen",
-          "Nächsten Schritt wählen"
+          "Paste the signal",
+          "Review the entry and duplicates",
+          "Choose the next step"
         ],
         "prerequisites": [
-          "Text des Signals im Chat"
+          "Text of the signal in the chat"
         ],
         "tags": [
           "Interest",
@@ -2349,8 +2349,8 @@
         ],
         "demoFlow": [
           "Fakten nennen",
-          "Score je Kriterium prüfen",
-          "Empfehlung übernehmen"
+          "Review the score per criterion",
+          "Accept the recommendation"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -2461,7 +2461,7 @@
         ],
         "demoFlow": [
           "Lead nennen",
-          "Regel und Zuständigen prüfen"
+          "Review the rule and the assignee"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -2574,9 +2574,9 @@
           "Welche Stakeholder fehlen noch?"
         ],
         "demoFlow": [
-          "Kunde und Thema nennen",
-          "Plan mit Quellen prüfen",
-          "Nächste Schritte übernehmen"
+          "Name the customer and topic",
+          "Review the plan with sources",
+          "Take over the next steps"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -2689,12 +2689,12 @@
           "Welche Fragen sind noch offen?"
         ],
         "demoFlow": [
-          "Fragenkatalog und frühere Antworten bereitstellen",
-          "Status je Frage prüfen",
+          "Provide the question list and earlier answers",
+          "Review the status per question",
           "Offene Fragen verteilen"
         ],
         "prerequisites": [
-          "Frühere RFP-Antworten als Datei oder Text"
+          "Earlier RFP answers as file or text"
         ],
         "tags": [
           "RFP",
@@ -2804,8 +2804,8 @@
         ],
         "demoFlow": [
           "Angebot nennen",
-          "Befund und Abweichungen prüfen",
-          "Freigabe anstoßen"
+          "Review the finding and deviations",
+          "Trigger the approval"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -2921,8 +2921,8 @@
         ],
         "demoFlow": [
           "Angebot nennen",
-          "Signale mit Quelle prüfen",
-          "Gegenmaßnahmen verteilen"
+          "Review the signals with sources",
+          "Assign countermeasures"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -3035,8 +3035,8 @@
         ],
         "demoFlow": [
           "Vertrag nennen",
-          "Tabelle der Abweichungen prüfen",
-          "Legal oder Deal Desk einbinden"
+          "Review the table of deviations",
+          "Involve Legal or the deal desk"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -3147,8 +3147,8 @@
         ],
         "demoFlow": [
           "Daten laden",
-          "Forecast und Aufmerksamkeitspunkte prüfen",
-          "Entscheidungen für die Runde"
+          "Review the forecast and attention points",
+          "Decisions for the round"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -3261,9 +3261,9 @@
           "Welche Annahmen im Business Case sind am empfindlichsten?"
         ],
         "demoFlow": [
-          "Vorhaben und Kunde nennen",
-          "Zahlen und Quellen prüfen",
-          "CFO-Seite übernehmen"
+          "Name the initiative and the customer",
+          "Review the figures and sources",
+          "Take over the CFO page"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -3376,8 +3376,8 @@
         ],
         "demoFlow": [
           "Opportunity nennen",
-          "Belegt, teilweise, offen prüfen",
-          "Fragen ins Gespräch mitnehmen"
+          "Review supported, partial and open",
+          "Take the questions into the conversation"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -3489,8 +3489,8 @@
         ],
         "demoFlow": [
           "Angebot nennen",
-          "Aussagen mit Quelle prüfen",
-          "Fragen an den Kunden übernehmen"
+          "Review the statements with sources",
+          "Take over the questions for the customer"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
@@ -3602,7 +3602,7 @@
         ],
         "demoFlow": [
           "Fragebogen bereitstellen",
-          "Status je Frage prüfen",
+          "Review the status per question",
           "Offene Fragen verteilen"
         ],
         "prerequisites": [
@@ -3716,14 +3716,14 @@
         ],
         "demoFlow": [
           "Vertrag nennen",
-          "Plan prüfen",
-          "Ticket bestätigen"
+          "Review the plan",
+          "Confirm the ticket"
         ],
         "prerequisites": [
           "Connector ai-control-tower"
         ],
         "tags": [
-          "Übergabe",
+          "Handover",
           "Onboarding",
           "Kickoff"
         ],
@@ -3829,8 +3829,8 @@
           "Was gehört aus dem Call ins CRM?"
         ],
         "demoFlow": [
-          "Notizen oder Transkript geben",
-          "CRM-Vorschläge prüfen",
+          "Provide notes or a transcript",
+          "Review the CRM suggestions",
           "Mail-Entwurf selbst senden"
         ],
         "prerequisites": [
@@ -3943,12 +3943,12 @@
           "Störung melden für BTP AI Core."
         ],
         "demoFlow": [
-          "Problem in zwei Sätzen schildern",
-          "Vorschlag für Titel, Produkt und Priorität prüfen",
-          "Mit \"ja\" bestätigen, Ticket wird angelegt"
+          "Describe the problem in two sentences",
+          "Review the suggested title, product and priority",
+          "Confirm with \"ja\", the ticket is created"
         ],
         "prerequisites": [
-          "Connector ai-control-tower mit Supabase (für echte Demo-Tickets)"
+          "Connector ai-control-tower with Supabase (for real demo tickets)"
         ],
         "tags": [
           "Service",
@@ -3972,14 +3972,14 @@
   "processGaps": [
     {
       "id": "GAP-01",
-      "process": "Bestellfreigabe prüfen",
+      "process": "Review the purchase approval",
       "boardArea": "Finance",
       "team": "Procurement",
       "priority": "High",
       "painLevel": 4,
       "minutesPerMonth": 5400,
       "status": "Skill requested",
-      "note": "Heute manuell im Einkauf, hohe Fehlerquote bei Schwellenwerten."
+      "note": "Done manually in Procurement today, high error rate with thresholds."
     },
     {
       "id": "GAP-02",
@@ -4001,7 +4001,7 @@
       "painLevel": 5,
       "minutesPerMonth": 4800,
       "status": "Skill in build",
-      "note": "Wiederkehrende Fragen, Antworten aus früheren RFPs. Pilot: rfp-responder."
+      "note": "Recurring questions, answers from earlier RFPs. Pilot: rfp-responder."
     },
     {
       "id": "GAP-05",
@@ -4012,7 +4012,7 @@
       "painLevel": 2,
       "minutesPerMonth": 900,
       "status": "No skill",
-      "note": "Follow-up-Mails und Lead-Scoring-Hinweise."
+      "note": "Follow-up mails and lead scoring hints."
     },
     {
       "id": "GAP-06",
@@ -4023,7 +4023,7 @@
       "painLevel": 3,
       "minutesPerMonth": 1800,
       "status": "No skill",
-      "note": "Vorlage vorhanden, Zeitachse aus Logs fehlt."
+      "note": "Template exists, timeline from logs is missing."
     },
     {
       "id": "GAP-08",
@@ -4034,23 +4034,23 @@
       "painLevel": 5,
       "minutesPerMonth": 7200,
       "status": "No skill",
-      "note": "Größter manueller Aufwand im Abschluss."
+      "note": "Largest manual effort in closing."
     }
   ],
   "requests": [
     {
       "id": "REQ-101",
-      "title": "Bestellfreigabe gegen Schwellenwerte prüfen",
+      "title": "Check purchase approval against thresholds",
       "requester": "Procurement",
       "boardArea": "Finance",
       "votes": 14,
       "status": "Open",
       "createdOn": "2026-09-28",
-      "note": "Passt zu invoice-matcher; gleiche Datenbasis."
+      "note": "Fits invoice-matcher; same data basis."
     },
     {
       "id": "REQ-102",
-      "title": "Berechtigungsreview mit Agent-Register abgleichen",
+      "title": "Match the access review with the agent registry",
       "requester": "Platform Security",
       "boardArea": "Engineering",
       "votes": 11,
@@ -4060,7 +4060,7 @@
     },
     {
       "id": "REQ-103",
-      "title": "Kundengespräch-Vorbereitung (360-Grad)",
+      "title": "Customer call preparation (360 degrees)",
       "requester": "Account Management",
       "boardArea": "Sales",
       "votes": 9,
@@ -4070,7 +4070,7 @@
     },
     {
       "id": "REQ-104",
-      "title": "RFP-Antworten aus früheren Ausschreibungen",
+      "title": "RFP answers from earlier tenders",
       "requester": "Presales",
       "boardArea": "Sales",
       "votes": 7,
@@ -4086,22 +4086,22 @@
       "votes": 6,
       "status": "Open",
       "createdOn": "2026-10-12",
-      "note": "Hohe Vertraulichkeit, DPIA nötig."
+      "note": "High confidentiality, DPIA needed."
     }
   ],
   "playbooks": [
     {
       "id": "PB-01",
-      "title": "Vom Kundentermin zur Verlängerung",
+      "title": "From the customer meeting to the renewal",
       "roles": [
         "Account Manager",
         "Account Executive",
         "Sales Operations"
       ],
-      "goal": "Ein Kundengespräch vorbereiten, die Verlängerung absichern und offene Punkte nachverfolgen.",
+      "goal": "Prepare a customer call, secure the renewal and follow up on open points.",
       "tags": [
         "Kundentermin",
-        "Verlängerung",
+        "Renewal",
         "Renewal",
         "Angebot",
         "Kunde"
@@ -4109,39 +4109,39 @@
       "steps": [
         {
           "skill": "customer-call-prep",
-          "why": "Verschafft vor dem Termin den Überblick über Verträge, Fristen, Angebote, Verbrauch und Tickets.",
-          "input": "Kunde oder Produkt",
+          "why": "Gives an overview of contracts, deadlines, offers, consumption and tickets before the meeting.",
+          "input": "Customer or product",
           "output": "Einseitiges Briefing"
         },
         {
           "skill": "renewal-radar",
-          "why": "Zeigt, welche Verträge bald auslaufen und wo die Kündigungsfrist drückt.",
+          "why": "Shows which contracts expire soon and where the notice period is tight.",
           "input": "Briefing, Fristen",
-          "output": "Liste der Verlängerungen mit Priorität"
+          "output": "List of renewals with priority"
         },
         {
           "skill": "quote-drafter",
-          "why": "Erstellt aus der Verlängerung den Angebotsentwurf.",
-          "input": "Vertrag und Angebotsdaten",
+          "why": "Creates the draft quote from the renewal.",
+          "input": "Contract and offer data",
           "output": "Angebotsentwurf"
         },
         {
           "skill": "ticket-writer",
-          "why": "Macht aus offenen Kundenthemen sauber beschriebene Serviceanfragen.",
+          "why": "Turns open customer topics into cleanly described service requests.",
           "input": "Kurze Problembeschreibung",
-          "output": "Serviceticket nach Bestätigung"
+          "output": "Service ticket after confirmation"
         }
       ]
     },
     {
       "id": "PB-02",
-      "title": "Kunde mit Problemen: Eskalation vorbereiten",
+      "title": "Customer with problems: prepare the escalation",
       "roles": [
         "Account Manager",
         "Account Executive",
         "Support Engineer"
       ],
-      "goal": "Ein Kundenproblem sauber aufnehmen, den Vertragsrahmen kennen und die Verlängerung nicht gefährden.",
+      "goal": "Capture a customer problem cleanly, know the contract framework and do not endanger the renewal.",
       "tags": [
         "Eskalation",
         "Ticket",
@@ -4151,33 +4151,33 @@
       "steps": [
         {
           "skill": "ticket-writer",
-          "why": "Hält das Problem als vollständiges Serviceticket fest.",
+          "why": "Records the problem as a complete service ticket.",
           "input": "Problembeschreibung",
           "output": "Serviceticket"
         },
         {
           "skill": "customer-call-prep",
-          "why": "Zeigt Vertrag, Service-Level, Tickets und Verbrauch für das Gespräch.",
+          "why": "Shows contract, service level, tickets and consumption for the conversation.",
           "input": "Kunde",
           "output": "Einseitiges Briefing"
         },
         {
           "skill": "renewal-radar",
-          "why": "Prüft, ob das Problem eine anstehende Verlängerung berührt.",
+          "why": "Checks whether the problem affects an upcoming renewal.",
           "input": "Briefing",
-          "output": "Betroffene Verlängerungen"
+          "output": "Affected renewals"
         }
       ]
     },
     {
       "id": "PB-03",
-      "title": "Spesen und Rechnungen prüfen",
+      "title": "Review expenses and invoices",
       "roles": [
         "Controller",
         "Accounts Payable Clerk",
         "Travel Manager"
       ],
-      "goal": "Spesenbelege prüfen und Rechnungen gegen Bestellung und Regeln abgleichen.",
+      "goal": "Check expense receipts and match invoices against purchase orders and rules.",
       "tags": [
         "Spesen",
         "Rechnung",
@@ -4188,19 +4188,19 @@
       "steps": [
         {
           "skill": "expense-check",
-          "why": "Prüft Spesen gegen die Reiserichtlinie.",
+          "why": "Checks expenses against the travel policy.",
           "input": "Spesenbelege",
           "output": "Befunde je Beleg"
         },
         {
           "skill": "concur-receipt-audit",
-          "why": "Findet auffällige Belege in Concur.",
+          "why": "Finds conspicuous receipts in Concur.",
           "input": "Concur-Belege",
-          "output": "Liste auffälliger Belege"
+          "output": "List of conspicuous receipts"
         },
         {
           "skill": "invoice-matcher",
-          "why": "Gleicht Rechnungen mit Bestellung und Wareneingang ab.",
+          "why": "Matches invoices with purchase orders and goods receipts.",
           "input": "Rechnungen",
           "output": "Abweichungsliste"
         }
@@ -4208,13 +4208,13 @@
     },
     {
       "id": "PB-04",
-      "title": "Sprint abschließen und Release melden",
+      "title": "Close the sprint and announce the release",
       "roles": [
         "Engineering Manager",
         "Product Manager",
         "Platform Engineer"
       ],
-      "goal": "Den Sprint zusammenfassen, Release-Notes schreiben und Kontingente im Blick behalten.",
+      "goal": "Summarise the sprint, write release notes and keep an eye on quotas.",
       "tags": [
         "Sprint",
         "Release",
@@ -4224,7 +4224,7 @@
       "steps": [
         {
           "skill": "my-sprint-digest",
-          "why": "Fasst zusammen, was im Sprint passiert ist.",
+          "why": "Summarises what happened in the sprint.",
           "input": "Sprint",
           "output": "Sprint-Zusammenfassung"
         },
@@ -4236,7 +4236,7 @@
         },
         {
           "skill": "btp-quota-watch",
-          "why": "Prüft, ob BTP-Kontingente für das Release reichen.",
+          "why": "Checks whether the BTP quotas are enough for the release.",
           "input": "Subaccounts",
           "output": "Kontingent-Warnungen"
         }
@@ -4244,13 +4244,13 @@
     },
     {
       "id": "PB-05",
-      "title": "KI-Governance für den Vorstand",
+      "title": "AI governance for the board",
       "roles": [
         "Compliance Officer",
         "AI Programme Manager",
         "Executive"
       ],
-      "goal": "Agenten mit zu vielen Rechten prüfen und das Ergebnis als Board-Briefing aufbereiten.",
+      "goal": "Review agents with too many permissions and prepare the result as a board briefing.",
       "tags": [
         "Governance",
         "Risiko",
@@ -4261,32 +4261,32 @@
       "steps": [
         {
           "skill": "access-review-prep",
-          "why": "Sammelt Agenten mit zu vielen Rechten für die Zugriffsprüfung.",
+          "why": "Collects agents with too many permissions for the access review.",
           "input": "Agentenregister",
-          "output": "Prüfliste"
+          "output": "Checklist"
         },
         {
           "skill": "automation-health-check",
-          "why": "Zeigt, ob die dahinterliegenden Automatisierungen gesund laufen.",
+          "why": "Shows whether the underlying automations run healthily.",
           "input": "n8n-Workflows",
           "output": "Gesundheitsbericht"
         },
         {
           "skill": "board-briefing",
-          "why": "Fasst Risiken, Agenten und Budget auf einer Seite zusammen.",
-          "input": "Ergebnisse der Schritte davor",
+          "why": "Summarises risks, agents and budget on one page.",
+          "input": "Results of the previous steps",
           "output": "Einseitiges Board-Briefing"
         }
       ]
     },
     {
       "id": "PB-06",
-      "title": "Kampagne planen und prüfen",
+      "title": "Plan and review a campaign",
       "roles": [
         "Marketing Manager",
         "Content Creator"
       ],
-      "goal": "Eine Kampagne konzipieren und die Posts vor der Veröffentlichung prüfen.",
+      "goal": "Design a campaign and review the posts before publication.",
       "tags": [
         "Kampagne",
         "Marketing",
@@ -4296,15 +4296,15 @@
       "steps": [
         {
           "skill": "campaign-brief",
-          "why": "Erstellt das Kampagnen-Briefing.",
-          "input": "Ziel und Zielgruppe",
+          "why": "Creates the campaign briefing.",
+          "input": "Goal and target group",
           "output": "Briefing"
         },
         {
           "skill": "social-post-checker",
-          "why": "Prüft Posts gegen Richtlinien.",
-          "input": "Entwurf der Posts",
-          "output": "Befunde und Korrekturen"
+          "why": "Checks posts against guidelines.",
+          "input": "Draft of the posts",
+          "output": "Findings and corrections"
         }
       ]
     },
@@ -4315,7 +4315,7 @@
         "Sales Development",
         "Account Manager"
       ],
-      "goal": "Ein neues Signal erfassen, den Lead bewerten und dem richtigen Vertriebsmitarbeiter zuweisen.",
+      "goal": "Capture a new signal, score the lead and assign it to the right sales rep.",
       "tags": [
         "Interest",
         "Lead",
@@ -4325,32 +4325,32 @@
       "steps": [
         {
           "skill": "interest-logger",
-          "why": "Macht aus Formular, Event oder Mail einen sauberen Eintrag und erkennt Dubletten.",
+          "why": "Turns a form, event or mail into a clean entry and detects duplicates.",
           "input": "Text des Signals",
           "output": "Strukturierter Eintrag"
         },
         {
           "skill": "lead-qualifier",
-          "why": "Bewertet den Lead nachvollziehbar nach ICP-Fit und BANT.",
+          "why": "Scores the lead transparently by ICP fit and BANT.",
           "input": "Eintrag, Kundendaten",
-          "output": "Score mit Begründung"
+          "output": "Score with rationale"
         },
         {
           "skill": "lead-router",
-          "why": "Weist den Lead nach Regeln zu und nennt die passende Regel.",
+          "why": "Assigns the lead by rules and names the matching rule.",
           "input": "Qualifizierter Lead",
-          "output": "Zuständiger mit Begründung"
+          "output": "Assignee with rationale"
         }
       ]
     },
     {
       "id": "PB-08",
-      "title": "Von der Opportunity zum Plan",
+      "title": "From the opportunity to the plan",
       "roles": [
         "Account Manager",
         "Presales"
       ],
-      "goal": "Eine Opportunity vorbereiten, Stakeholder und Risiken klären und eine Ausschreibung beantworten.",
+      "goal": "Prepare an opportunity, clarify stakeholders and risks and answer a tender.",
       "tags": [
         "Opportunity",
         "Account-Plan",
@@ -4360,21 +4360,21 @@
       "steps": [
         {
           "skill": "customer-call-prep",
-          "why": "Gibt vor dem Gespräch den Überblick über Verträge, Angebote und Tickets.",
+          "why": "Gives an overview of contracts, offers and tickets before the conversation.",
           "input": "Kunde",
           "output": "Einseitiges Briefing"
         },
         {
           "skill": "opportunity-planner",
-          "why": "Macht daraus einen Plan mit Stakeholdern, Wettbewerb, Risiken und nächsten Schritten.",
+          "why": "Turns it into a plan with stakeholders, competition, risks and next steps.",
           "input": "Briefing, Graph",
           "output": "Account-Plan"
         },
         {
           "skill": "rfp-responder",
-          "why": "Beantwortet den Fragenkatalog aus früheren Antworten und markiert Lücken.",
-          "input": "Fragenkatalog, frühere Antworten",
-          "output": "Antwortentwurf mit Status"
+          "why": "Answers the question list from earlier answers and flags gaps.",
+          "input": "Question list, earlier answers",
+          "output": "Answer draft with status"
         }
       ]
     },
@@ -4385,7 +4385,7 @@
         "Account Executive",
         "Deal Desk"
       ],
-      "goal": "Ein Angebot erstellen, Preis und Freigabe prüfen und das Risiko des Deals einschätzen.",
+      "goal": "Create a quote, check price and approval and assess the risk of the deal.",
       "tags": [
         "Sell",
         "Angebot",
@@ -4395,68 +4395,68 @@
       "steps": [
         {
           "skill": "quote-drafter",
-          "why": "Entwirft den Angebotstext aus Vertrags- und Angebotsdaten.",
+          "why": "Drafts the quote text from contract and offer data.",
           "input": "Vertrag, Angebotsdaten",
           "output": "Angebotsentwurf"
         },
         {
           "skill": "pricing-guard",
-          "why": "Prüft Rabatt und Freigabe gegen die Deal-Desk-Schwelle.",
+          "why": "Checks discount and approval against the deal desk threshold.",
           "input": "Angebotsnummer",
-          "output": "Befund und Abweichungen"
+          "output": "Finding and deviations"
         },
         {
           "skill": "deal-risk-check",
-          "why": "Fasst Warnsignale aus Angebot, Gesprächen und Mails zusammen.",
+          "why": "Summarises warning signals from the quote, calls and mails.",
           "input": "Angebotsnummer",
-          "output": "Risikoeinschätzung mit Gegenmaßnahmen"
+          "output": "Risk assessment with countermeasures"
         }
       ]
     },
     {
       "id": "PB-10",
-      "title": "Vertrag prüfen und übergeben",
+      "title": "Review and hand over the contract",
       "roles": [
         "Sales Operations",
         "Account Executive",
         "Deal Desk"
       ],
-      "goal": "Den Vertrag gegen den Standard prüfen, an den Service übergeben und die Fristen im Blick behalten.",
+      "goal": "Check the contract against the standard, hand it over to Service and keep an eye on deadlines.",
       "tags": [
         "Contract",
         "Vertrag",
-        "Übergabe"
+        "Handover"
       ],
       "steps": [
         {
           "skill": "contract-checker",
-          "why": "Vergleicht den Vertrag mit den Standardpositionen und listet Abweichungen.",
+          "why": "Compares the contract with the standard positions and lists deviations.",
           "input": "Vertragsnummer",
-          "output": "Tabelle der Abweichungen"
+          "output": "Table of deviations"
         },
         {
           "skill": "ticket-writer",
-          "why": "Legt die Übergabe an den Service als sauberes Ticket an.",
+          "why": "Creates the handover to Service as a clean ticket.",
           "input": "Kurze Beschreibung",
-          "output": "Serviceticket nach Bestätigung"
+          "output": "Service ticket after confirmation"
         },
         {
           "skill": "renewal-radar",
-          "why": "Merkt Kündigungsfristen und das Laufzeitende vor.",
+          "why": "Notes notice periods and the end of the term.",
           "input": "Vertragsdaten",
-          "output": "Liste mit Fristen"
+          "output": "List of deadlines"
         }
       ]
     },
     {
       "id": "PB-11",
-      "title": "Interest bis Contract: der ganze Weg",
+      "title": "Interest to contract: the whole way",
       "roles": [
         "Account Manager",
         "Sales Operations",
         "Executive"
       ],
-      "goal": "Den gesamten Vertriebsprozess vom ersten Interesse bis zum geprüften Vertrag mit Freigaben begleiten.",
+      "goal": "Accompany the whole sales process from first interest to the reviewed contract with approvals.",
       "tags": [
         "Interest",
         "Lead",
@@ -4468,39 +4468,39 @@
       "steps": [
         {
           "skill": "interest-logger",
-          "why": "Erfasst das erste Signal und erkennt Dubletten.",
+          "why": "Captures the first signal and detects duplicates.",
           "input": "Text des Signals",
           "output": "Strukturierter Eintrag"
         },
         {
           "skill": "lead-qualifier",
-          "why": "Bewertet den Lead mit erklärbarem Score.",
+          "why": "Scores the lead with an explainable score.",
           "input": "Eintrag",
-          "output": "Score und Empfehlung"
+          "output": "Score and recommendation"
         },
         {
           "skill": "opportunity-planner",
-          "why": "Plant die Opportunity mit Stakeholdern und Schritten.",
+          "why": "Plans the opportunity with stakeholders and steps.",
           "input": "Lead, Kundendaten",
           "output": "Account-Plan"
         },
         {
           "skill": "pricing-guard",
-          "why": "Prüft Preis, Rabatt und Freigabe des Angebots.",
+          "why": "Checks price, discount and approval of the quote.",
           "input": "Angebotsnummer",
           "output": "Befund"
         },
         {
           "skill": "contract-checker",
-          "why": "Prüft den Vertrag vor der Unterschrift.",
+          "why": "Checks the contract before signature.",
           "input": "Vertragsnummer",
           "output": "Abweichungen"
         },
         {
           "skill": "pipeline-review",
-          "why": "Fasst alle Phasen für die Wochenrunde zusammen.",
-          "input": "Angebote und Verträge",
-          "output": "Forecast und Entscheidungen"
+          "why": "Summarises all stages for the weekly round.",
+          "input": "Offers and contracts",
+          "output": "Forecast and decisions"
         }
       ]
     },
@@ -4511,7 +4511,7 @@
         "Account Executive",
         "Presales"
       ],
-      "goal": "Eine Opportunity belegen: Qualifizierung nach MEDDPICC, Wettbewerb einordnen und Business Case rechnen.",
+      "goal": "Substantiate an opportunity: qualify by MEDDPICC, position the competition and calculate the business case.",
       "tags": [
         "Opportunity",
         "MEDDPICC",
@@ -4521,66 +4521,66 @@
       "steps": [
         {
           "skill": "discovery-meddpicc",
-          "why": "Zeigt, was belegt ist und was im Discovery-Gespräch fehlt.",
+          "why": "Shows what is supported and what is missing for the discovery call.",
           "input": "Opportunity",
-          "output": "Lücken und Fragen"
+          "output": "Gaps and questions"
         },
         {
           "skill": "competitive-battlecard",
-          "why": "Ordnet den Wettbewerber ein und liefert Fragen und Einwand-Antworten.",
+          "why": "Positions the competitor and delivers questions and objection answers.",
           "input": "Angebot, Notizen",
           "output": "Battlecard"
         },
         {
           "skill": "business-case-builder",
-          "why": "Rechnet Kosten und Amortisation mit offenen Annahmen.",
+          "why": "Calculates costs and payback with open assumptions.",
           "input": "Vorhaben, Kunde",
-          "output": "Seite für das CFO-Gespräch"
+          "output": "Page for the CFO conversation"
         }
       ]
     },
     {
       "id": "PB-13",
-      "title": "Sicherheit und Übergabe",
+      "title": "Security and handover",
       "roles": [
         "Presales",
         "Sales Operations"
       ],
-      "goal": "Den Sicherheitsfragebogen beantworten und nach dem Abschluss sauber an den Service übergeben.",
+      "goal": "Answer the security questionnaire and hand over cleanly to Service after closing.",
       "tags": [
         "Security",
-        "Übergabe",
+        "Handover",
         "Onboarding"
       ],
       "steps": [
         {
           "skill": "security-questionnaire-helper",
-          "why": "Beantwortet aus Daten, was belegt ist, und leitet den Rest weiter.",
+          "why": "Answers from data what is supported and forwards the rest.",
           "input": "Fragebogen",
-          "output": "Antworttabelle mit Status"
+          "output": "Answer table with status"
         },
         {
           "skill": "handover-onboarding-plan",
-          "why": "Erstellt Übergabe und 90-Tage-Plan.",
+          "why": "Creates the handover and the 90-day plan.",
           "input": "Vertragsnummer",
           "output": "Onboarding-Plan"
         },
         {
           "skill": "ticket-writer",
-          "why": "Legt die Übergabe als Ticket an.",
+          "why": "Creates the handover as a ticket.",
           "input": "Kurze Beschreibung",
-          "output": "Ticket nach Bestätigung"
+          "output": "Ticket after confirmation"
         }
       ]
     },
     {
       "id": "PB-14",
-      "title": "Nach dem Kundengespräch",
+      "title": "After the customer call",
       "roles": [
         "Account Executive",
         "Account Manager"
       ],
-      "goal": "Ein Gespräch nachbereiten: CRM-Vorschläge, Mail-Entwurf und Risiko im Blick.",
+      "goal": "Follow up on a call: CRM suggestions, mail draft and risk in view.",
       "tags": [
         "Call",
         "Follow-up",
@@ -4589,15 +4589,15 @@
       "steps": [
         {
           "skill": "call-followup",
-          "why": "Macht Notizen zu CRM-Vorschlägen, Aktionen und Mail-Entwurf.",
-          "input": "Notizen oder Transkript",
-          "output": "Vorschläge und Entwurf"
+          "why": "Turns notes into CRM suggestions, actions and a mail draft.",
+          "input": "Notes or transcript",
+          "output": "Suggestions and draft"
         },
         {
           "skill": "deal-risk-check",
-          "why": "Prüft, ob sich das Risiko des Deals durch das Gespräch ändert.",
+          "why": "Checks whether the call changes the risk of the deal.",
           "input": "Angebotsnummer",
-          "output": "Risikoeinschätzung"
+          "output": "Risk assessment"
         }
       ]
     }

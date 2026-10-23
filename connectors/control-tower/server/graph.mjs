@@ -20,6 +20,7 @@ export const NODE_TYPES = {
   family: 'Product family',
   product: 'Product',
   contract: 'Contract',
+  deal: 'Deal (lead / opportunity)',
   offer: 'Offer',
   ticket: 'Ticket',
   call: 'Call',
@@ -64,6 +65,12 @@ export const EDGE_TYPES = {
   WITH_CUSTOMER: { verb: 'was held with', inverse: 'has conversations' },
   DISCUSSES: { verb: 'discusses', inverse: 'discussed in' },
   FOLLOWS_UP: { verb: 'follows up on', inverse: 'followed up by' },
+  HAS_DEAL: { verb: 'has deal', inverse: 'deal of' },
+  HAS_OFFER: { verb: 'has offer', inverse: 'offer of' },
+  CONTACT_AT: { verb: 'is a contact at', inverse: 'has contact' },
+  CONTACT_FOR: { verb: 'is contact for', inverse: 'has contact' },
+  TOOK_PART_IN: { verb: 'took part in', inverse: 'had participant' },
+  WROTE_IN: { verb: 'wrote in', inverse: 'has message from' },
 };
 
 export const slug = (text) => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -103,8 +110,8 @@ export function extractGraph(html) {
   return JSON.parse(match[1]);
 }
 
-/** sources: { sub4me, marketplace, controlTower, automation, links, communication? } (communication = { calls, threads } mockup data) */
-export function buildGraph({ sub4me, marketplace, controlTower, automation, links, communication }) {
+/** sources: { sub4me, marketplace, controlTower, automation, links, communication?, sales? } (communication = { calls, threads } mockup data, sales = the Sales pipeline) */
+export function buildGraph({ sub4me, marketplace, controlTower, automation, links, communication, sales }) {
   const nodes = new Map();
   const edges = [];
   const seen = new Set();
@@ -274,6 +281,7 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
         Participants: c.people.map((p) => p.name).join(', '), 'Open actions': `${open.length}${overdue.length ? ` (${overdue.length} overdue)` : ''}`,
         Decisions: String(c.decisions.length), ...(top ? { 'Highest risk': top } : {}),
       }, { space: 'call-transcripts', tab: 'calls' });
+      Object.assign(nodes.get(`call:${c.id}`), { date: c.date, ...(top ? { riskLevel: top } : {}) });
       addEdge(`call:${c.id}`, customerNode(c.customer), 'WITH_CUSTOMER');
       link(`call:${c.id}`, c.links);
     }
@@ -284,9 +292,87 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
         'Last message': last.at.slice(0, 10), 'Open points': String(t.ai.open.length),
         ...(t.ai.flags.length ? { Flag: 'Contains instructions aimed at AI assistants (not followed)' } : {}),
       }, { space: 'customer-emails', tab: 'inbox' });
+      nodes.get(`thread:${t.id}`).date = t.messages[0].at.slice(0, 10);
       addEdge(`thread:${t.id}`, customerNode(t.customer), 'WITH_CUSTOMER');
       link(`thread:${t.id}`, t.links);
       for (const x of t.ai.cross) if (x.kind === 'call') addEdge(`thread:${t.id}`, `call:${x.id}`, 'FOLLOWS_UP', x.topic);
+    }
+  }
+
+  /* Sales: deals (ACV, TCV, win probability, close date), stakeholders per customer (role and contact strength from calls and mails) */
+  if (sales) {
+    const customerFor = (name) => {
+      const id = `customer:${slug(name)}`;
+      if (!nodes.has(id)) addNode(id, 'customer', name, { Note: 'Not part of the Sub4Me sample data' }, { space: 'sales', tab: 'pipeline' });
+      return id;
+    };
+    const stageLabel = { lead: 'Lead', opportunity: 'Opportunity', sell: 'Offer in negotiation', contract: 'Contract' };
+    const calls = communication?.calls ?? [];
+    const threads = communication?.threads ?? [];
+    const people = new Map();
+    const person = (name, customer, title) => {
+      const id = personId(name);
+      if (!people.has(id)) people.set(id, { id, name, customer, titles: new Set(), calls: [], threads: [], deals: [], dates: [], first: null });
+      const p = people.get(id);
+      if (title) p.titles.add(title);
+      return p;
+    };
+    for (const c of calls) for (const p of c.people.filter((x) => x.side === 'customer')) {
+      const s = person(p.name, c.customer, p.role); s.calls.push(c.id); s.dates.push(c.date);
+    }
+    for (const th of threads) for (const name of new Set(th.messages.filter((m) => m.side === 'customer').map((m) => m.name))) {
+      const s = person(name, th.customer); s.threads.push(th.id); s.dates.push(th.messages[0].at.slice(0, 10));
+    }
+    const dealIds = [];
+    for (const d of sales.deals ?? []) {
+      if (!d.value) continue; // interest signals have no value yet
+      const id = d.stage === 'sell' ? `offer:${d.id}` : d.stage === 'contract' ? `contract:${d.id}` : `deal:${d.id}`;
+      const acv = d.value, term = d.termMonths ?? 12, tcv = Math.round((acv * term) / 12);
+      const extra = {
+        ACV: money(acv), TCV: `${money(tcv)} (${term} months)`, ...(d.score != null ? { 'Win probability': `${d.score}%` } : {}),
+        ...(d.closeDate ? { 'Close date': d.closeDate } : {}), 'Sales stage': stageLabel[d.stage] ?? d.stage, ...(d.risks?.length ? { Risk: d.risks[0] } : {}),
+      };
+      let node = nodes.get(id);
+      if (!node) node = addNode(id, d.stage === 'sell' ? 'offer' : d.stage === 'contract' ? 'contract' : 'deal', d.id, { Title: d.title, Account: d.account, Owner: d.owner }, { space: 'sales', tab: 'pipeline' });
+      Object.assign(node.meta, extra);
+      node.sales = {
+        acv, tcv, term, stage: d.stage, account: d.account, ...(d.score != null ? { prob: d.score } : {}), ...(d.closeDate ? { close: d.closeDate } : {}),
+        risks: d.risks ?? [], ...(d.prev ? { prev: d.prev } : {}), ...(d.changeWhy ? { changeWhy: d.changeWhy } : {}),
+      };
+      const first = (d.timeline ?? []).map((x) => x.date).sort()[0];
+      if (first && d.stage !== 'contract') node.date = first;
+      dealIds.push(id);
+      const cust = customerFor(d.account);
+      addEdge(cust, id, d.stage === 'contract' ? 'HAS_CONTRACT' : d.stage === 'sell' ? 'HAS_OFFER' : 'HAS_DEAL');
+      for (const cid of d.links?.calls ?? []) addEdge(`call:${cid}`, id, 'DISCUSSES');
+      for (const tid of d.links?.threads ?? []) addEdge(`thread:${tid}`, id, 'DISCUSSES');
+      if (d.owner) { addPerson(d.owner, 'Deal owner'); addEdge(personId(d.owner), id, 'MANAGES', 'Deal owner'); }
+      const m = /^([A-ZÄÖÜ][\wäöüß'-]+ [A-ZÄÖÜ][\wäöüß'-]+)(?:, (.+))?$/.exec(d.contact ?? '');
+      if (m) { const s = person(m[1], d.account, m[2]); s.deals.push(id); if (node.date && (!s.first || node.date < s.first)) s.first = node.date; }
+      else if (/\((sponsor)\)/i.test(d.contact ?? '')) node.meta.Contact = d.contact;
+    }
+    const BLOCKER = /security|legal|compliance|works council|data protection|privacy|risk/i;
+    const DECIDER = /procurement|purchas|cfo|finance|budget|director|chief|vp\b|head of it/i;
+    const SPONSOR = /platform|lead|owner|sponsor|e-commerce|business/i;
+    const roleOf = (p) => { const text = [...p.titles].join(' '); return BLOCKER.test(text) ? 'Blocker' : DECIDER.test(text) ? 'Decider' : SPONSOR.test(text) ? 'Sponsor' : 'Influencer'; };
+    for (const p of people.values()) {
+      const touches = p.calls.length + p.threads.length;
+      const strength = touches >= 3 ? 'strong' : touches === 2 ? 'medium' : touches === 1 ? 'light' : 'none';
+      const dates = [...p.dates].sort();
+      const role = roleOf(p);
+      const title = [...p.titles][0];
+      addNode(p.id, 'person', p.name, {
+        ...(title ? { Role: title } : {}), Customer: p.customer, Stakeholder: role, 'Contact strength': `${strength} (${p.calls.length} calls, ${p.threads.length} e-mails)`,
+        ...(dates.length ? { 'Last contact': dates[dates.length - 1] } : {}),
+      });
+      const node = nodes.get(p.id);
+      node.stake = { role, strength, touches, calls: p.calls.length, mails: p.threads.length, customer: p.customer, ...(dates.length ? { last: dates[dates.length - 1] } : {}) };
+      const appears = [dates[0], p.first].filter(Boolean).sort()[0];
+      if (appears) node.date = appears;
+      addEdge(p.id, customerFor(p.customer), 'CONTACT_AT', role);
+      for (const cid of p.calls) addEdge(p.id, `call:${cid}`, 'TOOK_PART_IN');
+      for (const tid of p.threads) addEdge(p.id, `thread:${tid}`, 'WROTE_IN');
+      for (const did of p.deals) addEdge(p.id, did, 'CONTACT_FOR');
     }
   }
 
@@ -295,7 +381,7 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
   for (const l of links?.links ?? []) if (!addEdge(l.from, l.to, l.type, l.label)) missing.push(l);
 
   return {
-    asOf: sub4me.asOf,
+    asOf: sales?.asOf && sales.asOf > sub4me.asOf ? sales.asOf : sub4me.asOf,
     nodeTypes: NODE_TYPES,
     edgeTypes: EDGE_TYPES,
     nodes: [...nodes.values()],

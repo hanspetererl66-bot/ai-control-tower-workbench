@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const dir = join(import.meta.dirname, '..', 'examples/n8n-workflows');
 const load = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8'));
-const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json'];
+const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json', '04-it-operations-alert-triage.json'];
 
 for (const file of FILES) {
   test(`${file} is a valid importable n8n workflow without credentials`, () => {
@@ -25,7 +25,7 @@ for (const file of FILES) {
       for (const output of outputs.main) for (const t of output) assert.ok(names.includes(t.node), `${from} -> ${t.node}`);
     }
     // every non-note node is reachable from a trigger
-    const triggers = wf.nodes.filter((n) => /Trigger$/.test(n.type)).map((n) => n.name);
+    const triggers = wf.nodes.filter((n) => /(Trigger|webhook)$/.test(n.type)).map((n) => n.name);
     assert.ok(triggers.length > 0);
     const seen = new Set(triggers);
     for (let grew = true; grew;) {
@@ -101,4 +101,33 @@ test('sales workflow: injected text is quarantined, scores are transparent, rout
   // the Switch thresholds in the workflow match the routes used here
   const rules = wf.nodes.find((n) => n.name === 'Route by score').parameters.rules.values;
   assert.deepEqual(rules.map((r) => [r.outputKey, r.conditions.conditions[0].operator.operation, r.conditions.conditions[0].rightValue]), [['opportunity', 'gte', 70], ['nurture', 'gte', 40], ['watch', 'lt', 40]]);
+});
+
+test('IT operations workflow: webhook and manual start, injected alert quarantined, priorities add up and route', async () => {
+  const wf = load(FILES[3]);
+  assert.ok(wf.nodes.some((n) => n.type === 'n8n-nodes-base.webhook' && n.parameters.path === 'it-ops-triage'), 'callable through a webhook');
+  const run = async (name, items, first = {}) => {
+    const js = wf.nodes.find((n) => n.name === name).parameters.jsCode;
+    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items, first: () => ({ json: first }) } })())];
+  };
+  const alerts = await run('Alerts', []);
+  assert.equal(alerts.length, 7);
+  const custom = await run('Alerts', [], { body: { alerts: [{ id: 'X-1', service: 'S', severity: 'low', text: 'ok' }] } });
+  assert.deepEqual(custom.map((i) => i.json.id), ['X-1'], 'alerts from the webhook body are used');
+  const guarded = await run('Guardrail: untrusted text', alerts);
+  assert.deepEqual(guarded.filter((i) => i.json.flagged).map((i) => i.json.id), ['A-507']);
+  const ok = guarded.filter((i) => !i.json.flagged);
+  const prio = await run('Priority', ok);
+  const p = Object.fromEntries(prio.map((i) => [i.json.id, i.json.priority]));
+  assert.ok(p['A-501'] >= 70 && p['A-502'] >= 70, 'customer facing critical alerts are P1');
+  assert.ok(p['A-503'] >= 35 && p['A-503'] < 70 && p['A-504'] >= 35 && p['A-504'] < 70, 'P2');
+  assert.ok(p['A-505'] < 35 && p['A-506'] < 35, 'P3');
+  const route = (v) => (v >= 70 ? 'P1: page on-call (draft)' : v >= 35 ? 'P2: open a ticket (draft)' : 'P3: watch, no action');
+  const routed = prio.map((i) => ({ json: { ...i.json, route: route(i.json.priority) } }));
+  const quarantined = guarded.filter((i) => i.json.flagged).map((i) => ({ json: { ...i.json, route: 'Quarantined', priority: 0 } }));
+  const [digest] = await run('Build digest', [...routed, ...quarantined]);
+  assert.deepEqual({ ...digest.json.counts }, { p1: 2, p2: 2, p3: 2, quarantined: 1 });
+  assert.match(digest.json.digest, /Nothing was paged/);
+  const rules = wf.nodes.find((n) => n.name === 'Route by priority').parameters.rules.values;
+  assert.deepEqual(rules.map((r) => [r.outputKey, r.conditions.conditions[0].operator.operation, r.conditions.conditions[0].rightValue]), [['p1', 'gte', 70], ['p2', 'gte', 35], ['p3', 'lt', 35]]);
 });

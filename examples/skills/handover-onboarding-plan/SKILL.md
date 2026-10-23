@@ -1,6 +1,6 @@
 ---
 name: handover-onboarding-plan
-description: Erstellt nach dem Abschluss einen Übergabe- und Onboarding-Plan an Service und Customer Success: Ansprechpartner, Meilensteine, Verbrauch, erste 90 Tage. Nutzen bei "Übergabe", "Onboarding", "Kickoff".
+description: After closing, creates a handover and onboarding plan for Service and Customer Success: contacts, milestones, consumption, first 90 days. Nutzen bei "Übergabe", "Onboarding", "Kickoff".
 metadata:
   domain: Vertrieb
   process: Übergabe und Onboarding

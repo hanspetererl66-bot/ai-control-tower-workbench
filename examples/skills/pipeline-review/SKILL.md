@@ -1,6 +1,6 @@
 ---
 name: pipeline-review
-description: Fasst die Pipeline für die Wochenrunde zusammen: Phasen, Werte, überfällige Schritte, Risiken und Forecast aus Angeboten und Verträgen. Nutzen bei "Pipeline-Review", "Forecast", "Wochenrunde Vertrieb".
+description: Summarises the pipeline for the weekly round: stages, values, overdue steps, risks and forecast from offers and contracts. Nutzen bei "Pipeline-Review", "Forecast", "Wochenrunde Vertrieb".
 metadata:
   domain: Vertrieb
   process: Pipeline besprechen

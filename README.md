@@ -399,6 +399,15 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 - **Supabase:** `npm run sync:skill-ratings` writes `supabase/migrations/20261019_013_skill_ratings.sql`. Run it once in the Supabase SQL editor after 012 (safe to run again; it only refreshes the sample rows). It creates `skills.skill_rating` (RLS on, no access for anon/authenticated) and two functions that only the server-side secret key may call: `skills_ratings()` and `skills_rate()`. Only skills in the registry (`skills.skill`, not retired) can be rated.
 - **Chat (connector 0.14.0):** `get_skill_ratings` (ranking, or one skill with distribution and comments) and `rate_skill`; the skill `rate-skill` asks for the stars and confirms before saving. `recommend_skills` and `recommend_skill_workflow` show the rating too. The rater is a hash of the local user and host (override with the env var `SKILL_RATER_ID`); no names are stored. Without a Supabase connection nothing is saved.
 
+### Sales Knowledge Graph: value, time, questions, stakeholders
+
+The Space opens in the **Sales view**: customers, deals (leads and opportunities), offers, contracts, calls, e-mails and contacts. Skills, tools, risks, agents, workflows and apps are **Enablers**, hidden until the **Enablers** button switches them on.
+
+- **Value**: node size is the ACV, line width (customer to deal, offer or contract) the TCV, colour the win probability (70 % and more green, 50 to 69 % amber, below 50 % red, contracts blue). The **Value** button turns this off. Deals come from `examples/sales/pipeline.json`; TCV is ACV times the term in months divided by 12.
+- **Week slider**: steps of three days over the last 18 days. Calls, e-mails, deals and contacts appear on their date (field `date` on the node), a dashed ring marks what is new in the last 7 days, the label shows what was added and the open ACV. The play button lets the graph grow.
+- **Questions**: five chips (risk, contact in calls and e-mails, missing skill, changes since last week, blockers). The answer colours the matching sub-graph and lists the nodes with the reason in the side panel.
+- **Stakeholder map**: person nodes carry `stake` with role (Sponsor, Decider, Blocker, Influencer) and contact strength (none, light, medium, strong). The role comes from the job title by simple rules, the strength counts shared calls and e-mails. The map lists contacts per customer and flags missing sponsors or deciders.
+
 ### Calls and e-mails in the Knowledge Graph
 
 The mockup data of the two Spaces above is part of the graph: **Call** and **E-mail conversation** nodes connect to the customer and to the contract, offer and ticket they discuss. A mail is linked to a call (`follows up on`) where both concern the same open action, for example the mail that confirms an alert still open after the escalation call. The mail with the instruction aimed at AI assistants is linked to risk R7 (prompt injection). The graph tools understand the new types (`type: "call"` or `"thread"`), so chat can answer “Was wurde zum Ariba-Vertrag besprochen und geschrieben?” via `analyze_graph_impact`. The third tour, “Customer communication”, walks through this. `npm run sync:knowledge-graph` rebuilds the graph from `calls.json` and `threads.json`.
@@ -408,11 +417,13 @@ The mockup data of the two Spaces above is part of the graph: **Call** and **E-m
 In the **Conversations** list the magnifier opens a search field (titles and message text, case-insensitive, `Esc` clears and closes) and the funnel opens a filter menu: all conversations, updated today, last 7 days, or with files. Both combine, the list shows “x of y shown” with a **Clear** link, and archived conversations that match appear automatically. Filtering is in `filterConversations` (`src/conversations.ts`).
 ## n8n demo workflows (simple and complex)
 
-Two importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
+Importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
 
 - `01-simple-contract-notice-check.json`: manual trigger, sample contracts, notice deadline per contract, IF “due within 30 days?” → alert or no action. Good for explaining the basic building blocks.
 - `02-complex-communication-digest.json`: manual or weekday-morning trigger, a Switch that splits mails and call action items, a **guardrail** that quarantines mail text containing instructions aimed at AI assistants (the same case as in the E-Mail-Communication Space), intent and 48-hour response target, overdue check, three Merge nodes and one digest per customer that ends in “create a draft, never send”. 20 nodes, two branches, IF, Switch, Merge, Code.
 - `03-sales-pipeline-digest.json`: six fictional interest signals, a **guardrail** that quarantines text containing instructions aimed at AI assistants, a transparent score (ICP fit, budget, decision maker, need, timing), a Switch that routes to opportunity, nurture or watch, three Merge nodes and a digest that ends in “draft, never send”. 15 nodes, no credentials.
+
+- `04-it-operations-alert-triage.json`: for the IT operations topic. Start with **Execute workflow** (seven fictional monitoring alerts) or by **POST to `/webhook/it-ops-triage`** with `{"alerts":[{"id","service","severity","impact","customerFacing","repeat24h","text"}]}` (activate the workflow first and use the production URL). A **guardrail** quarantines alert text aimed at AI assistants, a transparent priority (severity, business impact, customer facing, repeats) routes to P1 page on-call, P2 ticket or P3 watch, and the digest ends in “draft, never execute”. 17 nodes, no credentials.
 
 Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workflow**. The workflows stay inactive; the Code nodes use a fixed reference date (19 Oct 2026) so the result is the same every day. `test/n8n-demo-workflows.test.mjs` checks the structure and runs the Code nodes.
 

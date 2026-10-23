@@ -1,6 +1,6 @@
 ---
 name: security-questionnaire-helper
-description: Beantwortet Sicherheits- und Datenschutzfragebögen aus Vertrags- und Produktdaten (Rechenzentrum, Betrieb, Service-Level), markiert offene Fragen für Security und Legal. Nutzen bei "Security-Fragebogen", "CISO", "Datenschutz".
+description: Answers security and data protection questionnaires from contract and product data (data centre, operations, service level) and flags open questions for Security and Legal. Nutzen bei "Security-Fragebogen", "CISO", "Datenschutz".
 metadata:
   domain: Vertrieb
   process: Sicherheitsfragebogen beantworten

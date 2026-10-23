@@ -1,6 +1,6 @@
 ---
 name: opportunity-planner
-description: Erstellt aus Kundendaten einen Account-Plan für eine Opportunity: Ziel, Stakeholder, Wettbewerb, Risiken, nächste Schritte mit Terminen. Nutzen bei "Opportunity planen", "Account-Plan", "Deal-Strategie".
+description: Creates an account plan for an opportunity from customer data: goal, stakeholders, competition, risks, next steps with dates. Nutzen bei "Opportunity planen", "Account-Plan", "Deal-Strategie".
 metadata:
   domain: Vertrieb
   process: Opportunity planen

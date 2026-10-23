@@ -255,7 +255,23 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
 .steps{counter-reset:s;list-style:none;margin:6px 0;padding:0}.steps li{counter-increment:s;padding:4px 0 4px 26px;position:relative;font-size:13px}
 .steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:18px;height:18px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:700;text-align:center;line-height:18px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-@media (max-width:860px){.stage{grid-template-columns:1fr;height:auto}.wrap{height:62vh;min-height:380px}aside{border-left:0;border-top:1px solid var(--line)}.legend{max-height:40%}#mini{display:none}.hint{display:none}}
+.sep{width:1px;height:22px;background:var(--line);margin:0 2px}
+.ask{position:absolute;left:210px;right:64px;top:12px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.ask button{pointer-events:auto;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;opacity:.96}
+.ask button:hover{border-color:var(--brand)}.ask button[aria-pressed=true]{background:var(--brand-dim);color:var(--brand);border-color:var(--brand)}
+.timebar{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);width:min(440px,calc(100% - 420px));min-width:300px;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 10px;opacity:.95}
+.timebar input[type=range]{flex:1;min-width:80px;accent-color:var(--brand)}
+.timebar .btn{padding:3px 10px}
+.timebar .tl{display:flex;flex-direction:column;font-size:11px;color:var(--mut);line-height:1.3;min-width:150px}.timebar .tl b{color:var(--ink);font-size:12px}
+.vleg{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:11px;color:var(--mut);opacity:.95;max-width:230px}
+.vleg b{color:var(--ink);font-size:12px}.vleg .sw{display:flex;flex-wrap:wrap;gap:3px 10px}.vleg .sw span{display:inline-flex;align-items:center;gap:4px}
+.vleg i{display:inline-block;width:10px;height:10px;border-radius:50%}
+.ans small.note{display:block;color:var(--mut)}
+.role{display:inline-block;border-radius:999px;padding:0 8px;font-size:11px;font-weight:700;color:#fff}
+.role.Sponsor{background:var(--green)}.role.Decider{background:var(--purple)}.role.Blocker{background:var(--red)}.role.Influencer{background:var(--muted)}
+.pips{letter-spacing:2px;color:var(--brand);font-size:11px}
+.gap{margin:4px 0 0;color:var(--warn);font-size:12px}
+@media (max-width:860px){.ask{left:12px;right:12px;top:auto;bottom:96px}.timebar{width:calc(100% - 24px);bottom:10px}.vleg{display:none}.stage{grid-template-columns:1fr;height:auto}.wrap{height:62vh;min-height:380px}aside{border-left:0;border-top:1px solid var(--line)}.legend{max-height:40%}#mini{display:none}.hint{display:none}}
 </style>
 </head>
 <body>
@@ -263,7 +279,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   <div class="logo">Sales Knowledge <b>Graph</b></div>
   <div class="meta"><strong id="stats"></strong><span id="asof"></span></div>
 </header>
-<div class="demo">Fictional sample data. The graph is derived from Sub4Me, Skill Marketplace, Control Tower and n8n plus a few curated links.</div>
+<div class="demo">Fictional sample data. Sales view by default; skills, tools, risks, agents and automation are switchable as enablers.</div>
 <div class="bar" role="toolbar" aria-label="Graph controls">
   <div class="search">
     <input id="q" type="search" placeholder="Search nodes: ariba, R2, renewal-radar…" aria-label="Search nodes" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="res">
@@ -279,11 +295,18 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   <button class="btn" id="labels" aria-pressed="false">Labels</button>
   <button class="btn" id="pause" aria-pressed="false">Pause</button>
   <button class="btn" id="reset">Reset</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button class="btn" id="b-enabler" aria-pressed="false" title="Show skills, tools, agents, workflows, apps and risks as enablers">Enablers</button>
+  <button class="btn" id="b-value" aria-pressed="true" title="Node size = ACV, line width = TCV, colour = win probability">Value</button>
+  <button class="btn" id="b-stake" aria-pressed="false" title="Stakeholder map: contacts per customer with role and contact strength">Stakeholders</button>
 </div>
 <div class="stage">
   <div class="wrap" id="wrap">
     <canvas id="cv" tabindex="0" role="application" aria-label="Interactive knowledge graph. Use the search box or the lists in the side panel to navigate by keyboard. Plus and minus zoom, arrow keys pan, Escape clears the selection."></canvas>
     <div class="legend" id="legend" role="group" aria-label="Node types (toggle to show or hide)"></div>
+    <div class="ask" id="ask" role="group" aria-label="Ask the graph"></div>
+    <div class="timebar" id="timebar"><button class="btn" id="t-play" aria-label="Play the weeks" title="Let the graph grow week by week">▶</button><input id="t-range" type="range" min="0" max="6" step="1" value="6" aria-label="Week"><div class="tl"><b id="t-label"></b><span id="t-delta"></span></div></div>
+    <div class="vleg" id="vleg" aria-label="Legend for size, line width and colour"></div>
     <div class="zoom"><button class="btn" id="zin" aria-label="Zoom in">+</button><button class="btn" id="zout" aria-label="Zoom out">−</button><button class="btn" id="zfit" aria-label="Fit graph" title="Fit">⤢</button></div>
     <canvas id="mini" aria-hidden="true" width="300" height="200"></canvas>
     <div class="hint" id="hint">Drag to move · scroll to zoom · double-click a node to pin it</div>
@@ -292,7 +315,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
 </div>
 <script type="application/json" id="kg-data">
 {
- "asOf": "2026-10-18",
+ "asOf": "2026-10-19",
  "nodeTypes": {
   "system": "System",
   "connector": "Connector",
@@ -301,6 +324,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   "family": "Product family",
   "product": "Product",
   "contract": "Contract",
+  "deal": "Deal (lead / opportunity)",
   "offer": "Offer",
   "ticket": "Ticket",
   "call": "Call",
@@ -437,6 +461,30 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   "FOLLOWS_UP": {
    "verb": "follows up on",
    "inverse": "followed up by"
+  },
+  "HAS_DEAL": {
+   "verb": "has deal",
+   "inverse": "deal of"
+  },
+  "HAS_OFFER": {
+   "verb": "has offer",
+   "inverse": "offer of"
+  },
+  "CONTACT_AT": {
+   "verb": "is a contact at",
+   "inverse": "has contact"
+  },
+  "CONTACT_FOR": {
+   "verb": "is contact for",
+   "inverse": "has contact"
+  },
+  "TOOK_PART_IN": {
+   "verb": "took part in",
+   "inverse": "had participant"
+  },
+  "WROTE_IN": {
+   "verb": "wrote in",
+   "inverse": "has message from"
   }
  },
  "nodes": [
@@ -759,11 +807,22 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Term": "2024-04-01 → 2027-03-31",
     "Notice period": "90 days",
     "Service level": "Premium",
-    "Payment terms": "30 days net"
+    "Payment terms": "30 days net",
+    "ACV": "€6,400,000",
+    "TCV": "€32,000,000 (60 months)",
+    "Sales stage": "Contract"
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
+   },
+   "sales": {
+    "acv": 6400000,
+    "tcv": 32000000,
+    "term": 60,
+    "stage": "contract",
+    "account": "Muster Industrie AG",
+    "risks": []
    }
   },
   {
@@ -827,11 +886,25 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Term": "2023-02-01 → 2027-01-31",
     "Notice period": "90 days",
     "Service level": "Standard",
-    "Payment terms": "30 days net"
+    "Payment terms": "30 days net",
+    "ACV": "€2,900,000",
+    "TCV": "€8,700,000 (36 months)",
+    "Sales stage": "Contract",
+    "Risk": "Last day to give notice is 2026-11-02 and the renewal offer is still open."
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
+   },
+   "sales": {
+    "acv": 2900000,
+    "tcv": 8700000,
+    "term": 36,
+    "stage": "contract",
+    "account": "Muster Industrie AG",
+    "risks": [
+     "Last day to give notice is 2026-11-02 and the renewal offer is still open."
+    ]
    }
   },
   {
@@ -853,11 +926,25 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Term": "2026-01-01 → 2026-12-31",
     "Notice period": "60 days",
     "Service level": "Premium",
-    "Payment terms": "30 days net"
+    "Payment terms": "30 days net",
+    "ACV": "€3,600,000",
+    "TCV": "€10,800,000 (36 months)",
+    "Sales stage": "Contract",
+    "Risk": "Auto-renewal: the notice period is 60 days before 2026-12-31."
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
+   },
+   "sales": {
+    "acv": 3600000,
+    "tcv": 10800000,
+    "term": 36,
+    "stage": "contract",
+    "account": "Muster Industrie AG",
+    "risks": [
+     "Auto-renewal: the notice period is 60 days before 2026-12-31."
+    ]
    }
   },
   {
@@ -884,7 +971,17 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "label": "Petra Vogel",
    "meta": {
     "Role": "Travel Manager"
-   }
+   },
+   "stake": {
+    "role": "Decider",
+    "strength": "light",
+    "touches": 1,
+    "calls": 1,
+    "mails": 0,
+    "customer": "Nordwind Handel GmbH",
+    "last": "2026-10-12"
+   },
+   "date": "2026-10-12"
   },
   {
    "id": "offer:OFF-2026-0311",
@@ -897,12 +994,37 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Valid until": "2026-11-15",
     "Status": "Open",
     "Stage": "Proposal sent",
-    "Win probability": "70%"
+    "Win probability": "70%",
+    "ACV": "€4,380,000",
+    "TCV": "€13,140,000 (36 months)",
+    "Close date": "2026-11-15",
+    "Sales stage": "Offer in negotiation"
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
-   }
+   },
+   "sales": {
+    "acv": 4380000,
+    "tcv": 13140000,
+    "term": 36,
+    "stage": "sell",
+    "account": "Muster Industrie AG",
+    "prob": 70,
+    "close": "2026-11-15",
+    "risks": [],
+    "prev": {
+     "score": 70,
+     "category": "commit",
+     "value": 4380000,
+     "closeDate": "2026-11-30"
+    },
+    "changeWhy": {
+     "text": "Corrected offer for 4,500 employees was accepted in principle; the close date moved up.",
+     "ref": "T-102"
+    }
+   },
+   "date": "2026-10-09"
   },
   {
    "id": "offer:OFF-2026-0318",
@@ -915,12 +1037,41 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Valid until": "2026-12-04",
     "Status": "Open",
     "Stage": "Proposal sent",
-    "Win probability": "60%"
+    "Win probability": "60%",
+    "ACV": "€3,050,000",
+    "TCV": "€9,150,000 (36 months)",
+    "Close date": "2026-12-04",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "Coupa is being evaluated by the customer."
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
-   }
+   },
+   "sales": {
+    "acv": 3050000,
+    "tcv": 9150000,
+    "term": 36,
+    "stage": "sell",
+    "account": "Muster Industrie AG",
+    "prob": 60,
+    "close": "2026-12-04",
+    "risks": [
+     "Coupa is being evaluated by the customer.",
+     "Discount is exactly at the 15% threshold."
+    ],
+    "prev": {
+     "score": 70,
+     "category": "commit",
+     "value": 3050000,
+     "closeDate": "2026-12-04"
+    },
+    "changeWhy": {
+     "text": "Customer is evaluating Coupa; multi-year discount still open.",
+     "ref": "CALL-0414"
+    }
+   },
+   "date": "2026-10-14"
   },
   {
    "id": "offer:OFF-2026-0324",
@@ -933,12 +1084,41 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Valid until": "2026-11-30",
     "Status": "In negotiation",
     "Stage": "Negotiation",
-    "Win probability": "45%"
+    "Win probability": "45%",
+    "ACV": "€1,180,000",
+    "TCV": "€2,360,000 (24 months)",
+    "Close date": "2026-11-30",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "Discount 15.7% is above the 15% threshold: deal desk approval pending."
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
-   }
+   },
+   "sales": {
+    "acv": 1180000,
+    "tcv": 2360000,
+    "term": 24,
+    "stage": "sell",
+    "account": "Muster Industrie AG",
+    "prob": 45,
+    "close": "2026-11-30",
+    "risks": [
+     "Discount 15.7% is above the 15% threshold: deal desk approval pending.",
+     "Microsoft Copilot pilot is running at the customer."
+    ],
+    "prev": {
+     "score": 45,
+     "category": "pipeline",
+     "value": 1180000,
+     "closeDate": "2026-11-30"
+    },
+    "changeWhy": {
+     "text": "No change this week.",
+     "ref": null
+    }
+   },
+   "date": "2026-10-15"
   },
   {
    "id": "person:lukas-fischer",
@@ -2949,7 +3129,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
-   }
+   },
+   "date": "2026-10-15",
+   "riskLevel": "medium"
   },
   {
    "id": "call:CALL-0414",
@@ -2969,7 +3151,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
-   }
+   },
+   "date": "2026-10-14",
+   "riskLevel": "high"
   },
   {
    "id": "call:CALL-0412",
@@ -2989,7 +3173,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
-   }
+   },
+   "date": "2026-10-12",
+   "riskLevel": "low"
   },
   {
    "id": "customer:nordwind-handel-gmbh",
@@ -3021,7 +3207,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
-   }
+   },
+   "date": "2026-10-09",
+   "riskLevel": "medium"
   },
   {
    "id": "call:CALL-0407",
@@ -3041,7 +3229,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
-   }
+   },
+   "date": "2026-10-07",
+   "riskLevel": "high"
   },
   {
    "id": "thread:T-101",
@@ -3060,7 +3250,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "customer-emails",
     "tab": "inbox"
-   }
+   },
+   "date": "2026-10-14"
   },
   {
    "id": "thread:T-102",
@@ -3079,7 +3270,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "customer-emails",
     "tab": "inbox"
-   }
+   },
+   "date": "2026-10-12"
   },
   {
    "id": "thread:T-103",
@@ -3098,7 +3290,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "customer-emails",
     "tab": "inbox"
-   }
+   },
+   "date": "2026-10-08"
   },
   {
    "id": "thread:T-104",
@@ -3118,7 +3311,704 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "view": {
     "space": "customer-emails",
     "tab": "inbox"
+   },
+   "date": "2026-10-16"
+  },
+  {
+   "id": "deal:LEAD-301",
+   "type": "deal",
+   "label": "LEAD-301",
+   "meta": {
+    "Title": "Ariba supplier risk",
+    "Account": "Nordwind Handel GmbH",
+    "Owner": "Mara Weber",
+    "ACV": "€1,800,000",
+    "TCV": "€5,400,000 (36 months)",
+    "Win probability": "74%",
+    "Sales stage": "Lead"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1800000,
+    "tcv": 5400000,
+    "term": 36,
+    "stage": "lead",
+    "account": "Nordwind Handel GmbH",
+    "prob": 74,
+    "risks": []
+   },
+   "date": "2026-10-12"
+  },
+  {
+   "id": "person:mara-weber",
+   "type": "person",
+   "label": "Mara Weber",
+   "meta": {
+    "Role": "Deal owner"
    }
+  },
+  {
+   "id": "deal:LEAD-302",
+   "type": "deal",
+   "label": "LEAD-302",
+   "meta": {
+    "Title": "Joule for logistics planning",
+    "Account": "Kranich Logistik GmbH",
+    "Owner": "Dev Patel",
+    "ACV": "€900,000",
+    "TCV": "€1,800,000 (24 months)",
+    "Win probability": "61%",
+    "Sales stage": "Lead",
+    "Risk": "No budget owner named yet."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 900000,
+    "tcv": 1800000,
+    "term": 24,
+    "stage": "lead",
+    "account": "Kranich Logistik GmbH",
+    "prob": 61,
+    "risks": [
+     "No budget owner named yet."
+    ]
+   },
+   "date": "2026-10-16"
+  },
+  {
+   "id": "customer:kranich-logistik-gmbh",
+   "type": "customer",
+   "label": "Kranich Logistik GmbH",
+   "meta": {
+    "Note": "Not part of the Sub4Me sample data"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   }
+  },
+  {
+   "id": "person:dev-patel",
+   "type": "person",
+   "label": "Dev Patel",
+   "meta": {
+    "Role": "Deal owner"
+   }
+  },
+  {
+   "id": "deal:OPP-401",
+   "type": "deal",
+   "label": "OPP-401",
+   "meta": {
+    "Title": "Ariba Procurement with supplier risk",
+    "Account": "Nordwind Handel GmbH",
+    "Owner": "Mara Weber",
+    "ACV": "€1,800,000",
+    "TCV": "€5,400,000 (36 months)",
+    "Win probability": "35%",
+    "Close date": "2027-01-29",
+    "Sales stage": "Opportunity",
+    "Risk": "CFO not yet met.",
+    "Contact": "Head of Procurement, CFO (sponsor)"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1800000,
+    "tcv": 5400000,
+    "term": 36,
+    "stage": "opportunity",
+    "account": "Nordwind Handel GmbH",
+    "prob": 35,
+    "close": "2027-01-29",
+    "risks": [
+     "CFO not yet met.",
+     "Competitor Coupa is already in a pilot."
+    ],
+    "prev": {
+     "score": 30,
+     "category": "pipeline",
+     "value": 1800000,
+     "closeDate": "2027-01-29"
+    },
+    "changeWhy": {
+     "text": "The CFO was named as sponsor in the quarterly review.",
+     "ref": "CALL-0412"
+    }
+   },
+   "date": "2026-10-12"
+  },
+  {
+   "id": "deal:OPP-402",
+   "type": "deal",
+   "label": "OPP-402",
+   "meta": {
+    "Title": "AI units top-up after the quota escalation",
+    "Account": "Muster Industrie AG",
+    "Owner": "Dev Patel",
+    "ACV": "€1,200,000",
+    "TCV": "€2,400,000 (24 months)",
+    "Win probability": "55%",
+    "Close date": "2026-12-18",
+    "Sales stage": "Opportunity",
+    "Risk": "The customer links the top-up to a fix for the eu10 quota alerts."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1200000,
+    "tcv": 2400000,
+    "term": 24,
+    "stage": "opportunity",
+    "account": "Muster Industrie AG",
+    "prob": 55,
+    "close": "2026-12-18",
+    "risks": [
+     "The customer links the top-up to a fix for the eu10 quota alerts."
+    ],
+    "prev": {
+     "score": 40,
+     "category": "pipeline",
+     "value": 900000,
+     "closeDate": "2027-01-15"
+    },
+    "changeWhy": {
+     "text": "Customer asked for an AI-unit top-up after the quota escalation; volume and timing moved up.",
+     "ref": "T-103"
+    }
+   },
+   "date": "2026-10-07"
+  },
+  {
+   "id": "deal:OPP-403",
+   "type": "deal",
+   "label": "OPP-403",
+   "meta": {
+    "Title": "RFP: logistics planning platform",
+    "Account": "Kranich Logistik GmbH",
+    "Owner": "Lukas Fischer",
+    "ACV": "€2,500,000",
+    "TCV": "€12,500,000 (60 months)",
+    "Win probability": "25%",
+    "Close date": "2027-02-26",
+    "Sales stage": "Opportunity",
+    "Risk": "Formal RFP, price-driven."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 2500000,
+    "tcv": 12500000,
+    "term": 60,
+    "stage": "opportunity",
+    "account": "Kranich Logistik GmbH",
+    "prob": 25,
+    "close": "2027-02-26",
+    "risks": [
+     "Formal RFP, price-driven.",
+     "14 of 62 questions have no earlier answer."
+    ],
+    "changeWhy": {
+     "text": "RFP received on 18 October.",
+     "ref": "CRM"
+    }
+   },
+   "date": "2026-10-18"
+  },
+  {
+   "id": "deal:LEAD-304",
+   "type": "deal",
+   "label": "LEAD-304",
+   "meta": {
+    "Title": "Document AI for the shared service centre",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€850,000",
+    "TCV": "€2,550,000 (36 months)",
+    "Win probability": "66%",
+    "Sales stage": "Lead",
+    "Risk": "The open ticket TKT-47932 shapes the first impression of Document AI."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 850000,
+    "tcv": 2550000,
+    "term": 36,
+    "stage": "lead",
+    "account": "Hanse Handelsgruppe AG",
+    "prob": 66,
+    "risks": [
+     "The open ticket TKT-47932 shapes the first impression of Document AI."
+    ]
+   },
+   "date": "2026-10-12"
+  },
+  {
+   "id": "customer:hanse-handelsgruppe-ag",
+   "type": "customer",
+   "label": "Hanse Handelsgruppe AG",
+   "meta": {
+    "Note": "Not part of the Sub4Me sample data"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   }
+  },
+  {
+   "id": "deal:OPP-404",
+   "type": "deal",
+   "label": "OPP-404",
+   "meta": {
+    "Title": "Ariba supplier risk for all 3,800 suppliers",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Sven Albrecht",
+    "ACV": "€1,500,000",
+    "TCV": "€4,500,000 (36 months)",
+    "Win probability": "45%",
+    "Close date": "2027-02-12",
+    "Sales stage": "Opportunity",
+    "Risk": "Risk scores have not been updated since 1 October (TKT-48041): trust in the module is low right now."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1500000,
+    "tcv": 4500000,
+    "term": 36,
+    "stage": "opportunity",
+    "account": "Hanse Handelsgruppe AG",
+    "prob": 45,
+    "close": "2027-02-12",
+    "risks": [
+     "Risk scores have not been updated since 1 October (TKT-48041): trust in the module is low right now."
+    ],
+    "changeWhy": {
+     "text": "Opened this week from the category review request.",
+     "ref": "CRM"
+    }
+   },
+   "date": "2026-10-06"
+  },
+  {
+   "id": "person:sven-albrecht",
+   "type": "person",
+   "label": "Sven Albrecht",
+   "meta": {
+    "Role": "Deal owner"
+   }
+  },
+  {
+   "id": "offer:OFF-2026-0402",
+   "type": "offer",
+   "label": "OFF-2026-0402",
+   "meta": {
+    "Title": "SAP Commerce Cloud: renewal",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Sven Albrecht",
+    "ACV": "€4,050,000",
+    "TCV": "€12,150,000 (36 months)",
+    "Win probability": "55%",
+    "Close date": "2026-11-20",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "Shopify Plus is being evaluated."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 4050000,
+    "tcv": 12150000,
+    "term": 36,
+    "stage": "sell",
+    "account": "Hanse Handelsgruppe AG",
+    "prob": 55,
+    "close": "2026-11-20",
+    "risks": [
+     "Shopify Plus is being evaluated.",
+     "Storefront search is empty since the catalog import (TKT-48166, High)."
+    ],
+    "prev": {
+     "score": 60,
+     "category": "best",
+     "value": 4050000,
+     "closeDate": "2026-11-20"
+    },
+    "changeWhy": {
+     "text": "The customer is evaluating Shopify Plus; the open search ticket weighs on the renewal.",
+     "ref": "TKT-48166"
+    }
+   },
+   "date": "2026-10-10"
+  },
+  {
+   "id": "offer:OFF-2026-0407",
+   "type": "offer",
+   "label": "OFF-2026-0407",
+   "meta": {
+    "Title": "Integration Suite: renewal",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€1,900,000",
+    "TCV": "€3,800,000 (24 months)",
+    "Win probability": "40%",
+    "Close date": "2026-12-15",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "The contract C-2023-0215 expired on 30 April 2026; the platform runs without a valid term."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1900000,
+    "tcv": 3800000,
+    "term": 24,
+    "stage": "sell",
+    "account": "Hanse Handelsgruppe AG",
+    "prob": 40,
+    "close": "2026-12-15",
+    "risks": [
+     "The contract C-2023-0215 expired on 30 April 2026; the platform runs without a valid term."
+    ],
+    "prev": {
+     "score": 40,
+     "category": "pipeline",
+     "value": 1900000,
+     "closeDate": "2026-12-15"
+    },
+    "changeWhy": {
+     "text": "No change this week.",
+     "ref": null
+    }
+   },
+   "date": "2026-10-09"
+  },
+  {
+   "id": "offer:OFF-2026-0415",
+   "type": "offer",
+   "label": "OFF-2026-0415",
+   "meta": {
+    "Title": "AI units top-up and Joule for Procurement",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€1,260,000",
+    "TCV": "€1,260,000 (12 months)",
+    "Win probability": "65%",
+    "Close date": "2026-11-30",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "Non-standard top-up terms need the deal desk."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1260000,
+    "tcv": 1260000,
+    "term": 12,
+    "stage": "sell",
+    "account": "Hanse Handelsgruppe AG",
+    "prob": 65,
+    "close": "2026-11-30",
+    "risks": [
+     "Non-standard top-up terms need the deal desk."
+    ],
+    "prev": {
+     "score": 50,
+     "category": "best",
+     "value": 1260000,
+     "closeDate": "2026-11-30"
+    },
+    "changeWhy": {
+     "text": "The customer accepted the structure of the top-up; only the non-standard terms are open.",
+     "ref": "OFF-2026-0415"
+    }
+   },
+   "date": "2026-10-13"
+  },
+  {
+   "id": "contract:C-2024-0611",
+   "type": "contract",
+   "label": "C-2024-0611",
+   "meta": {
+    "Title": "SAP Commerce Cloud",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Sven Albrecht",
+    "ACV": "€3,800,000",
+    "TCV": "€11,400,000 (36 months)",
+    "Sales stage": "Contract",
+    "Risk": "The renewal offer OFF-2026-0402 is open and the last day to give notice is close."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 3800000,
+    "tcv": 11400000,
+    "term": 36,
+    "stage": "contract",
+    "account": "Hanse Handelsgruppe AG",
+    "risks": [
+     "The renewal offer OFF-2026-0402 is open and the last day to give notice is close."
+    ]
+   }
+  },
+  {
+   "id": "contract:C-2026-0044",
+   "type": "contract",
+   "label": "C-2026-0044",
+   "meta": {
+    "Title": "AI units (Joule, AI Core, Document AI, Ariba AI)",
+    "Account": "Hanse Handelsgruppe AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€2,400,000",
+    "TCV": "€4,800,000 (24 months)",
+    "Sales stage": "Contract",
+    "Risk": "The top-up offer OFF-2026-0415 is still in negotiation."
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 2400000,
+    "tcv": 4800000,
+    "term": 24,
+    "stage": "contract",
+    "account": "Hanse Handelsgruppe AG",
+    "risks": [
+     "The top-up offer OFF-2026-0415 is still in negotiation."
+    ]
+   }
+  },
+  {
+   "id": "person:felix-brandt",
+   "type": "person",
+   "label": "Felix Brandt",
+   "meta": {
+    "Role": "Head of Platform",
+    "Customer": "Muster Industrie AG",
+    "Stakeholder": "Blocker",
+    "Contact strength": "strong (2 calls, 1 e-mails)",
+    "Last contact": "2026-10-15"
+   },
+   "stake": {
+    "role": "Blocker",
+    "strength": "strong",
+    "touches": 3,
+    "calls": 2,
+    "mails": 1,
+    "customer": "Muster Industrie AG",
+    "last": "2026-10-15"
+   },
+   "date": "2026-10-07"
+  },
+  {
+   "id": "person:sarah-lindqvist",
+   "type": "person",
+   "label": "Sarah Lindqvist",
+   "meta": {
+    "Role": "Security Officer",
+    "Customer": "Muster Industrie AG",
+    "Stakeholder": "Blocker",
+    "Contact strength": "medium (1 calls, 1 e-mails)",
+    "Last contact": "2026-10-16"
+   },
+   "stake": {
+    "role": "Blocker",
+    "strength": "medium",
+    "touches": 2,
+    "calls": 1,
+    "mails": 1,
+    "customer": "Muster Industrie AG",
+    "last": "2026-10-16"
+   },
+   "date": "2026-10-15"
+  },
+  {
+   "id": "person:anna-beispiel",
+   "type": "person",
+   "label": "Anna Beispiel",
+   "meta": {
+    "Role": "Head of Procurement IT",
+    "Customer": "Muster Industrie AG",
+    "Stakeholder": "Decider",
+    "Contact strength": "medium (1 calls, 1 e-mails)",
+    "Last contact": "2026-10-14"
+   },
+   "stake": {
+    "role": "Decider",
+    "strength": "medium",
+    "touches": 2,
+    "calls": 1,
+    "mails": 1,
+    "customer": "Muster Industrie AG",
+    "last": "2026-10-14"
+   },
+   "date": "2026-10-09"
+  },
+  {
+   "id": "person:jonas-reuter",
+   "type": "person",
+   "label": "Jonas Reuter",
+   "meta": {
+    "Role": "Finance",
+    "Customer": "Muster Industrie AG",
+    "Stakeholder": "Decider",
+    "Contact strength": "medium (1 calls, 1 e-mails)",
+    "Last contact": "2026-10-14"
+   },
+   "stake": {
+    "role": "Decider",
+    "strength": "medium",
+    "touches": 2,
+    "calls": 1,
+    "mails": 1,
+    "customer": "Muster Industrie AG",
+    "last": "2026-10-14"
+   },
+   "date": "2026-10-14"
+  },
+  {
+   "id": "person:lena-hoffmann",
+   "type": "person",
+   "label": "Lena Hoffmann",
+   "meta": {
+    "Role": "HR IT Lead",
+    "Customer": "Muster Industrie AG",
+    "Stakeholder": "Sponsor",
+    "Contact strength": "medium (1 calls, 1 e-mails)",
+    "Last contact": "2026-10-12"
+   },
+   "stake": {
+    "role": "Sponsor",
+    "strength": "medium",
+    "touches": 2,
+    "calls": 1,
+    "mails": 1,
+    "customer": "Muster Industrie AG",
+    "last": "2026-10-12"
+   },
+   "date": "2026-10-07"
+  },
+  {
+   "id": "person:ilse-wagner",
+   "type": "person",
+   "label": "Ilse Wagner",
+   "meta": {
+    "Customer": "Kranich Logistik GmbH",
+    "Stakeholder": "Influencer",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Influencer",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Kranich Logistik GmbH"
+   },
+   "date": "2026-10-16"
+  },
+  {
+   "id": "person:ines-carstens",
+   "type": "person",
+   "label": "Ines Carstens",
+   "meta": {
+    "Role": "Head of Accounts Payable",
+    "Customer": "Hanse Handelsgruppe AG",
+    "Stakeholder": "Influencer",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Influencer",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Hanse Handelsgruppe AG"
+   },
+   "date": "2026-10-12"
+  },
+  {
+   "id": "person:mirko-sander",
+   "type": "person",
+   "label": "Mirko Sander",
+   "meta": {
+    "Role": "Head of Procurement",
+    "Customer": "Hanse Handelsgruppe AG",
+    "Stakeholder": "Decider",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Decider",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Hanse Handelsgruppe AG"
+   },
+   "date": "2026-10-06"
+  },
+  {
+   "id": "person:julia-westphal",
+   "type": "person",
+   "label": "Julia Westphal",
+   "meta": {
+    "Role": "Head of E-Commerce",
+    "Customer": "Hanse Handelsgruppe AG",
+    "Stakeholder": "Sponsor",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Sponsor",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Hanse Handelsgruppe AG"
+   },
+   "date": "2026-10-10"
+  },
+  {
+   "id": "person:tom-ahlers",
+   "type": "person",
+   "label": "Tom Ahlers",
+   "meta": {
+    "Role": "Platform Lead",
+    "Customer": "Hanse Handelsgruppe AG",
+    "Stakeholder": "Sponsor",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Sponsor",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Hanse Handelsgruppe AG"
+   },
+   "date": "2026-10-09"
   }
  ],
  "edges": [
@@ -5483,6 +6373,386 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "label": "security questionnaire and architecture sheet"
   },
   {
+   "source": "customer:nordwind-handel-gmbh",
+   "target": "deal:LEAD-301",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "call:CALL-0412",
+   "target": "deal:LEAD-301",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "person:mara-weber",
+   "target": "deal:LEAD-301",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:kranich-logistik-gmbh",
+   "target": "deal:LEAD-302",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "person:dev-patel",
+   "target": "deal:LEAD-302",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:nordwind-handel-gmbh",
+   "target": "deal:OPP-401",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "call:CALL-0412",
+   "target": "deal:OPP-401",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "person:mara-weber",
+   "target": "deal:OPP-401",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "deal:OPP-402",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "call:CALL-0407",
+   "target": "deal:OPP-402",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-103",
+   "target": "deal:OPP-402",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "person:dev-patel",
+   "target": "deal:OPP-402",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:kranich-logistik-gmbh",
+   "target": "deal:OPP-403",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "person:lukas-fischer",
+   "target": "deal:OPP-403",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "offer:OFF-2026-0311",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "offer:OFF-2026-0318",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "offer:OFF-2026-0324",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:mara-weber",
+   "target": "contract:C-2026-0012",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "person:mara-weber",
+   "target": "contract:C-2024-0233",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "deal:LEAD-304",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "deal:LEAD-304",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "deal:OPP-404",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "person:sven-albrecht",
+   "target": "deal:OPP-404",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "offer:OFF-2026-0402",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:sven-albrecht",
+   "target": "offer:OFF-2026-0402",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "offer:OFF-2026-0407",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "offer:OFF-2026-0407",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "offer:OFF-2026-0415",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "offer:OFF-2026-0415",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2024-0611",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "person:sven-albrecht",
+   "target": "contract:C-2024-0611",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2026-0044",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "contract:C-2026-0044",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "person:felix-brandt",
+   "target": "customer:muster-industrie-ag",
+   "type": "CONTACT_AT",
+   "label": "Blocker"
+  },
+  {
+   "source": "person:felix-brandt",
+   "target": "call:CALL-0415",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:felix-brandt",
+   "target": "call:CALL-0407",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:felix-brandt",
+   "target": "thread:T-103",
+   "type": "WROTE_IN"
+  },
+  {
+   "source": "person:felix-brandt",
+   "target": "offer:OFF-2026-0324",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:sarah-lindqvist",
+   "target": "customer:muster-industrie-ag",
+   "type": "CONTACT_AT",
+   "label": "Blocker"
+  },
+  {
+   "source": "person:sarah-lindqvist",
+   "target": "call:CALL-0415",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:sarah-lindqvist",
+   "target": "thread:T-104",
+   "type": "WROTE_IN"
+  },
+  {
+   "source": "person:anna-beispiel",
+   "target": "customer:muster-industrie-ag",
+   "type": "CONTACT_AT",
+   "label": "Decider"
+  },
+  {
+   "source": "person:anna-beispiel",
+   "target": "call:CALL-0414",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:anna-beispiel",
+   "target": "thread:T-101",
+   "type": "WROTE_IN"
+  },
+  {
+   "source": "person:anna-beispiel",
+   "target": "offer:OFF-2026-0311",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:anna-beispiel",
+   "target": "offer:OFF-2026-0318",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:anna-beispiel",
+   "target": "contract:C-2023-0390",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:jonas-reuter",
+   "target": "customer:muster-industrie-ag",
+   "type": "CONTACT_AT",
+   "label": "Decider"
+  },
+  {
+   "source": "person:jonas-reuter",
+   "target": "call:CALL-0414",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:jonas-reuter",
+   "target": "thread:T-101",
+   "type": "WROTE_IN"
+  },
+  {
+   "source": "person:petra-vogel",
+   "target": "customer:nordwind-handel-gmbh",
+   "type": "CONTACT_AT",
+   "label": "Decider"
+  },
+  {
+   "source": "person:petra-vogel",
+   "target": "call:CALL-0412",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:lena-hoffmann",
+   "target": "customer:muster-industrie-ag",
+   "type": "CONTACT_AT",
+   "label": "Sponsor"
+  },
+  {
+   "source": "person:lena-hoffmann",
+   "target": "call:CALL-0409",
+   "type": "TOOK_PART_IN"
+  },
+  {
+   "source": "person:lena-hoffmann",
+   "target": "thread:T-102",
+   "type": "WROTE_IN"
+  },
+  {
+   "source": "person:lena-hoffmann",
+   "target": "deal:OPP-402",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:lena-hoffmann",
+   "target": "contract:C-2026-0012",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:lena-hoffmann",
+   "target": "contract:C-2024-0233",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:ilse-wagner",
+   "target": "customer:kranich-logistik-gmbh",
+   "type": "CONTACT_AT",
+   "label": "Influencer"
+  },
+  {
+   "source": "person:ilse-wagner",
+   "target": "deal:LEAD-302",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:ines-carstens",
+   "target": "customer:hanse-handelsgruppe-ag",
+   "type": "CONTACT_AT",
+   "label": "Influencer"
+  },
+  {
+   "source": "person:ines-carstens",
+   "target": "deal:LEAD-304",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:mirko-sander",
+   "target": "customer:hanse-handelsgruppe-ag",
+   "type": "CONTACT_AT",
+   "label": "Decider"
+  },
+  {
+   "source": "person:mirko-sander",
+   "target": "deal:OPP-404",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:julia-westphal",
+   "target": "customer:hanse-handelsgruppe-ag",
+   "type": "CONTACT_AT",
+   "label": "Sponsor"
+  },
+  {
+   "source": "person:julia-westphal",
+   "target": "offer:OFF-2026-0402",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:julia-westphal",
+   "target": "contract:C-2024-0611",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:tom-ahlers",
+   "target": "customer:hanse-handelsgruppe-ag",
+   "type": "CONTACT_AT",
+   "label": "Sponsor"
+  },
+  {
+   "source": "person:tom-ahlers",
+   "target": "offer:OFF-2026-0407",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:tom-ahlers",
+   "target": "offer:OFF-2026-0415",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:tom-ahlers",
+   "target": "contract:C-2026-0044",
+   "type": "CONTACT_FOR"
+  },
+  {
    "source": "workflow:btp-service-health-check",
    "target": "product:business-technology-platform",
    "type": "MONITORS"
@@ -5704,11 +6974,14 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ST = {
   system:{c:'purple',s:'hex',r:13}, connector:{c:'muted',s:'hex',r:10}, customer:{c:'purple',s:'star',r:17},
   family:{c:'teal',s:'round',r:11}, product:{c:'teal',s:'circle',r:8}, contract:{c:'blue',s:'square',r:9},
-  offer:{c:'green',s:'square',r:8}, ticket:{c:'amber',s:'tri',r:7}, call:{c:'teal',s:'hex',r:8}, thread:{c:'blue',s:'diamond',r:8}, skill:{c:'purple',s:'circle',r:8},
+  offer:{c:'green',s:'square',r:8}, deal:{c:'blue',s:'round',r:9}, ticket:{c:'amber',s:'tri',r:7}, call:{c:'teal',s:'hex',r:8}, thread:{c:'blue',s:'diamond',r:8}, skill:{c:'purple',s:'circle',r:8},
   tool:{c:'muted',s:'circle',r:4.5}, risk:{c:'red',s:'diamond',r:10}, agent:{c:'amber',s:'diamond',r:8},
   workflow:{c:'green',s:'circle',r:8}, app:{c:'blue',s:'round',r:6}, person:{c:'ink2',s:'circle',r:5},
 };
-const ORDER = ['customer','contract','offer','product','family','ticket','call','thread','skill','tool','agent','risk','workflow','app','person'];
+/* Sales view first: sales types sit on the inner ring, enablers (skills, tools, agents ...) on the outer ring and are hidden until switched on */
+const SALES = ['deal','offer','contract','person','call','thread','ticket','product'];
+const EN_ORDER = ['family','skill','tool','agent','risk','workflow','app'];
+const ENABLER = new Set([...EN_ORDER, 'system', 'connector']);
 const HUB = new Set(['system','connector']);
 let C = {};
 function readColors() {
@@ -5725,18 +6998,25 @@ const byId = new Map(nodes.map((n) => [n.id, n]));
 const edges = D.edges.map((e, i) => ({ ...e, a: byId.get(e.source), b: byId.get(e.target), i, weak: !!(D.edgeTypes[e.type] || {}).weak }));
 for (const e of edges) { e.a.deg++; e.b.deg++; e.a.nb.push({ n: e.b, e, out: true }); e.b.nb.push({ n: e.a, e, out: false }); }
 for (const n of nodes) n.r = ST[n.type].r + Math.min(9, Math.sqrt(n.deg) * 0.9);
-const hidden = new Set();
+const valued = nodes.filter((n) => n.sales);
+const maxAcv = Math.max(1, ...valued.map((n) => n.sales.acv)), maxTcv = Math.max(1, ...valued.map((n) => n.sales.tcv));
+for (const n of valued) n.rv = 7 + 24 * Math.sqrt(n.sales.acv / maxAcv);
+const hidden = new Set(ENABLER);
 const count = {}; nodes.forEach((n) => (count[n.type] = (count[n.type] || 0) + 1));
 $('#stats').textContent = `${nodes.length} nodes · ${edges.length} relations`;
 $('#asof').textContent = D.asOf ? `as of ${D.asOf}` : '';
 
 /* ---------- layout: type sectors on a ring + force simulation ---------- */
 const ring = 360;
+const customers = nodes.filter((n) => n.type === 'customer'), hubs = nodes.filter((n) => HUB.has(n.type));
 nodes.forEach((n, i) => {
-  const k = ORDER.indexOf(n.type);
-  const ang = k < 0 ? 0 : (k / ORDER.length) * Math.PI * 2 - Math.PI / 2;
-  const rr = k < 0 ? 90 : ring;
-  n.ax = Math.cos(ang) * rr; n.ay = Math.sin(ang) * rr; n.as = n.type === 'person' ? 0.004 : k < 0 ? 0.02 : 0.016;
+  const si = SALES.indexOf(n.type), ei = EN_ORDER.indexOf(n.type);
+  let ang = 0, rr = 90, as = 0.016;
+  if (n.type === 'customer') { ang = (customers.indexOf(n) / customers.length) * Math.PI * 2 - Math.PI / 2; rr = 220; }
+  else if (si >= 0) { ang = (si / SALES.length) * Math.PI * 2 - Math.PI / 2; rr = 420; as = n.type === 'person' ? 0.004 : 0.016; }
+  else if (ei >= 0) { ang = (ei / EN_ORDER.length) * Math.PI * 2 - Math.PI / 2; rr = 650; }
+  else if (HUB.has(n.type)) { ang = (hubs.indexOf(n) / hubs.length) * Math.PI * 2; rr = 470; as = 0.02; }
+  n.ax = Math.cos(ang) * rr; n.ay = Math.sin(ang) * rr; n.as = as;
   const j = (i * 2654435761 % 1000) / 1000 * Math.PI * 2;
   n.x = n.ax + Math.cos(j) * 80; n.y = n.ay + Math.sin(j) * 80;
 });
@@ -5778,7 +7058,8 @@ function resize() {
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
 }
 new ResizeObserver(() => { resize(); }).observe(wrap);
-const vis = (n) => !hidden.has(n.type);
+const T = { cut: D.asOf, idx: 0 };
+const vis = (n) => !hidden.has(n.type) && (!n.date || n.date <= T.cut) && (n.type !== 'person' || n.stake || n.nb.some((s) => !hidden.has(s.n.type)));
 function bounds(list) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   for (const n of list) { x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x); y1 = Math.max(y1, n.y); }
@@ -5832,7 +7113,7 @@ function sentence(from, s) {
 }
 
 /* ---------- state ---------- */
-const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false };
+const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false, ans: null, stake: false, value: true };
 let foc = null; // { level: Map id->level, edges: Set }
 function computeFocus() {
   foc = null;
@@ -5843,6 +7124,13 @@ function computeFocus() {
     S.dist = impact(S.sel, S.depth);
     const edgesIn = new Set(edges.filter((e) => S.dist.has(e.a.id) && S.dist.has(e.b.id) && Math.abs(S.dist.get(e.a.id) - S.dist.get(e.b.id)) <= 1 && !(HUB.has(e.a.type) || HUB.has(e.b.type))));
     foc = { level: S.dist, edges: edgesIn, impact: true };
+  } else if (S.ans && !S.sel && S.mode === 'explore') {
+    const level = new Map([...S.ans.ids].map((id) => [id, 1]));
+    foc = { level, edges: new Set(edges.filter((e) => level.has(e.a.id) && level.has(e.b.id))), tint: S.ans.tint };
+  } else if (S.stake && !S.sel && S.mode === 'explore') {
+    const level = new Map(nodes.filter((n) => n.stake && vis(n)).map((n) => [n.id, 1]));
+    for (const n of [...level.keys()].map((id) => byId.get(id))) for (const s of n.nb) if (s.n.type === 'customer') level.set(s.n.id, 1);
+    foc = { level, edges: new Set(edges.filter((e) => e.type === 'CONTACT_AT' && level.has(e.a.id) && level.has(e.b.id))) };
   } else if (base) {
     const level = new Map([[base.id, 0]]), es = new Set();
     for (const s of base.nb) { level.set(s.n.id, 1); es.add(s.e); }
@@ -5850,6 +7138,7 @@ function computeFocus() {
   }
 }
 function setSel(n, opts = {}) {
+  if (n) ensureShown(n);
   if (S.mode === 'path' && n && !opts.fromPanel) {
     if (!S.pathA || S.steps) { S.pathA = n; S.steps = null; S.pathIds = new Set(); S.pathEdges = new Set(); S.sel = n; }
     else if (n !== S.pathA) {
@@ -5917,15 +7206,16 @@ function draw(now) {
   for (const e of edges) {
     if (!vis(e.a) || !vis(e.b)) continue;
     const inF = foc && foc.edges.has(e);
-    let al = foc ? (inF ? 0.95 : 0.04) : e.weak ? 0.07 : 0.24;
+    const ew = valueEdgeW(e);
+    let al = foc ? (inF ? 0.95 : 0.04) : ew ? 0.5 : e.weak ? 0.07 : 0.24;
     if (inF && foc.impact) al *= Math.min(reveal(e.a.id, now), reveal(e.b.id, now));
     if (al < 0.01) continue;
     const q = quad(e);
-    ctx.globalAlpha = al; ctx.lineWidth = inF ? (foc.path ? 3 : 1.8) : 1;
-    ctx.strokeStyle = inF ? (foc.path ? C.amber : C.purple) : C.mut;
+    ctx.globalAlpha = al; ctx.lineWidth = inF ? (foc.path ? 3 : 1.8) : (ew || 1);
+    ctx.strokeStyle = inF ? (foc.path ? C.amber : foc.tint ? C[foc.tint] : C.purple) : ew ? C.purple : C.mut;
     ctx.beginPath(); ctx.moveTo(sx(e.a.x), sy(e.a.y)); ctx.quadraticCurveTo(sx(q.cx), sy(q.cy), sx(e.b.x), sy(e.b.y)); ctx.stroke();
     if (inF && !reduced) {
-      ctx.fillStyle = foc.path ? C.amber : C.purple; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8;
+      ctx.fillStyle = foc.path ? C.amber : foc.tint ? C[foc.tint] : C.purple; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8;
       for (let k = 0; k < 2; k++) { const p = qpt(e, q, (t * 1.4 + e.i * 0.137 + k * 0.5) % 1); ctx.beginPath(); ctx.arc(sx(p.x), sy(p.y), 2.2, 0, Math.PI * 2); ctx.fill(); }
       ctx.shadowBlur = 0;
     }
@@ -5953,16 +7243,17 @@ function draw(now) {
     if (foc && foc.impact && lv !== undefined && al < 1) al = Math.max(al, 0.1);
     const x = sx(n.x), y = sy(n.y);
     if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
-    const r = n.r * Math.min(1.6, Math.max(0.55, cam.k));
+    const r = radOf(n) * bornK(n, now) * Math.min(1.6, Math.max(0.55, cam.k));
     const lift = (foc && lv !== undefined) || n === S.hover;
-    const colr = foc && foc.impact && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : col(n);
+    const colr = foc && foc.impact && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : foc && foc.tint && lv !== undefined ? C[foc.tint] : nodeCol(n);
     ctx.globalAlpha = al; ctx.fillStyle = colr; ctx.strokeStyle = C.bg; ctx.lineWidth = 1.6;
     if (lift) { ctx.shadowColor = colr; ctx.shadowBlur = n === S.sel ? 26 : 14; }
     shapePath(ctx, ST[n.type].s, x, y, r); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+    if (isNew(n) && !foc) { ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.teal; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, r + 3.5, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
     if (n.pin) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
     if (n === S.sel) { ctx.strokeStyle = C.ink; ctx.lineWidth = 2; shapePath(ctx, ST[n.type].s, x, y, r + 5); ctx.stroke(); }
     ctx.globalAlpha = 1;
-    if (al > 0.5 && (lift || labelAll || n.deg >= 9 || HUB.has(n.type) || n.type === 'customer')) lab.push({ n, x, y: y + r + 11, strong: lift || n === S.sel });
+    if (al > 0.5 && (lift || labelAll || n.deg >= 9 || HUB.has(n.type) || n.type === 'customer' || (S.value && n.rv > 15) || (S.stake && n.stake && n.stake.touches > 1))) lab.push({ n, x, y: y + r + 11, strong: lift || n === S.sel });
   }
   ctx.font = '11px ' + getComputedStyle(document.body).fontFamily; ctx.textAlign = 'center'; ctx.lineJoin = 'round';
   const placed = [];
@@ -5999,7 +7290,7 @@ function hit(p) {
   let best = null, bd = 1e9;
   for (const n of nodes) {
     if (!vis(n)) continue;
-    const d = Math.hypot(sx(n.x) - p.x, sy(n.y) - p.y), r = n.r * Math.min(1.6, Math.max(0.55, cam.k)) + 6;
+    const d = Math.hypot(sx(n.x) - p.x, sy(n.y) - p.y), r = radOf(n) * Math.min(1.6, Math.max(0.55, cam.k)) + 6;
     if (d < r && d < bd) { best = n; bd = d; }
   }
   return best;
@@ -6058,7 +7349,201 @@ $('#m-path').onclick = () => setMode('path');
 $('#depth').onchange = (e) => { S.depth = Number(e.target.value); S.t0 = performance.now(); computeFocus(); renderPanel(); };
 $('#labels').onclick = (e) => { S.labels = !S.labels; e.currentTarget.setAttribute('aria-pressed', String(S.labels)); };
 $('#pause').onclick = (e) => { S.paused = !S.paused; e.currentTarget.setAttribute('aria-pressed', String(S.paused)); e.currentTarget.textContent = S.paused ? 'Resume' : 'Pause'; };
-$('#reset').onclick = () => { hidden.clear(); renderLegend(); nodes.forEach((n) => (n.pin = false)); setMode('explore'); S.sel = null; computeFocus(); renderPanel(); alpha = 0.6; fit(); };
+$('#reset').onclick = () => { hidden.clear(); ENABLER.forEach((x) => hidden.add(x)); S.ans = null; S.stake = false; setCutIdx(WEEKS.length - 1); renderLegend(); nodes.forEach((n) => (n.pin = false)); setMode('explore'); S.sel = null; computeFocus(); renderPanel(); alpha = 0.6; fit(); };
+
+
+/* ---------- sales view: value encoding, time slider, questions, stakeholders ---------- */
+const money = (v) => (v >= 1e6 ? `€${(v / 1e6).toFixed(v % 1e6 ? 1 : 0)}M` : `€${Math.round(v / 1e3)}k`);
+const STAKE_COL = { Sponsor: 'green', Decider: 'purple', Blocker: 'red', Influencer: 'muted' };
+const STRENGTH = { none: 0, light: 1, medium: 2, strong: 3 };
+function radOf(n) {
+  if (S.stake && n.stake) return [5, 7.5, 10, 13][STRENGTH[n.stake.strength]];
+  return S.value && n.rv ? n.rv : n.r;
+}
+function salesCol(n) { // win probability scale; contracts are booked revenue
+  const p = n.sales.prob;
+  return p === undefined ? C.blue : p >= 70 ? C.green : p >= 50 ? C.amber : C.red;
+}
+function nodeCol(n) {
+  if (S.stake && n.stake) return C[STAKE_COL[n.stake.role]];
+  return S.value && n.sales ? salesCol(n) : col(n);
+}
+function valueEdgeW(e) { // line width = TCV of the deal, offer or contract on a customer edge
+  if (!S.value || S.stake) return 0;
+  const d = e.a.type === 'customer' ? e.b : e.b.type === 'customer' ? e.a : null;
+  return d && d.sales ? 1.2 + 7 * Math.sqrt(d.sales.tcv / maxTcv) : 0;
+}
+const addDays = (iso, d) => new Date(Date.parse(iso) + d * 864e5).toISOString().slice(0, 10);
+const WEEKS = [-18, -15, -12, -9, -6, -3, 0].map((d) => addDays(D.asOf, d)); // steps of three days over the last weeks
+const isNew = (n) => !!n.date && n.date > addDays(T.cut, -7) && n.date <= T.cut;
+function bornK(n, now) { if (!n.born) return 1; const k = Math.min(1, (now - n.born) / 700); if (k >= 1) n.born = 0; return reduced ? 1 : 0.25 + 0.75 * (1 - Math.pow(1 - k, 3)); }
+const fmtDate = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+function updateStats() {
+  const vn = nodes.filter(vis), ids = new Set(vn.map((n) => n.id));
+  $('#stats').textContent = `${vn.length} of ${nodes.length} nodes · ${edges.filter((e) => ids.has(e.a.id) && ids.has(e.b.id)).length} relations`;
+}
+function updateTime() {
+  $('#t-range').value = T.idx;
+  $('#t-label').textContent = `Up to ${fmtDate(T.cut)}${T.idx === WEEKS.length - 1 ? ' (now)' : ''}`;
+  const fresh = nodes.filter(isNew), cnt = (f) => fresh.filter(f).length;
+  const parts = [[cnt((n) => n.type === 'call'), 'call'], [cnt((n) => n.type === 'thread'), 'e-mail'], [cnt((n) => n.type === 'deal' || n.type === 'offer'), 'deal'], [cnt((n) => n.type === 'person'), 'contact']]
+    .filter(([c]) => c).map(([c, w]) => `+${c} ${w}${c > 1 ? 's' : ''}`);
+  const open = nodes.filter((n) => n.sales && n.sales.stage !== 'contract' && vis(n)).reduce((a, n) => a + n.sales.acv, 0);
+  $('#t-delta').textContent = `${parts.length ? parts.join(' · ') + ' in 7 days' : 'nothing new in 7 days'} · open ACV ${money(open)}`;
+}
+function setCutIdx(i) {
+  const before = new Set(nodes.filter(vis).map((n) => n.id));
+  T.idx = Math.max(0, Math.min(WEEKS.length - 1, i)); T.cut = WEEKS[T.idx];
+  const now = performance.now();
+  for (const n of nodes) if (vis(n) && !before.has(n.id)) n.born = now;
+  if (S.sel && !vis(S.sel)) S.sel = null;
+  if (S.ans) { S.ans = null; syncAsk(); }
+  computeFocus(); renderPanel(); updateTime(); updateStats();
+}
+function ensureShown(n) {
+  let changed = false;
+  if (hidden.has(n.type)) { hidden.delete(n.type); changed = true; }
+  if (n.date && n.date > T.cut) setCutIdx(WEEKS.length - 1);
+  if (changed) renderLegend();
+}
+let playing = null;
+function stopPlay() { if (playing) { clearInterval(playing); playing = null; } $('#t-play').textContent = '▶'; }
+$('#t-range').max = WEEKS.length - 1; $('#t-range').value = WEEKS.length - 1; T.idx = WEEKS.length - 1; T.cut = WEEKS[T.idx];
+$('#t-range').oninput = (e) => { stopPlay(); setCutIdx(Number(e.target.value)); };
+$('#t-play').onclick = () => {
+  if (playing) return stopPlay();
+  if (T.idx >= WEEKS.length - 1) setCutIdx(0);
+  $('#t-play').textContent = '❚❚';
+  playing = setInterval(() => { if (T.idx >= WEEKS.length - 1) return stopPlay(); setCutIdx(T.idx + 1); }, 1100);
+};
+
+const visNodes = () => nodes.filter(vis);
+const salesNodes = () => visNodes().filter((n) => n.sales);
+const nbOf = (n, type) => n.nb.map((s) => s.n).filter((x) => x.type === type && vis(x));
+const sumAcv = (list) => list.reduce((a, n) => a + n.sales.acv, 0);
+const SUGGEST = { lead: ['lead-qualifier', 'interest-logger'], opportunity: ['opportunity-planner', 'discovery-meddpicc'], sell: ['pricing-guard', 'deal-risk-check'] };
+const QUESTIONS = [
+  { id: 'risk', q: 'Which deals hang on a risk?', tint: 'red', run() {
+    const rows = [], ids = new Set();
+    for (const n of salesNodes()) {
+      const calls = nbOf(n, 'call').filter((c) => c.riskLevel === 'high' || c.riskLevel === 'medium');
+      if (!n.sales.risks.length && !calls.length) continue;
+      ids.add(n.id); calls.forEach((c) => ids.add(c.id)); nbOf(n, 'customer').forEach((c) => ids.add(c.id));
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · ${n.sales.risks[0] || `${calls[0].riskLevel} risk in ${calls[0].label}`}` });
+    }
+    rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
+    return { ids, rows, text: `${rows.length} of ${salesNodes().length} deals, offers and contracts carry a risk, together ${money(sumAcv(rows.map((r) => r.n)))} ACV.` };
+  } },
+  { id: 'contact', q: 'Which contact shows up in calls and e-mails?', tint: 'teal', run() {
+    const rows = [], ids = new Set();
+    for (const n of visNodes().filter((x) => x.stake && x.stake.calls && x.stake.mails)) {
+      ids.add(n.id); n.nb.forEach((s) => { if (['call', 'thread', 'customer'].includes(s.n.type) && vis(s.n)) ids.add(s.n.id); });
+      rows.push({ n, note: `${n.stake.customer} · ${n.stake.calls} call${n.stake.calls > 1 ? 's' : ''} · ${n.stake.mails} e-mail${n.stake.mails > 1 ? 's' : ''} · ${n.stake.role}` });
+    }
+    rows.sort((a, b) => b.n.stake.touches - a.n.stake.touches);
+    return { ids, rows, text: `${rows.length} contacts appear in both channels. These are the people who really talk to you.` };
+  } },
+  { id: 'skill', q: 'Where is a skill missing?', tint: 'amber', run() {
+    const rows = [], ids = new Set();
+    for (const n of salesNodes().filter((x) => x.sales.stage !== 'contract')) {
+      const cust = nbOf(n, 'customer')[0];
+      if (!cust || cust.nb.some((s) => s.n.type === 'skill')) continue;
+      const sug = (SUGGEST[n.sales.stage] || []).filter((s) => byId.has('skill:' + s));
+      ids.add(n.id); ids.add(cust.id);
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · no skill linked to ${cust.label}${sug.length ? ` · try ${sug.join(', ')}` : ''}` });
+    }
+    rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
+    return { ids, rows, text: `${rows.length} open deals (${money(sumAcv(rows.map((r) => r.n)))} ACV) sit at customers that no skill serves yet.` };
+  } },
+  { id: 'changed', q: 'What changed since last week?', tint: 'purple', run() {
+    const rows = [], ids = new Set(), latest = T.idx === WEEKS.length - 1;
+    for (const n of salesNodes()) {
+      const ch = [], p = n.sales.prev;
+      if (latest && p) {
+        if (p.score !== undefined && p.score !== n.sales.prob) ch.push(`probability ${p.score} → ${n.sales.prob} %`);
+        if (p.value !== undefined && p.value !== n.sales.acv) ch.push(`ACV ${money(p.value)} → ${money(n.sales.acv)}`);
+        if (p.closeDate && p.closeDate !== n.sales.close) ch.push(`close ${p.closeDate} → ${n.sales.close}`);
+      }
+      if (!ch.length && isNew(n)) ch.push('new this week');
+      if (!ch.length) continue;
+      ids.add(n.id); nbOf(n, 'customer').forEach((c) => ids.add(c.id));
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · ${ch.join(', ')}` });
+    }
+    rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
+    return { ids, rows, text: `${rows.length} deals changed or are new in the 7 days up to ${fmtDate(T.cut)}.${latest ? '' : ' Move the slider to the latest date to see value changes.'}` };
+  } },
+  { id: 'blocker', q: 'Who could block a deal?', tint: 'red', run() {
+    const rows = [], ids = new Set();
+    for (const n of visNodes().filter((x) => x.stake && x.stake.role === 'Blocker')) {
+      ids.add(n.id); n.nb.forEach((s) => { if (['customer', 'call', 'thread', 'deal', 'offer', 'contract'].includes(s.n.type) && vis(s.n)) ids.add(s.n.id); });
+      rows.push({ n, note: `${n.stake.customer} · ${n.meta.Role || 'role unknown'} · ${n.stake.calls} calls, ${n.stake.mails} e-mails` });
+    }
+    return { ids, rows, text: `${rows.length} contacts act as blockers (security, legal, compliance). Involve them early.` };
+  } },
+];
+function syncAsk() {
+  $('#ask').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(!!S.ans && S.ans.id === b.dataset.q)));
+}
+function clearAnswer() { S.ans = null; syncAsk(); computeFocus(); renderPanel(); }
+function askQuestion(q) {
+  if (S.ans && S.ans.id === q.id) return clearAnswer();
+  const r = q.run();
+  S.stake = false; S.sel = null; if (S.mode !== 'explore') setMode('explore');
+  for (const id of r.ids) hidden.delete(byId.get(id).type);
+  S.ans = { id: q.id, q: q.q, tint: q.tint, ...r };
+  renderLegend(); syncAsk(); computeFocus(); renderPanel(); panel.scrollTop = 0;
+  const list = [...r.ids].map((id) => byId.get(id));
+  if (list.length) fit(list);
+}
+$('#ask').innerHTML = QUESTIONS.map((q) => `<button data-q="${q.id}" aria-pressed="false">${esc(q.q)}</button>`).join('');
+$('#ask').querySelectorAll('button').forEach((b) => (b.onclick = () => askQuestion(QUESTIONS.find((q) => q.id === b.dataset.q))));
+function ansCard() {
+  const a = S.ans;
+  return `<div class="card ans"><span class="pill">Answer</span><h2 style="margin-top:8px">${esc(a.q)}</h2><p>${esc(a.text)}</p><div class="row"><button class="btn" id="ans-clear">Clear answer</button></div></div>` +
+    (a.rows.length ? `<div class="conn">${a.rows.map((r) => `<button data-go="${esc(r.n.id)}">${esc(r.n.label)}<small>${esc(r.note)}</small></button>`).join('')}</div>` : '<p>Nothing matches at this point in time.</p>');
+}
+function stakeCard() {
+  const by = new Map();
+  for (const n of visNodes().filter((x) => x.stake)) { if (!by.has(n.stake.customer)) by.set(n.stake.customer, []); by.get(n.stake.customer).push(n); }
+  let h = '<h2>Stakeholder map</h2><p style="color:var(--ink-2)">Contacts per customer. The role is derived from the job title; the contact strength counts calls and e-mails you share with the person.</p>';
+  for (const [cust, list] of [...by].sort((a, b) => b[1].length - a[1].length)) {
+    list.sort((a, b) => b.stake.touches - a.stake.touches);
+    const acv = sumAcv(salesNodes().filter((n) => n.sales.stage !== 'contract' && n.sales.account === cust));
+    h += `<div class="card"><h3 style="margin:0">${esc(cust)}</h3><small style="color:var(--mut)">${acv ? `Open ACV ${money(acv)}` : 'No open deal'}</small><div class="conn">` +
+      list.map((n) => { const s = n.stake, k = STRENGTH[s.strength]; return `<button data-go="${esc(n.id)}"><span><b>${esc(n.label)}</b> <span class="role ${s.role}">${s.role}</span> <span class="pips" title="Contact strength: ${s.strength}">${'●'.repeat(k)}${'○'.repeat(3 - k)}</span></span><small>${esc(n.meta.Role || 'role unknown')} · ${s.calls} call${s.calls === 1 ? '' : 's'}, ${s.mails} e-mail${s.mails === 1 ? '' : 's'}${s.last ? ` · last ${s.last}` : ' · not met yet'}</small></button>`; }).join('') + '</div>';
+    for (const need of ['Sponsor', 'Decider']) if (!list.some((n) => n.stake.role === need && n.stake.touches)) h += `<p class="gap">No ${need} met yet</p>`;
+    const bl = list.filter((n) => n.stake.role === 'Blocker');
+    if (bl.length) h += `<p class="gap">Blocker: ${bl.map((n) => esc(n.label)).join(', ')}. Involve early.</p>`;
+    h += '</div>';
+  }
+  return h;
+}
+function syncBars() {
+  const allEn = [...ENABLER].every((tp) => !hidden.has(tp) || !count[tp]);
+  $('#b-enabler').setAttribute('aria-pressed', String(allEn));
+  $('#b-value').setAttribute('aria-pressed', String(S.value));
+  $('#b-stake').setAttribute('aria-pressed', String(S.stake));
+  const sw = (c, l) => `<span><i style="background:var(--${c})"></i>${l}</span>`;
+  $('#vleg').innerHTML = S.stake
+    ? `<b>Stakeholders</b><div class="sw">${sw('green', 'Sponsor')}${sw('purple', 'Decider')}${sw('red', 'Blocker')}${sw('muted', 'Influencer')}</div><span>Size = contact strength</span>`
+    : S.value
+      ? `<b>Value view</b><span>Node size = ACV · line width = TCV</span><div class="sw">${sw('green', '70 % +')}${sw('amber', '50 to 69 %')}${sw('red', 'under 50 %')}${sw('blue', 'contract')}</div><span>Dashed ring = new in the last 7 days</span>`
+      : '<b>Dashed ring</b><span>new in the last 7 days</span>';
+  updateStats();
+}
+$('#b-enabler').onclick = () => {
+  const on = $('#b-enabler').getAttribute('aria-pressed') === 'true';
+  for (const tp of ENABLER) on ? hidden.add(tp) : hidden.delete(tp);
+  if (S.sel && hidden.has(S.sel.type)) S.sel = null;
+  renderLegend(); computeFocus(); renderPanel(); fit();
+};
+$('#b-value').onclick = () => { S.value = !S.value; syncBars(); };
+$('#b-stake').onclick = () => {
+  S.stake = !S.stake; S.ans = null; syncAsk();
+  if (S.stake) { hidden.delete('person'); hidden.delete('customer'); S.sel = null; if (S.mode !== 'explore') setMode('explore'); }
+  renderLegend(); computeFocus(); renderPanel(); panel.scrollTop = 0;
+  if (S.stake) fit(visNodes().filter((n) => n.stake || n.type === 'customer'));
+};
 
 /* ---------- legend ---------- */
 function svgShape(type) {
@@ -6079,8 +7564,9 @@ function renderLegend() {
   el.querySelectorAll('button').forEach((b) => (b.onclick = () => {
     const t = b.dataset.t; hidden.has(t) ? hidden.delete(t) : hidden.add(t);
     if (S.sel && hidden.has(S.sel.type)) S.sel = null;
-    b.setAttribute('aria-pressed', String(!hidden.has(t))); computeFocus(); renderPanel();
+    b.setAttribute('aria-pressed', String(!hidden.has(t))); computeFocus(); renderPanel(); syncBars();
   }));
+  syncBars();
 }
 
 /* ---------- side panel ---------- */
@@ -6122,8 +7608,10 @@ function renderPanel() {
   } else if (S.mode === 'path' && S.pathA && !S.steps) {
     h += `<div class="conn"><button data-go="${esc(S.pathA.id)}">${esc(S.pathA.label)}<small>start</small></button></div>`;
   }
-  if (!n && S.mode !== 'path' && S.tour < 0) {
-    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">One graph over customer, contracts, offers, products, calls and e-mails, skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
+  if (!n && S.mode !== 'path' && S.tour < 0 && S.ans) h += ansCard();
+  else if (!n && S.mode !== 'path' && S.tour < 0 && S.stake) h += stakeCard();
+  else if (!n && S.mode !== 'path' && S.tour < 0) {
+    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">The Sales view: customers, deals, offers, contracts, calls and e-mails. Node size is the ACV, line width the TCV, colour the win probability; try the questions at the top or the week slider. Switch on <b>Enablers</b> for skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
     const top = [...nodes].sort((a, b) => b.deg - a.deg).filter((x) => !HUB.has(x.type)).slice(0, 8);
     h += `<h3>Best connected</h3><div class="conn">${top.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])} · ${x.deg} relations</small></button>`).join('')}</div>`;
   }
@@ -6133,6 +7621,7 @@ function renderPanel() {
   on('#a-impact', () => { const keep = S.sel; setMode('impact'); setSel(keep); });
   on('#a-path', () => { const keep = S.sel; setMode('path'); S.pathA = keep; S.sel = keep; computeFocus(); renderPanel(); });
   on('#a-unpin', () => { n.pin = false; renderPanel(); });
+  on('#ans-clear', () => clearAnswer());
   panel.querySelectorAll('[data-tour]').forEach((b) => (b.onclick = () => startTour(Number(b.dataset.tour))));
   on('#t-prev', () => tourGo(S.tour - 1)); on('#t-next', () => tourGo(S.tour + 1)); on('#t-end', endTour);
 }
@@ -6152,7 +7641,7 @@ function search() {
   res.innerHTML = hits.map((n, i) => `<li><button type="button" role="option" data-i="${i}" aria-selected="${i === hi}">${svgShape(n.type)}${esc(n.label)}<small>${esc(D.nodeTypes[n.type])}</small></button></li>`).join('');
   res.querySelectorAll('button').forEach((b) => (b.onclick = () => pick(hits[Number(b.dataset.i)])));
 }
-function pick(n) { if (!n) return; hidden.delete(n.type); renderLegend(); res.hidden = true; q.value = ''; setSel(n); }
+function pick(n) { if (!n) return; ensureShown(n); res.hidden = true; q.value = ''; setSel(n); }
 q.addEventListener('input', search);
 q.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!hits.length) return; hi = (hi + (e.key === 'ArrowDown' ? 1 : hits.length - 1)) % hits.length; res.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-selected', String(i === hi))); }
@@ -6169,7 +7658,7 @@ function tourGo(i) {
   S.mode = st.impact ? 'impact' : 'explore';
   for (const k of ['explore', 'impact', 'path']) $('#m-' + k).setAttribute('aria-pressed', String(k === S.mode));
   $('#depth-l').hidden = S.mode !== 'impact';
-  hidden.delete(n.type); renderLegend();
+  ensureShown(n);
   S.tour = i; S.sel = n; S.t0 = performance.now(); computeFocus();
   flyTo(n, 1.25); renderPanel();
 }
@@ -6184,10 +7673,10 @@ $('#tour').onclick = () => {
 readColors();
 new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style', 'class'] });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
-renderLegend(); renderPanel(); resize(); fit(nodes, true);
+renderLegend(); renderPanel(); resize(); updateTime(); fit(visNodes(), true);
 requestAnimationFrame(frame);
 // test hook (read-only inspection, no network)
-window.__kg = { nodes, edges, S, setSel, byId, setMode, startTour, tourGo, cam };
+window.__kg = { nodes, edges, S, T, setSel, byId, setMode, startTour, tourGo, cam, setCutIdx, askQuestion, QUESTIONS, hidden };
 })();
 </script>
 </body>

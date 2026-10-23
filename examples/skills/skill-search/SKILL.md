@@ -1,6 +1,6 @@
 ---
 name: skill-search
-description: Findet im Skill-Marketplace passende Skills und die Reihenfolge, in der man sie nutzt (z. B. als Account Manager), vergleicht Reife, Risiko, Nutzen. Nutzen bei "welcher Skill", "Skills für meine Rolle", "in welcher Reihenfolge".
+description: Finds matching skills in the Skill Marketplace and the order in which to use them (e.g. as an account manager), and compares maturity, risk and benefit. Nutzen bei "welcher Skill", "Skills für meine Rolle", "in welcher Reihenfolge".
 metadata:
   domain: Skill-Management
   process: Skill-Suche
