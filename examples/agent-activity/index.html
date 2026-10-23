@@ -229,6 +229,9 @@ main{max-width:1320px;margin:0 auto;padding:20px 24px 40px}
 aside.card{flex:1 1 280px;min-width:260px;max-width:380px;margin:0;padding:18px 20px}
 aside h2{margin:0 0 6px;font-size:16px;font-weight:650}
 aside p{margin:8px 0;line-height:1.5;color:var(--ink-2)}
+aside .costbars{display:grid;gap:7px;margin-top:6px}
+aside .cbl{display:flex;justify-content:space-between;gap:8px;font-size:12px}aside .cbl b{font-variant-numeric:tabular-nums;font-weight:600}
+aside .cbt{height:5px;border-radius:3px;background:var(--line)}aside .cbt i{display:block;height:100%;border-radius:3px;background:var(--purple)}
 aside .facts{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:12px 0;font-size:12px}
 aside .facts dt{color:var(--muted)}aside .facts dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 aside .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
@@ -280,6 +283,10 @@ aside .note{font-size:11px;color:var(--muted)}
   "productionAgents": 125,
   "runsPerDay": 44800,
   "costPerWeekEur": 50600,
+  "tokensPerWeek": 15896849998,
+  "budgetActualM": 2.74,
+  "budgetCeilingM": 3.6,
+  "weeksPerYear": 52,
   "pendingReview": 28,
   "overprivileged": 31,
   "euHighRisk": 18
@@ -291,6 +298,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 12,
    "runsPerDay": 5016,
    "costPerWeekEur": 4520,
+   "tokensPerWeek": 2314833334,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 5016,
+     "costPerWeekEur": 4520,
+     "tokensPerWeek": 2314833334
+    }
+   },
    "overprivileged": 6,
    "euHighRisk": 0,
    "types": {
@@ -316,6 +331,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 5,
    "runsPerDay": 3848,
    "costPerWeekEur": 1856,
+   "tokensPerWeek": 500333333,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 3692,
+     "costPerWeekEur": 1669,
+     "tokensPerWeek": 438000000
+    },
+    "SAP BTP": {
+     "runsPerDay": 156,
+     "costPerWeekEur": 187,
+     "tokensPerWeek": 62333333
+    }
+   },
    "overprivileged": 4,
    "euHighRisk": 0,
    "types": {
@@ -341,6 +369,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 6,
    "runsPerDay": 3760,
    "costPerWeekEur": 2819,
+   "tokensPerWeek": 939666667,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 3760,
+     "costPerWeekEur": 2819,
+     "tokensPerWeek": 939666667
+    }
+   },
    "overprivileged": 6,
    "euHighRisk": 0,
    "types": {
@@ -366,6 +402,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 6,
    "runsPerDay": 2868,
    "costPerWeekEur": 2705,
+   "tokensPerWeek": 615000000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 2868,
+     "costPerWeekEur": 2705,
+     "tokensPerWeek": 615000000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -390,6 +434,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 6,
    "runsPerDay": 2768,
    "costPerWeekEur": 4082,
+   "tokensPerWeek": 776500000,
+   "byPlatform": {
+    "n8n Cloud": {
+     "runsPerDay": 2768,
+     "costPerWeekEur": 4082,
+     "tokensPerWeek": 776500000
+    }
+   },
    "overprivileged": 5,
    "euHighRisk": 0,
    "types": {
@@ -415,6 +467,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 9,
    "runsPerDay": 2505,
    "costPerWeekEur": 2652,
+   "tokensPerWeek": 610950000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 2505,
+     "costPerWeekEur": 2652,
+     "tokensPerWeek": 610950000
+    }
+   },
    "overprivileged": 3,
    "euHighRisk": 3,
    "types": {
@@ -439,6 +499,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 7,
    "runsPerDay": 2365,
    "costPerWeekEur": 2605,
+   "tokensPerWeek": 1237666668,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 2365,
+     "costPerWeekEur": 2605,
+     "tokensPerWeek": 1237666668
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -463,6 +531,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 5,
    "runsPerDay": 2331,
    "costPerWeekEur": 1961,
+   "tokensPerWeek": 479900000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 2331,
+     "costPerWeekEur": 1961,
+     "tokensPerWeek": 479900000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -487,6 +563,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 3,
    "runsPerDay": 2301,
    "costPerWeekEur": 3177,
+   "tokensPerWeek": 865000000,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 2301,
+     "costPerWeekEur": 3177,
+     "tokensPerWeek": 865000000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -511,6 +595,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 6,
    "runsPerDay": 1893,
    "costPerWeekEur": 1652,
+   "tokensPerWeek": 550666666,
+   "byPlatform": {
+    "SAP BTP": {
+     "runsPerDay": 99,
+     "costPerWeekEur": 338,
+     "tokensPerWeek": 112666666
+    },
+    "SAP AI Core": {
+     "runsPerDay": 1794,
+     "costPerWeekEur": 1314,
+     "tokensPerWeek": 438000000
+    }
+   },
    "overprivileged": 4,
    "euHighRisk": 0,
    "types": {
@@ -536,6 +633,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 1597,
    "costPerWeekEur": 1391,
+   "tokensPerWeek": 585666666,
+   "byPlatform": {
+    "Internal Python": {
+     "runsPerDay": 1597,
+     "costPerWeekEur": 1391,
+     "tokensPerWeek": 585666666
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -561,6 +666,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 7,
    "runsPerDay": 1557,
    "costPerWeekEur": 1801,
+   "tokensPerWeek": 414550000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 1557,
+     "costPerWeekEur": 1801,
+     "tokensPerWeek": 414550000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -586,6 +699,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 2,
    "runsPerDay": 1498,
    "costPerWeekEur": 2775,
+   "tokensPerWeek": 1165500000,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 1498,
+     "costPerWeekEur": 2775,
+     "tokensPerWeek": 1165500000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -610,6 +731,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 1366,
    "costPerWeekEur": 1228,
+   "tokensPerWeek": 461666666,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 1366,
+     "costPerWeekEur": 1228,
+     "tokensPerWeek": 461666666
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -635,6 +764,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 1200,
    "costPerWeekEur": 1490,
+   "tokensPerWeek": 395833333,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 1032,
+     "costPerWeekEur": 1210,
+     "tokensPerWeek": 302500000
+    },
+    "SAP BTP": {
+     "runsPerDay": 168,
+     "costPerWeekEur": 280,
+     "tokensPerWeek": 93333333
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -660,6 +802,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 5,
    "runsPerDay": 1179,
    "costPerWeekEur": 3236,
+   "tokensPerWeek": 858333333,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 937,
+     "costPerWeekEur": 2644,
+     "tokensPerWeek": 661000000
+    },
+    "SAP BTP": {
+     "runsPerDay": 242,
+     "costPerWeekEur": 592,
+     "tokensPerWeek": 197333333
+    }
+   },
    "overprivileged": 3,
    "euHighRisk": 0,
    "types": {
@@ -687,6 +842,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 3,
    "runsPerDay": 1096,
    "costPerWeekEur": 2248,
+   "tokensPerWeek": 714666666,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 149,
+     "costPerWeekEur": 416,
+     "tokensPerWeek": 104000000
+    },
+    "SAP BTP": {
+     "runsPerDay": 947,
+     "costPerWeekEur": 1832,
+     "tokensPerWeek": 610666666
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -712,6 +880,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 1062,
    "costPerWeekEur": 1192,
+   "tokensPerWeek": 409166667,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 1062,
+     "costPerWeekEur": 1192,
+     "tokensPerWeek": 409166667
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -736,6 +912,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 1041,
    "costPerWeekEur": 1174,
+   "tokensPerWeek": 279150000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 1041,
+     "costPerWeekEur": 1174,
+     "tokensPerWeek": 279150000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 4,
    "types": {
@@ -760,6 +944,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 6,
    "runsPerDay": 796,
    "costPerWeekEur": 1289,
+   "tokensPerWeek": 271300000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 796,
+     "costPerWeekEur": 1289,
+     "tokensPerWeek": 271300000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 6,
    "types": {
@@ -784,6 +976,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 655,
    "costPerWeekEur": 800,
+   "tokensPerWeek": 318333332,
+   "byPlatform": {
+    "Anthropic API": {
+     "runsPerDay": 655,
+     "costPerWeekEur": 800,
+     "tokensPerWeek": 318333332
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -808,6 +1008,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 2,
    "runsPerDay": 552,
    "costPerWeekEur": 621,
+   "tokensPerWeek": 181416667,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 410,
+     "costPerWeekEur": 307,
+     "tokensPerWeek": 76750000
+    },
+    "SAP BTP": {
+     "runsPerDay": 142,
+     "costPerWeekEur": 314,
+     "tokensPerWeek": 104666667
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -834,6 +1047,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 3,
    "runsPerDay": 500,
    "costPerWeekEur": 1840,
+   "tokensPerWeek": 435250000,
+   "byPlatform": {
+    "Azure OpenAI": {
+     "runsPerDay": 500,
+     "costPerWeekEur": 1840,
+     "tokensPerWeek": 435250000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 3,
    "types": {
@@ -858,6 +1079,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 2,
    "runsPerDay": 354,
    "costPerWeekEur": 402,
+   "tokensPerWeek": 185083333,
+   "byPlatform": {
+    "Internal Python": {
+     "runsPerDay": 354,
+     "costPerWeekEur": 402,
+     "tokensPerWeek": 185083333
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 2,
    "types": {
@@ -882,6 +1111,19 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 4,
    "runsPerDay": 300,
    "costPerWeekEur": 568,
+   "tokensPerWeek": 189333334,
+   "byPlatform": {
+    "SAP AI Core": {
+     "runsPerDay": 94,
+     "costPerWeekEur": 380,
+     "tokensPerWeek": 126666667
+    },
+    "SAP BTP": {
+     "runsPerDay": 206,
+     "costPerWeekEur": 188,
+     "tokensPerWeek": 62666667
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -907,6 +1149,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 1,
    "runsPerDay": 264,
    "costPerWeekEur": 371,
+   "tokensPerWeek": 92750000,
+   "byPlatform": {
+    "Internal Python": {
+     "runsPerDay": 264,
+     "costPerWeekEur": 371,
+     "tokensPerWeek": 92750000
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -931,6 +1181,14 @@ aside .note{font-size:11px;color:var(--muted)}
    "agents": 1,
    "runsPerDay": 128,
    "costPerWeekEur": 145,
+   "tokensPerWeek": 48333333,
+   "byPlatform": {
+    "SAP BTP": {
+     "runsPerDay": 128,
+     "costPerWeekEur": 145,
+     "tokensPerWeek": 48333333
+    }
+   },
    "overprivileged": 0,
    "euHighRisk": 0,
    "types": {
@@ -955,37 +1213,49 @@ aside .note{font-size:11px;color:var(--muted)}
    "id": "anthropic-api",
    "name": "Anthropic API",
    "agents": 36,
-   "runsPerDay": 14263
+   "runsPerDay": 14263,
+   "costPerWeekEur": 16297,
+   "tokensPerWeek": 6772166667
   },
   {
    "id": "sap-ai-core",
    "name": "SAP AI Core",
    "agents": 26,
-   "runsPerDay": 11868
+   "runsPerDay": 11868,
+   "costPerWeekEur": 10759,
+   "tokensPerWeek": 3086583334
   },
   {
    "id": "azure-openai",
    "name": "Azure OpenAI",
    "agents": 40,
-   "runsPerDay": 11598
+   "runsPerDay": 11598,
+   "costPerWeekEur": 13422,
+   "tokensPerWeek": 3106100000
   },
   {
    "id": "n8n-cloud",
    "name": "n8n Cloud",
    "agents": 6,
-   "runsPerDay": 2768
+   "runsPerDay": 2768,
+   "costPerWeekEur": 4082,
+   "tokensPerWeek": 776500000
   },
   {
    "id": "internal-python",
    "name": "Internal Python",
    "agents": 7,
-   "runsPerDay": 2215
+   "runsPerDay": 2215,
+   "costPerWeekEur": 2164,
+   "tokensPerWeek": 863499999
   },
   {
    "id": "sap-btp",
    "name": "SAP BTP",
    "agents": 10,
-   "runsPerDay": 2088
+   "runsPerDay": 2088,
+   "costPerWeekEur": 3876,
+   "tokensPerWeek": 1291999998
   }
  ],
  "systems": [
@@ -1025,7 +1295,170 @@ aside .note{font-size:11px;color:var(--muted)}
    "families": 6,
    "agents": 31
   }
- ]
+ ],
+ "models": [
+  {
+   "name": "GPT-4.1",
+   "priceEurPerMTok": 4,
+   "agents": 40,
+   "runsPerDay": 14984,
+   "costPerWeekEur": 16975,
+   "tokensPerWeek": 4243750000
+  },
+  {
+   "name": "Claude Sonnet 4.6",
+   "priceEurPerMTok": 6,
+   "agents": 20,
+   "runsPerDay": 8786,
+   "costPerWeekEur": 11113,
+   "tokensPerWeek": 1852166668
+  },
+  {
+   "name": "Claude Haiku 4.5",
+   "priceEurPerMTok": 1.5,
+   "agents": 23,
+   "runsPerDay": 8166,
+   "costPerWeekEur": 8886,
+   "tokensPerWeek": 5923999998
+  },
+  {
+   "name": "SAP proprietary",
+   "priceEurPerMTok": 3,
+   "agents": 24,
+   "runsPerDay": 8010,
+   "costPerWeekEur": 8638,
+   "tokensPerWeek": 2879333332
+  },
+  {
+   "name": "GPT-4o",
+   "priceEurPerMTok": 5,
+   "agents": 18,
+   "runsPerDay": 4854,
+   "costPerWeekEur": 4988,
+   "tokensPerWeek": 997600000
+  }
+ ],
+ "units": [
+  {
+   "group": "Engineering",
+   "businessUnits": [
+    "Engineering",
+    "Security"
+   ],
+   "budgetK": 1100,
+   "utilisationPct": 107,
+   "actualK": 1177,
+   "agents": 46,
+   "runsPerDay": 19918,
+   "costPerWeekEur": 21934,
+   "tokensPerWeek": 8695749999,
+   "annualAgentCostK": 1140.6,
+   "agentShareOfBudgetPct": 103.7
+  },
+  {
+   "group": "Operations",
+   "businessUnits": [
+    "Operations",
+    "Support"
+   ],
+   "budgetK": 360,
+   "utilisationPct": 62,
+   "actualK": 223.2,
+   "agents": 32,
+   "runsPerDay": 11908,
+   "costPerWeekEur": 12135,
+   "tokensPerWeek": 2796633333,
+   "annualAgentCostK": 631,
+   "agentShareOfBudgetPct": 175.3
+  },
+  {
+   "group": "Sales & Presales",
+   "businessUnits": [
+    "Sales"
+   ],
+   "budgetK": 560,
+   "utilisationPct": 88,
+   "actualK": 492.8,
+   "agents": 18,
+   "runsPerDay": 4350,
+   "costPerWeekEur": 6850,
+   "tokensPerWeek": 1863466667,
+   "annualAgentCostK": 356.2,
+   "agentShareOfBudgetPct": 63.6
+  },
+  {
+   "group": "Legal & Compliance",
+   "businessUnits": [
+    "Legal"
+   ],
+   "budgetK": 98,
+   "utilisationPct": 40,
+   "actualK": 39.2,
+   "agents": 13,
+   "runsPerDay": 3546,
+   "costPerWeekEur": 3826,
+   "tokensPerWeek": 890100000,
+   "annualAgentCostK": 199,
+   "agentShareOfBudgetPct": 203.1
+  },
+  {
+   "group": "Finance",
+   "businessUnits": [
+    "Finance"
+   ],
+   "budgetK": 280,
+   "utilisationPct": 104,
+   "actualK": 291.2,
+   "agents": 11,
+   "runsPerDay": 4224,
+   "costPerWeekEur": 3613,
+   "tokensPerWeek": 1030566666,
+   "annualAgentCostK": 187.9,
+   "agentShareOfBudgetPct": 67.1
+  },
+  {
+   "group": "HR / L&D",
+   "businessUnits": [
+    "HR"
+   ],
+   "budgetK": 182,
+   "utilisationPct": 46,
+   "actualK": 83.72,
+   "agents": 5,
+   "runsPerDay": 854,
+   "costPerWeekEur": 2242,
+   "tokensPerWeek": 620333333,
+   "annualAgentCostK": 116.6,
+   "agentShareOfBudgetPct": 64.1
+  },
+  {
+   "group": "Product & Design",
+   "businessUnits": [],
+   "budgetK": 420,
+   "utilisationPct": 76,
+   "actualK": 319.2,
+   "agents": 0,
+   "runsPerDay": 0,
+   "costPerWeekEur": 0,
+   "tokensPerWeek": 0,
+   "annualAgentCostK": 0,
+   "agentShareOfBudgetPct": 0
+  },
+  {
+   "group": "Data & AI Platform",
+   "businessUnits": [],
+   "budgetK": 600,
+   "utilisationPct": 19,
+   "actualK": 114,
+   "agents": 0,
+   "runsPerDay": 0,
+   "costPerWeekEur": 0,
+   "tokensPerWeek": 0,
+   "annualAgentCostK": 0,
+   "agentShareOfBudgetPct": 0
+  }
+ ],
+ "costNote": "Illustrative. Tokens are estimated: the registry has the weekly run cost per agent, the Space divides it by an assumed blended price per million tokens (input and output mixed) of the agent's model. Business units of the registry are assigned to the budget groups of the Control Tower as listed in budgetGroupOfUnit."
 }
 </script>
 <script>
@@ -1034,6 +1467,8 @@ aside .note{font-size:11px;color:var(--muted)}
   var D = JSON.parse(document.getElementById('aa-data').textContent);
   var fmt = function (n) { return Math.round(n).toLocaleString('de-DE'); };
   var eur = function (n) { return fmt(n) + ' €'; };
+  var tok = function (n) { return n >= 1e9 ? (n / 1e9).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' Mrd.' : n >= 1e6 ? (n / 1e6).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' Mio.' : fmt(n); };
+  var eur3 = function (n) { return n.toFixed(3).replace('.', ',') + ' €'; };
   var pct = function (part, whole) { return (whole ? Math.round(part / whole * 1000) / 10 : 0).toLocaleString('de-DE'); };
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
@@ -1042,7 +1477,7 @@ aside .note{font-size:11px;color:var(--muted)}
   // ---- nodes ----
   var nodes = [], byId = {};
   function add(kind, o) { o.kind = kind; o.key = kind + ':' + o.id; nodes.push(o); byId[o.key] = o; return o; }
-  D.platforms.forEach(function (p) { add('platform', { id: p.id, name: p.name, agents: p.agents, runs: p.runsPerDay }); });
+  D.platforms.forEach(function (p) { add('platform', { id: p.id, name: p.name, agents: p.agents, runs: p.runsPerDay, cost: p.costPerWeekEur, tokens: p.tokensPerWeek }); });
   D.families.forEach(function (f) { add('family', { id: f.id, name: f.name, agents: f.agents, runs: f.runsPerDay, f: f }); });
   D.systems.forEach(function (s) {
     var runs = 0;
@@ -1059,6 +1494,7 @@ aside .note{font-size:11px;color:var(--muted)}
     f.systems.forEach(function (sid) { edges.push({ from: byId['system:' + sid], to: fn, kind: 'data', w: f.runsPerDay / f.systems.length }); });
     Object.keys(f.platforms).forEach(function (pn) { edges.push({ from: fn, to: platformByName[pn], kind: 'model', w: f.runsPerDay * f.platforms[pn] / f.agents }); });
   });
+  var maxFamCost = Math.max.apply(null, D.families.map(function (f) { return f.costPerWeekEur; }));
   var maxEdge = Math.max.apply(null, edges.map(function (e) { return e.w; }));
 
   // ---- KPIs ----
@@ -1066,6 +1502,8 @@ aside .note{font-size:11px;color:var(--muted)}
     ['Agenten in Produktion', fmt(T.productionAgents)],
     ['Aufrufe pro Tag (Beispieldaten)', fmt(T.runsPerDay)],
     ['Kosten pro Woche', eur(T.costPerWeekEur)],
+    ['Tokens pro Woche (geschätzt)', tok(T.tokensPerWeek)],
+    ['Kosten pro Aufruf (Ø)', eur3(T.costPerWeekEur / 7 / T.runsPerDay)],
     ['Überprivilegiert', fmt(T.overprivileged)],
     ['High-Risk (EU AI Act)', fmt(T.euHighRisk)]
   ].map(function (k) { return '<div class="kpi"><div class="k">' + k[0] + '</div><div class="v">' + k[1] + '</div></div>'; }).join('');
@@ -1095,7 +1533,8 @@ aside .note{font-size:11px;color:var(--muted)}
       if (f.overprivileged) { tags.push('<span class="tag r">' + f.overprivileged + ' überprivilegiert</span>'); text.push('Auffällig: ' + f.overprivileged + ' von ' + f.agents + ' Agenten haben mehr Rechte, als ihre Aufgabe braucht. Das sind Kandidaten für die nächste Berechtigungsprüfung.'); }
       if (f.euHighRisk) { tags.push('<span class="tag a">' + f.euHighRisk + ' High-Risk (EU AI Act)</span>'); text.push('Auffällig: ' + f.euHighRisk + ' Agenten fallen unter High-Risk nach EU AI Act und brauchen eine Konformitätsbewertung vor dem Audit.'); }
       if (!f.overprivileged && !f.euHighRisk) tags.push('<span class="tag n">keine Auffälligkeiten</span>');
-      rows = [['Agenten', fmt(f.agents)], ['Aufrufe pro Tag', fmt(f.runsPerDay)], ['Kosten pro Woche', eur(f.costPerWeekEur)], ['Kosten pro Aufruf', (f.costPerWeekEur / 7 / f.runsPerDay).toFixed(3).replace('.', ',') + ' €']];
+      rows = [['Agenten', fmt(f.agents)], ['Aufrufe pro Tag', fmt(f.runsPerDay)], ['Kosten pro Woche', eur(f.costPerWeekEur) + ' (' + pct(f.costPerWeekEur, T.costPerWeekEur) + ' %)'], ['Tokens pro Woche (geschätzt)', tok(f.tokensPerWeek)], ['Kosten pro Aufruf', eur3(f.costPerWeekEur / 7 / f.runsPerDay)], ['Kosten pro Jahr (Hochrechnung)', eur(f.costPerWeekEur * T.weeksPerYear)]];
+      text.push('Kosten: ' + eur(f.costPerWeekEur) + ' pro Woche, das sind ' + pct(f.costPerWeekEur, T.costPerWeekEur) + ' % aller Agentenkosten und rund ' + tok(f.tokensPerWeek) + ' Tokens (Annahme, siehe Hinweis unten).');
       rel = sys.concat(pls);
       prompt = 'Erkläre mir die Agenten-Familie „' + f.name + '“ im AI Control Tower: Wofür wird sie genutzt, welche Risiken und Kosten hat sie, und was würdest du als Nächstes prüfen?';
     } else if (n.kind === 'platform') {
@@ -1104,7 +1543,7 @@ aside .note{font-size:11px;color:var(--muted)}
       text.push('Die größten Nutzer: ' + fams.slice(0, 3).map(function (f) { return f.name; }).join(', ') + '.');
       var priv = fams.reduce(function (s, f) { return s + f.overprivileged; }, 0);
       tags.push(priv ? '<span class="tag r">' + priv + ' überprivilegierte Agenten</span>' : '<span class="tag n">keine überprivilegierten Agenten</span>');
-      rows = [['Agenten', fmt(n.agents)], ['Aufrufe pro Tag', fmt(n.runs)], ['Familien', fmt(fams.length)]];
+      rows = [['Agenten', fmt(n.agents)], ['Aufrufe pro Tag', fmt(n.runs)], ['Kosten pro Woche', eur(n.cost) + ' (' + pct(n.cost, T.costPerWeekEur) + ' %)'], ['Tokens pro Woche (geschätzt)', tok(n.tokens)], ['Familien', fmt(fams.length)]];
       rel = fams.map(function (f) { return byId['family:' + f.id]; });
       prompt = 'Welche Agenten laufen auf der Plattform „' + n.name + '“, was kosten sie, und wo siehst du Risiken oder Abhängigkeiten im AI Control Tower?';
     } else {
@@ -1125,12 +1564,28 @@ aside .note{font-size:11px;color:var(--muted)}
       '<button type="button" class="primary ask" id="ask" data-prompt="' + esc(prompt) + '">Joule fragen</button>' +
       '<p class="note">Beispieldaten; die Erklärung ist aus den Registry-Feldern berechnet. „Joule fragen“ stellt die Frage im Chat mit Live-Zugriff auf den Control Tower.</p>';
   }
+  function bars(rows) {
+    var max = Math.max.apply(null, rows.map(function (r) { return r.v; })) || 1;
+    return '<div class="costbars">' + rows.map(function (r) { return '<div class="cb"><div class="cbl"><span>' + esc(r.label) + '</span><b>' + r.text + '</b></div><div class="cbt"><i style="width:' + Math.max(2, Math.round(r.v / max * 100)) + '%"></i></div></div>'; }).join('') + '</div>';
+  }
+  function costPanel() {
+    var fams = D.families.slice().sort(function (a, b) { return b.costPerWeekEur - a.costPerWeekEur; }).slice(0, 5);
+    var units = D.units.filter(function (u) { return u.agents; });
+    return '<div class="k" style="margin-top:14px">Kosten nach Modell (pro Woche)</div>' +
+      bars(D.models.map(function (m) { return { label: m.name, v: m.costPerWeekEur, text: eur(m.costPerWeekEur) + ' · ' + tok(m.tokensPerWeek) + ' Tok.' }; })) +
+      '<div class="k" style="margin-top:14px">Teuerste Familien</div>' +
+      bars(fams.map(function (f) { return { label: f.name, v: f.costPerWeekEur, text: eur(f.costPerWeekEur) }; })) +
+      '<div class="k" style="margin-top:14px">Agentenkosten je Budget-Gruppe (Hochrechnung pro Jahr)</div>' +
+      bars(units.map(function (u) { return { label: u.group, v: u.annualAgentCostK, text: fmt(u.annualAgentCostK) + ' T€ · Budget ' + fmt(u.budgetK) + ' T€' }; })) +
+      '<p class="note">' + esc(D.costNote) + '</p>';
+  }
   function renderPanel() {
     $('panel').innerHTML = selected ? describe(selected) :
       '<div class="k">Agent Activity</div><h2>Wer arbeitet womit?</h2>' +
       '<p>Jeder Punkt ist eine Agenten-Familie, links die Modelle, rechts die Business-Systeme. Jeder Puls ist ein simulierter Aufruf: erst der Datenabruf, dann der Modellaufruf.</p>' +
       '<p>Klicke einen Knoten an (oder wähle ihn oben aus), um zu sehen, was dahintersteckt, was auffällt und womit er verbunden ist.</p>' +
-      '<p class="note">Rote Ringe markieren überprivilegierte Agenten, gelbe High-Risk-Agenten nach EU AI Act.</p>';
+      '<p class="note">Rote Ringe markieren überprivilegierte Agenten, gelbe High-Risk-Agenten nach EU AI Act. Die Größe eines Punktes zeigt die Kosten der Familie.</p>' +
+      costPanel();
     $('pick').value = selected ? selected.key : '';
   }
   function select(n) { selected = n; renderPanel(); dirty = true; }
@@ -1172,7 +1627,7 @@ aside .note{font-size:11px;color:var(--muted)}
     col('system', W * (narrow ? 0.86 : 0.87), narrow ? 70 : 118, 26);
     col('family', W * 0.5, 0, 0);
     nodes.forEach(function (n) {
-      if (n.kind === 'family') n.r = 4 + 7 * Math.sqrt(n.runs / D.families[0].runsPerDay);
+      if (n.kind === 'family') n.r = 4 + 8 * Math.sqrt(n.f.costPerWeekEur / maxFamCost);
     });
     dirty = true;
   }
@@ -1197,7 +1652,7 @@ aside .note{font-size:11px;color:var(--muted)}
 
   // ---- simulation ----
   var playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var speed = 20, spawnAcc = 0, pulses = [], simulated = 0, last = 0;
+  var speed = 20, spawnAcc = 0, pulses = [], simulated = 0, simCost = 0, simTokens = 0, last = 0;
   var weights = D.families.map(function (f) { return f.runsPerDay; }), totalW = weights.reduce(function (a, b) { return a + b; }, 0);
   function pickFamily() {
     var r = Math.random() * totalW;
@@ -1214,11 +1669,11 @@ aside .note{font-size:11px;color:var(--muted)}
     var sys = byId['system:' + f.systems[Math.floor(Math.random() * f.systems.length)]];
     var pl = pickPlatform(f);
     pulses.push({ a: curve(sys, fn), b: curve(fn, pl), fn: fn, sys: sys, pl: pl, t: 0, dur: 1500 });
-    simulated++;
+    simulated++; simCost += f.costPerWeekEur / 7 / f.runsPerDay; simTokens += f.tokensPerWeek / 7 / f.runsPerDay;
   }
   function updateRate() {
     var perMin = T.runsPerDay / 1440 * speed;
-    $('rate').textContent = playing ? 'Simuliert: ' + fmt(simulated) + ' Aufrufe (' + fmt(perMin) + ' pro Minute bei ' + speed + '×)' : 'Pausiert';
+    $('rate').textContent = playing ? 'Simuliert: ' + fmt(simulated) + ' Aufrufe, ' + eur(simCost) + ', ' + tok(simTokens) + ' Tokens (' + fmt(perMin) + ' Aufrufe pro Minute bei ' + speed + '×)' : 'Pausiert';
   }
   $('play').addEventListener('click', function () {
     playing = !playing; $('play').textContent = playing ? 'Pause' : 'Abspielen'; $('play').setAttribute('aria-pressed', String(playing)); updateRate(); dirty = true;
