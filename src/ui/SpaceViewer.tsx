@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
 import { parseAskMessage } from '../space-ask';
+import { applySpacePrefs } from '../preferences-style';
+import type { Preferences } from '../preferences';
 import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 
@@ -16,6 +18,7 @@ export default function SpaceViewer({
   onAsk,
   textScale = DEFAULT_SPACE_SCALE,
   theme = 'light',
+  prefs,
 }: {
   space: Space;
   tabRequest?: SpaceTabRequest | null;
@@ -28,6 +31,8 @@ export default function SpaceViewer({
   textScale?: SpaceScale;
   /** The app's resolved theme; the Space follows it instead of the operating system. */
   theme?: 'light' | 'dark';
+  /** Personal look (accent, font, contrast); optional. */
+  prefs?: Preferences;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const loaded = useRef(false);
@@ -218,10 +223,10 @@ export default function SpaceViewer({
             if (query) sendTools({ type: 'sp:search', query });
             if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
           }}
-          key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}`}
+          key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceTools(applySpaceScale(applySpaceTheme(html ?? '', theme), textScale))}
+          srcDoc={applySpaceTools(applySpaceScale((() => { const themed = applySpaceTheme(html ?? '', theme); return prefs ? applySpacePrefs(themed, prefs) : themed; })(), textScale))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCP Marketplace</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 var(--font)}
+.note-bar{background:var(--blue-dim);color:var(--blue);font-size:12px;padding:7px 20px;border-bottom:1px solid var(--line)}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:750;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--purple)}
+.asof{margin-left:auto;font-size:12px;color:var(--muted)}
+nav{display:flex;gap:2px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--muted);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap;flex:none;border-bottom:3px solid transparent}
+nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
+nav button:focus-visible,.srv:focus-visible,.back:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+.pg{display:none}.pg.on{display:block}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+.tag{display:inline-block;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;border:1px solid var(--line);background:var(--wash);color:var(--ink-2)}
+.tag.green{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}.tag.amber{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}.tag.blue{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}.tag.purple{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}.tag.red{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.srv{display:block;text-align:left;width:100%;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;cursor:pointer;border-top:4px solid var(--sc);transition:transform .15s,box-shadow .15s}
+.srv:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.srv.candidate{--sc:var(--purple)}.srv.builtin{--sc:var(--green)}
+.srv h3{margin:8px 0 2px;font-size:16px}.srv .tl{color:var(--muted);font-size:13px;min-height:38px}
+.mix{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--line);margin:12px 0 6px}.mix i{display:block;height:100%}
+.mix .read{background:var(--green)}.mix .write{background:var(--amber)}.mix .data{background:var(--red)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.small{font-size:12px;color:var(--muted)}
+.back{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--radius-s);padding:6px 12px;font:inherit;cursor:pointer;margin-bottom:12px}
+.hd h2{margin:6px 0 2px;font-size:22px;letter-spacing:-.02em}.hd p{margin:6px 0 0;max-width:80ch}
+.two{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th{text-align:left;font-size:12px;font-weight:500;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 10px}.tbl td{padding:9px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.wrap{overflow-x:auto}
+code,.cmd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.cmd{display:block;background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:9px 11px;margin:6px 0;overflow-wrap:anywhere}
+ul.pts{margin:0;padding-left:18px}ul.pts li{margin:5px 0}
+.verdict{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:var(--radius-s);padding:12px 14px;margin-bottom:12px}
+.verdict b{color:var(--purple)}
+.steps{display:grid;gap:0;grid-template-columns:repeat(5,minmax(160px,1fr));overflow-x:auto}
+.step{border:1px solid var(--line);background:var(--surface);padding:14px 16px;margin-left:-1px;border-top:4px solid var(--purple)}.step:first-child{border-radius:var(--radius) 0 0 var(--radius);margin-left:0}.step:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.step h3{margin:0 0 4px;font-size:14px;color:var(--purple)}.step p{margin:0;font-size:13px;color:var(--ink-2)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+@media(max-width:800px){.two{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.srv{transition:none}}
+</style>
+</head>
+<body>
+<div class="note-bar" id="note"></div>
+<header>
+  <div class="logo">MCP <b>Marketplace</b></div>
+  <span class="tag purple">Catalog</span>
+  <div class="asof" id="asof"></div>
+</header>
+<nav role="tablist" id="tabs">
+  <button role="tab" aria-selected="true" data-tab="catalog">Catalog</button>
+  <button role="tab" aria-selected="false" data-tab="how">How it works</button>
+</nav>
+<main>
+  <section class="pg on" id="pg-catalog"><div class="grid" id="grid"></div><div class="legend" id="legend"></div></section>
+  <section class="pg" id="pg-detail"><div id="detail"></div></section>
+  <section class="pg" id="pg-how"><div class="panel card"><h2>From candidate to connector</h2><div class="steps" id="steps"></div></div><div class="panel card"><h2>Rules of this page</h2><ul class="pts" id="rules"></ul></div></section>
+</main>
+<script type="application/json" id="data">{"asOf":"2026-10-20","note":"Facts about candidates come from public READMEs and docs on 2026-10-20 and were not run by us. The tool classes are our reading of the tool descriptions, not a statement of the publisher.","classes":{"read":"Reads only","write":"Can change the system","data":"Can read business data"},"servers":[{"id":"arc-1","name":"ARC-1","tagline":"ABAP development for AI assistants, over the ADT REST API","category":"SAP ABAP development","publisher":"arc-mcp (community project)","license":"MIT","status":"candidate","statusLabel":"Candidate: not installed","source":"https://github.com/arc-mcp/arc-1","docs":"https://docs.arc-1-mcp.com/","package":"npm: arc-1","version":"not checked","summary":"Connects Claude and other assistants to SAP ABAP systems on premise or on BTP. Twelve intent-based tools cover reading and searching code, writing and activating objects, transports, abapGit, diagnostics and impact analysis. Read-only by default.","install":[{"label":"Claude Desktop bundle","how":"Download the latest arc-1-*.mcpb from the release page and open it. Claude asks for the SAP connection.","note":"In Werkbank: Connectors & Skills, Import MCP bundle. The review dialog appears before anything runs."},{"label":"npx","how":"npx arc-1@latest --url https://your-sap-host:44300 --user YOUR_USER","note":"Replace host and user. The password is not part of the command."},{"label":"Docker","how":"Image ghcr.io/arc-mcp/arc-1","note":"The README links the image but shows no run command here."}],"tools":[{"name":"SAPRead","class":"read","what":"Source, method bodies, CDS views, other object types. Table contents only when data preview is on.","default":"on"},{"name":"SAPSearch","class":"read","what":"Search objects and source code.","default":"on"},{"name":"SAPNavigate","class":"read","what":"Go to definition, find references, completion.","default":"on"},{"name":"SAPContext","class":"read","what":"Dependencies, where-used, CDS impact analysis.","default":"on"},{"name":"SAPLint","class":"read","what":"Lint and pretty-print ABAP code.","default":"on"},{"name":"SAPDiagnose","class":"read","what":"Syntax check, ABAP Unit, ATC, dumps.","default":"on"},{"name":"SAPManage","class":"read","what":"Feature probing, cache stats, package operations.","default":"on"},{"name":"SAPWrite","class":"write","what":"Create, update and delete ABAP and DDIC objects with automatic locking.","default":"off"},{"name":"SAPActivate","class":"write","what":"Activate objects, publish OData service bindings.","default":"off"},{"name":"SAPTransport","class":"write","what":"Manage CTS transports. Changes need two switches.","default":"off"},{"name":"SAPGit","class":"write","what":"gCTS and abapGit workflows. Git writes are off by default.","default":"off"},{"name":"SAPQuery","class":"data","what":"Run ABAP SQL.","default":"off"}],"switches":[{"name":"--allow-writes","default":"off","effect":"Allows SAPWrite and SAPActivate. Writes go to $TMP only unless packages are allowed."},{"name":"--allowed-packages","default":"$TMP","effect":"Limits where writes are allowed, for example \"Z*,$TMP\"."},{"name":"--allow-transport-writes","default":"off","effect":"Needs --allow-writes as well. Lets SAPTransport change transports."},{"name":"SAP_ALLOW_GIT_WRITES","default":"off","effect":"Allows gCTS and abapGit writes."},{"name":"SAP_ALLOW_DATA_PREVIEW","default":"false","effect":"Allows reading table contents through SAPRead."},{"name":"SAP_ALLOW_FREE_SQL","default":"false","effect":"Allows SAPQuery (ABAP SQL)."},{"name":"SAP_DENY_ACTIONS","default":"empty","effect":"Blocks single actions, for example SAPWrite.delete."},{"name":"SAP_BLOCKED_DATA_SOURCES","default":"empty","effect":"Experimental block list for tables or CDS views, for example USR02,PA0002."},{"name":"ARC1_RATE_LIMIT","default":"off","effect":"Per-user quota for MCP calls, for example 60."}],"auth":["API key (bearer token) with profiles viewer, viewer-data, viewer-sql, developer, developer-data, developer-sql, admin","OIDC or JWT","OAuth 2.0 with local browser login","XSUAA on BTP","Per-user SAP identity: the server runs with the real user and respects SAP authorizations"],"assessment":{"verdict":"Good first candidate for a read-only pilot","risk":"high-when-enabled","defaultRisk":"low","why":["Safe defaults: no writes, no free SQL, no table preview, no Git writes.","Respects SAP authorizations through the real user identity.","MIT license and a public supply-chain setup (CodeQL, Trivy, Dependabot, provenance attestations, as stated by the project)."],"plan":["Start against a sandbox or development system, never production.","Use a technical or personal user with display authorizations only, viewer profile for API keys.","Leave writes, transport writes, Git writes, data preview and free SQL off.","Enable writes later only with --allowed-packages for one Z package and a deny rule for deletes."],"checks":["Run it in a sandbox and record the version and release asset checksum.","Confirm which SAP authorizations the user needs for the tools you enable.","Decide which data classes are allowed if data preview is ever switched on.","Let Security review the project's supply-chain statements."]}},{"id":"ai-control-tower","name":"AI Control Tower","tagline":"Risks, agents, budget, Sub4Me sample data, skills, n8n and the knowledge graph","category":"Governance and sample data","publisher":"This prototype (own connector)","license":"Prototype","status":"builtin","statusLabel":"Built in","source":"connectors/control-tower","docs":"README of this repository","package":"local .mcpb","version":"0.15.0","summary":"Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.","install":[{"label":"Bundle","how":"npm run build:control-tower-mcpb, then import the bundle in Connectors & Skills.","note":"Configuration: Supabase URL and key, n8n URL and key (optional)."}],"tools":[{"name":"get_risks","class":"read","what":"","default":"on"},{"name":"get_risk","class":"read","what":"","default":"on"},{"name":"get_agent_overview","class":"read","what":"","default":"on"},{"name":"list_agents","class":"read","what":"","default":"on"},{"name":"get_unregistered_assets","class":"read","what":"","default":"on"},{"name":"get_overprivileged_agents","class":"read","what":"","default":"on"},{"name":"get_budget","class":"read","what":"","default":"on"},{"name":"list_tickets","class":"read","what":"","default":"on"},{"name":"create_ticket","class":"write","what":"","default":"on"},{"name":"find_similar_tickets","class":"read","what":"","default":"on"},{"name":"link_ticket","class":"write","what":"","default":"on"},{"name":"search_skills","class":"read","what":"","default":"on"},{"name":"get_skill_info","class":"read","what":"","default":"on"},{"name":"list_skill_catalog","class":"read","what":"","default":"on"},{"name":"get_skill_ranking","class":"read","what":"","default":"on"},{"name":"list_customers","class":"read","what":"","default":"on"},{"name":"list_invoices","class":"read","what":"","default":"on"},{"name":"list_contracts","class":"read","what":"","default":"on"},{"name":"list_offers","class":"read","what":"","default":"on"},{"name":"get_ai_consumption","class":"read","what":"","default":"on"},{"name":"get_customer_overview","class":"read","what":"","default":"on"},{"name":"get_product_overview","class":"read","what":"","default":"on"},{"name":"get_contract","class":"read","what":"","default":"on"},{"name":"get_offer","class":"read","what":"","default":"on"},{"name":"search_sub4me","class":"read","what":"","default":"on"},{"name":"get_n8n_overview","class":"read","what":"","default":"on"},{"name":"list_n8n_workflows","class":"read","what":"","default":"on"},{"name":"get_n8n_workflow","class":"read","what":"","default":"on"},{"name":"list_n8n_executions","class":"read","what":"","default":"on"},{"name":"list_n8n_categories","class":"read","what":"","default":"on"},{"name":"get_skill_impact","class":"read","what":"","default":"on"},{"name":"get_skill_governance","class":"read","what":"","default":"on"},{"name":"get_skill_lifecycle","class":"read","what":"","default":"on"},{"name":"find_skill_gaps","class":"read","what":"","default":"on"},{"name":"recommend_skills","class":"read","what":"","default":"on"},{"name":"recommend_skill_workflow","class":"read","what":"","default":"on"},{"name":"get_graph_overview","class":"read","what":"","default":"on"},{"name":"search_graph","class":"read","what":"","default":"on"},{"name":"get_graph_neighbors","class":"read","what":"","default":"on"},{"name":"find_graph_path","class":"read","what":"","default":"on"},{"name":"analyze_graph_impact","class":"read","what":"","default":"on"},{"name":"get_skill_ratings","class":"read","what":"","default":"on"},{"name":"rate_skill","class":"read","what":"","default":"on"},{"name":"simulate_credit_cut","class":"read","what":"","default":"on"},{"name":"enrich_ticket","class":"read","what":"","default":"on"},{"name":"search_sap_help","class":"read","what":"","default":"on"},{"name":"search_sap_community","class":"read","what":"","default":"on"},{"name":"get_preferences","class":"read","what":"","default":"on"},{"name":"save_preferences","class":"write","what":"","default":"on"}],"switches":[],"auth":["Secrets are stored in the OS keychain by the app"],"assessment":{"verdict":"In use","risk":"low","defaultRisk":"low","why":["Read-only except create_ticket, which is created only after a confirmation."],"plan":[],"checks":[]}},{"id":"gmail-drafts","name":"Gmail drafts","tagline":"Search and read mail, create draft replies","category":"Mail","publisher":"This prototype (own connector)","license":"Prototype","status":"builtin","statusLabel":"Built in","source":"connectors/gmail","docs":"README of this repository","package":"local .mcpb","version":"0.1.0","summary":"Search and read your Gmail and create draft replies. There is no tool that sends or deletes mail: drafts wait in your Drafts folder until you send them yourself.","install":[{"label":"Bundle","how":"Import the bundle in Connectors & Skills and enter the Google client values.","note":"There is no tool that sends or deletes mail."}],"tools":[{"name":"list_labels","class":"read","what":"","default":"on"},{"name":"search_mail","class":"read","what":"","default":"on"},{"name":"read_mail","class":"read","what":"","default":"on"},{"name":"create_draft","class":"write","what":"","default":"on"}],"switches":[],"auth":["Google OAuth refresh token, stored in the OS keychain"],"assessment":{"verdict":"In use","risk":"low","defaultRisk":"low","why":["Drafts wait in the Drafts folder until a person sends them."],"plan":[],"checks":[]}},{"id":"sap-notes","name":"SAP Notes","tagline":"Search and read SAP Notes and KBAs from behind the SAP login","category":"SAP knowledge","publisher":"marianfoo (community project)","license":"Apache-2.0","status":"candidate","statusLabel":"Candidate: not installed","source":"https://github.com/marianfoo/sap-mcp-servers","docs":"https://github.com/marianfoo/mcp-sap-notes (archived, moved to packages/notes in the repo above)","package":"npm: sap-note-search-mcp (packages/notes)","version":"not checked","summary":"Lets an assistant search SAP Notes by keyword, error code, component or note number and read a full note. It signs in to the SAP Support Portal with an S-user and uses private SAP APIs behind that login. The README tells users to check whether this is allowed under SAP's terms.","install":[{"label":"Bundle (as linked in this repository's README)","how":"Release asset sap-notes.mcpb of marianfoo/sap-mcp-servers, tag sap-notes-latest","note":"In Werkbank: Connectors & Skills, Import MCP bundle. The review dialog appears first. We did not check the release asset."},{"label":"Docker or git (archived repository)","how":"docker build -t mcp-sap-notes . and pass the credentials as environment variables","note":"Described in the archived mcp-sap-notes README. The newer repository needs npm install, npm run build and npm run install:browsers (Playwright)."}],"tools":[{"name":"search","class":"read","what":"Find SAP Notes by keyword, error code, component or note number. Parameters: q, lang (EN or DE).","default":"on"},{"name":"fetch","class":"read","what":"Full content and metadata of one note. With includeCorrections (default false) it adds ABAP correction details.","default":"on"}],"switches":[{"name":"SAP_USERNAME / SAP_PASSWORD","default":"none","effect":"S-user login. The app stores such values in the OS keychain."},{"name":"PFX_PATH / PFX_PASSPHRASE","default":"none","effect":"Alternative: SAP Passport certificate (.pfx)."},{"name":"AUTH_METHOD","default":"auto","effect":"Auto tries password first, then certificate."},{"name":"MFA_TIMEOUT","default":"120000 ms","effect":"How long to wait for a second factor."},{"name":"MAX_JWT_AGE_H","default":"12 h","effect":"Maximum age of the cached login token."},{"name":"HEADFUL","default":"false","effect":"Shows the login browser window when true."},{"name":"ACCESS_TOKEN","default":"none","effect":"Bearer token for the HTTP mode of the server."}],"auth":["S-user with access to the SAP Support Portal (me.sap.com), with username and password or an SAP Passport certificate","Interactive login on first run, a second factor may be asked","Never commit credentials, .env, *.pfx or token caches (the project's own warning)"],"assessment":{"verdict":"Useful, but check the terms first","risk":"medium","defaultRisk":"medium","why":["Two tools, both read content only and nothing in SAP changes.","Open source under Apache-2.0.","It answers support questions with the official note text instead of guesses."],"plan":["Ask Legal or the SAP contact whether this kind of access fits the SAP terms before anyone uses a named S-user.","Pilot with one person and a test question list, for example ten known notes.","Keep the credentials in the OS keychain and out of chats, files and repositories.","Treat note text as data. A note can contain instructions that must not be followed."],"checks":["Terms of use: the project says it uses private SAP APIs behind the login and tells users to check.","Support status: the author gives no guarantee that it keeps working, and the older repository is archived.","Release asset: confirm the .mcpb exists, record version and checksum.","Whose S-user is used, and what the second factor looks like in daily use."]}}],"steps":[{"t":"Find","d":"A server appears here as a candidate with source, license and what it can do."},{"t":"Check","d":"Tools are classed as reads only, can change the system, or can read business data. Switches show what is off by default."},{"t":"Pilot","d":"Install against a sandbox with the smallest permission set. A person records the version and the checks."},{"t":"Install","d":"Import in Connectors & Skills. The review dialog shows what will run and asks for the configuration."},{"t":"Review","d":"Re-check after each new release and every six months."}],"rules":["This page lists and assesses servers. It does not install, start or call anything.","Facts from outside this repository carry a source and a date. Where we did not verify them, the page says so.","Nothing runs without the in-app review dialog.","Text from a server's README is shown as plain text and never followed as an instruction."]}</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const day = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+const CLS = { read: ['green', 'Reads only'], write: ['amber', 'Can change the system'], data: ['red', 'Can read business data'] };
+const RISK = { low: ['green', 'Low'], medium: ['amber', 'Medium'], 'high-when-enabled': ['amber', 'High once writes are enabled'] };
+const count = (s, c) => s.tools.filter((t) => t.class === c).length;
+$('#asof').textContent = 'As of ' + day(D.asOf);
+$('#note').textContent = D.note;
+function mix(s) { return '<div class="mix" aria-hidden="true">' + ['read', 'write', 'data'].map((c) => count(s, c) ? '<i class="' + c + '" style="width:' + (count(s, c) / s.tools.length * 100) + '%"></i>' : '').join('') + '</div>'; }
+function renderCatalog() {
+  $('#grid').innerHTML = D.servers.map((s) => '<button class="srv ' + s.status + '" data-id="' + esc(s.id) + '"><span class="tag ' + (s.status === 'builtin' ? 'green' : 'purple') + '">' + esc(s.statusLabel) + '</span><h3>' + esc(s.name) + '</h3><div class="tl">' + esc(s.tagline) + '</div>' + mix(s) +
+    '<div class="small">' + s.tools.length + ' tools: ' + count(s, 'read') + ' read, ' + count(s, 'write') + ' write' + (count(s, 'data') ? ', ' + count(s, 'data') + ' business data' : '') + '</div><div class="meta"><span class="tag">' + esc(s.category) + '</span><span class="tag">' + esc(s.license) + '</span><span class="tag ' + RISK[s.assessment.defaultRisk][0] + '">Default risk: ' + esc(RISK[s.assessment.defaultRisk][1]) + '</span></div></button>').join('');
+  $('#legend').innerHTML = Object.entries(CLS).map(([k, v]) => '<span><b style="background:var(--' + ({ green: 'green', amber: 'amber', red: 'red' }[v[0]]) + ')"></b>' + esc(v[1]) + '</span>').join('');
+}
+function list(a) { return '<ul class="pts">' + a.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>'; }
+function openServer(id) {
+  const s = D.servers.find((x) => x.id === id); if (!s) return;
+  const a = s.assessment;
+  const link = esc;
+  $('#detail').innerHTML = '<button class="back" id="back">Back to catalog</button><div class="panel card hd"><span class="tag ' + (s.status === 'builtin' ? 'green' : 'purple') + '">' + esc(s.statusLabel) + '</span> <span class="tag">' + esc(s.category) + '</span><h2>' + esc(s.name) + '</h2><div class="small">' + esc(s.tagline) + '</div><p>' + esc(s.summary) + '</p>' +
+    '<div class="meta"><span class="tag">Publisher: ' + esc(s.publisher) + '</span><span class="tag">License: ' + esc(s.license) + '</span><span class="tag">Package: ' + esc(s.package) + '</span><span class="tag">Version: ' + esc(s.version) + '</span></div><div class="small" style="margin-top:8px">Source: ' + link(s.source) + ' &middot; Docs: ' + link(s.docs) + '</div></div>' +
+    '<div class="panel card"><h2>Our assessment</h2><div class="verdict"><b>' + esc(a.verdict) + '</b><div class="meta" style="margin-top:6px"><span class="tag ' + RISK[a.defaultRisk][0] + '">Default risk: ' + esc(RISK[a.defaultRisk][1]) + '</span><span class="tag ' + RISK[a.risk][0] + '">Maximum risk: ' + esc(RISK[a.risk][1]) + '</span></div></div>' +
+    '<div class="two"><div><h2 style="font-size:13px">Why</h2>' + list(a.why) + '</div>' + (a.plan.length ? '<div><h2 style="font-size:13px">Pilot plan</h2>' + list(a.plan) + '</div>' : '') + '</div>' +
+    (a.checks.length ? '<h2 style="font-size:13px;margin-top:14px">Still to check before use</h2>' + list(a.checks) : '') + '</div>' +
+    '<div class="panel card"><h2>Tools (' + s.tools.length + ')</h2>' + mix(s) + '<div class="wrap"><table class="tbl"><thead><tr><th>Tool</th><th>Class</th><th>What it does</th><th>Default</th></tr></thead><tbody>' + s.tools.map((t) => '<tr><td><code>' + esc(t.name) + '</code></td><td><span class="tag ' + CLS[t.class][0] + '">' + esc(CLS[t.class][1]) + '</span></td><td>' + esc(t.what) + '</td><td>' + esc(t.default) + '</td></tr>').join('') + '</tbody></table></div><div class="small" style="margin-top:8px">Classes are our reading of the tool descriptions.</div></div>' +
+    (s.switches.length ? '<div class="panel card"><h2>Switches and their defaults</h2><div class="wrap"><table class="tbl"><thead><tr><th>Switch</th><th>Default</th><th>Effect</th></tr></thead><tbody>' + s.switches.map((w) => '<tr><td><code>' + esc(w.name) + '</code></td><td>' + esc(w.default) + '</td><td>' + esc(w.effect) + '</td></tr>').join('') + '</tbody></table></div></div>' : '') +
+    '<div class="two"><div class="panel card"><h2>Install options</h2>' + s.install.map((i) => '<div style="margin-bottom:10px"><b>' + esc(i.label) + '</b><span class="cmd">' + esc(i.how) + '</span><div class="small">' + esc(i.note) + '</div></div>').join('') + '</div><div class="panel card"><h2>Authentication</h2>' + list(s.auth) + '</div></div>';
+  document.querySelectorAll('.pg').forEach((p) => p.classList.toggle('on', p.id === 'pg-detail'));
+  window.scrollTo(0, 0);
+}
+function showTab(t) {
+  document.querySelectorAll('#tabs button').forEach((x) => x.setAttribute('aria-selected', String(x.dataset.tab === t)));
+  document.querySelectorAll('.pg').forEach((p) => p.classList.toggle('on', p.id === 'pg-' + t));
+}
+$('#steps').innerHTML = D.steps.map((s, i) => '<div class="step"><h3>' + (i + 1) + '. ' + esc(s.t) + '</h3><p>' + esc(s.d) + '</p></div>').join('');
+$('#rules').innerHTML = D.rules.map((r) => '<li>' + esc(r) + '</li>').join('');
+$('#grid').addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (b) openServer(b.dataset.id); });
+$('#detail').addEventListener('click', (e) => { if (e.target.closest('#back')) showTab('catalog'); });
+document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+renderCatalog();
+</script>
+</body>
+</html>

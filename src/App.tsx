@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { connect, type Agent, type PermissionRequest, type ToolCall } from './acp';
 import {
-  readAppearance,
+ 
   resolveAppearance,
   writeAppearance,
   type AppearancePreference,
@@ -31,13 +31,17 @@ import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
-import { SUB4ME_EXTENSION, SUB4ME_SPACE } from './sub4me-bridge';
+import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
+import { assistantNote, loadPreferences, pinFirst, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
+import { buildPreferenceCss } from './preferences-style';
+import { listSkills, type Skill } from './skills';
+import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
 import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
-import { readSpaceScale, writeSpaceScale, type SpaceScale } from './space-scale';
+import { writeSpaceScale, type SpaceScale } from './space-scale';
 import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
 import { parseNavCommand } from './voice-commands';
 
@@ -128,11 +132,20 @@ export default function App() {
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [spaceScale, setSpaceScale] = useState<SpaceScale>(() => readSpaceScale(window.localStorage));
+  const [prefs, setPrefs] = useState<Preferences>(() => {
+    const loaded = loadPreferences(window.localStorage);
+    return loaded;
+  });
+  const updatePrefs = useCallback((change: (current: Preferences) => Preferences) => {
+    setPrefs((current) => sanitizePreferences(change(current)));
+  }, []);
+  const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
-    setSpaceScale(scale);
-    writeSpaceScale(scale, window.localStorage);
+    updatePrefs((c) => ({ ...c, spaceScale: scale }));
   }
+  const [skillList, setSkillList] = useState<Skill[]>([]);
+  const [extensionNames, setExtensionNames] = useState<string[]>([]);
+  const [syncState, setSyncState] = useState({ busy: false, message: '' });
   const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
   const speaker = useRef<ReplySpeaker | null>(null);
   const voiceRef = useRef(voice);
@@ -147,9 +160,8 @@ export default function App() {
     if (!patch.speak) speaker.current?.stop();
     return result;
   }
-  const [appearance, setAppearance] = useState<AppearancePreference>(() =>
-    readAppearance(window.localStorage)
-  );
+  const appearance = prefs.appearance as AppearancePreference;
+  const setAppearance = (value: AppearancePreference) => updatePrefs((c) => ({ ...c, appearance: value }));
   const [systemUsesDark, setSystemUsesDark] = useState(() =>
     window.matchMedia('(prefers-color-scheme: dark)').matches
   );
@@ -209,6 +221,84 @@ export default function App() {
     document.documentElement.dataset.theme = resolvedTheme;
     document.documentElement.style.colorScheme = resolvedTheme;
   }, [appearance, resolvedTheme]);
+
+  // Personal look: stored, applied as CSS on the app, zoom for the app size.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      savePreferences(prefs, window.localStorage);
+      writeSpaceScale(prefs.spaceScale as SpaceScale, window.localStorage);
+    }, 200);
+    return () => window.clearTimeout(timer);
+  }, [prefs]);
+  useEffect(() => {
+    let style = document.getElementById('werkbank-preferences') as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'werkbank-preferences';
+      document.head.appendChild(style);
+    }
+    style.textContent = buildPreferenceCss(prefs);
+    document.documentElement.dataset.density = prefs.density;
+    window.host?.setZoomFactor?.(prefs.appScale);
+  }, [prefs]);
+  useEffect(() => {
+    void listSkills().then(setSkillList).catch(() => undefined);
+  }, [settingsOpen]);
+  useEffect(() => {
+    if (!agent || !settingsOpen) return;
+    void agent.listExtensions().then((list) => setExtensionNames(list.filter((e) => e.enabled && !e.isPlatform).map((e) => e.name))).catch(() => undefined);
+  }, [agent, settingsOpen]);
+
+  // Start view: once, as soon as the Spaces are known.
+  const startApplied = useRef(false);
+  useEffect(() => {
+    if (startApplied.current || !spaces.length) return;
+    startApplied.current = true;
+    let last: string | null = null;
+    try { last = window.localStorage.getItem('werkbank.lastSpace'); } catch { /* ignore */ }
+    const target = startSpace(prefs, spaces.map((x) => x.slug), last);
+    if (target) {
+      setSelectedSpace(target);
+      setView('spaces');
+    }
+  }, [spaces, prefs]);
+  useEffect(() => {
+    if (!selectedSpace) return;
+    try { window.localStorage.setItem('werkbank.lastSpace', selectedSpace); } catch { /* ignore */ }
+  }, [selectedSpace]);
+
+  async function syncSave() {
+    if (!agent) return;
+    setSyncState({ busy: true, message: '' });
+    try {
+      const data = { ...prefs, sync: undefined };
+      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
+      setSyncState({ busy: false, message: out?.updatedAt ? `Saved to Supabase (${out.updatedAt}).` : 'Saved to Supabase.' });
+    } catch (error) {
+      setSyncState({ busy: false, message: `Saving failed: ${error instanceof Error ? error.message : String(error)}` });
+    }
+  }
+  const syncLoad = useCallback(async () => {
+    if (!agent) return;
+    setSyncState({ busy: true, message: '' });
+    try {
+      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
+      if (!out || !out.data) {
+        setSyncState({ busy: false, message: 'Nothing stored under this key yet.' });
+        return;
+      }
+      updatePrefs((c) => ({ ...sanitizePreferences(out.data), sync: c.sync }));
+      setSyncState({ busy: false, message: 'Loaded from Supabase.' });
+    } catch (error) {
+      setSyncState({ busy: false, message: `Loading failed: ${error instanceof Error ? error.message : String(error)}` });
+    }
+  }, [agent, prefs.sync.key, updatePrefs]);
+  const autoLoaded = useRef(false);
+  useEffect(() => {
+    if (!agent || autoLoaded.current || !prefs.sync.auto) return;
+    autoLoaded.current = true;
+    void syncLoad();
+  }, [agent, prefs.sync.auto, syncLoad]);
 
   useEffect(() => {
     const timer = window.setTimeout(
@@ -388,7 +478,7 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, assistantNote(prefs), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -606,6 +696,8 @@ export default function App() {
       onStopSpeaking={() => speaker.current?.stop()}
       onVoiceCommand={handleVoiceCommand}
       onNavigate={navigateTo}
+      ownStarters={prefs.starters}
+      favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
     />
   );
   const disclaimer = (
@@ -614,7 +706,7 @@ export default function App() {
     </p>
   );
   const space = spaces.find((s) => s.slug === selectedSpace) ?? null;
-  const orderedSpaces = orderSpaces(spaces, spaceOrder);
+  const orderedSpaces = pinFirst(orderSpaces(spaces, spaceOrder), prefs.pinnedSpaces);
 
   /** Reorder starting from what is on screen, so Spaces without a saved position get one too. */
   function changeSpaceOrder(change: (slugs: string[]) => string[]) {
@@ -725,6 +817,8 @@ export default function App() {
           onSelect={setSelectedSpace}
           onReorder={(from, to, after) => changeSpaceOrder((current) => moveSpace(current, from, to, after))}
           onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
+          pinned={prefs.pinnedSpaces}
+          onTogglePin={(slug) => updatePrefs((c) => ({ ...c, pinnedSpaces: togglePin(c.pinnedSpaces, slug) }))}
         />
       )}
       {view === 'manage' && (
@@ -764,6 +858,7 @@ export default function App() {
             tabRequest={spaceTab && (spaceTab.space ?? 'ai-control-tower') === space.slug ? spaceTab : null}
             textScale={spaceScale}
             theme={resolvedTheme}
+            prefs={prefs}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
             onAsk={askFromSpace}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
@@ -864,6 +959,17 @@ export default function App() {
           onSpaceScaleChange={changeSpaceScale}
           voice={voice}
           onVoiceChange={saveVoice}
+          personalize={{
+            prefs,
+            update: updatePrefs,
+            spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),
+            skills: skillList.map((x) => ({ name: x.name, description: x.description })),
+            connectors: extensionNames,
+            syncAvailable: Boolean(agent) && extensionNames.includes(CONTROL_TOWER_CONNECTOR),
+            sync: syncState,
+            onSyncSave: () => void syncSave(),
+            onSyncLoad: () => void syncLoad(),
+          }}
           onClose={() => setSettingsOpen(false)}
         />
       )}

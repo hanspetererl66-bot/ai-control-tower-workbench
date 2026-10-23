@@ -277,6 +277,14 @@ Nine new skills cover the stages, all in `examples/skills/` with domain *Vertrie
 
 Database: the domain list was out of date (four example skills could not be published). `supabase/migrations/20261020_014_skill_domains.sql` adds Vertrieb, Automatisierung, Sicherheit & Zugriff and Skill-Management. The sample data migrations 012 (profiles) and 013 (ratings) were regenerated with the new skills; both are upserts, so running them again is safe.
 
+Six more skills close the gaps for an account executive: `discovery-meddpicc`, `competitive-battlecard`, `business-case-builder`, `security-questionnaire-helper`, `handover-onboarding-plan` and `call-followup` (23 registered skills in total). They sit in the capability *Sales pipeline* and in the collections PB-12 (Opportunity absichern), PB-13 (Sicherheit und Übergabe) and PB-14 (Nach dem Kundengespräch). None of them sends mail or writes to a CRM; `handover-onboarding-plan` creates a ticket only after confirmation.
+
+The Sales Space has two more tabs. **Forecast** shows commit, best case and pipeline by close month with weighted totals and target coverage (category rule: probability 70 % or more and a cleared discount is commit, 50 to 69 % best case, below 50 % pipeline). **Meetings** lists upcoming meetings with a brief, questions and flags, and finished calls with proposed CRM changes, actions from the call and a follow-up mail that is only a draft. Data is in `examples/sales/pipeline.json` (`closeDate`, `category`, `forecast`, `meetings`); a test keeps it consistent with the call transcripts, e-mail threads and Sub4Me data. After a pull run `npm run sync:mockups`, `npm run sync:skill-marketplace` and `npm run install:sales`.
+
+### MCP Marketplace
+
+A Space **MCP Marketplace** (`npm run install:mcp-marketplace`) is a governed catalog of MCP servers. Each entry shows what the server can do (tools classed as reads only, can change the system, can read business data), which switches are off by default, authentication, install options, our assessment, a pilot plan and the checks still open. Candidates: **ARC-1** (`arc-mcp/arc-1`, ABAP development over ADT, MIT, read-only by default) and **SAP Notes** (`marianfoo/sap-mcp-servers`, search and read SAP Notes behind the S-user login; the README tells users to check SAP's terms first). The two built-in connectors appear as reference entries and a test keeps their tool lists equal to the manifests. Facts about the candidates come from their public READMEs on 2026-10-20 and were not run by us; the page says so. The Space lists and assesses only: installation stays with Connectors & Skills and its in-app review dialog. Data lives in `examples/mcp-marketplace/servers.json` (embedded by `npm run sync:mockups`).
+
 ### Skill Marketplace as a control surface for business users
 
 The Space is now organised for business users instead of a flat list. Navigation: **Discover** (search with live hits, skills by business
@@ -334,6 +342,28 @@ Every skill has a profile in four fields, plus the marketplace knows process gap
 - **Gaps** (tab *Gaps*): processes without a skill and requests from the teams.
 
 `npm run sync:skill-marketplace` embeds the profiles into the Space; `npm run sync:skill-profiles` writes `supabase/migrations/20261019_012_skill_profiles.sql` (run it once in the Supabase SQL editor). Chat tools: `get_skill_impact`, `get_skill_governance`, `get_skill_lifecycle`, `find_skill_gaps`, `recommend_skills`, and `recommend_skill_workflow` (an ordered chain of skills for a role and goal, from the `playbooks` in `profiles.json`, for example Account Manager: customer-call-prep → renewal-radar → quote-drafter → ticket-writer; connector 0.13.0; live from Supabase when connected, otherwise the embedded sample data).
+
+### Sales Space: sources, inbox and governance
+
+Ideas taken from AI-native CRMs (sourced reasoning, auto-capture, governed agents), all mockup data in `examples/sales/pipeline.json`:
+
+- **Why? Sources** in the deal drawer: each statement (probability, value, notice date) lists the mail, call, contract, ticket, invoice or offer it comes from, with a confidence. A test checks that every reference exists.
+- **Inbox:** suggestions captured from mails and calls (new stakeholder, risk, next step, closing an open action). Nothing reaches a deal until you accept; accepted and rejected items can be undone. A discount question cannot be accepted here and goes to the deal desk; an instruction hidden in a customer mail is blocked and flagged.
+- **Governance:** four levels (does it itself, you confirm, needs an approver, never) and an audit log of every decision, including undo.
+- **Two accounts:** the pipeline now also carries Hanse Handelsgruppe AG (interest, lead, opportunity, three offers, two contracts) built from the Sub4Me data; its briefs and evidence use tickets, offers, contracts and invoices (there are no sample calls or mails for Hanse). The forecast target is raised to 1.5M for both accounts.
+- **Forecast changes** since the previous week (category, probability, value, close date, each with its reason) and a **customer context** block in the meeting brief: open tickets, invoices and forecast changes from the Sub4Me data. The skill `customer-call-prep` now does the same through `list_tickets` and `list_invoices` and names a source for every statement.
+
+### Sub4Me: second customer, invoices and the ticket check
+
+The Sub4Me Space now has a customer switch in the header: **Muster Industrie AG** (industrial, S/4HANA) and **Hanse Handelsgruppe AG** (retail, Commerce Cloud, Ariba, Analytics Cloud). Each has its own profile (industry, account team, contacts, landscape), contracts, offers, AI-unit consumption, tickets and a new **Invoices** tab (invoices, credit notes, open and overdue amounts). All data is fictional and lives in `examples/sub4me/portfolio.json` (`profile`, `invoices`, `otherCustomers`, `knowledge`); `npm run sync:sub4me` embeds it and writes `supabase/migrations/20261021_015_sub4me_customers.sql` (run it once after 006 and 011; it is re-runnable).
+
+**Ticket check.** "Check, then send ticket" first looks for (1) a solution in the SAP Help Portal and the SAP Community (connector tools `search_sap_help` and `search_sap_community`, public content, no login) plus the sample notes, and (2) the same issue in the open tickets of all customers. Nothing is created until the person confirms: also when nothing is found, the ticket is only sent after "Send ticket". Inside the app the Space asks the connector through the bridge (`s4m:check-request`; each source can fail on its own and is shown as "not available"); opened standalone in a browser only the sample notes and sample tickets are used. Community posts are labelled as not official SAP guidance. Links are shown as text because the Space sandbox cannot open pages. The Help Portal and Community search formats are not verified against the live sites. Three example buttons show the cases: a note plus a ticket of another customer (Hanse, quota error), a note only (Hanse, empty invoice fields), and no match (Hanse, PDF export). If the same issue is open at another customer, the customer can *follow* that ticket (no new ticket; a row in `sub4me.ticket_links`) or open a new ticket that is *linked* to it. The other customer's details stay hidden in the portal. The notes are fictional samples (`SAMPLE-xxxx`); with the SAP Notes MCP installed, the skill `ticket-triage` also searches the real notes. Matching is a simple word-overlap score (strong from 0.5, possible from 0.35), implemented once in `connectors/control-tower/server/ticket-match.mjs` and copied into the page; a test keeps both identical.
+
+Connector tools: every Sub4Me and ticket tool takes an optional `customer` (`muster`, `hanse`); new are `list_customers`, `list_invoices`, `find_similar_tickets` and `link_ticket`. The knowledge graph, calls, e-mails and Sales Space stay with Muster Industrie. After a pull: `npm run install:sub4me`, run migration 015 in Supabase, `npm run build:control-tower-mcpb`, re-import the connector and restart.
+
+### SAP Help Portal search (no S-user)
+
+The connector tool `search_sap_help` queries the public search of help.sap.com (documentation and support content, no login) and returns title, link, product and an excerpt. It contacts only help.sap.com, drops links to other hosts, strips HTML and tells the model to treat the text as data. It runs on your computer when the connector is called, so it needs internet access there. The response format was taken from public descriptions and is covered by tests with a fake response; it has **not** been checked against the live service from the development environment. The `ticket-triage` skill uses it next to `find_similar_tickets`. After a pull: `npm run build:control-tower-mcpb`, re-import the connector and restart.
 
 ### Sub4Me: contract and offer details
 
@@ -401,3 +431,15 @@ The sparkle icon next to **+** in the composer opens a menu with two entries (th
 - **Model** shows **OpenRouter** with the model that is actually running (`GOOSE_MODEL` in `.env`). SAP Generative AI Hub, Azure OpenAI, Anthropic and Google Gemini are listed in light grey as “not connected”; switching the provider is not part of the prototype yet.
 
 The logic lives in `src/web-search.ts`.
+
+## Personalisierung
+
+Einstellungen → Tabs **Profile, Look, Work, Assistant, Storage, General**.
+
+- **Look:** Akzentfarbe (wirkt auch in allen Spaces), App- und Space-Textgröße, Schrift, Dichte, hoher Kontrast, weniger Bewegung.
+- **Profile:** fertige Profile (Standard, Vertrieb, Governance, Demo, Barrierearm) und eigene Profile speichern/löschen.
+- **Work:** Start-Ansicht (Chat, letzter Space, fester Space), angeheftete Spaces (★ in der Space-Liste), Lieblings-Skills und eigene Starter-Prompts als Chips, Standard-Connectoren.
+- **Assistant:** Sprache, Länge, Ton und feste Anweisungen; werden jeder Anfrage als „PERSONAL PREFERENCES“-Block mitgegeben.
+- **Storage:** benannte Ablageorte (Zweck → Pfad/URL), Export/Import als Datei und Abgleich mit Supabase (`werkbank.preferences`, Tools `get_preferences` / `save_preferences`; Geheimnisse werden abgelehnt). Migration: `supabase/migrations/20261022_016_werkbank_preferences.sql`.
+
+Lokal liegt alles in `localStorage` (`werkbank.preferences.v1`). Das Modell lässt sich über Goose/ACP nicht umschalten; der Modell-Wunsch ist nur eine Erinnerung.

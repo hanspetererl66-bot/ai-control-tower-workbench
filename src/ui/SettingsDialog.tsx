@@ -4,6 +4,30 @@ import { useState } from 'react';
 import type { AppearancePreference, ResolvedTheme } from '../appearance';
 import { SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { speechSupported, type VoiceSettings } from '../voice';
+import type { Preferences } from '../preferences';
+import { AssistantPanel, LookPanel, ProfilesPanel, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
+
+const TABS = [
+  { id: 'profiles', title: 'Profiles' },
+  { id: 'look', title: 'Look' },
+  { id: 'work', title: 'Work' },
+  { id: 'assistant', title: 'Assistant' },
+  { id: 'storage', title: 'Storage' },
+  { id: 'general', title: 'General' },
+] as const;
+type TabId = (typeof TABS)[number]['id'];
+
+export type PersonalizeProps = {
+  prefs: Preferences;
+  update: PrefsUpdate;
+  spaces: SpaceRef[];
+  skills: SkillRef[];
+  connectors: string[];
+  syncAvailable: boolean;
+  sync: SyncState;
+  onSyncSave: () => void;
+  onSyncLoad: () => void;
+};
 
 const OPTIONS: Array<{
   id: AppearancePreference;
@@ -23,6 +47,7 @@ export default function SettingsDialog({
   onSpaceScaleChange,
   voice,
   onVoiceChange,
+  personalize,
   onClose,
 }: {
   appearance: AppearancePreference;
@@ -34,8 +59,10 @@ export default function SettingsDialog({
   onVoiceChange?: (
     patch: Partial<Omit<VoiceSettings, 'hasKey'>> & { key?: string }
   ) => Promise<{ ok: boolean; detail?: string } | undefined>;
+  personalize?: PersonalizeProps;
   onClose: () => void;
 }) {
+  const [tab, setTab] = useState<TabId>(personalize ? 'profiles' : 'general');
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -61,13 +88,28 @@ export default function SettingsDialog({
         <header className="settings-head">
           <div>
             <h3 id="settings-title" className="dialog-title">Settings</h3>
-            <p className="dialog-body">Personalise how {PRODUCT_NAME} looks on this Mac.</p>
+            <p className="dialog-body">Personalise how {PRODUCT_NAME} looks and works.</p>
           </div>
           <button className="icon-btn settings-close" onClick={onClose} aria-label="Close settings">
             <CloseIcon />
           </button>
         </header>
 
+        {personalize && (
+          <div className="prefs-tabs" role="tablist" aria-label="Settings sections">
+            {TABS.map((t) => (
+              <button key={t.id} role="tab" aria-selected={tab === t.id} className={`prefs-tab ${tab === t.id ? 'prefs-tab-on' : ''}`} onClick={() => setTab(t.id)}>{t.title}</button>
+            ))}
+          </div>
+        )}
+        <div className="prefs-body">
+        {personalize && tab === 'profiles' && <ProfilesPanel prefs={personalize.prefs} update={personalize.update} />}
+        {personalize && tab === 'look' && <LookPanel prefs={personalize.prefs} update={personalize.update} />}
+        {personalize && tab === 'work' && <WorkPanel prefs={personalize.prefs} update={personalize.update} spaces={personalize.spaces} skills={personalize.skills} connectors={personalize.connectors} />}
+        {personalize && tab === 'assistant' && <AssistantPanel prefs={personalize.prefs} update={personalize.update} />}
+        {personalize && tab === 'storage' && <StoragePanel prefs={personalize.prefs} update={personalize.update} syncAvailable={personalize.syncAvailable} sync={personalize.sync} onSave={personalize.onSyncSave} onLoad={personalize.onSyncLoad} />}
+        {(!personalize || tab === 'general') && (
+          <>
         <div className="settings-section">
           <div className="settings-section-copy">
             <h4>Appearance</h4>
@@ -116,6 +158,9 @@ export default function SettingsDialog({
           </div>
         )}
         {voice && onVoiceChange && <VoiceSection voice={voice} onVoiceChange={onVoiceChange} />}
+          </>
+        )}
+        </div>
       </section>
     </div>
   );

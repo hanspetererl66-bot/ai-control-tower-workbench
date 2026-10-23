@@ -1,6 +1,6 @@
 // CommonJS on purpose: an ESM preload would require sandbox:false, and keeping the
 // sandbox on is worth more than matching the project's module style.
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
 
 // The renderer talks ACP to goosed over HTTP directly (same split goose's own
 // desktop uses). All it needs from main is where to find it, plus the few
@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld('host', {
   gooseUrl: 'http://127.0.0.1:3299',
   platform: process.platform,
   workspacePath: ipcRenderer.sendSync('get-workspace-path'),
+  setZoomFactor: (factor) => {
+    const f = Number(factor);
+    if (f >= 0.8 && f <= 1.5) webFrame.setZoomFactor(f);
+  },
   openFile: (path) => ipcRenderer.invoke('open-file', path),
   revealFile: (path) => ipcRenderer.send('reveal-file', path),
   pickChatFiles: () => ipcRenderer.invoke('pick-chat-files'),
