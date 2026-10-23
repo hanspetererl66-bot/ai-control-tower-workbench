@@ -1,40 +1,139 @@
 {
   "note": "Illustrative links between agent families and the business systems they work with. Fictional sample data: the Control Tower registry records platform and family, not the connected systems, so these links are assumptions for the demo.",
   "systems": [
-    { "id": "s4hana", "name": "SAP S/4HANA" },
-    { "id": "successfactors", "name": "SAP SuccessFactors" },
-    { "id": "salesforce", "name": "Salesforce" },
-    { "id": "icertis", "name": "Icertis" },
-    { "id": "m365", "name": "Microsoft 365" },
-    { "id": "github", "name": "GitHub" }
+    {
+      "id": "s4hana",
+      "name": "SAP S/4HANA"
+    },
+    {
+      "id": "successfactors",
+      "name": "SAP SuccessFactors"
+    },
+    {
+      "id": "salesforce",
+      "name": "Salesforce"
+    },
+    {
+      "id": "icertis",
+      "name": "Icertis"
+    },
+    {
+      "id": "m365",
+      "name": "Microsoft 365"
+    },
+    {
+      "id": "github",
+      "name": "GitHub"
+    }
   ],
   "families": {
-    "ABAP Code Assistant": ["github", "s4hana"],
-    "BTP Monitor": ["s4hana"],
-    "OData Enrichment Pipeline": ["s4hana", "salesforce"],
-    "Meeting Summarizer": ["m365"],
-    "n8n Workflow Builder": ["salesforce", "s4hana"],
-    "Contract Drafter": ["icertis"],
-    "Test Case Suggester": ["github"],
-    "Invoice Matcher": ["s4hana"],
-    "Test Suite Generator": ["github"],
-    "Report Generation Bot": ["s4hana"],
-    "Access Review Collector": ["m365", "s4hana"],
-    "L2C Deal Advisor": ["salesforce", "icertis"],
-    "Release Train Coordinator": ["github"],
-    "Fiori UX Reviewer": ["github", "s4hana"],
-    "Knowledge Base Search": ["m365"],
-    "L2C Pipeline Orchestrator": ["salesforce", "icertis", "s4hana"],
-    "BTP Deploy Coordinator": ["github"],
-    "Presales Proposal Generator": ["salesforce"],
-    "Contract Classifier": ["icertis"],
-    "Support Reply Drafter": ["salesforce"],
-    "SQL Query Helper": ["s4hana"],
-    "Price List Updater": ["s4hana", "salesforce"],
-    "Onboarding Orchestrator": ["successfactors"],
-    "Shift Roster Sync": ["successfactors"],
-    "SAP SPC Ticket Router": ["s4hana"],
-    "Log Anomaly Triage": ["s4hana"],
-    "Master Data Deduplicator": ["s4hana"]
-  }
+    "ABAP Code Assistant": [
+      "github",
+      "s4hana"
+    ],
+    "BTP Monitor": [
+      "s4hana"
+    ],
+    "OData Enrichment Pipeline": [
+      "s4hana",
+      "salesforce"
+    ],
+    "Meeting Summarizer": [
+      "m365"
+    ],
+    "n8n Workflow Builder": [
+      "salesforce",
+      "s4hana"
+    ],
+    "Contract Drafter": [
+      "icertis"
+    ],
+    "Test Case Suggester": [
+      "github"
+    ],
+    "Invoice Matcher": [
+      "s4hana"
+    ],
+    "Test Suite Generator": [
+      "github"
+    ],
+    "Report Generation Bot": [
+      "s4hana"
+    ],
+    "Access Review Collector": [
+      "m365",
+      "s4hana"
+    ],
+    "L2C Deal Advisor": [
+      "salesforce",
+      "icertis"
+    ],
+    "Release Train Coordinator": [
+      "github"
+    ],
+    "Fiori UX Reviewer": [
+      "github",
+      "s4hana"
+    ],
+    "Knowledge Base Search": [
+      "m365"
+    ],
+    "L2C Pipeline Orchestrator": [
+      "salesforce",
+      "icertis",
+      "s4hana"
+    ],
+    "BTP Deploy Coordinator": [
+      "github"
+    ],
+    "Presales Proposal Generator": [
+      "salesforce"
+    ],
+    "Contract Classifier": [
+      "icertis"
+    ],
+    "Support Reply Drafter": [
+      "salesforce"
+    ],
+    "SQL Query Helper": [
+      "s4hana"
+    ],
+    "Price List Updater": [
+      "s4hana",
+      "salesforce"
+    ],
+    "Onboarding Orchestrator": [
+      "successfactors"
+    ],
+    "Shift Roster Sync": [
+      "successfactors"
+    ],
+    "SAP SPC Ticket Router": [
+      "s4hana"
+    ],
+    "Log Anomaly Triage": [
+      "s4hana"
+    ],
+    "Master Data Deduplicator": [
+      "s4hana"
+    ]
+  },
+  "modelPriceEurPerMTok": {
+    "GPT-4.1": 4.0,
+    "GPT-4o": 5.0,
+    "Claude Haiku 4.5": 1.5,
+    "Claude Sonnet 4.6": 6.0,
+    "SAP proprietary": 3.0
+  },
+  "budgetGroupOfUnit": {
+    "Engineering": "Engineering",
+    "Sales": "Sales & Presales",
+    "Operations": "Operations",
+    "Finance": "Finance",
+    "HR": "HR / L&D",
+    "Legal": "Legal & Compliance",
+    "Support": "Operations",
+    "Security": "Engineering"
+  },
+  "costNote": "Illustrative. Tokens are estimated: the registry has the weekly run cost per agent, the Space divides it by an assumed blended price per million tokens (input and output mixed) of the agent's model. Business units of the registry are assigned to the budget groups of the Control Tower as listed in budgetGroupOfUnit."
 }
