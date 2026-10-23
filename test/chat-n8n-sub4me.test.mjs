@@ -206,3 +206,25 @@ test('contracts and offers carry the extended attributes and come live from Supa
   assert.equal(fallback.totalContracts, 6);
   assert.match(fallback.dataSource, /sample data/);
 });
+
+test('run_it_ops_triage: calls only the fixed webhook path, validates alerts and explains missing setup', async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return new Response(JSON.stringify([{ counts: { p1: 2 }, digest: 'ok' }]), { status: 200 }); };
+  const h = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl });
+  const r = await h.run_it_ops_triage({});
+  assert.equal(calls[0].url, 'https://firma.app.n8n.cloud/webhook/it-ops-triage');
+  assert.deepEqual(calls[0].body, {}, 'no alerts: the workflow uses its sample alerts');
+  assert.equal(r.result.digest, 'ok');
+  assert.match(r.note, /Nothing was paged/);
+  await h.run_it_ops_triage({ mode: 'test', alerts: [{ id: 'X', service: 'S', severity: 'high', text: 'Disk full', customerFacing: true }] });
+  assert.equal(calls[1].url, 'https://firma.app.n8n.cloud/webhook-test/it-ops-triage');
+  assert.deepEqual(calls[1].body.alerts[0], { id: 'X', service: 'S', severity: 'high', impact: 'low', customerFacing: true, repeat24h: 0, text: 'Disk full' });
+  for (const bad of [{ alerts: [] }, { alerts: [{ id: 'X', service: 'S', severity: 'urgent', text: 't' }] }, { alerts: [{ id: 'X', service: 'S', severity: 'low' }] }, { mode: 'live' }]) {
+    await assert.rejects(() => h.run_it_ops_triage(bad), /alert|mode|severity/);
+  }
+  await assert.rejects(() => createN8nHandlers({ env: {}, fetchImpl }).run_it_ops_triage({}), /not connected/);
+  const notFound = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl: async () => new Response('', { status: 404 }) });
+  await assert.rejects(() => notFound.run_it_ops_triage({}), /Import the workflow/);
+  await assert.rejects(() => notFound.run_it_ops_triage({ mode: 'test' }), /Execute workflow/);
+  assert.equal(calls.length, 2);
+});
