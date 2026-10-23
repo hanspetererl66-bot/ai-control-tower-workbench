@@ -1,7 +1,7 @@
 {
   "asOf": "2026-10-19",
   "me": "Mara Weber",
-  "customerNote": "Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Interest, lead and opportunity are made up.",
+  "customerNote": "Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Interest, lead and opportunity are made up. Values are illustrative ACV and TCV, ten times the Sub4Me amounts (see valueNote).",
   "discountThresholdPct": 15,
   "stages": [
     {
@@ -263,7 +263,7 @@
       "stage": "lead",
       "account": "Nordwind Handel GmbH",
       "title": "Ariba supplier risk",
-      "value": 180000,
+      "value": 1800000,
       "score": 74,
       "owner": "Mara Weber",
       "source": "Call",
@@ -348,14 +348,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "LEAD-302",
       "stage": "lead",
       "account": "Kranich Logistik GmbH",
       "title": "Joule for logistics planning",
-      "value": 90000,
+      "value": 900000,
       "score": 61,
       "owner": "Dev Patel",
       "source": "Event",
@@ -418,7 +419,8 @@
           "kind": "skill",
           "text": "Score 61: follow up with two questions."
         }
-      ]
+      ],
+      "termMonths": 24
     },
     {
       "id": "LEAD-303",
@@ -490,7 +492,7 @@
       "stage": "opportunity",
       "account": "Nordwind Handel GmbH",
       "title": "Ariba Procurement with supplier risk",
-      "value": 180000,
+      "value": 1800000,
       "score": 35,
       "owner": "Mara Weber",
       "source": "Call",
@@ -536,7 +538,7 @@
       "prev": {
         "score": 30,
         "category": "pipeline",
-        "value": 180000,
+        "value": 1800000,
         "closeDate": "2027-01-29"
       },
       "changeWhy": {
@@ -560,14 +562,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "OPP-402",
       "stage": "opportunity",
       "account": "Muster Industrie AG",
       "title": "AI units top-up after the quota escalation",
-      "value": 120000,
+      "value": 1200000,
       "score": 55,
       "owner": "Dev Patel",
       "source": "Escalation",
@@ -615,7 +618,7 @@
       "prev": {
         "score": 40,
         "category": "pipeline",
-        "value": 90000,
+        "value": 900000,
         "closeDate": "2027-01-15"
       },
       "changeWhy": {
@@ -645,7 +648,7 @@
           ]
         },
         {
-          "claim": "Value 120k a year",
+          "claim": "ACV €1.2M",
           "confidence": "medium",
           "basis": [
             {
@@ -660,14 +663,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 24
     },
     {
       "id": "OPP-403",
       "stage": "opportunity",
       "account": "Kranich Logistik GmbH",
       "title": "RFP: logistics planning platform",
-      "value": 250000,
+      "value": 2500000,
       "score": 25,
       "owner": "Lukas Fischer",
       "source": "RFP",
@@ -707,14 +711,15 @@
       "changeWhy": {
         "text": "RFP received on 18 October.",
         "ref": "CRM"
-      }
+      },
+      "termMonths": 60
     },
     {
       "id": "OFF-2026-0311",
       "stage": "sell",
       "account": "Muster Industrie AG",
       "title": "SuccessFactors Employee Central: renewal",
-      "value": 438000,
+      "value": 4380000,
       "score": 70,
       "owner": "Katrin Lindner",
       "source": "Renewal",
@@ -767,7 +772,7 @@
       "prev": {
         "score": 70,
         "category": "commit",
-        "value": 438000,
+        "value": 4380000,
         "closeDate": "2026-11-30"
       },
       "changeWhy": {
@@ -812,14 +817,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "OFF-2026-0318",
       "stage": "sell",
       "account": "Muster Industrie AG",
       "title": "Ariba Procurement: renewal",
-      "value": 305000,
+      "value": 3050000,
       "score": 60,
       "owner": "Katrin Lindner",
       "source": "Renewal",
@@ -875,7 +881,7 @@
       "prev": {
         "score": 70,
         "category": "commit",
-        "value": 305000,
+        "value": 3050000,
         "closeDate": "2026-12-04"
       },
       "changeWhy": {
@@ -915,14 +921,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "OFF-2026-0324",
       "stage": "sell",
       "account": "Muster Industrie AG",
       "title": "Joule Work for Desktop",
-      "value": 118000,
+      "value": 1180000,
       "score": 45,
       "owner": "Lukas Fischer",
       "source": "New product",
@@ -978,7 +985,7 @@
       "prev": {
         "score": 45,
         "category": "pipeline",
-        "value": 118000,
+        "value": 1180000,
         "closeDate": "2026-11-30"
       },
       "changeWhy": {
@@ -1013,14 +1020,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 24
     },
     {
       "id": "C-2026-0012",
       "stage": "contract",
       "account": "Muster Industrie AG",
       "title": "AI units (Joule, AI Core, Document AI)",
-      "value": 360000,
+      "value": 3600000,
       "score": null,
       "owner": "Mara Weber",
       "source": "Contract",
@@ -1062,14 +1070,15 @@
           "text": "Quota escalation, input for the top-up.",
           "ref": "CALL-0407"
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "C-2024-0233",
       "stage": "contract",
       "account": "Muster Industrie AG",
       "title": "Business Technology Platform",
-      "value": 640000,
+      "value": 6400000,
       "score": null,
       "owner": "Mara Weber",
       "source": "Contract",
@@ -1103,14 +1112,15 @@
           "kind": "skill",
           "text": "Checked against the standard, no open deviations."
         }
-      ]
+      ],
+      "termMonths": 60
     },
     {
       "id": "C-2023-0390",
       "stage": "contract",
       "account": "Muster Industrie AG",
       "title": "Ariba Procurement",
-      "value": 290000,
+      "value": 2900000,
       "score": null,
       "owner": "Katrin Lindner",
       "source": "Contract",
@@ -1152,7 +1162,8 @@
           "text": "Check-in before the notice date.",
           "ref": "CALL-0414"
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "INT-205",
@@ -1191,7 +1202,7 @@
       "stage": "lead",
       "account": "Hanse Handelsgruppe AG",
       "title": "Document AI for the shared service centre",
-      "value": 85000,
+      "value": 850000,
       "score": 66,
       "owner": "Mira Hoffmann",
       "source": "Ticket",
@@ -1272,14 +1283,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "OPP-404",
       "stage": "opportunity",
       "account": "Hanse Handelsgruppe AG",
       "title": "Ariba supplier risk for all 3,800 suppliers",
-      "value": 150000,
+      "value": 1500000,
       "score": 45,
       "owner": "Sven Albrecht",
       "source": "Contract",
@@ -1336,14 +1348,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "OFF-2026-0402",
       "stage": "sell",
       "account": "Hanse Handelsgruppe AG",
       "title": "SAP Commerce Cloud: renewal",
-      "value": 405000,
+      "value": 4050000,
       "score": 55,
       "owner": "Sven Albrecht",
       "source": "Renewal",
@@ -1389,7 +1402,7 @@
       "prev": {
         "score": 60,
         "category": "best",
-        "value": 405000,
+        "value": 4050000,
         "closeDate": "2026-11-20"
       },
       "changeWhy": {
@@ -1424,14 +1437,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "OFF-2026-0407",
       "stage": "sell",
       "account": "Hanse Handelsgruppe AG",
       "title": "Integration Suite: renewal",
-      "value": 190000,
+      "value": 1900000,
       "score": 40,
       "owner": "Mira Hoffmann",
       "source": "Renewal",
@@ -1471,7 +1485,7 @@
       "prev": {
         "score": 40,
         "category": "pipeline",
-        "value": 190000,
+        "value": 1900000,
         "closeDate": "2026-12-15"
       },
       "changeWhy": {
@@ -1495,14 +1509,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 24
     },
     {
       "id": "OFF-2026-0415",
       "stage": "sell",
       "account": "Hanse Handelsgruppe AG",
       "title": "AI units top-up and Joule for Procurement",
-      "value": 126000,
+      "value": 1260000,
       "score": 65,
       "owner": "Mira Hoffmann",
       "source": "Offer",
@@ -1542,7 +1557,7 @@
       "prev": {
         "score": 50,
         "category": "best",
-        "value": 126000,
+        "value": 1260000,
         "closeDate": "2026-11-30"
       },
       "changeWhy": {
@@ -1566,14 +1581,15 @@
             }
           ]
         }
-      ]
+      ],
+      "termMonths": 12
     },
     {
       "id": "C-2024-0611",
       "stage": "contract",
       "account": "Hanse Handelsgruppe AG",
       "title": "SAP Commerce Cloud",
-      "value": 380000,
+      "value": 3800000,
       "score": null,
       "owner": "Sven Albrecht",
       "source": "Contract",
@@ -1604,14 +1620,15 @@
           "kind": "note",
           "text": "Renewal proposal OFF-2026-0402 sent."
         }
-      ]
+      ],
+      "termMonths": 36
     },
     {
       "id": "C-2026-0044",
       "stage": "contract",
       "account": "Hanse Handelsgruppe AG",
       "title": "AI units (Joule, AI Core, Document AI, Ariba AI)",
-      "value": 240000,
+      "value": 2400000,
       "score": null,
       "owner": "Mira Hoffmann",
       "source": "Contract",
@@ -1642,7 +1659,8 @@
           "kind": "note",
           "text": "Top-up requested."
         }
-      ]
+      ],
+      "termMonths": 24
     }
   ],
   "automation": {
@@ -1687,7 +1705,7 @@
         "rule": "Probability below 50 %."
       }
     ],
-    "quotaEur": 1500000,
+    "quotaEur": 15000000,
     "quotaNote": "Fictional target for Q4 2026 and Q1 2027 closes, both accounts.",
     "previousAsOf": "2026-10-12"
   },
@@ -1713,7 +1731,7 @@
       "skill": "opportunity-planner",
       "prep": {
         "brief": [
-          "Opportunity: Ariba with supplier risk at Nordwind Handel, 180k, probability 35 %.",
+          "Opportunity: Ariba with supplier risk at Nordwind Handel, €1.8M, probability 35 %.",
           "The CFO is a sponsor but has not been met yet.",
           "Coupa is already in a pilot at the customer."
         ],
@@ -1753,7 +1771,7 @@
       "skill": "customer-call-prep",
       "prep": {
         "brief": [
-          "After the eu10 quota escalation the customer asks for more AI units, 120k.",
+          "After the eu10 quota escalation the customer asks for more AI units, €1.2M.",
           "Quota doubled on 8 October and the 80 % alert is active since 9 October; the written root cause analysis is due on 21 October (T-103).",
           "The customer ties the top-up to a fix for the quota alerts."
         ],
@@ -1804,7 +1822,7 @@
       "skill": "competitive-battlecard",
       "prep": {
         "brief": [
-          "Ariba renewal 305k, discount exactly at the 15 % threshold.",
+          "Ariba renewal €3.05M, discount exactly at the 15 % threshold.",
           "The customer evaluates Coupa. They asked for the per-seat price and price protection for the extra buyers (T-101); the revised quote is promised for 23 October.",
           "Notice period: the last day to give notice is 2 November."
         ],
@@ -1858,7 +1876,7 @@
       "skill": "deal-risk-check",
       "prep": {
         "brief": [
-          "SuccessFactors renewal 438k for 4,500 employees, 12 % discount, deal desk approved.",
+          "SuccessFactors renewal €4.38M for 4,500 employees, 12 % discount, deal desk approved.",
           "Offer valid until 15 November.",
           "The Time Tracking module is deferred until after Q2 (budget freeze)."
         ],
@@ -1907,7 +1925,7 @@
       "skill": "security-questionnaire-helper",
       "prep": {
         "brief": [
-          "Joule Work for Desktop, 118k, discount 15.7 %: deal desk approval is pending.",
+          "Joule Work for Desktop, €1.18M, discount 15.7 %: deal desk approval is pending.",
           "62-question security questionnaire due before the works council meeting on 5 November.",
           "The questionnaire footer contains an instruction; it was shown as text and not followed."
         ],
@@ -2109,7 +2127,7 @@
       "skill": "customer-call-prep",
       "prep": {
         "brief": [
-          "Commerce Cloud renewal 405k, discount 12 %, deal desk approved; valid until 20 November.",
+          "Commerce Cloud renewal €4.05M, discount 12 %, deal desk approved; valid until 20 November.",
           "The customer names Shopify Plus as an alternative.",
           "The contract ends on 31 December; the last day to give notice is 1 November."
         ],
@@ -2154,7 +2172,7 @@
       "skill": "customer-call-prep",
       "prep": {
         "brief": [
-          "Top-up and Joule for Procurement 126k, discount 8 %, in negotiation.",
+          "Top-up and Joule for Procurement €1.26M, discount 8 %, in negotiation.",
           "The non-standard top-up terms are with the deal desk.",
           "AI-unit consumption is forecast to use most of the 240k allotment by year-end."
         ],
@@ -2497,5 +2515,7 @@
         "undoable": false
       }
     ]
-  }
+  },
+  "valueScale": 10,
+  "valueNote": "Deal values are ACV (annual contract value) in EUR and illustrative enterprise sizes: ten times the annual amounts of the matching Sub4Me offers and contracts. TCV (total contract value) is ACV times the term in months divided by 12."
 }
