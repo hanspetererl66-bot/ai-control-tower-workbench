@@ -16,6 +16,7 @@ export const EXAMPLE_SPACES = {
   'call-transcripts': 'call-transcripts',
   'customer-emails': 'customer-emails',
   sales: 'sales',
+  'it-operations': 'it-operations',
   'mcp-marketplace': 'mcp-marketplace',
 };
 

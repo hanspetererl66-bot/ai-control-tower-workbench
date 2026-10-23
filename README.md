@@ -427,6 +427,12 @@ Importable workflows in `examples/n8n-workflows/`, fictional data only, no crede
 
 Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workflow**. The workflows stay inactive; the Code nodes use a fixed reference date (19 Oct 2026) so the result is the same every day. `test/n8n-demo-workflows.test.mjs` checks the structure and runs the Code nodes.
 
+## IT Operations example Space
+
+`examples/it-operations/` is a Space for IT operations alert triage: seven fictional monitoring alerts, a transparent priority (P1 page on-call, P2 ticket, P3 watch) with the reasons per alert, a guardrail that quarantines alert text aimed at AI assistants, and a form to add your own alert. The page calculates the preview itself with the same rules as the n8n workflow `examples/n8n-workflows/04-it-operations-alert-triage.json`; `test/it-operations.test.mjs` keeps both equal.
+
+**Run in n8n**: a Space has no network, so the button asks the chat (`wb:ask`) to call the connector tool `run_it_ops_triage`. The tool posts the alerts to `<N8N_URL>/webhook/it-ops-triage` (or `/webhook-test/` with `mode: "test"`), nothing else, and returns the digest. Setup: import the workflow, switch it to active, enter the n8n address in the connector settings. Nothing is paged, restarted or changed. Install with `npm run install:it-operations`; `npm run sync:it-operations` embeds `alerts.json` and the design system.
+
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.

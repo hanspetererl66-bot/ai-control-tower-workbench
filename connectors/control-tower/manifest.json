@@ -147,6 +147,10 @@
       "description": "The categories n8n workflows are sorted into by tag, with their workflows and the uncategorized ones."
     },
     {
+      "name": "run_it_ops_triage",
+      "description": "Run the demo n8n workflow \"Demo 4 (IT operations): alert triage\" through its webhook: guardrail against instructions aimed at AI assistants, transparent priority P1 to P3, digest. Uses the fictional sample alerts or alerts you pass. Only computes, nothing is paged or changed. Needs the n8n address and the imported, active workflow."
+    },
+    {
       "name": "get_skill_impact",
       "description": "Skill impact: runs, success, time saved, value and run cost per skill (sample data)."
     },

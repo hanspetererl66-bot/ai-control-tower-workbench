@@ -392,6 +392,12 @@
           "default": "on"
         },
         {
+          "name": "run_it_ops_triage",
+          "class": "write",
+          "what": "Starts the demo n8n workflow through its webhook. It only computes; nothing is paged or changed.",
+          "default": "on"
+        },
+        {
           "name": "get_skill_impact",
           "class": "read",
           "what": "",

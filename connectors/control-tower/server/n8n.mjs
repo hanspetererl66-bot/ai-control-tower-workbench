@@ -250,6 +250,34 @@ export const N8N_TOOL_DEFINITIONS = [
       'The categories n8n workflows are sorted into (by their tags): the matching tags, the workflows in each category and the ones that are not categorized yet. A workflow can be pinned with the n8n tag "cat:<Category name>".',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
+  {
+    name: 'run_it_ops_triage',
+    description:
+      'Run the demo n8n workflow "Demo 4 (IT operations): alert triage" through its webhook (/webhook/it-ops-triage). It checks alert text against instructions aimed at AI assistants, gives each alert a transparent priority (P1 page on-call, P2 ticket, P3 watch) and returns a digest. Without alerts it uses the seven fictional sample alerts of the workflow. It only computes: nothing is paged, restarted or changed. Needs N8N_URL and the workflow imported and active (mode "test" uses the test webhook after Execute workflow was clicked in the editor). Tell the person what you are about to run when they gave their own alerts.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        alerts: {
+          type: 'array',
+          maxItems: 50,
+          description: 'Optional alerts. Omit to use the sample alerts.',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' }, service: { type: 'string' }, text: { type: 'string', maxLength: 500 },
+              severity: { type: 'string', enum: ['critical', 'high', 'medium', 'low'] },
+              impact: { type: 'string', enum: ['high', 'medium', 'low'] },
+              customerFacing: { type: 'boolean' }, repeat24h: { type: 'integer', minimum: 0, maximum: 99 },
+            },
+            required: ['id', 'service', 'severity', 'text'],
+            additionalProperties: false,
+          },
+        },
+        mode: { type: 'string', enum: ['production', 'test'], description: 'production (default, workflow must be active) or test.' },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 const round1 = (value) => Math.round(value * 10) / 10;
@@ -427,6 +455,45 @@ export function createN8nHandlers({ env = process.env, fetchImpl = fetch, now = 
         })),
         view: { space: 'automation-dashboard', tab: 'categories' },
         dataSource: source(data),
+      };
+    },
+    async run_it_ops_triage(args = {}) {
+      if (!env.N8N_URL) throw new ToolError('n8n is not connected: enter the n8n address (N8N_URL) in the connector settings. The workflow itself is examples/n8n-workflows/04-it-operations-alert-triage.json (import it and activate it).');
+      const mode = args.mode ?? 'production';
+      if (!['production', 'test'].includes(mode)) throw new ToolError('mode must be production or test');
+      const body = {};
+      if (args.alerts !== undefined) {
+        if (!Array.isArray(args.alerts) || !args.alerts.length || args.alerts.length > 50) throw new ToolError('alerts must be a list of 1 to 50 alerts');
+        body.alerts = args.alerts.map((a, i) => {
+          if (!a || typeof a !== 'object') throw new ToolError(`alert ${i + 1} must be an object`);
+          for (const key of ['id', 'service', 'text']) if (typeof a[key] !== 'string' || !a[key].trim()) throw new ToolError(`alert ${i + 1}: ${key} is required`);
+          if (!['critical', 'high', 'medium', 'low'].includes(a.severity)) throw new ToolError(`alert ${i + 1}: severity must be critical, high, medium or low`);
+          if (a.impact !== undefined && !['high', 'medium', 'low'].includes(a.impact)) throw new ToolError(`alert ${i + 1}: impact must be high, medium or low`);
+          return { id: a.id.slice(0, 40), service: a.service.slice(0, 80), severity: a.severity, impact: a.impact ?? 'low', customerFacing: a.customerFacing === true, repeat24h: Number.isInteger(a.repeat24h) ? Math.max(0, Math.min(99, a.repeat24h)) : 0, text: a.text.slice(0, 500) };
+        });
+      }
+      let origin;
+      try { origin = normalizeInstanceUrl(env.N8N_URL); } catch (error) { throw new ToolError(`n8n: ${error.message}`); }
+      const url = `${origin}/${mode === 'test' ? 'webhook-test' : 'webhook'}/it-ops-triage`;
+      let response;
+      try {
+        response = await fetchImpl(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(30_000) });
+      } catch (error) {
+        throw new ToolError(`n8n: the workflow did not answer (${error.message})`);
+      }
+      if (response.status === 404) throw new ToolError(mode === 'test' ? 'n8n: the test webhook is not listening. Open the workflow in n8n and click Execute workflow first, then ask again.' : 'n8n: webhook /webhook/it-ops-triage not found. Import the workflow and switch it to active (or use mode "test").');
+      if (!response.ok) throw new ToolError(`n8n: the workflow answered with HTTP ${response.status}`);
+      const text = await response.text();
+      let result;
+      try { result = JSON.parse(text); } catch { result = text.slice(0, 4000); }
+      const first = Array.isArray(result) ? result[0] : result;
+      return {
+        workflow: 'Demo 4 (IT operations): alert triage',
+        mode,
+        alertsSent: body.alerts ? body.alerts.length : 'sample alerts of the workflow',
+        result: first ?? result,
+        note: 'Computed only. Nothing was paged, restarted or changed; a person decides about paging, tickets and restarts.',
+        view: { space: 'it-operations', tab: 'overview' },
       };
     },
   };
