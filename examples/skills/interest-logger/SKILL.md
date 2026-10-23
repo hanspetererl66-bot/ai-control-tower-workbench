@@ -1,6 +1,6 @@
 ---
 name: interest-logger
-description: Erfasst ein Interessenssignal (Formular, Event, Mail, Call) als strukturierten Eintrag und erkennt Dubletten. Nutzen bei "Interesse erfassen", "neuer Kontakt vom Event", "Signal einordnen".
+description: Captures an interest signal (form, event, mail, call) as a structured entry and detects duplicates. Nutzen bei "Interesse erfassen", "neuer Kontakt vom Event", "Signal einordnen".
 metadata:
   domain: Vertrieb
   process: Interesse erfassen

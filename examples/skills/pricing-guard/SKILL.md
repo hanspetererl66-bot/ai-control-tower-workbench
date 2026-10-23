@@ -1,6 +1,6 @@
 ---
 name: pricing-guard
-description: Prüft ein Angebot gegen Rabattschwellen und Freigaberegeln und sagt, ob Deal Desk oder Vorgesetzte zustimmen müssen. Nutzen bei "Rabatt prüfen", "Angebot freigeben", "Deal Desk".
+description: Checks a quote against discount thresholds and approval rules and says whether the deal desk or managers must approve. Nutzen bei "Rabatt prüfen", "Angebot freigeben", "Deal Desk".
 metadata:
   domain: Vertrieb
   process: Preise und Rabatte prüfen

@@ -1,6 +1,6 @@
 ---
 name: rate-skill
-description: Bewertet einen Skill aus dem Marketplace mit 1 bis 5 Sternen und optionalem Kommentar, nach Bestätigung. Nutzen bei "Skill bewerten", "gib dem Skill 4 Sterne", "wie fandest du den Skill", "Bewertung abgeben".
+description: Rates a skill from the marketplace with 1 to 5 stars and an optional comment, after confirmation. Nutzen bei "Skill bewerten", "gib dem Skill 4 Sterne", "wie fandest du den Skill", "Bewertung abgeben".
 metadata:
   domain: Skill-Management
   process: Skill-Bewertung

@@ -1,6 +1,6 @@
 ---
 name: skill-finder
-description: Prüft vor dem Bauen eines neuen Skills, ob es im gemeinsamen Skill-Register schon einen passenden gibt. Nutzen bei "gibt es einen Skill für", "Skill bauen", "neuen Skill entwickeln".
+description: Before a new skill is built, checks whether the shared skill registry already has a matching one. Nutzen bei "gibt es einen Skill für", "Skill bauen", "neuen Skill entwickeln".
 metadata:
   domain: Entwicklung
   process: Skill-Entwicklung

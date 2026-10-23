@@ -1,6 +1,6 @@
 ---
 name: rfp-responder
-description: Beantwortet Fragen einer Ausschreibung (RFP) mit Textbausteinen aus früheren Antworten, markiert Lücken und Quellen. Nutzen bei "RFP beantworten", "Ausschreibung", "Fragenkatalog".
+description: Answers the questions of a tender (RFP) with text blocks from earlier answers and flags gaps and sources. Nutzen bei "RFP beantworten", "Ausschreibung", "Fragenkatalog".
 metadata:
   domain: Vertrieb
   process: Ausschreibung beantworten
