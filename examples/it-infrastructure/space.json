@@ -1,0 +1,11 @@
+{
+  "title": "IT Infrastructure",
+  "description": "Mockup of 25 virtual machines as a status wall: every VM is green, yellow or red, and hovering over it explains why.",
+  "domain": "Operations",
+  "insights": [
+    "Fictional VMs and measurements, no live monitoring. The colour is calculated from fixed rules: CPU, memory, disk, backup age (production) and missing security patches.",
+    "Hover over a VM, or focus it with the keyboard, to see which check made it green, yellow or red and what the limits are.",
+    "Nothing is restarted or changed. 'Ask Joule' only asks the chat to explain the status and suggest the first checks."
+  ],
+  "prompt": "Bundled example: IT Infrastructure (static, data embedded by npm run sync:it-infrastructure)."
+}

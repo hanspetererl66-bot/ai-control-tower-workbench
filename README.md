@@ -433,6 +433,10 @@ Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workfl
 
 **Run in n8n**: a Space has no network, so the button asks the chat (`wb:ask`) to call the connector tool `run_it_ops_triage`. The tool posts the alerts to `<N8N_URL>/webhook/it-ops-triage` (or `/webhook-test/` with `mode: "test"`), nothing else, and returns the digest. Setup: import the workflow, switch it to active, enter the n8n address in the connector settings. Nothing is paged, restarted or changed. Install with `npm run install:it-operations`; `npm run sync:it-operations` embeds `alerts.json` and the design system.
 
+## IT Infrastructure example Space
+
+`examples/it-infrastructure/` is a status wall of 25 fictional virtual machines. Every VM is green, yellow or red, calculated on the page from fixed rules (`vms.json`, key `rules`): CPU, memory and disk usage, backup age (production VMs only), missing security patches, and an unreachable VM is always red. Hovering over a VM (or focusing it with the keyboard) shows why it has its colour with the measured values and the limits; clicking shows the measurements and a button that asks Joule (`wb:ask`) about the VM. Filters for red, yellow and green, KPIs and the rule table are on the page. Fictional data, nothing is measured live and nothing is changed. `npm run sync:it-infrastructure` embeds the data and the design system, `npm run install:it-infrastructure` installs the Space (or `npm run install:examples` for all); `test/it-infrastructure.test.mjs` checks the rules and the sync.
+
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.
