@@ -558,6 +558,8 @@ export default function App() {
     }
     setView('chat');
     void send(prompt);
+  }
+
   /** Open a Space (and optionally one of its tabs); used by spoken commands and briefing cards. */
   function navigateTo(target: { space: string; tab?: string; label?: string }) {
     const label = target.label ?? target.space;
