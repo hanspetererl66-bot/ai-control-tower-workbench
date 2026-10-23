@@ -113,3 +113,22 @@ test('domains survive sanitising, profiles and export; junk is dropped', () => {
   assert.deepEqual(profileSettingsOf(p).domains, p.domains);
   assert.deepEqual(importPreferences(exportPreferences(p)).spaceDomains, { ok: 'A' });
 });
+
+import { isOriginal, isOriginalLook, resetAll, resetLook } from '../src/preferences.ts';
+
+test('back to the original: look only, or everything but profiles and sync key', () => {
+  const played = sanitizePreferences({ accent: '#0070F2', appScale: 1.25, font: 'mono', density: 'compact', contrast: 'high', reduceMotion: true, appearance: 'dark', pinnedSpaces: ['a'], starters: [{ label: 'x', prompt: 'y' }], sync: { key: 'work', auto: true } });
+  const withProfile = saveProfile(played, 'Mine');
+  assert.equal(isOriginalLook(withProfile), false);
+  const look = resetLook(withProfile);
+  assert.equal(isOriginalLook(look), true);
+  assert.deepEqual(look.pinnedSpaces, ['a']);
+  assert.equal(look.starters.length, 1);
+  const all = resetAll(withProfile);
+  assert.equal(isOriginal(all), true);
+  assert.equal(all.pinnedSpaces.length, 0);
+  assert.equal(all.starters.length, 0);
+  assert.equal(all.profiles.length, 1);
+  assert.equal(all.sync.key, 'work');
+  assert.equal(isOriginal(DEFAULT_PREFERENCES), true);
+});

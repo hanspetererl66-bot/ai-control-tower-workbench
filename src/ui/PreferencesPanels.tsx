@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import {
   ACCENT_PRESETS, APP_SCALES, CONTRASTS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, TONES,
-  allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, saveProfile,
+  allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
 import { SPACE_SCALES } from '../space-scale';
@@ -42,6 +42,7 @@ const PURPOSE_NAMES: Record<(typeof PURPOSES)[number], string> = { reports: 'Rep
 
 export function ProfilesPanel({ prefs, update }: Common) {
   const [name, setName] = useState('');
+  const [confirm, setConfirm] = useState(false);
   return (
     <>
       <Section title="Profiles" hint="A profile bundles look, start view, pinned Spaces, favourite skills and assistant instructions. Switch with one click.">
@@ -55,13 +56,26 @@ export function ProfilesPanel({ prefs, update }: Common) {
                   <small>{custom ? 'Your profile' : 'Ready-made'}{prefs.activeProfile === profile.id ? ' · active' : ''}</small>
                 </span>
                 <span>
-                  <button className="ghost-btn" disabled={prefs.activeProfile === profile.id} onClick={() => update((p) => applyProfile(p, profile.id))}>Use</button>
+                  <button className="ghost-btn" disabled={JSON.stringify(applyProfile(prefs, profile.id)) === JSON.stringify(prefs)} onClick={() => update((p) => applyProfile(p, profile.id))}>Use</button>
                   {custom && <button className="ghost-btn" onClick={() => update((p) => deleteProfile(p, profile.id))} aria-label={`Delete ${profile.name}`}>Delete</button>}
                 </span>
               </li>
             );
           })}
         </ul>
+      </Section>
+      <Section title="Back to the original" hint="Resets look, start view, pins, domains, favourite skills, starters, assistant instructions and storage locations. Saved profiles and the Supabase key stay.">
+        <div className="prefs-row">
+          {confirm ? (
+            <>
+              <span>Really reset everything?</span>
+              <button className="ghost-btn ghost-btn-on" onClick={() => { update((p) => resetAll(p)); setConfirm(false); }}>Yes, reset</button>
+              <button className="ghost-btn" onClick={() => setConfirm(false)}>Cancel</button>
+            </>
+          ) : (
+            <button className="ghost-btn" disabled={isOriginal(prefs)} onClick={() => setConfirm(true)}>Reset all settings</button>
+          )}
+        </div>
       </Section>
       <Section title="Save the current settings as a profile">
         <div className="prefs-row">
@@ -77,6 +91,12 @@ export function LookPanel({ prefs, update }: Common) {
   const custom = prefs.accent && !ACCENT_PRESETS.some((a) => a.hex.toUpperCase() === prefs.accent);
   return (
     <>
+      <Section title="Original look" hint="Colour, text sizes, font, density, contrast and motion go back to how the app came. Your profiles, pins and starters stay.">
+        <div className="prefs-row">
+          <button className="ghost-btn" disabled={isOriginalLook(prefs)} onClick={() => update((p) => resetLook(p))}>Back to the original look</button>
+          {isOriginalLook(prefs) && <span className="prefs-note" style={{ margin: 0 }}>This is the original look.</span>}
+        </div>
+      </Section>
       <Section title="Accent colour" hint="Used for buttons, highlights and in all Spaces. Light colours are darkened so white text stays readable.">
         <div className="prefs-row" role="radiogroup" aria-label="Accent colour">
           <button className={`ghost-btn ${!prefs.accent ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={!prefs.accent} onClick={() => update((p) => ({ ...p, accent: '' }))}>Default</button>
