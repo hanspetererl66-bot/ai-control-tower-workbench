@@ -370,7 +370,7 @@ The connector tool `search_sap_help` queries the public search of help.sap.com (
 `examples/sub4me/portfolio.json` is the single source for the contracts and offers of the Sub4Me test customer, each with about 25 fictional attributes (contract type, billing and payment terms, SLA, data centre, contacts, licensed vs. used units, invoicing, auto-renewal, termination; for offers list price, discount, stage, win probability, approval, competitor, next step, conditions) and line items.
 `npm run sync:sub4me` embeds it into the Space (click a row in **Contracts** for the detail view) and writes `supabase/migrations/20261019_011_sub4me_contracts_offers.sql`. Run that file once in the Supabase SQL editor; it is re-runnable. The chat connector then reads contracts and offers live from Supabase (`public.sub4me_portfolio()`, secret key only) and falls back to the embedded copy.
 
-## Knowledge Graph example Space
+## Sales Knowledge Graph example Space
 
 One interactive graph over the other examples: the Sub4Me customer with contracts, offers, products and tickets, the Skill Marketplace (skills and the tools they use), the Control Tower (risks, agent families) and n8n (workflows, apps). Nothing is stored separately: `npm run sync:knowledge-graph` derives the graph from those sources plus `examples/knowledge-graph/links.json` (curated links and the guided tour) and embeds it into the Space (`-- --check` fails when it is stale). Everything is fictional sample data.
 
