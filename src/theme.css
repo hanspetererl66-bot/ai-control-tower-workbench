@@ -3513,3 +3513,38 @@ button {
 .message-actions {
   margin-top: 0;
 }
+
+/* ---------- long Space titles stay inside their boxes ---------- */
+
+.domain {
+  min-width: 0;
+}
+.card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.card-head {
+  min-width: 0;
+}
+.card-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.card-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topbar-stack {
+  min-width: 0;
+}
+.topbar-stack .topbar-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
