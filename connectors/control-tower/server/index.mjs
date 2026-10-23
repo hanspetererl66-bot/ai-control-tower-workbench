@@ -131,13 +131,13 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
         const rpcCall = ticketRpc();
         const sub4meHandlers = createSub4MeHandlers(undefined, rpcCall);
-        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...sub4meHandlers, ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createCrossSpaceHandlers({ sub4me: sub4meHandlers, loadTower: loadData, rpc: rpcCall }), ...n8nHandlers };
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...sub4meHandlers, ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createWhatIfHandlers({ loadTower: loadData, ToolError }), ...createCrossSpaceHandlers({ sub4me: sub4meHandlers, loadTower: loadData, rpc: rpcCall }), ...n8nHandlers };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');
