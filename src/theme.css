@@ -3430,3 +3430,86 @@ button {
   background: var(--panel);
   color: var(--ink);
 }
+
+/* ---------- compact chat: framed answers, tight spacing ---------- */
+
+.chat {
+  gap: calc(8px * var(--dens));
+  padding-top: 16px;
+}
+.msg-user {
+  padding: calc(6px * var(--dens)) 12px;
+  border-radius: 0;
+  max-width: 70%;
+}
+.msg-agent {
+  max-width: 100%;
+  width: fit-content;
+  min-width: min(100%, 320px);
+  padding: calc(8px * var(--dens)) 12px calc(4px * var(--dens));
+  gap: calc(4px * var(--dens));
+  border: 1px solid color-mix(in srgb, var(--accent, var(--purple, #6d28d9)) 55%, var(--line));
+  border-radius: 0;
+  background: var(--panel);
+}
+.msg-text {
+  white-space: normal;
+  line-height: 1.45;
+}
+.msg-text > :first-child {
+  margin-top: 0;
+}
+.msg-text > :last-child {
+  margin-bottom: 0;
+}
+.msg-text p {
+  margin: 0 0 6px;
+}
+.msg-text h1,
+.msg-text h2,
+.msg-text h3,
+.msg-text h4 {
+  margin: 10px 0 4px;
+  line-height: 1.25;
+}
+.msg-text h1 {
+  font-size: 1.25em;
+}
+.msg-text h2 {
+  font-size: 1.12em;
+}
+.msg-text h3,
+.msg-text h4 {
+  font-size: 1.02em;
+}
+.msg-text ul,
+.msg-text ol {
+  margin: 2px 0 6px;
+  padding-left: 20px;
+}
+.msg-text li {
+  margin: 1px 0;
+}
+.msg-text li > p {
+  margin: 0;
+}
+.msg-text hr {
+  margin: 8px 0;
+}
+.msg-text pre {
+  margin: 4px 0 6px;
+}
+.msg-text blockquote {
+  margin: 4px 0 6px;
+}
+.md-table {
+  margin: 2px 0 6px;
+  border-radius: 0;
+}
+.task-block,
+.tool {
+  border-radius: 0;
+}
+.message-actions {
+  margin-top: 0;
+}
