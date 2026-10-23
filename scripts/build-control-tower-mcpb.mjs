@@ -28,6 +28,7 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
     cpSync(join(ROOT, 'examples/automation-dashboard/categories.json'), join(stage, 'data/n8n-categories.json'));
     writeFileSync(join(stage, 'data/skill-marketplace.json'), JSON.stringify(extractMarketplaceData(readFileSync(join(ROOT, 'examples/skill-marketplace/index.html'), 'utf8')), null, 2));
     writeFileSync(join(stage, 'data/knowledge-graph.json'), JSON.stringify(extractGraph(readFileSync(join(ROOT, 'examples/knowledge-graph/index.html'), 'utf8')), null, 2));
+    cpSync(join(ROOT, 'examples/infra-ops/data.json'), join(stage, 'data/infra-ops.json'));
     writeFileSync(join(stage, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(SUB4ME_PAGE, 'utf8')), null, 2));
 
     mkdirSync(dirname(out), { recursive: true });

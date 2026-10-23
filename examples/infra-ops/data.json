@@ -1,0 +1,940 @@
+{
+ "asOf": "2026-10-21",
+ "customers": [
+  {
+   "id": "mi",
+   "name": "Muster Industrie AG",
+   "sla": "Premium Plus",
+   "domain": "muster-industrie.example",
+   "hyperscaler": "aws",
+   "region": "eu-central-1"
+  },
+  {
+   "id": "bp",
+   "name": "Beispiel Pharma GmbH",
+   "sla": "Premium Plus (GxP)",
+   "domain": "beispiel-pharma.example",
+   "hyperscaler": "azure",
+   "region": "westeurope"
+  },
+  {
+   "id": "nl",
+   "name": "Nordlicht Logistik AG",
+   "sla": "Premium",
+   "domain": "nordlicht-logistik.example",
+   "hyperscaler": "gcp",
+   "region": "europe-west3"
+  },
+  {
+   "id": "aw",
+   "name": "Alpenwerk Maschinenbau AG",
+   "sla": "Premium",
+   "domain": "alpenwerk.example",
+   "hyperscaler": "aws",
+   "region": "eu-central-1"
+  },
+  {
+   "id": "ke",
+   "name": "Kurpfalz Energie eG",
+   "sla": "Standard",
+   "domain": "kurpfalz-energie.example",
+   "hyperscaler": "azure",
+   "region": "westeurope"
+  },
+  {
+   "id": "hr",
+   "name": "Hanseatic Retail GmbH",
+   "sla": "Standard",
+   "domain": "hanseatic-retail.example",
+   "hyperscaler": "gcp",
+   "region": "europe-west3"
+  }
+ ],
+ "regions": [
+  {
+   "id": "eu-central-1",
+   "label": "AWS Frankfurt",
+   "hyperscaler": "aws",
+   "freePct": 38
+  },
+  {
+   "id": "eu-west-1",
+   "label": "AWS Ireland",
+   "hyperscaler": "aws",
+   "freePct": 44
+  },
+  {
+   "id": "westeurope",
+   "label": "Azure Amsterdam",
+   "hyperscaler": "azure",
+   "freePct": 12
+  },
+  {
+   "id": "germanywestcentral",
+   "label": "Azure Frankfurt",
+   "hyperscaler": "azure",
+   "freePct": 47
+  },
+  {
+   "id": "europe-west3",
+   "label": "Google Frankfurt",
+   "hyperscaler": "gcp",
+   "freePct": 55
+  },
+  {
+   "id": "europe-west1",
+   "label": "Google Belgium",
+   "hyperscaler": "gcp",
+   "freePct": 41
+  }
+ ],
+ "people": [
+  {
+   "id": "sa",
+   "name": "Sven Albrecht",
+   "role": "Operations"
+  },
+  {
+   "id": "mo",
+   "name": "Mara Okafor",
+   "role": "Security"
+  },
+  {
+   "id": "jb",
+   "name": "Jonas Brandt",
+   "role": "Change Manager"
+  },
+  {
+   "id": "lh",
+   "name": "Lea Hoffmann",
+   "role": "Operations"
+  },
+  {
+   "id": "tk",
+   "name": "Tim Krüger",
+   "role": "Change Manager"
+  },
+  {
+   "id": "nb",
+   "name": "Nora Bauer",
+   "role": "Security"
+  }
+ ],
+ "vms": [
+  {
+   "id": "mi-prd-db01",
+   "customer": "mi",
+   "env": "PRD",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-22"
+  },
+  {
+   "id": "mi-prd-app01",
+   "customer": "mi",
+   "env": "PRD",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": "mi-prd-db01",
+   "pendingPatches": 2,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-15"
+  },
+  {
+   "id": "mi-prd-wd01",
+   "customer": "mi",
+   "env": "PRD",
+   "role": "Web Dispatcher",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": "mi-prd-app01",
+   "pendingPatches": 1,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-08"
+  },
+  {
+   "id": "mi-qas-db01",
+   "customer": "mi",
+   "env": "QAS",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-01"
+  },
+  {
+   "id": "mi-qas-app01",
+   "customer": "mi",
+   "env": "QAS",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": "mi-qas-db01",
+   "pendingPatches": 4,
+   "criticalPatches": 1,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-08-25"
+  },
+  {
+   "id": "bp-prd-db01",
+   "customer": "bp",
+   "env": "PRD",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-08-14"
+  },
+  {
+   "id": "bp-prd-app01",
+   "customer": "bp",
+   "env": "PRD",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": "bp-prd-db01",
+   "pendingPatches": 6,
+   "criticalPatches": 3,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-26"
+  },
+  {
+   "id": "bp-prd-wd01",
+   "customer": "bp",
+   "env": "PRD",
+   "role": "Web Dispatcher",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": "bp-prd-app01",
+   "pendingPatches": 2,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-19"
+  },
+  {
+   "id": "bp-qas-db01",
+   "customer": "bp",
+   "env": "QAS",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": null,
+   "pendingPatches": 1,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-12"
+  },
+  {
+   "id": "bp-qas-app01",
+   "customer": "bp",
+   "env": "QAS",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": "bp-qas-db01",
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-05"
+  },
+  {
+   "id": "nl-prd-db01",
+   "customer": "nl",
+   "env": "PRD",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": null,
+   "pendingPatches": 3,
+   "criticalPatches": 1,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-21"
+  },
+  {
+   "id": "nl-prd-app01",
+   "customer": "nl",
+   "env": "PRD",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": "nl-prd-db01",
+   "pendingPatches": 1,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-14"
+  },
+  {
+   "id": "nl-prd-wd01",
+   "customer": "nl",
+   "env": "PRD",
+   "role": "Web Dispatcher",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": "nl-prd-app01",
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-07"
+  },
+  {
+   "id": "nl-qas-db01",
+   "customer": "nl",
+   "env": "QAS",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-18",
+   "lastPatch": "2026-08-31"
+  },
+  {
+   "id": "nl-qas-app01",
+   "customer": "nl",
+   "env": "QAS",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": "nl-qas-db01",
+   "pendingPatches": 2,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-08-24"
+  },
+  {
+   "id": "aw-prd-db01",
+   "customer": "aw",
+   "env": "PRD",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-08-15"
+  },
+  {
+   "id": "aw-prd-app01",
+   "customer": "aw",
+   "env": "PRD",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": "aw-prd-db01",
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-27"
+  },
+  {
+   "id": "aw-prd-wd01",
+   "customer": "aw",
+   "env": "PRD",
+   "role": "Web Dispatcher",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": "aw-prd-app01",
+   "pendingPatches": 5,
+   "criticalPatches": 2,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-20"
+  },
+  {
+   "id": "aw-qas-db01",
+   "customer": "aw",
+   "env": "QAS",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": null,
+   "pendingPatches": 1,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-13"
+  },
+  {
+   "id": "aw-qas-app01",
+   "customer": "aw",
+   "env": "QAS",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": "aw-qas-db01",
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-06"
+  },
+  {
+   "id": "ke-prd-db01",
+   "customer": "ke",
+   "env": "PRD",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": null,
+   "pendingPatches": 2,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-24"
+  },
+  {
+   "id": "ke-prd-app01",
+   "customer": "ke",
+   "env": "PRD",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": "ke-prd-db01",
+   "pendingPatches": 7,
+   "criticalPatches": 2,
+   "lastBackup": "2026-10-18",
+   "lastPatch": "2026-09-17"
+  },
+  {
+   "id": "ke-prd-wd01",
+   "customer": "ke",
+   "env": "PRD",
+   "role": "Web Dispatcher",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": "ke-prd-app01",
+   "pendingPatches": 1,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-10"
+  },
+  {
+   "id": "ke-qas-db01",
+   "customer": "ke",
+   "env": "QAS",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-03"
+  },
+  {
+   "id": "ke-qas-app01",
+   "customer": "ke",
+   "env": "QAS",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "azure",
+   "region": "westeurope",
+   "dependsOn": "ke-qas-db01",
+   "pendingPatches": 3,
+   "criticalPatches": 1,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-08-27"
+  },
+  {
+   "id": "hr-prd-db01",
+   "customer": "hr",
+   "env": "PRD",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-27"
+  },
+  {
+   "id": "hr-prd-app01",
+   "customer": "hr",
+   "env": "PRD",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": "hr-prd-db01",
+   "pendingPatches": 1,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-20"
+  },
+  {
+   "id": "hr-prd-wd01",
+   "customer": "hr",
+   "env": "PRD",
+   "role": "Web Dispatcher",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": "hr-prd-app01",
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-13"
+  },
+  {
+   "id": "hr-qas-db01",
+   "customer": "hr",
+   "env": "QAS",
+   "role": "HANA database",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": null,
+   "pendingPatches": 2,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-20",
+   "lastPatch": "2026-09-06"
+  },
+  {
+   "id": "hr-qas-app01",
+   "customer": "hr",
+   "env": "QAS",
+   "role": "Application server",
+   "os": "SLES 15 SP5",
+   "hyperscaler": "gcp",
+   "region": "europe-west3",
+   "dependsOn": "hr-qas-db01",
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-08-30"
+  }
+ ],
+ "certs": [
+  {
+   "id": "mi-s4-prd",
+   "customer": "mi",
+   "name": "Server TLS s4.muster-industrie.example",
+   "vmIds": [
+    "mi-prd-wd01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 3072",
+   "notAfter": "2026-11-24"
+  },
+  {
+   "id": "mi-ariba-gw",
+   "customer": "mi",
+   "name": "Client certificate Ariba integration",
+   "vmIds": [
+    "mi-prd-app01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 2048",
+   "notAfter": "2026-11-02"
+  },
+  {
+   "id": "bp-s4-prd",
+   "customer": "bp",
+   "name": "Server TLS s4.beispiel-pharma.example",
+   "vmIds": [
+    "bp-prd-wd01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 3072",
+   "notAfter": "2026-10-26"
+  },
+  {
+   "id": "bp-saml",
+   "customer": "bp",
+   "name": "SAML signing (SSO)",
+   "vmIds": [
+    "bp-prd-app01"
+   ],
+   "issuer": "Internal CA",
+   "key": "RSA 3072",
+   "notAfter": "2027-03-10"
+  },
+  {
+   "id": "nl-s4-prd",
+   "customer": "nl",
+   "name": "Server TLS s4.nordlicht-logistik.example",
+   "vmIds": [
+    "nl-prd-wd01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "ECDSA P-384",
+   "notAfter": "2027-01-04"
+  },
+  {
+   "id": "nl-cc",
+   "customer": "nl",
+   "name": "Cloud Connector certificate",
+   "vmIds": [
+    "nl-prd-app01"
+   ],
+   "issuer": "Internal CA",
+   "key": "RSA 2048",
+   "notAfter": "2026-10-19"
+  },
+  {
+   "id": "aw-s4-prd",
+   "customer": "aw",
+   "name": "Server TLS s4.alpenwerk.example",
+   "vmIds": [
+    "aw-prd-wd01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 3072",
+   "notAfter": "2026-11-17"
+  },
+  {
+   "id": "aw-s4-qas",
+   "customer": "aw",
+   "name": "Server TLS s4-qas.alpenwerk.example",
+   "vmIds": [
+    "aw-qas-app01"
+   ],
+   "issuer": "Internal CA",
+   "key": "RSA 2048",
+   "notAfter": "2027-01-24"
+  },
+  {
+   "id": "ke-s4-prd",
+   "customer": "ke",
+   "name": "Server TLS s4.kurpfalz-energie.example",
+   "vmIds": [
+    "ke-prd-wd01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 3072",
+   "notAfter": "2026-11-09"
+  },
+  {
+   "id": "ke-smgw",
+   "customer": "ke",
+   "name": "Client certificate market communication",
+   "vmIds": [
+    "ke-prd-app01"
+   ],
+   "issuer": "Industry CA",
+   "key": "ECDSA P-256",
+   "notAfter": "2026-12-18"
+  },
+  {
+   "id": "hr-s4-prd",
+   "customer": "hr",
+   "name": "Server TLS s4.hanseatic-retail.example",
+   "vmIds": [
+    "hr-prd-wd01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 3072",
+   "notAfter": "2027-05-09"
+  },
+  {
+   "id": "hr-pos",
+   "customer": "hr",
+   "name": "POS interface",
+   "vmIds": [
+    "hr-prd-app01"
+   ],
+   "issuer": "Internal CA",
+   "key": "RSA 2048",
+   "notAfter": "2027-09-16"
+  }
+ ],
+ "dns": [
+  {
+   "id": "mi-s4",
+   "customer": "mi",
+   "name": "s4.muster-industrie.example",
+   "type": "A",
+   "value": "203.0.113.10",
+   "ttl": 3600,
+   "vmId": "mi-prd-wd01"
+  },
+  {
+   "id": "mi-s4-qas",
+   "customer": "mi",
+   "name": "s4-qas.muster-industrie.example",
+   "type": "A",
+   "value": "203.0.113.11",
+   "ttl": 3600,
+   "vmId": "mi-qas-app01"
+  },
+  {
+   "id": "bp-s4",
+   "customer": "bp",
+   "name": "s4.beispiel-pharma.example",
+   "type": "A",
+   "value": "203.0.113.12",
+   "ttl": 300,
+   "vmId": "bp-prd-wd01"
+  },
+  {
+   "id": "bp-s4-qas",
+   "customer": "bp",
+   "name": "s4-qas.beispiel-pharma.example",
+   "type": "A",
+   "value": "203.0.113.13",
+   "ttl": 3600,
+   "vmId": "bp-qas-app01"
+  },
+  {
+   "id": "nl-s4",
+   "customer": "nl",
+   "name": "s4.nordlicht-logistik.example",
+   "type": "A",
+   "value": "203.0.113.14",
+   "ttl": 86400,
+   "vmId": "nl-prd-wd01"
+  },
+  {
+   "id": "nl-s4-qas",
+   "customer": "nl",
+   "name": "s4-qas.nordlicht-logistik.example",
+   "type": "A",
+   "value": "203.0.113.15",
+   "ttl": 3600,
+   "vmId": "nl-qas-app01"
+  },
+  {
+   "id": "aw-s4",
+   "customer": "aw",
+   "name": "s4.alpenwerk.example",
+   "type": "A",
+   "value": "203.0.113.16",
+   "ttl": 3600,
+   "vmId": "aw-prd-wd01"
+  },
+  {
+   "id": "aw-s4-qas",
+   "customer": "aw",
+   "name": "s4-qas.alpenwerk.example",
+   "type": "A",
+   "value": "203.0.113.17",
+   "ttl": 3600,
+   "vmId": "aw-qas-app01"
+  },
+  {
+   "id": "ke-s4",
+   "customer": "ke",
+   "name": "s4.kurpfalz-energie.example",
+   "type": "A",
+   "value": "203.0.113.18",
+   "ttl": 3600,
+   "vmId": "ke-prd-wd01"
+  },
+  {
+   "id": "ke-s4-qas",
+   "customer": "ke",
+   "name": "s4-qas.kurpfalz-energie.example",
+   "type": "A",
+   "value": "203.0.113.19",
+   "ttl": 3600,
+   "vmId": "ke-qas-app01"
+  },
+  {
+   "id": "hr-s4",
+   "customer": "hr",
+   "name": "s4.hanseatic-retail.example",
+   "type": "A",
+   "value": "203.0.113.20",
+   "ttl": 14400,
+   "vmId": "hr-prd-wd01"
+  },
+  {
+   "id": "hr-s4-qas",
+   "customer": "hr",
+   "name": "s4-qas.hanseatic-retail.example",
+   "type": "A",
+   "value": "203.0.113.21",
+   "ttl": 3600,
+   "vmId": "hr-qas-app01"
+  },
+  {
+   "id": "mi-ariba",
+   "customer": "mi",
+   "name": "ariba-gw.muster-industrie.example",
+   "type": "CNAME",
+   "value": "s4.muster-industrie.example",
+   "ttl": 3600,
+   "vmId": "mi-prd-wd01"
+  },
+  {
+   "id": "bp-sso",
+   "customer": "bp",
+   "name": "sso.beispiel-pharma.example",
+   "type": "CNAME",
+   "value": "s4.beispiel-pharma.example",
+   "ttl": 86400,
+   "vmId": "bp-prd-wd01"
+  },
+  {
+   "id": "ke-markt",
+   "customer": "ke",
+   "name": "markt.kurpfalz-energie.example",
+   "type": "CNAME",
+   "value": "s4.kurpfalz-energie.example",
+   "ttl": 3600,
+   "vmId": "ke-prd-wd01"
+  }
+ ],
+ "freezes": [
+  {
+   "from": "2026-10-26",
+   "to": "2026-10-28",
+   "customer": "bp",
+   "reason": "GxP audit at Beispiel Pharma"
+  },
+  {
+   "from": "2026-12-18",
+   "to": "2027-01-04",
+   "customer": null,
+   "reason": "Year-end freeze"
+  }
+ ],
+ "tasks": [
+  {
+   "id": "CHG-1037",
+   "template": "patch-vm",
+   "target": "hr-qas-app01",
+   "customer": "hr",
+   "window": [
+    "2026-10-16T21:00",
+    "2026-10-16T23:00"
+   ],
+   "state": "done",
+   "requester": "lh",
+   "approvals": [
+    "tk"
+   ]
+  },
+  {
+   "id": "CHG-1038",
+   "template": "update-dns-record",
+   "target": "ke-s4",
+   "customer": "ke",
+   "window": [
+    "2026-10-21T20:00",
+    "2026-10-21T21:00"
+   ],
+   "state": "in_window",
+   "requester": "sa",
+   "approvals": [
+    "mo",
+    "jb"
+   ],
+   "params": {
+    "newValue": "203.0.113.88",
+    "ttl": 300
+   }
+  },
+  {
+   "id": "CHG-1039",
+   "template": "patch-vm",
+   "target": "bp-prd-app01",
+   "customer": "bp",
+   "window": [
+    "2026-10-24T22:00",
+    "2026-10-25T02:00"
+   ],
+   "state": "approved",
+   "requester": "lh",
+   "approvals": [
+    "nb",
+    "jb"
+   ]
+  },
+  {
+   "id": "CHG-1040",
+   "template": "renew-certificate",
+   "target": "ke-s4-prd",
+   "customer": "ke",
+   "window": [
+    "2026-10-22T22:00",
+    "2026-10-23T00:00"
+   ],
+   "state": "in_review",
+   "requester": "sa",
+   "approvals": [
+    "mo"
+   ]
+  },
+  {
+   "id": "CHG-1041",
+   "template": "move-vm",
+   "target": "nl-qas-app01",
+   "customer": "nl",
+   "window": [
+    "2026-10-31T20:00",
+    "2026-11-01T02:00"
+   ],
+   "state": "in_review",
+   "requester": "lh",
+   "approvals": [],
+   "params": {
+    "targetRegion": "europe-west1"
+   }
+  },
+  {
+   "id": "CHG-1042",
+   "template": "renew-certificate",
+   "target": "aw-s4-prd",
+   "customer": "aw",
+   "window": [
+    "2026-11-03T22:00",
+    "2026-11-04T00:00"
+   ],
+   "state": "planned",
+   "requester": "sa",
+   "approvals": []
+  },
+  {
+   "id": "CHG-1043",
+   "template": "patch-vm",
+   "target": "ke-prd-app01",
+   "customer": "ke",
+   "window": [
+    "2026-11-07T21:00",
+    "2026-11-08T01:00"
+   ],
+   "state": "planned",
+   "requester": "lh",
+   "approvals": []
+  }
+ ]
+}

@@ -21,7 +21,9 @@
         "SUPABASE_URL": "${user_config.supabase_url}",
         "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}",
         "N8N_URL": "${user_config.n8n_url}",
-        "N8N_API_KEY": "${user_config.n8n_api_key}"
+        "N8N_API_KEY": "${user_config.n8n_api_key}",
+        "N8N_INFRA_WEBHOOK_URL": "${user_config.n8n_infra_webhook_url}",
+        "N8N_INFRA_WEBHOOK_TOKEN": "${user_config.n8n_infra_webhook_token}"
       }
     }
   },
@@ -183,6 +185,12 @@
       "description": "Rate a published marketplace skill with 1 to 5 stars and an optional short comment (max 280 characters). One rating per person and skill; rating again replaces the earlier one. Ask the person for the stars first and repeat skill, stars and comment back before calling; never rate on your own. Do not put names, customer data or secrets into the comment. Needs the Supabase connection; sample skills cannot be rated."
     },
     {
+      "name": "plan_infra_change",
+      "description": "Plan an infrastructure change (certificate, DNS, VM patch or move) against the sample inventory: pre-checks, simulated check-mode diff, impact, risk and approvals. Read-only."
+    },
+    {
+      "name": "submit_infra_change",
+      "description": "Hand a planned infrastructure change to the n8n workflow (check mode only) after the person confirms. Needs the n8n webhook address."
       "name": "enrich_ticket",
       "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
     }
@@ -211,6 +219,19 @@
       "type": "string",
       "title": "n8n API key",
       "description": "Optional. Created in n8n under Settings, n8n API. Read access to workflows and executions. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "n8n_infra_webhook_url": {
+      "type": "string",
+      "title": "n8n webhook for infrastructure changes",
+      "description": "Optional. Production webhook URL of the workflow 03-infra-change-request (https). Without it, submit_infra_change only shows what it would send.",
+      "required": false
+    },
+    "n8n_infra_webhook_token": {
+      "type": "string",
+      "title": "n8n webhook token",
+      "description": "Optional. Sent as header x-infra-token; the workflow checks it. Stored as a secret.",
       "sensitive": true,
       "required": false
     }

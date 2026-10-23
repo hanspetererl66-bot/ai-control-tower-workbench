@@ -13,6 +13,7 @@ import { N8N_TOOL_DEFINITIONS, createN8nHandlers } from './n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS, createSkillProfileHandlers } from './skill-profiles.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS, createSkillRatingHandlers } from './skill-ratings.mjs';
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
+import { INFRA_TOOL_DEFINITIONS, createInfraOpsHandlers } from './infra-ops.mjs';
 import { CROSS_SPACE_TOOL_DEFINITIONS, createCrossSpaceHandlers } from './cross-space.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
@@ -103,6 +104,7 @@ const reply = (id, result) => send({ id, result });
 const fail = (id, code, message) => send({ id, error: { code, message } });
 
 const n8nHandlers = createN8nHandlers();
+const infraHandlers = createInfraOpsHandlers({ ToolError });
 
 async function handle(message) {
   const { id, method, params } = message;

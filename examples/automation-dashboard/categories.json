@@ -9,6 +9,7 @@
     { "name": "Service & Support", "tags": ["service", "support", "ticket", "sub4me"], "minutesPerRun": 5 },
     { "name": "Sales & Marketing", "tags": ["sales", "marketing", "crm"], "minutesPerRun": 6 },
     { "name": "Platform & Monitoring", "tags": ["sap", "btp", "engineering", "monitoring"], "minutesPerRun": 3 },
-    { "name": "Reporting", "tags": ["reporting", "report"], "minutesPerRun": 30 }
+    { "name": "Reporting", "tags": ["reporting", "report"], "minutesPerRun": 30 },
+    { "name": "Infrastructure Operations", "tags": ["infrastruktur", "infrastructure"], "minutesPerRun": 25 }
   ]
 }

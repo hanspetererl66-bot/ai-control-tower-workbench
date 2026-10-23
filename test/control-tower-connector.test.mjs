@@ -10,6 +10,7 @@ import { SUB4ME_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sub4
 import { N8N_TOOL_DEFINITIONS } from '../connectors/control-tower/server/n8n.mjs';
 import { SKILL_PROFILE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-profiles.mjs';
 import { GRAPH_TOOL_DEFINITIONS } from '../connectors/control-tower/server/graph.mjs';
+import { INFRA_TOOL_DEFINITIONS } from '../connectors/control-tower/server/infra-ops.mjs';
 import { SKILL_RATING_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-ratings.mjs';
 import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
