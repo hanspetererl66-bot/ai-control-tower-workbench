@@ -201,7 +201,7 @@
       "source": "connectors/control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "summary": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.",
       "install": [
         {
@@ -465,6 +465,18 @@
         },
         {
           "name": "rate_skill",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "simulate_credit_cut",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "enrich_ticket",
           "class": "read",
           "what": "",
           "default": "on"
