@@ -197,14 +197,14 @@ test('Sales Space: offers and contracts match the Sub4Me sample data, gates and 
     if (d.offerId) {
       const o = sub.offers.find((x) => x.id === d.offerId);
       assert.ok(o, d.offerId);
-      assert.equal(d.value, o.annualEur); assert.equal(d.discountPct, o.discountPct); assert.equal(d.approval, o.approval);
+      assert.equal(d.value, o.annualEur * sales.valueScale); assert.equal(d.discountPct, o.discountPct); assert.equal(d.approval, o.approval);
       assert.equal(d.competitor, o.competitor); assert.equal(d.valid, o.validUntil); assert.equal(d.owner, o.owner.name);
       if (o.discountPct > sales.discountThresholdPct) assert.equal(d.met[1], false, `${d.id}: discount above the threshold is not cleared`);
     }
     if (d.stage === 'contract') {
       const c = sub.contracts.find((x) => x.id === d.contractId);
       assert.ok(c, d.contractId);
-      assert.equal(d.value, c.annualEur); assert.equal(d.end, c.end); assert.equal(d.noticeDays, c.noticeDays); assert.equal(d.autoRenew, c.autoRenew);
+      assert.equal(d.value, c.annualEur * sales.valueScale); assert.equal(d.end, c.end); assert.equal(d.noticeDays, c.noticeDays); assert.equal(d.autoRenew, c.autoRenew);
     }
   }
   assert.ok(sales.deals.some((d) => d.risks.some((r) => /instruction/i.test(r))), 'the untrusted-content case is visible');
