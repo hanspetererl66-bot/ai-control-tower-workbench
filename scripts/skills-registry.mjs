@@ -12,7 +12,7 @@ const SECRET_LIKE = /(sb_secret_|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVA
 
 export const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
-export const DOMAINS = ['Governance & Risiko', 'Service & Support', 'Finanzen', 'HR', 'Entwicklung', 'Betrieb', 'Sonstiges'];
+export const DOMAINS = ['Governance & Risiko', 'Service & Support', 'Finanzen', 'Vertrieb', 'HR', 'Entwicklung', 'Betrieb', 'Automatisierung', 'Sicherheit & Zugriff', 'Skill-Management', 'Sonstiges'];
 export const DATA_CLASSES = ['öffentlich', 'intern', 'vertraulich'];
 /** Quality ladder shown in the catalog. 'approved' is the official review and is only set with `approve --by`. */
 export const MATURITIES = ['pilot', 'empfohlen', 'approved'];

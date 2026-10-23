@@ -16,6 +16,7 @@ export const EXAMPLE_SPACES = {
   'customer-emails': 'customer-emails',
   'infra-ops': 'infra-ops',
   'calm-alm': 'calm-alm',
+  sales: 'sales',
 };
 
 /**

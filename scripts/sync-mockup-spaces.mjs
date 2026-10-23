@@ -11,6 +11,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const MOCKUPS = [
   { page: 'examples/call-transcripts/index.html', data: 'examples/call-transcripts/calls.json' },
   { page: 'examples/customer-emails/index.html', data: 'examples/customer-emails/threads.json' },
+  { page: 'examples/sales/index.html', data: 'examples/sales/pipeline.json' },
 ];
 const BLOCK = /<script type="application\/json" id="data">[\s\S]*?<\/script>/;
 

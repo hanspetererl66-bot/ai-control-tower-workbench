@@ -123,3 +123,19 @@ test('playbooks reference real skills, say why, and are found by role and goal',
   await assert.rejects(h.recommend_skill_workflow({}), /role, a goal/);
   await assert.rejects(h.recommend_skill_workflow({ role: 'x', limit: 9 }), /limit/);
 });
+
+test('every skill belongs to exactly one business capability and the hub navigation is in the Space', () => {
+  const owner = new Map();
+  for (const cap of page.capabilities) {
+    assert.ok(cap.id && cap.label && cap.blurb && cap.skills.length, cap.id);
+    for (const name of cap.skills) {
+      assert.ok(!owner.has(name), `${name} is in two capabilities`);
+      owner.set(name, cap.id);
+    }
+  }
+  for (const s of page.skills) assert.ok(owner.has(s.name), `${s.name} has no capability`);
+  for (const name of owner.keys()) assert.ok(page.skills.some((s) => s.name === name), `${name} is not a known skill`);
+  const html = readFileSync(new URL('../examples/skill-marketplace/index.html', import.meta.url), 'utf8');
+  for (const tab of ['discover', 'collections', 'catalog', 'mine', 'overview']) assert.match(html, new RegExp(`data-tab="${tab}"`));
+  assert.match(html, /id="pg-bundle"/);
+});
