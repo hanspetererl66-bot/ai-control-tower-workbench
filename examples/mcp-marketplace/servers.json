@@ -398,6 +398,12 @@
           "default": "on"
         },
         {
+          "name": "run_vm_maintenance_plan",
+          "class": "write",
+          "what": "Starts the demo n8n workflow through its webhook. It only proposes a plan; nothing is run or changed.",
+          "default": "on"
+        },
+        {
           "name": "get_skill_impact",
           "class": "read",
           "what": "",

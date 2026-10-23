@@ -250,6 +250,16 @@ h2{font-size:15px;font-weight:650;margin:0 0 4px}
 button.ghost,button.primary{font:inherit;cursor:pointer}
 table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}td{padding:6px 8px;border-bottom:1px solid var(--line-2)}th.n,td.n{text-align:right}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
+.guide{border-color:var(--purple-border);background:var(--purple-dim)}
+.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}
+.guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.guide p{margin:4px 0 0;color:var(--ink-2)}
+.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
+.tasks td,.tasks th{vertical-align:top}.tasks .steps{margin:4px 0 0;padding-left:16px;color:var(--muted);font-size:11px}
+.pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.flow{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);flex-wrap:wrap}.flow b{color:var(--ink)}
+.small{font:inherit;font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650;cursor:pointer}
+.small:disabled{opacity:.5;cursor:default}
 @media (max-width:860px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
@@ -257,6 +267,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 <main>
   <p class="demo">Fictional virtual machines and measurements, no live monitoring. The colour of every VM is calculated on this page from fixed rules; hover over a VM (or focus it with the keyboard) to see why it is green, yellow or red. Nothing is restarted or changed.</p>
   <div class="kpis" id="kpis"></div>
+  <div class="card guide" id="guide" aria-live="polite"></div>
   <div class="layout">
     <div class="card">
       <div class="head">
@@ -268,11 +279,17 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
     </div>
     <aside class="card" id="detail" aria-live="polite"></aside>
   </div>
+  <div class="card tasks" id="tasks-card">
+    <div class="head"><div style="flex:1 1 320px"><h2>Maintenance tasks</h2><p class="sub" style="margin:0">Every yellow or red reason becomes a recommended task. Each task runs through the same flow: detect, propose, approve, run, verify. A person approves; here the run is only simulated.</p></div>
+    <button class="primary" id="mkplan" type="button">Create the plan in n8n</button><button class="ghost" id="reset-demo" type="button">Reset demo</button></div>
+    <table><thead><tr><th>VM</th><th>Task</th><th>Urgency</th><th>Window</th><th>Approver</th><th>Flow</th></tr></thead><tbody id="task-rows"></tbody></table>
+    <p class="note" id="plan-note" role="status" aria-live="polite"></p>
+  </div>
   <div class="tip" id="tip" role="tooltip" hidden></div>
   <div class="card">
     <h2>The rules</h2>
     <p class="sub">One page of rules, the same for every VM. Backup age counts for production VMs only.</p>
-    <table><thead><tr><th>Check</th><th class="n">Yellow from</th><th class="n">Red from</th></tr></thead><tbody id="rules"></tbody></table>
+    <table><thead><tr><th>Check</th><th class="n">Yellow</th><th class="n">Red</th></tr></thead><tbody id="rules"></tbody></table>
     <p class="note">An unreachable VM is always red.</p>
   </div>
 </main>
@@ -301,6 +318,10 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   "patchLagDays": {
    "yellow": 14,
    "red": 30
+  },
+  "certExpiresInDays": {
+   "yellow": 30,
+   "red": 7
   }
  },
  "vms": [
@@ -319,7 +340,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 92,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 212
   },
   {
    "id": "vm-02",
@@ -336,7 +358,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 92,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 212
   },
   {
    "id": "vm-03",
@@ -353,7 +376,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 140,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 150
   },
   {
    "id": "vm-04",
@@ -370,7 +394,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 140,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 150
   },
   {
    "id": "vm-05",
@@ -387,7 +412,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 61,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 33
   },
   {
    "id": "vm-06",
@@ -404,7 +430,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 23,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 96
   },
   {
    "id": "vm-07",
@@ -421,7 +448,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 23,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 40
   },
   {
    "id": "vm-08",
@@ -438,7 +466,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 75,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 120
   },
   {
    "id": "vm-09",
@@ -455,7 +484,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 34,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 88
   },
   {
    "id": "vm-10",
@@ -472,7 +502,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 34,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 88
   },
   {
    "id": "vm-11",
@@ -489,7 +520,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 48,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 24
   },
   {
    "id": "vm-12",
@@ -506,7 +538,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 48,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 58
   },
   {
    "id": "vm-13",
@@ -523,7 +556,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 110,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 175
   },
   {
    "id": "vm-14",
@@ -540,7 +574,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 82,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 260
   },
   {
    "id": "vm-15",
@@ -557,7 +592,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 88,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 300
   },
   {
    "id": "vm-16",
@@ -574,7 +610,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 88,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 300
   },
   {
    "id": "vm-17",
@@ -591,7 +628,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 57,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 140
   },
   {
    "id": "vm-18",
@@ -608,7 +646,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 57,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 140
   },
   {
    "id": "vm-19",
@@ -625,7 +664,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 95,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 205
   },
   {
    "id": "vm-20",
@@ -642,7 +682,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 40,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 310
   },
   {
    "id": "vm-21",
@@ -659,7 +700,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 19,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 75
   },
   {
    "id": "vm-22",
@@ -676,7 +718,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 0,
    "reachable": false,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 75
   },
   {
    "id": "vm-23",
@@ -693,7 +736,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 12,
    "reachable": true,
    "vcpu": 8,
-   "ramGb": 32
+   "ramGb": 32,
+   "certExpiresInDays": 160
   },
   {
    "id": "vm-24",
@@ -710,7 +754,8 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 12,
    "reachable": true,
    "vcpu": 16,
-   "ramGb": 64
+   "ramGb": 64,
+   "certExpiresInDays": 160
   },
   {
    "id": "vm-25",
@@ -727,32 +772,143 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "uptimeDays": 66,
    "reachable": true,
    "vcpu": 4,
-   "ramGb": 16
+   "ramGb": 16,
+   "certExpiresInDays": 5
   }
- ]
+ ],
+ "tasks": {
+  "cert": {
+   "title": "Renew TLS certificate",
+   "steps": [
+    "Create the signing request",
+    "Check the chain and the services that use the certificate",
+    "Install in the maintenance window after approval"
+   ],
+   "reboot": false,
+   "approver": "Security",
+   "fix": {
+    "certExpiresInDays": 365
+   }
+  },
+  "patch": {
+   "title": "Install security patch",
+   "steps": [
+    "Check maintenance window and redundancy",
+    "Patch the twin or standby first",
+    "Restart and run the health check"
+   ],
+   "reboot": true,
+   "approver": "Change board",
+   "fix": {
+    "patchLagDays": 0,
+    "uptimeDays": 0
+   }
+  },
+  "disk": {
+   "title": "Free up disk space",
+   "steps": [
+    "Find the largest directories and old logs",
+    "Propose archive, clean-up or resize",
+    "Run after approval, then measure again"
+   ],
+   "reboot": false,
+   "approver": "Service owner",
+   "fix": {
+    "diskPct": 61
+   }
+  },
+  "backup": {
+   "title": "Catch up the backup",
+   "steps": [
+    "Check the backup job and its last error",
+    "Start a backup run",
+    "Verify the restore point"
+   ],
+   "reboot": false,
+   "approver": "Backup owner",
+   "fix": {
+    "backupAgeHours": 1
+   }
+  },
+  "unreachable": {
+   "title": "Check an unreachable VM",
+   "steps": [
+    "Ping, port and hypervisor status",
+    "Look at the console and recent changes",
+    "Propose a restart, never restart without approval"
+   ],
+   "reboot": true,
+   "approver": "On-call",
+   "fix": {
+    "reachable": true,
+    "cpuPct": 20,
+    "memPct": 35,
+    "diskPct": 40,
+    "uptimeDays": 0
+   }
+  },
+  "cpu": {
+   "title": "Analyse the CPU peak",
+   "steps": [
+    "Find the process behind the peak",
+    "Compare with the twin VM",
+    "Propose scaling or a fix, with approval"
+   ],
+   "reboot": false,
+   "approver": "Service owner",
+   "fix": {
+    "cpuPct": 45
+   }
+  },
+  "mem": {
+   "title": "Check memory pressure",
+   "steps": [
+    "List the largest memory users",
+    "Look for leaks and restart candidates",
+    "Propose a restart or more RAM, with approval"
+   ],
+   "reboot": false,
+   "approver": "Service owner",
+   "fix": {
+    "memPct": 60
+   }
+  }
+ }
 }
 </script>
 <script id="vm-logic">
-/* Status rules. The data block carries the limits; one function gives status and reasons for a VM. */
+/* Status rules and recommended tasks. The data block carries limits and task definitions; the n8n workflow 05-vm-maintenance-plan.json uses the same logic (a test keeps both equal). */
 function assess(vm, rules) {
   const reasons = [];
-  const add = (level, text) => reasons.push({ level, text });
-  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks');
+  const add = (level, text, key) => reasons.push({ level, text, key });
+  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks', 'unreachable');
   else {
-    const metric = (key, label, unit, fmt) => {
-      const v = vm[key], r = rules[key];
+    const metric = (field, label, unit, key) => {
+      const v = vm[field], r = rules[field];
       if (v === null || v === undefined) return;
       if (r.appliesTo && r.appliesTo !== vm.env) return;
-      if (v >= r.red) add('red', `${label} ${fmt(v)}${unit} (red from ${fmt(r.red)}${unit})`);
-      else if (v >= r.yellow) add('yellow', `${label} ${fmt(v)}${unit} (yellow from ${fmt(r.yellow)}${unit})`);
+      if (field === 'certExpiresInDays') {
+        if (v <= r.red) add('red', `${label} ${v}${unit} (red up to ${r.red}${unit})`, key);
+        else if (v <= r.yellow) add('yellow', `${label} ${v}${unit} (yellow up to ${r.yellow}${unit})`, key);
+      } else if (v >= r.red) add('red', `${label} ${v}${unit} (red from ${r.red}${unit})`, key);
+      else if (v >= r.yellow) add('yellow', `${label} ${v}${unit} (yellow from ${r.yellow}${unit})`, key);
     };
-    const id = (v) => v;
-    metric('cpuPct', 'CPU', ' %', id); metric('memPct', 'Memory', ' %', id); metric('diskPct', 'Disk', ' %', id);
-    metric('backupAgeHours', 'Last backup', ' h ago', id); metric('patchLagDays', 'Security patch missing for', ' days', id);
+    metric('cpuPct', 'CPU', ' %', 'cpu'); metric('memPct', 'Memory', ' %', 'mem'); metric('diskPct', 'Disk', ' %', 'disk');
+    metric('backupAgeHours', 'Last backup', ' h ago', 'backup'); metric('patchLagDays', 'Security patch missing for', ' days', 'patch');
+    metric('certExpiresInDays', 'TLS certificate expires in', ' days', 'cert');
   }
   const status = reasons.some((r) => r.level === 'red') ? 'red' : reasons.length ? 'yellow' : 'green';
   reasons.sort((a, b) => (a.level === b.level ? 0 : a.level === 'red' ? -1 : 1));
   return { status, reasons };
+}
+function tasksFor(vm, reasons, defs) {
+  return reasons.map((r) => ({ vm: vm.name, key: r.key, title: defs[r.key].title, steps: defs[r.key].steps, reboot: defs[r.key].reboot, approver: defs[r.key].approver, urgency: r.level === 'red' ? 'urgent' : 'planned', because: r.text }));
+}
+function plan(vms, rules, defs) {
+  return vms.map((vm) => ({ vm, ...assess(vm, rules) })).filter((x) => x.reasons.length).map((x) => {
+    const tasks = tasksFor(x.vm, x.reasons, defs);
+    return { vm: x.vm.name, status: x.status, tasks, window: tasks.some((t) => t.reboot) ? 'Maintenance window needed (restart)' : 'Can run during operations', bundle: tasks.length > 1 };
+  }).sort((a, b) => (a.status === b.status ? a.vm.localeCompare(b.vm) : a.status === 'red' ? -1 : 1));
 }
 </script>
 <script>
@@ -762,19 +918,29 @@ const DATA = JSON.parse(document.getElementById('vm-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' }, ICON = { green: '✓', yellow: '!', red: '✕' };
-const vms = DATA.vms.map((v) => ({ ...v, ...assess(v, DATA.rules) }));
-const state = { filter: 'all', sel: null };
+const FLOW = ['Detected', 'Proposed', 'Approved', 'Run (simulated)', 'Verified'];
+const state = { filter: 'all', sel: null, done: {}, approved: {}, proposed: false, step: -1 }; // done/approved keyed by "vm|task"
+let vms = [];
 const tip = $('#tip');
+const taskKey = (t) => `${t.vm}|${t.key}`;
+function recompute() {
+  vms = DATA.vms.map((v) => {
+    const fixed = { ...v };
+    for (const k of Object.keys(state.done)) { const [name, key] = k.split('|'); if (name === v.name) Object.assign(fixed, DATA.tasks[key].fix); }
+    return { ...fixed, ...assess(fixed, DATA.rules) };
+  });
+}
 const bar = (v, key) => { const r = DATA.rules[key]; return `<i class="${v >= r.red ? 'crit' : v >= r.yellow ? 'warn' : ''}" title="${key}"><b style="width:${Math.min(100, v)}%"></b></i>`; };
 function explain(vm) {
   const head = `<h3>${esc(vm.name)} is <span class="pill ${vm.status}">${LABEL[vm.status]}</span></h3>`;
   if (!vm.reasons.length) {
     const r = DATA.rules;
     return head + `<div>All checks are within their limits:</div><ul><li>CPU ${vm.cpuPct} % <span class="lim">(yellow from ${r.cpuPct.yellow} %)</span></li><li>Memory ${vm.memPct} % <span class="lim">(from ${r.memPct.yellow} %)</span></li><li>Disk ${vm.diskPct} % <span class="lim">(from ${r.diskPct.yellow} %)</span></li>` +
-      (vm.backupAgeHours != null && vm.env === 'prod' ? `<li>Last backup ${vm.backupAgeHours} h ago <span class="lim">(from ${r.backupAgeHours.yellow} h)</span></li>` : '') + `<li>Security patch missing ${vm.patchLagDays} days <span class="lim">(from ${r.patchLagDays.yellow})</span></li></ul>`;
+      (vm.backupAgeHours != null && vm.env === 'prod' ? `<li>Last backup ${vm.backupAgeHours} h ago <span class="lim">(from ${r.backupAgeHours.yellow} h)</span></li>` : '') + `<li>Security patch missing ${vm.patchLagDays} days <span class="lim">(from ${r.patchLagDays.yellow})</span></li><li>TLS certificate valid for ${vm.certExpiresInDays} more days <span class="lim">(warning up to ${r.certExpiresInDays.yellow})</span></li></ul>`;
   }
   const why = vm.status === 'red' ? 'Red because of the worst check:' : 'Yellow because:';
-  return head + `<div>${why}</div><ul>${vm.reasons.map((x) => `<li>${esc(x.text)}${x.level === 'yellow' && vm.status === 'red' ? ' <span class="lim">(also yellow)</span>' : ''}</li>`).join('')}</ul>`;
+  const rec = vm.reasons.map((x) => DATA.tasks[x.key].title).filter((t, i, a) => a.indexOf(t) === i);
+  return head + `<div>${why}</div><ul>${vm.reasons.map((x) => `<li>${esc(x.text)}${x.level === 'yellow' && vm.status === 'red' ? ' <span class="lim">(also yellow)</span>' : ''}</li>`).join('')}</ul><div class="lim" style="margin-top:6px">Recommended: ${esc(rec.join(', '))}</div>`;
 }
 function place(ev, el) {
   const r = el.getBoundingClientRect(), pad = 8, w = tip.offsetWidth, h = tip.offsetHeight;
@@ -791,36 +957,85 @@ function renderGrid() {
     const vm = vms.find((x) => x.id === el.dataset.id);
     el.onmouseenter = (e) => showTip(e, vm, el); el.onmousemove = (e) => place(e, el); el.onmouseleave = () => { tip.hidden = true; };
     el.onfocus = () => showTip(null, vm, el); el.onblur = () => { tip.hidden = true; };
-    el.onclick = () => { state.sel = state.sel === vm.id ? null : vm.id; renderGrid(); renderDetail(); };
+    el.onclick = () => { state.sel = state.sel === vm.id ? null : vm.id; renderAll(); };
   });
 }
 function renderKpis() {
   const n = (s) => vms.filter((v) => v.status === s).length, prod = vms.filter((v) => v.env === 'prod');
   const kpi = (k, v, s, tone) => `<div class="kpi ${tone}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
-  const live = vms.filter((v) => v.reachable);
+  const live = vms.filter((v) => v.reachable), open = plan(vms, DATA.rules, DATA.tasks).reduce((a, p) => a + p.tasks.length, 0);
   $('#kpis').innerHTML = kpi('Green', n('green'), 'all checks within limits', 'green') + kpi('Yellow', n('yellow'), 'warning, plan an action', 'amber') + kpi('Red', n('red'), 'act now', 'red') +
-    kpi('Average CPU', Math.round(live.reduce((a, v) => a + v.cpuPct, 0) / live.length) + ' %', `${live.length} reachable VMs`, 'purple') +
-    kpi('Backups older than 24 h', prod.filter((v) => v.backupAgeHours > DATA.rules.backupAgeHours.yellow).length, 'production VMs', 'purple');
+    kpi('Open tasks', open, `${Object.keys(state.done).length} verified in this demo`, 'purple') +
+    kpi('Average CPU', Math.round(live.reduce((a, v) => a + v.cpuPct, 0) / live.length) + ' %', `${live.length} reachable VMs`, 'purple');
 }
 function renderFilters() {
   const c = (s) => (s === 'all' ? vms.length : vms.filter((v) => v.status === s).length);
   $('#filters').innerHTML = ['all', 'red', 'yellow', 'green'].map((s) => `<button type="button" data-f="${s}" aria-pressed="${state.filter === s}">${s === 'all' ? 'All' : LABEL[s]} ${c(s)}</button>`).join('');
-  $('#filters').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.filter = b.dataset.f; renderFilters(); renderGrid(); }));
+  $('#filters').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.filter = b.dataset.f; renderAll(); }));
 }
 function renderDetail() {
   const v = vms.find((x) => x.id === state.sel);
   if (!v) { $('#detail').innerHTML = '<h2>Details</h2><p class="sub">Click a VM to see its measurements and a question for Joule. Hover over any VM to see why it has its colour.</p>'; return; }
-  const worst = vms.filter((x) => x.status === 'red')[0];
   $('#detail').innerHTML = `<h2>${esc(v.name)} <span class="pill ${v.status}">${LABEL[v.status]}</span></h2><p class="sub">${esc(v.role)}</p>` +
     `<dl class="facts"><dt>Environment</dt><dd>${esc(v.env)}</dd><dt>Site</dt><dd>${esc(v.site)}</dd><dt>System</dt><dd>${esc(v.os)}</dd><dt>Size</dt><dd>${v.vcpu} vCPU, ${v.ramGb} GB</dd>` +
-    (v.reachable ? `<dt>CPU</dt><dd>${v.cpuPct} %</dd><dt>Memory</dt><dd>${v.memPct} %</dd><dt>Disk</dt><dd>${v.diskPct} %</dd><dt>Last backup</dt><dd>${v.backupAgeHours == null ? 'not required' : v.backupAgeHours + ' h ago'}</dd><dt>Patch gap</dt><dd>${v.patchLagDays} days</dd><dt>Uptime</dt><dd>${v.uptimeDays} days</dd>` : '<dt>State</dt><dd>not reachable</dd>') + '</dl>' +
+    (v.reachable ? `<dt>CPU</dt><dd>${v.cpuPct} %</dd><dt>Memory</dt><dd>${v.memPct} %</dd><dt>Disk</dt><dd>${v.diskPct} %</dd><dt>Last backup</dt><dd>${v.backupAgeHours == null ? 'not required' : v.backupAgeHours + ' h ago'}</dd><dt>Patch gap</dt><dd>${v.patchLagDays} days</dd><dt>Certificate</dt><dd>${v.certExpiresInDays} days left</dd><dt>Uptime</dt><dd>${v.uptimeDays} days</dd>` : '<dt>State</dt><dd>not reachable</dd>') + '</dl>' +
     `<div>${explain(v)}</div><p style="margin-top:12px"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button></p>`;
-  $('#ask').onclick = () => window.parent.postMessage({ type: 'wb:ask', prompt: `Explain the status of the virtual machine ${v.name} (${v.role}, ${v.env}, ${v.site}): ${v.status}${v.reasons.length ? ' because ' + v.reasons.map((r) => r.text).join('; ') : ', all checks are within limits'}. Suggest the first three checks for the on-call engineer. Do not change anything. Please answer in German.` }, '*');
+  $('#ask').onclick = () => send(`Explain the status of the virtual machine ${v.name} (${v.role}, ${v.env}, ${v.site}): ${v.status}${v.reasons.length ? ' because ' + v.reasons.map((r) => r.text).join('; ') : ', all checks are within limits'}. Suggest the first three checks for the on-call engineer. Do not change anything. Please answer in German.`);
 }
-$('#rules').innerHTML = [['CPU', 'cpuPct', ' %'], ['Memory', 'memPct', ' %'], ['Disk', 'diskPct', ' %'], ['Last backup (production)', 'backupAgeHours', ' h'], ['Security patch missing', 'patchLagDays', ' days']].map(([l, k, u]) => `<tr><td>${l}</td><td class="n">${DATA.rules[k].yellow}${u}</td><td class="n">${DATA.rules[k].red}${u}</td></tr>`).join('');
-renderKpis(); renderFilters(); renderGrid(); renderDetail();
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderGrid(); renderDetail(); } });
-window.__vms = vms;
+const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt }, '*');
+const stage = (t) => (state.done[taskKey(t)] ? 4 : state.approved[taskKey(t)] ? 2 : state.proposed ? 1 : 0);
+function renderTasks() {
+  const open = plan(DATA.vms.map((v) => vms.find((x) => x.id === v.id)), DATA.rules, DATA.tasks);
+  const doneNow = Object.keys(state.done).map((k) => { const [vm, key] = k.split('|'); return { vm, key, ...DATA.tasks[key], urgency: 'done' }; });
+  const rows = [];
+  for (const p of open) for (const t of p.tasks) rows.push({ t, p });
+  for (const t of doneNow) rows.push({ t, p: { window: '', bundle: false }, done: true });
+  $('#task-rows').innerHTML = rows.map(({ t, p, done }) => {
+    const k = taskKey(t), s = done ? 4 : stage(t);
+    const action = done ? '' : s === 0 ? '<button class="small" data-act="propose" disabled title="Create the plan first">Propose</button>' : s === 1 ? `<button class="small" data-act="approve" data-k="${esc(k)}">Approve</button>` : `<button class="small" data-act="run" data-k="${esc(k)}">Run (simulated)</button>`;
+    return `<tr><td><b>${esc(t.vm)}</b>${p.bundle ? '<div class="why" style="color:var(--muted);font-size:11px">bundled with other tasks of this VM</div>' : ''}</td><td>${esc(t.title)}<ol class="steps">${t.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></td>` +
+      `<td><span class="pill ${t.urgency}">${done ? 'done' : t.urgency}</span></td><td>${esc(p.window || '')}</td><td>${esc(t.approver)}</td>` +
+      `<td><div class="flow">${FLOW.map((f, i) => (i === s ? `<b>${f}</b>` : f)).join(' › ')}</div>${action}</td></tr>`;
+  }).join('') || '<tr><td colspan="6">No open tasks. Every VM is green.</td></tr>';
+  $('#task-rows').querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
+    if (b.dataset.act === 'approve') state.approved[b.dataset.k] = true;
+    if (b.dataset.act === 'run') { state.done[b.dataset.k] = true; delete state.approved[b.dataset.k]; recompute(); }
+    renderAll();
+  }));
+}
+$('#mkplan').onclick = () => {
+  state.proposed = true; renderAll();
+  const p = plan(vms, DATA.rules, DATA.tasks);
+  $('#plan-note').textContent = `Draft plan: ${p.reduce((a, x) => a + x.tasks.length, 0)} tasks on ${p.length} VMs, ${p.filter((x) => x.bundle).length} VMs bundled in one window. Proposal only: nothing runs until a person approves.`;
+  send('Run the n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" with the tool run_vm_maintenance_plan (production mode, sample VMs, omit vms). Summarise the plan: urgent tasks first, which VMs need a maintenance window, which tasks are bundled and who must approve. Do not execute anything. Please answer in German.');
+};
+$('#reset-demo').onclick = () => { state.done = {}; state.approved = {}; state.proposed = false; state.filter = 'all'; state.sel = null; state.step = -1; $('#plan-note').textContent = ''; recompute(); renderAll(); };
+const STEPS = [
+  { t: 'See the wall', x: 'Every VM is green, yellow or red. Red VMs need action now, yellow ones need a plan.', on: () => { state.filter = 'red'; } },
+  { t: 'Why is it red?', x: 'Hover over joule-gw-01: the tooltip shows which checks made it red, with the measured value and the limit.', on: () => { state.filter = 'all'; state.sel = 'vm-06'; } },
+  { t: 'Recommended tasks', x: 'Each reason becomes a task: patch, certificate, disk space, backup. The table below lists them, urgent first.', on: () => { state.sel = null; document.getElementById('tasks-card').scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
+  { t: 'Create the plan', x: '“Create the plan in n8n” asks the chat to run the maintenance-plan workflow. It only proposes; the tasks move to “Proposed”.', on: () => { state.proposed = true; } },
+  { t: 'A person approves', x: 'The approver named in the table approves. We approve the certificate renewal on proxy-edge-01.', on: () => { state.proposed = true; state.approved['proxy-edge-01|cert'] = true; } },
+  { t: 'Run and verify', x: 'The task runs (simulated here), the VM is measured again and its colour changes. Reset the demo to start over.', on: () => { state.proposed = true; delete state.approved['proxy-edge-01|cert']; state.done['proxy-edge-01|cert'] = true; recompute(); state.sel = 'vm-25'; } },
+];
+function renderGuide() {
+  const g = $('#guide');
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Six steps from the status wall to a verified fix: see, understand, plan, approve, run, verify.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  const s = STEPS[state.step];
+  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button"${state.step === 0 ? ' disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
+  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
+}
+function go(i) {
+  state.step = i;
+  state.done = {}; state.approved = {}; state.proposed = false; state.filter = 'all'; state.sel = null; recompute();
+  for (let k = 0; k <= i; k++) STEPS[k].on();
+  recompute(); renderAll();
+}
+function renderAll() { renderKpis(); renderFilters(); renderGrid(); renderDetail(); renderTasks(); renderGuide(); }
+$('#rules').innerHTML = [['CPU', 'cpuPct', ' %', 'from'], ['Memory', 'memPct', ' %', 'from'], ['Disk', 'diskPct', ' %', 'from'], ['Last backup (production)', 'backupAgeHours', ' h', 'from'], ['Security patch missing', 'patchLagDays', ' days', 'from'], ['TLS certificate expires in', 'certExpiresInDays', ' days', 'up to']].map(([l, k, u, w]) => `<tr><td>${l}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].yellow}${u}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].red}${u}</td></tr>`).join('');
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
+recompute(); renderAll();
+window.__vms = () => vms; window.__state = state; window.__go = go;
 })();
 </script>
 </body>

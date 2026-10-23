@@ -1,11 +1,12 @@
 {
   "title": "IT Infrastructure",
-  "description": "Mockup of 25 virtual machines as a status wall: every VM is green, yellow or red, and hovering over it explains why.",
+  "description": "Mockup of 25 virtual machines as a status wall (green, yellow, red, hover explains why), with recommended maintenance tasks and a demo flow from detection to a verified fix.",
   "domain": "Operations",
   "insights": [
-    "Fictional VMs and measurements, no live monitoring. The colour is calculated from fixed rules: CPU, memory, disk, backup age (production) and missing security patches.",
-    "Hover over a VM, or focus it with the keyboard, to see which check made it green, yellow or red and what the limits are.",
-    "Nothing is restarted or changed. 'Ask Joule' only asks the chat to explain the status and suggest the first checks."
+    "Fictional VMs and measurements, no live monitoring. The colour is calculated from fixed rules: CPU, memory, disk, backup age (production), missing security patches and TLS certificate expiry.",
+    "Hover over a VM, or focus it with the keyboard, to see which check made it green, yellow or red, the limits, and the recommended task.",
+    "Every reason becomes a task (renew certificate, install patch, free up disk space, catch up backup, check an unreachable VM) that runs through detect, propose, approve, run, verify. The run is simulated; the plan comes from the n8n workflow 05-vm-maintenance-plan through the chat tool run_vm_maintenance_plan.",
+    "'Start demo' walks through six steps. Nothing is restarted or changed; a person approves."
   ],
   "prompt": "Bundled example: IT Infrastructure (static, data embedded by npm run sync:it-infrastructure)."
 }

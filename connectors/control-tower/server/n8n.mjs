@@ -278,6 +278,33 @@ export const N8N_TOOL_DEFINITIONS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'run_vm_maintenance_plan',
+    description:
+      'Run the demo n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" through its webhook (/webhook/vm-maintenance-plan). It checks virtual machines against fixed rules (CPU, memory, disk, backup, security patch, TLS certificate), turns every yellow or red reason into a recommended task (renew certificate, install patch, free up disk space, catch up backup, check an unreachable VM), proposes a maintenance window and bundles tasks per VM. Without vms it uses the 25 fictional VMs of the IT Infrastructure Space. It only proposes: nothing is run, restarted or changed. Needs N8N_URL; the workflow examples/n8n-workflows/05-vm-maintenance-plan.json must be imported and active.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        vms: {
+          type: 'array',
+          maxItems: 100,
+          description: 'Optional VMs. Omit to use the sample VMs.',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' }, name: { type: 'string' }, role: { type: 'string' }, env: { type: 'string', enum: ['prod', 'test', 'dev'] }, reachable: { type: 'boolean' },
+              cpuPct: { type: 'number', minimum: 0, maximum: 100 }, memPct: { type: 'number', minimum: 0, maximum: 100 }, diskPct: { type: 'number', minimum: 0, maximum: 100 },
+              backupAgeHours: { type: ['number', 'null'], minimum: 0 }, patchLagDays: { type: 'number', minimum: 0 }, certExpiresInDays: { type: 'number', minimum: -365 },
+            },
+            required: ['id', 'name'],
+            additionalProperties: false,
+          },
+        },
+        mode: { type: 'string', enum: ['production', 'test'], description: 'production (default, workflow must be active) or test.' },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 const round1 = (value) => Math.round(value * 10) / 10;
@@ -494,6 +521,48 @@ export function createN8nHandlers({ env = process.env, fetchImpl = fetch, now = 
         result: first ?? result,
         note: 'Computed only. Nothing was paged, restarted or changed; a person decides about paging, tickets and restarts.',
         view: { space: 'it-operations', tab: 'overview' },
+      };
+    },
+    async run_vm_maintenance_plan(args = {}) {
+      if (!env.N8N_URL) throw new ToolError('n8n is not connected: enter the n8n address (N8N_URL) in the connector settings. The workflow itself is examples/n8n-workflows/05-vm-maintenance-plan.json (import it and activate it).');
+      const mode = args.mode ?? 'production';
+      if (!['production', 'test'].includes(mode)) throw new ToolError('mode must be production or test');
+      const body = {};
+      if (args.vms !== undefined) {
+        if (!Array.isArray(args.vms) || !args.vms.length || args.vms.length > 100) throw new ToolError('vms must be a list of 1 to 100 virtual machines');
+        const num = (v, lo, hi) => (Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : undefined);
+        body.vms = args.vms.map((v, i) => {
+          if (!v || typeof v !== 'object') throw new ToolError(`vm ${i + 1} must be an object`);
+          for (const key of ['id', 'name']) if (typeof v[key] !== 'string' || !v[key].trim()) throw new ToolError(`vm ${i + 1}: ${key} is required`);
+          if (v.env !== undefined && !['prod', 'test', 'dev'].includes(v.env)) throw new ToolError(`vm ${i + 1}: env must be prod, test or dev`);
+          const out = { id: v.id.slice(0, 40), name: v.name.slice(0, 80), role: typeof v.role === 'string' ? v.role.slice(0, 120) : '', env: v.env ?? 'prod', reachable: v.reachable !== false };
+          for (const [key, lo, hi] of [['cpuPct', 0, 100], ['memPct', 0, 100], ['diskPct', 0, 100], ['patchLagDays', 0, 3650], ['certExpiresInDays', -365, 3650]]) { const n = num(v[key], lo, hi); if (n !== undefined) out[key] = n; }
+          if (v.backupAgeHours === null) out.backupAgeHours = null; else { const n = num(v.backupAgeHours, 0, 100000); if (n !== undefined) out.backupAgeHours = n; }
+          return out;
+        });
+      }
+      let origin;
+      try { origin = normalizeInstanceUrl(env.N8N_URL); } catch (error) { throw new ToolError(`n8n: ${error.message}`); }
+      const url = `${origin}/${mode === 'test' ? 'webhook-test' : 'webhook'}/vm-maintenance-plan`;
+      let response;
+      try {
+        response = await fetchImpl(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(30_000) });
+      } catch (error) {
+        throw new ToolError(`n8n: the workflow did not answer (${error.message})`);
+      }
+      if (response.status === 404) throw new ToolError(mode === 'test' ? 'n8n: the test webhook is not listening. Open the workflow in n8n and click Execute workflow first, then ask again.' : 'n8n: webhook /webhook/vm-maintenance-plan not found. Import the workflow 05-vm-maintenance-plan.json and activate it, or use mode "test".');
+      if (!response.ok) throw new ToolError(`n8n: the workflow answered with HTTP ${response.status}`);
+      const text = await response.text();
+      let result;
+      try { result = JSON.parse(text); } catch { result = text.slice(0, 4000); }
+      const first = Array.isArray(result) ? result[0] : result;
+      return {
+        workflow: 'Demo 5 (IT infrastructure): VM maintenance plan',
+        mode,
+        vmsSent: body.vms ? body.vms.length : 'sample VMs of the workflow',
+        result: first ?? result,
+        note: 'Proposal only. Nothing was run, restarted or changed; the named approver decides about every task.',
+        view: { space: 'it-infrastructure', tab: 'overview' },
       };
     },
   };

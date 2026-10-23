@@ -22,6 +22,10 @@
     "patchLagDays": {
       "yellow": 14,
       "red": 30
+    },
+    "certExpiresInDays": {
+      "yellow": 30,
+      "red": 7
     }
   },
   "vms": [
@@ -40,7 +44,8 @@
       "uptimeDays": 92,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 212
     },
     {
       "id": "vm-02",
@@ -57,7 +62,8 @@
       "uptimeDays": 92,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 212
     },
     {
       "id": "vm-03",
@@ -74,7 +80,8 @@
       "uptimeDays": 140,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 150
     },
     {
       "id": "vm-04",
@@ -91,7 +98,8 @@
       "uptimeDays": 140,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 150
     },
     {
       "id": "vm-05",
@@ -108,7 +116,8 @@
       "uptimeDays": 61,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 33
     },
     {
       "id": "vm-06",
@@ -125,7 +134,8 @@
       "uptimeDays": 23,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 96
     },
     {
       "id": "vm-07",
@@ -142,7 +152,8 @@
       "uptimeDays": 23,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 40
     },
     {
       "id": "vm-08",
@@ -159,7 +170,8 @@
       "uptimeDays": 75,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 120
     },
     {
       "id": "vm-09",
@@ -176,7 +188,8 @@
       "uptimeDays": 34,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 88
     },
     {
       "id": "vm-10",
@@ -193,7 +206,8 @@
       "uptimeDays": 34,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 88
     },
     {
       "id": "vm-11",
@@ -210,7 +224,8 @@
       "uptimeDays": 48,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 24
     },
     {
       "id": "vm-12",
@@ -227,7 +242,8 @@
       "uptimeDays": 48,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 58
     },
     {
       "id": "vm-13",
@@ -244,7 +260,8 @@
       "uptimeDays": 110,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 175
     },
     {
       "id": "vm-14",
@@ -261,7 +278,8 @@
       "uptimeDays": 82,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 260
     },
     {
       "id": "vm-15",
@@ -278,7 +296,8 @@
       "uptimeDays": 88,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 300
     },
     {
       "id": "vm-16",
@@ -295,7 +314,8 @@
       "uptimeDays": 88,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 300
     },
     {
       "id": "vm-17",
@@ -312,7 +332,8 @@
       "uptimeDays": 57,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 140
     },
     {
       "id": "vm-18",
@@ -329,7 +350,8 @@
       "uptimeDays": 57,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 140
     },
     {
       "id": "vm-19",
@@ -346,7 +368,8 @@
       "uptimeDays": 95,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 205
     },
     {
       "id": "vm-20",
@@ -363,7 +386,8 @@
       "uptimeDays": 40,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 310
     },
     {
       "id": "vm-21",
@@ -380,7 +404,8 @@
       "uptimeDays": 19,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 75
     },
     {
       "id": "vm-22",
@@ -397,7 +422,8 @@
       "uptimeDays": 0,
       "reachable": false,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 75
     },
     {
       "id": "vm-23",
@@ -414,7 +440,8 @@
       "uptimeDays": 12,
       "reachable": true,
       "vcpu": 8,
-      "ramGb": 32
+      "ramGb": 32,
+      "certExpiresInDays": 160
     },
     {
       "id": "vm-24",
@@ -431,7 +458,8 @@
       "uptimeDays": 12,
       "reachable": true,
       "vcpu": 16,
-      "ramGb": 64
+      "ramGb": 64,
+      "certExpiresInDays": 160
     },
     {
       "id": "vm-25",
@@ -448,7 +476,106 @@
       "uptimeDays": 66,
       "reachable": true,
       "vcpu": 4,
-      "ramGb": 16
+      "ramGb": 16,
+      "certExpiresInDays": 5
     }
-  ]
+  ],
+  "tasks": {
+    "cert": {
+      "title": "Renew TLS certificate",
+      "steps": [
+        "Create the signing request",
+        "Check the chain and the services that use the certificate",
+        "Install in the maintenance window after approval"
+      ],
+      "reboot": false,
+      "approver": "Security",
+      "fix": {
+        "certExpiresInDays": 365
+      }
+    },
+    "patch": {
+      "title": "Install security patch",
+      "steps": [
+        "Check maintenance window and redundancy",
+        "Patch the twin or standby first",
+        "Restart and run the health check"
+      ],
+      "reboot": true,
+      "approver": "Change board",
+      "fix": {
+        "patchLagDays": 0,
+        "uptimeDays": 0
+      }
+    },
+    "disk": {
+      "title": "Free up disk space",
+      "steps": [
+        "Find the largest directories and old logs",
+        "Propose archive, clean-up or resize",
+        "Run after approval, then measure again"
+      ],
+      "reboot": false,
+      "approver": "Service owner",
+      "fix": {
+        "diskPct": 61
+      }
+    },
+    "backup": {
+      "title": "Catch up the backup",
+      "steps": [
+        "Check the backup job and its last error",
+        "Start a backup run",
+        "Verify the restore point"
+      ],
+      "reboot": false,
+      "approver": "Backup owner",
+      "fix": {
+        "backupAgeHours": 1
+      }
+    },
+    "unreachable": {
+      "title": "Check an unreachable VM",
+      "steps": [
+        "Ping, port and hypervisor status",
+        "Look at the console and recent changes",
+        "Propose a restart, never restart without approval"
+      ],
+      "reboot": true,
+      "approver": "On-call",
+      "fix": {
+        "reachable": true,
+        "cpuPct": 20,
+        "memPct": 35,
+        "diskPct": 40,
+        "uptimeDays": 0
+      }
+    },
+    "cpu": {
+      "title": "Analyse the CPU peak",
+      "steps": [
+        "Find the process behind the peak",
+        "Compare with the twin VM",
+        "Propose scaling or a fix, with approval"
+      ],
+      "reboot": false,
+      "approver": "Service owner",
+      "fix": {
+        "cpuPct": 45
+      }
+    },
+    "mem": {
+      "title": "Check memory pressure",
+      "steps": [
+        "List the largest memory users",
+        "Look for leaks and restart candidates",
+        "Propose a restart or more RAM, with approval"
+      ],
+      "reboot": false,
+      "approver": "Service owner",
+      "fix": {
+        "memPct": 60
+      }
+    }
+  }
 }
