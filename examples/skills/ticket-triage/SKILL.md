@@ -1,6 +1,6 @@
 ---
 name: ticket-triage
-description: Prüft vor einem neuen Sub4Me-Ticket, ob eine SAP Note das Problem löst oder ein anderer Kunde es schon gemeldet hat, und schlägt Mitverfolgen, Verknüpfen oder neues Ticket vor.
+description: Before a new Sub4Me ticket, checks whether an SAP Note solves the problem or another customer has already reported it, and suggests following, linking or a new ticket.
 metadata:
   domain: Service & Support
   process: Serviceticket prüfen

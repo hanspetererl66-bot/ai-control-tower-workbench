@@ -1,6 +1,6 @@
 ---
 name: lead-router
-description: Weist einen qualifizierten Lead nach Region, Branche und Größe einem Account Manager zu und begründet die Wahl. Nutzen bei "Lead zuweisen", "wer bekommt den Lead", "Routing".
+description: Assigns a qualified lead to an account manager by region, industry and size and explains the choice. Nutzen bei "Lead zuweisen", "wer bekommt den Lead", "Routing".
 metadata:
   domain: Vertrieb
   process: Leads zuweisen

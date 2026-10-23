@@ -1,6 +1,6 @@
 ---
 name: competitive-battlecard
-description: Erstellt eine Battlecard gegen einen Wettbewerber aus den Angebotsdaten und den Notizen der Person: Stärken, Schwächen, Fragen, Einwände. Nutzen bei "Wettbewerb", "Battlecard", "Coupa", "Copilot".
+description: Creates a battlecard against a competitor from the offer data and the person's notes: strengths, weaknesses, questions, objections. Nutzen bei "Wettbewerb", "Battlecard", "Coupa", "Copilot".
 metadata:
   domain: Vertrieb
   process: Wettbewerb einordnen

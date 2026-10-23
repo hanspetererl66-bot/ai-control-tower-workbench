@@ -1,6 +1,6 @@
 ---
 name: access-review-prep
-description: Bereitet den Berechtigungsreview vor: überprivilegierte Agenten mit Zugriffsstufe, Eigentümer, Frist und Reihenfolge der Bereinigung. Nutzen bei "Berechtigungsreview", "überprivilegierte Agenten", "Least Privilege prüfen".
+description: Prepares the access review: over-privileged agents with access level, owner, deadline and order of clean-up. Nutzen bei "Berechtigungsreview", "überprivilegierte Agenten", "Least Privilege prüfen".
 metadata:
   domain: Sicherheit & Zugriff
   process: Berechtigungsreview

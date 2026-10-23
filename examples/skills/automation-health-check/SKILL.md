@@ -1,6 +1,6 @@
 ---
 name: automation-health-check
-description: Erstellt ein Lagebild der n8n-Automatisierung: Workflows, Läufe, Erfolgsquote, Kategorien und was Aufmerksamkeit braucht. Nutzen bei "n8n Lagebild", "Automation Health Check", "welche Workflows schlagen fehl".
+description: Creates a status picture of the n8n automation: workflows, runs, success rate, categories and what needs attention. Nutzen bei "n8n Lagebild", "Automation Health Check", "welche Workflows schlagen fehl".
 metadata:
   domain: Automatisierung
   process: n8n-Betrieb überwachen

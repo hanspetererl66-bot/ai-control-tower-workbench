@@ -1,6 +1,6 @@
 ---
 name: contract-checker
-description: Prüft einen Vertrag oder Angebotsentwurf gegen Standardpositionen (Laufzeit, Kündigung, Preissteigerung, Service-Level, Zahlung) und listet Abweichungen. Nutzen bei "Vertrag prüfen", "Klauseln", "Abweichung vom Standard".
+description: Checks a contract or draft quote against standard positions (term, termination, price increase, service level, payment) and lists deviations. Nutzen bei "Vertrag prüfen", "Klauseln", "Abweichung vom Standard".
 metadata:
   domain: Vertrieb
   process: Verträge prüfen

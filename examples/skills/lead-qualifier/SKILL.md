@@ -1,6 +1,6 @@
 ---
 name: lead-qualifier
-description: Bewertet einen Lead nach ICP-Fit und BANT mit Score und Begründung und empfiehlt Weiterverfolgen, Nachfassen oder Ablehnen. Nutzen bei "Lead bewerten", "ist das ein guter Lead", "Lead-Score".
+description: Scores a lead by ICP fit and BANT with score and rationale and recommends pursuing, nurturing or declining. Nutzen bei "Lead bewerten", "ist das ein guter Lead", "Lead-Score".
 metadata:
   domain: Vertrieb
   process: Leads qualifizieren

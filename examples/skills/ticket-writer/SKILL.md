@@ -1,6 +1,6 @@
 ---
 name: ticket-writer
-description: Macht aus einer kurzen Problembeschreibung ein sauberes Sub4Me-Serviceticket (Titel, Produkt, Priorität, Beschreibung) und legt es nach Bestätigung an. Nutzen bei "Ticket eröffnen", "Störung melden", "Sub4Me Ticket".
+description: Turns a short problem description into a clean Sub4Me service ticket (title, product, priority, description) and creates it after confirmation. Nutzen bei "Ticket eröffnen", "Störung melden", "Sub4Me Ticket".
 metadata:
   domain: Service & Support
   process: Serviceticket anlegen

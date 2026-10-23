@@ -1,6 +1,6 @@
 ---
 name: deal-risk-check
-description: Bewertet das Risiko eines Deals aus Angebots-, Mail- und Gesprächsdaten: Wettbewerb, Fristen, Zustimmung, Auffälligkeiten. Nutzen bei "Deal-Risiko", "ist der Deal gefährdet", "Risiken im Angebot".
+description: Assesses the risk of a deal from quote, mail and call data: competition, deadlines, approval, anomalies. Nutzen bei "Deal-Risiko", "ist der Deal gefährdet", "Risiken im Angebot".
 metadata:
   domain: Vertrieb
   process: Deal-Risiko bewerten

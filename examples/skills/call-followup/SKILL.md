@@ -1,6 +1,6 @@
 ---
 name: call-followup
-description: Macht aus Gesprächsnotizen oder einem Transkript Vorschläge für das CRM (Phase, Betrag, nächste Schritte) und einen Entwurf für die Nachfass-Mail. Nutzen bei "Nachbereitung", "Follow-up", "Call-Notizen ins CRM".
+description: Turns call notes or a transcript into suggestions for the CRM (stage, amount, next steps) and a draft for the follow-up mail. Nutzen bei "Nachbereitung", "Follow-up", "Call-Notizen ins CRM".
 metadata:
   domain: Vertrieb
   process: Gespräch nachbereiten

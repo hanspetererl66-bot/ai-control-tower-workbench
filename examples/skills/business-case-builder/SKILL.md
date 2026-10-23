@@ -1,6 +1,6 @@
 ---
 name: business-case-builder
-description: Baut aus Vertrags-, Verbrauchs- und Angebotsdaten einen Business Case (Kosten, Nutzen, Amortisation) mit offenen Annahmen für das Gespräch mit dem CFO. Nutzen bei "Business Case", "ROI", "Wirtschaftlichkeit".
+description: Builds a business case (cost, benefit, payback) from contract, consumption and offer data, with open assumptions for the conversation with the CFO. Nutzen bei "Business Case", "ROI", "Wirtschaftlichkeit".
 metadata:
   domain: Vertrieb
   process: Business Case erstellen
