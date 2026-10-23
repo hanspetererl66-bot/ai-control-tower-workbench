@@ -141,5 +141,20 @@ test('Stakeholders: customer contacts get a role and a contact strength derived 
 test('Page: Sales view by default with enablers, value legend, week slider, questions and stakeholder map', () => {
   for (const id of ['b-enabler', 'b-value', 'b-stake', 't-range', 'ask', 'vleg']) assert.match(page, new RegExp(`id="${id}"`));
   assert.match(page, /const hidden = new Set\(ENABLER\)/, 'enablers are hidden until switched on');
-  for (const q of ['Which deals hang on a risk?', 'Which contact shows up in calls and e-mails?', 'Where is a skill missing?', 'What changed since last week?', 'Who could block a deal?']) assert.ok(page.includes(q), q);
+  for (const q of ['Which opportunities can still close by quarter end?', 'Which opportunities do I have in MEE, APEC and NALA?', 'Which quarter-end deals are at risk?', 'Which contracts end or need notice before quarter end?', 'Which open deals have no decision maker yet?', 'What changed since last week?', 'Where is a skill missing?']) assert.ok(page.includes(q), q);
+  // questions, legend and time slider sit in their own bars and no longer cover the graph
+  for (const sel of ['.ask', '.legend', '.timebar', '.vleg']) assert.doesNotMatch(page, new RegExp(`\\${sel}\\{position:absolute`), `${sel} must not float over the canvas`);
+});
+
+test('Sales regions and quarter-end data: accounts carry a region, contracts carry end and notice', () => {
+  const regions = ['MEE', 'APEC', 'NALA'];
+  const open = graph.nodes.filter((n) => n.sales && n.sales.stage !== 'contract');
+  assert.ok(open.length > 8);
+  for (const n of open) assert.ok(regions.includes(n.sales.region), `${n.id} has a region`);
+  for (const r of regions) assert.ok(open.some((n) => n.sales.region === r), `${r} has open deals`);
+  for (const n of graph.nodes.filter((x) => x.type === 'customer' && x.sales === undefined && Object.values(x.meta).length)) if (n.region) assert.ok(regions.includes(n.region));
+  const contracts = graph.nodes.filter((n) => n.sales && n.sales.stage === 'contract');
+  assert.ok(contracts.length >= 5);
+  for (const c of contracts) assert.ok(c.sales.end && c.sales.noticeDays > 0, `${c.id} has end and notice period`);
+  assert.ok(graph.regionNote);
 });

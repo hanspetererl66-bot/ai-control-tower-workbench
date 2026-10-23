@@ -338,7 +338,11 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
       node.sales = {
         acv, tcv, term, stage: d.stage, account: d.account, ...(d.score != null ? { prob: d.score } : {}), ...(d.closeDate ? { close: d.closeDate } : {}),
         risks: d.risks ?? [], ...(d.prev ? { prev: d.prev } : {}), ...(d.changeWhy ? { changeWhy: d.changeWhy } : {}),
+        ...(links?.regions?.[d.account] ? { region: links.regions[d.account] } : {}),
+        ...(d.stage === 'contract' && d.end ? { end: d.end, noticeDays: d.noticeDays ?? 0, autoRenew: !!d.autoRenew } : {}),
       };
+      if (links?.regions?.[d.account]) node.meta.Region = links.regions[d.account];
+      if (d.stage === 'contract' && d.end) node.meta['Term ends'] = `${d.end}${d.autoRenew ? ' (auto-renews)' : ''}, notice ${d.noticeDays ?? 0} days`;
       const first = (d.timeline ?? []).map((x) => x.date).sort()[0];
       if (first && d.stage !== 'contract') node.date = first;
       dealIds.push(id);
@@ -374,6 +378,10 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
       for (const tid of p.threads) addEdge(p.id, `thread:${tid}`, 'WROTE_IN');
       for (const did of p.deals) addEdge(p.id, did, 'CONTACT_FOR');
     }
+    for (const [account, region] of Object.entries(links?.regions ?? {})) {
+      const node = nodes.get(`customer:${slug(account)}`);
+      if (node) { node.meta.Region = region; node.region = region; }
+    }
   }
 
   /* curated links */
@@ -387,6 +395,7 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
     nodes: [...nodes.values()],
     edges,
     tours: links?.tours ?? [],
+    ...(links?.regionNote ? { regionNote: links.regionNote } : {}),
     ...(missing.length ? { unresolvedLinks: missing } : {}),
   };
 }

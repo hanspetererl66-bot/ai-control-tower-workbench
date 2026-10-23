@@ -229,13 +229,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,canvas:focus-visib
 label.depth{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
 label.depth select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit}
 .stage{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0;height:calc(100vh - 150px);min-height:520px}
-.wrap{position:relative;min-width:0;background:var(--bg);overflow:hidden}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.wrap{position:relative;min-width:0;min-height:200px;flex:1;background:var(--bg);overflow:hidden}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
 #cv.drag{cursor:grabbing}#cv.hit{cursor:pointer}
-.legend{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;opacity:.94;max-height:calc(100% - 24px);overflow:auto}
-.legend button{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);padding:3px 8px;border-radius:6px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
+.legend{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:2px 4px;scrollbar-width:thin}.legend button{flex:none;white-space:nowrap}
+.legend button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--ink);padding:2px 8px;border-radius:999px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
 .legend button:hover{background:var(--brand-dim)}.legend button[aria-pressed=false]{opacity:.4;text-decoration:line-through}
-.legend em{margin-left:auto;font-style:normal;color:var(--mut);padding-left:10px}
+.legend em{font-style:normal;color:var(--mut);padding-left:2px}
 #mini{position:absolute;right:12px;bottom:12px;width:150px;height:100px;border:1px solid var(--line);border-radius:10px;background:var(--panel);opacity:.92;cursor:pointer}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px}
 .zoom .btn{padding:4px 10px;width:34px}
@@ -255,15 +256,17 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
 .steps{counter-reset:s;list-style:none;margin:6px 0;padding:0}.steps li{counter-increment:s;padding:4px 0 4px 26px;position:relative;font-size:13px}
 .steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:18px;height:18px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:700;text-align:center;line-height:18px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.dock{background:var(--panel);border-top:1px solid var(--line);padding:6px 12px;display:flex;flex-direction:column;gap:6px}
+.dockrow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
 .sep{width:1px;height:22px;background:var(--line);margin:0 2px}
-.ask{position:absolute;left:210px;right:64px;top:12px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
-.ask button{pointer-events:auto;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;opacity:.96}
+.ask{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:6px 12px;scrollbar-width:thin;background:var(--panel);border-bottom:1px solid var(--line)}
+.ask button{flex:none;white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .ask button:hover{border-color:var(--brand)}.ask button[aria-pressed=true]{background:var(--brand-dim);color:var(--brand);border-color:var(--brand)}
-.timebar{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);width:min(440px,calc(100% - 420px));min-width:300px;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 10px;opacity:.95}
+.timebar{flex:1 1 320px;min-width:260px;display:flex;align-items:center;gap:10px;background:var(--wash);border:1px solid var(--line);border-radius:12px;padding:6px 10px}
 .timebar input[type=range]{flex:1;min-width:80px;accent-color:var(--brand)}
 .timebar .btn{padding:3px 10px}
 .timebar .tl{display:flex;flex-direction:column;font-size:11px;color:var(--mut);line-height:1.3;min-width:150px}.timebar .tl b{color:var(--ink);font-size:12px}
-.vleg{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:11px;color:var(--mut);opacity:.95;max-width:230px}
+.vleg{flex:1 1 260px;display:flex;flex-direction:column;gap:3px;background:var(--wash);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:11px;color:var(--mut)}
 .vleg b{color:var(--ink);font-size:12px}.vleg .sw{display:flex;flex-wrap:wrap;gap:3px 10px}.vleg .sw span{display:inline-flex;align-items:center;gap:4px}
 .vleg i{display:inline-block;width:10px;height:10px;border-radius:50%}
 .ans small.note{display:block;color:var(--mut)}
@@ -271,7 +274,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
 .role.Sponsor{background:var(--green)}.role.Decider{background:var(--purple)}.role.Blocker{background:var(--red)}.role.Influencer{background:var(--muted)}
 .pips{letter-spacing:2px;color:var(--brand);font-size:11px}
 .gap{margin:4px 0 0;color:var(--warn);font-size:12px}
-@media (max-width:860px){.ask{left:12px;right:12px;top:auto;bottom:96px}.timebar{width:calc(100% - 24px);bottom:10px}.vleg{display:none}.stage{grid-template-columns:1fr;height:auto}.wrap{height:62vh;min-height:380px}aside{border-left:0;border-top:1px solid var(--line)}.legend{max-height:40%}#mini{display:none}.hint{display:none}}
+@media (max-width:860px){.vleg{display:none}.stage{grid-template-columns:1fr;height:auto}.wrap{flex:none;height:62vh;min-height:380px}aside{border-left:0;border-top:1px solid var(--line)}#mini{display:none}.hint{display:none}}
 </style>
 </head>
 <body>
@@ -301,15 +304,21 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
   <button class="btn" id="b-stake" aria-pressed="false" title="Stakeholder map: contacts per customer with role and contact strength">Stakeholders</button>
 </div>
 <div class="stage">
+  <div class="main">
+  <div class="ask" id="ask" role="group" aria-label="Ask the graph"></div>
   <div class="wrap" id="wrap">
     <canvas id="cv" tabindex="0" role="application" aria-label="Interactive knowledge graph. Use the search box or the lists in the side panel to navigate by keyboard. Plus and minus zoom, arrow keys pan, Escape clears the selection."></canvas>
-    <div class="legend" id="legend" role="group" aria-label="Node types (toggle to show or hide)"></div>
-    <div class="ask" id="ask" role="group" aria-label="Ask the graph"></div>
-    <div class="timebar" id="timebar"><button class="btn" id="t-play" aria-label="Play the weeks" title="Let the graph grow week by week">▶</button><input id="t-range" type="range" min="0" max="6" step="1" value="6" aria-label="Week"><div class="tl"><b id="t-label"></b><span id="t-delta"></span></div></div>
-    <div class="vleg" id="vleg" aria-label="Legend for size, line width and colour"></div>
     <div class="zoom"><button class="btn" id="zin" aria-label="Zoom in">+</button><button class="btn" id="zout" aria-label="Zoom out">−</button><button class="btn" id="zfit" aria-label="Fit graph" title="Fit">⤢</button></div>
     <canvas id="mini" aria-hidden="true" width="300" height="200"></canvas>
     <div class="hint" id="hint">Drag to move · scroll to zoom · double-click a node to pin it</div>
+  </div>
+  <div class="dock">
+    <div class="legend" id="legend" role="group" aria-label="Node types (toggle to show or hide)"></div>
+    <div class="dockrow">
+      <div class="timebar" id="timebar"><button class="btn" id="t-play" aria-label="Play the weeks" title="Let the graph grow week by week">▶</button><input id="t-range" type="range" min="0" max="6" step="1" value="6" aria-label="Week"><div class="tl"><b id="t-label"></b><span id="t-delta"></span></div></div>
+      <div class="vleg" id="vleg" aria-label="Legend for size, line width and colour"></div>
+    </div>
+  </div>
   </div>
   <aside id="panel" aria-live="polite"></aside>
 </div>
@@ -551,12 +560,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "meta": {
     "Customer no.": "100-482-117",
     "Country": "Germany",
-    "Contact": "A. Beispiel"
+    "Contact": "A. Beispiel",
+    "Region": "MEE"
    },
    "view": {
     "space": "sub4me",
     "tab": "overview"
-   }
+   },
+   "region": "MEE"
   },
   {
    "id": "product:joule-copilots",
@@ -810,7 +821,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Payment terms": "30 days net",
     "ACV": "€6,400,000",
     "TCV": "€32,000,000 (60 months)",
-    "Sales stage": "Contract"
+    "Sales stage": "Contract",
+    "Region": "MEE",
+    "Term ends": "2027-03-31 (auto-renews), notice 90 days"
    },
    "view": {
     "space": "sub4me",
@@ -822,7 +835,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "term": 60,
     "stage": "contract",
     "account": "Muster Industrie AG",
-    "risks": []
+    "risks": [],
+    "region": "MEE",
+    "end": "2027-03-31",
+    "noticeDays": 90,
+    "autoRenew": true
    }
   },
   {
@@ -890,7 +907,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "ACV": "€2,900,000",
     "TCV": "€8,700,000 (36 months)",
     "Sales stage": "Contract",
-    "Risk": "Last day to give notice is 2026-11-02 and the renewal offer is still open."
+    "Risk": "Last day to give notice is 2026-11-02 and the renewal offer is still open.",
+    "Region": "MEE",
+    "Term ends": "2027-01-31, notice 90 days"
    },
    "view": {
     "space": "sub4me",
@@ -904,7 +923,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "account": "Muster Industrie AG",
     "risks": [
      "Last day to give notice is 2026-11-02 and the renewal offer is still open."
-    ]
+    ],
+    "region": "MEE",
+    "end": "2027-01-31",
+    "noticeDays": 90,
+    "autoRenew": false
    }
   },
   {
@@ -930,7 +953,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "ACV": "€3,600,000",
     "TCV": "€10,800,000 (36 months)",
     "Sales stage": "Contract",
-    "Risk": "Auto-renewal: the notice period is 60 days before 2026-12-31."
+    "Risk": "Auto-renewal: the notice period is 60 days before 2026-12-31.",
+    "Region": "MEE",
+    "Term ends": "2026-12-31 (auto-renews), notice 60 days"
    },
    "view": {
     "space": "sub4me",
@@ -944,7 +969,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "account": "Muster Industrie AG",
     "risks": [
      "Auto-renewal: the notice period is 60 days before 2026-12-31."
-    ]
+    ],
+    "region": "MEE",
+    "end": "2026-12-31",
+    "noticeDays": 60,
+    "autoRenew": true
    }
   },
   {
@@ -998,7 +1027,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "ACV": "€4,380,000",
     "TCV": "€13,140,000 (36 months)",
     "Close date": "2026-11-15",
-    "Sales stage": "Offer in negotiation"
+    "Sales stage": "Offer in negotiation",
+    "Region": "MEE"
    },
    "view": {
     "space": "sub4me",
@@ -1022,7 +1052,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "Corrected offer for 4,500 employees was accepted in principle; the close date moved up.",
      "ref": "T-102"
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-09"
   },
@@ -1042,7 +1073,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "TCV": "€9,150,000 (36 months)",
     "Close date": "2026-12-04",
     "Sales stage": "Offer in negotiation",
-    "Risk": "Coupa is being evaluated by the customer."
+    "Risk": "Coupa is being evaluated by the customer.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sub4me",
@@ -1069,7 +1101,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "Customer is evaluating Coupa; multi-year discount still open.",
      "ref": "CALL-0414"
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-14"
   },
@@ -1089,7 +1122,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "TCV": "€2,360,000 (24 months)",
     "Close date": "2026-11-30",
     "Sales stage": "Offer in negotiation",
-    "Risk": "Discount 15.7% is above the 15% threshold: deal desk approval pending."
+    "Risk": "Discount 15.7% is above the 15% threshold: deal desk approval pending.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sub4me",
@@ -1116,7 +1150,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "No change this week.",
      "ref": null
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-15"
   },
@@ -3182,12 +3217,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "customer",
    "label": "Nordwind Handel GmbH",
    "meta": {
-    "Note": "Not part of the Sub4Me sample data"
+    "Note": "Not part of the Sub4Me sample data",
+    "Region": "NALA"
    },
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
-   }
+   },
+   "region": "NALA"
   },
   {
    "id": "call:CALL-0409",
@@ -3325,7 +3362,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "ACV": "€1,800,000",
     "TCV": "€5,400,000 (36 months)",
     "Win probability": "74%",
-    "Sales stage": "Lead"
+    "Sales stage": "Lead",
+    "Region": "NALA"
    },
    "view": {
     "space": "sales",
@@ -3338,7 +3376,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "stage": "lead",
     "account": "Nordwind Handel GmbH",
     "prob": 74,
-    "risks": []
+    "risks": [],
+    "region": "NALA"
    },
    "date": "2026-10-12"
   },
@@ -3362,7 +3401,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "TCV": "€1,800,000 (24 months)",
     "Win probability": "61%",
     "Sales stage": "Lead",
-    "Risk": "No budget owner named yet."
+    "Risk": "No budget owner named yet.",
+    "Region": "APEC"
    },
    "view": {
     "space": "sales",
@@ -3377,7 +3417,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "prob": 61,
     "risks": [
      "No budget owner named yet."
-    ]
+    ],
+    "region": "APEC"
    },
    "date": "2026-10-16"
   },
@@ -3386,12 +3427,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "customer",
    "label": "Kranich Logistik GmbH",
    "meta": {
-    "Note": "Not part of the Sub4Me sample data"
+    "Note": "Not part of the Sub4Me sample data",
+    "Region": "APEC"
    },
    "view": {
     "space": "sales",
     "tab": "pipeline"
-   }
+   },
+   "region": "APEC"
   },
   {
    "id": "person:dev-patel",
@@ -3415,6 +3458,7 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Close date": "2027-01-29",
     "Sales stage": "Opportunity",
     "Risk": "CFO not yet met.",
+    "Region": "NALA",
     "Contact": "Head of Procurement, CFO (sponsor)"
    },
    "view": {
@@ -3442,7 +3486,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "The CFO was named as sponsor in the quarterly review.",
      "ref": "CALL-0412"
-    }
+    },
+    "region": "NALA"
    },
    "date": "2026-10-12"
   },
@@ -3459,7 +3504,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Win probability": "55%",
     "Close date": "2026-12-18",
     "Sales stage": "Opportunity",
-    "Risk": "The customer links the top-up to a fix for the eu10 quota alerts."
+    "Risk": "The customer links the top-up to a fix for the eu10 quota alerts.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
@@ -3485,7 +3531,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "Customer asked for an AI-unit top-up after the quota escalation; volume and timing moved up.",
      "ref": "T-103"
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-07"
   },
@@ -3502,7 +3549,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Win probability": "25%",
     "Close date": "2027-02-26",
     "Sales stage": "Opportunity",
-    "Risk": "Formal RFP, price-driven."
+    "Risk": "Formal RFP, price-driven.",
+    "Region": "APEC"
    },
    "view": {
     "space": "sales",
@@ -3523,7 +3571,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "RFP received on 18 October.",
      "ref": "CRM"
-    }
+    },
+    "region": "APEC"
    },
    "date": "2026-10-18"
   },
@@ -3539,7 +3588,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "TCV": "€2,550,000 (36 months)",
     "Win probability": "66%",
     "Sales stage": "Lead",
-    "Risk": "The open ticket TKT-47932 shapes the first impression of Document AI."
+    "Risk": "The open ticket TKT-47932 shapes the first impression of Document AI.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
@@ -3554,7 +3604,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "prob": 66,
     "risks": [
      "The open ticket TKT-47932 shapes the first impression of Document AI."
-    ]
+    ],
+    "region": "MEE"
    },
    "date": "2026-10-12"
   },
@@ -3563,12 +3614,14 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
    "type": "customer",
    "label": "Hanse Handelsgruppe AG",
    "meta": {
-    "Note": "Not part of the Sub4Me sample data"
+    "Note": "Not part of the Sub4Me sample data",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
     "tab": "pipeline"
-   }
+   },
+   "region": "MEE"
   },
   {
    "id": "deal:OPP-404",
@@ -3583,7 +3636,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Win probability": "45%",
     "Close date": "2027-02-12",
     "Sales stage": "Opportunity",
-    "Risk": "Risk scores have not been updated since 1 October (TKT-48041): trust in the module is low right now."
+    "Risk": "Risk scores have not been updated since 1 October (TKT-48041): trust in the module is low right now.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
@@ -3603,7 +3657,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "Opened this week from the category review request.",
      "ref": "CRM"
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-06"
   },
@@ -3628,7 +3683,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Win probability": "55%",
     "Close date": "2026-11-20",
     "Sales stage": "Offer in negotiation",
-    "Risk": "Shopify Plus is being evaluated."
+    "Risk": "Shopify Plus is being evaluated.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
@@ -3655,7 +3711,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "The customer is evaluating Shopify Plus; the open search ticket weighs on the renewal.",
      "ref": "TKT-48166"
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-10"
   },
@@ -3672,7 +3729,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Win probability": "40%",
     "Close date": "2026-12-15",
     "Sales stage": "Offer in negotiation",
-    "Risk": "The contract C-2023-0215 expired on 30 April 2026; the platform runs without a valid term."
+    "Risk": "The contract C-2023-0215 expired on 30 April 2026; the platform runs without a valid term.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
@@ -3698,7 +3756,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "No change this week.",
      "ref": null
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-09"
   },
@@ -3715,7 +3774,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "Win probability": "65%",
     "Close date": "2026-11-30",
     "Sales stage": "Offer in negotiation",
-    "Risk": "Non-standard top-up terms need the deal desk."
+    "Risk": "Non-standard top-up terms need the deal desk.",
+    "Region": "MEE"
    },
    "view": {
     "space": "sales",
@@ -3741,7 +3801,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "changeWhy": {
      "text": "The customer accepted the structure of the top-up; only the non-standard terms are open.",
      "ref": "OFF-2026-0415"
-    }
+    },
+    "region": "MEE"
    },
    "date": "2026-10-13"
   },
@@ -3756,7 +3817,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "ACV": "€3,800,000",
     "TCV": "€11,400,000 (36 months)",
     "Sales stage": "Contract",
-    "Risk": "The renewal offer OFF-2026-0402 is open and the last day to give notice is close."
+    "Risk": "The renewal offer OFF-2026-0402 is open and the last day to give notice is close.",
+    "Region": "MEE",
+    "Term ends": "2026-12-31, notice 60 days"
    },
    "view": {
     "space": "sales",
@@ -3770,7 +3833,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "account": "Hanse Handelsgruppe AG",
     "risks": [
      "The renewal offer OFF-2026-0402 is open and the last day to give notice is close."
-    ]
+    ],
+    "region": "MEE",
+    "end": "2026-12-31",
+    "noticeDays": 60,
+    "autoRenew": false
    }
   },
   {
@@ -3784,7 +3851,9 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "ACV": "€2,400,000",
     "TCV": "€4,800,000 (24 months)",
     "Sales stage": "Contract",
-    "Risk": "The top-up offer OFF-2026-0415 is still in negotiation."
+    "Risk": "The top-up offer OFF-2026-0415 is still in negotiation.",
+    "Region": "MEE",
+    "Term ends": "2026-12-31 (auto-renews), notice 60 days"
    },
    "view": {
     "space": "sales",
@@ -3798,7 +3867,11 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     "account": "Hanse Handelsgruppe AG",
     "risks": [
      "The top-up offer OFF-2026-0415 is still in negotiation."
-    ]
+    ],
+    "region": "MEE",
+    "end": "2026-12-31",
+    "noticeDays": 60,
+    "autoRenew": true
    }
   },
   {
@@ -6959,7 +7032,8 @@ aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(
     }
    ]
   }
- ]
+ ],
+ "regionNote": "Illustrative: the sample data has no sales regions, so the accounts are assigned to MEE, APEC and NALA for the demo."
 }
 </script>
 <script>
@@ -7422,38 +7496,61 @@ const salesNodes = () => visNodes().filter((n) => n.sales);
 const nbOf = (n, type) => n.nb.map((s) => s.n).filter((x) => x.type === type && vis(x));
 const sumAcv = (list) => list.reduce((a, n) => a + n.sales.acv, 0);
 const SUGGEST = { lead: ['lead-qualifier', 'interest-logger'], opportunity: ['opportunity-planner', 'discovery-meddpicc'], sell: ['pricing-guard', 'deal-risk-check'] };
+const qEndOf = (iso) => { const d = new Date(iso + 'T12:00:00Z'); return new Date(Date.UTC(d.getUTCFullYear(), Math.floor(d.getUTCMonth() / 3) * 3 + 3, 0)).toISOString().slice(0, 10); };
+const QEND = qEndOf(D.asOf);
+const REGIONS = ['MEE', 'APEC', 'NALA'];
+const isOpen = (n) => n.sales && n.sales.stage !== 'contract';
+const weighted = (list) => list.reduce((a, n) => a + n.sales.acv * ((n.sales.prob || 0) / 100), 0);
+const callRisk = (n) => nbOf(n, 'call').find((c) => c.riskLevel === 'high' || c.riskLevel === 'medium');
+const addWith = (ids, n, types = ['customer']) => { ids.add(n.id); n.nb.forEach((s) => { if (types.includes(s.n.type) && vis(s.n)) ids.add(s.n.id); }); };
 const QUESTIONS = [
-  { id: 'risk', q: 'Which deals hang on a risk?', tint: 'red', run() {
-    const rows = [], ids = new Set();
-    for (const n of salesNodes()) {
-      const calls = nbOf(n, 'call').filter((c) => c.riskLevel === 'high' || c.riskLevel === 'medium');
-      if (!n.sales.risks.length && !calls.length) continue;
-      ids.add(n.id); calls.forEach((c) => ids.add(c.id)); nbOf(n, 'customer').forEach((c) => ids.add(c.id));
-      rows.push({ n, note: `${money(n.sales.acv)} ACV · ${n.sales.risks[0] || `${calls[0].riskLevel} risk in ${calls[0].label}`}` });
+  { id: 'qclose', q: 'Which opportunities can still close by quarter end?', tint: 'green', run() {
+    const open = salesNodes().filter(isOpen), hit = open.filter((n) => n.sales.close && n.sales.close <= QEND), rows = [], ids = new Set();
+    for (const n of hit) { addWith(ids, n); rows.push({ n, note: `${money(n.sales.acv)} ACV · ${n.sales.prob} % · closes ${fmtDate(n.sales.close)}` }); }
+    rows.sort((a, b) => a.n.sales.close.localeCompare(b.n.sales.close) || b.n.sales.acv - a.n.sales.acv);
+    const sure = hit.filter((n) => n.sales.prob >= 70);
+    return { ids, rows, text: `${hit.length} of ${open.length} open deals have a close date up to quarter end (${fmtDate(QEND)}): ${money(sumAcv(hit))} ACV, ${money(weighted(hit))} weighted by win probability, ${money(sumAcv(sure))} of it at 70 % or more. The other ${open.length - hit.length} close later or have no date yet.` };
+  } },
+  { id: 'region', q: 'Which opportunities do I have in MEE, APEC and NALA?', tint: 'teal', run() {
+    const open = salesNodes().filter(isOpen), rows = [], ids = new Set(), sel = S.region;
+    const per = REGIONS.map((r) => { const l = open.filter((n) => n.sales.region === r); return `${r}: ${l.length} (${money(sumAcv(l))})`; });
+    for (const n of open.filter((x) => !sel || x.sales.region === sel)) { addWith(ids, n); rows.push({ n, note: `${n.sales.region || 'no region'} · ${money(n.sales.acv)} ACV · ${n.sales.prob ?? 'no'} %${n.sales.close ? ` · closes ${fmtDate(n.sales.close)}` : ''}` }); }
+    rows.sort((a, b) => (a.n.sales.region || '').localeCompare(b.n.sales.region || '') || b.n.sales.acv - a.n.sales.acv);
+    return { ids, rows, regions: true, text: `${per.join(' · ')}.${sel ? ` Showing ${sel} only.` : ''} ${esc0(D.regionNote)}` };
+  } },
+  { id: 'attention', q: 'Which quarter-end deals are at risk?', tint: 'red', run() {
+    const rows = [], ids = new Set(), hit = [];
+    for (const n of salesNodes().filter((x) => isOpen(x) && x.sales.close && x.sales.close <= QEND)) {
+      const call = callRisk(n), why = n.sales.risks[0] || (call ? `${call.riskLevel} risk in ${call.label}` : n.sales.prob < 50 ? `win probability only ${n.sales.prob} %` : '');
+      if (!why) continue;
+      hit.push(n); addWith(ids, n); if (call) ids.add(call.id);
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · ${n.sales.prob} % · ${why}` });
     }
     rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
-    return { ids, rows, text: `${rows.length} of ${salesNodes().length} deals, offers and contracts carry a risk, together ${money(sumAcv(rows.map((r) => r.n)))} ACV.` };
+    return { ids, rows, text: `${rows.length} deals that should close by ${fmtDate(QEND)} carry a risk or a low probability, together ${money(sumAcv(hit))} ACV. Clear these first.` };
   } },
-  { id: 'contact', q: 'Which contact shows up in calls and e-mails?', tint: 'teal', run() {
-    const rows = [], ids = new Set();
-    for (const n of visNodes().filter((x) => x.stake && x.stake.calls && x.stake.mails)) {
-      ids.add(n.id); n.nb.forEach((s) => { if (['call', 'thread', 'customer'].includes(s.n.type) && vis(s.n)) ids.add(s.n.id); });
-      rows.push({ n, note: `${n.stake.customer} · ${n.stake.calls} call${n.stake.calls > 1 ? 's' : ''} · ${n.stake.mails} e-mail${n.stake.mails > 1 ? 's' : ''} · ${n.stake.role}` });
+  { id: 'renew', q: 'Which contracts end or need notice before quarter end?', tint: 'amber', run() {
+    const rows = [], ids = new Set(), hit = [];
+    for (const n of salesNodes().filter((x) => x.sales.stage === 'contract' && x.sales.end)) {
+      const notice = addDays(n.sales.end, -n.sales.noticeDays);
+      if (n.sales.end > QEND && notice > QEND) continue;
+      hit.push(n); addWith(ids, n); nbOf(n, 'offer').forEach((o) => ids.add(o.id));
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · notice by ${fmtDate(notice)} · ends ${fmtDate(n.sales.end)}${n.sales.autoRenew ? ' · auto-renews' : ''}`, d: notice });
     }
-    rows.sort((a, b) => b.n.stake.touches - a.n.stake.touches);
-    return { ids, rows, text: `${rows.length} contacts appear in both channels. These are the people who really talk to you.` };
+    rows.sort((a, b) => a.d.localeCompare(b.d));
+    return { ids, rows, text: `${rows.length} contracts reach their notice deadline or end by ${fmtDate(QEND)}: ${money(sumAcv(hit))} ACV to renew or lose.` };
   } },
-  { id: 'skill', q: 'Where is a skill missing?', tint: 'amber', run() {
-    const rows = [], ids = new Set();
-    for (const n of salesNodes().filter((x) => x.sales.stage !== 'contract')) {
-      const cust = nbOf(n, 'customer')[0];
-      if (!cust || cust.nb.some((s) => s.n.type === 'skill')) continue;
-      const sug = (SUGGEST[n.sales.stage] || []).filter((s) => byId.has('skill:' + s));
-      ids.add(n.id); ids.add(cust.id);
-      rows.push({ n, note: `${money(n.sales.acv)} ACV · no skill linked to ${cust.label}${sug.length ? ` · try ${sug.join(', ')}` : ''}` });
+  { id: 'decider', q: 'Which open deals have no decision maker yet?', tint: 'purple', run() {
+    const rows = [], ids = new Set(), hit = [];
+    for (const n of salesNodes().filter(isOpen)) {
+      const cust = nbOf(n, 'customer')[0]; if (!cust) continue;
+      const people = cust.nb.map((s) => s.n).filter((x) => x.stake && vis(x));
+      if (people.some((x) => x.stake.role === 'Decider' && x.stake.touches)) continue;
+      hit.push(n); addWith(ids, n); people.forEach((x) => ids.add(x.id));
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · no decider met at ${cust.label}` });
     }
     rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
-    return { ids, rows, text: `${rows.length} open deals (${money(sumAcv(rows.map((r) => r.n)))} ACV) sit at customers that no skill serves yet.` };
+    return { ids, rows, text: `${rows.length} open deals (${money(sumAcv(hit))} ACV) have no contact in the Decider role that you talked to in a call or e-mail.` };
   } },
   { id: 'changed', q: 'What changed since last week?', tint: 'purple', run() {
     const rows = [], ids = new Set(), latest = T.idx === WEEKS.length - 1;
@@ -7466,21 +7563,26 @@ const QUESTIONS = [
       }
       if (!ch.length && isNew(n)) ch.push('new this week');
       if (!ch.length) continue;
-      ids.add(n.id); nbOf(n, 'customer').forEach((c) => ids.add(c.id));
+      addWith(ids, n);
       rows.push({ n, note: `${money(n.sales.acv)} ACV · ${ch.join(', ')}` });
     }
     rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
     return { ids, rows, text: `${rows.length} deals changed or are new in the 7 days up to ${fmtDate(T.cut)}.${latest ? '' : ' Move the slider to the latest date to see value changes.'}` };
   } },
-  { id: 'blocker', q: 'Who could block a deal?', tint: 'red', run() {
+  { id: 'skill', q: 'Where is a skill missing?', tint: 'amber', run() {
     const rows = [], ids = new Set();
-    for (const n of visNodes().filter((x) => x.stake && x.stake.role === 'Blocker')) {
-      ids.add(n.id); n.nb.forEach((s) => { if (['customer', 'call', 'thread', 'deal', 'offer', 'contract'].includes(s.n.type) && vis(s.n)) ids.add(s.n.id); });
-      rows.push({ n, note: `${n.stake.customer} · ${n.meta.Role || 'role unknown'} · ${n.stake.calls} calls, ${n.stake.mails} e-mails` });
+    for (const n of salesNodes().filter(isOpen)) {
+      const cust = nbOf(n, 'customer')[0];
+      if (!cust || cust.nb.some((s) => s.n.type === 'skill')) continue;
+      const sug = (SUGGEST[n.sales.stage] || []).filter((s) => byId.has('skill:' + s));
+      addWith(ids, n);
+      rows.push({ n, note: `${money(n.sales.acv)} ACV · no skill linked to ${cust.label}${sug.length ? ` · try ${sug.join(', ')}` : ''}` });
     }
-    return { ids, rows, text: `${rows.length} contacts act as blockers (security, legal, compliance). Involve them early.` };
+    rows.sort((a, b) => b.n.sales.acv - a.n.sales.acv);
+    return { ids, rows, text: `${rows.length} open deals (${money(sumAcv(rows.map((r) => r.n)))} ACV) sit at customers that no skill serves yet.` };
   } },
 ];
+const esc0 = (s) => String(s || '');
 function syncAsk() {
   $('#ask').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(!!S.ans && S.ans.id === b.dataset.q)));
 }
@@ -7499,7 +7601,7 @@ $('#ask').innerHTML = QUESTIONS.map((q) => `<button data-q="${q.id}" aria-presse
 $('#ask').querySelectorAll('button').forEach((b) => (b.onclick = () => askQuestion(QUESTIONS.find((q) => q.id === b.dataset.q))));
 function ansCard() {
   const a = S.ans;
-  return `<div class="card ans"><span class="pill">Answer</span><h2 style="margin-top:8px">${esc(a.q)}</h2><p>${esc(a.text)}</p><div class="row"><button class="btn" id="ans-clear">Clear answer</button></div></div>` +
+  return `<div class="card ans"><span class="pill">Answer</span><h2 style="margin-top:8px">${esc(a.q)}</h2><p>${esc(a.text)}</p><div class="row">${a.regions ? ['All', ...REGIONS].map((r) => `<button class="btn" data-region="${r}" aria-pressed="${(S.region || 'All') === r}">${r}</button>`).join('') : ''}<button class="btn" id="ans-clear">Clear answer</button></div></div>` +
     (a.rows.length ? `<div class="conn">${a.rows.map((r) => `<button data-go="${esc(r.n.id)}">${esc(r.n.label)}<small>${esc(r.note)}</small></button>`).join('')}</div>` : '<p>Nothing matches at this point in time.</p>');
 }
 function stakeCard() {
@@ -7622,6 +7724,7 @@ function renderPanel() {
   on('#a-path', () => { const keep = S.sel; setMode('path'); S.pathA = keep; S.sel = keep; computeFocus(); renderPanel(); });
   on('#a-unpin', () => { n.pin = false; renderPanel(); });
   on('#ans-clear', () => clearAnswer());
+  panel.querySelectorAll('[data-region]').forEach((b) => (b.onclick = () => { S.region = b.dataset.region === 'All' ? null : b.dataset.region; const q = QUESTIONS.find((x) => x.id === 'region'); S.ans = null; askQuestion(q); }));
   panel.querySelectorAll('[data-tour]').forEach((b) => (b.onclick = () => startTour(Number(b.dataset.tour))));
   on('#t-prev', () => tourGo(S.tour - 1)); on('#t-next', () => tourGo(S.tour + 1)); on('#t-end', endTour);
 }
