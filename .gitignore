@@ -55,3 +55,6 @@ goose-home/**
 !goose-home/.config/
 !goose-home/.config/goose/
 !goose-home/.config/goose/config.yaml
+
+# Also ignore node_modules when it is a symlink (a trailing slash only matches directories).
+/node_modules
