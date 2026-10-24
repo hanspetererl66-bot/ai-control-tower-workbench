@@ -77,6 +77,7 @@ function spacesApi(): Plugin {
                   ? meta.insights.filter((line): line is string => typeof line === 'string')
                   : [],
                 domain: typeof meta.domain === 'string' ? meta.domain.trim().slice(0, 30) : undefined,
+                parent: typeof meta.parent === 'string' && /^[A-Za-z0-9._-]+$/.test(meta.parent.trim()) ? meta.parent.trim() : undefined,
                 cardCount,
                 updatedAt,
               };

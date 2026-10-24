@@ -3548,3 +3548,26 @@ button {
   min-width: 0;
   max-width: 100%;
 }
+
+/* ---------- subspaces ---------- */
+.card-sub {
+  margin-left: 18px;
+  width: calc(100% - 18px);
+  border-left: 3px solid var(--accent, var(--purple));
+}
+.sub-toggle {
+  display: inline-block;
+  width: 16px;
+  margin-right: 2px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.sub-count {
+  margin-left: 6px;
+  padding: 0 7px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--muted);
+  background: var(--line-2, rgba(128, 128, 128, 0.15));
+}
