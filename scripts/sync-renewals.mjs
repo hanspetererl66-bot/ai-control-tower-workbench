@@ -24,6 +24,12 @@ const OPEN_TICKET = (t) => !['Solution provided', 'Closed'].includes(t.status);
 const day = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
 const addDays = (s, n) => new Date(day(s) + n * 86400000).toISOString().slice(0, 10);
 
+/** Customer context that is not in the contract data: escalations and other topics (fictional). */
+export const CUSTOMERS = [
+  { id: 'muster', owner: 'Nina Kessler', escalation: { level: 'Management', since: '2026-10-14', topic: 'The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week.', owner: 'Nina Kessler' }, topics: [{ kind: 'people', text: 'New head of procurement from 1 November: introduce the renewal plan early' }, { kind: 'commercial', text: 'Asked for a comparison of Joule units and Document AI units' }] },
+  { id: 'hanse', owner: 'Tom Ahlers', escalation: null, topics: [{ kind: 'people', text: 'New CFO since September, reviews all software spend' }, { kind: 'commercial', text: 'Wants to bundle Commerce Cloud and Integration Suite into one contract' }] },
+];
+
 export function sub4meCustomers() {
   const html = read('examples/sub4me/index.html');
   const page = JSON.parse(/id="s4m-data">\n([\s\S]*?)\n<\/script>/.exec(html)[1]);
@@ -87,6 +93,7 @@ export function buildRenewals() {
     rules: RULES,
     note: 'Fictional data derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.',
     cases,
+    customers: CUSTOMERS.map((c) => ({ ...c, annualEur: cases.find((x) => x.customerId === c.id)?.customerAnnualEur ?? 0, since: cases.find((x) => x.customerId === c.id)?.customerSince ?? null, name: cases.find((x) => x.customerId === c.id)?.customer ?? c.id })),
   };
 }
 

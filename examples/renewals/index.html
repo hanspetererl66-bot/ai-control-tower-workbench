@@ -237,6 +237,29 @@ button:disabled{opacity:.5;cursor:default}
 .tile.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}
 .tile:hover,.tile:focus-visible,.tile[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:-1px;z-index:2}
 .pill.auto{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple);font-size:10px;padding:0 7px;margin-left:4px}tr.isauto td:first-child{box-shadow:inset 3px 0 0 var(--purple)}
+.cview{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start;margin-bottom:16px}
+.cust-cards{display:grid;gap:12px}
+.cust-cards .ccard{display:flex;flex-direction:column;gap:12px;text-align:left;font:inherit;color:var(--ink);padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);cursor:pointer}
+.ccard.red{border-left-color:var(--red)}.ccard.amber{border-left-color:var(--amber)}.ccard.green{border-left-color:var(--green)}
+.ccard.on{border-color:var(--purple-border);outline:2px solid var(--purple-border);outline-offset:0}
+.ccard.red.on,.ccard.amber.on,.ccard.green.on{border-left-color:var(--purple)}
+.ccard .ctop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}.ccard .cname{font-size:16px;font-weight:650}.ccard .cmeta{flex-basis:100%;color:var(--muted);font-size:12px}
+.sit{display:inline-block;border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700;border:1px solid;text-transform:uppercase;letter-spacing:.03em}.sit.sm{font-size:10px;padding:1px 8px;text-transform:none}
+.sit.red{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.sit.amber{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.sit.green{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}
+.mt{display:flex;flex-direction:column;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--canvas)}
+.mt b{font-size:20px;font-weight:650;line-height:1.1}.mt span{font-size:11px;color:var(--muted)}.mt small{font-size:11px;color:var(--ink-2)}
+.mt.red{border-color:var(--red-border);background:var(--red-dim)}.mt.red b{color:var(--red)}.mt.amber{border-color:var(--amber-border);background:var(--amber-dim)}.mt.amber b{color:var(--amber)}.mt.green{border-color:var(--green-border);background:var(--green-dim)}.mt.green b{color:var(--green)}
+.chips2{display:flex;gap:6px;flex-wrap:wrap}
+.cust-panel .esc{padding:8px 10px;border:1px solid var(--red-border);background:var(--red-dim);border-radius:var(--radius-s);font-size:12px;margin-bottom:10px}
+.cust-panel .mini{margin:12px 0 0}.cust-panel .mini h3{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+.hb{display:grid;grid-template-columns:70px 1fr 22px;align-items:center;gap:8px;font-size:12px;margin:3px 0}.hb i{display:block;height:10px;min-width:2px;border-radius:5px;background:var(--line)}.hb i.pVeryhigh{background:var(--red)}.hb i.pHigh{background:var(--amber)}.hb i.pMedium{background:var(--purple)}.hb i.pLow{background:var(--green)}.hb b{text-align:right}
+.invbox{display:flex;align-items:center;gap:14px;font-size:12px}.ring{width:70px;height:70px;flex:none}.ring circle{fill:none;stroke-width:9}.ring .trk{stroke:var(--line-2)}.ring .od{stroke:var(--red)}.ring .op{stroke:var(--amber)}.ring text{fill:var(--ink);font-size:18px;font-weight:650}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.dot.od{background:var(--red)}.dot.op{background:var(--amber)}
+.ub{display:grid;grid-template-columns:96px 1fr 46px;align-items:center;gap:8px;font-size:12px;margin:4px 0}.ub span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ub b{text-align:right}
+.ubar{position:relative;height:10px;border-radius:5px;background:var(--line-2)}.ubar i{display:block;height:100%;border-radius:5px;background:var(--purple)}.ubar i.low{background:var(--red)}.ubar i.high{background:var(--green)}.ubar u{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--muted)}
+.cust-panel .talk{margin-top:12px;padding:8px 10px;border-radius:var(--radius-s);background:var(--purple-dim);border:1px solid var(--purple-border);font-size:12px}
+@media (max-width:900px){.cview{grid-template-columns:1fr}}
 .auto-sw{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer}.auto-sw input{position:absolute;opacity:0;width:1px;height:1px}.auto-sw .trk{width:34px;height:20px;border-radius:99px;background:var(--line-2);position:relative;transition:background .15s}.auto-sw .trk::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--panel);transition:left .15s}.auto-sw input:checked+.trk{background:var(--green)}.auto-sw input:checked+.trk::after{left:17px}.auto-sw input:focus-visible+.trk{outline:2px solid var(--purple);outline-offset:2px}
 .autobox{border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin-top:12px}.autobox.on{border-color:var(--green-border);background:var(--green-dim)}.autobox ol{margin:6px 0 0;padding-left:18px;font-size:12.5px}.mail{border:1px dashed var(--line-2);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12.5px;background:var(--bg)}.mail b{display:block}
 .pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;border:1px solid}
@@ -293,6 +316,7 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
   <p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p>
   <div class="kpis" id="kpis"></div>
   <div class="card guide" id="guide" aria-live="polite"></div>
+  <div class="cview" id="cust"><div class="cust-cards" id="cust-cards"></div><aside class="card cust-panel" id="cust-panel" aria-live="polite"></aside></div>
   <div class="card">
     <div class="bar">
       <h2 style="margin:0">Renewal radar</h2>
@@ -859,6 +883,49 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
     }
    ]
   }
+ ],
+ "customers": [
+  {
+   "id": "muster",
+   "owner": "Nina Kessler",
+   "escalation": {
+    "level": "Management",
+    "since": "2026-10-14",
+    "topic": "The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week.",
+    "owner": "Nina Kessler"
+   },
+   "topics": [
+    {
+     "kind": "people",
+     "text": "New head of procurement from 1 November: introduce the renewal plan early"
+    },
+    {
+     "kind": "commercial",
+     "text": "Asked for a comparison of Joule units and Document AI units"
+    }
+   ],
+   "annualEur": 4540000,
+   "since": 2014,
+   "name": "Muster Industrie AG"
+  },
+  {
+   "id": "hanse",
+   "owner": "Tom Ahlers",
+   "escalation": null,
+   "topics": [
+    {
+     "kind": "people",
+     "text": "New CFO since September, reviews all software spend"
+    },
+    {
+     "kind": "commercial",
+     "text": "Wants to bundle Commerce Cloud and Integration Suite into one contract"
+    }
+   ],
+   "annualEur": 2518550,
+   "since": 2019,
+   "name": "Hanse Handelsgruppe AG"
+  }
  ]
 }
 </script>
@@ -940,6 +1007,29 @@ function autoCheck(c, sig, opts, rules) {
 function autoEmail(c, o) {
   return { to: `${c.csm.toLowerCase().replace(/[^a-z]+/g, '.')}@${c.customerId}.example`, subject: `Your renewal of ${c.product} (${c.contractId})`, body: `Dear ${c.customer} team, your contract ${c.contractId} for ${c.product} ends on ${c.end}. Offer: ${eur(o.annualEur)} a year for ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} % against today, within the contract cap of ${c.upliftCapPct} %). Reply to this e-mail or contact your account team to confirm.` };
 }
+/** Customer situation from the contracts of one customer: the use cases escalation, payment, usage and growth. Most serious first. */
+function customerSituation(cust, cases) {
+  const mine = cases.filter((c) => c.customerId === cust.id), live = mine.filter((c) => c.status !== 'Lapsed');
+  const tickets = mine.flatMap((c) => c.tickets.map((t) => ({ ...t, product: c.product })));
+  const byPrio = { 'Very high': 0, High: 0, Medium: 0, Low: 0 };
+  for (const t of tickets) if (t.priority in byPrio) byPrio[t.priority] += 1;
+  const invoices = mine.flatMap((c) => c.invoices.map((i) => ({ ...i, product: c.product })));
+  const overdue = invoices.filter((i) => i.status === 'Overdue'), open = invoices.filter((i) => i.status === 'Open');
+  const usage = live.filter((c) => usagePct(c) !== null).map((c) => ({ product: c.product, pct: usagePct(c), annualEur: c.annualEur })).sort((a, b) => a.pct - b.pct);
+  const low = usage.filter((u) => u.pct < 75), growth = usage.filter((u) => u.pct >= 95);
+  const hot = tickets.filter((t) => t.priority === 'Very high');
+  const list = [];
+  if (cust.escalation || hot.length) list.push({ key: 'escalation', level: 'red', label: 'Escalation', text: cust.escalation ? cust.escalation.topic : `Very high ticket ${hot[0].id} is open` });
+  if (overdue.length) list.push({ key: 'payment', level: 'yellow', label: 'Payment issue', text: `${overdue.length} overdue invoice${overdue.length === 1 ? '' : 's'}, ${overdue.reduce((a, i) => a + i.grossEur, 0)} EUR gross` });
+  if (low.length) list.push({ key: 'usage', level: 'yellow', label: 'Low usage', text: `${low.map((u) => u.product + ' ' + u.pct + ' %').join(', ')} used` });
+  if (growth.length) list.push({ key: 'growth', level: 'green', label: 'Growth', text: `${growth.length} contract${growth.length === 1 ? '' : 's'} at 95 % use or more` });
+  if (!list.length) list.push({ key: 'stable', level: 'green', label: 'Stable', text: 'No escalation, no overdue invoice, usage in range' });
+  const talk = list.some((s) => s.key === 'escalation') ? 'Resolve or acknowledge the escalation before any price talk; bring the owner of the open ticket.'
+    : list.some((s) => s.key === 'payment') ? 'Clear the overdue invoices with the customer finance team first, then talk about the renewal.'
+    : list.some((s) => s.key === 'usage') ? 'Right-size the offer to real usage; a smaller renewal beats a lost one.'
+    : list.some((s) => s.key === 'growth') ? 'Use the high usage to offer more volume with the renewal.' : 'Keep the cadence: confirm the renewal dates at the next meeting.';
+  return { primary: list[0], list, tickets, byPrio, invoices, overdue, open, usage, low, growth, renewalEur: live.reduce((a, c) => a + c.annualEur, 0), contracts: live.length, talk };
+}
 /** Retention levers: what to do to keep the customer, taken from the signals. */
 function levers(sig, rules) { return [...new Set(sig.signals.filter((s) => s.level !== 'plus').map((s) => rules.levers[s.key]).concat(sig.signals.some((s) => s.key === 'growth') ? [rules.levers.growth] : []).filter(Boolean))].slice(0, 4); }
 /** Next actions, most important first (at most three). */
@@ -1002,6 +1092,47 @@ function renderBar() {
   const count = (s) => model.filter((c) => s === 'all' || c.health === s).length;
   $('#status-chips').innerHTML = ['all', 'red', 'yellow', 'green'].map((s) => `<button type="button" data-s="${s}" aria-pressed="${state.status === s}">${s === 'all' ? 'All' : LABEL[s]} ${count(s)}</button>`).join('');
   $('#status-chips').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.status = b.dataset.s; renderAll(); }));
+}
+/* ---------- customer situation: cards and profile ---------- */
+const SIT = { red: 'red', yellow: 'amber', green: 'green' };
+const custSit = (cust) => customerSituation(cust, model);
+const SEVERITY = { escalation: 0, payment: 1, usage: 2, growth: 3, stable: 4 };
+function focusCustomer() {
+  const sel = state.sel ? model.find((c) => c.id === state.sel) : null;
+  if (sel) return sel.customerId;
+  if (state.customer !== 'all') return state.customer;
+  return [...DATA.customers].sort((a, b) => SEVERITY[custSit(a).primary.key] - SEVERITY[custSit(b).primary.key])[0].id;
+}
+function renderCustomers() {
+  const focus = focusCustomer();
+  $('#cust-cards').innerHTML = DATA.customers.map((cust) => {
+    const s = custSit(cust), p = s.primary, hot = s.byPrio['Very high'], avg = s.usage.length ? Math.round(s.usage.reduce((a, u) => a + u.pct * u.annualEur, 0) / s.usage.reduce((a, u) => a + u.annualEur, 0)) : null;
+    const tile = (cls, big, small, key) => `<div class="mt ${cls}"><b>${big}</b><span>${key}</span><small>${small}</small></div>`;
+    return `<button type="button" class="ccard ${SIT[p.level]} ${focus === cust.id ? 'on' : ''}" data-cust="${esc(cust.id)}" aria-pressed="${focus === cust.id}">
+      <span class="ctop"><span class="sit ${SIT[p.level]}">${esc(p.label)}</span><span class="cname">${esc(cust.name)}</span><span class="cmeta">since ${esc(String(cust.since || ''))} · ${eur(s.renewalEur)} up for renewal · ${s.contracts} contracts</span></span>
+      <span class="metrics">
+        ${tile(hot ? 'red' : s.tickets.length ? 'amber' : 'ok', s.tickets.length, hot ? hot + ' very high' : 'none very high', 'open tickets')}
+        ${tile(s.overdue.length ? 'amber' : 'ok', s.overdue.length, s.overdue.length ? eur(s.overdue.reduce((a, i) => a + i.grossEur, 0)) + ' overdue' : s.open.length + ' open, none late', 'invoices')}
+        ${tile(s.low.length ? 'amber' : 'ok', avg === null ? '–' : avg + ' %', s.low.length ? s.low.length + ' below 75 %' : 'all in range', 'usage')}
+        ${tile(s.growth.length ? 'green' : 'ok', s.growth.length, 'at 95 % or more', 'growth')}
+      </span>
+      <span class="chips2">${s.list.slice(1).map((x) => `<span class="sit sm ${SIT[x.level]}">${esc(x.label)}</span>`).join('')}</span></button>`;
+  }).join('');
+  $('#cust-cards').querySelectorAll('[data-cust]').forEach((b) => (b.onclick = () => { state.customer = state.customer === b.dataset.cust && !state.sel ? 'all' : b.dataset.cust; state.sel = null; $('#customer').value = state.customer; renderAll(); }));
+  const cust = DATA.customers.find((x) => x.id === focus), s = custSit(cust), maxT = Math.max(1, ...Object.values(s.byPrio));
+  const ring = (() => { const tot = s.overdue.reduce((a, i) => a + i.grossEur, 0) + s.open.reduce((a, i) => a + i.grossEur, 0), C = 2 * Math.PI * 30, od = tot ? (s.overdue.reduce((a, i) => a + i.grossEur, 0) / tot) * C : 0, op = tot ? C - od : 0;
+    return `<svg viewBox="0 0 80 80" class="ring" role="img" aria-label="${eur(tot)} unpaid"><circle class="trk" cx="40" cy="40" r="30"/>${tot ? `<circle class="od" cx="40" cy="40" r="30" stroke-dasharray="${od} ${C - od}" transform="rotate(-90 40 40)"/><circle class="op" cx="40" cy="40" r="30" stroke-dasharray="${op} ${C - op}" stroke-dashoffset="${-od}" transform="rotate(-90 40 40)"/>` : ''}<text x="40" y="43" text-anchor="middle">${s.overdue.length + s.open.length}</text></svg>`; })();
+  const e = cust.escalation;
+  $('#cust-panel').innerHTML = `<div class="bar" style="margin-bottom:6px"><h2 style="margin:0">${esc(cust.name)}</h2><span class="sit ${SIT[s.primary.level]}">${esc(s.primary.label)}</span></div>
+    <p class="sub" style="margin-bottom:8px">Customer owner ${esc(cust.owner)} · ${state.sel ? 'customer of the selected contract' : state.customer !== 'all' ? 'filtered customer' : 'most serious situation first'}</p>
+    ${e ? `<div class="esc"><b>${esc(e.level)} escalation since ${esc(e.since)}</b><div>${esc(e.topic)}</div><div class="sub" style="margin:2px 0 0">Owner: ${esc(e.owner)}</div></div>` : ''}
+    <div class="mini"><h3>Open tickets by priority</h3>${Object.entries(s.byPrio).map(([k, n]) => `<div class="hb"><span>${k}</span><i class="p${k.replace(' ', '')}" style="width:${(n / maxT) * 100}%"></i><b>${n}</b></div>`).join('')}</div>
+    <div class="mini inv"><h3>Unpaid invoices</h3><div class="invbox">${ring}<div><div><i class="dot od"></i>Overdue <b>${eur(s.overdue.reduce((a, i) => a + i.grossEur, 0))}</b></div><div><i class="dot op"></i>Open <b>${eur(s.open.reduce((a, i) => a + i.grossEur, 0))}</b></div></div></div></div>
+    <div class="mini"><h3>Usage against licence</h3>${s.usage.slice(0, 7).map((u) => `<div class="ub" title="${esc(u.product)}: ${u.pct} %"><span>${esc(u.product.replace(/\s*\(.*\)/, ''))}</span><div class="ubar"><i class="${u.pct < 60 ? 'low' : u.pct >= 95 ? 'high' : ''}" style="width:${Math.min(100, u.pct)}%"></i><u style="left:60%"></u></div><b>${u.pct} %</b></div>`).join('')}</div>
+    <div class="mini"><h3>Other topics</h3><ul class="notes">${cust.topics.map((x) => `<li>${esc(x.text)}</li>`).join('')}</ul></div>
+    <div class="talk"><b>For the renewal talk</b><div>${esc(s.talk)}</div></div>
+    <div style="margin-top:10px"><button class="small" id="cust-prep" type="button">Prepare the customer talk with Joule</button></div>`;
+  $('#cust-prep').onclick = () => send(`Prepare the renewal talk with ${cust.name}: situation ${s.list.map((x) => x.label).join(', ')}. ${s.tickets.length} open tickets (${s.byPrio['Very high']} very high), ${s.overdue.length} overdue invoices, ${eur(s.renewalEur)} a year up for renewal. ${e ? 'Escalation: ' + e.topic + ' ' : ''}Use the Sub4Me tools and the skill customer-call-prep. Please answer in English.`);
 }
 function renderTimeline() {
   const list = visible(), months = [];
@@ -1081,7 +1212,7 @@ function renderGuide() {
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
 }
 function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '' }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
-function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderKpis(); renderBar(); renderGuide(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
+function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderKpis(); renderBar(); renderGuide(); renderCustomers(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
 $('#customer').onchange = (e) => { state.customer = e.target.value; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
