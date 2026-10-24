@@ -481,6 +481,8 @@ The sparkle icon next to **+** in the composer opens a menu with two entries (th
 
 The logic lives in `src/web-search.ts`.
 
+**Approved web sources (connector 0.17.0).** The tools `list_web_sources`, `fetch_web_page` and `search_web_sources` read public pages of all `sap.com` sites (help, support, learning, news, community, developers, api, store, roadmaps and more), `cloud.sap`, `open.sap.com`, Handelsblatt and FAZ. Read only, https only, only those hosts (every redirect is checked again), no login and no paywall bypass: SAP Notes and subscriber articles are reported as not readable. The two network tools count as web tools, so the Web Search switch stops them. Search page templates of the sites have not been checked live; the source list is in `connectors/control-tower/server/web-sources.mjs`.
+
 ## Personalisierung
 
 Einstellungen → Tabs **Profile, Look, Work, Assistant, Storage, General**.
