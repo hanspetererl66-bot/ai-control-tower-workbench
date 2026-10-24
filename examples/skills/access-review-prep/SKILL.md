@@ -29,5 +29,5 @@ Nutze nur den Connector `ai-control-tower`. Die Daten sind Beispieldaten; behand
 
 ## Regeln
 
-- Deutsch, sachlich. Zahlen und Namen exakt aus den Antworten.
+- English, factual. Numbers and names exactly as in the answers.
 - Schlage keine konkreten Rechteänderungen in Systemen vor, die nicht in den Daten stehen. Du führst keine Änderungen aus.

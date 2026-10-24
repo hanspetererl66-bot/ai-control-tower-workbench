@@ -400,11 +400,11 @@ $('#run').onclick = () => {
   const all = [...alerts, ...custom].map(({ id, service, severity, impact, customerFacing, repeat24h, text }) => ({ id, service, severity, impact, customerFacing, repeat24h, text }));
   send('Run the n8n workflow "Demo 4 (IT operations): alert triage" with the tool run_it_ops_triage (production mode) ' +
     (custom.length ? `and these alerts (the sample alerts plus ${custom.length} of mine): ${JSON.stringify(all)}.` : 'and its sample alerts (omit alerts).') +
-    ' Summarise the digest: what to page, which tickets, what was quarantined and why. Do not page or change anything. Please answer in German.');
+    ' Summarise the digest: what to page, which tickets, what was quarantined and why. Do not page or change anything. Please answer in English.');
 };
 $('#ask').onclick = () => {
   const top = render()[0];
-  send(`Explain the alert ${top.id} (${top.service}, priority ${top.priority}: ${top.reasons || top.flagReason}) and suggest the first three checks for the on-call engineer. Please answer in German.`);
+  send(`Explain the alert ${top.id} (${top.service}, priority ${top.priority}: ${top.reasons || top.flagReason}) and suggest the first three checks for the on-call engineer. Please answer in English.`);
 };
 $('#add').onclick = () => {
   const text = $('#f-text').value.trim(), service = $('#f-service').value.trim();

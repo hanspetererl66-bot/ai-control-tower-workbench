@@ -225,14 +225,16 @@ create table if not exists sub4me.customers (
   id text primary key,
   name text not null,
   number text not null,
+  sap_customer_id text unique,
   contact text,
   country text,
   profile jsonb not null default '{}'::jsonb
 );
+alter table sub4me.customers add column if not exists sap_customer_id text unique;
 alter table sub4me.customers enable row level security;
 revoke all on sub4me.customers from anon, authenticated;
 `);
-  parts.push(upsert('sub4me.customers', ['id', 'name', 'number', 'contact', 'country', 'profile'], customers.map((c) => [q(c.id), q(c.customer.name), q(c.customer.number), q(c.customer.contact), q(c.customer.country), j(c.profile)])));
+  parts.push(upsert('sub4me.customers', ['id', 'name', 'number', 'sap_customer_id', 'contact', 'country', 'profile'], customers.map((c) => [q(c.id), q(c.customer.name), q(c.customer.number), q(c.customer.sapCustomerId), q(c.customer.contact), q(c.customer.country), j({ ...c.profile, sapCustomerId: c.customer.sapCustomerId })])));
   parts.push(`alter table sub4me.contracts add column if not exists customer_id text not null default 'muster' references sub4me.customers(id);
 alter table sub4me.offers add column if not exists customer_id text not null default 'muster' references sub4me.customers(id);
 alter table sub4me.tickets add column if not exists customer_id text not null default 'muster' references sub4me.customers(id);

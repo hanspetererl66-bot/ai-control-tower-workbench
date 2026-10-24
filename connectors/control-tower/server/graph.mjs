@@ -135,7 +135,7 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
   /* Sub4Me */
   const customer = sub4me.customer;
   const customerId = `customer:${slug(customer.name)}`;
-  addNode(customerId, 'customer', customer.name, { 'Customer no.': customer.number, Country: customer.country, Contact: customer.contact }, { space: 'sub4me', tab: 'overview' });
+  addNode(customerId, 'customer', customer.name, { 'SAP customer ID': customer.sapCustomerId, 'Customer no.': customer.number, Country: customer.country, Contact: customer.contact }, { space: 'sub4me', tab: 'overview' });
   addEdge(customerId, 'system:sub4me', 'MANAGED_IN');
 
   const productNames = new Set([...sub4me.products.map((p) => p.name), ...sub4me.contracts.map((c) => c.product), ...sub4me.offers.map((o) => o.product)]);

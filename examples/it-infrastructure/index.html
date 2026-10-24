@@ -282,7 +282,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   <div class="card tasks" id="tasks-card">
     <div class="head"><div style="flex:1 1 320px"><h2>Maintenance tasks</h2><p class="sub" style="margin:0">Every yellow or red reason becomes a recommended task. Each task runs through the same flow: detect, propose, approve, run, verify. A person approves; here the run is only simulated.</p></div>
     <button class="primary" id="mkplan" type="button">Create the plan in n8n</button><button class="ghost" id="reset-demo" type="button">Reset demo</button></div>
-    <table><thead><tr><th>VM</th><th>Task</th><th>Urgency</th><th>Window</th><th>Approver</th><th>Flow</th></tr></thead><tbody id="task-rows"></tbody></table>
+    <table><thead><tr><th>VM</th><th>Task</th><th>Urgency</th><th>Window</th><th>Approver</th><th>Operator ticket</th><th>Flow</th></tr></thead><tbody id="task-rows"></tbody></table>
     <p class="note" id="plan-note" role="status" aria-live="polite"></p>
   </div>
   <div class="tip" id="tip" role="tooltip" hidden></div>
@@ -919,7 +919,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' }, ICON = { green: '✓', yellow: '!', red: '✕' };
 const FLOW = ['Detected', 'Proposed', 'Approved', 'Run (simulated)', 'Verified'];
-const state = { filter: 'all', sel: null, done: {}, approved: {}, proposed: false, step: -1 }; // done/approved keyed by "vm|task"
+const state = { filter: 'all', sel: null, done: {}, approved: {}, tickets: {}, proposed: false, step: -1 }; // done/approved keyed by "vm|task"
 let vms = [];
 const tip = $('#tip');
 const taskKey = (t) => `${t.vm}|${t.key}`;
@@ -979,11 +979,28 @@ function renderDetail() {
   $('#detail').innerHTML = `<h2>${esc(v.name)} <span class="pill ${v.status}">${LABEL[v.status]}</span></h2><p class="sub">${esc(v.role)}</p>` +
     `<dl class="facts"><dt>Environment</dt><dd>${esc(v.env)}</dd><dt>Site</dt><dd>${esc(v.site)}</dd><dt>System</dt><dd>${esc(v.os)}</dd><dt>Size</dt><dd>${v.vcpu} vCPU, ${v.ramGb} GB</dd>` +
     (v.reachable ? `<dt>CPU</dt><dd>${v.cpuPct} %</dd><dt>Memory</dt><dd>${v.memPct} %</dd><dt>Disk</dt><dd>${v.diskPct} %</dd><dt>Last backup</dt><dd>${v.backupAgeHours == null ? 'not required' : v.backupAgeHours + ' h ago'}</dd><dt>Patch gap</dt><dd>${v.patchLagDays} days</dd><dt>Certificate</dt><dd>${v.certExpiresInDays} days left</dd><dt>Uptime</dt><dd>${v.uptimeDays} days</dd>` : '<dt>State</dt><dd>not reachable</dd>') + '</dl>' +
-    `<div>${explain(v)}</div><p style="margin-top:12px"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button></p>`;
-  $('#ask').onclick = () => send(`Explain the status of the virtual machine ${v.name} (${v.role}, ${v.env}, ${v.site}): ${v.status}${v.reasons.length ? ' because ' + v.reasons.map((r) => r.text).join('; ') : ', all checks are within limits'}. Suggest the first three checks for the on-call engineer. Do not change anything. Please answer in German.`);
+    `<div>${explain(v)}</div><p style="margin-top:12px"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button>${v.status === 'green' ? '' : state.tickets[v.name] ? ` <span class="pill planned">Ticket ${esc(state.tickets[v.name].id)} with the operator</span>` : ' <button class="ghost" id="mkticket" type="button">Create ticket for operator</button>'}</p>`;
+  if ($('#mkticket')) $('#mkticket').onclick = () => { createTicket(v.name); renderAll(); };
+  $('#ask').onclick = () => send(`Explain the status of the virtual machine ${v.name} (${v.role}, ${v.env}, ${v.site}): ${v.status}${v.reasons.length ? ' because ' + v.reasons.map((r) => r.text).join('; ') : ', all checks are within limits'}. Suggest the first three checks for the on-call engineer. Do not change anything. Please answer in English.`);
 }
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt }, '*');
 const stage = (t) => (state.done[taskKey(t)] ? 4 : state.approved[taskKey(t)] ? 2 : state.proposed ? 1 : 0);
+const ticketNo = () => 'OP-' + (1042 + Object.keys(state.tickets).length);
+function createTicket(name, silent) {
+  if (state.tickets[name]) return state.tickets[name];
+  const v = vms.find((x) => x.name === name);
+  const own = plan(vms, DATA.rules, DATA.tasks).filter((p) => p.vm === name).flatMap((p) => p.tasks);
+  if (!v || !own.length) return null;
+  const t = { id: ticketNo(), vm: name, tasks: own.map((x) => x.key), priority: v.status === 'red' ? 'High' : 'Medium' };
+  state.tickets[name] = t;
+  if (!silent) send(`Open a service ticket for the IT operator with the tool create_ticket: customer muster, product "IT infrastructure", priority ${t.priority}, title "${t.id} ${name}: ${own.map((x) => x.title).join(', ')}".`.slice(0, 380) + ` Description: ${v.role}, ${v.env}, ${v.site}; reasons: ${v.reasons.map((r) => r.text).join('; ')}`.slice(0, 180) + ' Please answer in English.');
+  return t;
+}
+function runbookPrompt(t) {
+  const v = DATA.vms.find((x) => x.name === t.vm), now = vms.find((x) => x.name === t.vm), k = state.tickets[t.vm];
+  const m = {}; for (const f of ['id', 'name', 'env', 'reachable', 'cpuPct', 'memPct', 'diskPct', 'backupAgeHours', 'patchLagDays', 'certExpiresInDays']) if (now[f] !== undefined) m[f] = now[f];
+  return `Run the n8n workflow "Demo 6 (IT infrastructure): operator runbook" with the tool run_vm_operator_runbook (production mode): ticketId ${k ? k.id : 'none'}, task ${t.key}, approved true (${t.approver} approved), vm ${JSON.stringify(m)}. Report the steps: check, backup, ${t.title}, verification. Please answer in English.`;
+}
 function renderTasks() {
   const open = plan(DATA.vms.map((v) => vms.find((x) => x.id === v.id)), DATA.rules, DATA.tasks);
   const doneNow = Object.keys(state.done).map((k) => { const [vm, key] = k.split('|'); return { vm, key, ...DATA.tasks[key], urgency: 'done' }; });
@@ -993,12 +1010,16 @@ function renderTasks() {
   $('#task-rows').innerHTML = rows.map(({ t, p, done }) => {
     const k = taskKey(t), s = done ? 4 : stage(t);
     const action = done ? '' : s === 0 ? '<button class="small" data-act="propose" disabled title="Create the plan first">Propose</button>' : s === 1 ? `<button class="small" data-act="approve" data-k="${esc(k)}">Approve</button>` : `<button class="small" data-act="run" data-k="${esc(k)}">Run (simulated)</button>`;
+    const tk = state.tickets[t.vm];
+    const ticketCell = tk ? `<b>${esc(tk.id)}</b> <span class="pill ${done ? 'done' : 'planned'}">${done ? 'resolved' : s >= 2 ? 'with operator' : 'open'}</span>${!done && s === 2 ? `<div><button class="small" data-act="runbook" data-k="${esc(k)}">Run runbook in n8n</button></div>` : ''}` : done ? '' : `<button class="small" data-act="ticket" data-vm="${esc(t.vm)}">Create ticket</button>`;
     return `<tr><td><b>${esc(t.vm)}</b>${p.bundle ? '<div class="why" style="color:var(--muted);font-size:11px">bundled with other tasks of this VM</div>' : ''}</td><td>${esc(t.title)}<ol class="steps">${t.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></td>` +
       `<td><span class="pill ${t.urgency}">${done ? 'done' : t.urgency}</span></td><td>${esc(p.window || '')}</td><td>${esc(t.approver)}</td>` +
-      `<td><div class="flow">${FLOW.map((f, i) => (i === s ? `<b>${f}</b>` : f)).join(' › ')}</div>${action}</td></tr>`;
-  }).join('') || '<tr><td colspan="6">No open tasks. Every VM is green.</td></tr>';
+      `<td>${ticketCell}</td><td><div class="flow">${FLOW.map((f, i) => (i === s ? `<b>${f}</b>` : f)).join(' › ')}</div>${action}</td></tr>`;
+  }).join('') || '<tr><td colspan="7">No open tasks. Every VM is green.</td></tr>';
   $('#task-rows').querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
     if (b.dataset.act === 'approve') state.approved[b.dataset.k] = true;
+    if (b.dataset.act === 'ticket') createTicket(b.dataset.vm);
+    if (b.dataset.act === 'runbook') { const [vmName, key] = b.dataset.k.split('|'); const t = rows.find((r) => r.t.vm === vmName && r.t.key === key); if (t) send(runbookPrompt(t.t)); return; }
     if (b.dataset.act === 'run') { state.done[b.dataset.k] = true; delete state.approved[b.dataset.k]; recompute(); }
     renderAll();
   }));
@@ -1007,27 +1028,28 @@ $('#mkplan').onclick = () => {
   state.proposed = true; renderAll();
   const p = plan(vms, DATA.rules, DATA.tasks);
   $('#plan-note').textContent = `Draft plan: ${p.reduce((a, x) => a + x.tasks.length, 0)} tasks on ${p.length} VMs, ${p.filter((x) => x.bundle).length} VMs bundled in one window. Proposal only: nothing runs until a person approves.`;
-  send('Run the n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" with the tool run_vm_maintenance_plan (production mode, sample VMs, omit vms). Summarise the plan: urgent tasks first, which VMs need a maintenance window, which tasks are bundled and who must approve. Do not execute anything. Please answer in German.');
+  send('Run the n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" with the tool run_vm_maintenance_plan (production mode, sample VMs, omit vms). Summarise the plan: urgent tasks first, which VMs need a maintenance window, which tasks are bundled and who must approve. Do not execute anything. Please answer in English.');
 };
-$('#reset-demo').onclick = () => { state.done = {}; state.approved = {}; state.proposed = false; state.filter = 'all'; state.sel = null; state.step = -1; $('#plan-note').textContent = ''; recompute(); renderAll(); };
+$('#reset-demo').onclick = () => { state.done = {}; state.approved = {}; state.tickets = {}; state.proposed = false; state.filter = 'all'; state.sel = null; state.step = -1; $('#plan-note').textContent = ''; recompute(); renderAll(); };
 const STEPS = [
   { t: 'See the wall', x: 'Every VM is green, yellow or red. Red VMs need action now, yellow ones need a plan.', on: () => { state.filter = 'red'; } },
   { t: 'Why is it red?', x: 'Hover over joule-gw-01: the tooltip shows which checks made it red, with the measured value and the limit.', on: () => { state.filter = 'all'; state.sel = 'vm-06'; } },
   { t: 'Recommended tasks', x: 'Each reason becomes a task: patch, certificate, disk space, backup. The table below lists them, urgent first.', on: () => { state.sel = null; document.getElementById('tasks-card').scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
+  { t: 'Ticket to the operator', x: 'From the overview or the table, “Create ticket” hands the VM and its tasks to the operator. The priority follows the colour. The chat also opens the ticket in the Sub4Me demo tickets.', on: () => { state.sel = null; createTicket('proxy-edge-01', true); } },
   { t: 'Create the plan', x: '“Create the plan in n8n” asks the chat to run the maintenance-plan workflow. It only proposes; the tasks move to “Proposed”.', on: () => { state.proposed = true; } },
   { t: 'A person approves', x: 'The approver named in the table approves. We approve the certificate renewal on proxy-edge-01.', on: () => { state.proposed = true; state.approved['proxy-edge-01|cert'] = true; } },
-  { t: 'Run and verify', x: 'The task runs (simulated here), the VM is measured again and its colour changes. Reset the demo to start over.', on: () => { state.proposed = true; delete state.approved['proxy-edge-01|cert']; state.done['proxy-edge-01|cert'] = true; recompute(); state.sel = 'vm-25'; } },
+  { t: 'Run and verify', x: 'The operator runs the runbook in n8n: check the VM, backup if needed, install the certificate, check again. Simulated here: the VM is measured again, its colour changes and the ticket is resolved. Reset the demo to start over.', on: () => { state.proposed = true; delete state.approved['proxy-edge-01|cert']; state.done['proxy-edge-01|cert'] = true; recompute(); state.sel = 'vm-25'; } },
 ];
 function renderGuide() {
   const g = $('#guide');
-  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Six steps from the status wall to a verified fix: see, understand, plan, approve, run, verify.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Seven steps from the status wall to a verified fix: see, understand, hand to the operator, plan, approve, run, verify.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
   const s = STEPS[state.step];
   g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button"${state.step === 0 ? ' disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
 }
 function go(i) {
   state.step = i;
-  state.done = {}; state.approved = {}; state.proposed = false; state.filter = 'all'; state.sel = null; recompute();
+  state.done = {}; state.approved = {}; state.tickets = {}; state.proposed = false; state.filter = 'all'; state.sel = null; recompute();
   for (let k = 0; k <= i; k++) STEPS[k].on();
   recompute(); renderAll();
 }

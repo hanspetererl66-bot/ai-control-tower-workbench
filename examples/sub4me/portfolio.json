@@ -881,6 +881,7 @@
         "id": "hanse",
         "name": "Hanse Handelsgruppe AG",
         "number": "100-731-904",
+        "sapCustomerId": "0010073904",
         "contact": "M. Sander",
         "country": "Germany"
       },

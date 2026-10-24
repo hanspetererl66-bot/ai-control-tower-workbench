@@ -320,6 +320,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     "id": "muster",
     "name": "Muster Industrie AG",
     "number": "100-482-117",
+    "sapCustomerId": "0010048211",
     "contact": "A. Beispiel",
     "country": "Germany"
   },
@@ -1361,6 +1362,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         "id": "hanse",
         "name": "Hanse Handelsgruppe AG",
         "number": "100-731-904",
+        "sapCustomerId": "0010073904",
         "contact": "M. Sander",
         "country": "Germany"
       },
@@ -2495,7 +2497,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
     live = D.contracts.filter(function(c){ return c.status !== 'Expired'; });
     annual = sum(live.map(function(c){ return c.annualEur; }));
     renewals = live.filter(function(c){ return days(c.end) <= 180 && days(c.end) >= 0; });
-    $('cust-meta').textContent = 'Customer no. ' + D.customer.number + ' · ' + D.customer.country + ' · as of ' + D.asOf;
+    $('cust-meta').textContent = 'SAP customer ID ' + (D.customer.sapCustomerId || (D.customer.profile || {}).sapCustomerId || '-') + ' · Customer no. ' + D.customer.number + ' · ' + D.customer.country + ' · as of ' + D.asOf;
   }
   var openTickets = function(){ return D.tickets.filter(function(t){ return t.status !== 'Closed' && t.status !== 'Solution provided'; }).length; };
 

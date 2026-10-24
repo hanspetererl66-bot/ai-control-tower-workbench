@@ -195,6 +195,8 @@ export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays =
 
 const STATUSES = ['success', 'error', 'running', 'canceled'];
 
+const VM_TASKS = ['cert', 'patch', 'disk', 'backup', 'unreachable', 'cpu', 'mem'];
+
 export const N8N_TOOL_DEFINITIONS = [
   {
     name: 'get_n8n_overview',
@@ -300,6 +302,33 @@ export const N8N_TOOL_DEFINITIONS = [
             additionalProperties: false,
           },
         },
+        mode: { type: 'string', enum: ['production', 'test'], description: 'production (default, workflow must be active) or test.' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'run_vm_operator_runbook',
+    description:
+      'Run the demo n8n workflow "Demo 6 (IT infrastructure): operator runbook" through its webhook (/webhook/vm-operator-runbook). It is the operator side of a VM ticket: 1 check the VM again, 2 take a backup if a production VM has no restore point from the last 24 h, 3 apply the task (for example install the renewed TLS certificate), 4 check again and report. Everything is simulated, no real VM is touched. It only runs when approved is true, which you set only after the person has said that the approver agreed; otherwise it stops after the check. Without vm it uses the sample ticket T-1042 (certificate of proxy-edge-01).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticketId: { type: 'string', description: 'Ticket id, for example T-1042.' },
+        ticketTitle: { type: 'string', description: 'Ticket title.' },
+        vm: {
+          type: 'object',
+          description: 'The VM with its measurements. Omit to use the sample.',
+          properties: {
+            id: { type: 'string' }, name: { type: 'string' }, role: { type: 'string' }, env: { type: 'string', enum: ['prod', 'test', 'dev'] }, reachable: { type: 'boolean' },
+            cpuPct: { type: 'number', minimum: 0, maximum: 100 }, memPct: { type: 'number', minimum: 0, maximum: 100 }, diskPct: { type: 'number', minimum: 0, maximum: 100 },
+            backupAgeHours: { type: ['number', 'null'], minimum: 0 }, patchLagDays: { type: 'number', minimum: 0 }, certExpiresInDays: { type: 'number', minimum: -365 },
+          },
+          required: ['id', 'name'],
+          additionalProperties: false,
+        },
+        task: { type: 'string', enum: VM_TASKS, description: 'Which task to run on the VM. Default for the sample: cert.' },
+        approved: { type: 'boolean', description: 'true only after the named approver agreed. Default false: the runbook stops after the check.' },
         mode: { type: 'string', enum: ['production', 'test'], description: 'production (default, workflow must be active) or test.' },
       },
       additionalProperties: false,
@@ -521,6 +550,52 @@ export function createN8nHandlers({ env = process.env, fetchImpl = fetch, now = 
         result: first ?? result,
         note: 'Computed only. Nothing was paged, restarted or changed; a person decides about paging, tickets and restarts.',
         view: { space: 'it-operations', tab: 'overview' },
+      };
+    },
+    async run_vm_operator_runbook(args = {}) {
+      if (!env.N8N_URL) throw new ToolError('n8n is not connected: enter the n8n address (N8N_URL) in the connector settings. The workflow itself is examples/n8n-workflows/06-vm-operator-runbook.json (import it and activate it).');
+      const mode = args.mode ?? 'production';
+      if (!['production', 'test'].includes(mode)) throw new ToolError('mode must be production or test');
+      if (args.task !== undefined && !VM_TASKS.includes(args.task)) throw new ToolError(`task must be one of ${VM_TASKS.join(', ')}`);
+      if (args.approved !== undefined && typeof args.approved !== 'boolean') throw new ToolError('approved must be true or false');
+      const body = {};
+      if (args.vm !== undefined) {
+        const v = args.vm;
+        if (!v || typeof v !== 'object' || Array.isArray(v)) throw new ToolError('vm must be an object');
+        for (const key of ['id', 'name']) if (typeof v[key] !== 'string' || !v[key].trim()) throw new ToolError(`vm: ${key} is required`);
+        if (v.env !== undefined && !['prod', 'test', 'dev'].includes(v.env)) throw new ToolError('vm: env must be prod, test or dev');
+        if (!args.task) throw new ToolError('task is required when a vm is given');
+        const num = (x, lo, hi) => (Number.isFinite(x) ? Math.max(lo, Math.min(hi, x)) : undefined);
+        const out = { id: v.id.slice(0, 40), name: v.name.slice(0, 80), role: typeof v.role === 'string' ? v.role.slice(0, 120) : '', env: v.env ?? 'prod', reachable: v.reachable !== false };
+        for (const [key, lo, hi] of [['cpuPct', 0, 100], ['memPct', 0, 100], ['diskPct', 0, 100], ['patchLagDays', 0, 3650], ['certExpiresInDays', -365, 3650]]) { const n = num(v[key], lo, hi); if (n !== undefined) out[key] = n; }
+        if (v.backupAgeHours === null) out.backupAgeHours = null; else { const n = num(v.backupAgeHours, 0, 100000); if (n !== undefined) out.backupAgeHours = n; }
+        body.vm = out;
+        body.task = args.task;
+        body.ticket = { id: typeof args.ticketId === 'string' ? args.ticketId.slice(0, 40) : '', title: typeof args.ticketTitle === 'string' ? args.ticketTitle.slice(0, 120) : '' };
+        body.approved = args.approved === true;
+      }
+      let origin;
+      try { origin = normalizeInstanceUrl(env.N8N_URL); } catch (error) { throw new ToolError(`n8n: ${error.message}`); }
+      const url = `${origin}/${mode === 'test' ? 'webhook-test' : 'webhook'}/vm-operator-runbook`;
+      let response;
+      try {
+        response = await fetchImpl(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(30_000) });
+      } catch (error) {
+        throw new ToolError(`n8n: the workflow did not answer (${error.message})`);
+      }
+      if (response.status === 404) throw new ToolError(mode === 'test' ? 'n8n: the test webhook is not listening. Open the workflow in n8n and click Execute workflow first, then ask again.' : 'n8n: webhook /webhook/vm-operator-runbook not found. Import the workflow 06-vm-operator-runbook.json and activate it, or use mode "test".');
+      if (!response.ok) throw new ToolError(`n8n: the workflow answered with HTTP ${response.status}`);
+      const text = await response.text();
+      let result;
+      try { result = JSON.parse(text); } catch { result = text.slice(0, 4000); }
+      const first = Array.isArray(result) ? result[0] : result;
+      return {
+        workflow: 'Demo 6 (IT infrastructure): operator runbook',
+        mode,
+        sent: body.vm ? { vm: body.vm.name, task: body.task, approved: body.approved } : 'sample ticket T-1042 of the workflow',
+        result: first ?? result,
+        note: 'Simulated. No real VM was backed up, changed or restarted. The runbook only runs when approved is true and the check still shows the reason.',
+        view: { space: 'it-infrastructure', tab: 'overview' },
       };
     },
     async run_vm_maintenance_plan(args = {}) {

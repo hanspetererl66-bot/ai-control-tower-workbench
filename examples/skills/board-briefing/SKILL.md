@@ -1,6 +1,6 @@
 ---
 name: board-briefing
-description: Creates a one-page board briefing in German from the AI Control Tower data (risks, agents, budget, EU AI Act audit). Nutzen bei "Board-Briefing", "Management Summary", "Lagebild AI Control Tower".
+description: Creates a one-page board briefing in English from the AI Control Tower data (risks, agents, budget, EU AI Act audit). Nutzen bei "Board-Briefing", "Management Summary", "Lagebild AI Control Tower".
 metadata:
   domain: Governance & Risiko
   process: Board-Reporting
@@ -31,6 +31,6 @@ Nutze nur den Connector `ai-control-tower`. Erfinde keine Zahlen.
 
 ## Regeln
 
-- Deutsch, sachlich, kurze Sätze. Zahlen exakt aus den Werkzeugantworten, Prozent und Euro mit Einheit.
+- English, factual, short sentences. Numbers exactly as in the tool answers, percent and euro with unit.
 - Keine Empfehlungen ohne Verantwortlichen und Datum.
 - Wenn ein Werkzeug fehlt oder einen Fehler liefert, brich nicht ab: schreibe das Briefing mit den vorhandenen Daten und benenne die Lücke.

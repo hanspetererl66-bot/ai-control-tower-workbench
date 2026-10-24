@@ -248,3 +248,25 @@ test('run_vm_maintenance_plan: calls only the fixed webhook path, validates VMs 
   await assert.rejects(() => notFound.run_vm_maintenance_plan({ mode: 'test' }), /Execute workflow/);
   assert.equal(calls.length, 2);
 });
+
+test('run_vm_operator_runbook: fixed webhook path, approval stays false unless given, validates input', async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return new Response(JSON.stringify([{ result: 'done', digest: 'ok' }]), { status: 200 }); };
+  const h = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl });
+  const r = await h.run_vm_operator_runbook({});
+  assert.equal(calls[0].url, 'https://firma.app.n8n.cloud/webhook/vm-operator-runbook');
+  assert.deepEqual(calls[0].body, {});
+  assert.equal(r.result.result, 'done');
+  assert.match(r.note, /Simulated/);
+  await h.run_vm_operator_runbook({ mode: 'test', ticketId: 'OP-1042', task: 'cert', vm: { id: 'x', name: 'web-01', certExpiresInDays: 4, junk: 1 } });
+  assert.equal(calls[1].url, 'https://firma.app.n8n.cloud/webhook-test/vm-operator-runbook');
+  assert.equal(calls[1].body.approved, false, 'approval must be given explicitly');
+  assert.equal(calls[1].body.ticket.id, 'OP-1042');
+  assert.equal(calls[1].body.vm.junk, undefined);
+  await h.run_vm_operator_runbook({ task: 'cert', approved: true, vm: { id: 'x', name: 'web-01' } });
+  assert.equal(calls[2].body.approved, true);
+  for (const bad of [{ task: 'format' }, { vm: { id: 'x', name: 'n' } }, { vm: { id: 'x' }, task: 'cert' }, { approved: 'yes' }, { mode: 'live' }]) await assert.rejects(() => h.run_vm_operator_runbook(bad), /task|vm|approved|mode/);
+  await assert.rejects(() => createN8nHandlers({ env: {}, fetchImpl }).run_vm_operator_runbook({}), /not connected/);
+  const notFound = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl: async () => new Response('', { status: 404 }) });
+  await assert.rejects(() => notFound.run_vm_operator_runbook({}), /Import the workflow/);
+});
