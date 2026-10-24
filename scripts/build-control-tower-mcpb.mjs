@@ -44,7 +44,7 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && !process.argv.includes('--gmail')) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && !process.argv.includes('--gmail') && !process.argv.includes('--databricks')) {
   console.log(`Built ${buildControlTowerBundle(process.argv[2])}`);
 }
 
@@ -67,4 +67,25 @@ export function buildGmailBundle(output = join(ROOT, 'dist/gmail-drafts.mcpb')) 
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--gmail')) {
   console.log(`Built ${buildGmailBundle()}`);
+}
+
+/** Databricks connector bundle: manifest + server only (no data). */
+export function buildDatabricksBundle(output = join(ROOT, 'dist/databricks.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'databricks-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/databricks');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--databricks')) {
+  console.log(`Built ${buildDatabricksBundle()}`);
 }

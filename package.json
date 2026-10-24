@@ -36,6 +36,7 @@
     "sync:automation": "node scripts/sync-automation-dashboard.mjs",
     "build:control-tower-mcpb": "node scripts/build-control-tower-mcpb.mjs",
     "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",
+    "build:databricks-mcpb": "node scripts/build-control-tower-mcpb.mjs --databricks",
     "gmail:authorize": "node scripts/gmail-authorize.mjs",
     "install:control-tower": "node scripts/install-example-space.mjs control-tower",
     "install:sub4me": "node scripts/install-example-space.mjs sub4me",
