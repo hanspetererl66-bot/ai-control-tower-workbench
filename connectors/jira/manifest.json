@@ -1,0 +1,77 @@
+{
+  "manifest_version": "0.2",
+  "name": "jira",
+  "display_name": "Jira",
+  "version": "0.1.0",
+  "description": "Jira Cloud: search and read issues with JQL, create issues, comment and change status. Needs the site address, the account e-mail and an API token.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "JIRA_SITE": "${user_config.jira_site}",
+        "JIRA_EMAIL": "${user_config.jira_email}",
+        "JIRA_API_TOKEN": "${user_config.jira_api_token}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "jira_check_connection",
+      "description": "Check the Jira connection (site, e-mail, API token) and show who the token belongs to."
+    },
+    {
+      "name": "jira_list_projects",
+      "description": "List the Jira projects (key, name) the account can see."
+    },
+    {
+      "name": "jira_search_issues",
+      "description": "Search issues with JQL, for example: project = ABC AND statusCategory != Done ORDER BY updated DESC. Returns key, summary, status, type, priority, assignee."
+    },
+    {
+      "name": "jira_get_issue",
+      "description": "Read one issue: description, labels and the last comments."
+    },
+    {
+      "name": "jira_create_issue",
+      "description": "Create an issue (this changes Jira). Ask the person before using it."
+    },
+    {
+      "name": "jira_add_comment",
+      "description": "Add a comment to an issue (this changes Jira). Ask the person before using it."
+    },
+    {
+      "name": "jira_set_status",
+      "description": "Move an issue to another status, for example \"In Progress\" or \"Done\" (this changes Jira). Ask the person before using it."
+    }
+  ],
+  "user_config": {
+    "jira_site": {
+      "type": "string",
+      "title": "Jira address",
+      "description": "Example: https://firma.atlassian.net",
+      "required": true
+    },
+    "jira_email": {
+      "type": "string",
+      "title": "Account e-mail",
+      "description": "The e-mail of the Atlassian account that owns the token.",
+      "required": true
+    },
+    "jira_api_token": {
+      "type": "string",
+      "title": "API token",
+      "description": "id.atlassian.com, Security, Create and manage API tokens, Create API token. Stored as a secret. The token acts with your rights in Jira.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

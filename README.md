@@ -511,3 +511,23 @@ Lokal liegt alles in `localStorage` (`werkbank.preferences.v1`). Das Modell läs
 3. In the chat: “Check the Databricks connection”, “Which Genie spaces do we have?”, “Ask Genie: ARR by customer”.
 
 Tools: `databricks_check_connection`, `databricks_list_genie_spaces`, `databricks_ask_genie` (text, SQL and result table), `databricks_run_sql` (one read-only statement, writes are refused), `databricks_describe_table`. At most 200 rows per call, the token is only sent to the configured workspace and never appears in results. Use a token of a user or service principal with read rights only.
+
+## Jira connector (search, read, create, comment, change status)
+
+`connectors/jira` is an MCP bundle for Jira Cloud over the REST API v3. No admin is needed: the Jira address, your account e-mail and a personal API token are entered once in the import dialog (the token is stored as a secret and acts with your own rights).
+
+1. `npm run build:jira-mcpb` writes `dist/jira.mcpb`.
+2. In Werkbank: Connectors & Skills, import `jira.mcpb`. Token: id.atlassian.com, Security, Create and manage API tokens.
+3. In the chat: “Check the Jira connection”, “Which tickets are open in project ABC?”, “Summarise ABC-123”.
+
+Tools: `jira_check_connection`, `jira_list_projects`, `jira_search_issues` (JQL), `jira_get_issue`, and the three that change Jira: `jira_create_issue`, `jira_add_comment`, `jira_set_status`. Those three are described as changing Jira, so the approval card of the chat asks first. Not tested against a live Jira here; “Check the Jira connection” shows whether the login works.
+
+## Slack connector (read channels, search, post)
+
+`connectors/slack` is an MCP bundle for Slack through an own Slack app, so no workspace-wide integration is needed.
+
+1. api.slack.com/apps, Create New App, From scratch. OAuth & Permissions, Bot Token Scopes: `channels:read`, `groups:read`, `channels:history`, `groups:history`, `chat:write`. Install to Workspace and copy the Bot User OAuth Token (`xoxb-…`). Optional for search: a User Token Scope `search:read` and its token (`xoxp-…`).
+2. `npm run build:slack-mcpb` writes `dist/slack.mcpb`; import it in Connectors & Skills and enter the token(s).
+3. Invite the app into each channel it should see (`/invite @app`). In the chat: “Check the Slack connection”, “What happened in #it-ops?”, “Post this summary to #it-ops”.
+
+Tools: `slack_check_connection`, `slack_list_channels`, `slack_read_channel`, `slack_read_thread`, `slack_search_messages` (needs the user token) and `slack_post_message` (visible to the channel, so the approval card asks first). Not tested against a live workspace here.

@@ -37,6 +37,8 @@
     "build:control-tower-mcpb": "node scripts/build-control-tower-mcpb.mjs",
     "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",
     "build:databricks-mcpb": "node scripts/build-control-tower-mcpb.mjs --databricks",
+    "build:jira-mcpb": "node scripts/build-control-tower-mcpb.mjs --jira",
+    "build:slack-mcpb": "node scripts/build-control-tower-mcpb.mjs --slack",
     "gmail:authorize": "node scripts/gmail-authorize.mjs",
     "install:control-tower": "node scripts/install-example-space.mjs control-tower",
     "install:sub4me": "node scripts/install-example-space.mjs sub4me",
