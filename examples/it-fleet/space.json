@@ -1,0 +1,12 @@
+{
+  "title": "IT Fleet",
+  "description": "Mockup of an IT fleet with 41 fictional customers and about 1,200 VMs: treemap, heatmap and a bundled task inbox, all with the green, yellow, red logic of the IT Infrastructure Space.",
+  "domain": "Operations",
+  "insights": [
+    "Fictional customers and VMs generated from a fixed seed, no live monitoring. A VM is green, yellow or red by the same rules as in the IT Infrastructure Space; a customer is as red as its worst VM.",
+    "Treemap: one tile per customer, area = VMs, colour = worst VM. Heatmap: customers against checks, a column with many customers points to a shared cause. Task inbox: the same task on many VMs is one bundle with one approval.",
+    "Click a customer for its VM wall, the SAP customer ID, and a button that creates a ticket for the operator through the chat tool create_ticket.",
+    "'Start demo' walks through five steps. Approving and running a bundle is simulated; nothing is changed."
+  ],
+  "prompt": "Bundled example: IT Fleet (static, data embedded by npm run sync:it-fleet)."
+}

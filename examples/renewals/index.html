@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Renewals</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
+main{max-width:1240px;margin:0 auto;padding:20px 24px 48px}
+.demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
+h2{font-size:15px;font-weight:650;margin:0 0 4px}h3{font-size:13px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 12px}
+.card{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi .v{font-size:22px;font-weight:600}.kpi .k{color:var(--muted);font-size:12px}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
+.kpi.red{border-color:var(--red-border)}.kpi.red .v{color:var(--red)}.kpi.amber{border-color:var(--amber-border)}.kpi.amber .v{color:var(--amber)}.kpi.green{border-color:var(--green-border)}.kpi.green .v{color:var(--green)}
+.bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--ink);font:inherit;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--purple-dim);color:var(--purple)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+select,input[type=search]{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:99px;padding:5px 10px;background:var(--surface);color:var(--ink)}
+label.chk{font-size:12px;color:var(--ink-2);display:inline-flex;gap:5px;align-items:center}
+.spacer{margin-left:auto}
+button.primary,button.ghost,button.small{font:inherit;cursor:pointer}
+button.primary{border:0;background:var(--purple);color:#fff;border-radius:99px;padding:7px 16px;font-weight:650}
+button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 14px;font-weight:600}
+button.small{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650}
+button:disabled{opacity:.5;cursor:default}
+.tm{position:relative;width:100%;height:470px}
+.tile{position:absolute;box-sizing:border-box;padding:6px 8px;border:2px solid var(--surface);border-radius:8px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;overflow:hidden}
+.tile .n{font-weight:650;font-size:12px;line-height:1.25;overflow:hidden}.tile .c{font-size:11px;margin-top:2px;color:var(--ink-2)}
+.tile.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}
+.tile:hover,.tile:focus-visible,.tile[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:-1px;z-index:2}
+.auto-sw{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer}.auto-sw input{position:absolute;opacity:0;width:1px;height:1px}.auto-sw .trk{width:34px;height:20px;border-radius:99px;background:var(--line-2);position:relative;transition:background .15s}.auto-sw .trk::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--panel);transition:left .15s}.auto-sw input:checked+.trk{background:var(--green)}.auto-sw input:checked+.trk::after{left:17px}.auto-sw input:focus-visible+.trk{outline:2px solid var(--purple);outline-offset:2px}
+.autobox{border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin-top:12px}.autobox.on{border-color:var(--green-border);background:var(--green-dim)}.autobox ol{margin:6px 0 0;padding-left:18px;font-size:12.5px}.mail{border:1px dashed var(--line-2);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12.5px;background:var(--bg)}.mail b{display:block}
+.pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;border:1px solid}
+.pill.green,.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}.pill.yellow,.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.red,.pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;color:var(--ink-2);font-size:12px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:4px;border:1.5px solid}
+.legend .g{background:var(--green-dim);border-color:var(--green)}.legend .y{background:var(--amber-dim);border-color:var(--amber)}.legend .r{background:var(--red-dim);border-color:var(--red)}
+table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}td{padding:5px 8px;border-bottom:1px solid var(--line-2)}
+.hm-wrap{max-height:560px;overflow:auto}
+.hm td.c{text-align:center;font-weight:650;min-width:70px}.hm td.c.red{background:var(--red-dim);color:var(--red)}.hm td.c.yellow{background:var(--amber-dim);color:var(--amber)}
+.hm tr[data-c]{cursor:pointer}.hm tr[data-c]:hover td,.hm tr[aria-selected=true] td{background:var(--purple-dim)}
+.sys{display:block;font-size:10px;color:var(--red);font-weight:700}
+.spark{display:inline-flex;align-items:flex-end;gap:2px;height:18px;vertical-align:middle}.spark i{display:block;width:4px;background:var(--red);opacity:.6;border-radius:1px;min-height:1px}
+.inbox{display:grid;gap:12px}
+.bundle{border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;background:var(--surface)}
+.bundle.red{border-color:var(--red-border)}.bundle .t{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.bundle .t b{font-size:14px}
+.bundle ol{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:12px}
+.cust{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.cust button{border:1px solid var(--line);background:var(--surface);border-radius:99px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer;color:var(--ink)}.cust button.red{border-color:var(--red-border);color:var(--red)}
+.flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin-top:8px;flex-wrap:wrap;align-items:center}.flow b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin-top:10px}
+.vm{text-align:left;font:inherit;color:var(--ink);border-radius:var(--radius-s);padding:7px 9px;border:1.5px solid var(--line);background:var(--surface);min-width:0;cursor:default}
+.vm .n{font-weight:650;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vm .r{color:var(--muted);font-size:10px}
+.vm.green{background:var(--green-dim);border-color:var(--green-border)}.vm.yellow{background:var(--amber-dim);border-color:var(--amber-border)}.vm.red{background:var(--red-dim);border-color:var(--red-border)}
+.vm:hover,.vm:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+.drill{border-color:var(--purple-border)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 18px;margin:6px 0;color:var(--ink-2);font-size:12px}.facts b{color:var(--ink)}
+.tip{position:fixed;z-index:10;max-width:300px;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);box-shadow:var(--shadow-lg);padding:10px 12px;font-size:12px;line-height:1.45}.tip[hidden]{display:none}.tip ul{margin:4px 0 0;padding-left:16px}.tip .lim{color:var(--muted)}
+.guide{border-color:var(--purple-border);background:var(--purple-dim)}.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}.guide p{margin:4px 0 0;color:var(--ink-2)}
+.guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{color:var(--muted);font-size:12px;margin:8px 0 0}
+@media (max-width:760px){.tm{height:620px}}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+.tl{position:relative;margin-top:6px;padding-bottom:20px}.tl .axis{position:relative;height:22px;margin-left:230px;border-bottom:1px solid var(--line);font-size:10px;color:var(--muted)}
+.tl .axis span{position:absolute;top:0;padding-left:3px;border-left:1px solid var(--line)}
+.tl .row{display:grid;grid-template-columns:230px 1fr;align-items:center;min-height:30px;cursor:pointer;border-radius:6px;width:100%;border:0;background:transparent;font:inherit;color:var(--ink);padding:0;text-align:left}.tl .row:hover,.tl .row[aria-pressed=true]{background:var(--purple-dim)}
+.tl .lab{font-size:12px;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.tl .lab b{font-weight:650}.tl .lab span{color:var(--muted)}
+.tl .track{position:relative;height:30px;border-left:1px solid var(--line)}
+.tl .bar{position:absolute;top:10px;height:10px;border-radius:5px}.tl .bar.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}.tl .bar.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber)}.tl .bar.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green)}
+.tl .dia{position:absolute;top:8px;width:13px;height:13px;margin-left:-6px;transform:rotate(45deg);border-radius:2px}.tl .dia.red{background:var(--red)}.tl .dia.yellow{background:var(--amber)}.tl .dia.green{background:var(--green)}
+.tl .today{position:absolute;top:22px;bottom:0;width:0;border-left:2px dashed var(--purple);pointer-events:none}.tl .today i{position:absolute;top:auto;bottom:-18px;left:-16px;font-style:normal;font-size:10px;font-weight:700;color:var(--purple)}
+.tl .ended{position:absolute;top:6px;width:2px;height:18px;background:var(--muted)}
+.n{text-align:right}#alt td.n{white-space:nowrap}tr[data-id]{cursor:pointer}tr[data-id]:hover td,tr[aria-selected=true] td{background:var(--purple-dim)}
+.sig{margin:6px 0;padding:6px 8px;border-radius:var(--radius-s);border:1px solid var(--line);font-size:12px}.sig.red{background:var(--red-dim);border-color:var(--red-border)}.sig.yellow{background:var(--amber-dim);border-color:var(--amber-border)}.sig.plus{background:var(--green-dim);border-color:var(--green-border)}
+.sig b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:12px;margin:8px 0}.dl dt{color:var(--muted)}.dl dd{margin:0;text-align:right;font-weight:600}
+.meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:4px 0}.meter i{display:block;height:100%;background:var(--purple)}
+ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
+.flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin:8px 0;flex-wrap:wrap}.flow b{color:var(--ink)}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.tl .axis{margin-left:130px}.tl .row{grid-template-columns:130px 1fr}}
+</style>
+</head>
+<body>
+<main>
+  <p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="card guide" id="guide" aria-live="polite"></div>
+  <div class="card">
+    <div class="bar">
+      <h2 style="margin:0">Renewal radar</h2>
+      <div class="chips" id="status-chips" role="group" aria-label="Filter by health"></div>
+      <select id="customer" aria-label="Customer"></select>
+      <input type="search" id="q" placeholder="Find product or contract" aria-label="Find product or contract">
+      <label class="auto-sw" title="Renewals below the threshold with no warning signal get an offer and an e-mail without a person (simulated)"><input type="checkbox" id="auto" role="switch"><span class="trk"></span><span id="auto-label">Automatic renewal</span></label>
+      <button class="ghost spacer" id="reset" type="button">Reset demo</button>
+    </div>
+    <p class="sub">Diamond = decision date, bar = time until the contract ends, dashed line = today. Colour = health of the renewal. Click a row for the details.</p>
+    <div class="tl" id="tl"></div>
+    <div class="legend"><span><i class="g"></i>Green: on track</span><span><i class="y"></i>Yellow: needs attention</span><span><i class="r"></i>Red: act now</span></div>
+  </div>
+  <div class="layout">
+    <div class="card"><h2>Renewals by decision date</h2><p class="sub">Earliest first. Health is the worst signal of the renewal.</p><div style="overflow:auto"><table><thead><tr><th>Customer</th><th>Product</th><th class="n">Annual value</th><th>Decision date</th><th>Offer</th><th>Health</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+    <aside class="card drill" id="detail" aria-live="polite"></aside>
+  </div>
+  <div class="card" id="alt" hidden></div>
+  <div class="card"><h2>Assumptions behind retention and lifetime value</h2><p class="sub" style="margin:0" id="assump"></p></div>
+</main>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<script type="application/json" id="renewal-data">
+{
+ "asOf": "2026-10-19",
+ "rules": {
+  "autoThresholdEur": 30000,
+  "marginPct": 70,
+  "lifetimeCapYears": 7,
+  "retention": {
+   "green": 0.95,
+   "yellow": 0.85,
+   "red": 0.65,
+   "lapsed": 0.25
+  },
+  "levers": {
+   "usage": "Adoption workshop with the business owner",
+   "ticket": "Escalate the open ticket to a named engineer",
+   "competitor": "Executive sponsor call and a competitive battlecard",
+   "invoice": "Payment plan agreed with the customer finance team",
+   "uplift": "Explain the price rise with scope and volume, or hold the cap",
+   "timing": "Joint timeline with the customer procurement",
+   "no-offer": "Early value review before the offer",
+   "lapsed": "Win-back call with the technical contact",
+   "growth": "Roadmap session for the next scope",
+   "validity": "Validity extension in exchange for a signing date"
+  }
+ },
+ "note": "Fictional data derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.",
+ "cases": [
+  {
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "id": "R-C-2023-0215",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "contractId": "C-2023-0215",
+   "product": "Integration Suite",
+   "status": "Lapsed",
+   "end": "2026-04-30",
+   "noticeDays": 90,
+   "decisionDate": "2026-01-30",
+   "autoRenew": false,
+   "annualEur": 135000,
+   "upliftCapPct": 3,
+   "termination": "Expired. Integrations still run on a trial tenant.",
+   "used": 15,
+   "licensed": 15,
+   "unit": "million messages",
+   "owner": "Mira Hoffmann",
+   "csm": "Nina Kessler",
+   "customerOwner": "Tom Ahlers",
+   "offer": {
+    "id": "OFF-2026-0407",
+    "annualEur": 190000,
+    "currentAnnualEur": 135000,
+    "discountPct": 10,
+    "validUntil": "2026-12-15",
+    "stage": "Proposal sent",
+    "probabilityPct": 40,
+    "competitor": "None",
+    "nextStep": "Technical review with the platform team by 2026-11-12",
+    "termMonths": 36,
+    "priceGuaranteeMonths": 24,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [],
+   "invoices": []
+  },
+  {
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "id": "R-C-2022-0502",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "contractId": "C-2022-0502",
+   "product": "Concur Travel",
+   "status": "Lapsed",
+   "end": "2026-06-30",
+   "noticeDays": 90,
+   "decisionDate": "2026-04-01",
+   "autoRenew": false,
+   "annualEur": 95000,
+   "upliftCapPct": 3,
+   "termination": "Expired on 2026-06-30 without renewal. Data deleted 90 days after the end.",
+   "used": 0,
+   "licensed": 900,
+   "unit": "travellers",
+   "owner": "Katrin Lindner",
+   "csm": "Sabine Roth",
+   "customerOwner": "Petra Vogel",
+   "offer": null,
+   "tickets": [],
+   "invoices": []
+  },
+  {
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "id": "R-C-2025-0041",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "contractId": "C-2025-0041",
+   "product": "SuccessFactors Employee Central",
+   "status": "Renewal due",
+   "end": "2026-12-31",
+   "noticeDays": 90,
+   "decisionDate": "2026-10-02",
+   "autoRenew": false,
+   "annualEur": 410000,
+   "upliftCapPct": 4,
+   "termination": "Ends without notice on the end date; renewal requires a new order.",
+   "used": 4650,
+   "licensed": 4800,
+   "unit": "employees",
+   "owner": "Katrin Lindner",
+   "csm": "Sabine Roth",
+   "customerOwner": "Claudia Neumann",
+   "offer": {
+    "id": "OFF-2026-0311",
+    "annualEur": 438000,
+    "currentAnnualEur": 410000,
+    "discountPct": 12,
+    "validUntil": "2026-11-15",
+    "stage": "Proposal sent",
+    "probabilityPct": 70,
+    "competitor": "None",
+    "nextStep": "Customer review with HR leadership by 2026-11-06",
+    "termMonths": 36,
+    "priceGuaranteeMonths": 36,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [],
+   "invoices": []
+  },
+  {
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "id": "R-C-2024-0611",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "contractId": "C-2024-0611",
+   "product": "SAP Commerce Cloud",
+   "status": "Renewal due",
+   "end": "2026-12-31",
+   "noticeDays": 60,
+   "decisionDate": "2026-11-01",
+   "autoRenew": false,
+   "annualEur": 380000,
+   "upliftCapPct": 4,
+   "termination": "Termination at the end of the term with 60 days notice; no automatic renewal.",
+   "used": 3,
+   "licensed": 3,
+   "unit": "storefronts",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": {
+    "id": "OFF-2026-0402",
+    "annualEur": 405000,
+    "currentAnnualEur": 380000,
+    "discountPct": 12,
+    "validUntil": "2026-11-20",
+    "stage": "Proposal sent",
+    "probabilityPct": 55,
+    "competitor": "Shopify Plus (evaluation)",
+    "nextStep": "Workshop with E-Commerce on the traffic block by 2026-11-05",
+    "termMonths": 36,
+    "priceGuaranteeMonths": 36,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [
+    {
+     "id": "TKT-48166",
+     "title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
+     "priority": "High",
+     "status": "In processing"
+    }
+   ],
+   "invoices": []
+  },
+  {
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "id": "R-C-2026-0012",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "contractId": "C-2026-0012",
+   "product": "AI units (Joule, AI Core, Document AI)",
+   "status": "Running",
+   "end": "2026-12-31",
+   "noticeDays": 60,
+   "decisionDate": "2026-11-01",
+   "autoRenew": true,
+   "annualEur": 360000,
+   "upliftCapPct": 0,
+   "termination": "Unused AI units do not carry over; top-up at the contract unit price of EUR 3.00 until 2026-12-31.",
+   "used": 93400,
+   "licensed": 120000,
+   "unit": "AI units",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Dr. Anja Berger",
+   "offer": null,
+   "tickets": [
+    {
+     "id": "TKT-48213",
+     "title": "Joule skill returns empty result for open purchase orders",
+     "priority": "High",
+     "status": "In processing"
+    },
+    {
+     "id": "TKT-48107",
+     "title": "BTP AI Core deployment quota exceeded in eu10",
+     "priority": "Very high",
+     "status": "Waiting for customer"
+    },
+    {
+     "id": "TKT-47888",
+     "title": "Ariba approval workflow not triggering for cost centre 4711",
+     "priority": "Medium",
+     "status": "In processing"
+    }
+   ],
+   "invoices": []
+  },
+  {
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "id": "R-C-2026-0044",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "contractId": "C-2026-0044",
+   "product": "AI units (Joule, AI Core, Document AI, Ariba AI)",
+   "status": "Running",
+   "end": "2026-12-31",
+   "noticeDays": 60,
+   "decisionDate": "2026-11-01",
+   "autoRenew": true,
+   "annualEur": 240000,
+   "upliftCapPct": 3,
+   "termination": "Termination at the end of term with 60 days notice. Unused units do not carry over.",
+   "used": 52950,
+   "licensed": 80000,
+   "unit": "AI units",
+   "owner": "Mira Hoffmann",
+   "csm": "Nina Kessler",
+   "customerOwner": "Tom Ahlers",
+   "offer": null,
+   "tickets": [
+    {
+     "id": "TKT-47932",
+     "title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
+     "priority": "High",
+     "status": "In processing"
+    }
+   ],
+   "invoices": []
+  },
+  {
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "id": "R-C-2023-0390",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "contractId": "C-2023-0390",
+   "product": "Ariba Procurement",
+   "status": "Renewal due",
+   "end": "2027-01-31",
+   "noticeDays": 90,
+   "decisionDate": "2026-11-02",
+   "autoRenew": false,
+   "annualEur": 290000,
+   "upliftCapPct": 3.5,
+   "termination": "Notice of 90 days before the end of the term, otherwise the contract ends and must be re-ordered.",
+   "used": 231,
+   "licensed": 250,
+   "unit": "buyers",
+   "owner": "Katrin Lindner",
+   "csm": "Jonas Weber",
+   "customerOwner": "Markus Engel",
+   "offer": {
+    "id": "OFF-2026-0318",
+    "annualEur": 305000,
+    "currentAnnualEur": 290000,
+    "discountPct": 15,
+    "validUntil": "2026-12-04",
+    "stage": "Proposal sent",
+    "probabilityPct": 60,
+    "competitor": "Coupa (customer evaluating)",
+    "nextStep": "Workshop on supplier risk module on 2026-10-29",
+    "termMonths": 24,
+    "priceGuaranteeMonths": 24,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [],
+   "invoices": [
+    {
+     "id": "INV-2026-10621",
+     "status": "Overdue",
+     "grossEur": 86275,
+     "due": "2026-08-31"
+    }
+   ]
+  },
+  {
+   "id": "R-C-2026-0902",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0902",
+   "product": "SAP Work Zone add-on",
+   "status": "Running",
+   "end": "2026-12-31",
+   "noticeDays": 30,
+   "decisionDate": "2026-12-01",
+   "autoRenew": false,
+   "annualEur": 12600,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 180,
+   "licensed": 200,
+   "unit": "users",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0912",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0912",
+   "product": "Commerce Cloud sandbox",
+   "status": "Running",
+   "end": "2026-12-31",
+   "noticeDays": 30,
+   "decisionDate": "2026-12-01",
+   "autoRenew": false,
+   "annualEur": 21000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 2,
+   "licensed": 2,
+   "unit": "sandboxes",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [
+    {
+     "id": "INV-2026-30590",
+     "status": "Overdue",
+     "grossEur": 24990,
+     "due": "2026-09-30"
+    }
+   ],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0901",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0901",
+   "product": "SAP Signavio Process Manager add-on",
+   "status": "Running",
+   "end": "2027-01-31",
+   "noticeDays": 60,
+   "decisionDate": "2026-12-02",
+   "autoRenew": false,
+   "annualEur": 24000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 41,
+   "licensed": 50,
+   "unit": "seats",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0903",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0903",
+   "product": "BTP extra storage package",
+   "status": "Running",
+   "end": "2027-02-28",
+   "noticeDays": 60,
+   "decisionDate": "2026-12-30",
+   "autoRenew": false,
+   "annualEur": 31500,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 8.2,
+   "licensed": 10,
+   "unit": "TB",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "id": "R-C-2024-0233",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "contractId": "C-2024-0233",
+   "product": "Business Technology Platform",
+   "status": "Running",
+   "end": "2027-03-31",
+   "noticeDays": 90,
+   "decisionDate": "2026-12-31",
+   "autoRenew": true,
+   "annualEur": 640000,
+   "upliftCapPct": 2.5,
+   "termination": "Unused capacity units expire at the end of each contract year; no refund.",
+   "used": 412000,
+   "licensed": 600000,
+   "unit": "cloud credits",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": []
+  },
+  {
+   "id": "R-C-2026-0911",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0911",
+   "product": "SAP Analytics Cloud planning add-on",
+   "status": "Running",
+   "end": "2027-03-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-01-30",
+   "autoRenew": false,
+   "annualEur": 27900,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 96,
+   "licensed": 120,
+   "unit": "users",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0913",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0913",
+   "product": "Integration Suite extra connectors",
+   "status": "Running",
+   "end": "2027-06-30",
+   "noticeDays": 30,
+   "decisionDate": "2027-05-31",
+   "autoRenew": false,
+   "annualEur": 9800,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 7,
+   "licensed": 8,
+   "unit": "connectors",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "id": "R-C-2024-0702",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "contractId": "C-2024-0702",
+   "product": "SAP Analytics Cloud",
+   "status": "Running",
+   "end": "2027-10-31",
+   "noticeDays": 90,
+   "decisionDate": "2027-08-02",
+   "autoRenew": false,
+   "annualEur": 219750,
+   "upliftCapPct": 3,
+   "termination": "Termination at the end of term with 90 days notice.",
+   "used": 588,
+   "licensed": 650,
+   "unit": "users",
+   "owner": "Mira Hoffmann",
+   "csm": "Nina Kessler",
+   "customerOwner": "Ines Carstens",
+   "offer": null,
+   "tickets": [],
+   "invoices": [
+    {
+     "id": "INV-2026-30077",
+     "status": "Open",
+     "grossEur": 261502.5,
+     "due": "2026-10-31"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<script id="renewal-logic">
+const DAY = 86400000;
+const toDay = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+const daysBetween = (from, to) => Math.round((toDay(to) - toDay(from)) / DAY);
+const eur = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+const upliftPct = (c) => (c.offer && c.offer.currentAnnualEur ? Math.round(((c.offer.annualEur / c.offer.currentAnnualEur - 1) * 1000)) / 10 : null);
+const usagePct = (c) => (c.licensed ? Math.round((c.used / c.licensed) * 100) : null);
+/** Health signals of one renewal. level: red, yellow or plus (positive). The worst level wins. */
+function signals(c, asOf) {
+  const out = [], add = (level, key, text) => out.push({ level, key, text });
+  const days = daysBetween(asOf, c.decisionDate);
+  if (c.status === 'Lapsed') add('yellow', 'lapsed', c.offer ? `Lapsed on ${c.end}; a reactivation offer (${c.offer.id}) is open until ${c.offer.validUntil}` : `Lapsed on ${c.end}; no offer yet, decide whether to win the customer back`);
+  else {
+    if (days < 0) add('red', 'timing', `Decision date ${c.decisionDate} passed ${-days} days ago: agree the renewal or a written extension now`);
+    else if (days <= 30) add(c.autoRenew ? 'yellow' : 'red', 'timing', `Decision date ${c.decisionDate} is in ${days} days${c.autoRenew ? ' (renews automatically unless changed)' : ''}`);
+    else if (days <= 90) add('yellow', 'timing', `Decision date ${c.decisionDate} is in ${days} days`);
+    if (!c.offer && !c.autoRenew) { if (days <= 30) add('red', 'no-offer', 'No renewal offer yet'); else if (days <= 120) add('yellow', 'no-offer', 'No renewal offer yet'); }
+  }
+  if (c.offer) {
+    const left = daysBetween(asOf, c.offer.validUntil);
+    if (c.status !== 'Lapsed' && left <= 14) add('yellow', 'validity', `Offer ${c.offer.id} is valid for ${left} more days`);
+    const up = upliftPct(c);
+    if (up !== null && up > c.upliftCapPct) add('yellow', 'uplift', `Price rise of ${up} % is above the contract cap of ${c.upliftCapPct} %`);
+    if (c.offer.competitor && c.offer.competitor !== 'None') add('yellow', 'competitor', `Competitor in play: ${c.offer.competitor}`);
+    if (c.offer.probabilityPct >= 70) add('plus', 'probability', `Offer probability ${c.offer.probabilityPct} %`);
+  }
+  const use = usagePct(c);
+  if (use !== null && c.status !== 'Lapsed') {
+    if (use < 60) add('red', 'usage', `Only ${use} % of the ${c.unit} are used: expect a smaller renewal`);
+    else if (use < 80) add('yellow', 'usage', `${use} % of the ${c.unit} are used: be ready to right-size`);
+    else if (use >= 95) add('plus', 'growth', `${use} % of the ${c.unit} are used: room to sell more`);
+  }
+  for (const t of c.tickets) {
+    if (t.priority === 'Very high' && t.status !== 'Waiting for customer') add('red', 'ticket', `Very high ticket ${t.id} is open: ${t.title}`);
+    else if (t.priority === 'Very high' || t.priority === 'High') add('yellow', 'ticket', `${t.priority} ticket ${t.id} is open (${t.status.toLowerCase()})`);
+  }
+  for (const i of c.invoices) if (i.status === 'Overdue') add('red', 'invoice', `Invoice ${i.id} is overdue (${eur(i.grossEur)}, due ${i.due})`);
+  const order = { red: 0, yellow: 1, plus: 2 };
+  out.sort((a, b) => order[a.level] - order[b.level]);
+  const health = out.some((s) => s.level === 'red') ? 'red' : out.some((s) => s.level === 'yellow') ? 'yellow' : 'green';
+  return { health, signals: out, days };
+}
+/** Retention probability of a renewal: from its health, or the lapsed value. */
+const retention = (c, health, rules) => (c.status === 'Lapsed' ? rules.retention.lapsed : rules.retention[health]);
+const lifetimeYears = (p, rules) => Math.min(rules.lifetimeCapYears, Math.round((1 / (1 - Math.min(p, 0.99))) * 10) / 10);
+/** Expected customer lifetime value of a product relationship: annual value x margin x expected lifetime in years. */
+const clv = (annual, p, rules) => Math.round((annual * (rules.marginPct / 100) * lifetimeYears(p, rules)) / 1000) * 1000;
+const roundK = (n) => Math.round(n / 1000) * 1000;
+/** Alternative offers for one renewal. Each has an annual value, a term, the price change against today, a retention probability and the expected CLV. */
+function options(c, sig, rules) {
+  const p0 = retention(c, sig.health, rules), cap = c.upliftCapPct, cur = c.offer ? c.offer.currentAnnualEur : c.annualEur, use = usagePct(c), lapsed = c.status === 'Lapsed';
+  const term = c.offer && c.offer.termMonths ? c.offer.termMonths : 12;
+  const list = [];
+  const add = (key, name, annual, termMonths, dp, why, scope = 1) => { const p = Math.min(0.97, Math.round((p0 + dp) * 100) / 100); list.push({ key, name, annualEur: annual, termMonths, changePct: Math.round((annual / cur - 1) * 1000) / 10, withinCap: (annual / (cur * scope) - 1) * 100 <= cap + 0.5, retentionPct: Math.round(p * 100), clvEur: clv(annual, p, rules), why }); };
+  add('standard', c.offer ? 'Renewal as offered' : 'Renewal at the contract cap', c.offer ? c.offer.annualEur : roundK(cur * (1 + cap / 100)), term, 0, c.offer ? 'The offer on the table.' : 'Same scope, price rise limited to the cap.');
+  if (c.offer && upliftPct(c) > cap) add('cap', 'Hold the contract cap', roundK(cur * (1 + cap / 100)), term, 0.05, 'Removes the price argument; the rise stays within what the contract allows.');
+  add('multi', '3-year commitment with price guarantee', roundK(cur * (1 + Math.min(cap, 2) / 100) * 0.96), 36, 0.05, 'A 4 % discount and a lower rise for a longer term; the customer gets planning security.');
+  if (!lapsed && use !== null && use < 85) add('right', 'Right-sized to real usage', roundK(cur * Math.max(0.7, use / 100 + 0.1)), term, 0.1, `Scope follows the ${use} % usage; less value now, a much safer renewal.`, Math.max(0.7, use / 100 + 0.1));
+  if (!lapsed && use !== null && use >= 90) add('growth', 'Growth bundle: 10 % more scope', roundK(cur * 1.1), term, 0.03, 'Usage is near the limit; 10 % more scope at the same unit price.', 1.1);
+  if (lapsed) add('winback', 'Win-back entry price', roundK(cur * 0.85), 12, 0.2, 'A 12-month entry price to restart the relationship.');
+  const best = list.filter((o) => o.withinCap).sort((a, b) => b.clvEur - a.clvEur)[0];
+  if (best) best.recommended = true;
+  return list;
+}
+/** Automatic renewal: allowed below the annual value threshold when nothing needs a person. A missing offer and the approaching date are what the automation fixes, so they do not block. */
+function autoCheck(c, sig, opts, rules) {
+  const blockers = [];
+  if (c.annualEur >= rules.autoThresholdEur) blockers.push(`Annual value ${eur(c.annualEur)} is not below ${eur(rules.autoThresholdEur)}`);
+  if (c.status === 'Lapsed') blockers.push('Lapsed contract: a person decides about a win-back');
+  for (const x of sig.signals) if (x.level !== 'plus' && x.key !== 'timing' && x.key !== 'no-offer') blockers.push(x.text);
+  const pick = opts.filter((o) => o.withinCap).sort((a, b) => b.clvEur - a.clvEur)[0];
+  if (!pick) blockers.push('No offer stays within the contract cap');
+  return { eligible: blockers.length === 0, blockers, pick: pick || null };
+}
+/** The simulated e-mail the automation sends. */
+function autoEmail(c, o) {
+  return { to: `${c.csm.toLowerCase().replace(/[^a-z]+/g, '.')}@${c.customerId}.example`, subject: `Your renewal of ${c.product} (${c.contractId})`, body: `Dear ${c.customer} team, your contract ${c.contractId} for ${c.product} ends on ${c.end}. Offer: ${eur(o.annualEur)} a year for ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} % against today, within the contract cap of ${c.upliftCapPct} %). Reply to this e-mail or contact your account team to confirm.` };
+}
+/** Retention levers: what to do to keep the customer, taken from the signals. */
+function levers(sig, rules) { return [...new Set(sig.signals.filter((s) => s.level !== 'plus').map((s) => rules.levers[s.key]).concat(sig.signals.some((s) => s.key === 'growth') ? [rules.levers.growth] : []).filter(Boolean))].slice(0, 4); }
+/** Next actions, most important first (at most three). */
+function actions(c, sig) {
+  const has = (k) => sig.signals.some((s) => s.key === k), list = [];
+  if (has('invoice')) list.push('Clear the overdue invoice with finance before the renewal talk');
+  if (has('timing') && c.offer && c.status !== 'Lapsed') list.push(sig.days < 0 ? 'Agree a written extension and the signing date with the customer' : 'Fix the signing date with the customer this week');
+  if (c.status === 'Lapsed') list.push(c.offer ? 'Follow up the reactivation offer with the technical contact' : 'Decide with the account team whether a win-back offer is worth it');
+  if (has('no-offer')) list.push('Create the renewal offer now and send it to the deal desk');
+  if (has('competitor')) list.push('Prepare the answer to the competitor (battlecard) before the next meeting');
+  if (has('uplift')) list.push('Check the price rise against the cap (pricing guard) and explain it with scope or volume');
+  if (has('ticket')) list.push('Get the open ticket solved or give the customer a date');
+  if (has('growth')) list.push('Offer more volume in the renewal: usage is close to the limit');
+  if (has('usage')) list.push('Right-size the offer to real usage instead of losing the renewal');
+  if (has('validity')) list.push('Extend the offer validity or close before it expires');
+  if (!list.length) list.push('Keep on track: confirm the renewal date at the next customer meeting');
+  return list.slice(0, 3);
+}
+</script>
+<script>
+(function () {
+'use strict';
+const DATA = JSON.parse(document.getElementById('renewal-data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
+const FLOW = ['Detected', 'Prepared', 'Offer approved', 'Sent (simulated)', 'Signed (simulated)'];
+const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
+const state = { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false };
+const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
+const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
+let model = [];
+function compute() {
+  model = DATA.cases.map((c) => {
+    const s = signals(c, DATA.asOf);
+    const opts = options(c, s, DATA.rules), chosen = (state.auto && autoCheck(c, s, opts, DATA.rules).eligible ? autoCheck(c, s, opts, DATA.rules).pick : null) || opts.find((o) => o.key === state.option[c.id]) || opts.find((o) => o.recommended) || opts[0];
+    const ac = autoCheck(c, s, opts, DATA.rules), run = state.auto && ac.eligible && (state.stage[c.id] || 0) < 3;
+    if (run) state.stage[c.id] = 3;
+    const st = state.stage[c.id] || 0;
+    const p = retention(c, st === 4 ? 'green' : s.health, DATA.rules);
+    return { ...c, auto: ac, autoRun: !!state.auto && ac.eligible, email: ac.pick ? autoEmail(c, ac.pick) : null, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules) };
+  });
+}
+const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase())));
+const live = (c) => c.status !== 'Lapsed' && c.stage < 4;
+function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c.customer)} · SAP customer ID ${esc(c.sapCustomerId)}</div><div style="margin-top:4px"><span class="pill ${c.health}">${LABEL[c.health]}</span> ${eur(c.annualEur)} a year</div><ul>${c.sig.signals.slice(0, 4).map((s) => `<li>${esc(s.text)}</li>`).join('')}</ul>`; }
+const tip = $('#tip');
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, e.clientX + 14)) + 'px'; tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, e.clientY + 14)) + 'px'; }
+function hover(el, html) { el.addEventListener('mousemove', (e) => showTip(e, html())); el.addEventListener('mouseleave', () => { tip.hidden = true; }); el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); showTip({ clientX: r.left, clientY: r.bottom - 14 }, html()); }); el.addEventListener('blur', () => { tip.hidden = true; }); }
+function renderKpis() {
+  const open = model.filter(live), red = open.filter((c) => c.health === 'red'), soon = open.filter((c) => c.sig.days <= 30);
+  const sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), signed = model.filter((c) => c.stage === 4);
+  const k = (cls, v, key, s) => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="k">${key}</div><div class="s">${s}</div></div>`;
+  $('#kpis').innerHTML = k('', open.length, 'Renewals to handle', eur(sum(open)) + ' a year') + k('red', red.length, 'Red renewals', eur(sum(red)) + ' at risk') + k('amber', soon.length, 'Decision within 30 days', soon.length ? 'incl. passed dates' : 'none') +
+    k('', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('', eur(open.reduce((a, c) => a + c.clv, 0)), 'Customer lifetime value', 'expected, open renewals (assumptions below)') + k('green', model.filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
+}
+function renderBar() {
+  const count = (s) => model.filter((c) => s === 'all' || c.health === s).length;
+  $('#status-chips').innerHTML = ['all', 'red', 'yellow', 'green'].map((s) => `<button type="button" data-s="${s}" aria-pressed="${state.status === s}">${s === 'all' ? 'All' : LABEL[s]} ${count(s)}</button>`).join('');
+  $('#status-chips').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.status = b.dataset.s; renderAll(); }));
+}
+function renderTimeline() {
+  const list = visible(), months = [];
+  for (let y = 2026; y <= 2027; y++) for (let m = 0; m < 12; m += 3) months.push([y, m]);
+  const todayPct = ((toDay(DATA.asOf) - START) / (END - START)) * 100;
+  $('#tl').innerHTML = `<div class="axis">${months.map(([y, m]) => `<span style="left:${((Date.UTC(y, m, 1) - START) / (END - START)) * 100}%">${['Jan', 'Apr', 'Jul', 'Oct'][m / 3]} ${String(y).slice(2)}</span>`).join('')}</div>` +
+    list.map((c) => { const a = pos(c.decisionDate), b = pos(c.end), live_ = c.status !== 'Lapsed'; return `<button type="button" class="row" data-id="${esc(c.id)}" aria-pressed="${state.sel === c.id}"><div class="lab"><b>${esc(c.product.replace(/\s*\(.*\)/, ''))}</b> <span>${esc(c.customer.split(' ')[0])}</span></div><div class="track">${live_ ? `<div class="bar ${c.health}" style="left:${a}%;width:${Math.max(0.5, b - a)}%"></div><div class="dia ${c.health}" style="left:${a}%"></div>` : `<div class="ended" style="left:${b}%"></div><div class="dia ${c.health}" style="left:${a}%"></div>`}</div></button>`; }).join('') +
+    (list.length ? `<div class="today" style="left:calc(230px + (100% - 230px) * ${todayPct / 100})"><i>Today</i></div>` : '<p class="note">No renewal matches the filters.</p>');
+  $('#tl').querySelectorAll('.row').forEach((r) => { r.onclick = () => { state.sel = state.sel === r.dataset.id ? null : r.dataset.id; renderAll(); }; hover(r, () => tipHtml(model.find((c) => c.id === r.dataset.id))); });
+}
+function renderRows() {
+  $('#rows').innerHTML = visible().map((c) => `<tr data-id="${esc(c.id)}" tabindex="0" aria-selected="${state.sel === c.id}"><td>${esc(c.customer)}<div class="sub" style="margin:0">SAP ${esc(c.sapCustomerId)}</div></td><td>${esc(c.product)}<div class="sub" style="margin:0">${esc(c.contractId)}</div></td><td class="n">${eur(c.annualEur)}</td><td>${c.status === 'Lapsed' ? 'lapsed ' + esc(c.end) : esc(c.decisionDate) + `<div class="sub" style="margin:0">${c.sig.days < 0 ? -c.sig.days + ' days ago' : 'in ' + c.sig.days + ' days'}</div>`}</td><td>${c.autoRun && c.stage >= 3 ? '<span class="pill done">auto offer sent</span>' : c.offer ? esc(c.offer.id) + `<div class="sub" style="margin:0">${esc(c.offer.stage)}</div>` : '<span style="color:var(--muted)">none</span>'}</td><td><span class="pill ${c.health}">${c.stage === 4 ? 'signed' : LABEL[c.health]}</span></td></tr>`).join('') || '<tr><td colspan="6">No renewal matches the filters.</td></tr>';
+  $('#rows').querySelectorAll('tr[data-id]').forEach((tr) => { const open = () => { state.sel = state.sel === tr.dataset.id ? null : tr.dataset.id; renderAll(); }; tr.onclick = open; tr.onkeydown = (e) => { if (e.key === 'Enter') open(); }; });
+}
+function prepPrompt(c) { return `Prepare the renewal talk for ${c.product} of ${c.customer} (SAP customer ID ${c.sapCustomerId}): decision date ${c.decisionDate}, ${eur(c.annualEur)} a year${c.offer ? ', offer ' + c.offer.id : ', no offer yet'}. Use the skill customer-call-prep and the Sub4Me tools: usage, open tickets, invoices, price against the contract cap. Please answer in English.`; }
+function pricePrompt(c) { return `Check the price of renewal offer ${c.offer.id} for ${c.customer}: ${eur(c.offer.annualEur)} against ${eur(c.offer.currentAnnualEur)} today (${upliftPct(c) > 0 ? '+' : ''}${upliftPct(c)} %), contract cap ${c.upliftCapPct} %, discount ${c.offer.discountPct} %. Use the skill pricing-guard and say what the deal desk has to approve. Please answer in English.`; }
+function renderDetail() {
+  const c = model.find((x) => x.id === state.sel), el = $('#detail');
+  if (!c) { el.innerHTML = '<h2>Details</h2><p class="sub">Click a renewal to see why it has its colour, the price check, the next actions and the approval flow.</p>'; return; }
+  const use = usagePct(c), up = upliftPct(c), st = c.stage;
+  const auto = c.autoRun && st >= 3 && c.auto.eligible; const btn = auto && st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : st === 0 ? `<button class="primary" data-act="prep" type="button">Prepare with Joule</button>` : st === 1 ? `<button class="primary" data-act="approve" type="button">${c.offer ? 'Approve offer (' + esc(c.owner) + ')' : 'Approve offer draft (' + esc(c.owner) + ')'}</button>` : st === 2 ? `<button class="primary" data-act="send" type="button">Send to customer (simulated)</button>` : st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : '<span class="pill done">Signed (simulated)</span>';
+  el.innerHTML = `<h2>${esc(c.product)} <span class="pill ${c.health}">${st === 4 ? 'signed' : LABEL[c.health]}</span></h2><p class="sub">${esc(c.customer)} · SAP customer ID <b>${esc(c.sapCustomerId)}</b> · ${esc(c.contractId)}</p>` +
+    `<dl class="dl"><dt>Annual value</dt><dd>${eur(c.annualEur)}</dd><dt>Contract ends</dt><dd>${esc(c.end)}</dd><dt>Notice period</dt><dd>${c.noticeDays} days</dd><dt>Decision date</dt><dd>${esc(c.decisionDate)}</dd><dt>Renews automatically</dt><dd>${c.autoRenew ? 'yes' : 'no'}</dd><dt>Account executive</dt><dd>${esc(c.owner)}</dd><dt>Customer owner</dt><dd>${esc(c.customerOwner)}</dd></dl>` +
+    (use === null ? '' : `<div class="sub" style="margin:6px 0 0">Usage: ${c.used.toLocaleString('en-GB')} of ${c.licensed.toLocaleString('en-GB')} ${esc(c.unit)} (${use} %)</div><div class="meter"><i style="width:${Math.min(100, use)}%"></i></div>`) +
+    (c.offer ? `<h3 style="margin-top:12px">Renewal offer ${esc(c.offer.id)}</h3><dl class="dl"><dt>Offer value</dt><dd>${eur(c.offer.annualEur)}</dd><dt>Today</dt><dd>${eur(c.offer.currentAnnualEur)}</dd><dt>Price rise / cap</dt><dd>${up > 0 ? '+' : ''}${up} % / ${c.upliftCapPct} %${up > c.upliftCapPct ? ' ⚠' : ''}</dd><dt>Discount</dt><dd>${c.offer.discountPct} %</dd><dt>Valid until</dt><dd>${esc(c.offer.validUntil)}</dd><dt>Stage</dt><dd>${esc(c.offer.stage)} (${c.offer.probabilityPct} %)</dd><dt>Approval</dt><dd>${esc(c.offer.approval)}</dd></dl>` : '<h3 style="margin-top:12px">No renewal offer</h3>') +
+    `<h3 style="margin-top:12px">Why this colour</h3>${c.sig.signals.map((s) => `<div class="sig ${s.level}"><b>${s.level === 'plus' ? 'positive' : s.level}</b>${esc(s.text)}</div>`).join('') || '<div class="sig plus">No warning signals.</div>'}` +
+    `<h3 style="margin-top:12px">Next actions</h3><ol class="act">${c.actions.map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` +
+    autoBlock(c) +
+    `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step; sending and signing are simulated here.</p>`;
+  el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
+    const a = b.dataset.act;
+    if (a === 'ask') return send(`Explain the renewal of ${c.product} for ${c.customer} (SAP customer ID ${c.sapCustomerId}): health ${c.health} because ${c.sig.signals.filter((s) => s.level !== 'plus').map((s) => s.text).join('; ') || 'no warning'}. What would you do first? Please answer in English.`);
+    if (a === 'price') return send(pricePrompt(c));
+    if (a === 'prep') { send(prepPrompt(c)); state.stage[c.id] = 1; }
+    if (a === 'approve') state.stage[c.id] = 2;
+    if (a === 'send') state.stage[c.id] = 3;
+    if (a === 'sign') state.stage[c.id] = 4;
+    compute(); renderAll();
+  }));
+}
+function autoBlock(c) {
+  const R = DATA.rules, th = eur(R.autoThresholdEur);
+  if (c.annualEur >= R.autoThresholdEur || c.status === 'Lapsed') return `<div class="autobox"><b>Automatic renewal</b><div class="sub" style="margin:2px 0 0">Not available: ${esc(c.auto.blockers[0])}. A person handles this renewal.</div></div>`;
+  if (!c.auto.eligible) return `<div class="autobox"><b>Automatic renewal: needs a person</b><div class="sub" style="margin:2px 0 0">Below ${th}, but these signals stop the automation:</div><ol>${c.auto.blockers.map((b) => `<li>${esc(b)}</li>`).join('')}</ol></div>`;
+  if (!c.autoRun) return `<div class="autobox"><b>Eligible for automatic renewal</b><div class="sub" style="margin:2px 0 0">Below ${th}, no warning signal, and an offer within the contract cap exists. Turn the switch on to let it run: ${esc(c.auto.pick.name)}, ${eur(c.auto.pick.annualEur)} a year.</div></div>`;
+  const o = c.auto.pick, m = c.email;
+  return `<div class="autobox on"><b>Handled automatically (simulated)</b><ol><li>Checked: below ${th}, no warning signal, price within the ${c.upliftCapPct} % cap</li><li>Offer created: ${esc(o.name)}, ${eur(o.annualEur)} a year, ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} %)</li><li>E-mail sent to the customer contact (simulated)</li><li>Logged for audit; a person can open the log and take the case over</li></ol><div class="mail"><b>To: ${esc(m.to)}</b><b>${esc(m.subject)}</b>${esc(m.body)}</div></div>`;
+}
+function renderAlt() {
+  const c = model.find((x) => x.id === state.sel), el = $('#alt');
+  if (!c) { el.hidden = true; return; }
+  el.hidden = false;
+  const R = DATA.rules, years = lifetimeYears(c.pRet, R), share = Math.round((c.annualEur / c.customerAnnualEur) * 100), lost = c.clv;
+  el.innerHTML = `<div class="head"><div style="flex:1 1 320px"><h2>Retention and alternative offers: ${esc(c.product)} at ${esc(c.customer)}</h2><p class="sub" style="margin:0">Customer since ${c.customerSince} (${2026 - c.customerSince} years) · all active contracts ${eur(c.customerAnnualEur)} a year · this renewal is ${share} % of it</p></div></div>` +
+    `<div class="kpis" style="margin:12px 0"><div class="kpi"><div class="v">${Math.round(c.pRet * 100)} %</div><div class="k">Expected retention</div><div class="s">from the health: ${c.stage === 4 ? 'signed' : LABEL[c.health].toLowerCase()}</div></div><div class="kpi"><div class="v">${years} years</div><div class="k">Expected lifetime</div><div class="s">1 / (1 − retention), at most ${R.lifetimeCapYears}</div></div><div class="kpi ${c.health === 'red' ? 'red' : ''}"><div class="v">${eur(lost)}</div><div class="k">Expected lifetime value</div><div class="s">${eur(c.annualEur)} × ${R.marginPct} % margin × ${years} years</div></div><div class="kpi"><div class="v">${eur(c.annualEur * (R.marginPct / 100))}</div><div class="k">Margin lost per year</div><div class="s">if the renewal is lost</div></div></div>` +
+    `<div class="layout" style="grid-template-columns:minmax(0,1fr) 300px"><div style="overflow:auto"><table><thead><tr><th>Option</th><th class="n">Annual value</th><th class="n">Term</th><th class="n">vs today</th><th class="n">Retention</th><th class="n">Expected lifetime value</th><th></th></tr></thead><tbody>${c.options.map((o) => `<tr style="${c.chosen.key === o.key ? 'background:var(--purple-dim)' : ''}"><td><b>${esc(o.name)}</b>${o.recommended ? ' <span class="pill done">best value</span>' : ''}${o.withinCap ? '' : ' <span class="pill urgent">above cap</span>'}<div class="sub" style="margin:0">${esc(o.why)}</div></td><td class="n">${eur(o.annualEur)}</td><td class="n">${o.termMonths} mo</td><td class="n">${o.changePct > 0 ? '+' : ''}${o.changePct} %</td><td class="n">${o.retentionPct} %</td><td class="n"><b>${eur(o.clvEur)}</b></td><td>${c.chosen.key === o.key ? '<span class="pill done">chosen</span>' : `<button class="small" data-opt="${esc(o.key)}" type="button">Choose</button>`}</td></tr>`).join('')}</tbody></table></div>` +
+    `<div><h3>Retention levers</h3><ul class="act" style="padding-left:18px;margin:6px 0">${c.levers.map((l) => `<li>${esc(l)}</li>`).join('') || '<li>Keep the regular customer rhythm.</li>'}</ul><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="primary" data-alt="note" type="button">Draft the cover note</button></div><p class="note">Best value = highest expected lifetime value among the options that stay within the contract cap. A person decides.</p></div></div>`;
+  el.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { state.option[c.id] = b.dataset.opt; compute(); renderAll(); }));
+  el.querySelector('[data-alt="note"]').onclick = () => send(`Draft a short cover note to the customer for the renewal of ${c.product} at ${c.customer} (SAP customer ID ${c.sapCustomerId}), option "${c.chosen.name}": ${eur(c.chosen.annualEur)} a year, ${c.chosen.termMonths} months, ${c.chosen.changePct > 0 ? '+' : ''}${c.chosen.changePct} % against today. Keep it factual and name what the customer gets. A person reviews it before sending. Please answer in English.`);
+}
+const byId = (id) => model.find((c) => c.id === id);
+const STEPS = [
+  { t: 'The renewal radar', x: 'Every renewal on one time line: the diamond is the decision date, the bar runs to the contract end, the dashed line is today. Red and yellow ones are where to look.', on: () => { state.status = 'all'; } },
+  { t: 'What is due first?', x: 'SuccessFactors at Muster Industrie: the decision date passed 17 days ago. The offer is open, so the next action is a written extension and a signing date.', on: () => { state.sel = 'R-C-2025-0041'; } },
+  { t: 'Why is Ariba red?', x: 'Decision date in 14 days, an overdue invoice, a competitor evaluating and a price rise above the contract cap. Every signal is listed, so the colour is explainable.', on: () => { state.sel = 'R-C-2023-0390'; } },
+  { t: 'Retention value and alternatives', x: 'What is this customer worth? The lifetime value, the alternative offers (hold the cap, 3-year commitment, right-sized) and the retention levers are side by side. The best value within the contract cap is marked; here we choose it and prepare the talk.', on: () => { state.sel = 'R-C-2023-0390'; state.option['R-C-2023-0390'] = 'cap'; state.stage['R-C-2023-0390'] = 1; } },
+  { t: 'A person approves', x: 'The account executive approves the offer. Nothing goes to the customer without this step.', on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 2; } },
+  { t: 'Send and sign (simulated)', x: 'The offer is sent and signed. The case turns green and the signed value appears in the KPIs. Reset the demo to start over.', on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 4; } },
+  { t: 'Fully automatic below 30,000 €', x: 'Small add-on contracts need no person: switch on automatic renewal. Eligible ones (below the threshold, no warning signal, price within the cap) get an offer and an e-mail on their own (simulated). The sandbox with an overdue invoice and the storage package above the threshold still go to a person.', on: () => { state.auto = true; $('#auto').checked = true; state.sel = 'R-C-2026-0902'; } },
+];
+function renderGuide() {
+  const g = $('#guide');
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Seven steps from the renewal radar to a signed renewal, and the automatic path for small contracts: see, find the urgent one, understand, prepare, approve, sign, automate.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  const s = STEPS[state.step];
+  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
+  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
+}
+function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '' }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
+function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderKpis(); renderBar(); renderGuide(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
+$('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
+$('#customer').onchange = (e) => { state.customer = e.target.value; renderAll(); };
+$('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
+$('#reset').onclick = () => { $('#auto').checked = false; Object.assign(state, { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
+$('#assump').textContent = `Illustrative assumptions, not real figures: gross margin ${DATA.rules.marginPct} %; expected retention by health: green ${DATA.rules.retention.green * 100} %, yellow ${DATA.rules.retention.yellow * 100} %, red ${DATA.rules.retention.red * 100} %, lapsed ${DATA.rules.retention.lapsed * 100} %. Expected lifetime = 1 / (1 − retention), at most ${DATA.rules.lifetimeCapYears} years. Lifetime value = annual value × margin × expected lifetime. Each alternative offer changes the annual value, the term and the retention.`;
+compute(); renderAll();
+window.__renewals = () => model; window.__state = state; window.__go = go;
+})();
+</script>
+</body>
+</html>
