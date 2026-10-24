@@ -6,6 +6,7 @@ import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
 import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
+import { downloadSpaceFile, emailDraftUrl } from '../space-share';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
 export type SpaceTabRequest = { tab: string; nonce: number; /** Target space; defaults to the AI Control Tower. */ space?: string };
@@ -110,6 +111,19 @@ export default function SpaceViewer({
 
   const [bust, setBust] = useState(space.updatedAt);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareNote, setShareNote] = useState('');
+  async function share(withMail: boolean) {
+    try {
+      const name = await downloadSpaceFile(space.slug);
+      setShareNote(withMail ? `Saved ${name}. Attach it to the e-mail.` : `Saved ${name}.`);
+      if (withMail) window.location.href = emailDraftUrl(space.title, name);
+    } catch (e: any) {
+      setShareNote(e?.message ?? 'Sharing failed.');
+    }
+    setShareOpen(false);
+    setTimeout(() => setShareNote(''), 8000);
+  }
   const [html, setHtml] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -192,6 +206,18 @@ export default function SpaceViewer({
         >
           <BulbIcon /> Insights
         </button>
+        <div className="chip-wrap">
+          <button className={`ghost-btn ${shareOpen ? 'ghost-btn-on' : ''}`} onClick={() => setShareOpen((v) => !v)} aria-expanded={shareOpen} title="Share this Space as a file">
+            Share
+          </button>
+          {shareOpen && (
+            <div className="menu share-menu" role="menu" style={{ top: 'calc(100% + 6px)', bottom: 'auto', right: 0, left: 'auto' }}>
+              <button role="menuitem" className="connector-menu-item" onClick={() => void share(false)}>Save as file</button>
+              <button role="menuitem" className="connector-menu-item" onClick={() => void share(true)}>Send by e-mail</button>
+            </div>
+          )}
+        </div>
+        {shareNote && <span className="space-count" role="status">{shareNote}</span>}
         {/* Re-render what is already on disk. Regeneration remains an explicit conversation. */}
         <button className="icon-btn" onClick={() => setBust(Date.now())} title="Refresh" aria-label="Refresh">
           <RefreshIcon />

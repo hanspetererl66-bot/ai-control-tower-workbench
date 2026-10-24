@@ -24,6 +24,8 @@ type Props = {
   onAddDomain?: (name: string) => void;
   onRenameDomain?: (from: string, to: string) => void;
   onDeleteDomain?: (name: string) => void;
+  /** Install a Space file somebody sent. */
+  onImportSpace?: (file: File) => void;
 };
 
 const COLLAPSED_KEY = 'werkbank.collapsedDomains';
@@ -38,7 +40,7 @@ function loadCollapsed(): string[] {
 
 type DropMark = { slug: string; after: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace }: Props) {
   const grouped = Boolean(domains && domainOf);
   const [collapsed, setCollapsed] = useState<string[]>(loadCollapsed);
   const [adding, setAdding] = useState(false);
@@ -196,6 +198,12 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     <aside className="list">
       <div className="list-head">
         <span className="list-title">Spaces</span>
+        {onImportSpace && (
+          <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
+            Import
+            <input type="file" accept=".json,application/json" hidden aria-label="Import Space file" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ''; if (f) onImportSpace(f); }} />
+          </label>
+        )}
         <button className="icon-btn" title="Search" aria-label="Search">
           <SearchIcon />
         </button>

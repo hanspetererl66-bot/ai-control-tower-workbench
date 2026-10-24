@@ -1,9 +1,10 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 import { parseSpaceMetadata } from './shared/space-metadata.mjs';
+import { MAX_PACKAGE_BYTES, buildSpacePackage, parseSpacePackage, uniqueSlug } from './shared/space-package.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const SPACES = join(ROOT, 'workspace/spaces');
@@ -25,6 +26,59 @@ function spacesApi(): Plugin {
   return {
     name: 'spaces-api',
     configureServer(server) {
+      // Share a Space: GET /<slug>/package returns it as one file; POST /import?mode=new|replace installs one.
+      server.middlewares.use('/__spaces', (req, res, next) => {
+        const json = (status: number, body: unknown) => {
+          res.statusCode = status;
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(JSON.stringify(body));
+        };
+        const pkg = /^\/([A-Za-z0-9._-]+)\/package$/.exec((req.url ?? '').split('?')[0]);
+        if (pkg && req.method === 'GET') {
+          try {
+            const dir = join(SPACES, pkg[1]);
+            const files: Record<string, string> = { 'index.html': readFileSync(join(dir, 'index.html'), 'utf8') };
+            try { files['space.json'] = readFileSync(join(dir, 'space.json'), 'utf8'); } catch { /* optional */ }
+            let title = pkg[1];
+            try { const m = parseSpaceMetadata(files['space.json'] ?? ''); if (typeof m.title === 'string') title = m.title; } catch { /* slug */ }
+            return json(200, buildSpacePackage({ slug: pkg[1], title, files }));
+          } catch {
+            return json(404, { error: 'space not found' });
+          }
+        }
+        if ((req.url ?? '').split('?')[0] === '/import' && req.method === 'POST') {
+          const mode = new URL(req.url ?? '/', 'http://x').searchParams.get('mode');
+          const chunks: Buffer[] = [];
+          let size = 0;
+          req.on('data', (chunk: Buffer) => {
+            size += chunk.length;
+            if (size <= MAX_PACKAGE_BYTES + 1024) chunks.push(chunk);
+          });
+          req.on('end', () => {
+            try {
+              if (size > MAX_PACKAGE_BYTES + 1024) throw new Error('The file is too large for a Space (limit 5 MB).');
+              const space = parseSpacePackage(Buffer.concat(chunks).toString('utf8'));
+              mkdirSync(SPACES, { recursive: true });
+              const existing = readdirSync(SPACES, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+              const taken = existing.includes(space.slug);
+              if (taken && mode !== 'new' && mode !== 'replace') return json(409, { exists: true, slug: space.slug, title: space.title });
+              const slug = taken && mode === 'new' ? uniqueSlug(space.slug, existing) : space.slug;
+              const dir = join(SPACES, slug);
+              mkdirSync(dir, { recursive: true });
+              writeFileSync(join(dir, 'index.html'), space.files['index.html']);
+              if (space.files['space.json']) writeFileSync(join(dir, 'space.json'), space.files['space.json']);
+              else if (existsSync(join(dir, 'space.json')) === false) writeFileSync(join(dir, 'space.json'), JSON.stringify({ title: space.title }, null, 2));
+              return json(200, { slug, title: space.title, replaced: taken && mode === 'replace' });
+            } catch (error) {
+              return json(400, { error: error instanceof Error ? error.message : 'import failed' });
+            }
+          });
+          return;
+        }
+        next();
+      });
+
       server.middlewares.use('/__spaces', (req, res, next) => {
         // Mounted path is stripped: "/" lists, "/<slug>/index.html" serves one.
         const match = /^\/([A-Za-z0-9._-]+)\/index\.html/.exec(req.url ?? '/');

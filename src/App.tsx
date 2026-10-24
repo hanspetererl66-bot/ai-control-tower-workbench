@@ -30,6 +30,7 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
+import { importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
@@ -687,6 +688,25 @@ export default function App() {
     return true;
   }
 
+  /** Install a Space file somebody sent: ask before replacing one with the same name. */
+  async function importSpace(file: File) {
+    const say = (message: string) => { setToast(message); setTimeout(() => setToast(null), 6000); };
+    try {
+      let result = await importSpaceFile(file);
+      if ('exists' in result) {
+        const replace = window.confirm(`A Space "${result.title}" already exists.\nOK = replace it, Cancel = import as a copy.`);
+        result = await importSpaceFile(file, replace ? 'replace' : 'new');
+      }
+      if ('exists' in result) return;
+      const next = await refreshSpaces();
+      void next;
+      setSelectedSpace(result.slug);
+      say(`Imported Space "${result.title}".`);
+    } catch (e: any) {
+      say(e?.message ?? 'The Space could not be imported.');
+    }
+  }
+
   /** "Save as Space": the agent turns one answer into a Space. */
   function saveAnswerAsSpace(index: number) {
     const answer = messages[index];
@@ -865,6 +885,7 @@ export default function App() {
           onAddDomain={(name) => updatePrefs((c) => addDomain(c, name))}
           onRenameDomain={(from, to) => updatePrefs((c) => renameDomain(c, spaces, from, to))}
           onDeleteDomain={(name) => updatePrefs((c) => deleteDomain(c, name))}
+          onImportSpace={(file) => void importSpace(file)}
         />
       )}
       {view === 'manage' && (
