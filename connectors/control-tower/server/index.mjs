@@ -21,7 +21,7 @@ import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.15.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.16.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));

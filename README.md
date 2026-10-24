@@ -421,9 +421,9 @@ In the **Conversations** list the magnifier opens a search field (titles and mes
 
 Importable workflows in `examples/n8n-workflows/`, fictional data only, no credentials, nothing is sent:
 
-- `01-simple-contract-notice-check.json`: manual trigger, sample contracts, notice deadline per contract, IF “due within 30 days?” → alert or no action. Good for explaining the basic building blocks.
-- `02-complex-communication-digest.json`: manual or weekday-morning trigger, a Switch that splits mails and call action items, a **guardrail** that quarantines mail text containing instructions aimed at AI assistants (the same case as in the E-Mail-Communication Space), intent and 48-hour response target, overdue check, three Merge nodes and one digest per customer that ends in “create a draft, never send”. 20 nodes, two branches, IF, Switch, Merge, Code.
-- `03-sales-pipeline-digest.json`: six fictional interest signals, a **guardrail** that quarantines text containing instructions aimed at AI assistants, a transparent score (ICP fit, budget, decision maker, need, timing), a Switch that routes to opportunity, nurture or watch, three Merge nodes and a digest that ends in “draft, never send”. 15 nodes, no credentials.
+- `01-simple-contract-notice-check.json`: notice deadlines (contract end minus notice period) and days left, IF “within the window?” → alert or ok, a report sorted by urgency. Manual start (five sample contracts) or **POST to `/webhook/contract-notice-check`** with `{"withinDays":60,"asOf":"2026-10-24","contracts":[{"id","product","end","noticeDays"}]}`; the contracts from `list_contracts` fit as they are. Chat tool: `run_contract_notice_check` (“Which notice deadlines are due in the next 60 days?”). Also good for explaining the basic building blocks.
+- `02-complex-communication-digest.json`: manual, weekday-morning or **webhook `/webhook/communication-digest`** (`{customer, mails, actions, ownDomains, asOf}`; without mails and actions the fictional sample is used; chat tool `run_communication_digest`: “Check the mails and open actions of customer X”), a Switch that splits mails and call action items, a **guardrail** that quarantines mail text containing instructions aimed at AI assistants (the same case as in the E-Mail-Communication Space), intent and 48-hour response target, overdue check, three Merge nodes and one digest per customer that ends in “create a draft, never send”. 20 nodes, two branches, IF, Switch, Merge, Code.
+- `03-sales-pipeline-digest.json`: six fictional interest signals or your own through **webhook `/webhook/sales-pipeline-digest`** (`{signals:[{id, account, source, industry, region, employees, budget, decisionMaker, need, timing, text}], asOf}`; chat tool `run_sales_pipeline_digest`: “Score these five contacts from the event”; unknown facts score 0), a **guardrail** that quarantines text containing instructions aimed at AI assistants, a transparent score (ICP fit, budget, decision maker, need, timing), a Switch that routes to opportunity, nurture or watch, three Merge nodes and a digest that ends in “draft, never send”. 15 nodes, no credentials.
 
 - `04-it-operations-alert-triage.json`: for the IT operations topic. Start with **Execute workflow** (seven fictional monitoring alerts) or by **POST to `/webhook/it-ops-triage`** with `{"alerts":[{"id","service","severity","impact","customerFacing","repeat24h","text"}]}` (activate the workflow first and use the production URL). A **guardrail** quarantines alert text aimed at AI assistants, a transparent priority (severity, business impact, customer facing, repeats) routes to P1 page on-call, P2 ticket or P3 watch, and the digest ends in “draft, never execute”. 17 nodes, no credentials.
 
@@ -435,14 +435,14 @@ Importable workflows in `examples/n8n-workflows/`, fictional data only, no crede
 
 | File | Name in n8n | Trigger | Webhook path | Used by |
 | --- | --- | --- | --- | --- |
-| `01-simple-contract-notice-check.json` | Demo 1 (simple) | Manual | none | Teaching example |
-| `02-complex-communication-digest.json` | Demo 2 (complex) | Manual, weekdays 07:30 | none | Teaching example (guardrail, Switch) |
-| `03-sales-pipeline-digest.json` | Demo 3 (sales) | Manual | none | Sales Space story |
+| `01-simple-contract-notice-check.json` | Demo 1 (simple) | Manual, webhook | `/webhook/contract-notice-check` | Renewals story, tool `run_contract_notice_check` |
+| `02-complex-communication-digest.json` | Demo 2 (complex) | Manual, weekdays 07:30, webhook | `/webhook/communication-digest` | E-Mail-Communication story, tool `run_communication_digest` |
+| `03-sales-pipeline-digest.json` | Demo 3 (sales) | Manual, webhook | `/webhook/sales-pipeline-digest` | Sales Space story, tool `run_sales_pipeline_digest` |
 | `04-it-operations-alert-triage.json` | Demo 4 (IT operations) | Manual, webhook | `/webhook/it-ops-triage` | IT Operations Space, tool `run_it_ops_triage` |
 | `05-vm-maintenance-plan.json` | Demo 5 (IT infrastructure) | Manual, webhook | `/webhook/vm-maintenance-plan` | IT Infrastructure Space, tool `run_vm_maintenance_plan` |
 | `06-vm-operator-runbook.json` | Demo 6 (IT infrastructure) | Manual, webhook | `/webhook/vm-operator-runbook` | IT Infrastructure Space (operator ticket), tool `run_vm_operator_runbook` |
 
-Only 04, 05 and 06 are called by the app (set `N8N_URL` in the connector settings and **activate** these three); 01 to 03 are for showing and explaining. For a test without activating, use mode `test` and click **Execute workflow** first.
+All six can be started from the chat (set `N8N_URL` in the connector settings and **activate** the workflows you want to call; a workflow with only the manual trigger cannot be activated, which is why 01 to 03 now have a webhook). For a test without activating, use mode `test` and click **Execute workflow** first.
 
 Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workflow**. The workflows stay inactive; the Code nodes use a fixed reference date (19 Oct 2026) so the result is the same every day. `test/n8n-demo-workflows.test.mjs` checks the structure and runs the Code nodes.
 
