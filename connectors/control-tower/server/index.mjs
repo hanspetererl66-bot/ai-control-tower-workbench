@@ -14,6 +14,7 @@ import { SKILL_PROFILE_TOOL_DEFINITIONS, createSkillProfileHandlers } from './sk
 import { SKILL_RATING_TOOL_DEFINITIONS, createSkillRatingHandlers } from './skill-ratings.mjs';
 import { PREFERENCE_TOOL_DEFINITIONS, createPreferenceHandlers } from './preferences.mjs';
 import { SAP_HELP_TOOL_DEFINITIONS, createSapHelpHandlers } from './sap-help.mjs';
+import { WEB_SOURCE_TOOL_DEFINITIONS, createWebSourceHandlers } from './web-sources.mjs';
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
 import { WHAT_IF_TOOL_DEFINITIONS, createWhatIfHandlers } from './what-if.mjs';
 import { CROSS_SPACE_TOOL_DEFINITIONS, createCrossSpaceHandlers } from './cross-space.mjs';
@@ -21,7 +22,7 @@ import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
 
-const SERVER_INFO = { name: 'ai-control-tower', version: '0.16.0' };
+const SERVER_INFO = { name: 'ai-control-tower', version: '0.17.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
@@ -107,6 +108,7 @@ const fail = (id, code, message) => send({ id, error: { code, message } });
 
 const n8nHandlers = createN8nHandlers();
 const sapHelpHandlers = createSapHelpHandlers();
+const webSourceHandlers = createWebSourceHandlers();
 
 async function handle(message) {
   const { id, method, params } = message;
@@ -134,13 +136,13 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
         const rpcCall = ticketRpc();
         const sub4meHandlers = createSub4MeHandlers(undefined, rpcCall);
-        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...sub4meHandlers, ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createWhatIfHandlers({ loadTower: loadData, ToolError }), ...createCrossSpaceHandlers({ sub4me: sub4meHandlers, loadTower: loadData, rpc: rpcCall }), ...n8nHandlers, ...sapHelpHandlers, ...createPreferenceHandlers(rpcCall) };
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...sub4meHandlers, ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createWhatIfHandlers({ loadTower: loadData, ToolError }), ...createCrossSpaceHandlers({ sub4me: sub4meHandlers, loadTower: loadData, rpc: rpcCall }), ...n8nHandlers, ...sapHelpHandlers, ...webSourceHandlers, ...createPreferenceHandlers(rpcCall) };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');

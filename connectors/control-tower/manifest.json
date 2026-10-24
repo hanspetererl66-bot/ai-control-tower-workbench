@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -237,6 +237,18 @@
     {
       "name": "search_sap_community",
       "description": "Search SAP Community (community.sap.com, no login) for questions, answers and blogs. Read only."
+    },
+    {
+      "name": "list_web_sources",
+      "description": "List the approved web sources: all public SAP sites, Handelsblatt and FAZ."
+    },
+    {
+      "name": "fetch_web_page",
+      "description": "Read one public page of an approved source (SAP sites, Handelsblatt, FAZ). No login or paywall bypass. Read only."
+    },
+    {
+      "name": "search_web_sources",
+      "description": "Search an approved source with its own site search (best effort). Read only."
     },
     {
       "name": "get_preferences",

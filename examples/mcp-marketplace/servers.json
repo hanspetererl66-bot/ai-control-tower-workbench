@@ -201,7 +201,7 @@
       "source": "connectors/control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "summary": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.",
       "install": [
         {
@@ -525,6 +525,24 @@
         },
         {
           "name": "search_sap_community",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_web_sources",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "fetch_web_page",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "search_web_sources",
           "class": "read",
           "what": "",
           "default": "on"
