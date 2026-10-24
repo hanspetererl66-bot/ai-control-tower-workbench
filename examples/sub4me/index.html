@@ -45,6 +45,13 @@ button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;pad
 .enrich-btn{border:1px solid var(--purple-border);background:transparent;color:var(--purple);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .enrich-btn:hover{background:var(--purple-dim)}
 .enrich-btn:disabled{opacity:.5;cursor:default}
+.tk-meta{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+tr.mh td{padding:0;background:var(--surface-2,var(--line-2));border-bottom:1px solid var(--line)}
+tr.mh button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;padding:12px 14px;cursor:pointer;text-align:left}
+tr.mh button:hover{background:var(--purple-dim)}
+tr.mh .chev{display:inline-block;transition:transform .15s;color:var(--muted)}tr.mh button[aria-expanded=true] .chev{transform:rotate(90deg)}
+tr.mh .ms{margin-left:auto;display:flex;gap:18px;font-weight:500;color:var(--ink-2)}tr.mh .ms b{color:var(--ink)}
+.inv-tools{display:flex;gap:8px;margin-left:auto}
 #enrich ul{margin:6px 0 10px;padding-left:18px}
 #enrich li{margin:3px 0}
 #enrich .k{margin-bottom:4px}
@@ -285,7 +292,7 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
 </nav>
 <main>
   <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div><h2>Customer</h2><div class="card" id="profile"></div></section>
-  <section class="pg" id="pg-invoices"><div class="grid" id="inv-kpis"></div><div class="filters"><label class="s" for="inv-status" style="display:inline">Status</label><select id="inv-status"><option value="">All</option><option>Open</option><option>Overdue</option><option>Paid</option><option>Settled</option></select></div><div class="card tbl" id="invoices"></div></section>
+  <section class="pg" id="pg-invoices"><div class="grid" id="inv-kpis"></div><div class="filters"><label class="s" for="inv-status" style="display:inline">Status</label><select id="inv-status"><option value="">All</option><option>Open</option><option>Overdue</option><option>Paid</option><option>Settled</option></select><span class="inv-tools"><button class="enrich-btn" type="button" id="inv-expand">Expand all</button><button class="enrich-btn" type="button" id="inv-collapse">Collapse all</button></span></div><div class="card tbl" id="invoices"></div></section>
   <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><div class="card detail" id="contract-detail" aria-live="polite"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div><div class="card detail" id="offer-detail" aria-live="polite"></div></section>
   <section class="pg" id="pg-usage">
     <div class="grid" id="usage-kpis"></div>
@@ -301,6 +308,8 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
         <form id="ticket-form" onsubmit="return false">
           <label>Product<select name="product" id="f-product"></select></label>
           <label>Priority<select name="priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Very high</option></select></label>
+          <label>Type<select name="kind"><option>Incident</option><option>Question</option><option>Change request</option></select></label>
+          <label>Who is affected<select name="impact"><option>Only me</option><option selected>My team</option><option>Whole company</option></select></label>
           <label>Title<input name="title" required maxlength="120" placeholder="Short summary of the issue"></label>
           <label>Description<textarea name="desc" rows="4" maxlength="2000" placeholder="What happened, since when, impact"></textarea></label>
           <button class="primary" type="button" id="create-ticket">Check, then send ticket</button>
@@ -2659,11 +2668,23 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
   $('products').addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectProduct(e.target.closest('tr')); } });
   var prio = {'Very high': 'bad', 'High': 'warn', 'Medium': 'n', 'Low': 'n'};
   var stat = {'Closed': 'ok', 'Solution provided': 'ok', 'Waiting for customer': 'warn', 'In processing': 'n', 'New': 'n'};
+  var RESP = {'Very high': '4 hours', 'High': '1 working day', 'Medium': '3 working days', 'Low': '5 working days'};
+  function age(t){
+    var d = Math.max(0, Math.round((new Date(D.asOf + 'T00:00:00Z') - new Date(t.created + 'T00:00:00Z')) / 864e5));
+    var closed = t.status === 'Closed' || t.status === 'Solution provided';
+    return '<span style="white-space:nowrap"><b>' + (closed ? 'closed after ' : 'open ') + d + (d === 1 ? ' day' : ' days') + '</b></span><div class="s">response target ' + esc(RESP[t.priority] || '3 working days') + '</div>';
+  }
+  function meta(t){
+    var h = '';
+    if (t.kind) h += tag('n', t.kind);
+    if (t.impact) h += tag('n', 'affects: ' + t.impact.toLowerCase());
+    return h ? '<div class="tk-meta">' + h + '</div>' : '';
+  }
   function renderTickets(){
-    $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>' +
+    $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Age / response target</th><th></th></tr></thead><tbody>' +
       D.tickets.map(function(t){
         var note = t.followsId ? '<div class="s">' + tag('n', 'following ' + esc(t.followsId)) + ' same issue as another customer, no new ticket</div>' : t.relatedTo ? '<div class="s">' + tag('n', 'linked to ' + esc(t.relatedTo)) + '</div>' : '';
-        return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div>' + note + '</td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + esc(t.updated) + '</td><td><button class="enrich-btn" type="button" data-enrich="' + esc(t.id) + '">Analyse with Control Tower</button></td></tr>';
+        return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div>' + meta(t) + note + '</td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + age(t) + '<div class="s">updated ' + esc(t.updated) + '</div></td><td><button class="enrich-btn" type="button" data-enrich="' + esc(t.id) + '" title="Show the context of this ticket">Details</button></td></tr>';
       }).join('') + '</tbody></table>';
   }
   function renderInvoices(){
@@ -2675,11 +2696,29 @@ button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s)
       kpi('Open amount', eur(sum(open.map(function(i){ return i.grossEur; }))), open.length + ' invoices, gross') +
       kpi('Overdue', D.invoices.filter(function(i){ return i.status === 'Overdue'; }).length, 'past the due date') +
       kpi('Credit notes', D.invoices.filter(function(i){ return i.grossEur < 0; }).length, eur(sum(D.invoices.filter(function(i){ return i.grossEur < 0; }).map(function(i){ return i.grossEur; }))));
-    $('invoices').innerHTML = '<table><thead><tr><th>Document</th><th>Contract</th><th>Period</th><th>Issued</th><th>Due</th><th class="num">Net</th><th class="num">Gross</th><th>Status</th></tr></thead><tbody>' +
-      list.map(function(i){
-        return '<tr><td><b>' + esc(i.id) + '</b><div class="s">' + esc(i.type) + (i.poNumber ? ' · ' + esc(i.poNumber) : '') + '</div></td><td>' + esc(i.contractId) + '<div class="s">' + esc(i.description) + '</div></td><td>' + esc(i.period) + '</td><td>' + esc(i.issued) + '</td><td>' + esc(i.due) + '</td><td class="num">' + eur(i.netEur) + '</td><td class="num">' + eur(i.grossEur) + '</td><td>' + tag(cls[i.status] || 'n', i.status) + (i.paidOn ? '<div class="s">paid ' + esc(i.paidOn) + '</div>' : '') + '</td></tr>';
-      }).join('') + (list.length ? '' : '<tr><td colspan="8" class="s">No invoices.</td></tr>') + '</tbody></table>';
+    var MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var groups = {};
+    list.forEach(function(i){ var k = String(i.issued).slice(0, 7); (groups[k] = groups[k] || []).push(i); });
+    var keys = Object.keys(groups).sort().reverse();
+    var row = function(i){
+      return '<tr><td><b>' + esc(i.id) + '</b><div class="s">' + esc(i.type) + (i.poNumber ? ' · ' + esc(i.poNumber) : '') + '</div></td><td>' + esc(i.contractId) + '<div class="s">' + esc(i.description) + '</div></td><td>' + esc(i.period) + '</td><td>' + esc(i.issued) + '</td><td>' + esc(i.due) + '</td><td class="num">' + eur(i.netEur) + '</td><td class="num">' + eur(i.grossEur) + '</td><td>' + tag(cls[i.status] || 'n', i.status) + (i.paidOn ? '<div class="s">paid ' + esc(i.paidOn) + '</div>' : '') + '</td></tr>';
+    };
+    var body = keys.map(function(k){
+      var g = groups[k], isOpen = !!invOpen[k], label = MON[Number(k.slice(5, 7)) - 1] + ' ' + k.slice(0, 4);
+      var late = g.filter(function(i){ return i.status === 'Overdue'; }).length;
+      return '<tr class="mh"><td colspan="8"><button type="button" data-month="' + k + '" aria-expanded="' + isOpen + '"><span class="chev" aria-hidden="true">&#9656;</span><span>' + label + '</span><span class="ms"><span>' + g.length + (g.length === 1 ? ' invoice' : ' invoices') + '</span>' + (late ? '<span>' + tag('bad', late + ' overdue') + '</span>' : '') + '<span>net <b>' + eur(sum(g.map(function(i){ return i.netEur; }))) + '</b></span><span>gross <b>' + eur(sum(g.map(function(i){ return i.grossEur; }))) + '</b></span></span></button></td></tr>' + (isOpen ? g.map(row).join('') : '');
+    }).join('');
+    $('invoices').innerHTML = '<table><thead><tr><th>Document</th><th>Contract</th><th>Period</th><th>Issued</th><th>Due</th><th class="num">Net</th><th class="num">Gross</th><th>Status</th></tr></thead><tbody>' + body + (list.length ? '' : '<tr><td colspan="8" class="s">No invoices.</td></tr>') + '</tbody></table>';
+    $('invoices').dataset.keys = keys.join(',');
   }
+  var invOpen = {};
+  $('invoices').addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('[data-month]') : null; if (!b) return;
+    var k = b.getAttribute('data-month'); invOpen[k] = !invOpen[k]; renderInvoices();
+    var nb = $('invoices').querySelector('[data-month="' + k + '"]'); if (nb) nb.focus();
+  });
+  $('inv-expand').addEventListener('click', function(){ ($('invoices').dataset.keys || '').split(',').forEach(function(k){ if (k) invOpen[k] = true; }); renderInvoices(); });
+  $('inv-collapse').addEventListener('click', function(){ invOpen = {}; renderInvoices(); });
   $('inv-status').addEventListener('change', renderInvoices);
 
   // ---- Ticket pre-check: solution note and same issue at another customer (same matching as the connector)
@@ -2812,13 +2851,13 @@ function similarity(a, b) {
       var fol = {id: 'F-' + target.id, title: 'Same issue as ' + target.id + ' (' + target.title + ')', product: target.product, priority: cand.priority, status: target.status, created: D.asOf, updated: D.asOf, followsId: target.id};
       if (!remote){ pushLocal(fol); toast('You now follow ' + target.id + '. No new ticket was opened (demo: this page only).'); finish(); f.reset(); return; }
     } else if (!remote){
-      pushLocal({id: 'TKT-L' + (seq++), title: cand.title, product: cand.product, priority: cand.priority, status: 'New', created: D.asOf, updated: D.asOf, relatedTo: mode === 'related' ? target.id : undefined});
+      pushLocal({id: 'TKT-L' + (seq++), title: cand.title, product: cand.product, priority: cand.priority, status: 'New', created: D.asOf, updated: D.asOf, kind: cand.kind, impact: cand.impact, relatedTo: mode === 'related' ? target.id : undefined});
       toast('Ticket created' + (mode === 'related' ? ' and linked to ' + target.id : '') + ' (demo: it exists only on this page).'); finish(); f.reset(); return;
     }
     var id = 'r' + (++reqCount) + '-' + Date.now();
     pending[id] = {cand: cand, mode: mode, target: target};
     toast('Saving...');
-    askParent({type: 's4m:create-ticket', requestId: id, customer: D.customer.id, title: cand.title, product: cand.product, priority: cand.priority, description: cand.description, mode: mode, targetId: target ? target.id : undefined});
+    askParent({type: 's4m:create-ticket', requestId: id, customer: D.customer.id, title: cand.title, product: cand.product, priority: cand.priority, description: ('[' + cand.kind + ' · affects: ' + cand.impact.toLowerCase() + '] ' + (cand.description || '')).slice(0, 2000), mode: mode, targetId: target ? target.id : undefined});
     finish(); f.reset();
     setTimeout(function(){ if (pending[id]){ delete pending[id]; toast('No answer from the database; ticket was not saved.', true); } }, 20000);
   }
@@ -2827,7 +2866,7 @@ function similarity(a, b) {
     var f = $('ticket-form');
     var title = f.title.value.trim();
     if (!title) return;
-    var cand = {title: title, product: f.product.value, priority: f.priority.value, description: f.desc.value};
+    var cand = {title: title, product: f.product.value, priority: f.priority.value, kind: f.kind.value, impact: f.impact.value, description: f.desc.value};
     var local = precheck(cand);
     local.mode = 'sample'; local.help = null; local.community = null;
     if (window.parent === window){ renderPre(cand, local); return; }

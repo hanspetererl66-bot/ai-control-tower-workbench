@@ -2,6 +2,7 @@
   "title": "Call Transcripts",
   "description": "Mockup: what call transcripts could look like once evaluated: summary, decisions, action items with owner and due date, risks, mood and a pointer to the passage in the transcript.",
   "domain": "Sales",
+  "parent": "sales",
   "insights": [
     "Design mockup with fictional customers and calls; no call platform is connected and nothing is recorded or stored.",
     "Every decision, risk and action links to the passage it came from, and action items from all calls collect in one list.",

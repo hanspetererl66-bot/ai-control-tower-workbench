@@ -2,6 +2,7 @@
   "title": "Agent Activity",
   "description": "Live-Netz der produktiven Agenten: Modelle, Agenten-Familien und Business-Systeme, mit einem Puls je (simuliertem) Aufruf, Kosten in Euro, geschätzten Tokens und einer Erklärung pro Knoten.",
   "domain": "Governance",
+  "parent": "ai-control-tower",
   "insights": [
     "Die Aufrufe sind aus runsPerDay der Control-Tower-Registry simuliert, keine Live-Messung; die Links zu den Business-Systemen sind illustrativ.",
     "Rote Ringe markieren Familien mit überprivilegierten Agenten, gelbe Ringe High-Risk-Agenten nach EU AI Act.",

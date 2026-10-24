@@ -111,3 +111,14 @@ test('page: chat prompts in English, nothing is sent, no network, no live system
   assert.equal((page.match(/\{ t: '/g) || []).length, 6);
   for (const m of page.matchAll(/send\(`([^`]{0,700})/g)) assert.ok(m[1].length > 40);
 });
+
+test('page: red alerts open a dialog, P&L and company codes need no horizontal scroll, bridge and calendar are graphic', () => {
+  const html = readFileSync(new URL('../examples/finance-preclose/index.html', import.meta.url), 'utf8');
+  assert.match(html, /id="modal"[^>]*hidden/);
+  assert.match(html, /data-open-alerts/);
+  assert.match(html, /function openAlerts\(/);
+  assert.match(html, /<table class="fit pl">/);
+  assert.doesNotMatch(html, /<div style="overflow:auto"><table class="fit/);
+  for (const c of ['wf budget', 'wf forecast', 'conn', 'g-track', 'agebar']) assert.ok(html.includes(c.split(' ').pop()), c);
+  assert.match(html, /Group" is the simple sum/);
+});

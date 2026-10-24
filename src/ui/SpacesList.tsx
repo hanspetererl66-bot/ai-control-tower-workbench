@@ -17,6 +17,10 @@ type Props = {
   domains?: string[];
   domainOf?: (slug: string) => string;
   onAssign?: (slug: string, domain: string) => void;
+  /** Subspaces: `parentOf` gives the parent slug ('' for top level), `parentCandidates` the Spaces it could be moved under. */
+  parentOf?: (slug: string) => string;
+  parentCandidates?: (slug: string) => string[];
+  onSetParent?: (slug: string, parent: string) => void;
   onAddDomain?: (name: string) => void;
   onRenameDomain?: (from: string, to: string) => void;
   onDeleteDomain?: (name: string) => void;
@@ -34,7 +38,7 @@ function loadCollapsed(): string[] {
 
 type DropMark = { slug: string; after: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, onAddDomain, onRenameDomain, onDeleteDomain }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain }: Props) {
   const grouped = Boolean(domains && domainOf);
   const [collapsed, setCollapsed] = useState<string[]>(loadCollapsed);
   const [adding, setAdding] = useState(false);
@@ -90,11 +94,19 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     }
   }
 
-  const renderCard = (s: Space) => (
+  const isSub = (slug: string) => Boolean(parentOf && parentOf(slug));
+  const subsOf = (slug: string) => (parentOf ? spaces.filter((x) => parentOf(x.slug) === slug) : []);
+  const subKey = (slug: string) => `space:${slug}`;
+  const renderTree = (items: Space[]) => items.filter((x) => !isSub(x.slug)).flatMap((x) => {
+    const subs = items.filter((y) => parentOf?.(y.slug) === x.slug);
+    return [renderCard(x, subs.length), ...(subs.length && !collapsed.includes(subKey(x.slug)) ? subs.map((y) => renderCard(y, 0)) : [])];
+  });
+  const renderCard = (s: Space, subCount = 0) => (
 <Fragment key={s.slug}>
           <button
             className={[
               'card',
+              isSub(s.slug) ? 'card-sub' : '',
               selected === s.slug ? 'card-on' : '',
               dragging === s.slug ? 'card-dragging' : '',
               mark?.slug === s.slug && dragging !== s.slug ? (mark.after ? 'card-drop-after' : 'card-drop-before') : '',
@@ -115,7 +127,21 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             <span className="card-head">
               <span className="card-icon"><SpaceIcon /></span>
               <span className="card-title-wrap">
-                <span className="card-title">{s.title}</span>
+                <span className="card-title">
+                  {subCount > 0 && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="sub-toggle"
+                      aria-expanded={!collapsed.includes(subKey(s.slug))}
+                      aria-label={`${collapsed.includes(subKey(s.slug)) ? 'Show' : 'Hide'} the ${subCount} subspaces of ${s.title}`}
+                      onClick={(event) => { event.stopPropagation(); toggleCollapsed(subKey(s.slug)); }}
+                      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); toggleCollapsed(subKey(s.slug)); } }}
+                    >{collapsed.includes(subKey(s.slug)) ? '▸' : '▾'}</span>
+                  )}
+                  {s.title}
+                  {subCount > 0 && <span className="sub-count" title={`${subCount} subspaces`}>{subCount}</span>}
+                </span>
                 <span className="card-meta">Updated {relativeTime(s.updatedAt)}</span>
               </span>
               {onTogglePin ? (
@@ -135,6 +161,26 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             </span>
             {s.description && <span className="card-desc">{s.description}</span>}
           </button>
+          {grouped && onSetParent && selected === s.slug && (() => {
+            const options = parentCandidates?.(s.slug) ?? [];
+            const current = parentOf?.(s.slug) ?? '';
+            const has = subsOf(s.slug).length > 0;
+            return (
+              <label className="domain-move">
+                <span>Subspace of</span>
+                <select
+                  value={current}
+                  disabled={has || (!options.length && !current)}
+                  onChange={(event) => onSetParent(s.slug, event.target.value)}
+                  aria-label={`Parent Space of ${s.title}`}
+                  title={has ? 'This Space has subspaces itself, so it stays on top level' : options.length || current ? 'Mark this Space as a subspace of another Space in the same domain' : 'No other top-level Space in this domain'}
+                >
+                  <option value="">None (top level)</option>
+                  {[...new Set([...(current ? [current] : []), ...options])].map((slug) => <option key={slug} value={slug}>{spaces.find((x) => x.slug === slug)?.title ?? slug}</option>)}
+                </select>
+              </label>
+            );
+          })()}
           {grouped && onAssign && selected === s.slug && (
             <label className="domain-move">
               <span>Domain</span>
@@ -203,7 +249,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                       </span>
                     )}
                   </div>
-                  {!isCollapsed && (items.length ? items.map(renderCard) : <div className="domain-empty">Drag a Space here</div>)}
+                  {!isCollapsed && (items.length ? renderTree(items) : <div className="domain-empty">Drag a Space here</div>)}
                 </section>
               );
             })}

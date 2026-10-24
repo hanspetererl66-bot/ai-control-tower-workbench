@@ -5,6 +5,8 @@ export type Space = {
   insights: string[];
   /** Optional group named in space.json; the person can override it. */
   domain?: string;
+  /** Optional slug of the Space this one belongs to (a subspace); the person can override it. */
+  parent?: string;
   cardCount: number;
   updatedAt: number;
 };
