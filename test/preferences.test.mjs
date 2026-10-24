@@ -132,3 +132,24 @@ test('back to the original: look only, or everything but profiles and sync key',
   assert.equal(all.sync.key, 'work');
   assert.equal(isOriginal(DEFAULT_PREFERENCES), true);
 });
+
+import { assignParent, childrenOf, effectiveDomain, parentCandidates, parentOf } from '../src/preferences.ts';
+
+test('subspaces: space.json parent, own override, one level, subspace follows the parent domain', () => {
+  const spaces = [{ slug: 'sales', domain: 'Sales' }, { slug: 'renewals', domain: 'Sales', parent: 'sales' }, { slug: 'calls', domain: 'Sales' }, { slug: 'fin', domain: 'Finance' }, { slug: 'orphan', domain: 'Sales', parent: 'missing' }];
+  const p = sanitizePreferences({});
+  assert.equal(parentOf(spaces[1], spaces, p), 'sales');
+  assert.equal(parentOf(spaces[4], spaces, p), '', 'unknown parent is ignored');
+  assert.deepEqual(childrenOf('sales', spaces, p), ['renewals']);
+  assert.deepEqual(parentCandidates(spaces[2], spaces, p), ['sales', 'orphan'], 'only top-level Spaces of the same domain');
+  assert.deepEqual(parentCandidates(spaces[0], spaces, p), [], 'a Space with subspaces stays on top level');
+  const a = assignParent(p, spaces[2], spaces, 'sales');
+  assert.equal(parentOf(spaces[2], spaces, a), 'sales');
+  assert.equal(assignParent(p, spaces[2], spaces, 'renewals'), p, 'a subspace cannot be a parent');
+  assert.equal(assignParent(p, spaces[2], spaces, 'fin'), p, 'other domain is refused');
+  const free = assignParent(a, spaces[1], spaces, '');
+  assert.equal(parentOf(spaces[1], spaces, free), '', 'own choice beats space.json');
+  assert.equal(assignParent(free, spaces[1], spaces, 'sales').spaceParents.renewals, undefined, 'back to the default stores nothing');
+  assert.equal(effectiveDomain(spaces[1], spaces, { spaceDomains: { sales: 'Revenue' }, spaceParents: {} }), 'Revenue');
+  assert.deepEqual(sanitizePreferences({ spaceParents: { a: 'b', c: 'c', 'Bad Slug': 'b', d: '' } }).spaceParents, { a: 'b', d: '' });
+});
