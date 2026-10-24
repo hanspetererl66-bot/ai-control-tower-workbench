@@ -1231,7 +1231,7 @@ const HILITE = /(notice date|deadline|price|cap|discount|bundle|board|CFO|approv
 const mark = (s) => esc(s).replace(HILITE, '<mark>$1</mark>');
 function mailTimeline(ms) {
   if (!ms.length) return '<p class="sub">No e-mail threads.</p>';
-  return `<ul class="mtl">${ms.map((m) => `<li class="${esc(m.mood)} ${m.status === 'waiting-us' ? 'wait' : ''}"><div class="mh"><b>${m.side === 'customer' ? '← Customer' : '→ We wrote'}</b><span>${esc(m.at.slice(0, 10))} · ${m.count} messages · ${esc(m.intent)}</span>${m.status === 'waiting-us' ? '<span class="mailchip us">waits ' + mailDays(m) + ' d for our reply</span>' : m.status === 'waiting-customer' ? '<span class="mailchip">waiting for customer</span>' : ''}</div><div><b>${esc(m.subject)}</b></div><div class="sn">${mark(m.snippet)}</div>${m.contractId ? `<div class="mh">${esc(m.contractId)}${m.offerId ? ' · ' + esc(m.offerId) : ''}</div>` : ''}</li>`).join('')}</ul>`;
+  return `<ul class="mtl">${ms.map((m) => `<li class="${esc(m.mood)} ${m.status === 'waiting-us' ? 'wait' : ''}"><div class="mh"><b>${m.side === 'customer' ? '← Customer' : '→ We wrote'}</b><span>${esc(m.at.slice(0, 10))} · ${m.count} messages · ${esc(m.intent)}</span>${m.status === 'waiting-us' ? '<span class="mailchip us">waits ' + mailDays(m) + ' d for our reply</span>' : m.status === 'waiting-customer' ? '<span class="mailchip">waiting for customer</span>' : ''}</div><div><b>${esc(m.subject)}</b></div>${m.snippet ? `<div class="sn">${mark(m.snippet)}</div>` : ""}${m.contractId ? `<div class="mh">${esc(m.contractId)}${m.offerId ? ' · ' + esc(m.offerId) : ''}</div>` : ''}</li>`).join('')}</ul>`;
 }
 function focusCustomer() {
   const sel = state.sel ? model.find((c) => c.id === state.sel) : null;

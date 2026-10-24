@@ -36,13 +36,14 @@ const HANSE_MAILS = [
   { id: 'H-202', subject: 'AW: Ariba renewal, price rise above the cap', status: 'waiting-customer', intent: 'Renewal', mood: 'negative', contractId: 'C-2025-0458', offerId: 'OFF-2026-0402', side: 'us', at: '2026-10-08T14:05:00+02:00', count: 4, snippet: 'We checked the contract: the uplift cap of 3 % applies. The revised quote with the capped price is attached, please confirm by 22 October.' },
   { id: 'H-203', subject: 'Integration Suite: extra connectors approved', status: 'answered', intent: 'Offer', mood: 'positive', contractId: 'C-2023-0215', offerId: null, side: 'customer', at: '2026-10-12T16:40:00+02:00', count: 2, snippet: 'Thank you, the two extra connectors are approved by our integration lead. Please go ahead with the order form.' },
 ];
-const snippetOf = (body) => body.split('\n').map((l) => l.trim()).filter((l) => l && !/^(hello|hi|dear|thanks|thank you|best|kind regards|regards)\b/i.test(l) && !l.startsWith('>') && l.length > 30)[0]?.slice(0, 190) ?? '';
+const snippetOf = (body) => { const ls = body.split('\n').map((l) => l.trim()).filter((l) => l && !/^(hello|hi|dear|thanks|thank you|best|kind regards|regards)\b/i.test(l) && !l.startsWith('>')); return (ls.find((l) => l.length > 30) ?? ls.sort((a, b) => b.length - a.length)[0] ?? '').slice(0, 190); };
+const cleanSnippet = (s) => (s.length < 12 ? '' : s);
 export function mailsFor(customerId, customerName) {
   if (customerId === 'hanse') return HANSE_MAILS;
   const { threads } = JSON.parse(read('examples/customer-emails/threads.json'));
   return threads.filter((th) => th.customer === customerName).map((th) => {
     const last = th.messages[th.messages.length - 1];
-    return { id: th.id, subject: th.subject, status: th.status, intent: th.intent, mood: th.mood, contractId: th.links.contract, offerId: th.links.offer, side: last.side, at: last.at, count: th.messages.length, snippet: snippetOf(last.body) };
+    return { id: th.id, subject: th.subject, status: th.status, intent: th.intent, mood: th.mood, contractId: th.links.contract, offerId: th.links.offer, side: last.side, at: last.at, count: th.messages.length, snippet: cleanSnippet(snippetOf(last.body)) };
   });
 }
 
