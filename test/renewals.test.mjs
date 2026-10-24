@@ -59,11 +59,11 @@ test('every case has at least one action and the actions follow the priority ord
 });
 
 test('page: radar, table, detail, seven demo steps, English chat prompts, no network', () => {
-  for (const id of ['kpis', 'guide', 'tl', 'rows', 'detail', 'customer', 'q', 'reset']) assert.match(page, new RegExp(`id="${id}"`));
+  for (const id of ['kpis', 'guide', 'tl', 'rows', 'detail', 'customer', 'q', 'reset', 'cust-cards', 'cust-panel']) assert.match(page, new RegExp(`id="${id}"`));
   assert.equal((page.match(/\{ t: '/g) || []).length, 7);
   assert.match(page, /customer-call-prep/);
   assert.match(page, /pricing-guard/);
-  assert.equal((page.match(/Please answer in English/g) || []).length, 4);
+  assert.equal((page.match(/Please answer in English/g) || []).length, 5);
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
 });
 
@@ -110,4 +110,19 @@ test('page: the switch exists, is off by default and nothing is really sent', ()
   assert.match(page, /auto: false/);
   assert.match(page, /\(simulated\)/);
   assert.ok(!/fetch\(|XMLHttpRequest/.test(page));
+});
+
+test('customer situation: escalation, payment, usage and growth are derived from the contracts', () => {
+  const sit = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; customerSituation`);
+  assert.deepEqual(data.customers.map((c) => c.id).sort(), ['hanse', 'muster']);
+  const muster = sit(data.customers.find((c) => c.id === 'muster'), data.cases), hanse = sit(data.customers.find((c) => c.id === 'hanse'), data.cases);
+  assert.equal(muster.primary.key, 'escalation');
+  assert.ok(muster.list.some((s) => s.key === 'payment') && muster.list.some((s) => s.key === 'usage'));
+  assert.equal(muster.byPrio['Very high'], 1);
+  assert.equal(hanse.primary.key, 'payment', 'no escalation: the overdue invoice comes first');
+  assert.ok(hanse.list.some((s) => s.key === 'growth'));
+  assert.equal(muster.overdue.length, 1);
+  assert.match(muster.talk, /escalation/);
+  const calm = sit({ id: 'x', escalation: null }, []);
+  assert.equal(calm.primary.key, 'stable');
 });

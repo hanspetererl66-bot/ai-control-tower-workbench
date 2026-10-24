@@ -542,5 +542,48 @@
         }
       ]
     }
+  ],
+  "customers": [
+    {
+      "id": "muster",
+      "owner": "Nina Kessler",
+      "escalation": {
+        "level": "Management",
+        "since": "2026-10-14",
+        "topic": "The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week.",
+        "owner": "Nina Kessler"
+      },
+      "topics": [
+        {
+          "kind": "people",
+          "text": "New head of procurement from 1 November: introduce the renewal plan early"
+        },
+        {
+          "kind": "commercial",
+          "text": "Asked for a comparison of Joule units and Document AI units"
+        }
+      ],
+      "annualEur": 4540000,
+      "since": 2014,
+      "name": "Muster Industrie AG"
+    },
+    {
+      "id": "hanse",
+      "owner": "Tom Ahlers",
+      "escalation": null,
+      "topics": [
+        {
+          "kind": "people",
+          "text": "New CFO since September, reviews all software spend"
+        },
+        {
+          "kind": "commercial",
+          "text": "Wants to bundle Commerce Cloud and Integration Suite into one contract"
+        }
+      ],
+      "annualEur": 2518550,
+      "since": 2019,
+      "name": "Hanse Handelsgruppe AG"
+    }
   ]
 }
