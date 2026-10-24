@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CSS = join(ROOT, 'examples/shared/design-system.css');
-export const SPACE_PAGES = ['examples/control-tower/index.html', 'examples/sub4me/index.html', 'examples/skill-marketplace/index.html', 'examples/automation-dashboard/index.html', 'examples/knowledge-graph/index.html', 'examples/call-transcripts/index.html', 'examples/customer-emails/index.html', 'examples/sales/index.html', 'examples/mcp-marketplace/index.html', 'examples/it-operations/index.html', 'examples/it-infrastructure/index.html', 'examples/renewals/index.html'];
+export const SPACE_PAGES = ['examples/control-tower/index.html', 'examples/sub4me/index.html', 'examples/skill-marketplace/index.html', 'examples/automation-dashboard/index.html', 'examples/knowledge-graph/index.html', 'examples/call-transcripts/index.html', 'examples/customer-emails/index.html', 'examples/sales/index.html', 'examples/mcp-marketplace/index.html', 'examples/it-operations/index.html', 'examples/it-infrastructure/index.html', 'examples/it-fleet/index.html'];
 const BLOCK = /<style id="design-system">[\s\S]*?<\/style>/;
 
 export function embedDesignSystem(html, css) {

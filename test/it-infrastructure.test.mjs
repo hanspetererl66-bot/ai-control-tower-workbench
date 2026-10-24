@@ -89,6 +89,8 @@ test('page: demo flow with seven steps, task board, operator tickets and plan bu
   assert.match(page, /create_ticket/);
   assert.match(page, /run_vm_operator_runbook/);
   assert.match(page, /id="mkticket"/);
+  assert.match(page, /id="q"/);
+  assert.match(page, /id="task-scope"/);
   assert.doesNotMatch(page, /answer in German/);
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
 });

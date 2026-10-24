@@ -272,6 +272,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
     <div class="card">
       <div class="head">
         <div style="flex:1 1 260px"><h2>25 virtual machines</h2><p class="sub" style="margin:0">Worst check wins: one red reason makes the VM red, otherwise one yellow reason makes it yellow.</p></div>
+        <input type="search" id="q" placeholder="Find a VM (name, role, site, system)" aria-label="Find a VM" style="font:inherit;font-size:12px;border:1px solid var(--line);border-radius:99px;padding:5px 12px;background:var(--surface);color:var(--ink);min-width:220px">
         <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
       </div>
       <div class="grid" id="grid"></div>
@@ -283,6 +284,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
     <div class="head"><div style="flex:1 1 320px"><h2>Maintenance tasks</h2><p class="sub" style="margin:0">Every yellow or red reason becomes a recommended task. Each task runs through the same flow: detect, propose, approve, run, verify. A person approves; here the run is only simulated.</p></div>
     <button class="primary" id="mkplan" type="button">Create the plan in n8n</button><button class="ghost" id="reset-demo" type="button">Reset demo</button></div>
     <table><thead><tr><th>VM</th><th>Task</th><th>Urgency</th><th>Window</th><th>Approver</th><th>Operator ticket</th><th>Flow</th></tr></thead><tbody id="task-rows"></tbody></table>
+    <p class="note" id="task-scope" role="status"></p>
     <p class="note" id="plan-note" role="status" aria-live="polite"></p>
   </div>
   <div class="tip" id="tip" role="tooltip" hidden></div>
@@ -919,7 +921,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' }, ICON = { green: '✓', yellow: '!', red: '✕' };
 const FLOW = ['Detected', 'Proposed', 'Approved', 'Run (simulated)', 'Verified'];
-const state = { filter: 'all', sel: null, done: {}, approved: {}, tickets: {}, proposed: false, step: -1 }; // done/approved keyed by "vm|task"
+const state = { filter: 'all', sel: null, done: {}, approved: {}, tickets: {}, proposed: false, step: -1, q: '' }; // done/approved keyed by "vm|task"
 let vms = [];
 const tip = $('#tip');
 const taskKey = (t) => `${t.vm}|${t.key}`;
@@ -949,8 +951,9 @@ function place(ev, el) {
   tip.style.top = Math.max(pad, Math.min(innerHeight - h - pad, y)) + 'px';
 }
 function showTip(ev, vm, el) { tip.className = 'tip ' + vm.status; tip.innerHTML = explain(vm); tip.hidden = false; place(ev, el); }
+const matches = (v) => (state.filter === 'all' || v.status === state.filter) && (!state.q || [v.name, v.role, v.site, v.os, v.env].join(' ').toLowerCase().includes(state.q.toLowerCase()));
 function renderGrid() {
-  $('#grid').innerHTML = vms.map((v) => `<button type="button" class="vm ${v.status}${state.filter !== 'all' && v.status !== state.filter ? ' dim' : ''}" data-id="${v.id}" aria-pressed="${state.sel === v.id}" aria-label="${esc(v.name)}: ${LABEL[v.status]}. ${esc(v.reasons.map((r) => r.text).join('; ') || 'All checks within limits')}">` +
+  $('#grid').innerHTML = vms.map((v) => `<button type="button" class="vm ${v.status}${matches(v) ? '' : ' dim'}" data-id="${v.id}" aria-pressed="${state.sel === v.id}" aria-label="${esc(v.name)}: ${LABEL[v.status]}. ${esc(v.reasons.map((r) => r.text).join('; ') || 'All checks within limits')}">` +
     `<span class="ic" aria-hidden="true">${ICON[v.status]}</span><div class="n">${esc(v.name)}</div><div class="r">${esc(v.role)}</div>` +
     (v.reachable ? `<div class="mini">${bar(v.cpuPct, 'cpuPct')}${bar(v.memPct, 'memPct')}${bar(v.diskPct, 'diskPct')}</div>` : '<div class="mini" style="color:var(--red);font-size:11px;display:block">no data</div>') + '</button>').join('');
   $('#grid').querySelectorAll('.vm').forEach((el) => {
@@ -1004,9 +1007,16 @@ function runbookPrompt(t) {
 function renderTasks() {
   const open = plan(DATA.vms.map((v) => vms.find((x) => x.id === v.id)), DATA.rules, DATA.tasks);
   const doneNow = Object.keys(state.done).map((k) => { const [vm, key] = k.split('|'); return { vm, key, ...DATA.tasks[key], urgency: 'done' }; });
-  const rows = [];
+  let rows = [];
   for (const p of open) for (const t of p.tasks) rows.push({ t, p });
   for (const t of doneNow) rows.push({ t, p: { window: '', bundle: false }, done: true });
+  // Only the tasks of the VMs that match the status filter and the search; urgent first, then planned, finished last.
+  const byName = Object.fromEntries(vms.map((v) => [v.name, v]));
+  rows = rows.filter((r) => byName[r.t.vm] && matches(byName[r.t.vm]));
+  const rank = (r) => (r.done ? 2 : r.t.urgency === 'urgent' ? 0 : 1);
+  rows.sort((a, b) => rank(a) - rank(b) || ({ red: 0, yellow: 1, green: 2 }[byName[a.t.vm].status] - { red: 0, yellow: 1, green: 2 }[byName[b.t.vm].status]) || a.t.vm.localeCompare(b.t.vm));
+  const sel = vms.filter(matches).length;
+  $('#task-scope').textContent = state.filter === 'all' && !state.q ? '' : `Tasks of the ${sel} selected VM${sel === 1 ? '' : 's'}${state.filter !== 'all' ? ' (' + LABEL[state.filter].toLowerCase() + ')' : ''}${state.q ? ' matching "' + state.q + '"' : ''}, urgent first, then planned.`;
   $('#task-rows').innerHTML = rows.map(({ t, p, done }) => {
     const k = taskKey(t), s = done ? 4 : stage(t);
     const action = done ? '' : s === 0 ? '<button class="small" data-act="propose" disabled title="Create the plan first">Propose</button>' : s === 1 ? `<button class="small" data-act="approve" data-k="${esc(k)}">Approve</button>` : `<button class="small" data-act="run" data-k="${esc(k)}">Run (simulated)</button>`;
@@ -1015,7 +1025,7 @@ function renderTasks() {
     return `<tr><td><b>${esc(t.vm)}</b>${p.bundle ? '<div class="why" style="color:var(--muted);font-size:11px">bundled with other tasks of this VM</div>' : ''}</td><td>${esc(t.title)}<ol class="steps">${t.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></td>` +
       `<td><span class="pill ${t.urgency}">${done ? 'done' : t.urgency}</span></td><td>${esc(p.window || '')}</td><td>${esc(t.approver)}</td>` +
       `<td>${ticketCell}</td><td><div class="flow">${FLOW.map((f, i) => (i === s ? `<b>${f}</b>` : f)).join(' › ')}</div>${action}</td></tr>`;
-  }).join('') || '<tr><td colspan="7">No open tasks. Every VM is green.</td></tr>';
+  }).join('') || `<tr><td colspan="7">${state.filter === 'all' && !state.q ? 'No open tasks. Every VM is green.' : 'No open tasks for this selection.'}</td></tr>`;
   $('#task-rows').querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
     if (b.dataset.act === 'approve') state.approved[b.dataset.k] = true;
     if (b.dataset.act === 'ticket') createTicket(b.dataset.vm);
@@ -1030,7 +1040,8 @@ $('#mkplan').onclick = () => {
   $('#plan-note').textContent = `Draft plan: ${p.reduce((a, x) => a + x.tasks.length, 0)} tasks on ${p.length} VMs, ${p.filter((x) => x.bundle).length} VMs bundled in one window. Proposal only: nothing runs until a person approves.`;
   send('Run the n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" with the tool run_vm_maintenance_plan (production mode, sample VMs, omit vms). Summarise the plan: urgent tasks first, which VMs need a maintenance window, which tasks are bundled and who must approve. Do not execute anything. Please answer in English.');
 };
-$('#reset-demo').onclick = () => { state.done = {}; state.approved = {}; state.tickets = {}; state.proposed = false; state.filter = 'all'; state.sel = null; state.step = -1; $('#plan-note').textContent = ''; recompute(); renderAll(); };
+$('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
+$('#reset-demo').onclick = () => { $('#q').value = ''; state.q = ''; state.done = {}; state.approved = {}; state.tickets = {}; state.proposed = false; state.filter = 'all'; state.sel = null; state.step = -1; $('#plan-note').textContent = ''; recompute(); renderAll(); };
 const STEPS = [
   { t: 'See the wall', x: 'Every VM is green, yellow or red. Red VMs need action now, yellow ones need a plan.', on: () => { state.filter = 'red'; } },
   { t: 'Why is it red?', x: 'Hover over joule-gw-01: the tooltip shows which checks made it red, with the measured value and the limit.', on: () => { state.filter = 'all'; state.sel = 'vm-06'; } },
@@ -1049,7 +1060,7 @@ function renderGuide() {
 }
 function go(i) {
   state.step = i;
-  state.done = {}; state.approved = {}; state.tickets = {}; state.proposed = false; state.filter = 'all'; state.sel = null; recompute();
+  state.done = {}; state.approved = {}; state.tickets = {}; state.proposed = false; state.filter = 'all'; state.q = ''; $('#q').value = ''; state.sel = null; recompute();
   for (let k = 0; k <= i; k++) STEPS[k].on();
   recompute(); renderAll();
 }
