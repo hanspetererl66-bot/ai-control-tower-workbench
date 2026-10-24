@@ -826,7 +826,7 @@ function simulateCreditCut(model, cutPct) {
   $('presets').addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button'); if (b) { cut = Number(b.getAttribute('data-cut')); render(); } });
   $('ask').addEventListener('click', function () {
     if (window.parent === window) return;
-    window.parent.postMessage({ type: 'wb:ask', prompt: 'Was passiert, wenn wir die AI-Credits um ' + cut + ' % kürzen? Nutze die Simulation im AI Control Tower und nenne Budget, betroffene Prozesse und Risiken.' }, '*');
+    window.parent.postMessage({ type: 'wb:ask', prompt: 'What happens if we cut the AI credits by ' + cut + ' %? Use the simulation in the AI Control Tower and name the budget, affected processes and risks. Please answer in English.' }, '*');
     $('ask').textContent = 'Frage an Joule gesendet';
     $('ask').disabled = true;
     setTimeout(function () { $('ask').textContent = 'Joule fragen'; $('ask').disabled = false; }, 4000);

@@ -1536,7 +1536,7 @@ aside .note{font-size:11px;color:var(--muted)}
       rows = [['Agenten', fmt(f.agents)], ['Aufrufe pro Tag', fmt(f.runsPerDay)], ['Kosten pro Woche', eur(f.costPerWeekEur) + ' (' + pct(f.costPerWeekEur, T.costPerWeekEur) + ' %)'], ['Tokens pro Woche (geschätzt)', tok(f.tokensPerWeek)], ['Kosten pro Aufruf', eur3(f.costPerWeekEur / 7 / f.runsPerDay)], ['Kosten pro Jahr (Hochrechnung)', eur(f.costPerWeekEur * T.weeksPerYear)]];
       text.push('Kosten: ' + eur(f.costPerWeekEur) + ' pro Woche, das sind ' + pct(f.costPerWeekEur, T.costPerWeekEur) + ' % aller Agentenkosten und rund ' + tok(f.tokensPerWeek) + ' Tokens (Annahme, siehe Hinweis unten).');
       rel = sys.concat(pls);
-      prompt = 'Erkläre mir die Agenten-Familie „' + f.name + '“ im AI Control Tower: Wofür wird sie genutzt, welche Risiken und Kosten hat sie, und was würdest du als Nächstes prüfen?';
+      prompt = 'Explain the agent family "' + f.name + '" in the AI Control Tower: what is it used for, what risks and costs does it have, and what would you check next? Please answer in English.';
     } else if (n.kind === 'platform') {
       var fams = D.families.filter(function (f) { return f.platforms[n.name]; });
       text.push(n.name + ' stellt die Modelle für ' + n.agents + ' Agenten in Produktion bereit, die zusammen rund ' + fmt(n.runs) + ' Aufrufe pro Tag ausführen (' + pct(n.runs, T.runsPerDay) + ' % aller Aufrufe).');
@@ -1545,7 +1545,7 @@ aside .note{font-size:11px;color:var(--muted)}
       tags.push(priv ? '<span class="tag r">' + priv + ' überprivilegierte Agenten</span>' : '<span class="tag n">keine überprivilegierten Agenten</span>');
       rows = [['Agenten', fmt(n.agents)], ['Aufrufe pro Tag', fmt(n.runs)], ['Kosten pro Woche', eur(n.cost) + ' (' + pct(n.cost, T.costPerWeekEur) + ' %)'], ['Tokens pro Woche (geschätzt)', tok(n.tokens)], ['Familien', fmt(fams.length)]];
       rel = fams.map(function (f) { return byId['family:' + f.id]; });
-      prompt = 'Welche Agenten laufen auf der Plattform „' + n.name + '“, was kosten sie, und wo siehst du Risiken oder Abhängigkeiten im AI Control Tower?';
+      prompt = 'Which agents run on the platform "' + n.name + '", what do they cost, and where do you see risks or dependencies in the AI Control Tower? Please answer in English.';
     } else {
       var users = D.families.filter(function (f) { return f.systems.indexOf(n.id) >= 0; });
       var hi = users.reduce(function (s, f) { return s + f.euHighRisk; }, 0), pr = users.reduce(function (s, f) { return s + f.overprivileged; }, 0);
@@ -1555,7 +1555,7 @@ aside .note{font-size:11px;color:var(--muted)}
       if (hi) tags.push('<span class="tag a">' + hi + ' High-Risk</span>');
       rows = [['Familien', fmt(n.families)], ['Agenten', fmt(n.agents)], ['Aufrufe pro Tag', fmt(n.runs)]];
       rel = users.map(function (f) { return byId['family:' + f.id]; });
-      prompt = 'Welche Agenten greifen auf „' + n.name + '“ zu, und was passiert im AI Control Tower, wenn dieses System ausfällt oder die Schnittstelle sich ändert?';
+      prompt = 'Which agents access "' + n.name + '", and what happens in the AI Control Tower if this system fails or its interface changes? Please answer in English.';
     }
     var label = { family: 'Agenten-Familie', platform: 'Modell & Plattform', system: 'Business-System' }[n.kind];
     return '<div class="k">' + label + '</div><h2>' + esc(n.name) + '</h2><div class="tags">' + tags.join('') + '</div>' +

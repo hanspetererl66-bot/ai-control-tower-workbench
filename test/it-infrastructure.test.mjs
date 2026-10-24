@@ -82,9 +82,68 @@ test('workflow 05: the samples are the Space VMs, and workflow and page give the
   assert.ok(result.plan[0].status === 'red' && result.plan.some((p) => p.bundle) && result.plan.some((p) => p.window.startsWith('Maintenance window')));
 });
 
-test('page: demo flow with six steps, task board and plan button; the plan request goes through the chat tool', () => {
+test('page: demo flow with seven steps, task board, operator tickets and plan button; requests go through the chat tools', () => {
   for (const id of ['guide', 'tasks-card', 'mkplan', 'reset-demo', 'task-rows']) assert.match(page, new RegExp(`id="${id}"`));
   assert.match(page, /run_vm_maintenance_plan/);
-  assert.equal((page.match(/\{ t: '/g) || []).length, 6);
+  assert.equal((page.match(/\{ t: '/g) || []).length, 7);
+  assert.match(page, /create_ticket/);
+  assert.match(page, /run_vm_operator_runbook/);
+  assert.match(page, /id="mkticket"/);
+  assert.doesNotMatch(page, /answer in German/);
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
+});
+
+const runbook = JSON.parse(read('examples/n8n-workflows/06-vm-operator-runbook.json'));
+const runStep = async (name, json) => {
+  const js = runbook.nodes.find((n) => n.name === name).parameters.jsCode;
+  return (await vm.runInNewContext(`(async()=>{${js}})`, { $input: { first: () => ({ json }), all: () => [{ json }] } })())[0].json;
+};
+const runAll = async (body, { skipBackup } = {}) => {
+  let s = await runStep('Ticket, VM and task', body ? { body } : {});
+  s = await runStep('1 Check VM', s);
+  if (!s.go) return runStep('Operator report', await runStep('Stop: not run', s));
+  const needBackup = s.vm.env === 'prod' && s.vm.backupAgeHours !== null && s.vm.backupAgeHours > 24;
+  s = await runStep(needBackup ? '2 Backup' : '2 No backup needed', s);
+  s = await runStep('4 Verify', await runStep('3 Apply task', s));
+  return runStep('Operator report', s);
+};
+
+test('workflow 06: rules and task definitions are the Space data, so the runbook and the page agree', () => {
+  const data = repoVms();
+  for (const name of ['1 Check VM', '3 Apply task', '4 Verify']) {
+    const js = runbook.nodes.find((n) => n.name === name).parameters.jsCode;
+    assert.deepEqual(JSON.parse(/const RULES = (.*);/.exec(js)[1]), data.rules, `${name}: rules`);
+    assert.deepEqual(JSON.parse(/const TASKS = (.*);/.exec(js)[1]), data.tasks, `${name}: tasks`);
+  }
+});
+
+test('workflow 06: sample ticket takes a backup first, renews the certificate and verifies', async () => {
+  const r = await runAll();
+  assert.equal(r.result, 'done');
+  assert.equal(r.ticket.id, 'T-1042');
+  assert.equal(r.statusBefore, 'red');
+  assert.notEqual(r.statusAfter, 'red');
+  assert.ok(r.backup.done && r.backup.verified);
+  assert.equal(r.log.length, 4);
+  assert.match(r.digest, /Simulated/);
+});
+
+test('workflow 06: no backup for a recent restore point or a test VM; stops without approval or when the reason is gone', async () => {
+  const base = { id: 'v1', name: 'web-01', env: 'prod', reachable: true, cpuPct: 20, memPct: 30, diskPct: 40, patchLagDays: 1, backupAgeHours: 3, certExpiresInDays: 4 };
+  const ok = await runAll({ ticket: { id: 'T-1' }, vm: base, task: 'cert', approved: true });
+  assert.equal(ok.result, 'done'); assert.equal(ok.backup.done, false); assert.equal(ok.statusAfter, 'green');
+  const test_ = await runAll({ ticket: { id: 'T-2' }, vm: { ...base, env: 'test', backupAgeHours: null }, task: 'cert', approved: true });
+  assert.equal(test_.result, 'done'); assert.equal(test_.backup.done, false);
+  const open = await runAll({ ticket: { id: 'T-3' }, vm: base, task: 'cert' });
+  assert.equal(open.result, 'not run'); assert.match(open.reason, /not approved/); assert.equal(open.statusAfter, 'red');
+  const gone = await runAll({ ticket: { id: 'T-4' }, vm: { ...base, certExpiresInDays: 200 }, task: 'cert', approved: true });
+  assert.equal(gone.result, 'not run'); assert.match(gone.reason, /no longer needed/);
+  const unknown = await runAll({ vm: base, task: 'rm -rf', approved: true });
+  assert.equal(unknown.result, 'not run'); assert.match(unknown.reason, /unknown task/);
+});
+
+test('the runbook prompt the page sends stays within the chat limit', () => {
+  assert.ok(/function runbookPrompt/.test(page));
+  const longest = `Run the n8n workflow "Demo 6 (IT infrastructure): operator runbook" with the tool run_vm_operator_runbook (production mode): ticketId OP-1042, task unreachable, approved true (Change board approved), vm ${JSON.stringify({ id: 'vm-25', name: 'proxy-edge-01', env: 'prod', reachable: true, cpuPct: 100, memPct: 100, diskPct: 100, backupAgeHours: 100000, patchLagDays: 3650, certExpiresInDays: -365 })}. Report the steps: check, backup, Check an unreachable VM, verification. Please answer in English.`;
+  assert.ok(longest.length <= 600, `prompt is ${longest.length} characters`);
 });

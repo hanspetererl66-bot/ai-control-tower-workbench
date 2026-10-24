@@ -404,6 +404,12 @@
           "default": "on"
         },
         {
+          "name": "run_vm_operator_runbook",
+          "class": "write",
+          "what": "Starts the demo n8n operator runbook (check, backup, apply task, check again) through its webhook. Simulated; runs only with approved: true.",
+          "default": "on"
+        },
+        {
           "name": "get_skill_impact",
           "class": "read",
           "what": "",

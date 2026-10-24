@@ -35,6 +35,6 @@ Nutze nur den Connector `ai-control-tower` (Sub4Me-Werkzeuge). Alle Sub4Me-Werkz
 ## Regeln
 
 - Jede Aussage nennt ihre Quelle in Klammern (Ticket-, Rechnungs-, Vertrags- oder Angebotsnummer, Mail oder Call). Was keine Quelle hat, steht nicht im Briefing.
-- Deutsch, sachlich, kurze Sätze. Zahlen exakt aus den Werkzeugantworten, Euro und Prozent mit Einheit.
+- English, factual, short sentences. Numbers exactly as in the tool answers, euro and percent with unit.
 - Keine Zusagen, keine Rabatte und keine Preise, die nicht in den Daten stehen.
 - Ein fehlendes Werkzeug oder ein Fehler ist kein Abbruchgrund: Briefing mit den vorhandenen Daten schreiben und die Lücke nennen.

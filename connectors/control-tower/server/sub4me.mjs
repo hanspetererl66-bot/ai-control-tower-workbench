@@ -534,7 +534,7 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
       return {
         count: records.length,
         customers: records.map((r) => ({
-          id: r.id, name: r.customer?.name, number: r.customer?.number, country: r.customer?.country,
+          id: r.id, name: r.customer?.name, sapCustomerId: r.customer?.sapCustomerId ?? r.customer?.profile?.sapCustomerId, number: r.customer?.number, country: r.customer?.country,
           industry: r.profile?.industry, segment: r.profile?.segment,
           contracts: r.contracts.length, invoices: r.invoices.length, openTickets: r.tickets.filter((t) => !closed(t)).length,
         })),

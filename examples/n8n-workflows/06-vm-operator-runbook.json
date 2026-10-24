@@ -1,0 +1,388 @@
+{
+  "name": "Demo 6 (IT infrastructure): operator runbook",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Demo 6 (IT infrastructure): operator runbook\nThe operator picks up a ticket from the IT Infrastructure Space and runs the same steps every time: **1 check the VM again, 2 backup if needed, 3 apply the task (for example install the renewed TLS certificate), 4 check again**. The rules and task definitions are the same as in the Space and in Demo 5 (a test keeps them equal).\n\nSafety: the runbook only runs when the body says `approved: true` and the check still shows the reason. Everything is **simulated**: no real VM is touched.\n\nOpen with the **Run demo** button (sample: ticket T-1042, certificate of proxy-edge-01) or call the webhook `/webhook/vm-operator-runbook` with `{ticket, vm, task, approved}`.",
+        "height": 300,
+        "width": 620
+      },
+      "id": "b8a66248-770a-5e24-a150-3e45db4d3977",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -380
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "258d1af9-bc89-5eed-bdcb-1c1c14f3622b",
+      "name": "Run demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vm-operator-runbook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "d007de94-edf6-52a2-93ea-9f5cd17ea36b",
+      "name": "Webhook: ticket",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "webhookId": "abfbc049-262b-56dd-877a-eac742e95748"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ticket, VM and task from the webhook body, or a fictional sample: ticket T-1042 asks to renew the TLS certificate of proxy-edge-01 (the sample backup is 30 h old, so the runbook takes a backup first).\n// A real call must say approved: true. Without it the runbook stops after the check and changes nothing.\nconst TASK_KEYS = [\"cert\", \"patch\", \"disk\", \"backup\", \"unreachable\", \"cpu\", \"mem\"];\nconst b = $input.first().json.body;\nconst sample = {\"id\":\"vm-25\",\"name\":\"proxy-edge-01\",\"role\":\"Edge proxy\",\"env\":\"prod\",\"site\":\"Amsterdam\",\"os\":\"Ubuntu 22.04\",\"cpuPct\":24,\"memPct\":39,\"diskPct\":35,\"backupAgeHours\":30,\"patchLagDays\":16,\"uptimeDays\":66,\"reachable\":true,\"vcpu\":4,\"ramGb\":16,\"certExpiresInDays\":5};\nconst src = b && b.vm ? b : { ticket: { id: 'T-1042', title: 'Renew TLS certificate of proxy-edge-01' }, vm: sample, task: 'cert', approved: true };\nconst vm = { env: 'prod', reachable: true, ...src.vm };\nconst ticket = { id: String((src.ticket && src.ticket.id) || 'no ticket').slice(0, 40), title: String((src.ticket && src.ticket.title) || '').slice(0, 120) };\nconst task = TASK_KEYS.includes(src.task) ? src.task : null;\nreturn [{ json: { ticket, vm, task, approved: src.approved === true, log: [] } }];\n"
+      },
+      "id": "57eb3d64-1de0-588f-abbb-a9f90f6f6640",
+      "name": "Ticket, VM and task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function assess(vm, rules) {\n  const reasons = [];\n  const add = (level, text, key) => reasons.push({ level, text, key });\n  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks', 'unreachable');\n  else {\n    const metric = (field, label, unit, key) => {\n      const v = vm[field], r = rules[field];\n      if (v === null || v === undefined) return;\n      if (r.appliesTo && r.appliesTo !== vm.env) return;\n      if (field === 'certExpiresInDays') {\n        if (v <= r.red) add('red', `${label} ${v}${unit} (red up to ${r.red}${unit})`, key);\n        else if (v <= r.yellow) add('yellow', `${label} ${v}${unit} (yellow up to ${r.yellow}${unit})`, key);\n      } else if (v >= r.red) add('red', `${label} ${v}${unit} (red from ${r.red}${unit})`, key);\n      else if (v >= r.yellow) add('yellow', `${label} ${v}${unit} (yellow from ${r.yellow}${unit})`, key);\n    };\n    metric('cpuPct', 'CPU', ' %', 'cpu'); metric('memPct', 'Memory', ' %', 'mem'); metric('diskPct', 'Disk', ' %', 'disk');\n    metric('backupAgeHours', 'Last backup', ' h ago', 'backup'); metric('patchLagDays', 'Security patch missing for', ' days', 'patch');\n    metric('certExpiresInDays', 'TLS certificate expires in', ' days', 'cert');\n  }\n  const status = reasons.some((r) => r.level === 'red') ? 'red' : reasons.length ? 'yellow' : 'green';\n  reasons.sort((a, b) => (a.level === b.level ? 0 : a.level === 'red' ? -1 : 1));\n  return { status, reasons };\n}\n\nconst RULES = {\"cpuPct\":{\"yellow\":75,\"red\":90},\"memPct\":{\"yellow\":85,\"red\":95},\"diskPct\":{\"yellow\":85,\"red\":95},\"backupAgeHours\":{\"yellow\":24,\"red\":48,\"appliesTo\":\"prod\"},\"patchLagDays\":{\"yellow\":14,\"red\":30},\"certExpiresInDays\":{\"yellow\":30,\"red\":7}};\nconst TASKS = {\"cert\":{\"title\":\"Renew TLS certificate\",\"steps\":[\"Create the signing request\",\"Check the chain and the services that use the certificate\",\"Install in the maintenance window after approval\"],\"reboot\":false,\"approver\":\"Security\",\"fix\":{\"certExpiresInDays\":365}},\"patch\":{\"title\":\"Install security patch\",\"steps\":[\"Check maintenance window and redundancy\",\"Patch the twin or standby first\",\"Restart and run the health check\"],\"reboot\":true,\"approver\":\"Change board\",\"fix\":{\"patchLagDays\":0,\"uptimeDays\":0}},\"disk\":{\"title\":\"Free up disk space\",\"steps\":[\"Find the largest directories and old logs\",\"Propose archive, clean-up or resize\",\"Run after approval, then measure again\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"diskPct\":61}},\"backup\":{\"title\":\"Catch up the backup\",\"steps\":[\"Check the backup job and its last error\",\"Start a backup run\",\"Verify the restore point\"],\"reboot\":false,\"approver\":\"Backup owner\",\"fix\":{\"backupAgeHours\":1}},\"unreachable\":{\"title\":\"Check an unreachable VM\",\"steps\":[\"Ping, port and hypervisor status\",\"Look at the console and recent changes\",\"Propose a restart, never restart without approval\"],\"reboot\":true,\"approver\":\"On-call\",\"fix\":{\"reachable\":true,\"cpuPct\":20,\"memPct\":35,\"diskPct\":40,\"uptimeDays\":0}},\"cpu\":{\"title\":\"Analyse the CPU peak\",\"steps\":[\"Find the process behind the peak\",\"Compare with the twin VM\",\"Propose scaling or a fix, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"cpuPct\":45}},\"mem\":{\"title\":\"Check memory pressure\",\"steps\":[\"List the largest memory users\",\"Look for leaks and restart candidates\",\"Propose a restart or more RAM, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"memPct\":60}}};\n// Step 1: measure the VM again and check that the task is still needed (the ticket may be old).\nconst s = $input.first().json;\nconst a = assess(s.vm, RULES);\nconst needed = !!s.task && a.reasons.some((r) => r.key === s.task);\nconst why = !s.task ? 'unknown task' : needed ? a.reasons.find((r) => r.key === s.task).text : 'the check no longer shows the reason';\nreturn [{ json: { ...s, before: { status: a.status, reasons: a.reasons }, needed, go: needed && s.approved, log: [...s.log, `1 Check: ${s.vm.name} is ${a.status}; ${s.task || 'task'} ${needed ? 'is needed (' + why + ')' : 'is not needed (' + why + ')'}`] } }];\n"
+      },
+      "id": "b49954fd-3fe4-5742-8d42-d7de520f78d9",
+      "name": "1 Check VM",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a924d7b0-c4bb-5fa4-bef4-042cf215c745",
+              "leftValue": "={{ $json.go }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f9a03222-87da-5dc5-8510-f5b5ca3dc754",
+      "name": "Approved and needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The runbook stops here: nothing was changed.\nconst s = $input.first().json;\nconst reason = !s.task ? 'unknown task' : !s.needed ? 'task no longer needed' : 'not approved yet';\nreturn [{ json: { ...s, result: 'not run', reason, log: [...s.log, 'Stopped: ' + reason + '. Nothing was changed.'] } }];\n"
+      },
+      "id": "17c15ebf-9dfd-5039-bc4a-61db7466562e",
+      "name": "Stop: not run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1ed54b1a-5b5e-5d03-8883-a76f42232dd9",
+              "leftValue": "={{ $json.vm.env === \"prod\" && $json.vm.backupAgeHours !== null && $json.vm.backupAgeHours > 24 }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1ac4a97f-681e-5ce3-97aa-a7761c3bc779",
+      "name": "Backup needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 2: backup before the change (simulated). Production VMs need a restore point that is at most 24 h old.\nconst s = $input.first().json;\nconst rp = 'RP-' + s.vm.id + '-' + String(s.vm.backupAgeHours) + 'h';\nreturn [{ json: { ...s, vm: { ...s.vm, backupAgeHours: 0 }, backup: { done: true, restorePoint: rp, verified: true }, log: [...s.log, `2 Backup: last backup was ${s.vm.backupAgeHours} h old, new restore point ${rp} created and verified (simulated)`] } }];\n"
+      },
+      "id": "ae5c8b03-07ca-519d-a0a8-32b755c8edca",
+      "name": "2 Backup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 2: no backup needed.\nconst s = $input.first().json;\nreturn [{ json: { ...s, backup: { done: false, reason: s.vm.env !== 'prod' ? 'not a production VM' : 'restore point is recent enough' }, log: [...s.log, '2 Backup: not needed (' + (s.vm.env !== 'prod' ? 'not a production VM' : 'restore point is ' + s.vm.backupAgeHours + ' h old') + ')'] } }];\n"
+      },
+      "id": "63b57897-437c-57cb-b6be-d75bcd5f8f6b",
+      "name": "2 No backup needed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function assess(vm, rules) {\n  const reasons = [];\n  const add = (level, text, key) => reasons.push({ level, text, key });\n  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks', 'unreachable');\n  else {\n    const metric = (field, label, unit, key) => {\n      const v = vm[field], r = rules[field];\n      if (v === null || v === undefined) return;\n      if (r.appliesTo && r.appliesTo !== vm.env) return;\n      if (field === 'certExpiresInDays') {\n        if (v <= r.red) add('red', `${label} ${v}${unit} (red up to ${r.red}${unit})`, key);\n        else if (v <= r.yellow) add('yellow', `${label} ${v}${unit} (yellow up to ${r.yellow}${unit})`, key);\n      } else if (v >= r.red) add('red', `${label} ${v}${unit} (red from ${r.red}${unit})`, key);\n      else if (v >= r.yellow) add('yellow', `${label} ${v}${unit} (yellow from ${r.yellow}${unit})`, key);\n    };\n    metric('cpuPct', 'CPU', ' %', 'cpu'); metric('memPct', 'Memory', ' %', 'mem'); metric('diskPct', 'Disk', ' %', 'disk');\n    metric('backupAgeHours', 'Last backup', ' h ago', 'backup'); metric('patchLagDays', 'Security patch missing for', ' days', 'patch');\n    metric('certExpiresInDays', 'TLS certificate expires in', ' days', 'cert');\n  }\n  const status = reasons.some((r) => r.level === 'red') ? 'red' : reasons.length ? 'yellow' : 'green';\n  reasons.sort((a, b) => (a.level === b.level ? 0 : a.level === 'red' ? -1 : 1));\n  return { status, reasons };\n}\n\nconst RULES = {\"cpuPct\":{\"yellow\":75,\"red\":90},\"memPct\":{\"yellow\":85,\"red\":95},\"diskPct\":{\"yellow\":85,\"red\":95},\"backupAgeHours\":{\"yellow\":24,\"red\":48,\"appliesTo\":\"prod\"},\"patchLagDays\":{\"yellow\":14,\"red\":30},\"certExpiresInDays\":{\"yellow\":30,\"red\":7}};\nconst TASKS = {\"cert\":{\"title\":\"Renew TLS certificate\",\"steps\":[\"Create the signing request\",\"Check the chain and the services that use the certificate\",\"Install in the maintenance window after approval\"],\"reboot\":false,\"approver\":\"Security\",\"fix\":{\"certExpiresInDays\":365}},\"patch\":{\"title\":\"Install security patch\",\"steps\":[\"Check maintenance window and redundancy\",\"Patch the twin or standby first\",\"Restart and run the health check\"],\"reboot\":true,\"approver\":\"Change board\",\"fix\":{\"patchLagDays\":0,\"uptimeDays\":0}},\"disk\":{\"title\":\"Free up disk space\",\"steps\":[\"Find the largest directories and old logs\",\"Propose archive, clean-up or resize\",\"Run after approval, then measure again\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"diskPct\":61}},\"backup\":{\"title\":\"Catch up the backup\",\"steps\":[\"Check the backup job and its last error\",\"Start a backup run\",\"Verify the restore point\"],\"reboot\":false,\"approver\":\"Backup owner\",\"fix\":{\"backupAgeHours\":1}},\"unreachable\":{\"title\":\"Check an unreachable VM\",\"steps\":[\"Ping, port and hypervisor status\",\"Look at the console and recent changes\",\"Propose a restart, never restart without approval\"],\"reboot\":true,\"approver\":\"On-call\",\"fix\":{\"reachable\":true,\"cpuPct\":20,\"memPct\":35,\"diskPct\":40,\"uptimeDays\":0}},\"cpu\":{\"title\":\"Analyse the CPU peak\",\"steps\":[\"Find the process behind the peak\",\"Compare with the twin VM\",\"Propose scaling or a fix, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"cpuPct\":45}},\"mem\":{\"title\":\"Check memory pressure\",\"steps\":[\"List the largest memory users\",\"Look for leaks and restart candidates\",\"Propose a restart or more RAM, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"memPct\":60}}};\n// Step 3: apply the task (simulated). The task definition says which values change; the VM list of the Space uses the same fix.\nconst s = $input.first().json;\nconst def = TASKS[s.task];\nreturn [{ json: { ...s, vm: { ...s.vm, ...def.fix }, applied: { task: s.task, title: def.title, approver: def.approver, steps: def.steps, reboot: def.reboot }, log: [...s.log, `3 ${def.title}: ${def.steps.join(' > ')} (simulated, approver ${def.approver})`] } }];\n"
+      },
+      "id": "64bb874c-ada9-51fa-b8f7-095b6f219574",
+      "name": "3 Apply task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function assess(vm, rules) {\n  const reasons = [];\n  const add = (level, text, key) => reasons.push({ level, text, key });\n  if (!vm.reachable) add('red', 'Not reachable: the VM does not answer monitoring checks', 'unreachable');\n  else {\n    const metric = (field, label, unit, key) => {\n      const v = vm[field], r = rules[field];\n      if (v === null || v === undefined) return;\n      if (r.appliesTo && r.appliesTo !== vm.env) return;\n      if (field === 'certExpiresInDays') {\n        if (v <= r.red) add('red', `${label} ${v}${unit} (red up to ${r.red}${unit})`, key);\n        else if (v <= r.yellow) add('yellow', `${label} ${v}${unit} (yellow up to ${r.yellow}${unit})`, key);\n      } else if (v >= r.red) add('red', `${label} ${v}${unit} (red from ${r.red}${unit})`, key);\n      else if (v >= r.yellow) add('yellow', `${label} ${v}${unit} (yellow from ${r.yellow}${unit})`, key);\n    };\n    metric('cpuPct', 'CPU', ' %', 'cpu'); metric('memPct', 'Memory', ' %', 'mem'); metric('diskPct', 'Disk', ' %', 'disk');\n    metric('backupAgeHours', 'Last backup', ' h ago', 'backup'); metric('patchLagDays', 'Security patch missing for', ' days', 'patch');\n    metric('certExpiresInDays', 'TLS certificate expires in', ' days', 'cert');\n  }\n  const status = reasons.some((r) => r.level === 'red') ? 'red' : reasons.length ? 'yellow' : 'green';\n  reasons.sort((a, b) => (a.level === b.level ? 0 : a.level === 'red' ? -1 : 1));\n  return { status, reasons };\n}\n\nconst RULES = {\"cpuPct\":{\"yellow\":75,\"red\":90},\"memPct\":{\"yellow\":85,\"red\":95},\"diskPct\":{\"yellow\":85,\"red\":95},\"backupAgeHours\":{\"yellow\":24,\"red\":48,\"appliesTo\":\"prod\"},\"patchLagDays\":{\"yellow\":14,\"red\":30},\"certExpiresInDays\":{\"yellow\":30,\"red\":7}};\nconst TASKS = {\"cert\":{\"title\":\"Renew TLS certificate\",\"steps\":[\"Create the signing request\",\"Check the chain and the services that use the certificate\",\"Install in the maintenance window after approval\"],\"reboot\":false,\"approver\":\"Security\",\"fix\":{\"certExpiresInDays\":365}},\"patch\":{\"title\":\"Install security patch\",\"steps\":[\"Check maintenance window and redundancy\",\"Patch the twin or standby first\",\"Restart and run the health check\"],\"reboot\":true,\"approver\":\"Change board\",\"fix\":{\"patchLagDays\":0,\"uptimeDays\":0}},\"disk\":{\"title\":\"Free up disk space\",\"steps\":[\"Find the largest directories and old logs\",\"Propose archive, clean-up or resize\",\"Run after approval, then measure again\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"diskPct\":61}},\"backup\":{\"title\":\"Catch up the backup\",\"steps\":[\"Check the backup job and its last error\",\"Start a backup run\",\"Verify the restore point\"],\"reboot\":false,\"approver\":\"Backup owner\",\"fix\":{\"backupAgeHours\":1}},\"unreachable\":{\"title\":\"Check an unreachable VM\",\"steps\":[\"Ping, port and hypervisor status\",\"Look at the console and recent changes\",\"Propose a restart, never restart without approval\"],\"reboot\":true,\"approver\":\"On-call\",\"fix\":{\"reachable\":true,\"cpuPct\":20,\"memPct\":35,\"diskPct\":40,\"uptimeDays\":0}},\"cpu\":{\"title\":\"Analyse the CPU peak\",\"steps\":[\"Find the process behind the peak\",\"Compare with the twin VM\",\"Propose scaling or a fix, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"cpuPct\":45}},\"mem\":{\"title\":\"Check memory pressure\",\"steps\":[\"List the largest memory users\",\"Look for leaks and restart candidates\",\"Propose a restart or more RAM, with approval\"],\"reboot\":false,\"approver\":\"Service owner\",\"fix\":{\"memPct\":60}}};\n// Step 4: measure the VM again. The task counts as done only if its reason is gone.\nconst s = $input.first().json;\nconst a = assess(s.vm, RULES);\nconst cleared = !a.reasons.some((r) => r.key === s.task);\nreturn [{ json: { ...s, after: { status: a.status, reasons: a.reasons }, result: cleared ? 'done' : 'failed', log: [...s.log, `4 Verify: ${s.vm.name} is ${a.status}; reason ${s.task} ${cleared ? 'cleared' : 'still present'}`] } }];\n"
+      },
+      "id": "cc5a8e66-a77a-59e5-950d-676c7609d209",
+      "name": "4 Verify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1820,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2e938928-255a-5239-a9c1-bc9628bb8809",
+      "name": "Everything together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2080,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Report for the operator and the ticket. This is what the ticket gets as the final comment.\nconst s = $input.first().json;\nconst out = {\n  ticket: s.ticket, vm: s.vm.name, task: s.task, result: s.result, reason: s.reason || null,\n  statusBefore: s.before && s.before.status, statusAfter: s.after ? s.after.status : (s.before && s.before.status),\n  backup: s.backup || null, log: s.log,\n};\nout.digest = s.result === 'done'\n  ? `Ticket ${s.ticket.id}: ${s.vm.name} checked, ${s.backup && s.backup.done ? 'restore point ' + s.backup.restorePoint + ' taken, ' : ''}task \"${s.applied.title}\" applied and verified. Status ${out.statusBefore} -> ${out.statusAfter}. Simulated: no real VM was changed.`\n  : `Ticket ${s.ticket.id}: ${s.vm.name} - ${s.result === 'failed' ? 'task applied but the check still shows the reason' : 'not run (' + s.reason + ')'}. Nothing else was changed. Simulated demo.`;\nreturn [{ json: out }];\n"
+      },
+      "id": "91d2c4c2-804c-5f33-878b-9fe8799cfc5c",
+      "name": "Operator report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "Run demo": {
+      "main": [
+        [
+          {
+            "node": "Ticket, VM and task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: ticket": {
+      "main": [
+        [
+          {
+            "node": "Ticket, VM and task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ticket, VM and task": {
+      "main": [
+        [
+          {
+            "node": "1 Check VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1 Check VM": {
+      "main": [
+        [
+          {
+            "node": "Approved and needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved and needed?": {
+      "main": [
+        [
+          {
+            "node": "Backup needed?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: not run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backup needed?": {
+      "main": [
+        [
+          {
+            "node": "2 Backup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "2 No backup needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2 Backup": {
+      "main": [
+        [
+          {
+            "node": "3 Apply task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2 No backup needed": {
+      "main": [
+        [
+          {
+            "node": "3 Apply task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3 Apply task": {
+      "main": [
+        [
+          {
+            "node": "4 Verify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4 Verify": {
+      "main": [
+        [
+          {
+            "node": "Everything together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop: not run": {
+      "main": [
+        [
+          {
+            "node": "Everything together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Everything together": {
+      "main": [
+        [
+          {
+            "node": "Operator report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

@@ -121,7 +121,7 @@
         "text": "Check duplicates and log the booth contact",
         "due": "2026-10-21",
         "skill": "interest-logger",
-        "prompt": "Erfasse: Ilse Wagner (Head of Logistics IT, Kranich Logistik GmbH) hat am SAP-TechEd-Stand nach Joule für die Transportplanung gefragt."
+        "prompt": "Log: Ilse Wagner (Head of Logistics IT, Kranich Logistik GmbH) asked about Joule for transport planning at the SAP TechEd booth."
       },
       "contact": "Ilse Wagner, Head of Logistics IT",
       "strength": "medium",
@@ -158,7 +158,7 @@
         "text": "Watch only, no contact until a second signal",
         "due": "2026-11-02",
         "skill": "interest-logger",
-        "prompt": "Ordne das Signal ein: Moritz Keller (Brauhaus Keller AG) hat die Webinar-Aufzeichnung zu Ariba heruntergeladen."
+        "prompt": "Classify the signal: Moritz Keller (Brauhaus Keller AG) downloaded the Ariba webinar recording."
       },
       "contact": "Moritz Keller, Purchasing",
       "strength": "weak",
@@ -190,7 +190,7 @@
         "text": "Qualify as an expansion lead",
         "due": "2026-10-20",
         "skill": "lead-qualifier",
-        "prompt": "Bewerte den Lead Muster Industrie AG: Erweiterung von Joule Work auf drei weitere Fachbereiche."
+        "prompt": "Score the lead Muster Industrie AG: extending Joule Work to three more business units."
       },
       "contact": "Felix Brandt, IT Security",
       "strength": "strong",
@@ -239,7 +239,7 @@
         "text": "Qualify and route",
         "due": "2026-10-20",
         "skill": "lead-qualifier",
-        "prompt": "Bewerte den Lead Nordwind Handel GmbH: Interesse am Supplier-Risk-Modul aus dem Quarterly Business Review."
+        "prompt": "Score the lead Nordwind Handel GmbH: interest in the Supplier Risk module from the quarterly business review."
       },
       "contact": "Procurement lead",
       "strength": "medium",
@@ -309,7 +309,7 @@
         "text": "Plan the first contact and book a workshop",
         "due": "2026-10-22",
         "skill": "opportunity-planner",
-        "prompt": "Erstelle einen Account-Plan für Nordwind Handel GmbH zum Thema Ariba Supplier Risk."
+        "prompt": "Create an account plan for Nordwind Handel GmbH on Ariba Supplier Risk."
       },
       "contact": "Head of Procurement",
       "risks": [],
@@ -402,7 +402,7 @@
         "text": "Ask two questions: budget owner and RFP date",
         "due": "2026-10-23",
         "skill": "lead-qualifier",
-        "prompt": "Bewerte den Lead Kranich Logistik GmbH und nenne die zwei Fragen, die den Score am meisten ändern."
+        "prompt": "Score the lead Kranich Logistik GmbH and name the two questions that change the score most."
       },
       "contact": "Ilse Wagner",
       "risks": [
@@ -473,7 +473,7 @@
         "text": "Decline politely or keep watching",
         "due": "2026-10-30",
         "skill": "lead-qualifier",
-        "prompt": "Bewerte den Lead Bauer & Söhne Maschinenbau und empfiehl Nachfassen oder Ablehnen."
+        "prompt": "Score the lead Bauer & Söhne Maschinenbau and recommend follow-up or decline."
       },
       "contact": "Managing director",
       "risks": [
@@ -507,7 +507,7 @@
         "text": "Account plan to the manager",
         "due": "2026-10-23",
         "skill": "opportunity-planner",
-        "prompt": "Erstelle den Account-Plan für die Opportunity Nordwind Handel, Ariba mit Supplier Risk."
+        "prompt": "Create the account plan for the opportunity Nordwind Handel, Ariba with Supplier Risk."
       },
       "contact": "Head of Procurement, CFO (sponsor)",
       "competitor": "SAP Ariba incumbent at a competitor: Coupa",
@@ -585,7 +585,7 @@
         "text": "Agree the usage forecast with the customer",
         "due": "2026-10-28",
         "skill": "customer-call-prep",
-        "prompt": "Bereite das Gespräch mit Muster Industrie AG zur Erweiterung der AI Units vor."
+        "prompt": "Prepare the conversation with Muster Industrie AG about extending the AI units."
       },
       "contact": "Lena Hoffmann, Platform lead",
       "risks": [
@@ -686,7 +686,7 @@
         "text": "Answer the open questions, 14 of 62",
         "due": "2026-11-12",
         "skill": "rfp-responder",
-        "prompt": "Beantworte den Fragenkatalog der Kranich-Logistik-Ausschreibung aus unseren früheren RFP-Antworten."
+        "prompt": "Answer the question catalogue of the Kranich Logistik tender from our earlier RFP answers."
       },
       "contact": "Procurement, formal process",
       "risks": [
@@ -741,7 +741,7 @@
         "text": "Customer review with HR leadership",
         "due": "2026-11-06",
         "skill": "deal-risk-check",
-        "prompt": "Wie riskant ist das Angebot OFF-2026-0311?"
+        "prompt": "How risky is offer OFF-2026-0311?"
       },
       "contact": "Anna Beispiel",
       "risks": [],
@@ -847,7 +847,7 @@
         "text": "Workshop on the supplier risk module",
         "due": "2026-10-29",
         "skill": "deal-risk-check",
-        "prompt": "Wie riskant ist das Angebot OFF-2026-0318?"
+        "prompt": "How risky is offer OFF-2026-0318?"
       },
       "contact": "Anna Beispiel",
       "risks": [
@@ -951,7 +951,7 @@
         "text": "Security review with the customer CISO",
         "due": "2026-11-10",
         "skill": "pricing-guard",
-        "prompt": "Prüfe den Rabatt im Angebot OFF-2026-0324."
+        "prompt": "Check the discount in offer OFF-2026-0324."
       },
       "contact": "Felix Brandt, IT Security",
       "risks": [
@@ -1047,7 +1047,7 @@
         "text": "Track the notice date and the uplift cap",
         "due": "2026-11-01",
         "skill": "renewal-radar",
-        "prompt": "Welche Fristen laufen beim Vertrag C-2026-0012?"
+        "prompt": "Which deadlines run on contract C-2026-0012?"
       },
       "contact": "Lena Hoffmann",
       "risks": [
@@ -1097,7 +1097,7 @@
         "text": "Nothing due: review the uplift cap in Q1",
         "due": "2027-01-15",
         "skill": "contract-checker",
-        "prompt": "Prüfe den Vertrag C-2024-0233 gegen unseren Standard."
+        "prompt": "Check contract C-2024-0233 against our standard."
       },
       "contact": "Lena Hoffmann",
       "risks": [],
@@ -1139,7 +1139,7 @@
         "text": "Renewal due: notice period starts 2026-11-02",
         "due": "2026-11-02",
         "skill": "renewal-radar",
-        "prompt": "Welche Fristen laufen beim Vertrag C-2023-0390?"
+        "prompt": "Which deadlines run on contract C-2023-0390?"
       },
       "contact": "Anna Beispiel",
       "risks": [
@@ -1184,7 +1184,7 @@
         "text": "Check duplicates and log the contact from the e-commerce round table",
         "due": "2026-10-22",
         "skill": "interest-logger",
-        "prompt": "Erfasse: Julia Westphal (Head of E-Commerce, Hanse Handelsgruppe AG) hat beim Kundentermin nach Joule für das Filialnetz gefragt."
+        "prompt": "Log: Julia Westphal (Head of E-Commerce, Hanse Handelsgruppe AG) asked about Joule for the store network at the customer meeting."
       },
       "contact": "Julia Westphal, Head of E-Commerce",
       "strength": "medium",
@@ -1248,7 +1248,7 @@
         "text": "Ask two questions: budget owner and rollout date",
         "due": "2026-10-26",
         "skill": "lead-qualifier",
-        "prompt": "Bewerte den Lead Hanse Handelsgruppe, Document AI für das Shared Service Center, und nenne die zwei Fragen, die den Score am meisten ändern."
+        "prompt": "Score the lead Hanse Handelsgruppe, Document AI for the shared service centre, and name the two questions that change the score most."
       },
       "contact": "Ines Carstens, Head of Accounts Payable",
       "risks": [
@@ -1306,7 +1306,7 @@
         "text": "Account plan with the category review as the anchor",
         "due": "2026-10-28",
         "skill": "opportunity-planner",
-        "prompt": "Erstelle den Account-Plan für die Opportunity Hanse Handelsgruppe, Ariba Supplier Risk für alle Lieferanten."
+        "prompt": "Create the account plan for the opportunity Hanse Handelsgruppe, Ariba Supplier Risk for all suppliers."
       },
       "contact": "Mirko Sander, Head of Procurement",
       "risks": [
@@ -1378,7 +1378,7 @@
         "text": "Resolve the search ticket before the renewal decision",
         "due": "2026-10-30",
         "skill": "deal-risk-check",
-        "prompt": "Wie riskant ist das Angebot OFF-2026-0402?"
+        "prompt": "How risky is offer OFF-2026-0402?"
       },
       "contact": "Julia Westphal, Head of E-Commerce",
       "risks": [
@@ -1467,7 +1467,7 @@
         "text": "Confirm the scope of the lapsed Integration Suite with the platform lead",
         "due": "2026-11-04",
         "skill": "deal-risk-check",
-        "prompt": "Wie riskant ist das Angebot OFF-2026-0407?"
+        "prompt": "How risky is offer OFF-2026-0407?"
       },
       "contact": "Tom Ahlers, Platform Lead",
       "risks": [
@@ -1539,7 +1539,7 @@
         "text": "Deal desk decision on the non-standard top-up terms",
         "due": "2026-10-27",
         "skill": "pricing-guard",
-        "prompt": "Prüfe das Angebot OFF-2026-0415 auf Preise und Rabatt."
+        "prompt": "Check offer OFF-2026-0415 for prices and discount."
       },
       "contact": "Tom Ahlers, Platform Lead",
       "risks": [
@@ -1608,7 +1608,7 @@
         "text": "Renewal due: notice period ends 2026-11-01",
         "due": "2026-11-01",
         "skill": "renewal-radar",
-        "prompt": "Welche Fristen laufen beim Vertrag C-2024-0611?"
+        "prompt": "Which deadlines run on contract C-2024-0611?"
       },
       "contact": "Julia Westphal, Head of E-Commerce",
       "risks": [
@@ -1647,7 +1647,7 @@
         "text": "AI units contract ends; notice period ends 2026-11-01",
         "due": "2026-11-01",
         "skill": "renewal-radar",
-        "prompt": "Welche Fristen laufen beim Vertrag C-2026-0044?"
+        "prompt": "Which deadlines run on contract C-2026-0044?"
       },
       "contact": "Tom Ahlers, Platform Lead",
       "risks": [
@@ -2517,5 +2517,13 @@
     ]
   },
   "valueScale": 10,
-  "valueNote": "Deal values are ACV (annual contract value) in EUR and illustrative enterprise sizes: ten times the annual amounts of the matching Sub4Me offers and contracts. TCV (total contract value) is ACV times the term in months divided by 12."
+  "valueNote": "Deal values are ACV (annual contract value) in EUR and illustrative enterprise sizes: ten times the annual amounts of the matching Sub4Me offers and contracts. TCV (total contract value) is ACV times the term in months divided by 12.",
+  "accounts": {
+    "Muster Industrie AG": {
+      "sapCustomerId": "0010048211"
+    },
+    "Hanse Handelsgruppe AG": {
+      "sapCustomerId": "0010073904"
+    }
+  }
 }

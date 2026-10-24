@@ -155,6 +155,10 @@
       "description": "Run the demo n8n workflow \"Demo 5 (IT infrastructure): VM maintenance plan\" through its webhook: rules per VM, recommended tasks (certificate, patch, disk, backup), maintenance windows, approvers. Uses the fictional sample VMs without input. Only proposes, nothing is run."
     },
     {
+      "name": "run_vm_operator_runbook",
+      "description": "Run the demo n8n workflow \"Demo 6 (IT infrastructure): operator runbook\" through its webhook: check the VM, backup if needed, apply the task (for example the renewed TLS certificate), check again. Simulated, runs only with approved: true."
+    },
+    {
       "name": "get_skill_impact",
       "description": "Skill impact: runs, success, time saved, value and run cost per skill (sample data)."
     },

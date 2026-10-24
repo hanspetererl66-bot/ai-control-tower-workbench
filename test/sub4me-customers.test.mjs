@@ -12,6 +12,8 @@ const AS_OF = page.asOf;
 test('the portfolio has two customers with complete, consistent data', () => {
   assert.deepEqual(customers.map((c) => c.id), ['muster', 'hanse']);
   assert.equal(new Set(customers.map((c) => c.customer.number)).size, customers.length);
+  assert.equal(new Set(customers.map((c) => c.customer.sapCustomerId)).size, customers.length, 'unique SAP customer ids');
+  for (const c of customers) assert.match(c.customer.sapCustomerId, /^00\d{8}$/, `${c.id}: SAP customer id has 10 digits`);
   for (const c of customers) {
     assert.ok(c.profile.industry && c.profile.employees > 0 && c.profile.accountTeam.length >= 3 && c.profile.contacts.length >= 3, `${c.id}: profile`);
     for (const x of [...c.contracts, ...c.offers]) assert.equal(x.lines.reduce((a, l) => a + l.annualEur, 0), x.annualEur, `${x.id}: lines add up`);
