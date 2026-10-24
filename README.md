@@ -430,6 +430,7 @@ Importable workflows in `examples/n8n-workflows/`, fictional data only, no crede
 - `05-vm-maintenance-plan.json`: the 25 VMs of the IT Infrastructure Space, rules per VM, recommended tasks (certificate, patch, disk, backup), maintenance windows, bundling per VM, plan proposal that ends in "nothing runs, a person approves". Manual or webhook start (`/webhook/vm-maintenance-plan`).
 
 - `06-vm-operator-runbook.json`: the operator side of a VM ticket. Steps: **1 check the VM again** (same rules as the Space and workflow 05), **2 backup** if a production VM has no restore point from the last 24 h, **3 apply the task** (for example install the renewed TLS certificate), **4 check again** and report for the ticket. It only runs when the body says `approved: true` and the check still shows the reason; everything is simulated. Manual (sample ticket T-1042) or webhook `/webhook/vm-operator-runbook` with `{ticket, vm, task, approved}`; the chat tool is `run_vm_operator_runbook`.
+- `07-vm-maintenance-approval.json`: the **approval step** between plan (05) and runbook (06). One request per task with the approver role from the task definition, a **Wait** node that pauses until the approver answers, rules (wrong role = invalid, **the requester can never approve their own request**, no answer = pending then expired, nothing is approved automatically) and an audit report. Approved tasks become the prepared call for workflow 06 (`approved: true`); this workflow starts nothing itself. Manual (fictional plan with sample decisions) or webhook `/webhook/vm-maintenance-approval` with `{plan, requester}`; the approver answers through the Wait resume URL with `{decisions:[{id, decision, by, role, comment}]}`.
 
 ### Overview: which workflows to import
 
@@ -441,6 +442,7 @@ Importable workflows in `examples/n8n-workflows/`, fictional data only, no crede
 | `04-it-operations-alert-triage.json` | Demo 4 (IT operations) | Manual, webhook | `/webhook/it-ops-triage` | IT Operations Space, tool `run_it_ops_triage` |
 | `05-vm-maintenance-plan.json` | Demo 5 (IT infrastructure) | Manual, webhook | `/webhook/vm-maintenance-plan` | IT Infrastructure Space, tool `run_vm_maintenance_plan` |
 | `06-vm-operator-runbook.json` | Demo 6 (IT infrastructure) | Manual, webhook | `/webhook/vm-operator-runbook` | IT Infrastructure Space (operator ticket), tool `run_vm_operator_runbook` |
+| `07-vm-maintenance-approval.json` | Demo 7 (IT infrastructure) | Manual, webhook (+ Wait resume) | `/webhook/vm-maintenance-approval` | Approval between plan (05) and runbook (06) |
 
 All six can be started from the chat (set `N8N_URL` in the connector settings and **activate** the workflows you want to call; a workflow with only the manual trigger cannot be activated, which is why 01 to 03 now have a webhook). For a test without activating, use mode `test` and click **Execute workflow** first.
 

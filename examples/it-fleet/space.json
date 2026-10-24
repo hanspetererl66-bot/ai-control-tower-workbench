@@ -2,7 +2,6 @@
   "title": "IT Fleet",
   "description": "Mockup of an IT fleet with 41 fictional customers and about 1,200 VMs: treemap, heatmap and a bundled task inbox, all with the green, yellow, red logic of the IT Infrastructure Space.",
   "domain": "Operations",
-  "parent": "it-operations",
   "insights": [
     "Fictional customers and VMs generated from a fixed seed, no live monitoring. A VM is green, yellow or red by the same rules as in the IT Infrastructure Space; a customer is as red as its worst VM.",
     "Treemap: one tile per customer, area = VMs, colour = worst VM. Heatmap: customers against checks, a column with many customers points to a shared cause. Task inbox: the same task on many VMs is one bundle with one approval.",

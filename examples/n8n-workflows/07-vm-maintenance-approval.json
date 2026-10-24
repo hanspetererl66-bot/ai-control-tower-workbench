@@ -1,0 +1,245 @@
+{
+  "name": "Demo 7 (IT infrastructure): approval of the VM maintenance plan",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Demo 7 (IT infrastructure): approval of the VM maintenance plan\nDemo 5 ends in \"proposal only\". This workflow is the **approval step** between plan and runbook (Demo 6).\n\n1. One **approval request per task**, with the approver role from the task definition (Security, Change board, Service owner, Backup owner, On-call). Valid for 48 h (urgent) or 7 days (planned).\n2. The **Wait** node pauses until the approver answers (resume URL). Decisions come as `{decisions:[{id, decision: approved|rejected, by, role, comment}]}`.\n3. Rules: wrong role = invalid, **the requester can never approve their own request** (four-eyes), no answer = pending, then expired. Nobody is approved automatically.\n4. Approved tasks become the **prepared call for Demo 6** (`approved: true`). This workflow starts nothing itself.\n\nManual start: fictional plan with three tasks and sample decisions (approved, self-approval rejected as invalid, rejected). Webhook `/webhook/vm-maintenance-approval` with `{plan, requester}` (plan = output of Demo 5): it creates the requests and waits for the answers. No credentials, fictional data.",
+        "height": 420,
+        "width": 560
+      },
+      "id": "7768abef-6143-5bf5-a1a5-626b4381a685",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -500
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "29dfc97f-4837-574d-84ff-77f723ef4bf1",
+      "name": "Run demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vm-maintenance-approval",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "acf8ec07-1281-5efb-ad56-fc23fe361208",
+      "name": "Webhook: plan",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "webhookId": "a1c4db89-e32d-5ec1-bc9d-45775df8970b"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Approval requests for a VM maintenance plan (output of Demo 5, or a fictional sample of two VMs).\n// One request per task. Rules: the approver is the role from the task definition, the requester may never approve their own request (four-eyes), a request is valid for 48 h (urgent) or 7 days (planned).\nconst b = ($input.first().json || {}).body;\nconst sample = [\n  { vm: 'sap-prd-app01', status: 'red', tasks: [{ vm: 'sap-prd-app01', key: 'patch', title: 'Install security patch', approver: 'Change board', reboot: true, urgency: 'urgent', because: 'Security patch missing for 34 days' }] },\n  { vm: 'proxy-edge-01', status: 'red', tasks: [{ vm: 'proxy-edge-01', key: 'cert', title: 'Renew TLS certificate', approver: 'Security', reboot: false, urgency: 'urgent', because: 'TLS certificate expires in 5 days' }, { vm: 'proxy-edge-01', key: 'backup', title: 'Catch up the backup', approver: 'Backup owner', reboot: false, urgency: 'planned', because: 'Last backup 30 h ago' }] }\n];\nconst live = b && Array.isArray(b.plan) && b.plan.length > 0;\nconst plan = live ? b.plan : sample;\nconst requester = String((live && b.requester) || 'maintenance-planner').slice(0, 60);\nconst now = Date.parse((live && b.now) || '2026-10-24T09:00:00Z');\nconst requests = plan.flatMap((p) => (p.tasks || []).map((t, i) => ({\n  id: `AP-${String(t.vm).replace(/[^A-Za-z0-9]+/g, '-')}-${t.key}`.slice(0, 60),\n  vm: String(t.vm), task: String(t.key), title: String(t.title), approver: String(t.approver), urgency: t.urgency === 'urgent' ? 'urgent' : 'planned',\n  reboot: t.reboot === true, because: String(t.because || '').slice(0, 200), requester,\n  expiresAt: new Date(now + (t.urgency === 'urgent' ? 2 : 7) * 864e5).toISOString(), status: 'pending'\n})));\n// Demo only: fictional decisions so the manual start shows every outcome. A real call waits for the people.\nconst sampleDecisions = live ? null : [\n  { id: 'AP-sap-prd-app01-patch', decision: 'approved', by: 'c.weber', role: 'Change board', comment: 'Window Saturday 22:00' },\n  { id: 'AP-proxy-edge-01-cert', decision: 'approved', by: 'maintenance-planner', role: 'Security', comment: 'Self-approval must not count' },\n  { id: 'AP-proxy-edge-01-backup', decision: 'rejected', by: 'm.klein', role: 'Backup owner', comment: 'Run after the cert change' }\n];\nreturn [{ json: { demo: !live, now: new Date(now).toISOString(), requester, requests, sampleDecisions } }];\n"
+      },
+      "id": "3d58c315-b487-50d3-8a90-d19125137342",
+      "name": "Plan and requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c3513769-4e18-5fef-81dd-ef54c676539f",
+              "leftValue": "={{ $json.demo }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7763b414-b06d-5f2e-b0b0-9435de78ae77",
+      "name": "Decisions at hand?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "id": "ad3cf9a6-d817-57d0-84ef-b4685032b2e0",
+      "name": "Wait for approver",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        220
+      ],
+      "webhookId": "bf20549a-7e7e-5388-aa60-3b801297ad84"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check every decision against the rules. Nothing is trusted: wrong role, self-approval, unknown request, late answer -> the request stays open or is marked invalid.\nconst planned = $('Plan and requests').first().json;\nconst input = $input.first().json;\nconst decisions = (planned.demo ? planned.sampleDecisions : (input.body && input.body.decisions)) || [];\nconst now = Date.parse(planned.now);\nconst out = planned.requests.map((r) => {\n  const d = decisions.find((x) => x && x.id === r.id);\n  const log = [`${r.id}: requested by ${r.requester}, approver role ${r.approver}`];\n  let status = 'pending', reason = 'no answer yet';\n  if (d) {\n    if (d.role !== r.approver) { status = 'invalid'; reason = `role ${d.role} is not the approver (${r.approver})`; }\n    else if (d.by === r.requester) { status = 'invalid'; reason = 'four-eyes rule: the requester cannot approve their own request'; }\n    else if (d.decision === 'approved') { status = 'approved'; reason = d.comment || 'approved'; }\n    else if (d.decision === 'rejected') { status = 'rejected'; reason = d.comment || 'rejected'; }\n    else { status = 'invalid'; reason = 'decision must be approved or rejected'; }\n    log.push(`decision by ${String(d.by).slice(0, 40)} (${d.role}): ${status} - ${reason}`);\n  }\n  if (status === 'pending' && now > Date.parse(r.expiresAt)) { status = 'expired'; reason = 'no answer within the time limit'; log.push('expired'); }\n  return { json: { ...r, status, reason, log, go: status === 'approved' } };\n});\nreturn out;\n"
+      },
+      "id": "195ebea7-9a90-567b-824f-a1d160b792e5",
+      "name": "Evaluate decisions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Approved tasks become the call for Demo 6 (operator runbook). Nothing is started here: the calls are prepared, one per task.\nconst items = $input.all().map((i) => i.json).filter((r) => r.go);\nconst calls = items.map((r, n) => ({\n  ticket: { id: `T-AP-${n + 1}`, title: `${r.title} on ${r.vm}` },\n  vm: r.vm, task: r.task, approved: true, approvedBy: r.reason, window: r.reboot ? 'Maintenance window needed (restart)' : 'Can run during operations'\n}));\nreturn [{ json: { released: calls, runbookWebhook: '/webhook/vm-operator-runbook', note: calls.length ? undefined : 'No approved task. Nothing is released.' } }];\n"
+      },
+      "id": "f87651fa-a632-51bc-a2b0-ada4d056030f",
+      "name": "Release to runbook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Approval report with audit trail. Open requests are reminded or escalated by a person, never approved automatically.\nconst reqs = $('Evaluate decisions').all().map((i) => i.json);\nconst rel = $input.first().json;\nconst count = (s) => reqs.filter((r) => r.status === s).length;\nconst counts = { requests: reqs.length, approved: count('approved'), rejected: count('rejected'), pending: count('pending'), invalid: count('invalid'), expired: count('expired') };\nconst lines = reqs.flatMap((r) => [`${r.id} [${r.urgency}] ${r.title} on ${r.vm}: ${r.status.toUpperCase()} (${r.reason})`, ...r.log.map((l) => `    ${l}`)]);\nconst todo = reqs.filter((r) => r.status === 'pending' || r.status === 'invalid' || r.status === 'expired').map((r) => `${r.id}: ask ${r.approver} again${r.urgency === 'urgent' ? ' (urgent, escalate to the on-call manager)' : ''}`);\nconst digest = [`VM maintenance approval: ${counts.requests} requests, ${counts.approved} approved, ${counts.rejected} rejected, ${counts.pending + counts.invalid + counts.expired} open`, ...lines, ...(todo.length ? ['Open:', ...todo] : []), `Released to the runbook: ${rel.released.length}. Nothing was run by this workflow.`].join('\\n');\nreturn [{ json: { counts, requests: reqs.map(({ go, ...r }) => r), released: rel.released, digest } }];\n"
+      },
+      "id": "4c5b9cdf-080a-5a26-b254-d38ba94fa921",
+      "name": "Approval report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Run demo": {
+      "main": [
+        [
+          {
+            "node": "Plan and requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: plan": {
+      "main": [
+        [
+          {
+            "node": "Plan and requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan and requests": {
+      "main": [
+        [
+          {
+            "node": "Decisions at hand?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decisions at hand?": {
+      "main": [
+        [
+          {
+            "node": "Evaluate decisions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait for approver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for approver": {
+      "main": [
+        [
+          {
+            "node": "Evaluate decisions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate decisions": {
+      "main": [
+        [
+          {
+            "node": "Release to runbook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Release to runbook": {
+      "main": [
+        [
+          {
+            "node": "Approval report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

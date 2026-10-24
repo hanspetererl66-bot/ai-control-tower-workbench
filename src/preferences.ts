@@ -43,6 +43,20 @@ export type Assistant = {
   tone: (typeof TONES)[number];
   instructions: string;
 };
+/** Optional helpers in the chat window. Read aloud, privacy bar and usage are off until the person switches them on. */
+export type ChatTools = {
+  readAloud: boolean;
+  privacyBar: boolean;
+  usage: boolean;
+  /** Ask before an action that changes something (approval card). */
+  askBeforeActions: boolean;
+  /** Price per million tokens in EUR; 0 means no cost is shown. */
+  priceInPerM: number;
+  priceOutPerM: number;
+  /** Labels of the built-in suggestions on the empty chat that the person switched off. */
+  hiddenStarters: string[];
+};
+export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [] };
 export type Starter = { label: string; prompt: string };
 export type StorageLocation = { id: string; name: string; purpose: (typeof PURPOSES)[number]; location: string };
 
@@ -65,6 +79,7 @@ export type ProfileSettings = {
   spaceParents: Record<string, string>;
   favoriteSkills: string[];
   assistant: Assistant;
+  chat: ChatTools;
 };
 export type Profile = { id: string; name: string; settings: Partial<ProfileSettings> };
 
@@ -97,6 +112,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   spaceParents: {},
   favoriteSkills: [],
   assistant: { ...DEFAULT_ASSISTANT },
+  chat: { ...DEFAULT_CHAT_TOOLS },
   starters: [],
   setup: { model: '', connectors: [] },
   storages: [],
@@ -142,6 +158,21 @@ const text = (value: unknown, max: number): string =>
 const list = (value: unknown, ok: (s: string) => boolean, max: number): string[] =>
   Array.isArray(value) ? [...new Set(value.filter((v): v is string => typeof v === 'string' && ok(v)))].slice(0, max) : [];
 
+const price = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.min(1000, Math.round(value * 100) / 100) : 0);
+export function sanitizeChatTools(value: unknown): ChatTools {
+  const v = isObject(value) ? value : {};
+  const flag = (x: unknown, fallback: boolean) => (typeof x === 'boolean' ? x : fallback);
+  return {
+    readAloud: flag(v.readAloud, DEFAULT_CHAT_TOOLS.readAloud),
+    privacyBar: flag(v.privacyBar, DEFAULT_CHAT_TOOLS.privacyBar),
+    usage: flag(v.usage, DEFAULT_CHAT_TOOLS.usage),
+    askBeforeActions: flag(v.askBeforeActions, DEFAULT_CHAT_TOOLS.askBeforeActions),
+    priceInPerM: price(v.priceInPerM),
+    priceOutPerM: price(v.priceOutPerM),
+    hiddenStarters: Array.isArray(v.hiddenStarters) ? [...new Set(v.hiddenStarters.filter((x): x is string => typeof x === 'string').map((x) => text(x, 60)).filter(Boolean))].slice(0, 12) : [],
+  };
+}
+
 export function sanitizeAssistant(value: unknown): Assistant {
   const v = isObject(value) ? value : {};
   return {
@@ -184,6 +215,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   }
   if (Array.isArray(v.favoriteSkills)) out.favoriteSkills = list(v.favoriteSkills, (s) => SLUG.test(s), 12);
   if (isObject(v.assistant)) out.assistant = sanitizeAssistant(v.assistant);
+  if (isObject(v.chat)) out.chat = sanitizeChatTools(v.chat);
   return out;
 }
 
@@ -224,8 +256,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, favoriteSkills, assistant } = prefs;
-  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant } };
+  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, favoriteSkills, assistant, chat } = prefs;
+  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {

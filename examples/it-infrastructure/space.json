@@ -2,7 +2,6 @@
   "title": "IT Infrastructure",
   "description": "Mockup of 25 virtual machines as a status wall (green, yellow, red, hover explains why), with recommended maintenance tasks and a demo flow from detection to a verified fix.",
   "domain": "Operations",
-  "parent": "it-operations",
   "insights": [
     "Fictional VMs and measurements, no live monitoring. The colour is calculated from fixed rules: CPU, memory, disk, backup age (production), missing security patches and TLS certificate expiry.",
     "Hover over a VM, or focus it with the keyboard, to see which check made it green, yellow or red, the limits, and the recommended task.",

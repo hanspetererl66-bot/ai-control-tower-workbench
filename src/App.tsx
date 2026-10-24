@@ -30,6 +30,7 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
+import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
 import { addDomain, assignDomain, assignParent, assistantNote, deleteDomain, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
@@ -123,6 +124,11 @@ export default function App() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
+  const [schedules, setSchedules] = useState<Schedule[]>(() => loadSchedules(window.localStorage));
+  const updateSchedules = useCallback((next: Schedule[]) => {
+    setSchedules(next);
+    saveSchedules(next, window.localStorage);
+  }, []);
   const [view, setView] = useState<View>('chat');
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -177,6 +183,8 @@ export default function App() {
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
   const webSearchRef = useRef(true);
+  const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
+  askBeforeActionsRef.current = prefs.chat.askBeforeActions;
   const blockedWebTool = useRef(false);
   const agentRef = useRef<Agent | null>(null);
   const lastGroundedCsvPath = useRef<string | null>(null);
@@ -402,6 +410,9 @@ export default function App() {
         agentRef.current = nextAgent;
         setAgent(nextAgent);
         setMode(nextAgent.currentMode);
+        if (askBeforeActionsRef.current && nextAgent.currentMode === 'auto') {
+          nextAgent.setMode('smart_approve').then(() => setMode('smart_approve')).catch(() => undefined);
+        }
         setError(null);
       } catch (e: any) {
         if (cancelled) return;
@@ -676,6 +687,29 @@ export default function App() {
     return true;
   }
 
+  /** "Save as Space": the agent turns one answer into a Space. */
+  function saveAnswerAsSpace(index: number) {
+    const answer = messages[index];
+    if (!answer || answer.role !== 'agent' || !answer.text.trim()) return;
+    void send(`Create a Space from your answer below. Give it a short, fitting title.\n\n${answer.text.slice(0, 8000)}`);
+  }
+
+  // Recurring briefings: while the app is open, run a due one when the chat is idle (also catches up to six hours).
+  const dueTick = useRef<() => void>(() => undefined);
+  dueTick.current = () => {
+    if (!agent || busy) return;
+    const now = new Date();
+    const due = schedules.find((s) => isDue(s, now));
+    if (!due) return;
+    updateSchedules(schedules.map((s) => (s.id === due.id ? { ...s, lastRun: now.toISOString() } : s)));
+    setView('chat');
+    void send(`${due.prompt}\n\n(Recurring briefing, ${due.time})`);
+  };
+  useEffect(() => {
+    const id = window.setInterval(() => dueTick.current(), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const empty = messages.length === 0;
   const composer = (
     <Composer
@@ -697,6 +731,9 @@ export default function App() {
       onVoiceCommand={handleVoiceCommand}
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
+      hiddenStarters={prefs.chat.hiddenStarters}
+      schedules={schedules}
+      onSchedulesChange={updateSchedules}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
     />
   );
@@ -920,6 +957,10 @@ export default function App() {
               <Chat
                 messages={messages}
                 busy={busy}
+                onAsk={askFromSpace}
+                onSaveAsSpace={saveAnswerAsSpace}
+                chatTools={prefs.chat}
+                meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
                   setView('spaces');

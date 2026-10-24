@@ -5,6 +5,7 @@ import {
   type Preferences, type Starter,
 } from '../preferences';
 import { SPACE_SCALES } from '../space-scale';
+import { STARTER_PROMPTS } from '../starter-prompts';
 
 export type PrefsUpdate = (change: (current: Preferences) => Preferences) => void;
 export type SpaceRef = { slug: string; title: string };
@@ -166,6 +167,14 @@ export function WorkPanel({ prefs, update, spaces, skills, connectors }: Common 
           </label>
         ))}
       </Section>
+      <Section title="Suggestions on the empty chat" hint="Untick a built-in suggestion to hide it.">
+        {STARTER_PROMPTS.map((s) => (
+          <label key={s.label} className="voice-option" title={s.prompt}>
+            <input type="checkbox" checked={!prefs.chat.hiddenStarters.includes(s.label)} onChange={() => update((p) => ({ ...p, chat: { ...p.chat, hiddenStarters: p.chat.hiddenStarters.includes(s.label) ? p.chat.hiddenStarters.filter((x) => x !== s.label) : [...p.chat.hiddenStarters, s.label] } }))} />
+            <span>{s.label}</span>
+          </label>
+        ))}
+      </Section>
       <Section title="Own starter prompts" hint="Frequent requests as buttons on the empty chat. Up to 12.">
         <ul className="prefs-list">
           {prefs.starters.map((s, i) => (
@@ -197,6 +206,7 @@ export function WorkPanel({ prefs, update, spaces, skills, connectors }: Common 
 export function AssistantPanel({ prefs, update }: Common) {
   const set = (patch: Partial<Preferences['assistant']>) => update((p) => ({ ...p, assistant: { ...p.assistant, ...patch } }));
   const note = assistantNote(prefs);
+  const setChat = (patch: Partial<Preferences['chat']>) => update((p) => ({ ...p, chat: { ...p.chat, ...patch } }));
   return (
     <>
       <Section title="Answers" hint="Sent with every message, together with your instructions.">
@@ -207,6 +217,18 @@ export function AssistantPanel({ prefs, update }: Common) {
       <Section title="Standing instructions" hint="For example: always name the source, write numbers in euro, prefer tables.">
         <textarea className="prefs-area" value={prefs.assistant.instructions} maxLength={1000} onChange={(e) => set({ instructions: e.target.value })} aria-label="Standing instructions" />
         <p className="prefs-note">{prefs.assistant.instructions.length} / 1000</p>
+      </Section>
+      <Section title="Chat window" hint="Helpers that show their result in the chat window once switched on.">
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.askBeforeActions} onChange={(e) => setChat({ askBeforeActions: e.target.checked })} /><span>Ask before actions (approval card for anything that changes something)</span></label>
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.readAloud} onChange={(e) => setChat({ readAloud: e.target.checked })} /><span>Read aloud: “Listen” button under each answer</span></label>
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.privacyBar} onChange={(e) => setChat({ privacyBar: e.target.checked })} /><span>Privacy bar: web search, connectors and model in use</span></label>
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.usage} onChange={(e) => setChat({ usage: e.target.checked })} /><span>Usage and cost estimate for this conversation</span></label>
+        {prefs.chat.usage && (
+          <div className="prefs-row">
+            <label className="prefs-field">Price per 1M input tokens (€)<input type="number" min={0} max={1000} step={0.1} value={prefs.chat.priceInPerM} onChange={(e) => setChat({ priceInPerM: Number(e.target.value) || 0 })} /></label>
+            <label className="prefs-field">Price per 1M output tokens (€)<input type="number" min={0} max={1000} step={0.1} value={prefs.chat.priceOutPerM} onChange={(e) => setChat({ priceOutPerM: Number(e.target.value) || 0 })} /></label>
+          </div>
+        )}
       </Section>
       <Section title="What the assistant receives">
         <pre className="prefs-note" style={{ whiteSpace: 'pre-wrap' }}>{note || 'Nothing: all settings are at their defaults.'}</pre>

@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const dir = join(import.meta.dirname, '..', 'examples/n8n-workflows');
 const load = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8'));
-const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json', '04-it-operations-alert-triage.json', '05-vm-maintenance-plan.json', '06-vm-operator-runbook.json'];
+const FILES = ['01-simple-contract-notice-check.json', '02-complex-communication-digest.json', '03-sales-pipeline-digest.json', '04-it-operations-alert-triage.json', '05-vm-maintenance-plan.json', '06-vm-operator-runbook.json', '07-vm-maintenance-approval.json'];
 
 for (const file of FILES) {
   test(`${file} is a valid importable n8n workflow without credentials`, () => {
@@ -159,4 +159,36 @@ test('IT operations workflow: webhook and manual start, injected alert quarantin
   assert.match(digest.json.digest, /Nothing was paged/);
   const rules = wf.nodes.find((n) => n.name === 'Route by priority').parameters.rules.values;
   assert.deepEqual(rules.map((r) => [r.outputKey, r.conditions.conditions[0].operator.operation, r.conditions.conditions[0].rightValue]), [['p1', 'gte', 70], ['p2', 'gte', 35], ['p3', 'lt', 35]]);
+});
+
+test('approval workflow 07: roles, four-eyes rule, expiry and the prepared runbook calls', async () => {
+  const wf = load('07-vm-maintenance-approval.json');
+  assert.ok(wf.nodes.some((n) => n.type === 'n8n-nodes-base.wait' && n.parameters.resume === 'webhook'), 'waits for the approver');
+  assert.ok(wf.nodes.some((n) => n.type === 'n8n-nodes-base.webhook' && n.parameters.path === 'vm-maintenance-approval'));
+  const js = (name) => wf.nodes.find((n) => n.name === name).parameters.jsCode;
+  const run = async (name, ctx) => JSON.parse(JSON.stringify(await vm.runInNewContext(`(async()=>{${js(name)}})`, ctx)()));
+  const first = (json) => ({ first: () => ({ json }), all: () => [{ json }] });
+  const [plan] = await run('Plan and requests', { $input: first({}) });
+  assert.equal(plan.json.demo, true);
+  assert.deepEqual(plan.json.requests.map((r) => [r.id, r.approver, r.urgency]), [
+    ['AP-sap-prd-app01-patch', 'Change board', 'urgent'], ['AP-proxy-edge-01-cert', 'Security', 'urgent'], ['AP-proxy-edge-01-backup', 'Backup owner', 'planned'],
+  ]);
+  const evaluate = (planned, body) => run('Evaluate decisions', { $: () => ({ first: () => ({ json: planned }) }), $input: first({ body }) });
+  const demo = await evaluate(plan.json, undefined);
+  assert.deepEqual(demo.map((i) => i.json.status), ['approved', 'invalid', 'rejected']);
+  assert.match(demo[1].json.reason, /four-eyes/);
+  // live call: wrong role is invalid, no answer stays pending and expires later, nobody is approved automatically
+  const live = { ...plan.json, demo: false, sampleDecisions: null };
+  const wrongRole = await evaluate(live, { decisions: [{ id: 'AP-sap-prd-app01-patch', decision: 'approved', by: 'x', role: 'Security' }] });
+  assert.deepEqual(wrongRole.map((i) => i.json.status), ['invalid', 'pending', 'pending']);
+  const late = await evaluate({ ...live, now: '2026-11-30T00:00:00Z' }, { decisions: [] });
+  assert.ok(late.every((i) => i.json.status === 'expired' && i.json.go === false));
+  // release: only approved tasks become a runbook call with approved: true
+  const [rel] = await run('Release to runbook', { $input: { all: () => demo } });
+  assert.deepEqual(rel.json.released.map((c) => [c.vm, c.task, c.approved]), [['sap-prd-app01', 'patch', true]]);
+  const [none] = await run('Release to runbook', { $input: { all: () => late } });
+  assert.deepEqual(none.json.released, []);
+  const [report] = await run('Approval report', { $: () => ({ all: () => demo }), $input: first(rel.json) });
+  assert.deepEqual(report.json.counts, { requests: 3, approved: 1, rejected: 1, pending: 0, invalid: 1, expired: 0 });
+  assert.match(report.json.digest, /Nothing was run by this workflow/);
 });
