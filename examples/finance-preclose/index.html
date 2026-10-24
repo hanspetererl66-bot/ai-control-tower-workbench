@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finance Pre-Close</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f7f6fb;--surface:#ffffff;--ink:#171322;--ink-2:#4a4560;--muted:#6c6784;--faint:#b4b0c4;--line:#ebe8f2;--line-2:#f4f2f9;--wash:#faf9fd;
+  --purple:#A100FF;--purple-mid:#7B00C2;--purple-dim:rgba(161,0,255,.08);--purple-border:rgba(161,0,255,.2);--purple-light:#f3e6ff;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041c2;--blue-dim:rgba(0,65,194,.08);--blue-border:rgba(0,65,194,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:16px;--radius-s:10px;--shadow:0 1px 2px rgba(23,19,34,.04);--shadow-lg:0 24px 60px rgba(23,19,34,.22);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0e0c14;--surface:#171320;--ink:#f2f0f8;--ink-2:#cfcbe0;--muted:#9a95b0;--faint:#5d5873;--line:#2b2638;--line-2:#211d2d;--wash:#1b1726;
+  --purple:#c26bff;--purple-mid:#d9a3ff;--purple-dim:rgba(194,107,255,.14);--purple-border:rgba(194,107,255,.32);--purple-light:#2a1640;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7aa7ff;--blue-dim:rgba(122,167,255,.13);--blue-border:rgba(122,167,255,.3);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+button.primary{background:var(--purple);color:#fff;border-radius:var(--radius-s);padding:10px 18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0a2b}}
+:root[data-theme="dark"] button.primary{color:#1a0a2b}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+</style>
+<style>
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
+main{max-width:1240px;margin:0 auto;padding:20px 24px 48px}
+.demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
+h2{font-size:15px;font-weight:650;margin:0 0 4px}h3{font-size:13px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 12px}
+.card{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi .v{font-size:22px;font-weight:600}.kpi .k{color:var(--muted);font-size:12px}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
+.kpi.red{border-color:var(--red-border)}.kpi.red .v{color:var(--red)}.kpi.amber{border-color:var(--amber-border)}.kpi.amber .v{color:var(--amber)}.kpi.green{border-color:var(--green-border)}.kpi.green .v{color:var(--green)}
+.bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--ink);font:inherit;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--purple-dim);color:var(--purple)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+select,input[type=search]{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:99px;padding:5px 10px;background:var(--surface);color:var(--ink)}
+label.chk{font-size:12px;color:var(--ink-2);display:inline-flex;gap:5px;align-items:center}
+.spacer{margin-left:auto}
+button.primary,button.ghost,button.small{font:inherit;cursor:pointer}
+button.primary{border:0;background:var(--purple);color:#fff;border-radius:99px;padding:7px 16px;font-weight:650}
+button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 14px;font-weight:600}
+button.small{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650}
+button:disabled{opacity:.5;cursor:default}
+.pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;border:1px solid}
+.pill.green,.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}.pill.yellow,.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.red,.pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;color:var(--ink-2);font-size:12px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:4px;border:1.5px solid}
+.legend .g{background:var(--green-dim);border-color:var(--green)}.legend .y{background:var(--amber-dim);border-color:var(--amber)}.legend .r{background:var(--red-dim);border-color:var(--red)}
+table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}td{padding:5px 8px;border-bottom:1px solid var(--line-2)}
+.flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin-top:8px;flex-wrap:wrap;align-items:center}.flow b{color:var(--ink)}
+.tip{position:fixed;z-index:10;max-width:300px;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);box-shadow:var(--shadow-lg);padding:10px 12px;font-size:12px;line-height:1.45}.tip[hidden]{display:none}.tip ul{margin:4px 0 0;padding-left:16px}.tip .lim{color:var(--muted)}
+.guide{border-color:var(--purple-border);background:var(--purple-dim)}.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}.guide p{margin:4px 0 0;color:var(--ink-2)}
+.guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{color:var(--muted);font-size:12px;margin:8px 0 0}
+.n{text-align:right}#alt td.n{white-space:nowrap}tr[data-id]{cursor:pointer}tr[data-id]:hover td,tr[aria-selected=true] td{background:var(--purple-dim)}
+.dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:12px;margin:8px 0}.dl dt{color:var(--muted)}.dl dd{margin:0;text-align:right;font-weight:600}
+.flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin:8px 0;flex-wrap:wrap}.flow b{color:var(--ink)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.drill{border-color:var(--purple-border)}
+.dayctl{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.dayctl input[type=range]{flex:1 1 260px;min-width:180px;accent-color:var(--purple)}
+.ch{width:100%;height:auto;display:block}
+.ch .grid{stroke:var(--line-2);stroke-width:1}.ch .ax{fill:var(--muted);font-size:10px}.ch .future{fill:var(--line-2);opacity:.35}
+.ch .bud{stroke:var(--ink-2);stroke-width:1.5;stroke-dasharray:5 4}.ch .bud-l{fill:var(--ink-2)}
+.ch .band{fill:var(--purple);opacity:.16}.ch .fc{fill:none;stroke:var(--purple);stroke-width:2.2}.ch .pt{fill:var(--purple)}.ch .lab-now{fill:var(--ink);font-size:11px;font-weight:700}
+.ch .wf.total{fill:var(--purple)}.ch .wf.pos{fill:var(--green)}.ch .wf.neg{fill:var(--red)}
+.n{text-align:right;white-space:nowrap}td.rng{color:var(--muted);font-size:11px}
+td.fav{color:var(--green)}td.unf{color:var(--red)}
+tr.tot td{background:var(--line-2);border-top:1px solid var(--line)}
+tr[data-line],tr[data-ent]{cursor:pointer}tr[data-line]:hover td,tr[data-ent]:hover td,tr[aria-selected=true] td{background:var(--purple-dim)}
+td.c{text-align:center;font-weight:650}td.c.red{background:var(--red-dim);color:var(--red)}td.c.yellow{background:var(--amber-dim);color:var(--amber)}
+tr.cur td{background:var(--purple-dim)}
+.dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:12px;margin:8px 0}.dl dt{color:var(--muted)}.dl dd{margin:0;text-align:right;font-weight:600}
+.spk{display:flex;align-items:flex-end;gap:2px;height:40px;margin:4px 0}.spk i{display:block;flex:1;background:var(--purple);opacity:.7;border-radius:2px;min-height:4px}
+ul.notes{margin:4px 0 0;padding-left:16px;font-size:12px}ul.notes li{margin:4px 0}
+.axisrow,.trow{display:grid;grid-template-columns:minmax(200px,38%) 1fr 92px;gap:10px;align-items:center}
+.axisrow{margin-bottom:2px}.wdax{position:relative;height:16px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--line)}.wdax span{position:absolute;top:0;padding-left:2px}
+.wdtrack .nl{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--purple)}.wdax span.now{color:var(--purple);font-weight:700}
+.ph{margin:12px 0 2px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.trow{padding:4px 0;border-bottom:1px solid var(--line-2)}.wdtrack{position:relative;height:12px;border-left:1px solid var(--line)}
+.tb{position:absolute;top:1px;height:10px;border-radius:5px;border:1.5px solid}.tb.done{background:var(--green-dim);border-color:var(--green)}.tb.red{background:var(--red-dim);border-color:var(--red)}.tb.yellow{background:var(--amber-dim);border-color:var(--amber)}.tb.planned{background:var(--line-2);border-color:var(--line)}
+.alert{padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-s);margin-bottom:8px;font-size:12px}.alert.red{background:var(--red-dim);border-color:var(--red-border)}.alert.yellow{background:var(--amber-dim);border-color:var(--amber-border)}
+.sc{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-s);margin-bottom:8px;cursor:pointer;font-size:12px}.sc.risk{border-left:4px solid var(--red)}.sc.opportunity{border-left:4px solid var(--green)}
+.sc input{margin-top:3px;accent-color:var(--purple)}
+.kpis.small{grid-template-columns:repeat(3,1fr);margin:8px 0 12px}
+.bar select{max-width:260px}
+@media (max-width:900px){.layout,.two{grid-template-columns:1fr}.axisrow,.trow{grid-template-columns:1fr 90px}.axisrow span:first-child{display:none}.wdtrack,.wdax{grid-column:1 / -1;order:3}}
+
+</style>
+</head>
+<body>
+<main>
+  <p class="demo">Fictional company and mockup data in the shape of an S/4HANA Finance extract; there is no connection to a finance system. A generator creates the figures, controllers' notes and open items, so the demo is the same every time. Nothing is posted: approving an accrual is simulated.</p>
+  <div class="card">
+    <div class="dayctl">
+      <h2 style="margin:0">Finance pre-close, <span id="period">October 2026</span></h2>
+      <select id="ent" aria-label="Company code"></select>
+      <div class="seg" id="metric" role="group" aria-label="Metric"><button type="button" data-m="revenue">Revenue</button><button type="button" data-m="gross">Gross profit</button><button type="button" data-m="ebit">EBIT</button></div>
+      <button class="primary spacer" id="brief" type="button">Daily briefing with Joule</button>
+      <button class="ghost" id="reset" type="button">Reset demo</button>
+    </div>
+    <div class="dayctl" style="margin-top:10px">
+      <button class="ghost" id="prev" type="button" aria-label="Previous working day">‹</button>
+      <input type="range" id="day" min="1" max="22" step="1" aria-label="Pre-close working day">
+      <button class="ghost" id="next" type="button" aria-label="Next working day">›</button>
+      <button class="small" id="today" type="button">Today</button>
+    </div>
+    <p class="sub" style="margin:8px 0 0" id="day-label" aria-live="polite"></p>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card guide" id="guide" aria-live="polite"></div>
+  <div class="two">
+    <div class="card"><h2>Forecast evolution</h2><p class="sub" id="evo-sub"></p><div id="evo"></div></div>
+    <div class="card"><h2>Budget to forecast</h2><p class="sub" id="bridge-sub"></p><div id="bridge"></div></div>
+  </div>
+  <div class="layout">
+    <div class="card"><h2 id="pnl-title">Profit and loss</h2><p class="sub">Thousand EUR, costs positive. Booked = posted so far; forecast = expected month end; the range is the 80 % band. Green and red are against the budget. Click a line.</p><div style="overflow:auto"><table><thead><tr><th>Line</th><th class="n">Booked</th><th class="n">Forecast</th><th class="n">Range</th><th class="n">Budget</th><th class="n">Var.</th><th class="n">Var. %</th><th class="n">vs last year</th><th>Confidence</th><th>Status</th></tr></thead><tbody id="pnl"></tbody></table></div></div>
+    <aside class="card drill" id="detail" aria-live="polite"></aside>
+  </div>
+  <div class="card"><h2>Company codes</h2><p class="sub">Forecast against budget, close readiness, open items and red alerts per company code. Click a row to filter the page.</p><div style="overflow:auto"><table><thead><tr><th>Company code</th><th class="n">Revenue</th><th class="n">vs budget</th><th class="n">EBIT</th><th class="n">vs budget</th><th class="n">Readiness</th><th class="n">Open items</th><th class="n">Red alerts</th></tr></thead><tbody id="ents"></tbody></table></div></div>
+  <div class="card"><div class="bar"><h2 style="margin:0">Close calendar</h2><div class="chips" id="task-chips" role="group" aria-label="Filter tasks"></div></div><p class="sub">Bars run from the start to the due working day (12 to 25); the dashed line is the day you selected. Working days 23 to 25 are in November.</p><div id="tasks"></div></div>
+  <div class="card"><h2>Open items and reconciliations</h2><p class="sub">What must be cleared before the cut-off, the largest first.</p><div class="kpis small" id="aging"></div><div class="chips" id="item-chips" role="group" aria-label="Filter by type" style="margin-bottom:10px"></div><div style="overflow:auto"><table><thead><tr><th>Item</th><th>Type</th><th>Company code</th><th class="n">Amount</th><th class="n">Age</th><th>Owner</th><th>Suggested step</th></tr></thead><tbody id="items"></tbody></table></div><p class="note" id="items-more"></p><div style="margin-top:8px"><button class="small" id="items-ask" type="button">Prioritise with Joule</button></div><div style="overflow:auto;margin-top:10px"><table id="ic"></table></div></div>
+  <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th></th></tr></thead><tbody id="accr"></tbody></table></div></div>
+  <div class="two">
+    <div class="card"><h2>Alerts and anomalies</h2><p class="sub">Found by rules on the postings up to the selected day.</p><div id="alerts"></div></div>
+    <div class="card"><h2>What if?</h2><p class="sub">Risks and opportunities that are not in the forecast yet. Tick them to see the effect.</p><div id="scen"></div><div style="overflow:auto"><table id="scen-res"></table></div></div>
+  </div>
+  <div class="card"><h2>How the numbers are made</h2><p class="sub" style="margin:0" id="assump"></p></div>
+</main>
+<script type="application/json" id="preclose-data">
+{"company":"Nordlicht Group (fictional)","period":"2026-10","periodLabel":"October 2026","currency":"EUR","unit":"thousand EUR","asOfWd":17,"source":"Mockup extract in the shape of S/4HANA Finance (company codes, G/L accounts grouped into P&L lines). Generated, not a live system.","workingDays":["2026-10-01","2026-10-02","2026-10-05","2026-10-06","2026-10-07","2026-10-08","2026-10-09","2026-10-12","2026-10-13","2026-10-14","2026-10-15","2026-10-16","2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30"],"entities":[{"id":"DE10","name":"Nordlicht Software GmbH","country":"Germany","currency":"EUR"},{"id":"FR10","name":"Nordlicht France SAS","country":"France","currency":"EUR"},{"id":"UK10","name":"Nordlicht UK Ltd","country":"United Kingdom","currency":"GBP"},{"id":"US10","name":"Nordlicht Inc.","country":"United States","currency":"USD"}],"lines":[{"key":"cloud","name":"Cloud subscriptions","kind":"revenue","method":"Contract schedule: billed subscriptions plus the remaining ratable revenue of active contracts.","driver":"Subscription base and price changes"},{"key":"license","name":"Software licences and support","kind":"revenue","method":"Booked deals plus the weighted pipeline of deals that can still close this month.","driver":"Deal timing at month end"},{"key":"services","name":"Professional services","kind":"revenue","method":"Run rate of booked hours times the rate card, plus the work in progress at month end.","driver":"Utilisation and milestone acceptance"},{"key":"hosting","name":"Cloud hosting and infrastructure","kind":"cogs","method":"Run rate of the provider invoices plus usage accrual until month end.","driver":"Usage and committed-use discounts"},{"key":"delivery","name":"Delivery partners and subcontractors","kind":"cogs","method":"Purchase orders and timesheets of partners, accrual for services received but not invoiced.","driver":"Partner hours"},{"key":"personnel","name":"Personnel","kind":"opex","method":"Payroll run plus accruals for bonus, holiday and social charges.","driver":"Headcount and bonus accrual"},{"key":"marketing","name":"Sales and marketing","kind":"opex","method":"Committed campaign budget and commissions on forecast revenue.","driver":"Commissions and campaigns"},{"key":"travel","name":"Travel and events","kind":"opex","method":"Booked expenses plus events and card statements not yet posted.","driver":"Events and card statements"},{"key":"it","name":"IT and facilities","kind":"opex","method":"Contract schedule of licences, rent and services.","driver":"Contracts"},{"key":"legal","name":"Legal and professional fees","kind":"opex","method":"Open invoices and engagement letters, accrual for work done.","driver":"Projects and audits"},{"key":"da","name":"Depreciation and amortisation","kind":"opex","method":"Asset register: the depreciation run on working day 21.","driver":"Asset additions"},{"key":"other","name":"Other operating expenses","kind":"opex","method":"Run rate of the last three months.","driver":"Various"}],"rules":{"varianceWarnPct":5,"varianceWarnK":50,"bandPct":80,"confidence":{"highBelowPct":2,"mediumBelowPct":6},"hardCloseWd":23},"pl":{"DE10":{"cloud":{"budget":5691,"py":5085,"actual":[2406,2566,2735,2859,3042,3172,3366,3520,3655,3794,3967,4094,4254,4416,4573,4686,4926,4986,5230,5309,5508,5650],"forecast":[5688,5703,5693,5690,5684,5695,5666,5688,5678,5667,5674,5646,5661,5656,5659,5646,5652,5657,5648,5650,5650,5650],"low":[5604,5623,5616,5616,5613,5628,5602,5628,5621,5614,5624,5600,5619,5617,5624,5615,5625,5635,5630,5637,5643,5650],"high":[5772,5783,5770,5764,5755,5762,5730,5748,5735,5720,5724,5692,5703,5695,5694,5677,5679,5679,5666,5663,5657,5650]},"license":{"budget":1970,"py":1813,"actual":[6,19,38,62,90,124,159,203,245,295,349,398,458,522,590,655,721,794,881,948,1032,1123],"forecast":[1901,1897,1885,1825,1807,1739,1714,1694,1626,1609,1581,1209,1187,1202,1193,1169,1162,1163,1152,1140,1135,1123],"low":[1735,1737,1732,1678,1667,1605,1587,1574,1513,1503,1482,1117,1103,1125,1124,1108,1109,1119,1117,1115,1120,1123],"high":[2067,2057,2038,1972,1947,1873,1841,1814,1739,1715,1680,1301,1271,1279,1262,1230,1215,1207,1187,1165,1150,1123]},"services":{"budget":3283,"py":3114,"actual":[156,311,470,622,782,925,1095,1252,1394,1557,1707,1856,1998,2183,2345,2496,2654,2775,2965,3130,3232,3414],"forecast":[3347,3344,3341,3285,3294,3287,3306,3382,3376,3410,3432,3374,3410,3426,3384,3410,3418,3419,3422,3409,3416,3414],"low":[3094,3101,3108,3062,3081,3084,3113,3199,3204,3249,3281,3234,3282,3309,3279,3317,3338,3352,3369,3370,3394,3414],"high":[3600,3587,3574,3508,3507,3490,3499,3565,3548,3571,3583,3514,3538,3543,3489,3503,3498,3486,3475,3448,3438,3414]},"hosting":{"budget":998,"py":904,"actual":[46,92,138,183,231,273,323,367,416,459,508,546,599,637,688,736,782,820,874,921,973,1009],"forecast":[1006,1006,994,1002,995,995,999,1006,1006,1001,998,1004,1012,1010,1010,1010,1009,1010,1007,1008,1009,1009],"low":[969,970,960,969,963,965,970,979,981,977,976,983,993,993,994,996,997,1000,999,1002,1006,1009],"high":[1043,1042,1028,1035,1027,1025,1028,1033,1031,1025,1020,1025,1031,1027,1026,1024,1021,1020,1015,1014,1012,1009]},"delivery":{"budget":755,"py":732,"actual":[4,13,26,41,60,82,107,134,163,196,231,268,309,350,390,433,487,535,586,641,694,750],"forecast":[759,756,740,765,756,754,748,748,745,748,757,756,751,748,754,750,752,747,753,748,750,750],"low":[694,694,680,708,701,702,699,701,701,707,718,720,718,718,727,726,731,730,739,738,744,750],"high":[824,818,800,822,811,806,797,795,789,789,796,792,784,778,781,774,773,764,767,758,756,750]},"personnel":{"budget":4709,"py":4475,"actual":[26,52,78,105,130,157,182,209,231,258,285,309,336,363,393,418,444,463,496,4715,4748,4760],"forecast":[4703,4712,4706,4718,4723,4720,4725,4725,4728,4730,4730,4754,4756,4756,4752,4755,4756,4755,4757,4759,4759,4760],"low":[4656,4667,4663,4676,4683,4682,4689,4691,4696,4700,4702,4728,4732,4734,4732,4738,4741,4743,4747,4752,4755,4760],"high":[4750,4757,4749,4760,4763,4758,4761,4759,4760,4760,4758,4780,4780,4778,4772,4772,4771,4767,4767,4766,4763,4760]},"marketing":{"budget":932,"py":870,"actual":[5,16,31,51,74,102,132,167,203,244,286,333,382,427,479,535,603,657,718,781,856,926],"forecast":[932,919,945,924,935,937,933,931,936,926,930,932,919,930,928,921,930,924,925,927,927,926],"low":[863,853,882,863,877,882,881,881,889,882,889,894,884,898,900,896,908,906,911,917,921,926],"high":[1001,985,1008,985,993,992,985,981,983,970,971,970,954,962,956,946,952,942,939,937,933,926]},"travel":{"budget":178,"py":158,"actual":[1,3,6,10,14,20,26,32,39,47,56,64,74,84,94,105,117,127,141,153,167,180],"forecast":[182,178,183,183,182,176,176,180,177,181,181,179,180,180,180,181,181,179,181,180,180,180],"low":[160,157,163,163,163,158,159,164,162,167,168,167,169,170,171,173,174,173,176,177,178,180],"high":[204,199,203,203,201,194,193,196,192,195,194,191,191,190,189,189,188,185,186,183,182,180]},"it":{"budget":316,"py":310,"actual":[15,29,43,59,72,88,102,117,131,144,160,176,188,204,219,230,249,262,278,293,305,320],"forecast":[314,317,313,320,315,318,316,317,316,318,317,317,319,318,321,319,320,320,320,320,320,320],"low":[298,302,298,306,302,305,304,306,305,308,308,308,311,311,314,313,315,316,317,318,319,320],"high":[330,332,328,334,328,331,328,328,327,328,326,326,327,325,328,325,325,324,323,322,321,320]},"legal":{"budget":118,"py":109,"actual":[1,3,6,9,14,19,25,31,37,44,53,61,70,79,88,99,111,123,134,146,158,171],"forecast":[125,118,126,124,125,130,126,134,133,135,137,142,143,142,166,167,168,167,169,170,170,171],"low":[100,94,103,102,104,110,107,116,116,119,122,128,130,130,155,158,160,160,164,166,168,171],"high":[150,142,149,146,146,150,145,152,150,151,152,156,156,154,177,176,176,174,174,174,172,171]},"da":{"budget":307,"py":275,"actual":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,308,308],"forecast":[307,307,307,307,307,308,307,307,307,307,307,308,308,308,308,308,308,308,308,308,308,308],"low":[305,305,305,305,305,306,306,306,306,306,306,307,307,307,307,307,307,307,308,308,308,308],"high":[309,309,309,309,309,310,308,308,308,308,308,309,309,309,309,309,309,309,308,308,308,308]},"other":{"budget":183,"py":164,"actual":[8,16,25,33,41,49,58,65,74,81,91,98,106,116,122,130,138,147,157,165,172,180],"forecast":[180,179,183,181,182,183,179,178,179,180,180,178,179,179,181,179,180,179,180,180,180,180],"low":[162,162,167,165,167,169,165,165,167,169,169,168,170,171,174,172,174,174,176,177,178,180],"high":[198,196,199,197,197,197,193,191,191,191,191,188,188,187,188,186,186,184,184,183,182,180]}},"FR10":{"cloud":{"budget":2070,"py":1982,"actual":[906,957,1004,1063,1130,1193,1233,1288,1350,1406,1462,1515,1572,1651,1704,1758,1825,1853,1914,1969,2026,2101],"forecast":[2081,2080,2087,2098,2100,2100,2103,2097,2098,2098,2095,2100,2103,2097,2102,2100,2101,2102,2102,2100,2101,2101],"low":[2050,2050,2058,2071,2074,2075,2079,2075,2077,2078,2076,2083,2087,2083,2089,2089,2091,2094,2095,2095,2098,2101],"high":[2112,2110,2116,2125,2126,2125,2127,2119,2119,2118,2114,2117,2119,2111,2115,2111,2111,2110,2109,2105,2104,2101]},"license":{"budget":717,"py":675,"actual":[4,12,24,39,57,78,101,126,156,186,218,252,287,328,367,411,461,499,555,598,658,709],"forecast":[739,724,731,715,722,723,725,715,713,721,714,708,716,703,708,709,716,713,712,707,709,709],"low":[634,623,634,622,633,639,645,639,642,654,651,650,663,655,664,670,683,685,690,691,700,709],"high":[844,825,828,808,811,807,805,791,784,788,777,766,769,751,752,748,749,741,734,723,718,709]},"services":{"budget":1194,"py":1071,"actual":[54,109,163,219,272,326,385,440,494,546,600,659,715,767,821,864,929,982,1026,1095,1140,1200],"forecast":[1181,1184,1178,1198,1207,1199,1185,1183,1186,1205,1206,1200,1206,1206,1205,1193,1206,1205,1200,1197,1200,1200],"low":[1092,1099,1096,1120,1132,1128,1117,1119,1125,1148,1153,1151,1161,1165,1168,1160,1178,1181,1181,1183,1192,1200],"high":[1270,1269,1260,1276,1282,1270,1253,1247,1247,1262,1259,1249,1251,1247,1242,1226,1234,1229,1219,1211,1208,1200]},"hosting":{"budget":356,"py":333,"actual":[16,33,49,65,81,99,115,131,146,164,179,196,214,230,245,263,278,295,312,328,343,360],"forecast":[358,355,359,359,359,355,356,357,357,361,359,359,361,361,361,361,360,360,360,360,360,360],"low":[345,342,347,347,348,344,346,347,348,352,351,352,354,355,355,356,356,356,357,358,359,360],"high":[371,368,371,371,370,366,366,367,366,370,367,366,368,367,367,366,364,364,363,362,361,360]},"delivery":{"budget":256,"py":230,"actual":[1,4,9,14,21,28,37,46,56,67,78,90,103,117,134,146,164,180,199,218,235,254],"forecast":[253,257,256,252,251,253,255,259,256,257,256,254,253,256,256,254,255,255,254,253,254,254],"low":[231,236,236,233,232,235,238,243,241,243,243,242,242,246,247,246,248,249,249,250,252,254],"high":[275,278,276,271,270,271,272,275,271,271,269,266,264,266,265,262,262,261,259,256,256,254]},"personnel":{"budget":1924,"py":1823,"actual":[11,21,31,42,53,64,75,85,95,105,118,127,137,147,159,168,179,191,201,1941,1943,1943],"forecast":[1929,1922,1923,1924,1926,1929,1928,1930,1931,1932,1931,1934,1933,1933,1942,1940,1942,1942,1943,1943,1943,1943],"low":[1910,1904,1905,1907,1910,1914,1913,1916,1918,1920,1920,1923,1923,1924,1934,1933,1936,1937,1939,1940,1941,1943],"high":[1948,1940,1941,1941,1942,1944,1943,1944,1944,1944,1942,1945,1943,1942,1950,1947,1948,1947,1947,1946,1945,1943]},"marketing":{"budget":316,"py":284,"actual":[2,5,11,17,25,35,45,56,69,83,96,113,129,147,165,182,205,223,248,267,293,315],"forecast":[318,317,321,312,312,319,312,319,317,316,312,312,314,316,317,316,314,315,315,315,315,315],"low":[295,295,299,291,292,300,294,302,301,301,298,299,302,305,307,307,307,309,310,311,313,315],"high":[341,339,343,333,332,338,330,336,333,331,326,325,326,327,327,325,321,321,320,319,317,315]},"travel":{"budget":62,"py":57,"actual":[0,1,3,5,6,9,12,14,18,21,25,29,33,38,42,47,52,58,63,69,74,81],"forecast":[63,63,65,65,66,68,66,67,68,70,70,70,72,80,78,80,80,80,80,81,81,81],"low":[53,53,56,56,58,60,58,60,61,64,64,64,67,75,74,76,77,77,78,79,80,81],"high":[73,73,74,74,74,76,74,74,75,76,76,76,77,85,82,84,83,83,82,83,82,81]},"it":{"budget":118,"py":108,"actual":[5,11,16,21,27,32,38,43,48,54,59,64,70,75,80,86,92,97,103,107,112,118],"forecast":[118,119,118,118,117,117,118,119,118,118,117,117,119,118,118,118,118,118,118,118,118,118],"low":[112,113,113,113,112,112,114,115,114,114,114,114,116,115,116,116,116,116,117,117,117,118],"high":[124,125,123,123,122,122,122,123,122,122,120,120,122,121,120,120,120,120,119,119,119,118]},"legal":{"budget":47,"py":42,"actual":[0,1,2,3,4,5,7,9,10,13,15,17,20,22,25,28,31,34,37,41,44,48],"forecast":[47,46,48,47,46,49,47,47,48,48,48,47,48,47,49,48,48,48,48,48,48,48],"low":[40,39,41,41,40,43,42,42,43,43,44,43,44,44,46,45,46,46,47,47,47,48],"high":[54,53,55,53,52,55,52,52,53,53,52,51,52,50,52,51,50,50,49,49,49,48]},"da":{"budget":106,"py":97,"actual":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,105,106],"forecast":[106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106],"low":[105,105,105,105,105,105,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106],"high":[107,107,107,107,107,107,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106]},"other":{"budget":62,"py":56,"actual":[3,6,8,11,14,17,19,22,25,28,31,33,36,38,42,44,47,50,52,55,59,61],"forecast":[61,63,62,61,63,61,63,63,61,61,61,61,61,62,61,61,61,61,61,61,61,61],"low":[55,57,56,56,58,56,58,59,57,57,57,58,58,59,59,59,59,59,60,60,60,61],"high":[67,69,68,66,68,66,68,67,65,65,65,64,64,65,63,63,63,63,62,62,62,61]}},"UK10":{"cloud":{"budget":2371,"py":2271,"actual":[989,1051,1125,1180,1248,1308,1354,1440,1501,1563,1615,1689,1756,1791,1868,1922,1984,2053,2140,2196,2241,2312],"forecast":[2368,2361,2354,2346,2342,2321,2324,2312,2318,2313,2318,2315,2314,2318,2315,2317,2312,2313,2313,2314,2312,2312],"low":[2334,2328,2322,2316,2313,2293,2298,2287,2295,2291,2298,2296,2297,2302,2301,2304,2301,2304,2306,2309,2309,2312],"high":[2402,2394,2386,2376,2371,2349,2350,2337,2341,2335,2338,2334,2331,2334,2329,2330,2323,2322,2320,2319,2315,2312]},"license":{"budget":821,"py":777,"actual":[4,14,28,45,65,89,116,146,177,212,253,289,336,382,422,475,532,583,643,691,761,817],"forecast":[803,832,820,812,822,841,827,811,819,815,836,817,808,818,808,815,821,823,818,819,816,817],"low":[682,716,708,705,720,744,735,724,737,738,764,750,747,762,758,771,783,791,793,801,805,817],"high":[924,948,932,919,924,938,919,898,901,892,908,884,869,874,858,859,859,855,843,837,827,817]},"services":{"budget":1368,"py":1220,"actual":[63,125,186,250,312,379,437,504,566,632,682,755,813,876,932,1004,1071,1122,1196,1259,1308,1377],"forecast":[1382,1389,1374,1390,1381,1370,1382,1367,1370,1367,1365,1383,1381,1366,1379,1370,1376,1376,1381,1377,1378,1377],"low":[1280,1291,1280,1300,1295,1288,1304,1293,1301,1302,1304,1327,1329,1319,1337,1333,1344,1349,1360,1361,1369,1377],"high":[1484,1487,1468,1480,1467,1452,1460,1441,1439,1432,1426,1439,1433,1413,1421,1407,1408,1403,1402,1393,1387,1377]},"hosting":{"budget":398,"py":350,"actual":[21,42,63,83,104,125,147,168,187,211,230,250,275,292,313,333,359,381,403,423,441,462],"forecast":[398,403,407,408,411,418,422,426,426,456,458,455,458,456,459,458,458,459,461,461,461,462],"low":[381,387,391,393,397,404,409,414,414,445,448,446,449,448,452,452,453,454,457,458,460,462],"high":[415,419,423,423,425,432,435,438,438,467,468,464,467,464,466,464,463,464,465,464,462,462]},"delivery":{"budget":311,"py":297,"actual":[2,6,12,19,28,38,50,62,76,91,107,125,141,162,180,201,224,249,270,293,319,348],"forecast":[306,315,313,318,318,320,322,320,320,328,328,325,346,346,344,346,347,345,347,348,348,348],"low":[276,286,285,291,293,296,299,298,300,309,310,308,331,332,332,335,337,337,341,343,345,348],"high":[336,344,341,345,343,344,345,342,340,347,346,342,361,360,356,357,357,353,353,353,351,348]},"personnel":{"budget":2061,"py":1873,"actual":[11,23,34,46,56,67,79,90,101,113,124,136,146,158,169,181,193,204,215,2076,2076,2076],"forecast":[2059,2059,2065,2065,2063,2063,2064,2067,2064,2068,2065,2077,2073,2076,2074,2077,2075,2074,2076,2075,2076,2076],"low":[2039,2039,2046,2047,2046,2047,2048,2052,2050,2055,2053,2066,2063,2067,2065,2069,2069,2069,2072,2072,2074,2076],"high":[2079,2079,2084,2083,2080,2079,2080,2082,2078,2081,2077,2088,2083,2085,2083,2085,2081,2079,2080,2078,2078,2076]},"marketing":{"budget":408,"py":373,"actual":[2,7,14,23,33,45,59,74,89,108,126,147,167,192,216,241,264,292,322,353,380,412],"forecast":[415,410,414,404,408,411,411,414,408,406,408,414,409,410,410,412,411,411,412,411,412,412],"low":[385,381,386,377,382,386,388,392,387,387,390,397,394,396,397,401,401,403,406,406,409,412],"high":[445,439,442,431,434,436,434,436,429,425,426,431,424,424,423,423,421,419,418,416,415,412]},"travel":{"budget":69,"py":61,"actual":[0,1,2,4,5,8,10,12,15,18,21,24,28,32,35,39,44,48,53,58,63,68],"forecast":[70,68,68,68,70,68,69,68,68,68,67,68,68,68,68,68,68,68,68,68,68,68],"low":[62,60,60,61,63,61,63,62,62,63,62,63,64,64,65,65,65,66,66,67,67,68],"high":[78,76,76,75,77,75,75,74,74,73,72,73,72,72,71,71,71,70,70,69,69,68]},"it":{"budget":136,"py":127,"actual":[6,12,18,24,31,36,43,49,55,61,67,73,79,85,91,98,104,111,115,122,128,134],"forecast":[135,135,135,137,135,136,135,136,135,136,135,136,135,134,134,134,134,134,134,134,134,134],"low":[128,129,129,131,129,131,130,131,130,132,131,132,132,131,131,132,132,132,133,133,133,134],"high":[142,141,141,143,141,141,140,141,140,140,139,140,138,137,137,136,136,136,135,135,135,134]},"legal":{"budget":52,"py":46,"actual":[0,1,2,3,4,6,7,9,11,14,16,19,21,24,27,30,33,37,41,44,48,52],"forecast":[50,52,51,52,52,51,51,51,53,52,51,52,52,52,52,52,52,52,52,52,52,52],"low":[42,45,44,45,46,45,45,45,48,47,46,48,48,48,49,49,50,50,50,51,51,52],"high":[58,59,58,59,58,57,57,57,58,57,56,56,56,56,55,55,54,54,54,53,53,52]},"da":{"budget":127,"py":115,"actual":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,128],"forecast":[127,127,127,127,127,127,127,127,127,128,128,128,128,128,128,128,128,128,128,128,128,128],"low":[126,126,126,126,126,126,126,126,126,127,128,128,128,128,128,128,128,128,128,128,128,128],"high":[128,128,128,128,128,128,128,128,128,129,128,128,128,128,128,128,128,128,128,128,128,128]},"other":{"budget":72,"py":70,"actual":[3,6,10,13,16,19,23,26,29,32,36,39,42,46,48,52,55,58,61,64,68,71],"forecast":[73,73,72,72,72,72,72,71,71,70,72,71,71,71,71,70,71,71,71,71,71,71],"low":[66,66,66,66,66,66,67,66,66,66,68,67,67,68,68,67,69,69,70,70,70,71],"high":[80,80,78,78,78,78,77,76,76,74,76,75,75,74,74,73,73,73,72,72,72,71]}},"US10":{"cloud":{"budget":4079,"py":3967,"actual":[1767,1881,1981,2125,2220,2327,2461,2532,2679,2797,2903,3010,3105,3263,3326,3436,3603,3674,3772,3918,4034,4137],"forecast":[4092,4074,4086,4081,4086,4086,4096,4101,4101,4092,4100,4095,4098,4100,4134,4136,4133,4136,4133,4134,4137,4137],"low":[4031,4015,4029,4027,4034,4037,4049,4057,4059,4053,4064,4061,4067,4072,4109,4114,4114,4120,4120,4125,4132,4137],"high":[4153,4133,4143,4135,4138,4135,4143,4145,4143,4131,4136,4129,4129,4128,4159,4158,4152,4152,4146,4143,4142,4137]},"license":{"budget":1307,"py":1205,"actual":[8,24,48,78,115,157,205,257,309,371,443,512,587,662,747,834,919,1004,1120,1201,1314,1425],"forecast":[1351,1346,1311,1299,1357,1326,1326,1333,1336,1325,1326,1373,1361,1357,1379,1399,1421,1419,1415,1414,1423,1425],"low":[1140,1143,1116,1113,1179,1156,1165,1181,1192,1190,1200,1257,1254,1260,1291,1322,1354,1363,1371,1382,1405,1425],"high":[1562,1549,1506,1485,1535,1496,1487,1485,1480,1460,1452,1489,1468,1454,1467,1476,1488,1475,1459,1446,1441,1425]},"services":{"budget":2179,"py":2045,"actual":[111,220,328,443,546,660,765,880,992,1090,1216,1319,1427,1532,1664,1772,1853,1996,2077,2190,2306,2419],"forecast":[2177,2211,2212,2265,2227,2250,2260,2382,2422,2373,2418,2399,2409,2405,2421,2412,2422,2422,2420,2411,2421,2419],"low":[1998,2039,2047,2107,2076,2106,2123,2253,2300,2259,2311,2300,2318,2322,2347,2346,2365,2374,2382,2384,2405,2419],"high":[2356,2383,2377,2423,2378,2394,2397,2511,2544,2487,2525,2498,2500,2488,2495,2478,2479,2470,2458,2438,2437,2419]},"hosting":{"budget":716,"py":655,"actual":[32,65,97,128,163,192,226,257,290,325,355,391,421,450,482,513,551,579,619,651,686,712],"forecast":[715,720,710,716,717,720,711,712,717,711,711,717,713,716,710,710,711,711,712,712,712,712],"low":[689,695,686,693,695,699,691,693,699,694,695,702,700,704,699,700,703,704,706,708,710,712],"high":[741,745,734,739,739,741,731,731,735,728,727,732,726,728,721,720,719,718,718,716,714,712]},"delivery":{"budget":487,"py":441,"actual":[3,8,16,27,40,54,71,88,108,128,150,176,200,229,258,285,316,346,385,414,456,490],"forecast":[495,491,489,482,487,480,482,482,495,496,488,494,485,487,489,488,487,488,492,491,489,490],"low":[453,450,450,445,451,446,450,451,466,469,463,471,464,467,471,472,474,477,483,485,485,490],"high":[537,532,528,519,523,514,514,513,524,523,513,517,506,507,507,504,500,499,501,497,493,490]},"personnel":{"budget":3541,"py":3209,"actual":[19,38,57,76,96,114,134,152,173,190,210,227,249,264,287,306,326,343,363,3484,3491,3491],"forecast":[3531,3534,3534,3532,3525,3532,3531,3530,3525,3527,3523,3517,3518,3497,3496,3496,3494,3494,3492,3492,3492,3491],"low":[3497,3501,3502,3502,3496,3504,3505,3505,3502,3505,3502,3498,3501,3481,3482,3483,3483,3485,3485,3487,3489,3491],"high":[3565,3567,3566,3562,3554,3560,3557,3555,3548,3549,3544,3536,3535,3513,3510,3509,3505,3503,3499,3497,3495,3491]},"marketing":{"budget":628,"py":612,"actual":[4,12,23,38,55,75,100,123,152,180,211,247,283,318,360,399,450,491,534,585,638,691],"forecast":[628,625,632,635,648,645,648,657,656,656,687,690,682,682,689,691,686,692,687,689,689,691],"low":[577,576,585,590,605,604,609,620,621,623,657,662,656,658,668,672,670,678,676,681,685,691],"high":[679,674,679,680,691,686,687,694,691,689,717,718,708,706,710,710,702,706,698,697,693,691]},"travel":{"budget":125,"py":121,"actual":[1,2,4,7,10,14,18,22,27,33,39,45,51,58,65,72,81,88,97,107,115,125],"forecast":[126,127,128,124,125,124,125,124,126,125,124,125,125,124,125,125,125,126,125,125,125,125],"low":[111,112,114,110,112,112,113,113,115,115,115,116,117,117,119,119,120,122,122,123,124,125],"high":[141,142,142,138,138,136,137,135,137,135,133,134,133,131,131,131,130,130,128,127,126,125]},"it":{"budget":216,"py":192,"actual":[10,20,29,39,49,59,69,78,88,98,108,117,128,139,146,156,168,178,188,197,205,216],"forecast":[217,215,218,214,217,217,216,217,216,215,216,217,216,217,217,215,216,217,216,216,216,216],"low":[206,205,208,205,208,208,208,209,209,208,210,211,211,212,213,211,213,214,214,214,215,216],"high":[228,225,228,223,226,226,224,225,223,222,222,223,221,222,221,219,219,220,218,218,217,216]},"legal":{"budget":84,"py":77,"actual":[0,1,3,5,7,9,12,15,18,22,26,30,35,39,44,49,55,60,66,71,77,84],"forecast":[83,85,87,84,84,86,82,84,83,83,84,85,85,84,83,84,85,84,84,84,84,84],"low":[71,73,76,73,74,76,73,75,75,75,77,78,79,78,78,79,81,81,81,82,83,84],"high":[95,97,98,95,94,96,91,93,91,91,91,92,91,90,88,89,89,87,87,86,85,84]},"da":{"budget":209,"py":188,"actual":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,211,211],"forecast":[209,209,209,209,209,210,210,211,211,211,211,211,211,211,211,211,211,211,211,211,211,211],"low":[208,208,208,208,208,209,209,210,210,210,210,210,210,210,210,211,211,211,211,211,211,211],"high":[210,210,210,210,210,211,211,212,212,212,212,212,212,212,212,211,211,211,211,211,211,211]},"other":{"budget":122,"py":119,"actual":[5,11,17,22,27,33,39,44,50,55,60,66,71,76,83,88,94,99,105,110,116,121],"forecast":[124,120,122,123,122,123,122,120,120,123,120,122,120,121,122,120,120,122,121,121,121,121],"low":[112,109,111,112,112,113,113,111,112,115,113,115,114,115,117,116,116,119,118,119,120,121],"high":[136,131,133,134,132,133,131,129,128,131,127,129,126,127,127,124,124,125,124,123,122,121]}}},"tasks":[{"id":"T01","phase":"Preparation","name":"Publish the close calendar and the cut-off rules","entity":"All","owner":"Anna Berger","startWd":1,"dueWd":3,"doneWd":2},{"id":"T02","phase":"Preparation","name":"Update the exchange rates for revaluation (month-end rates)","entity":"All","owner":"Sofia Ricci","startWd":17,"dueWd":21,"doneWd":null},{"id":"T03","phase":"Preparation","name":"Check the open purchase orders with receipt but no invoice","entity":"All","owner":"Lena Koch","startWd":8,"dueWd":17,"doneWd":16},{"id":"T04","phase":"Preparation","name":"Freeze master data changes (customers, vendors, cost centres)","entity":"All","owner":"Anna Berger","startWd":15,"dueWd":18,"doneWd":17},{"id":"T05","phase":"Preparation","name":"Review the budget version and the forecast version loaded in the system","entity":"All","owner":"Mira Lang","startWd":3,"dueWd":6,"doneWd":5},{"id":"T06","phase":"Revenue","name":"Billing run for cloud subscriptions","entity":"All","owner":"Tom Weber","startWd":1,"dueWd":2,"doneWd":1},{"id":"T07","phase":"Revenue","name":"Usage-based billing: load the usage files and rate them","entity":"US10","owner":"James Cole","startWd":13,"dueWd":19,"doneWd":null,"blocked":{"from":16,"until":18,"reason":"Usage file of the second data centre arrived incomplete"}},{"id":"T08","phase":"Revenue","name":"Review the revenue recognition of multi-element contracts","entity":"DE10","owner":"Anna Berger","startWd":14,"dueWd":20,"doneWd":null},{"id":"T09","phase":"Revenue","name":"Unbilled revenue: milestones accepted but not invoiced","entity":"All","owner":"Tom Weber","startWd":15,"dueWd":20,"doneWd":null},{"id":"T10","phase":"Revenue","name":"Deferred revenue release (ratable contracts)","entity":"All","owner":"Anna Berger","startWd":20,"dueWd":21,"doneWd":null},{"id":"T11","phase":"Procure to pay","name":"Accrue goods and services received but not invoiced (GR/IR)","entity":"All","owner":"Lena Koch","startWd":17,"dueWd":21,"doneWd":null},{"id":"T12","phase":"Procure to pay","name":"Approve or reject parked vendor invoices","entity":"All","owner":"Lena Koch","startWd":12,"dueWd":19,"doneWd":18},{"id":"T13","phase":"Procure to pay","name":"Match the card statements and post travel expenses","entity":"FR10","owner":"Marc Dubois","startWd":14,"dueWd":19,"doneWd":null,"blocked":{"from":17,"until":21,"reason":"Corporate card statement for the event in Lyon not yet received"}},{"id":"T14","phase":"Procure to pay","name":"Accrue legal and audit fees from the engagement letters","entity":"DE10","owner":"Anna Berger","startWd":16,"dueWd":21,"doneWd":null},{"id":"T15","phase":"People","name":"Payroll cut-off and payroll run","entity":"All","owner":"Ines Vogel","startWd":17,"dueWd":20,"doneWd":null},{"id":"T16","phase":"People","name":"Accrue bonus, holiday and overtime","entity":"All","owner":"Ines Vogel","startWd":18,"dueWd":21,"doneWd":null},{"id":"T17","phase":"People","name":"Reconcile headcount between HR and the general ledger","entity":"All","owner":"Ines Vogel","startWd":15,"dueWd":19,"doneWd":18},{"id":"T18","phase":"Treasury and tax","name":"Bank reconciliation of all accounts","entity":"All","owner":"Sofia Ricci","startWd":12,"dueWd":20,"doneWd":null},{"id":"T19","phase":"Treasury and tax","name":"FX revaluation of open items and bank balances","entity":"UK10","owner":"Priya Shah","startWd":21,"dueWd":22,"doneWd":null},{"id":"T20","phase":"Treasury and tax","name":"FX revaluation of open items and bank balances","entity":"US10","owner":"James Cole","startWd":21,"dueWd":22,"doneWd":null},{"id":"T21","phase":"Treasury and tax","name":"VAT pre-check: output and input tax against the sub-ledgers","entity":"DE10","owner":"Jonas Keller","startWd":16,"dueWd":20,"doneWd":19},{"id":"T22","phase":"Treasury and tax","name":"Tax provision estimate for the month","entity":"All","owner":"Jonas Keller","startWd":19,"dueWd":22,"doneWd":null},{"id":"T23","phase":"Intercompany","name":"Confirm the intercompany balances between all company codes","entity":"All","owner":"Karl Heim","startWd":14,"dueWd":19,"doneWd":null},{"id":"T24","phase":"Intercompany","name":"Clear the intercompany royalty differences DE10 / US10","entity":"DE10","owner":"Karl Heim","startWd":15,"dueWd":20,"doneWd":null},{"id":"T25","phase":"Intercompany","name":"Post the management recharges","entity":"All","owner":"Karl Heim","startWd":19,"dueWd":21,"doneWd":null},{"id":"T26","phase":"Fixed assets","name":"Post asset additions and check assets under construction","entity":"All","owner":"Ben Roth","startWd":12,"dueWd":18,"doneWd":17},{"id":"T27","phase":"Fixed assets","name":"Depreciation run","entity":"All","owner":"Ben Roth","startWd":21,"dueWd":21,"doneWd":null},{"id":"T28","phase":"Review","name":"Review manual journal entries above the approval limit","entity":"All","owner":"Anna Berger","startWd":18,"dueWd":21,"doneWd":null},{"id":"T29","phase":"Review","name":"Flux analysis: explain variances above 5 % and 50 k EUR","entity":"All","owner":"Mira Lang","startWd":19,"dueWd":22,"doneWd":null},{"id":"T30","phase":"Review","name":"Month-end forecast sign-off with the CFO","entity":"All","owner":"Mira Lang","startWd":20,"dueWd":22,"doneWd":null},{"id":"T31","phase":"Hard close","name":"Close the posting periods in the sub-ledgers","entity":"All","owner":"Anna Berger","startWd":22,"dueWd":23,"doneWd":null},{"id":"T32","phase":"Hard close","name":"Consolidation run and group reporting package","entity":"All","owner":"Anna Berger","startWd":23,"dueWd":25,"doneWd":null}],"items":[{"id":"OI-001","type":"Intercompany difference","entity":"DE10","counterparty":"US10","amountK":412,"openedWd":14,"closedWd":null,"owner":"Karl Heim","note":"Royalty invoice for September booked in DE10 in October and in US10 in September.","action":"Post the cut-off correction in US10 and confirm with the controller."},{"id":"OI-002","type":"Intercompany difference","entity":"UK10","counterparty":"DE10","amountK":86,"openedWd":15,"closedWd":19,"owner":"Karl Heim","note":"Recharge in GBP and EUR converted at different rates.","action":"Align the rate type and repost."},{"id":"OI-003","type":"Goods received, not invoiced","entity":"UK10","counterparty":"Cloud provider","amountK":75,"openedWd":12,"closedWd":null,"owner":"Lena Koch","note":"October usage of the second region is not invoiced yet; credit note under discussion.","action":"Accrue 75 k and keep the credit note as an opportunity."},{"id":"OI-004","type":"Unbilled revenue","entity":"US10","counterparty":"Retail customer","amountK":295,"openedWd":16,"closedWd":null,"owner":"Tom Weber","note":"Milestone 3 accepted on WD 15, invoice not yet created.","action":"Create the invoice before the billing cut-off."},{"id":"OI-005","type":"Manual journal pending approval","entity":"DE10","counterparty":"","amountK":880,"openedWd":17,"closedWd":null,"owner":"Anna Berger","note":"Reclassification of capitalised development cost, above the approval limit.","action":"Send to the financial controller for approval today."},{"id":"OI-006","type":"Manual journal pending approval","entity":"DE10","counterparty":"","amountK":77,"openedWd":5,"closedWd":9,"owner":"Anna Berger","note":"Waiting for the second approver.","action":"Remind the approver."},{"id":"OI-007","type":"Unbilled revenue","entity":"UK10","counterparty":"","amountK":149,"openedWd":12,"closedWd":null,"owner":"Tom Weber","note":"Work done, invoice not created.","action":"Create the invoice or accrue the revenue."},{"id":"OI-008","type":"Intercompany difference","entity":"DE10","counterparty":"US10","amountK":73,"openedWd":13,"closedWd":null,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-009","type":"Goods received, not invoiced","entity":"US10","counterparty":"","amountK":44,"openedWd":13,"closedWd":null,"owner":"Lena Koch","note":"Invoice expected, receipt confirmed.","action":"Accrue at the order value."},{"id":"OI-010","type":"Bank reconciliation","entity":"DE10","counterparty":"","amountK":31,"openedWd":14,"closedWd":null,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-011","type":"Intercompany difference","entity":"DE10","counterparty":"US10","amountK":65,"openedWd":11,"closedWd":13,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-012","type":"Goods received, not invoiced","entity":"DE10","counterparty":"","amountK":125,"openedWd":12,"closedWd":17,"owner":"Lena Koch","note":"Invoice expected, receipt confirmed.","action":"Accrue at the order value."},{"id":"OI-013","type":"Bank reconciliation","entity":"US10","counterparty":"","amountK":45,"openedWd":12,"closedWd":17,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-014","type":"Open purchase order","entity":"US10","counterparty":"","amountK":165,"openedWd":5,"closedWd":null,"owner":"Lena Koch","note":"Order without receipt at month end.","action":"Check whether the service was delivered."},{"id":"OI-015","type":"Unbilled revenue","entity":"US10","counterparty":"","amountK":176,"openedWd":7,"closedWd":null,"owner":"Tom Weber","note":"Work done, invoice not created.","action":"Create the invoice or accrue the revenue."},{"id":"OI-016","type":"Unbilled revenue","entity":"FR10","counterparty":"","amountK":112,"openedWd":6,"closedWd":null,"owner":"Tom Weber","note":"Work done, invoice not created.","action":"Create the invoice or accrue the revenue."},{"id":"OI-017","type":"Open purchase order","entity":"DE10","counterparty":"","amountK":81,"openedWd":10,"closedWd":11,"owner":"Lena Koch","note":"Order without receipt at month end.","action":"Check whether the service was delivered."},{"id":"OI-018","type":"Manual journal pending approval","entity":"UK10","counterparty":"","amountK":132,"openedWd":8,"closedWd":null,"owner":"Anna Berger","note":"Waiting for the second approver.","action":"Remind the approver."},{"id":"OI-019","type":"Intercompany difference","entity":"US10","counterparty":"UK10","amountK":105,"openedWd":14,"closedWd":null,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-020","type":"Intercompany difference","entity":"UK10","counterparty":"FR10","amountK":30,"openedWd":4,"closedWd":9,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-021","type":"Bank reconciliation","entity":"US10","counterparty":"","amountK":24,"openedWd":13,"closedWd":18,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-022","type":"Intercompany difference","entity":"FR10","counterparty":"DE10","amountK":59,"openedWd":16,"closedWd":null,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-023","type":"Intercompany difference","entity":"UK10","counterparty":"US10","amountK":68,"openedWd":7,"closedWd":12,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-024","type":"Bank reconciliation","entity":"DE10","counterparty":"","amountK":38,"openedWd":15,"closedWd":null,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-025","type":"Goods received, not invoiced","entity":"UK10","counterparty":"","amountK":35,"openedWd":7,"closedWd":null,"owner":"Lena Koch","note":"Invoice expected, receipt confirmed.","action":"Accrue at the order value."},{"id":"OI-026","type":"Manual journal pending approval","entity":"UK10","counterparty":"","amountK":43,"openedWd":10,"closedWd":11,"owner":"Anna Berger","note":"Waiting for the second approver.","action":"Remind the approver."},{"id":"OI-027","type":"Bank reconciliation","entity":"DE10","counterparty":"","amountK":13,"openedWd":14,"closedWd":null,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-028","type":"Manual journal pending approval","entity":"US10","counterparty":"","amountK":52,"openedWd":6,"closedWd":7,"owner":"Anna Berger","note":"Waiting for the second approver.","action":"Remind the approver."},{"id":"OI-029","type":"Manual journal pending approval","entity":"DE10","counterparty":"","amountK":54,"openedWd":12,"closedWd":15,"owner":"Anna Berger","note":"Waiting for the second approver.","action":"Remind the approver."},{"id":"OI-030","type":"Open purchase order","entity":"FR10","counterparty":"","amountK":69,"openedWd":4,"closedWd":7,"owner":"Lena Koch","note":"Order without receipt at month end.","action":"Check whether the service was delivered."},{"id":"OI-031","type":"Open purchase order","entity":"UK10","counterparty":"","amountK":54,"openedWd":8,"closedWd":null,"owner":"Lena Koch","note":"Order without receipt at month end.","action":"Check whether the service was delivered."},{"id":"OI-032","type":"Intercompany difference","entity":"DE10","counterparty":"UK10","amountK":11,"openedWd":15,"closedWd":null,"owner":"Karl Heim","note":"Timing difference between the partners.","action":"Align the posting date."},{"id":"OI-033","type":"Goods received, not invoiced","entity":"FR10","counterparty":"","amountK":179,"openedWd":10,"closedWd":12,"owner":"Lena Koch","note":"Invoice expected, receipt confirmed.","action":"Accrue at the order value."},{"id":"OI-034","type":"Unbilled revenue","entity":"FR10","counterparty":"","amountK":55,"openedWd":9,"closedWd":13,"owner":"Tom Weber","note":"Work done, invoice not created.","action":"Create the invoice or accrue the revenue."},{"id":"OI-035","type":"Open purchase order","entity":"UK10","counterparty":"","amountK":109,"openedWd":11,"closedWd":13,"owner":"Lena Koch","note":"Order without receipt at month end.","action":"Check whether the service was delivered."},{"id":"OI-036","type":"Unbilled revenue","entity":"DE10","counterparty":"","amountK":103,"openedWd":16,"closedWd":null,"owner":"Tom Weber","note":"Work done, invoice not created.","action":"Create the invoice or accrue the revenue."},{"id":"OI-037","type":"Bank reconciliation","entity":"DE10","counterparty":"","amountK":22,"openedWd":9,"closedWd":null,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-038","type":"Suspense account","entity":"US10","counterparty":"","amountK":9,"openedWd":17,"closedWd":null,"owner":"Anna Berger","note":"Posting without an account assignment.","action":"Reclassify to the correct account."},{"id":"OI-039","type":"Bank reconciliation","entity":"US10","counterparty":"","amountK":15,"openedWd":9,"closedWd":null,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-040","type":"Goods received, not invoiced","entity":"US10","counterparty":"","amountK":214,"openedWd":14,"closedWd":19,"owner":"Lena Koch","note":"Invoice expected, receipt confirmed.","action":"Accrue at the order value."},{"id":"OI-041","type":"Bank reconciliation","entity":"UK10","counterparty":"","amountK":27,"openedWd":16,"closedWd":19,"owner":"Sofia Ricci","note":"Payment without an open item.","action":"Assign the payment to the invoice."},{"id":"OI-042","type":"Open purchase order","entity":"DE10","counterparty":"","amountK":148,"openedWd":16,"closedWd":21,"owner":"Lena Koch","note":"Order without receipt at month end.","action":"Check whether the service was delivered."},{"id":"OI-043","type":"Suspense account","entity":"UK10","counterparty":"","amountK":28,"openedWd":15,"closedWd":17,"owner":"Anna Berger","note":"Posting without an account assignment.","action":"Reclassify to the correct account."},{"id":"OI-044","type":"Unbilled revenue","entity":"US10","counterparty":"","amountK":17,"openedWd":16,"closedWd":null,"owner":"Tom Weber","note":"Work done, invoice not created.","action":"Create the invoice or accrue the revenue."},{"id":"OI-045","type":"Manual journal pending approval","entity":"DE10","counterparty":"","amountK":160,"openedWd":13,"closedWd":16,"owner":"Anna Berger","note":"Waiting for the second approver.","action":"Remind the approver."},{"id":"OI-046","type":"Suspense account","entity":"US10","counterparty":"","amountK":40,"openedWd":8,"closedWd":null,"owner":"Anna Berger","note":"Posting without an account assignment.","action":"Reclassify to the correct account."}],"accruals":[{"id":"AC-01","entity":"UK10","line":"hosting","amountK":75,"basis":"October usage of the second region, provider invoice due on WD 24. Based on the usage report of WD 16.","confidence":"high","fromWd":16},{"id":"AC-02","entity":"DE10","line":"legal","amountK":60,"basis":"Audit pre-work and the arbitration case: engagement letters signed, invoices not received.","confidence":"medium","fromWd":15},{"id":"AC-03","entity":"DE10","line":"personnel","amountK":420,"basis":"Bonus accrual for the quarter at 92 % target attainment, plus unused holiday.","confidence":"medium","fromWd":18},{"id":"AC-04","entity":"FR10","line":"travel","amountK":54,"basis":"Event in Lyon: hotel and venue booked, card statement outstanding.","confidence":"medium","fromWd":17},{"id":"AC-05","entity":"US10","line":"delivery","amountK":210,"basis":"Partner timesheets for the migration project approved, invoices not yet received.","confidence":"high","fromWd":17},{"id":"AC-06","entity":"US10","line":"marketing","amountK":160,"basis":"Commissions on the forecast licence revenue of the quarter.","confidence":"medium","fromWd":18},{"id":"AC-07","entity":"UK10","line":"delivery","amountK":95,"basis":"Subcontractor hours of week 43 approved in the time system.","confidence":"high","fromWd":17},{"id":"AC-08","entity":"FR10","line":"it","amountK":22,"basis":"Annual maintenance of the office network, invoiced in November.","confidence":"high","fromWd":17},{"id":"AC-09","entity":"DE10","line":"other","amountK":35,"basis":"Utilities and services for the quarter, estimated from the last three months.","confidence":"low","fromWd":18},{"id":"AC-10","entity":"US10","line":"legal","amountK":48,"basis":"Contract review for the new reseller agreement.","confidence":"low","fromWd":19},{"id":"AC-11","entity":"DE10","line":"delivery","amountK":130,"basis":"Partner invoices for the services project are approved, goods receipt posted on WD 17.","confidence":"high","fromWd":17},{"id":"AC-12","entity":"UK10","line":"travel","amountK":26,"basis":"Corporate card statement of the second half of October, estimated.","confidence":"low","fromWd":19}],"anomalies":[{"wd":11,"entity":"UK10","kind":"Cost jump","text":"Cloud hosting is 38 % above the three-month average since WD 10.","amountK":75,"severity":"red","action":"Ask the provider manager for the usage breakdown."},{"wd":13,"entity":"DE10","kind":"Possible duplicate","text":"Two vendor invoices with the same amount and invoice date for the same supplier.","amountK":64,"severity":"yellow","action":"Block the second invoice for payment."},{"wd":14,"entity":"US10","kind":"Missing posting","text":"No usage billing posted since WD 12 although usage files exist.","amountK":280,"severity":"red","action":"Check the interface log of the billing run."},{"wd":15,"entity":"FR10","kind":"Cost jump","text":"Travel and events is 3 times the monthly average.","amountK":40,"severity":"yellow","action":"Confirm the event budget with the head of marketing."},{"wd":16,"entity":"DE10","kind":"Revenue reversal","text":"Licence order of 900 k EUR moved from October to November in the sales system.","amountK":900,"severity":"red","action":"Reflect it in the forecast and tell the CFO."},{"wd":17,"entity":"DE10","kind":"Large manual entry","text":"Manual journal of 880 k EUR (capitalised development cost) without a second approver.","amountK":880,"severity":"yellow","action":"Route it to the financial controller."},{"wd":18,"entity":"UK10","kind":"FX movement","text":"GBP/EUR moved by 2.1 % in a week; the open receivables in GBP are revalued at month end.","amountK":95,"severity":"yellow","action":"Review the exposure with treasury."},{"wd":19,"entity":"US10","kind":"Posting in closed period","text":"Two postings to September were attempted and rejected.","amountK":18,"severity":"yellow","action":"Ask the cost centre owner to repost to October."},{"wd":20,"entity":"FR10","kind":"Round amount","text":"Seven journal entries of exactly 10,000 EUR in one day.","amountK":70,"severity":"yellow","action":"Ask for the supporting documents."}],"notes":[{"wd":4,"entity":"FR10","line":"cloud","text":"Price increase of 3 % on renewals is confirmed; forecast raised slightly."},{"wd":8,"entity":"US10","line":"services","text":"Two projects ahead of plan; services forecast raised by about 8 %."},{"wd":10,"entity":"UK10","line":"hosting","text":"Provider invoice for the second region is much higher than planned; hosting forecast raised."},{"wd":12,"entity":"DE10","line":"license","text":"A large licence deal is at risk to slip into November; the forecast is cut by half of the risk."},{"wd":15,"entity":"DE10","line":"legal","text":"Arbitration case adds legal fees; forecast raised."},{"wd":16,"entity":"DE10","line":"license","text":"The deal moved to November in the sales system; the forecast now excludes it."},{"wd":16,"entity":"US10","line":"license","text":"A reseller order of 120 k EUR was signed; forecast raised."},{"wd":17,"entity":"FR10","line":"travel","text":"Event in Lyon is booked but the card statement is missing; accrual proposed."}],"scenarios":[{"key":"deal","label":"The slipped DE10 licence deal is signed on WD 22 after all","entity":"DE10","line":"license","revenueK":900,"costK":90,"probabilityPct":15,"kind":"opportunity"},{"key":"milestone","label":"US10 services milestone 4 accepted before month end","entity":"US10","line":"services","revenueK":320,"costK":70,"probabilityPct":55,"kind":"opportunity"},{"key":"credit","label":"UK10 hosting provider grants the credit note","entity":"UK10","line":"hosting","revenueK":0,"costK":-40,"probabilityPct":35,"kind":"opportunity"},{"key":"usage","label":"US10 usage billing is not fixed before the cut-off","entity":"US10","line":"cloud","revenueK":-280,"costK":0,"probabilityPct":30,"kind":"risk"},{"key":"bonus","label":"DE10 bonus accrual rises to 100 % attainment","entity":"DE10","line":"personnel","revenueK":0,"costK":160,"probabilityPct":25,"kind":"risk"},{"key":"fx","label":"GBP weakens another 3 % against the euro","entity":"UK10","line":"cloud","revenueK":-80,"costK":-50,"probabilityPct":25,"kind":"risk"},{"key":"partner","label":"FR10 partner invoices arrive in October instead of November","entity":"FR10","line":"delivery","revenueK":0,"costK":45,"probabilityPct":40,"kind":"risk"}]}
+</script>
+<script id="preclose-logic">
+const NWD = 22;
+const sumA = (a) => a.reduce((x, y) => x + y, 0);
+const fmtK = (n) => { const a = Math.abs(n), s = n < 0 ? '−' : ''; return a >= 1000 ? `${s}${(a / 1000).toFixed(2)} m` : `${s}${Math.round(a).toLocaleString('en-GB')} k`; };
+const fmtSigned = (n) => (n > 0 ? '+' : n < 0 ? '' : '') + fmtK(n);
+const pct1 = (n) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(Math.round(n * 10) / 10)} %`;
+const rss = (a) => Math.sqrt(a.reduce((x, y) => x + y * y, 0));
+/** One P&L line for the chosen company codes at working day d (1..22). Approved accruals add to the booked amount of cost lines. */
+function lineAt(data, ent, key, d, approved) {
+  const ents = ent === 'all' ? Object.keys(data.pl) : [ent];
+  let actual = 0, forecast = 0, budget = 0, py = 0; const half = [];
+  for (const e of ents) {
+    const r = data.pl[e][key];
+    actual += r.actual[d - 1]; forecast += r.forecast[d - 1]; budget += r.budget; py += r.py;
+    half.push((r.high[d - 1] - r.low[d - 1]) / 2);
+  }
+  const line = data.lines.find((l) => l.key === key);
+  if (approved && line.kind !== 'revenue') for (const a of data.accruals) if (a.line === key && approved[a.id] && a.fromWd <= d && ents.includes(a.entity)) actual += a.amountK;
+  const h = rss(half);
+  return { key, name: line.name, kind: line.kind, actual, forecast, budget, py, low: forecast - h, high: forecast + h, half: h };
+}
+const ebitImpact = (r) => (r.kind === 'revenue' ? r.forecast - r.budget : r.budget - r.forecast);
+function addRows(name, kind, rows, sign) {
+  const s = (f) => rows.reduce((a, r) => a + (sign ? sign(r) : 1) * r[f], 0);
+  const h = rss(rows.map((r) => r.half));
+  const forecast = s('forecast');
+  return { key: name, name, kind, total: true, actual: s('actual'), forecast, budget: s('budget'), py: s('py'), low: forecast - h, high: forecast + h, half: h };
+}
+/** The whole P&L with sub-totals. */
+function pnl(data, ent, d, approved) {
+  const L = (k) => data.lines.filter((l) => l.kind === k).map((l) => lineAt(data, ent, l.key, d, approved));
+  const rev = L('revenue'), cogs = L('cogs'), opex = L('opex');
+  const tRev = addRows('Revenue', 'revenue', rev), tCogs = addRows('Cost of revenue', 'cogs', cogs), tOpex = addRows('Operating expenses', 'opex', opex);
+  const gross = addRows('Gross profit', 'profit', [tRev, tCogs], (r) => (r.kind === 'revenue' ? 1 : -1));
+  const ebit = addRows('EBIT', 'profit', [gross, tOpex], (r) => (r.kind === 'profit' ? 1 : -1));
+  return { rev, cogs, opex, tRev, tCogs, tOpex, gross, ebit, lines: [...rev, ...cogs, ...opex] };
+}
+/** Variance against the budget. Favourable means better for EBIT. */
+function variance(r, rules) {
+  const abs = r.forecast - r.budget, fav = r.kind === 'cogs' || r.kind === 'opex' ? abs <= 0 : abs >= 0;
+  const pct = r.budget ? (abs / r.budget) * 100 : 0;
+  const warn = Math.abs(pct) >= rules.varianceWarnPct && Math.abs(abs) >= rules.varianceWarnK;
+  const status = warn && !fav ? 'red' : (warn && fav) || (!fav && Math.abs(pct) >= 2 && Math.abs(abs) >= 20) ? 'yellow' : 'green';
+  const widthPct = r.forecast ? (r.half / Math.abs(r.forecast)) * 100 : 0;
+  const confidence = widthPct < rules.confidence.highBelowPct ? 'high' : widthPct < rules.confidence.mediumBelowPct ? 'medium' : 'low';
+  return { abs, pct, fav, warn, status, confidence, impact: ebitImpact(r), vsPy: r.py ? ((r.forecast / r.py - 1) * 100) : 0 };
+}
+/** Month-end forecast per working day, for the evolution chart. metric: revenue, gross or ebit. */
+function evolution(data, ent, metric, approved) {
+  const out = [];
+  for (let d = 1; d <= NWD; d++) { const p = pnl(data, ent, d, approved), r = metric === 'revenue' ? p.tRev : metric === 'gross' ? p.gross : p.ebit; out.push({ d, forecast: r.forecast, low: r.low, high: r.high, budget: r.budget, actual: r.actual }); }
+  return out;
+}
+/** Waterfall from budget to forecast: the lines with the biggest effect on the chosen metric. */
+function bridge(data, ent, d, metric, approved, top = 7) {
+  const p = pnl(data, ent, d, approved);
+  const rows = (metric === 'revenue' ? p.rev : p.lines).map((r) => ({ name: r.name, delta: metric === 'revenue' ? r.forecast - r.budget : ebitImpact(r) }));
+  rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const main = rows.slice(0, top), rest = rows.slice(top), other = rest.reduce((a, r) => a + r.delta, 0);
+  const steps = main.concat(rest.length ? [{ name: 'Other lines', delta: other }] : []);
+  const start = metric === 'revenue' ? p.tRev.budget : p.ebit.budget, end = metric === 'revenue' ? p.tRev.forecast : p.ebit.forecast;
+  return { start, end, steps };
+}
+/** State of a close task at working day d. */
+function taskState(t, d) {
+  if (t.doneWd !== null && t.doneWd <= d) return 'done';
+  if (t.blocked && d >= t.blocked.from && d <= t.blocked.until) return 'blocked';
+  if (t.dueWd < d) return 'overdue';
+  if (t.startWd <= d) return 'progress';
+  return 'open';
+}
+function readiness(data, ent, d) {
+  const ts = data.tasks.filter((t) => ent === 'all' || t.entity === 'All' || t.entity === ent);
+  const st = ts.map((t) => taskState(t, d));
+  const due = ts.filter((t) => t.dueWd <= d);
+  return { total: ts.length, done: st.filter((s) => s === 'done').length, blocked: st.filter((s) => s === 'blocked').length, overdue: st.filter((s) => s === 'overdue').length, dueDone: due.filter((t) => taskState(t, d) === 'done').length, due: due.length, pct: Math.round((st.filter((s) => s === 'done').length / Math.max(1, ts.length)) * 100) };
+}
+const itemOpen = (i, d) => i.openedWd <= d && (i.closedWd === null || i.closedWd > d);
+function openItems(data, ent, d) { return data.items.filter((i) => itemOpen(i, d) && (ent === 'all' || i.entity === ent || i.counterparty === ent)); }
+function accrualsAt(data, ent, d) { return data.accruals.filter((a) => a.fromWd <= d && (ent === 'all' || a.entity === ent)); }
+function alertsAt(data, ent, d) { return data.anomalies.filter((a) => a.wd <= d && (ent === 'all' || a.entity === ent)); }
+/** Intercompany differences per pair, open at day d. */
+function icMatrix(data, d) { const m = {}; for (const i of data.items) if (i.type === 'Intercompany difference' && itemOpen(i, d)) { const k = `${i.entity}>${i.counterparty}`; m[k] = (m[k] || 0) + i.amountK; } return m; }
+/** What-if: effect of the chosen scenarios on revenue and EBIT of the chosen company codes. */
+function scenarioEffect(data, selected, ent) {
+  let rev = 0, ebit = 0;
+  for (const s of data.scenarios) if (selected[s.key] && (ent === 'all' || s.entity === ent)) { rev += s.revenueK; ebit += s.revenueK - s.costK; }
+  return { rev, ebit };
+}
+function expectedScenario(data, ent) {
+  let rev = 0, ebit = 0, up = 0, down = 0;
+  for (const s of data.scenarios) if (ent === 'all' || s.entity === ent) { const p = s.probabilityPct / 100, e = s.revenueK - s.costK; rev += p * s.revenueK; ebit += p * e; if (e > 0) up += e; else down += e; }
+  return { rev: Math.round(rev), ebit: Math.round(ebit), up, down };
+}
+</script>
+<script>
+(function () {
+'use strict';
+const DATA = JSON.parse(document.getElementById('preclose-data').textContent);
+const R = DATA.rules;
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
+const state = { d: DATA.asOfWd, ent: 'all', metric: 'ebit', sel: null, taskFilter: 'all', itemType: 'all', approved: {}, scen: {}, step: -1 };
+const ENT = Object.fromEntries(DATA.entities.map((e) => [e.id, e]));
+const entName = (e) => (e === 'all' ? 'the group' : `${e} (${ENT[e].name})`);
+const DAYNAME = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const dayLabel = (d) => { const s = DATA.workingDays[d - 1], dt = new Date(s + 'T00:00:00Z'); return `${DAYNAME[dt.getUTCDay()]} ${dt.getUTCDate()} Oct`; };
+const STATUS = { red: 'Act now', yellow: 'Watch', green: 'On track' };
+const TASK = { done: ['done', 'Done'], blocked: ['red', 'Blocked'], overdue: ['red', 'Overdue'], progress: ['yellow', 'In progress'], open: ['planned', 'Not started'] };
+const short = (n) => n.replace(/ and /g, ' & ').split(' ').slice(0, 2).join(' ');
+let P = null;
+function compute() { P = pnl(DATA, state.ent, state.d, state.approved); }
+const metricRow = () => (state.metric === 'revenue' ? P.tRev : state.metric === 'gross' ? P.gross : P.ebit);
+const METRIC = { revenue: 'Revenue', gross: 'Gross profit', ebit: 'EBIT' };
+
+function renderHead() {
+  const left = NWD - state.d;
+  $('#day-label').innerHTML = `<b>Working day ${state.d} of ${NWD}</b> · ${esc(dayLabel(state.d))} · ${left === 0 ? 'last working day of the month' : left + ' working day' + (left === 1 ? '' : 's') + ' to month end'} · hard close on working day ${R.hardCloseWd}`;
+  $('#day').value = state.d; $('#prev').disabled = state.d <= 1; $('#next').disabled = state.d >= NWD;
+  $('#metric').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === state.metric)));
+}
+function renderKpis() {
+  const rev = P.tRev, eb = P.ebit, rv = variance(rev, R), ev = variance(eb, R), rd = readiness(DATA, state.ent, state.d);
+  const items = openItems(DATA, state.ent, state.d), accr = accrualsAt(DATA, state.ent, state.d), pend = accr.filter((a) => !state.approved[a.id]);
+  const reds = alertsAt(DATA, state.ent, state.d).filter((a) => a.severity === 'red');
+  const k = (cls, v, key, s) => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="k">${key}</div><div class="s">${s}</div></div>`;
+  const cls = (v) => (v.status === 'red' ? 'red' : v.status === 'yellow' ? 'amber' : 'green');
+  $('#kpis').innerHTML = k(cls(rv), fmtK(rev.forecast), 'Revenue forecast', `${fmtSigned(rv.abs)} (${pct1(rv.pct)}) against budget`) +
+    k(cls(ev), fmtK(eb.forecast), 'EBIT forecast', `${fmtSigned(ev.abs)} (${pct1(ev.pct)}) · margin ${Math.round((eb.forecast / rev.forecast) * 1000) / 10} %`) +
+    k('', `${fmtK(eb.low)} to ${fmtK(eb.high)}`, `EBIT range (${R.bandPct} % band)`, `confidence ${ev.confidence}`) +
+    k(rd.blocked + rd.overdue ? 'amber' : 'green', rd.pct + ' %', 'Close readiness', `${rd.done} of ${rd.total} tasks done · ${rd.blocked} blocked · ${rd.overdue} overdue`) +
+    k(items.length ? 'amber' : 'green', items.length, 'Open items', fmtK(items.reduce((a, i) => a + i.amountK, 0)) + ' to clear') +
+    k(pend.length ? 'amber' : 'green', pend.length, 'Accruals to approve', fmtK(pend.reduce((a, x) => a + x.amountK, 0)) + ' proposed') +
+    k(reds.length ? 'red' : 'green', reds.length, 'Red alerts', 'anomalies up to today');
+}
+/* ---------- charts ---------- */
+function evolutionChart() {
+  const ev = evolution(DATA, state.ent, state.metric, state.approved), W = 760, H = 250, L = 56, Rr = 16, T = 14, B = 28;
+  const shown = ev.slice(0, state.d), all = ev.flatMap((x, i) => (i < state.d ? [x.low, x.high, x.budget] : [x.budget]));
+  const lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.15 || 1, y0 = lo - pad, y1 = hi + pad;
+  const x = (d) => L + ((d - 1) / (NWD - 1)) * (W - L - Rr), y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  const band = shown.map((p) => `${x(p.d)},${y(p.high)}`).join(' ') + ' ' + shown.slice().reverse().map((p) => `${x(p.d)},${y(p.low)}`).join(' ');
+  const line = shown.map((p) => `${x(p.d)},${y(p.forecast)}`).join(' ');
+  const ticks = [0, 1, 2, 3, 4].map((i) => y0 + ((y1 - y0) * i) / 4);
+  const last = shown[shown.length - 1];
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Month-end forecast of ${METRIC[state.metric]} for each working day, with the budget" class="ch">` +
+    ticks.map((t) => `<line class="grid" x1="${L}" x2="${W - Rr}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${L - 6}" y="${y(t) + 3}" text-anchor="end">${esc(fmtK(t))}</text>`).join('') +
+    [1, 5, 10, 15, 20, 22].map((d) => `<text class="ax" x="${x(d)}" y="${H - 8}" text-anchor="middle">WD ${d}</text>`).join('') +
+    `<rect class="future" x="${x(state.d)}" y="${T}" width="${W - Rr - x(state.d)}" height="${H - T - B}"/>` +
+    `<line class="bud" x1="${L}" x2="${W - Rr}" y1="${y(last.budget)}" y2="${y(last.budget)}"/><text class="ax bud-l" x="${W - Rr}" y="${y(last.budget) - 5}" text-anchor="end">Budget ${esc(fmtK(last.budget))}</text>` +
+    `<polygon class="band" points="${band}"/><polyline class="fc" points="${line}"/>` +
+    shown.map((p) => `<circle class="pt" cx="${x(p.d)}" cy="${y(p.forecast)}" r="${p.d === state.d ? 5 : 2.5}"><title>WD ${p.d}: forecast ${esc(fmtK(p.forecast))}, range ${esc(fmtK(p.low))} to ${esc(fmtK(p.high))}</title></circle>`).join('') +
+    `<text class="lab-now" x="${Math.min(x(state.d), W - 90)}" y="${y(last.forecast) - 10}">${esc(fmtK(last.forecast))}</text></svg>`;
+}
+function bridgeChart() {
+  const b = bridge(DATA, state.ent, state.d, state.metric === 'revenue' ? 'revenue' : 'ebit', state.approved), W = 760, H = 260, L = 12, T = 26, B = 52;
+  let run = b.start; const bars = [{ name: 'Budget', from: 0, to: b.start, kind: 'total' }];
+  for (const s of b.steps) { bars.push({ name: s.name, from: run, to: run + s.delta, kind: s.delta >= 0 ? 'pos' : 'neg', delta: s.delta }); run += s.delta; }
+  bars.push({ name: 'Forecast', from: 0, to: b.end, kind: 'total' });
+  const vals = bars.flatMap((x) => (x.kind === 'total' ? [x.to] : [x.from, x.to])), lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * 0.2 || 1, y0 = lo - pad, y1 = hi + pad;
+  const bw = (W - L * 2) / bars.length, y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bridge from budget to forecast of ${METRIC[state.metric === 'revenue' ? 'revenue' : 'ebit']}" class="ch">` +
+    bars.map((x, i) => { const a = Math.min(y(x.from || y0), y(x.to)), top = x.kind === 'total' ? y(x.to) : Math.min(y(x.from), y(x.to)), bot = x.kind === 'total' ? y(y0) : Math.max(y(x.from), y(x.to)); return `<g><rect class="wf ${x.kind}" x="${L + i * bw + bw * 0.18}" y="${top}" width="${bw * 0.64}" height="${Math.max(2, bot - top)}"><title>${esc(x.name)}: ${esc(x.kind === 'total' ? fmtK(x.to) : fmtSigned(x.delta))}</title></rect><text class="ax" x="${L + i * bw + bw / 2}" y="${top - 5}" text-anchor="middle">${esc(x.kind === 'total' ? fmtK(x.to) : fmtSigned(x.delta))}</text><text class="ax" x="${L + i * bw + bw / 2}" y="${H - 30}" text-anchor="middle">${esc(short(x.name))}</text><text class="ax" x="${L + i * bw + bw / 2}" y="${H - 17}" text-anchor="middle">${esc(x.name.split(' ').slice(2, 4).join(' '))}</text></g>`; }).join('') + '</svg>';
+}
+function renderCharts() {
+  $('#evo').innerHTML = evolutionChart();
+  $('#bridge').innerHTML = bridgeChart();
+  $('#evo-sub').textContent = `How the forecast of ${METRIC[state.metric]} for the month end moved each working day (${entName(state.ent)}). The band is the ${R.bandPct} % range; it narrows as the month fills.`;
+  $('#bridge-sub').textContent = `From the budget to today's forecast of ${state.metric === 'revenue' ? 'revenue' : 'EBIT'}: the lines with the biggest effect. The axis does not start at zero.`;
+}
+/* ---------- P&L ---------- */
+function plRow(r) {
+  const v = variance(r, R), sel = state.sel === r.key;
+  if (r.total) return `<tr class="tot"><td><b>${esc(r.name)}</b></td><td class="n">${fmtK(r.actual)}</td><td class="n"><b>${fmtK(r.forecast)}</b></td><td class="n rng">${fmtK(r.low)} to ${fmtK(r.high)}</td><td class="n">${fmtK(r.budget)}</td><td class="n ${v.fav ? 'fav' : 'unf'}">${fmtSigned(v.abs)}</td><td class="n ${v.fav ? 'fav' : 'unf'}">${pct1(v.pct)}</td><td class="n">${pct1(v.vsPy)}</td><td></td><td><span class="pill ${v.status}">${STATUS[v.status]}</span></td></tr>`;
+  return `<tr data-line="${esc(r.key)}" tabindex="0" aria-selected="${sel}"><td>${esc(r.name)}</td><td class="n">${fmtK(r.actual)}</td><td class="n"><b>${fmtK(r.forecast)}</b></td><td class="n rng">${fmtK(r.low)} to ${fmtK(r.high)}</td><td class="n">${fmtK(r.budget)}</td><td class="n ${v.fav ? 'fav' : 'unf'}">${fmtSigned(v.abs)}</td><td class="n ${v.fav ? 'fav' : 'unf'}">${pct1(v.pct)}</td><td class="n">${pct1(v.vsPy)}</td><td>${v.confidence}</td><td><span class="pill ${v.status}">${STATUS[v.status]}</span></td></tr>`;
+}
+function renderPnl() {
+  $('#pnl-title').textContent = `Profit and loss, ${entName(state.ent)}`;
+  $('#pnl').innerHTML = P.rev.map(plRow).join('') + plRow(P.tRev) + P.cogs.map(plRow).join('') + plRow(P.tCogs) + plRow(P.gross) + P.opex.map(plRow).join('') + plRow(P.tOpex) + plRow(P.ebit);
+  $('#pnl').querySelectorAll('tr[data-line]').forEach((tr) => { tr.onclick = () => { state.sel = state.sel === tr.dataset.line ? null : tr.dataset.line; renderPnl(); renderDetail(); }; tr.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tr.click(); } }; });
+}
+function renderDetail() {
+  const el = $('#detail');
+  if (!state.sel) { el.innerHTML = '<h2>Line details</h2><p class="sub">Click a line of the profit and loss to see the forecast method, the split by company code, the notes of the controllers and a question for Joule.</p>'; return; }
+  const l = DATA.lines.find((x) => x.key === state.sel), cur = lineAt(DATA, state.ent, l.key, state.d, state.approved), v = variance(cur, R);
+  const split = DATA.entities.map((e) => { const r = lineAt(DATA, e.id, l.key, state.d, state.approved), w = variance(r, R); return `<tr class="${state.ent === e.id ? 'cur' : ''}"><td>${e.id}</td><td class="n">${fmtK(r.forecast)}</td><td class="n">${fmtK(r.budget)}</td><td class="n ${w.fav ? 'fav' : 'unf'}">${fmtSigned(w.abs)}</td><td><span class="pill ${w.status}">${STATUS[w.status]}</span></td></tr>`; }).join('');
+  const notes = DATA.notes.filter((n) => n.line === l.key && n.wd <= state.d && (state.ent === 'all' || n.entity === state.ent));
+  const spark = Array.from({ length: state.d }, (_, i) => lineAt(DATA, state.ent, l.key, i + 1, state.approved).forecast), mn = Math.min(...spark), mx = Math.max(...spark);
+  el.innerHTML = `<h2>${esc(l.name)} <span class="pill ${v.status}">${STATUS[v.status]}</span></h2><p class="sub">${esc(entName(state.ent))} · working day ${state.d}</p>` +
+    `<dl class="dl"><dt>Booked to date</dt><dd>${fmtK(cur.actual)}</dd><dt>Forecast month end</dt><dd>${fmtK(cur.forecast)}</dd><dt>Range</dt><dd>${fmtK(cur.low)} to ${fmtK(cur.high)}</dd><dt>Budget</dt><dd>${fmtK(cur.budget)}</dd><dt>Against budget</dt><dd>${fmtSigned(v.abs)} (${pct1(v.pct)})</dd><dt>Effect on EBIT</dt><dd>${fmtSigned(v.impact)}</dd><dt>Confidence</dt><dd>${v.confidence}</dd></dl>` +
+    `<h3>Forecast method</h3><p class="sub" style="margin:0 0 6px">${esc(l.method)} Main driver: ${esc(l.driver.toLowerCase())}.</p>` +
+    `<h3>Forecast day by day</h3><div class="spk" aria-label="Forecast per working day">${spark.map((s, i) => `<i style="height:${6 + ((s - mn) / (mx - mn || 1)) * 30}px" title="WD ${i + 1}: ${esc(fmtK(s))}"></i>`).join('')}</div>` +
+    `<h3 style="margin-top:10px">Company codes</h3><table><thead><tr><th>Code</th><th class="n">Forecast</th><th class="n">Budget</th><th class="n">Var.</th><th></th></tr></thead><tbody>${split}</tbody></table>` +
+    `<h3 style="margin-top:10px">Notes of the controllers</h3>${notes.length ? '<ul class="notes">' + notes.map((n) => `<li><b>WD ${n.wd} · ${n.entity}</b> ${esc(n.text)}</li>`).join('') + '</ul>' : '<p class="sub">No notes for this line up to today.</p>'}` +
+    `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="primary" id="d-ask" type="button">Explain the variance</button></div>`;
+  $('#d-ask').onclick = () => send(`Pre-close ${DATA.periodLabel}, working day ${state.d} of ${NWD}: explain the variance of "${l.name}" for ${entName(state.ent)}. Forecast ${fmtK(cur.forecast)} against budget ${fmtK(cur.budget)} (${pct1(v.pct)}), booked ${fmtK(cur.actual)}. ${notes.length ? 'Notes: ' + notes.map((n) => n.text).join(' ') : ''} What should the controller check first? Please answer in English.`);
+}
+/* ---------- entities ---------- */
+function renderEntities() {
+  const rows = [{ id: 'all', name: 'Group' }, ...DATA.entities];
+  $('#ents').innerHTML = rows.map((e) => { const p = pnl(DATA, e.id, state.d, state.approved), rv = variance(p.tRev, R), ev = variance(p.ebit, R), rd = readiness(DATA, e.id, state.d), it = openItems(DATA, e.id, state.d), al = alertsAt(DATA, e.id, state.d).filter((a) => a.severity === 'red').length;
+    const c = (s) => (s === 'red' ? 'red' : s === 'yellow' ? 'yellow' : '');
+    return `<tr data-ent="${e.id}" tabindex="0" aria-selected="${state.ent === e.id}"><td><b>${e.id === 'all' ? 'Group' : e.id}</b><div class="sub" style="margin:0">${esc(e.name || 'All company codes')}</div></td><td class="n">${fmtK(p.tRev.forecast)}</td><td class="n c ${c(rv.status)}">${pct1(rv.pct)}</td><td class="n">${fmtK(p.ebit.forecast)}</td><td class="n c ${c(ev.status)}">${pct1(ev.pct)}</td><td class="n c ${rd.blocked + rd.overdue ? 'yellow' : ''}">${rd.pct} %</td><td class="n c ${it.reduce((a, i) => a + i.amountK, 0) > 1500 ? 'yellow' : ''}">${it.length} · ${fmtK(it.reduce((a, i) => a + i.amountK, 0))}</td><td class="n c ${al ? 'red' : ''}">${al}</td></tr>`; }).join('');
+  $('#ents').querySelectorAll('tr[data-ent]').forEach((tr) => { const go = () => { state.ent = tr.dataset.ent; $('#ent').value = state.ent; renderAll(); }; tr.onclick = go; tr.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
+}
+/* ---------- close calendar ---------- */
+function renderTasks() {
+  const ts = DATA.tasks.filter((t) => state.ent === 'all' || t.entity === 'All' || t.entity === state.ent), ss = ts.map((t) => [t, taskState(t, state.d)]);
+  const cnt = (f) => ss.filter(([, s]) => f(s)).length;
+  const chips = [['all', 'All', ss.length], ['open', 'Not done', cnt((s) => s !== 'done')], ['blocked', 'Blocked', cnt((s) => s === 'blocked')], ['overdue', 'Overdue', cnt((s) => s === 'overdue')], ['done', 'Done', cnt((s) => s === 'done')]];
+  $('#task-chips').innerHTML = chips.map(([k, n, c]) => `<button type="button" data-f="${k}" aria-pressed="${state.taskFilter === k}">${n} ${c}</button>`).join('');
+  $('#task-chips').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.taskFilter = b.dataset.f; renderTasks(); }));
+  const vis = ss.filter(([, s]) => state.taskFilter === 'all' || (state.taskFilter === 'open' ? s !== 'done' : s === state.taskFilter));
+  const A = 12, Z = 25, pos = (w) => ((w - A) / (Z - A + 1)) * 100, phases = [...new Set(vis.map(([t]) => t.phase))];
+  $('#tasks').innerHTML = `<div class="axisrow"><span></span><div class="wdax">${Array.from({ length: Z - A + 1 }, (_, i) => `<span class="${A + i === state.d ? 'now' : ''}" style="left:${pos(A + i)}%">${A + i}</span>`).join('')}</div></div>` +
+    phases.map((ph) => `<div class="ph">${esc(ph)}</div>` + vis.filter(([t]) => t.phase === ph).map(([t, s]) => { const [cls, lab] = TASK[s], from = Math.max(A, t.startWd), to = Math.min(Z, t.dueWd);
+      return `<div class="trow"><div class="tl-name"><b>${esc(t.name)}</b><div class="sub" style="margin:0">${esc(t.entity)} · ${esc(t.owner)}${s === 'blocked' ? ' · <span style="color:var(--red)">' + esc(t.blocked.reason) + '</span>' : ''}</div></div><div class="wdtrack">${state.d >= A && state.d <= Z ? `<i class="nl" style="left:${pos(state.d) + 100 / (Z - A + 1) / 2}%"></i>` : ''}<i class="tb ${cls}" style="left:${pos(from)}%;width:${Math.max(2.5, pos(to + 1) - pos(from))}%"></i></div><span class="pill ${cls}">${lab}</span></div>`; }).join('')).join('') || '<p class="sub">No task matches the filter.</p>';
+}
+/* ---------- open items ---------- */
+function renderItems() {
+  const all = openItems(DATA, state.ent, state.d), types = [...new Set(DATA.items.map((i) => i.type))];
+  $('#item-chips').innerHTML = [['all', 'All', all.length], ...types.map((t) => [t, t, all.filter((i) => i.type === t).length])].map(([k, n, c]) => `<button type="button" data-t="${esc(k)}" aria-pressed="${state.itemType === k}">${esc(n)} ${c}</button>`).join('');
+  $('#item-chips').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.itemType = b.dataset.t; renderItems(); }));
+  const vis = all.filter((i) => state.itemType === 'all' || i.type === state.itemType).sort((a, b) => b.amountK - a.amountK);
+  const age = (i) => state.d - i.openedWd, buckets = [[0, 2, '0–2 days'], [3, 5, '3–5 days'], [6, 99, 'older']].map(([a, b, n]) => [n, all.filter((i) => age(i) >= a && age(i) <= b)]);
+  $('#aging').innerHTML = buckets.map(([n, l]) => `<div class="kpi ${n === 'older' && l.length ? 'amber' : ''}"><div class="v">${l.length}</div><div class="k">${n}</div><div class="s">${fmtK(l.reduce((a, i) => a + i.amountK, 0))}</div></div>`).join('');
+  $('#items').innerHTML = vis.slice(0, 14).map((i) => `<tr><td>${esc(i.id)}</td><td>${esc(i.type)}<div class="sub" style="margin:0">${esc(i.note)}</div></td><td>${esc(i.entity)}${i.counterparty ? ' › ' + esc(i.counterparty) : ''}</td><td class="n"><b>${fmtK(i.amountK)}</b></td><td class="n">${age(i)} d</td><td>${esc(i.owner)}</td><td>${esc(i.action)}</td></tr>`).join('') || '<tr><td colspan="7">No open item matches.</td></tr>';
+  $('#items-more').textContent = vis.length > 14 ? `Showing the 14 largest of ${vis.length} open items.` : '';
+  $('#items-ask').onclick = () => send(`Pre-close ${DATA.periodLabel}, WD ${state.d} of ${NWD}, ${entName(state.ent)}: ${all.length} open items, ${fmtK(all.reduce((x, i) => x + i.amountK, 0))}. Largest: ${vis.slice(0, 4).map((i) => i.id + ' ' + i.type + ' ' + i.entity + ' ' + fmtK(i.amountK)).join('; ')}. Which should be cleared first before the cut-off, and why? Please answer in English.`);
+  const m = icMatrix(DATA, state.d), ids = DATA.entities.map((e) => e.id);
+  $('#ic').innerHTML = `<thead><tr><th>Intercompany</th>${ids.map((i) => `<th class="n">${i}</th>`).join('')}</tr></thead><tbody>${ids.map((a) => `<tr><td><b>${a}</b></td>${ids.map((b) => { const v = m[`${a}>${b}`] || 0; return `<td class="n c ${v > 100 ? 'red' : v ? 'yellow' : ''}">${a === b ? '' : v ? fmtK(v) : '–'}</td>`; }).join('')}</tr>`).join('')}</tbody>`;
+}
+/* ---------- accruals ---------- */
+function renderAccruals() {
+  const list = accrualsAt(DATA, state.ent, state.d), pend = list.filter((a) => !state.approved[a.id]);
+  $('#accr-sub').textContent = `Joule proposes, a person approves. ${pend.length} of ${list.length} proposals wait; approving posts the accrual (simulated) and raises the booked amount of the cost line.`;
+  $('#accr').innerHTML = list.map((a) => `<tr><td>${esc(a.id)}</td><td>${a.entity}</td><td>${esc(DATA.lines.find((l) => l.key === a.line).name)}</td><td>${esc(a.basis)}</td><td><span class="pill ${a.confidence === 'high' ? 'green' : a.confidence === 'medium' ? 'yellow' : 'red'}">${a.confidence}</span></td><td class="n"><b>${fmtK(a.amountK)}</b></td><td>${state.approved[a.id] ? '<span class="pill done">Posted (simulated)</span>' : `<button class="small" data-ap="${a.id}" type="button">Approve</button>`}</td></tr>`).join('') || '<tr><td colspan="7">No proposals yet for this day.</td></tr>';
+  $('#accr').querySelectorAll('[data-ap]').forEach((b) => (b.onclick = () => { state.approved[b.dataset.ap] = true; renderAll(); }));
+  $('#accr-all').disabled = !pend.length; $('#accr-all').onclick = () => { pend.filter((a) => a.confidence !== 'low').forEach((a) => (state.approved[a.id] = true)); renderAll(); };
+}
+/* ---------- alerts ---------- */
+function renderAlerts() {
+  const l = alertsAt(DATA, state.ent, state.d).sort((a, b) => b.wd - a.wd);
+  $('#alerts').innerHTML = l.map((a, i) => `<div class="alert ${a.severity}"><div><span class="pill ${a.severity}">${a.severity === 'red' ? 'Red' : 'Yellow'}</span> <b>${esc(a.kind)}</b> · ${a.entity} · WD ${a.wd} · ${fmtK(a.amountK)}</div><div>${esc(a.text)}</div><div class="sub" style="margin:2px 0 0">Suggested: ${esc(a.action)} <button class="small" data-al="${i}" type="button">Ask Joule</button></div></div>`).join('') || '<p class="sub">No alerts up to this day.</p>';
+  $('#alerts').querySelectorAll('[data-al]').forEach((b) => (b.onclick = () => { const a = l[+b.dataset.al]; send(`Pre-close ${DATA.periodLabel}, WD ${state.d}: anomaly in ${a.entity}: ${a.kind}. ${a.text} Amount ${fmtK(a.amountK)}. Suggested step: ${a.action} How would you check it and what is the effect on the month-end forecast? Please answer in English.`); }));
+}
+/* ---------- scenarios ---------- */
+function renderScen() {
+  const sc = DATA.scenarios.filter((s) => state.ent === 'all' || s.entity === state.ent), eff = scenarioEffect(DATA, state.scen, state.ent), ex = expectedScenario(DATA, state.ent), rv = P.tRev.forecast, eb = P.ebit.forecast;
+  $('#scen').innerHTML = sc.map((s) => `<label class="sc ${s.kind}"><input type="checkbox" data-sc="${s.key}" ${state.scen[s.key] ? 'checked' : ''}><span><b>${esc(s.label)}</b><span class="sub" style="display:block;margin:0">${s.kind === 'risk' ? 'Risk' : 'Opportunity'} · ${s.entity} · probability ${s.probabilityPct} % · revenue ${fmtSigned(s.revenueK)} · EBIT ${fmtSigned(s.revenueK - s.costK)}</span></span></label>`).join('') || '<p class="sub">No scenario for this company code.</p>';
+  $('#scen').querySelectorAll('[data-sc]').forEach((c) => (c.onchange = () => { state.scen[c.dataset.sc] = c.checked; renderScen(); }));
+  const r = (n, a, b) => `<tr><td>${n}</td><td class="n">${fmtK(a)}</td><td class="n">${fmtK(b)}</td></tr>`;
+  $('#scen-res').innerHTML = `<thead><tr><th></th><th class="n">Revenue</th><th class="n">EBIT</th></tr></thead><tbody>${r('Forecast today', rv, eb)}${r('With the selected scenarios', rv + eff.rev, eb + eff.ebit)}${r('Probability-weighted', rv + ex.rev, eb + ex.ebit)}${r('Best case (all opportunities)', rv, eb + ex.up)}${r('Worst case (all risks)', rv, eb + ex.down)}</tbody>`;
+}
+/* ---------- briefing + guide ---------- */
+function briefing() {
+  const p = pnl(DATA, 'all', state.d, state.approved), top = [...p.lines].map((r) => ({ r, v: variance(r, R) })).sort((a, b) => Math.abs(b.v.impact) - Math.abs(a.v.impact)).slice(0, 3);
+  const rd = readiness(DATA, 'all', state.d), it = openItems(DATA, 'all', state.d).filter((i) => i.amountK >= 100).length;
+  send(`Write the pre-close briefing for ${DATA.periodLabel}, working day ${state.d} of ${NWD}. Group forecast: revenue ${fmtK(p.tRev.forecast)} (budget ${fmtK(p.tRev.budget)}), EBIT ${fmtK(p.ebit.forecast)} (budget ${fmtK(p.ebit.budget)}). Biggest effects: ${top.map((t) => `${t.r.name} ${fmtSigned(t.v.impact)}`).join('; ')}. Tasks: ${rd.blocked} blocked, ${rd.overdue} overdue. ${it} open items above 100 k. Maximum ten lines, then three actions for today. Please answer in English.`);
+}
+const STEPS = [
+  { t: 'The picture of today', x: 'Working day 17 of 22. The group forecasts a revenue close to budget but an EBIT below it. The band shows how sure the forecast is, the readiness shows how far the close is.', on: () => { state.d = 17; state.metric = 'ebit'; } },
+  { t: 'Where does the EBIT gap come from?', x: 'The bridge walks from the budget to the forecast. The licence deal of DE10 that moved to November is the biggest step; the hosting overrun of UK10 and the legal fees follow. Click the licence line for the method and the notes.', on: () => { state.sel = 'license'; state.ent = 'all'; } },
+  { t: 'Go back in time', x: 'Move the day back to working day 11: the forecast was still close to the budget. Every day the controllers add what they learn, and the evolution chart shows when the picture changed.', on: () => { state.d = 11; state.sel = 'license'; } },
+  { t: 'Back to today: what blocks the close?', x: 'Two tasks are blocked: the usage billing in the US and the card statement in France. Open items and the intercompany matrix show the amounts that must be cleared before the cut-off.', on: () => { state.d = 17; state.taskFilter = 'blocked'; state.ent = 'all'; } },
+  { t: 'Approve the accruals', x: 'Joule proposes accruals from receipts, timesheets and contracts. A person approves each one; the booked amount of the cost line rises.', on: () => { state.approved['AC-01'] = true; state.approved['AC-05'] = true; state.approved['AC-07'] = true; } },
+  { t: 'What if?', x: 'Select the scenarios, such as the milestone in the US or the credit note from the hosting provider. The table shows the forecast with them, the probability-weighted value and the best and worst case. The briefing button asks Joule for the daily summary.', on: () => { state.scen.milestone = true; state.scen.credit = true; state.scen.usage = false; } },
+];
+function renderGuide() {
+  const g = $('#guide');
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Six steps through one pre-close day: the picture, the gap to budget, the days before, the blockers, the accruals, the scenarios.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  const s = STEPS[state.step];
+  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
+  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
+}
+function resetState() { Object.assign(state, { d: DATA.asOfWd, ent: 'all', metric: 'ebit', sel: null, taskFilter: 'all', itemType: 'all', approved: {}, scen: {} }); $('#ent').value = 'all'; }
+function go(i) { state.step = i; resetState(); for (let k = 0; k <= i; k++) STEPS[k].on(); renderAll(); }
+function renderAll() { compute(); renderHead(); renderGuide(); renderKpis(); renderCharts(); renderPnl(); renderDetail(); renderEntities(); renderTasks(); renderItems(); renderAccruals(); renderAlerts(); renderScen(); }
+$('#ent').innerHTML = '<option value="all">All company codes</option>' + DATA.entities.map((e) => `<option value="${e.id}">${e.id} · ${esc(e.name)}</option>`).join('');
+$('#ent').onchange = (e) => { state.ent = e.target.value; renderAll(); };
+$('#day').oninput = (e) => { state.d = +e.target.value; renderAll(); };
+$('#prev').onclick = () => { state.d = Math.max(1, state.d - 1); renderAll(); };
+$('#next').onclick = () => { state.d = Math.min(NWD, state.d + 1); renderAll(); };
+$('#today').onclick = () => { state.d = DATA.asOfWd; renderAll(); };
+$('#metric').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.metric = b.dataset.m; renderAll(); }));
+$('#brief').onclick = briefing;
+$('#reset').onclick = () => { state.step = -1; resetState(); renderAll(); };
+$('#assump').textContent = `Mockup data, no live system: a generator creates the figures in the shape of an S/4HANA Finance extract (company codes, G/L accounts grouped into P&L lines), the same every time. Amounts are thousand EUR; costs are positive, EBIT = revenue − cost of revenue − operating expenses. The forecast of a day starts from the budget and moves towards the month end as controllers add what they know; the band is a ${R.bandPct} % range that shrinks over the month. A line is red when it is worse than the budget by at least ${R.varianceWarnPct} % and ${R.varianceWarnK} k. Subtotal ranges combine the line ranges as independent errors. Approved accruals only raise the booked amount in this demo.`;
+resetState(); renderAll();
+window.__preclose = () => ({ state, P }); window.__go = go;
+})();
+</script>
+</body>
+</html>
