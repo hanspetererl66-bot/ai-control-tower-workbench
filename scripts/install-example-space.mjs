@@ -18,6 +18,7 @@ export const EXAMPLE_SPACES = {
   sales: 'sales',
   'it-operations': 'it-operations',
   'it-infrastructure': 'it-infrastructure',
+  renewals: 'renewals',
   'it-fleet': 'it-fleet',
   'mcp-marketplace': 'mcp-marketplace',
 };
