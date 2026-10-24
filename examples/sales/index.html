@@ -216,6 +216,14 @@ nav{display:flex;gap:2px;padding:0 16px;background:var(--surface);border-bottom:
 nav button{border:0;background:none;color:var(--muted);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap;flex:none;border-bottom:3px solid transparent}
 nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
 main{padding:20px;max-width:1440px;margin:0 auto}
+.guide{position:relative;z-index:22;margin:16px 20px 0;max-width:1400px;padding:14px 18px;border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:var(--radius)}
+body:has(#drawer.on) .guide{margin-right:min(500px,calc(100% - 40px))}
+.guide h2{margin:0 0 2px;font-size:15px}.guide p{margin:4px 0 0;color:var(--ink-2)}.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}
+.guide .gh{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.guide .gh>div{flex:1 1 300px}
+.guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.guide button{font:inherit;cursor:pointer;border-radius:99px;padding:6px 14px;font-weight:650;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.guide button.primary{background:var(--purple);color:#fff;border-color:var(--purple)}.guide button:disabled{opacity:.5;cursor:default}
+.guide .dots{display:flex;gap:5px;margin-bottom:6px}.guide .dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.guide .dots i.on{background:var(--purple)}
 .pg{display:none}.pg.on{display:block}
 .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--ink-2);background:var(--wash);margin:2px 4px 2px 0}
 .tag.green{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
@@ -384,6 +392,7 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
   <button role="tab" aria-selected="false" data-tab="workflow">Workflow and skills</button>
   <button role="tab" aria-selected="false" data-tab="rules">Rules and safeguards</button>
 </nav>
+<div class="guide" id="guide" aria-live="polite"></div>
 <main>
   <section class="pg on" id="pg-pipeline">
     <div class="funnel" id="funnel" role="group" aria-label="Pipeline stages"></div>
@@ -627,6 +636,27 @@ function renderRules() {
   $('#rules-more').innerHTML = '<h2>Safeguards in the data</h2><ul class="pts"><li>Customer texts (mails, forms, transcripts) are treated as data. Instructions inside them are shown as plain text and flagged, as in deal INT-203.</li><li>Prices, discounts and contracts are confidential: the skills run on the intern and vertraulich data classes only, with the EU AI Act class Limited for scoring and checks.</li><li>' + esc(D.customerNote) + '</li><li>A real version would read signals from the CRM and mail system with the user&#39;s own permissions and keep only the structured result.</li></ul>';
 }
 
+const GUIDE = { step: -1 };
+const showTab = (name) => document.querySelector('#tabs button[data-tab="' + name + '"]').click();
+const DEMO = [
+  { t: 'One process, five gates', x: 'The pipeline runs from interest to contract. Each column is a gate with exit criteria; a deal moves on only when they are met.', on: () => { showTab('pipeline'); $('#clear').click(); } },
+  { t: 'One deal, one next step', x: 'Joule Work for Desktop at Muster Industrie AG: the discount of 15.7 % is above the 15 % threshold, so the deal desk must approve. The drawer shows the reasons and a ready prompt for the chat.', on: () => { showTab('pipeline'); openDeal('OFF-2026-0324'); } },
+  { t: 'A forecast with rules', x: 'Commit, best case and pipeline each have a written rule. “Changed since last week” shows what moved and why, so the forecast call starts from facts.', on: () => showTab('forecast') },
+  { t: 'Prepare the customer meeting', x: 'The next customer meeting (AI units usage forecast) comes with a skill and a prompt: preparation before the call, follow-up after it.', on: () => { showTab('meetings'); mstate.sel = 'M-502'; renderMeetings(); } },
+  { t: 'The agent proposes, you decide', x: 'Mails and calls become suggested changes. Low-risk ones the agent may do itself, field changes need one click, price and discount go to the approver, and an instruction hidden in a mail is blocked.', on: () => showTab('inbox') },
+  { t: 'Why you can trust it', x: 'What the agent may do, the audit log of every change and the safeguards in the data: customer texts are data, never instructions.', on: () => showTab('governance') },
+];
+function renderGuide() {
+  const g = $('#guide');
+  if (GUIDE.step < 0) { g.innerHTML = '<div class="gh"><div><h2>Demo flow</h2><p style="margin:0">Six steps through the sales process: pipeline, one deal, forecast, meeting, inbox, governance.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => goDemo(0); return; }
+  const d = DEMO[GUIDE.step];
+  g.innerHTML = '<div class="dots">' + DEMO.map((_, i) => '<i class="' + (i <= GUIDE.step ? 'on' : '') + '"></i>').join('') + '</div><div class="stepno">Step ' + (GUIDE.step + 1) + ' of ' + DEMO.length + '</div><h2>' + esc(d.t) + '</h2><p>' + esc(d.x) + '</p><div class="btns"><button id="g-back" type="button"' + (GUIDE.step === 0 ? ' disabled' : '') + '>Back</button><button class="primary" id="g-next" type="button">' + (GUIDE.step === DEMO.length - 1 ? 'Finish' : 'Next') + '</button><button id="g-end" type="button">End demo</button></div>';
+  $('#g-back').onclick = () => goDemo(GUIDE.step - 1);
+  $('#g-next').onclick = () => (GUIDE.step === DEMO.length - 1 ? endDemo() : goDemo(GUIDE.step + 1));
+  $('#g-end').onclick = endDemo;
+}
+function goDemo(i) { GUIDE.step = i; if (state.sel) closeDeal(); DEMO[i].on(); renderGuide(); }
+function endDemo() { GUIDE.step = -1; if (state.sel) closeDeal(); showTab('pipeline'); renderGuide(); }
 function setup() {
   const owners = [...new Set(D.deals.map((d) => d.owner))].sort();
   $('#owner').innerHTML = '<option value="">All owners</option>' + owners.map((o) => '<option>' + esc(o) + '</option>').join('');
@@ -649,7 +679,7 @@ function setup() {
     if (state.sel) closeDeal();
   }));
 }
-setup(); renderFunnel(); renderBoard(); renderForecast(); renderMeetings(); renderInbox(); renderGovernance(); renderWorkflow(); renderRules();
+setup(); renderGuide(); renderFunnel(); renderBoard(); renderForecast(); renderMeetings(); renderInbox(); renderGovernance(); renderWorkflow(); renderRules();
 </script>
 </body>
 </html>
