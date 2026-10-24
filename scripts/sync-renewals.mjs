@@ -27,8 +27,16 @@ const addDays = (s, n) => new Date(day(s) + n * 86400000).toISOString().slice(0,
 export function sub4meCustomers() {
   const html = read('examples/sub4me/index.html');
   const page = JSON.parse(/id="s4m-data">\n([\s\S]*?)\n<\/script>/.exec(html)[1]);
-  return [{ id: 'muster', customer: page.customer, contracts: page.contracts, offers: page.offers, invoices: page.invoices, tickets: page.tickets }, ...JSON.parse(read('examples/sub4me/portfolio.json')).otherCustomers];
+  return [{ id: 'muster', customer: page.customer, profile: page.profile, contracts: page.contracts, offers: page.offers, invoices: page.invoices, tickets: page.tickets }, ...JSON.parse(read('examples/sub4me/portfolio.json')).otherCustomers];
 }
+
+/** Illustrative assumptions for retention and customer lifetime value (CLV). Not real figures. */
+export const RULES = {
+  marginPct: 70,
+  lifetimeCapYears: 7,
+  retention: { green: 0.95, yellow: 0.85, red: 0.65, lapsed: 0.25 },
+  levers: { usage: 'Adoption workshop with the business owner', ticket: 'Escalate the open ticket to a named engineer', competitor: 'Executive sponsor call and a competitive battlecard', invoice: 'Payment plan agreed with the customer finance team', uplift: 'Explain the price rise with scope and volume, or hold the cap', timing: 'Joint timeline with the customer procurement', 'no-offer': 'Early value review before the offer', lapsed: 'Win-back call with the technical contact', growth: 'Roadmap session for the next scope', validity: 'Validity extension in exchange for a signing date' },
+};
 
 export function buildRenewals() {
   const cases = [];
@@ -40,7 +48,9 @@ export function buildRenewals() {
       const isAi = /^AI units/.test(k.product);
       const tickets = c.tickets.filter((t) => OPEN_TICKET(t) && (isAi ? AI_PRODUCTS.has(t.product) : t.product === k.product)).map((t) => ({ id: t.id, title: t.title, priority: t.priority, status: t.status }));
       const invoices = c.invoices.filter((i) => i.contractId === k.id && ['Open', 'Overdue'].includes(i.status)).map((i) => ({ id: i.id, status: i.status, grossEur: i.grossEur, due: i.due }));
+      const active = c.contracts.filter((x) => x.status !== 'Expired');
       cases.push({
+        customerSince: c.profile.customerSince, customerAnnualEur: active.reduce((a, x) => a + x.annualEur, 0),
         id: `R-${k.id}`, customerId: c.id, customer: c.customer.name, sapCustomerId: c.customer.sapCustomerId,
         contractId: k.id, product: k.product, status: lapsed ? 'Lapsed' : k.status === 'Renewal due' ? 'Renewal due' : 'Running', end: k.end,
         noticeDays: k.noticeDays, decisionDate: addDays(k.end, -k.noticeDays), autoRenew: k.autoRenew, annualEur: k.annualEur, upliftCapPct: k.priceUpliftCapPct, termination: k.termination,
@@ -53,6 +63,7 @@ export function buildRenewals() {
   cases.sort((a, b) => a.decisionDate.localeCompare(b.decisionDate) || a.id.localeCompare(b.id));
   return {
     asOf: AS_OF,
+    rules: RULES,
     note: 'Fictional data derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.',
     cases,
   };

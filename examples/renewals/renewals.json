@@ -1,8 +1,32 @@
 {
   "asOf": "2026-10-19",
+  "rules": {
+    "marginPct": 70,
+    "lifetimeCapYears": 7,
+    "retention": {
+      "green": 0.95,
+      "yellow": 0.85,
+      "red": 0.65,
+      "lapsed": 0.25
+    },
+    "levers": {
+      "usage": "Adoption workshop with the business owner",
+      "ticket": "Escalate the open ticket to a named engineer",
+      "competitor": "Executive sponsor call and a competitive battlecard",
+      "invoice": "Payment plan agreed with the customer finance team",
+      "uplift": "Explain the price rise with scope and volume, or hold the cap",
+      "timing": "Joint timeline with the customer procurement",
+      "no-offer": "Early value review before the offer",
+      "lapsed": "Win-back call with the technical contact",
+      "growth": "Roadmap session for the next scope",
+      "validity": "Validity extension in exchange for a signing date"
+    }
+  },
   "note": "Fictional data derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.",
   "cases": [
     {
+      "customerSince": 2019,
+      "customerAnnualEur": 2518550,
       "id": "R-C-2023-0215",
       "customerId": "hanse",
       "customer": "Hanse Handelsgruppe AG",
@@ -41,6 +65,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
       "id": "R-C-2022-0502",
       "customerId": "muster",
       "customer": "Muster Industrie AG",
@@ -66,6 +92,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
       "id": "R-C-2025-0041",
       "customerId": "muster",
       "customer": "Muster Industrie AG",
@@ -104,6 +132,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2019,
+      "customerAnnualEur": 2518550,
       "id": "R-C-2024-0611",
       "customerId": "hanse",
       "customer": "Hanse Handelsgruppe AG",
@@ -149,6 +179,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
       "id": "R-C-2026-0012",
       "customerId": "muster",
       "customer": "Muster Industrie AG",
@@ -193,6 +225,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2019,
+      "customerAnnualEur": 2518550,
       "id": "R-C-2026-0044",
       "customerId": "hanse",
       "customer": "Hanse Handelsgruppe AG",
@@ -225,6 +259,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
       "id": "R-C-2023-0390",
       "customerId": "muster",
       "customer": "Muster Industrie AG",
@@ -270,6 +306,8 @@
       ]
     },
     {
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
       "id": "R-C-2024-0233",
       "customerId": "muster",
       "customer": "Muster Industrie AG",
@@ -295,6 +333,8 @@
       "invoices": []
     },
     {
+      "customerSince": 2019,
+      "customerAnnualEur": 2518550,
       "id": "R-C-2024-0702",
       "customerId": "hanse",
       "customer": "Hanse Handelsgruppe AG",

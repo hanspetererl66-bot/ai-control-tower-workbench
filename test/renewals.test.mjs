@@ -11,7 +11,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/renewals/index.html');
 const data = JSON.parse(read(DATA_FILE));
-const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween })`);
+const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, levers })`);
 const byContract = (id) => data.cases.find((c) => c.contractId === id);
 const health = (id) => logic.signals(byContract(id), AS_OF);
 
@@ -63,6 +63,29 @@ test('page: radar, table, detail, six demo steps, English chat prompts, no netwo
   assert.equal((page.match(/\{ t: '/g) || []).length, 6);
   assert.match(page, /customer-call-prep/);
   assert.match(page, /pricing-guard/);
-  assert.equal((page.match(/Please answer in English/g) || []).length, 3);
+  assert.equal((page.match(/Please answer in English/g) || []).length, 4);
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
+});
+
+test('retention and lifetime value: transparent formula, alternatives follow the rules, the recommendation respects the cap', () => {
+  const R = data.rules;
+  assert.equal(R.marginPct, 70);
+  assert.equal(logic.lifetimeYears(0.5, R), 2);
+  assert.equal(logic.lifetimeYears(0.97, R), R.lifetimeCapYears, 'capped');
+  assert.equal(logic.clv(100000, 0.5, R), 140000, 'annual value x margin x lifetime');
+  for (const c of data.cases) {
+    const s = logic.signals(c, AS_OF), opts = logic.options(c, s, R);
+    assert.ok(opts.length >= 2, c.id);
+    assert.equal(opts.filter((o) => o.recommended).length, 1, `${c.id}: exactly one recommended option`);
+    const rec = opts.find((o) => o.recommended);
+    assert.ok(rec.withinCap, `${c.id}: the recommended option stays within the contract cap`);
+    for (const o of opts.filter((x) => x.withinCap)) assert.ok(rec.clvEur >= o.clvEur, `${c.id}: ${o.key} is not better than the recommendation`);
+    assert.ok(c.customerAnnualEur >= c.annualEur || c.status === 'Lapsed', c.id);
+  }
+  const ariba = byContract('C-2023-0390'), opts = logic.options(ariba, logic.signals(ariba, AS_OF), R);
+  assert.ok(!opts.find((o) => o.key === 'standard').withinCap, 'the offer is above the cap');
+  assert.equal(opts.find((o) => o.recommended).key, 'cap');
+  assert.ok(logic.levers(logic.signals(ariba, AS_OF), R).length >= 2);
+  assert.match(page, /id="alt"/);
+  assert.match(page, /Illustrative assumptions/);
 });
