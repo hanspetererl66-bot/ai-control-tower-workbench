@@ -1,0 +1,12 @@
+{
+  "title": "Finance Pre-Close",
+  "description": "Daily pre-close for the month end: forecast of revenue, gross profit and EBIT per company code with a range, bridge to the budget, close calendar, open items, accrual proposals, alerts and what-if scenarios, on mockup data.",
+  "domain": "Finance",
+  "insights": [
+    "Fictional group and mockup data in the shape of an S/4HANA Finance extract; no finance system or MCP server is connected. A generator creates the figures.",
+    "Move through the 22 working days of the month: the forecast, its range, the open items, the close tasks and the alerts change with the day.",
+    "A person approves every accrual; the app only simulates posting. Joule explains variances and writes the daily briefing.",
+    "'Start demo' walks through six steps for one pre-close day."
+  ],
+  "prompt": "Bundled example: Finance Pre-Close (static, mockup data embedded by npm run sync:finance-preclose)."
+}

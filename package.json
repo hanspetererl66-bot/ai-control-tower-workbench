@@ -24,6 +24,8 @@
     "sync:it-operations": "node scripts/sync-it-operations.mjs",
     "sync:it-infrastructure": "node scripts/sync-it-infrastructure.mjs",
     "sync:renewals": "node scripts/sync-renewals.mjs",
+    "sync:finance-preclose": "node scripts/sync-finance-preclose.mjs",
+    "install:finance-preclose": "node scripts/install-example-space.mjs finance-preclose",
     "install:it-operations": "node scripts/install-example-space.mjs it-operations",
     "install:it-infrastructure": "node scripts/install-example-space.mjs it-infrastructure",
     "install:renewals": "node scripts/install-example-space.mjs renewals",
