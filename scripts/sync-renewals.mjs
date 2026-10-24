@@ -30,6 +30,22 @@ export const CUSTOMERS = [
   { id: 'hanse', owner: 'Tom Ahlers', escalation: null, topics: [{ kind: 'people', text: 'New CFO since September, reviews all software spend' }, { kind: 'commercial', text: 'Wants to bundle Commerce Cloud and Integration Suite into one contract' }] },
 ];
 
+/** E-mail threads per customer for the Renewals Space: the threads of the E-Mail-Communication Space, plus fictional ones for Hanse. */
+const HANSE_MAILS = [
+  { id: 'H-201', subject: 'Commerce Cloud renewal: bundle with the Analytics add-on?', status: 'waiting-us', intent: 'Renewal', mood: 'mixed', contractId: 'C-2024-0611', offerId: 'OFF-2026-0407', side: 'customer', at: '2026-10-15T09:20:00+02:00', count: 3, snippet: 'Our new CFO would like one bundle for Commerce Cloud and Analytics Cloud planning. Can you send one price for both before the 30th?' },
+  { id: 'H-202', subject: 'AW: Ariba renewal, price rise above the cap', status: 'waiting-customer', intent: 'Renewal', mood: 'negative', contractId: 'C-2025-0458', offerId: 'OFF-2026-0402', side: 'us', at: '2026-10-08T14:05:00+02:00', count: 4, snippet: 'We checked the contract: the uplift cap of 3 % applies. The revised quote with the capped price is attached, please confirm by 22 October.' },
+  { id: 'H-203', subject: 'Integration Suite: extra connectors approved', status: 'answered', intent: 'Offer', mood: 'positive', contractId: 'C-2023-0215', offerId: null, side: 'customer', at: '2026-10-12T16:40:00+02:00', count: 2, snippet: 'Thank you, the two extra connectors are approved by our integration lead. Please go ahead with the order form.' },
+];
+const snippetOf = (body) => body.split('\n').map((l) => l.trim()).filter((l) => l && !/^(hello|hi|dear|thanks|thank you|best|kind regards|regards)\b/i.test(l) && !l.startsWith('>') && l.length > 30)[0]?.slice(0, 190) ?? '';
+export function mailsFor(customerId, customerName) {
+  if (customerId === 'hanse') return HANSE_MAILS;
+  const { threads } = JSON.parse(read('examples/customer-emails/threads.json'));
+  return threads.filter((th) => th.customer === customerName).map((th) => {
+    const last = th.messages[th.messages.length - 1];
+    return { id: th.id, subject: th.subject, status: th.status, intent: th.intent, mood: th.mood, contractId: th.links.contract, offerId: th.links.offer, side: last.side, at: last.at, count: th.messages.length, snippet: snippetOf(last.body) };
+  });
+}
+
 export function sub4meCustomers() {
   const html = read('examples/sub4me/index.html');
   const page = JSON.parse(/id="s4m-data">\n([\s\S]*?)\n<\/script>/.exec(html)[1]);
@@ -93,7 +109,7 @@ export function buildRenewals() {
     rules: RULES,
     note: 'Fictional data derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.',
     cases,
-    customers: CUSTOMERS.map((c) => ({ ...c, annualEur: cases.find((x) => x.customerId === c.id)?.customerAnnualEur ?? 0, since: cases.find((x) => x.customerId === c.id)?.customerSince ?? null, name: cases.find((x) => x.customerId === c.id)?.customer ?? c.id })),
+    customers: CUSTOMERS.map((c) => ({ ...c, annualEur: cases.find((x) => x.customerId === c.id)?.customerAnnualEur ?? 0, since: cases.find((x) => x.customerId === c.id)?.customerSince ?? null, name: cases.find((x) => x.customerId === c.id)?.customer ?? c.id, mails: [] })).map((c) => ({ ...c, mails: mailsFor(c.id, c.name).sort((x, y) => y.at.localeCompare(x.at)) })),
   };
 }
 

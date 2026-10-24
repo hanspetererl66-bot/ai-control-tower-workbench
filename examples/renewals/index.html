@@ -268,6 +268,14 @@ button:disabled{opacity:.5;cursor:default}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.dot.od{background:var(--red)}.dot.op{background:var(--amber)}
 .ub{display:grid;grid-template-columns:96px 1fr 46px;align-items:center;gap:8px;font-size:12px;margin:4px 0}.ub span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ub b{text-align:right}
 .ubar{position:relative;height:10px;border-radius:5px;background:var(--line-2)}.ubar i{display:block;height:100%;border-radius:5px;background:var(--purple)}.ubar i.low{background:var(--red)}.ubar i.high{background:var(--green)}.ubar u{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--muted)}
+.mailchip{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.mailchip.us{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.mailchip.bad{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.mailchip.ok{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.mtl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line);display:grid;gap:10px}
+.mtl li{position:relative;font-size:12px}.mtl li::before{content:"";position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--muted)}
+.mtl li.positive::before{border-color:var(--green)}.mtl li.negative::before{border-color:var(--red)}.mtl li.mixed::before{border-color:var(--amber)}
+.mtl li.wait{padding:6px 8px;border:1px solid var(--amber-border);background:var(--amber-dim);border-radius:var(--radius-s)}
+.mtl .mh{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;color:var(--muted)}.mtl .mh b{color:var(--ink)}.mtl .sn{margin-top:2px;color:var(--ink-2)}
+.mtl mark{background:var(--purple-dim);color:var(--purple-mid);border-radius:4px;padding:0 3px}
 .cust-panel .talk{margin-top:12px;padding:8px 10px;border-radius:var(--radius-s);background:var(--purple-dim);border:1px solid var(--purple-border);font-size:12px}
 @media (max-width:900px){.cview{grid-template-columns:1fr}}
 .auto-sw{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer}.auto-sw input{position:absolute;opacity:0;width:1px;height:1px}.auto-sw .trk{width:34px;height:20px;border-radius:99px;background:var(--line-2);position:relative;transition:background .15s}.auto-sw .trk::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--panel);transition:left .15s}.auto-sw input:checked+.trk{background:var(--green)}.auto-sw input:checked+.trk::after{left:17px}.auto-sw input:focus-visible+.trk{outline:2px solid var(--purple);outline-offset:2px}
@@ -916,7 +924,61 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
    ],
    "annualEur": 4540000,
    "since": 2014,
-   "name": "Muster Industrie AG"
+   "name": "Muster Industrie AG",
+   "mails": [
+    {
+     "id": "T-101",
+     "subject": "AW: Ariba renewal: revised quote and price benchmark",
+     "status": "waiting-us",
+     "intent": "Renewal",
+     "mood": "mixed",
+     "contractId": "C-2023-0390",
+     "offerId": "OFF-2026-0318",
+     "side": "customer",
+     "at": "2026-10-17T11:05:00+02:00",
+     "count": 3,
+     "snippet": "in addition to Jonas: can you confirm that the notice date of 2 November stays as it is if we sign the new term before that date? The procurement board meets on 28 October."
+    },
+    {
+     "id": "T-104",
+     "subject": "Joule Work pilot: security questionnaire",
+     "status": "waiting-customer",
+     "intent": "Security",
+     "mood": "positive",
+     "contractId": null,
+     "offerId": "OFF-2026-0324",
+     "side": "us",
+     "at": "2026-10-17T10:15:00+02:00",
+     "count": 2,
+     "snippet": ""
+    },
+    {
+     "id": "T-102",
+     "subject": "SuccessFactors: corrected offer for 4,500 employees",
+     "status": "waiting-us",
+     "intent": "Offer",
+     "mood": "mixed",
+     "contractId": "C-2025-0041",
+     "offerId": "OFF-2026-0311",
+     "side": "customer",
+     "at": "2026-10-16T15:30:00+02:00",
+     "count": 3,
+     "snippet": ""
+    },
+    {
+     "id": "T-103",
+     "subject": "URGENT: AI Core quota eu10: alert and RCA",
+     "status": "waiting-customer",
+     "intent": "Escalation",
+     "mood": "negative",
+     "contractId": "C-2026-0012",
+     "offerId": null,
+     "side": "us",
+     "at": "2026-10-09T11:20:00+02:00",
+     "count": 4,
+     "snippet": "Confirmed: the alert at 80 percent of the quota is configured and active for eu10."
+    }
+   ]
   },
   {
    "id": "hanse",
@@ -934,7 +996,48 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
    ],
    "annualEur": 2518550,
    "since": 2019,
-   "name": "Hanse Handelsgruppe AG"
+   "name": "Hanse Handelsgruppe AG",
+   "mails": [
+    {
+     "id": "H-201",
+     "subject": "Commerce Cloud renewal: bundle with the Analytics add-on?",
+     "status": "waiting-us",
+     "intent": "Renewal",
+     "mood": "mixed",
+     "contractId": "C-2024-0611",
+     "offerId": "OFF-2026-0407",
+     "side": "customer",
+     "at": "2026-10-15T09:20:00+02:00",
+     "count": 3,
+     "snippet": "Our new CFO would like one bundle for Commerce Cloud and Analytics Cloud planning. Can you send one price for both before the 30th?"
+    },
+    {
+     "id": "H-203",
+     "subject": "Integration Suite: extra connectors approved",
+     "status": "answered",
+     "intent": "Offer",
+     "mood": "positive",
+     "contractId": "C-2023-0215",
+     "offerId": null,
+     "side": "customer",
+     "at": "2026-10-12T16:40:00+02:00",
+     "count": 2,
+     "snippet": "Thank you, the two extra connectors are approved by our integration lead. Please go ahead with the order form."
+    },
+    {
+     "id": "H-202",
+     "subject": "AW: Ariba renewal, price rise above the cap",
+     "status": "waiting-customer",
+     "intent": "Renewal",
+     "mood": "negative",
+     "contractId": "C-2025-0458",
+     "offerId": "OFF-2026-0402",
+     "side": "us",
+     "at": "2026-10-08T14:05:00+02:00",
+     "count": 4,
+     "snippet": "We checked the contract: the uplift cap of 3 % applies. The revised quote with the capped price is attached, please confirm by 22 October."
+    }
+   ]
   }
  ]
 }
@@ -1107,6 +1210,29 @@ function renderBar() {
 const SIT = { red: 'red', yellow: 'amber', green: 'green' };
 const custSit = (cust) => customerSituation(cust, model);
 const SEVERITY = { escalation: 0, payment: 1, usage: 2, growth: 3, stable: 4 };
+
+/* E-mail communication: a signal per contract (rows) and a timeline per customer (panel). */
+const mailDays = (m) => Math.max(0, Math.round((toDay(DATA.asOf) - toDay(m.at.slice(0, 10))) / 864e5));
+const mailsOfCustomer = (id) => ((DATA.customers.find((x) => x.id === id) || {}).mails || []);
+const mailsOfCase = (c) => mailsOfCustomer(c.customerId).filter((m) => m.contractId === c.contractId || (c.offer && m.offerId === c.offer.id));
+function mailSignal(c) {
+  const ms = mailsOfCase(c);
+  if (!ms.length) return null;
+  const us = ms.filter((m) => m.status === 'waiting-us').sort((a, b) => a.at.localeCompare(b.at))[0];
+  if (us) return { cls: 'us', text: `Customer waits ${mailDays(us)} d`, title: us.subject };
+  const neg = ms.find((m) => m.mood === 'negative');
+  if (neg) return { cls: 'bad', text: 'Tense tone', title: neg.subject };
+  const wc = ms.find((m) => m.status === 'waiting-customer');
+  if (wc) return { cls: '', text: `Waiting for customer ${mailDays(wc)} d`, title: wc.subject };
+  return { cls: 'ok', text: 'Mail answered', title: ms[0].subject };
+}
+const mailChip = (c) => { const s = mailSignal(c); return s ? `<span class="mailchip ${s.cls}" title="${esc(s.title)}">✉ ${esc(s.text)}</span>` : ''; };
+const HILITE = /(notice date|deadline|price|cap|discount|bundle|board|CFO|approved|quote|escalat\w*|cancel\w*|competitor)/gi;
+const mark = (s) => esc(s).replace(HILITE, '<mark>$1</mark>');
+function mailTimeline(ms) {
+  if (!ms.length) return '<p class="sub">No e-mail threads.</p>';
+  return `<ul class="mtl">${ms.map((m) => `<li class="${esc(m.mood)} ${m.status === 'waiting-us' ? 'wait' : ''}"><div class="mh"><b>${m.side === 'customer' ? '← Customer' : '→ We wrote'}</b><span>${esc(m.at.slice(0, 10))} · ${m.count} messages · ${esc(m.intent)}</span>${m.status === 'waiting-us' ? '<span class="mailchip us">waits ' + mailDays(m) + ' d for our reply</span>' : m.status === 'waiting-customer' ? '<span class="mailchip">waiting for customer</span>' : ''}</div><div><b>${esc(m.subject)}</b></div><div class="sn">${mark(m.snippet)}</div>${m.contractId ? `<div class="mh">${esc(m.contractId)}${m.offerId ? ' · ' + esc(m.offerId) : ''}</div>` : ''}</li>`).join('')}</ul>`;
+}
 function focusCustomer() {
   const sel = state.sel ? model.find((c) => c.id === state.sel) : null;
   if (sel) return sel.customerId;
@@ -1140,6 +1266,7 @@ function renderCustomers() {
     <div class="mini inv"><h3>Unpaid invoices</h3><div class="invbox">${ring}<div><div><i class="dot od"></i>Overdue <b>${eur(s.overdue.reduce((a, i) => a + i.grossEur, 0))}</b></div><div><i class="dot op"></i>Open <b>${eur(s.open.reduce((a, i) => a + i.grossEur, 0))}</b></div></div></div></div>
     <div class="mini"><h3>Usage against licence</h3>${s.usage.slice(0, 7).map((u) => `<div class="ub" title="${esc(u.product)}: ${u.pct} %"><span>${esc(u.product.replace(/\s*\(.*\)/, ''))}</span><div class="ubar"><i class="${u.pct < 60 ? 'low' : u.pct >= 95 ? 'high' : ''}" style="width:${Math.min(100, u.pct)}%"></i><u style="left:60%"></u></div><b>${u.pct} %</b></div>`).join('')}</div>
     <div class="mini"><h3>Other topics</h3><ul class="notes">${cust.topics.map((x) => `<li>${esc(x.text)}</li>`).join('')}</ul></div>
+    <div class="mini"><h3>E-mail communication</h3>${mailTimeline(mailsOfCustomer(cust.id))}</div>
     <div class="talk"><b>For the renewal talk</b><div>${esc(s.talk)}</div></div>
     <div style="margin-top:10px"><button class="small" id="cust-prep" type="button">Prepare the customer talk with Joule</button></div>`;
   $('#cust-prep').onclick = () => send(`Prepare the renewal talk with ${cust.name}: situation ${s.list.map((x) => x.label).join(', ')}. ${s.tickets.length} open tickets (${s.byPrio['Very high']} very high), ${s.overdue.length} overdue invoices, ${eur(s.renewalEur)} a year up for renewal. ${e ? 'Escalation: ' + e.topic + ' ' : ''}Use the Sub4Me tools and the skill customer-call-prep. Please answer in English.`);
@@ -1155,7 +1282,7 @@ function renderTimeline() {
 }
 function renderRows() {
   $('#rows-sub').textContent = state.auto ? 'Contracts handled by automatic renewal come first, grouped by customer (marked Auto); the rest follows, earliest decision date first.' : 'Earliest first. Health is the worst signal of the renewal.';
-  $('#rows').innerHTML = visible().map((c) => `<tr data-id="${esc(c.id)}" class="${c.autoRun ? 'isauto' : ''}" tabindex="0" aria-selected="${state.sel === c.id}"><td>${esc(c.customer)}${autoTag(c)}<div class="sub" style="margin:0">SAP ${esc(c.sapCustomerId)}</div></td><td>${esc(c.product)}<div class="sub" style="margin:0">${esc(c.contractId)}</div></td><td class="n">${eur(c.annualEur)}</td><td>${c.status === 'Lapsed' ? 'lapsed ' + esc(c.end) : esc(c.decisionDate) + `<div class="sub" style="margin:0">${c.sig.days < 0 ? -c.sig.days + ' days ago' : 'in ' + c.sig.days + ' days'}</div>`}</td><td>${c.autoRun && c.stage >= 3 ? '<span class="pill done">auto offer sent</span>' : c.offer ? esc(c.offer.id) + `<div class="sub" style="margin:0">${esc(c.offer.stage)}</div>` : '<span style="color:var(--muted)">none</span>'}</td><td><span class="pill ${c.health}">${c.stage === 4 ? 'signed' : LABEL[c.health]}</span></td></tr>`).join('') || '<tr><td colspan="6">No renewal matches the filters.</td></tr>';
+  $('#rows').innerHTML = visible().map((c) => `<tr data-id="${esc(c.id)}" class="${c.autoRun ? 'isauto' : ''}" tabindex="0" aria-selected="${state.sel === c.id}"><td>${esc(c.customer)}${autoTag(c)}${mailChip(c)}<div class="sub" style="margin:0">SAP ${esc(c.sapCustomerId)}</div></td><td>${esc(c.product)}<div class="sub" style="margin:0">${esc(c.contractId)}</div></td><td class="n">${eur(c.annualEur)}</td><td>${c.status === 'Lapsed' ? 'lapsed ' + esc(c.end) : esc(c.decisionDate) + `<div class="sub" style="margin:0">${c.sig.days < 0 ? -c.sig.days + ' days ago' : 'in ' + c.sig.days + ' days'}</div>`}</td><td>${c.autoRun && c.stage >= 3 ? '<span class="pill done">auto offer sent</span>' : c.offer ? esc(c.offer.id) + `<div class="sub" style="margin:0">${esc(c.offer.stage)}</div>` : '<span style="color:var(--muted)">none</span>'}</td><td><span class="pill ${c.health}">${c.stage === 4 ? 'signed' : LABEL[c.health]}</span></td></tr>`).join('') || '<tr><td colspan="6">No renewal matches the filters.</td></tr>';
   $('#rows').querySelectorAll('tr[data-id]').forEach((tr) => { const open = () => { state.sel = state.sel === tr.dataset.id ? null : tr.dataset.id; renderAll(); }; tr.onclick = open; tr.onkeydown = (e) => { if (e.key === 'Enter') open(); }; });
 }
 function prepPrompt(c) { return `Prepare the renewal talk for ${c.product} of ${c.customer} (SAP customer ID ${c.sapCustomerId}): decision date ${c.decisionDate}, ${eur(c.annualEur)} a year${c.offer ? ', offer ' + c.offer.id : ', no offer yet'}. Use the skill customer-call-prep and the Sub4Me tools: usage, open tickets, invoices, price against the contract cap. Please answer in English.`; }
@@ -1170,6 +1297,7 @@ function renderDetail() {
     (use === null ? '' : `<div class="sub" style="margin:6px 0 0">Usage: ${c.used.toLocaleString('en-GB')} of ${c.licensed.toLocaleString('en-GB')} ${esc(c.unit)} (${use} %)</div><div class="meter"><i style="width:${Math.min(100, use)}%"></i></div>`) +
     (c.offer ? `<h3 style="margin-top:12px">Renewal offer ${esc(c.offer.id)}</h3><dl class="dl"><dt>Offer value</dt><dd>${eur(c.offer.annualEur)}</dd><dt>Today</dt><dd>${eur(c.offer.currentAnnualEur)}</dd><dt>Price rise / cap</dt><dd>${up > 0 ? '+' : ''}${up} % / ${c.upliftCapPct} %${up > c.upliftCapPct ? ' ⚠' : ''}</dd><dt>Discount</dt><dd>${c.offer.discountPct} %</dd><dt>Valid until</dt><dd>${esc(c.offer.validUntil)}</dd><dt>Stage</dt><dd>${esc(c.offer.stage)} (${c.offer.probabilityPct} %)</dd><dt>Approval</dt><dd>${esc(c.offer.approval)}</dd></dl>` : '<h3 style="margin-top:12px">No renewal offer</h3>') +
     `<h3 style="margin-top:12px">Why this colour</h3>${c.sig.signals.map((s) => `<div class="sig ${s.level}"><b>${s.level === 'plus' ? 'positive' : s.level}</b>${esc(s.text)}</div>`).join('') || '<div class="sig plus">No warning signals.</div>'}` +
+    (mailsOfCase(c).length ? `<h3 style="margin-top:12px">E-mail about this renewal</h3>${mailTimeline(mailsOfCase(c))}` : '') +
     `<h3 style="margin-top:12px">Next actions</h3><ol class="act">${c.actions.map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` +
     autoBlock(c) +
     `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step; sending and signing are simulated here.</p>`;
