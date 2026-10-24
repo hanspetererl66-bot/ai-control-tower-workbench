@@ -247,7 +247,16 @@ h2{font-size:15px;font-weight:650;margin:0 0 4px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;color:var(--ink-2);font-size:12px}
 .legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:4px;border:1.5px solid}
 .legend .g{background:var(--green-dim);border-color:var(--green)}.legend .y{background:var(--amber-dim);border-color:var(--amber)}.legend .r{background:var(--red-dim);border-color:var(--red)}
-button.ghost,button.primary{font:inherit;cursor:pointer}
+/* One button family: same size and shape, a soft tinted primary and a quiet neutral secondary. */
+button.ghost,button.primary,button.small{font:inherit;font-size:12.5px;font-weight:550;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+button.primary,button.small{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+button.ghost:hover:not(:disabled){border-color:var(--purple-border);color:var(--purple);background:var(--purple-dim)}
+button.primary:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple);box-shadow:0 1px 6px var(--purple-dim)}
+button.ghost:focus-visible,button.primary:focus-visible,button.small:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+button.ghost:disabled,button.primary:disabled,button.small:disabled{opacity:.5;cursor:default}
+button.small{padding:5px 11px;font-size:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:var(--purple)}}
+:root[data-theme="dark"] button.primary{color:var(--purple)}
 table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}td{padding:6px 8px;border-bottom:1px solid var(--line-2)}th.n,td.n{text-align:right}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
 .guide{border-color:var(--purple-border);background:var(--purple-dim)}
@@ -258,8 +267,6 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 .tasks td,.tasks th{vertical-align:top}.tasks .steps{margin:4px 0 0;padding-left:16px;color:var(--muted);font-size:11px}
 .pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
 .flow{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);flex-wrap:wrap}.flow b{color:var(--ink)}
-.small{font:inherit;font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650;cursor:pointer}
-.small:disabled{opacity:.5;cursor:default}
 @media (max-width:860px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
@@ -982,7 +989,7 @@ function renderDetail() {
   $('#detail').innerHTML = `<h2>${esc(v.name)} <span class="pill ${v.status}">${LABEL[v.status]}</span></h2><p class="sub">${esc(v.role)}</p>` +
     `<dl class="facts"><dt>Environment</dt><dd>${esc(v.env)}</dd><dt>Site</dt><dd>${esc(v.site)}</dd><dt>System</dt><dd>${esc(v.os)}</dd><dt>Size</dt><dd>${v.vcpu} vCPU, ${v.ramGb} GB</dd>` +
     (v.reachable ? `<dt>CPU</dt><dd>${v.cpuPct} %</dd><dt>Memory</dt><dd>${v.memPct} %</dd><dt>Disk</dt><dd>${v.diskPct} %</dd><dt>Last backup</dt><dd>${v.backupAgeHours == null ? 'not required' : v.backupAgeHours + ' h ago'}</dd><dt>Patch gap</dt><dd>${v.patchLagDays} days</dd><dt>Certificate</dt><dd>${v.certExpiresInDays} days left</dd><dt>Uptime</dt><dd>${v.uptimeDays} days</dd>` : '<dt>State</dt><dd>not reachable</dd>') + '</dl>' +
-    `<div>${explain(v)}</div><p style="margin-top:12px"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button>${v.status === 'green' ? '' : state.tickets[v.name] ? ` <span class="pill planned">Ticket ${esc(state.tickets[v.name].id)} with the operator</span>` : ' <button class="ghost" id="mkticket" type="button">Create ticket for operator</button>'}</p>`;
+    `<div>${explain(v)}</div><p style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button>${v.status === 'green' ? '' : state.tickets[v.name] ? ` <span class="pill planned">Ticket ${esc(state.tickets[v.name].id)} with the operator</span>` : ' <button class="ghost" id="mkticket" type="button">Create ticket for operator</button>'}</p>`;
   if ($('#mkticket')) $('#mkticket').onclick = () => { createTicket(v.name); renderAll(); };
   $('#ask').onclick = () => send(`Explain the status of the virtual machine ${v.name} (${v.role}, ${v.env}, ${v.site}): ${v.status}${v.reasons.length ? ' because ' + v.reasons.map((r) => r.text).join('; ') : ', all checks are within limits'}. Suggest the first three checks for the on-call engineer. Do not change anything. Please answer in English.`);
 }
