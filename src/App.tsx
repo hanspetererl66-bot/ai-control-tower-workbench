@@ -32,7 +32,7 @@ import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
-import { addDomain, assignDomain, assistantNote, deleteDomain, domainNames, domainOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
+import { addDomain, assignDomain, assignParent, assistantNote, deleteDomain, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
@@ -820,8 +820,11 @@ export default function App() {
           pinned={prefs.pinnedSpaces}
           onTogglePin={(slug) => updatePrefs((c) => ({ ...c, pinnedSpaces: togglePin(c.pinnedSpaces, slug) }))}
           domains={domainNames(spaces, prefs)}
-          domainOf={(slug) => domainOf(spaces.find((x) => x.slug === slug) ?? { slug }, prefs)}
-          onAssign={(slug, name) => updatePrefs((c) => assignDomain(c, spaces.find((x) => x.slug === slug) ?? { slug }, name))}
+          domainOf={(slug) => effectiveDomain(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
+          onAssign={(slug, name) => updatePrefs((c) => { const sp = spaces.find((x) => x.slug === slug) ?? { slug }; return assignDomain(assignParent(c, sp, spaces, ''), sp, name); })}
+          parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
+          parentCandidates={(slug) => parentCandidates(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
+          onSetParent={(slug, parent) => updatePrefs((c) => assignParent(c, spaces.find((x) => x.slug === slug) ?? { slug }, spaces, parent))}
           onAddDomain={(name) => updatePrefs((c) => addDomain(c, name))}
           onRenameDomain={(from, to) => updatePrefs((c) => renameDomain(c, spaces, from, to))}
           onDeleteDomain={(name) => updatePrefs((c) => deleteDomain(c, name))}

@@ -2,6 +2,7 @@
   "title": "Renewals",
   "description": "Renewal radar for contracts that end soon: decision dates, transparent health signals, price against the contract cap, next actions and an approval flow, with a guided demo.",
   "domain": "Sales",
+  "parent": "sales",
   "insights": [
     "Fictional renewals derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. The decision date is the contract end minus the notice period.",
     "Health is the worst signal: decision date, missing or expiring offer, price rise above the contract cap, competitor, usage, open tickets and overdue invoices. Every signal is listed with its reason.",

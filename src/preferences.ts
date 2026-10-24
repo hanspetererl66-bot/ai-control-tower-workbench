@@ -61,6 +61,8 @@ export type ProfileSettings = {
   /** Own domains (groups of Spaces), in display order, and manual Space → domain assignments. */
   domains: string[];
   spaceDomains: Record<string, string>;
+  /** Subspaces: Space → parent Space. An empty value means "top level" even if its space.json names a parent. */
+  spaceParents: Record<string, string>;
   favoriteSkills: string[];
   assistant: Assistant;
 };
@@ -92,6 +94,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   pinnedSpaces: [],
   domains: [],
   spaceDomains: {},
+  spaceParents: {},
   favoriteSkills: [],
   assistant: { ...DEFAULT_ASSISTANT },
   starters: [],
@@ -172,6 +175,13 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
     }
     out.spaceDomains = map;
   }
+  if (isObject(v.spaceParents)) {
+    const map: Record<string, string> = {};
+    for (const [slug, parent] of Object.entries(v.spaceParents)) {
+      if (SLUG.test(slug) && typeof parent === 'string' && (parent === '' || (SLUG.test(parent) && parent !== slug)) && Object.keys(map).length < 80) map[slug] = parent;
+    }
+    out.spaceParents = map;
+  }
   if (Array.isArray(v.favoriteSkills)) out.favoriteSkills = list(v.favoriteSkills, (s) => SLUG.test(s), 12);
   if (isObject(v.assistant)) out.assistant = sanitizeAssistant(v.assistant);
   return out;
@@ -214,8 +224,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, favoriteSkills, assistant } = prefs;
-  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant } };
+  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, favoriteSkills, assistant } = prefs;
+  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -327,7 +337,7 @@ export function startSpace(prefs: Preferences, slugs: string[], lastSlug: string
 
 // ---------- domains: groups of Spaces ----------
 
-type DomainSpace = { slug: string; domain?: string };
+type DomainSpace = { slug: string; domain?: string; parent?: string };
 
 /** The domain of a Space: the person's own assignment, else the one its space.json names, else General. */
 export function domainOf(space: DomainSpace, prefs: Pick<Preferences, 'spaceDomains'>): string {
@@ -335,8 +345,9 @@ export function domainOf(space: DomainSpace, prefs: Pick<Preferences, 'spaceDoma
 }
 
 /** All domain names in display order: the person's own list first, then others by name, General last unless listed. */
-export function domainNames(spaces: DomainSpace[], prefs: Pick<Preferences, 'domains' | 'spaceDomains'>): string[] {
-  const found = new Set(spaces.map((x) => domainOf(x, prefs)));
+export function domainNames(spaces: DomainSpace[], prefs: Pick<Preferences, 'domains' | 'spaceDomains'> & Partial<Pick<Preferences, 'spaceParents'>>): string[] {
+  const full = { spaceParents: {}, ...prefs };
+  const found = new Set(spaces.map((x) => effectiveDomain(x, spaces, full)));
   const own = prefs.domains;
   const rest = [...found].filter((n) => !own.includes(n) && n !== DEFAULT_DOMAIN).sort((a, b) => a.localeCompare(b));
   const out = [...own, ...rest];
@@ -377,6 +388,45 @@ export function renameDomain<T extends Preferences>(prefs: T, spaces: DomainSpac
 export function deleteDomain<T extends Preferences>(prefs: T, name: string): T {
   const spaceDomains = Object.fromEntries(Object.entries(prefs.spaceDomains).filter(([, n]) => n !== name));
   return { ...prefs, domains: prefs.domains.filter((n) => n !== name), spaceDomains };
+}
+
+// ---------- subspaces: one level of hierarchy inside a domain ----------
+
+const rawParent = (space: DomainSpace, prefs: Pick<Preferences, 'spaceParents'>): string =>
+  Object.prototype.hasOwnProperty.call(prefs.spaceParents, space.slug) ? prefs.spaceParents[space.slug] : (space.parent ?? '');
+
+/** The parent of a Space, or '' for a top-level Space. Only one level: the parent must exist and must not be a subspace itself. */
+export function parentOf(space: DomainSpace, spaces: DomainSpace[], prefs: Pick<Preferences, 'spaceParents'>): string {
+  const p = rawParent(space, prefs);
+  if (!p || p === space.slug) return '';
+  const parent = spaces.find((x) => x.slug === p);
+  return parent && !rawParent(parent, prefs) ? p : '';
+}
+
+export function childrenOf(slug: string, spaces: DomainSpace[], prefs: Pick<Preferences, 'spaceParents'>): string[] {
+  return spaces.filter((x) => parentOf(x, spaces, prefs) === slug).map((x) => x.slug);
+}
+
+/** A subspace lives in the domain of its parent. */
+export function effectiveDomain(space: DomainSpace, spaces: DomainSpace[], prefs: Pick<Preferences, 'spaceDomains' | 'spaceParents'>): string {
+  const p = parentOf(space, spaces, prefs), parent = p ? spaces.find((x) => x.slug === p) : undefined;
+  return parent ? domainOf(parent, prefs) : domainOf(space, prefs);
+}
+
+/** Spaces a Space can become a subspace of: top-level Spaces of its domain; none if it has subspaces itself. */
+export function parentCandidates(space: DomainSpace, spaces: DomainSpace[], prefs: Pick<Preferences, 'spaceDomains' | 'spaceParents'>): string[] {
+  if (childrenOf(space.slug, spaces, prefs).length) return [];
+  const dom = effectiveDomain(space, spaces, prefs);
+  return spaces.filter((x) => x.slug !== space.slug && !parentOf(x, spaces, prefs) && effectiveDomain(x, spaces, prefs) === dom).map((x) => x.slug);
+}
+
+/** Mark a Space as subspace of `parent`, or back to top level with ''. Invalid choices change nothing. */
+export function assignParent<T extends Preferences>(prefs: T, space: DomainSpace, spaces: DomainSpace[], parent: string): T {
+  if (parent && !parentCandidates(space, spaces, prefs).includes(parent)) return prefs;
+  const spaceParents = { ...prefs.spaceParents };
+  if (parent === (space.parent ?? '')) delete spaceParents[space.slug];
+  else spaceParents[space.slug] = parent;
+  return { ...prefs, spaceParents };
 }
 
 // ---------- back to the original ----------
