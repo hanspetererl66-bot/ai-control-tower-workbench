@@ -1,0 +1,12 @@
+{
+  "title": "Renewals",
+  "description": "Renewal radar for contracts that end soon: decision dates, transparent health signals, price against the contract cap, next actions and an approval flow, with a guided demo.",
+  "domain": "Sales",
+  "insights": [
+    "Fictional renewals derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. The decision date is the contract end minus the notice period.",
+    "Health is the worst signal: decision date, missing or expiring offer, price rise above the contract cap, competitor, usage, open tickets and overdue invoices. Every signal is listed with its reason.",
+    "Next actions are rule-based and ordered. A person approves each step; sending and signing are simulated.",
+    "'Start demo' walks through six steps from the radar to a signed renewal."
+  ],
+  "prompt": "Bundled example: Renewals (static, data embedded by npm run sync:renewals)."
+}
