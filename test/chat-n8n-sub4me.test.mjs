@@ -270,3 +270,52 @@ test('run_vm_operator_runbook: fixed webhook path, approval stays false unless g
   const notFound = createN8nHandlers({ env: { N8N_URL: 'https://firma.app.n8n.cloud' }, fetchImpl: async () => new Response('', { status: 404 }) });
   await assert.rejects(() => notFound.run_vm_operator_runbook({}), /Import the workflow/);
 });
+
+test('run_contract_notice_check, run_communication_digest, run_sales_pipeline_digest: fixed webhook paths, validated input, setup hints', async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return new Response(JSON.stringify([{ digest: 'ok' }]), { status: 200 }); };
+  const env = { N8N_URL: 'https://firma.app.n8n.cloud' };
+  const h = createN8nHandlers({ env, fetchImpl });
+  // Demo 1
+  const r1 = await h.run_contract_notice_check({});
+  assert.equal(calls[0].url, 'https://firma.app.n8n.cloud/webhook/contract-notice-check');
+  assert.deepEqual(calls[0].body, {}, 'no contracts: the workflow uses its sample contracts');
+  assert.equal(r1.result.digest, 'ok');
+  assert.match(r1.note, /Nothing was sent/);
+  await h.run_contract_notice_check({ mode: 'test', withinDays: 60, asOf: '2026-10-24', contracts: [{ id: 'C-1', product: 'Ariba', end: '2027-03-31', noticeDays: 90, junk: 1 }] });
+  assert.equal(calls[1].url, 'https://firma.app.n8n.cloud/webhook-test/contract-notice-check');
+  assert.deepEqual(calls[1].body, { contracts: [{ id: 'C-1', product: 'Ariba', end: '2027-03-31', noticeDays: 90 }], withinDays: 60, asOf: '2026-10-24' });
+  for (const bad of [{ contracts: [] }, { contracts: [{ id: 'C', product: 'P', end: '31.03.2027', noticeDays: 90 }] }, { contracts: [{ id: 'C', product: 'P', end: '2027-03-31', noticeDays: -1 }] }, { withinDays: 0 }, { asOf: 'heute' }, { mode: 'live' }]) {
+    await assert.rejects(() => h.run_contract_notice_check(bad), /contract|withinDays|asOf|mode/);
+  }
+  // Demo 2
+  const r2 = await h.run_communication_digest({});
+  assert.equal(calls[2].url, 'https://firma.app.n8n.cloud/webhook/communication-digest');
+  assert.deepEqual(calls[2].body, {});
+  assert.match(r2.note, /No mail was sent/);
+  await h.run_communication_digest({ customer: 'Acme', ownDomains: ['acme.example'], mails: [{ id: 'M-1', subject: 'Offer', from: 'a@acme.example', receivedAt: '2026-10-20T10:00:00+02:00', waitingForUs: true, body: 'Hello', junk: 1 }], actions: [{ id: 'A-1', text: 'Send quote', owner: 'Mara', due: '2026-10-23', status: 'open' }] });
+  assert.equal(calls[3].body.mails[0].junk, undefined);
+  assert.equal(calls[3].body.mails[0].waitingForUs, true);
+  assert.deepEqual(calls[3].body.ownDomains, ['acme.example']);
+  for (const bad of [{ mails: [] }, { mails: [{ id: 'M', subject: 's', from: 'f', receivedAt: 'gestern', body: 'b' }] }, { actions: [{ id: 'A', text: 't', owner: 'o', due: '2026-10-23', status: 'late' }] }, { ownDomains: ['not a domain'] }, { asOf: 'x' }]) {
+    await assert.rejects(() => h.run_communication_digest(bad), /mail|action|ownDomains|asOf|give at least/);
+  }
+  // Demo 3
+  const r3 = await h.run_sales_pipeline_digest({});
+  assert.equal(calls[4].url, 'https://firma.app.n8n.cloud/webhook/sales-pipeline-digest');
+  assert.deepEqual(calls[4].body, {});
+  assert.match(r3.note, /Nothing was sent/);
+  await h.run_sales_pipeline_digest({ signals: [{ id: 'S-1', account: 'Acme', text: 'Asked about Joule', budget: 'cycle', employees: 800 }] });
+  assert.deepEqual(calls[5].body.signals[0], { id: 'S-1', account: 'Acme', source: 'unknown', industry: 'unknown', region: 'unknown', employees: 800, budget: 'cycle', decisionMaker: 'none', need: 'none', timing: 'none', text: 'Asked about Joule' }, 'unknown facts default to the lowest score');
+  for (const bad of [{ signals: [] }, { signals: [{ id: 'S', account: 'A' }] }, { signals: [{ id: 'S', account: 'A', text: 't', budget: 'rich' }] }, { signals: [{ id: 'S', account: 'A', text: 't', employees: -3 }] }]) {
+    await assert.rejects(() => h.run_sales_pipeline_digest(bad), /signal/);
+  }
+  assert.equal(calls.length, 6, 'invalid input never reaches the workflow');
+  // setup hints
+  for (const name of ['run_contract_notice_check', 'run_communication_digest', 'run_sales_pipeline_digest']) {
+    await assert.rejects(() => createN8nHandlers({ env: {}, fetchImpl })[name]({}), /not connected/);
+    const notFound = createN8nHandlers({ env, fetchImpl: async () => new Response('', { status: 404 }) });
+    await assert.rejects(() => notFound[name]({}), /Import the workflow/);
+    await assert.rejects(() => notFound[name]({ mode: 'test' }), /Execute workflow/);
+  }
+});

@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Simple demo: contract notice check\nOne trigger, one Code node with fictional sample contracts, one IF.\n**Run it:** click *Execute workflow*. Contracts whose notice deadline is within 30 days (or already passed) go to the *Alert* branch.\nNo credentials needed.",
-        "height": 170,
+        "content": "## Demo 1 (simple): contract notice check\nWhich contracts have a **notice deadline** (contract end minus notice period) within the next N days, or already passed? A Code node reads the contracts, a Set node calculates the deadline, one IF splits *alert* from *ok*, and a last Code node writes the report.\n**From the chat:** ask Joule, for example \"Which notice deadlines are due in the next 60 days?\". The chat tool `run_contract_notice_check` posts to the webhook `/webhook/contract-notice-check` with `{\"withinDays\":60,\"contracts\":[{\"id\":\"C-1\",\"product\":\"...\",\"end\":\"2027-03-31\",\"noticeDays\":90}]}` (contracts from `list_contracts` fit as they are; without contracts the five sample contracts are used; `asOf` is optional).\n**By hand:** click *Execute workflow*. Fictional data, no credentials, nothing is sent or changed.",
+        "height": 260,
         "width": 640,
         "color": 4
       },
@@ -30,7 +30,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Sample data (fictional, from the Sub4Me example). The reference date is fixed so the demo gives the same result every day.\nconst asOf = '2026-10-19';\nconst contracts = [\n  { id: 'C-2023-0390', product: 'Ariba Procurement', end: '2027-01-31', noticeDays: 90 },\n  { id: 'C-2025-0041', product: 'SuccessFactors Employee Central', end: '2026-12-31', noticeDays: 90 },\n  { id: 'C-2026-0012', product: 'AI units (Joule, AI Core, Document AI)', end: '2026-12-31', noticeDays: 60 },\n  { id: 'C-2024-0233', product: 'Business Technology Platform', end: '2027-03-31', noticeDays: 90 },\n  { id: 'C-2024-0187', product: 'S/4HANA Cloud Private Edition', end: '2028-12-31', noticeDays: 180 },\n];\nreturn contracts.map((c) => ({ json: { ...c, asOf } }));"
+        "jsCode": "// Contracts from the webhook body, or fictional sample data (from the Sub4Me example). Without asOf the reference date is fixed (19 Oct 2026), so the demo gives the same result every day.\nconst body = $input.first().json.body || {};\nconst valid = (d) => typeof d === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(d) && !Number.isNaN(Date.parse(d));\nconst asOf = valid(body.asOf) ? body.asOf : '2026-10-19';\nconst withinDays = Number.isFinite(body.withinDays) ? Math.max(1, Math.min(365, Math.round(body.withinDays))) : 30;\nconst sample = [\n  { id: 'C-2023-0390', product: 'Ariba Procurement', end: '2027-01-31', noticeDays: 90 },\n  { id: 'C-2025-0041', product: 'SuccessFactors Employee Central', end: '2026-12-31', noticeDays: 90 },\n  { id: 'C-2026-0012', product: 'AI units (Joule, AI Core, Document AI)', end: '2026-12-31', noticeDays: 60 },\n  { id: 'C-2024-0233', product: 'Business Technology Platform', end: '2027-03-31', noticeDays: 90 },\n  { id: 'C-2024-0187', product: 'S/4HANA Cloud Private Edition', end: '2028-12-31', noticeDays: 180 },\n];\nconst given = Array.isArray(body.contracts) ? body.contracts.filter((x) => x && typeof x.id === 'string' && valid(x.end) && Number.isFinite(x.noticeDays)) : null;\nconst contracts = given && given.length ? given : sample;\nreturn contracts.map((x) => ({ json: { ...x, asOf, withinDays } }));"
       },
       "id": "5038e8ca-0ca6-5d71-80fc-c9b4b18bf540",
       "name": "Sample contracts",
@@ -88,7 +88,7 @@
                 "type": "number",
                 "operation": "lte"
               },
-              "rightValue": 30
+              "rightValue": "={{ $json.withinDays }}"
             }
           ],
           "combinator": "and"
@@ -96,7 +96,7 @@
         "options": {}
       },
       "id": "c4652322-d0fb-5548-8cde-3f8fab125fee",
-      "name": "Due within 30 days?",
+      "name": "Within the window?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -163,6 +163,46 @@
         960,
         100
       ]
+    },
+    {
+      "parameters": {},
+      "id": "2453b788-064a-5354-a5ab-e5157d5c6a63",
+      "name": "Everything together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Report for the account owner. Ends in \"draft only\": nothing is sent, a person decides about notice or renewal.\nconst items = $input.all().map((i) => i.json).sort((a, b) => a.daysLeft - b.daysLeft);\nconst alerts = items.filter((i) => i.status === 'alert');\nconst passed = alerts.filter((i) => i.daysLeft < 0);\nconst asOf = items[0].asOf;\nconst withinDays = items[0].withinDays;\nconst lines = [\n  `Contract notice check as of ${asOf}: ${items.length} contracts, ${alerts.length} with a notice deadline within ${withinDays} days or already passed (${passed.length} passed).`,\n  ...alerts.map((a) => `- ${a.message}`),\n  alerts.length ? 'Draft only: nothing is sent. The account owner decides about notice or renewal.' : 'Nothing to do now.',\n];\nreturn [{ json: { asOf, withinDays, total: items.length, alerts: alerts.length, passed: passed.length, contracts: items.map((i) => ({ id: i.id, product: i.product, end: i.end, noticeDays: i.noticeDays, noticeDeadline: i.noticeDeadline, daysLeft: i.daysLeft, status: i.status })), digest: lines.join('\\n') } }];"
+      },
+      "id": "a3204ff1-887d-56d5-9df0-6e8b71a6922f",
+      "name": "Build report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "contract-notice-check",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "8aa0f117-4aca-5a3d-bb92-7b47b8c6d8ba",
+      "name": "Webhook: contracts",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ]
     }
   ],
   "connections": {
@@ -192,14 +232,14 @@
       "main": [
         [
           {
-            "node": "Due within 30 days?",
+            "node": "Within the window?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Due within 30 days?": {
+    "Within the window?": {
       "main": [
         [
           {
@@ -211,6 +251,50 @@
         [
           {
             "node": "No action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert": {
+      "main": [
+        [
+          {
+            "node": "Everything together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No action": {
+      "main": [
+        [
+          {
+            "node": "Everything together",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Everything together": {
+      "main": [
+        [
+          {
+            "node": "Build report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: contracts": {
+      "main": [
+        [
+          {
+            "node": "Sample contracts",
             "type": "main",
             "index": 0
           }

@@ -37,21 +37,45 @@ for (const file of FILES) {
   });
 }
 
-test('simple workflow: the notice deadline logic gives the expected alerts', async () => {
+test('simple workflow: the notice deadline logic gives the expected alerts, also from the webhook', async () => {
   const wf = load(FILES[0]);
-  const js = wf.nodes.find((n) => n.name === 'Sample contracts').parameters.jsCode;
-  const items = [...(await vm.runInNewContext(`(async()=>{${js}})`)())];
+  assert.ok(wf.nodes.some((n) => n.type === 'n8n-nodes-base.webhook' && n.parameters.path === 'contract-notice-check'), 'callable through a webhook');
+  const run = async (name, items, first = {}) => {
+    const js = wf.nodes.find((n) => n.name === name).parameters.jsCode;
+    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items, first: () => ({ json: first }) } })())];
+  };
+  const items = await run('Sample contracts', []);
   const days = Object.fromEntries(items.map(({ json: c }) => [c.id, Math.round((Date.parse(c.end) - c.noticeDays * 864e5 - Date.parse(c.asOf)) / 864e5)]));
   assert.deepEqual(days, { 'C-2023-0390': 14, 'C-2025-0041': -17, 'C-2026-0012': 13, 'C-2024-0233': 73, 'C-2024-0187': 624 });
+  assert.ok(items.every((i) => i.json.withinDays === 30 && i.json.asOf === '2026-10-19'));
+  const custom = await run('Sample contracts', [], { body: { asOf: '2026-10-24', withinDays: 60, contracts: [{ id: 'X-1', product: 'P', end: '2027-01-31', noticeDays: 30 }, { id: 'bad', product: 'P', end: 'soon', noticeDays: 30 }] } });
+  assert.deepEqual(custom.map((i) => i.json.id), ['X-1'], 'contracts from the webhook body are used, invalid ones are dropped');
+  assert.equal(custom[0].json.withinDays, 60);
+  assert.equal(custom[0].json.asOf, '2026-10-24');
+  assert.equal(wf.nodes.find((n) => n.name === 'Within the window?').parameters.conditions.conditions[0].rightValue, '={{ $json.withinDays }}');
+  // the report sorts by urgency and counts alerts
+  const rows = items.map(({ json: c }) => { const daysLeft = days[c.id]; return { json: { ...c, noticeDeadline: 'x', daysLeft, status: daysLeft <= c.withinDays ? 'alert' : 'ok', message: `${c.id} in ${daysLeft}` } }; });
+  const [report] = await run('Build report', rows);
+  assert.equal(report.json.total, 5);
+  assert.equal(report.json.alerts, 3);
+  assert.equal(report.json.passed, 1);
+  assert.deepEqual(report.json.contracts.map((c) => c.id).slice(0, 3), ['C-2025-0041', 'C-2026-0012', 'C-2023-0390']);
+  assert.match(report.json.digest, /Draft only: nothing is sent/);
 });
 
 test('complex workflow: guardrail quarantines the injected mail, target and overdue checks, digest', async () => {
   const wf = load(FILES[1]);
-  const run = async (name, items) => {
+  assert.ok(wf.nodes.some((n) => n.type === 'n8n-nodes-base.webhook' && n.parameters.path === 'communication-digest'), 'callable through a webhook');
+  const run = async (name, items, first = {}) => {
     const js = wf.nodes.find((n) => n.name === name).parameters.jsCode;
-    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items } })())];
+    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items, first: () => ({ json: first }) } })())];
   };
   const data = await run('Sample data', []);
+  const own = await run('Sample data', [], { body: { customer: 'Acme', asOf: '2026-10-24', ownDomains: ['acme.example'], mails: [{ id: 'M-1', subject: 'Offer', from: 'a@acme.example', receivedAt: '2026-10-20T10:00:00+02:00', waitingForUs: true, body: 'Hello' }], actions: [{ id: 'A-1', text: 'Send quote', owner: 'Mara', due: '2026-10-23', status: 'open' }] } });
+  assert.deepEqual(own.map((i) => [i.json.kind, i.json.customer, i.json.today]), [['mail', 'Acme', '2026-10-24'], ['action', 'Acme', '2026-10-24']], 'mails and actions from the webhook body replace the sample');
+  const ownClass = await run('Classify and check target', own.filter((i) => i.json.kind === 'mail'));
+  assert.equal(ownClass[0].json.pastSla, true, 'the 48 h target is measured against the given date');
+  assert.equal((await run('Sample data', [], { body: { customer: 'Acme', mails: [] } })).length, 0, 'an empty custom list is not replaced by the sample');
   const mails = data.filter((i) => i.json.kind === 'mail');
   const actions = data.filter((i) => i.json.kind === 'action');
   const guarded = await run('Guardrail: untrusted mail text', mails);
@@ -63,7 +87,8 @@ test('complex workflow: guardrail quarantines the injected mail, target and over
   assert.deepEqual(classified.filter((i) => i.json.pastSla).map((i) => i.json.id), ['T-101', 'T-102']);
   assert.equal(classified.find((i) => i.json.id === 'T-103').json.intent, 'Escalation');
   const quarantined = flagged.map((i) => ({ json: { ...i.json, intent: 'Quarantined', attention: true } }));
-  const prioritised = actions.map((i) => ({ json: { ...i.json, priority: i.json.status !== 'done' && i.json.due < '2026-10-19' ? 'overdue' : 'other' } }));
+  const prioritised = actions.map((i) => ({ json: { ...i.json, priority: i.json.status !== 'done' && i.json.due < i.json.today ? 'overdue' : 'other' } }));
+  assert.equal(wf.nodes.find((n) => n.name === 'Overdue?').parameters.conditions.conditions[0].leftValue, "={{ $json.status !== 'done' && $json.due < $json.today }}");
   const [digest] = await run('Build digest', [...quarantined, ...classified, ...prioritised]);
   assert.equal(digest.json.mails, 4);
   assert.equal(digest.json.overdue, 2);
@@ -73,12 +98,15 @@ test('complex workflow: guardrail quarantines the injected mail, target and over
 
 test('sales workflow: injected text is quarantined, scores are transparent, routes and digest add up', async () => {
   const wf = load(FILES[2]);
-  const run = async (name, items) => {
+  assert.ok(wf.nodes.some((n) => n.type === 'n8n-nodes-base.webhook' && n.parameters.path === 'sales-pipeline-digest'), 'callable through a webhook');
+  const run = async (name, items, first = {}) => {
     const js = wf.nodes.find((n) => n.name === name).parameters.jsCode;
-    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items } })())];
+    return [...(await vm.runInNewContext(`(async()=>{${js}})`, { $input: { all: () => items, first: () => ({ json: first }) } })())];
   };
   const signals = await run('Sample signals', []);
   assert.equal(signals.length, 6);
+  const given = await run('Sample signals', [], { body: { asOf: '2026-10-24', signals: [{ id: 'S-1', account: 'Acme', text: 'hi' }] } });
+  assert.deepEqual(given.map((i) => [i.json.id, i.json.asOf]), [['S-1', '2026-10-24']], 'signals from the webhook body are used');
   const guarded = await run('Guardrail: untrusted text', signals);
   const flagged = guarded.filter((i) => i.json.flagged);
   assert.deepEqual(flagged.map((i) => i.json.id), ['INT-206']);
@@ -98,6 +126,7 @@ test('sales workflow: injected text is quarantined, scores are transparent, rout
   assert.equal(digest.json.quarantined, 1);
   assert.equal(digest.json.topAccount, 'Muster Industrie AG');
   assert.match(digest.json.digest, /nothing is sent/i);
+  assert.match(digest.json.digest, /^Pipeline digest, 2026-10-19:/);
   // the Switch thresholds in the workflow match the routes used here
   const rules = wf.nodes.find((n) => n.name === 'Route by score').parameters.rules.values;
   assert.deepEqual(rules.map((r) => [r.outputKey, r.conditions.conditions[0].operator.operation, r.conditions.conditions[0].rightValue]), [['opportunity', 'gte', 70], ['nurture', 'gte', 40], ['watch', 'lt', 40]]);

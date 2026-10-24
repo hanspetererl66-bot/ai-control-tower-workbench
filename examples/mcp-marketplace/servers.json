@@ -201,7 +201,7 @@
       "source": "connectors/control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "summary": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.",
       "install": [
         {
@@ -407,6 +407,24 @@
           "name": "run_vm_operator_runbook",
           "class": "write",
           "what": "Starts the demo n8n operator runbook (check, backup, apply task, check again) through its webhook. Simulated; runs only with approved: true.",
+          "default": "on"
+        },
+        {
+          "name": "run_contract_notice_check",
+          "class": "write",
+          "what": "Starts the demo n8n workflow through its webhook. It only calculates notice deadlines; nothing is sent or cancelled.",
+          "default": "on"
+        },
+        {
+          "name": "run_communication_digest",
+          "class": "write",
+          "what": "Starts the demo n8n workflow through its webhook. It quarantines suspicious mails and builds a digest; nothing is sent.",
+          "default": "on"
+        },
+        {
+          "name": "run_sales_pipeline_digest",
+          "class": "write",
+          "what": "Starts the demo n8n workflow through its webhook. It scores and routes signals; nothing is sent or written to a CRM.",
           "default": "on"
         },
         {
