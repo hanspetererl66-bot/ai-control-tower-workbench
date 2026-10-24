@@ -236,6 +236,8 @@ button:disabled{opacity:.5;cursor:default}
 .tile .n{font-weight:650;font-size:12px;line-height:1.25;overflow:hidden}.tile .c{font-size:11px;margin-top:2px;color:var(--ink-2)}
 .tile.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}
 .tile:hover,.tile:focus-visible,.tile[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:-1px;z-index:2}
+.auto-sw{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer}.auto-sw input{position:absolute;opacity:0;width:1px;height:1px}.auto-sw .trk{width:34px;height:20px;border-radius:99px;background:var(--line-2);position:relative;transition:background .15s}.auto-sw .trk::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}.auto-sw input:checked+.trk{background:var(--green)}.auto-sw input:checked+.trk::after{left:17px}.auto-sw input:focus-visible+.trk{outline:2px solid var(--purple);outline-offset:2px}
+.autobox{border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin-top:12px}.autobox.on{border-color:var(--green-border);background:var(--green-dim)}.autobox ol{margin:6px 0 0;padding-left:18px;font-size:12.5px}.mail{border:1px dashed var(--line-2);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12.5px;background:var(--bg)}.mail b{display:block}
 .pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;border:1px solid}
 .pill.green,.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}.pill.yellow,.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.red,.pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;color:var(--ink-2);font-size:12px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:4px;border:1.5px solid}
@@ -296,6 +298,7 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
       <div class="chips" id="status-chips" role="group" aria-label="Filter by health"></div>
       <select id="customer" aria-label="Customer"></select>
       <input type="search" id="q" placeholder="Find product or contract" aria-label="Find product or contract">
+      <label class="auto-sw" title="Renewals below the threshold with no warning signal get an offer and an e-mail without a person (simulated)"><input type="checkbox" id="auto" role="switch"><span class="trk"></span><span id="auto-label">Automatic renewal</span></label>
       <button class="ghost spacer" id="reset" type="button">Reset demo</button>
     </div>
     <p class="sub">Diamond = decision date, bar = time until the contract ends, dashed line = today. Colour = health of the renewal. Click a row for the details.</p>
@@ -314,6 +317,7 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 {
  "asOf": "2026-10-19",
  "rules": {
+  "autoThresholdEur": 30000,
   "marginPct": 70,
   "lifetimeCapYears": 7,
   "retention": {
@@ -619,6 +623,125 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
    ]
   },
   {
+   "id": "R-C-2026-0902",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0902",
+   "product": "SAP Work Zone add-on",
+   "status": "Running",
+   "end": "2026-12-31",
+   "noticeDays": 30,
+   "decisionDate": "2026-12-01",
+   "autoRenew": false,
+   "annualEur": 12600,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 180,
+   "licensed": 200,
+   "unit": "users",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0912",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0912",
+   "product": "Commerce Cloud sandbox",
+   "status": "Running",
+   "end": "2026-12-31",
+   "noticeDays": 30,
+   "decisionDate": "2026-12-01",
+   "autoRenew": false,
+   "annualEur": 21000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 2,
+   "licensed": 2,
+   "unit": "sandboxes",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [
+    {
+     "id": "INV-2026-30590",
+     "status": "Overdue",
+     "grossEur": 24990,
+     "due": "2026-09-30"
+    }
+   ],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0901",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0901",
+   "product": "SAP Signavio Process Manager add-on",
+   "status": "Running",
+   "end": "2027-01-31",
+   "noticeDays": 60,
+   "decisionDate": "2026-12-02",
+   "autoRenew": false,
+   "annualEur": 24000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 41,
+   "licensed": 50,
+   "unit": "seats",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0903",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0903",
+   "product": "BTP extra storage package",
+   "status": "Running",
+   "end": "2027-02-28",
+   "noticeDays": 60,
+   "decisionDate": "2026-12-30",
+   "autoRenew": false,
+   "annualEur": 31500,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 8.2,
+   "licensed": 10,
+   "unit": "TB",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
    "customerSince": 2014,
    "customerAnnualEur": 4540000,
    "id": "R-C-2024-0233",
@@ -644,6 +767,62 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
    "offer": null,
    "tickets": [],
    "invoices": []
+  },
+  {
+   "id": "R-C-2026-0911",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0911",
+   "product": "SAP Analytics Cloud planning add-on",
+   "status": "Running",
+   "end": "2027-03-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-01-30",
+   "autoRenew": false,
+   "annualEur": 27900,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 96,
+   "licensed": 120,
+   "unit": "users",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0913",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0913",
+   "product": "Integration Suite extra connectors",
+   "status": "Running",
+   "end": "2027-06-30",
+   "noticeDays": 30,
+   "decisionDate": "2027-05-31",
+   "autoRenew": false,
+   "annualEur": 9800,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 7,
+   "licensed": 8,
+   "unit": "connectors",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
   },
   {
    "customerSince": 2019,
@@ -746,6 +925,20 @@ function options(c, sig, rules) {
   if (best) best.recommended = true;
   return list;
 }
+/** Automatic renewal: allowed below the annual value threshold when nothing needs a person. A missing offer and the approaching date are what the automation fixes, so they do not block. */
+function autoCheck(c, sig, opts, rules) {
+  const blockers = [];
+  if (c.annualEur >= rules.autoThresholdEur) blockers.push(`Annual value ${eur(c.annualEur)} is not below ${eur(rules.autoThresholdEur)}`);
+  if (c.status === 'Lapsed') blockers.push('Lapsed contract: a person decides about a win-back');
+  for (const x of sig.signals) if (x.level !== 'plus' && x.key !== 'timing' && x.key !== 'no-offer') blockers.push(x.text);
+  const pick = opts.filter((o) => o.withinCap).sort((a, b) => b.clvEur - a.clvEur)[0];
+  if (!pick) blockers.push('No offer stays within the contract cap');
+  return { eligible: blockers.length === 0, blockers, pick: pick || null };
+}
+/** The simulated e-mail the automation sends. */
+function autoEmail(c, o) {
+  return { to: `${c.csm.toLowerCase().replace(/[^a-z]+/g, '.')}@${c.customerId}.example`, subject: `Your renewal of ${c.product} (${c.contractId})`, body: `Dear ${c.customer} team, your contract ${c.contractId} for ${c.product} ends on ${c.end}. Offer: ${eur(o.annualEur)} a year for ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} % against today, within the contract cap of ${c.upliftCapPct} %). Reply to this e-mail or contact your account team to confirm.` };
+}
 /** Retention levers: what to do to keep the customer, taken from the signals. */
 function levers(sig, rules) { return [...new Set(sig.signals.filter((s) => s.level !== 'plus').map((s) => rules.levers[s.key]).concat(sig.signals.some((s) => s.key === 'growth') ? [rules.levers.growth] : []).filter(Boolean))].slice(0, 4); }
 /** Next actions, most important first (at most three). */
@@ -774,16 +967,19 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared', 'Offer approved', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1 };
+const state = { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
 function compute() {
   model = DATA.cases.map((c) => {
-    const s = signals(c, DATA.asOf), st = state.stage[c.id] || 0;
-    const opts = options(c, s, DATA.rules), chosen = opts.find((o) => o.key === state.option[c.id]) || opts.find((o) => o.recommended) || opts[0];
+    const s = signals(c, DATA.asOf);
+    const opts = options(c, s, DATA.rules), chosen = (state.auto && autoCheck(c, s, opts, DATA.rules).eligible ? autoCheck(c, s, opts, DATA.rules).pick : null) || opts.find((o) => o.key === state.option[c.id]) || opts.find((o) => o.recommended) || opts[0];
+    const ac = autoCheck(c, s, opts, DATA.rules), run = state.auto && ac.eligible && (state.stage[c.id] || 0) < 3;
+    if (run) state.stage[c.id] = 3;
+    const st = state.stage[c.id] || 0;
     const p = retention(c, st === 4 ? 'green' : s.health, DATA.rules);
-    return { ...c, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules) };
+    return { ...c, auto: ac, autoRun: !!state.auto && ac.eligible, email: ac.pick ? autoEmail(c, ac.pick) : null, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules) };
   });
 }
 const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase())));
@@ -797,7 +993,7 @@ function renderKpis() {
   const sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), signed = model.filter((c) => c.stage === 4);
   const k = (cls, v, key, s) => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="k">${key}</div><div class="s">${s}</div></div>`;
   $('#kpis').innerHTML = k('', open.length, 'Renewals to handle', eur(sum(open)) + ' a year') + k('red', red.length, 'Red renewals', eur(sum(red)) + ' at risk') + k('amber', soon.length, 'Decision within 30 days', soon.length ? 'incl. passed dates' : 'none') +
-    k('', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('', eur(open.reduce((a, c) => a + c.clv, 0)), 'Customer lifetime value', 'expected, open renewals (assumptions below)') + k('green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
+    k('', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('', eur(open.reduce((a, c) => a + c.clv, 0)), 'Customer lifetime value', 'expected, open renewals (assumptions below)') + k('green', model.filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
 }
 function renderBar() {
   const count = (s) => model.filter((c) => s === 'all' || c.health === s).length;
@@ -814,7 +1010,7 @@ function renderTimeline() {
   $('#tl').querySelectorAll('.row').forEach((r) => { r.onclick = () => { state.sel = state.sel === r.dataset.id ? null : r.dataset.id; renderAll(); }; hover(r, () => tipHtml(model.find((c) => c.id === r.dataset.id))); });
 }
 function renderRows() {
-  $('#rows').innerHTML = visible().map((c) => `<tr data-id="${esc(c.id)}" tabindex="0" aria-selected="${state.sel === c.id}"><td>${esc(c.customer)}<div class="sub" style="margin:0">SAP ${esc(c.sapCustomerId)}</div></td><td>${esc(c.product)}<div class="sub" style="margin:0">${esc(c.contractId)}</div></td><td class="n">${eur(c.annualEur)}</td><td>${c.status === 'Lapsed' ? 'lapsed ' + esc(c.end) : esc(c.decisionDate) + `<div class="sub" style="margin:0">${c.sig.days < 0 ? -c.sig.days + ' days ago' : 'in ' + c.sig.days + ' days'}</div>`}</td><td>${c.offer ? esc(c.offer.id) + `<div class="sub" style="margin:0">${esc(c.offer.stage)}</div>` : '<span style="color:var(--muted)">none</span>'}</td><td><span class="pill ${c.health}">${c.stage === 4 ? 'signed' : LABEL[c.health]}</span></td></tr>`).join('') || '<tr><td colspan="6">No renewal matches the filters.</td></tr>';
+  $('#rows').innerHTML = visible().map((c) => `<tr data-id="${esc(c.id)}" tabindex="0" aria-selected="${state.sel === c.id}"><td>${esc(c.customer)}<div class="sub" style="margin:0">SAP ${esc(c.sapCustomerId)}</div></td><td>${esc(c.product)}<div class="sub" style="margin:0">${esc(c.contractId)}</div></td><td class="n">${eur(c.annualEur)}</td><td>${c.status === 'Lapsed' ? 'lapsed ' + esc(c.end) : esc(c.decisionDate) + `<div class="sub" style="margin:0">${c.sig.days < 0 ? -c.sig.days + ' days ago' : 'in ' + c.sig.days + ' days'}</div>`}</td><td>${c.autoRun && c.stage >= 3 ? '<span class="pill done">auto offer sent</span>' : c.offer ? esc(c.offer.id) + `<div class="sub" style="margin:0">${esc(c.offer.stage)}</div>` : '<span style="color:var(--muted)">none</span>'}</td><td><span class="pill ${c.health}">${c.stage === 4 ? 'signed' : LABEL[c.health]}</span></td></tr>`).join('') || '<tr><td colspan="6">No renewal matches the filters.</td></tr>';
   $('#rows').querySelectorAll('tr[data-id]').forEach((tr) => { const open = () => { state.sel = state.sel === tr.dataset.id ? null : tr.dataset.id; renderAll(); }; tr.onclick = open; tr.onkeydown = (e) => { if (e.key === 'Enter') open(); }; });
 }
 function prepPrompt(c) { return `Prepare the renewal talk for ${c.product} of ${c.customer} (SAP customer ID ${c.sapCustomerId}): decision date ${c.decisionDate}, ${eur(c.annualEur)} a year${c.offer ? ', offer ' + c.offer.id : ', no offer yet'}. Use the skill customer-call-prep and the Sub4Me tools: usage, open tickets, invoices, price against the contract cap. Please answer in English.`; }
@@ -823,13 +1019,14 @@ function renderDetail() {
   const c = model.find((x) => x.id === state.sel), el = $('#detail');
   if (!c) { el.innerHTML = '<h2>Details</h2><p class="sub">Click a renewal to see why it has its colour, the price check, the next actions and the approval flow.</p>'; return; }
   const use = usagePct(c), up = upliftPct(c), st = c.stage;
-  const btn = st === 0 ? `<button class="primary" data-act="prep" type="button">Prepare with Joule</button>` : st === 1 ? `<button class="primary" data-act="approve" type="button">${c.offer ? 'Approve offer (' + esc(c.owner) + ')' : 'Approve offer draft (' + esc(c.owner) + ')'}</button>` : st === 2 ? `<button class="primary" data-act="send" type="button">Send to customer (simulated)</button>` : st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : '<span class="pill done">Signed (simulated)</span>';
+  const auto = c.autoRun && st >= 3 && c.auto.eligible; const btn = auto && st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : st === 0 ? `<button class="primary" data-act="prep" type="button">Prepare with Joule</button>` : st === 1 ? `<button class="primary" data-act="approve" type="button">${c.offer ? 'Approve offer (' + esc(c.owner) + ')' : 'Approve offer draft (' + esc(c.owner) + ')'}</button>` : st === 2 ? `<button class="primary" data-act="send" type="button">Send to customer (simulated)</button>` : st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : '<span class="pill done">Signed (simulated)</span>';
   el.innerHTML = `<h2>${esc(c.product)} <span class="pill ${c.health}">${st === 4 ? 'signed' : LABEL[c.health]}</span></h2><p class="sub">${esc(c.customer)} · SAP customer ID <b>${esc(c.sapCustomerId)}</b> · ${esc(c.contractId)}</p>` +
     `<dl class="dl"><dt>Annual value</dt><dd>${eur(c.annualEur)}</dd><dt>Contract ends</dt><dd>${esc(c.end)}</dd><dt>Notice period</dt><dd>${c.noticeDays} days</dd><dt>Decision date</dt><dd>${esc(c.decisionDate)}</dd><dt>Renews automatically</dt><dd>${c.autoRenew ? 'yes' : 'no'}</dd><dt>Account executive</dt><dd>${esc(c.owner)}</dd><dt>Customer owner</dt><dd>${esc(c.customerOwner)}</dd></dl>` +
     (use === null ? '' : `<div class="sub" style="margin:6px 0 0">Usage: ${c.used.toLocaleString('en-GB')} of ${c.licensed.toLocaleString('en-GB')} ${esc(c.unit)} (${use} %)</div><div class="meter"><i style="width:${Math.min(100, use)}%"></i></div>`) +
     (c.offer ? `<h3 style="margin-top:12px">Renewal offer ${esc(c.offer.id)}</h3><dl class="dl"><dt>Offer value</dt><dd>${eur(c.offer.annualEur)}</dd><dt>Today</dt><dd>${eur(c.offer.currentAnnualEur)}</dd><dt>Price rise / cap</dt><dd>${up > 0 ? '+' : ''}${up} % / ${c.upliftCapPct} %${up > c.upliftCapPct ? ' ⚠' : ''}</dd><dt>Discount</dt><dd>${c.offer.discountPct} %</dd><dt>Valid until</dt><dd>${esc(c.offer.validUntil)}</dd><dt>Stage</dt><dd>${esc(c.offer.stage)} (${c.offer.probabilityPct} %)</dd><dt>Approval</dt><dd>${esc(c.offer.approval)}</dd></dl>` : '<h3 style="margin-top:12px">No renewal offer</h3>') +
     `<h3 style="margin-top:12px">Why this colour</h3>${c.sig.signals.map((s) => `<div class="sig ${s.level}"><b>${s.level === 'plus' ? 'positive' : s.level}</b>${esc(s.text)}</div>`).join('') || '<div class="sig plus">No warning signals.</div>'}` +
     `<h3 style="margin-top:12px">Next actions</h3><ol class="act">${c.actions.map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` +
+    autoBlock(c) +
     `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step; sending and signing are simulated here.</p>`;
   el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
     const a = b.dataset.act;
@@ -841,6 +1038,14 @@ function renderDetail() {
     if (a === 'sign') state.stage[c.id] = 4;
     compute(); renderAll();
   }));
+}
+function autoBlock(c) {
+  const R = DATA.rules, th = eur(R.autoThresholdEur);
+  if (c.annualEur >= R.autoThresholdEur || c.status === 'Lapsed') return `<div class="autobox"><b>Automatic renewal</b><div class="sub" style="margin:2px 0 0">Not available: ${esc(c.auto.blockers[0])}. A person handles this renewal.</div></div>`;
+  if (!c.auto.eligible) return `<div class="autobox"><b>Automatic renewal: needs a person</b><div class="sub" style="margin:2px 0 0">Below ${th}, but these signals stop the automation:</div><ol>${c.auto.blockers.map((b) => `<li>${esc(b)}</li>`).join('')}</ol></div>`;
+  if (!c.autoRun) return `<div class="autobox"><b>Eligible for automatic renewal</b><div class="sub" style="margin:2px 0 0">Below ${th}, no warning signal, and an offer within the contract cap exists. Turn the switch on to let it run: ${esc(c.auto.pick.name)}, ${eur(c.auto.pick.annualEur)} a year.</div></div>`;
+  const o = c.auto.pick, m = c.email;
+  return `<div class="autobox on"><b>Handled automatically (simulated)</b><ol><li>Checked: below ${th}, no warning signal, price within the ${c.upliftCapPct} % cap</li><li>Offer created: ${esc(o.name)}, ${eur(o.annualEur)} a year, ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} %)</li><li>E-mail sent to the customer contact (simulated)</li><li>Logged for audit; a person can open the log and take the case over</li></ol><div class="mail"><b>To: ${esc(m.to)}</b><b>${esc(m.subject)}</b>${esc(m.body)}</div></div>`;
 }
 function renderAlt() {
   const c = model.find((x) => x.id === state.sel), el = $('#alt');
@@ -862,20 +1067,22 @@ const STEPS = [
   { t: 'Retention value and alternatives', x: 'What is this customer worth? The lifetime value, the alternative offers (hold the cap, 3-year commitment, right-sized) and the retention levers are side by side. The best value within the contract cap is marked; here we choose it and prepare the talk.', on: () => { state.sel = 'R-C-2023-0390'; state.option['R-C-2023-0390'] = 'cap'; state.stage['R-C-2023-0390'] = 1; } },
   { t: 'A person approves', x: 'The account executive approves the offer. Nothing goes to the customer without this step.', on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 2; } },
   { t: 'Send and sign (simulated)', x: 'The offer is sent and signed. The case turns green and the signed value appears in the KPIs. Reset the demo to start over.', on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 4; } },
+  { t: 'Fully automatic below 30,000 €', x: 'Small add-on contracts need no person: switch on automatic renewal. Eligible ones (below the threshold, no warning signal, price within the cap) get an offer and an e-mail on their own (simulated). The sandbox with an overdue invoice and the storage package above the threshold still go to a person.', on: () => { state.auto = true; $('#auto').checked = true; state.sel = 'R-C-2026-0902'; } },
 ];
 function renderGuide() {
   const g = $('#guide');
-  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Six steps from the renewal radar to a signed renewal: see, find the urgent one, understand, prepare, approve, sign.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Seven steps from the renewal radar to a signed renewal, and the automatic path for small contracts: see, find the urgent one, understand, prepare, approve, sign, automate.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
   const s = STEPS[state.step];
   g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
 }
-function go(i) { state.step = i; Object.assign(state, { stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '' }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
-function renderAll() { renderKpis(); renderBar(); renderGuide(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
+function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '' }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
+function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderKpis(); renderBar(); renderGuide(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
 $('#customer').onchange = (e) => { state.customer = e.target.value; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
-$('#reset').onclick = () => { Object.assign(state, { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1 }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#reset').onclick = () => { $('#auto').checked = false; Object.assign(state, { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 $('#assump').textContent = `Illustrative assumptions, not real figures: gross margin ${DATA.rules.marginPct} %; expected retention by health: green ${DATA.rules.retention.green * 100} %, yellow ${DATA.rules.retention.yellow * 100} %, red ${DATA.rules.retention.red * 100} %, lapsed ${DATA.rules.retention.lapsed * 100} %. Expected lifetime = 1 / (1 − retention), at most ${DATA.rules.lifetimeCapYears} years. Lifetime value = annual value × margin × expected lifetime. Each alternative offer changes the annual value, the term and the retention.`;
 compute(); renderAll();

@@ -11,7 +11,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/renewals/index.html');
 const data = JSON.parse(read(DATA_FILE));
-const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, levers })`);
+const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers })`);
 const byContract = (id) => data.cases.find((c) => c.contractId === id);
 const health = (id) => logic.signals(byContract(id), AS_OF);
 
@@ -58,9 +58,9 @@ test('every case has at least one action and the actions follow the priority ord
   assert.match(logic.actions(byContract('C-2023-0390'), s)[0], /overdue invoice/, 'an overdue invoice comes first');
 });
 
-test('page: radar, table, detail, six demo steps, English chat prompts, no network', () => {
+test('page: radar, table, detail, seven demo steps, English chat prompts, no network', () => {
   for (const id of ['kpis', 'guide', 'tl', 'rows', 'detail', 'customer', 'q', 'reset']) assert.match(page, new RegExp(`id="${id}"`));
-  assert.equal((page.match(/\{ t: '/g) || []).length, 6);
+  assert.equal((page.match(/\{ t: '/g) || []).length, 7);
   assert.match(page, /customer-call-prep/);
   assert.match(page, /pricing-guard/);
   assert.equal((page.match(/Please answer in English/g) || []).length, 4);
@@ -88,4 +88,26 @@ test('retention and lifetime value: transparent formula, alternatives follow the
   assert.ok(logic.levers(logic.signals(ariba, AS_OF), R).length >= 2);
   assert.match(page, /id="alt"/);
   assert.match(page, /Illustrative assumptions/);
+});
+
+test('automatic renewal: only below the threshold, without warning signals, within the cap', () => {
+  const R = data.rules;
+  assert.equal(R.autoThresholdEur, 30000);
+  const check = (id) => { const c = byContract(id), s = logic.signals(c, AS_OF); return logic.autoCheck(c, s, logic.options(c, s, R), R); };
+  const small = data.cases.filter((c) => c.annualEur < R.autoThresholdEur);
+  assert.ok(small.length >= 5 && data.cases.some((c) => c.annualEur >= R.autoThresholdEur));
+  for (const id of ['C-2026-0901', 'C-2026-0902', 'C-2026-0911', 'C-2026-0913']) { const r = check(id); assert.ok(r.eligible, id); assert.ok(r.pick.withinCap, id); }
+  assert.ok(!check('C-2026-0912').eligible, 'overdue invoice stops the automation');
+  assert.match(check('C-2026-0912').blockers.join(' '), /overdue/);
+  assert.ok(!check('C-2026-0903').eligible, 'above the threshold');
+  for (const c of data.cases.filter((x) => x.annualEur >= R.autoThresholdEur)) assert.ok(!check(c.contractId).eligible, c.contractId);
+  const c = byContract('C-2026-0902'), m = logic.autoEmail(c, check('C-2026-0902').pick);
+  assert.match(m.to, /@muster\.example$/); assert.match(m.body, /within the contract cap/);
+});
+
+test('page: the switch exists, is off by default and nothing is really sent', () => {
+  assert.match(page, /id="auto"[^>]*role="switch"/);
+  assert.match(page, /auto: false/);
+  assert.match(page, /\(simulated\)/);
+  assert.ok(!/fetch\(|XMLHttpRequest/.test(page));
 });

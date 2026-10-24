@@ -32,11 +32,22 @@ export function sub4meCustomers() {
 
 /** Illustrative assumptions for retention and customer lifetime value (CLV). Not real figures. */
 export const RULES = {
+  autoThresholdEur: 30000,
   marginPct: 70,
   lifetimeCapYears: 7,
   retention: { green: 0.95, yellow: 0.85, red: 0.65, lapsed: 0.25 },
   levers: { usage: 'Adoption workshop with the business owner', ticket: 'Escalate the open ticket to a named engineer', competitor: 'Executive sponsor call and a competitive battlecard', invoice: 'Payment plan agreed with the customer finance team', uplift: 'Explain the price rise with scope and volume, or hold the cap', timing: 'Joint timeline with the customer procurement', 'no-offer': 'Early value review before the offer', lapsed: 'Win-back call with the technical contact', growth: 'Roadmap session for the next scope', validity: 'Validity extension in exchange for a signing date' },
 };
+
+/** Small add-on contracts (illustrative, not in the Sub4Me sample data): they show the automatic path below the threshold. */
+const ADDONS = [
+  { customerId: 'muster', id: 'C-2026-0901', product: 'SAP Signavio Process Manager add-on', annualEur: 24000, end: '2027-01-31', noticeDays: 60, used: 41, licensed: 50, unit: 'seats' },
+  { customerId: 'muster', id: 'C-2026-0902', product: 'SAP Work Zone add-on', annualEur: 12600, end: '2026-12-31', noticeDays: 30, used: 180, licensed: 200, unit: 'users' },
+  { customerId: 'muster', id: 'C-2026-0903', product: 'BTP extra storage package', annualEur: 31500, end: '2027-02-28', noticeDays: 60, used: 8.2, licensed: 10, unit: 'TB' },
+  { customerId: 'hanse', id: 'C-2026-0911', product: 'SAP Analytics Cloud planning add-on', annualEur: 27900, end: '2027-03-31', noticeDays: 60, used: 96, licensed: 120, unit: 'users' },
+  { customerId: 'hanse', id: 'C-2026-0912', product: 'Commerce Cloud sandbox', annualEur: 21000, end: '2026-12-31', noticeDays: 30, used: 2, licensed: 2, unit: 'sandboxes', overdue: { id: 'INV-2026-30590', grossEur: 24990, due: '2026-09-30' } },
+  { customerId: 'hanse', id: 'C-2026-0913', product: 'Integration Suite extra connectors', annualEur: 9800, end: '2027-06-30', noticeDays: 30, used: 7, licensed: 8, unit: 'connectors' },
+];
 
 export function buildRenewals() {
   const cases = [];
@@ -59,6 +70,16 @@ export function buildRenewals() {
         tickets, invoices,
       });
     }
+  }
+  for (const a of ADDONS) {
+    const main = cases.find((c) => c.customerId === a.customerId);
+    cases.push({
+      id: `R-${a.id}`, customerId: a.customerId, customer: main.customer, sapCustomerId: main.sapCustomerId, customerSince: main.customerSince, customerAnnualEur: main.customerAnnualEur,
+      contractId: a.id, product: a.product, status: 'Running', end: a.end, noticeDays: a.noticeDays, decisionDate: addDays(a.end, -a.noticeDays), autoRenew: false, annualEur: a.annualEur,
+      upliftCapPct: 3, termination: 'Ends on the end date; renewal requires a new order.', used: a.used, licensed: a.licensed, unit: a.unit,
+      owner: main.owner, csm: main.csm, customerOwner: main.customerOwner, offer: null, tickets: [],
+      invoices: a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due }] : [], addon: true,
+    });
   }
   cases.sort((a, b) => a.decisionDate.localeCompare(b.decisionDate) || a.id.localeCompare(b.id));
   return {
