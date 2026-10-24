@@ -36,6 +36,17 @@ td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
 .months div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%;font-size:11px;color:var(--mut)}
 .months span{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
 .months div.cur span{opacity:.55}
+.aihead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:2px;background:var(--bg)}
+.seg button{border:0;background:none;font:inherit;font-size:12px;font-weight:550;color:var(--mut);padding:4px 11px;border-radius:99px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--brand-dim);color:var(--brand)}
+.yrs{display:grid;gap:10px;margin-top:12px}.yrow{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;font-size:12px}
+.yrow .bar{min-width:0;height:12px!important;display:flex}.yrow .bar i.fc{background:var(--brand-dim);border:1px dashed var(--brand);box-sizing:border-box}
+.term-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.term-facts div{font-size:12px;color:var(--mut)}.term-facts b{display:block;font-size:17px;color:var(--ink);font-weight:650}
+.months div.proj .col i,.months div.proj span{opacity:.3}
+.months.term{height:120px;gap:3px}.months.term div{font-size:9.5px}
+
 form{display:grid;gap:10px;max-width:640px}
 label{font-size:12px;font-weight:600;color:var(--mut);display:grid;gap:4px}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
@@ -306,7 +317,9 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
   <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><div class="card detail" id="contract-detail" aria-live="polite"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div><div class="card detail" id="offer-detail" aria-live="polite"></div></section>
   <section class="pg" id="pg-usage">
     <div class="grid" id="usage-kpis"></div>
-    <div class="row"><div class="card"><div class="k">AI units per month (2026)</div><div class="months stack" id="months"></div><div class="legend" id="legend"></div></div>
+    <div class="row"><div class="card"><div class="aihead"><div class="k" id="ai-title">AI units per month (2026)</div><div class="seg" id="ai-seg" role="tablist" aria-label="Time axis"><button type="button" data-v="month" aria-pressed="true">Month</button><button type="button" data-v="year" aria-pressed="false">Year</button><button type="button" data-v="term" aria-pressed="false">Contract term</button></div></div>
+      <div id="ai-view-month"><div class="months stack" id="months"></div><div class="legend" id="legend"></div></div>
+      <div id="ai-view-year" hidden></div><div id="ai-view-term" hidden></div></div>
     <div class="card tbl" id="forecast"></div></div>
     <h2>Consumption by product</h2><div class="card tbl" id="products"></div>
     <div class="card" id="product-detail" aria-live="polite"></div>
@@ -347,6 +360,26 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
     "periodStart": "2026-01-01",
     "periodEnd": "2026-12-31",
     "allotment": 120000,
+    "history": [
+      {
+        "year": 2025,
+        "allotment": 60000,
+        "monthly": [
+          2100,
+          2500,
+          2900,
+          3300,
+          3800,
+          4200,
+          4100,
+          4600,
+          5100,
+          5400,
+          5800,
+          6000
+        ]
+      }
+    ],
     "monthly": [
       6200,
       7100,
@@ -1458,6 +1491,26 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
         "periodStart": "2026-01-01",
         "periodEnd": "2026-12-31",
         "allotment": 80000,
+        "history": [
+          {
+            "year": 2025,
+            "allotment": 40000,
+            "monthly": [
+              900,
+              1100,
+              1300,
+              1500,
+              1800,
+              2000,
+              1900,
+              2200,
+              2600,
+              3000,
+              3400,
+              3100
+            ]
+          }
+        ],
         "monthly": [
           2600,
           3200,
@@ -2497,7 +2550,7 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
   var KNOW = ALL.knowledge;
   var D, AS_OF, days;
   var used, pctUsed, fullMonths, avg, forecast, forecastPct, live, annual, renewals;
-  var selContract = 0, selOffer = 0, selected = 0;
+  var selContract = 0, selOffer = 0, selected = 0, aiView = 'month';
   var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var SHADES = [1, .78, .58, .42, .28];
   var sum = function(list){ return list.reduce(function(a, b){ return a + b; }, 0); };
@@ -2648,6 +2701,48 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
       }).join('') + '</tbody></table>';
     renderOfferDetail();
   }
+
+  /* AI units on the time axis: per month, per year and over the term of the AI units contract. */
+  function aiSeries(){
+    var m = {}, hist = D.aiUnits.history || [], y0 = Number(D.aiUnits.periodStart.slice(0, 4));
+    hist.forEach(function(h){ h.monthly.forEach(function(v, i){ m[h.year + '-' + (i < 9 ? '0' : '') + (i + 1)] = v; }); });
+    D.aiUnits.monthly.forEach(function(v, i){ m[y0 + '-' + (i < 9 ? '0' : '') + (i + 1)] = v; });
+    return m;
+  }
+  function ymAdd(ym, k){ var y = Number(ym.slice(0, 4)), mo = Number(ym.slice(5, 7)) - 1 + k; y += Math.floor(mo / 12); mo = ((mo % 12) + 12) % 12; return y + '-' + (mo < 9 ? '0' : '') + (mo + 1); }
+  function renderAiTime(){
+    var seg = $('ai-seg').querySelectorAll('button');
+    Array.prototype.forEach.call(seg, function(b){ b.setAttribute('aria-pressed', String(b.dataset.v === aiView)); });
+    ['month', 'year', 'term'].forEach(function(v){ $('ai-view-' + v).hidden = v !== aiView; });
+    var series = aiSeries(), cur = D.asOf.slice(0, 7), y0 = Number(D.aiUnits.periodStart.slice(0, 4));
+    $('ai-title').textContent = aiView === 'month' ? 'AI units per month (' + y0 + ')' : aiView === 'year' ? 'AI units per year' : 'AI units over the contract term';
+    if (aiView === 'year'){
+      var rows = (D.aiUnits.history || []).map(function(h){ var u = sum(h.monthly); return {y: h.year, used: u, allot: h.allotment, fc: 0}; });
+      rows.push({y: y0, used: used, allot: D.aiUnits.allotment, fc: Math.max(0, forecast - used)});
+      var top = Math.max.apply(null, rows.map(function(r){ return Math.max(r.used + r.fc, r.allot); }));
+      $('ai-view-year').innerHTML = '<div class="yrs">' + rows.map(function(r){
+        var pct = Math.round(r.used / r.allot * 100);
+        return '<div class="yrow"><b>' + r.y + '</b><div class="bar" title="Allotment ' + n(r.allot) + '"><i style="width:' + (r.used / top * 100) + '%;display:block;flex:none" class="' + (pct >= 100 ? 'bad' : pct >= 90 ? 'warn' : '') + '"></i><i class="fc" style="width:' + (r.fc / top * 100) + '%;display:block;flex:none"></i></div><span>' + n(r.used) + ' of ' + n(r.allot) + ' (' + pct + '%)' + (r.fc ? ' · forecast ' + n(r.used + r.fc) : '') + '</span></div>';
+      }).join('') + '</div><p class="s" style="margin:12px 0 0">Average per month: ' + rows.map(function(r){ return r.y + ' ' + n(Math.round(r.used / (r.y === y0 ? D.aiUnits.monthly.length : 12))); }).join(' · ') + '. Dashed part = forecast at the current run rate.</p>';
+    }
+    if (aiView === 'term'){
+      var c = D.contracts.filter(function(x){ return /^AI units/.test(x.product); })[0];
+      if (!c){ $('ai-view-term').innerHTML = '<p class="s">No AI units contract found.</p>'; return; }
+      var s0 = c.start.slice(0, 7), e0 = c.end.slice(0, 7), list = [], ym = s0, guard = 0;
+      while (ym <= e0 && guard++ < 60){ list.push(ym); ym = ymAdd(ym, 1); }
+      var av = (function(){ var f = []; for (var k = -4; k <= -2; k++){ var v = series[ymAdd(cur, k)]; if (v !== undefined) f.push(v); } return f.length ? sum(f) / f.length : 0; })();
+      var vals = list.map(function(x){ return x <= cur && series[x] !== undefined ? {v: series[x], p: false} : x > cur ? {v: Math.round(av), p: true} : {v: 0, p: false}; });
+      var usedTerm = sum(vals.filter(function(x){ return !x.p; }).map(function(x){ return x.v; })), fcTerm = usedTerm + sum(vals.filter(function(x){ return x.p; }).map(function(x){ return x.v; }));
+      var tot = Math.max(1, (new Date(c.end + 'T00:00:00Z') - new Date(c.start + 'T00:00:00Z')) / 864e5), el = Math.min(tot, Math.max(0, (AS_OF - new Date(c.start + 'T00:00:00Z')) / 864e5));
+      var allot = c.licensedUnits || D.aiUnits.allotment, mx = Math.max.apply(null, vals.map(function(x){ return x.v; })) || 1;
+      var bars = vals.map(function(x, i){ var mo = Number(list[i].slice(5, 7)) - 1; return '<div class="' + (x.p ? 'proj' : '') + '" title="' + MONTHS[mo] + ' ' + list[i].slice(0, 4) + ': ' + n(x.v) + (x.p ? ' (forecast)' : '') + '"><span style="height:' + (x.v / mx * 100) + '%"></span>' + MONTHS[mo].charAt(0) + '</div>'; }).join('');
+      var notice = new Date(new Date(c.end + 'T00:00:00Z').getTime() - c.noticeDays * 864e5).toISOString().slice(0, 10);
+      $('ai-view-term').innerHTML = '<p class="s" style="margin:6px 0 0">Contract ' + esc(c.id) + ' · ' + esc(c.start) + ' → ' + esc(c.end) + ' (' + list.length + ' months). The AI units contract has its own term; the months below follow it, not the calendar year.</p>' +
+        '<div class="term-facts"><div><b>' + n(usedTerm) + '</b>used so far (' + Math.round(usedTerm / allot * 100) + '% of ' + n(allot) + ')</div><div><b>' + Math.round(el / tot * 100) + '%</b>of the term elapsed</div><div><b>' + n(fcTerm) + '</b>forecast at term end (' + Math.round(fcTerm / allot * 100) + '%)</div><div><b>' + esc(notice) + '</b>last day for notice (' + c.noticeDays + ' days)</div></div>' +
+        '<div class="months term">' + bars + '</div><p class="s" style="margin:10px 0 0">' + (fcTerm > allot ? tag('warn', 'Allotment likely exhausted before term end') : tag('ok', 'On track for the term')) + ' ' + esc(c.termination || '') + '</p>';
+    }
+  }
+  $('ai-seg').addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; aiView = b.dataset.v; renderAiTime(); });
   function renderUsage(){
     $('usage-kpis').innerHTML =
       kpi('Allotment 2026', n(D.aiUnits.allotment), 'AI units, contract ' + esc((D.contracts.filter(function(c){ return /^AI units/.test(c.product); })[0] || {id: '–'}).id)) +
@@ -2666,6 +2761,7 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
         var r = proj(p.monthly, p.allotment), pct = Math.round(r.used / p.allotment * 100);
         return '<tr tabindex="0" data-i="' + i + '" aria-selected="' + (i === selected) + '"><td><b>' + esc(p.name) + '</b><div class="s">' + esc(p.meters) + '</div></td><td class="num">' + n(r.used) + '</td><td class="num">' + n(p.allotment) + '</td><td class="num">' + n(p.allotment - r.used) + '</td><td class="num">' + Math.round(r.used / used * 100) + '%</td><td><div class="bar"><i class="' + tone(pct) + '" style="width:' + Math.min(pct, 100) + '%"></i></div><div class="s">' + pct + '%</div></td><td class="num">' + r.pct + '%</td><td>' + (r.hit ? tag('bad', 'Empty in ' + r.hit) : r.pct >= 90 ? tag('warn', 'Tight') : tag('ok', 'On track')) + '</td></tr>';
       }).join('') + '</tbody></table>';
+    renderAiTime();
     renderDetail();
   }
   function selectProduct(tr){
