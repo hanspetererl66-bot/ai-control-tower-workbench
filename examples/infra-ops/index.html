@@ -1532,10 +1532,10 @@ function simulateRun(plan) {
   function handOff(to, payload, open, notice) { persistNow(); window.parent.postMessage({ type: 'wb:handoff', to: to, payload: payload, open: open, notice: notice || '' }, '*'); }
   function taskPayload(t) { return { id: t.id, template: t.template, target: t.target, customer: t.customer, window: t.window, requester: t.requester, params: t.params || {} }; }
 
-  /** Pre-check and post-check run in the Change Checks Space; the result comes back as a hand-over. */
+  /** Pre-check and post-check run in the Pre-Checks and Post-Checks Space; the result comes back as a hand-over. */
   function sendCheck(t, mode) {
     t.flow.phase = mode === 'pre' ? 'precheck' : 'post';
-    addLog(t, (mode === 'pre' ? 'pre-check' : 'post-check') + ' started in the Change Checks Space');
+    addLog(t, (mode === 'pre' ? 'pre-check' : 'post-check') + ' started in the Pre-Checks and Post-Checks Space');
     if (inHost) { handOff(CHECKS_SPACE, { type: 'check-request', mode: mode, speed: S.speed, ticket: t.ticket || '', task: taskPayload(t) }, true); return; }
     // standalone page (no host): run the same checks right here so the demo still works
     var p = planOf(t);
@@ -1628,14 +1628,14 @@ function simulateRun(plan) {
     var tk = ticketOf(t), fail = phase === 'blocked' ? 1 : phase === 'post_failed' ? 5 : -1;
     var text = [];
     text[0] = 'Created by ' + pname(t.requester) + (t.ticket ? ' from ticket ' + t.ticket : '');
-    text[1] = t.precheck ? 'Pre-check ' + (t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') : phase === 'precheck' ? 'Running in the Change Checks Space' : 'Playbook in check mode, nothing is changed';
+    text[1] = t.precheck ? 'Pre-check ' + (t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') : phase === 'precheck' ? 'Running in the Pre-Checks and Post-Checks Space' : 'Playbook in check mode, nothing is changed';
     var nextDue = '';
     if (phase === 'approval' && t.flow && have < need) { var due = (APPROVE_AT(need)[have] || 0) - (Date.now() - (t.flow.approvalStart || Date.now())); nextDue = ' · next answer in about ' + Math.max(0, Math.ceil(due / 1000)) + ' s'; }
     text[2] = have + ' of ' + need + ' approvals' + ((t.approvals || []).length ? ' (' + t.approvals.map(function (id) { return (person(id) || {}).name || id; }).join(', ') + ')' : '') + nextDue + (have < need && phase === 'approval' ? ' · ' + approvalHint(t, D) : '');
     if (phase === 'window' && t.flow) { var fr = Math.min(1, (Date.now() - (t.flow.windowStart || Date.now())) / WINDOW_MS()), a = Date.parse(D.asOf + 'T08:00:00Z'), b = Date.parse(t.window[0] + ':00Z'); text[3] = 'Demo clock ' + clockText(a + fr * (b - a)) + ' → window opens ' + t.window[0].replace('T', ' '); text[3] += '|' + Math.round(fr * 100); }
     else text[3] = (phase === 'running' || cur > 3) ? 'Window ' + t.window[0].replace('T', ' ') + ' to ' + t.window[1].replace('T', ' ') : 'Starts only inside the approved window ' + t.window[0].replace('T', ' ');
     text[4] = cur > 4 ? 'Playbook applied (simulated)' : phase === 'running' ? 'AWX job running' : 'Runs after the window opens';
-    text[5] = t.postcheck ? 'Post-check ' + (t.postcheck.verdict === 'fail' ? 'failed' : 'passed') : phase === 'post' ? 'Running in the Change Checks Space' : 'Service, certificate, dependencies, monitoring';
+    text[5] = t.postcheck ? 'Post-check ' + (t.postcheck.verdict === 'fail' ? 'failed' : 'passed') : phase === 'post' ? 'Running in the Pre-Checks and Post-Checks Space' : 'Service, certificate, dependencies, monitoring';
     text[6] = phase === 'done' ? (tk ? 'Ticket ' + tk.id + ' closed, success report sent to the Fleet Manager' : 'Evidence filed') : tk ? 'Ticket ' + tk.id + ' is closed and the Fleet Manager is told' : 'Evidence is filed';
     return STEP_TITLES.map(function (title, i) { return { title: title, st: i === fail ? 'fail' : i < cur ? 'done' : i === cur && phase !== 'done' ? 'cur' : phase === 'done' ? 'done' : 'todo', text: text[i] }; });
   }
@@ -1774,7 +1774,7 @@ function simulateRun(plan) {
       '<div class="row"><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span><span class="tag">' + STATE_LABEL[t.state] + '</span><span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span><span class="tag ' + (p.downtime.minutes ? 'amber' : 'ok') + '">' + (p.downtime.minutes ? 'Outage about ' + p.downtime.minutes + ' min' : 'no outage') + '</span></div>' + errsHtml(p);
     h += '<h3>Process</h3><div id="tracker">' + trackerHtml(t, p) + '</div>';
     h += '<div id="actions"></div><div id="runbox"></div>';
-    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + (t.precheck ? '<p class="note">Result from the Change Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
+    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + (t.precheck ? '<p class="note">Result from the Pre-Checks and Post-Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
     h += '<h3>Impact</h3><p>' + esc(p.downtime.note) + '</p><p class="sub">Affected systems: ' + esc(p.blast.vms.join(', ') || 'none') + '<br>DNS names: ' + esc(p.blast.dns.join(', ') || 'none') + '</p>';
     if (!t.flow) h += '<h3>Flow (n8n and AWX)</h3>' + p.steps.map(function (s) {
       var oi = ORCHESTRATION.map(function (o) { return o.id; }).indexOf(s.id);
@@ -1838,7 +1838,7 @@ function simulateRun(plan) {
       $('#evidence').innerHTML = '<h3>Audit evidence</h3><pre class="code">' + esc([
         'Task:         ' + t.id + ' (' + p.playbook.id + ')', 'Target:       ' + t.target + ' / ' + p.customer, 'Window:       ' + t.window[0] + ' to ' + t.window[1],
         'Requested by: ' + pname(t.requester), 'Approvals:    ' + (t.approvals || []).map(pname).join('; '),
-        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes' + (t.precheck ? ' (Change Checks: ' + t.precheck.verdict + ')' : ''),
+        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes' + (t.precheck ? ' (Pre-Checks and Post-Checks: ' + t.precheck.verdict + ')' : ''),
         'Post-check:   ' + (t.postcheck ? t.postcheck.verdict : 'not run') + (t.ticket ? '\nTicket:       ' + t.ticket + ' closed' : ''),
         'Result:       ok=' + run.recap.ok + ' changed=' + run.recap.changed + ' failed=' + run.recap.failed, 'Rollback:     not needed',
       ].join('\n')) + '</pre>';
