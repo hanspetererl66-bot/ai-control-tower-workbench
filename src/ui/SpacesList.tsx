@@ -154,37 +154,64 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                 </span>
                 <span className="card-meta">Updated {relativeTime(s.updatedAt)}</span>
               </span>
-              {onTogglePin ? (
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className={`pin-btn ${pinned.includes(s.slug) ? 'pin-btn-on' : ''}`}
-                  aria-pressed={pinned.includes(s.slug)}
-                  aria-label={pinned.includes(s.slug) ? `Unpin ${s.title}` : `Pin ${s.title}`}
-                  title={pinned.includes(s.slug) ? 'Unpin' : 'Pin to the top'}
-                  onClick={(event) => { event.stopPropagation(); onTogglePin(s.slug); }}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onTogglePin(s.slug); } }}
-                >{pinned.includes(s.slug) ? '★' : '☆'}</span>
-              ) : (
-                <span className="card-more" aria-hidden="true">···</span>
-              )}
+              <span className="card-tools">
+                {onRenameSpace && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="mini-icon"
+                    aria-label={`Rename ${s.title}`}
+                    title={isSub(s.slug) ? 'Rename this subspace' : 'Rename this Space'}
+                    onClick={(event) => { event.stopPropagation(); setRenamingSpace(s.slug); setSpaceName(s.title); }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setRenamingSpace(s.slug); setSpaceName(s.title); } }}
+                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M11.3 2.3a1.6 1.6 0 0 1 2.3 2.3L5.4 12.8 2 13.6l.8-3.4z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg></span>
+                )}
+                {onRenameSpace && originalTitle && originalTitle(s.slug) !== s.title && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="mini-icon"
+                    aria-label={`Back to the original name of ${s.title}`}
+                    title={`Back to “${originalTitle(s.slug)}”`}
+                    onClick={(event) => { event.stopPropagation(); onRenameSpace(s.slug, ''); }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onRenameSpace(s.slug, ''); } }}
+                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+                )}
+                {onDeleteSpace && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="mini-icon mini-icon-danger"
+                    aria-label={`Delete ${s.title}`}
+                    title="Delete this Space"
+                    onClick={(event) => { event.stopPropagation(); setConfirmDelete(s.slug); }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setConfirmDelete(s.slug); } }}
+                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+                )}
+                {onTogglePin ? (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className={`pin-btn ${pinned.includes(s.slug) ? 'pin-btn-on' : ''}`}
+                    aria-pressed={pinned.includes(s.slug)}
+                    aria-label={pinned.includes(s.slug) ? `Unpin ${s.title}` : `Pin ${s.title}`}
+                    title={pinned.includes(s.slug) ? 'Unpin' : 'Pin to the top'}
+                    onClick={(event) => { event.stopPropagation(); onTogglePin(s.slug); }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onTogglePin(s.slug); } }}
+                  >{pinned.includes(s.slug) ? '★' : '☆'}</span>
+                ) : (
+                  <span className="card-more" aria-hidden="true">···</span>
+                )}
+              </span>
             </span>
             {s.description && <span className="card-desc">{s.description}</span>}
           </button>
-          {(onRenameSpace || onDeleteSpace) && selected === s.slug && (
-            renamingSpace === s.slug ? (
-              <form className="domain-move space-rename" onSubmit={(event) => { event.preventDefault(); onRenameSpace?.(s.slug, spaceName); setRenamingSpace(null); }}>
-                <input autoFocus value={spaceName} maxLength={80} aria-label={`New name for ${s.title}`} onChange={(event) => setSpaceName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenamingSpace(null); }} />
-                <button type="submit" className="ghost-btn small" disabled={!spaceName.trim()}>Save</button>
-                <button type="button" className="ghost-btn small" onClick={() => setRenamingSpace(null)}>Cancel</button>
-              </form>
-            ) : (
-              <div className="domain-move space-actions">
-                {onRenameSpace && <button className="ghost-btn small" onClick={() => { setRenamingSpace(s.slug); setSpaceName(s.title); }} title={isSub(s.slug) ? 'Rename this subspace' : 'Rename this Space'}>Rename</button>}
-                {onRenameSpace && originalTitle && originalTitle(s.slug) !== s.title && <button className="ghost-btn small" onClick={() => onRenameSpace(s.slug, '')} title={`Back to “${originalTitle(s.slug)}”`}>Original name</button>}
-                {onDeleteSpace && <button className="ghost-btn small ghost-danger" onClick={() => setConfirmDelete(s.slug)} title="Delete this Space">Delete</button>}
-              </div>
-            )
+          {onRenameSpace && renamingSpace === s.slug && (
+            <form className="domain-move space-rename" onSubmit={(event) => { event.preventDefault(); onRenameSpace(s.slug, spaceName); setRenamingSpace(null); }}>
+              <input autoFocus value={spaceName} maxLength={80} aria-label={`New name for ${s.title}`} onChange={(event) => setSpaceName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenamingSpace(null); }} />
+              <button type="submit" className="ghost-btn small" disabled={!spaceName.trim()}>Save</button>
+              <button type="button" className="ghost-btn small" onClick={() => setRenamingSpace(null)}>Cancel</button>
+            </form>
           )}
           {grouped && onSetParent && selected === s.slug && (() => {
             const options = parentCandidates?.(s.slug) ?? [];

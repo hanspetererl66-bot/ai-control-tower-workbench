@@ -3708,3 +3708,25 @@ button {
 .briefing-tab:hover { color: var(--ink); }
 .briefing-tab-on { color: var(--accent); border-color: var(--accent); font-weight: 600; }
 .briefing-count { font-size: 11px; opacity: 0.8; }
+
+/* Mini icons at the top right of a Space card: rename, original name, delete. Quiet until the card is hovered, focused or selected. */
+.card-tools { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; flex: none; }
+.mini-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  color: var(--muted);
+  opacity: 0;
+  cursor: pointer;
+}
+.card:hover .mini-icon,
+.card:focus-within .mini-icon,
+.card-on .mini-icon,
+.mini-icon:focus-visible { opacity: 0.8; }
+.mini-icon:hover { opacity: 1; background: rgb(127 127 127 / 16%); color: var(--ink); }
+.mini-icon-danger:hover { color: #b91c1c; background: rgb(220 38 38 / 12%); }
+:root[data-theme="dark"] .mini-icon-danger:hover { color: #f87171; }
+@media (hover: none) { .mini-icon { opacity: 0.7; } }
