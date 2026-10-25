@@ -271,20 +271,13 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), extr
     area: 'Board',
     tone: 'neutral',
     title: 'Board-Briefing auf Knopfdruck',
-    detail: 'Eine Seite aus Risiken, Agenten, Budget und EU-AI-Act-Stand, direkt aus den Control-Tower-Daten.',
+    detail: 'Eine Seite aus Risiken, Agenten, Budget und EU-AI-Act-Stand, direkt aus den Control-Tower-Daten. Für einen Kunden mit Verbrauch und Roadmap: Space „Kundenspezifisches AI-Briefing“.',
     actions: [
       {
         kind: 'ask',
         label: 'Im Chat erstellen',
         connector: CONNECTOR,
         prompt: 'Erstelle mit dem Skill board-briefing ein einseitiges Board-Briefing aus den AI-Control-Tower-Daten.',
-      },
-      {
-        kind: 'ask',
-        label: 'Als Space anlegen',
-        connector: CONNECTOR,
-        prompt:
-          'Erstelle mit dem Skill board-briefing das einseitige Board-Briefing und lege es als Space „AI Briefing“ an. Nur Zahlen aus den Werkzeugantworten, Datenquelle und Stand auf der Seite nennen.',
       },
     ],
   });

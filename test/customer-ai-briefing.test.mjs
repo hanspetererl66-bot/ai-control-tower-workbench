@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EXAMPLE_SPACES } from '../scripts/install-example-space.mjs';
-import { embedBriefing, PAGE, DATA } from '../scripts/sync-customer-briefing.mjs';
+import { buildBriefing, embedBriefing, PAGE, DATA } from '../scripts/sync-customer-briefing.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
-const data = JSON.parse(read(DATA));
+const data = buildBriefing();
 const sub4me = JSON.parse(/<script type="application\/json" id="s4m-data">([\s\S]*?)<\/script>/.exec(read('examples/sub4me/index.html'))[1]);
 
 test('the Space is registered and its page is in sync with data and design system', () => {
@@ -17,11 +17,14 @@ test('the Space is registered and its page is in sync with data and design syste
   assert.equal(JSON.parse(read('examples/customer-ai-briefing/space.json')).title, 'Kundenspezifisches AI-Briefing');
 });
 
-test('AI-unit figures match the Sub4Me sample data', () => {
-  const by = { musind: sub4me, hanse: sub4me.otherCustomers[0] };
+test('customer, AI units, offers and renewals are pulled from Sub4Me and Renewals, not copied by hand', () => {
+  const by = { muster: sub4me, hanse: sub4me.otherCustomers[0] };
+  const hand = JSON.parse(read(DATA));
+  for (const c of hand.customers) assert.deepEqual(Object.keys(c).sort(), ['agents', 'contractModels', 'decisions', 'id']);
   for (const c of data.customers) {
     const src = by[c.id];
-    assert.equal(c.allotment, src.aiUnits.allotment, c.id);
+    assert.equal(c.name, src.customer.name); assert.equal(c.allotment, src.aiUnits.allotment, c.id);
+    assert.ok(c.contracts.length && c.renewals.length && Array.isArray(c.offers) && Array.isArray(c.tickets));
     for (const p of c.products) {
       const s = src.products.find((x) => x.name === p.name);
       assert.ok(s, `${c.id} ${p.name}`);

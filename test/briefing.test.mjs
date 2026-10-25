@@ -37,14 +37,12 @@ test('every card is actionable and mail drafts never send', () => {
   }
 });
 
-test('the board briefing asks the skill, as a chat answer or as a Space, and never invents numbers', () => {
+test('the board briefing asks the skill as a chat answer and creates no second Space (the customer briefing is its own Space)', () => {
   const board = buildBriefing(data, today).at(-1);
-  assert.deepEqual(board.actions.map((a) => a.label), ['Im Chat erstellen', 'Als Space anlegen']);
+  assert.deepEqual(board.actions.map((a) => a.label), ['Im Chat erstellen']);
   for (const action of board.actions) assert.match(action.prompt, /board-briefing/);
   assert.equal(wantsSpace(board.actions[0].prompt), false, 'chat answer must not create a Space');
-  assert.equal(wantsSpace(board.actions[1].prompt), true, 'Space action must create a Space');
-  assert.match(board.actions[1].prompt, /Space/);
-  assert.match(board.actions[1].prompt, /Nur Zahlen aus den Werkzeugantworten/);
+  assert.match(board.detail, /Kundenspezifisches AI-Briefing/);
 });
 
 test('only the board briefing remains when nothing needs attention', () => {

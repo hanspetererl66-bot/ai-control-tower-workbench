@@ -1,45 +1,8 @@
 {
- "asOf": "2026-10-19",
+ "note": "Hand-written part of the Customer AI Briefing: agents, decisions and AI-credit contract terms per customer. Everything else (customer, contracts, AI units, offers, tickets, invoices, renewals) is pulled from the Sub4Me and Renewals data by npm run sync:customer-briefing.",
  "customers": [
   {
-   "id": "musind",
-   "name": "Muster Industrie AG",
-   "sapCustomerId": "0010048211",
-   "industry": "Manufacturing, 4,800 employees",
-   "landscape": "S/4HANA Cloud Private Edition, SuccessFactors Employee Central, Ariba Procurement, BTP",
-   "allotment": 120000,
-   "products": [
-    {
-     "name": "Joule copilots",
-     "allotment": 50000,
-     "consumed": 41000,
-     "meters": "copilot dialogues and agent runs"
-    },
-    {
-     "name": "BTP AI Core",
-     "allotment": 30000,
-     "consumed": 28300,
-     "meters": "model inference and training hours"
-    },
-    {
-     "name": "SuccessFactors AI",
-     "allotment": 12000,
-     "consumed": 9800,
-     "meters": "generated job texts and talent suggestions"
-    },
-    {
-     "name": "Ariba AI",
-     "allotment": 10000,
-     "consumed": 8200,
-     "meters": "guided buying and supplier risk checks"
-    },
-    {
-     "name": "Document AI",
-     "allotment": 18000,
-     "consumed": 5000,
-     "meters": "processed document pages"
-    }
-   ],
+   "id": "muster",
    "agents": [
     {
      "id": "MI-F1",
@@ -295,37 +258,6 @@
   },
   {
    "id": "hanse",
-   "name": "Hanse Handelsgruppe AG",
-   "sapCustomerId": "0010073904",
-   "industry": "Retail, 6,200 employees",
-   "landscape": "S/4HANA Cloud Public Edition, Ariba Procurement and Supplier Risk, SAP Commerce Cloud, Analytics Cloud",
-   "allotment": 80000,
-   "products": [
-    {
-     "name": "Joule copilots",
-     "allotment": 25000,
-     "consumed": 12400,
-     "meters": "copilot dialogues and agent runs"
-    },
-    {
-     "name": "BTP AI Core",
-     "allotment": 20000,
-     "consumed": 15800,
-     "meters": "model inference and training hours"
-    },
-    {
-     "name": "Document AI",
-     "allotment": 25000,
-     "consumed": 18000,
-     "meters": "processed document pages"
-    },
-    {
-     "name": "Ariba AI",
-     "allotment": 10000,
-     "consumed": 6750,
-     "meters": "guided buying and supplier risk checks"
-    }
-   ],
    "agents": [
     {
      "id": "HA-F1",
