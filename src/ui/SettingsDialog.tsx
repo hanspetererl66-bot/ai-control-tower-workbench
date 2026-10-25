@@ -5,6 +5,7 @@ import type { AppearancePreference, ResolvedTheme } from '../appearance';
 import { SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { speechSupported, type VoiceSettings } from '../voice';
 import type { Preferences } from '../preferences';
+import GroupsPanel, { type GroupsPanelProps } from './GroupsPanel';
 import { AssistantPanel, LookPanel, ProfilesPanel, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
 
 const TABS = [
@@ -12,6 +13,7 @@ const TABS = [
   { id: 'look', title: 'Look' },
   { id: 'work', title: 'Work' },
   { id: 'assistant', title: 'Assistant' },
+  { id: 'groups', title: 'Groups' },
   { id: 'storage', title: 'Storage' },
   { id: 'general', title: 'General' },
 ] as const;
@@ -27,6 +29,7 @@ export type PersonalizeProps = {
   sync: SyncState;
   onSyncSave: () => void;
   onSyncLoad: () => void;
+  groups: GroupsPanelProps;
 };
 
 const OPTIONS: Array<{
@@ -107,6 +110,7 @@ export default function SettingsDialog({
         {personalize && tab === 'look' && <LookPanel prefs={personalize.prefs} update={personalize.update} />}
         {personalize && tab === 'work' && <WorkPanel prefs={personalize.prefs} update={personalize.update} spaces={personalize.spaces} skills={personalize.skills} connectors={personalize.connectors} />}
         {personalize && tab === 'assistant' && <AssistantPanel prefs={personalize.prefs} update={personalize.update} />}
+        {personalize && tab === 'groups' && <GroupsPanel {...personalize.groups} />}
         {personalize && tab === 'storage' && <StoragePanel prefs={personalize.prefs} update={personalize.update} syncAvailable={personalize.syncAvailable} sync={personalize.sync} onSave={personalize.onSyncSave} onLoad={personalize.onSyncLoad} />}
         {(!personalize || tab === 'general') && (
           <>

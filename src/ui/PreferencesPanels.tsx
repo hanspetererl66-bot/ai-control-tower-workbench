@@ -13,7 +13,7 @@ export type SkillRef = { name: string; description: string };
 
 type Common = { prefs: Preferences; update: PrefsUpdate };
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+export function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
     <div className="settings-section">
       <div className="settings-section-copy">

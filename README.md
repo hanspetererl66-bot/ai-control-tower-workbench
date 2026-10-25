@@ -473,6 +473,15 @@ Three Spaces play one process, simulated end to end. In **Infra-Operations-Fleet
 
 Spaces cannot talk to each other directly. A Space posts `{type:'wb:handoff', to, payload, open, notice}` to the host, which validates shape and size, queues it and (with `open`) opens the target Space; the target receives it as `wb:restore {state, handoffs}` when its frame has loaded. A Space keeps its working state across the trip with `wb:state`. The state lives in memory only. Nothing from a payload is executed.
 
+## Groups (shared Spaces, instructions and team memory)
+
+Settings → **Groups** lets a team share Spaces, one set of instructions and a team memory. Everything lives in Supabase (migration `20261025_017_werkbank_groups.sql`, schema `werkbank`, closed tables, `security definer` functions that only the connector's service key may call); the app reaches it through the 13 connector tools `group_*` (control-tower connector 0.18.0, same Supabase URL and secret key as the settings sync).
+
+- **Roles:** admin (members, configuration, delete), member (publish Spaces, add memory), viewer (read). The rules are checked in the database; the last admin cannot be removed.
+- **Spaces:** *Publish* sends the Space package (the same file as *Share*, at most 5 MB) to the group, a new publish is a new version. *Install* puts the group version on the computer and asks before replacing a Space of the same name.
+- **Team memory:** rules, decisions and facts (600 characters each); author or admin edits and deletes, deleting asks first. With *Use in chat* the rules and the group instructions go to the assistant as background; they never override safety rules, tool permissions or the request. The group is read again every minute.
+- **Identity:** the person types an e-mail once. This is a label, not a login: anyone who knows a member's address could act as that member. Do not put anything in a group you would not show the whole team. Real sign-in (Supabase Auth or SSO) is the next step if groups go beyond a trusted team. Anything that looks like a key, token or password is refused in the group configuration.
+
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.
