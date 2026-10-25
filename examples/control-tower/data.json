@@ -4336,6 +4336,8 @@
   "budget": {
     "totalActualM": 16.37,
     "ceilingM": 21.5,
+    "tokenApiM": 15.12,
+    "tokensBillionPerWeek": 775,
     "groups": [
       {
         "name": "Engineering",

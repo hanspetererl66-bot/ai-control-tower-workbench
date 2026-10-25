@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
-import { createWhatIfHandlers, prepareWhatIf, simulateCreditCut } from '../connectors/control-tower/server/what-if.mjs';
+import { createWhatIfHandlers, creditCutCurve, prepareWhatIf, simulateCreditCut } from '../connectors/control-tower/server/what-if.mjs';
 import { embedWhatIf, modelSource, repoModel } from '../scripts/sync-what-if.mjs';
 
 const data = JSON.parse(readFileSync(new URL('../examples/control-tower/data.json', import.meta.url), 'utf8'));
@@ -56,4 +56,30 @@ test('the tool validates input and returns a view', async () => {
   const r = await h.simulate_credit_cut({ cut_percent: 30 });
   assert.equal(r.view.space, 'what-if');
   assert.equal(r.cutPct, 30);
+});
+
+test('countermeasures lower the spend, move the break-even and shrink the gap', () => {
+  const plain = simulateCreditCut(model, 30);
+  const all = simulateCreditCut(model, 30, { levers: ['cache', 'routing', 'compress', 'caps'] });
+  assert.equal(plain.levers.savingsM, 0);
+  assert.equal(all.levers.savingsM, 3.59);
+  assert.equal(all.ceiling.actualM, 12.78);
+  assert.ok(all.ceiling.overByM < plain.ceiling.overByM);
+  assert.ok(all.breakEvenCutPct > plain.breakEvenCutPct);
+  assert.equal(all.agents.runsLostPerDay, 0);
+  assert.equal(simulateCreditCut(model, 0, { levers: ['nope'] }).levers.savingsM, 0);
+});
+
+test('tokens: the token API is 92 % of the spend and a throttle lowers the weekly tokens', () => {
+  const r = simulateCreditCut(model, 50);
+  assert.equal(r.tokens.sharePct, 92.4);
+  assert.equal(r.tokens.billionPerWeek, 775);
+  assert.ok(r.tokens.lostBillionPerWeek > 0);
+  assert.equal(simulateCreditCut(model, 0).tokens.lostBillionPerWeek, 0);
+});
+
+test('the curve starts at no gap and never shrinks with more cut', () => {
+  const pts = creditCutCurve(model);
+  assert.equal(pts[0].overByM, 0);
+  for (let i = 1; i < pts.length; i += 1) assert.ok(pts[i].overByM >= pts[i - 1].overByM);
 });
