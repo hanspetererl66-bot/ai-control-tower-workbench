@@ -3640,3 +3640,14 @@ button {
 .approval-params dt { color: var(--muted); }
 .approval-params dd { margin: 0; overflow-wrap: anywhere; }
 .approval-note { color: var(--muted); font-size: 11.5px; margin: 0 0 12px; }
+
+/* ---------- rename and delete a Space ---------- */
+.space-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.space-rename { display: flex; gap: 6px; align-items: center; }
+.space-rename input { flex: 1; min-width: 0; }
+.ghost-btn.ghost-danger { color: #b91c1c; }
+.ghost-btn.ghost-danger:hover:not(:disabled) { background: #fef2f2; }
+:root[data-theme="dark"] .ghost-btn.ghost-danger { color: #f87171; }
+:root[data-theme="dark"] .ghost-btn.ghost-danger:hover:not(:disabled) { background: rgb(248 113 113 / 12%); }
+:root[data-theme="dark"] .dialog-btn-danger { color: #f87171; border-color: rgb(248 113 113 / 40%); }
+:root[data-theme="dark"] .dialog-btn-danger:hover:not(:disabled) { background: rgb(248 113 113 / 12%); }

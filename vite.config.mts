@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
@@ -45,6 +45,18 @@ function spacesApi(): Plugin {
             return json(200, buildSpacePackage({ slug: pkg[1], title, files }));
           } catch {
             return json(404, { error: 'space not found' });
+          }
+        }
+        // Delete a Space: DELETE /<slug> removes its folder. The page asks the person first.
+        const del = /^\/([A-Za-z0-9._-]+)$/.exec((req.url ?? '').split('?')[0]);
+        if (del && req.method === 'DELETE') {
+          const slug = del[1];
+          if (slug === '.' || slug === '..' || !existsSync(join(SPACES, slug, 'index.html'))) return json(404, { error: 'space not found' });
+          try {
+            rmSync(join(SPACES, slug), { recursive: true, force: true });
+            return json(200, { deleted: slug });
+          } catch (error) {
+            return json(500, { error: error instanceof Error ? error.message : 'delete failed' });
           }
         }
         if ((req.url ?? '').split('?')[0] === '/import' && req.method === 'POST') {

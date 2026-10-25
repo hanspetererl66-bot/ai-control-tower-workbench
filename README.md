@@ -531,3 +531,7 @@ Tools: `jira_check_connection`, `jira_list_projects`, `jira_search_issues` (JQL)
 3. Invite the app into each channel it should see (`/invite @app`). In the chat: “Check the Slack connection”, “What happened in #it-ops?”, “Post this summary to #it-ops”.
 
 Tools: `slack_check_connection`, `slack_list_channels`, `slack_read_channel`, `slack_read_thread`, `slack_search_messages` (needs the user token) and `slack_post_message` (visible to the channel, so the approval card asks first). Not tested against a live workspace here.
+
+## Rename and delete Spaces
+
+Select a Space or subspace in the list: **Rename** gives it an own name (kept in the settings, so it survives updates of the example Spaces and travels with the Supabase sync; **Original name** takes it back). **Delete** always asks first in a dialog (“Delete for good”, Cancel is the default) and removes the Space folder from this computer; its subspaces move to the top level, and pins, domain, own name and start view of that Space are cleaned up. Tip: Share → Save as file keeps a copy. `npm run install:examples` installs the example Spaces again, so a deleted example Space comes back with the next update.

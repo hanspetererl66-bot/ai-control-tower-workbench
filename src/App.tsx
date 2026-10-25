@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { connect, type Agent, type PermissionRequest, type ToolCall } from './acp';
 import {
  
@@ -30,11 +30,11 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
-import { importSpaceFile } from './space-share';
+import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
-import { addDomain, assignDomain, assignParent, assistantNote, deleteDomain, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
+import { addDomain, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
@@ -133,7 +133,7 @@ export default function App() {
   const [view, setView] = useState<View>('chat');
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [rawSpaces, setSpaces] = useState<Space[]>([]);
   const [spaceOrder, setSpaceOrder] = useState<string[]>(() => loadSpaceOrder(window.localStorage));
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
@@ -146,6 +146,7 @@ export default function App() {
   const updatePrefs = useCallback((change: (current: Preferences) => Preferences) => {
     setPrefs((current) => sanitizePreferences(change(current)));
   }, []);
+  const spaces = useMemo(() => applySpaceTitles(rawSpaces, prefs), [rawSpaces, prefs]);
   const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
@@ -707,6 +708,31 @@ export default function App() {
     }
   }
 
+  /** Rename a Space or subspace: the new name is kept in the settings, the folder name stays. */
+  function renameSpaceTitle(slug: string, title: string) {
+    const original = rawSpaces.find((x) => x.slug === slug)?.title ?? slug;
+    updatePrefs((c) => renameSpace(c, slug, title, original));
+  }
+
+  /** Delete a Space for good. SpacesList has already asked the person to confirm. */
+  async function deleteSpace(slug: string) {
+    const say = (message: string) => { setToast(message); setTimeout(() => setToast(null), 6000); };
+    const title = spaces.find((x) => x.slug === slug)?.title ?? slug;
+    try {
+      await deleteSpaceFolder(slug);
+      updatePrefs((c) => forgetSpace(c, slug, rawSpaces));
+      setSpaceOrder((current) => {
+        const next = current.filter((x) => x !== slug);
+        saveSpaceOrder(window.localStorage, next);
+        return next;
+      });
+      await refreshSpaces();
+      say(`Deleted Space "${title}".`);
+    } catch (e: any) {
+      say(e?.message ?? 'The Space could not be deleted.');
+    }
+  }
+
   /** "Save as Space": the agent turns one answer into a Space. */
   function saveAnswerAsSpace(index: number) {
     const answer = messages[index];
@@ -886,6 +912,9 @@ export default function App() {
           onRenameDomain={(from, to) => updatePrefs((c) => renameDomain(c, spaces, from, to))}
           onDeleteDomain={(name) => updatePrefs((c) => deleteDomain(c, name))}
           onImportSpace={(file) => void importSpace(file)}
+          onRenameSpace={renameSpaceTitle}
+          originalTitle={(slug) => rawSpaces.find((x) => x.slug === slug)?.title ?? slug}
+          onDeleteSpace={(slug) => void deleteSpace(slug)}
         />
       )}
       {view === 'manage' && (

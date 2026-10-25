@@ -77,6 +77,8 @@ export type ProfileSettings = {
   spaceDomains: Record<string, string>;
   /** Subspaces: Space → parent Space. An empty value means "top level" even if its space.json names a parent. */
   spaceParents: Record<string, string>;
+  /** Own names for Spaces (slug → title). They survive updates of the example Spaces. */
+  spaceTitles: Record<string, string>;
   favoriteSkills: string[];
   assistant: Assistant;
   chat: ChatTools;
@@ -110,6 +112,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   domains: [],
   spaceDomains: {},
   spaceParents: {},
+  spaceTitles: {},
   favoriteSkills: [],
   assistant: { ...DEFAULT_ASSISTANT },
   chat: { ...DEFAULT_CHAT_TOOLS },
@@ -213,6 +216,14 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
     }
     out.spaceParents = map;
   }
+  if (isObject(v.spaceTitles)) {
+    const map: Record<string, string> = {};
+    for (const [slug, title] of Object.entries(v.spaceTitles)) {
+      const clean = cleanSpaceTitle(title);
+      if (SLUG.test(slug) && clean && Object.keys(map).length < 80) map[slug] = clean;
+    }
+    out.spaceTitles = map;
+  }
   if (Array.isArray(v.favoriteSkills)) out.favoriteSkills = list(v.favoriteSkills, (s) => SLUG.test(s), 12);
   if (isObject(v.assistant)) out.assistant = sanitizeAssistant(v.assistant);
   if (isObject(v.chat)) out.chat = sanitizeChatTools(v.chat);
@@ -256,8 +267,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, favoriteSkills, assistant, chat } = prefs;
-  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
+  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat } = prefs;
+  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -459,6 +470,47 @@ export function assignParent<T extends Preferences>(prefs: T, space: DomainSpace
   if (parent === (space.parent ?? '')) delete spaceParents[space.slug];
   else spaceParents[space.slug] = parent;
   return { ...prefs, spaceParents };
+}
+
+// ---------- rename and delete ----------
+
+export const MAX_SPACE_TITLE = 80;
+
+/** A usable Space title: one line, no control characters, 1 to 80 characters; '' when nothing is left. */
+export function cleanSpaceTitle(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  // eslint-disable-next-line no-control-regex
+  return value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_SPACE_TITLE);
+}
+
+/** Give a Space (or subspace) its own name; the original name (or an empty value) takes the own name away again. */
+export function renameSpace<T extends Preferences>(prefs: T, slug: string, title: string, originalTitle: string): T {
+  const clean = cleanSpaceTitle(title);
+  const spaceTitles = { ...prefs.spaceTitles };
+  if (!clean || clean === originalTitle) delete spaceTitles[slug];
+  else spaceTitles[slug] = clean;
+  return { ...prefs, spaceTitles };
+}
+
+/** The list of Spaces with the person's own names applied. */
+export function applySpaceTitles<S extends { slug: string; title: string }>(spaces: S[], prefs: Pick<Preferences, 'spaceTitles'>): S[] {
+  return spaces.map((x) => (prefs.spaceTitles[x.slug] ? { ...x, title: prefs.spaceTitles[x.slug] } : x));
+}
+
+/** After a Space is deleted: remove every trace of it from the settings. Its subspaces move to the top level. */
+export function forgetSpace<T extends Preferences>(prefs: T, slug: string, spaces: DomainSpace[]): T {
+  const spaceParents = { ...prefs.spaceParents };
+  delete spaceParents[slug];
+  for (const space of spaces) if (space.slug !== slug && (rawParent(space, prefs) === slug)) spaceParents[space.slug] = '';
+  const without = <V,>(map: Record<string, V>) => Object.fromEntries(Object.entries(map).filter(([key]) => key !== slug));
+  return {
+    ...prefs,
+    pinnedSpaces: prefs.pinnedSpaces.filter((x) => x !== slug),
+    spaceDomains: without(prefs.spaceDomains),
+    spaceTitles: without(prefs.spaceTitles),
+    spaceParents,
+    startView: prefs.startView === `space:${slug}` ? 'chat' : prefs.startView,
+  };
 }
 
 // ---------- back to the original ----------

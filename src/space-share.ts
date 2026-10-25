@@ -40,3 +40,12 @@ export async function importSpaceFile(file: File, mode?: 'new' | 'replace'): Pro
   if (!res.ok) throw new Error(body?.error ?? 'The Space could not be imported.');
   return body;
 }
+
+/** Delete a Space folder. The caller has asked the person first. */
+export async function deleteSpaceFolder(slug: string): Promise<void> {
+  const res = await fetch(`/__spaces/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'The Space could not be deleted.');
+  }
+}
