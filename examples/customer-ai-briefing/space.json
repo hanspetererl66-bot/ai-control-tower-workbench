@@ -1,10 +1,10 @@
 {
   "title": "Kundenspezifisches AI-Briefing",
-  "description": "Briefing for the SAP account team about one end customer: Autonomous Enterprise Suite agents in S/4HANA Finance, SuccessFactors HCM and Procurement with utilisation, roadmap, AI-unit consumption and the valid AI-credit contract type.",
+  "description": "Briefing for the SAP account team about one end customer: Autonomous Enterprise Suite agents for Finance (5) and Supply Chain (8) with a consumption model per agent, the Business AI components BTP, Business Data Cloud and Joule Work, roadmap and the valid AI-credit contract type.",
   "domain": "Governance",
   "insights": [
     "Choose the customer at the top: Muster Industrie AG or Hanse Handelsgruppe AG. Contracts and AI-unit figures come from the Sub4Me sample data; the agents, their utilisation and the roadmap are made up.",
-    "Every agent has a status (live, in implementation, purchased, planned), a type (autonomous, copilot, orchestrator), a utilisation and the point where a person decides.",
+    "Every agent has a status, a type, a utilisation and a consumption model: what is counted, AI units per event and events a month.",
     "The AI-credit contract card shows the usual models (pay as you go, agreed consumption, fixed consumption, rollover, prepaid pool, top-up packs); a check marks the ones that are valid for the customer.",
     "'Written briefing with Joule' asks the chat to turn the page into a one-page briefing."
   ],

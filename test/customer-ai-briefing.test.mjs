@@ -20,7 +20,7 @@ test('the Space is registered and its page is in sync with data and design syste
 test('customer, AI units, offers and renewals are pulled from Sub4Me and Renewals, not copied by hand', () => {
   const by = { muster: sub4me, hanse: sub4me.otherCustomers[0] };
   const hand = JSON.parse(read(DATA));
-  for (const c of hand.customers) assert.deepEqual(Object.keys(c).sort(), ['agents', 'contractModels', 'decisions', 'id']);
+  for (const c of hand.customers) assert.deepEqual(Object.keys(c).sort(), ['agents', 'bdc', 'contractModels', 'decisions', 'id', 'packages']);
   for (const c of data.customers) {
     const src = by[c.id];
     assert.equal(c.name, src.customer.name); assert.equal(c.allotment, src.aiUnits.allotment, c.id);
@@ -33,24 +33,38 @@ test('customer, AI units, offers and renewals are pulled from Sub4Me and Renewal
   }
 });
 
-test('agents are consistent: units never exceed the product use, live agents have runs, others none', () => {
+test('the suite has 5 Finance and 8 Supply Chain agents per customer, each with a consumption model', () => {
   for (const c of data.customers) {
+    const fin = c.agents.filter((a) => a.area === 'finance'), sc = c.agents.filter((a) => a.area === 'supplychain');
+    assert.equal(fin.length, 5); assert.equal(sc.length, 8);
+    assert.deepEqual(c.packages.map((p) => [p.id, p.agentsLicensed]), [['finance', 5], ['supplychain', 8]]);
     const ids = new Set();
     for (const a of c.agents) {
       assert.ok(!ids.has(a.id)); ids.add(a.id);
       assert.ok(['live', 'implementing', 'purchased', 'planned'].includes(a.status));
       assert.ok(['autonomous', 'copilot', 'orchestrator'].includes(a.type));
       assert.ok(c.products.some((p) => p.name === a.product), `${a.id} product`);
-      if (a.status === 'live') assert.ok(a.runs > 0 && a.runs <= a.cap && a.units > 0, a.id);
-      else assert.ok(a.runs === 0 && a.units === 0, a.id);
+      assert.ok(a.meter && a.perEvent > 0 && a.events > 0, `${a.id} consumption model`);
+      assert.equal(a.unitsMonth, Math.round(a.perEvent * a.events), `${a.id} units a month`);
+      if (a.status === 'live') assert.ok(a.cap >= a.events && a.unitsYtd > 0, a.id);
+      else assert.ok(a.cap === 0 && a.unitsYtd === 0, a.id);
       assert.ok(a.golive >= a.since);
     }
     for (const p of c.products) {
-      const sum = c.agents.filter((a) => a.product === p.name).reduce((t, a) => t + a.units, 0);
+      const sum = c.agents.filter((a) => a.product === p.name).reduce((t, a) => t + a.unitsYtd, 0);
       assert.ok(sum <= p.consumed, `${c.id} ${p.name}: ${sum} > ${p.consumed}`);
     }
-    assert.ok(c.agents.some((a) => a.area === 'finance') && c.decisions.length <= 3);
+    assert.ok(c.decisions.length <= 3);
   }
+});
+
+test('Business AI components: BTP from the Sub4Me products, Joule Work from the Sub4Me offer, Business Data Cloud by hand', () => {
+  const muster = data.customers.find((c) => c.id === 'muster'), hanse = data.customers.find((c) => c.id === 'hanse');
+  assert.ok(muster.products.some((p) => p.name === 'BTP AI Core') && muster.products.some((p) => p.name === 'Document AI'));
+  assert.equal(muster.jouleWork.status, 'In negotiation');
+  assert.equal(muster.jouleWork.unitsMonth, muster.jouleWork.users * 8);
+  assert.equal(hanse.jouleWork, null);
+  assert.ok(muster.bdc.usedCu <= muster.bdc.contractedCu && hanse.bdc.status === 'planned');
 });
 
 test('every customer shows all contract models and at least one valid, with terms', () => {
