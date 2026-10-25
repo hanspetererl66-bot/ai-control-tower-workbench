@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket tools; creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -194,7 +194,7 @@
     },
     {
       "name": "recommend_skill_workflow",
-      "description": "Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role \"Account Manager\", goal \"Kundentermin und Verl\u00e4ngerung\" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for \"In welcher Reihenfolge nutze ich welche Skills \u2026?\". Sample playbooks."
+      "description": "Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role \"Account Manager\", goal \"Kundentermin und Verlängerung\" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for \"In welcher Reihenfolge nutze ich welche Skills …?\". Sample playbooks."
     },
     {
       "name": "get_graph_overview",
@@ -210,11 +210,11 @@
     },
     {
       "name": "find_graph_path",
-      "description": "Shortest connection between two nodes of the knowledge graph, step by step with the relation on each step. Answers \"Wie h\u00e4ngt Risiko R2 mit dem Kunden zusammen?\" or \"Wie ist der Ariba-Vertrag mit dem Skill renewal-radar verbunden?\". Sample data."
+      "description": "Shortest connection between two nodes of the knowledge graph, step by step with the relation on each step. Answers \"Wie hängt Risiko R2 mit dem Kunden zusammen?\" or \"Wie ist der Ariba-Vertrag mit dem Skill renewal-radar verbunden?\". Sample data."
     },
     {
       "name": "analyze_graph_impact",
-      "description": "Impact analysis: everything connected to a node within a number of steps, grouped by distance and node type, with the route to each. Answers \"Was ist betroffen, wenn der Ariba-Vertrag nicht verl\u00e4ngert wird?\" or \"Was h\u00e4ngt an Risiko R2?\". Hubs such as the connector and the systems are not followed, so the result stays about business relations. Sample data."
+      "description": "Impact analysis: everything connected to a node within a number of steps, grouped by distance and node type, with the route to each. Answers \"Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?\" or \"Was hängt an Risiko R2?\". Hubs such as the connector and the systems are not followed, so the result stays about business relations. Sample data."
     },
     {
       "name": "get_skill_ratings",
@@ -226,7 +226,7 @@
     },
     {
       "name": "simulate_credit_cut",
-      "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % k\u00fcrzen?\"."
+      "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % kürzen?\"."
     },
     {
       "name": "enrich_ticket",
@@ -267,6 +267,58 @@
     {
       "name": "submit_infra_change",
       "description": "Hand a planned infrastructure change to the n8n workflow (check mode only) after the person confirms. Needs the n8n webhook address."
+    },
+    {
+      "name": "group_create",
+      "description": "Create a group; the actor becomes its admin. Write."
+    },
+    {
+      "name": "group_list",
+      "description": "List the groups the actor belongs to, with role and revision. Read only."
+    },
+    {
+      "name": "group_get",
+      "description": "Load one group: members, published Spaces (without their files), configuration and team memory. Read only."
+    },
+    {
+      "name": "group_set_member",
+      "description": "Add a member or change a role (admin, member, viewer). Admin only. Write."
+    },
+    {
+      "name": "group_remove_member",
+      "description": "Remove a member (an admin, or the person themself). Write."
+    },
+    {
+      "name": "group_delete",
+      "description": "Delete a group with its Spaces and memory. Admin only. Irreversible: ask the person first."
+    },
+    {
+      "name": "group_publish_space",
+      "description": "Publish a Space package (the file from \"Share a Space\") to the group; a new version replaces the old one. Admin or member. Write."
+    },
+    {
+      "name": "group_get_space",
+      "description": "Load the package of one group Space. Read only."
+    },
+    {
+      "name": "group_remove_space",
+      "description": "Remove a Space from the group (its publisher or an admin). Write."
+    },
+    {
+      "name": "group_save_config",
+      "description": "Save the group configuration (shared instructions, starter prompts, profiles; no secrets). Admin only. Write."
+    },
+    {
+      "name": "group_memory_add",
+      "description": "Add an entry to the team memory (fact, decision or rule, 1 to 600 characters). Admin or member. Write."
+    },
+    {
+      "name": "group_memory_update",
+      "description": "Change a team memory entry (its author or an admin). Write."
+    },
+    {
+      "name": "group_memory_delete",
+      "description": "Delete a team memory entry (its author or an admin). Ask the person first."
     }
   ],
   "user_config": {
@@ -279,7 +331,7 @@
     "supabase_secret_key": {
       "type": "string",
       "title": "Supabase secret key",
-      "description": "Optional. Server-side secret key (sb_secret_\u2026) of that project. Stored as a secret, never written to config files.",
+      "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
       "sensitive": true,
       "required": false
     },
