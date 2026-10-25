@@ -281,6 +281,64 @@ mark{background:var(--amber-dim);color:var(--ink);border-radius:3px;padding:0 2p
 .note{font-size:12px;color:var(--muted);margin-top:8px}
 .btn{border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple);border-radius:var(--radius-s);padding:6px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .empty{color:var(--muted);padding:20px;text-align:center}
+/* Text 15% smaller than the shared design system */
+.ml,.k{font-size:10.2px}
+.mv,.v{font-size:25.5px}
+.md,.s{font-size:10.2px}
+.sh{font-size:11.05px}
+.chd{font-size:12.75px}
+.tag{font-size:9.35px}
+.tbl th,table th{font-size:10.2px}
+button.primary,button.ghost,button.small{font-size:11.05px}
+button.small{font-size:10.2px}
+.ag-tbl th{font-size:10.2px}
+.ct .hdr-title{font-size:12.75px}
+.ct .hdr-sub{font-size:9.35px}
+.ct .hdr-stat-lbl{font-size:9.35px}
+.ct .tb{font-size:11.05px}
+.ct .dm{font-size:10.2px}
+.s4m .logo{font-size:12.75px}
+.s4m header .s{font-size:9.35px}
+.s4m{font-size:11.05px}
+.s4m nav button{font-size:11.05px}
+.s4m h2{font-size:11.05px}
+.s4m .legend{font-size:9.35px}
+.s4m .detail .head .t{font-size:15.3px}
+.s4m .detail h3{font-size:10.2px}
+.s4m .detail dl{font-size:11.05px}
+.s4m .detail .note{font-size:11.05px}
+.s4m #product-detail .dgrid .v{font-size:17px}
+.s4m .smx-kpis .v{font-size:20.4px}
+.s4m .smx-title{font-size:17px}
+.s4m .smx-grid h3{font-size:10.2px}
+.s4m .smx-dl{font-size:11.05px}
+.s4m .smx-list{font-size:11.05px}
+.s4m .smx-stars-sm{font-size:10.2px}
+.s4m .smx-line{font-size:11.05px}
+.s4m .smx-big{font-size:27.2px}
+.s4m .smx-bars{font-size:10.2px}
+body{font-size:11.9px}
+.demo{font-size:10.2px}
+.logo{font-size:15.3px}
+.asof{font-size:10.2px}
+.kpi .k{font-size:10.2px}
+.kpi .v{font-size:22.1px}
+.chip{font-size:10.2px}
+.item .m{font-size:10.2px}
+.panel h2{font-size:12.75px}
+.panel h3{font-size:11.05px}
+.head h1{font-size:16.15px}
+.sub{font-size:11.05px}
+.tag{font-size:9.35px}
+.who{font-size:10.2px}
+.ref{font-size:10.2px}
+table{font-size:11.05px}
+th{font-size:10.2px}
+.legend{font-size:10.2px}
+.turn .ts{font-size:10.2px}
+.turn .sp{font-size:11.05px}
+.note{font-size:10.2px}
+.btn{font-size:10.2px}
 </style>
 </head>
 <body>
@@ -394,14 +452,14 @@ function jump(n) {
 
 function actions() {
   const rows = allActions().sort((a, b) => (a.status === 'done') - (b.status === 'done') || a.due.localeCompare(b.due));
-  $('#actions').innerHTML = `<h2 style="margin:0 0 6px;font-size:16px">All action items across calls</h2>
+  $('#actions').innerHTML = `<h2 style="margin:0 0 6px;font-size:13.6px">All action items across calls</h2>
   <div class="sub" style="margin-bottom:10px">One list for the account team instead of notes scattered across calls.</div>
   <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Action</th><th>Owner</th><th>Due</th><th>Customer</th><th>From</th></tr></thead><tbody>
   ${rows.map((a) => `<tr><td>${a.status === 'done' ? '<span class="tag green">done</span>' : isOver(a) ? '<span class="tag red">overdue</span>' : '<span class="tag amber">open</span>'}</td><td>${esc(a.text)}</td><td class="nw">${esc(a.owner)}</td><td class="nw">${fmtDate(a.due)}</td><td class="nw">${esc(a.call.customer)}</td><td class="nw"><button class="ref" data-open="${a.call.id}">${a.call.id}</button></td></tr>`).join('')}</tbody></table></div>`;
 }
 
 function how() {
-  $('#how').innerHTML = `<h2 style="margin:0 0 6px;font-size:16px">How a real version would work</h2>
+  $('#how').innerHTML = `<h2 style="margin:0 0 6px;font-size:13.6px">How a real version would work</h2>
   <div class="sub">This page is a design mockup. The numbered steps describe the concept, nothing here runs.</div>
   <ol class="pts" style="margin-top:12px">
     <li><b>Source.</b> A transcript file from the call platform (Teams, Zoom, Meet) or an exported text or VTT file. Only calls you attended, only with consent of the participants.</li>
