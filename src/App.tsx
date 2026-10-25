@@ -823,6 +823,7 @@ export default function App() {
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
       hiddenStarters={prefs.chat.hiddenStarters}
+      hiddenBriefing={prefs.chat.hiddenBriefing}
       schedules={schedules}
       onSchedulesChange={updateSchedules}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}

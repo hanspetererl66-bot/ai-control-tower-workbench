@@ -55,8 +55,10 @@ export type ChatTools = {
   priceOutPerM: number;
   /** Labels of the built-in suggestions on the empty chat that the person switched off. */
   hiddenStarters: string[];
+  /** Briefing cards (by id) and whole groups ("cat:<id>") under the chat that the person switched off. */
+  hiddenBriefing: string[];
 };
-export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [] };
+export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [], hiddenBriefing: [] };
 export type Starter = { label: string; prompt: string };
 export type StorageLocation = { id: string; name: string; purpose: (typeof PURPOSES)[number]; location: string };
 
@@ -172,6 +174,7 @@ export function sanitizeChatTools(value: unknown): ChatTools {
     askBeforeActions: flag(v.askBeforeActions, DEFAULT_CHAT_TOOLS.askBeforeActions),
     priceInPerM: price(v.priceInPerM),
     priceOutPerM: price(v.priceOutPerM),
+    hiddenBriefing: Array.isArray(v.hiddenBriefing) ? [...new Set(v.hiddenBriefing.filter((x): x is string => typeof x === 'string').map((x) => text(x, 40)).filter(Boolean))].slice(0, 40) : [],
     hiddenStarters: Array.isArray(v.hiddenStarters) ? [...new Set(v.hiddenStarters.filter((x): x is string => typeof x === 'string').map((x) => text(x, 60)).filter(Boolean))].slice(0, 12) : [],
   };
 }

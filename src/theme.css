@@ -3684,3 +3684,27 @@ button {
   color: var(--muted);
   margin-bottom: 2px;
 }
+
+.briefing-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+}
+.briefing-head .briefing-title { margin: 0; }
+.briefing-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.briefing-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: transparent;
+}
+.briefing-tab:hover { color: var(--ink); }
+.briefing-tab-on { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.briefing-count { font-size: 11px; opacity: 0.8; }

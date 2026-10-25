@@ -8,8 +8,21 @@ export type BriefingAction =
   | { kind: 'open'; label: string; space: string; tab?: string }
   | { kind: 'ask'; label: string; prompt: string; connector?: string };
 
+export type BriefingCategoryId = 'ai' | 'sales' | 'renewals' | 'ops' | 'board';
+/** The groups of cards under the chat, in the order they are shown. `cards` is every card a group can show (for the settings). */
+export const BRIEFING_CATEGORIES: Array<{ id: BriefingCategoryId; title: string; cards: Array<{ id: string; label: string }> }> = [
+  { id: 'ai', title: 'AI', cards: [{ id: 'risks', label: 'AI risks below the mitigation threshold' }, { id: 'budget', label: 'Teams over the AI budget' }, { id: 'audit', label: 'EU AI Act audit' }, { id: 'agents', label: 'Agent status' }] },
+  { id: 'sales', title: 'Sales', cards: [{ id: 'sales-desk', label: 'Offers waiting for the deal desk' }, { id: 'sales-overdue', label: 'Overdue next steps' }] },
+  { id: 'renewals', title: 'Renewals', cards: [{ id: 'renew-decisions', label: 'Renewal decisions due' }, { id: 'renew-lapsed', label: 'Lapsed contracts' }] },
+  { id: 'ops', title: 'Infrastruktur', cards: [{ id: 'certs', label: 'Certificates about to expire' }, { id: 'fleet', label: 'Red customers in the fleet' }] },
+  { id: 'board', title: 'Board', cards: [{ id: 'board', label: 'Board briefing on a button' }] },
+];
+/** Key under which a whole group is switched off in the settings. */
+export const categoryKey = (id: BriefingCategoryId) => `cat:${id}`;
+
 export type BriefingCard = {
   id: string;
+  category: BriefingCategoryId;
   /** Small label above the title: which area the card is about. */
   area: string;
   tone: 'red' | 'amber' | 'neutral';
@@ -34,6 +47,16 @@ export type OpsBriefingData = {
     customers: { id: string; name: string; vms: [string, string, number, number, number, number, number, number, number][] }[];
   };
 };
+
+/** Sales pipeline and renewal samples. Optional: no cards without them. */
+export type SalesBriefingData = {
+  asOf: string;
+  deals: { id: string; stage: string; account: string; title: string; value: number | null; approval?: string; next?: { text: string; due: string } }[];
+};
+export type RenewalsBriefingData = {
+  cases: { id: string; customer: string; product: string; status: string; decisionDate: string; annualEur: number }[];
+};
+export type BriefingExtra = { ops?: OpsBriefingData; sales?: SalesBriefingData; renewals?: RenewalsBriefingData };
 
 const DAY_MS = 86_400_000;
 
@@ -67,6 +90,7 @@ function opsCards(ops: OpsBriefingData, today: Date): BriefingCard[] {
     const first = soon[0] ?? expired[0];
     cards.push({
       id: 'certs',
+      category: 'ops',
       area: 'Infrastruktur',
       tone: expired.length || (soon[0] && soon[0].left <= 7) ? 'red' : 'amber',
       title: `${soon.length} ${soon.length === 1 ? 'Zertifikat läuft' : 'Zertifikate laufen'} in unter 30 Tagen ab${expired.length ? `, ${expired.length} abgelaufen` : ''}`,
@@ -81,6 +105,7 @@ function opsCards(ops: OpsBriefingData, today: Date): BriefingCard[] {
   if (reds.length) {
     cards.push({
       id: 'fleet',
+      category: 'ops',
       area: 'Infrastruktur',
       tone: 'red',
       title: `${reds.length} ${reds.length === 1 ? 'Kunde ist' : 'Kunden sind'} im Fleet rot`,
@@ -91,7 +116,78 @@ function opsCards(ops: OpsBriefingData, today: Date): BriefingCard[] {
   return cards;
 }
 
-export function buildBriefing(data: BriefingData, today: Date = new Date(), ops?: OpsBriefingData): BriefingCard[] {
+const eur = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(2).replace(/\.?0+$/, '').replace('.', ',')} Mio. €` : `${Math.round(n / 1000)} k€`);
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+function salesCards(sales: SalesBriefingData, today: Date): BriefingCard[] {
+  const cards: BriefingCard[] = [];
+  const waiting = sales.deals.filter((d) => d.stage === 'sell' && /^pending/i.test(d.approval ?? ''));
+  if (waiting.length) {
+    const sum = waiting.reduce((a, d) => a + (d.value ?? 0), 0);
+    cards.push({
+      id: 'sales-desk', category: 'sales', area: 'Sales', tone: 'amber',
+      title: `${plural(waiting.length, 'Angebot wartet', 'Angebote warten')} auf den Deal Desk`,
+      detail: `${waiting.map((d) => `${d.account} ${d.id} (${eur(d.value ?? 0)})`).join(', ')}: zusammen ${eur(sum)}.`,
+      actions: [
+        { kind: 'open', label: 'Pipeline öffnen', space: 'sales' },
+        { kind: 'ask', label: 'Freigabe-Unterlagen vorbereiten', connector: CONNECTOR, prompt: `Bereite für den Deal Desk eine kurze Freigabe-Unterlage für die Angebote ${waiting.map((d) => d.id).join(' und ')} vor: Kunde, Wert, Rabatt, Grund der Prüfung, Risiken. Nur Zahlen aus den Daten, nichts versenden.` },
+      ],
+    });
+  }
+  const overdue = sales.deals
+    .filter((d) => d.next && d.stage !== 'contract' && d.stage !== 'interest' && daysUntil(d.next.due, today) < 0)
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+  if (overdue.length) {
+    cards.push({
+      id: 'sales-overdue', category: 'sales', area: 'Sales', tone: 'amber',
+      title: `${plural(overdue.length, 'nächster Schritt ist', 'nächste Schritte sind')} überfällig`,
+      detail: overdue.slice(0, 3).map((d) => `${d.account} ${d.id} (seit ${-daysUntil(d.next!.due, today)} ${-daysUntil(d.next!.due, today) === 1 ? 'Tag' : 'Tagen'})`).join('; ') + '.',
+      actions: [
+        { kind: 'open', label: 'Pipeline öffnen', space: 'sales' },
+        { kind: 'ask', label: 'Mail-Entwurf an Owner', connector: CONNECTOR, prompt: `Erstelle für die überfälligen nächsten Schritte der Deals ${overdue.map((d) => d.id).join(', ')} je einen kurzen Gmail-Entwurf an den Owner mit der Bitte um ein Update. Nur Entwürfe anlegen, nichts senden.` },
+      ],
+    });
+  }
+  return cards;
+}
+
+function renewalCards(renewals: RenewalsBriefingData, today: Date): BriefingCard[] {
+  const cards: BriefingCard[] = [];
+  const open = renewals.cases.filter((c) => c.status !== 'Lapsed');
+  const late = open.filter((c) => daysUntil(c.decisionDate, today) < 0);
+  const soon = open.filter((c) => { const d = daysUntil(c.decisionDate, today); return d >= 0 && d <= 14; });
+  if (late.length || soon.length) {
+    const sum = [...late, ...soon].reduce((a, c) => a + c.annualEur, 0);
+    const first = late[0] ?? soon[0];
+    cards.push({
+      id: 'renew-decisions', category: 'renewals', area: 'Renewals', tone: late.length ? 'red' : 'amber',
+      title: late.length
+        ? `${plural(late.length, 'Entscheidung', 'Entscheidungen')} überfällig${soon.length ? `, ${soon.length} weitere in 14 Tagen` : ''}`
+        : `${plural(soon.length, 'Entscheidung', 'Entscheidungen')} in 14 Tagen fällig`,
+      detail: `${first.customer}, ${first.product} (${eur(first.annualEur)}) zuerst. Zusammen ${eur(sum)} pro Jahr.`,
+      actions: [
+        { kind: 'open', label: 'Renewals öffnen', space: 'renewals' },
+        { kind: 'ask', label: 'Reihenfolge erklären', connector: CONNECTOR, prompt: 'Welche Verlängerungsentscheidungen sind überfällig oder in den nächsten 14 Tagen fällig, und in welcher Reihenfolge sollte ich sie angehen? Begründe kurz mit Wert und Risiko.' },
+      ],
+    });
+  }
+  const lapsed = renewals.cases.filter((c) => c.status === 'Lapsed');
+  if (lapsed.length) {
+    const sum = lapsed.reduce((a, c) => a + c.annualEur, 0);
+    cards.push({
+      id: 'renew-lapsed', category: 'renewals', area: 'Renewals', tone: 'amber',
+      title: `${plural(lapsed.length, 'Vertrag', 'Verträge')} abgelaufen, ${eur(sum)} ohne Vertrag`,
+      detail: lapsed.map((c) => `${c.product} bei ${c.customer} (${eur(c.annualEur)})`).join(', ') + '.',
+      actions: [
+        { kind: 'open', label: 'Renewals öffnen', space: 'renewals' },
+        { kind: 'ask', label: 'Rückholplan vorschlagen', connector: CONNECTOR, prompt: 'Schlage für die abgelaufenen Verträge einen Rückholplan vor: nächste Schritte, Ansprechpartner, Risiken. Nur vorschlagen, nichts versenden.' },
+      ],
+    });
+  }
+  return cards;
+}
+
+export function buildBriefing(data: BriefingData, today: Date = new Date(), extra: BriefingExtra = {}): BriefingCard[] {
   const cards: BriefingCard[] = [];
 
   const weakHigh = data.risks
@@ -101,6 +197,7 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), ops?
     const worst = weakHigh[0];
     cards.push({
       id: 'risks',
+      category: 'ai',
       area: 'AI-Risiken',
       tone: 'red',
       title: `${weakHigh.length} High-Risiken unter ${data.meta.riskThresholdPct} % mitigiert`,
@@ -121,6 +218,7 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), ops?
   if (over.length) {
     cards.push({
       id: 'budget',
+      category: 'ai',
       area: 'AI-Budget',
       tone: 'amber',
       title: `${over.length} ${over.length === 1 ? 'Team liegt' : 'Teams liegen'} über dem KI-Budget`,
@@ -137,6 +235,7 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), ops?
   if (days >= 0) {
     cards.push({
       id: 'audit',
+      category: 'ai',
       area: 'AI-Compliance',
       tone: days <= 60 ? 'amber' : 'neutral',
       title: days === 0 ? 'EU-AI-Act-Audit ist heute' : `EU-AI-Act-Audit in ${days} ${days === 1 ? 'Tag' : 'Tagen'}`,
@@ -148,6 +247,7 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), ops?
   if (data.agents.unregistered > 0 || data.agents.overprivileged > 0) {
     cards.push({
       id: 'agents',
+      category: 'ai',
       area: 'AI-Agenten-Status',
       tone: 'amber',
       title: `${data.agents.unregistered} unregistrierte KI-Assets, ${data.agents.overprivileged} überprivilegierte Agenten`,
@@ -159,11 +259,15 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), ops?
     });
   }
 
-  if (ops) cards.push(...opsCards(ops, today));
+  // Order of the groups: AI, Sales, Renewals, Infrastruktur, Board (the board card stays last).
+  if (extra.sales) cards.push(...salesCards(extra.sales, today));
+  if (extra.renewals) cards.push(...renewalCards(extra.renewals, today));
+  if (extra.ops) cards.push(...opsCards(extra.ops, today));
 
   // Always last: the one-page summary for whoever has to report upwards, on demand.
   cards.push({
     id: 'board',
+    category: 'board',
     area: 'Board',
     tone: 'neutral',
     title: 'Board-Briefing auf Knopfdruck',

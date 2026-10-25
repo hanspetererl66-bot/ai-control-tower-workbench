@@ -486,6 +486,10 @@ Settings → **Groups** lets a team share Spaces, one set of instructions and a 
 
 Settings → **Memory** holds short notes the assistant keeps in mind in every conversation: *About me*, *How I like results*, *Projects and context* (50 entries, 300 characters each). They are stored on this computer only, can be switched off, edited and forgotten (asks first). Nothing is saved by the assistant on its own: when you write something like "Merk dir: …", "Remember that …", "Ab jetzt …" or "Ich bin …", a card above the composer offers *Remember* or *No thanks*. Entries that look like passwords, keys or card numbers are refused. The notes go to the assistant as background and never override safety rules, tool permissions or the request. A group's team memory is separate (Settings → Groups).
 
+## Cards under the chat
+
+The empty chat shows "Heute für dich" as groups under the message box: **AI** (risks, budget, audit, agent status), **Sales** (offers waiting for the deal desk, overdue next steps), **Renewals** (decisions overdue or due within 14 days, lapsed contracts), **Infrastruktur** (certificates about to expire, red customers in the fleet) and **Board**. A group is picked with the chips; the count is the number of cards. The numbers are calculated when the chat opens from the sample data of the Spaces (`examples/control-tower`, `sales`, `renewals`, `infra-ops`, `it-fleet`) with today's date, so they match what the Spaces show. Buttons that only open a Space always work; buttons that ask the assistant need the control-tower connector and never send or change anything (drafts, plans, proposals only). In Settings → Work → *Cards under the chat* every group and every card can be switched off; this is part of the personal settings and of profiles. The rules are in `src/briefing.ts`, covered by `test/briefing.test.mjs`.
+
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.
