@@ -375,6 +375,11 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 .chg .w{color:var(--muted);font-size:12px;grid-column:2}
 .lvl{border-left:4px solid var(--line);padding:6px 12px;margin-bottom:8px}.lvl.auto{border-color:var(--green)}.lvl.suggest{border-color:var(--blue)}.lvl.approve{border-color:var(--amber)}.lvl.never{border-color:var(--red)}
 @media(max-width:700px){.chg{grid-template-columns:1fr}.chg .w{grid-column:1}}
+/* Calm palette, same as Renewals: status colours are quiet greys with a faint tint. */
+:root{--red:#7b5656;--red-dim:#f1eded;--red-border:#d3c7c7;--amber:#76683f;--amber-dim:#f2efe8;--amber-border:#d6cfbd;--green:#58695e;--green-dim:#edf0ee;--green-border:#c9d1cc;--blue:#5f6670;--blue-dim:#eff0f2;--blue-border:#d0d3d8;--teal:#66706f;--teal-dim:#eef0f0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26);--blue:#b3bac4;--blue-dim:rgba(179,186,196,.11);--blue-border:rgba(179,186,196,.26);--teal:#b0bebb;--teal-dim:rgba(176,190,187,.11)}}
+:root[data-theme="dark"]{--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26);--blue:#b3bac4;--blue-dim:rgba(179,186,196,.11);--blue-border:rgba(179,186,196,.26);--teal:#b0bebb;--teal-dim:rgba(176,190,187,.11)}
+.demo{background:var(--wash);color:var(--ink-2)}
 </style>
 </head>
 <body>
