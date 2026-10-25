@@ -21,6 +21,8 @@
     "sync:what-if": "node scripts/sync-what-if.mjs",
     "sync:agent-activity": "node scripts/sync-agent-activity.mjs",
     "sync:mockups": "node scripts/sync-mockup-spaces.mjs",
+    "sync:infra-ops": "node scripts/sync-infra-ops.mjs",
+    "install:infra-ops": "node scripts/install-example-space.mjs infra-ops",
     "sync:it-operations": "node scripts/sync-it-operations.mjs",
     "sync:it-infrastructure": "node scripts/sync-it-infrastructure.mjs",
     "sync:renewals": "node scripts/sync-renewals.mjs",

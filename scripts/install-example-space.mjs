@@ -15,6 +15,7 @@ export const EXAMPLE_SPACES = {
   'what-if': 'what-if',
   'call-transcripts': 'call-transcripts',
   'customer-emails': 'customer-emails',
+  'infra-ops': 'infra-ops',
   sales: 'sales',
   'it-operations': 'it-operations',
   'it-infrastructure': 'it-infrastructure',

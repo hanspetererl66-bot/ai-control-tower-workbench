@@ -558,6 +558,18 @@
           "class": "write",
           "what": "",
           "default": "on"
+        },
+        {
+          "name": "plan_infra_change",
+          "class": "read",
+          "what": "Plans an infrastructure change against the sample inventory: pre-checks, simulated check-mode diff, risk and approvals. Changes nothing.",
+          "default": "on"
+        },
+        {
+          "name": "submit_infra_change",
+          "class": "write",
+          "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
+          "default": "on"
         }
       ],
       "switches": [],
