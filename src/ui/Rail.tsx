@@ -49,13 +49,13 @@ export default function Rail({
 
       <div className="rail-nav">
         <button
-          className={`rail-btn ${view === 'chat' ? 'rail-btn-on' : ''}`}
-          onClick={() => onView('chat')}
-          title="Conversations"
-          aria-label="Conversations"
-          aria-pressed={view === 'chat'}
+          className={`rail-btn ${view === 'n8n' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('n8n')}
+          title="n8n Automation"
+          aria-label="n8n Automation"
+          aria-pressed={view === 'n8n'}
         >
-          <ChatIcon />
+          <WorkflowIcon />
         </button>
         <button
           className={`rail-btn ${view === 'spaces' ? 'rail-btn-on' : ''}`}
@@ -76,13 +76,13 @@ export default function Rail({
           <ConnectorIcon />
         </button>
         <button
-          className={`rail-btn ${view === 'n8n' ? 'rail-btn-on' : ''}`}
-          onClick={() => onView('n8n')}
-          title="n8n Automation"
-          aria-label="n8n Automation"
-          aria-pressed={view === 'n8n'}
+          className={`rail-btn ${view === 'chat' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('chat')}
+          title="Conversations"
+          aria-label="Conversations"
+          aria-pressed={view === 'chat'}
         >
-          <WorkflowIcon />
+          <ChatIcon />
         </button>
       </div>
 
