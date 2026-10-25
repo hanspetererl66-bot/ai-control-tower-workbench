@@ -327,12 +327,29 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin:8px 0;flex-wrap:wrap}.flow b{color:var(--ink)}
 @media (max-width:900px){.layout{grid-template-columns:1fr}.tl .axis{margin-left:130px}.tl .row{grid-template-columns:130px 1fr}}
+
+/* Calm palette: status colours are quiet greys with a faint tint; the words Red, Yellow and Green carry the meaning. */
+:root{--red:#7b5656;--red-dim:#f1eded;--red-border:#d3c7c7;--amber:#76683f;--amber-dim:#f2efe8;--amber-border:#d6cfbd;--green:#58695e;--green-dim:#edf0ee;--green-border:#c9d1cc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26)}}
+:root[data-theme="dark"]{--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26)}
+.kpi.red,.kpi.amber,.kpi.green{border-color:var(--line)}.kpi.red .v,.kpi.amber .v,.kpi.green .v{color:var(--ink)}.kpi.red{border-left:3px solid var(--red)}
+.kpi{cursor:pointer;text-align:left;font:inherit;color:inherit}.kpi:hover{border-color:var(--ink-2)}.kpi[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}.kpi:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.kpi-hint{margin:-8px 0 12px;font-size:11px;color:var(--muted)}
+#kpi-detail .head{display:flex;align-items:center;gap:10px}#kpi-detail .head h2{margin:0;flex:1}
+#kpi-detail tbody tr{cursor:pointer}#kpi-detail tbody tr:hover{background:var(--wash)}
+.nba{border-left:4px solid var(--ink-2)}.nba .lab{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.nba .do{font-size:17px;font-weight:650;margin:2px 0 4px}.nba .why{font-size:12px;color:var(--ink-2);margin:0 0 10px}
+.nba .row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.nba .then{margin-top:10px;font-size:12px;color:var(--muted)}.nba .then button{font:inherit;font-size:12px;border:0;background:none;color:var(--ink);text-decoration:underline;cursor:pointer;padding:0 2px}
+.act-first{font-size:13px;font-weight:650;padding:8px 10px;border:1px solid var(--line);border-left:3px solid var(--ink-2);border-radius:var(--radius-s);background:var(--canvas);margin:6px 0 4px}
 </style>
 </head>
 <body>
 <main>
   <p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p>
+  <div class="card nba" id="nba" aria-live="polite"></div>
   <div class="kpis" id="kpis"></div>
+  <p class="kpi-hint">Double-click a box to see the renewals behind the number.</p>
+  <div class="card" id="kpi-detail" hidden></div>
   <div class="card guide" id="guide" aria-live="polite"></div>
   <div class="cview" id="cust"><div class="cust-cards" id="cust-cards"></div><aside class="card cust-panel" id="cust-panel" aria-live="polite"></aside></div>
   <div class="card">
@@ -1171,7 +1188,7 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared', 'Offer approved', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false };
+const state = { kpi: null, status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -1194,12 +1211,51 @@ function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c
 const tip = $('#tip');
 function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, e.clientX + 14)) + 'px'; tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, e.clientY + 14)) + 'px'; }
 function hover(el, html) { el.addEventListener('mousemove', (e) => showTip(e, html())); el.addEventListener('mouseleave', () => { tip.hidden = true; }); el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); showTip({ clientX: r.left, clientY: r.bottom - 14 }, html()); }); el.addEventListener('blur', () => { tip.hidden = true; }); }
+const KPI_ROWS = {
+  open: { title: 'Renewals to handle', list: (m) => m.filter(live), extra: [['Decision date', (c) => c.decisionDate]] },
+  red: { title: 'Red renewals', list: (m) => m.filter(live).filter((c) => c.health === 'red'), extra: [['Why', (c) => (c.sig.signals.find((x) => x.level !== 'plus') || { text: '' }).text]] },
+  soon: { title: 'Decision within 30 days', list: (m) => m.filter(live).filter((c) => c.sig.days <= 30), extra: [['Days left', (c) => (c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d ago' : c.sig.days + ' d')]] },
+  ret: { title: 'Expected retention', list: (m) => m.filter(live), extra: [['Retention', (c) => Math.round(c.pRet * 100) + ' %'], ['Expected a year', (c) => eur(c.annualEur * c.pRet)]] },
+  clv: { title: 'Customer lifetime value', list: (m) => m.filter(live), extra: [['Lifetime value', (c) => eur(c.clv)]] },
+  auto: { title: 'Handled automatically', list: (m) => m.filter((c) => c.autoRun && c.stage >= 3), extra: [['Stage', (c) => FLOW[c.stage]]] },
+  signed: { title: 'Signed in this demo', list: (m) => m.filter((c) => c.stage === 4), extra: [['Signed value', (c) => eur(c.chosen.annualEur) + ' a year']] },
+};
+function renderKpiDetail() {
+  const el = $('#kpi-detail'), def = KPI_ROWS[state.kpi];
+  if (!def) { el.hidden = true; return; }
+  const rows = def.list(model).sort((a, b) => a.decisionDate.localeCompare(b.decisionDate));
+  el.hidden = false;
+  el.innerHTML = `<div class="head"><h2>${esc(def.title)}: ${rows.length}</h2><button class="ghost" id="kpi-close" type="button">Close</button></div><p class="sub">Click a row to open the renewal.</p>` +
+    (rows.length ? `<div style="overflow:auto"><table><thead><tr><th>Customer</th><th>Product</th><th class="n">Annual value</th>${def.extra.map(([h]) => `<th>${esc(h)}</th>`).join('')}<th>Health</th></tr></thead><tbody>${rows.map((c) => `<tr data-id="${esc(c.id)}" tabindex="0"><td>${esc(c.customer)}</td><td>${esc(c.product)}</td><td class="n">${eur(c.annualEur)}</td>${def.extra.map(([, f]) => `<td>${esc(f(c))}</td>`).join('')}<td><span class="pill ${c.health}">${LABEL[c.health]}</span></td></tr>`).join('')}</tbody></table></div>` : '<p class="note">Nothing here at the moment.</p>');
+  $('#kpi-close').onclick = () => { state.kpi = null; renderKpis(); renderKpiDetail(); };
+  el.querySelectorAll('tbody tr').forEach((r) => { const go = () => { state.sel = r.dataset.id; renderAll(); $('#detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }; r.onclick = go; r.onkeydown = (e) => { if (e.key === 'Enter') go(); }; });
+}
 function renderKpis() {
   const open = model.filter(live), red = open.filter((c) => c.health === 'red'), soon = open.filter((c) => c.sig.days <= 30);
   const sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), signed = model.filter((c) => c.stage === 4);
-  const k = (cls, v, key, s) => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="k">${key}</div><div class="s">${s}</div></div>`;
-  $('#kpis').innerHTML = k('', open.length, 'Renewals to handle', eur(sum(open)) + ' a year') + k('red', red.length, 'Red renewals', eur(sum(red)) + ' at risk') + k('amber', soon.length, 'Decision within 30 days', soon.length ? 'incl. passed dates' : 'none') +
-    k('', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('', eur(open.reduce((a, c) => a + c.clv, 0)), 'Customer lifetime value', 'expected, open renewals (assumptions below)') + k('green', model.filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
+  const k = (key, cls, v, name, s) => `<div class="kpi ${cls}" data-k="${key}" role="button" tabindex="0" aria-pressed="${state.kpi === key}" title="Double-click for the details"><div class="v">${v}</div><div class="k">${name}</div><div class="s">${s}</div></div>`;
+  $('#kpis').innerHTML = k('open', '', open.length, 'Renewals to handle', eur(sum(open)) + ' a year') + k('red', 'red', red.length, 'Red renewals', eur(sum(red)) + ' at risk') + k('soon', 'amber', soon.length, 'Decision within 30 days', soon.length ? 'incl. passed dates' : 'none') +
+    k('ret', '', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('clv', '', eur(open.reduce((a, c) => a + c.clv, 0)), 'Customer lifetime value', 'expected, open renewals (assumptions below)') + k('auto', 'green', model.filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('signed', 'green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
+  const toggle = (key) => { state.kpi = state.kpi === key ? null : key; renderKpis(); renderKpiDetail(); if (state.kpi) $('#kpi-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+  $('#kpis').querySelectorAll('.kpi').forEach((b) => { b.ondblclick = () => toggle(b.dataset.k); b.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(b.dataset.k); } }; });
+}
+/* Next best action: the one renewal to take care of first, and what to do there. */
+const RANK = { red: 0, yellow: 1, green: 2 };
+function nextBest() {
+  return model.filter((c) => live(c) && !c.autoRun).sort((a, b) => (RANK[a.health] - RANK[b.health]) || (a.sig.days - b.sig.days) || (b.annualEur - a.annualEur));
+}
+function renderNba() {
+  const el = $('#nba'), list = nextBest(), c = list[0];
+  if (!c) { el.innerHTML = '<div class="lab">Next best action</div><div class="do">Nothing open: every renewal is signed or handled automatically.</div>'; return; }
+  const d = c.sig.days, when = d < 0 ? `decision date passed ${-d} ${-d === 1 ? 'day' : 'days'} ago` : d === 0 ? 'decision date is today' : `decision in ${d} ${d === 1 ? 'day' : 'days'}`;
+  const sig = c.sig.signals.find((x) => x.level !== 'plus');
+  el.innerHTML = `<div class="lab">Next best action</div><div class="do">${esc(c.actions[0])}</div><p class="why">${esc(c.product)} at ${esc(c.customer)} · ${eur(c.annualEur)} a year · ${when} · ${LABEL[c.health]}${sig ? ' · ' + esc(sig.text) : ''}</p>` +
+    `<div class="row2"><button class="primary" id="nba-open" type="button">Open this renewal</button><button class="small" id="nba-ask" type="button">Ask Joule</button></div>` +
+    (list.length > 1 ? `<div class="then">Then: ${list.slice(1, 4).map((x) => `<button type="button" data-id="${esc(x.id)}">${esc(x.product)} (${esc(x.customer.split(' ')[0])})</button>`).join(' · ')}</div>` : '');
+  const open = (id) => { state.sel = id; renderAll(); $('#detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+  $('#nba-open').onclick = () => open(c.id);
+  $('#nba-ask').onclick = () => send(`The next best action for the renewal of ${c.product} at ${c.customer} (SAP customer ID ${c.sapCustomerId}) is: ${c.actions[0]}. Explain why this comes first, what I should prepare, and who to involve. Do not send anything. Please answer in English.`);
+  el.querySelectorAll('.then button').forEach((b) => (b.onclick = () => open(b.dataset.id)));
 }
 function renderBar() {
   const count = (s) => model.filter((c) => s === 'all' || c.health === s).length;
@@ -1298,7 +1354,7 @@ function renderDetail() {
     (c.offer ? `<h3 style="margin-top:12px">Renewal offer ${esc(c.offer.id)}</h3><dl class="dl"><dt>Offer value</dt><dd>${eur(c.offer.annualEur)}</dd><dt>Today</dt><dd>${eur(c.offer.currentAnnualEur)}</dd><dt>Price rise / cap</dt><dd>${up > 0 ? '+' : ''}${up} % / ${c.upliftCapPct} %${up > c.upliftCapPct ? ' ⚠' : ''}</dd><dt>Discount</dt><dd>${c.offer.discountPct} %</dd><dt>Valid until</dt><dd>${esc(c.offer.validUntil)}</dd><dt>Stage</dt><dd>${esc(c.offer.stage)} (${c.offer.probabilityPct} %)</dd><dt>Approval</dt><dd>${esc(c.offer.approval)}</dd></dl>` : '<h3 style="margin-top:12px">No renewal offer</h3>') +
     `<h3 style="margin-top:12px">Why this colour</h3>${c.sig.signals.map((s) => `<div class="sig ${s.level}"><b>${s.level === 'plus' ? 'positive' : s.level}</b>${esc(s.text)}</div>`).join('') || '<div class="sig plus">No warning signals.</div>'}` +
     (mailsOfCase(c).length ? `<h3 style="margin-top:12px">E-mail about this renewal</h3>${mailTimeline(mailsOfCase(c))}` : '') +
-    `<h3 style="margin-top:12px">Next actions</h3><ol class="act">${c.actions.map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` +
+    `<h3 style="margin-top:12px">Next best action</h3><div class="act-first">${esc(c.actions[0])}</div>` + (c.actions.length > 1 ? `<div class="sub" style="margin:6px 0 0">After that</div><ol class="act">${c.actions.slice(1).map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` : '') +
     autoBlock(c) +
     `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step; sending and signing are simulated here.</p>`;
   el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
@@ -1350,11 +1406,11 @@ function renderGuide() {
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
 }
 function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '' }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
-function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderKpis(); renderBar(); renderGuide(); renderCustomers(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
+function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderNba(); renderKpis(); renderKpiDetail(); renderBar(); renderGuide(); renderCustomers(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
 $('#customer').onchange = (e) => { state.customer = e.target.value; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
-$('#reset').onclick = () => { $('#auto').checked = false; Object.assign(state, { status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#reset').onclick = () => { $('#auto').checked = false; Object.assign(state, { kpi: null, status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
 $('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 $('#assump').textContent = `Illustrative assumptions, not real figures: gross margin ${DATA.rules.marginPct} %; expected retention by health: green ${DATA.rules.retention.green * 100} %, yellow ${DATA.rules.retention.yellow * 100} %, red ${DATA.rules.retention.red * 100} %, lapsed ${DATA.rules.retention.lapsed * 100} %. Expected lifetime = 1 / (1 − retention), at most ${DATA.rules.lifetimeCapYears} years. Lifetime value = annual value × margin × expected lifetime. Each alternative offer changes the annual value, the term and the retention.`;
