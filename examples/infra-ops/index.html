@@ -310,6 +310,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 .trk li.cur .n{border-color:var(--purple);color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
 .trk li.fail .n{background:var(--red);border-color:var(--red);color:var(--surface)}
 .trk li.todo{opacity:.6}.trk b{display:block;font-size:13px}.trk small{display:block;color:var(--muted);font-size:12px}
+.trk .sub-steps{list-style:none;margin:6px 0 2px;padding:0;display:grid;gap:3px}.trk .sub-steps li{display:flex;gap:8px;align-items:center;padding:0;font-size:12px;color:var(--muted)}.trk .sub-steps li::before{display:none}.trk .sub-steps i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font:700 9px/1 var(--font,inherit);font-style:normal;color:var(--surface)}.trk .sub-steps li.done{color:var(--ink)}.trk .sub-steps li.done i{background:var(--green);border-color:var(--green)}.trk .sub-steps li.cur{color:var(--purple);font-weight:700}.trk .sub-steps li.cur i{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-dim)}
 .pbar{height:6px;border-radius:99px;background:var(--line-2);margin-top:5px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--purple);transition:width .35s linear}
 .tq{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}.tq:last-child{border-bottom:0}.tq small{display:block;color:var(--muted)}
 .speedctl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.speedctl select{padding:4px 6px;width:auto}
@@ -1517,6 +1518,13 @@ function simulateRun(plan) {
   var WINDOW_MS = function () { return 12000 * K(); };
   var PHASE_STEP = { created: 1, precheck: 1, precheck_done: 2, approval: 2, window: 3, running: 4, post: 5, closing: 6, done: 7, blocked: 1, post_failed: 5 };
   var STEP_TITLES = ['Task created', 'Pre-check', 'Approval', 'Downtime window', 'Upgrade', 'Post-check', 'Close ticket'];
+  /** The upgrade as a simulation: what AWX does inside the downtime window, one step after the other. */
+  function upgradeSteps(t, p) {
+    var kind = (PLAYBOOKS[t.template] || {}).kind;
+    var apply = kind === 'cert' ? 'Install the new certificate and bind it to the service' : kind === 'dns' ? 'Change the DNS record and lower the TTL' : t.template === 'move-vm' ? 'Replicate the disks and start the VM in the target region' : 'Install the patches';
+    var restart = kind === 'cert' ? 'Reload the service with the new certificate' : kind === 'dns' ? 'Flush the DNS caches' : 'Restart the VM and the services on it';
+    return ['Snapshot taken, health check before the change', 'Monitoring silenced and the service set to maintenance mode', apply, restart, 'Smoke test: service answers, ' + (kind === 'cert' ? 'new certificate is served' : kind === 'dns' ? 'name resolves to the new address' : 'dependent systems are reachable'), 'Maintenance mode lifted, monitoring active again'];
+  }
   var CHECKS_SPACE = 'change-checks', FLEET_SPACE = 'it-fleet';
   var later = function (fn, ms) { S.timers.push(setTimeout(fn, Math.max(0, ms))); };
   function phaseOf(t) { if (t.flow) return t.flow.phase; return { planned: 'created', in_review: 'approval', approved: 'window', in_window: 'running', done: 'done' }[t.state] || 'created'; }
@@ -1634,7 +1642,7 @@ function simulateRun(plan) {
     text[2] = have + ' of ' + need + ' approvals' + ((t.approvals || []).length ? ' (' + t.approvals.map(function (id) { return (person(id) || {}).name || id; }).join(', ') + ')' : '') + nextDue + (have < need && phase === 'approval' ? ' · ' + approvalHint(t, D) : '');
     if (phase === 'window' && t.flow) { var fr = Math.min(1, (Date.now() - (t.flow.windowStart || Date.now())) / WINDOW_MS()), a = Date.parse(D.asOf + 'T08:00:00Z'), b = Date.parse(t.window[0] + ':00Z'); text[3] = 'Demo clock ' + clockText(a + fr * (b - a)) + ' → window opens ' + t.window[0].replace('T', ' '); text[3] += '|' + Math.round(fr * 100); }
     else text[3] = (phase === 'running' || cur > 3) ? 'Window ' + t.window[0].replace('T', ' ') + ' to ' + t.window[1].replace('T', ' ') : 'Starts only inside the approved window ' + t.window[0].replace('T', ' ');
-    text[4] = cur > 4 ? 'Playbook applied (simulated)' : phase === 'running' ? 'AWX job running' : 'Runs after the window opens';
+    text[4] = cur > 4 ? 'Playbook applied (simulated), 6 of 6 steps done' : phase === 'running' ? 'AWX job running (simulated): ' + ((t.flow && t.flow.upg) || 0) + ' of 6 steps' : 'Runs after the window opens: snapshot, maintenance mode, playbook, restart, smoke test';
     text[5] = t.postcheck ? 'Post-check ' + (t.postcheck.verdict === 'fail' ? 'failed' : 'passed') : phase === 'post' ? 'Running in the Pre-Checks and Post-Checks Space' : 'Service, certificate, dependencies, monitoring';
     text[6] = phase === 'done' ? (tk ? 'Ticket ' + tk.id + ' closed, success report sent to the Fleet Manager' : 'Evidence filed') : tk ? 'Ticket ' + tk.id + ' is closed and the Fleet Manager is told' : 'Evidence is filed';
     return STEP_TITLES.map(function (title, i) { return { title: title, st: i === fail ? 'fail' : i < cur ? 'done' : i === cur && phase !== 'done' ? 'cur' : phase === 'done' ? 'done' : 'todo', text: text[i] }; });
@@ -1642,6 +1650,7 @@ function simulateRun(plan) {
   function trackerHtml(t, p) {
     return '<ol class="trk" aria-label="Change process">' + trackerSteps(t, p).map(function (x, i) {
       var parts = String(x.text).split('|'), bar = parts[1] ? '<div class="pbar" role="img" aria-label="Waiting for the window"><i style="width:' + esc(parts[1]) + '%"></i></div>' : '';
+      if (i === 4 && (x.st === 'cur' || x.st === 'done' || (t.flow && t.flow.upg))) { var u = (t.flow && t.flow.upg) || 0, all = x.st === 'done'; bar += '<ul class="sub-steps">' + upgradeSteps(t, p).map(function (nm, k) { var c = all || k < u ? 'done' : k === u ? 'cur' : ''; return '<li class="' + c + '"><i>' + (c === 'done' ? '✓' : '') + '</i>' + esc(nm) + '</li>'; }).join('') + '</ul>'; }
       return '<li class="' + x.st + '"><span class="n">' + (x.st === 'done' ? '✓' : x.st === 'fail' ? '×' : i + 1) + '</span><div><b>' + esc(x.title) + '</b><small>' + esc(parts[0]) + '</small>' + bar + '</div></li>';
     }).join('') + '</ol>';
   }
@@ -1816,7 +1825,7 @@ function simulateRun(plan) {
   }
   function refresh(t) { render(); openTask(t.id); }
   function finish(t) {
-    if (t.flow) { addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
+    if (t.flow) { t.flow.upg = 6; addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
     t.state = 'done'; addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
   }
   function startRun(t) {
@@ -1826,6 +1835,7 @@ function simulateRun(plan) {
     var shown = 0;
     function next() {
       shown++; showRun(t, p, shown);
+      if (t.flow) { t.flow.upg = Math.min(6, Math.floor(shown / run.lines.length * 6)); var tb = $('#tracker'); if (tb && S.openTask === t.id) tb.innerHTML = trackerHtml(t, p); }
       if (shown < run.lines.length) S.timers.push(setTimeout(next, reduced ? 0 : Math.round(380 * (S.speed === 'fast' ? 0.3 : 1)))); else finish(t);
     }
     if (reduced) { showRun(t, p, run.lines.length); finish(t); } else next();
