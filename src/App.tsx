@@ -29,6 +29,7 @@ import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
+import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KINDS, type MemoryState } from './memory';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
@@ -164,6 +165,10 @@ export default function App() {
   const [identity, setIdentity] = useState<Identity | null>(() => loadIdentity(window.localStorage));
   const [activeGroupId, setActiveGroupId] = useState<string | null>(() => { try { return window.localStorage.getItem(ACTIVE_GROUP_KEY); } catch { return null; } });
   const [activeGroup, setActiveGroup] = useState<GroupDetail | null>(null);
+  // Personal memory: notes kept on this computer; the assistant may suggest an entry, the person decides.
+  const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
+  const [memorySuggestion, setMemorySuggestion] = useState<ReturnType<typeof suggestMemory>>(null);
+  const changeMemory = useCallback((next: MemoryState) => { setMemoryState(next); saveMemory(window.localStorage, next); }, []);
   const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
   const speaker = useRef<ReplySpeaker | null>(null);
   const voiceRef = useRef(voice);
@@ -488,6 +493,7 @@ export default function App() {
     if (messages.length === 0) {
       setTitle((text || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
+    setMemorySuggestion(suggestMemory(text, memory));
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -520,7 +526,7 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, assistantNote(prefs), memoryNote(memory), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -822,6 +828,13 @@ export default function App() {
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
     />
   );
+  const suggestionBar = memorySuggestion && (
+    <div className="memory-suggest" role="status">
+      <span>Remember “{memorySuggestion.text}” ({MEMORY_KINDS.find((k) => k.id === memorySuggestion.kind)?.title.toLowerCase()})?</span>
+      <button className="ghost-btn" onClick={() => { const r = addMemory(memory, memorySuggestion.kind, memorySuggestion.text); if (!r.error) changeMemory(r.state); setMemorySuggestion(null); }}>Remember</button>
+      <button className="ghost-btn" onClick={() => setMemorySuggestion(null)}>No thanks</button>
+    </div>
+  );
   const disclaimer = (
     <p className="disclaimer">
       {PRODUCT_NAME} uses AI. Verify results. <a href="#">AI Guidance</a>
@@ -1043,6 +1056,7 @@ export default function App() {
                 <br />
                 to get things done?
               </h2>
+              {suggestionBar}
               {composer}
               {disclaimer}
             </div>
@@ -1071,6 +1085,7 @@ export default function App() {
                 }}
               />
               <div className="composer-dock">
+                {suggestionBar}
                 {composer}
                 {disclaimer}
               </div>
@@ -1113,6 +1128,7 @@ export default function App() {
             sync: syncState,
             onSyncSave: () => void syncSave(),
             onSyncLoad: () => void syncLoad(),
+            memory: { memory, onChange: changeMemory },
             groups: {
               call: groupCall,
               identity,

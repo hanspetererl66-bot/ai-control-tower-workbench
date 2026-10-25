@@ -482,6 +482,10 @@ Settings → **Groups** lets a team share Spaces, one set of instructions and a 
 - **Team memory:** rules, decisions and facts (600 characters each); author or admin edits and deletes, deleting asks first. With *Use in chat* the rules and the group instructions go to the assistant as background; they never override safety rules, tool permissions or the request. The group is read again every minute.
 - **Identity:** the person types an e-mail once. This is a label, not a login: anyone who knows a member's address could act as that member. Do not put anything in a group you would not show the whole team. Real sign-in (Supabase Auth or SSO) is the next step if groups go beyond a trusted team. Anything that looks like a key, token or password is refused in the group configuration.
 
+## Memory (personal notes for the assistant)
+
+Settings → **Memory** holds short notes the assistant keeps in mind in every conversation: *About me*, *How I like results*, *Projects and context* (50 entries, 300 characters each). They are stored on this computer only, can be switched off, edited and forgotten (asks first). Nothing is saved by the assistant on its own: when you write something like "Merk dir: …", "Remember that …", "Ab jetzt …" or "Ich bin …", a card above the composer offers *Remember* or *No thanks*. Entries that look like passwords, keys or card numbers are refused. The notes go to the assistant as background and never override safety rules, tool permissions or the request. A group's team memory is separate (Settings → Groups).
+
 ## Cover sheet typeface
 
 The cover sheet (click the logo in the left rail) is set in the SAP “72” typeface (Light, Regular, Semibold, Bold, Black), taken from the Apache-2.0 package `@sap-theming/theming-base-content` and bundled in `src/assets/fonts/72/` with its license; see `NOTICE`. The rest of the app keeps its own fonts.

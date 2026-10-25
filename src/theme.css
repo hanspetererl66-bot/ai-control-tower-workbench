@@ -3651,3 +3651,27 @@ button {
 :root[data-theme="dark"] .ghost-btn.ghost-danger:hover:not(:disabled) { background: rgb(248 113 113 / 12%); }
 :root[data-theme="dark"] .dialog-btn-danger { color: #f87171; border-color: rgb(248 113 113 / 40%); }
 :root[data-theme="dark"] .dialog-btn-danger:hover:not(:disabled) { background: rgb(248 113 113 / 12%); }
+
+/* Memory suggestion above the composer: one line, two buttons. */
+.memory-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 8px;
+  max-width: 760px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 13px;
+}
+.memory-suggest span { flex: 1 1 260px; }
+
+/* Space titles are a strong purple, subspace titles a lighter one, so the two levels read apart. */
+.card:not(.card-sub) .card-title { color: #5b21b6; font-weight: 700; }
+.card-sub .card-title { color: #8b5cf6; font-weight: 600; }
+:root[data-theme="dark"] .card:not(.card-sub) .card-title { color: #b69cff; }
+:root[data-theme="dark"] .card-sub .card-title { color: #9a82e0; }
+:root[data-theme="dark"] .ghost-btn:hover:not(:disabled) { background: rgb(255 255 255 / 8%); }
