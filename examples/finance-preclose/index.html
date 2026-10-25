@@ -328,11 +328,43 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
 @media (max-width:900px){.layout,.two,.oi-grid{grid-template-columns:1fr}}
 @media (max-width:640px){.hs{display:none}}
 
+/* Calm palette: purple, white and grey only. Status is carried by shade, hatching and words, not by hue. */
+:root{--green:#6b4a8f;--green-dim:rgba(107,74,143,.10);--green-border:rgba(107,74,143,.28);--amber:#7d7589;--amber-dim:rgba(125,117,137,.13);--amber-border:rgba(125,117,137,.32);--red:#33204a;--red-dim:rgba(51,32,74,.07);--red-border:rgba(51,32,74,.30);--blue:#9a8fb0;--blue-dim:rgba(154,143,176,.14);--blue-border:rgba(154,143,176,.38)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--green:#b79bdc;--green-dim:rgba(183,155,220,.13);--green-border:rgba(183,155,220,.32);--amber:#aaa3b6;--amber-dim:rgba(170,163,182,.13);--amber-border:rgba(170,163,182,.30);--red:#eadcff;--red-dim:rgba(234,220,255,.10);--red-border:rgba(234,220,255,.34);--blue:#7e7396;--blue-dim:rgba(126,115,150,.18);--blue-border:rgba(126,115,150,.40)}}
+:root[data-theme="dark"]{--green:#b79bdc;--green-dim:rgba(183,155,220,.13);--green-border:rgba(183,155,220,.32);--amber:#aaa3b6;--amber-dim:rgba(170,163,182,.13);--amber-border:rgba(170,163,182,.30);--red:#eadcff;--red-dim:rgba(234,220,255,.10);--red-border:rgba(234,220,255,.34);--blue:#7e7396;--blue-dim:rgba(126,115,150,.18);--blue-border:rgba(126,115,150,.40)}
+.demo{border-color:var(--line);background:var(--wash)}
+.legend .lblk,.gb.blocked{border-color:var(--red)}
+.intro h2{font-size:16px}.intro .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 22px;margin-top:10px}
+.intro h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--purple);margin:0 0 4px}.intro p{margin:0;color:var(--ink-2);line-height:1.5}
+.intro dl{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:4px 14px;margin:10px 0 0;font-size:12px}.intro dt{font-weight:650;color:var(--ink)}.intro dd{margin:0;color:var(--ink-2)}
+.intro summary{cursor:pointer;font-weight:650;color:var(--purple);font-size:12px;margin-top:12px}
 </style>
 </head>
 <body>
 <main>
   <p class="demo">Fictional company and mockup data in the shape of an S/4HANA Finance extract; there is no connection to a finance system. A generator creates the figures, controllers' notes and open items, so the demo is the same every time. Nothing is posted: approving an accrual is simulated.</p>
+  <div class="card intro">
+    <h2>What is this page?</h2>
+    <p style="color:var(--ink-2)">The <b>pre-close</b> is the look ahead before the month end: while the month is still running, finance already estimates how revenue, gross profit and EBIT will end, what is still open, and what could go wrong, so that the real close on the last days goes without surprises. This page shows that for a fictional group with four company codes.</p>
+    <div class="cols">
+      <div><h3>1. The picture</h3><p>The tiles and the two charts say where the month will land compared with the budget, and how that estimate moved over the last working days. The grey band is the range: the wider it is, the less sure the forecast.</p></div>
+      <div><h3>2. The detail</h3><p>The profit and loss, the company codes and the close calendar show where the gap comes from and who is working on which close task. Click a line, a row or a task to see the detail.</p></div>
+      <div><h3>3. What to do</h3><p>Open items and accrual proposals are the work list: clear the items, approve or reject each accrual. Alerts point out postings that look unusual. “What if?” shows the effect of risks that are not in the forecast yet.</p></div>
+      <div><h3>4. How to use it</h3><p>Move the day slider through the 22 working days of the month, pick a company code or metric, or press “Start demo” for a guided walk in six steps. Nothing is posted; approvals are simulated.</p></div>
+    </div>
+    <details><summary>Terms used on this page</summary>
+      <dl>
+        <dt>Forecast</dt><dd>Booked amount so far plus the expected rest of the month.</dd>
+        <dt>Range</dt><dd>Lowest and highest likely end result, with 80 % confidence.</dd>
+        <dt>Budget bridge</dt><dd>The step from the budget to today's forecast, split by the biggest reasons.</dd>
+        <dt>Variance</dt><dd>Forecast minus budget. On revenue and profit a minus is unfavourable; on costs a plus is.</dd>
+        <dt>Close readiness</dt><dd>Share of close tasks that are done, weighted by effort.</dd>
+        <dt>Open items</dt><dd>Postings or reconciliations that must be cleared before the cut-off.</dd>
+        <dt>Accrual</dt><dd>An estimated posting for costs or revenue of this month that are not invoiced yet. A person approves each one.</dd>
+        <dt>Hard close</dt><dd>The last working day on which the books for the month can still be changed.</dd>
+      </dl>
+    </details>
+  </div>
   <div class="card">
     <div class="dayctl">
       <h2 style="margin:0">Finance pre-close, <span id="period">October 2026</span></h2>
@@ -359,7 +391,7 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
     <div class="card"><h2 id="pnl-title">Profit and loss</h2><p class="sub" id="pnl-sub"></p><table class="fit pl"><thead><tr><th>Line</th><th class="n hs">Booked</th><th class="n">Forecast (range)</th><th class="n">Budget</th><th class="n">Variance</th><th class="n hs">vs LY</th><th>Status</th></tr></thead><tbody id="pnl"></tbody></table></div>
     <aside class="card drill" id="detail" aria-live="polite"></aside>
   </div>
-  <div class="card"><h2>Company codes</h2><p class="sub">Forecast against budget (chip = deviation), close readiness, open items (number · amount) and red alerts. Click a row to filter the page, click the red number to see the alerts.</p><table class="fit dense"><thead><tr><th>Company code</th><th class="n">Revenue</th><th class="n">EBIT</th><th>Readiness</th><th class="n">Open items</th><th class="n">Red alerts</th></tr></thead><tbody id="ents"></tbody></table></div>
+  <div class="card"><h2>Company codes</h2><p class="sub">Forecast against budget (chip = deviation), close readiness, open items (number · amount) and red alerts. Click a row to filter the page, click the number in the last column to see the alerts.</p><table class="fit dense"><thead><tr><th>Company code</th><th class="n">Revenue</th><th class="n">EBIT</th><th>Readiness</th><th class="n">Open items</th><th class="n">Red alerts</th></tr></thead><tbody id="ents"></tbody></table></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Close calendar</h2><div class="chips" id="task-chips" role="group" aria-label="Filter tasks"></div></div><p class="sub">One bar per task from start to due working day (12 to 25). Working days 23 to 25 are in November. Click a task for details.</p><div class="cal-top" id="cal-top"></div><div id="tasks"></div></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Open items and reconciliations</h2><button class="small spacer" id="items-ask" type="button">Prioritise with Joule</button></div><p class="sub">What must be cleared before the cut-off, the largest first.</p><div id="aging"></div><div class="chips cp" id="item-chips" role="group" aria-label="Filter by type"></div><div class="oi-grid"><div><table class="fit dense"><thead><tr><th>Item</th><th>Company code</th><th class="n">Amount</th><th class="n">Age</th><th>Owner</th><th>Step</th></tr></thead><tbody id="items"></tbody></table><p class="note" id="items-more"></p></div><aside><table id="ic" class="ic"></table><p class="note">Open intercompany differences, thousand EUR.</p></aside></div></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th></th></tr></thead><tbody id="accr"></tbody></table></div></div>
@@ -564,7 +596,7 @@ function plRow(r) {
 function renderPnl() {
   const all = state.ent === 'all';
   $('#pnl-title').textContent = all ? `Profit and loss · Group (all ${DATA.entities.length} company codes together)` : `Profit and loss · ${state.ent} (${ENT[state.ent].name})`;
-  $('#pnl-sub').textContent = 'Thousand EUR, costs positive. Booked = posted so far; forecast = expected month end with its 80 % range; variance is against the budget (green better, red worse). Click a line.' + (all ? ' "Group" is the simple sum of all company codes (no consolidation entries in this demo); pick one company code at the top to see it alone.' : '');
+  $('#pnl-sub').textContent = 'Thousand EUR, costs positive. Booked = posted so far; forecast = expected month end with its 80 % range; variance is against the budget; the status column gives the verdict. Click a line.' + (all ? ' "Group" is the simple sum of all company codes (no consolidation entries in this demo); pick one company code at the top to see it alone.' : '');
   $('#pnl').innerHTML = P.rev.map(plRow).join('') + plRow(P.tRev) + P.cogs.map(plRow).join('') + plRow(P.tCogs) + plRow(P.gross) + P.opex.map(plRow).join('') + plRow(P.tOpex) + plRow(P.ebit);
   $('#pnl').querySelectorAll('tr[data-line]').forEach((tr) => { tr.onclick = () => { state.sel = state.sel === tr.dataset.line ? null : tr.dataset.line; renderPnl(); renderDetail(); }; tr.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tr.click(); } }; });
 }
