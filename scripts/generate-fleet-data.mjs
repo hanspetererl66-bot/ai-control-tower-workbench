@@ -61,6 +61,12 @@ const customers = NAMES.map(([name, region, tier, sap], i) => {
   return { id: slug, name, region, tier, sapCustomerId: sap ?? nextId(), vms };
 });
 
+// Demo case (IT Fleet → Infrastructure Operations): the Ariba integration VM of the Gold customer has a TLS certificate that
+// expires in 6 days. It is the certificate "mi-ariba-gw" of the Infrastructure Operations inventory. Set after the random draw so
+// nothing else in the file changes.
+const demoVm = customers[0].vms.find((v) => v.name === 'musind-int04');
+if (demoVm) demoVm.cert = 6;
+
 const A = infra.rules;
 const redShare = (c) => {
   let red = 0;

@@ -39,6 +39,7 @@ import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
+import type { Handoff, IncomingHandoff } from './space-handoff';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
 import CoverSheet from './ui/CoverSheet';
@@ -137,6 +138,10 @@ export default function App() {
   const [spaceOrder, setSpaceOrder] = useState<string[]>(() => loadSpaceOrder(window.localStorage));
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
+  // Hand-over between Spaces: the working state of each Space (in memory) and work waiting for a Space to open.
+  const spaceStates = useRef<Record<string, Record<string, unknown>>>({});
+  const [incoming, setIncoming] = useState<Record<string, IncomingHandoff[]>>({});
+  const handoffNonce = useRef(0);
   const [coverOpen, setCoverOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [prefs, setPrefs] = useState<Preferences>(() => {
@@ -708,6 +713,16 @@ export default function App() {
     }
   }
 
+  /** A Space hands work to another Space: queue it, open that Space unless told not to, and show the notice. */
+  function handOff(fromSlug: string, handoff: Handoff) {
+    const target = spaces.find((x) => x.slug === handoff.to);
+    if (!target) { setToast('The Space for this hand-over is not installed.'); setTimeout(() => setToast(null), 6000); return; }
+    handoffNonce.current += 1;
+    setIncoming((current) => ({ ...current, [handoff.to]: [...(current[handoff.to] ?? []), { from: fromSlug, payload: handoff.payload, nonce: handoffNonce.current }].slice(-20) }));
+    if (handoff.open) { setSelectedSpace(handoff.to); setView('spaces'); }
+    if (handoff.notice) { setToast(handoff.notice); setTimeout(() => setToast(null), 8000); }
+  }
+
   /** Rename a Space or subspace: the new name is kept in the settings, the folder name stays. */
   function renameSpaceTitle(slug: string, title: string) {
     const original = rawSpaces.find((x) => x.slug === slug)?.title ?? slug;
@@ -957,6 +972,11 @@ export default function App() {
             prefs={prefs}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
             onAsk={askFromSpace}
+            onHandoff={(handoff) => handOff(space.slug, handoff)}
+            onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
+            savedState={spaceStates.current[space.slug]}
+            incoming={incoming[space.slug]}
+            onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (

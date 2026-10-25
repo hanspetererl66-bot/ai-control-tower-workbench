@@ -563,7 +563,7 @@
    ],
    "issuer": "DigiTrust EU CA",
    "key": "RSA 2048",
-   "notAfter": "2026-11-02"
+   "notAfter": "2026-10-27"
   },
   {
    "id": "bp-s4-prd",

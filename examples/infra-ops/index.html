@@ -292,13 +292,24 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 .run{background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;margin:8px 0}
 .log{font-size:12px;color:var(--ink-2)}.log div{padding:3px 0;border-bottom:1px solid var(--line-2)}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.trk{list-style:none;margin:10px 0 4px;padding:0;display:grid;gap:0}
+.trk li{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:7px 0;position:relative}
+.trk li:not(:last-child)::before{content:"";position:absolute;left:13px;top:30px;bottom:-4px;width:2px;background:var(--line)}
+.trk .n{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--muted);background:var(--surface)}
+.trk li.done .n{background:var(--green);border-color:var(--green);color:var(--surface)}.trk li.done::before{background:var(--green)}
+.trk li.cur .n{border-color:var(--purple);color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
+.trk li.fail .n{background:var(--red);border-color:var(--red);color:var(--surface)}
+.trk li.todo{opacity:.6}.trk b{display:block;font-size:13px}.trk small{display:block;color:var(--muted);font-size:12px}
+.pbar{height:6px;border-radius:99px;background:var(--line-2);margin-top:5px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--purple);transition:width .35s linear}
+.tq{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}.tq:last-child{border-bottom:0}.tq small{display:block;color:var(--muted)}
+.speedctl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.speedctl select{padding:4px 6px;width:auto}
 @media (max-width:900px){.two,.pbs{grid-template-columns:1fr}.tl{grid-template-columns:110px 1fr 56px}}
 </style>
 </head>
 <body>
 <header>
   <div><div class="logo">Infrastructure <b>Operations</b></div><div class="sub">SAP Private Cloud · Certificates, VMs, DNS</div></div>
-  <div class="who"><label for="who">Signed in as</label><select id="who" aria-label="Signed-in person"></select><button class="btn" id="reset" type="button">Reset demo</button></div>
+  <div class="who"><span class="speedctl"><label for="speed">Demo speed</label><select id="speed" aria-label="Demo speed"><option value="normal">Normal (about 20 s approval)</option><option value="fast">Fast</option></select></span><label for="who">Signed in as</label><select id="who" aria-label="Signed-in person"></select><button class="btn" id="reset" type="button">Reset demo</button></div>
 </header>
 <div class="demo">Fictional sample data, simulated execution: no system is changed. In operation AWX runs the Ansible playbooks and n8n orchestrates approvals and notifications.</div>
 <nav role="tablist" aria-label="Sections" id="tabs"></nav>
@@ -870,7 +881,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
    ],
    "issuer": "DigiTrust EU CA",
    "key": "RSA 2048",
-   "notAfter": "2026-11-02"
+   "notAfter": "2026-10-27"
   },
   {
    "id": "bp-s4-prd",
@@ -1457,10 +1468,11 @@ function simulateRun(plan) {
   var customer = function (id) { return D.customers.filter(function (c) { return c.id === id; })[0]; };
   var pname = function (id) { var p = person(id); return p ? p.name + ' (' + p.role + ')' : id; };
 
-  var S = { tab: 'overview', inv: 'certs', filter: '', pb: 'renew-certificate', flowTask: null, who: 'jb', tasks: [], logs: {}, runs: {}, timers: [] };
+  var S = { tab: 'overview', inv: 'certs', filter: '', pb: 'renew-certificate', flowTask: null, who: 'jb', tasks: [], logs: {}, runs: {}, timers: [], tickets: [], auto: true, speed: 'normal' };
+  var inHost = window.parent !== window;
 
   function reset() {
-    S.timers.forEach(clearTimeout); S.timers = [];
+    S.timers.forEach(clearTimeout); S.timers = []; S.tickets = [];
     S.tasks = JSON.parse(JSON.stringify(D.tasks));
     S.logs = {}; S.runs = {};
     S.tasks.forEach(function (t) {
@@ -1472,6 +1484,148 @@ function simulateRun(plan) {
   function find(id) { return S.tasks.filter(function (t) { return t.id === id; })[0]; }
   function addLog(t, text) { S.logs[t.id].push(text); }
   var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : many); };
+
+
+  /* ---------- the guided process: ticket, pre-check, approval, change window, upgrade, post-check, close ---------- */
+  var K = function () { return (S.speed === 'fast' || reduced) ? 0.12 : 1; };
+  var APPROVE_AT = function (need) { return (need === 2 ? [8000, 20000] : [20000]).map(function (x) { return x * K(); }); };
+  var WINDOW_MS = function () { return 12000 * K(); };
+  var PHASE_STEP = { created: 1, precheck: 1, precheck_done: 2, approval: 2, window: 3, running: 4, post: 5, closing: 6, done: 7, blocked: 1, post_failed: 5 };
+  var STEP_TITLES = ['Task created', 'Pre-check', 'Approval', 'Change window', 'Upgrade', 'Post-check', 'Close ticket'];
+  var CHECKS_SPACE = 'change-checks', FLEET_SPACE = 'it-fleet';
+  var later = function (fn, ms) { S.timers.push(setTimeout(fn, Math.max(0, ms))); };
+  function phaseOf(t) { if (t.flow) return t.flow.phase; return { planned: 'created', in_review: 'approval', approved: 'window', in_window: 'running', done: 'done' }[t.state] || 'created'; }
+  var clockText = function (ms) { return new Date(ms).toISOString().slice(0, 16).replace('T', ' '); };
+
+  /* Everything this page knows survives a trip to another Space: the host keeps the state and gives it back. */
+  var persistTimer = null;
+  function persistNow() {
+    if (!inHost) return;
+    window.parent.postMessage({ type: 'wb:state', state: { tasks: S.tasks, logs: S.logs, runs: S.runs, tickets: S.tickets, who: S.who, auto: S.auto, speed: S.speed, tab: S.tab, openTask: S.openTask || null } }, '*');
+  }
+  function persist() { if (!inHost) return; clearTimeout(persistTimer); persistTimer = setTimeout(persistNow, 200); }
+  function handOff(to, payload, open, notice) { persistNow(); window.parent.postMessage({ type: 'wb:handoff', to: to, payload: payload, open: open, notice: notice || '' }, '*'); }
+  function taskPayload(t) { return { id: t.id, template: t.template, target: t.target, customer: t.customer, window: t.window, requester: t.requester, params: t.params || {} }; }
+
+  /** Pre-check and post-check run in the Change Checks Space; the result comes back as a hand-over. */
+  function sendCheck(t, mode) {
+    t.flow.phase = mode === 'pre' ? 'precheck' : 'post';
+    addLog(t, (mode === 'pre' ? 'pre-check' : 'post-check') + ' started in the Change Checks Space');
+    if (inHost) { handOff(CHECKS_SPACE, { type: 'check-request', mode: mode, speed: S.speed, ticket: t.ticket || '', task: taskPayload(t) }, true); return; }
+    // standalone page (no host): run the same checks right here so the demo still works
+    var p = planOf(t);
+    later(function () { onCheckResult({ type: 'check-result', mode: mode, taskId: t.id, ticket: t.ticket || '', verdict: mode === 'post' || p.ok ? (p.checks && p.checks.some(function (c) { return c.status === 'warn'; }) && mode === 'pre' ? 'warn' : 'ok') : 'fail', counts: { ok: (p.checks || []).length, notes: 0, errors: p.errors.length }, checks: (p.checks || []).map(function (c) { return { label: c.label, status: c.status, detail: c.detail }; }), lines: [] }); }, 1500 * K());
+    render(); if (S.openTask === t.id) openTask(t.id);
+  }
+  function onCheckResult(res) {
+    var t = find(String(res.taskId || '')); if (!t || !t.flow || (res.mode !== 'pre' && res.mode !== 'post')) return;
+    var verdict = res.verdict === 'warn' || res.verdict === 'fail' ? res.verdict : 'ok';
+    var keep = { verdict: verdict, counts: res.counts || {}, checks: (Array.isArray(res.checks) ? res.checks : []).slice(0, 12).map(function (c) { return { label: String(c.label || '').slice(0, 80), status: String(c.status || ''), detail: String(c.detail || '').slice(0, 200) }; }) };
+    var word = verdict === 'ok' ? 'passed' : verdict === 'warn' ? 'passed with notes' : 'blocked';
+    if (res.mode === 'pre') {
+      t.precheck = keep; addLog(t, 'pre-check ' + word + ' (' + (keep.counts.ok || 0) + ' ok, ' + (keep.counts.notes || 0) + ' notes, ' + (keep.counts.errors || 0) + ' errors)');
+      if (verdict === 'fail') { t.flow.phase = 'blocked'; }
+      else if (t.flow.auto) { later(function () { submitForReview(t); }, 900 * K()); t.flow.phase = 'precheck_done'; }
+      else t.flow.phase = 'precheck_done';
+    } else {
+      t.postcheck = keep; addLog(t, 'post-check ' + word);
+      if (verdict === 'fail') { t.flow.phase = 'post_failed'; addLog(t, 'post-check failed: the rollback of the playbook would start now (simulated)'); }
+      else { t.flow.phase = 'closing'; later(function () { finishFlow(t); }, 1200 * K()); }
+    }
+    S.tab = 'tasks'; render(); openTask(t.id); persist();
+  }
+  function beginFlow(t) { t.flow.phase = 'created'; later(function () { sendCheck(t, 'pre'); }, 1400 * K()); }
+  function submitForReview(t) {
+    if (t.state !== 'planned') return;
+    t.state = 'in_review'; t.flow.phase = 'approval'; t.flow.approvalStart = Date.now();
+    addLog(t, 'submitted for review, approval requested in Teams (simulated)');
+    scheduleApprovals(t); render(); if (S.openTask === t.id) openTask(t.id); persist();
+  }
+  /** The simulated approvers answer after a few seconds. The four-eyes rule is enforced by canApprove, as for a person. */
+  function scheduleApprovals(t) {
+    var need = planOf(t).approvalsNeeded, at = APPROVE_AT(need), elapsed = Date.now() - (t.flow.approvalStart || Date.now());
+    for (var k = (t.approvals || []).length; k < need; k++) (function (due) { later(function () { simulatedApproval(t); }, due - elapsed); })(at[k - 0] != null ? at[k] : at[at.length - 1]);
+  }
+  var PREFERRED = ['Security', 'Change Manager', 'Operations'];
+  function simulatedApproval(t) {
+    if (t.state !== 'in_review') return;
+    var cands = D.people.slice().sort(function (a, b) { return PREFERRED.indexOf(a.role) - PREFERRED.indexOf(b.role); });
+    for (var i = 0; i < cands.length; i++) if (canApprove(t, cands[i].id, D).ok) { approveBy(t, cands[i].id); return; }
+    addLog(t, 'no eligible approver found');
+  }
+  function approveBy(t, who) {
+    t.approvals = (t.approvals || []).concat([who]); addLog(t, 'approved by ' + pname(who));
+    if (t.approvals.length >= planOf(t).approvalsNeeded) {
+      t.state = 'approved'; addLog(t, 'all approvals in place, task is approved');
+      if (t.flow) { t.flow.phase = 'window'; t.flow.windowStart = Date.now(); addLog(t, 'waiting for the change window ' + t.window[0].replace('T', ' ')); scheduleWindow(t); }
+    }
+    render(); if (S.openTask === t.id) openTask(t.id); persist();
+  }
+  function scheduleWindow(t) { later(function () { if (t.flow && t.flow.phase === 'window') openWindow(t); }, WINDOW_MS() - (Date.now() - (t.flow.windowStart || Date.now()))); }
+  function openWindow(t) { addLog(t, 'change window is open, execution starts'); t.flow.phase = 'running'; startRun(t); }
+  function finishFlow(t) {
+    t.state = 'done'; t.flow.phase = 'done';
+    addLog(t, 'post-check passed, evidence created');
+    var tk = ticketOf(t);
+    if (tk) {
+      tk.status = 'closed'; addLog(t, 'ticket ' + tk.id + ' closed');
+      var text = (PLAYBOOKS[t.template] || {}).kind === 'cert' ? 'The certificate was renewed on ' + tk.vm + ' and verified.' : 'The change was applied on ' + tk.vm + ' and verified.';
+      tk.report = text; t.flow.reported = true;
+      addLog(t, 'success report sent to the Fleet Manager');
+      if (inHost) handOff(FLEET_SPACE, { type: 'ticket-closed', ticket: tk.id, customerId: tk.customerId, customerName: tk.customerName, vm: tk.vm, kind: tk.kind, chg: t.id, report: text }, false, 'Fleet Manager notified: ' + tk.id + ' closed. ' + text);
+    }
+    render(); if (S.openTask === t.id) openTask(t.id); persist();
+  }
+  function ticketOf(t) { return S.tickets.filter(function (x) { return x.id === t.ticket; })[0] || null; }
+
+  /* Tickets arrive from the Infra-Operations-Fleet Space (hand-over); the operator turns one into a change. */
+  function onTicket(p) {
+    var str = function (v, n) { return typeof v === 'string' ? v.slice(0, n) : ''; };
+    var id = str(p.id, 20); if (!/^[A-Z]{2,4}-\d{3,6}$/.test(id) || S.tickets.some(function (x) { return x.id === id; })) return;
+    S.tickets.unshift({ id: id, customerId: str(p.customerId, 30), customerName: str(p.customerName, 60), vm: str(p.vm, 40), kind: p.kind === 'cert' ? 'cert' : 'other', priority: p.priority === 'High' ? 'High' : 'Medium',
+      reasons: Array.isArray(p.reasons) ? p.reasons.slice(0, 4).map(function (r) { return str(r, 120); }) : [], createdBy: str(p.createdBy, 40) || 'Fleet Manager', status: 'open', chg: '' });
+  }
+  /** The inventory target for a ticket: the certificate of that customer that expires first. */
+  function ticketTarget(tk) {
+    var c = D.customers.filter(function (x) { return x.name === tk.customerName; })[0]; if (!c || tk.kind !== 'cert') return null;
+    var certs = D.certs.filter(function (x) { return x.customer === c.id; }).map(function (x) { return Object.assign({ daysLeft: certStatus(x, D.asOf).daysLeft }, x); }).sort(function (a, b) { return a.daysLeft - b.daysLeft; });
+    return certs.length ? { template: 'renew-certificate', target: certs[0].id, cert: certs[0] } : null;
+  }
+  function demoTicket() {
+    var n = 2042 + S.tickets.length;
+    onTicket({ id: 'OP-' + n, customerId: 'musind', customerName: 'Muster Industrie AG', vm: 'musind-int04', kind: 'cert', priority: 'High', reasons: ['TLS certificate expires in 6 days'], createdBy: 'Fleet Manager' });
+    render(); persist();
+  }
+
+  /* The process as a tracker: what is done, what is running now, what comes next. */
+  function trackerSteps(t, p) {
+    var phase = phaseOf(t), cur = PHASE_STEP[phase] != null ? PHASE_STEP[phase] : 1, need = p.approvalsNeeded, have = (t.approvals || []).length;
+    var tk = ticketOf(t), fail = phase === 'blocked' ? 1 : phase === 'post_failed' ? 5 : -1;
+    var text = [];
+    text[0] = 'Created by ' + pname(t.requester) + (t.ticket ? ' from ticket ' + t.ticket : '');
+    text[1] = t.precheck ? 'Pre-check ' + (t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') : phase === 'precheck' ? 'Running in the Change Checks Space' : 'Playbook in check mode, nothing is changed';
+    var nextDue = '';
+    if (phase === 'approval' && t.flow && have < need) { var due = (APPROVE_AT(need)[have] || 0) - (Date.now() - (t.flow.approvalStart || Date.now())); nextDue = ' · next answer in about ' + Math.max(0, Math.ceil(due / 1000)) + ' s'; }
+    text[2] = have + ' of ' + need + ' approvals' + ((t.approvals || []).length ? ' (' + t.approvals.map(function (id) { return (person(id) || {}).name || id; }).join(', ') + ')' : '') + nextDue;
+    if (phase === 'window' && t.flow) { var fr = Math.min(1, (Date.now() - (t.flow.windowStart || Date.now())) / WINDOW_MS()), a = Date.parse(D.asOf + 'T08:00:00Z'), b = Date.parse(t.window[0] + ':00Z'); text[3] = 'Demo clock ' + clockText(a + fr * (b - a)) + ' → window opens ' + t.window[0].replace('T', ' '); text[3] += '|' + Math.round(fr * 100); }
+    else text[3] = (phase === 'running' || cur > 3) ? 'Window ' + t.window[0].replace('T', ' ') + ' to ' + t.window[1].replace('T', ' ') : 'Starts only inside the approved window ' + t.window[0].replace('T', ' ');
+    text[4] = cur > 4 ? 'Playbook applied (simulated)' : phase === 'running' ? 'AWX job running' : 'Runs after the window opens';
+    text[5] = t.postcheck ? 'Post-check ' + (t.postcheck.verdict === 'fail' ? 'failed' : 'passed') : phase === 'post' ? 'Running in the Change Checks Space' : 'Service, certificate, dependencies, monitoring';
+    text[6] = phase === 'done' ? (tk ? 'Ticket ' + tk.id + ' closed, success report sent to the Fleet Manager' : 'Evidence filed') : tk ? 'Ticket ' + tk.id + ' is closed and the Fleet Manager is told' : 'Evidence is filed';
+    return STEP_TITLES.map(function (title, i) { return { title: title, st: i === fail ? 'fail' : i < cur ? 'done' : i === cur && phase !== 'done' ? 'cur' : phase === 'done' ? 'done' : 'todo', text: text[i] }; });
+  }
+  function trackerHtml(t, p) {
+    return '<ol class="trk" aria-label="Change process">' + trackerSteps(t, p).map(function (x, i) {
+      var parts = String(x.text).split('|'), bar = parts[1] ? '<div class="pbar" role="img" aria-label="Waiting for the window"><i style="width:' + esc(parts[1]) + '%"></i></div>' : '';
+      return '<li class="' + x.st + '"><span class="n">' + (x.st === 'done' ? '✓' : x.st === 'fail' ? '×' : i + 1) + '</span><div><b>' + esc(x.title) + '</b><small>' + esc(parts[0]) + '</small>' + bar + '</div></li>';
+    }).join('') + '</ol>';
+  }
+  /* Repaint the tracker while a flow is moving (countdowns, demo clock). */
+  setInterval(function () {
+    var box = $('#tracker'); if (!box || !S.openTask) return;
+    var t = find(S.openTask); if (!t) return; var ph = phaseOf(t);
+    if (ph === 'approval' || ph === 'window') box.innerHTML = trackerHtml(t, planOf(t));
+  }, 400);
 
   /* ---------- overview ---------- */
   function overview() {
@@ -1485,6 +1639,12 @@ function simulateRun(plan) {
       kpi(crit, 'VMs with critical patches', crit ? 'red' : '') + kpi(review, 'Tasks in review or approved', '') +
       kpi(next ? next.window[0].replace('T', ' ') : '–', 'Next approved window', '') + '</div>';
     var f = findings(D).slice(0, 7);
+    h += '<div class="card" style="margin-bottom:16px"><div class="tools" style="margin:0"><h2 style="margin:0">Tickets for the operator</h2><button class="btn" id="demo-ticket" type="button" style="margin-left:auto" title="Normally the ticket comes from the Infra-Operations-Fleet Space">Simulate ticket from Infra-Operations-Fleet</button></div><p class="note">Tickets the Fleet Manager opened in IT Fleet. Start a change from a ticket: pre-check, approval, window, upgrade, post-check, close.</p>' +
+      (S.tickets.length ? S.tickets.map(function (tk) {
+        var tg = ticketTarget(tk);
+        return '<div class="tq"><div><b>' + esc(tk.id) + ' · ' + esc(tk.customerName) + '</b> <span class="tag ' + (tk.priority === 'High' ? 'red' : 'amber') + '">' + esc(tk.priority) + '</span> <span class="tag ' + (tk.status === 'closed' ? 'ok' : tk.status === 'open' ? '' : 'tool') + '">' + (tk.status === 'closed' ? 'closed' : tk.status === 'open' ? 'open' : 'in change ' + esc(tk.chg)) + '</span><small>' + esc(tk.vm) + ' · ' + esc(tk.reasons.join(', ') || 'see the fleet view') + (tg ? ' · certificate ' + esc(tg.target) : '') + '</small>' + (tk.report ? '<small>' + esc(tk.report) + ' Reported to the Fleet Manager.</small>' : '') + '</div>' +
+          (tk.status === 'open' ? '<button class="btn primary" data-ticket="' + esc(tk.id) + '" type="button"' + (tg ? '' : ' disabled title="No playbook for this kind of ticket yet"') + '>Start change</button>' : tk.chg ? '<button class="btn" data-chg="' + esc(tk.chg) + '" type="button">Open ' + esc(tk.chg) + '</button>' : '') + '</div>';
+      }).join('') : '<p class="note" style="margin:0">No ticket yet. Open one for a red VM in Infra-Operations-Fleet.</p>') + '</div>';
     h += '<div class="two"><div class="card"><h2>To do today</h2><p class="note">Suggestions from the inventory. “Suggest task” pre-fills the request; nothing is changed.</p>' +
       f.map(function (x, i) { return '<div class="todo"><span class="dot ' + x.severity + '"></span><div>' + esc(x.title) + '<small>' + esc(x.detail) + '</small></div>' + (x.template ? '<button class="btn" data-new="' + i + '" type="button">Suggest task</button>' : '') + '</div>'; }).join('') + '</div>';
     h += '<div class="card"><h2>Certificate timeline</h2><p class="note">Days remaining (scale up to 365).</p>' + certs.map(function (c) {
@@ -1492,6 +1652,9 @@ function simulateRun(plan) {
       return '<div class="tl"><span class="n" title="' + esc(c.name) + '">' + esc(c.id) + '</span><div class="bar" role="img" aria-label="' + esc(c.id) + ': ' + c.daysLeft + ' days"><i class="' + c.status + '" style="width:' + (c.daysLeft < 0 ? 2 : w) + '%"></i></div><span class="d">' + (c.daysLeft < 0 ? 'expired' : c.daysLeft + ' d') + '</span></div>';
     }).join('') + '</div></div>';
     $('#main').innerHTML = h;
+    var dt = $('#demo-ticket'); if (dt) dt.onclick = demoTicket;
+    document.querySelectorAll('[data-ticket]').forEach(function (b) { b.onclick = function () { var tk = S.tickets.filter(function (x) { return x.id === b.dataset.ticket; })[0], tg = tk && ticketTarget(tk); if (tg) openNew({ template: tg.template, target: tg.target, ticket: tk.id }); }; });
+    document.querySelectorAll('[data-chg]').forEach(function (b) { b.onclick = function () { S.tab = 'tasks'; render(); openTask(b.dataset.chg); }; });
     document.querySelectorAll('[data-new]').forEach(function (b) { b.onclick = function () { var x = f[Number(b.dataset.new)]; openNew({ template: x.template, target: x.target }); }; });
   }
   function kpi(v, label, tone) { return '<div class="kpi ' + (tone || '') + '"><b>' + esc(v) + '</b><span>' + esc(label) + '</span></div>'; }
@@ -1584,14 +1747,15 @@ function simulateRun(plan) {
     var p = planOf(t), done = STEPS_DONE[t.state];
     var h = '<h2>' + esc(t.id) + ' · ' + esc(p.playbook.title) + '</h2><p class="note">' + esc(t.target) + ' · ' + esc(p.customer) + ' · ' + esc(t.window[0].replace('T', ' ')) + ' to ' + esc(t.window[1].replace('T', ' ')) + '</p>' +
       '<div class="row"><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span><span class="tag">' + STATE_LABEL[t.state] + '</span><span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span><span class="tag ' + (p.downtime.minutes ? 'amber' : 'ok') + '">' + (p.downtime.minutes ? 'Outage about ' + p.downtime.minutes + ' min' : 'no outage') + '</span></div>' + errsHtml(p);
-    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
+    h += '<h3>Process</h3><div id="tracker">' + trackerHtml(t, p) + '</div>';
+    h += '<div id="actions"></div><div id="runbox"></div>';
+    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + (t.precheck ? '<p class="note">Result from the Change Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
     h += '<h3>Impact</h3><p>' + esc(p.downtime.note) + '</p><p class="sub">Affected systems: ' + esc(p.blast.vms.join(', ') || 'none') + '<br>DNS names: ' + esc(p.blast.dns.join(', ') || 'none') + '</p>';
-    h += '<h3>Flow (n8n and AWX)</h3>' + p.steps.map(function (s) {
+    if (!t.flow) h += '<h3>Flow (n8n and AWX)</h3>' + p.steps.map(function (s) {
       var oi = ORCHESTRATION.map(function (o) { return o.id; }).indexOf(s.id);
       var cls = oi < 0 ? '' : oi < done ? 'done' : oi === done ? 'cur' : '';
       return '<div class="step ' + cls + '"><i></i><div>' + esc(s.title) + '<small>' + esc(s.detail || s.when || '') + '</small></div>' + (s.tool ? '<span class="tag tool">' + esc(s.tool) + '</span>' : '<span class="tag">upfront</span>') + '</div>';
     }).join('');
-    h += '<div id="actions"></div><div id="runbox"></div>';
     h += '<div class="card" style="margin:14px 0"><span class="tag tool">Joule</span><div class="row"><button class="btn" data-ask="explain" type="button">Explain this change</button><button class="btn" data-ask="customer" type="button">Draft customer notice</button><button class="btn" data-ask="rollback" type="button">What happens on rollback?</button><button class="btn" data-ask="n8n" type="button">Submit to n8n</button></div><p class="note" style="margin:0">Joule answers in the chat of the desktop app. “Submit to n8n” plans the change and hands it to the n8n workflow (check mode) after you confirm.</p></div>';
     h += '<h3>Log</h3><div class="log" id="log"></div><div id="evidence"></div>';
     openDrawer(h);
@@ -1603,25 +1767,33 @@ function simulateRun(plan) {
   function renderActions(t, p) {
     var box = $('#actions'); if (!box) return;
     var h = '<div class="row">';
-    if (t.state === 'planned') h += '<button class="btn primary" data-do="submit" type="button"' + (p.ok ? '' : ' disabled') + '>Submit for review</button>';
+    var ph = phaseOf(t);
+    if (t.flow && (ph === 'created' || ph === 'precheck')) h += '<button class="btn primary" data-do="precheck" type="button">' + (ph === 'precheck' ? 'Run the pre-check again' : 'Run pre-check now') + '</button>';
+    if (t.flow && ph === 'post') h += '<button class="btn" data-do="postcheck" type="button">Run the post-check again</button>';
+    if (t.flow && ph === 'blocked') h += '<span class="sub" role="status">The pre-check blocked this change. Fix the request (window, backup) and create a new task.</span>';
+    if (t.flow && ph === 'window') h += '<button class="btn" data-do="skip" type="button">Skip the waiting (open the window now)</button>';
+    if (t.flow && ph === 'post_failed') h += '<span class="sub" role="status">The post-check failed: the rollback would start now (simulated).</span>';
+    if (t.state === 'planned' && !(t.flow && t.flow.auto && ph !== 'precheck_done')) h += '<button class="btn primary" data-do="submit" type="button"' + (p.ok ? '' : ' disabled') + '>Submit for review</button>';
     if (t.state === 'in_review') {
       var ok = canApprove(t, S.who, D);
       h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Approve as ' + esc((person(S.who) || {}).name) + '</button>' + (ok.ok ? '' : '<span class="sub" role="status">' + esc(ok.reason) + '</span>');
     }
-    if (t.state === 'approved' || t.state === 'in_window') h += '<button class="btn primary" data-do="run" type="button"' + (p.ok ? '' : ' disabled') + '>' + (t.state === 'in_window' ? 'Continue execution' : 'Start in window') + ' (simulation)</button>';
+    if ((t.state === 'approved' || t.state === 'in_window') && !t.flow) h += '<button class="btn primary" data-do="run" type="button"' + (p.ok ? '' : ' disabled') + '>' + (t.state === 'in_window' ? 'Continue execution' : 'Start in window') + ' (simulation)</button>';
     h += '</div>';
     box.innerHTML = h;
     var b;
-    if ((b = box.querySelector('[data-do=submit]'))) b.onclick = function () { t.state = 'in_review'; addLog(t, 'submitted for review by ' + pname(S.who)); refresh(t); };
-    if ((b = box.querySelector('[data-do=approve]'))) b.onclick = function () {
-      t.approvals = (t.approvals || []).concat([S.who]); addLog(t, 'approved by ' + pname(S.who));
-      if (t.approvals.length >= planOf(t).approvalsNeeded) { t.state = 'approved'; addLog(t, 'all approvals in place, task is approved'); }
-      refresh(t);
-    };
+    if ((b = box.querySelector('[data-do=precheck]'))) b.onclick = function () { sendCheck(t, 'pre'); };
+    if ((b = box.querySelector('[data-do=postcheck]'))) b.onclick = function () { sendCheck(t, 'post'); };
+    if ((b = box.querySelector('[data-do=skip]'))) b.onclick = function () { openWindow(t); };
+    if ((b = box.querySelector('[data-do=submit]'))) b.onclick = function () { if (t.flow) { submitForReview(t); return; } t.state = 'in_review'; addLog(t, 'submitted for review by ' + pname(S.who)); refresh(t); };
+    if ((b = box.querySelector('[data-do=approve]'))) b.onclick = function () { approveBy(t, S.who); };
     if ((b = box.querySelector('[data-do=run]'))) b.onclick = function () { startRun(t); };
   }
   function refresh(t) { render(); openTask(t.id); }
-  function finish(t) { t.state = 'done'; addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id); }
+  function finish(t) {
+    if (t.flow) { addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
+    t.state = 'done'; addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
+  }
   function startRun(t) {
     var p = planOf(t), run = simulateRun(p);
     t.state = 'in_window'; addLog(t, 'execution started (simulation) by ' + pname(S.who));
@@ -1629,7 +1801,7 @@ function simulateRun(plan) {
     var shown = 0;
     function next() {
       shown++; showRun(t, p, shown);
-      if (shown < run.lines.length) S.timers.push(setTimeout(next, reduced ? 0 : 380)); else finish(t);
+      if (shown < run.lines.length) S.timers.push(setTimeout(next, reduced ? 0 : Math.round(380 * (S.speed === 'fast' ? 0.3 : 1)))); else finish(t);
     }
     if (reduced) { showRun(t, p, run.lines.length); finish(t); } else next();
   }
@@ -1641,7 +1813,8 @@ function simulateRun(plan) {
       $('#evidence').innerHTML = '<h3>Audit evidence</h3><pre class="code">' + esc([
         'Task:         ' + t.id + ' (' + p.playbook.id + ')', 'Target:       ' + t.target + ' / ' + p.customer, 'Window:       ' + t.window[0] + ' to ' + t.window[1],
         'Requested by: ' + pname(t.requester), 'Approvals:    ' + (t.approvals || []).map(pname).join('; '),
-        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes',
+        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes' + (t.precheck ? ' (Change Checks: ' + t.precheck.verdict + ')' : ''),
+        'Post-check:   ' + (t.postcheck ? t.postcheck.verdict : 'not run') + (t.ticket ? '\nTicket:       ' + t.ticket + ' closed' : ''),
         'Result:       ok=' + run.recap.ok + ' changed=' + run.recap.changed + ' failed=' + run.recap.failed, 'Rollback:     not needed',
       ].join('\n')) + '</pre>';
     }
@@ -1649,8 +1822,8 @@ function simulateRun(plan) {
 
   /* ---------- new task ---------- */
   function openNew(pre) {
-    var f = { template: pre.template || 'renew-certificate', target: pre.target || '', date: addDays(D.asOf, 10), time: '22:00', hours: 2, newValue: '', ttl: 300, targetRegion: 'europe-west1' };
-    openDrawer('<h2>New task</h2><p class="note">The request is checked against the inventory and the rules before it can be created.</p><div class="form" id="form"></div><div id="preview"></div>');
+    var f = { auto: S.auto, template: pre.template || 'renew-certificate', target: pre.target || '', date: addDays(D.asOf, 10), time: '22:00', hours: 2, newValue: '', ttl: 300, targetRegion: 'europe-west1' };
+    openDrawer('<h2>New task</h2><p class="note">The request is checked against the inventory and the rules before it can be created.' + (pre.ticket ? ' From ticket <b>' + esc(pre.ticket) + '</b>.' : '') + '</p><div class="form" id="form"></div><div id="preview"></div>');
     function targetsFor(tpl) { var k = PLAYBOOKS[tpl].kind; return k === 'cert' ? D.certs.map(function (c) { return [c.id, c.id + ' · ' + c.name]; }) : k === 'dns' ? D.dns.map(function (d) { return [d.id, d.name]; }) : D.vms.map(function (v) { return [v.id, v.id + ' · ' + v.role]; }); }
     function req() {
       var start = f.date + 'T' + f.time, end = new Date(Date.parse(start + ':00Z') + f.hours * 3600000).toISOString().slice(0, 16);
@@ -1666,6 +1839,8 @@ function simulateRun(plan) {
           (f.template === 'update-dns-record' ? '<label>New value<input id="f-val" value="' + esc(f.newValue) + '" placeholder="203.0.113.99"></label><label>TTL (seconds)<input id="f-ttl" type="number" value="' + f.ttl + '"></label>' : '') +
           (f.template === 'move-vm' ? '<label>Target region<select id="f-reg">' + D.regions.map(function (r) { return '<option value="' + r.id + '"' + (r.id === f.targetRegion ? ' selected' : '') + '>' + esc(r.label + ' (' + r.freePct + ' % free)') + '</option>'; }).join('') + '</select></label>' : '');
         var on = function (id, key, num) { var el = $(id); if (el) el.oninput = el.onchange = function () { f[key] = num ? Number(el.value) : el.value; if (key === 'template') { f.target = ''; paint(true); } else paint(false); }; };
+        $('#form').insertAdjacentHTML('beforeend', '<label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-auto" style="width:auto;margin:0"' + (f.auto ? ' checked' : '') + '> Run the whole process automatically (demo): pre-check, approval, change window, upgrade, post-check, close ticket</label>');
+        $('#f-auto').onchange = function (e) { f.auto = e.target.checked; S.auto = f.auto; };
         on('#f-tpl', 'template'); on('#f-target', 'target'); on('#f-date', 'date'); on('#f-time', 'time'); on('#f-hours', 'hours', true); on('#f-val', 'newValue'); on('#f-ttl', 'ttl', true); on('#f-reg', 'targetRegion');
       }
       var p = planTask(D, req());
@@ -1673,7 +1848,10 @@ function simulateRun(plan) {
       var c = $('#create');
       if (c) c.onclick = function () {
         var r = req(), id = 'CHG-' + (1044 + S.tasks.length - D.tasks.length), t = { id: id, template: r.template, target: r.target, customer: p.customer ? D.customers.filter(function (x) { return x.name === p.customer; })[0].id : '', window: r.window, state: 'planned', requester: S.who, approvals: [], params: { newValue: r.newValue, ttl: r.ttl, targetRegion: r.targetRegion } };
-        S.tasks.push(t); S.logs[id] = ['created by ' + pname(S.who)]; S.tab = 'tasks'; render(); openTask(id);
+        S.tasks.push(t); S.logs[id] = ['created by ' + pname(S.who)]; S.tab = 'tasks';
+        if (pre.ticket) { t.ticket = pre.ticket; var tk = S.tickets.filter(function (x) { return x.id === pre.ticket; })[0]; if (tk) { tk.status = 'change'; tk.chg = id; S.logs[id][0] += ' from ticket ' + tk.id; } }
+        t.flow = { auto: f.auto, phase: 'created' };
+        render(); openTask(id); if (f.auto) beginFlow(t);
       };
     }
     paint(true);
@@ -1703,10 +1881,42 @@ function simulateRun(plan) {
     $('#tabs').innerHTML = TABS.map(function (x) { return '<button role="tab" type="button" data-tab="' + x[0] + '" aria-selected="' + (S.tab === x[0]) + '">' + x[1] + '</button>'; }).join('');
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { S.tab = b.dataset.tab; render(); }; });
     ({ overview: overview, tasks: tasksTab, inventory: inventory, playbooks: playbooksTab })[S.tab]();
+    persist();
   }
   $('#who').innerHTML = D.people.map(function (p) { return '<option value="' + p.id + '"' + (p.id === S.who ? ' selected' : '') + '>' + esc(p.name + ' (' + p.role + ')') + '</option>'; }).join('');
   $('#who').onchange = function (e) { S.who = e.target.value; if (S.openTask && find(S.openTask)) openTask(S.openTask); };
   $('#reset').onclick = function () { reset(); closeDrawer(); render(); };
+  $('#speed').onchange = function (e) { S.speed = e.target.value; persist(); };
+
+  /* The host gives back what this page saved before it was left, and delivers hand-overs from other Spaces. */
+  function resumeFlows() {
+    S.tasks.forEach(function (t) {
+      if (!t.flow) return;
+      if (t.flow.phase === 'approval') scheduleApprovals(t);
+      else if (t.flow.phase === 'window') scheduleWindow(t);
+      else if (t.flow.phase === 'running' && t.state === 'in_window') { if (!S.runs[t.id]) startRun(t); else finish(t); }
+      else if (t.flow.phase === 'closing') later(function () { finishFlow(t); }, 600 * K());
+    });
+  }
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+    var m = e.data, st = m.state;
+    if (st && Array.isArray(st.tasks)) {
+      S.timers.forEach(clearTimeout); S.timers = [];
+      S.tasks = st.tasks; S.logs = st.logs || {}; S.runs = st.runs || {}; S.tickets = Array.isArray(st.tickets) ? st.tickets : [];
+      if (typeof st.who === 'string') S.who = st.who; S.auto = st.auto !== false; S.speed = st.speed === 'fast' ? 'fast' : 'normal'; if (st.tab) S.tab = st.tab;
+      $('#who').value = S.who; $('#speed').value = S.speed;
+    }
+    var open = null;
+    (Array.isArray(m.handoffs) ? m.handoffs : []).forEach(function (h) {
+      var p = h && h.payload; if (!p) return;
+      if (p.type === 'ticket') { onTicket(p); S.tab = 'overview'; }
+      else if (p.type === 'check-result') { var t = find(String(p.taskId || '')); if (t) { onCheckResult(p); open = t.id; } }
+    });
+    resumeFlows(); render();
+    var back = open || (st && st.openTask);
+    if (back && find(back)) openTask(back);
+  });
   reset(); render();
   window.__io = { S: S, openTask: openTask, openNew: openNew, render: render, startRun: startRun, promptFor: promptFor, find: find };
 })();

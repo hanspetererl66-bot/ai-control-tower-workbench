@@ -7,5 +7,7 @@
     "Production needs two approvals from different roles; the requester cannot approve their own change.",
     "Fictional sample data and simulated execution. “Submit to n8n” sends a check-mode request only, once a webhook is configured."
   ],
-  "prompt": "Bundled example: Infrastructure Operations (static, data and model embedded by npm run sync:infra-ops)."
+  "prompt": "Bundled example: Infrastructure Operations (static, data and model embedded by npm run sync:infra-ops).",
+  "domain": "Operations",
+  "parent": "it-fleet"
 }

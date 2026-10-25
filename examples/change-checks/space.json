@@ -1,0 +1,12 @@
+{
+  "title": "Change Checks",
+  "description": "Runs the pre-check and the post-check of an infrastructure change: the playbook in check mode with a live log, then back to the change request.",
+  "domain": "Operations",
+  "insights": [
+    "Infrastructure Operations hands a change request to this Space. The pre-check runs the playbook in check mode (nothing is changed) and returns the verdict to the change request.",
+    "After the upgrade the same Space runs the post-check: service health, new certificate, dependent systems and monitoring.",
+    "Fictional sample data and a simulated run. In operation AWX runs the Ansible job template and n8n collects the result."
+  ],
+  "prompt": "Bundled example: Change Checks (static, data and model embedded by npm run sync:infra-ops).",
+  "parent": "it-fleet"
+}

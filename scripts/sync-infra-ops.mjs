@@ -12,6 +12,8 @@ import { embedDesignSystem } from './sync-design-system.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = 'examples/infra-ops/index.html';
+/** Pages that run the same model: the Infrastructure Operations Space and the Change Checks Space. */
+export const PAGES = [PAGE, 'examples/change-checks/index.html'];
 const DATA = /(<script type="application\/json" id="io-data">)([\s\S]*?)(<\/script>)/;
 const MODEL = /(<script id="io-model">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
@@ -34,13 +36,13 @@ export function embedInfraOps(html, data, source, css) {
 export const repoData = () => JSON.parse(read('examples/infra-ops/data.json'));
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const html = read(PAGE);
-  const next = embedInfraOps(html, repoData(), undefined, read('examples/shared/design-system.css'));
-  if (process.argv.includes('--check')) {
-    if (next !== html) { console.error('Infrastructure Operations page is out of sync — run: npm run sync:infra-ops'); process.exit(1); }
-    console.log('Infrastructure Operations page is in sync.');
-  } else {
-    writeFileSync(join(ROOT, PAGE), next);
-    console.log('Embedded the Infrastructure Operations data, model and design system.');
+  let stale = false;
+  for (const page of PAGES) {
+    const html = read(page);
+    const next = embedInfraOps(html, repoData(), undefined, read('examples/shared/design-system.css'));
+    if (process.argv.includes('--check')) { if (next !== html) { console.error(`${page} is out of sync — run: npm run sync:infra-ops`); stale = true; } }
+    else writeFileSync(join(ROOT, page), next);
   }
+  if (process.argv.includes('--check')) { if (stale) process.exit(1); console.log('Infrastructure Operations pages are in sync.'); }
+  else console.log('Embedded the Infrastructure Operations data, model and design system.');
 }

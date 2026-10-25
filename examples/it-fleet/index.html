@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IT Fleet</title>
+<title>Infra-Operations-Fleet</title>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
    Source of truth: examples/shared/design-system.css. Embedded into each Space by
@@ -433,20 +433,20 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
    "tier": "Gold",
    "sapCustomerId": "0010048211",
    "trend": [
+    5,
+    3,
+    3,
+    5,
+    4,
+    5,
+    5,
     3,
     1,
-    1,
-    3,
     2,
-    3,
-    3,
+    2,
+    2,
     1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+    2
    ],
    "vms": [
     [
@@ -490,7 +490,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
      37,
      8,
      10,
-     270,
+     6,
      1
     ],
     [
@@ -14337,7 +14337,8 @@ const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: pro
 const CHECKS = [['cpu', 'CPU'], ['mem', 'Memory'], ['disk', 'Disk'], ['backup', 'Backup'], ['patch', 'Patch'], ['cert', 'Certificate'], ['unreachable', 'Unreachable']];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
 const FLOW = ['Detected', 'Approved', 'Run (simulated)', 'Verified'];
-const state = { view: 'map', status: 'all', prod: true, region: 'all', q: '', sel: null, approved: {}, done: {}, tickets: {}, step: -1 };
+const inHost = window.parent !== window;
+const state = { fixed: [], news: [], view: 'map', status: 'all', prod: true, region: 'all', q: '', sel: null, approved: {}, done: {}, tickets: {}, step: -1 };
 const raw = DATA.customers.map((c) => ({ id: c.id, name: c.name, region: c.region, tier: c.tier, sap: c.sapCustomerId, trend: c.trend,
   vms: c.vms.map(([name, env, cpu, mem, disk, backup, patch, cert, reach]) => ({ id: c.id + '/' + name, name, env, cpuPct: cpu, memPct: mem, diskPct: disk, backupAgeHours: backup, patchLagDays: patch, certExpiresInDays: cert, reachable: !!reach })) }));
 let model = [];
@@ -14450,7 +14451,11 @@ function renderDrill() {
   $('#ask').onclick = () => send(`Explain the IT status of the customer ${c.name} (SAP customer ID ${c.sap}, ${c.region}): ${c.status}, ${c.red} red and ${c.yellow} yellow of ${c.vms.length} VMs (${reasonsOf(c).join(', ') || 'no reasons'}). What should the operator do first? Please answer in English.`);
   if ($('#ticket')) $('#ticket').onclick = () => {
     const id = 'OP-' + (2042 + Object.keys(state.tickets).length); state.tickets[c.id] = id;
-    send(`Open a service ticket for the IT operator with the tool create_ticket: customer muster, product "IT infrastructure", priority ${c.status === 'red' ? 'High' : 'Medium'}, title "${id} ${c.name} (SAP ${c.sap}): ${c.red} red, ${c.yellow} yellow VMs", description "${reasonsOf(c).join(', ')}". Please answer in English.`);
+    const bad = [...c.vms].filter((v) => v.status !== 'green'), vm = bad.find((v) => v.reasons.some((r) => r.key === 'cert' && r.level === 'red')) || bad.find((v) => v.status === 'red') || bad[0];
+    const kind = vm && vm.reasons.some((r) => r.key === 'cert') ? 'cert' : 'other';
+    const payload = { type: 'ticket', id, customerId: c.id, customerName: c.name, vm: vm ? vm.name : '', kind, priority: c.status === 'red' ? 'High' : 'Medium', reasons: (vm ? vm.reasons : []).map((r) => r.text).slice(0, 6), createdBy: 'Fleet Manager' };
+    if (inHost) { saveState(); window.parent.postMessage({ type: 'wb:handoff', to: 'infra-ops', payload, open: true, notice: 'Ticket ' + id + ' sent to the infrastructure operator.' }, '*'); }
+    else send(`Open a service ticket for the IT operator with the tool create_ticket: customer muster, product "IT infrastructure", priority ${payload.priority}, title "${id} ${c.name} (SAP ${c.sap}): ${c.red} red, ${c.yellow} yellow VMs", description "${reasonsOf(c).join(', ')}". Please answer in English.`);
     renderAll();
   };
 }
@@ -14489,7 +14494,26 @@ $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
 $('#reset').onclick = () => { Object.assign(state, { status: 'all', prod: true, region: 'all', q: '', sel: null, approved: {}, done: {}, tickets: {}, step: -1, view: 'map' }); $('#prod').checked = true; $('#region').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { hideTip(); state.sel = null; renderAll(); } });
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => state.view === 'map' && renderMap(), 120); });
-compute(); renderAll();
+function saveState() { if (inHost) window.parent.postMessage({ type: 'wb:state', state: { tickets: state.tickets, fixed: state.fixed, news: state.news, sel: state.sel, view: state.view, status: state.status } }, '*'); }
+function applyFixed() { state.fixed.forEach((f) => { const c = raw.find((x) => x.id === f.customerId); const v = c && c.vms.find((x) => x.name === f.vm); if (v) { v.certExpiresInDays = 365; } }); }
+function renderNews() {
+  let el = document.getElementById('news');
+  if (!el) { el = document.createElement('div'); el.id = 'news'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite'); $('#kpis').parentNode.insertBefore(el, $('#kpis')); }
+  el.innerHTML = state.news.map((n) => `<div class="card news"><b>${esc(n.ticket)} closed</b> <span class="pill done">success</span><div>${esc(n.report)}</div><div class="note">${esc(n.customerName)} / ${esc(n.vm)} is green again. Ticket closed by the infrastructure operator.</div></div>`).join('');
+}
+window.addEventListener('message', (e) => {
+  if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+  const m = e.data, st = m.state;
+  if (st && typeof st === 'object') { state.tickets = st.tickets || {}; state.fixed = Array.isArray(st.fixed) ? st.fixed : []; state.news = Array.isArray(st.news) ? st.news : []; if (st.sel) state.sel = st.sel; if (st.view) state.view = st.view; if (st.status) state.status = st.status; }
+  (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => {
+    const p = h && h.payload; if (!p || p.type !== 'ticket-closed') return;
+    if (!state.fixed.some((f) => f.customerId === p.customerId && f.vm === p.vm)) state.fixed.push({ customerId: String(p.customerId), vm: String(p.vm) });
+    if (!state.news.some((n) => n.ticket === String(p.ticket))) state.news.push({ ticket: String(p.ticket), customerName: String(p.customerName), vm: String(p.vm), report: String(p.report || '').slice(0, 300) });
+    state.sel = String(p.customerId);
+  });
+  applyFixed(); compute(); renderAll(); renderNews(); saveState();
+});
+compute(); renderAll(); renderNews();
 window.__fleet = () => model; window.__state = state; window.__go = go;
 })();
 </script>

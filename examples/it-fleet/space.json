@@ -1,5 +1,5 @@
 {
-  "title": "IT Fleet",
+  "title": "Infra-Operations-Fleet",
   "description": "Mockup of an IT fleet with 41 fictional customers and about 1,200 VMs: treemap, heatmap and a bundled task inbox, all with the green, yellow, red logic of the IT Infrastructure Space.",
   "domain": "Operations",
   "insights": [
@@ -8,5 +8,5 @@
     "Click a customer for its VM wall, the SAP customer ID, and a button that creates a ticket for the operator through the chat tool create_ticket.",
     "'Start demo' walks through five steps. Approving and running a bundle is simulated; nothing is changed."
   ],
-  "prompt": "Bundled example: IT Fleet (static, data embedded by npm run sync:it-fleet)."
+  "prompt": "Bundled example: Infra-Operations-Fleet (static, data embedded by npm run sync:it-fleet)."
 }
