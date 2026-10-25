@@ -31,7 +31,7 @@ test('every card is actionable and mail drafts never send', () => {
   for (const card of buildBriefing(data, today)) {
     assert.ok(card.actions.length > 0, card.id);
     for (const action of card.actions) {
-      if (action.kind === 'open') assert.equal(action.space, 'ai-control-tower');
+      if (action.kind === 'open') assert.ok(['ai-control-tower', 'infra-ops', 'it-fleet'].includes(action.space));
       if (action.kind === 'ask' && /Gmail/.test(action.prompt)) assert.match(action.prompt, /nichts senden/);
     }
   }
@@ -55,4 +55,25 @@ test('only the board briefing remains when nothing needs attention', () => {
   calm.agents.overprivileged = 0;
   calm.compliance.euAiAct.auditDate = '2025-01-01';
   assert.deepEqual(buildBriefing(calm, today).map((c) => c.id), ['board']);
+});
+
+const ops = { certs: JSON.parse(readFileSync(new URL('../examples/infra-ops/data.json', import.meta.url), 'utf8')).certs, fleet: JSON.parse(readFileSync(new URL('../examples/it-fleet/fleet.json', import.meta.url), 'utf8')) };
+
+test('each card names its area; the AI cards are labelled AI', () => {
+  const cards = buildBriefing(data, today, ops);
+  assert.deepEqual(cards.filter((c) => c.area.startsWith('AI-')).map((c) => c.area), ['AI-Risiken', 'AI-Budget', 'AI-Compliance', 'AI-Agenten-Status']);
+  assert.ok(cards.every((c) => c.area));
+});
+
+test('two infrastructure cards come from the certificates and the fleet, before the board card', () => {
+  const cards = buildBriefing(data, new Date(2026, 9, 25), ops);
+  assert.deepEqual(cards.map((c) => c.id), ['risks', 'budget', 'audit', 'agents', 'certs', 'fleet', 'board']);
+  const certs = cards.find((c) => c.id === 'certs');
+  assert.match(certs.title, /^5 Zertifikate laufen in unter 30 Tagen ab, 1 abgelaufen$/);
+  assert.equal(certs.tone, 'red');
+  assert.match(certs.actions.find((a) => a.kind === 'ask').prompt, /nichts ausführen/);
+  const fleet = cards.find((c) => c.id === 'fleet');
+  assert.equal(fleet.title, '7 Kunden sind im Fleet rot');
+  assert.deepEqual(fleet.actions.map((a) => a.space), ['it-fleet']);
+  assert.equal(buildBriefing(data, today).some((c) => c.id === 'certs' || c.id === 'fleet'), false);
 });

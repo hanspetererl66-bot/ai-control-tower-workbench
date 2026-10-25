@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import controlTowerData from '../../examples/control-tower/data.json';
-import { buildBriefing, type BriefingAction, type BriefingData } from '../briefing';
+import infraOpsData from '../../examples/infra-ops/data.json';
+import fleetData from '../../examples/it-fleet/fleet.json';
+import { buildBriefing, type OpsBriefingData, type BriefingAction, type BriefingData } from '../briefing';
 
 type Props = {
   disabled: boolean;
@@ -12,7 +14,7 @@ type Props = {
 
 /** Proactive cards on the empty chat: what needs attention today, one click from the answer. */
 export default function BriefingCards({ disabled, canAsk, onOpen, onAsk }: Props) {
-  const cards = useMemo(() => buildBriefing(controlTowerData as unknown as BriefingData), []);
+  const cards = useMemo(() => buildBriefing(controlTowerData as unknown as BriefingData, new Date(), { certs: (infraOpsData as { certs: OpsBriefingData['certs'] }).certs, fleet: fleetData as unknown as OpsBriefingData['fleet'] }), []);
   if (cards.length === 0) return null;
 
   const run = (action: BriefingAction) => {
@@ -26,6 +28,7 @@ export default function BriefingCards({ disabled, canAsk, onOpen, onAsk }: Props
       <div className="briefing-grid">
         {cards.map((card) => (
           <article key={card.id} className={`briefing-card briefing-${card.tone}`}>
+            <div className="briefing-area">{card.area}</div>
             <h3>{card.title}</h3>
             <p>{card.detail}</p>
             <div className="briefing-actions">

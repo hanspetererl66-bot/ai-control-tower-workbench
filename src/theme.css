@@ -3675,3 +3675,12 @@ button {
 :root[data-theme="dark"] .card:not(.card-sub) .card-title { color: #b69cff; }
 :root[data-theme="dark"] .card-sub .card-title { color: #9a82e0; }
 :root[data-theme="dark"] .ghost-btn:hover:not(:disabled) { background: rgb(255 255 255 / 8%); }
+
+.briefing-area {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
