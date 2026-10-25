@@ -84,6 +84,9 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .filters{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .saved{margin-top:12px}
 @media(max-width:600px){main{padding:14px}}
+/* KPI rows: all boxes side by side in one row */
+#kpis,#inv-kpis,#usage-kpis{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+#kpis .card,#inv-kpis .card,#usage-kpis .card{min-width:0;overflow-wrap:anywhere}
 </style>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
@@ -295,9 +298,6 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
-/* KPI rows: all boxes side by side in one row */
-#kpis,#inv-kpis,#usage-kpis{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
-#kpis .card,#inv-kpis .card,#usage-kpis .card{min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body class="s4m">
