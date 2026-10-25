@@ -9,7 +9,7 @@ const fake = (routes) => { const calls = []; const fn = async (url) => { calls.p
 test('approved sources: SAP sites, openSAP, Handelsblatt and FAZ; everything else is refused', () => {
   const ids = SOURCES.map((s) => s.id);
   for (const id of ['sap', 'sap-learning', 'sap-support', 'sap-news', 'openSAP', 'handelsblatt', 'faz', 'finanzen', 'cnn']) assert.ok(ids.includes(id), id);
-  for (const ok of ['https://www.sap.com/', 'https://learning.sap.com/x', 'https://support.sap.com/en/index.html', 'https://news.sap.com/?s=ai', 'https://open.sap.com/', 'https://discovery-center.cloud.sap/', 'https://www.handelsblatt.com/', 'https://www.faz.net/aktuell/', 'https://www.finanzen.net/aktien/sap-aktie', 'https://edition.cnn.com/markets/stocks/SAP']) assert.equal(checkUrl(ok).href.startsWith('https://'), true, ok);
+  for (const ok of ['https://www.sap.com/', 'https://learning.sap.com/x', 'https://support.sap.com/en/index.html', 'https://news.sap.com/?s=ai', 'https://open.sap.com/', 'https://discovery-center.cloud.sap/', 'https://www.handelsblatt.com/', 'https://www.faz.net/aktuell/', 'https://www.finanzen.net/aktien/sap-aktie', 'https://www.sap.com/investors/de.html', 'https://edition.cnn.com/markets/stocks/SAP']) assert.equal(checkUrl(ok).href.startsWith('https://'), true, ok);
   for (const bad of ['http://www.sap.com/', 'https://evil.example/sap.com', 'https://sap.com.evil.example/', 'https://notsap.com/', 'https://finanzen.net.evil.example/', 'https://notcnn.com/', 'https://www.google.com/finance/', 'https://user:pw@www.sap.com/', 'https://www.sap.com:8443/', 'https://10.0.0.1/', 'file:///etc/passwd', 'javascript:alert(1)', '']) assert.throws(() => checkUrl(bad), /approved|https|IP|user name|port|valid/, bad);
   assert.equal(sourceOfHost('help.sap.com').id, 'sap-help', 'most specific source wins');
 });
@@ -75,4 +75,12 @@ test('market sources: share prices carry the delay and no-advice note, and the S
   assert.match(cnn.note, /markets\/stocks\/SAP/);
   assert.equal(sourceOfHost('www.finanzen.net').id, 'finanzen');
   assert.equal(sourceOfHost('edition.cnn.com').id, 'cnn');
+});
+
+test('SAP Investor Relations is listed for Markets, and sap.com pages still belong to the SAP source', () => {
+  const ir = SOURCES.find((s) => s.id === 'sap-investors');
+  assert.equal(ir.group, 'Markets');
+  assert.match(ir.note, /sap\.com\/investors\/de\.html/);
+  assert.equal(sourceOfHost('www.sap.com').id, 'sap');
+  assert.equal(checkUrl('https://www.sap.com/investors/de.html').hostname, 'www.sap.com');
 });
