@@ -338,10 +338,15 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin:8px 0;flex-wrap:wrap}.flow b{color:var(--ink)}
 @media (max-width:900px){.layout{grid-template-columns:1fr}.tl .axis{margin-left:130px}.tl .row{grid-template-columns:130px 1fr}}
 
-/* Calm palette: status colours are quiet greys with a faint tint; the words Red, Yellow and Green carry the meaning. */
-:root{--red:#7b5656;--red-dim:#f1eded;--red-border:#d3c7c7;--amber:#76683f;--amber-dim:#f2efe8;--amber-border:#d6cfbd;--green:#58695e;--green-dim:#edf0ee;--green-border:#c9d1cc}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26)}}
-:root[data-theme="dark"]{--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26)}
+/* Health colours stay clear: red, yellow and green are the signal of this page; everything else is calm purple and grey. */
+:root{--red:#c0392b;--red-dim:rgba(192,57,43,.14);--red-border:rgba(192,57,43,.45);--amber:#b07a00;--amber-dim:rgba(224,163,0,.20);--amber-border:rgba(176,122,0,.50);--green:#1f8a5b;--green-dim:rgba(31,138,91,.16);--green-border:rgba(31,138,91,.45)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#ff8a80;--red-dim:rgba(255,138,128,.18);--red-border:rgba(255,138,128,.50);--amber:#ffc94d;--amber-dim:rgba(255,201,77,.18);--amber-border:rgba(255,201,77,.50);--green:#4fd69c;--green-dim:rgba(79,214,156,.17);--green-border:rgba(79,214,156,.48)}}
+:root[data-theme="dark"]{--red:#ff8a80;--red-dim:rgba(255,138,128,.18);--red-border:rgba(255,138,128,.50);--amber:#ffc94d;--amber-dim:rgba(255,201,77,.18);--amber-border:rgba(255,201,77,.50);--green:#4fd69c;--green-dim:rgba(79,214,156,.17);--green-border:rgba(79,214,156,.48)}
+.demo{border-color:var(--line);background:var(--wash)}
+.tl .bar.red{background:var(--red);box-shadow:none;opacity:.55}.tl .bar.yellow{background:var(--amber);box-shadow:none;opacity:.55}.tl .bar.green{background:var(--green);box-shadow:none;opacity:.55}
+.legend .g{background:var(--green);border-color:var(--green)}.legend .y{background:var(--amber);border-color:var(--amber)}.legend .r{background:var(--red);border-color:var(--red)}
+.pill.green,.pill.yellow,.pill.red{font-weight:750}
+.pill.green::before,.pill.yellow::before,.pill.red::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:5px}
 .kpi.red,.kpi.amber,.kpi.green{border-color:var(--line)}.kpi.red .v,.kpi.amber .v,.kpi.green .v{color:var(--ink)}.kpi.red{border-left:3px solid var(--red)}
 .kpi{cursor:pointer;text-align:left;font:inherit;color:inherit}.kpi:hover{border-color:var(--ink-2)}.kpi[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}.kpi:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
 .kpi-hint{margin:-8px 0 12px;font-size:11px;color:var(--muted)}
