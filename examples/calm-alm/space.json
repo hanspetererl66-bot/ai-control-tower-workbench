@@ -1,0 +1,11 @@
+{
+  "title": "SAP Cloud ALM",
+  "description": "Mockup of Cloud ALM data (projects, stories, defects, tests) answered through the Calm MCP server and Joule. Sample data; the real server is read-only by default.",
+  "insights": [
+    "Eight defects have status Open across three projects; three of them are Very High and due this week.",
+    "Group Reporting is not ready for cutover: the quality gate is blocked and failing tests remain.",
+    "Ask Joule shows the calm_* tool calls behind each answer. With the Calm MCP connector installed, the same questions run on your tenant.",
+    "Fictional sample data. No SAP Cloud ALM tenant is called."
+  ],
+  "prompt": "Bundled example: SAP Cloud ALM via Calm MCP (static, data and tool mock embedded by npm run sync:calm-alm)."
+}

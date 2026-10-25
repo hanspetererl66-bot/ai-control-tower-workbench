@@ -24,6 +24,7 @@ export const EXAMPLE_SPACES = {
   'finance-preclose': 'finance-preclose',
   'it-fleet': 'it-fleet',
   'mcp-marketplace': 'mcp-marketplace',
+  'calm-alm': 'calm-alm',
 };
 
 /**
