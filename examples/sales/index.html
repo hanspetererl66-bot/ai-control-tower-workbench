@@ -329,19 +329,19 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 .fc-top{display:grid;gap:14px;grid-template-columns:repeat(4,1fr);margin-bottom:14px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;border-top:3px solid var(--sc,var(--purple))}
 .kpi .k{font-size:12px;color:var(--muted)}.kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:2px}.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
-.kpi.commit{--sc:var(--green)}.kpi.best{--sc:var(--amber)}.kpi.pipeline{--sc:var(--blue)}
+.kpi.commit{--sc:var(--fc-commit)}.kpi.best{--sc:var(--fc-best)}.kpi.pipeline{--sc:var(--fc-pipe)}
 .months{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end;height:200px;margin:10px 0 4px}
 .mcol{display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:6px}
 .mstack{display:flex;flex-direction:column-reverse;border-radius:8px 8px 4px 4px;overflow:hidden;background:var(--line-2);min-height:4px}
 .mstack i{display:block;width:100%;height:0;transition:height .6s cubic-bezier(.2,.8,.2,1)}
-.mstack .commit{background:var(--green)}.mstack .best{background:var(--amber)}.mstack .pipeline{background:var(--blue)}
+.mstack .commit{background:var(--fc-commit)}.mstack .best{background:var(--fc-best)}.mstack .pipeline{background:var(--fc-pipe)}
 .mlab{font-size:12px;font-weight:600;text-align:center}.mlab small{display:block;font-weight:400;color:var(--muted)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .cov{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px;display:flex}.cov i{display:block;height:100%}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{text-align:left}.tbl td.r,.tbl th.r{text-align:right}
 .tbl tbody tr{cursor:pointer}.tbl tbody tr:hover{background:var(--wash)}.tbl tbody tr:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
 .cat{font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);font-weight:600}
-.cat.commit{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}.cat.best{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}.cat.pipeline{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
+.cat.commit{background:color-mix(in srgb,var(--fc-commit) 14%,transparent);color:var(--fc-commit);border-color:color-mix(in srgb,var(--fc-commit) 35%,transparent)}.cat.best{background:color-mix(in srgb,var(--fc-best) 14%,transparent);color:var(--fc-best);border-color:color-mix(in srgb,var(--fc-best) 35%,transparent)}.cat.pipeline{background:color-mix(in srgb,var(--fc-pipe) 14%,transparent);color:var(--fc-pipe);border-color:color-mix(in srgb,var(--fc-pipe) 35%,transparent)}
 .tblwrap{overflow-x:auto;max-width:100%}
 /* meetings */
 .mt{display:grid;gap:14px;grid-template-columns:minmax(260px,340px) 1fr;align-items:start}
@@ -381,6 +381,9 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 :root[data-theme="dark"]{--red:#d0b0b0;--red-dim:rgba(208,176,176,.11);--red-border:rgba(208,176,176,.26);--amber:#cdbf98;--amber-dim:rgba(205,191,152,.11);--amber-border:rgba(205,191,152,.26);--green:#adc0b3;--green-dim:rgba(173,192,179,.11);--green-border:rgba(173,192,179,.26);--blue:#b3bac4;--blue-dim:rgba(179,186,196,.11);--blue-border:rgba(179,186,196,.26);--teal:#b0bebb;--teal-dim:rgba(176,190,187,.11)}
 .demo{background:var(--wash);color:var(--ink-2)}
 .deal .av{width:19px;height:19px;font-size:9px}.deal .due{font-size:9px;padding:1px 6px}.deal .tag{font-size:9px}
+:root{--fc-commit:#460073;--fc-best:#8a3fd0;--fc-pipe:#c9a6ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--fc-commit:#dcafff;--fc-best:#a86ee6;--fc-pipe:#6a3fa0}}
+:root[data-theme="dark"]{--fc-commit:#dcafff;--fc-best:#a86ee6;--fc-pipe:#6a3fa0}
 </style>
 </head>
 <body>
@@ -529,8 +532,8 @@ function renderForecast() {
     '<div class="kpi best"><div class="k">Commit plus best case ACV</div><div class="v">' + eur(commit + best) + '</div><div class="s">TCV ' + eur(tcvOf('commit') + tcvOf('best')) + ' · ' + L.filter((d) => d.category !== 'pipeline').length + ' deals</div></div>' +
     '<div class="kpi pipeline"><div class="k">Open pipeline ACV</div><div class="v">' + eur(commit + best + pipe) + '</div><div class="s">TCV ' + eur(tcvAll) + ' · ' + L.length + ' deals in opportunity and sell</div></div>' +
     '<div class="kpi"><div class="k">Weighted forecast ACV</div><div class="v">' + eur(wAll) + '</div><div class="s">TCV ' + eur(sum('', (d) => tcv(d) * (d.score || 0) / 100)) + ' · ACV times probability</div></div></div>' +
-    '<div class="panel card"><h2>Closes by month</h2><div class="months" id="months">' + col + '</div><div class="legend">' + D.forecast.categories.map((c) => '<span><b style="background:var(--' + ({ commit: 'green', best: 'amber', pipeline: 'blue' }[c.id]) + ')"></b>' + esc(c.label) + '</span>').join('') + '</div></div>' +
-    '<div class="panel card"><h2>Coverage of the target</h2><div class="note" style="margin:0">' + esc(D.forecast.quotaNote) + ' Target ' + eur(q) + ' ACV.</div><div class="cov" aria-hidden="true"><i style="width:' + pct(commit) + '%;background:var(--green)"></i><i style="width:' + Math.max(0, pct(commit + best) - pct(commit)) + '%;background:var(--amber)"></i><i style="width:' + Math.max(0, pct(commit + best + pipe) - pct(commit + best)) + '%;background:var(--blue)"></i></div><div class="note" style="margin-top:4px">Commit covers ' + pct(commit) + ' %, with best case ' + pct(commit + best) + ' %, whole pipeline ' + Math.round((commit + best + pipe) / q * 100) + ' % of the target. Weighted forecast: ' + pct(wAll) + ' %.</div></div>' +
+    '<div class="panel card"><h2>Closes by month</h2><div class="months" id="months">' + col + '</div><div class="legend">' + D.forecast.categories.map((c) => '<span><b style="background:var(--' + ({ commit: 'fc-commit', best: 'fc-best', pipeline: 'fc-pipe' }[c.id]) + ')"></b>' + esc(c.label) + '</span>').join('') + '</div></div>' +
+    '<div class="panel card"><h2>Coverage of the target</h2><div class="note" style="margin:0">' + esc(D.forecast.quotaNote) + ' Target ' + eur(q) + ' ACV.</div><div class="cov" aria-hidden="true"><i style="width:' + pct(commit) + '%;background:var(--fc-commit)"></i><i style="width:' + Math.max(0, pct(commit + best) - pct(commit)) + '%;background:var(--fc-best)"></i><i style="width:' + Math.max(0, pct(commit + best + pipe) - pct(commit + best)) + '%;background:var(--fc-pipe)"></i></div><div class="note" style="margin-top:4px">Commit covers ' + pct(commit) + ' %, with best case ' + pct(commit + best) + ' %, whole pipeline ' + Math.round((commit + best + pipe) / q * 100) + ' % of the target. Weighted forecast: ' + pct(wAll) + ' %.</div></div>' +
     changesPanel() +
     '<div class="panel card"><h2>Deals in the forecast</h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Deal</th><th>Category</th><th>Close</th><th class="r">ACV</th><th class="r">TCV</th><th class="r">Prob.</th><th class="r">Weighted ACV</th></tr></thead><tbody>' +
     L.map((d) => '<tr tabindex="0" data-deal="' + esc(d.id) + '"><td><b>' + esc(d.account) + '</b><br><span class="note" style="margin:0">' + esc(d.title) + '</span></td><td><span class="cat ' + d.category + '">' + esc(CAT[d.category].label) + '</span></td><td>' + day(d.closeDate) + '</td><td class="r">' + eur(d.value) + '</td><td class="r">' + eur(tcv(d)) + '</td><td class="r">' + d.score + ' %</td><td class="r">' + eur(wv(d)) + '</td></tr>').join('') +
