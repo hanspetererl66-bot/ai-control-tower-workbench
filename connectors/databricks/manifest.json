@@ -1,0 +1,76 @@
+{
+  "manifest_version": "0.2",
+  "name": "databricks",
+  "display_name": "Databricks",
+  "version": "0.1.0",
+  "description": "Read-only access to a Databricks workspace: ask Genie spaces business questions and run read-only SQL on a SQL warehouse. Needs the workspace address and a personal access token.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "DATABRICKS_HOST": "${user_config.databricks_host}",
+        "DATABRICKS_TOKEN": "${user_config.databricks_token}",
+        "DATABRICKS_WAREHOUSE_ID": "${user_config.warehouse_id}",
+        "DATABRICKS_GENIE_SPACE_ID": "${user_config.genie_space_id}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "databricks_check_connection",
+      "description": "Check the Databricks connection (host and token) and show who the token belongs to."
+    },
+    {
+      "name": "databricks_list_genie_spaces",
+      "description": "List the Genie spaces of the workspace (id, title) so a question can go to the right one."
+    },
+    {
+      "name": "databricks_ask_genie",
+      "description": "Ask a business question in natural language to a Databricks Genie space. Returns the answer text, the SQL Genie used and a result table."
+    },
+    {
+      "name": "databricks_run_sql",
+      "description": "Run ONE read-only SQL statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) on a SQL warehouse. Writes are refused."
+    },
+    {
+      "name": "databricks_describe_table",
+      "description": "Show the columns of a table (catalog.schema.table)."
+    }
+  ],
+  "user_config": {
+    "databricks_host": {
+      "type": "string",
+      "title": "Workspace address",
+      "description": "Example: https://adb-1234567890.1.azuredatabricks.net (copy it from the browser address bar of your workspace).",
+      "required": true
+    },
+    "databricks_token": {
+      "type": "string",
+      "title": "Personal access token",
+      "description": "Databricks: your user icon, Settings, Developer, Access tokens, Generate new token. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": true
+    },
+    "warehouse_id": {
+      "type": "string",
+      "title": "SQL warehouse id",
+      "description": "Optional. SQL Warehouses, open one, copy the id from the address bar or the Connection details tab. Needed for SQL questions.",
+      "required": false
+    },
+    "genie_space_id": {
+      "type": "string",
+      "title": "Default Genie space id",
+      "description": "Optional. The id at the end of the Genie space address. Without it the chat asks you which space or lists them.",
+      "required": false
+    }
+  }
+}

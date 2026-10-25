@@ -13,10 +13,12 @@ type Props = {
   own?: StarterPrompt[];
   favorites?: StarterPrompt[];
   onPickOwn?: (prompt: StarterPrompt) => void;
+  /** Labels of built-in suggestions the person switched off. */
+  hidden?: string[];
 };
 
 /** Suggested Control Tower questions below the composer on an empty chat. */
-export default function StarterPrompts({ available, disabled, onPick, onInstall, onManage, own = [], favorites = [], onPickOwn }: Props) {
+export default function StarterPrompts({ available, disabled, onPick, onInstall, onManage, own = [], favorites = [], onPickOwn, hidden = [] }: Props) {
   const mine = own.length || favorites.length ? (
     <div className="starters" role="group" aria-label="Your starters and favourite skills">
       {own.length > 0 && <div className="starters-title">My prompts</div>}
@@ -66,7 +68,7 @@ export default function StarterPrompts({ available, disabled, onPick, onInstall,
     <div className="starters" role="group" aria-label="Suggested questions about the AI Control Tower">
       <div className="starters-title">AI Control Tower</div>
       <div className="starters-list">
-        {STARTER_PROMPTS.map((starter) => (
+        {STARTER_PROMPTS.filter((starter) => !hidden.includes(starter.label)).map((starter) => (
           <button
             key={starter.label}
             className="starter"

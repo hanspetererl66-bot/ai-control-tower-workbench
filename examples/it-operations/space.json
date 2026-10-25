@@ -1,5 +1,5 @@
 {
-  "title": "IT Operations",
+  "title": "Cloud Infrastructure Operations",
   "description": "Alert triage for IT operations: seven fictional monitoring alerts, a transparent priority P1 to P3, a guardrail against injected instructions, and a button that runs the same triage as an n8n workflow through the chat.",
   "domain": "Operations",
   "insights": [
@@ -7,5 +7,5 @@
     "The page calculates the triage itself (preview). 'Run in n8n' asks the chat to start the n8n workflow 04-it-operations-alert-triage through the connector tool run_it_ops_triage; a Space has no network of its own.",
     "Alert text is untrusted: an alert that tells an AI assistant what to do is quarantined and never passed on. Nothing is paged, restarted or changed; a person decides."
   ],
-  "prompt": "Bundled example: IT Operations (static, alerts embedded by npm run sync:it-operations)."
+  "prompt": "Bundled example: Cloud Infrastructure Operations (static, alerts embedded by npm run sync:it-operations)."
 }

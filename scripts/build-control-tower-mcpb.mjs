@@ -28,6 +28,7 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
     cpSync(join(ROOT, 'examples/automation-dashboard/categories.json'), join(stage, 'data/n8n-categories.json'));
     writeFileSync(join(stage, 'data/skill-marketplace.json'), JSON.stringify(extractMarketplaceData(readFileSync(join(ROOT, 'examples/skill-marketplace/index.html'), 'utf8')), null, 2));
     writeFileSync(join(stage, 'data/knowledge-graph.json'), JSON.stringify(extractGraph(readFileSync(join(ROOT, 'examples/knowledge-graph/index.html'), 'utf8')), null, 2));
+    cpSync(join(ROOT, 'examples/infra-ops/data.json'), join(stage, 'data/infra-ops.json'));
     writeFileSync(join(stage, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(SUB4ME_PAGE, 'utf8')), null, 2));
 
     mkdirSync(dirname(out), { recursive: true });
@@ -44,7 +45,7 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && !process.argv.includes('--gmail')) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && !process.argv.includes('--gmail') && !process.argv.includes('--databricks') && !process.argv.includes('--jira') && !process.argv.includes('--slack')) {
   console.log(`Built ${buildControlTowerBundle(process.argv[2])}`);
 }
 
@@ -67,4 +68,67 @@ export function buildGmailBundle(output = join(ROOT, 'dist/gmail-drafts.mcpb')) 
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--gmail')) {
   console.log(`Built ${buildGmailBundle()}`);
+}
+
+/** Databricks connector bundle: manifest + server only (no data). */
+export function buildDatabricksBundle(output = join(ROOT, 'dist/databricks.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'databricks-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/databricks');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--databricks')) {
+  console.log(`Built ${buildDatabricksBundle()}`);
+}
+
+/** Jira connector bundle: manifest + server only (no data). */
+export function buildJiraBundle(output = join(ROOT, 'dist/jira.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'jira-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/jira');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--jira')) {
+  console.log(`Built ${buildJiraBundle()}`);
+}
+
+/** Slack connector bundle: manifest + server only (no data). */
+export function buildSlackBundle(output = join(ROOT, 'dist/slack.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'slack-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/slack');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--slack')) {
+  console.log(`Built ${buildSlackBundle()}`);
 }

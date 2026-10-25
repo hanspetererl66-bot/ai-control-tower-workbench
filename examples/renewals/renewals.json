@@ -565,7 +565,61 @@
       ],
       "annualEur": 4540000,
       "since": 2014,
-      "name": "Muster Industrie AG"
+      "name": "Muster Industrie AG",
+      "mails": [
+        {
+          "id": "T-101",
+          "subject": "AW: Ariba renewal: revised quote and price benchmark",
+          "status": "waiting-us",
+          "intent": "Renewal",
+          "mood": "mixed",
+          "contractId": "C-2023-0390",
+          "offerId": "OFF-2026-0318",
+          "side": "customer",
+          "at": "2026-10-17T11:05:00+02:00",
+          "count": 3,
+          "snippet": "in addition to Jonas: can you confirm that the notice date of 2 November stays as it is if we sign the new term before that date? The procurement board meets on 28 October."
+        },
+        {
+          "id": "T-104",
+          "subject": "Joule Work pilot: security questionnaire",
+          "status": "waiting-customer",
+          "intent": "Security",
+          "mood": "positive",
+          "contractId": null,
+          "offerId": "OFF-2026-0324",
+          "side": "us",
+          "at": "2026-10-17T10:15:00+02:00",
+          "count": 2,
+          "snippet": ""
+        },
+        {
+          "id": "T-102",
+          "subject": "SuccessFactors: corrected offer for 4,500 employees",
+          "status": "waiting-us",
+          "intent": "Offer",
+          "mood": "mixed",
+          "contractId": "C-2025-0041",
+          "offerId": "OFF-2026-0311",
+          "side": "customer",
+          "at": "2026-10-16T15:30:00+02:00",
+          "count": 3,
+          "snippet": ""
+        },
+        {
+          "id": "T-103",
+          "subject": "URGENT: AI Core quota eu10: alert and RCA",
+          "status": "waiting-customer",
+          "intent": "Escalation",
+          "mood": "negative",
+          "contractId": "C-2026-0012",
+          "offerId": null,
+          "side": "us",
+          "at": "2026-10-09T11:20:00+02:00",
+          "count": 4,
+          "snippet": "Confirmed: the alert at 80 percent of the quota is configured and active for eu10."
+        }
+      ]
     },
     {
       "id": "hanse",
@@ -583,7 +637,48 @@
       ],
       "annualEur": 2518550,
       "since": 2019,
-      "name": "Hanse Handelsgruppe AG"
+      "name": "Hanse Handelsgruppe AG",
+      "mails": [
+        {
+          "id": "H-201",
+          "subject": "Commerce Cloud renewal: bundle with the Analytics add-on?",
+          "status": "waiting-us",
+          "intent": "Renewal",
+          "mood": "mixed",
+          "contractId": "C-2024-0611",
+          "offerId": "OFF-2026-0407",
+          "side": "customer",
+          "at": "2026-10-15T09:20:00+02:00",
+          "count": 3,
+          "snippet": "Our new CFO would like one bundle for Commerce Cloud and Analytics Cloud planning. Can you send one price for both before the 30th?"
+        },
+        {
+          "id": "H-203",
+          "subject": "Integration Suite: extra connectors approved",
+          "status": "answered",
+          "intent": "Offer",
+          "mood": "positive",
+          "contractId": "C-2023-0215",
+          "offerId": null,
+          "side": "customer",
+          "at": "2026-10-12T16:40:00+02:00",
+          "count": 2,
+          "snippet": "Thank you, the two extra connectors are approved by our integration lead. Please go ahead with the order form."
+        },
+        {
+          "id": "H-202",
+          "subject": "AW: Ariba renewal, price rise above the cap",
+          "status": "waiting-customer",
+          "intent": "Renewal",
+          "mood": "negative",
+          "contractId": "C-2025-0458",
+          "offerId": "OFF-2026-0402",
+          "side": "us",
+          "at": "2026-10-08T14:05:00+02:00",
+          "count": 4,
+          "snippet": "We checked the contract: the uplift cap of 3 % applies. The revised quote with the capped price is attached, please confirm by 22 October."
+        }
+      ]
     }
   ]
 }

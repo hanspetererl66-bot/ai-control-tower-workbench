@@ -21,7 +21,9 @@
         "SUPABASE_URL": "${user_config.supabase_url}",
         "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}",
         "N8N_URL": "${user_config.n8n_url}",
-        "N8N_API_KEY": "${user_config.n8n_api_key}"
+        "N8N_API_KEY": "${user_config.n8n_api_key}",
+        "N8N_INFRA_WEBHOOK_URL": "${user_config.n8n_infra_webhook_url}",
+        "N8N_INFRA_WEBHOOK_TOKEN": "${user_config.n8n_infra_webhook_token}"
       }
     }
   },
@@ -192,7 +194,7 @@
     },
     {
       "name": "recommend_skill_workflow",
-      "description": "Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role \"Account Manager\", goal \"Kundentermin und Verlängerung\" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for \"In welcher Reihenfolge nutze ich welche Skills …?\". Sample playbooks."
+      "description": "Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role \"Account Manager\", goal \"Kundentermin und Verl\u00e4ngerung\" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for \"In welcher Reihenfolge nutze ich welche Skills \u2026?\". Sample playbooks."
     },
     {
       "name": "get_graph_overview",
@@ -208,11 +210,11 @@
     },
     {
       "name": "find_graph_path",
-      "description": "Shortest connection between two nodes of the knowledge graph, step by step with the relation on each step. Answers \"Wie hängt Risiko R2 mit dem Kunden zusammen?\" or \"Wie ist der Ariba-Vertrag mit dem Skill renewal-radar verbunden?\". Sample data."
+      "description": "Shortest connection between two nodes of the knowledge graph, step by step with the relation on each step. Answers \"Wie h\u00e4ngt Risiko R2 mit dem Kunden zusammen?\" or \"Wie ist der Ariba-Vertrag mit dem Skill renewal-radar verbunden?\". Sample data."
     },
     {
       "name": "analyze_graph_impact",
-      "description": "Impact analysis: everything connected to a node within a number of steps, grouped by distance and node type, with the route to each. Answers \"Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?\" or \"Was hängt an Risiko R2?\". Hubs such as the connector and the systems are not followed, so the result stays about business relations. Sample data."
+      "description": "Impact analysis: everything connected to a node within a number of steps, grouped by distance and node type, with the route to each. Answers \"Was ist betroffen, wenn der Ariba-Vertrag nicht verl\u00e4ngert wird?\" or \"Was h\u00e4ngt an Risiko R2?\". Hubs such as the connector and the systems are not followed, so the result stays about business relations. Sample data."
     },
     {
       "name": "get_skill_ratings",
@@ -224,7 +226,7 @@
     },
     {
       "name": "simulate_credit_cut",
-      "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % kürzen?\"."
+      "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % k\u00fcrzen?\"."
     },
     {
       "name": "enrich_ticket",
@@ -257,6 +259,14 @@
     {
       "name": "save_preferences",
       "description": "Save the personal Werkbank settings (one row, settings only, no secrets) to werkbank.preferences."
+    },
+    {
+      "name": "plan_infra_change",
+      "description": "Plan an infrastructure change (certificate, DNS, VM patch or move) against the sample inventory: pre-checks, simulated check-mode diff, impact, risk and approvals. Read-only."
+    },
+    {
+      "name": "submit_infra_change",
+      "description": "Hand a planned infrastructure change to the n8n workflow (check mode only) after the person confirms. Needs the n8n webhook address."
     }
   ],
   "user_config": {
@@ -269,7 +279,7 @@
     "supabase_secret_key": {
       "type": "string",
       "title": "Supabase secret key",
-      "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "description": "Optional. Server-side secret key (sb_secret_\u2026) of that project. Stored as a secret, never written to config files.",
       "sensitive": true,
       "required": false
     },
@@ -283,6 +293,19 @@
       "type": "string",
       "title": "n8n API key",
       "description": "Optional. Created in n8n under Settings, n8n API. Read access to workflows and executions. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "n8n_infra_webhook_url": {
+      "type": "string",
+      "title": "n8n webhook for infrastructure changes",
+      "description": "Optional. Production webhook URL of the workflow 08-infra-change-request (https). Without it, submit_infra_change only shows what it would send.",
+      "required": false
+    },
+    "n8n_infra_webhook_token": {
+      "type": "string",
+      "title": "n8n webhook token",
+      "description": "Optional. Sent as header x-infra-token; the workflow checks it. Stored as a secret.",
       "sensitive": true,
       "required": false
     }

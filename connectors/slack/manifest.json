@@ -1,0 +1,67 @@
+{
+  "manifest_version": "0.2",
+  "name": "slack",
+  "display_name": "Slack",
+  "version": "0.1.0",
+  "description": "Slack: read channels and threads, search messages and post messages through an own Slack app. Needs the bot token (xoxb-) of that app; search needs an optional user token.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "SLACK_BOT_TOKEN": "${user_config.slack_bot_token}",
+        "SLACK_USER_TOKEN": "${user_config.slack_user_token}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "slack_check_connection",
+      "description": "Check the Slack connection and show the workspace and the bot name."
+    },
+    {
+      "name": "slack_list_channels",
+      "description": "List the channels the app can see (id, name, member). Optional name filter."
+    },
+    {
+      "name": "slack_read_channel",
+      "description": "Read the latest messages of a channel the app is a member of."
+    },
+    {
+      "name": "slack_read_thread",
+      "description": "Read the replies of one thread."
+    },
+    {
+      "name": "slack_search_messages",
+      "description": "Search messages across the workspace (needs the optional user token)."
+    },
+    {
+      "name": "slack_post_message",
+      "description": "Post a message to a channel, or as a reply when thread_ts is given (this posts to Slack for everyone in the channel). Ask the person before using it."
+    }
+  ],
+  "user_config": {
+    "slack_bot_token": {
+      "type": "string",
+      "title": "Bot User OAuth Token",
+      "description": "api.slack.com/apps, your app, OAuth & Permissions, Bot User OAuth Token (xoxb-\u2026). Scopes: channels:read, groups:read, channels:history, groups:history, chat:write. Stored as a secret.",
+      "sensitive": true,
+      "required": true
+    },
+    "slack_user_token": {
+      "type": "string",
+      "title": "User token for search (optional)",
+      "description": "Optional. User OAuth Token (xoxp-\u2026) with scope search:read. Without it, search is off.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

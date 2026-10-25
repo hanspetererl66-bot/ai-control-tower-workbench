@@ -15,7 +15,7 @@ export type ToolCall = {
 };
 
 export type PermissionOption = { optionId: string; name: string; kind?: string };
-export type PermissionRequest = { title: string; options: PermissionOption[] };
+export type PermissionRequest = { title: string; options: PermissionOption[]; toolName?: string; rawInput?: Record<string, unknown> };
 
 export type Mode = { id: string; name: string; description?: string };
 export type Model = { modelId: string; name: string };
@@ -159,9 +159,12 @@ export async function connect(url: string, cwd: string, handlers: Handlers): Pro
     },
     requestPermission: async (req: Record<string, any>) => {
       const options: PermissionOption[] = req?.options ?? [];
+      const meta = toolMeta(req?.toolCall ?? {});
       const optionId = await handlers.onPermission({
         title: req?.toolCall?.title ?? 'Allow this action?',
         options,
+        toolName: meta.toolName,
+        rawInput: req?.toolCall?.rawInput,
       });
       return { outcome: { outcome: 'selected' as const, optionId } };
     },

@@ -430,6 +430,7 @@ Importable workflows in `examples/n8n-workflows/`, fictional data only, no crede
 - `05-vm-maintenance-plan.json`: the 25 VMs of the IT Infrastructure Space, rules per VM, recommended tasks (certificate, patch, disk, backup), maintenance windows, bundling per VM, plan proposal that ends in "nothing runs, a person approves". Manual or webhook start (`/webhook/vm-maintenance-plan`).
 
 - `06-vm-operator-runbook.json`: the operator side of a VM ticket. Steps: **1 check the VM again** (same rules as the Space and workflow 05), **2 backup** if a production VM has no restore point from the last 24 h, **3 apply the task** (for example install the renewed TLS certificate), **4 check again** and report for the ticket. It only runs when the body says `approved: true` and the check still shows the reason; everything is simulated. Manual (sample ticket T-1042) or webhook `/webhook/vm-operator-runbook` with `{ticket, vm, task, approved}`; the chat tool is `run_vm_operator_runbook`.
+- `07-vm-maintenance-approval.json`: the **approval step** between plan (05) and runbook (06). One request per task with the approver role from the task definition, a **Wait** node that pauses until the approver answers, rules (wrong role = invalid, **the requester can never approve their own request**, no answer = pending then expired, nothing is approved automatically) and an audit report. Approved tasks become the prepared call for workflow 06 (`approved: true`); this workflow starts nothing itself. Manual (fictional plan with sample decisions) or webhook `/webhook/vm-maintenance-approval` with `{plan, requester}`; the approver answers through the Wait resume URL with `{decisions:[{id, decision, by, role, comment}]}`.
 
 ### Overview: which workflows to import
 
@@ -441,6 +442,7 @@ Importable workflows in `examples/n8n-workflows/`, fictional data only, no crede
 | `04-it-operations-alert-triage.json` | Demo 4 (IT operations) | Manual, webhook | `/webhook/it-ops-triage` | IT Operations Space, tool `run_it_ops_triage` |
 | `05-vm-maintenance-plan.json` | Demo 5 (IT infrastructure) | Manual, webhook | `/webhook/vm-maintenance-plan` | IT Infrastructure Space, tool `run_vm_maintenance_plan` |
 | `06-vm-operator-runbook.json` | Demo 6 (IT infrastructure) | Manual, webhook | `/webhook/vm-operator-runbook` | IT Infrastructure Space (operator ticket), tool `run_vm_operator_runbook` |
+| `07-vm-maintenance-approval.json` | Demo 7 (IT infrastructure) | Manual, webhook (+ Wait resume) | `/webhook/vm-maintenance-approval` | Approval between plan (05) and runbook (06) |
 
 All six can be started from the chat (set `N8N_URL` in the connector settings and **activate** the workflows you want to call; a workflow with only the manual trigger cannot be activated, which is why 01 to 03 now have a webhook). For a test without activating, use mode `test` and click **Execute workflow** first.
 
@@ -464,6 +466,12 @@ Import in n8n: **Workflows → ⋯ → Import from file**, then **Execute workfl
 ## IT Fleet example Space
 
 `examples/it-fleet/` shows how the status wall scales to many customers: 41 fictional customers with about 1,200 VMs (generated from a fixed seed by `scripts/generate-fleet-data.mjs` into `fleet.json`; rules and task definitions are copied from the IT Infrastructure Space, a test keeps the colour logic equal). A customer is as red as its worst VM. Three views: **Treemap** (one tile per customer, area = VMs, colour = worst VM, hover for the reasons), **Heatmap** (customers against checks, a column with many customers points to a shared cause, plus a 14-day trend), and **Task inbox** (the same task on many VMs is one bundle with one approval; approving and running is simulated and the colours change). Filters: status, production only, region, customer search. Clicking a customer opens its VM wall, the SAP customer ID and buttons to ask Joule or to create a ticket for the operator (chat tool `create_ticket`). **Start demo** walks through five steps. `npm run sync:it-fleet` embeds the data and the design system, `npm run install:it-fleet` installs the Space; `test/it-fleet.test.mjs` checks data, sync and logic.
+
+## Infrastructure change demo (Fleet → Operations → Checks → Fleet)
+
+Three Spaces play one process, simulated end to end. In **Infra-Operations-Fleet** open the red customer Muster Industrie AG, then the red VM `musind-int04` (certificate expires in 6 days), and choose *Create ticket for operator*. The host opens **Infrastructure Operations** with the ticket in *Tickets for the operator*. *Start change* opens the New task drawer (leave *Run the whole process automatically* ticked). The process then runs by itself: pre-check in the **Change Checks** Space (playbook in check mode with a live log, then back to the change request), approval (four-eyes, simulated after about 20 s each; production needs two), wait for the change window (demo clock), upgrade, post-check in Change Checks, ticket closed, and a success message in the Fleet (the VM is green again). The *Demo speed* selector makes the whole run take about 10 s.
+
+Spaces cannot talk to each other directly. A Space posts `{type:'wb:handoff', to, payload, open, notice}` to the host, which validates shape and size, queues it and (with `open`) opens the target Space; the target receives it as `wb:restore {state, handoffs}` when its frame has loaded. A Space keeps its working state across the trip with `wb:state`. The state lives in memory only. Nothing from a payload is executed.
 
 ## Cover sheet typeface
 
@@ -499,3 +507,37 @@ Lokal liegt alles in `localStorage` (`werkbank.preferences.v1`). Das Modell läs
 ## Finance Pre-Close
 
 `examples/finance-preclose/` is a Space for the daily pre-close of the month end. It runs on **mockup data**, not on an MCP server or a live S/4HANA Finance: `scripts/generate-preclose-data.mjs` creates a fictional group (four company codes, 12 P&L lines, the 22 working days of October 2026) in the shape of an S/4HANA Finance extract, seeded so it is the same every time (`npm run sync:finance-preclose` writes `preclose.json` and embeds it). A slider moves through the working days; every view follows the day: the **forecast** of revenue, gross profit and EBIT with an 80 % range that narrows during the month, a **forecast evolution** chart, a **bridge** from the budget to the forecast, the P&L with booked, forecast, budget, variance, last year and confidence, a company-code overview, the **close calendar** (32 tasks with owners, blocked and overdue states), **open items** with ageing and an intercompany matrix, **accrual proposals** that a person approves (posting is simulated and raises the booked amount of the cost line), **alerts and anomalies** and **what-if scenarios** (risks and opportunities with probabilities, best and worst case). Buttons ask the chat (`wb:ask`) to explain a variance, an anomaly or the open items, and for the daily briefing. **Start demo** walks through six steps (picture of the day, the EBIT gap, going back in time, blockers, accruals, scenarios). A later step could replace the generator with a connector to S/4HANA Finance; the page only needs the same JSON shape. Fictional data, nothing is posted. `npm run install:finance-preclose` installs the Space; `test/finance-preclose.test.mjs` checks the data, the sub-totals, the bridge, the calendar and the sync.
+
+## Databricks connector (Genie and read-only SQL)
+
+`connectors/databricks` is a small MCP bundle that talks to a Databricks workspace over the public REST APIs. It needs no OAuth, no extra software and no HTTP headers in Werkbank: the workspace address and a personal access token are entered once in the import dialog (the token is stored as a secret).
+
+1. In the repository: `npm run build:databricks-mcpb` writes `dist/databricks.mcpb`.
+2. In Werkbank: Connectors & Skills, import `databricks.mcpb`, enter the workspace address and the token (Databricks: user icon, Settings, Developer, Access tokens). Optional: SQL warehouse id and a default Genie space id.
+3. In the chat: “Check the Databricks connection”, “Which Genie spaces do we have?”, “Ask Genie: ARR by customer”.
+
+Tools: `databricks_check_connection`, `databricks_list_genie_spaces`, `databricks_ask_genie` (text, SQL and result table), `databricks_run_sql` (one read-only statement, writes are refused), `databricks_describe_table`. At most 200 rows per call, the token is only sent to the configured workspace and never appears in results. Use a token of a user or service principal with read rights only.
+
+## Jira connector (search, read, create, comment, change status)
+
+`connectors/jira` is an MCP bundle for Jira Cloud over the REST API v3. No admin is needed: the Jira address, your account e-mail and a personal API token are entered once in the import dialog (the token is stored as a secret and acts with your own rights).
+
+1. `npm run build:jira-mcpb` writes `dist/jira.mcpb`.
+2. In Werkbank: Connectors & Skills, import `jira.mcpb`. Token: id.atlassian.com, Security, Create and manage API tokens.
+3. In the chat: “Check the Jira connection”, “Which tickets are open in project ABC?”, “Summarise ABC-123”.
+
+Tools: `jira_check_connection`, `jira_list_projects`, `jira_search_issues` (JQL), `jira_get_issue`, and the three that change Jira: `jira_create_issue`, `jira_add_comment`, `jira_set_status`. Those three are described as changing Jira, so the approval card of the chat asks first. Not tested against a live Jira here; “Check the Jira connection” shows whether the login works.
+
+## Slack connector (read channels, search, post)
+
+`connectors/slack` is an MCP bundle for Slack through an own Slack app, so no workspace-wide integration is needed.
+
+1. api.slack.com/apps, Create New App, From scratch. OAuth & Permissions, Bot Token Scopes: `channels:read`, `groups:read`, `channels:history`, `groups:history`, `chat:write`. Install to Workspace and copy the Bot User OAuth Token (`xoxb-…`). Optional for search: a User Token Scope `search:read` and its token (`xoxp-…`).
+2. `npm run build:slack-mcpb` writes `dist/slack.mcpb`; import it in Connectors & Skills and enter the token(s).
+3. Invite the app into each channel it should see (`/invite @app`). In the chat: “Check the Slack connection”, “What happened in #it-ops?”, “Post this summary to #it-ops”.
+
+Tools: `slack_check_connection`, `slack_list_channels`, `slack_read_channel`, `slack_read_thread`, `slack_search_messages` (needs the user token) and `slack_post_message` (visible to the channel, so the approval card asks first). Not tested against a live workspace here.
+
+## Rename and delete Spaces
+
+Select a Space or subspace in the list: **Rename** gives it an own name (kept in the settings, so it survives updates of the example Spaces and travels with the Supabase sync; **Original name** takes it back). **Delete** always asks first in a dialog (“Delete for good”, Cancel is the default) and removes the Space folder from this computer; its subspaces move to the top level, and pins, domain, own name and start view of that Space are cleaned up. Tip: Share → Save as file keeps a copy. `npm run install:examples` installs the example Spaces again, so a deleted example Space comes back with the next update.

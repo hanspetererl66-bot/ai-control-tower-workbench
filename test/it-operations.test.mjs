@@ -23,7 +23,7 @@ test('page embeds the current alerts and design system, installs, and has no net
   assert.equal(embedAlerts(page, repoAlerts(), read('examples/shared/design-system.css')), page, 'run npm run sync:it-operations');
   assert.equal(EXAMPLE_SPACES['it-operations'], 'it-operations');
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage|type="submit"/);
-  assert.equal(JSON.parse(read('examples/it-operations/space.json')).title, 'IT Operations');
+  assert.equal(JSON.parse(read('examples/it-operations/space.json')).title, 'Cloud Infrastructure Operations');
 });
 
 test('the workflow samples are the Space alerts, and page and workflow triage give the same result', async () => {

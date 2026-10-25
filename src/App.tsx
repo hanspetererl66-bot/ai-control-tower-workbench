@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { connect, type Agent, type PermissionRequest, type ToolCall } from './acp';
 import {
  
@@ -30,13 +30,16 @@ import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
 import SpacesList from './ui/SpacesList';
+import { deleteSpaceFolder, importSpaceFile } from './space-share';
+import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
-import { addDomain, assignDomain, assignParent, assistantNote, deleteDomain, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
+import { addDomain, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
+import type { Handoff, IncomingHandoff } from './space-handoff';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_NAME } from './product';
 import CoverSheet from './ui/CoverSheet';
@@ -123,13 +126,22 @@ export default function App() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
+  const [schedules, setSchedules] = useState<Schedule[]>(() => loadSchedules(window.localStorage));
+  const updateSchedules = useCallback((next: Schedule[]) => {
+    setSchedules(next);
+    saveSchedules(next, window.localStorage);
+  }, []);
   const [view, setView] = useState<View>('chat');
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [rawSpaces, setSpaces] = useState<Space[]>([]);
   const [spaceOrder, setSpaceOrder] = useState<string[]>(() => loadSpaceOrder(window.localStorage));
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
   const [spaceTab, setSpaceTab] = useState<SpaceTabRequest | null>(null);
+  // Hand-over between Spaces: the working state of each Space (in memory) and work waiting for a Space to open.
+  const spaceStates = useRef<Record<string, Record<string, unknown>>>({});
+  const [incoming, setIncoming] = useState<Record<string, IncomingHandoff[]>>({});
+  const handoffNonce = useRef(0);
   const [coverOpen, setCoverOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [prefs, setPrefs] = useState<Preferences>(() => {
@@ -139,6 +151,7 @@ export default function App() {
   const updatePrefs = useCallback((change: (current: Preferences) => Preferences) => {
     setPrefs((current) => sanitizePreferences(change(current)));
   }, []);
+  const spaces = useMemo(() => applySpaceTitles(rawSpaces, prefs), [rawSpaces, prefs]);
   const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
@@ -177,6 +190,8 @@ export default function App() {
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
   const webSearchRef = useRef(true);
+  const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
+  askBeforeActionsRef.current = prefs.chat.askBeforeActions;
   const blockedWebTool = useRef(false);
   const agentRef = useRef<Agent | null>(null);
   const lastGroundedCsvPath = useRef<string | null>(null);
@@ -402,6 +417,9 @@ export default function App() {
         agentRef.current = nextAgent;
         setAgent(nextAgent);
         setMode(nextAgent.currentMode);
+        if (askBeforeActionsRef.current && nextAgent.currentMode === 'auto') {
+          nextAgent.setMode('smart_approve').then(() => setMode('smart_approve')).catch(() => undefined);
+        }
         setError(null);
       } catch (e: any) {
         if (cancelled) return;
@@ -676,6 +694,83 @@ export default function App() {
     return true;
   }
 
+  /** Install a Space file somebody sent: ask before replacing one with the same name. */
+  async function importSpace(file: File) {
+    const say = (message: string) => { setToast(message); setTimeout(() => setToast(null), 6000); };
+    try {
+      let result = await importSpaceFile(file);
+      if ('exists' in result) {
+        const replace = window.confirm(`A Space "${result.title}" already exists.\nOK = replace it, Cancel = import as a copy.`);
+        result = await importSpaceFile(file, replace ? 'replace' : 'new');
+      }
+      if ('exists' in result) return;
+      const next = await refreshSpaces();
+      void next;
+      setSelectedSpace(result.slug);
+      say(`Imported Space "${result.title}".`);
+    } catch (e: any) {
+      say(e?.message ?? 'The Space could not be imported.');
+    }
+  }
+
+  /** A Space hands work to another Space: queue it, open that Space unless told not to, and show the notice. */
+  function handOff(fromSlug: string, handoff: Handoff) {
+    const target = spaces.find((x) => x.slug === handoff.to);
+    if (!target) { setToast('The Space for this hand-over is not installed.'); setTimeout(() => setToast(null), 6000); return; }
+    handoffNonce.current += 1;
+    setIncoming((current) => ({ ...current, [handoff.to]: [...(current[handoff.to] ?? []), { from: fromSlug, payload: handoff.payload, nonce: handoffNonce.current }].slice(-20) }));
+    if (handoff.open) { setSelectedSpace(handoff.to); setView('spaces'); }
+    if (handoff.notice) { setToast(handoff.notice); setTimeout(() => setToast(null), 8000); }
+  }
+
+  /** Rename a Space or subspace: the new name is kept in the settings, the folder name stays. */
+  function renameSpaceTitle(slug: string, title: string) {
+    const original = rawSpaces.find((x) => x.slug === slug)?.title ?? slug;
+    updatePrefs((c) => renameSpace(c, slug, title, original));
+  }
+
+  /** Delete a Space for good. SpacesList has already asked the person to confirm. */
+  async function deleteSpace(slug: string) {
+    const say = (message: string) => { setToast(message); setTimeout(() => setToast(null), 6000); };
+    const title = spaces.find((x) => x.slug === slug)?.title ?? slug;
+    try {
+      await deleteSpaceFolder(slug);
+      updatePrefs((c) => forgetSpace(c, slug, rawSpaces));
+      setSpaceOrder((current) => {
+        const next = current.filter((x) => x !== slug);
+        saveSpaceOrder(window.localStorage, next);
+        return next;
+      });
+      await refreshSpaces();
+      say(`Deleted Space "${title}".`);
+    } catch (e: any) {
+      say(e?.message ?? 'The Space could not be deleted.');
+    }
+  }
+
+  /** "Save as Space": the agent turns one answer into a Space. */
+  function saveAnswerAsSpace(index: number) {
+    const answer = messages[index];
+    if (!answer || answer.role !== 'agent' || !answer.text.trim()) return;
+    void send(`Create a Space from your answer below. Give it a short, fitting title.\n\n${answer.text.slice(0, 8000)}`);
+  }
+
+  // Recurring briefings: while the app is open, run a due one when the chat is idle (also catches up to six hours).
+  const dueTick = useRef<() => void>(() => undefined);
+  dueTick.current = () => {
+    if (!agent || busy) return;
+    const now = new Date();
+    const due = schedules.find((s) => isDue(s, now));
+    if (!due) return;
+    updateSchedules(schedules.map((s) => (s.id === due.id ? { ...s, lastRun: now.toISOString() } : s)));
+    setView('chat');
+    void send(`${due.prompt}\n\n(Recurring briefing, ${due.time})`);
+  };
+  useEffect(() => {
+    const id = window.setInterval(() => dueTick.current(), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const empty = messages.length === 0;
   const composer = (
     <Composer
@@ -697,6 +792,9 @@ export default function App() {
       onVoiceCommand={handleVoiceCommand}
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
+      hiddenStarters={prefs.chat.hiddenStarters}
+      schedules={schedules}
+      onSchedulesChange={updateSchedules}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
     />
   );
@@ -828,6 +926,10 @@ export default function App() {
           onAddDomain={(name) => updatePrefs((c) => addDomain(c, name))}
           onRenameDomain={(from, to) => updatePrefs((c) => renameDomain(c, spaces, from, to))}
           onDeleteDomain={(name) => updatePrefs((c) => deleteDomain(c, name))}
+          onImportSpace={(file) => void importSpace(file)}
+          onRenameSpace={renameSpaceTitle}
+          originalTitle={(slug) => rawSpaces.find((x) => x.slug === slug)?.title ?? slug}
+          onDeleteSpace={(slug) => void deleteSpace(slug)}
         />
       )}
       {view === 'manage' && (
@@ -870,6 +972,11 @@ export default function App() {
             prefs={prefs}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
             onAsk={askFromSpace}
+            onHandoff={(handoff) => handOff(space.slug, handoff)}
+            onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
+            savedState={spaceStates.current[space.slug]}
+            incoming={incoming[space.slug]}
+            onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
@@ -920,6 +1027,10 @@ export default function App() {
               <Chat
                 messages={messages}
                 busy={busy}
+                onAsk={askFromSpace}
+                onSaveAsSpace={saveAnswerAsSpace}
+                chatTools={prefs.chat}
+                meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
                   setView('spaces');

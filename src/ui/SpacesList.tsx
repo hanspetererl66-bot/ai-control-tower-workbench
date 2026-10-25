@@ -24,6 +24,13 @@ type Props = {
   onAddDomain?: (name: string) => void;
   onRenameDomain?: (from: string, to: string) => void;
   onDeleteDomain?: (name: string) => void;
+  /** Install a Space file somebody sent. */
+  onImportSpace?: (file: File) => void;
+  /** Rename a Space or subspace (own name; an empty or the original name takes it back). */
+  onRenameSpace?: (slug: string, title: string) => void;
+  originalTitle?: (slug: string) => string;
+  /** Delete a Space for good; called only after the person confirmed in the dialog. */
+  onDeleteSpace?: (slug: string) => void;
 };
 
 const COLLAPSED_KEY = 'werkbank.collapsedDomains';
@@ -38,7 +45,10 @@ function loadCollapsed(): string[] {
 
 type DropMark = { slug: string; after: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace }: Props) {
+  const [renamingSpace, setRenamingSpace] = useState<string | null>(null);
+  const [spaceName, setSpaceName] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const grouped = Boolean(domains && domainOf);
   const [collapsed, setCollapsed] = useState<string[]>(loadCollapsed);
   const [adding, setAdding] = useState(false);
@@ -161,6 +171,21 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             </span>
             {s.description && <span className="card-desc">{s.description}</span>}
           </button>
+          {(onRenameSpace || onDeleteSpace) && selected === s.slug && (
+            renamingSpace === s.slug ? (
+              <form className="domain-move space-rename" onSubmit={(event) => { event.preventDefault(); onRenameSpace?.(s.slug, spaceName); setRenamingSpace(null); }}>
+                <input autoFocus value={spaceName} maxLength={80} aria-label={`New name for ${s.title}`} onChange={(event) => setSpaceName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenamingSpace(null); }} />
+                <button type="submit" className="ghost-btn small" disabled={!spaceName.trim()}>Save</button>
+                <button type="button" className="ghost-btn small" onClick={() => setRenamingSpace(null)}>Cancel</button>
+              </form>
+            ) : (
+              <div className="domain-move space-actions">
+                {onRenameSpace && <button className="ghost-btn small" onClick={() => { setRenamingSpace(s.slug); setSpaceName(s.title); }} title={isSub(s.slug) ? 'Rename this subspace' : 'Rename this Space'}>Rename</button>}
+                {onRenameSpace && originalTitle && originalTitle(s.slug) !== s.title && <button className="ghost-btn small" onClick={() => onRenameSpace(s.slug, '')} title={`Back to “${originalTitle(s.slug)}”`}>Original name</button>}
+                {onDeleteSpace && <button className="ghost-btn small ghost-danger" onClick={() => setConfirmDelete(s.slug)} title="Delete this Space">Delete</button>}
+              </div>
+            )
+          )}
           {grouped && onSetParent && selected === s.slug && (() => {
             const options = parentCandidates?.(s.slug) ?? [];
             const current = parentOf?.(s.slug) ?? '';
@@ -196,6 +221,12 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     <aside className="list">
       <div className="list-head">
         <span className="list-title">Spaces</span>
+        {onImportSpace && (
+          <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
+            Import
+            <input type="file" accept=".json,application/json" hidden aria-label="Import Space file" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ''; if (f) onImportSpace(f); }} />
+          </label>
+        )}
         <button className="icon-btn" title="Search" aria-label="Search">
           <SearchIcon />
         </button>
@@ -258,6 +289,27 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
           spaces.map(renderCard)
         )
       )}
+      {confirmDelete && (() => {
+        const target = spaces.find((x) => x.slug === confirmDelete);
+        const subs = target ? subsOf(target.slug) : [];
+        if (!target) return null;
+        return (
+          <div className="scrim" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setConfirmDelete(null); }}>
+            <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="del-title" aria-describedby="del-text" onKeyDown={(event) => { if (event.key === 'Escape') setConfirmDelete(null); }}>
+              <h2 id="del-title" className="dialog-title">Delete “{target.title}”?</h2>
+              <p id="del-text" className="dialog-body">
+                This deletes the {isSub(target.slug) ? 'subspace' : 'Space'} and its page from this computer. It cannot be undone.
+                {subs.length > 0 && ` Its ${subs.length === 1 ? 'subspace' : `${subs.length} subspaces`} (${subs.map((x) => x.title).join(', ')}) will stay and move to the top level.`}
+                {' '}Tip: Share → Save as file keeps a copy first.
+              </p>
+              <div className="dialog-actions">
+                <button autoFocus className="dialog-btn dialog-btn-primary" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                <button className="dialog-btn dialog-btn-danger" onClick={() => { const slug = confirmDelete; setConfirmDelete(null); onDeleteSpace?.(slug); }}>Delete for good</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </aside>
   );
 }

@@ -6,6 +6,8 @@ import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
 import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
+import { downloadSpaceFile, emailDraftUrl } from '../space-share';
+import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
 export type SpaceTabRequest = { tab: string; nonce: number; /** Target space; defaults to the AI Control Tower. */ space?: string };
@@ -19,6 +21,11 @@ export default function SpaceViewer({
   textScale = DEFAULT_SPACE_SCALE,
   theme = 'light',
   prefs,
+  onHandoff,
+  onSpaceState,
+  savedState,
+  incoming,
+  onIncomingDelivered,
 }: {
   space: Space;
   tabRequest?: SpaceTabRequest | null;
@@ -33,6 +40,14 @@ export default function SpaceViewer({
   theme?: 'light' | 'dark';
   /** Personal look (accent, font, contrast); optional. */
   prefs?: Preferences;
+  /** The Space hands work to another Space (the host opens it). */
+  onHandoff?: (handoff: Handoff) => void;
+  /** The Space reports its working state so it survives a trip to another Space. */
+  onSpaceState?: (state: Record<string, unknown>) => void;
+  savedState?: Record<string, unknown>;
+  /** Work another Space handed to this one; delivered once the frame has loaded. */
+  incoming?: IncomingHandoff[];
+  onIncomingDelivered?: () => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const loaded = useRef(false);
@@ -55,6 +70,30 @@ export default function SpaceViewer({
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, []);
+
+  const handoffRef = useRef(onHandoff);
+  handoffRef.current = onHandoff;
+  const stateRef = useRef(onSpaceState);
+  stateRef.current = onSpaceState;
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (!frame.current || event.source !== frame.current.contentWindow) return;
+      const handoff = parseHandoffMessage(event.data);
+      if (handoff) { handoffRef.current?.(handoff); return; }
+      const state = parseStateMessage(event.data);
+      if (state) stateRef.current?.(state);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+  const restoreRef = useRef({ savedState, incoming, onIncomingDelivered });
+  restoreRef.current = { savedState, incoming, onIncomingDelivered };
+  const postRestore = () => {
+    const { savedState: saved, incoming: inbox, onIncomingDelivered: delivered } = restoreRef.current;
+    if (!saved && !inbox?.length) return;
+    frame.current?.contentWindow?.postMessage(restoreMessage(saved, inbox ?? []), '*');
+    if (inbox?.length) delivered?.();
+  };
 
   const bridgeRef = useRef(bridge);
   bridgeRef.current = bridge;
@@ -110,6 +149,19 @@ export default function SpaceViewer({
 
   const [bust, setBust] = useState(space.updatedAt);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareNote, setShareNote] = useState('');
+  async function share(withMail: boolean) {
+    try {
+      const name = await downloadSpaceFile(space.slug);
+      setShareNote(withMail ? `Saved ${name}. Attach it to the e-mail.` : `Saved ${name}.`);
+      if (withMail) window.location.href = emailDraftUrl(space.title, name);
+    } catch (e: any) {
+      setShareNote(e?.message ?? 'Sharing failed.');
+    }
+    setShareOpen(false);
+    setTimeout(() => setShareNote(''), 8000);
+  }
   const [html, setHtml] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -192,6 +244,18 @@ export default function SpaceViewer({
         >
           <BulbIcon /> Insights
         </button>
+        <div className="chip-wrap">
+          <button className={`ghost-btn ${shareOpen ? 'ghost-btn-on' : ''}`} onClick={() => setShareOpen((v) => !v)} aria-expanded={shareOpen} title="Share this Space as a file">
+            Share
+          </button>
+          {shareOpen && (
+            <div className="menu share-menu" role="menu" style={{ top: 'calc(100% + 6px)', bottom: 'auto', right: 0, left: 'auto' }}>
+              <button role="menuitem" className="connector-menu-item" onClick={() => void share(false)}>Save as file</button>
+              <button role="menuitem" className="connector-menu-item" onClick={() => void share(true)}>Send by e-mail</button>
+            </div>
+          )}
+        </div>
+        {shareNote && <span className="space-count" role="status">{shareNote}</span>}
         {/* Re-render what is already on disk. Regeneration remains an explicit conversation. */}
         <button className="icon-btn" onClick={() => setBust(Date.now())} title="Refresh" aria-label="Refresh">
           <RefreshIcon />
@@ -218,7 +282,10 @@ export default function SpaceViewer({
         <iframe
           ref={frame}
           onLoad={() => {
+            // The frame first loads empty while the page is still being fetched; restoring then would use up the hand-over.
+            if (html === null) return;
             loaded.current = true;
+            postRestore();
             postTab();
             if (query) sendTools({ type: 'sp:search', query });
             if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
