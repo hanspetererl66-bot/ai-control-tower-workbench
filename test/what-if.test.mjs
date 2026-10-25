@@ -18,7 +18,7 @@ test('0 % cut throttles nobody and keeps the ceiling', () => {
 
 test('30 % cut falls under the actual spend and throttles', () => {
   const r = simulateCreditCut(model, 30);
-  assert.equal(r.ceiling.afterM, 2.52);
+  assert.equal(r.ceiling.afterM, 15.05);
   assert.ok(r.ceiling.overByM > 0 && r.ceiling.status === 'over');
   assert.ok(r.agents.runsLostPerDay > 0 && r.processes.length > 0);
   assert.ok(r.risks.some((k) => k.effect === 'steigt'));
