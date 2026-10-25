@@ -1,3 +1,4 @@
+import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
   ACCENT_PRESETS, APP_SCALES, CONTRASTS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, TONES,
@@ -13,7 +14,7 @@ export type SkillRef = { name: string; description: string };
 
 type Common = { prefs: Preferences; update: PrefsUpdate };
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+export function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
     <div className="settings-section">
       <div className="settings-section-copy">
@@ -174,6 +175,23 @@ export function WorkPanel({ prefs, update, spaces, skills, connectors }: Common 
             <span>{s.label}</span>
           </label>
         ))}
+      </Section>
+      <Section title="Cards under the chat" hint="The groups of cards under the message box on the empty chat. Untick a group or a single card to hide it.">
+        {BRIEFING_CATEGORIES.map((c) => {
+          const off = prefs.chat.hiddenBriefing.includes(categoryKey(c.id));
+          const flip = (key: string) => update((p) => ({ ...p, chat: { ...p.chat, hiddenBriefing: p.chat.hiddenBriefing.includes(key) ? p.chat.hiddenBriefing.filter((x) => x !== key) : [...p.chat.hiddenBriefing, key] } }));
+          return (
+            <div key={c.id}>
+              <label className="voice-option"><input type="checkbox" checked={!off} onChange={() => flip(categoryKey(c.id))} /><span><b>{c.title}</b></span></label>
+              {c.cards.length > 1 && c.cards.map((card) => (
+                <label key={card.id} className="voice-option" style={{ marginLeft: 22 }}>
+                  <input type="checkbox" disabled={off} checked={!off && !prefs.chat.hiddenBriefing.includes(card.id)} onChange={() => flip(card.id)} />
+                  <span>{card.label}</span>
+                </label>
+              ))}
+            </div>
+          );
+        })}
       </Section>
       <Section title="Own starter prompts" hint="Frequent requests as buttons on the empty chat. Up to 12.">
         <ul className="prefs-list">

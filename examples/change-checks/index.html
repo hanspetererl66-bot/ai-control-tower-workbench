@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Change Checks</title>
+<title>Pre-Checks and Post-Checks</title>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
    Source of truth: examples/shared/design-system.css. Embedded into each Space by
@@ -214,6 +214,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 <style>
 *{box-sizing:border-box}
@@ -1223,7 +1233,7 @@ const ORCHESTRATION = [
   { id: 'ticket', title: 'Create task and ticket', tool: 'n8n', detail: 'Change ticket in the ITSM, task in the Space' },
   { id: 'check', title: 'Pre-check in check mode', tool: 'AWX', detail: 'Playbook with --check --diff, dependencies, conflicts' },
   { id: 'approve', title: 'Approval (four eyes)', tool: 'n8n', detail: 'Request to the approvers in Teams; the answer starts the next step' },
-  { id: 'window', title: 'Wait for the change window', tool: 'n8n', detail: 'Start only inside the approved window' },
+  { id: 'window', title: 'Wait for the downtime window', tool: 'n8n', detail: 'Start only inside the approved window' },
   { id: 'run', title: 'Run the playbook', tool: 'AWX', detail: 'Job template with checked parameters, snapshot first' },
   { id: 'verify', title: 'Verification', tool: 'AWX', detail: 'Health and certificate checks, rollback on failure' },
   { id: 'evidence', title: 'Evidence and notification', tool: 'n8n', detail: 'File the log, inform customer and team' },
@@ -1283,10 +1293,10 @@ function planTask(data, req) {
   const vmMap = by(data.vms);
   const customer = by(data.customers).get(target.customer);
   const win = req.window;
-  if (!win || !win[0] || !win[1] || win[0] >= win[1]) errors.push('The change window is invalid.');
+  if (!win || !win[0] || !win[1] || win[0] >= win[1]) errors.push('The downtime window is invalid.');
   else {
     if (toDay(win[0]) <= data.asOf && !['in_window', 'done'].includes(req.state)) errors.push('The window must be in the future.');
-    if (hoursOf(win) > 8) errors.push('A change window may last 8 hours at most.');
+    if (hoursOf(win) > 8) errors.push('A downtime window may last 8 hours at most.');
     for (const f of data.freezes) {
       if ((f.customer === null || f.customer === target.customer) && toDay(win[0]) <= f.to && toDay(win[1]) >= f.from) errors.push(`The window falls into a freeze: ${f.reason} (${f.from} to ${f.to}).`);
     }
@@ -1384,17 +1394,32 @@ function planTask(data, req) {
   };
 }
 
+/** What the next approval has to look like (two approvals: four eyes plus the change manager). */
+function approvalHint(task, data) {
+  const plan = planTask(data, { ...task, ...(task.params ?? {}) });
+  const have = (task.approvals ?? []).map((id) => by(data.people).get(id)).filter(Boolean);
+  if (!plan.ok) return '';
+  if (have.length >= plan.approvalsNeeded) return 'All approvals are in.';
+  if (plan.approvalsNeeded === 1) return 'One approval from anyone except the requester.';
+  if (have.length === 0) return 'First approval: anyone except the requester. Two approvals need one change manager and one other person.';
+  return have[0].role === 'Change Manager' ? 'Second approval: a person who is not a change manager, for example Security or Operations (the change manager has already approved).' : 'Second approval: a change manager (four eyes plus change manager).';
+}
+
 /** May this person approve? Technical enforcement of the four-eyes rule. */
 function canApprove(task, personId, data) {
   const person = by(data.people).get(personId);
   if (!person) return { ok: false, reason: 'Unknown person.' };
   if (task.state !== 'in_review') return { ok: false, reason: 'Approval is only possible in the "In review" phase.' };
   if (task.requester === personId) return { ok: false, reason: 'The requester must not approve their own change.' };
-  if ((task.approvals ?? []).includes(personId)) return { ok: false, reason: 'This person has already approved.' };
   const plan = planTask(data, { ...task, ...(task.params ?? {}) });
+  if ((task.approvals ?? []).includes(personId)) return { ok: false, reason: 'This person has already approved.' + (plan.ok ? ' ' + approvalHint(task, data) : '') };
   if (!plan.ok) return { ok: false, reason: `The plan has errors: ${plan.errors[0]}` };
   const have = (task.approvals ?? []).map((id) => by(data.people).get(id));
-  if (plan.approvalsNeeded === 2 && have.length === 1 && have[0].role === person.role && person.role !== 'Change Manager') return { ok: false, reason: 'The second approval must come from a different role than the first, for example the change manager.' };
+  if (plan.approvalsNeeded === 2 && have.length === 1) {
+    const firstIsCm = have[0].role === 'Change Manager', isCm = person.role === 'Change Manager';
+    if (!firstIsCm && !isCm) return { ok: false, reason: 'The second approval must come from a different role than the first: the change manager.' };
+    if (firstIsCm && isCm) return { ok: false, reason: 'The second approval must come from a different role than the first: the change manager has already approved, so Security or Operations is needed.' };
+  }
   return { ok: true, reason: '' };
 }
 

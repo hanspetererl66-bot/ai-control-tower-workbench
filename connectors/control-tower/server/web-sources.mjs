@@ -11,6 +11,7 @@ import { ToolError } from './tools.mjs';
 /** domain: allowed host and its subdomains; search: URL template with {q}, or null when the site has no usable public search. */
 export const SOURCES = [
   { id: 'sap', name: 'SAP (all sap.com sites)', domain: 'sap.com', group: 'SAP', search: 'https://www.sap.com/search.html?q={q}', note: 'Covers www, help, support, learning, news, community, developers, api, store, roadmaps, partneredge and further sap.com subdomains.' },
+  { id: 'sap-investors', name: 'SAP Investor Relations', domain: 'sap.com', group: 'Markets', search: null, note: 'Share, quarterly results, dividend, financial calendar and reports: https://www.sap.com/investors/de.html (English: /investors/en.html). Part of the sap.com sources, listed here so it is easy to find. The live share price is often loaded by script and then not readable: for the current quote use finanzen.net or CNN, and name the exchange and the time stamp. Not investment advice.' },
   { id: 'sap-help', name: 'SAP Help Portal', domain: 'help.sap.com', group: 'SAP', search: null, note: 'Use the tool search_sap_help for searching.' },
   { id: 'sap-community', name: 'SAP Community', domain: 'community.sap.com', group: 'SAP', search: null, note: 'Use the tool search_sap_community for searching.' },
   { id: 'sap-learning', name: 'SAP Learning', domain: 'learning.sap.com', group: 'SAP', search: 'https://learning.sap.com/search?q={q}', note: 'Learning journeys, courses and certifications.' },
@@ -24,6 +25,8 @@ export const SOURCES = [
   { id: 'sap-cloud', name: 'SAP cloud sites (cloud.sap)', domain: 'cloud.sap', group: 'SAP', search: null, note: 'Further SAP cloud sites such as the Discovery Center and the trust centre.' },
   { id: 'handelsblatt', name: 'Handelsblatt', domain: 'handelsblatt.com', group: 'News', search: 'https://www.handelsblatt.com/suche/?suchbegriff={q}', note: 'German business newspaper. Many articles are for subscribers: only the free part can be read.' },
   { id: 'faz', name: 'Frankfurter Allgemeine Zeitung (FAZ)', domain: 'faz.net', group: 'News', search: 'https://www.faz.net/suche/?query={q}', note: 'German newspaper. Many articles are for subscribers (FAZ+): only the free part can be read.' },
+  { id: 'finanzen', name: 'finanzen.net', domain: 'finanzen.net', group: 'Markets', search: 'https://www.finanzen.net/suchergebnis.asp?_search={q}', note: 'German market data. Share prices are delayed (usually 15 minutes) and not investment advice: always name the exchange and the time stamp of the quote. SAP share: https://www.finanzen.net/aktien/sap-aktie. The site search is best effort.' },
+  { id: 'cnn', name: 'CNN', domain: 'cnn.com', group: 'News', search: null, note: 'News and US market data (edition.cnn.com, money.cnn.com). SAP ADR on the NYSE: https://edition.cnn.com/markets/stocks/SAP. Quotes are delayed and not investment advice; name the exchange and the time stamp. The site search is rendered in the browser, so read pages directly.' },
 ];
 
 const MAX_BYTES = 1_500_000;
@@ -35,7 +38,7 @@ export const WEB_SOURCE_TOOL_DEFINITIONS = [
   {
     name: 'list_web_sources',
     description:
-      'List the web sources this assistant may read: all public SAP sites (sap.com and its subdomains, cloud.sap, openSAP) plus Handelsblatt and FAZ. Use it to see what is allowed and which source has a search. No network access.',
+      'List the web sources this assistant may read: all public SAP sites (sap.com and its subdomains, cloud.sap, openSAP) plus Handelsblatt, FAZ, CNN and finanzen.net (share prices). Use it to see what is allowed and which source has a search. No network access.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {

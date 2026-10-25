@@ -214,6 +214,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 <style>
 *{box-sizing:border-box}
@@ -280,6 +290,66 @@ td{padding:10px;border-bottom:1px solid var(--line-2);vertical-align:top}
 .two{display:grid;gap:14px;grid-template-columns:1fr 1fr}
 @media(max-width:900px){.two{grid-template-columns:1fr}}
 .empty{color:var(--muted);padding:20px;text-align:center}
+/* Text 15% smaller than the shared design system */
+.ml,.k{font-size:10.2px}
+.mv,.v{font-size:25.5px}
+.md,.s{font-size:10.2px}
+.sh{font-size:11.05px}
+.chd{font-size:12.75px}
+.tag{font-size:9.35px}
+.tbl th,table th{font-size:10.2px}
+button.primary,button.ghost,button.small{font-size:11.05px}
+button.small{font-size:10.2px}
+.ag-tbl th{font-size:10.2px}
+.ct .hdr-title{font-size:12.75px}
+.ct .hdr-sub{font-size:9.35px}
+.ct .hdr-stat-lbl{font-size:9.35px}
+.ct .tb{font-size:11.05px}
+.ct .dm{font-size:10.2px}
+.s4m .logo{font-size:12.75px}
+.s4m header .s{font-size:9.35px}
+.s4m{font-size:11.05px}
+.s4m nav button{font-size:11.05px}
+.s4m h2{font-size:11.05px}
+.s4m .legend{font-size:9.35px}
+.s4m .detail .head .t{font-size:15.3px}
+.s4m .detail h3{font-size:10.2px}
+.s4m .detail dl{font-size:11.05px}
+.s4m .detail .note{font-size:11.05px}
+.s4m #product-detail .dgrid .v{font-size:17px}
+.s4m .smx-kpis .v{font-size:20.4px}
+.s4m .smx-title{font-size:17px}
+.s4m .smx-grid h3{font-size:10.2px}
+.s4m .smx-dl{font-size:11.05px}
+.s4m .smx-list{font-size:11.05px}
+.s4m .smx-stars-sm{font-size:10.2px}
+.s4m .smx-line{font-size:11.05px}
+.s4m .smx-big{font-size:27.2px}
+.s4m .smx-bars{font-size:10.2px}
+body{font-size:11.9px}
+.demo{font-size:10.2px}
+.logo{font-size:15.3px}
+.asof{font-size:10.2px}
+.kpi .k{font-size:10.2px}
+.kpi .v{font-size:22.1px}
+.chip{font-size:10.2px}
+.item .m{font-size:10.2px}
+.panel h2{font-size:12.75px}
+.panel h3{font-size:11.05px}
+.head h1{font-size:15.3px}
+.sub{font-size:11.05px}
+.tag{font-size:9.35px}
+.msg .mh{font-size:10.2px}
+.msg .mh b{font-size:11.05px}
+.warn{font-size:11.05px}
+.cross{font-size:11.05px}
+.draft{font-size:11.05px}
+.btn{font-size:10.2px}
+.note{font-size:10.2px}
+table{font-size:11.05px}
+th{font-size:10.2px}
+.chart .lbl{font-size:9.35px}
+.legend{font-size:10.2px}
 </style>
 </head>
 <body>
@@ -410,7 +480,7 @@ function overview() {
 
 function rules() {
   const p = DATA.privacy;
-  $('#rules').innerHTML = `<h2 style="margin:0 0 6px;font-size:16px">Rules and privacy (concept)</h2>
+  $('#rules').innerHTML = `<h2 style="margin:0 0 6px;font-size:13.6px">Rules and privacy (concept)</h2>
   <div class="sub">What a real version would do before anything is shown here. The numbers are made up.</div>
   <div class="kpis" style="margin-top:14px">
     <div class="kpi"><div class="k">Messages scanned (90 days)</div><div class="v">${p.scanned}</div></div>

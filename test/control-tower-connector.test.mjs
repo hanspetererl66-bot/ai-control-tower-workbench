@@ -16,12 +16,13 @@ import { INFRA_TOOL_DEFINITIONS } from '../connectors/control-tower/server/infra
 import { SAP_HELP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sap-help.mjs';
 import { WEB_SOURCE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/web-sources.mjs';
 import { PREFERENCE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/preferences.mjs';
+import { GROUP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/groups.mjs';
 import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
 import { CROSS_SPACE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/cross-space.mjs';
 import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
 
-const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS];
+const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS, ...GROUP_TOOL_DEFINITIONS];
 
 const ROOT = join(import.meta.dirname, '..');
 const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');

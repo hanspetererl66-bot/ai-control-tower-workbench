@@ -201,7 +201,7 @@
       "source": "connectors/control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "0.17.0",
+      "version": "0.18.0",
       "summary": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.",
       "install": [
         {
@@ -570,6 +570,84 @@
           "class": "write",
           "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
           "default": "on"
+        },
+        {
+          "name": "group_create",
+          "class": "write",
+          "what": "Creates a group; the actor becomes admin.",
+          "default": "ask"
+        },
+        {
+          "name": "group_list",
+          "class": "read",
+          "what": "Lists the groups of a person.",
+          "default": "on"
+        },
+        {
+          "name": "group_get",
+          "class": "read",
+          "what": "Loads members, Spaces, configuration and team memory of a group.",
+          "default": "on"
+        },
+        {
+          "name": "group_set_member",
+          "class": "write",
+          "what": "Adds a member or changes a role (admin only).",
+          "default": "ask"
+        },
+        {
+          "name": "group_remove_member",
+          "class": "write",
+          "what": "Removes a member.",
+          "default": "ask"
+        },
+        {
+          "name": "group_delete",
+          "class": "write",
+          "what": "Deletes a group with its Spaces and memory (admin only, asked first).",
+          "default": "ask"
+        },
+        {
+          "name": "group_publish_space",
+          "class": "write",
+          "what": "Publishes a Space package to the group.",
+          "default": "ask"
+        },
+        {
+          "name": "group_get_space",
+          "class": "read",
+          "what": "Loads one group Space.",
+          "default": "on"
+        },
+        {
+          "name": "group_remove_space",
+          "class": "write",
+          "what": "Removes a Space from the group.",
+          "default": "ask"
+        },
+        {
+          "name": "group_save_config",
+          "class": "write",
+          "what": "Saves the group configuration (admin only, no secrets).",
+          "default": "ask"
+        },
+        {
+          "name": "group_memory_add",
+          "class": "write",
+          "what": "Adds a team memory entry.",
+          "default": "ask"
+        },
+        {
+          "name": "group_memory_update",
+          "class": "write",
+          "what": "Changes a team memory entry.",
+          "default": "ask"
+        },
+        {
+          "name": "group_memory_delete",
+          "class": "write",
+          "what": "Deletes a team memory entry.",
+          "default": "ask"
         }
       ],
       "switches": [],

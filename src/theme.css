@@ -3651,3 +3651,82 @@ button {
 :root[data-theme="dark"] .ghost-btn.ghost-danger:hover:not(:disabled) { background: rgb(248 113 113 / 12%); }
 :root[data-theme="dark"] .dialog-btn-danger { color: #f87171; border-color: rgb(248 113 113 / 40%); }
 :root[data-theme="dark"] .dialog-btn-danger:hover:not(:disabled) { background: rgb(248 113 113 / 12%); }
+
+/* Memory suggestion above the composer: one line, two buttons. */
+.memory-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 8px;
+  max-width: 760px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 13px;
+}
+.memory-suggest span { flex: 1 1 260px; }
+
+/* Space titles are a strong purple, subspace titles a lighter one, so the two levels read apart. */
+.card:not(.card-sub) .card-title { color: #5b21b6; font-weight: 700; }
+.card-sub .card-title { color: #8b5cf6; font-weight: 600; }
+:root[data-theme="dark"] .card:not(.card-sub) .card-title { color: #b69cff; }
+:root[data-theme="dark"] .card-sub .card-title { color: #9a82e0; }
+:root[data-theme="dark"] .ghost-btn:hover:not(:disabled) { background: rgb(255 255 255 / 8%); }
+
+.briefing-area {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.briefing-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+}
+.briefing-head .briefing-title { margin: 0; }
+.briefing-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.briefing-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: transparent;
+}
+.briefing-tab:hover { color: var(--ink); }
+.briefing-tab-on { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.briefing-count { font-size: 11px; opacity: 0.8; }
+
+/* Mini icons at the top right of a Space card: rename, original name, delete. Quiet until the card is hovered, focused or selected. */
+.card-tools { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; flex: none; }
+.mini-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  color: var(--muted);
+  opacity: 0;
+  cursor: pointer;
+}
+.card:hover .mini-icon,
+.card:focus-within .mini-icon,
+.card-on .mini-icon,
+.mini-icon:focus-visible { opacity: 0.8; }
+.mini-icon:hover { opacity: 1; background: rgb(127 127 127 / 16%); color: var(--ink); }
+.mini-icon-danger:hover { color: #b91c1c; background: rgb(220 38 38 / 12%); }
+:root[data-theme="dark"] .mini-icon-danger:hover { color: #f87171; }
+@media (hover: none) { .mini-icon { opacity: 0.7; } }

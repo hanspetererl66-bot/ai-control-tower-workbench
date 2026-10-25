@@ -195,3 +195,17 @@ test('the page offers the n8n hand-off through Joule, in English, and the workfl
   assert.doesNotMatch(JSON.stringify(wf), /"--check"\s*:\s*false|job_type["']?\s*:\s*["']run/);
   for (const [from, outs] of Object.entries(wf.connections)) { assert.ok(wf.nodes.some((n) => n.name === from), from); for (const o of outs.main.flat()) assert.ok(wf.nodes.some((n) => n.name === o.node), o.node); }
 });
+
+test('two approvals: four eyes plus exactly one change manager', async () => {
+  const { approvalHint } = await import('../connectors/control-tower/server/infra-ops.mjs');
+  const base = { ...data.tasks.find((t) => t.id === 'CHG-1040') };
+  const cm = (id) => ({ ...base, approvals: [id], requester: 'sa' });
+  // first approval by the change manager: another change manager must not give the second one
+  assert.match(canApprove(cm('jb'), 'tk', data).reason, /different role/);
+  assert.equal(canApprove(cm('jb'), 'mo', data).ok, true);
+  // first approval by Security: the second must be a change manager
+  assert.match(canApprove(cm('mo'), 'nb', data).reason, /change manager/);
+  assert.equal(canApprove(cm('mo'), 'tk', data).ok, true);
+  assert.match(approvalHint(cm('mo'), data), /change manager/);
+  assert.match(canApprove(cm('jb'), 'jb', data).reason, /already approved.*Second approval/);
+});

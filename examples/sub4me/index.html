@@ -84,6 +84,36 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .filters{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .saved{margin-top:12px}
 @media(max-width:600px){main{padding:14px}}
+/* Overview: next best action, tickets, offers, AI-unit runway, contract timeline */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-top:14px}
+.ov-grid>.card,#ov-timeline{min-width:0}
+.ov-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}.ov-h .k{margin:0}
+.ov-nba .big,#ov-nba .big{font-size:16px;font-weight:700;margin:4px 0 2px}
+#ov-nba{border-color:var(--purple-border);background:var(--purple-dim)}
+#ov-nba .then{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+#ov-nba .then div{margin:2px 0}
+.ov-row{padding:8px 0;border-top:1px solid var(--line)}.ov-row:first-of-type{border-top:0}
+.ov-row .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ov-row .bar{margin-top:5px;min-width:0}
+.ov-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}.ov-stats b{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.ov-ai-bar{position:relative;height:14px;background:var(--line-2);border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.ov-ai-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--brand)}
+.ov-ai-bar i.fc{background:var(--brand-dim);border:1px dashed var(--brand);box-sizing:border-box}
+.tl2{position:relative;margin-top:6px}
+.tl2 .ax{position:relative;height:18px;margin-left:270px;border-bottom:1px solid var(--line);font-size:11px;color:var(--mut)}
+.tl2 .ax span{position:absolute;top:0;transform:translateX(-50%)}
+.tl2 .r{display:grid;grid-template-columns:270px 1fr;align-items:center;min-height:30px}
+.tl2 .lab{font-size:12px;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl2 .trk2{position:relative;height:30px}
+.tl2 .b{position:absolute;top:9px;height:12px;border-radius:99px;background:var(--brand);opacity:.75}
+.tl2 .b.soon{background:var(--warn);opacity:.85}
+.tl2 .nt{position:absolute;top:7px;width:10px;height:10px;margin-left:-5px;background:var(--bad);transform:rotate(45deg);top:10px}
+.tl2 .today{position:absolute;top:18px;bottom:0;left:0;width:0;border-left:2px dashed var(--brand);pointer-events:none}
+.tl2 .legend{margin-top:8px;font-size:12px;color:var(--mut)}
+@media(max-width:700px){.tl2 .ax{margin-left:120px}.tl2 .r{grid-template-columns:120px 1fr}}
+/* KPI rows: all boxes side by side in one row */
+#kpis,#inv-kpis,#usage-kpis{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+#kpis .card,#inv-kpis .card,#usage-kpis .card{min-width:0;overflow-wrap:anywhere}
 </style>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
@@ -295,6 +325,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 </head>
 <body class="s4m">
@@ -312,7 +352,10 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
   <button role="tab" data-tab="tickets" aria-selected="false">Tickets</button>
 </nav>
 <main>
-  <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div><h2>Customer</h2><div class="card" id="profile"></div></section>
+  <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div>
+    <div class="ov-grid"><div class="card" id="ov-nba"></div><div class="card" id="ov-tickets"></div></div>
+    <div class="ov-grid"><div class="card" id="ov-offers"></div><div class="card" id="ov-ai"></div></div>
+    <div class="card" id="ov-timeline" style="margin-top:14px"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div><h2>Customer</h2><div class="card" id="profile"></div></section>
   <section class="pg" id="pg-invoices"><div class="grid" id="inv-kpis"></div><div class="filters"><label class="s" for="inv-status" style="display:inline">Status</label><select id="inv-status"><option value="">All</option><option>Open</option><option>Overdue</option><option>Paid</option><option>Settled</option></select><span class="inv-tools"><button class="enrich-btn" type="button" id="inv-expand">Expand all</button><button class="enrich-btn" type="button" id="inv-collapse">Collapse all</button></span></div><div class="card tbl" id="invoices"></div></section>
   <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><div class="card detail" id="contract-detail" aria-live="polite"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div><div class="card detail" id="offer-detail" aria-live="polite"></div></section>
   <section class="pg" id="pg-usage">
@@ -2587,8 +2630,88 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
     var due = D.invoices.filter(function(i){ return i.status === 'Overdue'; });
     due.forEach(function(i){ rows.push('<tr><td>' + tag('bad', 'overdue') + '</td><td><b>Invoice ' + esc(i.id) + '</b><div class="s">' + eur(i.grossEur) + ' gross, due ' + esc(i.due) + ' (' + (-days(i.due)) + ' days ago), contract ' + esc(i.contractId) + '</div></td></tr>'); });
     $('attention').innerHTML = '<table><tbody>' + (rows.length ? rows.join('') : '<tr><td class="s">Nothing needs attention.</td></tr>') + '</tbody></table>';
+    renderNba(); renderOvTickets(); renderOvOffers(); renderOvAi(); renderTimeline();
     renderProfile();
   }
+
+  /* ---------- Overview extras: next best action, tickets, offers, AI-unit runway, contract timeline ---------- */
+  var goTab = function(t){ var b = document.querySelector('[data-tab="' + t + '"]'); if (b) b.click(); };
+  var openOffers = function(){ return D.offers.filter(function(o){ return o.status === 'Open' || o.status === 'In negotiation'; }); };
+  var ticketOpen = function(t){ return t.status !== 'Closed' && t.status !== 'Solution provided'; };
+  var ticketAge = function(t){ return Math.max(0, -days(t.created)); };
+  var addDaysIso = function(iso, d){ return new Date(Date.parse(iso + 'T00:00:00Z') + d * 864e5).toISOString().slice(0, 10); };
+  function runway(){
+    var left = D.aiUnits.allotment - used, months = avg > 0 ? left / avg : Infinity;
+    var end = new Date(AS_OF.getTime() + months * 30.4 * 864e5);
+    var periodEnd = D.aiUnits.periodEnd;
+    var ok = months === Infinity || end.toISOString().slice(0, 10) > periodEnd;
+    return {left: left, months: months, end: end, ok: ok, label: MONTHS[end.getUTCMonth()] + ' ' + end.getUTCFullYear()};
+  }
+  function nextBestActions(){
+    var c = [];
+    D.invoices.filter(function(i){ return i.status === 'Overdue'; }).forEach(function(i){ c.push({score: 100 + -days(i.due), tab: 'invoices', title: 'Clear the overdue invoice ' + i.id, why: eur(i.grossEur) + ' gross, ' + (-days(i.due)) + ' days overdue (contract ' + i.contractId + '). Ask accounts payable for a payment date.'}); });
+    D.tickets.filter(function(t){ return ticketOpen(t) && t.priority === 'Very high'; }).forEach(function(t){ c.push({score: 95, tab: 'tickets', title: 'Follow up the very high ticket ' + t.id, why: t.title + ', open for ' + ticketAge(t) + ' days.'}); });
+    openOffers().forEach(function(o){ var d = days(o.validUntil); if (d <= 30) c.push({score: 90 - Math.max(0, d), tab: 'contracts', title: 'Close offer ' + o.id + ' before it lapses', why: o.product + ': valid until ' + o.validUntil + ' (' + (d >= 0 ? d + ' days left' : 'lapsed') + ', win probability ' + (o.probabilityPct == null ? 'unknown' : o.probabilityPct + ' %') + '). Next step: ' + (o.nextStep || 'agree one with the customer') + '.'}); });
+    live.forEach(function(k){ var nd = days(addDaysIso(k.end, -(k.noticeDays || 0))); if (nd >= 0 && nd <= 90 && !k.autoRenew) c.push({score: 80 - nd / 2, tab: 'contracts', title: 'Decide on ' + k.product + ' before the notice date', why: 'Last day to give notice is ' + addDaysIso(k.end, -(k.noticeDays || 0)) + ' (' + nd + ' days). The contract ends ' + k.end + ' and does not renew by itself.'}); });
+    if (forecastPct >= 90) c.push({score: 70, tab: 'usage', title: 'Talk about more AI units', why: 'At the current run rate the year ends at ' + forecastPct + '% of the allotment.'});
+    D.tickets.filter(function(t){ return ticketOpen(t) && t.status === 'Waiting for customer'; }).forEach(function(t){ c.push({score: 40 + ticketAge(t), tab: 'tickets', title: 'Remind the customer about ' + t.id, why: 'Waiting for the customer for ' + ticketAge(t) + ' days: ' + t.title}); });
+    return c.sort(function(a, b){ return b.score - a.score; });
+  }
+  function renderNba(){
+    var list = nextBestActions();
+    if (!list.length){ $('ov-nba').innerHTML = '<div class="ov-h"><div class="k">Next best action</div></div><div class="s">Nothing urgent. The account is in good shape.</div>'; return; }
+    var a = list[0];
+    $('ov-nba').innerHTML = '<div class="ov-h"><div class="k">Next best action</div><span class="s">' + list.length + ' suggestion' + (list.length === 1 ? '' : 's') + '</span></div>' +
+      '<div class="big">' + esc(a.title) + '</div><div class="s">' + esc(a.why) + '</div>' +
+      '<div class="btns" style="margin-top:10px"><button type="button" class="primary" data-go="' + a.tab + '">Open</button></div>' +
+      (list.length > 1 ? '<div class="then"><div class="s"><b>Then</b></div>' + list.slice(1, 3).map(function(x){ return '<div class="s">· ' + esc(x.title) + '</div>'; }).join('') + '</div>' : '');
+  }
+  function renderOvTickets(){
+    var open = D.tickets.filter(ticketOpen).sort(function(a, b){ return ticketAge(b) - ticketAge(a); });
+    var by = function(p){ return open.filter(function(t){ return t.priority === p; }).length; };
+    var wait = open.filter(function(t){ return t.status === 'Waiting for customer'; }).length;
+    $('ov-tickets').innerHTML = '<div class="ov-h"><div class="k">Tickets</div><span class="s">' + open.length + ' open' + (wait ? ' · ' + wait + ' waiting for the customer' : '') + '</span></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">' + ['Very high', 'High', 'Medium', 'Low'].map(function(p){ return tag(prio[p] || 'n', p + ': ' + by(p)); }).join('') + '</div>' +
+      (open.length ? '<div class="s" style="margin-bottom:4px">Oldest first. The oldest has been open for ' + ticketAge(open[0]) + ' days.</div>' + open.slice(0, 4).map(function(t){ return '<div class="ov-row"><div class="top"><span><b>' + esc(t.id) + '</b> ' + esc(t.title) + '</span><span class="s" style="white-space:nowrap">' + ticketAge(t) + ' d</span></div><div class="s">' + tag(prio[t.priority] || 'n', t.priority) + ' ' + tag(stat[t.status] || 'n', t.status) + '</div></div>'; }).join('') : '<div class="s">No open tickets.</div>');
+  }
+  function renderOvOffers(){
+    var list = openOffers().sort(function(a, b){ return a.validUntil < b.validUntil ? -1 : 1; });
+    var weighted = sum(list.map(function(o){ return o.annualEur * (o.probabilityPct || 0) / 100; })), total = sum(list.map(function(o){ return o.annualEur; }));
+    $('ov-offers').innerHTML = '<div class="ov-h"><div class="k">Open offers</div><span class="s">' + eur(total) + ' offered · ' + eur(Math.round(weighted)) + ' weighted</span></div>' +
+      (list.length ? list.map(function(o){
+        var d = days(o.validUntil), delta = o.currentAnnualEur ? ((o.annualEur / o.currentAnnualEur - 1) * 100).toFixed(1).replace(/^(\d)/, '+$1') + '%' : 'new';
+        return '<div class="ov-row"><div class="top"><span><b>' + esc(o.product) + '</b> ' + tag('n', o.type) + '</span><span><b>' + eur(o.annualEur) + '</b> <span class="s">' + delta + '</span></span></div>' +
+          '<div class="s">' + esc(o.stage || o.status) + ' · valid until ' + esc(o.validUntil) + ' ' + tag(d < 0 ? 'bad' : d <= 14 ? 'warn' : 'n', d < 0 ? 'lapsed' : d + ' days') + (o.competitor && o.competitor !== 'None' ? ' · competitor ' + esc(o.competitor) : '') + '</div>' +
+          '<div class="bar" aria-label="Win probability"><i style="width:' + (o.probabilityPct || 0) + '%"></i></div><div class="s">' + (o.probabilityPct == null ? 'no estimate' : o.probabilityPct + ' % win probability') + (o.nextStep ? ' · next: ' + esc(o.nextStep) : '') + '</div></div>';
+      }).join('') : '<div class="s">No open offers.</div>');
+  }
+  function renderOvAi(){
+    var r = runway(), al = D.aiUnits.allotment, p1 = Math.min(100, used / al * 100), p2 = Math.min(100, forecast / al * 100);
+    $('ov-ai').innerHTML = '<div class="ov-h"><div class="k">AI units: will they last?</div><span class="s">' + esc(D.aiUnits.periodStart) + ' → ' + esc(D.aiUnits.periodEnd) + '</span></div>' +
+      '<div class="ov-ai-bar" role="img" aria-label="' + pctUsed + ' percent used, forecast ' + forecastPct + ' percent"><i class="fc" style="width:' + p2 + '%"></i><i style="width:' + p1 + '%"></i></div>' +
+      '<div class="s">Solid = used (' + pctUsed + '%), dashed = forecast for year-end (' + forecastPct + '%)</div>' +
+      '<div class="ov-stats"><div><b>Used</b>' + n(used) + '</div><div><b>Left</b>' + n(Math.max(0, r.left)) + '</div><div><b>Per month</b>' + n(Math.round(avg)) + '</div></div>' +
+      '<div style="margin-top:10px">' + (r.ok ? tag('ok', 'enough until the end of the period') : tag(forecastPct >= 100 ? 'bad' : 'warn', 'runs out about ' + r.label)) + '</div>' +
+      '<div class="s" style="margin-top:6px">' + (r.ok ? 'At ' + n(Math.round(avg)) + ' units per month the allotment covers the period.' : 'At ' + n(Math.round(avg)) + ' units per month the ' + n(Math.max(0, r.left)) + ' remaining units last about ' + r.months.toFixed(1) + ' months. Talk to the customer about a top-up or a larger allotment.') + '</div>';
+  }
+  function renderTimeline(){
+    var list = live.slice().sort(function(a, b){ return a.end < b.end ? -1 : 1; });
+    if (!list.length){ $('ov-timeline').innerHTML = ''; return; }
+    var from = addDaysIso(D.asOf, -120), maxEnd = list[list.length - 1].end, to = addDaysIso(maxEnd, 60);
+    var t0 = Date.parse(from + 'T00:00:00Z'), t1 = Date.parse(to + 'T00:00:00Z'), pc = function(iso){ return Math.max(0, Math.min(100, (Date.parse(iso + 'T00:00:00Z') - t0) / (t1 - t0) * 100)); };
+    var y0 = new Date(t0).getUTCFullYear() + 1, y1 = new Date(t1).getUTCFullYear(), ticks = '';
+    for (var y = y0; y <= y1; y++) ticks += '<span style="left:' + pc(y + '-01-01') + '%">' + y + '</span>';
+    $('ov-timeline').innerHTML = '<div class="ov-h"><div class="k">Contract timeline</div><span class="s">Bar = term, red diamond = last day to give notice, dashed line = today</span></div>' +
+      '<div class="tl2"><div class="ax">' + ticks + '</div>' + list.map(function(c){
+        var l = pc(c.start < from ? from : c.start), w = Math.max(1.2, pc(c.end) - l), notice = addDaysIso(c.end, -(c.noticeDays || 0)), soon = days(c.end) <= 180;
+        return '<div class="r"><div class="lab" title="' + esc(c.id + ' · ' + c.product) + '"><b>' + esc(c.product) + '</b> <span class="s">' + esc(c.id) + (c.autoRenew ? ' · auto-renews' : '') + '</span></div><div class="trk2"><div class="b' + (soon ? ' soon' : '') + '" style="left:' + l + '%;width:' + w + '%" title="' + esc(c.start + ' → ' + c.end + ' · ' + eur(c.annualEur) + ' per year') + '"></div>' + (notice >= from && !c.autoRenew ? '<div class="nt" style="left:' + pc(notice) + '%" title="Last day to give notice: ' + esc(notice) + '"></div>' : '') + '</div></div>';
+      }).join('') + '<div class="today" id="tl-today"></div></div>' +
+      '<div class="legend">Amber bars end within 180 days.</div>';
+    var tl = $('ov-timeline').querySelector('.tl2'), td = $('tl-today');
+    var place = function(){ var ax = tl.querySelector('.ax'), first = tl.querySelector('.trk2'); if (!first) return; var off = first.getBoundingClientRect().left - tl.getBoundingClientRect().left; td.style.left = (off + first.getBoundingClientRect().width * pc(D.asOf) / 100) + 'px'; };
+    place(); window.addEventListener('resize', place);
+  }
+  document.addEventListener('click', function(e){ var g = e.target.closest && e.target.closest('[data-go]'); if (g) goTab(g.dataset.go); });
   function renderProfile(){
     var p = D.profile || {};
     var people = function(list){ return '<ul class="pl">' + (list || []).map(function(x){ return '<li><b>' + esc(x.name) + '</b>, ' + esc(x.role) + '<div class="s">' + esc(x.email) + '</div></li>'; }).join('') + '</ul>'; };

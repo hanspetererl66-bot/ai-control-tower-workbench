@@ -58,6 +58,8 @@ type Props = {
   favoriteStarters?: StarterPrompt[];
   /** Built-in suggestions the person switched off (by label). */
   hiddenStarters?: string[];
+  /** Briefing cards and groups under the chat that are switched off. */
+  hiddenBriefing?: string[];
   /** Recurring briefings (clock button). */
   schedules?: Schedule[];
   onSchedulesChange?: (next: Schedule[]) => void;
@@ -79,6 +81,7 @@ export default function Composer({
   ownStarters,
   favoriteStarters,
   hiddenStarters,
+  hiddenBriefing,
   schedules,
   onSchedulesChange,
   voice,
@@ -687,6 +690,7 @@ export default function Composer({
         <BriefingCards
           disabled={busy || preparingConnector || !agent}
           canAsk={connectorsChecked && hasControlTowerConnector(known.map((k) => k.name))}
+          hidden={hiddenBriefing}
           onOpen={onNavigate}
           onAsk={(prompt, connector) => void submit({ text: prompt, connector })}
         />

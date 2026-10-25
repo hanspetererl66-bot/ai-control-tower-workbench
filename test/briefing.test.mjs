@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { buildBriefing, daysUntil } from '../src/briefing.ts';
+import { BRIEFING_CATEGORIES, buildBriefing, daysUntil } from '../src/briefing.ts';
 import { wantsSpace } from '../src/space-intent.ts';
 
 const data = JSON.parse(readFileSync(new URL('../examples/control-tower/data.json', import.meta.url), 'utf8'));
@@ -31,20 +31,18 @@ test('every card is actionable and mail drafts never send', () => {
   for (const card of buildBriefing(data, today)) {
     assert.ok(card.actions.length > 0, card.id);
     for (const action of card.actions) {
-      if (action.kind === 'open') assert.equal(action.space, 'ai-control-tower');
+      if (action.kind === 'open') assert.ok(['ai-control-tower', 'infra-ops', 'it-fleet', 'sales', 'renewals'].includes(action.space));
       if (action.kind === 'ask' && /Gmail/.test(action.prompt)) assert.match(action.prompt, /nichts senden/);
     }
   }
 });
 
-test('the board briefing asks the skill, as a chat answer or as a Space, and never invents numbers', () => {
+test('the board briefing asks the skill as a chat answer and creates no second Space (the customer briefing is its own Space)', () => {
   const board = buildBriefing(data, today).at(-1);
-  assert.deepEqual(board.actions.map((a) => a.label), ['Im Chat erstellen', 'Als Space anlegen']);
+  assert.deepEqual(board.actions.map((a) => a.label), ['Im Chat erstellen']);
   for (const action of board.actions) assert.match(action.prompt, /board-briefing/);
   assert.equal(wantsSpace(board.actions[0].prompt), false, 'chat answer must not create a Space');
-  assert.equal(wantsSpace(board.actions[1].prompt), true, 'Space action must create a Space');
-  assert.match(board.actions[1].prompt, /Space/);
-  assert.match(board.actions[1].prompt, /Nur Zahlen aus den Werkzeugantworten/);
+  assert.match(board.detail, /Kundenspezifisches AI-Briefing/);
 });
 
 test('only the board briefing remains when nothing needs attention', () => {
@@ -55,4 +53,56 @@ test('only the board briefing remains when nothing needs attention', () => {
   calm.agents.overprivileged = 0;
   calm.compliance.euAiAct.auditDate = '2025-01-01';
   assert.deepEqual(buildBriefing(calm, today).map((c) => c.id), ['board']);
+});
+
+const ops = { certs: JSON.parse(readFileSync(new URL('../examples/infra-ops/data.json', import.meta.url), 'utf8')).certs, fleet: JSON.parse(readFileSync(new URL('../examples/it-fleet/fleet.json', import.meta.url), 'utf8')) };
+
+test('each card names its area; the AI cards are labelled AI', () => {
+  const cards = buildBriefing(data, today, { ops });
+  assert.deepEqual(cards.filter((c) => c.area.startsWith('AI-')).map((c) => c.area), ['AI-Risiken', 'AI-Budget', 'AI-Compliance', 'AI-Agenten-Status']);
+  assert.ok(cards.every((c) => c.area));
+});
+
+const sales = JSON.parse(readFileSync(new URL('../examples/sales/pipeline.json', import.meta.url), 'utf8'));
+const renewals = JSON.parse(readFileSync(new URL('../examples/renewals/renewals.json', import.meta.url), 'utf8'));
+const all = { ops, sales, renewals };
+
+test('the groups are in the order AI, Sales, Renewals, Infrastruktur, Board', () => {
+  const cards = buildBriefing(data, new Date(2026, 9, 25), all);
+  assert.deepEqual(cards.map((c) => c.id), ['risks', 'budget', 'audit', 'agents', 'sales-desk', 'sales-overdue', 'renew-decisions', 'renew-lapsed', 'certs', 'fleet', 'board']);
+  assert.deepEqual([...new Set(cards.map((c) => c.category))], ['ai', 'sales', 'renewals', 'ops', 'board']);
+  const known = new Set(BRIEFING_CATEGORIES.flatMap((c) => c.cards.map((x) => x.id)));
+  assert.ok(cards.every((c) => known.has(c.id)), 'every card is listed for the settings');
+});
+
+test('sales cards: only offers still pending at the deal desk, and overdue next steps', () => {
+  const [desk, overdue] = buildBriefing(data, new Date(2026, 9, 25), all).filter((c) => c.category === 'sales');
+  assert.equal(desk.title, '2 Angebote warten auf den Deal Desk');
+  assert.match(desk.detail, /OFF-2026-0324 \(1,18 Mio\. €\)/);
+  assert.match(desk.detail, /zusammen 2,44 Mio\. €/);
+  assert.match(overdue.title, /^3 nächste Schritte sind überfällig$/);
+  assert.match(desk.actions.find((a) => a.kind === 'ask').prompt, /nichts versenden/);
+  assert.match(overdue.actions.find((a) => a.kind === 'ask').prompt, /nichts senden/);
+});
+
+test('renewal cards: overdue decision, the ones due within 14 days, and lapsed contracts', () => {
+  const [decisions, lapsed] = buildBriefing(data, new Date(2026, 9, 25), all).filter((c) => c.category === 'renewals');
+  assert.equal(decisions.title, '1 Entscheidung überfällig, 4 weitere in 14 Tagen');
+  assert.equal(decisions.tone, 'red');
+  assert.match(decisions.detail, /SuccessFactors/);
+  assert.equal(lapsed.title, '2 Verträge abgelaufen, 230 k€ ohne Vertrag');
+  assert.deepEqual(decisions.actions.filter((a) => a.kind === 'open').map((a) => a.space), ['renewals']);
+});
+
+test('two infrastructure cards come from the certificates and the fleet, before the board card', () => {
+  const cards = buildBriefing(data, new Date(2026, 9, 25), all);
+  assert.deepEqual(cards.map((c) => c.id).filter((id) => id === 'certs' || id === 'fleet'), ['certs', 'fleet']);
+  const certs = cards.find((c) => c.id === 'certs');
+  assert.match(certs.title, /^5 Zertifikate laufen in unter 30 Tagen ab, 1 abgelaufen$/);
+  assert.equal(certs.tone, 'red');
+  assert.match(certs.actions.find((a) => a.kind === 'ask').prompt, /nichts ausführen/);
+  const fleet = cards.find((c) => c.id === 'fleet');
+  assert.equal(fleet.title, '7 Kunden sind im Fleet rot');
+  assert.deepEqual(fleet.actions.map((a) => a.space), ['it-fleet']);
+  assert.equal(buildBriefing(data, today).some((c) => c.id === 'certs' || c.id === 'fleet'), false);
 });

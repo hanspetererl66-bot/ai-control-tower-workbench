@@ -58,9 +58,10 @@ test('export and follow-ups', () => {
 
 test('chat tool preferences: defaults and sanitizing', () => {
   assert.deepEqual(sanitizeChatTools(undefined), DEFAULT_CHAT_TOOLS);
-  const c = sanitizeChatTools({ readAloud: true, priceInPerM: -4, hiddenStarters: ['A', 5, 'A'], askBeforeActions: false });
+  const c = sanitizeChatTools({ readAloud: true, priceInPerM: -4, hiddenStarters: ['A', 5, 'A'], hiddenBriefing: ['cat:sales', 'certs', 7, 'certs'], askBeforeActions: false });
   assert.equal(c.readAloud, true);
   assert.equal(c.askBeforeActions, false);
   assert.equal(c.priceInPerM, 0);
   assert.deepEqual(c.hiddenStarters, ['A']);
+  assert.deepEqual(c.hiddenBriefing, ['cat:sales', 'certs']);
 });

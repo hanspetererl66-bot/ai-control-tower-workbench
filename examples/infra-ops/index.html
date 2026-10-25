@@ -214,6 +214,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 <style>
 *{box-sizing:border-box}
@@ -300,6 +310,7 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 .trk li.cur .n{border-color:var(--purple);color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
 .trk li.fail .n{background:var(--red);border-color:var(--red);color:var(--surface)}
 .trk li.todo{opacity:.6}.trk b{display:block;font-size:13px}.trk small{display:block;color:var(--muted);font-size:12px}
+.trk .sub-steps{list-style:none;margin:6px 0 2px;padding:0;display:grid;gap:3px}.trk .sub-steps li{display:flex;gap:8px;align-items:center;padding:0;font-size:12px;color:var(--muted)}.trk .sub-steps li::before{display:none}.trk .sub-steps i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font:700 9px/1 var(--font,inherit);font-style:normal;color:var(--surface)}.trk .sub-steps li.done{color:var(--ink)}.trk .sub-steps li.done i{background:var(--green);border-color:var(--green)}.trk .sub-steps li.cur{color:var(--purple);font-weight:700}.trk .sub-steps li.cur i{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-dim)}
 .pbar{height:6px;border-radius:99px;background:var(--line-2);margin-top:5px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--purple);transition:width .35s linear}
 .tq{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}.tq:last-child{border-bottom:0}.tq small{display:block;color:var(--muted)}
 .speedctl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.speedctl select{padding:4px 6px;width:auto}
@@ -1272,7 +1283,7 @@ const ORCHESTRATION = [
   { id: 'ticket', title: 'Create task and ticket', tool: 'n8n', detail: 'Change ticket in the ITSM, task in the Space' },
   { id: 'check', title: 'Pre-check in check mode', tool: 'AWX', detail: 'Playbook with --check --diff, dependencies, conflicts' },
   { id: 'approve', title: 'Approval (four eyes)', tool: 'n8n', detail: 'Request to the approvers in Teams; the answer starts the next step' },
-  { id: 'window', title: 'Wait for the change window', tool: 'n8n', detail: 'Start only inside the approved window' },
+  { id: 'window', title: 'Wait for the downtime window', tool: 'n8n', detail: 'Start only inside the approved window' },
   { id: 'run', title: 'Run the playbook', tool: 'AWX', detail: 'Job template with checked parameters, snapshot first' },
   { id: 'verify', title: 'Verification', tool: 'AWX', detail: 'Health and certificate checks, rollback on failure' },
   { id: 'evidence', title: 'Evidence and notification', tool: 'n8n', detail: 'File the log, inform customer and team' },
@@ -1332,10 +1343,10 @@ function planTask(data, req) {
   const vmMap = by(data.vms);
   const customer = by(data.customers).get(target.customer);
   const win = req.window;
-  if (!win || !win[0] || !win[1] || win[0] >= win[1]) errors.push('The change window is invalid.');
+  if (!win || !win[0] || !win[1] || win[0] >= win[1]) errors.push('The downtime window is invalid.');
   else {
     if (toDay(win[0]) <= data.asOf && !['in_window', 'done'].includes(req.state)) errors.push('The window must be in the future.');
-    if (hoursOf(win) > 8) errors.push('A change window may last 8 hours at most.');
+    if (hoursOf(win) > 8) errors.push('A downtime window may last 8 hours at most.');
     for (const f of data.freezes) {
       if ((f.customer === null || f.customer === target.customer) && toDay(win[0]) <= f.to && toDay(win[1]) >= f.from) errors.push(`The window falls into a freeze: ${f.reason} (${f.from} to ${f.to}).`);
     }
@@ -1433,17 +1444,32 @@ function planTask(data, req) {
   };
 }
 
+/** What the next approval has to look like (two approvals: four eyes plus the change manager). */
+function approvalHint(task, data) {
+  const plan = planTask(data, { ...task, ...(task.params ?? {}) });
+  const have = (task.approvals ?? []).map((id) => by(data.people).get(id)).filter(Boolean);
+  if (!plan.ok) return '';
+  if (have.length >= plan.approvalsNeeded) return 'All approvals are in.';
+  if (plan.approvalsNeeded === 1) return 'One approval from anyone except the requester.';
+  if (have.length === 0) return 'First approval: anyone except the requester. Two approvals need one change manager and one other person.';
+  return have[0].role === 'Change Manager' ? 'Second approval: a person who is not a change manager, for example Security or Operations (the change manager has already approved).' : 'Second approval: a change manager (four eyes plus change manager).';
+}
+
 /** May this person approve? Technical enforcement of the four-eyes rule. */
 function canApprove(task, personId, data) {
   const person = by(data.people).get(personId);
   if (!person) return { ok: false, reason: 'Unknown person.' };
   if (task.state !== 'in_review') return { ok: false, reason: 'Approval is only possible in the "In review" phase.' };
   if (task.requester === personId) return { ok: false, reason: 'The requester must not approve their own change.' };
-  if ((task.approvals ?? []).includes(personId)) return { ok: false, reason: 'This person has already approved.' };
   const plan = planTask(data, { ...task, ...(task.params ?? {}) });
+  if ((task.approvals ?? []).includes(personId)) return { ok: false, reason: 'This person has already approved.' + (plan.ok ? ' ' + approvalHint(task, data) : '') };
   if (!plan.ok) return { ok: false, reason: `The plan has errors: ${plan.errors[0]}` };
   const have = (task.approvals ?? []).map((id) => by(data.people).get(id));
-  if (plan.approvalsNeeded === 2 && have.length === 1 && have[0].role === person.role && person.role !== 'Change Manager') return { ok: false, reason: 'The second approval must come from a different role than the first, for example the change manager.' };
+  if (plan.approvalsNeeded === 2 && have.length === 1) {
+    const firstIsCm = have[0].role === 'Change Manager', isCm = person.role === 'Change Manager';
+    if (!firstIsCm && !isCm) return { ok: false, reason: 'The second approval must come from a different role than the first: the change manager.' };
+    if (firstIsCm && isCm) return { ok: false, reason: 'The second approval must come from a different role than the first: the change manager has already approved, so Security or Operations is needed.' };
+  }
   return { ok: true, reason: '' };
 }
 
@@ -1468,7 +1494,7 @@ function simulateRun(plan) {
   var customer = function (id) { return D.customers.filter(function (c) { return c.id === id; })[0]; };
   var pname = function (id) { var p = person(id); return p ? p.name + ' (' + p.role + ')' : id; };
 
-  var S = { tab: 'overview', inv: 'certs', filter: '', pb: 'renew-certificate', flowTask: null, who: 'jb', tasks: [], logs: {}, runs: {}, timers: [], tickets: [], auto: true, speed: 'normal' };
+  var S = { tab: 'overview', inv: 'certs', filter: '', pb: 'renew-certificate', flowTask: null, who: 'sa', tasks: [], logs: {}, runs: {}, timers: [], tickets: [], auto: true, speed: 'normal' };
   var inHost = window.parent !== window;
 
   function reset() {
@@ -1486,12 +1512,19 @@ function simulateRun(plan) {
   var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : many); };
 
 
-  /* ---------- the guided process: ticket, pre-check, approval, change window, upgrade, post-check, close ---------- */
+  /* ---------- the guided process: ticket, pre-check, approval, downtime window, upgrade, post-check, close ---------- */
   var K = function () { return (S.speed === 'fast' || reduced) ? 0.12 : 1; };
   var APPROVE_AT = function (need) { return (need === 2 ? [8000, 20000] : [20000]).map(function (x) { return x * K(); }); };
   var WINDOW_MS = function () { return 12000 * K(); };
   var PHASE_STEP = { created: 1, precheck: 1, precheck_done: 2, approval: 2, window: 3, running: 4, post: 5, closing: 6, done: 7, blocked: 1, post_failed: 5 };
-  var STEP_TITLES = ['Task created', 'Pre-check', 'Approval', 'Change window', 'Upgrade', 'Post-check', 'Close ticket'];
+  var STEP_TITLES = ['Task created', 'Pre-check', 'Approval', 'Downtime window', 'Upgrade', 'Post-check', 'Close ticket'];
+  /** The upgrade as a simulation: what AWX does inside the downtime window, one step after the other. */
+  function upgradeSteps(t, p) {
+    var kind = (PLAYBOOKS[t.template] || {}).kind;
+    var apply = kind === 'cert' ? 'Install the new certificate and bind it to the service' : kind === 'dns' ? 'Change the DNS record and lower the TTL' : t.template === 'move-vm' ? 'Replicate the disks and start the VM in the target region' : 'Install the patches';
+    var restart = kind === 'cert' ? 'Reload the service with the new certificate' : kind === 'dns' ? 'Flush the DNS caches' : 'Restart the VM and the services on it';
+    return ['Snapshot taken, health check before the change', 'Monitoring silenced and the service set to maintenance mode', apply, restart, 'Smoke test: service answers, ' + (kind === 'cert' ? 'new certificate is served' : kind === 'dns' ? 'name resolves to the new address' : 'dependent systems are reachable'), 'Maintenance mode lifted, monitoring active again'];
+  }
   var CHECKS_SPACE = 'change-checks', FLEET_SPACE = 'it-fleet';
   var later = function (fn, ms) { S.timers.push(setTimeout(fn, Math.max(0, ms))); };
   function phaseOf(t) { if (t.flow) return t.flow.phase; return { planned: 'created', in_review: 'approval', approved: 'window', in_window: 'running', done: 'done' }[t.state] || 'created'; }
@@ -1507,10 +1540,10 @@ function simulateRun(plan) {
   function handOff(to, payload, open, notice) { persistNow(); window.parent.postMessage({ type: 'wb:handoff', to: to, payload: payload, open: open, notice: notice || '' }, '*'); }
   function taskPayload(t) { return { id: t.id, template: t.template, target: t.target, customer: t.customer, window: t.window, requester: t.requester, params: t.params || {} }; }
 
-  /** Pre-check and post-check run in the Change Checks Space; the result comes back as a hand-over. */
+  /** Pre-check and post-check run in the Pre-Checks and Post-Checks Space; the result comes back as a hand-over. */
   function sendCheck(t, mode) {
     t.flow.phase = mode === 'pre' ? 'precheck' : 'post';
-    addLog(t, (mode === 'pre' ? 'pre-check' : 'post-check') + ' started in the Change Checks Space');
+    addLog(t, (mode === 'pre' ? 'pre-check' : 'post-check') + ' started in the Pre-Checks and Post-Checks Space');
     if (inHost) { handOff(CHECKS_SPACE, { type: 'check-request', mode: mode, speed: S.speed, ticket: t.ticket || '', task: taskPayload(t) }, true); return; }
     // standalone page (no host): run the same checks right here so the demo still works
     var p = planOf(t);
@@ -1557,12 +1590,12 @@ function simulateRun(plan) {
     t.approvals = (t.approvals || []).concat([who]); addLog(t, 'approved by ' + pname(who));
     if (t.approvals.length >= planOf(t).approvalsNeeded) {
       t.state = 'approved'; addLog(t, 'all approvals in place, task is approved');
-      if (t.flow) { t.flow.phase = 'window'; t.flow.windowStart = Date.now(); addLog(t, 'waiting for the change window ' + t.window[0].replace('T', ' ')); scheduleWindow(t); }
+      if (t.flow) { t.flow.phase = 'window'; t.flow.windowStart = Date.now(); addLog(t, 'waiting for the downtime window ' + t.window[0].replace('T', ' ')); scheduleWindow(t); }
     }
     render(); if (S.openTask === t.id) openTask(t.id); persist();
   }
   function scheduleWindow(t) { later(function () { if (t.flow && t.flow.phase === 'window') openWindow(t); }, WINDOW_MS() - (Date.now() - (t.flow.windowStart || Date.now()))); }
-  function openWindow(t) { addLog(t, 'change window is open, execution starts'); t.flow.phase = 'running'; startRun(t); }
+  function openWindow(t) { addLog(t, 'downtime window is open, execution starts'); t.flow.phase = 'running'; startRun(t); }
   function finishFlow(t) {
     t.state = 'done'; t.flow.phase = 'done';
     addLog(t, 'post-check passed, evidence created');
@@ -1603,20 +1636,21 @@ function simulateRun(plan) {
     var tk = ticketOf(t), fail = phase === 'blocked' ? 1 : phase === 'post_failed' ? 5 : -1;
     var text = [];
     text[0] = 'Created by ' + pname(t.requester) + (t.ticket ? ' from ticket ' + t.ticket : '');
-    text[1] = t.precheck ? 'Pre-check ' + (t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') : phase === 'precheck' ? 'Running in the Change Checks Space' : 'Playbook in check mode, nothing is changed';
+    text[1] = t.precheck ? 'Pre-check ' + (t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') : phase === 'precheck' ? 'Running in the Pre-Checks and Post-Checks Space' : 'Playbook in check mode, nothing is changed';
     var nextDue = '';
     if (phase === 'approval' && t.flow && have < need) { var due = (APPROVE_AT(need)[have] || 0) - (Date.now() - (t.flow.approvalStart || Date.now())); nextDue = ' · next answer in about ' + Math.max(0, Math.ceil(due / 1000)) + ' s'; }
-    text[2] = have + ' of ' + need + ' approvals' + ((t.approvals || []).length ? ' (' + t.approvals.map(function (id) { return (person(id) || {}).name || id; }).join(', ') + ')' : '') + nextDue;
+    text[2] = have + ' of ' + need + ' approvals' + ((t.approvals || []).length ? ' (' + t.approvals.map(function (id) { return (person(id) || {}).name || id; }).join(', ') + ')' : '') + nextDue + (have < need && phase === 'approval' ? ' · ' + approvalHint(t, D) : '');
     if (phase === 'window' && t.flow) { var fr = Math.min(1, (Date.now() - (t.flow.windowStart || Date.now())) / WINDOW_MS()), a = Date.parse(D.asOf + 'T08:00:00Z'), b = Date.parse(t.window[0] + ':00Z'); text[3] = 'Demo clock ' + clockText(a + fr * (b - a)) + ' → window opens ' + t.window[0].replace('T', ' '); text[3] += '|' + Math.round(fr * 100); }
     else text[3] = (phase === 'running' || cur > 3) ? 'Window ' + t.window[0].replace('T', ' ') + ' to ' + t.window[1].replace('T', ' ') : 'Starts only inside the approved window ' + t.window[0].replace('T', ' ');
-    text[4] = cur > 4 ? 'Playbook applied (simulated)' : phase === 'running' ? 'AWX job running' : 'Runs after the window opens';
-    text[5] = t.postcheck ? 'Post-check ' + (t.postcheck.verdict === 'fail' ? 'failed' : 'passed') : phase === 'post' ? 'Running in the Change Checks Space' : 'Service, certificate, dependencies, monitoring';
+    text[4] = cur > 4 ? 'Playbook applied (simulated), 6 of 6 steps done' : phase === 'running' ? 'AWX job running (simulated): ' + ((t.flow && t.flow.upg) || 0) + ' of 6 steps' : 'Runs after the window opens: snapshot, maintenance mode, playbook, restart, smoke test';
+    text[5] = t.postcheck ? 'Post-check ' + (t.postcheck.verdict === 'fail' ? 'failed' : 'passed') : phase === 'post' ? 'Running in the Pre-Checks and Post-Checks Space' : 'Service, certificate, dependencies, monitoring';
     text[6] = phase === 'done' ? (tk ? 'Ticket ' + tk.id + ' closed, success report sent to the Fleet Manager' : 'Evidence filed') : tk ? 'Ticket ' + tk.id + ' is closed and the Fleet Manager is told' : 'Evidence is filed';
     return STEP_TITLES.map(function (title, i) { return { title: title, st: i === fail ? 'fail' : i < cur ? 'done' : i === cur && phase !== 'done' ? 'cur' : phase === 'done' ? 'done' : 'todo', text: text[i] }; });
   }
   function trackerHtml(t, p) {
     return '<ol class="trk" aria-label="Change process">' + trackerSteps(t, p).map(function (x, i) {
       var parts = String(x.text).split('|'), bar = parts[1] ? '<div class="pbar" role="img" aria-label="Waiting for the window"><i style="width:' + esc(parts[1]) + '%"></i></div>' : '';
+      if (i === 4 && (x.st === 'cur' || x.st === 'done' || (t.flow && t.flow.upg))) { var u = (t.flow && t.flow.upg) || 0, all = x.st === 'done'; bar += '<ul class="sub-steps">' + upgradeSteps(t, p).map(function (nm, k) { var c = all || k < u ? 'done' : k === u ? 'cur' : ''; return '<li class="' + c + '"><i>' + (c === 'done' ? '✓' : '') + '</i>' + esc(nm) + '</li>'; }).join('') + '</ul>'; }
       return '<li class="' + x.st + '"><span class="n">' + (x.st === 'done' ? '✓' : x.st === 'fail' ? '×' : i + 1) + '</span><div><b>' + esc(x.title) + '</b><small>' + esc(parts[0]) + '</small>' + bar + '</div></li>';
     }).join('') + '</ol>';
   }
@@ -1661,7 +1695,7 @@ function simulateRun(plan) {
 
   /* ---------- tasks ---------- */
   function tasksTab() {
-    var h = '<div class="tools"><h2 style="margin:0">Change tasks</h2><button class="btn primary" id="new" type="button" style="margin-left:auto">New task</button></div><p class="note">Every task goes through pre-check, approval, window, execution and evidence. Click for details.</p><div class="board">';
+    var h = '<div class="tools"><h2 style="margin:0">Service Request Tasks</h2><button class="btn primary" id="new" type="button" style="margin-left:auto">New task</button></div><p class="note">Every task goes through pre-check, approval, window, execution and evidence. Click for details.</p><div class="board">';
     ['planned', 'in_review', 'approved', 'in_window', 'done'].forEach(function (st) {
       var list = S.tasks.filter(function (t) { return t.state === st; });
       h += '<section class="col" aria-label="' + STATE_LABEL[st] + '"><h3><span>' + STATE_LABEL[st] + '</span><span>' + list.length + '</span></h3>' + list.map(function (t) {
@@ -1749,7 +1783,7 @@ function simulateRun(plan) {
       '<div class="row"><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span><span class="tag">' + STATE_LABEL[t.state] + '</span><span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span><span class="tag ' + (p.downtime.minutes ? 'amber' : 'ok') + '">' + (p.downtime.minutes ? 'Outage about ' + p.downtime.minutes + ' min' : 'no outage') + '</span></div>' + errsHtml(p);
     h += '<h3>Process</h3><div id="tracker">' + trackerHtml(t, p) + '</div>';
     h += '<div id="actions"></div><div id="runbox"></div>';
-    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + (t.precheck ? '<p class="note">Result from the Change Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
+    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + (t.precheck ? '<p class="note">Result from the Pre-Checks and Post-Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
     h += '<h3>Impact</h3><p>' + esc(p.downtime.note) + '</p><p class="sub">Affected systems: ' + esc(p.blast.vms.join(', ') || 'none') + '<br>DNS names: ' + esc(p.blast.dns.join(', ') || 'none') + '</p>';
     if (!t.flow) h += '<h3>Flow (n8n and AWX)</h3>' + p.steps.map(function (s) {
       var oi = ORCHESTRATION.map(function (o) { return o.id; }).indexOf(s.id);
@@ -1771,12 +1805,12 @@ function simulateRun(plan) {
     if (t.flow && (ph === 'created' || ph === 'precheck')) h += '<button class="btn primary" data-do="precheck" type="button">' + (ph === 'precheck' ? 'Run the pre-check again' : 'Run pre-check now') + '</button>';
     if (t.flow && ph === 'post') h += '<button class="btn" data-do="postcheck" type="button">Run the post-check again</button>';
     if (t.flow && ph === 'blocked') h += '<span class="sub" role="status">The pre-check blocked this change. Fix the request (window, backup) and create a new task.</span>';
-    if (t.flow && ph === 'window') h += '<button class="btn" data-do="skip" type="button">Skip the waiting (open the window now)</button>';
+    if (t.flow && ph === 'window') h += '<button class="btn" data-do="skip" type="button">Skip the waiting (open the downtime window now)</button>';
     if (t.flow && ph === 'post_failed') h += '<span class="sub" role="status">The post-check failed: the rollback would start now (simulated).</span>';
     if (t.state === 'planned' && !(t.flow && t.flow.auto && ph !== 'precheck_done')) h += '<button class="btn primary" data-do="submit" type="button"' + (p.ok ? '' : ' disabled') + '>Submit for review</button>';
     if (t.state === 'in_review') {
       var ok = canApprove(t, S.who, D);
-      h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Approve as ' + esc((person(S.who) || {}).name) + '</button>' + (ok.ok ? '' : '<span class="sub" role="status">' + esc(ok.reason) + '</span>');
+      h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Approve as ' + esc((person(S.who) || {}).name) + '</button>' + '<span class="sub" role="status">' + esc(ok.ok ? approvalHint(t, D) : ok.reason) + '</span>';
     }
     if ((t.state === 'approved' || t.state === 'in_window') && !t.flow) h += '<button class="btn primary" data-do="run" type="button"' + (p.ok ? '' : ' disabled') + '>' + (t.state === 'in_window' ? 'Continue execution' : 'Start in window') + ' (simulation)</button>';
     h += '</div>';
@@ -1791,7 +1825,7 @@ function simulateRun(plan) {
   }
   function refresh(t) { render(); openTask(t.id); }
   function finish(t) {
-    if (t.flow) { addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
+    if (t.flow) { t.flow.upg = 6; addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
     t.state = 'done'; addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
   }
   function startRun(t) {
@@ -1801,6 +1835,7 @@ function simulateRun(plan) {
     var shown = 0;
     function next() {
       shown++; showRun(t, p, shown);
+      if (t.flow) { t.flow.upg = Math.min(6, Math.floor(shown / run.lines.length * 6)); var tb = $('#tracker'); if (tb && S.openTask === t.id) tb.innerHTML = trackerHtml(t, p); }
       if (shown < run.lines.length) S.timers.push(setTimeout(next, reduced ? 0 : Math.round(380 * (S.speed === 'fast' ? 0.3 : 1)))); else finish(t);
     }
     if (reduced) { showRun(t, p, run.lines.length); finish(t); } else next();
@@ -1813,7 +1848,7 @@ function simulateRun(plan) {
       $('#evidence').innerHTML = '<h3>Audit evidence</h3><pre class="code">' + esc([
         'Task:         ' + t.id + ' (' + p.playbook.id + ')', 'Target:       ' + t.target + ' / ' + p.customer, 'Window:       ' + t.window[0] + ' to ' + t.window[1],
         'Requested by: ' + pname(t.requester), 'Approvals:    ' + (t.approvals || []).map(pname).join('; '),
-        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes' + (t.precheck ? ' (Change Checks: ' + t.precheck.verdict + ')' : ''),
+        'Pre-check:    ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' ok, ' + p.checks.filter(function (c) { return c.status !== 'ok'; }).length + ' notes' + (t.precheck ? ' (Pre-Checks and Post-Checks: ' + t.precheck.verdict + ')' : ''),
         'Post-check:   ' + (t.postcheck ? t.postcheck.verdict : 'not run') + (t.ticket ? '\nTicket:       ' + t.ticket + ' closed' : ''),
         'Result:       ok=' + run.recap.ok + ' changed=' + run.recap.changed + ' failed=' + run.recap.failed, 'Rollback:     not needed',
       ].join('\n')) + '</pre>';
@@ -1839,7 +1874,7 @@ function simulateRun(plan) {
           (f.template === 'update-dns-record' ? '<label>New value<input id="f-val" value="' + esc(f.newValue) + '" placeholder="203.0.113.99"></label><label>TTL (seconds)<input id="f-ttl" type="number" value="' + f.ttl + '"></label>' : '') +
           (f.template === 'move-vm' ? '<label>Target region<select id="f-reg">' + D.regions.map(function (r) { return '<option value="' + r.id + '"' + (r.id === f.targetRegion ? ' selected' : '') + '>' + esc(r.label + ' (' + r.freePct + ' % free)') + '</option>'; }).join('') + '</select></label>' : '');
         var on = function (id, key, num) { var el = $(id); if (el) el.oninput = el.onchange = function () { f[key] = num ? Number(el.value) : el.value; if (key === 'template') { f.target = ''; paint(true); } else paint(false); }; };
-        $('#form').insertAdjacentHTML('beforeend', '<label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-auto" style="width:auto;margin:0"' + (f.auto ? ' checked' : '') + '> Run the whole process automatically (demo): pre-check, approval, change window, upgrade, post-check, close ticket</label>');
+        $('#form').insertAdjacentHTML('beforeend', '<label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="f-auto" style="width:auto;margin:0"' + (f.auto ? ' checked' : '') + '> Run the whole process automatically (demo): pre-check, approval, downtime window, upgrade, post-check, close ticket</label>');
         $('#f-auto').onchange = function (e) { f.auto = e.target.checked; S.auto = f.auto; };
         on('#f-tpl', 'template'); on('#f-target', 'target'); on('#f-date', 'date'); on('#f-time', 'time'); on('#f-hours', 'hours', true); on('#f-val', 'newValue'); on('#f-ttl', 'ttl', true); on('#f-reg', 'targetRegion');
       }

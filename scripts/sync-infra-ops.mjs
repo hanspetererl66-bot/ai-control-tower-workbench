@@ -12,7 +12,7 @@ import { embedDesignSystem } from './sync-design-system.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = 'examples/infra-ops/index.html';
-/** Pages that run the same model: the Infrastructure Operations Space and the Change Checks Space. */
+/** Pages that run the same model: the Infrastructure Operations Space and the Pre-Checks and Post-Checks Space. */
 export const PAGES = [PAGE, 'examples/change-checks/index.html'];
 const DATA = /(<script type="application\/json" id="io-data">)([\s\S]*?)(<\/script>)/;
 const MODEL = /(<script id="io-model">)([\s\S]*?)(<\/script>)/;

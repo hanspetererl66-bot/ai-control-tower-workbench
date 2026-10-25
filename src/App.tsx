@@ -29,6 +29,8 @@ import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
+import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KINDS, type MemoryState } from './memory';
+import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
@@ -159,6 +161,14 @@ export default function App() {
   const [skillList, setSkillList] = useState<Skill[]>([]);
   const [extensionNames, setExtensionNames] = useState<string[]>([]);
   const [syncState, setSyncState] = useState({ busy: false, message: '' });
+  // Groups: who the person says they are, which group's rules the chat uses, and that group as last read from the server.
+  const [identity, setIdentity] = useState<Identity | null>(() => loadIdentity(window.localStorage));
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(() => { try { return window.localStorage.getItem(ACTIVE_GROUP_KEY); } catch { return null; } });
+  const [activeGroup, setActiveGroup] = useState<GroupDetail | null>(null);
+  // Personal memory: notes kept on this computer; the assistant may suggest an entry, the person decides.
+  const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
+  const [memorySuggestion, setMemorySuggestion] = useState<ReturnType<typeof suggestMemory>>(null);
+  const changeMemory = useCallback((next: MemoryState) => { setMemoryState(next); saveMemory(window.localStorage, next); }, []);
   const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
   const speaker = useRef<ReplySpeaker | null>(null);
   const voiceRef = useRef(voice);
@@ -281,6 +291,25 @@ export default function App() {
     if (!selectedSpace) return;
     try { window.localStorage.setItem('werkbank.lastSpace', selectedSpace); } catch { /* ignore */ }
   }, [selectedSpace]);
+
+  const groupCall = useMemo(() => (agent && extensionNames.includes(CONTROL_TOWER_CONNECTOR)
+    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__${tool}`, args))
+    : null), [agent, extensionNames]);
+  const chooseActiveGroup = useCallback((id: string | null) => {
+    setActiveGroupId(id);
+    if (!id) setActiveGroup(null);
+    try { if (id) window.localStorage.setItem(ACTIVE_GROUP_KEY, id); else window.localStorage.removeItem(ACTIVE_GROUP_KEY); } catch { /* ignore */ }
+  }, []);
+  // The group used in chat is read again every minute, so rules a colleague adds apply without a restart.
+  useEffect(() => {
+    if (!groupCall || !identity || !activeGroupId) return undefined;
+    const client = createGroupClient(groupCall, identity.email);
+    let stopped = false;
+    const read = () => { client.get(activeGroupId).then((d) => { if (!stopped) setActiveGroup(d); }).catch(() => { if (!stopped) setActiveGroup(null); }); };
+    read();
+    const timer = window.setInterval(read, 60_000);
+    return () => { stopped = true; window.clearInterval(timer); };
+  }, [groupCall, identity, activeGroupId]);
 
   async function syncSave() {
     if (!agent) return;
@@ -464,6 +493,7 @@ export default function App() {
     if (messages.length === 0) {
       setTitle((text || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
+    setMemorySuggestion(suggestMemory(text, memory));
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -496,7 +526,7 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, assistantNote(prefs), memoryNote(memory), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -793,10 +823,18 @@ export default function App() {
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
       hiddenStarters={prefs.chat.hiddenStarters}
+      hiddenBriefing={prefs.chat.hiddenBriefing}
       schedules={schedules}
       onSchedulesChange={updateSchedules}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
     />
+  );
+  const suggestionBar = memorySuggestion && (
+    <div className="memory-suggest" role="status">
+      <span>Remember “{memorySuggestion.text}” ({MEMORY_KINDS.find((k) => k.id === memorySuggestion.kind)?.title.toLowerCase()})?</span>
+      <button className="ghost-btn" onClick={() => { const r = addMemory(memory, memorySuggestion.kind, memorySuggestion.text); if (!r.error) changeMemory(r.state); setMemorySuggestion(null); }}>Remember</button>
+      <button className="ghost-btn" onClick={() => setMemorySuggestion(null)}>No thanks</button>
+    </div>
   );
   const disclaimer = (
     <p className="disclaimer">
@@ -1019,6 +1057,7 @@ export default function App() {
                 <br />
                 to get things done?
               </h2>
+              {suggestionBar}
               {composer}
               {disclaimer}
             </div>
@@ -1047,6 +1086,7 @@ export default function App() {
                 }}
               />
               <div className="composer-dock">
+                {suggestionBar}
                 {composer}
                 {disclaimer}
               </div>
@@ -1089,6 +1129,17 @@ export default function App() {
             sync: syncState,
             onSyncSave: () => void syncSave(),
             onSyncLoad: () => void syncLoad(),
+            memory: { memory, onChange: changeMemory },
+            groups: {
+              call: groupCall,
+              identity,
+              onIdentity: setIdentity,
+              spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),
+              activeId: activeGroupId,
+              onActive: chooseActiveGroup,
+              onSpaceInstalled: (slug: string) => { void refreshSpaces().then(() => setSelectedSpace(slug)); },
+              onDetail: setActiveGroup,
+            },
           }}
           onClose={() => setSettingsOpen(false)}
         />
