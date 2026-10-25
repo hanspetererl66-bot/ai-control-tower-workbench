@@ -214,6 +214,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 <style>
 body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
@@ -343,8 +353,9 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
 <body>
 <main>
   <p class="demo">Fictional company and mockup data in the shape of an S/4HANA Finance extract; there is no connection to a finance system. A generator creates the figures, controllers' notes and open items, so the demo is the same every time. Nothing is posted: approving an accrual is simulated.</p>
-  <div class="card intro">
-    <h2>What is this page?</h2>
+  <details class="card intro" open>
+    <summary><h2>What is this page?</h2><span class="hint">click to fold</span></summary>
+    <div class="body">
     <p style="color:var(--ink-2)">The <b>pre-close</b> is the look ahead before the month end: while the month is still running, finance already estimates how revenue, gross profit and EBIT will end, what is still open, and what could go wrong, so that the real close on the last days goes without surprises. This page shows that for a fictional group with four company codes.</p>
     <div class="cols">
       <div><h3>1. The picture</h3><p>The tiles and the two charts say where the month will land compared with the budget, and how that estimate moved over the last working days. The grey band is the range: the wider it is, the less sure the forecast.</p></div>
@@ -364,7 +375,8 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
         <dt>Hard close</dt><dd>The last working day on which the books for the month can still be changed.</dd>
       </dl>
     </details>
-  </div>
+    </div>
+  </details>
   <div class="card">
     <div class="dayctl">
       <h2 style="margin:0">Finance pre-close, <span id="period">October 2026</span></h2>

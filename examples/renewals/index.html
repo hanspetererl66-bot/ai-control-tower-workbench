@@ -214,6 +214,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 <style>
 body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:13px}
@@ -341,11 +351,21 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .nba .do{font-size:17px;font-weight:650;margin:2px 0 4px}.nba .why{font-size:12px;color:var(--ink-2);margin:0 0 10px}
 .nba .row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.nba .then{margin-top:10px;font-size:12px;color:var(--muted)}.nba .then button{font:inherit;font-size:12px;border:0;background:none;color:var(--ink);text-decoration:underline;cursor:pointer;padding:0 2px}
 .act-first{font-size:13px;font-weight:650;padding:8px 10px;border:1px solid var(--line);border-left:3px solid var(--ink-2);border-radius:var(--radius-s);background:var(--canvas);margin:6px 0 4px}
+.intro h2{font-size:16px}.intro .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 22px;margin-top:10px}
+.intro h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--purple);margin:0 0 4px}.intro p{margin:0;color:var(--ink-2);line-height:1.5}
+.intro dl{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:4px 14px;margin:10px 0 0;font-size:12px}.intro dt{font-weight:650;color:var(--ink)}.intro dd{margin:0;color:var(--ink-2)}
+.intro summary.t{cursor:pointer;font-weight:650;color:var(--purple);font-size:12px;margin-top:12px}
 </style>
 </head>
 <body>
 <main>
   <p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p>
+  <details class="card intro" open>
+    <summary><h2>What is this page?</h2><span class="hint">click to fold</span></summary>
+    <div class="body"><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of two fictional customers: which renewals need a decision first, why, and what to do next.</p>
+    <div class="cols"><div><h3>1. What to do first</h3><p>The “Next best action” card at the top names the one renewal to take care of first and the step to take. “Ask Joule” explains it and what to prepare.</p></div><div><h3>2. The seven boxes</h3><p>The numbers at the top summarise the radar. Double-click a box to see the renewals behind the number.</p></div><div><h3>3. The radar</h3><p>One row per renewal: the diamond is the decision date, the bar runs until the contract ends, the dashed line is today. The colour is the health of the renewal.</p></div><div><h3>4. The detail</h3><p>Click a row for the signals behind its health, the price against the contract cap, the next actions in order and the approval. Sending and signing are simulated; “Start demo” walks through six steps.</p></div></div>
+    <details><summary class="t">Terms used on this page</summary><dl><dt>Decision date</dt><dd>Contract end minus the notice period: the last day to decide.</dd><dt>Notice period</dt><dd>How long before the end the customer or SAP must act.</dd><dt>Health</dt><dd>The worst of the signals: decision date, missing or expiring offer, price above the cap, competitor, usage, open tickets, overdue invoices.</dd><dt>Contract cap</dt><dd>The largest price rise the contract allows at renewal.</dd><dt>Retention</dt><dd>Expected chance that the customer renews, weighted by annual value.</dd><dt>Customer lifetime value</dt><dd>Expected value of the customer over the years if it stays.</dd><dt>Automatic renewal</dt><dd>Small renewals without a warning signal get an offer and an e-mail without a person (simulated).</dd></dl></details></div>
+  </details>
   <div class="card nba" id="nba" aria-live="polite"></div>
   <div class="kpis" id="kpis"></div>
   <p class="kpi-hint">Double-click a box to see the renewals behind the number.</p>

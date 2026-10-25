@@ -214,6 +214,16 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
 .s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
 .s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
 <style>
 *{box-sizing:border-box}
@@ -384,6 +394,10 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 :root{--fc-commit:#460073;--fc-best:#8a3fd0;--fc-pipe:#c9a6ee}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--fc-commit:#dcafff;--fc-best:#a86ee6;--fc-pipe:#6a3fa0}}
 :root[data-theme="dark"]{--fc-commit:#dcafff;--fc-best:#a86ee6;--fc-pipe:#6a3fa0}
+.intro h2{font-size:16px}.intro .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 22px;margin-top:10px}
+.intro h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--purple);margin:0 0 4px}.intro p{margin:0;color:var(--ink-2);line-height:1.5}
+.intro dl{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:4px 14px;margin:10px 0 0;font-size:12px}.intro dt{font-weight:650;color:var(--ink)}.intro dd{margin:0;color:var(--ink-2)}
+.intro summary.t{cursor:pointer;font-weight:650;color:var(--purple);font-size:12px;margin-top:12px}
 </style>
 </head>
 <body>
@@ -404,6 +418,12 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
   <button role="tab" aria-selected="false" data-tab="rules">Rules and safeguards</button>
 </nav>
 <main>
+  <details class="card intro" open>
+    <summary><h2>What is this page?</h2><span class="hint">click to fold</span></summary>
+    <div class="body"><p>A <b>sales pipeline</b> shows every open deal by stage, from the first interest to the signed contract. This Space follows the deals of two fictional customers through five stages; each stage ends in a gate with exit criteria, and a person moves a deal on.</p>
+    <div class="cols"><div><h3>Pipeline</h3><p>The funnel counts deals and value per stage; the board shows each deal as a tile. Click a tile for the detail and the gate to the next stage.</p></div><div><h3>Forecast</h3><p>What is likely to close: commit, best case and the rest of the pipeline, by month and against the target.</p></div><div><h3>Meetings and Inbox</h3><p>Meetings to prepare and follow up, and suggestions from agents. A person approves every suggestion.</p></div><div><h3>Governance, Workflow, Rules</h3><p>What the agents did and why, the five gates with their skills, and the safeguards that apply.</p></div></div>
+    <details><summary class="t">Terms used on this page</summary><dl><dt>ACV</dt><dd>Annual contract value: what the deal brings in a year.</dd><dt>TCV</dt><dd>Total contract value over the whole term.</dd><dt>Weighted forecast</dt><dd>ACV times the probability of the deal.</dd><dt>Commit</dt><dd>Cleared and likely to close this period.</dd><dt>Best case</dt><dd>Could close with effort or a decision.</dd><dt>Gate</dt><dd>The check between two stages; a deal moves on when the exit criteria are met.</dd><dt>At risk</dt><dd>A deal with at least one risk flag, for example an overdue next step.</dd></dl></details></div>
+  </details>
   <section class="pg on" id="pg-pipeline">
     <div class="funnel" id="funnel" role="group" aria-label="Pipeline stages"></div>
     <div class="sumline" id="sumline"></div>
