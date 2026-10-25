@@ -1,0 +1,529 @@
+{
+ "asOf": "2026-10-19",
+ "customers": [
+  {
+   "id": "musind",
+   "name": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "industry": "Manufacturing, 4,800 employees",
+   "landscape": "S/4HANA Cloud Private Edition, SuccessFactors Employee Central, Ariba Procurement, BTP",
+   "allotment": 120000,
+   "products": [
+    {
+     "name": "Joule copilots",
+     "allotment": 50000,
+     "consumed": 41000,
+     "meters": "copilot dialogues and agent runs"
+    },
+    {
+     "name": "BTP AI Core",
+     "allotment": 30000,
+     "consumed": 28300,
+     "meters": "model inference and training hours"
+    },
+    {
+     "name": "SuccessFactors AI",
+     "allotment": 12000,
+     "consumed": 9800,
+     "meters": "generated job texts and talent suggestions"
+    },
+    {
+     "name": "Ariba AI",
+     "allotment": 10000,
+     "consumed": 8200,
+     "meters": "guided buying and supplier risk checks"
+    },
+    {
+     "name": "Document AI",
+     "allotment": 18000,
+     "consumed": 5000,
+     "meters": "processed document pages"
+    }
+   ],
+   "agents": [
+    {
+     "id": "MI-F1",
+     "area": "finance",
+     "name": "Invoice Matching Agent",
+     "type": "autonomous",
+     "status": "live",
+     "since": "2026-03-02",
+     "golive": "2026-03-02",
+     "runs": 340,
+     "cap": 450,
+     "units": 12400,
+     "product": "BTP AI Core",
+     "auto": 87,
+     "owner": "Tom Weber",
+     "desc": "Matches supplier invoices with purchase orders and goods receipts in S/4HANA Finance and posts the clean ones.",
+     "human": "A person decides on every mismatch above 5,000 EUR.",
+     "next": "Add the three-way match for service entry sheets (Q1 2027)."
+    },
+    {
+     "id": "MI-F2",
+     "area": "finance",
+     "name": "Accrual Proposal Agent",
+     "type": "copilot",
+     "status": "live",
+     "since": "2026-06-15",
+     "golive": "2026-06-15",
+     "runs": 45,
+     "cap": 80,
+     "units": 6100,
+     "product": "Joule copilots",
+     "auto": 0,
+     "owner": "Sofia Rossi",
+     "desc": "Proposes month-end accruals from open purchase orders and goods receipts.",
+     "human": "A controller approves every accrual.",
+     "next": "Extend to payroll accruals together with the HCM agents."
+    },
+    {
+     "id": "MI-F3",
+     "area": "finance",
+     "name": "Bank Reconciliation Agent",
+     "type": "autonomous",
+     "status": "implementing",
+     "since": "2026-09-01",
+     "golive": "2026-12-07",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "BTP AI Core",
+     "auto": 0,
+     "owner": "Sofia Rossi",
+     "desc": "Reconciles the bank statements with open items and clears the clear matches.",
+     "human": "Planned: exceptions go to the accounts team.",
+     "next": "Pilot with the Hamburg and Lyon accounts in November, go-live 7 December."
+    },
+    {
+     "id": "MI-F4",
+     "area": "finance",
+     "name": "Close Orchestrator",
+     "type": "orchestrator",
+     "status": "purchased",
+     "since": "2026-10-01",
+     "golive": "2027-03-01",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "Joule copilots",
+     "auto": 0,
+     "owner": "Lena Koch",
+     "desc": "Coordinates the close tasks between the other finance agents and the people.",
+     "human": "The controller releases each close step.",
+     "next": "Kick-off planned for January 2027; needs the AI-unit top-up first."
+    },
+    {
+     "id": "MI-F5",
+     "area": "finance",
+     "name": "Dunning and Collections Agent",
+     "type": "autonomous",
+     "status": "planned",
+     "since": "2027-04-01",
+     "golive": "2027-07-01",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "Document AI",
+     "auto": 0,
+     "owner": "to be named",
+     "desc": "Writes and sends reminders for overdue invoices and tracks the answers.",
+     "human": "Not decided yet.",
+     "next": "Business case with the next budget round."
+    },
+    {
+     "id": "MI-H1",
+     "area": "hcm",
+     "name": "Employee Self-Service Agent",
+     "type": "copilot",
+     "status": "live",
+     "since": "2026-04-20",
+     "golive": "2026-04-20",
+     "runs": 620,
+     "cap": 700,
+     "units": 7400,
+     "product": "SuccessFactors AI",
+     "auto": 0,
+     "owner": "Felix Brandt",
+     "desc": "Answers employees' questions on leave, payslips and policies in SuccessFactors.",
+     "human": "Answers cite the policy; HR handles every case that changes data.",
+     "next": "Add the works-council FAQ in German."
+    },
+    {
+     "id": "MI-H2",
+     "area": "hcm",
+     "name": "Job Posting and Talent Agent",
+     "type": "copilot",
+     "status": "live",
+     "since": "2026-07-01",
+     "golive": "2026-07-01",
+     "runs": 90,
+     "cap": 160,
+     "units": 2400,
+     "product": "SuccessFactors AI",
+     "auto": 0,
+     "owner": "Felix Brandt",
+     "desc": "Drafts job texts and suggests internal candidates from Employee Central.",
+     "human": "Recruiters edit and publish every text.",
+     "next": "Tie into the renewal of Employee Central (decision date passed on 2 October)."
+    },
+    {
+     "id": "MI-H3",
+     "area": "hcm",
+     "name": "Onboarding Orchestrator",
+     "type": "orchestrator",
+     "status": "implementing",
+     "since": "2026-09-15",
+     "golive": "2027-01-18",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "Joule copilots",
+     "auto": 0,
+     "owner": "Felix Brandt",
+     "desc": "Coordinates accounts, equipment and training for new employees across HR, IT and the manager.",
+     "human": "HR releases each hand-off.",
+     "next": "Design workshop with IT and the works council in November."
+    },
+    {
+     "id": "MI-H4",
+     "area": "hcm",
+     "name": "Payroll Check Agent",
+     "type": "autonomous",
+     "status": "planned",
+     "since": "2027-05-01",
+     "golive": "2027-09-01",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "BTP AI Core",
+     "auto": 0,
+     "owner": "to be named",
+     "desc": "Checks payroll runs for outliers before the release.",
+     "human": "Payroll lead releases; works-council agreement needed.",
+     "next": "Waiting for the works-council discussion on monitoring."
+    },
+    {
+     "id": "MI-P1",
+     "area": "procurement",
+     "name": "Supplier Risk Agent",
+     "type": "autonomous",
+     "status": "live",
+     "since": "2026-05-11",
+     "golive": "2026-05-11",
+     "runs": 210,
+     "cap": 260,
+     "units": 8200,
+     "product": "Ariba AI",
+     "auto": 92,
+     "owner": "Dev Patel",
+     "desc": "Screens suppliers for financial, sanction and delivery risk and flags changes.",
+     "human": "Buyers decide on every red supplier.",
+     "next": "Ariba AI budget is at 82 %: top-up with the renewal."
+    }
+   ],
+   "decisions": [
+    {
+     "t": "Top up the BTP AI Core AI-unit budget",
+     "w": "BTP AI Core is at 94 % of its own budget; the Finance agents and the Bank Reconciliation go-live depend on it.",
+     "o": "Dev Patel",
+     "d": "2026-10-30"
+    },
+    {
+     "t": "Decide the SuccessFactors Employee Central renewal",
+     "w": "The decision date was 2 October; two HCM agents run on SuccessFactors AI.",
+     "o": "Mara Weber",
+     "d": "2026-10-23"
+    },
+    {
+     "t": "Approve the Close Orchestrator kick-off",
+     "w": "Purchased, but kick-off waits for the AI-unit top-up and a named business owner.",
+     "o": "Lena Koch",
+     "d": "2026-11-15"
+    }
+   ],
+   "contractModels": [
+    {
+     "id": "payg",
+     "label": "Pay as you go",
+     "what": "Every unit is billed after use at the list price. No commitment, no discount, no cap.",
+     "fit": "Flexible, but the most expensive per unit and hard to plan.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "agreed",
+     "label": "Agreed consumption per year",
+     "what": "The customer commits to a yearly volume at a discounted unit price; units beyond the volume are billed as overage.",
+     "fit": "Planning security for both sides; overage needs a rule.",
+     "valid": true,
+     "terms": "120,000 units for 2026 at the agreed price of 3.00 EUR per unit (360,000 EUR a year). Overage above 120,000 units is billed at the list price of 4.20 EUR per unit."
+    },
+    {
+     "id": "fixed",
+     "label": "Fixed consumption per year",
+     "what": "A fixed yearly volume with a hard cap: when it is used up, agents are throttled or stopped until the next period or a top-up.",
+     "fit": "Cost is capped, but business processes can stop.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "rollover",
+     "label": "Rollover",
+     "what": "Unused units move to the next period (usually capped and valid for 12 months).",
+     "fit": "Protects the customer against under-use in the ramp-up year.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "pool",
+     "label": "Prepaid credit pool",
+     "what": "One prepaid pool is drawn down by all products (Joule, AI Core, Document AI, Ariba AI).",
+     "fit": "Simple to steer across products; one number to watch.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "topup",
+     "label": "Top-up packs",
+     "what": "Extra units can be bought in fixed packs during the year at the agreed unit price, without a new contract.",
+     "fit": "Quick remedy when a product runs out early.",
+     "valid": true,
+     "terms": "Packs of 10,000 units at 3.00 EUR per unit, ordered by the customer admin, effective the next day."
+    }
+   ]
+  },
+  {
+   "id": "hanse",
+   "name": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "industry": "Retail, 6,200 employees",
+   "landscape": "S/4HANA Cloud Public Edition, Ariba Procurement and Supplier Risk, SAP Commerce Cloud, Analytics Cloud",
+   "allotment": 80000,
+   "products": [
+    {
+     "name": "Joule copilots",
+     "allotment": 25000,
+     "consumed": 12400,
+     "meters": "copilot dialogues and agent runs"
+    },
+    {
+     "name": "BTP AI Core",
+     "allotment": 20000,
+     "consumed": 15800,
+     "meters": "model inference and training hours"
+    },
+    {
+     "name": "Document AI",
+     "allotment": 25000,
+     "consumed": 18000,
+     "meters": "processed document pages"
+    },
+    {
+     "name": "Ariba AI",
+     "allotment": 10000,
+     "consumed": 6750,
+     "meters": "guided buying and supplier risk checks"
+    }
+   ],
+   "agents": [
+    {
+     "id": "HA-F1",
+     "area": "finance",
+     "name": "Invoice Matching Agent",
+     "type": "autonomous",
+     "status": "live",
+     "since": "2026-05-04",
+     "golive": "2026-05-04",
+     "runs": 280,
+     "cap": 400,
+     "units": 9800,
+     "product": "Document AI",
+     "auto": 81,
+     "owner": "Nils Jacobsen",
+     "desc": "Matches supplier invoices with purchase orders and goods receipts in S/4HANA Finance.",
+     "human": "A person decides on every mismatch above 2,000 EUR.",
+     "next": "Raise the automatic share by adding the store delivery notes."
+    },
+    {
+     "id": "HA-F2",
+     "area": "finance",
+     "name": "Accrual Proposal Agent",
+     "type": "copilot",
+     "status": "implementing",
+     "since": "2026-09-08",
+     "golive": "2026-11-23",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "Joule copilots",
+     "auto": 0,
+     "owner": "Nils Jacobsen",
+     "desc": "Proposes month-end accruals from open purchase orders.",
+     "human": "A controller approves every accrual.",
+     "next": "Pilot in the October close, go-live 23 November."
+    },
+    {
+     "id": "HA-F3",
+     "area": "finance",
+     "name": "Bank Reconciliation Agent",
+     "type": "autonomous",
+     "status": "purchased",
+     "since": "2026-10-10",
+     "golive": "2027-02-01",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "BTP AI Core",
+     "auto": 0,
+     "owner": "Nils Jacobsen",
+     "desc": "Reconciles bank statements with open items.",
+     "human": "Exceptions go to the accounts team.",
+     "next": "Kick-off in December."
+    },
+    {
+     "id": "HA-H1",
+     "area": "hcm",
+     "name": "Store Staffing Agent",
+     "type": "copilot",
+     "status": "planned",
+     "since": "2027-03-01",
+     "golive": "2027-06-01",
+     "runs": 0,
+     "cap": 0,
+     "units": 0,
+     "product": "Joule copilots",
+     "auto": 0,
+     "owner": "to be named",
+     "desc": "Suggests shift plans for the stores. Needs SuccessFactors, which Hanse does not use today.",
+     "human": "Not decided; no HCM contract yet.",
+     "next": "Open topic for the account team: no SuccessFactors contract."
+    },
+    {
+     "id": "HA-P1",
+     "area": "procurement",
+     "name": "Supplier Risk Agent",
+     "type": "autonomous",
+     "status": "live",
+     "since": "2026-02-16",
+     "golive": "2026-02-16",
+     "runs": 190,
+     "cap": 240,
+     "units": 4100,
+     "product": "Ariba AI",
+     "auto": 90,
+     "owner": "M. Sander",
+     "desc": "Screens 3,800 suppliers for risk and flags changes.",
+     "human": "Buyers decide on every red supplier.",
+     "next": "Add the sanctions list refresh."
+    },
+    {
+     "id": "HA-P2",
+     "area": "procurement",
+     "name": "Guided Buying Copilot",
+     "type": "copilot",
+     "status": "live",
+     "since": "2026-06-22",
+     "golive": "2026-06-22",
+     "runs": 430,
+     "cap": 520,
+     "units": 2650,
+     "product": "Ariba AI",
+     "auto": 0,
+     "owner": "M. Sander",
+     "desc": "Guides store managers through requests and suggests the contracted supplier.",
+     "human": "Approvals stay with the budget owner.",
+     "next": "Extend to the three new storefronts."
+    },
+    {
+     "id": "HA-D1",
+     "area": "data",
+     "name": "Commerce Insights Agent",
+     "type": "copilot",
+     "status": "live",
+     "since": "2026-08-17",
+     "golive": "2026-08-17",
+     "runs": 75,
+     "cap": 120,
+     "units": 5600,
+     "product": "Joule copilots",
+     "auto": 0,
+     "owner": "Nils Jacobsen",
+     "desc": "Answers questions on storefront sales and page views from SAP Analytics Cloud.",
+     "human": "Read only; no data is changed.",
+     "next": "The Commerce Cloud renewal is due: decide before extending."
+    }
+   ],
+   "decisions": [
+    {
+     "t": "Decide the SAP Commerce Cloud renewal",
+     "w": "Decision date 1 November; the Commerce Insights Agent depends on it.",
+     "o": "Nils Jacobsen",
+     "d": "2026-11-01"
+    },
+    {
+     "t": "Clarify an HCM offer",
+     "w": "The Store Staffing Agent needs SuccessFactors; Hanse has no HCM contract.",
+     "o": "Account team",
+     "d": "2026-11-30"
+    },
+    {
+     "t": "Watch the BTP AI Core budget",
+     "w": "BTP AI Core is at 79 % of 20,000 units; the Bank Reconciliation Agent will add load from February.",
+     "o": "Nils Jacobsen",
+     "d": "2026-10-31"
+    }
+   ],
+   "contractModels": [
+    {
+     "id": "payg",
+     "label": "Pay as you go",
+     "what": "Every unit is billed after use at the list price. No commitment, no discount, no cap.",
+     "fit": "Flexible, but the most expensive per unit and hard to plan.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "agreed",
+     "label": "Agreed consumption per year",
+     "what": "The customer commits to a yearly volume at a discounted unit price; units beyond the volume are billed as overage.",
+     "fit": "Planning security for both sides; overage needs a rule.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "fixed",
+     "label": "Fixed consumption per year",
+     "what": "A fixed yearly volume with a hard cap: when it is used up, agents are throttled or stopped until the next period or a top-up.",
+     "fit": "Cost is capped, but business processes can stop.",
+     "valid": true,
+     "terms": "80,000 units for calendar year 2026, hard cap. At 100 % agents of the affected product are throttled to read-only suggestions."
+    },
+    {
+     "id": "rollover",
+     "label": "Rollover",
+     "what": "Unused units move to the next period (usually capped and valid for 12 months).",
+     "fit": "Protects the customer against under-use in the ramp-up year.",
+     "valid": true,
+     "terms": "Up to 10 % of the yearly volume (8,000 units) move to 2027 and expire on 31 December 2027."
+    },
+    {
+     "id": "pool",
+     "label": "Prepaid credit pool",
+     "what": "One prepaid pool is drawn down by all products (Joule, AI Core, Document AI, Ariba AI).",
+     "fit": "Simple to steer across products; one number to watch.",
+     "valid": false,
+     "terms": ""
+    },
+    {
+     "id": "topup",
+     "label": "Top-up packs",
+     "what": "Extra units can be bought in fixed packs during the year at the agreed unit price, without a new contract.",
+     "fit": "Quick remedy when a product runs out early.",
+     "valid": false,
+     "terms": ""
+    }
+   ]
+  }
+ ]
+}

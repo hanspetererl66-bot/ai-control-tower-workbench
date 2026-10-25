@@ -284,7 +284,7 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), extr
         label: 'Als Space anlegen',
         connector: CONNECTOR,
         prompt:
-          'Erstelle mit dem Skill board-briefing das einseitige Board-Briefing und lege es als Space „Board Briefing“ an. Nur Zahlen aus den Werkzeugantworten, Datenquelle und Stand auf der Seite nennen.',
+          'Erstelle mit dem Skill board-briefing das einseitige Board-Briefing und lege es als Space „AI Briefing“ an. Nur Zahlen aus den Werkzeugantworten, Datenquelle und Stand auf der Seite nennen.',
       },
     ],
   });

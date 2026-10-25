@@ -22,6 +22,7 @@ export const EXAMPLE_SPACES = {
   'it-infrastructure': 'it-infrastructure',
   renewals: 'renewals',
   'finance-preclose': 'finance-preclose',
+  'customer-ai-briefing': 'customer-ai-briefing',
   'it-fleet': 'it-fleet',
   'mcp-marketplace': 'mcp-marketplace',
 };
