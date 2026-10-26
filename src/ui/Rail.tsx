@@ -3,7 +3,7 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import WerkbankMark from './WerkbankMark';
 
-export type View = 'chat' | 'spaces' | 'manage' | 'n8n';
+export type View = 'chat' | 'spaces' | 'studio' | 'manage' | 'n8n';
 
 export default function Rail({
   view,
@@ -65,6 +65,15 @@ export default function Rail({
           aria-pressed={view === 'spaces'}
         >
           <LayersIcon />
+        </button>
+        <button
+          className={`rail-btn ${view === 'studio' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('studio')}
+          title="Agent Studio"
+          aria-label="Agent Studio"
+          aria-pressed={view === 'studio'}
+        >
+          <AgentIcon />
         </button>
         <button
           className={`rail-btn ${view === 'n8n' ? 'rail-btn-on' : ''}`}
@@ -197,6 +206,18 @@ function ConnectorIcon() {
       <rect x="3" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
       <rect x="10" y="9" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
       <path d="M8.5 11.5 11 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AgentIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <rect x="4" y="6.5" width="12" height="9" rx="2.4" fill="currentColor" />
+      <path d="M10 6.5V4M8.2 4h3.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="7.6" cy="10.6" r="1.1" fill="white" />
+      <circle cx="12.4" cy="10.6" r="1.1" fill="white" />
+      <path d="M7.8 13.2h4.4" stroke="white" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   );
 }

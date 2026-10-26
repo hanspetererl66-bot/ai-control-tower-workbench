@@ -33,6 +33,8 @@ import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFr
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
 import { MEMORY_GOV_KEY, loadGov, levelOf as govLevelOf } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
+import AgentStudio from './ui/AgentStudio';
+import { loadAgents, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -175,6 +177,8 @@ export default function App() {
   const [activeGroup, setActiveGroup] = useState<GroupDetail | null>(null);
   // Personal memory: notes kept on this computer; the assistant may suggest an entry, the person decides.
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
+  const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
+  const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
   const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
   const changePersonas = useCallback((next: PersonaState) => { setPersonasState(next); savePersonas(window.localStorage, next); }, []);
   const [ownCommands, setOwnCommandsState] = useState<Command[]>(() => loadCommands(window.localStorage));
@@ -1054,6 +1058,14 @@ export default function App() {
           onBack={() => setView('chat')}
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
+        />
+      ) : view === 'studio' ? (
+        <AgentStudio
+          agents={studioAgents}
+          onAgents={changeStudioAgents}
+          connectors={extensionNames}
+          spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
+          onRunInChat={(prompt) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt); }}
         />
       ) : view === 'spaces' && spacesHome ? (
         <SpacesOverview
