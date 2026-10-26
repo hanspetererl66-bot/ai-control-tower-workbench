@@ -8,6 +8,7 @@ import {
 } from '../connector-presentation';
 import { listSkills, type Skill } from '../skills';
 import SkillIcon from './SkillIcon';
+import SkillGovernance from './SkillGovernance';
 import SkillInstallDialog, { type InstallRequest } from './SkillInstallDialog';
 
 const LOOKS_SECRET = /password|secret|token|api[-_]?key|authorization|cookie|credential/i;
@@ -298,28 +299,34 @@ export default function ManageView({
 
         <h2 className="manage-h">Skills</h2>
         {skills.length === 0 && <p className="manage-empty">No skills installed.</p>}
-        {skills.map((s) => (
-          <div key={s.dir} className="row">
-            <div className="row-main">
-              <span className="row-title row-title-skill"><SkillIcon name={s.name} />{s.name}</span>
-              <span className="row-detail">{s.description}</span>
-            </div>
-            <div className="row-actions">
-              <button
-                className="dialog-btn dialog-btn-danger"
-                disabled={busy !== null}
-                onClick={() =>
-                  run(`rm-skill-${s.dir}`, async () => {
-                    const r = await window.host?.removeSkill?.(s.name);
-                    if (r && !r.ok) throw new Error(r.detail ?? 'remove failed');
-                  })
-                }
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        ))}
+        {skills.length > 0 && (
+          <SkillGovernance
+            skills={skills}
+            renderRow={(s, extra) => (
+              <div className="row">
+                <div className="row-main">
+                  <span className="row-title row-title-skill"><SkillIcon name={s.name} />{s.name}</span>
+                  <span className="row-detail">{s.description}</span>
+                </div>
+                <div className="row-actions">
+                  {extra}
+                  <button
+                    className="dialog-btn dialog-btn-danger"
+                    disabled={busy !== null}
+                    onClick={() =>
+                      run(`rm-skill-${s.dir}`, async () => {
+                        const r = await window.host?.removeSkill?.(s.name);
+                        if (r && !r.ok) throw new Error(r.detail ?? 'remove failed');
+                      })
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            )}
+          />
+        )}
 
         {configuring && (
           <SkillInstallDialog

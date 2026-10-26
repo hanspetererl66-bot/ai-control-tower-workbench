@@ -3762,3 +3762,27 @@ button {
 .sov-card { min-height: 112px; }
 @media (max-width: 1100px) { .sov-grid, .sov-spaces { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .sov-grid, .sov-spaces { grid-template-columns: minmax(0, 1fr); } }
+
+/* Skill levels and approvals */
+.sgov-tabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 12px; }
+.sgov-tab { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.sgov-tab.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.sgov-n { margin-left: 6px; font-size: 11px; color: var(--muted); }
+.sgov-n-hot { color: var(--accent); font-weight: 700; }
+.sgov-edit { margin-left: auto; font: inherit; font-size: 12px; background: none; border: 0; color: var(--accent); cursor: pointer; }
+.sgov-rename, .sgov-form, .sgov-req { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 8px 0; background: var(--panel); display: flex; flex-direction: column; gap: 8px; }
+.sgov-help { margin: 0; font-size: 13px; color: var(--muted); }
+.sgov-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sgov-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.sgov-fields input, .sgov-form textarea, .sgov-actions input { font: inherit; font-size: 13px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.sgov-form textarea { min-height: 60px; resize: vertical; }
+.sgov-check { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.sgov-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sgov-actions input { flex: 1; min-width: 160px; }
+.sgov-extra { display: flex; gap: 8px; align-items: center; }
+.sgov-req-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sgov-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.sgov-badge-wait { color: var(--accent); border-color: var(--accent); }
+.sgov-badge-ok { color: var(--ink); }
+.sgov-badge-no { color: var(--error, var(--ink)); border-color: var(--error, var(--line)); }
+@media (max-width: 760px) { .sgov-fields { grid-template-columns: minmax(0, 1fr); } }
