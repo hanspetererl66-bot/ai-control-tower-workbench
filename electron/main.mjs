@@ -79,6 +79,7 @@ async function createWindow() {
     height: 720,
     minWidth: 900,
     minHeight: 600,
+    title: 'Joule Work X - Next Gen Design Study',
     show: false,
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#ffffff',
