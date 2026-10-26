@@ -24,7 +24,7 @@ import Chat, { type Message } from './ui/Chat';
 import Composer from './ui/Composer';
 import ConversationList from './ui/ConversationList';
 import ManageView from './ui/ManageView';
-import DetailsPanel, { type GeneratedFile } from './ui/DetailsPanel';
+import SidePanel, { memorySummary, type ContextItem, type GeneratedFile, type SidePanelTab } from './ui/SidePanel';
 import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
@@ -126,6 +126,7 @@ export default function App() {
     []
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [sideTab, setSideTab] = useState<SidePanelTab>('memory');
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
   const [schedules, setSchedules] = useState<Schedule[]>(() => loadSchedules(window.localStorage));
@@ -397,6 +398,7 @@ export default function App() {
     }
     if (added) {
       setFiles([...paths.current].map((path) => ({ path })));
+      setSideTab('context');
       setDetailsOpen(true);
     }
   }, []);
@@ -851,6 +853,15 @@ export default function App() {
     saveSpaceOrder(window.localStorage, next);
   }
   const showDetails = detailsOpen && view === 'chat';
+  const activeSchedules = schedules.filter((x) => x.enabled).length;
+  const instructionsSet = Boolean(assistantNote(prefs));
+  const contextItems: ContextItem[] = [
+    { id: 'memory', label: 'Memory', detail: memory.enabled ? memorySummary(memory) : 'Switched off', on: memory.enabled && memory.entries.length > 0, tab: 'memory' },
+    { id: 'instructions', label: 'Instructions', detail: instructionsSet ? 'Language, length, tone or standing instructions set' : 'All at their defaults', on: instructionsSet, tab: 'instructions' },
+    { id: 'web', label: 'Web search', detail: webSearch ? 'The assistant may search the web' : 'Switched off for this conversation', on: webSearch },
+    { id: 'group', label: 'Group', detail: activeGroup ? activeGroup.group.name : 'No group selected', on: Boolean(activeGroup) },
+    { id: 'schedule', label: 'Schedule', detail: activeSchedules ? `${activeSchedules} recurring ${activeSchedules === 1 ? 'briefing' : 'briefings'} active` : 'No recurring briefings', on: activeSchedules > 0, tab: 'schedule' },
+  ];
 
   function resetConversationSurface(conversationFiles: GeneratedFile[] = []) {
     setDetailsOpen(false);
@@ -1034,16 +1045,15 @@ export default function App() {
               <ListIcon />
             </button>
             <h1 className="topbar-title">{title}</h1>
-            {(files.length > 0 || detailsOpen) && (
-              <button
-                className={`icon-btn topbar-details ${detailsOpen ? 'icon-btn-on' : ''}`}
-                onClick={() => setDetailsOpen((v) => !v)}
-                title="Conversation details"
-                aria-label="Conversation details"
-              >
-                <DetailsIcon />
-              </button>
-            )}
+            <button
+              className={`icon-btn topbar-details ${detailsOpen ? 'icon-btn-on' : ''}`}
+              onClick={() => setDetailsOpen((v) => !v)}
+              title="Memory, context, instructions and schedule"
+              aria-label="Memory, context, instructions and schedule"
+              aria-expanded={detailsOpen}
+            >
+              <DetailsIcon />
+            </button>
             <button className="icon-btn topbar-more" title="More" aria-label="More">
               ···
             </button>
@@ -1098,8 +1108,17 @@ export default function App() {
       )}
 
       {showDetails && (
-        <DetailsPanel
+        <SidePanel
+          tab={sideTab}
+          onTab={setSideTab}
           files={files}
+          memory={memory}
+          onMemoryChange={changeMemory}
+          prefs={prefs}
+          onPrefs={updatePrefs}
+          schedules={schedules}
+          onSchedules={updateSchedules}
+          context={contextItems}
           onClose={() => setDetailsOpen(false)}
           onOpen={(p) => window.host?.openFile?.(p)}
           onReveal={(p) => window.host?.revealFile?.(p)}
