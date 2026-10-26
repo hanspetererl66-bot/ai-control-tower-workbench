@@ -3786,6 +3786,16 @@ button {
 .mini-icon-danger:hover { color: #b91c1c; background: rgb(220 38 38 / 12%); }
 :root[data-theme="dark"] .mini-icon-danger:hover { color: #f87171; }
 @media (hover: none) { .mini-icon { opacity: 0.7; } }
+.mini-icon-always { opacity: 0.6; }
+.card:hover .mini-icon-always, .card-on .mini-icon-always { opacity: 0.9; }
+.archived-spaces { margin: 14px 0 4px; border-top: 1px solid var(--line, rgb(127 127 127 / 25%)); padding-top: 8px; }
+.archived-head { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; padding: 6px 2px; color: var(--muted, inherit); font: inherit; font-size: 12.5px; cursor: pointer; text-align: left; }
+.archived-head:hover { color: var(--ink); }
+.archived-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
+.archived-list li { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 13px; }
+.archived-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.8; }
+.ghost-btn.small { padding: 2px 8px; font-size: 12px; }
+.archived-list .mini-icon { position: static; opacity: 0.6; }
 
 /* ---------- side panel: memory, context, instructions, schedule ---------- */
 .app-details { grid-template-columns: var(--rail-w) var(--list-w) 1fr 360px; }

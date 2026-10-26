@@ -31,6 +31,10 @@ type Props = {
   originalTitle?: (slug: string) => string;
   /** Delete a Space for good; called only after the person confirmed in the dialog. */
   onDeleteSpace?: (slug: string) => void;
+  /** Archive a Space: it leaves the list and can be restored from the Archived Spaces section. */
+  onArchiveSpace?: (slug: string) => void;
+  archived?: Space[];
+  onRestoreSpace?: (slug: string) => void;
 };
 
 const COLLAPSED_KEY = 'werkbank.collapsedDomains';
@@ -45,7 +49,8 @@ function loadCollapsed(): string[] {
 
 type DropMark = { slug: string; after: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
+  const [archivedOpen, setArchivedOpen] = useState(false);
   const [renamingSpace, setRenamingSpace] = useState<string | null>(null);
   const [spaceName, setSpaceName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -177,11 +182,22 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                     onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onRenameSpace(s.slug, ''); } }}
                   ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
                 )}
+                {onArchiveSpace && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="mini-icon mini-icon-always"
+                    aria-label={`Archive ${s.title}`}
+                    title="Archive this Space (hide it; restore it any time)"
+                    onClick={(event) => { event.stopPropagation(); onArchiveSpace(s.slug); }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onArchiveSpace(s.slug); } }}
+                  ><ArchiveIcon /></span>
+                )}
                 {onDeleteSpace && (
                   <span
                     role="button"
                     tabIndex={0}
-                    className="mini-icon mini-icon-danger"
+                    className="mini-icon mini-icon-danger mini-icon-always"
                     aria-label={`Delete ${s.title}`}
                     title="Delete this Space"
                     onClick={(event) => { event.stopPropagation(); setConfirmDelete(s.slug); }}
@@ -264,7 +280,9 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
 
       {spaces.length === 0 ? (
         <p className="list-empty">
-          No Spaces yet. Ask {PRODUCT_TITLE} to create a dashboard from grounded data.
+          {archived.length > 0
+            ? `All Spaces are archived. Restore one below, or ask ${PRODUCT_TITLE} to build a new one.`
+            : `No Spaces yet. Ask ${PRODUCT_TITLE} to create a dashboard from grounded data.`}
         </p>
       ) : (
         grouped ? (
@@ -316,8 +334,32 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
           spaces.map(renderCard)
         )
       )}
+      {archived.length > 0 && (
+        <section className="archived-spaces" aria-label="Archived Spaces">
+          <button className="archived-head" aria-expanded={archivedOpen} onClick={() => setArchivedOpen((v) => !v)}>
+            <span aria-hidden="true">{archivedOpen ? '▾' : '▸'}</span>
+            <span>Archived Spaces</span>
+            <span className="domain-count">{archived.length}</span>
+          </button>
+          {archivedOpen && (
+            <ul className="archived-list">
+              {archived.map((s) => (
+                <li key={s.slug}>
+                  <span className="archived-title" title={s.description || s.title}>{s.title}</span>
+                  {onRestoreSpace && <button className="ghost-btn small" onClick={() => onRestoreSpace(s.slug)} aria-label={`Restore ${s.title}`}>Restore</button>}
+                  {onDeleteSpace && (
+                    <button className="mini-icon mini-icon-danger mini-icon-always" onClick={() => setConfirmDelete(s.slug)} aria-label={`Delete ${s.title}`} title="Delete this Space for good">
+                      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
       {confirmDelete && (() => {
-        const target = spaces.find((x) => x.slug === confirmDelete);
+        const target = [...spaces, ...archived].find((x) => x.slug === confirmDelete);
         const subs = target ? subsOf(target.slug) : [];
         if (!target) return null;
         return (
@@ -338,6 +380,14 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
         );
       })()}
     </aside>
+  );
+}
+
+function ArchiveIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+      <path d="M2 3.5h12v3H2zM3 6.5v6h10v-6M6.5 9h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

@@ -36,7 +36,7 @@ import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
-import { addDomain, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
+import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
@@ -155,6 +155,7 @@ export default function App() {
     setPrefs((current) => sanitizePreferences(change(current)));
   }, []);
   const spaces = useMemo(() => applySpaceTitles(rawSpaces, prefs), [rawSpaces, prefs]);
+  const { active: activeSpaces, archived: archivedSpaces } = useMemo(() => splitArchived(spaces, prefs), [spaces, prefs]);
   const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
@@ -278,16 +279,16 @@ export default function App() {
   // Start view: once, as soon as the Spaces are known.
   const startApplied = useRef(false);
   useEffect(() => {
-    if (startApplied.current || !spaces.length) return;
+    if (startApplied.current || !activeSpaces.length) return;
     startApplied.current = true;
     let last: string | null = null;
     try { last = window.localStorage.getItem('werkbank.lastSpace'); } catch { /* ignore */ }
-    const target = startSpace(prefs, spaces.map((x) => x.slug), last);
+    const target = startSpace(prefs, activeSpaces.map((x) => x.slug), last);
     if (target) {
       setSelectedSpace(target);
       setView('spaces');
     }
-  }, [spaces, prefs]);
+  }, [activeSpaces, prefs]);
   useEffect(() => {
     if (!selectedSpace) return;
     try { window.localStorage.setItem('werkbank.lastSpace', selectedSpace); } catch { /* ignore */ }
@@ -780,6 +781,22 @@ export default function App() {
     }
   }
 
+  /** Archive hides a Space from the list without touching its files; Restore brings it back. */
+  function archiveOne(slug: string) {
+    const title = spaces.find((x) => x.slug === slug)?.title ?? slug;
+    updatePrefs((c) => archiveSpace(c, slug, rawSpaces));
+    if (selectedSpace === slug) setSelectedSpace(activeSpaces.find((x) => x.slug !== slug)?.slug ?? null);
+    setToast(`Archived "${title}". Find it under Archived Spaces.`);
+    setTimeout(() => setToast(null), 6000);
+  }
+
+  function restoreOne(slug: string) {
+    const title = spaces.find((x) => x.slug === slug)?.title ?? slug;
+    updatePrefs((c) => restoreSpace(c, slug));
+    setToast(`Restored "${title}".`);
+    setTimeout(() => setToast(null), 6000);
+  }
+
   /** "Save as Space": the agent turns one answer into a Space. */
   function saveAnswerAsSpace(index: number) {
     const answer = messages[index];
@@ -843,8 +860,8 @@ export default function App() {
       {PRODUCT_TITLE} uses AI. Verify results. <a href="#">AI Guidance</a>
     </p>
   );
-  const space = spaces.find((s) => s.slug === selectedSpace) ?? null;
-  const orderedSpaces = pinFirst(orderSpaces(spaces, spaceOrder), prefs.pinnedSpaces);
+  const space = activeSpaces.find((s) => s.slug === selectedSpace) ?? null;
+  const orderedSpaces = pinFirst(orderSpaces(activeSpaces, spaceOrder), prefs.pinnedSpaces);
 
   /** Reorder starting from what is on screen, so Spaces without a saved position get one too. */
   function changeSpaceOrder(change: (slugs: string[]) => string[]) {
@@ -966,7 +983,7 @@ export default function App() {
           onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
           pinned={prefs.pinnedSpaces}
           onTogglePin={(slug) => updatePrefs((c) => ({ ...c, pinnedSpaces: togglePin(c.pinnedSpaces, slug) }))}
-          domains={domainNames(spaces, prefs)}
+          domains={domainNames(activeSpaces, prefs)}
           domainOf={(slug) => effectiveDomain(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
           onAssign={(slug, name) => updatePrefs((c) => { const sp = spaces.find((x) => x.slug === slug) ?? { slug }; return assignDomain(assignParent(c, sp, spaces, ''), sp, name); })}
           parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
@@ -979,6 +996,9 @@ export default function App() {
           onRenameSpace={renameSpaceTitle}
           originalTitle={(slug) => rawSpaces.find((x) => x.slug === slug)?.title ?? slug}
           onDeleteSpace={(slug) => void deleteSpace(slug)}
+          onArchiveSpace={archiveOne}
+          archived={archivedSpaces}
+          onRestoreSpace={restoreOne}
         />
       )}
       {view === 'manage' && (
