@@ -9,12 +9,13 @@ const composer = readFileSync(path.join(root, 'src/ui/Composer.tsx'), 'utf8');
 const manage = readFileSync(path.join(root, 'src/ui/ManageView.tsx'), 'utf8');
 const spaces = readFileSync(path.join(root, 'src/spaces.ts'), 'utf8');
 
-test('the public product surface uses the Joule Work X - Next Gen name', () => {
+test('the public product surface uses the Joule Work X - Next Gen Design Study title', () => {
   const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
   assert.match(product, /PRODUCT_NAME = 'Joule Work X - Next Gen'/);
-  assert.match(app, /\{PRODUCT_NAME\} uses AI/);
-  assert.match(composer, /Message \$\{PRODUCT_NAME\}/);
-  assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen<\/title>/);
+  assert.match(product, /PRODUCT_TITLE = `\$\{PRODUCT_NAME\} Design Study`/);
+  assert.match(app, /\{PRODUCT_TITLE\} uses AI/);
+  assert.match(composer, /Message \$\{PRODUCT_TITLE\}/);
+  assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen Design Study<\/title>/);
 });
 
 test('connector import and all generated Spaces are available in the product surface', () => {
@@ -22,14 +23,15 @@ test('connector import and all generated Spaces are available in the product sur
   assert.doesNotMatch(spaces, /FEATURED_SPACE_SLUG|visibleSpaces/);
 });
 
-test('clicking the logo opens the cover sheet with the prototype wording', () => {
+test('clicking the logo opens the cover sheet with the design study wording', () => {
   const rail = readFileSync(path.join(root, 'src/ui/Rail.tsx'), 'utf8');
   const cover = readFileSync(path.join(root, 'src/ui/CoverSheet.tsx'), 'utf8');
   assert.match(rail, /<button className="rail-logo" onClick=\{onOpenCover\}/);
   assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
   assert.match(app, /\{coverOpen && <CoverSheet/);
   assert.match(cover, /\{PRODUCT_NAME\}/);
-  assert.match(cover, />Prototype</);
+  assert.match(cover, />Design Study</);
+  assert.doesNotMatch(cover, /[Pp]rototype/);
   assert.match(cover, /Built by Accenture/);
   assert.match(cover, /Demo only/);
   assert.match(cover, /Escape/); // closable from the keyboard

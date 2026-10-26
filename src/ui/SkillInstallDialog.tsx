@@ -1,4 +1,4 @@
-import { PRODUCT_NAME } from '../product';
+import { PRODUCT_TITLE } from '../product';
 import { useState } from 'react';
 
 export type ConfigField = {
@@ -62,7 +62,7 @@ export default function SkillInstallDialog({
       : request.source === 'link'
         ? 'Install link'
         : request.source === 'example'
-          ? `${PRODUCT_NAME} definition`
+          ? `${PRODUCT_TITLE} definition`
           : 'Goose config';
 
   const [values, setValues] = useState<Record<string, string>>(() =>

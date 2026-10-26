@@ -1,4 +1,4 @@
-import { PRODUCT_NAME } from '../product';
+import { PRODUCT_TITLE } from '../product';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import type { AppearancePreference, ResolvedTheme } from '../appearance';
@@ -94,7 +94,7 @@ export default function SettingsDialog({
         <header className="settings-head">
           <div>
             <h3 id="settings-title" className="dialog-title">Settings</h3>
-            <p className="dialog-body">Personalise how {PRODUCT_NAME} looks and works.</p>
+            <p className="dialog-body">Personalise how {PRODUCT_TITLE} looks and works.</p>
           </div>
           <button className="icon-btn settings-close" onClick={onClose} aria-label="Close settings">
             <CloseIcon />
