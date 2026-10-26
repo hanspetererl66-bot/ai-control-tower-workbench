@@ -14,7 +14,7 @@ test('the public product surface uses the Joule Work X - Next Gen name', () => {
   assert.match(product, /PRODUCT_NAME = 'Joule Work X - Next Gen'/);
   assert.match(app, /\{PRODUCT_NAME\} uses AI/);
   assert.match(composer, /Message \$\{PRODUCT_NAME\}/);
-  assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen<\/title>/);
+  assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen · Prototype<\/title>/);
 });
 
 test('connector import and all generated Spaces are available in the product surface', () => {

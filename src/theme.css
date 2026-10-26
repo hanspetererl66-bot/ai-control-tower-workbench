@@ -2921,10 +2921,11 @@ button {
 }
 
 .cover-kind {
-  margin: 4px 0 0;
-  font-size: clamp(16px, 2.2vw, 24px);
-  font-weight: 300;
-  letter-spacing: 0.24em;
+  margin: 10px 0 0;
+  font-size: clamp(48px, 9vw, 104px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -3733,12 +3734,12 @@ button {
 
 /* Spaces overview: domain tiles, then the Spaces of one domain */
 .sov { overflow-y: auto; }
-.sov-inner { max-width: 960px; margin: 0 auto; padding: 48px 32px 64px; }
+.sov-inner { max-width: 1180px; margin: 0 auto; padding: 48px 32px 64px; }
 .sov-title { font-size: 26px; margin: 0 0 4px; color: var(--ink); }
 .sov-sub { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
 .sov-back { background: none; border: 0; padding: 0; margin-bottom: 16px; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer; }
 .sov-back:hover { text-decoration: underline; }
-.sov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.sov-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .sov-tile, .sov-card, .sov-kid {
   display: flex; flex-direction: column; gap: 6px; text-align: left; font: inherit; color: var(--ink);
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; cursor: pointer;
@@ -3749,10 +3750,15 @@ button {
 .sov-tile-count { font-size: 12px; color: var(--accent); font-weight: 600; }
 .sov-tile-list { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); margin-top: 4px; }
 .sov-more { font-style: italic; }
-.sov-spaces { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.sov-spaces { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .sov-space { display: flex; flex-direction: column; gap: 6px; }
 .sov-card-title { font-weight: 600; font-size: 15px; }
 .sov-card-desc { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .sov-card-meta { font-size: 12px; color: var(--muted); }
 .sov-kids { display: flex; flex-direction: column; gap: 6px; margin-left: 16px; border-left: 2px solid var(--line); padding-left: 10px; }
 .sov-kid { padding: 10px 14px; }
+
+.sov-tile { min-height: 168px; }
+.sov-card { min-height: 112px; }
+@media (max-width: 1100px) { .sov-grid, .sov-spaces { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .sov-grid, .sov-spaces { grid-template-columns: minmax(0, 1fr); } }
