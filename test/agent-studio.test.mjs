@@ -88,3 +88,18 @@ test('PRD writer: Jira is its source, it cannot write to Jira, and it needs Jira
   assert.equal(s.simulateRun({ ...a, sources: ['web'] }, cat).title, 'No result');
   assert.match(s.agentPrompt(a, cat), /read only/);
 });
+
+test('pre-close checker reads the Finance Pre-Close Space and Databricks, is read only and refuses posting', () => {
+  const cat = s.buildCatalog(['databricks'], [{ slug: 'finance-preclose', title: 'Finance Pre-Close' }, { slug: 'renewals', title: 'Renewals' }]);
+  const t = s.TEMPLATES.find((x) => x.id === 'preclose-check');
+  const a = s.newAgent(t, cat);
+  assert.deepEqual(a.sources.sort(), ['conn:databricks', 'space:finance-preclose']);
+  assert.equal(s.problems(a).length, 0);
+  assert.equal(a.canWrite, false);
+  const r = s.simulateRun(a, cat);
+  assert.match(r.title, /3 red findings/);
+  assert.ok(r.table.rows.some((x) => x.level === 'red'));
+  assert.ok(r.blocked.includes('posting accruals'));
+  const none = s.simulateRun({ ...a, sources: ['web'] }, cat);
+  assert.equal(none.title, 'No result');
+});

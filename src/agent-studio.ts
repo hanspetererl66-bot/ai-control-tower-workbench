@@ -55,6 +55,12 @@ export const TEMPLATES: Template[] = [
     instruction: 'Read the epics and stories of the Jira project the person names. Write a PRD with overview, goals, users, requirements per epic (every requirement with its ticket key and acceptance criteria), what is out of scope, and open questions for tickets without criteria, priority or user role. Do not invent requirements that are not in a ticket. Change nothing in Jira.',
     match: ['jira', 'prd-builder'], output: 'summary', trigger: { type: 'manual', time: '08:00' }, canWrite: false,
   },
+  {
+    id: 'preclose-check', name: 'Pre-close checker', story: 'Use case 4',
+    purpose: 'Check the month-end pre-close every morning: open items, anomalies and accrual proposals, with the first step for every red one.',
+    instruction: 'Read the pre-close of the current month. List the open items (intercompany differences, bank reconciliation, goods received not invoiced, unbilled revenue) with amount and age in working days, the anomalies of the last days rated red or yellow, and the accrual proposals with their confidence. Rate each finding red (amount above 400 thousand EUR, older than 5 working days or a red anomaly), yellow or green. Name the owner and the next step for every red one. Do not post anything: accruals are only proposed, a person approves them.',
+    match: ['finance-preclose', 'preclose', 'databricks'], output: 'table', trigger: { type: 'daily', time: '07:45' }, canWrite: false,
+  },
 ];
 
 export function newAgent(t: Template | null, catalog: Source[], now = Date.now()): StudioAgent {
@@ -270,6 +276,23 @@ export function simulateRun(a: StudioAgent, catalog: Source[], today = new Date(
     steps.push({ text: 'Tried to read the HR Space for team sizes: refused, it is not one of the agent\'s sources.', blocked: true }); blocked.push('the HR Space');
     return { steps, title: 'Headroom 5.1 M EUR, two teams over budget', sources: used, blocked,
       lines: ['Result: the spend is 16.37 M EUR of 21.5 M EUR (76 percent). Headroom 5.13 M EUR. No action is urgent.', 'Reason: token API is 15.12 M EUR (92 percent of the spend). Engineering and Finance are over their allocation.', 'Decision needed: approve two levers before the next month: model routing (saves 1.1 M EUR) and hard limits for teams over budget (saves 0.8 M EUR).'] };
+  }
+
+  if (a.template === 'preclose-check') {
+    const ok = read('preclose', 'the Finance Pre-Close Space', 'Read the pre-close of October 2026 at working day 17: 30 open items (3.56 M EUR), 6 anomalies, 7 accrual proposals (646 thousand EUR). Mockup data in the shape of an S/4HANA extract.');
+    const db = read('databricks', 'Databricks', 'Databricks (read only): in this prototype the same figures come from the demo data; with a SQL warehouse the connector would run the same read-only query on the finance tables.');
+    if (!ok && !db) return { steps, title: 'No result', lines: ['The agent has no finance data. Tick the Finance Pre-Close Space (demo data) or the Databricks connector as a source.'], sources: used, blocked };
+    steps.push({ text: 'Rated the findings: 3 red anomalies (1.26 M EUR), 3 yellow, largest open item OI-005 (880 thousand EUR).' });
+    steps.push({ text: 'Tried to post the accrual proposals: refused, the agent is read only. A person approves every accrual.', blocked: true }); blocked.push('posting accruals');
+    const table = { head: ['Finding', 'Entity', 'Amount', 'Next step'], rows: [
+      { level: 'red' as const, cells: ['OI-001 Intercompany difference (royalty cut-off)', 'DE10 / US10', '412 thousand EUR', 'Post the cut-off correction in US10 and confirm with the controller (Karl Heim)'] },
+      { level: 'red' as const, cells: ['OI-005 Largest open item', 'see Space', '880 thousand EUR', 'Owner to clear or justify before the close call'] },
+      { level: 'red' as const, cells: ['Cloud hosting 38 % above the 3-month average', 'UK10', '75 thousand EUR', 'Ask the provider manager for the usage breakdown'] },
+      { level: 'yellow' as const, cells: ['Possible duplicate vendor invoice', 'DE10', '64 thousand EUR', 'Block the second invoice for payment'] },
+      { level: 'green' as const, cells: ['Accrual proposals: 7, 5 with high confidence', 'all', '646 thousand EUR', 'Approve in the Space; a person posts'] },
+    ] };
+    return { steps, title: '3 red findings, 30 open items worth 3.56 M EUR', table, sources: used, blocked,
+      lines: ['Source: Finance Pre-Close Space, working day 17 of October 2026 (mockup data). Nothing was posted or changed.', 'For the briefing to the controller use the Space (Joule writes the daily briefing from the same figures).'] };
   }
 
   if (a.template === 'prd-writer') {
