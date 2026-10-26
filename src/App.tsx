@@ -33,6 +33,7 @@ import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KI
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
+import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
@@ -297,9 +298,13 @@ export default function App() {
     try { window.localStorage.setItem('werkbank.lastSpace', selectedSpace); } catch { /* ignore */ }
   }, [selectedSpace]);
 
-  const groupCall = useMemo(() => (agent && extensionNames.includes(CONTROL_TOWER_CONNECTOR)
+  /** 'local': groups kept on this computer (sample group, no database). 'server': the connector with Supabase. */
+  const [groupMode, setGroupModeState] = useState<'local' | 'server'>(() => { try { return window.localStorage.getItem(GROUP_MODE_KEY) === 'server' ? 'server' : 'local'; } catch { return 'local'; } });
+  const serverGroupCall = useMemo(() => (agent && extensionNames.includes(CONTROL_TOWER_CONNECTOR)
     ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__${tool}`, args))
     : null), [agent, extensionNames]);
+  const localGroupCall = useMemo(() => createLocalGroupCall(window.localStorage), []);
+  const groupCall = groupMode === 'server' ? serverGroupCall : localGroupCall;
   const chooseActiveGroup = useCallback((id: string | null) => {
     setActiveGroupId(id);
     if (!id) setActiveGroup(null);
@@ -1151,6 +1156,9 @@ export default function App() {
             memory: { memory, onChange: changeMemory },
             groups: {
               call: groupCall,
+              mode: groupMode,
+              serverAvailable: !!serverGroupCall,
+              onMode: (m: 'local' | 'server') => { setGroupModeState(m); chooseActiveGroup(null); try { window.localStorage.setItem(GROUP_MODE_KEY, m); } catch { /* ignore */ } },
               identity,
               onIdentity: setIdentity,
               spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MAX_TEXT, MEMORY_KINDS, addMemory, deleteMemory, updateMemory, type MemoryKind, type MemoryState } from '../memory';
+import { MAX_TEXT, MEMORY_KINDS, addMemory, deleteMemory, memoryNote, updateMemory, type MemoryKind, type MemoryState } from '../memory';
 import { Section } from './PreferencesPanels';
 
 export type MemoryPanelProps = { memory: MemoryState; onChange: (next: MemoryState) => void };
@@ -17,8 +17,21 @@ export default function MemoryPanel({ memory, onChange }: MemoryPanelProps) {
     onChange(r.state); setMessage(ok); after?.();
   };
 
+  const note = memoryNote(memory);
   return (
     <>
+      <Section title="How memory works" hint="Memory is what the assistant should always know about you, so you do not have to repeat it in every conversation.">
+        <ul className="prefs-list">
+          <li><div><b>About me</b> <small>Who you are and what you do. Example: “I lead Sales EMEA at Accenture”. The assistant picks the right depth and examples.</small></div></li>
+          <li><div><b>How I like results</b> <small>Form and tone. Example: “always answer in German, result first, then reasons”. Applies to every answer.</small></div></li>
+          <li><div><b>Projects and context</b> <small>Names and facts. Example: “Sub4Me is the service portal of customer X”. Saves you the explanation.</small></div></li>
+        </ul>
+        <p className="prefs-note"><b>How an entry gets in:</b> you type it here, or you write “Remember that …” in a conversation and press “Remember” on the suggestion. The assistant never saves on its own, and passwords or keys are refused.</p>
+        <p className="prefs-note"><b>Personal or team:</b> this memory is yours and stays on this computer. What a whole team should know (rules, decisions) belongs in the team memory of a group (tab Groups).</p>
+      </Section>
+      <Section title="What the assistant sees" hint="This is the exact text added to your conversations. If an entry should not be used, forget it below.">
+        <pre className="prefs-area" style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{note || (memory.enabled ? 'Nothing yet. Add your first entry below.' : 'Memory is switched off: the assistant sees nothing.')}</pre>
+      </Section>
       <Section title="Memory" hint="Short notes the assistant keeps in mind in every conversation, for example who you are or how you like results. They stay on this computer. The assistant never saves anything by itself: it can only suggest an entry, and you press Remember.">
         <div className="prefs-row">
           <label>
