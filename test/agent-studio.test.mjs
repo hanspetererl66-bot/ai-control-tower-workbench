@@ -78,3 +78,13 @@ test('registry entries describe the agent as a process', () => {
   const [p] = s.registryEntries([a], catalog, () => 1, ['Personal', 'Department', 'Company'], () => null, [], '');
   assert.equal(p.lifecycle, 'production'); assert.equal(p.level, 'Department'); assert.equal(p.owner, 'You');
 });
+
+test('PRD writer: Jira is its source, it cannot write to Jira, and it needs Jira to run', () => {
+  const cat = s.buildCatalog(['jira', 'sub4me'], spaces);
+  const a = s.newAgent(s.TEMPLATES.find((t) => t.id === 'prd-writer'), cat);
+  assert.deepEqual(a.sources, ['conn:jira']);
+  const r = s.simulateRun(a, cat);
+  assert.match(r.title, /14 requirements in 4 epics/); assert.ok(r.blocked.includes('writing to Jira'));
+  assert.equal(s.simulateRun({ ...a, sources: ['web'] }, cat).title, 'No result');
+  assert.match(s.agentPrompt(a, cat), /read only/);
+});

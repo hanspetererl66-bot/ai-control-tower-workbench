@@ -34,6 +34,7 @@ import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, l
 import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
 import AgentStudio from './ui/AgentStudio';
+import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
@@ -1100,7 +1101,7 @@ export default function App() {
             textScale={spaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
@@ -1108,7 +1109,7 @@ export default function App() {
             incoming={incoming[space.slug]}
             studioAgents={space.slug === 'ai-control-tower' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
-            bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
+            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? (extensionNames.find((n) => /jira/i.test(n)) ?? JIRA_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
           <main className="main">

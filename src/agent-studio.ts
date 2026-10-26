@@ -49,6 +49,12 @@ export const TEMPLATES: Template[] = [
     instruction: 'Compare the actual monthly spend with the ceiling and the plan. Say how much headroom is left and which teams are over their allocation. If utilisation is above 85 percent or a team is over budget, propose the levers from the What-if Simulator with the saving per lever. Result first, then the reason, then the decision needed.',
     match: ['ai-control-tower', 'what-if', 'control-tower'], output: 'summary', trigger: { type: 'weekly', time: '07:30' }, canWrite: false,
   },
+  {
+    id: 'prd-writer', name: 'PRD writer', story: 'Use case 3',
+    purpose: 'Turn the chosen Jira requirements into a product requirements document.',
+    instruction: 'Read the epics and stories of the Jira project the person names. Write a PRD with overview, goals, users, requirements per epic (every requirement with its ticket key and acceptance criteria), what is out of scope, and open questions for tickets without criteria, priority or user role. Do not invent requirements that are not in a ticket. Change nothing in Jira.',
+    match: ['jira', 'prd-builder'], output: 'summary', trigger: { type: 'manual', time: '08:00' }, canWrite: false,
+  },
 ];
 
 export function newAgent(t: Template | null, catalog: Source[], now = Date.now()): StudioAgent {
@@ -264,6 +270,15 @@ export function simulateRun(a: StudioAgent, catalog: Source[], today = new Date(
     steps.push({ text: 'Tried to read the HR Space for team sizes: refused, it is not one of the agent\'s sources.', blocked: true }); blocked.push('the HR Space');
     return { steps, title: 'Headroom 5.1 M EUR, two teams over budget', sources: used, blocked,
       lines: ['Result: the spend is 16.37 M EUR of 21.5 M EUR (76 percent). Headroom 5.13 M EUR. No action is urgent.', 'Reason: token API is 15.12 M EUR (92 percent of the spend). Engineering and Finance are over their allocation.', 'Decision needed: approve two levers before the next month: model routing (saves 1.1 M EUR) and hard limits for teams over budget (saves 0.8 M EUR).'] };
+  }
+
+  if (a.template === 'prd-writer') {
+    const ok = read('jira', 'Jira', 'Read the backlog of the project: 4 epics and 14 stories with priority and acceptance criteria (sample project).');
+    read('prd-builder', 'the PRD Builder Space', 'Used the PRD structure of the PRD Builder: overview, goals, users, requirements, out of scope, open questions, sources.');
+    if (!ok) return { steps, title: 'No result', lines: ['The agent cannot read requirements without Jira as a source. Tick the Jira connector.'], sources: used, blocked };
+    steps.push({ text: 'Tried to create a comment in Jira with the PRD link: refused, the agent is read only.', blocked: true }); blocked.push('writing to Jira');
+    return { steps, title: 'PRD draft: 14 requirements in 4 epics', sources: used, blocked,
+      lines: ['Overview and goals taken from the four epics; users: seller (11 stories) and sales manager (3 stories).', 'Every requirement carries its ticket key and its three acceptance criteria.', 'Open questions: none found from the tickets alone. Use the PRD Builder to tick the stories that belong in the first release.'] };
   }
 
   /* any other agent: list the sources and what would happen */
