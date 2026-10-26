@@ -31,10 +31,10 @@ import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog
 import SettingsDialog from './ui/SettingsDialog';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
-import { MEMORY_GOV_KEY, loadGov, levelOf as govLevelOf } from './skill-governance';
+import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
 import AgentStudio from './ui/AgentStudio';
-import { loadAgents, saveAgents, type StudioAgent } from './agent-studio';
+import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -179,6 +179,8 @@ export default function App() {
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
   const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
   const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
+  const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
+  const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
   const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
   const changePersonas = useCallback((next: PersonaState) => { setPersonasState(next); savePersonas(window.localStorage, next); }, []);
   const [ownCommands, setOwnCommandsState] = useState<Command[]>(() => loadCommands(window.localStorage));
@@ -521,7 +523,10 @@ export default function App() {
 
   async function send(typed: string, attachments: ChatAttachment[] = []) {
     if (!agent || busy) return;
-    const text = expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
+    const studioCatalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
+    const asAgent = expandAgentCommand(typed, studioAgents, studioCatalog, (id) => govLevelOf(agentGov, id));
+    if (asAgent && 'error' in asAgent) { setToast(asAgent.error); setTimeout(() => setToast(null), 6000); return; }
+    const text = asAgent?.prompt ?? expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
     cancelledByUser.current = false;
     const startedAt = Date.now();
     const previousSpaces = new Map(spaces.map((space) => [space.slug, space.updatedAt]));
@@ -823,6 +828,11 @@ export default function App() {
   }
 
   // Recurring briefings: while the app is open, run a due one when the chat is idle (also catches up to six hours).
+  /** Published Studio agents with a trigger run through the schedules; unpublished or deleted ones are removed from them. */
+  useEffect(() => {
+    const next = agentSchedules(studioAgents, (id) => govLevelOf(agentGov, id), schedules);
+    if (next !== schedules) updateSchedules(next);
+  }, [studioAgents, agentGov, schedules, updateSchedules]);
   const dueTick = useRef<() => void>(() => undefined);
   dueTick.current = () => {
     if (!agent || busy) return;
@@ -1062,6 +1072,9 @@ export default function App() {
       ) : view === 'studio' ? (
         <AgentStudio
           agents={studioAgents}
+          gov={agentGov}
+          onGov={changeAgentGov}
+          schedules={schedules}
           onAgents={changeStudioAgents}
           connectors={extensionNames}
           spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
@@ -1093,6 +1106,7 @@ export default function App() {
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}
             incoming={incoming[space.slug]}
+            studioAgents={space.slug === 'ai-control-tower' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
             bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />

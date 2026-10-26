@@ -4,6 +4,8 @@
  * The test run is a simulation on sample data (a sandbox): it shows which sources the agent touches and what it would
  * answer, before anything runs for real. "Run in chat" hands the same brief to the assistant, restricted to the sources.
  */
+import type { Schedule } from './schedules';
+
 export type SourceKind = 'connector' | 'space' | 'file' | 'web';
 export type Source = { id: string; kind: SourceKind; label: string; hint: string };
 export type Output = 'summary' | 'table' | 'draft-mail' | 'ticket';
@@ -12,7 +14,7 @@ export type StudioAgent = {
   id: string; name: string; purpose: string; instruction: string;
   sources: string[]; canWrite: boolean; askBeforeWrite: boolean; maxSteps: number;
   output: Output; trigger: { type: TriggerType; time: string };
-  tested: boolean; template: string; createdAt: number;
+  tested: boolean; testedAt?: number; template: string; createdAt: number;
 };
 export const AGENTS_KEY = 'werkbank.studioAgents';
 export const AGENT_GOV_KEY = 'werkbank.agentGovernance';
@@ -69,7 +71,7 @@ export function sanitizeAgents(v: unknown): StudioAgent[] {
       canWrite: r.canWrite === true, askBeforeWrite: r.askBeforeWrite !== false, maxSteps: Math.min(30, Math.max(1, Number(r.maxSteps) || 10)),
       output: OUTPUTS.some((o) => o.id === r.output) ? r.output : 'summary',
       trigger: { type: ['manual', 'daily', 'weekly'].includes(r.trigger?.type) ? r.trigger.type : 'manual', time: /^([01]\d|2[0-3]):[0-5]\d$/.test(r.trigger?.time ?? '') ? r.trigger.time : '08:00' },
-      tested: r.tested === true, template: typeof r.template === 'string' ? r.template : '', createdAt: Number(r.createdAt) || 0,
+      tested: r.tested === true, ...(Number(r.testedAt) > 0 ? { testedAt: Number(r.testedAt) } : {}), template: typeof r.template === 'string' ? r.template : '', createdAt: Number(r.createdAt) || 0,
     });
     if (out.length >= MAX_AGENTS) break;
   }
@@ -268,4 +270,59 @@ export function simulateRun(a: StudioAgent, catalog: Source[], today = new Date(
   for (const id of a.sources) { steps.push({ text: `Would read ${label(catalog, id)}.`, source: label(catalog, id) }); used.push(label(catalog, id)); }
   steps.push({ text: 'There is no sample data for a custom agent. Use “Run in chat” to run it for real with the ticked sources.' });
   return { steps, title: 'Setup checked', lines: [`The agent may read: ${used.join(', ') || 'nothing'}. Everything else is blocked.`], sources: used, blocked };
+}
+
+/* ---- Scheduler: published agents with a trigger run through the app's schedules ---- */
+export const AGENT_SCHEDULE_PREFIX = 'agent-';
+const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * The schedule list with one entry per published agent that has a trigger. The entry only says "/agent <id>": the
+ * brief is built when it runs, so a changed instruction or source list applies at once and an unpublished agent stops.
+ */
+export function agentSchedules(agents: StudioAgent[], levelOf: (id: string) => number, existing: Schedule[]): Schedule[] {
+  const others = existing.filter((s) => !s.id.startsWith(AGENT_SCHEDULE_PREFIX));
+  const own: Schedule[] = [];
+  for (const a of agents) {
+    if (a.trigger.type === 'manual' || levelOf(a.id) < 1) continue;
+    const id = `${AGENT_SCHEDULE_PREFIX}${a.id}`.slice(0, 40);
+    const old = existing.find((s) => s.id === id);
+    own.push({ id, prompt: `/agent ${a.id}`, time: a.trigger.time, repeat: a.trigger.type === 'daily' ? 'daily' : 'weekly', days: a.trigger.type === 'daily' ? [] : [1], enabled: old?.enabled !== false, ...(old?.lastRun ? { lastRun: old.lastRun } : {}) });
+  }
+  const next = [...others, ...own];
+  return sameJson(next, existing) ? existing : next;
+}
+
+/** "/agent <id>" typed or scheduled: the brief, or why it does not run. */
+export function expandAgentCommand(text: string, agents: StudioAgent[], catalog: Source[], levelOf: (id: string) => number): { prompt: string } | { error: string } | null {
+  const m = /^\/agent\s+(a-[a-z0-9]+)\b([\s\S]*)$/i.exec(text.trim());
+  if (!m) return null;
+  const a = agents.find((x) => x.id === m[1]);
+  if (!a) return { error: 'This agent no longer exists.' };
+  if (levelOf(a.id) < 1) return { error: `"${a.name}" is not published (approved) yet, so it does not run on a schedule.` };
+  return { prompt: agentPrompt(a, catalog) };
+}
+
+/* ---- Registry: every agent from the Studio is registered as a process in the AI Control Tower ---- */
+export type RegistryEntry = {
+  id: string; name: string; purpose: string; lifecycle: 'production' | 'pending_review' | 'draft'; level: string; owner: string;
+  sources: string[]; rights: string; trigger: string; steps: number; output: string; lastTest: string; lastRun: string; approval: string;
+};
+export function registryEntries(agents: StudioAgent[], catalog: Source[], levelOf: (id: string) => number, levelNames: string[], pendingTo: (id: string) => number | null, schedules: Schedule[], owner: string): RegistryEntry[] {
+  return agents.slice(0, MAX_AGENTS).map((a, i) => {
+    const lvl = levelOf(a.id), req = pendingTo(a.id);
+    const trigger = a.trigger.type === 'manual' ? 'On demand' : a.trigger.type === 'daily' ? `Every day at ${a.trigger.time}` : `Every Monday at ${a.trigger.time}`;
+    const run = schedules.find((s) => s.id === `${AGENT_SCHEDULE_PREFIX}${a.id}`.slice(0, 40))?.lastRun ?? '';
+    return {
+      id: `AGT-S-${String(i + 1).padStart(3, '0')}`, name: a.name, purpose: a.purpose, owner: owner || 'You',
+      lifecycle: lvl > 0 ? 'production' : a.tested || req ? 'pending_review' : 'draft',
+      level: levelNames[lvl] ?? 'Personal',
+      sources: a.sources.map((id) => catalog.find((s) => s.id === id)?.label ?? id),
+      rights: a.canWrite ? (a.askBeforeWrite ? 'Proposes changes, asks before each write' : 'Writes') : 'Read only',
+      trigger: lvl > 0 || a.trigger.type === 'manual' ? trigger : `${trigger} (starts after approval)`,
+      steps: a.maxSteps, output: OUTPUTS.find((o) => o.id === a.output)?.label ?? 'Summary',
+      lastTest: a.testedAt ? new Date(a.testedAt).toISOString() : '', lastRun: run,
+      approval: lvl > 0 ? `Approved for ${levelNames[lvl]}` : req ? `Waiting: ${levelNames[req]}` : 'Not requested',
+    };
+  });
 }

@@ -47,3 +47,34 @@ test('sanitizeAgents drops broken entries and clamps values', () => {
   const out = s.sanitizeAgents([{ id: 'a', name: 'ok', maxSteps: 999, trigger: { type: 'weird', time: 'x' } }, { id: 'a', name: 'dup' }, { name: 'no id' }, null]);
   assert.equal(out.length, 1); assert.equal(out[0].maxSteps, 30); assert.equal(out[0].trigger.type, 'manual');
 });
+
+test('published agents with a trigger get a schedule that only says /agent <id>; unpublished ones do not', () => {
+  const a = s.newAgent(s.TEMPLATES[0], catalog, 1000);
+  assert.equal(s.agentSchedules([a], () => 0, []).length, 0);
+  const sch = s.agentSchedules([a], () => 1, [{ id: 'other', prompt: 'x', time: '07:00', repeat: 'daily', days: [], enabled: true }]);
+  assert.equal(sch.length, 2);
+  const mine = sch.find((x) => x.id.startsWith('agent-'));
+  assert.equal(mine.prompt, `/agent ${a.id}`); assert.deepEqual(mine.days, [1]); assert.equal(mine.repeat, 'weekly');
+  const again = s.agentSchedules([a], () => 1, [...sch.map((x) => (x === mine ? { ...x, lastRun: '2026-10-26T06:00:00Z' } : x))]);
+  assert.equal(again.find((x) => x.id === mine.id).lastRun, '2026-10-26T06:00:00Z');
+  assert.equal(s.agentSchedules([a], () => 1, again), again);
+  assert.equal(s.agentSchedules([], () => 1, again).length, 1);
+  assert.equal(s.agentSchedules([{ ...a, trigger: { type: 'manual', time: '08:00' } }], () => 1, again).length, 1);
+});
+
+test('/agent runs only published agents and builds the brief at run time', () => {
+  const a = s.newAgent(s.TEMPLATES[0], catalog, 1000);
+  assert.match(s.expandAgentCommand(`/agent ${a.id}\n\n(Recurring)`, [a], catalog, () => 1).prompt, /use only these/);
+  assert.match(s.expandAgentCommand(`/agent ${a.id}`, [a], catalog, () => 0).error, /not published/);
+  assert.match(s.expandAgentCommand('/agent a-nope', [a], catalog, () => 1).error, /no longer exists/);
+  assert.equal(s.expandAgentCommand('/briefing', [a], catalog, () => 1), null);
+});
+
+test('registry entries describe the agent as a process', () => {
+  const a = { ...s.newAgent(s.TEMPLATES[0], catalog, 1000), tested: true, testedAt: Date.parse('2026-10-26T10:00:00Z') };
+  const [e] = s.registryEntries([a], catalog, () => 0, ['Personal', 'Department', 'Company'], () => 1, [], 'Hans');
+  assert.equal(e.id, 'AGT-S-001'); assert.equal(e.lifecycle, 'pending_review'); assert.equal(e.rights, 'Read only');
+  assert.match(e.trigger, /starts after approval/); assert.equal(e.approval, 'Waiting: Department'); assert.deepEqual(e.sources.sort(), ['Renewals', 'sub4me']);
+  const [p] = s.registryEntries([a], catalog, () => 1, ['Personal', 'Department', 'Company'], () => null, [], '');
+  assert.equal(p.lifecycle, 'production'); assert.equal(p.level, 'Department'); assert.equal(p.owner, 'You');
+});

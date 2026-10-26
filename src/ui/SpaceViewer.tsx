@@ -25,6 +25,7 @@ export default function SpaceViewer({
   onSpaceState,
   savedState,
   incoming,
+  studioAgents,
   onIncomingDelivered,
 }: {
   space: Space;
@@ -47,6 +48,8 @@ export default function SpaceViewer({
   savedState?: Record<string, unknown>;
   /** Work another Space handed to this one; delivered once the frame has loaded. */
   incoming?: IncomingHandoff[];
+  /** Agents built in the Agent Studio; the AI Control Tower registers them as processes. */
+  studioAgents?: unknown[];
   onIncomingDelivered?: () => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -58,6 +61,12 @@ export default function SpaceViewer({
     frame.current?.contentWindow?.postMessage({ type: 'ct:open-tab', tab: tabRequest.tab }, '*');
   };
   useEffect(postTab, [tabRequest?.tab, tabRequest?.nonce]);
+  const postAgents = () => {
+    if (space.slug !== 'ai-control-tower' || !loaded.current || !studioAgents) return;
+    frame.current?.contentWindow?.postMessage({ type: 'ct:studio-agents', agents: studioAgents }, '*');
+  };
+  const agentsKey = JSON.stringify(studioAgents ?? null);
+  useEffect(postAgents, [agentsKey]);
 
   const askRef = useRef(onAsk);
   askRef.current = onAsk;
@@ -287,6 +296,7 @@ export default function SpaceViewer({
             loaded.current = true;
             postRestore();
             postTab();
+            postAgents();
             if (query) sendTools({ type: 'sp:search', query });
             if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
           }}

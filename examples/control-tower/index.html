@@ -1026,6 +1026,9 @@ details.intro .body{margin-top:8px}
     </div>
   </div>
 
+  <div class="sh" id="studio-sh">Agents built in the Agent Studio &mdash; registered as processes</div>
+  <div class="card" id="studio-reg" style="overflow-x:auto;margin-bottom:16px"><p style="margin:0;font-size:12px;color:var(--g500)">No agents from the Agent Studio yet. Build one under <b>Agent Studio</b> in the left menu: it is registered here as a process with owner, sources, rights, schedule and approval.</p></div>
+
   <div class="sh">Discovery scan &mdash; top unregistered assets (last scan: 2h ago)</div>
   <div class="card" style="overflow-x:auto">
     <table class="tbl" style="min-width:560px">
@@ -6209,6 +6212,30 @@ window.addEventListener('message',function(e){
   var btn=document.querySelector('.tb[onclick^="go(\''+d.tab+'\'"]');
   if(btn&&document.getElementById('page-'+d.tab))go(d.tab,btn);
 });
+// Agents built in the Agent Studio arrive from the host and are registered here as processes (owner, sources, rights, trigger, approval).
+function ctStudio(list){
+  var box=document.getElementById('studio-reg'); if(!box) return;
+  var sh=document.getElementById('studio-sh');
+  if(sh) sh.textContent='Agents built in the Agent Studio \u2014 registered as processes ('+list.length+')';
+  if(!list.length){ box.innerHTML='<p style="margin:0;font-size:12px;color:var(--g500)">No agents from the Agent Studio yet. Build one under <b>Agent Studio</b> in the left menu: it is registered here as a process with owner, sources, rights, schedule and approval.</p>'; if(window.__ctRegSet) window.__ctRegSet([]); return; }
+  var LIFE={production:['Production','var(--green-dim)','var(--green)'],pending_review:['Pending review','var(--amber-dim)','var(--amber)'],draft:['Draft','var(--g100)','var(--g500)']};
+  function when(iso){ if(!iso) return '\u2014'; var d=new Date(iso); return isNaN(d)?'\u2014':d.toLocaleDateString('en-GB')+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+  box.innerHTML='<table class="tbl"><thead><tr><th>ID</th><th>Process</th><th>Owner</th><th>Sources</th><th>Rights</th><th>Trigger</th><th>Status</th><th>Approval</th><th>Last test</th><th>Last run</th></tr></thead><tbody>'+list.map(function(a){
+    var l=LIFE[a.lifecycle]||LIFE.draft;
+    return '<tr><td class="ag-id">'+esc(a.id)+'</td><td><b>'+esc(a.name)+'</b><div style="color:var(--g500)">'+esc(a.purpose)+'</div><div style="color:var(--g500)">Output: '+esc(a.output)+' \u00b7 max '+esc(a.steps)+' steps</div></td><td>'+esc(a.owner)+'</td><td>'+a.sources.map(function(x){return '<span class="tag" style="background:var(--g100);color:var(--g700);margin:0 4px 2px 0;display:inline-block">'+esc(x)+'</span>';}).join('')+'</td><td>'+esc(a.rights)+'</td><td>'+esc(a.trigger)+'</td><td><span class="tag" style="background:'+l[1]+';color:'+l[2]+'">'+l[0]+'</span><div style="color:var(--g500)">Level: '+esc(a.level)+'</div></td><td>'+esc(a.approval)+'</td><td>'+when(a.lastTest)+'</td><td>'+when(a.lastRun)+'</td></tr>';
+  }).join('')+'</tbody></table>';
+  if(window.__ctRegSet) window.__ctRegSet(list);
+}
+window.addEventListener('message',function(e){
+  if(e.source!==window.parent)return;
+  var d=e.data;
+  if(!d||d.type!=='ct:studio-agents'||!Array.isArray(d.agents))return;
+  var ok=d.agents.slice(0,20).filter(function(a){return a&&typeof a.id==='string'&&typeof a.name==='string'&&Array.isArray(a.sources);}).map(function(a){
+    function t(v,n){return String(v==null?'':v).slice(0,n);}
+    return {id:t(a.id,16),name:t(a.name,60),purpose:t(a.purpose,300),lifecycle:['production','pending_review','draft'].indexOf(a.lifecycle)>=0?a.lifecycle:'draft',level:t(a.level,40),owner:t(a.owner,80),sources:a.sources.slice(0,20).map(function(x){return t(x,60);}),rights:t(a.rights,80),trigger:t(a.trigger,80),steps:Number(a.steps)||0,output:t(a.output,40),lastTest:t(a.lastTest,40),lastRun:t(a.lastRun,40),approval:t(a.approval,80)};
+  });
+  ctStudio(ok);
+});
 function tick(){
   const el=document.getElementById('htime');
   if(el)el.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -6269,6 +6296,12 @@ wireExpandGrid('policies-mr', 3, 'rgba(161,0,255,0.18)');
 (function(){
   var reg=(CT.agents&&CT.agents.registry)||[];
   if(!reg.length) return;
+  var baseReg=reg.slice();
+  // Studio agents are added to the registry list (the overlay shows them with the others).
+  window.__ctRegSet=function(items){
+    reg.length=0; baseReg.forEach(function(a){reg.push(a);});
+    items.forEach(function(a){reg.push({id:a.id,name:a.name,family:a.name,type:'studio agent',lifecycle:a.lifecycle==='production'?'production':'pending_review',platform:'Agent Studio',model:'Assistant',owner:a.owner,ownerTeam:a.level,businessUnit:'Agent Studio',dataClass:'Internal',accessTier:/Read only/.test(a.rights)?'Read-only':'Write with approval',overprivileged:false,euRisk:'limited',euAssessment:'n/a',runsPerDay:0,costPerWeekEur:0,registeredOn:new Date().toISOString().slice(0,10)});});
+  };
   var ov=document.createElement('div'); ov.className='ag-ov';
   ov.innerHTML='<div class="ag-box" role="dialog" aria-modal="true"><div class="ag-hd"><h2 id="ag-title"></h2><span class="ag-sub" id="ag-sub"></span><button class="ag-x" id="ag-close">Close (Esc)</button></div><div class="ag-tools"><input id="ag-q" placeholder="Filter by name, owner, team, platform..." aria-label="Filter agents"><button id="ag-all"></button></div><div style="overflow-x:auto"><table class="ag-tbl"><thead><tr><th>ID</th><th>Agent</th><th>Type</th><th>Status</th><th>Platform &middot; model</th><th>Owner</th><th>Access</th><th>EU AI Act</th><th class="num">Runs/day</th><th class="num">&euro;/week</th></tr></thead><tbody id="ag-body"></tbody></table></div></div>';
   document.body.appendChild(ov);

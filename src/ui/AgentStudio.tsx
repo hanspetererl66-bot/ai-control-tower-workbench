@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { AGENT_GOV_KEY, OUTPUTS, TEMPLATES, agentPrompt, buildCatalog, newAgent, problems, simulateRun, type RunResult, type StudioAgent } from '../agent-studio';
-import { decide, levelOf, loadGov, pendingFor, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
+import { OUTPUTS, TEMPLATES, agentPrompt, buildCatalog, newAgent, problems, simulateRun, type RunResult, type StudioAgent } from '../agent-studio';
+import { decide, levelOf, pendingFor, requestPromotion, type LevelIndex, type SkillGov } from '../skill-governance';
+import type { Schedule } from '../schedules';
 import WerkbankMark from './WerkbankMark';
 
 export type AgentStudioProps = {
   agents: StudioAgent[];
+  /** Approval state (levels, requests) of the agents; kept by the app so the registry and the scheduler see it. */
+  gov: SkillGov;
+  onGov: (next: SkillGov) => void;
+  schedules: Schedule[];
   onAgents: (next: StudioAgent[]) => void;
   connectors: string[];
   spaces: Array<{ slug: string; title: string }>;
@@ -15,14 +20,13 @@ export type AgentStudioProps = {
 const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', web: 'Web' } as const;
 
 /** Agent Studio: define a simple agent by form, tick its sources, test it in a sandbox, then ask for approval to publish it. */
-export default function AgentStudio({ agents, onAgents, connectors, spaces, onRunInChat }: AgentStudioProps) {
+export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat }: AgentStudioProps) {
   const [selected, setSelected] = useState<string | null>(agents[0]?.id ?? null);
-  const [gov, setGov] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
+  const setGov = (fn: (g: SkillGov) => SkillGov) => onGov(fn(gov));
   const [run, setRun] = useState<RunResult | null>(null);
   const [shown, setShown] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const timer = useRef<number | undefined>(undefined);
-  useEffect(() => saveGov(gov, undefined, AGENT_GOV_KEY), [gov]);
   useEffect(() => () => window.clearInterval(timer.current), []);
 
   const catalog = buildCatalog(connectors, spaces);
@@ -49,7 +53,7 @@ export default function AgentStudio({ agents, onAgents, connectors, spaces, onRu
     let n = 1;
     timer.current = window.setInterval(() => {
       n += 1; setShown(n);
-      if (n >= result.steps.length) { window.clearInterval(timer.current); onAgents(agents.map((a) => (a.id === agent.id ? { ...a, tested: true } : a))); }
+      if (n >= result.steps.length) { window.clearInterval(timer.current); onAgents(agents.map((a) => (a.id === agent.id ? { ...a, tested: true, testedAt: Date.now() } : a))); }
     }, 550);
   };
 
@@ -184,6 +188,11 @@ export default function AgentStudio({ agents, onAgents, connectors, spaces, onRu
               )}
               {pendingFor(gov, agent.id) && <span>Waiting for approval (see the list on the left).</span>}
               {levelOf(gov, agent.id) === 2 && <span>Top level reached.</span>}
+              {agent.trigger.type !== 'manual' && (
+                <small>{levelOf(gov, agent.id) > 0
+                  ? `Scheduled: ${agent.trigger.type === 'daily' ? 'every day' : 'every Monday'} at ${agent.trigger.time}${schedules.find((x) => x.id === `agent-${agent.id}`)?.lastRun ? `, last run ${new Date(schedules.find((x) => x.id === `agent-${agent.id}`)!.lastRun!).toLocaleString()}` : ', has not run yet'} (while the app is open).`
+                  : 'The schedule starts when the agent is approved.'}</small>
+              )}
               {!agent.tested && <small>The test must run through first. Changing sources or instruction resets it.</small>}
               {confirmDelete
                 ? <><button className="ghost-btn ghost-btn-on" onClick={() => { onAgents(agents.filter((a) => a.id !== agent.id)); setSelected(null); setConfirmDelete(false); }}>Yes, delete</button><button className="ghost-btn" onClick={() => setConfirmDelete(false)}>Cancel</button></>
