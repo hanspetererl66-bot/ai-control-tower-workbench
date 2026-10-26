@@ -3730,3 +3730,29 @@ button {
 .mini-icon-danger:hover { color: #b91c1c; background: rgb(220 38 38 / 12%); }
 :root[data-theme="dark"] .mini-icon-danger:hover { color: #f87171; }
 @media (hover: none) { .mini-icon { opacity: 0.7; } }
+
+/* Spaces overview: domain tiles, then the Spaces of one domain */
+.sov { overflow-y: auto; }
+.sov-inner { max-width: 960px; margin: 0 auto; padding: 48px 32px 64px; }
+.sov-title { font-size: 26px; margin: 0 0 4px; color: var(--ink); }
+.sov-sub { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
+.sov-back { background: none; border: 0; padding: 0; margin-bottom: 16px; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer; }
+.sov-back:hover { text-decoration: underline; }
+.sov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.sov-tile, .sov-card, .sov-kid {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; font: inherit; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; cursor: pointer;
+}
+.sov-tile:hover, .sov-card:hover, .sov-kid:hover { border-color: var(--accent); }
+.sov-tile:focus-visible, .sov-card:focus-visible, .sov-kid:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sov-tile-name { font-size: 17px; font-weight: 600; }
+.sov-tile-count { font-size: 12px; color: var(--accent); font-weight: 600; }
+.sov-tile-list { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); margin-top: 4px; }
+.sov-more { font-style: italic; }
+.sov-spaces { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.sov-space { display: flex; flex-direction: column; gap: 6px; }
+.sov-card-title { font-weight: 600; font-size: 15px; }
+.sov-card-desc { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sov-card-meta { font-size: 12px; color: var(--muted); }
+.sov-kids { display: flex; flex-direction: column; gap: 6px; margin-left: 16px; border-left: 2px solid var(--line); padding-left: 10px; }
+.sov-kid { padding: 10px 14px; }

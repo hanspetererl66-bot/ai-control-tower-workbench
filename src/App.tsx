@@ -32,6 +32,7 @@ import SettingsDialog from './ui/SettingsDialog';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KINDS, type MemoryState } from './memory';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
+import SpacesOverview from './ui/SpacesOverview';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
@@ -134,6 +135,9 @@ export default function App() {
     saveSchedules(next, window.localStorage);
   }, []);
   const [view, setView] = useState<View>('chat');
+  /** The Spaces landing page (domain tiles) shows until a Space is opened. */
+  const [spacesHome, setSpacesHome] = useState(true);
+  const [overviewDomain, setOverviewDomain] = useState<string | null>(null);
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [rawSpaces, setSpaces] = useState<Space[]>([]);
@@ -284,6 +288,7 @@ export default function App() {
     const target = startSpace(prefs, spaces.map((x) => x.slug), last);
     if (target) {
       setSelectedSpace(target);
+      setSpacesHome(false);
       setView('spaces');
     }
   }, [spaces, prefs]);
@@ -712,6 +717,7 @@ export default function App() {
     speaker.current?.stop();
     setSelectedSpace(target.space);
     setSpaceTab(target.tab ? { tab: target.tab, nonce: Date.now(), space: target.space } : null);
+    setSpacesHome(false);
     setView('spaces');
     notify(`Öffne ${label}`);
   }
@@ -749,7 +755,7 @@ export default function App() {
     if (!target) { setToast('The Space for this hand-over is not installed.'); setTimeout(() => setToast(null), 6000); return; }
     handoffNonce.current += 1;
     setIncoming((current) => ({ ...current, [handoff.to]: [...(current[handoff.to] ?? []), { from: fromSlug, payload: handoff.payload, nonce: handoffNonce.current }].slice(-20) }));
-    if (handoff.open) { setSelectedSpace(handoff.to); setView('spaces'); }
+    if (handoff.open) { setSelectedSpace(handoff.to); setSpacesHome(false); setView('spaces'); }
     if (handoff.notice) { setToast(handoff.notice); setTimeout(() => setToast(null), 8000); }
   }
 
@@ -930,7 +936,7 @@ export default function App() {
         onAppearance={setAppearance}
         onView={(v) => {
           setView(v);
-          if (v === 'spaces') refreshSpaces();
+          if (v === 'spaces') { setSpacesHome(true); setOverviewDomain(null); refreshSpaces(); }
         }}
       />
 
@@ -950,7 +956,7 @@ export default function App() {
         <SpacesList
           spaces={orderedSpaces}
           selected={selectedSpace}
-          onSelect={setSelectedSpace}
+          onSelect={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           onReorder={(from, to, after) => changeSpaceOrder((current) => moveSpace(current, from, to, after))}
           onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
           pinned={prefs.pinnedSpaces}
@@ -998,6 +1004,17 @@ export default function App() {
           onBack={() => setView('chat')}
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
+        />
+      ) : view === 'spaces' && spacesHome ? (
+        <SpacesOverview
+          domains={domainNames(spaces, prefs).map((name) => ({
+            name,
+            spaces: orderedSpaces.filter((x) => effectiveDomain(x, spaces, prefs) === name),
+          }))}
+          active={overviewDomain}
+          onActive={setOverviewDomain}
+          onOpen={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
+          parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
         />
       ) : view === 'spaces' ? (
         space ? (
@@ -1072,6 +1089,7 @@ export default function App() {
                 meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
+                  setSpacesHome(false);
                   setView('spaces');
                 }}
                 onOpenView={(target) => {
@@ -1082,6 +1100,7 @@ export default function App() {
                   }
                   setSelectedSpace(target.space);
                   setSpaceTab({ tab: target.tab, nonce: Date.now() });
+                  setSpacesHome(false);
                   setView('spaces');
                 }}
               />
