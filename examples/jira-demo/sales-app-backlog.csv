@@ -1,0 +1,89 @@
+"Issue Id","Issue Type","Summary","Description","Priority","Labels","Story Points","Parent"
+"1","Epic","Account 360 and opportunity workspace","Sellers see everything about an account on one page: contacts, contracts, open opportunities, tickets and recent activity, so that no call starts without context.","High","sales-companion accounts","",""
+"2","Epic","Pipeline and forecast","A clear pipeline with stages, a forecast that managers trust and early warnings for deals that are stuck.","High","sales-companion pipeline","",""
+"3","Epic","Quotes and pricing guardrails","Create a quote in minutes with correct prices, discount rules and approvals, without leaving the app.","Medium","sales-companion quotes","",""
+"4","Epic","AI assistant and next best action","An assistant that proposes the next step per account, drafts follow-ups and answers questions about the pipeline, always naming its sources.","High","sales-companion ai","",""
+"5","Story","View all contacts and roles of an account","As a seller I want to see the contacts of an account with their role (sponsor, decision maker, user) so that I know whom to address.
+
+Acceptance criteria:
+* Contacts are listed with name, role, e-mail and last contact date.
+* A role can be set or changed in two clicks.
+* Accounts without a decision maker show a hint.","High","accounts","3","1"
+"6","Story","Show contracts and renewal dates on the account page","As a seller I want to see all contracts of an account with end date and decision date so that I never miss a renewal.
+
+Acceptance criteria:
+* Each contract shows product, annual value, end date and decision date.
+* Renewals with a decision date in the next 90 days are highlighted red, yellow or green.
+* A click opens the contract details.","High","accounts renewals","5","1"
+"7","Story","Show open tickets and escalations on the account page","As a seller I want to see open service tickets of the account so that I do not walk into a meeting unaware of an escalation.
+
+Acceptance criteria:
+* Open tickets show priority, age and owner.
+* Critical tickets appear at the top.
+* The list refreshes when the page is opened.","Medium","accounts service","3","1"
+"8","Story","Record a call or meeting note in under 30 seconds","As a seller I want to log a note by typing or dictating so that the account history stays complete without effort.
+
+Acceptance criteria:
+* A note can be saved with a single field and a date.
+* Voice input is available on mobile.
+* Notes appear in the account timeline immediately.","Medium","accounts activities","5","1"
+"9","Story","Kanban view of the pipeline by stage","As a seller I want to see my opportunities as cards in stages so that I can move them by drag and drop.
+
+Acceptance criteria:
+* Stages are Qualify, Propose, Negotiate, Close.
+* Moving a card changes the stage and stores who did it and when.
+* The column header shows count and total value.","High","pipeline","5","2"
+"10","Story","Weighted forecast for the quarter","As a sales manager I want a forecast weighted by stage probability so that I can commit a number I trust.
+
+Acceptance criteria:
+* The forecast shows commit, best case and pipeline for the current quarter.
+* The probability per stage can be changed by an admin.
+* Changes since last week are shown as a delta.","High","pipeline forecast","8","2"
+"11","Story","Flag deals without activity for 14 days","As a sales manager I want deals without activity to be flagged so that stuck deals get attention early.
+
+Acceptance criteria:
+* A deal without activity for 14 days gets a yellow flag, after 28 days a red flag.
+* The threshold can be changed per team.
+* The seller gets a notification once per flag.","Medium","pipeline alerts","3","2"
+"12","Story","Win/loss reason when closing a deal","As a sales manager I want a required reason when a deal is won or lost so that we learn from outcomes.
+
+Acceptance criteria:
+* A closing deal cannot be saved without a reason from a defined list.
+* A free text comment is optional.
+* Reasons are available in the pipeline report.","Low","pipeline reporting","2","2"
+"13","Story","Create a quote from a product catalogue","As a seller I want to build a quote from the product catalogue so that prices and terms are correct.
+
+Acceptance criteria:
+* Products are searchable and show list price and unit.
+* The quote shows subtotal, discount and total per year.
+* A quote can be saved as draft and exported as PDF.","Medium","quotes","8","3"
+"14","Story","Discount rules with approval above a threshold","As a sales manager I want discounts above a threshold to need my approval so that margins are protected.
+
+Acceptance criteria:
+* A discount above 15 percent sends an approval request to the regional lead.
+* The seller sees the status of the request.
+* The decision and reason are stored with the quote.","High","quotes governance","5","3"
+"15","Story","Reuse an earlier quote as a template","As a seller I want to copy a previous quote so that I do not start from zero for similar customers.
+
+Acceptance criteria:
+* A quote can be copied with all lines.
+* Prices are refreshed to the current price list on copy.
+* The copy links back to its source.","Low","quotes","2","3"
+"16","Story","Next best action card per account","As a seller I want the app to propose the one next step per account so that I start my day with a clear list.
+
+Acceptance criteria:
+* The card names the action, the reason and the data it used.
+* The seller can accept, snooze or reject the proposal.
+* Rejected proposals are not shown again for 14 days.","High","ai accounts","8","4"
+"17","Story","Draft a follow-up e-mail from the last meeting note","As a seller I want a draft follow-up e-mail based on my note so that I send it the same day.
+
+Acceptance criteria:
+* The draft is in the language of the customer.
+* Nothing is sent without the seller pressing send.
+* The draft lists which note it used.","Medium","ai activities","5","4"
+"18","Story","Ask questions about the pipeline in plain language","As a sales manager I want to ask 'which deals above 100k are at risk this quarter?' so that I get an answer without building a report.
+
+Acceptance criteria:
+* The answer names the deals and the source figures.
+* The assistant only reads data the manager is allowed to see.
+* Questions it cannot answer are said so, without guessing.","Medium","ai pipeline","8","4"
