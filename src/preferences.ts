@@ -89,6 +89,8 @@ export type Profile = { id: string; name: string; settings: Partial<ProfileSetti
 
 export type Preferences = ProfileSettings & {
   version: number;
+  /** Archived Spaces: hidden from the list and kept on this computer until restored or deleted. Not part of a profile. */
+  archivedSpaces: string[];
   starters: Starter[];
   setup: { model: string; connectors: string[] };
   storages: StorageLocation[];
@@ -111,6 +113,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   reduceMotion: false,
   startView: 'chat',
   pinnedSpaces: [],
+  archivedSpaces: [],
   domains: [],
   spaceDomains: {},
   spaceParents: {},
@@ -259,6 +262,7 @@ export function sanitizePreferences(value: unknown): Preferences {
   return {
     ...base,
     version: PREFERENCES_VERSION,
+    archivedSpaces: Array.isArray(v.archivedSpaces) ? list(v.archivedSpaces, (s) => SLUG.test(s), 200) : [],
     starters,
     setup: { model: text(setup.model, 80), connectors: list(setup.connectors, (s) => s.length > 0 && s.length <= 60, 12) },
     storages,
@@ -509,11 +513,43 @@ export function forgetSpace<T extends Preferences>(prefs: T, slug: string, space
   return {
     ...prefs,
     pinnedSpaces: prefs.pinnedSpaces.filter((x) => x !== slug),
+    archivedSpaces: prefs.archivedSpaces.filter((x) => x !== slug),
     spaceDomains: without(prefs.spaceDomains),
     spaceTitles: without(prefs.spaceTitles),
     spaceParents,
     startView: prefs.startView === `space:${slug}` ? 'chat' : prefs.startView,
   };
+}
+
+// ---------- archive ----------
+
+/**
+ * Archive a Space: it leaves the list (and the pins) but its folder stays on this computer.
+ * Its subspaces stay visible and move to the top level, as when a Space is deleted.
+ */
+export function archiveSpace<T extends Preferences>(prefs: T, slug: string, spaces: DomainSpace[]): T {
+  if (prefs.archivedSpaces.includes(slug)) return prefs;
+  const spaceParents = { ...prefs.spaceParents };
+  delete spaceParents[slug];
+  for (const space of spaces) if (space.slug !== slug && rawParent(space, prefs) === slug) spaceParents[space.slug] = '';
+  return {
+    ...prefs,
+    archivedSpaces: [...prefs.archivedSpaces, slug].slice(-200),
+    pinnedSpaces: prefs.pinnedSpaces.filter((x) => x !== slug),
+    spaceParents,
+  };
+}
+
+export function restoreSpace<T extends Preferences>(prefs: T, slug: string): T {
+  return { ...prefs, archivedSpaces: prefs.archivedSpaces.filter((x) => x !== slug) };
+}
+
+/** The Spaces that are not archived, and the ones that are (in the order they were archived, newest first). */
+export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pick<Preferences, 'archivedSpaces'>): { active: S[]; archived: S[] } {
+  const set = new Set(prefs.archivedSpaces);
+  const active = spaces.filter((x) => !set.has(x.slug));
+  const archived = [...prefs.archivedSpaces].reverse().map((slug) => spaces.find((x) => x.slug === slug)).filter((x): x is S => Boolean(x));
+  return { active, archived };
 }
 
 // ---------- back to the original ----------
@@ -533,7 +569,8 @@ export function isOriginalLook(prefs: Preferences): boolean {
 
 /** Everything back to the original; saved profiles and the Supabase key stay. */
 export function resetAll(prefs: Preferences): Preferences {
-  return { ...DEFAULT_PREFERENCES, profiles: prefs.profiles, sync: prefs.sync };
+  // Archived Spaces stay archived: that is how the person sorted their work, not a look or an assistant setting.
+  return { ...DEFAULT_PREFERENCES, profiles: prefs.profiles, sync: prefs.sync, archivedSpaces: prefs.archivedSpaces };
 }
 
 export function isOriginal(prefs: Preferences): boolean {
