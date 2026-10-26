@@ -13,6 +13,27 @@ export default function SchedulePopover({
   draftPrompt: string;
   onClose: () => void;
 }) {
+  return (
+    <div className="schedule-pop" role="dialog" aria-label="Recurring briefing">
+      <div className="schedule-head">
+        <b>Recurring briefing</b>
+        <button className="schedule-x" onClick={onClose} aria-label="Close">×</button>
+      </div>
+      <ScheduleEditor schedules={schedules} onChange={onChange} draftPrompt={draftPrompt} />
+    </div>
+  );
+}
+
+/** The form and the list of briefings, shared by the clock popover and the side panel. */
+export function ScheduleEditor({
+  schedules,
+  onChange,
+  draftPrompt,
+}: {
+  schedules: Schedule[];
+  onChange: (next: Schedule[]) => void;
+  draftPrompt: string;
+}) {
   const [prompt, setPrompt] = useState(draftPrompt);
   const [time, setTime] = useState('08:00');
   const [repeat, setRepeat] = useState<'daily' | 'weekly'>('daily');
@@ -27,11 +48,7 @@ export default function SchedulePopover({
   }
 
   return (
-    <div className="schedule-pop" role="dialog" aria-label="Recurring briefing">
-      <div className="schedule-head">
-        <b>Recurring briefing</b>
-        <button className="schedule-x" onClick={onClose} aria-label="Close">×</button>
-      </div>
+    <div className="schedule-editor">
       <label className="schedule-field">
         <span>Question</span>
         <textarea value={prompt} maxLength={600} rows={2} placeholder="For example: Which renewals have an escalation or an open ticket?" onChange={(e) => setPrompt(e.target.value)} />

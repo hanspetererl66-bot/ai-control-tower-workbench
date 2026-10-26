@@ -1,5 +1,5 @@
 import type { Message } from './ui/Chat';
-import type { GeneratedFile } from './ui/DetailsPanel';
+import type { GeneratedFile } from './ui/SidePanel';
 
 export const CONVERSATION_STORAGE_KEY = 'werkbank.conversations.v1';
 
