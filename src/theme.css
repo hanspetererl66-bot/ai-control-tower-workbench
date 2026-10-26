@@ -20,11 +20,66 @@
 }
 
 .dialog.settings-dialog {
-  width: min(620px, calc(100vw - 40px));
-  max-width: 620px;
+  /* Roomy by default and resizable with the mouse (drag the lower right corner). */
+  width: min(880px, calc(100vw - 40px));
+  height: min(760px, calc(100vh - 40px));
+  min-width: min(520px, calc(100vw - 40px));
+  min-height: min(420px, calc(100vh - 40px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
   padding: 0;
   overflow: hidden;
   border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+}
+
+.dialog.settings-dialog-large {
+  width: calc(100vw - 40px) !important;
+  height: calc(100vh - 40px) !important;
+}
+
+.settings-head,
+.prefs-tabs {
+  flex: none;
+}
+
+.settings-size {
+  flex: none;
+  margin-left: auto;
+}
+
+.settings-intro {
+  margin: 14px 22px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--wash, var(--panel));
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.settings-intro p {
+  margin: 2px 0;
+}
+
+.settings-intro b {
+  color: var(--ink);
+}
+
+.settings-effect {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  border-left: 2px solid var(--line);
+  padding-left: 9px;
+}
+
+.settings-effect b {
+  color: var(--ink);
 }
 
 .settings-head {
@@ -3266,7 +3321,8 @@ button {
   font-weight: 600;
 }
 .prefs-body {
-  max-height: min(62vh, 560px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 .prefs-row {
@@ -3764,3 +3820,5 @@ button {
 .side-panel .prefs-row input[type='text'] { width: 100%; }
 .side-body > .prefs-note { padding: 0 16px; }
 .side-panel .details-count { background: var(--line); color: var(--muted); margin-left: 6px; }
+
+:root[data-theme="dark"] .settings-intro { background: #171a21; border-color: #2b2f3a; }

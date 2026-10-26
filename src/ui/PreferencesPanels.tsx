@@ -5,6 +5,7 @@ import {
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
+import { sectionEffect } from '../settings-help';
 import { SPACE_SCALES } from '../space-scale';
 import { STARTER_PROMPTS } from '../starter-prompts';
 
@@ -14,12 +15,19 @@ export type SkillRef = { name: string; description: string };
 
 type Common = { prefs: Preferences; update: PrefsUpdate };
 
+/** The "what does this do" line under a section hint, from the shared help text. */
+export function SectionEffect({ title }: { title: string }) {
+  const effect = sectionEffect(title);
+  return effect ? <p className="settings-effect"><b>What it does:</b> {effect}</p> : null;
+}
+
 export function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
     <div className="settings-section">
       <div className="settings-section-copy">
         <h4>{title}</h4>
         {hint && <p>{hint}</p>}
+        <SectionEffect title={title} />
       </div>
       {children}
     </div>
