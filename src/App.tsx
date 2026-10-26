@@ -29,7 +29,10 @@ import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
-import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KINDS, type MemoryState } from './memory';
+import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
+import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
+import { MEMORY_GOV_KEY, loadGov, levelOf as govLevelOf } from './skill-governance';
+import ChatContextBar from './ui/ChatContextBar';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -172,6 +175,13 @@ export default function App() {
   const [activeGroup, setActiveGroup] = useState<GroupDetail | null>(null);
   // Personal memory: notes kept on this computer; the assistant may suggest an entry, the person decides.
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
+  const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
+  const changePersonas = useCallback((next: PersonaState) => { setPersonasState(next); savePersonas(window.localStorage, next); }, []);
+  const [ownCommands, setOwnCommandsState] = useState<Command[]>(() => loadCommands(window.localStorage));
+  const changeCommands = useCallback((next: Command[]) => { setOwnCommandsState(next); saveCommands(window.localStorage, next); }, []);
+  /** The Space whose memory entries apply to this conversation (set when a question is asked from a Space). */
+  const [contextSpace, setContextSpace] = useState('');
+  const [dismissedIdeas, setDismissedIdeas] = useState<string[]>([]);
   const [memorySuggestion, setMemorySuggestion] = useState<ReturnType<typeof suggestMemory>>(null);
   const changeMemory = useCallback((next: MemoryState) => { setMemoryState(next); saveMemory(window.localStorage, next); }, []);
   const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
@@ -495,15 +505,26 @@ export default function App() {
     setAgentEpoch((current) => current + 1);
   }
 
-  async function send(text: string, attachments: ChatAttachment[] = []) {
+  /** Memory as the assistant gets it: entries for every conversation plus those tied to the Space in context, with agreed levels marked. */
+  function currentMemoryNote(space = contextSpace) {
+    const g = loadGov(undefined, MEMORY_GOV_KEY);
+    const names = loadGov().levels as string[];
+    return memoryNote(memory, space, (id) => govLevelOf(g, id), names);
+  }
+  function openApprovals() {
+    return loadGov().requests.filter((r) => r.status === 'pending').length + loadGov(undefined, MEMORY_GOV_KEY).requests.filter((r) => r.status === 'pending').length;
+  }
+
+  async function send(typed: string, attachments: ChatAttachment[] = []) {
     if (!agent || busy) return;
+    const text = expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
     cancelledByUser.current = false;
     const startedAt = Date.now();
     const previousSpaces = new Map(spaces.map((space) => [space.slug, space.updatedAt]));
     if (messages.length === 0) {
-      setTitle((text || attachments[0]?.name || 'New Conversation').slice(0, 48));
+      setTitle((typed || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
-    setMemorySuggestion(suggestMemory(text, memory));
+    setMemorySuggestion(suggestMemory(typed, memory));
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -512,7 +533,7 @@ export default function App() {
       ...prev,
       {
         role: 'user',
-        text,
+        text: typed,
         tools: [],
         attachments: attachments.map(({ name, kind, mimeType }) => ({ name, kind, mimeType })),
       },
@@ -536,7 +557,7 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), memoryNote(memory), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, assistantNote(prefs), personaNote(personas), currentMemoryNote(), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -698,13 +719,14 @@ export default function App() {
   }
 
   /** "Joule fragen" in a Space: switch to the chat and send the question, unless the agent is busy or missing. */
-  function askFromSpace(prompt: string) {
+  function askFromSpace(prompt: string, spaceSlug?: string) {
     if (!agent || busy) {
       setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.');
       setTimeout(() => setToast(null), 5000);
       return;
     }
     setView('chat');
+    if (spaceSlug) setContextSpace(spaceSlug);
     void send(prompt);
   }
 
@@ -815,6 +837,7 @@ export default function App() {
   const empty = messages.length === 0;
   const composer = (
     <Composer
+      commands={allCommands(ownCommands)}
       onSend={send}
       agent={agent}
       busy={busy}
@@ -838,6 +861,26 @@ export default function App() {
       schedules={schedules}
       onSchedulesChange={updateSchedules}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
+    />
+  );
+  const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
+  const contextBar = (
+    <ChatContextBar
+      memoryEnabled={memory.enabled}
+      memoryCount={activeEntries(memory, contextSpace).length}
+      onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
+      groupName={activeGroup?.group.name ?? null}
+      onGroupOff={() => chooseActiveGroup(null)}
+      personas={allPersonas(personas)}
+      persona={activePersona(personas)?.id ?? ''}
+      onPersona={(id) => changePersonas({ ...personas, active: id })}
+      spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
+      contextSpace={contextSpace}
+      onContextSpace={setContextSpace}
+      ideas={ideas}
+      onRemember={(idea) => { const r = addMemory(memory, idea.kind, idea.text); if (!r.error) changeMemory(r.state); else setDismissedIdeas((d) => [...d, idea.text]); }}
+      onDismissIdea={(idea) => setDismissedIdeas((d) => [...d, idea.text])}
+      onOpenSettings={() => setSettingsOpen(true)}
     />
   );
   const suggestionBar = memorySuggestion && (
@@ -876,6 +919,8 @@ export default function App() {
 
   function newConversation() {
     if (busy) return;
+    setContextSpace('');
+    setDismissedIdeas([]);
     const conversation = createConversation();
     setConversationState((state) => ({
       selectedId: conversation.id,
@@ -1031,7 +1076,7 @@ export default function App() {
             theme={resolvedTheme}
             prefs={prefs}
             bridgeEnabled={space.slug === SUB4ME_SPACE}
-            onAsk={askFromSpace}
+            onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}
@@ -1080,6 +1125,7 @@ export default function App() {
                 to get things done?
               </h2>
               {suggestionBar}
+              {contextBar}
               {composer}
               {disclaimer}
             </div>
@@ -1111,6 +1157,7 @@ export default function App() {
               />
               <div className="composer-dock">
                 {suggestionBar}
+                {contextBar}
                 {composer}
                 {disclaimer}
               </div>
@@ -1154,6 +1201,7 @@ export default function App() {
             onSyncSave: () => void syncSave(),
             onSyncLoad: () => void syncLoad(),
             memory: { memory, onChange: changeMemory },
+            chat: { personas, onPersonas: changePersonas, commands: ownCommands, onCommands: changeCommands, schedules, onSchedules: updateSchedules },
             groups: {
               call: groupCall,
               mode: groupMode,

@@ -23,6 +23,7 @@ import SchedulePopover from './SchedulePopover';
 import type { Schedule } from '../schedules';
 import BriefingCards from './BriefingCards';
 import { PRODUCT_NAME } from '../product';
+import type { Command } from '../chat-context';
 import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
@@ -61,11 +62,14 @@ type Props = {
   /** Briefing cards and groups under the chat that are switched off. */
   hiddenBriefing?: string[];
   /** Recurring briefings (clock button). */
+  /** Slash commands (own and built-in): typing / lists them next to the skills. */
+  commands?: Command[];
   schedules?: Schedule[];
   onSchedulesChange?: (next: Schedule[]) => void;
 };
 
 export default function Composer({
+  commands = [],
   onSend,
   agent,
   busy,
@@ -298,6 +302,10 @@ export default function Composer({
     ? skills.filter((s) => s.name.toLowerCase().includes(slash[1].toLowerCase())).slice(0, 8)
     : [];
 
+  const cmdMatches = slash ? commands.filter((c) => c.name.includes(slash[1].toLowerCase())).slice(0, 8) : [];
+  const exactCommand = slash ? commands.some((c) => c.name === slash[1].toLowerCase()) : false;
+  const pickCommand = (name: string) => setText(`/${name} `);
+
   function pickSkill(name: string) {
     setText(`Use the ${name} skill to `);
   }
@@ -381,8 +389,14 @@ export default function Composer({
 
   return (
     <div className="composer">
-      {matches.length > 0 && (
+      {(matches.length > 0 || cmdMatches.length > 0) && (
         <div className="picker">
+          {cmdMatches.map((c) => (
+            <button key={`cmd-${c.name}`} className="picker-item" onClick={() => pickCommand(c.name)}>
+              <span className="picker-name">/{c.name}</span>
+              <span className="picker-desc">Command · {c.prompt.replace(/\{[a-z]+\}/g, '').replace(/\s+/g, ' ').trim().slice(0, 100)}</span>
+            </button>
+          ))}
           {matches.map((s) => (
             <button key={s.name} className="picker-item" onClick={() => pickSkill(s.name)}>
               <span className="picker-name"><SkillIcon name={s.name} />/{s.name}</span>
@@ -443,7 +457,9 @@ export default function Composer({
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             // While the skill picker is open, Enter takes the top match.
-            if (matches.length > 0) pickSkill(matches[0].name);
+            if (exactCommand) submit();
+            else if (cmdMatches.length > 0) pickCommand(cmdMatches[0].name);
+            else if (matches.length > 0) pickSkill(matches[0].name);
             else submit();
           }
         }}

@@ -3786,3 +3786,18 @@ button {
 .sgov-badge-ok { color: var(--ink); }
 .sgov-badge-no { color: var(--error, var(--ink)); border-color: var(--error, var(--line)); }
 @media (max-width: 760px) { .sgov-fields { grid-template-columns: minmax(0, 1fr); } }
+
+/* Context row above the message box */
+.ctxbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; position: relative; margin: 0 0 6px; font-size: 12px; }
+.ctx-chip { font: inherit; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; }
+.ctx-chip.on { color: var(--ink); border-color: var(--accent); }
+.ctx-hot { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.ctx-select select { font: inherit; font-size: 12px; border: 0; background: transparent; color: inherit; cursor: pointer; max-width: 140px; }
+.ctx-ideas { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 5; width: min(520px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; color: var(--ink); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
+.ctx-idea { display: flex; gap: 8px; align-items: center; }
+.ctx-idea span { flex: 1; font-size: 13px; }
+.mem-badge { margin-left: 6px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.mem-badge-on { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.prefs-tabs { flex-wrap: wrap; }
+.prefs-list small { white-space: normal; }
+.prefs-list li > div:last-child > small:only-child { white-space: nowrap; }

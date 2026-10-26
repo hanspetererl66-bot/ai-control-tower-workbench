@@ -75,10 +75,12 @@ export function demote(gov: SkillGov, skill: string): SkillGov {
   return { ...gov, skills: { ...gov.skills, [skill]: (from - 1) as LevelIndex } };
 }
 
-export function loadGov(storage?: Pick<Storage, 'getItem'>): SkillGov {
+export const MEMORY_GOV_KEY = 'werkbank.memoryGovernance';
+
+export function loadGov(storage?: Pick<Storage, 'getItem'>, key: string = GOV_KEY): SkillGov {
   const base = defaultGov();
   try {
-    const raw = (storage ?? window.localStorage).getItem(GOV_KEY);
+    const raw = (storage ?? window.localStorage).getItem(key);
     if (!raw) return base;
     const p = JSON.parse(raw);
     const levels = Array.isArray(p.levels) && p.levels.length === 3 && p.levels.every((n: unknown) => typeof n === 'string' && n.trim())
@@ -92,6 +94,6 @@ export function loadGov(storage?: Pick<Storage, 'getItem'>): SkillGov {
   }
 }
 
-export function saveGov(gov: SkillGov, storage?: Pick<Storage, 'setItem'>): void {
-  try { (storage ?? window.localStorage).setItem(GOV_KEY, JSON.stringify(gov)); } catch { /* ignore */ }
+export function saveGov(gov: SkillGov, storage?: Pick<Storage, 'setItem'>, key: string = GOV_KEY): void {
+  try { (storage ?? window.localStorage).setItem(key, JSON.stringify(gov)); } catch { /* ignore */ }
 }
