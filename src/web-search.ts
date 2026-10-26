@@ -17,7 +17,7 @@ export function isWebTool(call: { toolName?: string; title?: string }): boolean 
   return WEB_TOOL.test(call.toolName ?? '') || WEB_TOOL.test(call.title ?? '');
 }
 
-/** Model providers shown in the Model menu. Only OpenRouter is wired up in this prototype. */
+/** Model providers shown in the Model menu. Only OpenRouter is wired up in this design study. */
 export const MODEL_PROVIDERS = [
   { id: 'openrouter', label: 'OpenRouter', available: true },
   { id: 'sap-genai-hub', label: 'SAP Generative AI Hub', available: false },

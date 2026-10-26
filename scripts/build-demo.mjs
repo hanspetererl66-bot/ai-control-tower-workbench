@@ -30,7 +30,7 @@ export function galleryHtml(spaces) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Joule Work X Demo</title>
+<title>Joule Work X - Next Gen Design Study</title>
 <style>
 :root{--bg:#f5f6f7;--panel:#fbfbfc;--ink:#1d2d3e;--muted:#5b6b7b;--line:#d9dde1;--accent:#6a1bb1;--accent-dim:#efe3fa}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1115;--panel:#171a20;--ink:#e8eaed;--muted:#9aa4af;--line:#2a2f38;--accent:#c08af0;--accent-dim:#2b1d3d}}
@@ -47,7 +47,7 @@ iframe{width:100%;height:100%;border:0;background:var(--bg)}
 </style>
 </head>
 <body>
-<header><b>Joule Work X Demo</b> · Beispieldaten, nur lesend. Chat, Joule und Connectors laufen in der Desktop-App.</header>
+<header><b>Joule Work X - Next Gen Design Study</b> · Beispieldaten, nur lesend. Chat, Joule und Connectors laufen in der Desktop-App.</header>
 <nav aria-label="Spaces">
       ${items}
 </nav>
@@ -63,7 +63,7 @@ iframe{width:100%;height:100%;border:0;background:var(--bg)}
     links.forEach(function (a) { a.removeAttribute('aria-current'); });
     link.setAttribute('aria-current', 'page');
     frame.src = 'spaces/' + link.dataset.slug + '/index.html';
-    document.title = link.textContent + ' · Joule Work X Demo';
+    document.title = link.textContent + ' · Joule Work X - Next Gen Design Study';
   }
   window.addEventListener('hashchange', show);
   show();

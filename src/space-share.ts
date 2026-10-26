@@ -25,8 +25,8 @@ export function emailDraftUrl(title: string, fileName: string): string {
   const body = [
     `Hello,`,
     ``,
-    `attached is the Space "${title}" for Joule Work X (file ${fileName}).`,
-    `To use it: open Joule Work X, go to Spaces, click "Import Space" and choose the file.`,
+    `attached is the Space "${title}" for Joule Work X - Next Gen Design Study (file ${fileName}).`,
+    `To use it: open Joule Work X - Next Gen Design Study, go to Spaces, click "Import Space" and choose the file.`,
     ``,
   ].join('\n');
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

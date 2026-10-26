@@ -7,7 +7,7 @@ a project-local [Goose](https://block.github.io/goose/) process through the Agen
 Client Protocol; connector configuration and generated work stay in the local project
 workspace.
 
-> **Not affiliated with SAP.** "Joule" is the name of an SAP product. This is an independent prototype in a similar style; it is not
+> **Not affiliated with SAP.** "Joule" is the name of an SAP product. This is an independent design study in a similar style; it is not
 > SAP software and is not endorsed by SAP. Internal identifiers (the `werkbank://` link scheme, storage keys, package name) keep
 > the original name so existing links and data keep working.
 
@@ -294,7 +294,7 @@ governance, gaps, hints). Capabilities are defined in `examples/skill-marketplac
 to belong to exactly one). Collections are the existing playbooks; each shows per step why, input and output, how many skills are available
 (the Sample switch changes that), summed time saved, highest AI Act risk and lowest maturity. The skill detail page starts with a
 "Trust & fit" strip (maturity, AI Act, DPIA, allowed data, models, region, next review, needs, collections). Sandbox runs, signatures and
-install buttons are not part of this prototype. After a pull run `npm run sync:skill-marketplace` and `npm run install:skill-marketplace`.
+install buttons are not part of this design study. After a pull run `npm run sync:skill-marketplace` and `npm run install:skill-marketplace`.
 
 ### Asking the chat about the Sub4Me Space
 
