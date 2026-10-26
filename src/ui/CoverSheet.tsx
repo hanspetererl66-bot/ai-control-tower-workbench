@@ -14,12 +14,12 @@ export default function CoverSheet({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="cover" role="dialog" aria-modal="true" aria-label={`${PRODUCT_NAME} prototype`} onClick={onClose}>
+    <div className="cover" role="dialog" aria-modal="true" aria-label={`${PRODUCT_NAME} design study`} onClick={onClose}>
       <div className="cover-body" onClick={(event) => event.stopPropagation()}>
         <CoverGrid />
         <WerkbankMark size={60} className="cover-mark" />
         <h1 className="cover-title">{PRODUCT_NAME}</h1>
-        <p className="cover-kind">Prototype</p>
+        <p className="cover-kind">Design Study</p>
         <p className="cover-by">Built by Accenture</p>
         <p className="cover-note">Demo only · illustrative sample data</p>
         <button className="cover-close" onClick={onClose}>

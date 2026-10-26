@@ -1,5 +1,5 @@
 import { Fragment, useState, type DragEvent, type KeyboardEvent } from 'react';
-import { PRODUCT_NAME } from '../product';
+import { PRODUCT_TITLE } from '../product';
 import { relativeTime, type Space } from '../spaces';
 
 type Props = {
@@ -264,7 +264,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
 
       {spaces.length === 0 ? (
         <p className="list-empty">
-          No Spaces yet. Ask {PRODUCT_NAME} to create a dashboard from grounded data.
+          No Spaces yet. Ask {PRODUCT_TITLE} to create a dashboard from grounded data.
         </p>
       ) : (
         grouped ? (

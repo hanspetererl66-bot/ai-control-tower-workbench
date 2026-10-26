@@ -22,7 +22,7 @@ import StarterPrompts from './StarterPrompts';
 import SchedulePopover from './SchedulePopover';
 import type { Schedule } from '../schedules';
 import BriefingCards from './BriefingCards';
-import { PRODUCT_NAME } from '../product';
+import { PRODUCT_TITLE } from '../product';
 import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
@@ -433,7 +433,7 @@ export default function Composer({
       )}
       <textarea
         className="composer-input"
-        placeholder={agent ? `Message ${PRODUCT_NAME}…` : 'Connecting…'}
+        placeholder={agent ? `Message ${PRODUCT_TITLE}…` : 'Connecting…'}
         rows={1}
         autoFocus
         value={text}
@@ -526,7 +526,7 @@ export default function Composer({
                             role="menuitemradio"
                             aria-checked={provider.available}
                             aria-disabled={!provider.available}
-                            title={provider.available ? 'Active provider' : 'Not connected in this prototype'}
+                            title={provider.available ? 'Active provider' : 'Not connected in this design study'}
                           >
                             <span className="integration-menu-label">
                               {provider.label}

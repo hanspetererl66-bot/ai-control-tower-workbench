@@ -43,7 +43,7 @@ import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import type { Handoff, IncomingHandoff } from './space-handoff';
 import WerkbankMark from './ui/WerkbankMark';
-import { PRODUCT_NAME } from './product';
+import { PRODUCT_TITLE } from './product';
 import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
 import { writeSpaceScale, type SpaceScale } from './space-scale';
@@ -840,7 +840,7 @@ export default function App() {
   );
   const disclaimer = (
     <p className="disclaimer">
-      {PRODUCT_NAME} uses AI. Verify results. <a href="#">AI Guidance</a>
+      {PRODUCT_TITLE} uses AI. Verify results. <a href="#">AI Guidance</a>
     </p>
   );
   const space = spaces.find((s) => s.slug === selectedSpace) ?? null;

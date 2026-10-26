@@ -43,7 +43,7 @@ export default function Rail({
 
   return (
     <nav className="rail">
-      <button className="rail-logo" onClick={onOpenCover} title="About this prototype" aria-label="About this prototype">
+      <button className="rail-logo" onClick={onOpenCover} title="About this design study" aria-label="About this design study">
         <WerkbankMark size={24} />
       </button>
 
@@ -114,7 +114,7 @@ export default function Rail({
                 onOpenCover();
               }}
             >
-              About this prototype
+              About this design study
             </button>
             <button
               className="rail-pop-item"
