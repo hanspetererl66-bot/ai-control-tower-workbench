@@ -7,7 +7,8 @@ import { speechSupported, type VoiceSettings } from '../voice';
 import type { Preferences } from '../preferences';
 import MemoryPanel, { type MemoryPanelProps } from './MemoryPanel';
 import GroupsPanel, { type GroupsPanelProps } from './GroupsPanel';
-import { AssistantPanel, LookPanel, ProfilesPanel, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
+import { TAB_HELP } from '../settings-help';
+import { AssistantPanel, LookPanel, ProfilesPanel, SectionEffect, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
 
 const TABS = [
   { id: 'profiles', title: 'Profiles' },
@@ -69,6 +70,7 @@ export default function SettingsDialog({
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<TabId>(personalize ? 'profiles' : 'general');
+  const [large, setLarge] = useState(false);
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -86,7 +88,7 @@ export default function SettingsDialog({
       if (event.target === event.currentTarget) onClose();
     }}>
       <section
-        className="dialog settings-dialog"
+        className={`dialog settings-dialog ${large ? 'settings-dialog-large' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
@@ -96,6 +98,9 @@ export default function SettingsDialog({
             <h3 id="settings-title" className="dialog-title">Settings</h3>
             <p className="dialog-body">Personalise how {PRODUCT_TITLE} looks and works.</p>
           </div>
+          <button className="icon-btn settings-size" onClick={() => setLarge((v) => !v)} aria-pressed={large} title={large ? 'Smaller window' : 'Larger window'} aria-label={large ? 'Make the settings window smaller' : 'Make the settings window larger'}>
+            {large ? '⤡' : '⤢'}
+          </button>
           <button className="icon-btn settings-close" onClick={onClose} aria-label="Close settings">
             <CloseIcon />
           </button>
@@ -109,6 +114,7 @@ export default function SettingsDialog({
           </div>
         )}
         <div className="prefs-body">
+        {personalize && <TabIntro tab={tab} />}
         {personalize && tab === 'profiles' && <ProfilesPanel prefs={personalize.prefs} update={personalize.update} />}
         {personalize && tab === 'look' && <LookPanel prefs={personalize.prefs} update={personalize.update} />}
         {personalize && tab === 'work' && <WorkPanel prefs={personalize.prefs} update={personalize.update} spaces={personalize.spaces} skills={personalize.skills} connectors={personalize.connectors} />}
@@ -122,6 +128,7 @@ export default function SettingsDialog({
           <div className="settings-section-copy">
             <h4>Appearance</h4>
             <p>{activeAppearanceCopy}</p>
+            <SectionEffect title="Appearance" />
           </div>
           <div className="appearance-options" role="radiogroup" aria-label="Appearance">
             {OPTIONS.map((option) => (
@@ -149,6 +156,7 @@ export default function SettingsDialog({
             <div className="settings-section-copy">
               <h4>Text size in Spaces</h4>
               <p>Scales text and layout of every Space, including ones the agent builds. Default is 115%.</p>
+              <SectionEffect title="Text size in Spaces" />
             </div>
             <div className="scale-options" role="radiogroup" aria-label="Text size in Spaces">
               {SPACE_SCALES.map((scale) => (
@@ -170,6 +178,18 @@ export default function SettingsDialog({
         )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function TabIntro({ tab }: { tab: TabId }) {
+  const help = TAB_HELP[tab];
+  if (!help) return null;
+  return (
+    <div className="settings-intro" role="note">
+      <p><b>What this is:</b> {help.what}</p>
+      <p><b>Where it applies:</b> {help.where}</p>
+      <p><b>What changes:</b> {help.effect}</p>
     </div>
   );
 }
@@ -198,6 +218,7 @@ function VoiceSection({
           Eingabefeld ein. Gespeichert wird nur Text, kein Audio. Der Key liegt verschlüsselt im Schlüsselbund
           dieses Rechners.
         </p>
+        <SectionEffect title="Sprache" />
       </div>
       <div className="voice-row">
         <input
