@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -207,7 +208,13 @@ function skillsApi(): Plugin {
   };
 }
 
+/** Short git commit of this checkout, shown on the cover sheet so it is obvious which version is running. */
+function buildStamp(): string {
+  try { return execSync('git rev-parse --short HEAD', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return 'unknown'; }
+}
+
 export default defineConfig({
+  define: { __BUILD_STAMP__: JSON.stringify(buildStamp()) },
   plugins: [react(), spacesApi(), skillsApi()],
   server: { port: 5273, strictPort: true },
   build: { outDir: 'dist/renderer', emptyOutDir: true },

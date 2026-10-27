@@ -21,6 +21,7 @@ export default function CoverSheet({ onClose }: { onClose: () => void }) {
         <h1 className="cover-title">{PRODUCT_TITLE}</h1>
         <p className="cover-by">Built by Accenture</p>
         <p className="cover-note">Demo only · illustrative sample data</p>
+        <p className="cover-note" title="Git commit of the running version">Build {typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : 'dev'}</p>
         <button className="cover-close" onClick={onClose}>
           Close
         </button>
