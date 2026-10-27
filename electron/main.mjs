@@ -1193,7 +1193,8 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', (_e, argv) => {
     const link = argv.find((a) => a.startsWith('werkbank://'));
     if (link) handleDeepLink(link);
-    if (mainWindow) {
+    // The window may already be closed (macOS keeps the app alive without one).
+    if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
