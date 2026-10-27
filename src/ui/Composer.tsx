@@ -35,6 +35,10 @@ type Props = {
    *  empty state, so local mode state would silently reset to the default. */
   mode: string;
   onModeChange: (id: string) => void;
+  /** Working profiles (harness): the choice in the chat bar. */
+  harnesses?: Array<{ id: string; name: string; description: string }>;
+  harnessId?: string;
+  onHarnessChange?: (id: string) => void;
   /** Web Search switch of the current conversation. */
   webSearch?: boolean;
   onWebSearchChange?: (enabled: boolean) => void;
@@ -72,6 +76,9 @@ export default function Composer({
   workdir,
   mode,
   onModeChange,
+  harnesses,
+  harnessId,
+  onHarnessChange,
   webSearch = true,
   onWebSearchChange,
   onCancel,
@@ -633,6 +640,19 @@ export default function Composer({
             </div>
           )}
         </div>
+
+        {harnesses && harnesses.length > 1 && onHarnessChange && (
+          <label className="chip chip-select" title={harnesses.find((h) => h.id === harnessId)?.description || 'Working profile'}>
+            <SlidersIcon />
+            <select aria-label="Working profile" value={harnessId} onChange={(e) => onHarnessChange(e.target.value)} disabled={busy}>
+              {harnesses.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <label className="chip chip-select" title="Approval mode">
           <SlidersIcon />
