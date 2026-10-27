@@ -134,3 +134,29 @@ CREATE OR REPLACE TABLE werkbank_demo.ops.rerun_requests (
   created_at TIMESTAMP COMMENT 'When the request was written.'
 )
 COMMENT 'The only table the on-call agent may write to, and only after explicit approval in the conversation. Starts empty.';
+
+-- ---------------------------------------------------------------- fin: pre-close
+
+CREATE OR REPLACE TABLE werkbank_demo.fin.grir_items (
+  po_number STRING COMMENT 'Ten-digit purchase order number.',
+  item STRING COMMENT 'Item number within the purchase order.',
+  vendor_id STRING COMMENT 'Vendor id.',
+  vendor_name STRING COMMENT 'Vendor name (fictional).',
+  company_code STRING COMMENT 'Company code that owns the liability: DE01, PL01 or FR01.',
+  gr_offset_days INT COMMENT 'Goods receipt date as days from today (negative = in the past).',
+  gr_value_eur DECIMAL(14,2) COMMENT 'Value of the goods received in EUR.',
+  invoiced_value_eur DECIMAL(14,2) COMMENT 'Value invoiced by the vendor so far in EUR.',
+  description STRING COMMENT 'What was received.'
+)
+COMMENT 'Goods received and not fully invoiced (GR/IR), the same rows SAP holds. Synthetic.';
+
+CREATE OR REPLACE TABLE werkbank_demo.fin.intercompany_items (
+  item_id STRING COMMENT 'Intercompany document id.',
+  seller_company STRING COMMENT 'Company code that billed: DE01, PL01 or FR01.',
+  buyer_company STRING COMMENT 'Company code that was billed.',
+  description STRING COMMENT 'What was charged.',
+  posting_offset_days INT COMMENT 'Posting date on the seller side as days from today (negative = in the past).',
+  seller_amount_eur DECIMAL(14,2) COMMENT 'Receivable booked by the seller in EUR.',
+  buyer_amount_eur DECIMAL(14,2) COMMENT 'Payable booked by the buyer in EUR. NULL when the buyer has not posted it.'
+)
+COMMENT 'Intercompany receivables and payables of the period, both sides. Should net to zero. Synthetic.';

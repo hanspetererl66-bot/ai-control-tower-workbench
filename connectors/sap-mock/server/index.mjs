@@ -6,7 +6,7 @@
  *
  * A stand-in for an S/4HANA purchasing API in demos. All data is fictional.
  * Reading is free. Writing is a two-step gate enforced here, not only by the client:
- *   1. draft_expedite_request / draft_supplier_inquiry  -> changes nothing, returns a draft and a token
+ *   1. draft_expedite_request / draft_supplier_inquiry / draft_accrual_posting  -> changes nothing, returns a draft and a token
  *   2. submit_draft with confirmed=true and that token  -> posts once, writes an audit entry
  * State is in memory; restart the agent to reset the demo.
  */
@@ -16,6 +16,9 @@ import { createInterface } from 'node:readline';
 import {
   ALTERNATIVES,
   BUYERS,
+  COMPANY_CODES,
+  GRIR_ITEMS,
+  classifyGrir,
   LANE_CONGESTION,
   MATERIALS,
   PLANTS,
@@ -56,6 +59,8 @@ const drafts = new Map();
 const audit = [];
 const expedites = new Map(); // po -> { requestedDate, reason, changeDocument }
 const inquiries = [];
+const accruals = new Map(); // `${po}-${item}` -> { amountEur, accrualDocument, changeDocument }
+let accrualSequence = 0;
 let sequence = 0;
 let changeSequence = 0;
 
@@ -127,6 +132,31 @@ const summary = (po) => ({
   status: po.status,
   ZZ_EXPEDITE_FLAG: po.ZZ_EXPEDITE_FLAG,
 });
+
+const grirKey = (row) => `${row.po}-${row.item}`;
+const round2 = (value) => Math.round(value * 100) / 100;
+
+function grirView(row, base) {
+  const posted = accruals.get(grirKey(row));
+  const open = round2(row.grValueEur - row.invoicedValueEur);
+  const classification = classifyGrir(row);
+  return {
+    po_number: row.po,
+    item: row.item,
+    company_code: row.companyCode,
+    vendor_id: row.vendor,
+    vendor_name: vendorOf(row.vendor).name,
+    description: row.description,
+    goods_receipt_date: isoDay(addDays(base, row.grOffset)),
+    age_days: -row.grOffset,
+    goods_receipt_value_eur: row.grValueEur,
+    invoiced_value_eur: row.invoicedValueEur,
+    open_value_eur: open,
+    classification,
+    accrued_eur: posted?.amountEur ?? 0,
+    accrual_document: posted?.accrualDocument ?? null,
+  };
+}
 
 /* ---------------- argument helpers ---------------- */
 
@@ -237,9 +267,41 @@ const TOOLS = [
     annotations: { title: 'Draft supplier inquiry', ...DRAFT_ONLY },
   },
   {
+    name: 'get_open_grir_items',
+    description:
+      'List goods received but not fully invoiced (GR/IR) for a company code, as SAP holds them: received value, invoiced value, open value, age and whether an accrual was already posted. ' +
+      'Use it to check a figure from the lakehouse against the system of record before drafting an accrual.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        company_code: { type: 'string', description: 'Company code DE01, PL01 or FR01. Omit for all.' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'List open GR/IR items', ...READ_ONLY },
+  },
+  {
+    name: 'draft_accrual_posting',
+    description:
+      'Prepare an accrual for goods received and not yet invoiced on one purchase order item. This DOES NOT post anything: it returns a draft with a draft_id and a confirmation_token. ' +
+      'The amount may not exceed the open GR/IR value. Show the draft to the person and wait for their explicit yes before calling submit_draft.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        po_number: { type: 'string', description: 'Ten-digit purchase order number from the GR/IR list.' },
+        item: { type: 'string', description: 'Item number, for example 10.' },
+        amount_eur: { type: 'number', description: 'Accrual amount in EUR, more than 0 and at most the open GR/IR value.' },
+        reason: { type: 'string', description: 'Business reason for the posting text, at most 300 characters. No personal data.' },
+      },
+      required: ['po_number', 'item', 'amount_eur', 'reason'],
+      additionalProperties: false,
+    },
+    annotations: { title: 'Draft accrual posting', ...DRAFT_ONLY },
+  },
+  {
     name: 'submit_draft',
     description:
-      'WRITE. Post a draft created by draft_expedite_request or draft_supplier_inquiry. Call it only after the person has seen the draft and clearly said yes in this conversation. ' +
+      'WRITE. Post a draft created by draft_expedite_request, draft_supplier_inquiry or draft_accrual_posting. Call it only after the person has seen the draft and clearly said yes in this conversation. ' +
       'Requires the draft_id, the confirmation_token from the draft and confirmed=true. Each draft can be posted once.',
     inputSchema: {
       type: 'object',
@@ -379,6 +441,44 @@ const HANDLERS = {
     });
   },
 
+  get_open_grir_items(args) {
+    const base = today();
+    const company = optionalString(args, 'company_code', 10);
+    if (company !== undefined && !COMPANY_CODES.some((code) => code.id === company)) {
+      throw new ToolError(`company_code must be one of ${COMPANY_CODES.map((code) => code.id).join(', ')}`);
+    }
+    const items = GRIR_ITEMS.filter((row) => company === undefined || row.companyCode === company).map((row) => grirView(row, base));
+    return { count: items.length, items };
+  },
+
+  draft_accrual_posting(args) {
+    const base = today();
+    const number = requiredString(args, 'po_number', 20);
+    const item = requiredString(args, 'item', 6);
+    const row = GRIR_ITEMS.find((candidate) => candidate.po === number && candidate.item === item);
+    if (!row) throw new ToolError(`No GR/IR item for purchase order ${number} item ${item}; call get_open_grir_items first`);
+    if (typeof args.amount_eur !== 'number' || !Number.isFinite(args.amount_eur) || args.amount_eur <= 0) {
+      throw new ToolError('amount_eur must be a number greater than 0');
+    }
+    const amount = round2(args.amount_eur);
+    const reason = requiredString(args, 'reason', 300);
+    const view = grirView(row, base);
+    if (view.classification === 'INVOICE_BEFORE_GOODS') throw new ToolError('This item was invoiced before the goods arrived; there is nothing to accrue. Clarify it with the vendor instead');
+    if (view.classification === 'STALE_REVIEW') throw new ToolError(`This item is older than 90 days (${view.age_days}); it needs a clearing review, not an accrual`);
+    if (accruals.has(grirKey(row))) throw new ToolError(`An accrual of ${accruals.get(grirKey(row)).amountEur} EUR is already posted for this item`);
+    if (amount > view.open_value_eur) throw new ToolError(`amount_eur ${amount} is above the open GR/IR value ${view.open_value_eur}`);
+    return newDraft('ACCRUAL_POSTING', { po: row.po }, { item: row.item, amountEur: amount, reason, companyCode: row.companyCode }, {
+      company_code: row.companyCode,
+      vendor: `${view.vendor_name} (${view.vendor_id})`,
+      po_item: `${row.po}/${row.item}`,
+      goods_receipt_date: view.goods_receipt_date,
+      open_gr_ir_value_eur: view.open_value_eur,
+      accrual_amount_eur: amount,
+      reason,
+      effect_if_posted: 'Posts an accrual document (expense against accrued liabilities, reversal on the first day of next period). The purchase order is not changed.',
+    });
+  },
+
   draft_supplier_inquiry(args) {
     const base = today();
     const row = findPo(args);
@@ -425,7 +525,12 @@ const HANDLERS = {
     draft.status = 'POSTED';
     changeSequence += 1;
     draft.changeDocument = `CHG-${4900000000 + changeSequence}`;
-    if (draft.type === 'EXPEDITE_REQUEST') {
+    if (draft.type === 'ACCRUAL_POSTING') {
+      accrualSequence += 1;
+      const accrualDocument = `ACC-${5100000000 + accrualSequence}`;
+      accruals.set(`${draft.po}-${draft.payload.item}`, { amountEur: draft.payload.amountEur, accrualDocument, changeDocument: draft.changeDocument });
+      draft.accrualDocument = accrualDocument;
+    } else if (draft.type === 'EXPEDITE_REQUEST') {
       expedites.set(draft.po, { requestedDate: draft.payload.requestedDate, reason: draft.payload.reason, changeDocument: draft.changeDocument });
     } else {
       inquiries.push({ po: draft.po, ...draft.payload, changeDocument: draft.changeDocument });
@@ -437,7 +542,13 @@ const HANDLERS = {
       type: draft.type,
       po_number: draft.po,
       change_document: draft.changeDocument,
-      note: draft.type === 'EXPEDITE_REQUEST' ? 'ZZ_EXPEDITE_FLAG is now X on this purchase order.' : 'Request for quotation created.',
+      ...(draft.accrualDocument ? { accrual_document: draft.accrualDocument } : {}),
+      note:
+        draft.type === 'ACCRUAL_POSTING'
+          ? `Accrual document ${draft.accrualDocument} posted for ${draft.payload.amountEur} EUR.`
+          : draft.type === 'EXPEDITE_REQUEST'
+            ? 'ZZ_EXPEDITE_FLAG is now X on this purchase order.'
+            : 'Request for quotation created.',
     };
   },
 

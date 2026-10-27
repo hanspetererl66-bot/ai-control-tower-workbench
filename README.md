@@ -149,8 +149,8 @@ the copyable Markdown.
 
 ## Databricks MCP demo (SAP TechEd Berlin)
 
-Three scenarios through the Werkbank: a governed Genie analyst, a pipeline on-call copilot and a PO delay-risk
-flow that posts to a mock SAP system only after approval. It ships a stdio bridge to the Databricks managed MCP
+Four scenarios through the Werkbank: a governed Genie analyst, a pipeline on-call copilot, a PO delay-risk
+flow and a finance pre-close check; the last two post to a mock SAP system only after approval. It ships a stdio bridge to the Databricks managed MCP
 endpoints, a mock SAP MCP server, seed SQL for a fresh Databricks workspace, three Goose recipes and the matching skills.
 Start with [`examples/databricks-demo/README.md`](examples/databricks-demo/README.md).
 

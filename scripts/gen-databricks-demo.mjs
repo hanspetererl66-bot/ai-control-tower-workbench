@@ -10,10 +10,11 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse, stringify } from 'yaml';
-import { DRIVER_LABELS, LANE_CONGESTION, PLANTS, BUYERS, MATERIALS, PURCHASE_ORDERS, RISK_MODEL, VENDORS } from '../connectors/sap-mock/server/data.mjs';
+import { GRIR_ITEMS, DRIVER_LABELS, LANE_CONGESTION, PLANTS, BUYERS, MATERIALS, PURCHASE_ORDERS, RISK_MODEL, VENDORS } from '../connectors/sap-mock/server/data.mjs';
 import {
   CATALOG,
   DOWNSTREAM_ASSETS,
+  IC_ITEMS,
   JOBS,
   LINEAGE_EDGES,
   dealRows,
@@ -39,6 +40,14 @@ export const TABLES = {
   'fin.large_discount_deals': {
     types: 'sdssssnnnss',
     rows: () => dealRows().map((d) => [d.deal, d.month, d.region, d.productLine, d.segment, d.customer, d.listValue, d.discountPct, d.policyLimitPct, d.approval, d.approvedByRole]),
+  },
+  'fin.grir_items': {
+    types: 'sssssnnns',
+    rows: () => GRIR_ITEMS.map((g) => [g.po, g.item, g.vendor, VENDORS.find((v) => v.id === g.vendor).name, g.companyCode, g.grOffset, g.grValueEur, g.invoicedValueEur, g.description]),
+  },
+  'fin.intercompany_items': {
+    types: 'ssssnnn',
+    rows: () => IC_ITEMS.map((i) => [i.id, i.seller, i.buyer, i.description, i.postingOffset, i.sellerAmountEur, i.buyerAmountEur]),
   },
   'scm.vendors': {
     types: 'sssnnn',
@@ -219,6 +228,11 @@ const SKILL_META = {
     process: 'Pipeline incident triage',
     tools: 'get_failed_runs, get_run_diagnosis, get_downstream_impact, Databricks SQL (one approved write)',
   },
+  'finance-pre-close': {
+    domain: 'Finance',
+    process: 'Period-end pre-close',
+    tools: 'get_grir_accrual_candidates, get_intercompany_differences, Databricks SQL (read), SAP mock (draft, then submit_draft after approval)',
+  },
   'po-expedite': {
     domain: 'Procurement',
     process: 'Purchase order expediting',
@@ -277,7 +291,7 @@ const ALL_IN_ONE = [
 /** Returns { relativePath: content } for every generated file. */
 export function renderAll() {
   const files = {
-    'sql/02_seed_finance.sql': seedFile('02_seed_finance.sql: margin by region, product line and month, and the deals above discount policy.', ['fin.margin_monthly', 'fin.large_discount_deals']),
+    'sql/02_seed_finance.sql': seedFile('02_seed_finance.sql: margin by region, product line and month, the deals above discount policy, and the pre-close items (open goods receipts and intercompany).', ['fin.margin_monthly', 'fin.large_discount_deals', 'fin.grir_items', 'fin.intercompany_items']),
     'sql/03_seed_ops.sql': seedFile('03_seed_ops.sql: jobs, 14 nights of runs, task results, lineage and downstream assets. Offsets are days from today.', ['ops.jobs', 'ops.job_runs_seed', 'ops.job_task_runs', 'ops.lineage_edges', 'ops.lineage_closure', 'ops.downstream_assets']),
     'sql/04_seed_scm.sql': seedFile('04_seed_scm.sql: vendors and purchase orders, the same rows the SAP mock connector serves. Offsets are days from today.', ['scm.vendors', 'scm.purchase_orders_seed']),
     'sql/06_model_view.sql': modelView(),

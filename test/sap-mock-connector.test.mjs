@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { ALTERNATIVES, PURCHASE_ORDERS, VENDORS, scorePo } from '../connectors/sap-mock/server/data.mjs';
+import { ALTERNATIVES, GRIR_ITEMS, PURCHASE_ORDERS, VENDORS, scorePo } from '../connectors/sap-mock/server/data.mjs';
 import { startStdioServer } from './helpers/stdio-mcp.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -30,7 +30,7 @@ test('only submit_draft is marked as a write, and it says so', async () => {
     assert.deepEqual(writes, ['submit_draft']);
     const submit = result.tools.find((tool) => tool.name === 'submit_draft');
     assert.match(submit.description, /WRITE/);
-    for (const draft of ['draft_expedite_request', 'draft_supplier_inquiry']) {
+    for (const draft of ['draft_expedite_request', 'draft_supplier_inquiry', 'draft_accrual_posting']) {
       assert.match(result.tools.find((tool) => tool.name === draft).description, /DOES NOT/);
     }
   } finally {
@@ -180,4 +180,61 @@ test('every reference in the data resolves', () => {
     for (const alternative of alternatives) assert.ok(vendors.has(alternative.vendorId));
   }
   assert.equal(new Set(PURCHASE_ORDERS.map((row) => `${row.po}-${row.item}`)).size, PURCHASE_ORDERS.length, 'po/item keys are unique');
+});
+
+test('GR/IR: SAP and the lakehouse agree on the classification and the open values', async () => {
+  const server = startStdioServer(SERVER, PIN);
+  try {
+    const all = await server.tool('get_open_grir_items', {});
+    assert.equal(all.json.count, GRIR_ITEMS.length);
+    const byClass = (name) => all.json.items.filter((item) => item.classification === name);
+    assert.equal(byClass('ACCRUE').length, 8);
+    assert.equal(byClass('STALE_REVIEW').length, 3);
+    assert.equal(byClass('INVOICE_BEFORE_GOODS').length, 1);
+    const pl = await server.tool('get_open_grir_items', { company_code: 'PL01' });
+    assert.ok(pl.json.items.every((item) => item.company_code === 'PL01'));
+    assert.equal((await server.tool('get_open_grir_items', { company_code: 'XX99' })).isError, true);
+    const first = all.json.items.find((item) => item.po_number === '4500001001');
+    assert.equal(first.goods_receipt_date, '2026-10-23'); // today - 4
+    assert.equal(first.open_value_eur, 50700);
+  } finally {
+    server.close();
+  }
+});
+
+test('an accrual follows the same gate and is limited to the open value', async () => {
+  const server = startStdioServer(SERVER, PIN);
+  try {
+    const base = { po_number: '4500001001', item: '10', reason: 'GR/IR accrual, invoice pending' };
+    // Refused before any draft exists.
+    assert.equal((await server.tool('draft_accrual_posting', { ...base, amount_eur: 50700.01 })).isError, true, 'above open value');
+    assert.equal((await server.tool('draft_accrual_posting', { ...base, amount_eur: 0 })).isError, true);
+    assert.equal((await server.tool('draft_accrual_posting', { ...base, amount_eur: '100' })).isError, true);
+    assert.equal((await server.tool('draft_accrual_posting', { po_number: '4500000871', item: '10', amount_eur: 100, reason: 'x' })).isError, true, 'stale item');
+    assert.equal((await server.tool('draft_accrual_posting', { po_number: '4500003004', item: '10', amount_eur: 100, reason: 'x' })).isError, true, 'invoice before goods');
+    assert.equal((await server.tool('draft_accrual_posting', { po_number: '4500009999', item: '10', amount_eur: 100, reason: 'x' })).isError, true, 'unknown item');
+
+    const draft = await server.tool('draft_accrual_posting', { ...base, amount_eur: 50700 });
+    assert.equal(draft.isError, false);
+    assert.match(draft.json.status, /nothing has been posted/);
+    assert.equal(draft.json.preview.company_code, 'DE01');
+    let item = (await server.tool('get_open_grir_items', { company_code: 'DE01' })).json.items.find((entry) => entry.po_number === '4500001001');
+    assert.equal(item.accrued_eur, 0, 'drafting changes nothing');
+
+    const rejected = await server.tool('submit_draft', { draft_id: draft.json.draft_id, confirmation_token: draft.json.confirmation_token, confirmed: false });
+    assert.equal(rejected.isError, true);
+    const posted = await server.tool('submit_draft', { draft_id: draft.json.draft_id, confirmation_token: draft.json.confirmation_token, confirmed: true });
+    assert.equal(posted.json.status, 'POSTED');
+    assert.match(posted.json.accrual_document, /^ACC-\d+$/);
+
+    item = (await server.tool('get_open_grir_items', { company_code: 'DE01' })).json.items.find((entry) => entry.po_number === '4500001001');
+    assert.equal(item.accrued_eur, 50700);
+    assert.equal(item.accrual_document, posted.json.accrual_document);
+    // One accrual per item: a second one is refused.
+    assert.equal((await server.tool('draft_accrual_posting', { ...base, amount_eur: 100 })).isError, true);
+    const again = await server.tool('submit_draft', { draft_id: draft.json.draft_id, confirmation_token: draft.json.confirmation_token, confirmed: true });
+    assert.equal(again.json.status, 'ALREADY_POSTED');
+  } finally {
+    server.close();
+  }
 });

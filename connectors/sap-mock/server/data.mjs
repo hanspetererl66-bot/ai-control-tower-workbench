@@ -158,3 +158,50 @@ export function scorePo(row, model = RISK_MODEL) {
     drivers,
   };
 }
+
+/* ---------------- finance: goods receipt / invoice receipt (GR/IR) ---------------- */
+
+/** Company codes of the fictional group; each owns one plant. */
+export const COMPANY_CODES = [
+  { id: 'DE01', name: 'Demo Industrial GmbH', plant: '1010' },
+  { id: 'PL01', name: 'Demo Industrial Polska Sp. z o.o.', plant: '1020' },
+  { id: 'FR01', name: 'Demo Industrial France SAS', plant: '1030' },
+];
+
+/**
+ * Goods received and not (fully) invoiced. [po, item, vendor, companyCode, goodsReceiptOffsetDays, grValueEur, invoicedValueEur, description]
+ * Open value = received - invoiced. Positive and recent: accrue at period end. Positive and older than 90 days: review, do not accrue.
+ * Negative: invoiced before the goods arrived. This is the single source for SAP and for the lakehouse table fin.grir_items.
+ */
+export const STALE_AFTER_DAYS = 90;
+export const GRIR_ITEMS = [
+  ['4500001001', '10', 'V-1001', 'DE01', -4, 50700, 0, 'Metal housings, 600 pcs received'],
+  ['4500001003', '10', 'V-1005', 'DE01', -3, 29760, 0, 'Cable harness, 4,800 pcs received'],
+  ['4500001005', '10', 'V-1002', 'DE01', -5, 47250, 0, 'Control boards, 2,500 pcs received'],
+  ['4500003001', '10', 'V-1002', 'DE01', -11, 28350, 0, 'Control boards, 1,500 pcs received'],
+  ['4500002001', '10', 'V-1001', 'PL01', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'],
+  ['4500002004', '10', 'V-1005', 'PL01', -7, 24180, 0, 'Cable harness, 3,900 pcs received'],
+  ['4500003004', '10', 'V-1002', 'PL01', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'],
+  ['4500001008', '10', 'V-1003', 'FR01', -6, 7560, 0, 'Fasteners, 18,000 pcs received'],
+  ['4500003003', '10', 'V-1004', 'FR01', -2, 28400, 0, 'Precision shafts, 200 pcs received'],
+  ['4500000871', '10', 'V-1003', 'DE01', -118, 6300, 0, 'Fasteners, received, invoice never arrived'],
+  ['4500000902', '10', 'V-1006', 'PL01', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'],
+  ['4500000955', '10', 'V-1002', 'FR01', -97, 9450, 0, 'Control boards, received, invoice missing'],
+].map(([po, item, vendor, companyCode, grOffset, grValueEur, invoicedValueEur, description]) => ({
+  po,
+  item,
+  vendor,
+  companyCode,
+  grOffset,
+  grValueEur,
+  invoicedValueEur,
+  description,
+}));
+
+/** Classification used by SAP mock and by the Databricks view fin.v_grir_open. */
+export function classifyGrir(item) {
+  const open = Math.round((item.grValueEur - item.invoicedValueEur) * 100) / 100;
+  if (open < 0) return 'INVOICE_BEFORE_GOODS';
+  if (-item.grOffset > STALE_AFTER_DAYS) return 'STALE_REVIEW';
+  return open > 0 ? 'ACCRUE' : 'CLEARED';
+}

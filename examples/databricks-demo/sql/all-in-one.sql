@@ -159,8 +159,34 @@ CREATE OR REPLACE TABLE werkbank_demo.ops.rerun_requests (
 )
 COMMENT 'The only table the on-call agent may write to, and only after explicit approval in the conversation. Starts empty.';
 
+-- ---------------------------------------------------------------- fin: pre-close
+
+CREATE OR REPLACE TABLE werkbank_demo.fin.grir_items (
+  po_number STRING COMMENT 'Ten-digit purchase order number.',
+  item STRING COMMENT 'Item number within the purchase order.',
+  vendor_id STRING COMMENT 'Vendor id.',
+  vendor_name STRING COMMENT 'Vendor name (fictional).',
+  company_code STRING COMMENT 'Company code that owns the liability: DE01, PL01 or FR01.',
+  gr_offset_days INT COMMENT 'Goods receipt date as days from today (negative = in the past).',
+  gr_value_eur DECIMAL(14,2) COMMENT 'Value of the goods received in EUR.',
+  invoiced_value_eur DECIMAL(14,2) COMMENT 'Value invoiced by the vendor so far in EUR.',
+  description STRING COMMENT 'What was received.'
+)
+COMMENT 'Goods received and not fully invoiced (GR/IR), the same rows SAP holds. Synthetic.';
+
+CREATE OR REPLACE TABLE werkbank_demo.fin.intercompany_items (
+  item_id STRING COMMENT 'Intercompany document id.',
+  seller_company STRING COMMENT 'Company code that billed: DE01, PL01 or FR01.',
+  buyer_company STRING COMMENT 'Company code that was billed.',
+  description STRING COMMENT 'What was charged.',
+  posting_offset_days INT COMMENT 'Posting date on the seller side as days from today (negative = in the past).',
+  seller_amount_eur DECIMAL(14,2) COMMENT 'Receivable booked by the seller in EUR.',
+  buyer_amount_eur DECIMAL(14,2) COMMENT 'Payable booked by the buyer in EUR. NULL when the buyer has not posted it.'
+)
+COMMENT 'Intercompany receivables and payables of the period, both sides. Should net to zero. Synthetic.';
+
 -- ======================================================================== 02_seed_finance.sql
--- 02_seed_finance.sql: margin by region, product line and month, and the deals above discount policy.
+-- 02_seed_finance.sql: margin by region, product line and month, the deals above discount policy, and the pre-close items (open goods receipts and intercompany).
 
 INSERT OVERWRITE TABLE werkbank_demo.fin.margin_monthly VALUES
   (DATE'2026-01-01', 'DACH', 'Edge Gateways', 1647736.5, 1656000, 107004.73, 99360, 858606.5, 861120, 7306.27, 6624),
@@ -365,6 +391,32 @@ INSERT OVERWRITE TABLE werkbank_demo.fin.large_discount_deals VALUES
   ('D-26-0731', DATE'2026-07-01', 'UKI', 'Industrial Sensors', 'Mid-Market', 'C-UK-0144', 52000, 10, 12, 'Standard', 'Sales Manager'),
   ('D-26-0811', DATE'2026-08-01', 'NORDICS', 'Control Software', 'Enterprise', 'C-SE-0033', 120000, 7, 12, 'Standard', 'Sales Manager'),
   ('D-26-0832', DATE'2026-09-01', 'FR', 'Industrial Sensors', 'Mid-Market', 'C-FR-0107', 58000, 11.5, 12, 'Standard', 'Sales Manager');
+
+INSERT OVERWRITE TABLE werkbank_demo.fin.grir_items VALUES
+  ('4500001001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'DE01', -4, 50700, 0, 'Metal housings, 600 pcs received'),
+  ('4500001003', '10', 'V-1005', 'Pannonia Cables Kft', 'DE01', -3, 29760, 0, 'Cable harness, 4,800 pcs received'),
+  ('4500001005', '10', 'V-1002', 'Neckar Elektronik AG', 'DE01', -5, 47250, 0, 'Control boards, 2,500 pcs received'),
+  ('4500003001', '10', 'V-1002', 'Neckar Elektronik AG', 'DE01', -11, 28350, 0, 'Control boards, 1,500 pcs received'),
+  ('4500002001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'PL01', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'),
+  ('4500002004', '10', 'V-1005', 'Pannonia Cables Kft', 'PL01', -7, 24180, 0, 'Cable harness, 3,900 pcs received'),
+  ('4500003004', '10', 'V-1002', 'Neckar Elektronik AG', 'PL01', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'),
+  ('4500001008', '10', 'V-1003', 'Baltic Fasteners UAB', 'FR01', -6, 7560, 0, 'Fasteners, 18,000 pcs received'),
+  ('4500003003', '10', 'V-1004', 'Tessin Precision SA', 'FR01', -2, 28400, 0, 'Precision shafts, 200 pcs received'),
+  ('4500000871', '10', 'V-1003', 'Baltic Fasteners UAB', 'DE01', -118, 6300, 0, 'Fasteners, received, invoice never arrived'),
+  ('4500000902', '10', 'V-1006', 'Anatolia Plastics A.S.', 'PL01', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'),
+  ('4500000955', '10', 'V-1002', 'Neckar Elektronik AG', 'FR01', -97, 9450, 0, 'Control boards, received, invoice missing');
+
+INSERT OVERWRITE TABLE werkbank_demo.fin.intercompany_items VALUES
+  ('IC-0001', 'DE01', 'PL01', 'Contract assembly services', -12, 120000, 120000),
+  ('IC-0002', 'DE01', 'FR01', 'Software licence recharge', -10, 45000, 45000),
+  ('IC-0003', 'PL01', 'DE01', 'Sub-assembly delivery', -9, 210400, 210400),
+  ('IC-0004', 'FR01', 'DE01', 'Field service recharge', -8, 33800, 33800),
+  ('IC-0005', 'DE01', 'PL01', 'Management fee Q3', -7, 84200, NULL),
+  ('IC-0006', 'PL01', 'FR01', 'Component transfer', -6, 96250.4, 96238),
+  ('IC-0007', 'DE01', 'FR01', 'Engineering services', -5, 78650, 60000),
+  ('IC-0008', 'FR01', 'PL01', 'Tooling recharge', -4, 15400, 15400),
+  ('IC-0009', 'DE01', 'PL01', 'IT services', -3, 22000, 22000),
+  ('IC-0010', 'PL01', 'DE01', 'Logistics recharge', -2, 18900, 18900);
 
 -- ======================================================================== 03_seed_ops.sql
 -- 03_seed_ops.sql: jobs, 14 nights of runs, task results, lineage and downstream assets. Offsets are days from today.
@@ -715,6 +767,74 @@ FROM (
 ) runs
 WHERE start_time <= current_timestamp();
 
+-- ---------------------------------------------------------------- fin: pre-close
+
+CREATE OR REPLACE VIEW werkbank_demo.fin.v_grir_open (
+  po_number COMMENT 'Ten-digit purchase order number; the key to use in SAP.',
+  item COMMENT 'Item number.',
+  company_code COMMENT 'Company code that owns the liability.',
+  vendor_id COMMENT 'Vendor id.',
+  vendor_name COMMENT 'Vendor name.',
+  description COMMENT 'What was received.',
+  goods_receipt_date COMMENT 'Date the goods were received.',
+  age_days COMMENT 'Days since goods receipt.',
+  gr_value_eur COMMENT 'Value received in EUR.',
+  invoiced_value_eur COMMENT 'Value invoiced so far in EUR.',
+  open_value_eur COMMENT 'Received minus invoiced in EUR. Negative means invoiced before the goods arrived.',
+  classification COMMENT 'ACCRUE (recent, open value above zero), STALE_REVIEW (older than 90 days, needs clearing review not an accrual), INVOICE_BEFORE_GOODS (negative, clarify with the vendor).'
+)
+COMMENT 'Open goods receipt / invoice receipt items with age and a recommended treatment for the period-end close.'
+AS
+SELECT
+  g.po_number,
+  g.item,
+  g.company_code,
+  g.vendor_id,
+  g.vendor_name,
+  g.description,
+  date_add(current_date(), g.gr_offset_days) AS goods_receipt_date,
+  -g.gr_offset_days AS age_days,
+  CAST(g.gr_value_eur AS DOUBLE) AS gr_value_eur,
+  CAST(g.invoiced_value_eur AS DOUBLE) AS invoiced_value_eur,
+  CAST(g.gr_value_eur - g.invoiced_value_eur AS DOUBLE) AS open_value_eur,
+  CASE
+    WHEN g.gr_value_eur - g.invoiced_value_eur < 0 THEN 'INVOICE_BEFORE_GOODS'
+    WHEN -g.gr_offset_days > 90 THEN 'STALE_REVIEW'
+    WHEN g.gr_value_eur - g.invoiced_value_eur > 0 THEN 'ACCRUE'
+    ELSE 'CLEARED'
+  END AS classification
+FROM werkbank_demo.fin.grir_items g;
+
+CREATE OR REPLACE VIEW werkbank_demo.fin.v_ic_differences (
+  item_id COMMENT 'Intercompany document id.',
+  seller_company COMMENT 'Company code that billed.',
+  buyer_company COMMENT 'Company code that was billed.',
+  description COMMENT 'What was charged.',
+  posting_date COMMENT 'Posting date on the seller side.',
+  seller_amount_eur COMMENT 'Seller receivable in EUR.',
+  buyer_amount_eur COMMENT 'Buyer payable in EUR; NULL when not posted.',
+  difference_eur COMMENT 'Seller minus buyer in EUR (buyer counts as zero when not posted).',
+  category COMMENT 'MISSING_ON_BUYER_SIDE, AMOUNT_MISMATCH, or ROUNDING (difference of 50 EUR or less).'
+)
+COMMENT 'Only the intercompany items where seller and buyer disagree, with a category. Items that match are not listed.'
+AS
+SELECT
+  item_id,
+  seller_company,
+  buyer_company,
+  description,
+  date_add(current_date(), posting_offset_days) AS posting_date,
+  CAST(seller_amount_eur AS DOUBLE) AS seller_amount_eur,
+  CAST(buyer_amount_eur AS DOUBLE) AS buyer_amount_eur,
+  ROUND(CAST(seller_amount_eur - coalesce(buyer_amount_eur, 0) AS DOUBLE), 2) AS difference_eur,
+  CASE
+    WHEN buyer_amount_eur IS NULL THEN 'MISSING_ON_BUYER_SIDE'
+    WHEN abs(seller_amount_eur - buyer_amount_eur) <= 50 THEN 'ROUNDING'
+    ELSE 'AMOUNT_MISMATCH'
+  END AS category
+FROM werkbank_demo.fin.intercompany_items
+WHERE seller_amount_eur <> coalesce(buyer_amount_eur, 0);
+
 -- ======================================================================== 06_model_view.sql
 -- 06_model_view.sql: the stand-in for a Model Serving endpoint.
 -- A transparent logistic score over four features, so the demo is deterministic and every number can be explained.
@@ -991,3 +1111,55 @@ RETURN
   JOIN werkbank_demo.ops.lineage_closure c ON c.impacted_table = a.depends_on_table
   WHERE c.source_table = table_name
   ORDER BY hops, impacted_object;
+
+-- ---------------------------------------------------------------- fin: pre-close
+
+CREATE OR REPLACE FUNCTION werkbank_demo.fin.get_grir_accrual_candidates(
+  company STRING DEFAULT 'ALL' COMMENT 'Company code DE01, PL01 or FR01, or ALL for the whole group. Default ALL.'
+)
+RETURNS TABLE (
+  po_number STRING COMMENT 'Ten-digit purchase order number; the key to use in SAP.',
+  item STRING COMMENT 'Item number.',
+  company_code STRING COMMENT 'Company code that owns the liability.',
+  vendor_name STRING COMMENT 'Vendor name.',
+  goods_receipt_date DATE COMMENT 'Date the goods were received.',
+  age_days INT COMMENT 'Days since goods receipt.',
+  open_value_eur DOUBLE COMMENT 'Received minus invoiced in EUR.',
+  classification STRING COMMENT 'ACCRUE, STALE_REVIEW or INVOICE_BEFORE_GOODS.'
+)
+COMMENT 'Returns goods received and not yet fully invoiced (GR/IR) for the period-end close, largest open value first, each with a recommended treatment: ACCRUE (book an accrual), STALE_REVIEW (older than 90 days, needs a clearing review, do not accrue) or INVOICE_BEFORE_GOODS (negative, clarify with the vendor). Use it when asked what must be accrued before closing. It reads a snapshot and changes nothing; an accrual is drafted in SAP with the po_number and item it returns.'
+RETURN
+  SELECT
+    po_number,
+    item,
+    company_code,
+    vendor_name,
+    goods_receipt_date,
+    CAST(age_days AS INT) AS age_days,
+    open_value_eur,
+    classification
+  FROM werkbank_demo.fin.v_grir_open
+  WHERE classification <> 'CLEARED'
+    AND (upper(coalesce(company, 'ALL')) = 'ALL' OR company_code = upper(company))
+  ORDER BY abs(open_value_eur) DESC, po_number;
+
+CREATE OR REPLACE FUNCTION werkbank_demo.fin.get_intercompany_differences(
+  min_diff DOUBLE DEFAULT 0 COMMENT 'Only return items whose absolute difference in EUR is above this value. Default 0.'
+)
+RETURNS TABLE (
+  item_id STRING COMMENT 'Intercompany document id.',
+  seller_company STRING COMMENT 'Company code that billed.',
+  buyer_company STRING COMMENT 'Company code that was billed.',
+  description STRING COMMENT 'What was charged.',
+  posting_date DATE COMMENT 'Posting date on the seller side.',
+  seller_amount_eur DOUBLE COMMENT 'Seller receivable in EUR.',
+  buyer_amount_eur DOUBLE COMMENT 'Buyer payable in EUR; NULL when not posted.',
+  difference_eur DOUBLE COMMENT 'Seller minus buyer in EUR.',
+  category STRING COMMENT 'MISSING_ON_BUYER_SIDE, AMOUNT_MISMATCH or ROUNDING.'
+)
+COMMENT 'Returns the intercompany items where seller and buyer disagree, largest difference first, with a category. Use it when asked which intercompany balances will not eliminate in the consolidation. It changes nothing and does not correct any posting; the owning company clarifies and rebooks.'
+RETURN
+  SELECT item_id, seller_company, buyer_company, description, posting_date, seller_amount_eur, buyer_amount_eur, difference_eur, category
+  FROM werkbank_demo.fin.v_ic_differences
+  WHERE abs(difference_eur) > coalesce(min_diff, 0)
+  ORDER BY abs(difference_eur) DESC, item_id;

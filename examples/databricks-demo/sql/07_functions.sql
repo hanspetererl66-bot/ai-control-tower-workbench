@@ -180,3 +180,55 @@ RETURN
   JOIN werkbank_demo.ops.lineage_closure c ON c.impacted_table = a.depends_on_table
   WHERE c.source_table = table_name
   ORDER BY hops, impacted_object;
+
+-- ---------------------------------------------------------------- fin: pre-close
+
+CREATE OR REPLACE FUNCTION werkbank_demo.fin.get_grir_accrual_candidates(
+  company STRING DEFAULT 'ALL' COMMENT 'Company code DE01, PL01 or FR01, or ALL for the whole group. Default ALL.'
+)
+RETURNS TABLE (
+  po_number STRING COMMENT 'Ten-digit purchase order number; the key to use in SAP.',
+  item STRING COMMENT 'Item number.',
+  company_code STRING COMMENT 'Company code that owns the liability.',
+  vendor_name STRING COMMENT 'Vendor name.',
+  goods_receipt_date DATE COMMENT 'Date the goods were received.',
+  age_days INT COMMENT 'Days since goods receipt.',
+  open_value_eur DOUBLE COMMENT 'Received minus invoiced in EUR.',
+  classification STRING COMMENT 'ACCRUE, STALE_REVIEW or INVOICE_BEFORE_GOODS.'
+)
+COMMENT 'Returns goods received and not yet fully invoiced (GR/IR) for the period-end close, largest open value first, each with a recommended treatment: ACCRUE (book an accrual), STALE_REVIEW (older than 90 days, needs a clearing review, do not accrue) or INVOICE_BEFORE_GOODS (negative, clarify with the vendor). Use it when asked what must be accrued before closing. It reads a snapshot and changes nothing; an accrual is drafted in SAP with the po_number and item it returns.'
+RETURN
+  SELECT
+    po_number,
+    item,
+    company_code,
+    vendor_name,
+    goods_receipt_date,
+    CAST(age_days AS INT) AS age_days,
+    open_value_eur,
+    classification
+  FROM werkbank_demo.fin.v_grir_open
+  WHERE classification <> 'CLEARED'
+    AND (upper(coalesce(company, 'ALL')) = 'ALL' OR company_code = upper(company))
+  ORDER BY abs(open_value_eur) DESC, po_number;
+
+CREATE OR REPLACE FUNCTION werkbank_demo.fin.get_intercompany_differences(
+  min_diff DOUBLE DEFAULT 0 COMMENT 'Only return items whose absolute difference in EUR is above this value. Default 0.'
+)
+RETURNS TABLE (
+  item_id STRING COMMENT 'Intercompany document id.',
+  seller_company STRING COMMENT 'Company code that billed.',
+  buyer_company STRING COMMENT 'Company code that was billed.',
+  description STRING COMMENT 'What was charged.',
+  posting_date DATE COMMENT 'Posting date on the seller side.',
+  seller_amount_eur DOUBLE COMMENT 'Seller receivable in EUR.',
+  buyer_amount_eur DOUBLE COMMENT 'Buyer payable in EUR; NULL when not posted.',
+  difference_eur DOUBLE COMMENT 'Seller minus buyer in EUR.',
+  category STRING COMMENT 'MISSING_ON_BUYER_SIDE, AMOUNT_MISMATCH or ROUNDING.'
+)
+COMMENT 'Returns the intercompany items where seller and buyer disagree, largest difference first, with a category. Use it when asked which intercompany balances will not eliminate in the consolidation. It changes nothing and does not correct any posting; the owning company clarifies and rebooks.'
+RETURN
+  SELECT item_id, seller_company, buyer_company, description, posting_date, seller_amount_eur, buyer_amount_eur, difference_eur, category
+  FROM werkbank_demo.fin.v_ic_differences
+  WHERE abs(difference_eur) > coalesce(min_diff, 0)
+  ORDER BY abs(difference_eur) DESC, item_id;

@@ -260,3 +260,19 @@ export function lineageClosure() {
   }
   return rows;
 }
+
+/* ---------------- finance pre-close: intercompany ---------------- */
+
+/** [id, sellerCompany, buyerCompany, description, postingOffsetDays, sellerAmountEur, buyerAmountEur|null] null = not posted on the buyer side. */
+export const IC_ITEMS = [
+  ['IC-0001', 'DE01', 'PL01', 'Contract assembly services', -12, 120000, 120000],
+  ['IC-0002', 'DE01', 'FR01', 'Software licence recharge', -10, 45000, 45000],
+  ['IC-0003', 'PL01', 'DE01', 'Sub-assembly delivery', -9, 210400, 210400],
+  ['IC-0004', 'FR01', 'DE01', 'Field service recharge', -8, 33800, 33800],
+  ['IC-0005', 'DE01', 'PL01', 'Management fee Q3', -7, 84200, null],
+  ['IC-0006', 'PL01', 'FR01', 'Component transfer', -6, 96250.4, 96238],
+  ['IC-0007', 'DE01', 'FR01', 'Engineering services', -5, 78650, 60000],
+  ['IC-0008', 'FR01', 'PL01', 'Tooling recharge', -4, 15400, 15400],
+  ['IC-0009', 'DE01', 'PL01', 'IT services', -3, 22000, 22000],
+  ['IC-0010', 'PL01', 'DE01', 'Logistics recharge', -2, 18900, 18900],
+].map(([id, seller, buyer, description, postingOffset, sellerAmountEur, buyerAmountEur]) => ({ id, seller, buyer, description, postingOffset, sellerAmountEur, buyerAmountEur }));

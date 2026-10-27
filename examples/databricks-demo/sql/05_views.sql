@@ -127,3 +127,71 @@ FROM (
   JOIN werkbank_demo.ops.jobs j ON j.job_id = r.job_id
 ) runs
 WHERE start_time <= current_timestamp();
+
+-- ---------------------------------------------------------------- fin: pre-close
+
+CREATE OR REPLACE VIEW werkbank_demo.fin.v_grir_open (
+  po_number COMMENT 'Ten-digit purchase order number; the key to use in SAP.',
+  item COMMENT 'Item number.',
+  company_code COMMENT 'Company code that owns the liability.',
+  vendor_id COMMENT 'Vendor id.',
+  vendor_name COMMENT 'Vendor name.',
+  description COMMENT 'What was received.',
+  goods_receipt_date COMMENT 'Date the goods were received.',
+  age_days COMMENT 'Days since goods receipt.',
+  gr_value_eur COMMENT 'Value received in EUR.',
+  invoiced_value_eur COMMENT 'Value invoiced so far in EUR.',
+  open_value_eur COMMENT 'Received minus invoiced in EUR. Negative means invoiced before the goods arrived.',
+  classification COMMENT 'ACCRUE (recent, open value above zero), STALE_REVIEW (older than 90 days, needs clearing review not an accrual), INVOICE_BEFORE_GOODS (negative, clarify with the vendor).'
+)
+COMMENT 'Open goods receipt / invoice receipt items with age and a recommended treatment for the period-end close.'
+AS
+SELECT
+  g.po_number,
+  g.item,
+  g.company_code,
+  g.vendor_id,
+  g.vendor_name,
+  g.description,
+  date_add(current_date(), g.gr_offset_days) AS goods_receipt_date,
+  -g.gr_offset_days AS age_days,
+  CAST(g.gr_value_eur AS DOUBLE) AS gr_value_eur,
+  CAST(g.invoiced_value_eur AS DOUBLE) AS invoiced_value_eur,
+  CAST(g.gr_value_eur - g.invoiced_value_eur AS DOUBLE) AS open_value_eur,
+  CASE
+    WHEN g.gr_value_eur - g.invoiced_value_eur < 0 THEN 'INVOICE_BEFORE_GOODS'
+    WHEN -g.gr_offset_days > 90 THEN 'STALE_REVIEW'
+    WHEN g.gr_value_eur - g.invoiced_value_eur > 0 THEN 'ACCRUE'
+    ELSE 'CLEARED'
+  END AS classification
+FROM werkbank_demo.fin.grir_items g;
+
+CREATE OR REPLACE VIEW werkbank_demo.fin.v_ic_differences (
+  item_id COMMENT 'Intercompany document id.',
+  seller_company COMMENT 'Company code that billed.',
+  buyer_company COMMENT 'Company code that was billed.',
+  description COMMENT 'What was charged.',
+  posting_date COMMENT 'Posting date on the seller side.',
+  seller_amount_eur COMMENT 'Seller receivable in EUR.',
+  buyer_amount_eur COMMENT 'Buyer payable in EUR; NULL when not posted.',
+  difference_eur COMMENT 'Seller minus buyer in EUR (buyer counts as zero when not posted).',
+  category COMMENT 'MISSING_ON_BUYER_SIDE, AMOUNT_MISMATCH, or ROUNDING (difference of 50 EUR or less).'
+)
+COMMENT 'Only the intercompany items where seller and buyer disagree, with a category. Items that match are not listed.'
+AS
+SELECT
+  item_id,
+  seller_company,
+  buyer_company,
+  description,
+  date_add(current_date(), posting_offset_days) AS posting_date,
+  CAST(seller_amount_eur AS DOUBLE) AS seller_amount_eur,
+  CAST(buyer_amount_eur AS DOUBLE) AS buyer_amount_eur,
+  ROUND(CAST(seller_amount_eur - coalesce(buyer_amount_eur, 0) AS DOUBLE), 2) AS difference_eur,
+  CASE
+    WHEN buyer_amount_eur IS NULL THEN 'MISSING_ON_BUYER_SIDE'
+    WHEN abs(seller_amount_eur - buyer_amount_eur) <= 50 THEN 'ROUNDING'
+    ELSE 'AMOUNT_MISMATCH'
+  END AS category
+FROM werkbank_demo.fin.intercompany_items
+WHERE seller_amount_eur <> coalesce(buyer_amount_eur, 0);

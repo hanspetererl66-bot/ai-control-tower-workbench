@@ -70,7 +70,7 @@
       "type": "string",
       "title": "MCP endpoint paths",
       "description": "Comma or line separated, each /path or alias=/path. Add your Genie space as genie=<path of its MCP endpoint> once you have it. See examples/databricks-demo/README.md.",
-      "default": "sql=/api/2.0/mcp/sql,fn_delay_risk=/api/2.0/mcp/functions/werkbank_demo/scm/get_delay_risk_pos,fn_po_detail=/api/2.0/mcp/functions/werkbank_demo/scm/get_po_detail,fn_failed_runs=/api/2.0/mcp/functions/werkbank_demo/ops/get_failed_runs,fn_run_diagnosis=/api/2.0/mcp/functions/werkbank_demo/ops/get_run_diagnosis,fn_downstream=/api/2.0/mcp/functions/werkbank_demo/ops/get_downstream_impact",
+      "default": "sql=/api/2.0/mcp/sql,fn_delay_risk=/api/2.0/mcp/functions/werkbank_demo/scm/get_delay_risk_pos,fn_po_detail=/api/2.0/mcp/functions/werkbank_demo/scm/get_po_detail,fn_failed_runs=/api/2.0/mcp/functions/werkbank_demo/ops/get_failed_runs,fn_run_diagnosis=/api/2.0/mcp/functions/werkbank_demo/ops/get_run_diagnosis,fn_downstream=/api/2.0/mcp/functions/werkbank_demo/ops/get_downstream_impact,fn_grir=/api/2.0/mcp/functions/werkbank_demo/fin/get_grir_accrual_candidates,fn_ic=/api/2.0/mcp/functions/werkbank_demo/fin/get_intercompany_differences",
       "required": true
     }
   }

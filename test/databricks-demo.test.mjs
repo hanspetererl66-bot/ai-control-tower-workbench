@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { parse } from 'yaml';
-import { DISCOUNT_POLICY_PCT, dealRows, marginRows, marginSummary } from '../examples/databricks-demo/seed/data.mjs';
+import { COMPANY_CODES, GRIR_ITEMS, VENDORS, classifyGrir } from '../connectors/sap-mock/server/data.mjs';
+import { DISCOUNT_POLICY_PCT, IC_ITEMS, dealRows, marginRows, marginSummary } from '../examples/databricks-demo/seed/data.mjs';
 import { installDatabricksDemo } from '../scripts/install-databricks-demo.mjs';
 import { buildConnectorBundle } from '../scripts/build-connector-mcpb.mjs';
 import { load, splitStatements, withCatalog } from '../scripts/databricks-demo-load.mjs';
@@ -55,7 +56,7 @@ test('every generated INSERT has as many values per row as its table has columns
       checked++;
     }
   }
-  assert.equal(checked, 10);
+  assert.equal(checked, 12);
 });
 
 test('the story is in the data: DACH misses plan in Q3 and nothing else does', () => {
@@ -77,7 +78,7 @@ test('the story is in the data: DACH misses plan in Q3 and nothing else does', (
 test('recipes are valid Goose recipes and refer only to things that exist', () => {
   const functions = read('sql/07_functions.sql');
   const tables = read('sql/01_tables.sql');
-  assert.deepEqual(recipeNames().sort(), ['margin-analyst', 'pipeline-oncall', 'po-expedite']);
+  assert.deepEqual(recipeNames().sort(), ['finance-pre-close', 'margin-analyst', 'pipeline-oncall', 'po-expedite']);
   for (const name of recipeNames()) {
     const recipe = parse(read(`recipes/${name}.yaml`));
     for (const key of ['version', 'title', 'description', 'instructions', 'prompt']) assert.ok(recipe[key], `${name}: ${key}`);
@@ -89,10 +90,10 @@ test('recipes are valid Goose recipes and refer only to things that exist', () =
     }
     const text = `${recipe.instructions}\n${recipe.prompt}`;
     for (const match of text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)) assert.ok(declared.has(match[1]), `${name}: {{ ${match[1]} }} has no parameter`);
-    for (const tool of text.match(/\b(?:draft_expedite_request|draft_supplier_inquiry|submit_draft|get_audit_log|list_alternative_suppliers|list_purchase_orders|get_purchase_order)\b/g) ?? []) {
+    for (const tool of text.match(/\b(?:draft_expedite_request|draft_supplier_inquiry|draft_accrual_posting|get_open_grir_items|submit_draft|get_audit_log|list_alternative_suppliers|list_purchase_orders|get_purchase_order)\b/g) ?? []) {
       assert.ok(SAP_TOOLS.includes(tool), `${name}: unknown SAP tool ${tool}`);
     }
-    for (const fn of text.match(/\b(?:get_delay_risk_pos|get_po_detail|get_failed_runs|get_run_diagnosis|get_downstream_impact)\b/g) ?? []) {
+    for (const fn of text.match(/\b(?:get_delay_risk_pos|get_po_detail|get_failed_runs|get_run_diagnosis|get_downstream_impact|get_grir_accrual_candidates|get_intercompany_differences)\b/g) ?? []) {
       assert.match(functions, new RegExp(`FUNCTION werkbank_demo\\.\\w+\\.${fn}\\(`), `${name}: no SQL function ${fn}`);
     }
   }
@@ -109,7 +110,7 @@ test('the bridge manifest default paths match the functions in 07_functions.sql'
   const functions = read('sql/07_functions.sql');
   const paths = defaults.split(',').map((entry) => entry.split('=').pop());
   const functionPaths = paths.filter((path) => path.includes('/mcp/functions/'));
-  assert.equal(functionPaths.length, 5);
+  assert.equal(functionPaths.length, 7);
   for (const path of functionPaths) {
     const [, schema, fn] = path.match(/functions\/werkbank_demo\/(\w+)\/(\w+)$/);
     assert.match(functions, new RegExp(`FUNCTION werkbank_demo\\.${schema}\\.${fn}\\(`), path);
@@ -235,7 +236,7 @@ test('install copies skills, merges both extensions with absolute paths, and nev
   try {
     const first = installDatabricksDemo({ root, host: 'https://adb-1.2.azuredatabricks.net/some/path' });
     assert.deepEqual(first.extensions.sort(), ['databricks', 'sap-mock']);
-    assert.equal(first.skills.length, 3);
+    assert.equal(first.skills.length, 4);
     const configPath = join(root, 'goose-home/.config/goose/config.yaml');
     const config = parse(readFileSync(configPath, 'utf8'));
     assert.equal(config.GOOSE_MODE, 'auto');
@@ -269,4 +270,34 @@ test('connector bundles contain a manifest and the server and nothing else', () 
   } finally {
     rmSync(join(out, '..'), { recursive: true, force: true });
   }
+});
+
+test('pre-close story: what must be accrued, reviewed and clarified', () => {
+  const classes = {};
+  for (const item of GRIR_ITEMS) {
+    const bucket = (classes[classifyGrir(item)] ??= { count: 0, open: 0 });
+    bucket.count += 1;
+    bucket.open = Math.round((bucket.open + item.grValueEur - item.invoicedValueEur) * 100) / 100;
+  }
+  assert.deepEqual(classes, {
+    ACCRUE: { count: 8, open: 245775 },
+    INVOICE_BEFORE_GOODS: { count: 1, open: -16065 },
+    STALE_REVIEW: { count: 3, open: 17765 },
+  });
+  // Every GR/IR vendor exists, and the three company codes are the ones the plants belong to.
+  for (const item of GRIR_ITEMS) assert.ok(VENDORS.some((vendor) => vendor.id === item.vendor), item.vendor);
+  assert.deepEqual([...new Set(GRIR_ITEMS.map((item) => item.companyCode))].sort(), COMPANY_CODES.map((code) => code.id).sort());
+
+  const differences = IC_ITEMS.filter((item) => item.sellerAmountEur !== (item.buyerAmountEur ?? 0));
+  assert.deepEqual(differences.map((item) => item.id), ['IC-0005', 'IC-0006', 'IC-0007']);
+  assert.equal(differences.find((item) => item.id === 'IC-0005').buyerAmountEur, null);
+});
+
+test('pre-close SQL objects and the margin flash exist', () => {
+  const all = read('sql/all-in-one.sql');
+  for (const name of ['fin.grir_items', 'fin.intercompany_items']) assert.match(all, new RegExp(`CREATE OR REPLACE TABLE werkbank_demo\\.${name.replace('.', '\\.')} \\(`));
+  for (const name of ['fin.v_grir_open', 'fin.v_ic_differences']) assert.match(all, new RegExp(`CREATE OR REPLACE VIEW werkbank_demo\\.${name.replace('.', '\\.')} \\(`));
+  const recipe = read('recipes/finance-pre-close.yaml');
+  assert.match(recipe, /never post anything without a clear yes/i);
+  assert.match(recipe, /v_margin_vs_plan/);
 });

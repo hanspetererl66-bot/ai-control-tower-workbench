@@ -3,7 +3,7 @@
   "name": "sap-mock",
   "display_name": "SAP mock (purchasing)",
   "version": "0.1.0",
-  "description": "Mock SAP purchasing with fictional data for demos: read purchase orders and alternative suppliers, and post expedite requests or supplier inquiries through a two-step gate (draft first, then submit with a confirmation token). In memory only; restart the agent to reset.",
+  "description": "Mock SAP purchasing with fictional data for demos: read purchase orders and alternative suppliers, and post expedite requests, supplier inquiries or period-end accruals through a two-step gate (draft first, then submit with a confirmation token). In memory only; restart the agent to reset.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -41,6 +41,14 @@
     {
       "name": "draft_supplier_inquiry",
       "description": "Prepare an inquiry to an alternative supplier. Changes nothing; returns a draft and a confirmation token."
+    },
+    {
+      "name": "get_open_grir_items",
+      "description": "Goods received and not fully invoiced (GR/IR) per company code, as SAP holds them."
+    },
+    {
+      "name": "draft_accrual_posting",
+      "description": "Prepare an accrual for an open GR/IR item. Changes nothing; returns a draft and a confirmation token."
     },
     {
       "name": "submit_draft",

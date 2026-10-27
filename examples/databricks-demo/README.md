@@ -1,6 +1,6 @@
 # Databricks MCP demo for SAP TechEd Berlin
 
-Three scenarios, called from the Werkbank (the Goose client), against a Databricks workspace and a mock SAP system.
+Four scenarios, called from the Werkbank (the Goose client), against a Databricks workspace and a mock SAP system.
 All data is synthetic and generated from code, so every number in the demo can be reproduced.
 
 | # | Scenario | Databricks side | Write? |
@@ -8,15 +8,16 @@ All data is synthetic and generated from code, so every number in the demo can b
 | 1 | **Governed analyst**: "Why did DACH gross margin miss plan in Q3?" | Genie space, SQL tool | none |
 | 2 | **Pipeline on-call**: the nightly S/4 to Delta load failed, why, who is hit, what now | SQL tool, UC functions over job-run and lineage tables | one INSERT into `ops.rerun_requests`, after a yes |
 | 3 | **Insight to action**: purchase orders likely to slip, then an expedite request or supplier inquiry in SAP | UC functions (risk score) | `submit_draft` in the mock SAP, after a yes |
+| 4 | **Finance pre-close**: what to accrue or clarify before the period closes, checked against SAP | UC functions (open GR/IR, intercompany differences), SQL tool | an accrual in the mock SAP, after a yes |
 
-The story links 2 and 3: the custom SAP field `ZZ_EXPEDITE_FLAG` breaks the nightly ingest (schema drift) and is the same
+Scenario 4 reuses the same purchase orders and vendors: goods received on them and not yet invoiced are the GR/IR items. The story links 2 and 3: the custom SAP field `ZZ_EXPEDITE_FLAG` breaks the nightly ingest (schema drift) and is the same
 flag an expedite request sets.
 
 ## What is in here
 
 | Path | What |
 |------|------|
-| `recipes/*.yaml` | The three Goose recipes (`goose run --recipe ...`) |
+| `recipes/*.yaml` | The four Goose recipes (`goose run --recipe ...`) |
 | `skills/*/SKILL.md` | The same flows as Werkbank skills (generated from the recipes; the app has no recipe support) |
 | `goose/extensions.yaml` | The two extensions to add to Goose |
 | `sql/` | Setup, tables, seed data, views, UC functions, governance, grants, teardown. `all-in-one.sql` is 00 to 07 |
@@ -58,7 +59,7 @@ flag an expedite request sets.
 Use `smart_approve` or `approve` for the demo. The recipes ask for approval themselves; the mode adds a second, visible gate
 on every tool that is not marked read-only. The mock SAP marks its read tools read-only and `submit_draft` as the one write.
 
-## The demo, about 15 minutes
+## The demo, about 15 minutes (scenarios 1 to 3) plus 5 for the pre-close
 
 1. **Scenario 1 (4 min).** Ask the question. Open the generated SQL. Point at the ratio-of-sums rule from the space
    instructions, then the driver breakdown: Industrial Sensors discounts, Edge Gateways cost and FX. Switch the connector to the
@@ -71,6 +72,19 @@ on every tool that is not marked read-only. The mock SAP marks its read tools re
    Close the loop on the story: that flag is what breaks tomorrow night's ingest.
 4. **The tool-description moment (1 min).** Show a UC function with a good `COMMENT` next to one with an empty comment.
    The comment is the tool description the agent sees; it is part of the interface.
+
+## Scenario 4: finance pre-close (5 min)
+
+Ask: "What do I need to accrue or clarify before the close?" The assistant lists open goods receipts by treatment (accrue,
+review, clarify), the intercompany differences that will not eliminate, and any region more than a point below plan.
+It then checks the accrual candidates against SAP (`get_open_grir_items`): the two sides must agree before anything is drafted.
+Say "prepare the accruals", read the drafts, say yes, and show the accrual documents and the audit log.
+
+What to point out: the 90-day-old items are *not* accrued (a clearing review is the right treatment), the invoice that arrived
+before the goods is *not* accrued either, and SAP refuses an amount above the open value. With the seed data: 8 items to
+accrue (245,775 EUR), 3 stale (17,765 EUR), 1 invoice before goods, and 3 intercompany differences (a management fee of
+84,200 EUR missing on the buyer side, an engineering recharge off by 18,650 EUR, a 12.40 EUR rounding difference).
+Accruals are proposals for the controller, not accounting advice. The Databricks figures are a snapshot; SAP is the system of record.
 
 ## Swapping the risk view for a model
 

@@ -20,9 +20,9 @@ extensions:
       - <REPO>/connectors/databricks-bridge/server/index.mjs
     envs:
       DATABRICKS_HOST: https://adb-0000000000000000.0.azuredatabricks.net
-      # Endpoint paths, comma separated. sql and the five functions come from the managed MCP endpoints for
+      # Endpoint paths, comma separated. sql and the seven functions come from the managed MCP endpoints for
       # Databricks SQL and Unity Catalog functions. Add your Genie space with genie=<path of its MCP endpoint>.
-      DATABRICKS_MCP_PATHS: "sql=/api/2.0/mcp/sql,fn_delay_risk=/api/2.0/mcp/functions/werkbank_demo/scm/get_delay_risk_pos,fn_po_detail=/api/2.0/mcp/functions/werkbank_demo/scm/get_po_detail,fn_failed_runs=/api/2.0/mcp/functions/werkbank_demo/ops/get_failed_runs,fn_run_diagnosis=/api/2.0/mcp/functions/werkbank_demo/ops/get_run_diagnosis,fn_downstream=/api/2.0/mcp/functions/werkbank_demo/ops/get_downstream_impact"
+      DATABRICKS_MCP_PATHS: "sql=/api/2.0/mcp/sql,fn_delay_risk=/api/2.0/mcp/functions/werkbank_demo/scm/get_delay_risk_pos,fn_po_detail=/api/2.0/mcp/functions/werkbank_demo/scm/get_po_detail,fn_failed_runs=/api/2.0/mcp/functions/werkbank_demo/ops/get_failed_runs,fn_run_diagnosis=/api/2.0/mcp/functions/werkbank_demo/ops/get_run_diagnosis,fn_downstream=/api/2.0/mcp/functions/werkbank_demo/ops/get_downstream_impact,fn_grir=/api/2.0/mcp/functions/werkbank_demo/fin/get_grir_accrual_candidates,fn_ic=/api/2.0/mcp/functions/werkbank_demo/fin/get_intercompany_differences"
     timeout: 120
   sap-mock:
     type: stdio
