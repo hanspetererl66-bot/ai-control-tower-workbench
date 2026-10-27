@@ -38,13 +38,15 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
     onAgents(agents.map((a) => (a.id === agent.id ? { ...a, ...change, ...(touchesSetup ? { tested: false } : {}) } : a)));
     if (touchesSetup) setRun(null);
   };
+  const open = (id: string) => { setHelp(false); setSelected(id); setRun(null); setShown(0); setConfirmDelete(false); };
   const create = (templateId: string | null) => {
     const t = TEMPLATES.find((x) => x.id === templateId) ?? null;
+    const existing = t ? agents.find((x) => x.template === t.id) : undefined;
+    if (existing) { open(existing.id); return; }
     const a = newAgent(t, catalog);
     onAgents([a, ...agents]);
     setSelected(a.id); setRun(null); setShown(0); setHelp(false);
   };
-  const open = (id: string) => { setHelp(false); setSelected(id); setRun(null); setShown(0); setConfirmDelete(false); };
 
   const test = () => {
     if (!agent || problems(agent).length) return;
@@ -74,7 +76,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
         <p className="studio-sub">Simple agents by form: brief, sources, rights. Test first, then publish.</p>
         <button className={`studio-tpl ${(!agent || help) ? 'on' : ''}`} onClick={() => setHelp(true)}><b>How does it work?</b><small>start here</small></button>
         <div className="studio-new">
-          {TEMPLATES.map((t) => <button key={t.id} className="studio-tpl" onClick={() => create(t.id)}><b>{t.name}</b><small>{t.story}</small></button>)}
+          {TEMPLATES.map((t) => <button key={t.id} className="studio-tpl" onClick={() => create(t.id)} title={agents.some((x) => x.template === t.id) ? 'Already created: opens your agent' : 'Create an agent from this template'}><b>{t.name}</b><small>{agents.some((x) => x.template === t.id) ? 'open' : t.story}</small></button>)}
           <button className="studio-tpl" onClick={() => create(null)}><b>Blank agent</b><small>start empty</small></button>
         </div>
         {agents.map((a) => (
