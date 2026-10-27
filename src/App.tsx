@@ -33,6 +33,7 @@ import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFr
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
 import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
+import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
@@ -896,6 +897,9 @@ export default function App() {
       onRemember={(idea) => { const r = addMemory(memory, idea.kind, idea.text); if (!r.error) changeMemory(r.state); else setDismissedIdeas((d) => [...d, idea.text]); }}
       onDismissIdea={(idea) => setDismissedIdeas((d) => [...d, idea.text])}
       onOpenSettings={() => setSettingsOpen(true)}
+      preview={contextPreview({ style: assistantNote(prefs), persona: personaNote(personas), memory: currentMemoryNote(), group: groupNote(activeGroup) })}
+      canMakeSkill={messages.filter((m) => m.role === 'user').length >= 2 && !busy}
+      onMakeSkill={() => { void send('/make-skill'); }}
     />
   );
   const suggestionBar = memorySuggestion && (

@@ -3851,3 +3851,7 @@ textarea.studio-field { min-height: 120px; }
 .studio-glossary, .studio-steps { margin: 4px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; }
 .studio-steps li i { display: block; color: var(--muted); font-style: normal; font-size: 13px; margin-top: 2px; }
 .studio-tip { font-size: 13px; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 10px; margin: 12px 0 0; }
+.ctx-preview { top: calc(100% + 6px); bottom: auto; max-height: min(50vh, 420px); overflow: auto; }
+.ctx-preview-sec { display: flex; flex-direction: column; gap: 4px; }
+.ctx-preview-sec small { color: var(--ink-3, var(--ink)); opacity: 0.75; }
+.ctx-preview-sec pre { margin: 0; white-space: pre-wrap; font: inherit; font-size: 12px; background: var(--surface, var(--panel)); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }

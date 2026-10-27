@@ -52,6 +52,7 @@ export const NAME_RE = /^[a-z0-9][a-z0-9_-]{0,29}$/;
 /** {args}: what is typed after the command. {memory}: the memory entries in context. {approvals}: open requests. */
 export const BUILTIN_COMMANDS: Command[] = [
   { name: 'briefing', prompt: 'Create my briefing for today. What you know about me and my work:\n{memory}\n\nOpen approvals waiting for a decision: {approvals}.\n\nStructure: 1) the three priorities of the day, 2) risks and deviations from the AI Control Tower, 3) decisions and approvals I have to make, 4) what I should prepare. Short, concrete, no filler. {args}' },
+  { name: 'make-skill', prompt: 'Turn the workflow of this conversation into a reusable skill. Do not create or save any file. Write the draft as ONE code block in SKILL.md format: front matter with name (kebab-case) and a specific description of when to use it, then the steps in order, the inputs it needs, the sources it reads and the shape of the result. Leave out anything personal or one-off. After the block, list in two lines what I should check before I install it. {args}' },
   { name: 'board', prompt: 'Summarise the current state of risks, budget and open audit points on one page for the board: result first, then three numbers, then the decision needed. {args}' },
   { name: 'renewals', prompt: 'Which renewals in the next 90 days are red or yellow? Give the reason per customer and a next step. {args}' },
 ];

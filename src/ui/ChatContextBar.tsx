@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Persona } from '../chat-context';
 import type { MemoryKind } from '../memory';
+import type { PreviewSection } from '../personalization';
 
 export type MemoryIdea = { kind: MemoryKind; text: string };
 export type ChatContextBarProps = {
@@ -20,6 +21,11 @@ export type ChatContextBarProps = {
   onRemember: (idea: MemoryIdea) => void;
   onDismissIdea: (idea: MemoryIdea) => void;
   onOpenSettings: () => void;
+  /** What goes along with the next message, section by section. */
+  preview: PreviewSection[];
+  /** Offered once the conversation has some substance; turns it into a skill draft. */
+  canMakeSkill: boolean;
+  onMakeSkill: () => void;
 };
 
 /**
@@ -29,6 +35,8 @@ export type ChatContextBarProps = {
 export default function ChatContextBar(p: ChatContextBarProps) {
   const [ideasOpen, setIdeasOpen] = useState(false);
   const open = ideasOpen && p.ideas.length > 0;
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const activeCount = p.preview.filter((x) => x.active).length;
   return (
     <div className="ctxbar" role="group" aria-label="What shapes the answers">
       <button className={`ctx-chip ${p.memoryEnabled ? 'on' : ''}`} aria-pressed={p.memoryEnabled} title="Memory is added to every message. Click to switch it off or on." onClick={() => p.onMemoryEnabled(!p.memoryEnabled)}>
@@ -53,6 +61,20 @@ export default function ChatContextBar(p: ChatContextBarProps) {
       </label>
       {p.ideas.length > 0 && (
         <button className="ctx-chip ctx-hot" aria-expanded={open} onClick={() => setIdeasOpen((o) => !o)}>Memory ideas {p.ideas.length}</button>
+      )}
+      <button className={`ctx-chip ${previewOpen ? 'on' : ''}`} aria-expanded={previewOpen} title="Show exactly what Joule gets along with your next message" onClick={() => setPreviewOpen((o) => !o)}>What Joule knows {activeCount}</button>
+      {p.canMakeSkill && <button className="ctx-chip" title="Draft a reusable skill from this conversation (nothing is saved)" onClick={p.onMakeSkill}>Make skill</button>}
+      {previewOpen && (
+        <div className="ctx-ideas ctx-preview" role="region" aria-label="What Joule knows">
+          <strong>Sent along with your next message</strong>
+          {p.preview.map((x) => (
+            <div key={x.id} className="ctx-preview-sec">
+              <b>{x.title}</b> <small>{x.active ? 'active' : 'empty'} · {x.hint}</small>
+              {x.active && <pre>{x.text}</pre>}
+            </div>
+          ))}
+          <button className="ghost-btn" onClick={p.onOpenSettings}>Change in settings</button>
+        </div>
       )}
       {open && (
         <div className="ctx-ideas" role="region" aria-label="Memory ideas from this conversation">
