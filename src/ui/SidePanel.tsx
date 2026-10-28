@@ -2,6 +2,7 @@ import { fileKind } from '../acp';
 import { MEMORY_KINDS, type MemoryState } from '../memory';
 import { LANGUAGES, LENGTHS, TONES, assistantNote, type Preferences } from '../preferences';
 import type { Schedule } from '../schedules';
+import HarnessPanel from './HarnessPanel';
 import MemoryPanel from './MemoryPanel';
 import type { PrefsUpdate } from './PreferencesPanels';
 import { ScheduleEditor } from './SchedulePopover';
@@ -142,6 +143,7 @@ function InstructionsTab({ prefs, onPrefs }: { prefs: Preferences; onPrefs: Pref
       <p className="side-hint">{a.instructions.length} / 1000</p>
       <h4 style={{ marginTop: 14 }}>What the assistant receives</h4>
       <pre className="side-pre">{note || 'Nothing: all settings are at their defaults.'}</pre>
+      <HarnessPanel prefs={prefs} onPrefs={onPrefs} />
     </div>
   );
 }

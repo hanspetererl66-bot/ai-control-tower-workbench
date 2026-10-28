@@ -29,6 +29,7 @@ import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
+import { activeHarness, allHarnesses, chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KINDS, type MemoryState } from './memory';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
@@ -204,6 +205,12 @@ export default function App() {
   const webSearchRef = useRef(true);
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
   askBeforeActionsRef.current = prefs.chat.askBeforeActions;
+  // Working profile (harness): checked on every tool call and approval request of the running answer.
+  const harness = activeHarness(prefs.harness);
+  const harnessRef = useRef(harness);
+  harnessRef.current = harness;
+  const harnessStepCount = useRef(0);
+  const harnessBlock = useRef<string | null>(null);
   const blockedWebTool = useRef(false);
   const agentRef = useRef<Agent | null>(null);
   const lastGroundedCsvPath = useRef<string | null>(null);
@@ -416,6 +423,14 @@ export default function App() {
         flush();
       },
       onToolCall: (tc: ToolCall) => {
+        const profile = harnessRef.current;
+        harnessStepCount.current += 1;
+        const verdict = checkToolCall(profile, tc);
+        if (!verdict.ok || stepsExceeded(profile, harnessStepCount.current)) {
+          // The working profile does not allow this call (connector, rights) or the step limit is reached: stop the answer here.
+          harnessBlock.current ??= verdict.ok ? harnessStepsNote(profile) : harnessBlockedNote(verdict.reason);
+          void agentRef.current?.cancel().catch(() => undefined);
+        }
         if (!webSearchRef.current && isWebTool(tc)) {
           // Web Search is off for this conversation: stop the turn as soon as a web tool is announced.
           blockedWebTool.current = true;
@@ -433,6 +448,13 @@ export default function App() {
       },
       onPermission: (req: PermissionRequest) =>
         new Promise<string>((resolve) => {
+          // A request the working profile refuses is declined without asking; the person sees why in the answer.
+          const verdict = checkToolCall(harnessRef.current, req);
+          if (!verdict.ok) {
+            harnessBlock.current ??= harnessBlockedNote(verdict.reason);
+            resolve(rejectOption(req.options));
+            return;
+          }
           resolvePermission.current = resolve;
           setPermission(req);
         }),
@@ -497,6 +519,8 @@ export default function App() {
       setTitle((text || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
     setMemorySuggestion(suggestMemory(text, memory));
+    harnessStepCount.current = 0;
+    harnessBlock.current = null;
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -529,7 +553,7 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), memoryNote(memory), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, assistantNote(prefs), harnessNote(harnessRef.current), memoryNote(memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -622,6 +646,11 @@ export default function App() {
       }
     } finally {
       speaker.current?.finish();
+      if (harnessBlock.current) {
+        if (!cancelledByUser.current) draft.current += harnessBlock.current;
+        harnessBlock.current = null;
+        flush();
+      }
       if (blockedWebTool.current) {
         blockedWebTool.current = false;
         if (!cancelledByUser.current) draft.current += WEB_SEARCH_BLOCKED_NOTE;
@@ -678,6 +707,15 @@ export default function App() {
       setMode(previous);
     }
   }
+
+  /** Choosing a profile that limits actions switches the agent to asking before changes; it never switches it back by itself. */
+  function changeHarness(id: string) {
+    updatePrefs((current) => ({ ...current, harness: chooseHarness(current.harness, id) }));
+  }
+  useEffect(() => {
+    if (agent && requiresApproval(harness) && mode === 'auto') void changeMode('smart_approve');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agent, harness.id, harness.permission, mode]);
 
   /** One click: stage the bundled connector and show the usual approve dialog (URL and key are optional there). */
   async function installControlTowerConnector() {
@@ -829,6 +867,9 @@ export default function App() {
       workdir={WORKDIR}
       mode={mode}
       onModeChange={changeMode}
+      harnesses={allHarnesses(prefs.harness).map(({ id, name, description }) => ({ id, name, description }))}
+      harnessId={harness.id}
+      onHarnessChange={changeHarness}
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
@@ -875,6 +916,7 @@ export default function App() {
   const contextItems: ContextItem[] = [
     { id: 'memory', label: 'Memory', detail: memory.enabled ? memorySummary(memory) : 'Switched off', on: memory.enabled && memory.entries.length > 0, tab: 'memory' },
     { id: 'instructions', label: 'Instructions', detail: instructionsSet ? 'Language, length, tone or standing instructions set' : 'All at their defaults', on: instructionsSet, tab: 'instructions' },
+    { id: 'harness', label: 'Working profile', detail: harnessSummary(harness), on: harness.id !== 'standard', tab: 'instructions' },
     { id: 'web', label: 'Web search', detail: webSearch ? 'The assistant may search the web' : 'Switched off for this conversation', on: webSearch },
     { id: 'group', label: 'Group', detail: activeGroup ? activeGroup.group.name : 'No group selected', on: Boolean(activeGroup) },
     { id: 'schedule', label: 'Schedule', detail: activeSchedules ? `${activeSchedules} recurring ${activeSchedules === 1 ? 'briefing' : 'briefings'} active` : 'No recurring briefings', on: activeSchedules > 0, tab: 'schedule' },
