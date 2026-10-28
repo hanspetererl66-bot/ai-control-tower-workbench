@@ -203,6 +203,8 @@ export default function App() {
   const paths = useRef(new Set<string>());
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
+  const developStopped = useRef(false);
+  const sendRef = useRef<(text: string, attachments?: ChatAttachment[], options?: { plain?: boolean }) => Promise<void>>(async () => {});
   const webSearchRef = useRef(true);
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
   askBeforeActionsRef.current = prefs.chat.askBeforeActions;
@@ -511,7 +513,8 @@ export default function App() {
     setAgentEpoch((current) => current + 1);
   }
 
-  async function send(text: string, attachments: ChatAttachment[] = []) {
+  /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
+  async function send(text: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
     if (!agent || busy) return;
     cancelledByUser.current = false;
     const startedAt = Date.now();
@@ -538,7 +541,7 @@ export default function App() {
     ]);
     setBusy(true);
     try {
-      const spaceRequested = wantsSpace(text);
+      const spaceRequested = !options.plain && wantsSpace(text);
       const grounding = dataGroundingContext(attachments);
       const existingSpace = spaceRequested
         ? spaces.find((space) => text.toLocaleLowerCase().includes(space.title.toLocaleLowerCase()))
@@ -659,7 +662,7 @@ export default function App() {
       }
       setBusy(false);
       const nextSpaces = await refreshSpaces();
-      const spaceResult = wantsSpace(text)
+      const spaceResult = !options.plain && wantsSpace(text)
         ? nextSpaces.find((space) => {
             const previousUpdatedAt = previousSpaces.get(space.slug);
             return previousUpdatedAt === undefined || space.updatedAt > previousUpdatedAt;
@@ -680,9 +683,25 @@ export default function App() {
     }
   }
 
+  /**
+   * Develop: runs one working prompt through the agent in a conversation of its own, so the person's chats stay
+   * clean, and returns the agent's answer. '' means the person stopped it.
+   */
+  async function developGenerate(prompt: string, title: string): Promise<string> {
+    if (!agent) throw new Error('The agent is not connected yet.');
+    if (busy) throw new Error('The agent is still busy with another answer. Wait until it has finished.');
+    developStopped.current = false;
+    newConversation();
+    await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
+    await sendRef.current(prompt, [], { plain: true });
+    setTitle(title.slice(0, 48));
+    return developStopped.current ? '' : draft.current;
+  }
+
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
+    developStopped.current = true;
     speaker.current?.stop();
     try {
       await agent.cancel();
