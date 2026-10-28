@@ -10,7 +10,10 @@ export default function N8nView({
   visible,
   theme,
   onRestartAgent,
+  onBack,
 }: {
+  /** Back to the Develop start page. */
+  onBack?: () => void;
   /** False while a dialog is open: a native view would paint over it. */
   visible: boolean;
   /** The app's resolved theme; n8n is shown in the same one. */
@@ -118,6 +121,11 @@ export default function N8nView({
   return (
     <main className="main n8n-main">
       <header className="n8n-bar">
+        {onBack && (
+          <button className="ghost-btn" onClick={onBack} title="Back to Develop" aria-label="Back to Develop">
+            &larr; Develop
+          </button>
+        )}
         <h1 className="topbar-title">n8n</h1>
         {settings?.url && !editing && (
           <>
