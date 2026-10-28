@@ -3832,3 +3832,20 @@ button {
 .side-panel .details-count { background: var(--line); color: var(--muted); margin-left: 6px; }
 
 :root[data-theme="dark"] .settings-intro { background: #171a21; border-color: #2b2f3a; }
+
+/* ---------- mass upload of tables ---------- */
+.composer-drop { outline: 2px dashed var(--accent, #6d28d9); outline-offset: -2px; border-radius: 12px; }
+.attachment-table .attachment-icon { background: #15803d; }
+.table-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
+.table-actions-label { color: var(--muted, #667085); }
+.table-actions-note { color: var(--muted, #667085); }
+.table-send { flex-basis: 100%; display: grid; gap: 8px; padding: 10px 12px; border: 1px solid rgb(127 127 127 / 25%); border-radius: 10px; }
+.table-send label { display: grid; gap: 3px; font-size: 12px; color: var(--muted, #667085); }
+.table-send input, .table-send select { font: inherit; padding: 5px 8px; border: 1px solid rgb(127 127 127 / 30%); border-radius: 7px; background: transparent; color: inherit; }
+.table-send-help { margin: 0; font-size: 12px; color: var(--muted, #667085); }
+.table-send-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.table-send-status { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.table-send-status progress { width: 160px; }
+.table-send-failed { color: #b91c1c; }
+:root[data-theme="dark"] .table-send-failed { color: #f87171; }
+.table-send-done { color: #15803d; }

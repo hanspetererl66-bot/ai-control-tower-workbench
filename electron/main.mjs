@@ -5,7 +5,9 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
 import { parseDocument } from 'yaml';
-import { ATTACHMENT_FILTERS, prepareAttachments } from './attachments.mjs';
+import { ATTACHMENT_FILTERS, prepareAttachments, readTables } from './attachments.mjs';
+import { uploadBatches } from './bulk-upload.mjs';
+import { buildBatches } from '../shared/table-ingest.mjs';
 import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
 import { extractMarketplaceData } from '../connectors/control-tower/server/skill-profiles.mjs';
 import { extractGraph } from '../connectors/control-tower/server/graph.mjs';
@@ -1083,6 +1085,60 @@ ipcMain.handle('pick-chat-files', async () => {
     return prepareAttachments(result.filePaths, WORKSPACE);
   } catch (error) {
     return { files: [], errors: [error?.message ?? String(error)] };
+  }
+});
+
+/** Files dropped onto the chat: the same copy-and-extract path as the file dialog. */
+ipcMain.handle('add-chat-files', (_event, paths) => {
+  try {
+    if (!Array.isArray(paths) || !paths.every((p) => typeof p === 'string')) return { files: [], errors: ['Nothing to add.'] };
+    return prepareAttachments(paths, WORKSPACE);
+  } catch (error) {
+    return { files: [], errors: [error?.message ?? String(error)] };
+  }
+});
+
+/** The tables of an attached file (workspace only), for the table Space and the mass upload. */
+ipcMain.handle('read-tables', (_event, path) => {
+  try {
+    const file = workspaceFile(path);
+    if (!file) return { ok: false, detail: 'File is outside the workspace.' };
+    const tables = readTables(file).filter((t) => t.table.columns.length > 0);
+    if (!tables.length) return { ok: false, detail: 'No table found in this file.' };
+    return { ok: true, tables };
+  } catch (error) {
+    return { ok: false, detail: error?.message ?? String(error) };
+  }
+});
+
+/** Mass upload: send the rows of one table to a webhook in batches. Progress goes back as events. */
+let bulkCancelled = false;
+ipcMain.on('bulk-upload-cancel', () => { bulkCancelled = true; });
+ipcMain.handle('bulk-upload-rows', async (event, request) => {
+  try {
+    const file = workspaceFile(request?.path);
+    if (!file) return { ok: false, error: 'File is outside the workspace.' };
+    const tables = readTables(file);
+    const picked = tables[Number(request?.tableIndex) || 0];
+    if (!picked) return { ok: false, error: 'This table was not found.' };
+    const batches = buildBatches({
+      fileName: tables.length > 1 ? `${picked.name}` : picked.name,
+      table: picked.table,
+      batchSize: request?.batchSize,
+      batchId: typeof request?.batchId === 'string' && request.batchId ? request.batchId.slice(0, 80) : randomUUID(),
+    });
+    bulkCancelled = false;
+    const result = await uploadBatches({
+      url: String(request?.url ?? ''),
+      token: typeof request?.token === 'string' ? request.token.slice(0, 500) : '',
+      startAt: Math.max(1, Number(request?.startAt) || 1),
+      batches,
+      isCancelled: () => bulkCancelled,
+      onProgress: (progress) => event.sender.send('bulk-upload-progress', progress),
+    });
+    return { ...result, batchId: batches[0]?.batchId, totalRows: picked.table.rows.length };
+  } catch (error) {
+    return { ok: false, error: error?.message ?? String(error) };
   }
 });
 
