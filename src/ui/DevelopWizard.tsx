@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   GUARDRAILS, STAGES, STAGE_LABEL, SYSTEMS, TRIGGERS, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson,
-  documentFiles, extraQuestion, intentProblems, prdPrompt, setDocument, specPrompt, type Project, type Stage,
+  artifactFileName, extraQuestion, intentProblems, prdPrompt, projectFiles, setDocument, skillSlug, specPrompt, type Project, type Stage,
 } from '../develop';
+import { docToMarkdown, markdownToHtml, toHtml } from '../doc-html';
+import { exportDocument, saveFile, wrapHtml, type ExportFormat } from '../doc-export';
+import { makeZip } from '../zip';
 import { ChatMarkdown } from './ChatMarkdown';
+import { RichDoc } from './RichDoc';
 
 type Props = {
   project: Project;
@@ -16,6 +20,8 @@ type Props = {
   onOpenN8n: () => void;
   onOpenConnectors: () => void;
   onRestartAgent: () => Promise<void> | void;
+  /** Did the last store into the app's storage work, and when. */
+  saveState: { ok: boolean; at: number };
 };
 
 function download(name: string, text: string) {
@@ -29,7 +35,8 @@ function download(name: string, text: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-export default function DevelopWizard({ project, onChange, onClose, generate, onStop, ready, onOpenN8n, onOpenConnectors, onRestartAgent }: Props) {
+export default function DevelopWizard({ project, onChange, onClose, generate, onStop, ready, onOpenN8n, onOpenConnectors, onRestartAgent, saveState }: Props) {
+  const [folder, setFolder] = useState(false);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
@@ -50,11 +57,11 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
 
   async function run(which: 'requirements' | 'specification' | 'build', useFeedback: boolean) {
     const p = projectRef.current;
-    const previous = which === 'requirements' ? p.docs.prd : which === 'specification' ? p.docs.spec : p.docs.build;
+    const previous = which === 'requirements' ? docToMarkdown(p.docs.prd) : which === 'specification' ? docToMarkdown(p.docs.spec) : p.docs.build;
     const fb = useFeedback ? feedback : '';
     const prompt = which === 'requirements' ? prdPrompt(p.kind, p.intent, fb, previous)
-      : which === 'specification' ? specPrompt(p.kind, p.intent, p.docs.prd, fb, previous)
-      : buildPrompt(p.kind, p.intent, p.docs.prd, p.docs.spec, fb, previous);
+      : which === 'specification' ? specPrompt(p.kind, p.intent, docToMarkdown(p.docs.prd), fb, previous)
+      : buildPrompt(p.kind, p.intent, docToMarkdown(p.docs.prd), docToMarkdown(p.docs.spec), fb, previous);
     setWorking(true); setError(''); setNote('');
     try {
       const label = which === 'requirements' ? 'requirements' : which === 'specification' ? 'specification' : 'build';
@@ -62,7 +69,7 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
       if (!alive.current) return;
       if (!text) setNote('Stopped. Nothing was changed.');
       else if (text.startsWith('⚠️')) setError(text.replace(/^⚠️\s*/, ''));
-      else { onChange(setDocument({ ...projectRef.current, stage: which }, which, text)); setFeedback(''); setEditing(false); }
+      else { onChange(setDocument({ ...projectRef.current, stage: which }, which, which === 'build' ? text : markdownToHtml(text))); setFeedback(''); setEditing(false); }
     } catch (e: any) {
       if (alive.current) setError(e?.message ?? 'The agent could not answer.');
     } finally {
@@ -86,7 +93,10 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
         <button className="ghost-btn" onClick={onClose} disabled={working}>&larr; Develop</button>
         <h1 className="dev-title">{project.intent.name.trim() || `New ${kindWord}`}</h1>
         <span className="dev-kind">{project.kind === 'workflow' ? 'n8n workflow' : 'Agent'}</span>
+        <button className="ghost-btn small dev-folder-btn" onClick={() => setFolder((v) => !v)} aria-expanded={folder}>Project folder</button>
       </header>
+      {folder && <ProjectFolder project={project} />}
+      <SaveLine state={saveState} />
       <ol className="dev-steps" aria-label="Steps">
         {STAGES.map((s, i) => (
           <li key={s}>
@@ -118,17 +128,26 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
             </div>
           ) : (
             <>
-              <div className="dev-doc-bar">
-                <button className="ghost-btn small" onClick={() => setEditing((v) => !v)}>{editing ? 'Show' : 'Edit'}</button>
-                {stage !== 'build' && <button className="ghost-btn small" onClick={() => download(documentFiles(project).find((f) => (stage === 'requirements' ? /PRD/ : /specification/).test(f.name))?.name ?? 'document.md', doc)}>Download .md</button>}
-                {project.approved.includes(stage) && <span className="dev-approved">✓ Approved</span>}
-              </div>
-              {stage === 'build' && <BuildResult project={project} onOpenN8n={onOpenN8n} onOpenConnectors={onOpenConnectors} onRestartAgent={onRestartAgent} />}
-              {stage === 'build' && !editing
-                ? <details className="dev-answer"><summary>The full answer of the agent</summary><div className="dev-rendered"><ChatMarkdown text={doc} /></div></details>
-                : editing
-                  ? <textarea className="dev-edit" value={doc} onChange={(e) => onChange(setDocument(project, stage as 'requirements' | 'specification' | 'build', e.target.value))} aria-label="Edit the document" />
-                  : <div className="dev-rendered"><ChatMarkdown text={doc} /></div>}
+              {stage === 'build' ? (
+                <>
+                  <div className="dev-doc-bar">
+                    <button className="ghost-btn small" onClick={() => setEditing((v) => !v)}>{editing ? 'Show' : 'Edit text'}</button>
+                    <button className="ghost-btn small" onClick={() => saveFile(`${skillSlug(project.intent.name) || 'project'}-build-answer.md`, doc, 'text/markdown;charset=utf-8')}>Save answer (.md)</button>
+                  </div>
+                  <BuildResult project={project} onOpenN8n={onOpenN8n} onOpenConnectors={onOpenConnectors} onRestartAgent={onRestartAgent} />
+                  {editing
+                    ? <textarea className="dev-edit" value={doc} onChange={(e) => onChange(setDocument(project, 'build', e.target.value))} aria-label="Edit the build answer" />
+                    : <details className="dev-answer"><summary>The full answer of the agent</summary><div className="dev-rendered"><ChatMarkdown text={doc} /></div></details>}
+                </>
+              ) : (
+                <>
+                  <div className="dev-doc-bar">
+                    <ExportMenu onExport={(f) => exportDocument(f, toHtml(doc), `${skillSlug(project.intent.name) || 'project'}-${stage === 'requirements' ? 'PRD' : 'specification'}`, `${stage === 'requirements' ? 'PRD' : 'Specification'}: ${project.intent.name.trim() || 'project'}`)} />
+                    {project.approved.includes(stage) && <span className="dev-approved">✓ Approved</span>}
+                  </div>
+                  <RichDoc key={`${project.id}-${stage}`} value={toHtml(doc)} onChange={(html) => onChange(setDocument(projectRef.current, stage as 'requirements' | 'specification', html))} label={STAGE_LABEL[stage]} />
+                </>
+              )}
               <div className="dev-feedback">
                 <label>Something to change?
                   <textarea value={feedback} onChange={(e) => setFeedback(e.target.value)} rows={2} placeholder="For example: add a requirement for an audit log, or: the approval must come from the account owner." />
@@ -174,6 +193,8 @@ function IntentMask({ project, onChange, onDone, disabled }: { project: Project;
         <select value={i.guardrail} onChange={(e) => set({ guardrail: e.target.value })}>{GUARDRAILS.map((g) => <option key={g}>{g}</option>)}</select>
       </label>
       <label>How will you know that it works?<textarea rows={2} value={i.success} onChange={(e) => set({ success: e.target.value })} placeholder="Something you can check, for example: no deadline is missed." /></label>
+      <label>Who is involved? <span className="dev-opt">optional</span><textarea rows={2} value={i.stakeholders} onChange={(e) => set({ stakeholders: e.target.value })} placeholder="Who uses it, who approves, who is affected. For example: legal team, contract owners, procurement lead." /></label>
+      <label>What should it explicitly not do? <span className="dev-opt">optional</span><textarea rows={2} value={i.outOfScope} onChange={(e) => set({ outOfScope: e.target.value })} placeholder="For example: no terminations, no changes in S/4HANA, no personal data." /></label>
       <label>{extra.label}<textarea rows={2} value={i.extra} onChange={(e) => set({ extra: e.target.value })} placeholder={extra.hint} /></label>
       {shown && problems.length > 0 && <ul className="dev-error" role="alert">{problems.map((p) => <li key={p}>{p}</li>)}</ul>}
       <div className="dev-next"><button className="dev-primary" type="submit" disabled={disabled}>Write the requirements</button></div>
@@ -187,7 +208,7 @@ function BuildResult({ project, onOpenN8n, onOpenConnectors, onRestartAgent }: {
   const [installed, setInstalled] = useState(false);
   if (!artifact) return <p className="dev-error" role="alert">I could not find the {project.kind === 'workflow' ? 'workflow JSON' : 'SKILL.md'} in the answer. Write it again with a change request such as "Give me the complete file in one code block".</p>;
   const check = project.kind === 'workflow' ? checkWorkflowJson(artifact) : checkSkillMd(artifact);
-  const slug = documentFiles(project).find((f) => !/PRD|specification/.test(f.name))?.name ?? 'result.txt';
+  const slug = artifactFileName(project);
 
   async function install(replace = false) {
     setMsg('');
@@ -232,5 +253,41 @@ function BuildResult({ project, onOpenN8n, onOpenConnectors, onRestartAgent }: {
       </div>
       {msg && <p className="dev-note" role="status">{msg}</p>}
     </div>
+  );
+}
+
+function SaveLine({ state }: { state: { ok: boolean; at: number } }) {
+  if (!state.ok) return <p className="dev-error" role="alert">Your changes could not be stored in the app (the storage is full or blocked). Download the project folder now so that nothing is lost, and delete old projects or large images.</p>;
+  return <p className="dev-saved" role="status">Saved automatically{state.at ? ` at ${new Date(state.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}. Every change is stored while you type.</p>;
+}
+
+function ExportMenu({ onExport }: { onExport: (f: ExportFormat) => void }) {
+  const items: [ExportFormat, string][] = [['pdf', 'PDF (print dialog)'], ['word', 'Word (.doc)'], ['html', 'Web page (.html)'], ['md', 'Markdown (.md)']];
+  return (
+    <details className="dev-export">
+      <summary className="ghost-btn small">Save / export ▾</summary>
+      <div className="dev-export-list" role="menu">
+        {items.map(([f, label]) => <button key={f} role="menuitem" onClick={(e) => { onExport(f); (e.currentTarget.closest('details') as HTMLDetailsElement).open = false; }}>{label}</button>)}
+      </div>
+    </details>
+  );
+}
+
+function ProjectFolder({ project }: { project: Project }) {
+  const files = projectFiles(project, wrapHtml);
+  const slug = skillSlug(project.intent.name) || 'project';
+  return (
+    <section className="dev-tree" aria-label="Project folder">
+      <ul>
+        {files.map((f) => (
+          <li key={f.path}>
+            <span className="dev-tree-path">{f.path}</span>
+            <span className="dev-tree-size">{Math.max(1, Math.round(f.text.length / 1024))} KB</span>
+            <button className="ghost-btn small" onClick={() => saveFile(f.path.split('/').pop() ?? 'file', f.text, 'text/plain;charset=utf-8')}>Save</button>
+          </li>
+        ))}
+      </ul>
+      <button className="dev-primary" onClick={() => saveFile(`${slug}.zip`, makeZip(files) as BlobPart, 'application/zip')}>Download the whole folder (.zip)</button>
+    </section>
   );
 }

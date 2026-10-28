@@ -18,7 +18,8 @@ type Props = {
 export default function DevelopHub(props: Props) {
   const [projects, setProjects] = useState<Project[]>(() => loadProjects(window.localStorage));
   const [openId, setOpenId] = useState<string | null>(null);
-  useEffect(() => saveProjects(window.localStorage, projects), [projects]);
+  const [saveState, setSaveState] = useState({ ok: true, at: 0 });
+  useEffect(() => { const ok = saveProjects(window.localStorage, projects); setSaveState((s) => ({ ok, at: ok ? Date.now() : s.at })); }, [projects]);
   const open = projects.find((p) => p.id === openId) ?? null;
 
   const start = (kind: Kind) => {
@@ -33,6 +34,7 @@ export default function DevelopHub(props: Props) {
         <DevelopWizard
           project={open}
           onChange={(p) => setProjects((list) => upsertProject(list, p))}
+          saveState={saveState}
           onClose={() => setOpenId(null)}
           generate={props.generate}
           onStop={props.onStop}
