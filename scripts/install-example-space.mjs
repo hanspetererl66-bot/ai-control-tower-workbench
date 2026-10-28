@@ -26,6 +26,7 @@ export const EXAMPLE_SPACES = {
   'it-fleet': 'it-fleet',
   'mcp-marketplace': 'mcp-marketplace',
   'calm-alm': 'calm-alm',
+  'abap-workbench': 'abap-workbench',
 };
 
 /**

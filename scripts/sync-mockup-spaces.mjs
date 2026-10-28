@@ -12,6 +12,7 @@ export const MOCKUPS = [
   { page: 'examples/call-transcripts/index.html', data: 'examples/call-transcripts/calls.json' },
   { page: 'examples/customer-emails/index.html', data: 'examples/customer-emails/threads.json' },
   { page: 'examples/sales/index.html', data: 'examples/sales/pipeline.json' },
+  { page: 'examples/abap-workbench/index.html', data: 'examples/abap-workbench/data.json' },
 ];
 /** Catalog Spaces: real, sourced facts (not fictional), embedded the same way. */
 export const CATALOGS = [

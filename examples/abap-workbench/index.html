@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ABAP Workbench</title>
+<style id="design-system">
+/* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
+   Source of truth: examples/shared/design-system.css. Embedded into each Space by
+   `npm run sync:design` (Spaces are single-file pages: no network, no external CSS).
+   Light and dark follow prefers-color-scheme (or data-theme on <html>); colours only exist as tokens. */
+:root{
+  color-scheme:light dark;
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
+  --canvas:#f6f1fc;--surface:#ffffff;--ink:#22093a;--ink-2:#4b3a66;--muted:#6f6388;--faint:#bcb0d2;--line:#e8def6;--line-2:#f2ebfa;--wash:#faf6ff;
+  --purple:#A100FF;--purple-mid:#7500C0;--purple-deep:#460073;--purple-dim:rgba(161,0,255,.07);--purple-border:rgba(161,0,255,.22);--purple-light:#E6DCFF;
+  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
+  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
+  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
+  --blue:#0041F0;--blue-dim:rgba(0,65,240,.08);--blue-border:rgba(0,65,240,.22);
+  --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
+  --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(70,0,115,.05),0 8px 24px rgba(70,0,115,.06);--shadow-lg:0 24px 60px rgba(70,0,115,.25);
+  --space:8px;
+  /* Control Tower token names */
+  --black:var(--surface);--white:var(--surface);
+  --g900:var(--ink);--g700:var(--ink-2);--g500:var(--muted);--g300:var(--faint);--g200:var(--line);--g100:var(--line-2);--g50:var(--wash);
+  --sh:var(--shadow);--p-dim:var(--purple-dim);--r-dim:var(--red-dim);--r-bd:var(--red-border);--a-bd:var(--amber-border);--g-bd:var(--green-border);
+  /* Sub4Me token names */
+  --bg:var(--canvas);--panel:var(--surface);--mut:var(--muted);--brand:var(--purple);--brand-dim:var(--purple-dim);
+  --ok:var(--green);--ok-dim:var(--green-dim);--warn:var(--amber);--warn-dim:var(--amber-dim);--bad:var(--red);--bad-dim:var(--red-dim);
+}
+/* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#120820;--surface:#1c1030;--ink:#f5efff;--ink-2:#d6c9ec;--muted:#a597c2;--faint:#62517f;--line:#312247;--line-2:#25193a;--wash:#201437;
+  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2e1650;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#120820;--surface:#1c1030;--ink:#f5efff;--ink-2:#d6c9ec;--muted:#a597c2;--faint:#62517f;--line:#312247;--line-2:#25193a;--wash:#201437;
+  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2e1650;
+  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
+  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
+  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
+  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
+  --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
+}
+:root[data-theme="light"]{color-scheme:light}
+
+/* ---- Base ---- */
+body{background:var(--canvas);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+/* Calmer labels: no all-caps micro headings, also where pages style them inline. */
+[style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.tag,.mv,.bv,.kval,.dv,.tbl td,.num,.hdr-stat-val{font-variant-numeric:tabular-nums}
+
+/* ---- Cards and tiles (both Spaces) ---- */
+.mc,.card,.ns,.dtier,.pc,.cc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mc{padding:20px 22px}
+.card,.ns{padding:24px;margin-bottom:16px}
+.dtier,.pc,.cc{padding:18px}
+.ns{border-top:1px solid var(--line)}
+.ml,.k{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.mv,.v{font-family:var(--font);font-size:30px;font-weight:650;letter-spacing:-.025em;color:var(--ink);line-height:1.15}
+.md,.s{font-size:12px}
+.sh{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin:36px 0 14px}
+.chd{font-size:15px;font-weight:650;color:var(--ink)}
+
+/* Status tags */
+.tag{font-family:var(--font);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border-width:1px}
+.src{border-radius:99px;font-weight:600}
+
+/* Tables */
+.tbl th,table th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 14px}
+.tbl td,table td{padding:14px;border-bottom:1px solid var(--line-2)}
+.tbl{border-collapse:collapse}
+
+/* Bars */
+.bt{height:6px;border-radius:99px;background:var(--line-2)}
+.bf{border-radius:99px}
+.bar{background:var(--line-2)}
+
+/* Alerts, notes and callouts */
+.ab{border-radius:var(--radius);border-width:1px;border-left-width:1px;padding:18px 20px}
+.ab-w{border-color:var(--amber-border)}.ab-i{border-color:var(--purple-border)}.ab-s{border-color:var(--blue-border)}.ab-ok{border-color:var(--green-border)}
+
+/* Forms and buttons */
+input,select,textarea{font-family:var(--font);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;box-shadow:0 0 0 3px var(--purple-dim)}
+/* Calm Bento buttons: one family. Primary = Accenture purple on white text, secondary = soft tint, quiet = neutral. */
+button.primary,button.ghost,button.small{font:inherit;font-size:13px;font-weight:550;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:var(--radius-s);border:1px solid var(--line);background:var(--surface);color:var(--ink-2);transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+button.primary{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 1px 2px rgba(70,0,115,.18)}
+button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-mid)}
+button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-mid)}
+button.primary:hover:not(:disabled){background:var(--purple-mid);border-color:var(--purple-mid)}
+button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;cursor:default}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple)}}
+:root[data-theme="dark"] button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}
+:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple)}
+
+/* Bento: the first tile of a KPI row carries the accent wash. */
+.mr>.mc:first-child,.s4m .grid>.card:first-child{background:linear-gradient(135deg,var(--purple-light),var(--surface) 78%)}
+
+/* Overlay (agent list) */
+.ag-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px 30px}
+.ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
+.ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
+.ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ag-tbl td{padding:10px 8px}
+
+/* ---- Control Tower shell ---- */
+.ct .hdr{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:60px;padding:0 32px}
+.ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
+.ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
+.ct .hdr-div{background:var(--line)}
+.ct .acc-mark{color:var(--purple)}
+.ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
+.ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
+.ct .live{color:var(--muted);font-family:var(--font)}
+.ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.ct .tb:hover:not(.on){color:var(--ink)}
+.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tnum{display:none}
+.ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
+.ct .mr{gap:16px;margin-bottom:32px}
+.ct .g2,.ct .g3,.ct .g4{gap:20px}
+.ct .br{margin-bottom:14px}
+.ct .krow,.ct .srow,.ct .ci{padding:14px 0}
+.ct .kdesc,.ct .sdesc,.ct .abod{line-height:1.65}
+.ct .fn{border-radius:99px;font-family:var(--font)}
+.ct .ns-fml{font-family:var(--font);border-radius:var(--radius-s)}
+.ct .dm{font-family:var(--font);letter-spacing:.02em;text-transform:none;font-size:12px;font-weight:500}
+
+/* ---- Sub4Me shell ---- */
+.s4m header{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 32px;min-height:60px;box-sizing:border-box}
+.s4m .logo{font-size:15px;font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.s4m header .s{font-size:11px;letter-spacing:.01em;line-height:1.5;margin-top:1px;color:var(--muted)}
+.s4m{font-size:13px}
+.s4m .demo{padding:8px 32px}
+.s4m nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
+.s4m nav button{padding:16px 14px 14px;font-size:13px;font-weight:500;line-height:normal;border-bottom:2px solid transparent}
+.s4m nav button:hover:not([aria-selected=true]){color:var(--ink)}
+.s4m nav button[aria-selected=true]{font-weight:600;border-bottom-color:var(--purple)}
+.s4m main{padding:40px 32px 64px;max-width:1320px}
+.s4m .grid{gap:16px;margin-bottom:28px}
+.s4m h2{font-size:13px;font-weight:600;margin:36px 0 14px}
+.s4m .row{gap:20px}
+.s4m .months span{border-radius:8px 8px 0 0}
+.s4m .bar{height:6px}
+@media(max-width:640px){.ct .pg,.s4m main{padding:24px 16px 48px}.ct .hdr,.ct .tbar,.s4m header,.s4m nav{padding-left:16px;padding-right:16px}}
+.s4m .months.stack div{cursor:default}
+.s4m .months.stack .col{display:flex;flex-direction:column-reverse;width:100%;flex:1;justify-content:flex-start;gap:1px}
+.s4m .months.stack .col i{display:block;width:100%;min-height:1px}
+.s4m .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--mut)}
+.s4m .legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s4m #products tbody tr{cursor:pointer}
+.s4m #products tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #products tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m #contracts tbody tr,.s4m #offers tbody tr{cursor:pointer}
+.s4m #contracts tbody tr[aria-selected="true"],.s4m #offers tbody tr[aria-selected="true"]{background:var(--line-2)}
+.s4m #contracts tbody tr:focus-visible,.s4m #offers tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .detail{margin-top:12px}
+.s4m .detail .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+.s4m .detail .head .t{font-size:18px;font-weight:600}
+.s4m .detail .hint{margin:0 0 4px}
+.s4m .detail .secs{display:grid;gap:18px 28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px}
+.s4m .detail h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .detail dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:5px 12px;font-size:13px}
+.s4m .detail dt{color:var(--muted)}
+.s4m .detail dd{margin:0;overflow-wrap:anywhere}
+.s4m .detail .lines{margin-top:16px;overflow-x:auto}
+.s4m .detail .note{margin-top:14px;font-size:13px;color:var(--muted)}
+.s4m #product-detail{margin-top:16px}
+.s4m #product-detail .dgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:12px 0 18px}
+.s4m #product-detail .dgrid .v{font-size:20px;font-weight:600}
+.s4m #offers td:not(:nth-child(2)),.s4m #offers th,.s4m #contracts td:not(:nth-child(2)):not(:nth-child(3)){white-space:nowrap}
+
+/* Skill Marketplace: impact, governance, gaps and the skill detail view */
+.s4m .smx-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:6px}
+.s4m .smx-kpis .v{font-size:24px;font-weight:600}
+.s4m tr[data-skill],.s4m article.sk[data-skill]{cursor:pointer}
+.s4m tr[data-skill]:hover{background:var(--line-2)}
+.s4m tr[data-skill]:focus-visible,.s4m article.sk[data-skill]:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.s4m .smx-spark{display:inline-flex;align-items:flex-end;gap:3px;height:28px;min-width:72px}
+.s4m .smx-spark i{display:block;width:8px;border-radius:2px;background:var(--brand);opacity:.45}
+.s4m .smx-spark i.cur{opacity:.2}
+.s4m .smx-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.s4m .smx-title{font-size:20px;font-weight:600}
+.s4m .smx-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:14px}
+.s4m .smx-grid h3{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.s4m .smx-dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:6px 12px;font-size:13px}
+.s4m .smx-dl dt{color:var(--muted)}
+.s4m .smx-dl dd{margin:0;overflow-wrap:anywhere}
+.s4m .smx-list{margin:4px 0 0;padding-left:18px;font-size:13px}
+.s4m .smx-list li{margin:3px 0}
+.s4m #detail-back{margin-bottom:10px}
+.s4m .smx-rate{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.s4m .smx-stars{display:inline-block;letter-spacing:1px;line-height:1;background:linear-gradient(90deg,var(--amber) var(--p,0%),var(--faint) var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.s4m .smx-stars-sm{font-size:12px}
+.s4m .smx-line{margin:2px 0 6px;font-size:13px}
+.s4m .smx-big{font-size:32px;font-weight:600;line-height:1.1}
+.s4m .smx-bars{display:grid;gap:5px;margin-top:10px;font-size:12px}
+.s4m .smx-bar{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;color:var(--muted)}
+.s4m .smx-bar i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.s4m .smx-bar i b{display:block;height:100%;border-radius:4px;background:var(--amber)}
+.s4m .smx-bar .num{text-align:right}
+/* Collapsible "What is this page?" card (details element) */
+details.intro>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin:0 4px 0 2px}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary h2{margin:0!important}
+details.intro>summary .hint{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:4px;border-radius:6px}
+details.intro .body{margin-top:8px}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
+</style>
+<style>
+.demo{background:var(--wash);color:var(--muted)}
+.intro-wrap{max-width:1320px;margin:0 auto;padding:16px 22px 0}
+details.intro{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:0}
+details.intro>summary{cursor:pointer;list-style:none;padding:12px 16px;font-weight:700;display:flex;align-items:center;gap:8px}
+details.intro>summary::-webkit-details-marker{display:none}
+details.intro>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
+details.intro[open]>summary::before{transform:rotate(45deg)}
+details.intro>summary .hint{margin-left:auto;font-weight:500;font-size:12px;color:var(--muted)}
+details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:var(--radius)}
+details.intro .body{padding:0 16px 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px 22px;color:var(--ink-2)}
+details.intro .body h4{margin:0 0 2px;font-size:12px;color:var(--ink)}details.intro .body p{margin:0}
+*{box-sizing:border-box}
+body{margin:0;font-size:13px;line-height:1.5}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 22px;background:var(--surface);border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--purple)}
+.sub{color:var(--muted);font-size:12px}
+.hr{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.demo{padding:7px 22px;border-bottom:1px solid var(--line);font-size:12px}
+nav{display:flex;gap:4px;padding:8px 22px 0;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--muted);padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
+main{max-width:1320px;margin:0 auto;padding:20px 22px 60px}
+button.btn,.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:var(--radius-s);font:inherit;font-weight:600;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--purple)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--purple);border-color:var(--purple);color:var(--surface)}
+h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:14px 0 6px;color:var(--muted)}
+.note{color:var(--muted);font-size:12px;margin:0 0 12px}
+.card{margin-bottom:16px}
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid var(--line);color:var(--ink-2);background:var(--line-2);white-space:nowrap}
+.tag.amber{color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border)}
+.tag.ok{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
+.tag.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-border)}
+.tag.tool{color:var(--purple);background:var(--purple-dim);border-color:var(--purple-border)}
+.tag.hit{color:var(--purple);background:var(--purple-dim);border-color:var(--purple-border)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tools input{width:100%;max-width:300px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--radius-s);overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:none;color:var(--muted);padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--purple-dim);color:var(--purple)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;font-size:12px}th,td{padding:7px 8px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--wash)}
+tr.click:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.callstrip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;color:var(--muted);font-size:12px}
+.callstrip code,.call code,td code,.note code,.sub code{background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:0 5px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink)}
+pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 0;overflow:auto;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;margin:6px 0;color:var(--ink)}
+pre.code .ln{display:flex;gap:14px;padding:0 14px;white-space:pre}
+pre.code .no{flex:0 0 26px;text-align:right;color:var(--muted)}
+.selbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.verdict{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.verdict b{display:block;margin-bottom:2px}
+.verdict.ok{border-color:var(--green-border);background:var(--green-dim)}
+.verdict.warn{border-color:var(--amber-border);background:var(--amber-dim)}
+.verdict.none{border-color:var(--blue-border);background:var(--blue-dim)}
+.trq{border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+.trq .h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:4px}
+.chat{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
+.qlist{display:flex;flex-direction:column;gap:6px}
+.qlist button{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 12px;border-radius:12px;font:inherit;cursor:pointer}
+.qlist button[aria-pressed=true]{border-color:var(--purple);background:var(--purple-dim)}
+.conv{display:flex;flex-direction:column;gap:12px}
+.msg{max-width:92%;border-radius:14px;padding:10px 13px;border:1px solid var(--line);background:var(--surface)}
+.msg.me{align-self:flex-end;background:var(--purple-dim);border-color:var(--purple-border)}
+.msg p{margin:0 0 6px}.msg p:last-child{margin:0}
+.call{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:12px;padding:8px 12px;max-width:100%}
+.call .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.call .res{margin-top:4px;color:var(--ink-2)}
+.flow{display:flex;gap:0;overflow-x:auto;padding:8px 0}
+.node{flex:0 0 190px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;position:relative;margin-right:22px}
+.node:not(:last-child)::after{content:"\2192";position:absolute;right:-19px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.node b{display:block;font-size:12px;margin:4px 0 2px}.node small{color:var(--muted);font-size:11px;display:block}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.steps2{margin:6px 0 0;padding-left:20px;line-height:1.6}
+@media (max-width:900px){.two,.chat{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="logo">ABAP <b>Workbench</b></div><div class="sub">via ARC-1 (ADT) · search, read, where-used, transports</div></div>
+  <div class="hr"><span class="tag ok">read-only</span><span class="sub" id="sys"></span></div>
+</header>
+<div class="demo">Mockup with fictional data. It mirrors the ARC-1 tools (SAPSearch, SAPRead, SAPContext, SAPNavigate, SAPTransport) but does not call an SAP system. Tool names follow ARC-1; the arguments are simplified.</div>
+<nav role="tablist" aria-label="Sections" id="tabs"></nav>
+<div class="intro-wrap"><details class="intro" open><summary>What is this page?<span class="hint">click to collapse</span></summary><div class="body">
+<div><h4>What it shows</h4><p>A developer's view of an ABAP system: find an object, read its source and its documentation, see where it is used and check which transport requests contain it.</p></div>
+<div><h4>The tabs</h4><p><b>Object search</b>, <b>Source code</b>, <b>Where-used</b> and <b>Transports</b> work on the selected object. <b>Ask Joule</b> replays questions with the tool calls behind each answer. <b>Connection</b> shows how the real server is attached.</p></div>
+<div><h4>Demo or real?</h4><p>The data is fictional and nothing is stored or changed. With the ARC-1 connector installed and a SAP user with display rights, Joule runs the same tools on your system.</p></div>
+</div></details></div>
+<main id="main"></main>
+<script type="application/json" id="data">{"asOf":"2026-10-28","system":{"sid":"DEV","client":"100","release":"SAP_BASIS 816","kind":"on-premise","mode":"read-only"},"objects":[{"name":"ZCL_ORDER_HANDLER","type":"CLAS","pkg":"ZORDER","desc":"Order processing: validation and booking","changedBy":"DEVELOPER1","changedOn":"2026-10-21"},{"name":"ZCL_ORDER_VALIDATOR","type":"CLAS","pkg":"ZORDER","desc":"Validation rules for orders","changedBy":"DEVELOPER1","changedOn":"2026-10-20"},{"name":"ZI_SALESORDER","type":"DDLS","pkg":"ZORDER","desc":"Interface view sales order","changedBy":"DEVELOPER2","changedOn":"2026-10-24"},{"name":"ZC_SALESORDER","type":"DDLS","pkg":"ZORDER","desc":"Consumption view sales order","changedBy":"DEVELOPER2","changedOn":"2026-10-24"},{"name":"ZR_SALESORDER","type":"BDEF","pkg":"ZORDER","desc":"Behavior definition sales order","changedBy":"DEVELOPER2","changedOn":"2026-10-18"},{"name":"ZORDER_REPORT","type":"PROG","pkg":"ZORDER","desc":"Order list as ALV report","changedBy":"DEVELOPER2","changedOn":"2026-10-26"},{"name":"ZTB_ORDER_LOG","type":"TABL","pkg":"ZORDER","desc":"Order log table","changedBy":"DEVELOPER1","changedOn":"2026-09-30"},{"name":"ZMSG_ORDER","type":"MSAG","pkg":"ZORDER","desc":"Message class for orders","changedBy":"DEVELOPER1","changedOn":"2026-09-30"}],"sources":{"ZCL_ORDER_HANDLER":["CLASS zcl_order_handler IMPLEMENTATION.","","  METHOD validate_order.","    DATA(lo_validator) = NEW zcl_order_validator( ).","    rv_valid = lo_validator->check( is_order ).","  ENDMETHOD.","","  METHOD book_order.","    IF validate_order( is_order ) = abap_false.","      RAISE EXCEPTION TYPE zcx_order_invalid.","    ENDIF.","    INSERT ztb_order_log FROM @( VALUE #( order_id = is_order-order_id","                                          status   = 'B' ) ).","  ENDMETHOD.","","ENDCLASS."],"ZI_SALESORDER":["@AccessControl.authorizationCheck: #CHECK","@EndUserText.label: 'Sales Order Interface View'","define root view entity ZI_SalesOrder","  as select from zsalesorder","{","  key order_id   as OrderId,","      customer   as Customer,","      net_amount as NetAmount,","      currency   as Currency","}"],"ZORDER_REPORT":["REPORT zorder_report.","","START-OF-SELECTION.","  SELECT order_id, customer, net_amount","    FROM zi_salesorder","    INTO TABLE @DATA(lt_orders).","","  cl_salv_table=>factory( IMPORTING r_salv_table = DATA(lo_alv)","                          CHANGING  t_table      = lt_orders ).","  lo_alv->display( )."]},"ktd":{"ZCL_ORDER_HANDLER":"Purpose: central class for validating and booking orders. Depends on ZCL_ORDER_VALIDATOR and ZTB_ORDER_LOG. Owner: team Order-to-Cash.","ZI_SALESORDER":"Purpose: stable read model for sales orders. Consumed by ZC_SALESORDER and the behavior definition ZR_SALESORDER. Owner: team Order-to-Cash."},"uses":{"ZCL_ORDER_HANDLER":[{"name":"ZORDER_REPORT","type":"PROG","pkg":"ZORDER","ctx":"Line 14: NEW zcl_order_handler( )"},{"name":"ZCL_ORDER_API","type":"CLAS","pkg":"ZORDER_API","ctx":"Method CREATE_ORDER"},{"name":"ZCL_ORDER_HANDLER_TEST","type":"CLAS","pkg":"ZORDER","ctx":"Local test class"}],"ZI_SALESORDER":[{"name":"ZC_SALESORDER","type":"DDLS","pkg":"ZORDER","ctx":"Consumption view reads from this view"},{"name":"ZR_SALESORDER","type":"BDEF","pkg":"ZORDER","ctx":"Behavior definition on this entity"},{"name":"ZORDER_REPORT","type":"PROG","pkg":"ZORDER","ctx":"Line 4: SELECT FROM zi_salesorder"}],"ZTB_ORDER_LOG":[{"name":"ZCL_ORDER_HANDLER","type":"CLAS","pkg":"ZORDER","ctx":"Method BOOK_ORDER: INSERT"}]},"transports":[{"id":"DEVK900231","owner":"DEVELOPER1","status":"modifiable","desc":"Order: extend validation","objects":["ZCL_ORDER_HANDLER","ZCL_ORDER_VALIDATOR","ZORDER_REPORT"]},{"id":"DEVK900244","owner":"DEVELOPER2","status":"modifiable","desc":"CDS: add net amount","objects":["ZI_SALESORDER","ZC_SALESORDER"]},{"id":"DEVK900252","owner":"DEVELOPER2","status":"modifiable","desc":"Report: adjust ALV layout","objects":["ZORDER_REPORT"]},{"id":"DEVK900198","owner":"DEVELOPER1","status":"released","desc":"Order: initial delivery","objects":["ZCL_ORDER_HANDLER","ZORDER_REPORT","ZTB_ORDER_LOG","ZMSG_ORDER"]}],"questions":[{"id":"q1","q":"What does ZCL_ORDER_HANDLER do?","calls":[{"tool":"SAPContext","args":"{\"action\":\"deps\",\"type\":\"CLAS\",\"name\":\"ZCL_ORDER_HANDLER\"}","result":"KTD found; 2 dependencies (ZCL_ORDER_VALIDATOR, ZTB_ORDER_LOG)"}],"answer":["ZCL_ORDER_HANDLER is the central class for validating and booking orders. It is owned by team Order-to-Cash.","It uses ZCL_ORDER_VALIDATOR for the checks and writes the booking to ZTB_ORDER_LOG."]},{"id":"q2","q":"Where is ZI_SALESORDER used?","calls":[{"tool":"SAPContext","args":"{\"action\":\"impact\",\"type\":\"DDLS\",\"name\":\"ZI_SALESORDER\"}","result":"3 usages: 1 consumption view, 1 behavior definition, 1 program"}],"answer":["Three objects depend on ZI_SALESORDER: the consumption view ZC_SALESORDER, the behavior definition ZR_SALESORDER and the report ZORDER_REPORT.","A change to the interface view therefore touches the RAP stack and the report."]},{"id":"q3","q":"Can I change ZORDER_REPORT? Check the transports.","calls":[{"tool":"SAPTransport","args":"{\"action\":\"list\"}","result":"3 modifiable, 1 released request; ZORDER_REPORT is in DEVK900231, DEVK900252 and DEVK900198"}],"answer":["ZORDER_REPORT is in two modifiable requests with different owners: DEVK900231 (DEVELOPER1) and DEVK900252 (DEVELOPER2). Agree the change with both before you edit.","It was also delivered in the released request DEVK900198."]},{"id":"q4","q":"Which classes are in package ZORDER?","calls":[{"tool":"SAPSearch","args":"{\"query\":\"Z*\",\"type\":\"CLAS\"}","result":"2 objects in package ZORDER"}],"answer":["Package ZORDER contains two classes in the sample: ZCL_ORDER_HANDLER and ZCL_ORDER_VALIDATOR."]}]}</script>
+<script>
+(function () {
+  'use strict';
+  var D = JSON.parse(document.getElementById('data').textContent);
+  var TABS = [['search', 'Object search'], ['source', 'Source code'], ['used', 'Where-used'], ['transports', 'Transports'], ['ask', 'Ask Joule'], ['connect', 'Connection']];
+  var TYPES = ['ALL', 'CLAS', 'DDLS', 'BDEF', 'PROG', 'TABL', 'MSAG'];
+  var S = { tab: 'search', q: '', type: 'ALL', sel: D.objects[0].name, tf: 'all', qid: D.questions[0].id };
+
+  function $(s) { return document.querySelector(s); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function obj(n) { return D.objects.filter(function (o) { return o.name === n; })[0] || D.objects[0]; }
+  function ask(text) { if (window.parent !== window) window.parent.postMessage({ type: 'wb:ask', prompt: String(text).slice(0, 600) }, '*'); }
+  function call(tool, args, result) {
+    return '<div class="call"><div class="h"><span class="tag tool">' + esc(tool) + '</span><code>' + esc(args) + '</code></div>' + (result ? '<div class="res">' + esc(result) + '</div>' : '') + '</div>';
+  }
+  function strip(tool, args) { return '<div class="callstrip"><span>Runs</span><span class="tag tool">' + esc(tool) + '</span><code>' + esc(args) + '</code></div>'; }
+
+  function selbar() {
+    var o = obj(S.sel);
+    return '<div class="selbar"><span class="sub">Selected object</span><b class="mono">' + esc(o.name) + '</b><span class="tag blue">' + esc(o.type) + '</span><span class="sub">Package ' + esc(o.pkg) + ' · changed ' + esc(o.changedOn) + ' by ' + esc(o.changedBy) + '</span></div>';
+  }
+
+  function vSearch() {
+    var q = S.q.replace(/\*/g, '').trim().toLowerCase();
+    var res = D.objects.filter(function (o) {
+      return (S.type === 'ALL' || o.type === S.type) && (q === '' || o.name.toLowerCase().indexOf(q) >= 0 || o.desc.toLowerCase().indexOf(q) >= 0);
+    });
+    var h = '<div class="card"><h2>Object search</h2><p class="note">Name pattern or description. Select an object to open its source.</p>' +
+      '<div class="tools"><label class="sub" for="q">Search</label><input id="q" type="text" value="' + esc(S.q) + '" placeholder="e.g. Z*ORDER*" autocomplete="off">' +
+      '<div class="seg" role="group" aria-label="Object type">' + TYPES.map(function (t) { return '<button type="button" data-type="' + t + '" aria-pressed="' + (S.type === t) + '">' + (t === 'ALL' ? 'All' : t) + '</button>'; }).join('') + '</div></div>' +
+      strip('SAPSearch', JSON.stringify({ query: S.q || '*', type: S.type === 'ALL' ? undefined : S.type })) +
+      '<p class="note" id="count" aria-live="polite">' + res.length + (res.length === 1 ? ' object' : ' objects') + '</p>' +
+      '<div class="scroll"><table><thead><tr><th>Name</th><th>Type</th><th>Package</th><th>Description</th><th>Changed</th></tr></thead><tbody id="rows">' + rows(res) + '</tbody></table></div></div>';
+    return h;
+  }
+  function rows(res) {
+    if (!res.length) return '<tr><td colspan="5" class="sub">No match. Adjust the search or the type filter.</td></tr>';
+    return res.map(function (o) {
+      return '<tr class="click" tabindex="0" data-open="' + esc(o.name) + '"><td class="mono"><b>' + esc(o.name) + '</b></td><td><span class="tag blue">' + esc(o.type) + '</span></td><td>' + esc(o.pkg) + '</td><td>' + esc(o.desc) + '</td><td>' + esc(o.changedOn) + '</td></tr>';
+    }).join('');
+  }
+
+  function vSource() {
+    var o = obj(S.sel);
+    var lines = D.sources[o.name] || ['* Sample: no source stored for this object'];
+    var code = lines.map(function (t, i) { return '<div class="ln"><span class="no">' + (i + 1) + '</span><span>' + esc(t === '' ? ' ' : t) + '</span></div>'; }).join('');
+    var ktd = D.ktd[o.name];
+    return selbar() + '<div class="card"><h2>Source code</h2>' + strip('SAPRead', JSON.stringify({ type: o.type, name: o.name })) +
+      '<pre class="code" tabindex="0" aria-label="Source of ' + esc(o.name) + '">' + code + '</pre>' +
+      '<div class="row"><button class="btn" type="button" data-go="used">Where-used</button><button class="btn" type="button" data-go="transports">Check transports</button><button class="btn" type="button" data-ask="explain">Ask Joule to explain</button></div></div>' +
+      '<div class="card"><h2>Knowledge Transfer Document (KTD)</h2>' + strip('SAPContext', JSON.stringify({ action: 'deps', type: o.type, name: o.name })) +
+      (ktd ? '<p style="margin:0">' + esc(ktd) + '</p>' : '<p class="note" style="margin:0">No KTD exists for this object.</p>') + '</div>';
+  }
+
+  function vUsed() {
+    var o = obj(S.sel);
+    var list = D.uses[o.name] || [];
+    var impact = o.type === 'DDLS';
+    var args = impact ? { action: 'impact', type: 'DDLS', name: o.name } : { action: 'references', name: o.name };
+    var h = selbar() + '<div class="card"><h2>Where-used analysis</h2>' + strip(impact ? 'SAPContext' : 'SAPNavigate', JSON.stringify(args)) +
+      '<p style="margin:0 0 10px"><b>' + (list.length ? list.length + (list.length === 1 ? ' usage' : ' usages') + ' found' : 'No usages') + '</b>' + (impact ? ' <span class="sub">(CDS impact: grouped by RAP role)</span>' : '') + '</p>';
+    if (list.length) {
+      h += '<div class="scroll"><table><thead><tr><th>Object</th><th>Type</th><th>Package</th><th>Where</th></tr></thead><tbody>' + list.map(function (u) {
+        var known = D.objects.some(function (x) { return x.name === u.name; });
+        return '<tr' + (known ? ' class="click" tabindex="0" data-pick="' + esc(u.name) + '"' : '') + '><td class="mono"><b>' + esc(u.name) + '</b></td><td><span class="tag blue">' + esc(u.type) + '</span></td><td>' + esc(u.pkg) + '</td><td>' + esc(u.ctx) + '</td></tr>';
+      }).join('') + '</tbody></table></div><p class="note" style="margin:8px 0 0">Select a row to continue with that object.</p>';
+    } else {
+      h += '<p class="note" style="margin:0">The sample holds no usages for this object.</p>';
+    }
+    return h + '</div>';
+  }
+
+  function check(name) {
+    var all = D.transports.filter(function (t) { return t.objects.indexOf(name) >= 0; });
+    var mod = all.filter(function (t) { return t.status === 'modifiable'; });
+    var owners = {}; mod.forEach(function (t) { owners[t.owner] = 1; });
+    if (!all.length) return { k: 'none', t: 'Not in any request', m: name + ' is not contained in a transport request.' };
+    if (mod.length > 1 && Object.keys(owners).length > 1) return { k: 'warn', t: 'Conflict', m: name + ' is in ' + mod.length + ' modifiable requests with different owners (' + mod.map(function (t) { return t.id + ' / ' + t.owner; }).join(', ') + '). Agree the change first.' };
+    if (mod.length) return { k: 'ok', t: 'No conflict', m: name + ' is in the modifiable request ' + mod[0].id + ' (' + mod[0].owner + ').' };
+    return { k: 'ok', t: 'Only released', m: name + ' is only in released requests. A change needs a new request.' };
+  }
+  function vTransports() {
+    var o = obj(S.sel);
+    var v = check(o.name);
+    var list = D.transports.filter(function (t) { return S.tf === 'all' || t.status === S.tf; });
+    var seg = [['all', 'All'], ['modifiable', 'Modifiable'], ['released', 'Released']];
+    return selbar() + '<div class="card"><h2>Transport check</h2>' + strip('SAPTransport', JSON.stringify({ action: 'list' })) +
+      '<div class="verdict ' + v.k + '" role="status"><b>' + esc(v.t) + '</b>' + esc(v.m) + '</div>' +
+      '<div class="tools"><div class="seg" role="group" aria-label="Status">' + seg.map(function (x) { return '<button type="button" data-tf="' + x[0] + '" aria-pressed="' + (S.tf === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+      list.map(function (t) {
+        var has = t.objects.indexOf(o.name) >= 0;
+        return '<div class="trq"><div class="h"><b class="mono">' + esc(t.id) + '</b><span class="tag ' + (t.status === 'modifiable' ? 'amber' : 'ok') + '">' + (t.status === 'modifiable' ? 'Modifiable' : 'Released') + '</span><span class="sub">Owner ' + esc(t.owner) + '</span>' + (has ? '<span class="tag hit">contains selected object</span>' : '') + '</div><div>' + esc(t.desc) + '</div><div class="sub mono" style="margin-top:4px">' + t.objects.map(esc).join(' · ') + '</div></div>';
+      }).join('') + '<p class="note" style="margin:8px 0 0">Listing only. Creating or releasing requests is not part of this Space.</p></div>';
+  }
+
+  function vAsk() {
+    var q = D.questions.filter(function (x) { return x.id === S.qid; })[0] || D.questions[0];
+    return '<div class="chat"><div class="qlist" role="group" aria-label="Questions">' + D.questions.map(function (x) {
+      return '<button type="button" data-q="' + x.id + '" aria-pressed="' + (x.id === q.id) + '">' + esc(x.q) + '</button>';
+    }).join('') + '</div><div class="card"><div class="conv" aria-live="polite"><div class="msg me"><p>' + esc(q.q) + '</p></div>' +
+      q.calls.map(function (c) { return call(c.tool, c.args, c.result); }).join('') +
+      '<div class="msg">' + q.answer.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div></div>' +
+      '<div class="row"><button class="btn primary" type="button" data-live="' + esc(q.id) + '">Ask the real Joule</button></div>' +
+      '<p class="note" style="margin:0">Sends the question to the chat of the desktop app. With the ARC-1 connector installed, Joule calls the same tools on your system.</p></div></div>';
+  }
+
+  function vConnect() {
+    var nodes = [['Joule', 'asks in the chat'], ['ARC-1 MCP server', 'read-only by default'], ['ADT REST API', '/sap/bc/adt'], ['SAP system', 'ABAP, CDS, transports']];
+    var tools = [['SAPSearch', 'read', 'Find objects by name pattern'], ['SAPRead', 'read', 'Source, methods, CDS, KTD'], ['SAPContext', 'read', 'KTD, dependencies, CDS impact'], ['SAPNavigate', 'read', 'References, go to definition'], ['SAPTransport', 'list only here', 'Requests and their objects'], ['SAPWrite, SAPActivate', 'off', 'Not used by this Space']];
+    return '<div class="card"><h2>How the pieces fit</h2><p class="note">Nothing is stored in the Space. Joule asks, ARC-1 calls the ADT REST API with a SAP user.</p><div class="flow">' +
+      nodes.map(function (n) { return '<div class="node"><b>' + esc(n[0]) + '</b><small>' + esc(n[1]) + '</small></div>'; }).join('') + '</div></div>' +
+      '<div class="two"><div class="card"><h2>Tools</h2><table><tbody>' + tools.map(function (t) {
+        return '<tr><td><code>' + esc(t[0]) + '</code></td><td><span class="tag ' + (t[1] === 'read' ? 'ok' : 'amber') + '">' + esc(t[1]) + '</span></td><td>' + esc(t[2]) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="card"><h2>Connect your system</h2><ol class="steps2"><li>Install the ARC-1 server (npm package <code>arc-1</code>) and import it as a connector.</li><li>Enter the system URL, user, password and client. The password is stored as a secret.</li><li>Use a SAP user with display rights only.</li><li>Enable transport reading on the server if the transport check reports it as blocked.</li><li>Ask Joule one of the questions on the Ask Joule tab.</li></ol>' +
+      '<table style="margin-top:8px"><tbody>' + [['SAP_URL', 'https://your-sap-host:44300'], ['SAP_USER', '(display user)'], ['SAP_PASSWORD', '(stored as a secret)'], ['SAP_CLIENT', D.system.client]].map(function (r) { return '<tr><td><code>' + r[0] + '</code></td><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
+  }
+
+  var VIEWS = { search: vSearch, source: vSource, used: vUsed, transports: vTransports, ask: vAsk, connect: vConnect };
+
+  function render() {
+    $('#sys').textContent = D.system.sid + ' · client ' + D.system.client + ' · ' + D.system.release;
+    $('#tabs').innerHTML = TABS.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (S.tab === t[0]) + '">' + t[1] + '</button>'; }).join('');
+    $('#main').innerHTML = VIEWS[S.tab]();
+  }
+  function go(tab) { S.tab = tab; render(); window.scrollTo(0, 0); }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-tab],[data-type],[data-open],[data-pick],[data-go],[data-tf],[data-q],[data-ask],[data-live]');
+    if (!el) return;
+    var d = el.dataset;
+    if (d.tab) go(d.tab);
+    else if (d.type) { S.type = d.type; render(); }
+    else if (d.open) { S.sel = d.open; go('source'); }
+    else if (d.pick) { S.sel = d.pick; go('source'); }
+    else if (d.go) go(d.go);
+    else if (d.tf) { S.tf = d.tf; render(); }
+    else if (d.q) { S.qid = d.q; render(); }
+    else if (d.ask) { ask('Explain what ' + S.sel + ' does and where it is used.'); }
+    else if (d.live) { var q = D.questions.filter(function (x) { return x.id === d.live; })[0]; if (q) ask(q.q); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var row = e.target.closest && e.target.closest('tr.click');
+    if (!row) return;
+    e.preventDefault();
+    S.sel = row.dataset.open || row.dataset.pick; go('source');
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.id !== 'q') return;
+    S.q = e.target.value;
+    var q = S.q.replace(/\*/g, '').trim().toLowerCase();
+    var res = D.objects.filter(function (o) { return (S.type === 'ALL' || o.type === S.type) && (q === '' || o.name.toLowerCase().indexOf(q) >= 0 || o.desc.toLowerCase().indexOf(q) >= 0); });
+    $('#rows').innerHTML = rows(res);
+    $('#count').textContent = res.length + (res.length === 1 ? ' object' : ' objects');
+  });
+  render();
+})();
+</script>
+</body>
+</html>

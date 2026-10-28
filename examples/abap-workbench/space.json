@@ -1,0 +1,12 @@
+{
+  "title": "ABAP Workbench",
+  "description": "Mockup of an ABAP system seen through ARC-1 (ADT): object search, source code with KTD, where-used analysis and transport check. Sample data; the real server is read-only by default.",
+  "domain": "Development",
+  "insights": [
+    "Select an object once: source, KTD, where-used and the transport check all follow it.",
+    "The transport check flags an object that sits in several modifiable requests with different owners.",
+    "Ask Joule shows the tool calls (SAPSearch, SAPRead, SAPContext, SAPNavigate, SAPTransport) behind each answer. With the ARC-1 connector installed, the same questions run on your system.",
+    "Fictional sample data. No SAP system is called and nothing is changed."
+  ],
+  "prompt": "Bundled example: ABAP Workbench via ARC-1 (static mockup, data embedded by npm run sync:mockups)."
+}

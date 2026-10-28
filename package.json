@@ -57,6 +57,7 @@
     "install:sales": "node scripts/install-example-space.mjs sales",
     "install:mcp-marketplace": "node scripts/install-example-space.mjs mcp-marketplace",
     "install:calm-alm": "node scripts/install-example-space.mjs calm-alm",
+    "install:abap-workbench": "node scripts/install-example-space.mjs abap-workbench",
     "install:skills": "node scripts/install-example-skills.mjs",
     "skills": "node scripts/skills-registry.mjs",
     "skills:sync": "node scripts/skills-registry.mjs sync",
