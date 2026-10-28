@@ -5,7 +5,7 @@ import DevelopWizard from './DevelopWizard';
 type Props = {
   onOpenN8n: () => void;
   onOpenConnectors: () => void;
-  generate: (prompt: string) => Promise<string>;
+  generate: (prompt: string, title: string) => Promise<string>;
   onStop: () => void;
   ready: boolean;
   onRestartAgent: () => Promise<void> | void;

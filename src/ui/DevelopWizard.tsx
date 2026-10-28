@@ -10,7 +10,7 @@ type Props = {
   onChange: (project: Project) => void;
   onClose: () => void;
   /** Runs a prompt through the chat agent and returns its answer ('' when stopped). Rejects when the agent is unavailable. */
-  generate: (prompt: string) => Promise<string>;
+  generate: (prompt: string, title: string) => Promise<string>;
   onStop: () => void;
   ready: boolean;
   onOpenN8n: () => void;
@@ -57,7 +57,8 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
       : buildPrompt(p.kind, p.intent, p.docs.prd, p.docs.spec, fb, previous);
     setWorking(true); setError(''); setNote('');
     try {
-      const text = (await generate(prompt)).trim();
+      const label = which === 'requirements' ? 'requirements' : which === 'specification' ? 'specification' : 'build';
+      const text = (await generate(prompt, `Develop: ${p.intent.name.trim() || p.kind} (${label})`)).trim();
       if (!alive.current) return;
       if (!text) setNote('Stopped. Nothing was changed.');
       else if (text.startsWith('⚠️')) setError(text.replace(/^⚠️\s*/, ''));
@@ -122,10 +123,12 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
                 {stage !== 'build' && <button className="ghost-btn small" onClick={() => download(documentFiles(project).find((f) => (stage === 'requirements' ? /PRD/ : /specification/).test(f.name))?.name ?? 'document.md', doc)}>Download .md</button>}
                 {project.approved.includes(stage) && <span className="dev-approved">✓ Approved</span>}
               </div>
-              {editing
-                ? <textarea className="dev-edit" value={doc} onChange={(e) => onChange(setDocument(project, stage as 'requirements' | 'specification' | 'build', e.target.value))} aria-label="Edit the document" />
-                : <div className="dev-rendered"><ChatMarkdown text={doc} /></div>}
               {stage === 'build' && <BuildResult project={project} onOpenN8n={onOpenN8n} onOpenConnectors={onOpenConnectors} onRestartAgent={onRestartAgent} />}
+              {stage === 'build' && !editing
+                ? <details className="dev-answer"><summary>The full answer of the agent</summary><div className="dev-rendered"><ChatMarkdown text={doc} /></div></details>
+                : editing
+                  ? <textarea className="dev-edit" value={doc} onChange={(e) => onChange(setDocument(project, stage as 'requirements' | 'specification' | 'build', e.target.value))} aria-label="Edit the document" />
+                  : <div className="dev-rendered"><ChatMarkdown text={doc} /></div>}
               <div className="dev-feedback">
                 <label>Something to change?
                   <textarea value={feedback} onChange={(e) => setFeedback(e.target.value)} rows={2} placeholder="For example: add a requirement for an audit log, or: the approval must come from the account owner." />

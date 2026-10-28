@@ -232,7 +232,7 @@ export function skillSlug(name: string): string {
   return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64);
 }
 
-export { checkSkillMd } from '../shared/skill-install.mjs';
+export { checkSkillMd } from '../shared/skill-check.mjs';
 
 /** The build result: the artifact (workflow JSON or SKILL.md) from the answer. */
 export function artifactOf(kind: Kind, buildText: string): string {

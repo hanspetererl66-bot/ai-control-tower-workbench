@@ -683,6 +683,8 @@ export default function App() {
     }
   }
 
+  sendRef.current = send;
+
   /**
    * Develop: runs one working prompt through the agent in a conversation of its own, so the person's chats stay
    * clean, and returns the agent's answer. '' means the person stopped it.
@@ -1077,7 +1079,14 @@ export default function App() {
       )}
 
       {view === 'develop' ? (
-        <DevelopHub onWorkflow={() => setView('n8n')} onAgent={() => setView('manage')} />
+        <DevelopHub
+          onOpenN8n={() => setView('n8n')}
+          onOpenConnectors={() => setView('manage')}
+          generate={developGenerate}
+          onStop={() => void cancelCurrent()}
+          ready={Boolean(agent)}
+          onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
+        />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}
