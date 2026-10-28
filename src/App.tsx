@@ -863,6 +863,7 @@ export default function App() {
   const composer = (
     <Composer
       onSend={send}
+      onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
       workdir={WORKDIR}

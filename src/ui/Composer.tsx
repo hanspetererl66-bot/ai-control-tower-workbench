@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Agent, SessionExtension } from '../acp';
-import { formatFileSize, type ChatAttachment } from '../attachments';
+import { MAX_CHAT_ATTACHMENTS, formatFileSize, isTableFile, type ChatAttachment } from '../attachments';
+import TableActions from './TableActions';
 import {
   applyExclusiveConnectorRequest,
   requestedConnectorIsAlreadyExclusive,
@@ -28,6 +29,8 @@ import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
 type Props = {
   onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void>;
+  /** Install a Space file made from attached tables and open it. */
+  onCreateTableSpace?: (file: File) => void | Promise<void>;
   agent: Agent | null;
   busy: boolean;
   workdir: string;
@@ -71,6 +74,7 @@ type Props = {
 
 export default function Composer({
   onSend,
+  onCreateTableSpace,
   agent,
   busy,
   workdir,
@@ -100,6 +104,7 @@ export default function Composer({
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
+  const [dragging, setDragging] = useState(false);
   const [micState, setMicState] = useState<'idle' | 'recording' | 'transcribing'>('idle');
   const [micError, setMicError] = useState('');
   const recording = useRef<Recording | null>(null);
@@ -374,20 +379,42 @@ export default function Composer({
       setAttachmentError('File attachments are available in the Electron app.');
       return;
     }
+    mergeAttachments(result);
+  }
+
+  function mergeAttachments(result: { files: ChatAttachment[]; errors: string[] }) {
     const merged = new Map(attachments.map((attachment) => [attachment.path, attachment]));
     for (const attachment of result.files) merged.set(attachment.path, attachment);
     const next = [...merged.values()];
-    if (next.length > 8) {
-      setAttachmentError('Attach at most 8 files at once.');
-      setAttachments(next.slice(0, 8));
+    if (next.length > MAX_CHAT_ATTACHMENTS) {
+      setAttachmentError(`Attach at most ${MAX_CHAT_ATTACHMENTS} files at once.`);
+      setAttachments(next.slice(0, MAX_CHAT_ATTACHMENTS));
     } else {
       setAttachments(next);
       setAttachmentError(result.errors.join(' '));
     }
   }
 
+  /** Files dropped on the composer, up to the same limit as the dialog. */
+  async function dropFiles(files: FileList) {
+    if (busy || !window.host?.pathsOfDroppedFiles || !window.host.addChatFiles) return;
+    const paths = window.host.pathsOfDroppedFiles(files);
+    if (!paths.length) return;
+    if (paths.length + attachments.length > MAX_CHAT_ATTACHMENTS) {
+      setAttachmentError(`Attach at most ${MAX_CHAT_ATTACHMENTS} files at once.`);
+      return;
+    }
+    setAttachmentError('');
+    mergeAttachments(await window.host.addChatFiles(paths));
+  }
+
   return (
-    <div className="composer">
+    <div
+      className={`composer ${dragging ? 'composer-drop' : ''}`}
+      onDragOver={(event) => { if (event.dataTransfer?.types?.includes('Files')) { event.preventDefault(); setDragging(true); } }}
+      onDragLeave={(event) => { if (event.currentTarget === event.target) setDragging(false); }}
+      onDrop={(event) => { if (event.dataTransfer?.files?.length) { event.preventDefault(); setDragging(false); void dropFiles(event.dataTransfer.files); } }}
+    >
       {matches.length > 0 && (
         <div className="picker">
           {matches.map((s) => (
@@ -414,7 +441,7 @@ export default function Composer({
                 />
               ) : (
                 <span className="attachment-icon" aria-hidden="true">
-                  {attachment.kind === 'presentation' ? 'P' : attachment.kind === 'document' ? 'W' : 'T'}
+                  {attachment.kind === 'presentation' ? 'P' : attachment.kind === 'document' ? 'W' : attachment.kind === 'table' || isTableFile(attachment.name) ? 'X' : 'T'}
                 </span>
               )}
               <span className="attachment-body">
@@ -455,13 +482,14 @@ export default function Composer({
           }
         }}
       />
+      <TableActions attachments={attachments} onCreateSpace={onCreateTableSpace} />
       {(attachmentError || connectorError) && (
         <div className="attachment-error">{attachmentError || connectorError}</div>
       )}
       <div className="composer-bar">
         <button
           className="chip chip-icon"
-          title="Add PowerPoint, Word, text, or picture files"
+          title={`Add up to ${MAX_CHAT_ATTACHMENTS} files: PowerPoint, Word, Excel, CSV, text or pictures (or drop them here)`}
           aria-label="Attach files"
           onClick={pickAttachments}
           disabled={busy || preparingConnector}
