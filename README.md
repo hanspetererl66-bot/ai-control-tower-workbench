@@ -134,6 +134,14 @@ npm run check
 
 This runs the TypeScript check, Node test suite, and production renderer build.
 
+## Mass upload of tables
+
+In the chat, attach up to **25 files** at once (the **+** button or drag and drop). CSV, TSV and Excel files are read locally; the model gets a compact description (rows, columns, types, ranges, sample rows) and the file path, not the whole table.
+When tables are attached, a bar appears under the files:
+
+- **Make a table Space** builds one Space with a tab per file (per sheet for Excel), search, sortable columns and an "Ask about this table" button. A Space holds at most 2,000 rows per table.
+- **Send rows to n8n…** sends the rows of one file in batches (50 to 500 rows) to a webhook, with progress, retries and "Continue at batch N" after an error. Import `examples/n8n-workflows/09-bulk-table-ingest.json` into n8n, run `supabase/migrations/20261028_018_bulk_upload_rows.sql`, set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` in n8n, activate the workflow and paste its production URL. Sending a batch twice does not duplicate rows. The webhook address is remembered on this computer; the optional token is not saved.
+
 ## Connectors and skills
 
 Use **Connectors & Skills** inside the app to import an MCP bundle, configure an

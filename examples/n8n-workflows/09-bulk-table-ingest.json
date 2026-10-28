@@ -1,0 +1,216 @@
+{
+  "name": "09 Bulk table ingest (Werkbank \u2192 Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Mass upload of tables (Werkbank \u2192 Supabase)\nReceives the rows of an uploaded table in batches (the Werkbank sends them from the chat: attach a CSV or Excel file, then **Send rows to n8n\u2026**), checks each batch and stores the rows in the Supabase table `bulk_upload_rows` (migration `018`). Sending a batch twice does not duplicate rows.\n**Setup:** run migration `20261028_018_bulk_upload_rows.sql`, create a *Header Auth* credential (header `x-upload-token`), set the environment variables `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (the secret key, only in n8n), activate the workflow and paste its *production* webhook URL into the Werkbank.\nAnswers `200` with `{ ok, batch, total, stored }`, or `400` with the reasons.",
+        "height": 280,
+        "width": 720,
+        "color": 4
+      },
+      "id": "8bc2b086-4579-512c-b1ea-8f70bcfd5dfb",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bulk-table-ingest",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b3f67dea-cfed-54df-8d75-62b7a750d1b2",
+      "name": "Receive batch",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "00a14c36-1164-56df-ac23-3f1fa9b7fd39"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n must not trust its caller: check the batch before anything is written.\nconst b = $input.first().json.body ?? $input.first().json;\nconst errors = [];\nif (typeof b.batchId !== 'string' || !/^[A-Za-z0-9._-]{1,80}$/.test(b.batchId)) errors.push('invalid batchId');\nif (!Number.isInteger(b.index) || !Number.isInteger(b.total) || b.index < 1 || b.index > b.total) errors.push('invalid batch index');\nif (!Array.isArray(b.columns) || b.columns.length === 0 || b.columns.length > 200) errors.push('invalid columns');\nif (!Array.isArray(b.rows) || b.rows.length === 0 || b.rows.length > 1000) errors.push('a batch holds 1 to 1000 rows');\nif (!Number.isInteger(b.offset) || b.offset < 0) errors.push('invalid offset');\nif (errors.length) return [{ json: { ok: false, errors } }];\nconst source = String(b.source ?? '').slice(0, 180);\n// One item per row. (batchId, row_index) is the key in Supabase, so a batch sent twice does not duplicate rows.\nconst rows = b.rows.map((data, i) => ({ batch_id: b.batchId, row_index: b.offset + i, source, data }));\nreturn [{ json: { ok: true, batchId: b.batchId, index: b.index, total: b.total, count: rows.length, rows } }];"
+      },
+      "id": "e5fddc6e-4b0b-52ea-8608-11aec8620a27",
+      "name": "Validate batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c2f96a22-19c3-5e90-93e8-426c5f1c9222",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "380d484d-e24d-59dc-b7fc-a3c743c7275b",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bulk_upload_rows?on_conflict=batch_id,row_index",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=ignore-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.rows) }}",
+        "options": {}
+      },
+      "id": "c0192ac4-11d2-5ba9-bea7-d923ff373de8",
+      "name": "Store rows in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        780,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, batch: $('Validate batch').item.json.index, total: $('Validate batch').item.json.total, stored: $('Validate batch').item.json.count }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "1ad85010-c999-5e49-a596-49b8d7d60e3a",
+      "name": "Stored",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, errors: $json.errors }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "aa438627-0996-5629-9d31-48bb2ecb5cc7",
+      "name": "Rejected",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Receive batch": {
+      "main": [
+        [
+          {
+            "node": "Validate batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate batch": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Store rows in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store rows in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Stored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
