@@ -71,7 +71,7 @@ export default function TableActions({ attachments, onCreateSpace }: Props) {
     setRun({ state: 'running', text: 'Starting…', batch: 0, total: 0 });
     const result: BulkUploadResult = await window.host.bulkUploadRows({ path: current.path, tableIndex: 0, url: url.trim(), token: token || undefined, batchSize, batchId: batchId.current, startAt });
     setBusy(false);
-    if (result.ok) setRun({ state: 'done', batch: result.total ?? 0, total: result.total ?? 0, text: `Done: ${(result.totalRows ?? 0).toLocaleString('en-US')} rows in ${result.total} batches.` });
+    if (result.ok) setRun({ state: 'done', batch: result.total ?? 0, total: result.total ?? 0, text: `Done: ${(result.totalRows ?? 0).toLocaleString('en-US')} rows in ${result.total} batches. Upload ID: ${result.batchId ?? batchId.current}` });
     else setRun({ state: 'failed', batch: result.sentBatches ?? 0, total: result.total ?? 0, next: result.nextBatch, text: result.cancelled ? `Stopped after ${result.sentBatches ?? 0} batches.` : `Stopped at batch ${result.failedBatch ?? '?'}: ${result.error ?? 'unknown error'}` });
   }
 

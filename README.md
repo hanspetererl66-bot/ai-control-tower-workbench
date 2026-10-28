@@ -142,6 +142,10 @@ When tables are attached, a bar appears under the files:
 - **Make a table Space** builds one Space with a tab per file (per sheet for Excel), search, sortable columns and an "Ask about this table" button. A Space holds at most 2,000 rows per table.
 - **Send rows to n8n…** sends the rows of one file in batches (50 to 500 rows) to a webhook, with progress, retries and "Continue at batch N" after an error. Import `examples/n8n-workflows/09-bulk-table-ingest.json` into n8n, run `supabase/migrations/20261028_018_bulk_upload_rows.sql`, set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` in n8n, activate the workflow and paste its production URL. Sending a batch twice does not duplicate rows. The webhook address is remembered on this computer; the optional token is not saved.
 
+### Demo: contract notice check after an upload
+
+`examples/demo-data/contracts-demo.xlsx` (also as `.csv`) holds 60 fictional contracts. Attach it in the chat, click **Send rows to n8n…** and note the **Upload ID** shown when it is done. Then import `examples/n8n-workflows/10-contract-notice-from-upload.json` (needs workflow 09, the migration and the same Supabase variables) and call it with that ID. It reads the uploaded rows from Supabase, computes every notice deadline (reference date 19 Oct 2026 unless you pass `asOf`) and answers with a digest per owner: which contracts must be terminated or renewed soon, which deadlines have passed, how much annual value is affected. Nothing is sent. `node scripts/make-demo-contracts.mjs` writes the files again.
+
 ## Connectors and skills
 
 Use **Connectors & Skills** inside the app to import an MCP bundle, configure an
