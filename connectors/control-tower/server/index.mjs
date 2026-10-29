@@ -20,6 +20,7 @@ import { WEB_SOURCE_TOOL_DEFINITIONS, createWebSourceHandlers } from './web-sour
 import { GRAPH_TOOL_DEFINITIONS, createGraphHandlers } from './graph.mjs';
 import { WHAT_IF_TOOL_DEFINITIONS, createWhatIfHandlers } from './what-if.mjs';
 import { CROSS_SPACE_TOOL_DEFINITIONS, createCrossSpaceHandlers } from './cross-space.mjs';
+import { PAYMENT_RISK_TOOL_DEFINITIONS, createPaymentRiskHandlers } from './payment-risk.mjs';
 import { normalizeSupabaseUrl } from './supabase-url.mjs';
 import { SKILL_TOOL_DEFINITIONS, createSkillHandlers } from './skills.mjs';
 import { TOOL_DEFINITIONS, ToolError, callTool } from './tools.mjs';
@@ -139,13 +140,13 @@ async function handle(message) {
       if (isRequest) reply(id, {});
       return;
     case 'tools/list':
-      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS, ...GROUP_TOOL_DEFINITIONS] });
+      reply(id, { tools: [...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS, ...GROUP_TOOL_DEFINITIONS, ...PAYMENT_RISK_TOOL_DEFINITIONS] });
       return;
     case 'tools/call': {
       try {
         const rpcCall = ticketRpc();
         const sub4meHandlers = createSub4MeHandlers(undefined, rpcCall);
-        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...sub4meHandlers, ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createWhatIfHandlers({ loadTower: loadData, ToolError }), ...createCrossSpaceHandlers({ sub4me: sub4meHandlers, loadTower: loadData, rpc: rpcCall }), ...n8nHandlers, ...sapHelpHandlers, ...webSourceHandlers, ...createPreferenceHandlers(rpcCall), ...infraHandlers, ...createGroupHandlers(rpcCall) };
+        const ticketHandlers = { ...createTicketHandlers(rpcCall), ...createSkillHandlers(rpcCall), ...sub4meHandlers, ...createSkillProfileHandlers(undefined, rpcCall), ...createGraphHandlers(), ...createSkillRatingHandlers(undefined, rpcCall), ...createWhatIfHandlers({ loadTower: loadData, ToolError }), ...createCrossSpaceHandlers({ sub4me: sub4meHandlers, loadTower: loadData, rpc: rpcCall }), ...n8nHandlers, ...sapHelpHandlers, ...webSourceHandlers, ...createPreferenceHandlers(rpcCall), ...infraHandlers, ...createGroupHandlers(rpcCall), ...createPaymentRiskHandlers({ sub4me: sub4meHandlers, ToolError }) };
         if (Object.hasOwn(ticketHandlers, params?.name)) {
           const args = params.arguments ?? {};
           if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');
