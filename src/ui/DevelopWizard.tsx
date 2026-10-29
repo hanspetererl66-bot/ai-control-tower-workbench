@@ -3,7 +3,7 @@ import {
   GUARDRAILS, STAGES, STAGE_LABEL, SYSTEMS, TRIGGERS, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson,
   artifactFileName, extraQuestion, intentProblems, prdPrompt, projectFiles, setDocument, skillSlug, specPrompt, type Project, type Stage,
 } from '../develop';
-import { docToMarkdown, markdownToHtml, toHtml } from '../doc-html';
+import { docToMarkdown, htmlToMarkdown, markdownToHtml, toHtml } from '../doc-html';
 import { exportDocument, saveFile, wrapHtml, type ExportFormat } from '../doc-export';
 import { makeZip } from '../zip';
 import { ChatMarkdown } from './ChatMarkdown';
@@ -274,7 +274,7 @@ function ExportMenu({ onExport }: { onExport: (f: ExportFormat) => void }) {
 }
 
 function ProjectFolder({ project }: { project: Project }) {
-  const files = projectFiles(project, wrapHtml);
+  const files = projectFiles(project, wrapHtml, (t) => htmlToMarkdown(toHtml(t), { images: 'keep' }));
   const slug = skillSlug(project.intent.name) || 'project';
   return (
     <section className="dev-tree" aria-label="Project folder">

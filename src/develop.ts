@@ -330,12 +330,18 @@ export type ProjectFile = { path: string; text: string };
  * The project folder: intent, PRD, specification and the build result in a fixed structure.
  * `wrap` turns a stored HTML document into a complete, self-contained file (given by the caller, because it needs a browser).
  */
-export function projectFiles(project: Project, wrap: (html: string, title: string) => string = (h) => h): ProjectFile[] {
+export function projectFiles(project: Project, wrap: (html: string, title: string) => string = (h) => h, toMarkdown: ((stored: string) => string) | null = null): ProjectFile[] {
   const slug = skillSlug(project.intent.name) || 'project';
   const name = project.intent.name.trim() || slug;
   const out: ProjectFile[] = [{ path: `${slug}/01-intent/intent.md`, text: `# Intent: ${name}\n\n${intentBlock(project.kind, project.intent).split('\n').map((l) => `- ${l}`).join('\n')}\n` }];
-  if (project.docs.prd.trim()) out.push({ path: `${slug}/02-requirements/PRD.html`, text: wrap(project.docs.prd, `PRD: ${name}`) });
-  if (project.docs.spec.trim()) out.push({ path: `${slug}/03-specification/specification-architecture.html`, text: wrap(project.docs.spec, `Specification: ${name}`) });
+  if (project.docs.prd.trim()) {
+    out.push({ path: `${slug}/02-requirements/PRD.html`, text: wrap(project.docs.prd, `PRD: ${name}`) });
+    if (toMarkdown) out.push({ path: `${slug}/02-requirements/PRD.md`, text: toMarkdown(project.docs.prd) + '\n' });
+  }
+  if (project.docs.spec.trim()) {
+    out.push({ path: `${slug}/03-specification/specification-architecture.html`, text: wrap(project.docs.spec, `Specification: ${name}`) });
+    if (toMarkdown) out.push({ path: `${slug}/03-specification/specification-architecture.md`, text: toMarkdown(project.docs.spec) + '\n' });
+  }
   const artifact = artifactOf(project.kind, project.docs.build);
   if (artifact) out.push({ path: `${slug}/04-build/${project.kind === 'workflow' ? `${slug}.workflow.json` : 'SKILL.md'}`, text: artifact });
   if (project.docs.build.trim()) out.push({ path: `${slug}/04-build/build-answer.md`, text: project.docs.build });
