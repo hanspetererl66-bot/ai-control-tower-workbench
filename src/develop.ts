@@ -33,6 +33,10 @@ export type Intent = {
   data: string;
   guardrail: string;
   success: string;
+  /** Optional: who uses it, who approves, who is affected. */
+  stakeholders: string;
+  /** Optional: what it should explicitly not do. */
+  outOfScope: string;
   /** Workflow: what happens on errors. Agent: example requests it must handle. */
   extra: string;
 };
@@ -51,7 +55,7 @@ export type Project = {
   updatedAt: number;
 };
 
-export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', extra: '' });
+export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', stakeholders: '', outOfScope: '', extra: '' });
 
 export function newProject(kind: Kind, now = Date.now()): Project {
   return { id: `p${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind, stage: 'intent', intent: emptyIntent(), docs: { prd: '', spec: '', build: '' }, approved: [], createdAt: now, updatedAt: now };
@@ -77,7 +81,7 @@ export function intentProblems(intent: Intent): string[] {
   return out;
 }
 
-function intentBlock(kind: Kind, i: Intent): string {
+export function intentBlock(kind: Kind, i: Intent): string {
   const systems = [...i.systems, ...(i.otherSystems.trim() ? [i.otherSystems.trim()] : [])].join(', ');
   const q = extraQuestion(kind);
   return [
@@ -89,6 +93,8 @@ function intentBlock(kind: Kind, i: Intent): string {
     `Data in and out: ${i.data.trim()}`,
     `Guardrail: ${i.guardrail}`,
     `Success: ${i.success.trim()}`,
+    `Stakeholders named by the person: ${i.stakeholders.trim() || '(not given)'}`,
+    `Explicitly out of scope: ${i.outOfScope.trim() || '(not given)'}`,
     `${q.label} ${i.extra.trim() || '(not answered)'}`,
   ].join('\n');
 }
@@ -103,16 +109,20 @@ export function prdPrompt(kind: Kind, intent: Intent, feedback = '', previous = 
     intentBlock(kind, intent),
     '',
     '## Structure of the PRD',
-    '1. Summary and intent (what and why, in plain words)',
-    '2. Users and stakeholders (who uses it, who approves, who is affected)',
-    '3. Goals and non-goals',
-    '4. Functional requirements: a numbered table REQ-01, REQ-02 … with columns ID, Requirement, Priority (Must/Should/Could), Acceptance criterion',
-    '5. Non-functional requirements (security, privacy, auditability, performance, availability; mention the EU AI Act only where it applies)',
-    '6. Data and systems (which systems, which data, direction of flow)',
-    '7. Guardrails and approvals (what it may do alone, what needs a person)',
-    '8. Success criteria (measurable)',
-    '9. Open questions and assumptions',
+    '1. Summary and intent (what and why, in plain words; one short paragraph)',
+    '2. Stakeholders: a table with columns Role, Who (team or function, no invented names), Interest, Involvement (Responsible / Accountable / Consulted / Informed)',
+    '3. Scope: "In scope" as a bullet list and "Out of scope" as a bullet list with a short reason for each item',
+    '4. Goals, business value and success metrics: a table with Metric, Baseline, Target, How measured',
+    '5. Functional requirements: a numbered table REQ-01, REQ-02 … with columns ID, Requirement, Priority (Must/Should/Could), Acceptance criterion',
+    '6. Non-functional requirements (security, privacy, auditability, performance, availability; mention the EU AI Act only where it applies)',
+    '7. Data and systems (which systems, which data, direction of flow)',
+    '8. Autonomy, guardrails and approvals (what it may do alone, what needs a person, what is forbidden)',
+    '9. Risks, dependencies and assumptions: a table with Item, Type (Risk/Dependency/Assumption), Impact, Mitigation or owner',
+    '10. Evaluation and acceptance (how quality is tested before go-live, the quality bar, who signs off)',
+    '11. Rollout, change management and go/no-go (phases, pilot group, training, rollback, go/no-go criteria)',
+    '12. Open questions',
     '',
+    'Use the stakeholders and the out-of-scope items the person named; add only what is clearly implied and mark additions as assumptions.',
     'Requirements must be testable and written so that a later specification can refer to them by ID.',
     feedback.trim() ? `\n## Changes asked for by the person\n${feedback.trim()}\n\n## Previous version\n${previous.slice(0, 20_000)}` : '',
     '',
@@ -124,7 +134,7 @@ export function specPrompt(kind: Kind, intent: Intent, prd: string, feedback = '
   const structure = kind === 'workflow'
     ? [
         '1. Overview and scope (what is built, what is not)',
-        '2. Solution architecture: components, systems, trigger, data flow. Include one Mermaid flowchart in a ```mermaid fence.',
+        '2. Solution architecture: components, systems, trigger, data flow. Show the components as a table (Component, Role, Technology, Interfaces) and describe the data flow as numbered sentences. No diagrams in code fences.',
         '3. Process specification: numbered steps, each traced to REQ IDs',
         '4. n8n node plan: a table with node name, node type (n8n-nodes-base.*), purpose, key settings, credentials or environment variables',
         '5. Data contracts: example input and output as JSON',
@@ -135,7 +145,7 @@ export function specPrompt(kind: Kind, intent: Intent, prd: string, feedback = '
       ]
     : [
         '1. Overview and scope (what the agent does, what it does not do)',
-        '2. Solution architecture: the agent, its skill, the connectors it uses, memory and context. Include one Mermaid flowchart in a ```mermaid fence.',
+        '2. Solution architecture: the agent, its skill, the connectors it uses, memory and context. Show the components as a table (Component, Role, Technology, Interfaces) and describe the data flow as numbered sentences. No diagrams in code fences.',
         '3. Behaviour specification: role, tone, how it decides, what it asks back, when it hands over to a person; each traced to REQ IDs',
         '4. Skill outline: name (kebab-case), description (one sentence that says when to use it), the sections of its instructions',
         '5. Connectors and tools: which are needed, what each is used for, read or write',
@@ -282,7 +292,7 @@ export function sanitizeProject(raw: any): Project | null {
     name: str(i.name, 80), goal: str(i.goal, 1500), trigger: str(i.trigger, 120) || base.trigger,
     systems: Array.isArray(i.systems) ? i.systems.filter((s: unknown) => typeof s === 'string').slice(0, 20).map((s: string) => s.slice(0, 60)) : [],
     otherSystems: str(i.otherSystems, 300), data: str(i.data, 1500), guardrail: str(i.guardrail, 160) || base.guardrail,
-    success: str(i.success, 1000), extra: str(i.extra, 1000),
+    success: str(i.success, 1000), stakeholders: str(i.stakeholders, 800), outOfScope: str(i.outOfScope, 800), extra: str(i.extra, 1000),
   };
   const d = raw.docs ?? {};
   const stage: Stage = STAGES.includes(raw.stage) ? raw.stage : 'intent';
@@ -305,21 +315,41 @@ export function loadProjects(store: Store): Project[] {
   }
 }
 
-export function saveProjects(store: Store, projects: Project[]): void {
-  try { store.setItem(KEY, JSON.stringify(projects.slice(0, MAX_PROJECTS))); } catch { /* storage may be unavailable */ }
+/** True when the projects were stored; false when the browser refused (storage full or unavailable). */
+export function saveProjects(store: Store, projects: Project[]): boolean {
+  try { store.setItem(KEY, JSON.stringify(projects.slice(0, MAX_PROJECTS))); return true; } catch { return false; }
 }
 
 export function upsertProject(projects: Project[], project: Project): Project[] {
   return [project, ...projects.filter((p) => p.id !== project.id)].slice(0, MAX_PROJECTS);
 }
 
-/** The documents as files for download: name and text. */
-export function documentFiles(project: Project): { name: string; text: string }[] {
+export type ProjectFile = { path: string; text: string };
+
+/**
+ * The project folder: intent, PRD, specification and the build result in a fixed structure.
+ * `wrap` turns a stored HTML document into a complete, self-contained file (given by the caller, because it needs a browser).
+ */
+export function projectFiles(project: Project, wrap: (html: string, title: string) => string = (h) => h, toMarkdown: ((stored: string) => string) | null = null): ProjectFile[] {
   const slug = skillSlug(project.intent.name) || 'project';
-  const out: { name: string; text: string }[] = [];
-  if (project.docs.prd.trim()) out.push({ name: `${slug}-PRD.md`, text: project.docs.prd });
-  if (project.docs.spec.trim()) out.push({ name: `${slug}-specification.md`, text: project.docs.spec });
+  const name = project.intent.name.trim() || slug;
+  const out: ProjectFile[] = [{ path: `${slug}/01-intent/intent.md`, text: `# Intent: ${name}\n\n${intentBlock(project.kind, project.intent).split('\n').map((l) => `- ${l}`).join('\n')}\n` }];
+  if (project.docs.prd.trim()) {
+    out.push({ path: `${slug}/02-requirements/PRD.html`, text: wrap(project.docs.prd, `PRD: ${name}`) });
+    if (toMarkdown) out.push({ path: `${slug}/02-requirements/PRD.md`, text: toMarkdown(project.docs.prd) + '\n' });
+  }
+  if (project.docs.spec.trim()) {
+    out.push({ path: `${slug}/03-specification/specification-architecture.html`, text: wrap(project.docs.spec, `Specification: ${name}`) });
+    if (toMarkdown) out.push({ path: `${slug}/03-specification/specification-architecture.md`, text: toMarkdown(project.docs.spec) + '\n' });
+  }
   const artifact = artifactOf(project.kind, project.docs.build);
-  if (artifact) out.push({ name: project.kind === 'workflow' ? `${slug}.workflow.json` : `${slug}-SKILL.md`, text: artifact });
+  if (artifact) out.push({ path: `${slug}/04-build/${project.kind === 'workflow' ? `${slug}.workflow.json` : 'SKILL.md'}`, text: artifact });
+  if (project.docs.build.trim()) out.push({ path: `${slug}/04-build/build-answer.md`, text: project.docs.build });
   return out;
+}
+
+/** Name of the build artifact file for a single download. */
+export function artifactFileName(project: Project): string {
+  const slug = skillSlug(project.intent.name) || 'project';
+  return project.kind === 'workflow' ? `${slug}.workflow.json` : `${slug}-SKILL.md`;
 }

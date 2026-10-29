@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  STAGES, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson, documentFiles, emptyIntent, extractFence,
+  STAGES, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson, projectFiles, emptyIntent, extractFence,
   intentProblems, loadProjects, newProject, prdPrompt, sanitizeProject, saveProjects, setDocument, skillSlug, specPrompt, upsertProject,
 } from '../src/develop.ts';
 
@@ -28,7 +28,7 @@ test('each prompt carries the earlier documents and asks for one document only',
   const spec = specPrompt('workflow', p.intent, '# PRD\nREQ-01 …');
   assert.match(spec, /## Approved PRD\n# PRD/);
   assert.match(spec, /n8n node plan/);
-  assert.match(spec, /mermaid/);
+  assert.doesNotMatch(spec, /mermaid/i);
   assert.match(specPrompt('agent', p.intent, '# PRD'), /Skill outline/);
   const build = buildPrompt('workflow', p.intent, '# PRD', '# SPEC');
   assert.match(build, /# SPEC/);
@@ -98,9 +98,9 @@ test('the artifact is taken from the build answer by kind, and the documents bec
   let p = filled();
   p = { ...p, docs: { prd: '# PRD', spec: '# SPEC', build: 'Here:\n```json\n{"name":"W"}\n```\nTo do: …' } };
   assert.equal(artifactOf('workflow', p.docs.build), '{"name":"W"}');
-  assert.deepEqual(documentFiles(p).map((f) => f.name), ['contract-notice-check-PRD.md', 'contract-notice-check-specification.md', 'contract-notice-check.workflow.json']);
+  assert.deepEqual(projectFiles(p).map((f) => f.path), ['contract-notice-check/01-intent/intent.md', 'contract-notice-check/02-requirements/PRD.html', 'contract-notice-check/03-specification/specification-architecture.html', 'contract-notice-check/04-build/contract-notice-check.workflow.json', 'contract-notice-check/04-build/build-answer.md']);
   const a = { ...filled('agent'), docs: { prd: '# PRD', spec: '', build: '```markdown\n---\nname: x\n---\nbody\n```' } };
-  assert.deepEqual(documentFiles(a).map((f) => f.name), ['contract-notice-check-PRD.md', 'contract-notice-check-SKILL.md']);
+  assert.deepEqual(projectFiles(a).map((f) => f.path).filter((x) => x.includes('04-build')), ['contract-notice-check/04-build/SKILL.md', 'contract-notice-check/04-build/build-answer.md']);
 });
 
 test('projects are stored, sorted newest first, capped, and junk is dropped', () => {
