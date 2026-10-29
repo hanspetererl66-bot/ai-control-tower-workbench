@@ -23,7 +23,9 @@
         "N8N_URL": "${user_config.n8n_url}",
         "N8N_API_KEY": "${user_config.n8n_api_key}",
         "N8N_INFRA_WEBHOOK_URL": "${user_config.n8n_infra_webhook_url}",
-        "N8N_INFRA_WEBHOOK_TOKEN": "${user_config.n8n_infra_webhook_token}"
+        "N8N_INFRA_WEBHOOK_TOKEN": "${user_config.n8n_infra_webhook_token}",
+        "TABPFN_SERVICE_URL": "${user_config.tabpfn_service_url}",
+        "TABPFN_SERVICE_TOKEN": "${user_config.tabpfn_service_token}"
       }
     }
   },
@@ -319,6 +321,10 @@
     {
       "name": "group_memory_delete",
       "description": "Delete a team memory entry (its author or an admin). Ask the person first."
+    },
+    {
+      "name": "predict_late_payments",
+      "description": "Forecast which open Sub4Me invoices will probably be paid more than 14 days late (TabPFN service, synthetic training data). Read only."
     }
   ],
   "user_config": {
@@ -358,6 +364,19 @@
       "type": "string",
       "title": "n8n webhook token",
       "description": "Optional. Sent as header x-infra-token; the workflow checks it. Stored as a secret.",
+      "sensitive": true,
+      "required": false
+    },
+    "tabpfn_service_url": {
+      "type": "string",
+      "title": "Late-payment forecast service",
+      "description": "Optional. Address of services/tabpfn, for example http://127.0.0.1:8808 (https for anything not on this computer). Needed for predict_late_payments.",
+      "required": false
+    },
+    "tabpfn_service_token": {
+      "type": "string",
+      "title": "Forecast service token",
+      "description": "Optional. Bearer token if the service was started with TABPFN_SERVICE_TOKEN. Stored as a secret.",
       "sensitive": true,
       "required": false
     }

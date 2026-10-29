@@ -648,6 +648,12 @@
           "class": "write",
           "what": "Deletes a team memory entry.",
           "default": "ask"
+        },
+        {
+          "name": "predict_late_payments",
+          "class": "read",
+          "what": "Forecasts which open Sub4Me invoices will probably be paid late (TabPFN service, synthetic data).",
+          "default": "on"
         }
       ],
       "switches": [],
