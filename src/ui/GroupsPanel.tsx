@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { EMAIL, MEMORY_KINDS, canEditMemory, canWrite, createGroupClient, groupSlug, saveIdentity, type GroupCall, type GroupDetail, type GroupRole, type GroupSummary, type Identity, type MemoryKind } from '../groups';
 import { importSpaceFile } from '../space-share';
+import { simulateColleague } from '../groups-local';
 import { Section, type SpaceRef } from './PreferencesPanels';
 
 export type GroupsPanelProps = {
   call: GroupCall | null;
+  /** local = kept on this computer (sample group); server = the connector with a database. */
+  mode: 'local' | 'server';
+  serverAvailable: boolean;
+  onMode: (mode: 'local' | 'server') => void;
   identity: Identity | null;
   onIdentity: (identity: Identity | null) => void;
   spaces: SpaceRef[];
@@ -19,7 +24,7 @@ export type GroupsPanelProps = {
 const ROLES: GroupRole[] = ['admin', 'member', 'viewer'];
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-export default function GroupsPanel({ call, identity, onIdentity, spaces, activeId, onActive, onSpaceInstalled, onDetail }: GroupsPanelProps) {
+export default function GroupsPanel({ call, mode, serverAvailable, onMode, identity, onIdentity, spaces, activeId, onActive, onSpaceInstalled, onDetail }: GroupsPanelProps) {
   const [email, setEmail] = useState(identity?.email ?? '');
   const [name, setName] = useState(identity?.name ?? '');
   const [groups, setGroups] = useState<GroupSummary[]>([]);
@@ -106,10 +111,34 @@ export default function GroupsPanel({ call, identity, onIdentity, spaces, active
     });
   };
 
-  if (!call) return <p className="prefs-note">Groups need the control-tower connector with a Supabase URL and secret key. Connect it first (Manage).</p>;
+  const intro = (
+    <>
+      <Section title="What are groups?" hint="A group is a small team that works with the same assistant setup. Four things are shared:">
+        <ul className="prefs-list">
+          <li><div><b>1 · Shared instructions.</b> <small>One standing brief for everybody, for example “answer in German, result first, name the source”. It comes on top of each person's own settings.</small></div></li>
+          <li><div><b>2 · Team memory.</b> <small>Rules, decisions and facts of the team (“quotes above 50k need a second review”). When you use the group in chat, the assistant knows them.</small></div></li>
+          <li><div><b>3 · Shared Spaces.</b> <small>One person publishes a Space; the others install it. A new publish creates a new version.</small></div></li>
+          <li><div><b>4 · Roles.</b> <small>Admin manages everything, member publishes and writes memory, viewer only reads. Every change lands in the activity log.</small></div></li>
+        </ul>
+        <p className="prefs-note"><b>Try it:</b> save your e-mail, open the sample group, press “Use in chat”, then ask something in a conversation. Use “Colleague adds a rule” to see how a teammate's rule arrives.</p>
+      </Section>
+      <Section title="Where the group lives">
+        <div className="prefs-row" role="radiogroup" aria-label="Where groups are kept">
+          <button className={`ghost-btn ${mode === 'local' ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={mode === 'local'} onClick={() => onMode('local')}>On this computer (demo)</button>
+          <button className={`ghost-btn ${mode === 'server' ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={mode === 'server'} onClick={() => onMode('server')}>Team server (Supabase)</button>
+        </div>
+        <p className="prefs-note">{mode === 'local'
+          ? 'Kept on this computer only, with a made-up sample team. Good for trying and for demos; nobody else sees it.'
+          : serverAvailable ? 'Shared with real colleagues through the database behind the control-tower connector.' : 'Needs the control-tower connector with a Supabase URL and secret key. Connect it first (Manage), or switch back to the demo.'}</p>
+      </Section>
+    </>
+  );
+
+  if (!call) return <>{intro}</>;
 
   return (
     <>
+      {intro}
       <Section title="Who you are" hint="An e-mail address is how the group knows you. It is a label, not a login: anyone who knows a member's address could act as that member, so do not put anything in a group you would not show the whole team.">
         <div className="prefs-row">
           <input type="text" aria-label="Your e-mail address" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -132,6 +161,7 @@ export default function GroupsPanel({ call, identity, onIdentity, spaces, active
                   <div>
                     <button className="ghost-btn" onClick={() => setOpenId(g.id === openId ? null : g.id)} aria-expanded={g.id === openId}>{g.id === openId ? 'Close' : 'Open'}</button>
                     <button className="ghost-btn" onClick={() => onActive(g.id === activeId ? null : g.id)}>{g.id === activeId ? 'Stop using in chat' : 'Use in chat'}</button>
+                    {mode === 'local' && g.id === openId && <button className="ghost-btn" onClick={() => { const t = simulateColleague(window.localStorage, g.id); setMessage(t ? `Anna Schmidt added a rule: “${t}”` : 'Anna has nothing more to add.'); void load(); }}>Colleague adds a rule</button>}
                   </div>
                 </li>
               ))}

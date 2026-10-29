@@ -13,6 +13,7 @@ export const EXAMPLE_SPACES = {
   'automation-dashboard': 'automation-dashboard',
   'knowledge-graph': 'knowledge-graph',
   'what-if': 'what-if',
+  'prd-builder': 'prd-builder',
   'call-transcripts': 'call-transcripts',
   'customer-emails': 'customer-emails',
   'infra-ops': 'infra-ops',

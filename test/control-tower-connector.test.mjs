@@ -180,9 +180,9 @@ test('get_budget flags overspend and reports that team rows add up to the stated
     assert.equal(status.Finance, 'over budget');
     assert.equal(status['Sales & Presales'], 'near limit');
     assert.equal(status['HR / L&D'], 'within budget');
-    assert.equal(budget.headroomM, 0.86);
-    assert.equal(budget.reconciliation.sumOfTeamBudgetsK, 3600);
-    assert.equal(budget.reconciliation.sumOfTeamActualsK, 2740);
+    assert.equal(budget.headroomM, 5.13);
+    assert.equal(budget.reconciliation.sumOfTeamBudgetsK, 21500);
+    assert.equal(budget.reconciliation.sumOfTeamActualsK, 16370);
     assert.equal(budget.reconciliation.ceilingMinusTeamBudgetsK, 0);
     assert.equal(budget.reconciliation.statedActualMinusTeamActualsK, 0);
     assert.equal(budget.reconciliation.reconciles, true);
@@ -386,7 +386,7 @@ test('a mismatch in the budget source data is still reported', async () => {
   try {
     const { reconciliation } = parse(await server.call('get_budget', {}));
     assert.equal(reconciliation.reconciles, false);
-    assert.equal(reconciliation.ceilingMinusTeamBudgetsK, 98);
+    assert.equal(reconciliation.ceilingMinusTeamBudgetsK, 565);
     assert.match(reconciliation.note, /do not add up/);
   } finally {
     server.stop();

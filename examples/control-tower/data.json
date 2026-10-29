@@ -4334,54 +4334,56 @@
     ]
   },
   "budget": {
-    "totalActualM": 2.74,
-    "ceilingM": 3.6,
+    "totalActualM": 16.37,
+    "ceilingM": 21.5,
+    "tokenApiM": 15.12,
+    "tokensBillionPerWeek": 775,
     "groups": [
       {
         "name": "Engineering",
-        "budgetK": 1100,
+        "budgetK": 6566,
         "utilisationPct": 107,
         "color": "red"
       },
       {
         "name": "Sales & Presales",
-        "budgetK": 560,
+        "budgetK": 3335,
         "utilisationPct": 88,
         "color": "amber"
       },
       {
         "name": "Product & Design",
-        "budgetK": 420,
+        "budgetK": 2519,
         "utilisationPct": 76,
         "color": "purple"
       },
       {
         "name": "Operations",
-        "budgetK": 360,
+        "budgetK": 2148,
         "utilisationPct": 62,
         "color": "green"
       },
       {
         "name": "Finance",
-        "budgetK": 280,
+        "budgetK": 1683,
         "utilisationPct": 104,
         "color": "red"
       },
       {
         "name": "HR / L&D",
-        "budgetK": 182,
+        "budgetK": 1097,
         "utilisationPct": 46,
         "color": "green"
       },
       {
         "name": "Data & AI Platform",
-        "budgetK": 600,
+        "budgetK": 3587,
         "utilisationPct": 19,
         "color": "purple"
       },
       {
         "name": "Legal & Compliance",
-        "budgetK": 98,
+        "budgetK": 565,
         "utilisationPct": 40,
         "color": "green"
       }

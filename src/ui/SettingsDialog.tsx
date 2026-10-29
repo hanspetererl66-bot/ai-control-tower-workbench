@@ -6,18 +6,26 @@ import { SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { speechSupported, type VoiceSettings } from '../voice';
 import type { Preferences } from '../preferences';
 import MemoryPanel, { type MemoryPanelProps } from './MemoryPanel';
+import DataAuditPanel from './DataAuditPanel';
 import GroupsPanel, { type GroupsPanelProps } from './GroupsPanel';
+<<<<<<< HEAD
 import { TAB_HELP } from '../settings-help';
 import { AssistantPanel, LookPanel, ProfilesPanel, SectionEffect, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
+=======
+import ChatPanel, { type ChatPanelProps } from './ChatPanel';
+import { AssistantPanel, LookPanel, ProfilesPanel, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
+>>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
 
 const TABS = [
   { id: 'profiles', title: 'Profiles' },
   { id: 'look', title: 'Look' },
   { id: 'work', title: 'Work' },
   { id: 'assistant', title: 'Assistant' },
+  { id: 'chat', title: 'Chat' },
   { id: 'memory', title: 'Memory' },
   { id: 'groups', title: 'Groups' },
   { id: 'storage', title: 'Storage' },
+  { id: 'data', title: 'Data & audit' },
   { id: 'general', title: 'General' },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
@@ -33,6 +41,7 @@ export type PersonalizeProps = {
   onSyncSave: () => void;
   onSyncLoad: () => void;
   groups: GroupsPanelProps;
+  chat: ChatPanelProps;
   memory: MemoryPanelProps;
 };
 
@@ -119,7 +128,9 @@ export default function SettingsDialog({
         {personalize && tab === 'look' && <LookPanel prefs={personalize.prefs} update={personalize.update} />}
         {personalize && tab === 'work' && <WorkPanel prefs={personalize.prefs} update={personalize.update} spaces={personalize.spaces} skills={personalize.skills} connectors={personalize.connectors} />}
         {personalize && tab === 'assistant' && <AssistantPanel prefs={personalize.prefs} update={personalize.update} />}
-        {personalize && tab === 'memory' && <MemoryPanel {...personalize.memory} />}
+        {personalize && tab === 'chat' && <ChatPanel {...personalize.chat} />}
+        {personalize && tab === 'memory' && <MemoryPanel {...personalize.memory} spaces={personalize.spaces} />}
+        {personalize && tab === 'data' && <DataAuditPanel />}
         {personalize && tab === 'groups' && <GroupsPanel {...personalize.groups} />}
         {personalize && tab === 'storage' && <StoragePanel prefs={personalize.prefs} update={personalize.update} syncAvailable={personalize.syncAvailable} sync={personalize.sync} onSave={personalize.onSyncSave} onLoad={personalize.onSyncLoad} />}
         {(!personalize || tab === 'general') && (

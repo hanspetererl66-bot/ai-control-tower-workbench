@@ -77,3 +77,14 @@ test('the stdio server speaks MCP', async () => {
   assert.equal(init.result.serverInfo.name, 'jira');
   assert.equal(list.result.tools.length, TOOL_DEFINITIONS.length);
 });
+
+test('read_backlog returns parent epic, labels and description text for a project (read only)', async () => {
+  const calls = [];
+  const adf = { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: 'As a seller I want X.' }] }] };
+  const h = make(json({ isLast: true, issues: [{ key: 'ABC-2', fields: { summary: 'Story', issuetype: { name: 'Story' }, status: { name: 'To Do' }, priority: { name: 'High' }, labels: ['a'], description: adf, parent: { key: 'ABC-1', fields: { summary: 'Epic' } } } }] }), calls);
+  const r = await h.jira_read_backlog({ project: 'abc' });
+  assert.equal(r.issues[0].parentKey, 'ABC-1'); assert.equal(r.issues[0].parentSummary, 'Epic'); assert.match(r.issues[0].description, /As a seller/);
+  const body = JSON.parse(calls[0].init.body);
+  assert.match(body.jql, /^project = ABC /); assert.equal(calls[0].init.method, 'POST');
+  await assert.rejects(h.jira_read_backlog({ project: 'x; DROP' }), JiraError);
+});

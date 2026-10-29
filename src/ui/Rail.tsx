@@ -3,10 +3,14 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import WerkbankMark from './WerkbankMark';
 
+<<<<<<< HEAD
 export type View = 'chat' | 'spaces' | 'develop' | 'manage' | 'n8n';
 
 /** Screens that belong to Develop: the start page and the two places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'manage', 'n8n'];
+=======
+export type View = 'chat' | 'spaces' | 'studio' | 'manage' | 'n8n';
+>>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
 
 export default function Rail({
   view,
@@ -70,6 +74,7 @@ export default function Rail({
           <LayersIcon />
         </button>
         <button
+<<<<<<< HEAD
           className={`rail-btn ${DEVELOP_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
           onClick={() => onView('develop')}
           title="Develop: workflows and agents"
@@ -77,6 +82,33 @@ export default function Rail({
           aria-pressed={DEVELOP_VIEWS.includes(view)}
         >
           <DevelopIcon />
+=======
+          className={`rail-btn ${view === 'studio' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('studio')}
+          title="Agent Studio"
+          aria-label="Agent Studio"
+          aria-pressed={view === 'studio'}
+        >
+          <AgentIcon />
+        </button>
+        <button
+          className={`rail-btn ${view === 'n8n' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('n8n')}
+          title="n8n Automation"
+          aria-label="n8n Automation"
+          aria-pressed={view === 'n8n'}
+        >
+          <WorkflowIcon />
+>>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
+        </button>
+        <button
+          className={`rail-btn ${view === 'manage' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('manage')}
+          title="Connectors & Skills"
+          aria-label="Connectors and Skills"
+          aria-pressed={view === 'manage'}
+        >
+          <ConnectorIcon />
         </button>
       </div>
 
@@ -179,6 +211,18 @@ function DevelopIcon() {
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <path d="M7 6 3 10l4 4M13 6l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M11.2 4.5 8.8 15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AgentIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <rect x="4" y="6.5" width="12" height="9" rx="2.4" fill="currentColor" />
+      <path d="M10 6.5V4M8.2 4h3.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="7.6" cy="10.6" r="1.1" fill="white" />
+      <circle cx="12.4" cy="10.6" r="1.1" fill="white" />
+      <path d="M7.8 13.2h4.4" stroke="white" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   );
 }
