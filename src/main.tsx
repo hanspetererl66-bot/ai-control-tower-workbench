@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import type { AttachmentPickerResult } from './attachments';
+import type { AttachmentPickerResult, BulkUploadResult } from './attachments';
 import type { VoiceSettings } from './voice';
 import './theme.css';
 
@@ -14,6 +14,12 @@ declare global {
       openFile?: (path: string) => Promise<{ ok: boolean; detail?: string }>;
       revealFile?: (path: string) => void;
       pickChatFiles?: () => Promise<AttachmentPickerResult>;
+      pathsOfDroppedFiles?: (files: FileList | File[]) => string[];
+      addChatFiles?: (paths: string[]) => Promise<AttachmentPickerResult>;
+      readTables?: (path: string) => Promise<{ ok: true; tables: { name: string; table: { columns: string[]; rows: string[][]; truncated: boolean } }[] } | { ok: false; detail: string }>;
+      bulkUploadRows?: (request: { path: string; tableIndex: number; url: string; token?: string; batchSize?: number; batchId?: string; startAt?: number }) => Promise<BulkUploadResult>;
+      cancelBulkUpload?: () => void;
+      onBulkUploadProgress?: (cb: (p: { batch: number; total: number; sentRows: number; totalRows: number }) => void) => () => void;
       setZoomFactor?: (factor: number) => void;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';

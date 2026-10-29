@@ -1,6 +1,6 @@
 // CommonJS on purpose: an ESM preload would require sandbox:false, and keeping the
 // sandbox on is worth more than matching the project's module style.
-const { contextBridge, ipcRenderer, webFrame } = require('electron');
+const { contextBridge, ipcRenderer, webFrame, webUtils } = require('electron');
 
 // The renderer talks ACP to goosed over HTTP directly (same split goose's own
 // desktop uses). All it needs from main is where to find it, plus the few
@@ -16,6 +16,17 @@ contextBridge.exposeInMainWorld('host', {
   openFile: (path) => ipcRenderer.invoke('open-file', path),
   revealFile: (path) => ipcRenderer.send('reveal-file', path),
   pickChatFiles: () => ipcRenderer.invoke('pick-chat-files'),
+  /** Absolute paths of files dropped on the window (the page itself never sees them). */
+  pathsOfDroppedFiles: (files) => Array.from(files ?? []).map((f) => webUtils.getPathForFile(f)).filter(Boolean),
+  addChatFiles: (paths) => ipcRenderer.invoke('add-chat-files', paths),
+  readTables: (path) => ipcRenderer.invoke('read-tables', path),
+  bulkUploadRows: (request) => ipcRenderer.invoke('bulk-upload-rows', request),
+  cancelBulkUpload: () => ipcRenderer.send('bulk-upload-cancel'),
+  onBulkUploadProgress: (cb) => {
+    const handler = (_e, payload) => cb(payload);
+    ipcRenderer.on('bulk-upload-progress', handler);
+    return () => ipcRenderer.removeListener('bulk-upload-progress', handler);
+  },
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 
   // Werkbank install deep links. Callbacks receive only
