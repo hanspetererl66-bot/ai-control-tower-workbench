@@ -112,8 +112,8 @@ export default function ManageView({
         <button
           className="icon-btn topbar-back"
           onClick={onBack}
-          title="Back to conversation"
-          aria-label="Back to conversation"
+          title="Back to Develop"
+          aria-label="Back to Develop"
         >
           <BackIcon />
         </button>

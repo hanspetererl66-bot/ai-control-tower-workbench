@@ -47,6 +47,7 @@ import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_TITLE } from './product';
 import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
+import DevelopHub from './ui/DevelopHub';
 import { writeSpaceScale, type SpaceScale } from './space-scale';
 import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
 import { parseNavCommand } from './voice-commands';
@@ -1057,8 +1058,11 @@ export default function App() {
         />
       )}
 
-      {view === 'n8n' ? (
+      {view === 'develop' ? (
+        <DevelopHub onWorkflow={() => setView('n8n')} onAgent={() => setView('manage')} />
+      ) : view === 'n8n' ? (
         <N8nView
+          onBack={() => setView('develop')}
           theme={resolvedTheme}
           visible={!settingsOpen && !coverOpen && !skillRequest && !permission}
           onRestartAgent={async () => {
@@ -1069,7 +1073,7 @@ export default function App() {
       ) : view === 'manage' ? (
         <ManageView
           agent={agent}
-          onBack={() => setView('chat')}
+          onBack={() => setView('develop')}
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
         />

@@ -3833,6 +3833,23 @@ button {
 
 :root[data-theme="dark"] .settings-intro { background: #171a21; border-color: #2b2f3a; }
 
+/* ---------- Develop start page ---------- */
+.develop-main { grid-column: 2 / -1; align-items: center; justify-content: center; overflow: auto; }
+.develop { width: min(860px, 100%); padding: 32px 24px; text-align: center; }
+.develop-title { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.4px; }
+.develop-sub { margin: 6px 0 28px; color: var(--muted); }
+.develop-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.develop-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 22px 28px; border: 1px solid rgb(127 127 127 / 28%); border-radius: 18px; background: var(--panel); color: inherit; font: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.develop-card:hover, .develop-card:focus-visible { border-color: var(--accent); box-shadow: 0 8px 28px rgb(109 40 217 / 14%); transform: translateY(-2px); outline: none; }
+.develop-logo { display: grid; place-items: center; width: 112px; height: 112px; border-radius: 28px; margin-bottom: 14px; }
+.develop-logo svg { width: 72px; height: 72px; }
+.develop-logo-n8n { color: #ea4b71; background: #fdecf1; }
+.develop-logo-agent { color: var(--accent); background: #efeafd; }
+:root[data-theme="dark"] .develop-logo-n8n { background: rgb(234 75 113 / 16%); }
+:root[data-theme="dark"] .develop-logo-agent { background: rgb(139 92 246 / 18%); }
+.develop-card-title { font-size: 20px; font-weight: 600; }
+.develop-card-brand { font-size: 14px; color: var(--accent); font-weight: 600; }
+.develop-card-text { font-size: 13px; color: var(--muted); max-width: 26ch; }
 /* ---------- mass upload of tables ---------- */
 .composer-drop { outline: 2px dashed var(--accent, #6d28d9); outline-offset: -2px; border-radius: 12px; }
 .attachment-table .attachment-icon { background: #15803d; }

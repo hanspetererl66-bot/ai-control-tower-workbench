@@ -3,7 +3,10 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import WerkbankMark from './WerkbankMark';
 
-export type View = 'chat' | 'spaces' | 'manage' | 'n8n';
+export type View = 'chat' | 'spaces' | 'develop' | 'manage' | 'n8n';
+
+/** Screens that belong to Develop: the start page and the two places it leads to. */
+const DEVELOP_VIEWS: View[] = ['develop', 'manage', 'n8n'];
 
 export default function Rail({
   view,
@@ -67,22 +70,13 @@ export default function Rail({
           <LayersIcon />
         </button>
         <button
-          className={`rail-btn ${view === 'manage' ? 'rail-btn-on' : ''}`}
-          onClick={() => onView('manage')}
-          title="Connectors & Skills"
-          aria-label="Connectors and Skills"
-          aria-pressed={view === 'manage'}
+          className={`rail-btn ${DEVELOP_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('develop')}
+          title="Develop: workflows and agents"
+          aria-label="Develop"
+          aria-pressed={DEVELOP_VIEWS.includes(view)}
         >
-          <ConnectorIcon />
-        </button>
-        <button
-          className={`rail-btn ${view === 'n8n' ? 'rail-btn-on' : ''}`}
-          onClick={() => onView('n8n')}
-          title="n8n Automation"
-          aria-label="n8n Automation"
-          aria-pressed={view === 'n8n'}
-        >
-          <WorkflowIcon />
+          <DevelopIcon />
         </button>
       </div>
 
@@ -180,23 +174,11 @@ export default function Rail({
   );
 }
 
-function WorkflowIcon() {
+function DevelopIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="4.5" cy="10" r="2" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="15.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="15.5" cy="15" r="2" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M6.3 9.2 13.7 5.8M6.3 10.8l7.4 3.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ConnectorIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect x="3" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="10" y="9" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M8.5 11.5 11 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M7 6 3 10l4 4M13 6l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M11.2 4.5 8.8 15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
