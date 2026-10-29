@@ -4,9 +4,10 @@
   "domain": "Governance",
   "parent": "ai-control-tower",
   "insights": [
-    "Bei 30 % weniger Credits sinkt die Obergrenze auf 2,52 Mio. € und liegt 0,22 Mio. € unter dem heutigen Verbrauch; Engineering und Finance trifft es am stärksten.",
-    "Ab rund 24 % Kürzung reicht die Obergrenze nicht mehr für den heutigen Verbrauch.",
-    "Das Modell ist ein offenes Regelwerk über Beispieldaten (Annahmen stehen im Space); derselbe Rechenweg beantwortet die Frage im Chat über das Werkzeug simulate_credit_cut."
+    "Bei 30 % weniger Credits sinkt die Obergrenze von 21,5 auf 15,05 Mio. € und liegt 1,32 Mio. € unter dem heutigen Verbrauch von 16,37 Mio. €; Engineering und Finance trifft es am stärksten.",
+    "Ab rund 24 % Kürzung reicht die Obergrenze nicht mehr. Token-API-Kosten machen 92 % des Verbrauchs aus, deshalb schlägt jede Drosselung direkt auf den Tokenverbrauch durch (775 Mrd. pro Woche).",
+    "Vier Gegenmaßnahmen (Cache, Modell-Routing, Kompression, harte Limits) sparen zusammen rund 3,6 Mio. € pro Monat und verschieben den Break-even auf etwa 34 %. Die Kürzungskurve zeigt die Lücke mit und ohne sie.",
+    "Das Modell ist ein offenes Regelwerk über Beispieldaten (Annahmen stehen im Space); derselbe Rechenweg beantwortet die Frage im Chat über das Werkzeug simulate_credit_cut, auch mit Gegenmaßnahmen."
   ],
   "prompt": "Bundled example: What-if Simulator (static, model and data embedded by npm run sync:what-if)."
 }

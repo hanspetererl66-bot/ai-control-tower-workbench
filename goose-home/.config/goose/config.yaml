@@ -2,4 +2,24 @@
 # GOOSE_MODEL and OPENROUTER_API_KEY come from the untracked .env file.
 GOOSE_PROVIDER: openrouter
 
-extensions: {}
+extensions:
+  {
+    ai-control-tower:
+      {
+        enabled: true,
+        type: stdio,
+        name: ai-control-tower,
+        cmd: node,
+        args:
+          [
+            /home/hp_baxter/Downloads/ai-control-tower-workbench/goose-home/bundles/ai-control-tower/server/index.mjs
+          ],
+        envs:
+          {
+            CONTROL_TOWER_DATA: /home/hp_baxter/Downloads/ai-control-tower-workbench/goose-home/bundles/ai-control-tower/data/data.json,
+            SUPABASE_URL: https://iguatwcsgjewpyejlgdk.supabase.co,
+            N8N_URL: https://jamesbond66.app.n8n.cloud/
+          },
+        timeout: 300
+      }
+  }
