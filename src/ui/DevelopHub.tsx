@@ -1,5 +1,5 @@
 /** Start page of "Develop": two ways to build something, each opens the screen that existed before. */
-export default function DevelopHub({ onWorkflow, onAgent }: { onWorkflow: () => void; onAgent: () => void }) {
+export default function DevelopHub({ onWorkflow, onAgent, onConnectors }: { onWorkflow: () => void; onAgent: () => void; onConnectors: () => void }) {
   return (
     <main className="main develop-main">
       <div className="develop">
@@ -15,8 +15,14 @@ export default function DevelopHub({ onWorkflow, onAgent }: { onWorkflow: () => 
           <button className="develop-card" onClick={onAgent} aria-label="Create an Agent">
             <span className="develop-logo develop-logo-agent" aria-hidden="true"><AgentMark /></span>
             <span className="develop-card-title">Create an Agent</span>
-            <span className="develop-card-brand">with connectors &amp; skills</span>
-            <span className="develop-card-text">Give your agent tools (connectors) and know-how (skills).</span>
+            <span className="develop-card-brand">with the Agent Studio</span>
+            <span className="develop-card-text">Describe a task, tick its sources, test it safely and publish it with approval.</span>
+          </button>
+          <button className="develop-card" onClick={onConnectors} aria-label="Connectors and Skills">
+            <span className="develop-logo develop-logo-agent" aria-hidden="true"><ConnectorMark /></span>
+            <span className="develop-card-title">Connectors &amp; Skills</span>
+            <span className="develop-card-brand">tools and know-how</span>
+            <span className="develop-card-text">Import connectors (tools) and skills (know-how) your agents can use.</span>
           </button>
         </div>
       </div>
@@ -33,6 +39,17 @@ function WorkflowMark() {
       <circle cx="40" cy="50" r="8" fill="currentColor" />
       <circle cx="56" cy="32" r="5" fill="currentColor" opacity=".55" />
       <path d="M19 28l14-9M19 36l14 9M47 18l5 9M47 46l5-9" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Two plugs meeting: a generic connector mark. */
+function ConnectorMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <rect x="8" y="22" width="22" height="20" rx="8" fill="currentColor" />
+      <rect x="34" y="22" width="22" height="20" rx="8" fill="currentColor" opacity=".55" />
+      <path d="M30 28h4M30 36h4" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" />
     </svg>
   );
 }

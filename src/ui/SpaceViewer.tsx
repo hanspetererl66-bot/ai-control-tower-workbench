@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
+import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
@@ -25,6 +26,7 @@ export default function SpaceViewer({
   onSpaceState,
   savedState,
   incoming,
+  studioAgents,
   onIncomingDelivered,
 }: {
   space: Space;
@@ -47,6 +49,8 @@ export default function SpaceViewer({
   savedState?: Record<string, unknown>;
   /** Work another Space handed to this one; delivered once the frame has loaded. */
   incoming?: IncomingHandoff[];
+  /** Agents built in the Agent Studio; the AI Control Tower registers them as processes. */
+  studioAgents?: unknown[];
   onIncomingDelivered?: () => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -58,6 +62,12 @@ export default function SpaceViewer({
     frame.current?.contentWindow?.postMessage({ type: 'ct:open-tab', tab: tabRequest.tab }, '*');
   };
   useEffect(postTab, [tabRequest?.tab, tabRequest?.nonce]);
+  const postAgents = () => {
+    if (space.slug !== 'ai-control-tower' || !loaded.current || !studioAgents) return;
+    frame.current?.contentWindow?.postMessage({ type: 'ct:studio-agents', agents: studioAgents }, '*');
+  };
+  const agentsKey = JSON.stringify(studioAgents ?? null);
+  useEffect(postAgents, [agentsKey]);
 
   const askRef = useRef(onAsk);
   askRef.current = onAsk;
@@ -102,13 +112,14 @@ export default function SpaceViewer({
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
-      void handleSub4meMessage(event.data, bridgeRef.current).then((reply) => {
+      const handle = space.slug === PRD_SPACE ? handlePrdMessage : handleSub4meMessage;
+      void handle(event.data, bridgeRef.current).then((reply) => {
         if (reply) frame.current?.contentWindow?.postMessage(reply, '*');
       });
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
-  }, [bridgeEnabled]);
+  }, [bridgeEnabled, space.slug]);
 
   // Search and filter: the page script (space-tools.ts) does the work, these are its controls.
   const [query, setQuery] = useState('');
@@ -287,6 +298,7 @@ export default function SpaceViewer({
             loaded.current = true;
             postRestore();
             postTab();
+            postAgents();
             if (query) sendTools({ type: 'sp:search', query });
             if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
           }}
