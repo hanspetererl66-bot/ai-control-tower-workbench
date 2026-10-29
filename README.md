@@ -134,6 +134,16 @@ npm run check
 
 This runs the TypeScript check, Node test suite, and production renderer build.
 
+## Develop: intent-based development
+
+The **Develop** icon starts a guided process instead of opening a blank tool. For **Create a Workflow with n8n** and **Create an Agent**:
+
+1. **Intent**: a short form (goal, what starts it, systems, data in and out, how much it may do alone, how you will know it works).
+2. **Requirements**: the chat agent writes a Product Requirements Definition with numbered, testable requirements (REQ-01 …). You read it, edit it, ask for changes and approve it.
+3. **Specification & Architecture**: from the approved PRD, the agent writes the specification and the solution architecture (a diagram, the n8n node plan or the skill outline, data contracts, errors, security, test plan), traced to the REQ IDs. You approve it.
+4. **Build**: from both documents, the agent writes the importable n8n workflow file, or a `SKILL.md`. The result is checked (valid JSON, unique node names, no secrets, front matter) before you can download the workflow or install the skill. Changing an earlier document takes the later approvals back.
+
+The documents are kept per project in this app and can be downloaded as Markdown. Each step runs in its own conversation, named "Develop: …". Experts can still open n8n and Connectors & Skills directly from the Develop page.
 ## Mass upload of tables
 
 In the chat, attach up to **25 files** at once (the **+** button or drag and drop). CSV, TSV and Excel files are read locally; the model gets a compact description (rows, columns, types, ranges, sample rows) and the file path, not the whole table.

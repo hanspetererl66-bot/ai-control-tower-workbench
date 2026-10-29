@@ -226,6 +226,8 @@ export default function App() {
   const paths = useRef(new Set<string>());
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
+  const developStopped = useRef(false);
+  const sendRef = useRef<(text: string, attachments?: ChatAttachment[], options?: { plain?: boolean }) => Promise<void>>(async () => {});
   const webSearchRef = useRef(true);
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
   askBeforeActionsRef.current = prefs.chat.askBeforeActions;
@@ -539,6 +541,8 @@ export default function App() {
     setAgentEpoch((current) => current + 1);
   }
 
+  /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
+  async function send(text: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
   /** Memory as the assistant gets it: entries for every conversation plus those tied to the Space in context, with agreed levels marked. */
   function currentMemoryNote(space = contextSpace) {
     const g = loadGov(undefined, MEMORY_GOV_KEY);
@@ -561,13 +565,10 @@ export default function App() {
     if (messages.length === 0) {
       setTitle((typed || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
-<<<<<<< HEAD
     setMemorySuggestion(suggestMemory(text, memory));
     harnessStepCount.current = 0;
     harnessBlock.current = null;
-=======
     setMemorySuggestion(suggestMemory(typed, memory));
->>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -584,7 +585,7 @@ export default function App() {
     ]);
     setBusy(true);
     try {
-      const spaceRequested = wantsSpace(text);
+      const spaceRequested = !options.plain && wantsSpace(text);
       const grounding = dataGroundingContext(attachments);
       const existingSpace = spaceRequested
         ? spaces.find((space) => text.toLocaleLowerCase().includes(space.title.toLocaleLowerCase()))
@@ -600,11 +601,8 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-<<<<<<< HEAD
       const prompt = [historyGrounding, text, assistantNote(prefs), harnessNote(harnessRef.current), memoryNote(memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
-=======
       const prompt = [historyGrounding, text, assistantNote(prefs), personaNote(personas), currentMemoryNote(), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
->>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -709,7 +707,7 @@ export default function App() {
       }
       setBusy(false);
       const nextSpaces = await refreshSpaces();
-      const spaceResult = wantsSpace(text)
+      const spaceResult = !options.plain && wantsSpace(text)
         ? nextSpaces.find((space) => {
             const previousUpdatedAt = previousSpaces.get(space.slug);
             return previousUpdatedAt === undefined || space.updatedAt > previousUpdatedAt;
@@ -730,9 +728,27 @@ export default function App() {
     }
   }
 
+  sendRef.current = send;
+
+  /**
+   * Develop: runs one working prompt through the agent in a conversation of its own, so the person's chats stay
+   * clean, and returns the agent's answer. '' means the person stopped it.
+   */
+  async function developGenerate(prompt: string, title: string): Promise<string> {
+    if (!agent) throw new Error('The agent is not connected yet.');
+    if (busy) throw new Error('The agent is still busy with another answer. Wait until it has finished.');
+    developStopped.current = false;
+    newConversation();
+    await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
+    await sendRef.current(prompt, [], { plain: true });
+    setTitle(title.slice(0, 48));
+    return developStopped.current ? '' : draft.current;
+  }
+
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
+    developStopped.current = true;
     speaker.current?.stop();
     try {
       await agent.cancel();
@@ -1142,7 +1158,14 @@ export default function App() {
       )}
 
       {view === 'develop' ? (
-        <DevelopHub onWorkflow={() => setView('n8n')} onAgent={() => setView('manage')} />
+        <DevelopHub
+          onOpenN8n={() => setView('n8n')}
+          onOpenConnectors={() => setView('manage')}
+          generate={developGenerate}
+          onStop={() => void cancelCurrent()}
+          ready={Boolean(agent)}
+          onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
+        />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}

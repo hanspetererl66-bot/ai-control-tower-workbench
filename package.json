@@ -35,8 +35,6 @@
     "install:it-infrastructure": "node scripts/install-example-space.mjs it-infrastructure",
     "install:renewals": "node scripts/install-example-space.mjs renewals",
     "sync:it-fleet": "node scripts/sync-it-fleet.mjs",
-    "install:it-operations": "node scripts/install-example-space.mjs it-operations",
-    "install:it-infrastructure": "node scripts/install-example-space.mjs it-infrastructure",
     "install:it-fleet": "node scripts/install-example-space.mjs it-fleet",
     "sync:calm-alm": "node scripts/sync-calm-alm.mjs",
     "sync:automation": "node scripts/sync-automation-dashboard.mjs",
@@ -93,13 +91,17 @@
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "@types/turndown": "^5.0.6",
     "@vitejs/plugin-react": "^6.0.5",
     "electron": "^43.3.0",
+    "jsdom": "^29.1.1",
     "typescript": "^7.0.2",
     "vite": "^8.2.0"
   }
