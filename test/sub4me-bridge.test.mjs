@@ -48,7 +48,7 @@ test('the Space only talks to its parent and the app only wires the bridge for s
   const html = readFileSync(join(import.meta.dirname, '..', 'examples/sub4me/index.html'), 'utf8');
   assert.match(html, /e\.source !== window\.parent/);
   const app = readFileSync(join(import.meta.dirname, '..', 'src/App.tsx'), 'utf8');
-  assert.match(app, /bridgeEnabled=\{space\.slug === SUB4ME_SPACE\}/);
+  assert.match(app, /bridgeEnabled=\{space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE\}/);
   const viewer = readFileSync(join(import.meta.dirname, '..', 'src/ui/SpaceViewer.tsx'), 'utf8');
   assert.match(viewer, /event\.source !== frame\.current\.contentWindow/);
 });
@@ -110,4 +110,21 @@ test('check-request reports each failing source separately and validates input',
   assert.equal((await handleSub4meMessage({ type: 's4m:check-request', requestId: 'c3', title: '' }, call)).message, 'invalid ticket');
   assert.equal(await handleSub4meMessage({ type: 's4m:check-request', requestId: '../x', title: 'T' }, call), null);
   assert.equal((await handleSub4meMessage({ type: 's4m:check-request', requestId: 'c4', title: 'T' }, undefined)).type, 's4m:error');
+});
+
+test('payment-risk requests call only predict_late_payments and pass on the rendered fields', async () => {
+  const calls = [];
+  const forecast = { asOf: '2026-10-18', engine: 'baseline', engineNote: 'n', trainedOn: '600 synthetic invoices', disclaimer: 'Demo', hidden: 1, customerHabit: { avgDelayDays: 3, lateShare: 0.2, paidInvoicesSeen: 8, x: 1 }, items: [{ id: 'INV-1', contractId: 'C-1', grossEur: 5, due: '2026-10-31', daysToDue: 13, lateProbability: 0.7, risk: 'high', drivers: [{ label: 'Invoice amount', value: 11.5, effectPct: 20, extra: 1 }], secret: 'x' }] };
+  const reply = await handleSub4meMessage({ type: 's4m:payment-risk-request', requestId: 'p1', customer: 'hanse', tool: 'get_budget' }, async (tool, args) => (calls.push([tool, args]), ok(forecast)));
+  assert.deepEqual(calls, [['predict_late_payments', { customer: 'hanse' }]]);
+  assert.equal(reply.type, 's4m:payment-risk');
+  assert.equal(reply.requestId, 'p1');
+  assert.equal(reply.forecast.hidden, undefined);
+  assert.equal(reply.forecast.items[0].secret, undefined);
+  assert.deepEqual(reply.forecast.items[0].drivers, [{ label: 'Invoice amount', value: 11.5, effectPct: 20 }]);
+  const none = await handleSub4meMessage({ type: 's4m:payment-risk-request', requestId: 'p2' }, undefined);
+  assert.deepEqual(none, { type: 's4m:error', requestId: 'p2', message: 'The agent is not connected yet.' });
+  const err = await handleSub4meMessage({ type: 's4m:payment-risk-request', requestId: 'p3' }, async () => ({ isError: true, content: [{ type: 'text', text: 'service not configured' }] }));
+  assert.equal(err.message, 'service not configured');
+  assert.equal(await handleSub4meMessage({ type: 's4m:payment-risk-request', requestId: '../x' }, async () => ok({})), null);
 });

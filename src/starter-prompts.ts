@@ -39,6 +39,10 @@ export const STARTER_PROMPTS: StarterPrompt[] = [
     label: 'Budget pro Team',
     prompt: 'Welche Teams liegen über dem KI-Budget?',
   },
+  {
+    label: 'Zahlungsverzug-Prognose',
+    prompt: 'Welche offenen Sub4Me-Rechnungen werden voraussichtlich mehr als 14 Tage zu spät bezahlt?',
+  },
 ];
 
 function normalized(name: string): string {

@@ -20,9 +20,10 @@ import { GROUP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/group
 import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
 import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
 import { CROSS_SPACE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/cross-space.mjs';
+import { PAYMENT_RISK_TOOL_DEFINITIONS } from '../connectors/control-tower/server/payment-risk.mjs';
 import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
 
-const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS, ...GROUP_TOOL_DEFINITIONS];
+const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS, ...GROUP_TOOL_DEFINITIONS, ...PAYMENT_RISK_TOOL_DEFINITIONS];
 
 const ROOT = join(import.meta.dirname, '..');
 const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');
@@ -179,9 +180,9 @@ test('get_budget flags overspend and reports that team rows add up to the stated
     assert.equal(status.Finance, 'over budget');
     assert.equal(status['Sales & Presales'], 'near limit');
     assert.equal(status['HR / L&D'], 'within budget');
-    assert.equal(budget.headroomM, 0.86);
-    assert.equal(budget.reconciliation.sumOfTeamBudgetsK, 3600);
-    assert.equal(budget.reconciliation.sumOfTeamActualsK, 2740);
+    assert.equal(budget.headroomM, 5.13);
+    assert.equal(budget.reconciliation.sumOfTeamBudgetsK, 21500);
+    assert.equal(budget.reconciliation.sumOfTeamActualsK, 16370);
     assert.equal(budget.reconciliation.ceilingMinusTeamBudgetsK, 0);
     assert.equal(budget.reconciliation.statedActualMinusTeamActualsK, 0);
     assert.equal(budget.reconciliation.reconciles, true);
@@ -385,7 +386,7 @@ test('a mismatch in the budget source data is still reported', async () => {
   try {
     const { reconciliation } = parse(await server.call('get_budget', {}));
     assert.equal(reconciliation.reconciles, false);
-    assert.equal(reconciliation.ceilingMinusTeamBudgetsK, 98);
+    assert.equal(reconciliation.ceilingMinusTeamBudgetsK, 565);
     assert.match(reconciliation.note, /do not add up/);
   } finally {
     server.stop();

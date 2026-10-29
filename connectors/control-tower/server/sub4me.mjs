@@ -559,7 +559,7 @@ export function createSub4MeHandlers(load = loadSub4MeData, rpc = null) {
       if (args.contract) list = list.filter((i) => i.contractId === args.contract);
       const open = list.filter((i) => i.status === 'Open' || i.status === 'Overdue');
       return {
-        customer: record.customer?.name, asOf: record.asOf, count: list.length,
+        customer: record.customer?.name, customerId: record.id, asOf: record.asOf, count: list.length,
         openGrossEur: open.reduce((a, i) => a + i.grossEur, 0), overdue: list.filter((i) => i.status === 'Overdue').length,
         invoices: list, source: dataSource, view: { space: 'sub4me', tab: 'invoices' },
       };

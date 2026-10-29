@@ -29,7 +29,16 @@ const ASSUMPTIONS = [
   'Die Nachfrage bleibt gleich. Die Gesamt-Obergrenze ist die harte Grenze; einzelne Teams dürfen über ihrem Budget liegen (wie heute Engineering mit 107 %).',
   'Reicht die gekürzte Obergrenze nicht für den Verbrauch, wird der fehlende Betrag auf die Teams verteilt, die über ihrem gekürzten Budget liegen, im Verhältnis ihrer Überschreitung. Deren produktive Agenten führen gleichmäßig weniger Aufrufe aus, die Kosten sinken im selben Verhältnis.',
   'Agenten werden über ihre Business Unit einem Budget-Team zugeordnet (Support zu Operations, Security zu Engineering); das ist eine Annahme für die Demo.',
+  'Gegenmaßnahmen senken den Verbrauch aller Teams im gleichen Verhältnis, bevor die Kürzung greift; die Beträge stammen aus dem Token-Economics-Tab (Schätzungen, nicht gemessen).',
   'Die Risiko-Effekte sind Faustregeln, keine Prognose. Beispieldaten, keine Live-Messung.',
+];
+
+/** Countermeasures from the Token Economics tab: each lowers the monthly spend (EUR M) without throttling a single agent. */
+const LEVERS = [
+  { id: 'cache', label: 'Prompt-Cache-Quote von 38 % auf 60 %', savingsM: 1.09, detail: 'Semantischer Cache und stabile System-Prompts; heute spart der Cache 1,88 Mio. € pro Monat.' },
+  { id: 'routing', label: 'Modell-Routing straffen', savingsM: 1.1, detail: 'Opus nur mit Freigabe des Tech Leads, Standardfälle auf Sonnet, Klassifikation auf Haiku/Nano.' },
+  { id: 'compress', label: 'Kompression ab 5 statt ab 10 Schritten', savingsM: 0.6, detail: 'LLMLingua-2 früher in Agenten-Schleifen einsetzen.' },
+  { id: 'caps', label: 'Harte Limits für Teams über Budget', savingsM: 0.8, detail: 'Gilt für die 8 Teams über ihrer Zuteilung (Engineering, Finance); Gateway stoppt nach Limit.' },
 ];
 
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -53,6 +62,8 @@ function prepareWhatIf(tower) {
   return {
     ceilingM: tower.budget.ceilingM,
     actualM: tower.budget.totalActualM,
+    tokenApiM: tower.budget.tokenApiM ?? 0,
+    tokensBillionPerWeek: tower.budget.tokensBillionPerWeek ?? 0,
     thresholdPct: tower.meta?.riskThresholdPct ?? 40,
     groups: tower.budget.groups.map((g) => ({ name: g.name, budgetK: g.budgetK, utilisationPct: g.utilisationPct })),
     agents: [...rows.values()].sort((a, b) => b.runsPerDay - a.runsPerDay || a.family.localeCompare(b.family)),
@@ -74,13 +85,17 @@ function riskEffects(model, throttledGroups) {
 }
 
 /** `cutPct`: 0 to 100 (percent of the AI credits taken away). */
-function simulateCreditCut(model, cutPct) {
+function simulateCreditCut(model, cutPct, options = {}) {
+  const applied = LEVERS.filter((lever) => (options.levers ?? []).includes(lever.id));
+  const savingsM = Math.min(applied.reduce((n, lever) => n + lever.savingsM, 0), model.actualM * 0.5);
+  const actualEffM = model.actualM - savingsM;
+  const spendRatio = model.actualM > 0 ? actualEffM / model.actualM : 1;
   const cut = Math.min(100, Math.max(0, Number(cutPct) || 0));
   const factor = 1 - cut / 100;
   const ceilingAfter = model.ceilingM * factor;
 
   const rows = model.groups.map((group) => {
-    const actualK = (group.budgetK * group.utilisationPct) / 100;
+    const actualK = ((group.budgetK * group.utilisationPct) / 100) * spendRatio;
     return { group, actualK, budgetAfter: group.budgetK * factor };
   });
   const actualTotalK = rows.reduce((n, row) => n + row.actualK, 0);
@@ -114,19 +129,23 @@ function simulateCreditCut(model, cutPct) {
   const runsBefore = model.agents.reduce((n, row) => n + row.runsPerDay, 0);
   const runsLost = processes.reduce((n, row) => n + row.runsLostPerDay, 0);
   const throttledGroups = groups.filter((g) => g.mustReducePct > 0).map((g) => g.name);
-  const overBy = round2(Math.max(0, model.actualM - ceilingAfter));
+  const overBy = round2(Math.max(0, actualEffM - ceilingAfter));
+  const tokenShare = model.actualM > 0 ? model.tokenApiM / model.actualM : 0;
+  const missingShare = actualTotalK > 0 ? missingK / actualTotalK : 0;
 
   return {
     cutPct: round1(cut),
     ceiling: {
       beforeM: model.ceilingM,
       afterM: round2(ceilingAfter),
-      actualM: model.actualM,
-      headroomM: round2(Math.max(0, ceilingAfter - model.actualM)),
+      actualM: round2(actualEffM),
+      headroomM: round2(Math.max(0, ceilingAfter - actualEffM)),
       overByM: overBy,
-      status: overBy > 0 ? 'over' : model.actualM / ceilingAfter >= 0.9 ? 'tight' : 'ok',
+      status: overBy > 0 ? 'over' : actualEffM / ceilingAfter >= 0.9 ? 'tight' : 'ok',
     },
-    breakEvenCutPct: round1((1 - model.actualM / model.ceilingM) * 100),
+    breakEvenCutPct: round1((1 - actualEffM / model.ceilingM) * 100),
+    levers: { applied: applied.map((lever) => lever.id), savingsM: round2(savingsM), spendBeforeM: model.actualM, spendAfterM: round2(actualEffM), available: LEVERS },
+    tokens: { apiCostM: model.tokenApiM, sharePct: round1(tokenShare * 100), billionPerWeek: model.tokensBillionPerWeek, lostBillionPerWeek: Math.round(model.tokensBillionPerWeek * spendRatio * missingShare) },
     groups,
     agents: {
       production: model.agents.reduce((n, row) => n + row.agents, 0),
@@ -141,9 +160,19 @@ function simulateCreditCut(model, cutPct) {
     assumptions: ASSUMPTIONS,
   };
 }
+
+/** Gap per cut step (0 to 60 %), for the curve on the page. */
+function creditCutCurve(model, options = {}) {
+  const points = [];
+  for (let cut = 0; cut <= 60; cut += 5) {
+    const r = simulateCreditCut(model, cut, options);
+    points.push({ cut, overByM: r.ceiling.overByM, runsLostPerDay: r.agents.runsLostPerDay });
+  }
+  return points;
+}
 // END-MODEL
 
-export { UNIT_TO_GROUP, ASSUMPTIONS, prepareWhatIf, simulateCreditCut };
+export { UNIT_TO_GROUP, ASSUMPTIONS, LEVERS, prepareWhatIf, simulateCreditCut, creditCutCurve };
 
 export const WHAT_IF_TOOL_DEFINITIONS = [
   {
@@ -152,7 +181,10 @@ export const WHAT_IF_TOOL_DEFINITIONS = [
       'What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team\'s new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as "Was passiert, wenn wir die AI-Credits um 30 % kürzen?".',
     inputSchema: {
       type: 'object',
-      properties: { cut_percent: { type: 'number', minimum: 0, maximum: 90, description: 'Share of the AI credits that is taken away, for example 30.' } },
+      properties: {
+        cut_percent: { type: 'number', minimum: 0, maximum: 90, description: 'Share of the AI credits that is taken away, for example 30.' },
+        levers: { type: 'array', items: { type: 'string', enum: ['cache', 'routing', 'compress', 'caps'] }, description: 'Optional countermeasures that lower the spend before the cut is applied: cache (prompt cache 38 to 60 %), routing (tighter model routing), compress (compression from 5 steps), caps (hard limits for teams over budget).' },
+      },
       required: ['cut_percent'],
       additionalProperties: false,
     },
@@ -166,7 +198,8 @@ export function createWhatIfHandlers({ loadTower, ToolError }) {
       const cut = args.cut_percent;
       if (typeof cut !== 'number' || !Number.isFinite(cut) || cut < 0 || cut > 90) throw new ToolError('cut_percent must be a number between 0 and 90');
       const { data, source } = await loadTower();
-      return { ...simulateCreditCut(prepareWhatIf(data), cut), view: { space: 'what-if', tab: 'overview' }, dataSource: source };
+      const levers = Array.isArray(args.levers) ? args.levers.filter((x) => typeof x === 'string') : [];
+      return { ...simulateCreditCut(prepareWhatIf(data), cut, { levers }), view: { space: 'what-if', tab: 'overview' }, dataSource: source };
     },
   };
 }

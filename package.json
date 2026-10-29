@@ -19,6 +19,7 @@
     "sync:sub4me": "node scripts/sync-sub4me.mjs",
     "sync:knowledge-graph": "node scripts/sync-knowledge-graph.mjs",
     "sync:what-if": "node scripts/sync-what-if.mjs",
+    "sync:prd-builder": "node scripts/sync-prd-builder.mjs",
     "sync:agent-activity": "node scripts/sync-agent-activity.mjs",
     "sync:mockups": "node scripts/sync-mockup-spaces.mjs",
     "sync:infra-ops": "node scripts/sync-infra-ops.mjs",

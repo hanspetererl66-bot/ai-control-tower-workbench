@@ -56,6 +56,14 @@ button.primary{background:var(--brand);color:#fff;border:0;border-radius:6px;pad
 .enrich-btn{border:1px solid var(--purple-border);background:transparent;color:var(--purple);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .enrich-btn:hover{background:var(--purple-dim)}
 .enrich-btn:disabled{opacity:.5;cursor:default}
+.pr-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.pr-head h3{margin:0 0 2px;font-size:14px}
+.pr-meta{margin-top:10px}
+.pr-prob{display:flex;align-items:center;gap:8px;min-width:150px}
+.pr-prob .bar{flex:1;min-width:70px}
+.pr-prob b{min-width:38px;text-align:right}
+.pr-drv{margin:0;padding-left:16px;font-size:12px;color:var(--mut)}
+.pr-foot{margin-top:10px}
 .tk-meta{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
 tr.mh td{padding:0;background:var(--surface-2,var(--line-2));border-bottom:1px solid var(--line)}
 tr.mh button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;padding:12px 14px;cursor:pointer;text-align:left}
@@ -356,7 +364,7 @@ details.intro .body{margin-top:8px}
     <div class="ov-grid"><div class="card" id="ov-nba"></div><div class="card" id="ov-tickets"></div></div>
     <div class="ov-grid"><div class="card" id="ov-offers"></div><div class="card" id="ov-ai"></div></div>
     <div class="card" id="ov-timeline" style="margin-top:14px"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div><h2>Customer</h2><div class="card" id="profile"></div></section>
-  <section class="pg" id="pg-invoices"><div class="grid" id="inv-kpis"></div><div class="filters"><label class="s" for="inv-status" style="display:inline">Status</label><select id="inv-status"><option value="">All</option><option>Open</option><option>Overdue</option><option>Paid</option><option>Settled</option></select><span class="inv-tools"><button class="enrich-btn" type="button" id="inv-expand">Expand all</button><button class="enrich-btn" type="button" id="inv-collapse">Collapse all</button></span></div><div class="card tbl" id="invoices"></div></section>
+  <section class="pg" id="pg-invoices"><div class="grid" id="inv-kpis"></div><div class="card" id="pay-risk" style="margin-bottom:14px"></div><div class="filters"><label class="s" for="inv-status" style="display:inline">Status</label><select id="inv-status"><option value="">All</option><option>Open</option><option>Overdue</option><option>Paid</option><option>Settled</option></select><span class="inv-tools"><button class="enrich-btn" type="button" id="inv-expand">Expand all</button><button class="enrich-btn" type="button" id="inv-collapse">Collapse all</button></span></div><div class="card tbl" id="invoices"></div></section>
   <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><div class="card detail" id="contract-detail" aria-live="polite"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div><div class="card detail" id="offer-detail" aria-live="polite"></div></section>
   <section class="pg" id="pg-usage">
     <div class="grid" id="usage-kpis"></div>
@@ -2950,6 +2958,44 @@ details.intro .body{margin-top:8px}
   $('inv-collapse').addEventListener('click', function(){ invOpen = {}; renderInvoices(); });
   $('inv-status').addEventListener('change', renderInvoices);
 
+  // ---- Late-payment forecast (TabPFN service behind the connector; the Space only asks its parent)
+  var payPending = null, payState = {kind: 'idle'};
+  function payTag(r, late){ if (late) return tag('bad', 'already late'); return tag(r === 'high' ? 'bad' : r === 'medium' ? 'warn' : 'ok', r === 'high' ? 'likely late' : r === 'medium' ? 'watch' : 'on time'); }
+  function renderPayRisk(){
+    var head = '<div class="pr-head"><div><h3>Late-payment forecast</h3><div class="s">Which open invoices will probably be paid more than 14 days after the due date. Demo model, trained on synthetic data.</div></div>' +
+      '<button class="enrich-btn" type="button" id="pay-run"' + (payState.kind === 'loading' ? ' disabled' : '') + '>' + (payState.kind === 'result' ? 'Run again' : 'Run forecast') + '</button></div>';
+    var body = '';
+    if (payState.kind === 'loading') body = '<div class="s pr-meta">Scoring the open invoices …</div>';
+    else if (payState.kind === 'error') body = '<div class="s pr-meta">' + esc(payState.message) + '</div>';
+    else if (payState.kind === 'result') {
+      var f = payState.forecast, items = f.items || [];
+      if (!items.length) body = '<div class="s pr-meta">No open invoices to score.</div>';
+      else body = '<div class="tbl pr-meta"><table><thead><tr><th>Invoice</th><th class="num">Gross</th><th>Due</th><th>Chance of a late payment</th><th>Main drivers</th></tr></thead><tbody>' +
+        items.map(function(i){
+          var pct = Math.round(i.lateProbability * 100), pctText = i.alreadyLate ? '100%' : (pct === 0 ? '<1%' : pct + '%');
+          var due = i.daysToDue === null ? esc(i.due) : esc(i.due) + '<div class="s">' + (i.daysToDue < 0 ? (-i.daysToDue) + ' days overdue' : 'in ' + i.daysToDue + ' days') + '</div>';
+          var drv = i.alreadyLate ? '<span class="s">already more than 14 days past due, nothing left to predict</span>' : (i.drivers || []).length ? '<ul class="pr-drv">' + i.drivers.map(function(d){ return '<li>' + esc(d.label) + ' (' + (d.effectPct > 0 ? '+' : '') + d.effectPct + ' pts)</li>'; }).join('') + '</ul>' : '<span class="s">no single driver stands out</span>';
+          return '<tr><td><b>' + esc(i.id) + '</b><div class="s">' + esc(i.contractId) + '</div></td><td class="num">' + (i.grossEur === null ? '–' : eur(i.grossEur)) + '</td><td>' + due + '</td>' +
+            '<td><div class="pr-prob"><div class="bar"><i class="' + (i.risk === 'high' ? 'bad' : i.risk === 'medium' ? 'warn' : '') + '" style="width:' + pct + '%"></i></div><b>' + pctText + '</b>' + payTag(i.risk, i.alreadyLate) + '</div></td><td>' + drv + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+      var h = f.customerHabit || {};
+      body += '<div class="s pr-foot">Engine: <b>' + esc(f.engine === 'tabpfn' ? 'TabPFN' : f.engine === 'baseline' ? 'gradient-boosting baseline (TabPFN not loaded)' : f.engine) + '</b> · trained on ' + esc(f.trainedOn) + ' · as of ' + esc(f.asOf) +
+        (h.paidInvoicesSeen ? ' · this customer paid ' + h.paidInvoicesSeen + ' invoices so far, on average ' + (h.avgDelayDays > 0 ? h.avgDelayDays + ' days after' : Math.abs(h.avgDelayDays) + ' days before') + ' the due date' : '') +
+        '. ' + esc(f.disclaimer || '') + '</div>';
+      if (f.engine === 'baseline' && f.engineNote) body += '<div class="s">' + esc(f.engineNote) + '</div>';
+    }
+    $('pay-risk').innerHTML = head + body;
+  }
+  $('pay-risk').addEventListener('click', function(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest('#pay-run') : null;
+    if (!btn) return;
+    if (window.parent === window) { payState = {kind: 'error', message: 'The forecast needs the agent connection. Open this Space in the app.'}; renderPayRisk(); return; }
+    var id = 'p' + Date.now().toString(36);
+    payPending = id; payState = {kind: 'loading'}; renderPayRisk();
+    askParent({type: 's4m:payment-risk-request', requestId: id, customer: D.customer.id});
+    setTimeout(function(){ if (payPending === id) { payPending = null; payState = {kind: 'error', message: 'No answer from the agent. Is the AI Control Tower connector connected and the forecast service running?'}; renderPayRisk(); } }, 30000);
+  });
+
   // ---- Ticket pre-check: solution note and same issue at another customer (same matching as the connector)
   /*match:start*/
 const STOP = new Set(['the', 'and', 'for', 'with', 'after', 'from', 'not', 'are', 'was', 'has', 'have', 'that', 'this', 'when', 'into', 'since', 'still', 'our', 'its', 'but', 'all', 'can', 'cannot', 'does', 'did', 'get', 'gets', 'new', 'now', 'one', 'two', 'too', 'who', 'how', 'why', 'what', 'which', 'while', 'than', 'then', 'them', 'they', 'their', 'you', 'your', 'also', 'any', 'may', 'per', 'via', 'use', 'used', 'using', 'need', 'needs', 'want', 'each', 'other', 'only', 'some', 'there', 'here', 'will', 'would', 'should', 'could', 'been', 'being', 'were', 'return', 'returns', 'shows', 'show']);
@@ -3138,6 +3184,7 @@ function similarity(a, b) {
     $('f-product').innerHTML = D.contracts.filter(function(c){ return c.status !== 'Expired'; }).map(function(c){ return '<option>' + esc(c.product) + '</option>'; }).join('') + D.products.map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
     $('ticket-form').reset(); finish(); $('toast').className = 'toast';
     renderOverview(); renderContracts(); renderOffers(); renderUsage(); renderTickets(); renderInvoices(); renderScenarios();
+    payPending = null; payState = {kind: 'idle'}; renderPayRisk();
     if (window.parent !== window) loadRemote(); else setStorage(false);
   }
   $('cust-select').innerHTML = RECORDS.map(function(r){ return '<option value="' + esc(r.id) + '">' + esc(r.customer.name) + '</option>'; }).join('');
@@ -3155,6 +3202,11 @@ function similarity(a, b) {
     if (e.source !== window.parent || !d || typeof d.type !== 'string') return;
     if (d.type === 'ct:open-tab' && typeof d.tab === 'string') {
       if (/^[a-z]+$/.test(d.tab) && document.getElementById('pg-' + d.tab)) show(d.tab);
+    } else if (d.type === 's4m:payment-risk' && d.requestId && d.requestId === payPending && d.forecast) {
+      if (d.customer && d.customer !== D.customer.id) return;
+      payPending = null; payState = {kind: 'result', forecast: d.forecast}; renderPayRisk();
+    } else if (d.type === 's4m:error' && d.requestId && d.requestId === payPending) {
+      payPending = null; payState = {kind: 'error', message: 'Could not run the forecast: ' + String(d.message).slice(0, 200)}; renderPayRisk();
     } else if (d.type === 's4m:enrichment' && d.requestId && enrichPending[d.requestId] && d.enrichment) {
       delete enrichPending[d.requestId]; renderEnrichment(d.enrichment); renderTickets();
     } else if (d.type === 's4m:error' && d.requestId && enrichPending[d.requestId]) {

@@ -12,10 +12,16 @@ const spaces = readFileSync(path.join(root, 'src/spaces.ts'), 'utf8');
 test('the public product surface uses the Joule Work X - Next Gen Design Study title', () => {
   const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
   assert.match(product, /PRODUCT_NAME = 'Joule Work X - Next Gen'/);
+<<<<<<< HEAD
   assert.match(product, /PRODUCT_TITLE = `\$\{PRODUCT_NAME\} Design Study`/);
   assert.match(app, /\{PRODUCT_TITLE\} uses AI/);
   assert.match(composer, /Message \$\{PRODUCT_TITLE\}/);
   assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen Design Study<\/title>/);
+=======
+  assert.match(app, /\{PRODUCT_NAME\} uses AI/);
+  assert.match(composer, /Message \$\{PRODUCT_NAME\}/);
+  assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen · Prototype<\/title>/);
+>>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
 });
 
 test('connector import and all generated Spaces are available in the product surface', () => {
