@@ -103,6 +103,32 @@ the same information. A new connector is a folder `connectors/<name>/` with a `m
 Coming from the earlier single connector? Remove the old `ai-control-tower` entry once and add the ones you use. Each
 connector keeps its own settings, so enter the Supabase URL and key once per connector that needs them.
 
+### Cognee Memory: an open source knowledge graph underneath (pilot)
+
+`connectors/cognee-memory/` is a manifest that starts the published [Cognee](https://github.com/topoteretes/cognee)
+MCP server (`uvx cognee-mcp`, Apache-2.0) on this computer. Cognee extracts entities and relations from text and
+answers questions over them; its tools are `remember`, `recall` and `forget`. It sits next to the hand-built
+`knowledge-graph` connector so you can compare answers before replacing anything.
+
+1. Install [uv](https://docs.astral.sh/uv/). The first start downloads about 1 GB (Python packages and an embedding model).
+2. In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, **Cognee Memory**. Enter a
+   *memory folder* (for example `/Users/you/cognee-memory`) and, to extract entities and get answers, an LLM key.
+   The text you store is sent to that model provider.
+3. Load the sample graph once, with the same folder:
+
+```
+npm run cognee:corpus                       # 233 short documents from the Knowledge Graph sample data
+pip install cognee                          # Python 3.10 to 3.13
+export LLM_API_KEY=...
+export SYSTEM_ROOT_DIRECTORY=/Users/you/cognee-memory/system
+export DATA_ROOT_DIRECTORY=/Users/you/cognee-memory/data
+npm run cognee:seed                         # add -- --reset to start over
+```
+
+Then ask in the chat, for example: "Use Cognee: which tickets concern the Muster Industrie contracts?" Only the
+fictional sample data is loaded. Not yet tried against a real Cognee run in this repository's tests: the tests cover
+the documents and the manifest, not Cognee itself.
+
 ## Gmail connector (read + drafts)
 
 A second bundled MCP connector (`connectors/gmail`) lets the chat search and read your Gmail and

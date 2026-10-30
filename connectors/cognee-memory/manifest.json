@@ -1,0 +1,58 @@
+{
+  "manifest_version": "0.2",
+  "name": "cognee-memory",
+  "display_name": "Cognee Memory (open source knowledge graph)",
+  "version": "0.1.0",
+  "description": "A real knowledge graph engine under the Werkbank sample data: Cognee (Apache-2.0, topoteretes/cognee) turns text into entities and relations and answers questions over them. Runs on this computer through the published cognee-mcp package (needs uv; the first start downloads about 1 GB). Load the sample data once with npm run cognee:seed.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "python",
+    "entry_point": "cognee-mcp",
+    "mcp_config": {
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.12",
+        "cognee-mcp"
+      ],
+      "env": {
+        "LLM_API_KEY": "${user_config.llm_api_key}",
+        "ENABLE_BACKEND_ACCESS_CONTROL": "false",
+        "SYSTEM_ROOT_DIRECTORY": "${user_config.memory_folder}/system",
+        "DATA_ROOT_DIRECTORY": "${user_config.memory_folder}/data"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "remember",
+      "description": "Store text or documents in Cognee memory. Without a session it becomes permanent graph memory (entities and relations are extracted); with a session id it only goes to the fast session cache."
+    },
+    {
+      "name": "recall",
+      "description": "Ask Cognee a question. It searches the graph, the vectors and the session memory and returns the matching facts or an answer."
+    },
+    {
+      "name": "forget",
+      "description": "Delete one dataset or everything this connector owns from Cognee memory. Irreversible."
+    }
+  ],
+  "user_config": {
+    "llm_api_key": {
+      "type": "string",
+      "title": "LLM API key",
+      "description": "Key of the model provider Cognee uses to extract entities and answer questions (OpenAI by default; see the Cognee .env template for other providers). The text you store is sent to that provider. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "memory_folder": {
+      "type": "string",
+      "title": "Memory folder",
+      "description": "Absolute path of a folder on this computer where Cognee keeps its databases, for example /Users/you/cognee-memory. Use the same folder when you run npm run cognee:seed.",
+      "required": true
+    }
+  }
+}

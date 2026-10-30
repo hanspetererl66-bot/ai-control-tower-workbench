@@ -8,7 +8,7 @@ import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments, readTables } from './attachments.mjs';
 import { uploadBatches } from './bulk-upload.mjs';
 import { buildBatches } from '../shared/table-ingest.mjs';
-import { LIBRARY_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
+import { BUNDLED_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
@@ -486,7 +486,7 @@ ipcMain.handle('import-mcpb', async () => {
  */
 function prepareLibraryConnector(id) {
   try {
-    if (!LIBRARY_CONNECTORS.includes(id)) return { error: `unknown connector: ${id}` };
+    if (!BUNDLED_CONNECTORS.includes(id)) return { error: `unknown connector: ${id}` };
     const manifest = JSON.parse(readFileSync(join(ROOT, 'connectors', id, 'manifest.json'), 'utf8'));
     const mcp = manifest?.server?.mcp_config;
     if (!mcp?.command || !ALLOWED_COMMANDS.has(mcp.command)) {
@@ -523,7 +523,7 @@ ipcMain.handle('prepare-control-tower-connector', () => prepareLibraryConnector(
 
 /** The connectors that come with Werkbank, for the "Add a bundled connector" list. */
 ipcMain.handle('list-bundled-connectors', () =>
-  LIBRARY_CONNECTORS.map((id) => {
+  BUNDLED_CONNECTORS.map((id) => {
     try {
       const m = JSON.parse(readFileSync(join(ROOT, 'connectors', id, 'manifest.json'), 'utf8'));
       return { id, name: m.name, title: m.display_name ?? m.name, description: m.description ?? '', tools: (m.tools ?? []).length, needsSetup: Object.keys(m.user_config ?? {}).length > 0 };

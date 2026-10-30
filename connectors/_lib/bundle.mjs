@@ -20,6 +20,12 @@ export const LIBRARY_CONNECTORS = ['ai-control-tower', 'sub4me', 'n8n-automation
 
 const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 
+/** Connectors that only bring a manifest: the server is a published package that the manifest starts (for example with uvx). */
+export const MANIFEST_ONLY_CONNECTORS = ['cognee-memory'];
+
+/** Every connector Werkbank ships, in the order they are shown. */
+export const BUNDLED_CONNECTORS = [...LIBRARY_CONNECTORS, ...MANIFEST_ONLY_CONNECTORS];
+
 /** Sample data files per connector, written into connectors/_lib/data/. */
 const DATA = {
   'ai-control-tower': (put) => put.copy('examples/control-tower/data.json', 'data.json'),
@@ -39,9 +45,10 @@ const DATA = {
 
 /** Copy manifest, shared code, the connector and its data into `target` (an empty folder). */
 export function stageConnector(id, target) {
-  if (!LIBRARY_CONNECTORS.includes(id)) throw new Error(`unknown connector: ${id}`);
+  if (!BUNDLED_CONNECTORS.includes(id)) throw new Error(`unknown connector: ${id}`);
   const source = join(ROOT, 'connectors', id);
   cpSync(join(source, 'manifest.json'), join(target, 'manifest.json'));
+  if (MANIFEST_ONLY_CONNECTORS.includes(id)) return target;
   cpSync(join(ROOT, 'connectors/_lib/server'), join(target, 'connectors/_lib/server'), { recursive: true });
   cpSync(join(source, 'server'), join(target, 'connectors', id, 'server'), { recursive: true });
   const dataDir = join(target, 'connectors/_lib/data');

@@ -1094,6 +1094,87 @@
           "Whose S-user is used, and what the second factor looks like in daily use."
         ]
       }
+    },
+    {
+      "id": "cognee-memory",
+      "name": "Cognee Memory",
+      "tagline": "A real open source knowledge graph under the sample data",
+      "category": "Knowledge",
+      "publisher": "topoteretes (Cognee, open source); manifest by this design study",
+      "license": "Apache-2.0",
+      "status": "builtin",
+      "statusLabel": "Manifest bundled, server is third-party",
+      "source": "connectors/cognee-memory",
+      "docs": "https://github.com/topoteretes/cognee",
+      "package": "PyPI: cognee-mcp (run with uvx)",
+      "version": "0.1.0",
+      "summary": "Cognee turns text into entities and relations and answers questions over them. The manifest starts the published cognee-mcp package on this computer. Load the Werkbank sample graph once with npm run cognee:seed and compare its answers with the hand-built Knowledge Graph.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank, Cognee Memory. Enter a memory folder and, if you want answers, an LLM key.",
+          "note": "Needs uv on this computer. The first start downloads about 1 GB (Python packages including torch and an embedding model)."
+        },
+        {
+          "label": "Load the sample data",
+          "how": "npm run cognee:corpus, then pip install cognee and npm run cognee:seed with the same memory folder (SYSTEM_ROOT_DIRECTORY and DATA_ROOT_DIRECTORY).",
+          "note": "Only the fictional sample graph is loaded: 233 short documents."
+        }
+      ],
+      "tools": [
+        {
+          "name": "remember",
+          "class": "write",
+          "what": "Store text or documents in Cognee memory. Without a session it becomes permanent graph memory (entities and relations are extracted); with a session id it only goes to the fast session cache.",
+          "default": "ask"
+        },
+        {
+          "name": "recall",
+          "class": "read",
+          "what": "Ask Cognee a question. It searches the graph, the vectors and the session memory and returns the matching facts or an answer.",
+          "default": "on"
+        },
+        {
+          "name": "forget",
+          "class": "write",
+          "what": "Delete one dataset or everything this connector owns from Cognee memory. Irreversible.",
+          "default": "ask"
+        }
+      ],
+      "switches": [
+        {
+          "name": "LLM_API_KEY",
+          "default": "none",
+          "effect": "Lets Cognee call a model to extract entities and to answer. The stored text is sent to that provider."
+        },
+        {
+          "name": "ENABLE_BACKEND_ACCESS_CONTROL",
+          "default": "false (set by the manifest)",
+          "effect": "Single-user mode on this computer."
+        }
+      ],
+      "auth": [
+        "LLM key is stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "Pilot with sample data only",
+        "risk": "medium",
+        "defaultRisk": "medium",
+        "why": [
+          "Apache-2.0, open source, runs on this computer.",
+          "Third-party code is downloaded and run (cognee-mcp and its dependencies).",
+          "Text you store goes to the LLM provider you configure."
+        ],
+        "plan": [
+          "Use only the fictional sample data first.",
+          "Pin the cognee-mcp version once you are happy with it.",
+          "Do not store customer data until Security has reviewed the provider and the data flow."
+        ],
+        "checks": [
+          "Compare answers for five known questions with the hand-built Knowledge Graph.",
+          "Record the version of cognee-mcp and its dependencies that you tested."
+        ]
+      }
     }
   ],
   "steps": [

@@ -282,7 +282,7 @@ test('MCP Marketplace Space: data is in sync, sourced, and the built-in entries 
   assert.equal(arc.tools.length, 12);
   assert.deepEqual(d.servers.find((s) => s.id === 'sap-notes').tools.map((t) => t.name), ['search', 'fetch']);
   assert.ok(arc.switches.some((w) => w.name === 'SAP_ALLOW_FREE_SQL' && w.default === 'false'));
-  for (const [id, dir] of [['ai-control-tower', 'ai-control-tower'], ['sub4me', 'sub4me'], ['n8n-automation', 'n8n-automation'], ['skill-marketplace', 'skill-marketplace'], ['knowledge-graph', 'knowledge-graph'], ['web-sources', 'web-sources'], ['werkbank-workspace', 'werkbank-workspace'], ['gmail-drafts', 'gmail']]) {
+  for (const [id, dir] of [['ai-control-tower', 'ai-control-tower'], ['sub4me', 'sub4me'], ['n8n-automation', 'n8n-automation'], ['skill-marketplace', 'skill-marketplace'], ['knowledge-graph', 'knowledge-graph'], ['web-sources', 'web-sources'], ['werkbank-workspace', 'werkbank-workspace'], ['cognee-memory', 'cognee-memory'], ['gmail-drafts', 'gmail']]) {
     const m = JSON.parse(readFileSync(join(ROOT, 'connectors', dir, 'manifest.json'), 'utf8'));
     const s = d.servers.find((x) => x.id === id);
     assert.deepEqual(s.tools.map((t) => t.name), m.tools.map((t) => t.name), `${id}: tools equal the manifest`);

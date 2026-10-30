@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LIBRARY_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
+import { BUNDLED_CONNECTORS, LIBRARY_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MAIN = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
@@ -32,16 +32,16 @@ export function buildConnectorBundle(id, output = join(ROOT, `dist/${id}.mcpb`))
   }
 }
 
-/** All library-based connectors into one folder. */
+/** All bundled connectors into one folder. */
 export function buildAllConnectorBundles(dir = join(ROOT, 'dist')) {
-  return LIBRARY_CONNECTORS.map((id) => buildConnectorBundle(id, join(dir, `${id}.mcpb`)));
+  return BUNDLED_CONNECTORS.map((id) => buildConnectorBundle(id, join(dir, `${id}.mcpb`)));
 }
 
 if (MAIN && !FLAGS.some((f) => process.argv.includes(f))) {
   const wanted = process.argv[2];
-  if (wanted && LIBRARY_CONNECTORS.includes(wanted)) console.log(`Built ${buildConnectorBundle(wanted)}`);
+  if (wanted && BUNDLED_CONNECTORS.includes(wanted)) console.log(`Built ${buildConnectorBundle(wanted)}`);
   else if (!wanted || wanted === '--all') for (const out of buildAllConnectorBundles()) console.log(`Built ${out}`);
-  else { console.error(`Unknown connector "${wanted}". Choose one of: ${LIBRARY_CONNECTORS.join(', ')}, or --all.`); process.exit(1); }
+  else { console.error(`Unknown connector "${wanted}". Choose one of: ${BUNDLED_CONNECTORS.join(', ')}, or --all.`); process.exit(1); }
 }
 
 /** Gmail connector bundle: manifest + server only (no data). */
