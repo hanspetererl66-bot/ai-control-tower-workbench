@@ -14,13 +14,16 @@ test('the rail has one Develop button instead of separate Connectors and n8n but
   assert.match(rail, /DEVELOP_VIEWS: View\[\] = \['develop', 'studio', 'manage', 'n8n'\]/);
 });
 
-test('Develop offers a workflow card and an agent card that lead to the earlier screens', () => {
+test('Develop has the Agent tile first, then the Workflow tile with the n8n symbol, then Skills and Connectors', () => {
   const hub = src('src/ui/DevelopHub.tsx');
-  assert.match(hub, /Create a Workflow/);
+  const agent = hub.indexOf('title="Create an Agent"'), flow = hub.indexOf('title="Create a Workflow"'), skills = hub.indexOf('aria-label="Skills and Connectors"');
+  assert.ok(agent > 0 && flow > agent && skills > flow, 'order: agent, workflow, skills');
   assert.match(hub, /with n8n/);
-  assert.match(hub, /Create an Agent/);
-  assert.match(hub, /Connectors &amp; Skills/);
+  assert.match(hub, /aria-label="n8n"/);
+  assert.match(hub, /Skills &amp; Connectors/);
+  assert.match(hub, /What should be achieved\?/, 'both tiles start from a goal');
   const app = src('src/App.tsx');
-  assert.match(app, /<DevelopHub onWorkflow=\{\(\) => setView\('n8n'\)\} onAgent=\{\(\) => setView\('studio'\)\} onConnectors=\{\(\) => setView\('manage'\)\} \/>/);
+  assert.match(app, /onAgentIntent=\{\(intent\) =>[\s\S]*agentFromIntent[\s\S]*setView\('studio'\)/);
+  assert.match(app, /onWorkflowIntent=\{\(intent\) =>[\s\S]*workflowPlanPrompt\(intent\)/);
   assert.match(app, /onBack=\{\(\) => setView\('develop'\)\}/g);
 });

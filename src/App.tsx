@@ -37,7 +37,7 @@ import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
-import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
+import { AGENT_GOV_KEY, agentSchedules, agentFromIntent, buildCatalog, expandAgentCommand, workflowPlanPrompt, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -1134,7 +1134,21 @@ export default function App() {
       )}
 
       {view === 'develop' ? (
-        <DevelopHub onWorkflow={() => setView('n8n')} onAgent={() => setView('studio')} onConnectors={() => setView('manage')} />
+        <DevelopHub
+          onAgent={() => setView('studio')}
+          onWorkflow={() => setView('n8n')}
+          onConnectors={() => setView('manage')}
+          onAgentIntent={(intent) => {
+            const draft = agentFromIntent(intent, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))));
+            changeStudioAgents([draft, ...studioAgents]);
+            setView('studio');
+          }}
+          onWorkflowIntent={(intent) => {
+            if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; }
+            setView('chat');
+            void send(workflowPlanPrompt(intent));
+          }}
+        />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}

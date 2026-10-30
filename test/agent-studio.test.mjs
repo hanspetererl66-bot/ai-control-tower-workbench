@@ -103,3 +103,17 @@ test('pre-close checker reads the Finance Pre-Close Space and Databricks, is rea
   const none = s.simulateRun({ ...a, sources: ['web'] }, cat);
   assert.equal(none.title, 'No result');
 });
+
+test('a goal becomes a draft agent and a workflow plan request that changes nothing in n8n', () => {
+  const a = s.agentFromIntent('Watch our renewals and tell me every Monday which ones are at risk', catalog, 1000);
+  assert.equal(a.name, 'Watch our renewals and tell');
+  assert.equal(a.purpose, a.instruction);
+  assert.deepEqual(a.sources, []);
+  assert.equal(a.canWrite, false);
+  assert.equal(a.tested, false);
+  assert.ok(s.problems(a).some((p) => /source/i.test(p)), 'the person still has to tick sources');
+  assert.equal(s.agentFromIntent('   ', catalog).name, 'New agent');
+  const prompt = s.workflowPlanPrompt('Check notice periods of uploaded contracts');
+  assert.match(prompt, /Do not create or change anything in n8n yet/);
+  assert.match(prompt, /Check notice periods/);
+});
