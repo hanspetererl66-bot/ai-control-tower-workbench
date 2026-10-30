@@ -16,3 +16,7 @@ test('without a request every step is open and the organisation level needs the 
   assert.ok(s.every((x) => x.state === 'todo'));
   assert.match(s[2].who, /Governance board/);
 });
+test('a preview can show the automatic review as blocked', () => {
+  const s = a.approvalSteps(1, null, 'rejected');
+  assert.deepEqual(s.map((x) => x.state), ['done', 'rejected', 'todo', 'todo']);
+});

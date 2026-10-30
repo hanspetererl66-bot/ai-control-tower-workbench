@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import type { Skill } from '../skills';
+import { readSkill, type Skill } from '../skills';
+import { reviewOutcome, reviewSkill, type CheckResult } from '../skill-review';
 import { APPROVER, approvalSteps, type ApprovalStep } from '../skill-approval';
 import { CHECKS, decide, demote, levelOf, loadGov, pendingFor, renameLevel, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 
@@ -25,6 +26,31 @@ function Steps({ steps }: { steps: ApprovalStep[] }) {
  * Skills grouped by organisation level (three, with names the person chooses) plus the approval queue
  * that moves a skill one level up. `renderRow` draws the skill itself; this adds the level controls.
  */
+const CHECK_MARK = { pass: '✓', warn: '!', fail: '✕' } as const;
+const CHECK_TITLE: Record<string, string> = { secrets: 'Secrets scan', scripts: 'Script review', permissions: 'Permissions', harness: 'Harness policy', data: 'Data class' };
+
+/** The five automatic checks, revealed one after the other, with what was found. */
+function Checks({ results, version }: { results: { id: string; status: 'pass' | 'warn' | 'fail'; detail: string }[] | null; version?: string }) {
+  if (!results) return <p className="sgov-checking" role="status">Reading the skill and running the checks…</p>;
+  const blocked = results.some((r) => r.status === 'fail'), warns = results.filter((r) => r.status === 'warn').length;
+  return (
+    <div className="sgov-checks">
+      <div className="sgov-checks-h"><b>Automatic review{version ? ` of ${version}` : ''}</b>
+        <span className={`sgov-badge ${blocked ? 'sgov-badge-no' : warns ? 'sgov-badge-wait' : 'sgov-badge-ok'}`}>{blocked ? 'Blocked: fix the red points' : warns ? `Passed with ${warns} note${warns > 1 ? 's' : ''} for the reviewer` : 'All five checks passed'}</span>
+      </div>
+      <ul>
+        {results.map((r, i) => (
+          <li key={r.id} className={`sgov-ck sgov-ck-${r.status}`} style={{ animationDelay: `${i * 140}ms` }}>
+            <span className="sgov-ck-dot" aria-label={r.status}>{CHECK_MARK[r.status]}</span>
+            <span><b>{CHECK_TITLE[r.id] ?? r.id}</b><small>{r.detail}</small></span>
+          </li>
+        ))}
+      </ul>
+      <p className="sgov-help">The reviewer sees these findings and the skill text. A skill that changes afterwards has to be requested again.</p>
+    </div>
+  );
+}
+
 export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]; renderRow: (skill: Skill, extra: ReactNode) => ReactNode }) {
   const [gov, setGov] = useState<SkillGov>(() => loadGov());
   const [tab, setTab] = useState<Tab>('map');
@@ -34,6 +60,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
   const [asking, setAsking] = useState<string | null>(null);
   const [checked, setChecked] = useState<boolean[]>(CHECKS.map(() => false));
   const [note, setNote] = useState('');
+  const [review, setReview] = useState<CheckResult[] | null>(null);
   const [reasons, setReasons] = useState<Record<number, string>>({});
 
   useEffect(() => saveGov(gov), [gov]);
@@ -120,6 +147,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                   <h3>How a skill moves up <small>(mockup of the approval process)</small></h3>
                   <p className="sgov-help">Pick a skill above to publish it. Every step up needs an approval; a skill never skips a level.</p>
                   <Steps steps={approvalSteps(1)} />
+                  <p className="sgov-help"><b>Automatic review</b> before anyone looks at it: secrets, scripts and downloads, tools that change data, the harness rules (no bypassing approvals) and the data class. A red finding blocks the request; notes go to the reviewer.</p>
                   <ul className="sgov-roles">
                     <li><b>{gov.levels[0]} → {gov.levels[1]}</b><span>{APPROVER[1].role}, {APPROVER[1].sla}</span></li>
                     <li><b>{gov.levels[1]} → {gov.levels[2]}</b><span>{APPROVER[2].role}, {APPROVER[2].sla}</span></li>
@@ -133,7 +161,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
               <div className="sgov-extra">
                 {req && <span className="sgov-badge sgov-badge-wait">In review for {gov.levels[req.to]}</span>}
                 {!req && lvl < 2 && asking !== s.name && (
-                  <button className="dialog-btn dialog-btn-primary" onClick={() => { setAsking(s.name); setChecked(CHECKS.map(() => false)); setNote(''); }}>
+                  <button className="dialog-btn dialog-btn-primary" onClick={() => { setAsking(s.name); setChecked(CHECKS.map(() => false)); setNote(''); setReview(null); const target = lvl + 1 === 2 ? 'organization' : 'department'; void readSkill(s.dir).then((body) => { window.setTimeout(() => setReview(body ? reviewSkill(body, target) : [{ id: 'secrets', title: 'Secrets scan', question: '', status: 'fail', detail: 'The SKILL.md could not be read, so nothing could be checked.' }]), 450); }); }}>
                     Publish to {gov.levels[(lvl + 1) as LevelIndex]}
                   </button>
                 )}
@@ -144,7 +172,9 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
             return (
               <div className="sgov-sel">
                 {renderRow(s, extra)}
-                {(req || asking === s.name) && <Steps steps={approvalSteps(req ? req.to : ((lvl + 1) as LevelIndex), req)} />}
+                {(req || asking === s.name) && <Steps steps={approvalSteps(req ? req.to : ((lvl + 1) as LevelIndex), req, review ? (reviewOutcome(review) === 'blocked' ? 'rejected' : 'done') : 'active')} />}
+                {req?.checks && <Checks results={req.checks} />}
+                {asking === s.name && !req && <Checks results={review} version="the current version" />}
                 {asking === s.name && lvl < 2 && (
                   <div className="sgov-form">
                     <strong>Publish to {gov.levels[(lvl + 1) as LevelIndex]}: {gov.levels[lvl]} → {gov.levels[(lvl + 1) as LevelIndex]}</strong>
@@ -154,7 +184,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                     ))}
                     <textarea placeholder="Why should this skill be published? Who will use it?" value={note} maxLength={400} onChange={(e) => setNote(e.target.value)} />
                     <div className="sgov-actions">
-                      <button className="dialog-btn dialog-btn-primary" disabled={!checked.every(Boolean)} onClick={() => { change((g) => requestPromotion(g, s.name, note, Date.now())); setAsking(null); }}>Submit for approval</button>
+                      <button className="dialog-btn dialog-btn-primary" disabled={!checked.every(Boolean) || !review || reviewOutcome(review) === 'blocked'} onClick={() => { change((g) => requestPromotion(g, s.name, note, Date.now(), review?.map(({ id, status, detail }) => ({ id, status, detail })))); setAsking(null); }}>Submit for approval</button>
                       <button className="dialog-btn" onClick={() => setAsking(null)}>Cancel</button>
                     </div>
                   </div>
@@ -176,6 +206,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                 <span className={`sgov-badge ${r.status === 'approved' ? 'sgov-badge-ok' : r.status === 'rejected' ? 'sgov-badge-no' : 'sgov-badge-wait'}`}>{r.status === 'pending' ? 'Pending' : r.status === 'approved' ? 'Approved' : 'Rejected'}</span>
               </div>
               <Steps steps={approvalSteps(r.to, r)} />
+              {r.checks && <Checks results={r.checks} />}
               {r.note && <p className="row-detail">{r.note}</p>}
               <p className="row-detail">Requested {new Date(r.createdAt).toLocaleString()}{r.decidedAt ? ` · decided ${new Date(r.decidedAt).toLocaleString()}` : ''}{r.reason ? ` · “${r.reason}”` : ''}</p>
               {r.status === 'pending' && (

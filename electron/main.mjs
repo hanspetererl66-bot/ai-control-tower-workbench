@@ -693,6 +693,16 @@ function readSkills() {
 
 ipcMain.handle('list-skills', () => readSkills());
 
+/** Text of one SKILL.md, for the automatic review before a skill is published one level up. */
+ipcMain.handle('read-skill', (_event, dir) => {
+  if (!/^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/.test(dir ?? '')) return null;
+  try {
+    return readFileSync(join(SKILLS_DIR, dir, 'SKILL.md'), 'utf8').slice(0, 40_000);
+  } catch {
+    return null;
+  }
+});
+
 ipcMain.handle('remove-skill', async (_event, name) => {
   if (!/^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/.test(name ?? '')) return { ok: false, detail: 'bad name' };
   return await new Promise((resolve) => {

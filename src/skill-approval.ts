@@ -14,11 +14,11 @@ export type ApprovalStep = { id: 'submit' | 'checks' | 'review' | 'publish'; tit
  * pending = waiting at the review step, approved = all done, rejected = stopped at the review.
  * Without a request (the preview) every step is open.
  */
-export function approvalSteps(to: LevelIndex, request?: Pick<PromotionRequest, 'status'> | null): ApprovalStep[] {
+export function approvalSteps(to: LevelIndex, request?: Pick<PromotionRequest, 'status'> | null, checksState?: StepState): ApprovalStep[] {
   const approver = to >= 1 ? APPROVER[to as 1 | 2].role : 'Owner';
   const base: Omit<ApprovalStep, 'state'>[] = [
     { id: 'submit', title: 'Request submitted', who: 'Skill owner' },
-    { id: 'checks', title: 'Automatic checks', who: 'Platform: secrets scan, script review, permissions' },
+    { id: 'checks', title: 'Automatic checks', who: 'Platform: secrets, scripts, permissions, harness, data class' },
     { id: 'review', title: 'Review and decision', who: approver },
     { id: 'publish', title: 'Published and visible', who: 'Platform: new version for everyone on the level' },
   ];
@@ -27,5 +27,6 @@ export function approvalSteps(to: LevelIndex, request?: Pick<PromotionRequest, '
     : request.status === 'approved' ? ['done', 'done', 'done', 'done']
     : request.status === 'rejected' ? ['done', 'done', 'rejected', 'todo']
     : ['done', 'done', 'active', 'todo'];
+  if (!request && checksState) { states[0] = 'done'; states[1] = checksState; }
   return base.map((b, i) => ({ ...b, state: states[i] }));
 }

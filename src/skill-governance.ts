@@ -16,6 +16,8 @@ export type PromotionRequest = {
   createdAt: number;
   decidedAt?: number;
   reason?: string;
+  /** Result of the automatic review at the time of the request. */
+  checks?: { id: string; status: 'pass' | 'warn' | 'fail'; detail: string }[];
 };
 
 export type SkillGov = {
@@ -51,11 +53,11 @@ export function renameLevel(gov: SkillGov, index: LevelIndex, name: string): Ski
 }
 
 /** Ask to move a skill one level up. Refused for the top level and while a request is pending. */
-export function requestPromotion(gov: SkillGov, skill: string, note: string, now: number): SkillGov {
+export function requestPromotion(gov: SkillGov, skill: string, note: string, now: number, checks?: PromotionRequest['checks']): SkillGov {
   const from = levelOf(gov, skill);
   if (from >= 2 || pendingFor(gov, skill)) return gov;
   const seq = gov.seq + 1;
-  const req: PromotionRequest = { id: seq, skill, from, to: (from + 1) as LevelIndex, note: note.trim().slice(0, 400), status: 'pending', createdAt: now };
+  const req: PromotionRequest = { id: seq, skill, from, to: (from + 1) as LevelIndex, note: note.trim().slice(0, 400), status: 'pending', createdAt: now, ...(checks ? { checks } : {}) };
   return { ...gov, seq, requests: [req, ...gov.requests].slice(0, 200) };
 }
 

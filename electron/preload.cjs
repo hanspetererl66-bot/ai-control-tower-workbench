@@ -46,6 +46,7 @@ contextBridge.exposeInMainWorld('host', {
 
   // Managing what is installed.
   listSkills: () => ipcRenderer.invoke('list-skills'),
+  readSkill: (dir) => ipcRenderer.invoke('read-skill', dir),
   importMcpb: () => ipcRenderer.invoke('import-mcpb'),
   prepareControlTowerConnector: () => ipcRenderer.invoke('prepare-control-tower-connector'),
   getConnectorSpec: (name) => ipcRenderer.invoke('get-connector-spec', name),
