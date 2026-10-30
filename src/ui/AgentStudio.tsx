@@ -4,7 +4,7 @@ import { decide, levelOf, pendingFor, requestPromotion, type LevelIndex, type Sk
 import type { Schedule } from '../schedules';
 import WerkbankMark from './WerkbankMark';
 import AgentProjectView from './AgentProjectView';
-import { currentStage, newProject, stageLabel, type AgentProject } from '../agent-project';
+import { currentStage, newProject, stageLabel, type AgentProject, type DocKey } from '../agent-project';
 
 export type AgentStudioProps = {
   agents: StudioAgent[];
@@ -22,12 +22,14 @@ export type AgentStudioProps = {
   onProjects: (next: AgentProject[]) => void;
   /** Project to open first (from the Develop page). */
   focusProject?: string | null;
+  /** The document open next to the docked chat, or null. */
+  onDocFocus?: (focus: { projectId: string; docKey: DocKey } | null) => void;
 };
 
 const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', web: 'Web' } as const;
 
 /** Agent Studio: define a simple agent by form, tick its sources, test it in a sandbox, then ask for approval to publish it. */
-export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null }: AgentStudioProps) {
+export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null, onDocFocus }: AgentStudioProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(focusProject && projects.some((x) => x.id === focusProject) ? focusProject : null);
   const [selected, setSelected] = useState<string | null>(focusProject ? null : agents[0]?.id ?? null);
   const setGov = (fn: (g: SkillGov) => SkillGov) => onGov(fn(gov));
@@ -130,6 +132,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
             agentExists={project.agentId ? agents.some((x) => x.id === project.agentId) : false}
             onDelete={() => { onProjects(projects.filter((x) => x.id !== project.id)); setSelectedProject(null); }}
             onRunInChat={onRunInChat}
+            onFocus={(key) => onDocFocus?.(key ? { projectId: project.id, docKey: key } : null)}
           />
         )}
         {!project && (!agent || help) && (

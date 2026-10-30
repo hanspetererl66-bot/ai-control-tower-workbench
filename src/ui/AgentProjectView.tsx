@@ -16,6 +16,8 @@ export type AgentProjectViewProps = {
   agentExists: boolean;
   onDelete: () => void;
   onRunInChat: (prompt: string) => void;
+  /** Which document is open now (null on the questions and build steps), so the docked chat can work on it. */
+  onFocus?: (key: DocKey | null) => void;
 };
 
 const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', web: 'Web' } as const;
@@ -32,6 +34,8 @@ export default function AgentProjectView(p: AgentProjectViewProps) {
   useEffect(() => { setView(current); setPreview(false); setConfirmDelete(false); }, [current, project.id]);
   const reachable = (s: Stage) => s === 'questions' || (s === 'build' ? !!project.docs.risk : !!project.docs[s as DocKey]);
   const shown: Stage = view === 'done' ? 'build' : view;
+  const { onFocus } = p;
+  useEffect(() => { onFocus?.(DOC_ORDER.includes(shown as DocKey) ? (shown as DocKey) : null); return () => onFocus?.(null); }, [shown, project.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const now = () => Date.now();
 
   return (

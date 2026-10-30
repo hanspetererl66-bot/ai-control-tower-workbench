@@ -36,7 +36,9 @@ import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as 
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
-import { loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { documentNote, isConfirmCommand, type DockFocus } from './dock';
+import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, workflowPlanPrompt, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
@@ -189,6 +191,8 @@ export default function App() {
   const [agentProjects, setAgentProjectsState] = useState<AgentProject[]>(() => loadProjects(window.localStorage));
   const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); }, []);
   const [focusProject, setFocusProject] = useState<string | null>(null);
+  /** The project document open in Agent Studio, so the docked chat can work on it. */
+  const [dockFocus, setDockFocus] = useState<DockFocus | null>(null);
   const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
   const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
   const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
@@ -600,7 +604,9 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
+      const docContext = dockProject && dockFocus ? documentNote(dockProject, dockFocus.docKey) : '';
+      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -913,10 +919,22 @@ export default function App() {
   }, []);
 
   const empty = messages.length === 0;
+  const dockShown = view === 'studio' || view === 'manage';
+  const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
+  const confirmDockDoc = () => {
+    if (!dockProject || !dockFocus) return;
+    const catalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
+    changeAgentProjects(agentProjects.map((x) => (x.id === dockProject.id ? confirmDoc(x, dockFocus.docKey, catalog, Date.now()) : x)));
+  };
+  /** In the docked chat, "yes, confirm" confirms the document on screen instead of going to the model. */
+  const interceptSend = (typed: string, attachments: ChatAttachment[] = []) => {
+    if (dockProject && dockFocus && attachments.length === 0 && isConfirmCommand(typed)) { confirmDockDoc(); return; }
+    return send(typed, attachments);
+  };
   const composer = (
     <Composer
       commands={allCommands(ownCommands)}
-      onSend={send}
+      onSend={interceptSend}
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
@@ -931,7 +949,7 @@ export default function App() {
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
       onInstallConnector={installControlTowerConnector}
-      starters={empty}
+      starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
       onStopSpeaking={() => speaker.current?.stop()}
@@ -1072,7 +1090,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${showDetails ? 'app-details' : ''}`}>
+    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`}>
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -1181,6 +1199,7 @@ export default function App() {
           projects={agentProjects}
           onProjects={changeAgentProjects}
           focusProject={focusProject}
+          onDocFocus={setDockFocus}
           connectors={extensionNames}
           spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
           onRunInChat={(prompt) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt); }}
@@ -1296,6 +1315,37 @@ export default function App() {
 
           {error && <div className="banner-error">Could not reach the agent: {error}</div>}
         </main>
+      )}
+
+      {dockShown && (
+        <JouleDock
+          where={view === 'manage' ? 'manage' : 'studio'}
+          empty={empty}
+          busy={busy}
+          focus={dockProject ? dockFocus : null}
+          project={dockProject}
+          lastAnswer={[...messages].reverse().find((m) => m.role === 'agent')?.text ?? ''}
+          onApply={(text) => {
+            if (!dockProject || !dockFocus) return;
+            changeAgentProjects(agentProjects.map((x) => (x.id === dockProject.id ? editDoc(x, dockFocus.docKey, text, Date.now()) : x)));
+            setToast('Document updated. Read it through, then confirm.');
+            setTimeout(() => setToast(null), 4000);
+          }}
+          onConfirm={confirmDockDoc}
+          onAsk={(prompt) => { void send(prompt); }}
+          composer={composer}
+          chat={
+            <Chat
+              messages={messages}
+              busy={busy}
+              onAsk={askFromSpace}
+              onSaveAsSpace={saveAnswerAsSpace}
+              chatTools={prefs.chat}
+              meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
+              onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }}
+            />
+          }
+        />
       )}
 
       {showDetails && (
