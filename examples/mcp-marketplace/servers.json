@@ -537,7 +537,7 @@
     {
       "id": "skill-marketplace",
       "name": "Skill Marketplace",
-      "tagline": "The shared skill registry: search, impact, governance, ratings",
+      "tagline": "The shared skill registry: search, impact, governance, lifecycle, ratings",
       "category": "Skills",
       "publisher": "This design study (own connector)",
       "license": "Design study",
@@ -546,8 +546,8 @@
       "source": "connectors/skill-marketplace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.0.0",
-      "summary": "The shared skill registry and marketplace: search, profiles, ranking, impact, governance, lifecycle, gaps, recommendations and ratings. Reads approved skills only; rating a skill is the only write.",
+      "version": "1.1.0",
+      "summary": "The shared skill registry and marketplace: search, impact, governance, ratings, and the skill lifecycle (marketplace card, duplicate check, approval flow, deprecate, retire, restore, history). The lifecycle tools write to the registry and ask first.",
       "install": [
         {
           "label": "In the app",
@@ -632,6 +632,78 @@
           "class": "read",
           "what": "",
           "default": "on"
+        },
+        {
+          "name": "check_skill_duplicates",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_card",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "set_skill_card",
+          "class": "write",
+          "what": "Writes the marketplace card of a skill.",
+          "default": "ask"
+        },
+        {
+          "name": "get_skill_status",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_skill_lifecycle",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_skill_requests",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "request_skill_promotion",
+          "class": "write",
+          "what": "Asks to share a skill; seven automatic checks run first.",
+          "default": "ask"
+        },
+        {
+          "name": "decide_skill_request",
+          "class": "write",
+          "what": "Approves or rejects a request (never the requester).",
+          "default": "ask"
+        },
+        {
+          "name": "withdraw_skill_request",
+          "class": "write",
+          "what": "Withdraws the requester’s own open request.",
+          "default": "ask"
+        },
+        {
+          "name": "deprecate_skill",
+          "class": "write",
+          "what": "Sets a sunset date; the skill stays usable until it is retired.",
+          "default": "ask"
+        },
+        {
+          "name": "retire_skill",
+          "class": "write",
+          "what": "Takes a skill out of the marketplace and every sync.",
+          "default": "ask"
+        },
+        {
+          "name": "restore_skill",
+          "class": "write",
+          "what": "Undoes a deprecation or restores a retired skill as a draft.",
+          "default": "ask"
         }
       ],
       "switches": [],
@@ -640,10 +712,13 @@
       ],
       "assessment": {
         "verdict": "In use",
-        "risk": "low",
+        "risk": "medium",
         "defaultRisk": "low",
         "why": [
-          "Reads approved skills only; rate_skill adds an anonymous star rating."
+          "Reads approved skills; rate_skill adds an anonymous star rating.",
+          "The lifecycle tools change the shared registry (card, approval, sunset, retirement) and ask first by default.",
+          "Who may decide is checked in the database: never the requester, the department admin for a department, the Governance board for everyone.",
+          "Identity is an e-mail label for now; real sign-in (SSO) is still to be decided."
         ],
         "plan": [],
         "checks": []
