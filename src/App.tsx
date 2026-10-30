@@ -36,8 +36,9 @@ import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as 
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
+import { loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
-import { AGENT_GOV_KEY, agentSchedules, agentFromIntent, buildCatalog, expandAgentCommand, workflowPlanPrompt, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
+import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, workflowPlanPrompt, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -185,6 +186,9 @@ export default function App() {
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
   const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
   const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
+  const [agentProjects, setAgentProjectsState] = useState<AgentProject[]>(() => loadProjects(window.localStorage));
+  const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); }, []);
+  const [focusProject, setFocusProject] = useState<string | null>(null);
   const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
   const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
   const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
@@ -1139,8 +1143,9 @@ export default function App() {
           onWorkflow={() => setView('n8n')}
           onConnectors={() => setView('manage')}
           onAgentIntent={(intent) => {
-            const draft = agentFromIntent(intent, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))));
-            changeStudioAgents([draft, ...studioAgents]);
+            const project = newProject(intent);
+            changeAgentProjects([project, ...agentProjects]);
+            setFocusProject(project.id);
             setView('studio');
           }}
           onWorkflowIntent={(intent) => {
@@ -1173,6 +1178,9 @@ export default function App() {
           onGov={changeAgentGov}
           schedules={schedules}
           onAgents={changeStudioAgents}
+          projects={agentProjects}
+          onProjects={changeAgentProjects}
+          focusProject={focusProject}
           connectors={extensionNames}
           spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
           onRunInChat={(prompt) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt); }}

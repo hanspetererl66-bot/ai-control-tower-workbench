@@ -21,7 +21,7 @@ export default function DevelopHub({
         <div className="develop-cards">
           <IntentCard
             kind="agent" logo={<AgentMark />} title="Create an Agent" brand="with the Agent Studio"
-            text="An agent does a recurring job for you, with only the sources and rights you give it."
+            text="From goal to agent in confirmed steps: requirements, design, architecture, test plan, build."
             placeholder="e.g. Watch our renewals and tell me every Monday which ones are at risk"
             action="Start from this goal" other="or open the Agent Studio"
             onIntent={onAgentIntent} onOther={onAgent}

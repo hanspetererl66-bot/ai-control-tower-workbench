@@ -8,7 +8,7 @@ import type { SkillGov } from './skill-governance';
 /** Every localStorage key that holds personalisation data. Conversations and app settings are not part of it. */
 export const PERSONAL_KEYS = [
   'werkbank.memory', 'werkbank.personas', 'werkbank.commands', 'werkbank.skillGovernance', 'werkbank.memoryGovernance',
-  'werkbank.agentGovernance', 'werkbank.studioAgents', 'werkbank.localGroups', 'werkbank.groupMode', 'werkbank.schedules.v1',
+  'werkbank.agentGovernance', 'werkbank.studioAgents', 'werkbank.agentProjects', 'werkbank.localGroups', 'werkbank.groupMode', 'werkbank.schedules.v1',
 ] as const;
 
 export type ExportBundle = { app: 'Joule Work X – Next Gen (prototype)'; exportedAt: string; note: string; data: Record<string, unknown> };
@@ -46,9 +46,9 @@ export function contextPreview(parts: { style: string; persona: string; memory: 
 }
 
 /* ---- Audit trail, derived from the approval stores ---- */
-export type AuditEvent = { at: number; kind: 'Skill' | 'Memory' | 'Agent'; what: string; action: 'requested' | 'approved' | 'rejected'; from: string; to: string; note: string };
-export function buildAudit(sources: Array<{ kind: AuditEvent['kind']; gov: SkillGov; nameOf: (id: string) => string }>): AuditEvent[] {
-  const out: AuditEvent[] = [];
+export type AuditEvent = { at: number; kind: 'Skill' | 'Memory' | 'Agent'; what: string; action: 'requested' | 'approved' | 'rejected' | 'confirmed'; from: string; to: string; note: string };
+export function buildAudit(sources: Array<{ kind: AuditEvent['kind']; gov: SkillGov; nameOf: (id: string) => string }>, confirmations: Array<{ at: number; what: string }> = []): AuditEvent[] {
+  const out: AuditEvent[] = confirmations.map((c) => ({ at: c.at, kind: 'Agent' as const, what: c.what, action: 'confirmed' as const, from: '', to: '', note: '' }));
   for (const { kind, gov, nameOf } of sources) {
     for (const r of gov.requests) {
       const base = { kind, what: nameOf(r.skill), from: gov.levels[r.from] ?? String(r.from), to: gov.levels[r.to] ?? String(r.to) };

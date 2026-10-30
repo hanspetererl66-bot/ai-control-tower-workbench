@@ -72,15 +72,6 @@ export function newAgent(t: Template | null, catalog: Source[], now = Date.now()
   };
 }
 
-/** A draft agent from a goal in plain words: the goal becomes purpose and first instruction; sources and rights stay to the person. */
-export function agentFromIntent(intent: string, catalog: Source[], now = Date.now()): StudioAgent {
-  const goal = clean(intent, 400);
-  const words = goal.replace(/[.!?:;,]+/g, ' ').split(/\s+/).filter(Boolean).slice(0, 5).join(' ');
-  const name = (words.charAt(0).toUpperCase() + words.slice(1)).slice(0, 40) || 'New agent';
-  const base = newAgent(null, catalog, now);
-  return { ...base, name, purpose: goal.slice(0, 300), instruction: goal };
-}
-
 /** The request to Joule for a workflow plan from a goal. Nothing is created in n8n before the person confirms. */
 export function workflowPlanPrompt(intent: string): string {
   return [
