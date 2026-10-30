@@ -4,9 +4,9 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { createN8nHandlers } from '../connectors/control-tower/server/n8n.mjs';
-import { createSub4MeHandlers } from '../connectors/control-tower/server/sub4me.mjs';
-import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
+import { createN8nHandlers } from '../connectors/_lib/server/n8n.mjs';
+import { createSub4MeHandlers } from '../connectors/_lib/server/sub4me.mjs';
+import { buildConnectorBundle } from '../scripts/build-control-tower-mcpb.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 
@@ -165,9 +165,9 @@ test('a rejected key surfaces as a readable tool error without the key', async (
 
 test('the bundle carries the sample data and category rules the tools need', () => {
   const out = join(mkdtempSync(join(tmpdir(), 'bundle-')), 'x.mcpb');
-  buildControlTowerBundle(out);
+  buildConnectorBundle('n8n-automation', out);
   const list = execFileSync('unzip', ['-Z1', out], { encoding: 'utf8' });
-  for (const file of ['data/sub4me.json', 'data/n8n-categories.json', 'server/n8n.mjs']) assert.ok(list.includes(file), file);
+  for (const file of ['connectors/_lib/data/n8n-categories.json', 'connectors/_lib/server/n8n.mjs']) assert.ok(list.includes(file), file);
   const manifest = JSON.parse(execFileSync('unzip', ['-p', out, 'manifest.json'], { encoding: 'utf8' }));
   assert.equal(manifest.user_config.n8n_api_key.sensitive, true);
   assert.equal(manifest.server.mcp_config.env.N8N_API_KEY, '${user_config.n8n_api_key}');
@@ -175,7 +175,7 @@ test('the bundle carries the sample data and category rules the tools need', () 
 
 test('the app prepares the same data files when it stages the connector itself', () => {
   const main = readFileSync(join(ROOT, 'electron/main.mjs'), 'utf8');
-  assert.ok(main.includes("'data/sub4me.json'") && main.includes("'data/n8n-categories.json'"));
+  assert.ok(main.includes('stageConnector'), 'the desktop app must stage connectors with the same code as the bundle build');
 });
 
 test('contracts and offers carry the extended attributes and come live from Supabase when connected', async () => {

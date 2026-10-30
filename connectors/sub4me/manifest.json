@@ -1,0 +1,103 @@
+{
+  "manifest_version": "0.2",
+  "name": "sub4me",
+  "display_name": "Sub4Me",
+  "version": "1.0.0",
+  "description": "The Sub4Me test customer (sample data): customers, invoices, contracts, offers, AI consumption and service tickets. Creating a ticket is the only write and goes to a demo table.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "connectors/sub4me/server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/connectors/sub4me/server/index.mjs"
+      ],
+      "env": {
+        "CONTROL_TOWER_DATA": "${__dirname}/connectors/_lib/data/data.json",
+        "SUPABASE_URL": "${user_config.supabase_url}",
+        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_tickets",
+      "description": "List the Sub4Me demo service tickets (Supabase)."
+    },
+    {
+      "name": "create_ticket",
+      "description": "Open a Sub4Me demo ticket (the only write; demo table)."
+    },
+    {
+      "name": "find_similar_tickets",
+      "description": "Before opening a ticket: find a note with a solution and the same issue in open tickets of any customer."
+    },
+    {
+      "name": "link_ticket",
+      "description": "Let a customer follow an existing ticket or link a new ticket to it (demo link table)."
+    },
+    {
+      "name": "list_customers",
+      "description": "List the fictional Sub4Me customers with ids (Muster Industrie AG, Hanse Handelsgruppe AG)."
+    },
+    {
+      "name": "list_invoices",
+      "description": "Invoices and credit notes of a Sub4Me customer (sample data)."
+    },
+    {
+      "name": "list_contracts",
+      "description": "List the Sub4Me demo customer's contracts, filter by status (sample data)."
+    },
+    {
+      "name": "list_offers",
+      "description": "Offers SAP made to the Sub4Me demo customer: renewals and new products, filter by type or status (sample data)."
+    },
+    {
+      "name": "get_ai_consumption",
+      "description": "AI-unit consumption of the Sub4Me demo customer with forecast, by product and month, optional product or month filter (sample data)."
+    },
+    {
+      "name": "get_customer_overview",
+      "description": "Everything about the Sub4Me test customer in one answer: master data, contracts, offers, AI units, tickets and highlights (sample data)."
+    },
+    {
+      "name": "get_product_overview",
+      "description": "One Sub4Me product with its contracts, offers, consumption and tickets (sample data)."
+    },
+    {
+      "name": "get_contract",
+      "description": "One Sub4Me contract by id with notice deadline, renewal offers, consumption and tickets (sample data)."
+    },
+    {
+      "name": "get_offer",
+      "description": "One SAP offer to the Sub4Me customer by id with the contract it renews (sample data)."
+    },
+    {
+      "name": "search_sub4me",
+      "description": "Free-text search across Sub4Me products, contracts, offers and tickets."
+    },
+    {
+      "name": "enrich_ticket",
+      "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
+    }
+  ],
+  "user_config": {
+    "supabase_url": {
+      "type": "string",
+      "title": "Supabase project URL",
+      "description": "Optional. Example: https://<project-ref>.supabase.co. Leave empty to use the bundled sample data.",
+      "required": false
+    },
+    "supabase_secret_key": {
+      "type": "string",
+      "title": "Supabase secret key",
+      "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

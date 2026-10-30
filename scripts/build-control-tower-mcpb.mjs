@@ -1,36 +1,23 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
-import { extractMarketplaceData } from '../connectors/control-tower/server/skill-profiles.mjs';
-import { extractGraph } from '../connectors/control-tower/server/graph.mjs';
+import { LIBRARY_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE = join(ROOT, 'connectors/control-tower');
-const DATA = join(ROOT, 'examples/control-tower/data.json');
-const SUB4ME_PAGE = join(ROOT, 'examples/sub4me/index.html');
+const MAIN = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+const FLAGS = ['--gmail', '--databricks', '--jira', '--slack'];
 
 /**
- * Build the .mcpb bundle: manifest.json, the server, and a copy of data.json and the Sub4Me sample data.
- * A .mcpb is a plain zip; Werkbank reads manifest.json and extracts the rest.
+ * Build one connector as a .mcpb bundle (a plain zip; Werkbank reads manifest.json and extracts the rest).
  * Returns the path of the bundle.
  */
-export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tower.mcpb')) {
+export function buildConnectorBundle(id, output = join(ROOT, `dist/${id}.mcpb`)) {
   const out = resolve(output);
-  const stage = mkdtempSync(join(tmpdir(), 'control-tower-mcpb-'));
+  const stage = mkdtempSync(join(tmpdir(), `${id}-mcpb-`));
   try {
-    cpSync(join(SOURCE, 'manifest.json'), join(stage, 'manifest.json'));
-    cpSync(join(SOURCE, 'server'), join(stage, 'server'), { recursive: true });
-    mkdirSync(join(stage, 'data'));
-    cpSync(DATA, join(stage, 'data/data.json'));
-    cpSync(join(ROOT, 'examples/automation-dashboard/categories.json'), join(stage, 'data/n8n-categories.json'));
-    writeFileSync(join(stage, 'data/skill-marketplace.json'), JSON.stringify(extractMarketplaceData(readFileSync(join(ROOT, 'examples/skill-marketplace/index.html'), 'utf8')), null, 2));
-    writeFileSync(join(stage, 'data/knowledge-graph.json'), JSON.stringify(extractGraph(readFileSync(join(ROOT, 'examples/knowledge-graph/index.html'), 'utf8')), null, 2));
-    cpSync(join(ROOT, 'examples/infra-ops/data.json'), join(stage, 'data/infra-ops.json'));
-    writeFileSync(join(stage, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(SUB4ME_PAGE, 'utf8')), null, 2));
-
+    stageConnector(id, stage);
     mkdirSync(dirname(out), { recursive: true });
     if (existsSync(out)) rmSync(out);
     try {
@@ -45,8 +32,16 @@ export function buildControlTowerBundle(output = join(ROOT, 'dist/ai-control-tow
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && !process.argv.includes('--gmail') && !process.argv.includes('--databricks') && !process.argv.includes('--jira') && !process.argv.includes('--slack')) {
-  console.log(`Built ${buildControlTowerBundle(process.argv[2])}`);
+/** All library-based connectors into one folder. */
+export function buildAllConnectorBundles(dir = join(ROOT, 'dist')) {
+  return LIBRARY_CONNECTORS.map((id) => buildConnectorBundle(id, join(dir, `${id}.mcpb`)));
+}
+
+if (MAIN && !FLAGS.some((f) => process.argv.includes(f))) {
+  const wanted = process.argv[2];
+  if (wanted && LIBRARY_CONNECTORS.includes(wanted)) console.log(`Built ${buildConnectorBundle(wanted)}`);
+  else if (!wanted || wanted === '--all') for (const out of buildAllConnectorBundles()) console.log(`Built ${out}`);
+  else { console.error(`Unknown connector "${wanted}". Choose one of: ${LIBRARY_CONNECTORS.join(', ')}, or --all.`); process.exit(1); }
 }
 
 /** Gmail connector bundle: manifest + server only (no data). */

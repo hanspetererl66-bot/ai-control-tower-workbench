@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { handleSub4meMessage } from '../src/sub4me-bridge.ts';
-import { createSub4MeHandlers, customerRecords, extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
-import { createTicketHandlers } from '../connectors/control-tower/server/tickets.mjs';
-import { POSSIBLE, rank, similarity, STRONG } from '../connectors/control-tower/server/ticket-match.mjs';
+import { createSub4MeHandlers, customerRecords, extractSub4MeData } from '../connectors/_lib/server/sub4me.mjs';
+import { createTicketHandlers } from '../connectors/_lib/server/tickets.mjs';
+import { POSSIBLE, rank, similarity, STRONG } from '../connectors/_lib/server/ticket-match.mjs';
 
 const html = readFileSync(new URL('../examples/sub4me/index.html', import.meta.url), 'utf8');
 const all = extractSub4MeData(html);
@@ -14,7 +14,7 @@ const scenario = (label) => all.knowledge.scenarios.find((s) => s.label === labe
 
 test('the page carries the same matching code as the connector module', () => {
   const block = (src) => /\/\*match:start\*\/([\s\S]*?)\/\*match:end\*\//.exec(src)[1];
-  const module = readFileSync(new URL('../connectors/control-tower/server/ticket-match.mjs', import.meta.url), 'utf8');
+  const module = readFileSync(new URL('../connectors/_lib/server/ticket-match.mjs', import.meta.url), 'utf8');
   assert.equal(block(html).trim(), block(module).trim());
 });
 

@@ -60,6 +60,8 @@ declare global {
       readSkill?: (dir: string) => Promise<string | null>;
       importMcpb?: () => Promise<Record<string, unknown> | null>;
       prepareControlTowerConnector?: () => Promise<Record<string, unknown> | null>;
+      prepareConnector?: (id: string) => Promise<Record<string, unknown> | null>;
+      listBundledConnectors?: () => Promise<{ id: string; name: string; title: string; description: string; tools: number; needsSetup: boolean }[]>;
       getConnectorSpec?: (name: string) => Promise<Record<string, unknown> | null>;
       saveConnectorConfig?: (
         name: string,

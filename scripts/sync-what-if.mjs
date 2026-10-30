@@ -1,5 +1,5 @@
 /**
- * What-if Space: embeds the data (Control Tower) and the model code (connectors/control-tower/server/what-if.mjs,
+ * What-if Space: embeds the data (Control Tower) and the model code (connectors/_lib/server/what-if.mjs,
  * the part between BEGIN-MODEL and END-MODEL) into the page, plus the shared design system, so the slider and the
  * chat tool use literally the same rules.
  *   npm run sync:what-if            write
@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { prepareWhatIf } from '../connectors/control-tower/server/what-if.mjs';
+import { prepareWhatIf } from '../connectors/_lib/server/what-if.mjs';
 import { embedDesignSystem } from './sync-design-system.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -18,7 +18,7 @@ const MODEL = /(<script id="wi-model">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
 /** The model code exactly as the page runs it. */
-export function modelSource(source = read('connectors/control-tower/server/what-if.mjs')) {
+export function modelSource(source = read('connectors/_lib/server/what-if.mjs')) {
   const match = /\/\/ BEGIN-MODEL\n([\s\S]*?)\/\/ END-MODEL/.exec(source);
   if (!match) throw new Error('what-if.mjs has no BEGIN-MODEL / END-MODEL block');
   return match[1].trimEnd();

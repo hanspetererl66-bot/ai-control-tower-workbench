@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
-import { createWhatIfHandlers, creditCutCurve, prepareWhatIf, simulateCreditCut } from '../connectors/control-tower/server/what-if.mjs';
+import { createWhatIfHandlers, creditCutCurve, prepareWhatIf, simulateCreditCut } from '../connectors/_lib/server/what-if.mjs';
 import { embedWhatIf, modelSource, repoModel } from '../scripts/sync-what-if.mjs';
 
 const data = JSON.parse(readFileSync(new URL('../examples/control-tower/data.json', import.meta.url), 'utf8'));

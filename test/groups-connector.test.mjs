@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { GROUP_TOOL_DEFINITIONS, createGroupHandlers } from '../connectors/control-tower/server/groups.mjs';
-import { ToolError } from '../connectors/control-tower/server/tools.mjs';
+import { GROUP_TOOL_DEFINITIONS, createGroupHandlers } from '../connectors/_lib/server/groups.mjs';
+import { ToolError } from '../connectors/_lib/server/tools.mjs';
 
 const G = '123e4567-e89b-12d3-a456-426614174000';
 const calls = [];

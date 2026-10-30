@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { createSkillProfileHandlers, economics, extractMarketplaceData } from '../connectors/control-tower/server/skill-profiles.mjs';
+import { createSkillProfileHandlers, economics, extractMarketplaceData } from '../connectors/_lib/server/skill-profiles.mjs';
 import { buildProfilesSql } from '../scripts/sync-skill-profiles.mjs';
 import { loadProfiles } from '../scripts/sync-skill-marketplace.mjs';
 

@@ -49,6 +49,8 @@ contextBridge.exposeInMainWorld('host', {
   readSkill: (dir) => ipcRenderer.invoke('read-skill', dir),
   importMcpb: () => ipcRenderer.invoke('import-mcpb'),
   prepareControlTowerConnector: () => ipcRenderer.invoke('prepare-control-tower-connector'),
+  prepareConnector: (id) => ipcRenderer.invoke('prepare-connector', id),
+  listBundledConnectors: () => ipcRenderer.invoke('list-bundled-connectors'),
   getConnectorSpec: (name) => ipcRenderer.invoke('get-connector-spec', name),
   saveConnectorConfig: (name, values, config) =>
     ipcRenderer.invoke('save-connector-config', { name, values, config }),

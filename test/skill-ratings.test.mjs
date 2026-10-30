@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { createSkillRatingHandlers, raterId, summarise } from '../connectors/control-tower/server/skill-ratings.mjs';
-import { extractMarketplaceData } from '../connectors/control-tower/server/skill-profiles.mjs';
-import { ToolError } from '../connectors/control-tower/server/tools.mjs';
+import { createSkillRatingHandlers, raterId, summarise } from '../connectors/_lib/server/skill-ratings.mjs';
+import { extractMarketplaceData } from '../connectors/_lib/server/skill-profiles.mjs';
+import { ToolError } from '../connectors/_lib/server/tools.mjs';
 import { buildRatingsSql, sampleRows } from '../scripts/sync-skill-ratings.mjs';
 
 const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
@@ -44,7 +44,7 @@ test('summarise damps small samples and marks new skills', () => {
 });
 
 test('skill recommendations carry the rating', async () => {
-  const { createSkillProfileHandlers } = await import('../connectors/control-tower/server/skill-profiles.mjs');
+  const { createSkillProfileHandlers } = await import('../connectors/_lib/server/skill-profiles.mjs');
   const h = createSkillProfileHandlers(() => page);
   const r = await h.recommend_skills({ role: 'Account Executive' });
   assert.ok(r.skills.every((s) => /of 5|new|not rated/.test(s.rating)));

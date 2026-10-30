@@ -1,5 +1,5 @@
 /**
- * n8n Cloud data for the AI Control Tower connector and the Automation Dashboard Space.
+ * n8n Cloud data for the n8n Automation connector and the Automation Dashboard Space.
  * Self-contained (no imports from outside this folder) so it ships inside the .mcpb bundle.
  * Reads workflows and executions from the n8n public API (X-N8N-API-KEY): names, tags, active state, node types,
  * status, mode and timings. Execution payloads are never requested or stored.

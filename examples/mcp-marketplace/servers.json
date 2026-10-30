@@ -192,22 +192,27 @@
     {
       "id": "ai-control-tower",
       "name": "AI Control Tower",
-      "tagline": "Risks, agents, budget, Sub4Me sample data, skills, n8n and the knowledge graph",
+      "tagline": "Risks, agents, budget and the what-if on AI credits",
       "category": "Governance and sample data",
       "publisher": "This design study (own connector)",
       "license": "Design study",
       "status": "builtin",
       "statusLabel": "Built in",
-      "source": "connectors/control-tower",
+      "source": "connectors/ai-control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "0.18.0",
-      "summary": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.",
+      "version": "1.0.0",
+      "summary": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits.",
       "install": [
         {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key (optional)."
+        },
+        {
           "label": "Bundle",
-          "how": "npm run build:control-tower-mcpb, then import the bundle in Connectors & Skills.",
-          "note": "Configuration: Supabase URL and key, n8n URL and key (optional)."
+          "how": "npm run build:connectors, then import dist/ai-control-tower.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
         }
       ],
       "tools": [
@@ -254,6 +259,55 @@
           "default": "on"
         },
         {
+          "name": "simulate_credit_cut",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "sub4me",
+      "name": "Sub4Me",
+      "tagline": "Customers, contracts, offers, consumption and demo tickets",
+      "category": "Sample data",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/sub4me",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "The Sub4Me test customer (sample data): customers, invoices, contracts, offers, AI consumption and service tickets. Creating or linking a ticket is the only write and goes to a demo table.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key (optional)."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/sub4me.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
+        {
           "name": "list_tickets",
           "class": "read",
           "what": "",
@@ -274,30 +328,6 @@
         {
           "name": "link_ticket",
           "class": "write",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "search_skills",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "get_skill_info",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "list_skill_catalog",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "get_skill_ranking",
-          "class": "read",
           "what": "",
           "default": "on"
         },
@@ -361,6 +391,55 @@
           "what": "",
           "default": "on"
         },
+        {
+          "name": "enrich_ticket",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only except create_ticket and link_ticket, which write to a demo table after a confirmation."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "n8n-automation",
+      "name": "n8n Automation",
+      "tagline": "Your n8n Cloud workflows, runs and demo workflows",
+      "category": "Automation",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/n8n-automation",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "Your n8n Cloud automation: workflows, executions and categories (read), the demo workflows, and planned infrastructure changes handed to n8n in check mode.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: n8n URL and API key; for infrastructure changes also the webhook URL and token (all optional)."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/n8n-automation.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
         {
           "name": "get_n8n_overview",
           "class": "read",
@@ -428,6 +507,85 @@
           "default": "on"
         },
         {
+          "name": "plan_infra_change",
+          "class": "read",
+          "what": "Plans an infrastructure change against the sample inventory: pre-checks, simulated check-mode diff, risk and approvals. Changes nothing.",
+          "default": "on"
+        },
+        {
+          "name": "submit_infra_change",
+          "class": "write",
+          "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Reads n8n. The demo workflows only compute; infrastructure changes run in check mode and only after a confirmation."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "skill-marketplace",
+      "name": "Skill Marketplace",
+      "tagline": "The shared skill registry: search, impact, governance, ratings",
+      "category": "Skills",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/skill-marketplace",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "The shared skill registry and marketplace: search, profiles, ranking, impact, governance, lifecycle, gaps, recommendations and ratings. Reads approved skills only; rating a skill is the only write.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key (optional)."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/skill-marketplace.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
+        {
+          "name": "search_skills",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_info",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_skill_catalog",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_ranking",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
           "name": "get_skill_impact",
           "class": "read",
           "what": "",
@@ -464,6 +622,61 @@
           "default": "on"
         },
         {
+          "name": "get_skill_ratings",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "rate_skill",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Reads approved skills only; rate_skill adds an anonymous star rating."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "knowledge-graph",
+      "name": "Knowledge Graph",
+      "tagline": "How customers, contracts, skills and agents connect",
+      "category": "Sample data",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/knowledge-graph",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "The knowledge graph that connects the Sub4Me customer, contracts, products, teams and skills: search, neighbours, shortest path and impact analysis (sample data).",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "No configuration needed."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/knowledge-graph.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
+        {
           "name": "get_graph_overview",
           "class": "read",
           "what": "",
@@ -492,31 +705,50 @@
           "class": "read",
           "what": "",
           "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "None"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "web-sources",
+      "name": "Web Sources",
+      "tagline": "SAP Help, SAP Community and other approved public sites",
+      "category": "Knowledge",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/web-sources",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "Approved public web sources only: SAP Help Portal, SAP Community, other SAP sites and a few news sites. No login; other websites are refused.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "No configuration needed."
         },
         {
-          "name": "get_skill_ratings",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "rate_skill",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "simulate_credit_cut",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "enrich_ticket",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/web-sources.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
         {
           "name": "search_sap_help",
           "class": "read",
@@ -546,7 +778,50 @@
           "class": "read",
           "what": "",
           "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "None"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only; only approved public sites."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "werkbank-workspace",
+      "name": "Werkbank Workspace",
+      "tagline": "Personal settings sync and shared groups",
+      "category": "Workspace",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/werkbank-workspace",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key."
         },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/werkbank-workspace.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
         {
           "name": "get_preferences",
           "class": "read",
@@ -557,18 +832,6 @@
           "name": "save_preferences",
           "class": "write",
           "what": "",
-          "default": "on"
-        },
-        {
-          "name": "plan_infra_change",
-          "class": "read",
-          "what": "Plans an infrastructure change against the sample inventory: pre-checks, simulated check-mode diff, risk and approvals. Changes nothing.",
-          "default": "on"
-        },
-        {
-          "name": "submit_infra_change",
-          "class": "write",
-          "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
           "default": "on"
         },
         {
@@ -659,7 +922,7 @@
         "risk": "low",
         "defaultRisk": "low",
         "why": [
-          "Read-only except create_ticket, which is created only after a confirmation."
+          "Writes only to the Werkbank tables; changes to groups ask first."
         ],
         "plan": [],
         "checks": []

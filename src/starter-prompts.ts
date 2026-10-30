@@ -4,8 +4,11 @@
  * a connector or type "Use only …" first.
  */
 
-/** The connector's name as defined in connectors/control-tower/manifest.json. */
+/** The connector's name as defined in connectors/ai-control-tower/manifest.json. */
 export const CONTROL_TOWER_CONNECTOR = 'ai-control-tower';
+
+/** Personal settings sync and groups (connectors/werkbank-workspace). */
+export const WORKSPACE_CONNECTOR = 'werkbank-workspace';
 
 export type StarterPrompt = {
   /** Short label on the chip. */

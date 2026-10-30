@@ -52,7 +52,7 @@ import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
-import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
+import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import type { Handoff, IncomingHandoff } from './space-handoff';
 import WerkbankMark from './ui/WerkbankMark';
@@ -336,8 +336,8 @@ export default function App() {
 
   /** 'local': groups kept on this computer (sample group, no database). 'server': the connector with Supabase. */
   const [groupMode, setGroupModeState] = useState<'local' | 'server'>(() => { try { return window.localStorage.getItem(GROUP_MODE_KEY) === 'server' ? 'server' : 'local'; } catch { return 'local'; } });
-  const serverGroupCall = useMemo(() => (agent && extensionNames.includes(CONTROL_TOWER_CONNECTOR)
-    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__${tool}`, args))
+  const serverGroupCall = useMemo(() => (agent && extensionNames.includes(WORKSPACE_CONNECTOR)
+    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__${tool}`, args))
     : null), [agent, extensionNames]);
   const localGroupCall = useMemo(() => createLocalGroupCall(window.localStorage), []);
   const groupCall = groupMode === 'server' ? serverGroupCall : localGroupCall;
@@ -362,7 +362,7 @@ export default function App() {
     setSyncState({ busy: true, message: '' });
     try {
       const data = { ...prefs, sync: undefined };
-      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
+      const out = parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
       setSyncState({ busy: false, message: out?.updatedAt ? `Saved to Supabase (${out.updatedAt}).` : 'Saved to Supabase.' });
     } catch (error) {
       setSyncState({ busy: false, message: `Saving failed: ${error instanceof Error ? error.message : String(error)}` });
@@ -372,7 +372,7 @@ export default function App() {
     if (!agent) return;
     setSyncState({ busy: true, message: '' });
     try {
-      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
+      const out = parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
       if (!out || !out.data) {
         setSyncState({ busy: false, message: 'Nothing stored under this key yet.' });
         return;
@@ -1385,7 +1385,7 @@ export default function App() {
             spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),
             skills: skillList.map((x) => ({ name: x.name, description: x.description })),
             connectors: extensionNames,
-            syncAvailable: Boolean(agent) && extensionNames.includes(CONTROL_TOWER_CONNECTOR),
+            syncAvailable: Boolean(agent) && extensionNames.includes(WORKSPACE_CONNECTOR),
             sync: syncState,
             onSyncSave: () => void syncSave(),
             onSyncLoad: () => void syncLoad(),

@@ -1,0 +1,90 @@
+{
+  "manifest_version": "0.2",
+  "name": "skill-marketplace",
+  "display_name": "Skill Marketplace",
+  "version": "1.0.0",
+  "description": "The shared skill registry and marketplace: search, profiles, ranking, impact, governance, lifecycle, gaps, recommendations and ratings. Reads approved skills only.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "connectors/skill-marketplace/server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/connectors/skill-marketplace/server/index.mjs"
+      ],
+      "env": {
+        "SUPABASE_URL": "${user_config.supabase_url}",
+        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "search_skills",
+      "description": "Search the shared skill registry (approved skills) before building a new skill."
+    },
+    {
+      "name": "get_skill_info",
+      "description": "Profile of one approved skill from the shared registry (no skill text)."
+    },
+    {
+      "name": "list_skill_catalog",
+      "description": "Skill marketplace overview: counts per board area, LOB, team and reach, with the skills; filterable."
+    },
+    {
+      "name": "get_skill_ranking",
+      "description": "Top skills by demand (installs, views, search hits), filterable by board area, LOB, team or reach."
+    },
+    {
+      "name": "get_skill_impact",
+      "description": "Skill impact: runs, success, time saved, value and run cost per skill (sample data)."
+    },
+    {
+      "name": "get_skill_governance",
+      "description": "Skill governance: EU AI Act class, DPIA, reviews due, linked risks and agents (sample data)."
+    },
+    {
+      "name": "get_skill_lifecycle",
+      "description": "Skill lifecycle: change log, dependencies, tests, sunset, deputy; who depends on what (sample data)."
+    },
+    {
+      "name": "find_skill_gaps",
+      "description": "Processes without a skill and skill requests from the teams, with potential hours (sample data)."
+    },
+    {
+      "name": "recommend_skills",
+      "description": "Recommend skills for a role and/or a task with example prompts and demo flow."
+    },
+    {
+      "name": "recommend_skill_workflow",
+      "description": "Recommend an ordered sequence of marketplace skills for a role and/or a goal, so the person does not need to know every skill. Example: role \"Account Manager\", goal \"Kundentermin und Verlängerung\" returns the steps customer-call-prep, renewal-radar, quote-drafter and ticket-writer, each with why, input, output, maturity, risk class and warnings (sunset, replaced, not in the registry). Use it for \"In welcher Reihenfolge nutze ich welche Skills …?\". Sample playbooks."
+    },
+    {
+      "name": "get_skill_ratings",
+      "description": "Star ratings of marketplace skills (1 to 5, anonymous, one rating per person). Without a name: ranking of all skills by a damped average (a skill with two five-star votes does not beat one with 40 votes at 4.6); skills with fewer than 5 ratings are marked \"new\". With a name: average, number of ratings, how many gave 1 to 5 stars, and the latest comments. Answers \"Welche Skills sind am besten bewertet?\" or \"Wie wird ticket-writer bewertet?\". Live from Supabase when connected, otherwise sample data."
+    },
+    {
+      "name": "rate_skill",
+      "description": "Rate a published marketplace skill with 1 to 5 stars and an optional short comment (max 280 characters). One rating per person and skill; rating again replaces the earlier one. Ask the person for the stars first and repeat skill, stars and comment back before calling; never rate on your own. Do not put names, customer data or secrets into the comment. Needs the Supabase connection; sample skills cannot be rated."
+    }
+  ],
+  "user_config": {
+    "supabase_url": {
+      "type": "string",
+      "title": "Supabase project URL",
+      "description": "Optional. Example: https://<project-ref>.supabase.co. Leave empty to use the bundled sample data.",
+      "required": false
+    },
+    "supabase_secret_key": {
+      "type": "string",
+      "title": "Supabase secret key",
+      "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

@@ -70,20 +70,38 @@ The risk register is data-driven: edit `examples/control-tower/data.json`, then 
 `npm run sync:control-tower` to embed it into the page (a Space cannot fetch files
 from inside the sandbox). `npm test` fails if the two drift apart.
 
-### Control Tower connector (MCP)
+### Werkbank connectors (MCP)
 
-`connectors/control-tower/` is a small, dependency-free MCP server that lets the chat
-query the same `data.json` the Space renders: risks, agent registry, unregistered
-assets, overprivileged agents and the AI budget. All tools are read-only.
+The sample-data tools are split into seven small connectors, each with one job. They are dependency-free MCP
+servers that share the code in `connectors/_lib/`. Add only the ones you need.
+
+| Connector | What it does | Settings (all optional) |
+|---|---|---|
+| `ai-control-tower` | Risks, agent registry, AI budget, what-if on AI credits | Supabase URL and key |
+| `sub4me` | Customers, invoices, contracts, offers, AI consumption, demo tickets | Supabase URL and key |
+| `n8n-automation` | n8n Cloud workflows and executions, demo workflows, infrastructure change plans | n8n URL and key, webhook |
+| `skill-marketplace` | Skill search, impact, governance, lifecycle, gaps, ratings | Supabase URL and key |
+| `knowledge-graph` | Search, neighbours, paths and impact over the sample data | none |
+| `web-sources` | SAP Help, SAP Community and other approved public sites | none |
+| `werkbank-workspace` | Personal settings sync, groups, shared Spaces and team memory | Supabase URL and key |
+
+Jira, Databricks, Slack and Gmail have their own connectors as before.
+
+In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, then confirm. Or build bundles:
 
 ```
-npm run build:control-tower-mcpb     # writes dist/ai-control-tower.mcpb
+npm run build:connectors                 # writes dist/<connector>.mcpb for all seven
+npm run build:control-tower-mcpb         # only dist/ai-control-tower.mcpb
+node scripts/build-control-tower-mcpb.mjs sub4me
 ```
 
-Then in Werkbank open **Connectors & Skills**, choose **Import MCP bundle**, pick the
-file and confirm. Ask, for example, "Which risks are below 40% mitigated?". Edits to
-the bundled `data.json` apply without restarting the agent. Every result carries a
-`view` field naming the Control Tower tab that shows the same information.
+and import a file with **Import MCP bundle**. Ask, for example, "Which risks are below 40% mitigated?". Edits to the
+bundled `data.json` apply without restarting the agent. Every result carries a `view` field naming the tab that shows
+the same information. A new connector is a folder `connectors/<name>/` with a `manifest.json` and a short
+`server/index.mjs` that calls `serve()` from `connectors/_lib/server/runtime.mjs`.
+
+Coming from the earlier single connector? Remove the old `ai-control-tower` entry once and add the ones you use. Each
+connector keeps its own settings, so enter the Supabase URL and key once per connector that needs them.
 
 ## Gmail connector (read + drafts)
 
@@ -198,7 +216,7 @@ installed Space contains the updated page.
   "Joule Work X - Next Gen · Design Study · Built by Accenture · Demo only". Click anywhere outside the
   text, "Close" or Esc to dismiss it.
 - If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
-  **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
+  **Jetzt installieren**. That stages the AI Control Tower connector bundled in this repository and opens the usual approve
   dialog; the Supabase URL and key fields can stay empty to use the sample data. No `.mcpb` file is needed.
 
 
