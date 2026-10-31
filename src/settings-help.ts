@@ -96,6 +96,7 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Shared Spaces', 'Install copies the group version to this computer. Publish sends your version to everybody in the group.'],
   ['Team memory', 'Visible to every member and sent to the assistant while the group is active. Keep personal and confidential details out.'],
   ['Group instructions', 'Added to the messages of every member while the group is active, on top of their own instructions.'],
+  ['Working profiles', 'Shows up in the chat bar of every member while the group is active. The rules of the profile (connectors, rights, step limit) then apply to that member\'s answers; they only narrow what the assistant does.'],
   ['Recent activity', 'A read-only log of who changed the group, for transparency.'],
   ['Delete group', 'Removes the group for everybody. Spaces that were already installed on a computer stay there.'],
   ['Storage locations', 'The assistant sees these names and uses a location only when you ask it to save a result.'],

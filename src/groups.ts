@@ -11,7 +11,7 @@ export type GroupSummary = { id: string; name: string; description: string; role
 export type GroupMember = { email: string; name: string; role: GroupRole };
 export type GroupSpace = { slug: string; title: string; version: number; publishedBy: string; publishedAt: string; bytes: number };
 export type MemoryEntry = { id: string; kind: MemoryKind; text: string; createdBy: string; createdAt: string };
-export type GroupConfig = { instructions?: string };
+export type GroupConfig = { instructions?: string; /** Working profiles published by an admin (see harness-share.ts); read through sanitizeGroupHarnesses. */ harnesses?: unknown[] };
 export type GroupDetail = {
   role: GroupRole;
   group: { id: string; name: string; description: string; rev: number };
