@@ -226,7 +226,7 @@ async function main(argv) {
   if (cmd === 'sync') {
     const force = rest.includes('--force');
     const skillsDir = process.env.SKILLS_DIR || join(ROOT, 'goose-home/.agents/skills');
-    const r = await syncSkills({ url, key: env('SUPABASE_KEY', 'SUPABASE_PUBLISHABLE_KEY'), skillsDir, force });
+    const r = await syncSkills({ url, key: env('SUPABASE_SECRET_KEY'), skillsDir, force });
     for (const [label, items] of Object.entries(r)) if (items.length) console.log(`${label}: ${items.join(', ')}`);
     if (Object.values(r).every((items) => !items.length)) console.log('No published skills in the registry yet.');
     return;

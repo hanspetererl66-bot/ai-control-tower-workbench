@@ -261,14 +261,14 @@ installed Space contains the updated page.
 Skills can be shared with colleagues through the same Supabase project (migration `007`). The Goose agent
 reads skills from files, so colleagues **sync** published skills into their local `goose-home/.agents/skills/`.
 
-- **Read (everyone):** the publishable key can call `skills_list` / `skills_get`, which only return `published` skills.
+- **Read:** `skills_list` / `skills_get` only return `published` skills. Since migration 022 they (and `skills_search`, `skills_ranking`, `skills_track`) are closed to the publishable key; the connectors and the sync scripts use the secret key.
 - **Write (maintainer):** the secret key uploads drafts and releases them (`release`); the agent has no tool for this.
 - **Safety:** every version is checksummed (SHA-256, verified on sync); names must equal the folder name;
   skills that look like they contain credentials are refused; local skills are never overwritten (`--force` to replace).
 
 ```bash
 # Colleague: pull published skills (then restart the agent)
-SUPABASE_URL=https://<ref>.supabase.co SUPABASE_KEY=<publishable key> npm run skills:sync
+SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SECRET_KEY=<secret key> npm run skills:sync
 
 # Maintainer
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills:publish            # upload examples/skills/* as drafts
@@ -314,7 +314,7 @@ anonymous machine hash, with no name or address. One machine counts once per ski
 ten minutes (view, search hit). Score = 3 × installs + 1 × views + 0.5 × search hits over the last 30 days, with the trend against
 the 30 days before. The Space has a **Ranking** tab (top 10, filter by board area); the chat answers
 "Welche Skills sind am stärksten nachgefragt?" with `get_skill_ranking` (connector 0.9.0). The counters are best-effort
-and can be inflated by anyone holding the publishable key, so treat the numbers as a signal, not as proof. The skill itself
+and can be inflated by anyone who can call the tracking function, so treat the numbers as a signal, not as proof. The skill itself
 does not report its use yet.
 
 ### Skill marketplace overview: board areas, LOBs, teams, individual
@@ -328,7 +328,7 @@ A skill without a scope counts as `individual`; a team scope needs a team, a LOB
 
 - **Space "Skill Marketplace":** `npm run install:skill-marketplace` installs it (overview by board area, LOB and team, catalog with filters,
   hints on possible duplicates and gaps). `npm run sync:skill-marketplace` embeds the example skills of the repository;
-  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
+  `SUPABASE_URL=… SUPABASE_SECRET_KEY=<secret key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
   registry into the installed copy only (`workspace/spaces/`), so files tracked by Git stay unchanged and `git pull` never conflicts.
   Skills tagged **Sample** are fictional and only show the structure.
 - **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
