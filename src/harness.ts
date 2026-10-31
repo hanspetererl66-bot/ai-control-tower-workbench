@@ -40,6 +40,8 @@ export type HarnessProfile = {
   /** Most tool calls in one answer; 0 means no limit. */
   maxSteps: number;
   answerForm: HarnessForm;
+  /** Where a copy came from, for example an imported file or a group. Shown to the person; has no effect on the rules. */
+  origin?: string;
 };
 
 export type HarnessState = { active: string; custom: HarnessProfile[] };
@@ -119,6 +121,7 @@ export function sanitizeHarness(value: unknown): HarnessProfile | null {
   const name = text(value.name, 40);
   if (!id || !name) return null;
   const steps = typeof value.maxSteps === 'number' && Number.isFinite(value.maxSteps) ? Math.round(value.maxSteps) : 0;
+  const origin = text(value.origin, 80);
   return {
     id,
     name,
@@ -131,8 +134,13 @@ export function sanitizeHarness(value: unknown): HarnessProfile | null {
     permission: pick(HARNESS_PERMISSIONS, value.permission, 'standard'),
     maxSteps: Math.max(0, Math.min(MAX_STEP_LIMIT, steps)),
     answerForm: pick(HARNESS_FORMS, value.answerForm, 'free'),
+    ...(origin ? { origin } : {}),
   };
 }
+
+/** Profiles published by a group are chosen with this prefix; they are not stored in the person's own list. */
+export const GROUP_HARNESS_PREFIX = 'group:';
+const GROUP_ACTIVE = /^group:[a-z0-9][a-z0-9_-]{0,39}$/;
 
 export const DEFAULT_HARNESS_STATE: HarnessState = { active: 'standard', custom: [] };
 
@@ -146,7 +154,7 @@ export function sanitizeHarnessState(value: unknown): HarnessState {
     taken.add(profile.id);
     custom.push(profile);
   }
-  const active = typeof v.active === 'string' && [...BUILTIN_HARNESSES, ...custom].some((p) => p.id === v.active) ? v.active : 'standard';
+  const active = typeof v.active === 'string' && ([...BUILTIN_HARNESSES, ...custom].some((p) => p.id === v.active) || GROUP_ACTIVE.test(v.active)) ? v.active : 'standard';
   return { active, custom };
 }
 
@@ -154,8 +162,9 @@ export const allHarnesses = (state: HarnessState): HarnessProfile[] => [...BUILT
 export const activeHarness = (state: HarnessState): HarnessProfile => allHarnesses(state).find((p) => p.id === state.active) ?? STANDARD_HARNESS;
 export const isBuiltinHarness = (id: string): boolean => BUILTIN_HARNESSES.some((p) => p.id === id);
 
-export function chooseHarness(state: HarnessState, id: string): HarnessState {
-  return allHarnesses(state).some((p) => p.id === id) ? { ...state, active: id } : state;
+/** `groupIds` are the ids (with prefix) of the group profiles that are available right now. */
+export function chooseHarness(state: HarnessState, id: string, groupIds: string[] = []): HarnessState {
+  return allHarnesses(state).some((p) => p.id === id) || groupIds.includes(id) ? { ...state, active: id } : state;
 }
 
 /** Saves or replaces a custom profile and makes it the active one. Built-in ids cannot be replaced. */
