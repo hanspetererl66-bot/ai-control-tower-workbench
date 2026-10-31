@@ -552,8 +552,8 @@
       "source": "connectors/skill-marketplace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.1.0",
-      "summary": "The shared skill registry and marketplace: search, impact, governance, ratings, and the skill lifecycle (marketplace card, duplicate check, approval flow, deprecate, retire, restore, history). The lifecycle tools write to the registry and ask first.",
+      "version": "1.2.0",
+      "summary": "The shared skill registry and marketplace: search, impact, governance, ratings, and the skill lifecycle (marketplace card, duplicate check, approval flow, deprecate, retire, restore, history). Extra files of a skill (scripts, templates) are kept with it. The lifecycle and file tools write to the registry and ask first.",
       "install": [
         {
           "label": "In the app",
@@ -709,6 +709,30 @@
           "name": "restore_skill",
           "class": "write",
           "what": "Undoes a deprecation or restores a retired skill as a draft.",
+          "default": "ask"
+        },
+        {
+          "name": "list_skill_files",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_file",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "set_skill_file",
+          "class": "write",
+          "what": "Adds or replaces an extra file (for example a script) of a skill.",
+          "default": "ask"
+        },
+        {
+          "name": "delete_skill_file",
+          "class": "write",
+          "what": "Removes an extra file of a skill.",
           "default": "ask"
         }
       ],
@@ -879,7 +903,7 @@
     {
       "id": "werkbank-workspace",
       "name": "Werkbank Workspace",
-      "tagline": "Personal settings sync and shared groups",
+      "tagline": "Personal settings, shared groups, and agents, workflows and code",
       "category": "Workspace",
       "publisher": "This design study (own connector)",
       "license": "Design study",
@@ -888,8 +912,8 @@
       "source": "connectors/werkbank-workspace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.0.0",
-      "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory.",
+      "version": "1.1.0",
+      "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory. Agents, workflows and code of any kind are saved as revisions in the shared database; saving asks first.",
       "install": [
         {
           "label": "In the app",
@@ -992,6 +1016,36 @@
           "class": "write",
           "what": "Deletes a team memory entry.",
           "default": "ask"
+        },
+        {
+          "name": "save_work_item",
+          "class": "write",
+          "what": "Saves an agent, workflow or code as a new revision in the shared database.",
+          "default": "ask"
+        },
+        {
+          "name": "get_work_item",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_work_items",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "work_item_history",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "archive_work_item",
+          "class": "write",
+          "what": "Archives an item or brings it back; all revisions stay.",
+          "default": "ask"
         }
       ],
       "switches": [],
@@ -1003,7 +1057,8 @@
         "risk": "low",
         "defaultRisk": "low",
         "why": [
-          "Writes only to the Werkbank tables; changes to groups ask first."
+          "Writes only to the Werkbank tables; changes to groups ask first.",
+          "Saved files are checked for keys, tokens and passwords before they are stored; every save is a new revision, nothing is overwritten."
         ],
         "plan": [],
         "checks": []
