@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "skill-marketplace",
   "display_name": "Skill Marketplace",
-  "version": "1.0.0",
-  "description": "The shared skill registry and marketplace: search, profiles, ranking, impact, governance, lifecycle, gaps, recommendations and ratings. Reads approved skills only.",
+  "version": "1.1.0",
+  "description": "The shared skill registry and marketplace: search, profiles, ranking, impact, governance, lifecycle, gaps, recommendations and ratings, plus the skill lifecycle (marketplace card, duplicate check, approval flow, deprecate, retire, restore, history). Reads approved skills; the lifecycle tools write to the registry.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -70,6 +70,54 @@
     {
       "name": "rate_skill",
       "description": "Rate a published marketplace skill with 1 to 5 stars and an optional short comment (max 280 characters). One rating per person and skill; rating again replaces the earlier one. Ask the person for the stars first and repeat skill, stars and comment back before calling; never rate on your own. Do not put names, customer data or secrets into the comment. Needs the Supabase connection; sample skills cannot be rated."
+    },
+    {
+      "name": "check_skill_duplicates",
+      "description": "Before building or sharing a skill: is there already an identical or similar one? Compares description, text, domain and tools with the shared skills."
+    },
+    {
+      "name": "get_skill_card",
+      "description": "Marketplace card of a skill (when to use, inputs, outputs, example prompt) and what is missing before it may be shared."
+    },
+    {
+      "name": "set_skill_card",
+      "description": "Write the marketplace card of a skill (owner, department admin or Governance board). Write."
+    },
+    {
+      "name": "get_skill_status",
+      "description": "Live lifecycle state of one skill: level, version, sunset, open approval request with its checks, and the history. Read only."
+    },
+    {
+      "name": "list_skill_lifecycle",
+      "description": "Lifecycle overview: skills per state, skills that need attention and requests waiting for the actor. Read only."
+    },
+    {
+      "name": "list_skill_requests",
+      "description": "Approval requests for skills: own ones and those waiting for the actor to decide, with the automatic checks. Read only."
+    },
+    {
+      "name": "request_skill_promotion",
+      "description": "Ask to share a skill with a department or the whole organization; seven automatic checks run first. Write."
+    },
+    {
+      "name": "decide_skill_request",
+      "description": "Approve or reject an approval request (department admin or Governance board, never the requester). Write."
+    },
+    {
+      "name": "withdraw_skill_request",
+      "description": "Withdraw an open approval request (its requester only). Write."
+    },
+    {
+      "name": "deprecate_skill",
+      "description": "Announce the end of a shared skill with a sunset date and an optional replacement. Write."
+    },
+    {
+      "name": "retire_skill",
+      "description": "Take a skill out of the marketplace and every sync; shared skills are deprecated first. Write."
+    },
+    {
+      "name": "restore_skill",
+      "description": "Undo a deprecation, or bring a retired skill back as an Individual draft. Write."
     }
   ],
   "user_config": {

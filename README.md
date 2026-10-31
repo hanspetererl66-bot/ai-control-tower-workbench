@@ -80,7 +80,7 @@ servers that share the code in `connectors/_lib/`. Add only the ones you need.
 | `ai-control-tower` | Risks, agent registry, AI budget, what-if on AI credits | Supabase URL and key |
 | `sub4me` | Customers, invoices, contracts, offers, AI consumption, demo tickets | Supabase URL and key |
 | `n8n-automation` | n8n Cloud workflows and executions, demo workflows, infrastructure change plans | n8n URL and key, webhook |
-| `skill-marketplace` | Skill search, impact, governance, lifecycle, gaps, ratings | Supabase URL and key |
+| `skill-marketplace` | Skill search, impact, governance, gaps, ratings, and the skill lifecycle (card, duplicates, approval, retirement) | Supabase URL and key |
 | `knowledge-graph` | Search, neighbours, paths and impact over the sample data | none |
 | `web-sources` | SAP Help, SAP Community and other approved public sites | none |
 | `werkbank-workspace` | Personal settings sync, groups, shared Spaces and team memory | Supabase URL and key |
@@ -456,6 +456,18 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 - **Sample data:** `examples/skill-marketplace/ratings.json` (fictional), embedded by `npm run sync:skill-marketplace`.
 - **Supabase:** `npm run sync:skill-ratings` writes `supabase/migrations/20261019_013_skill_ratings.sql`. Run it once in the Supabase SQL editor after 012 (safe to run again; it only refreshes the sample rows). It creates `skills.skill_rating` (RLS on, no access for anon/authenticated) and two functions that only the server-side secret key may call: `skills_ratings()` and `skills_rate()`. Only skills in the registry (`skills.skill`, not retired) can be rated.
 - **Chat (connector 0.14.0):** `get_skill_ratings` (ranking, or one skill with distribution and comments) and `rate_skill`; the skill `rate-skill` asks for the stars and confirms before saving. `recommend_skills` and `recommend_skill_workflow` show the rating too. The rater is a hash of the local user and host (override with the env var `SKILL_RATER_ID`); no names are stored. Without a Supabase connection nothing is saved.
+
+### Skill lifecycle: card, duplicates, approval, retirement
+
+A skill in the shared registry (Supabase) has a lifecycle with a state that is derived, not stored twice: `draft` (Individual), `department`, `in_review`, `blocked`, `published` (organization), `deprecated` and `retired`. Migration `20261031_020_skill_lifecycle.sql` builds on the promotion flow of 019; the connector `skill-marketplace` (1.1.0) offers it as 12 tools. Write tools say "Write:" in their description and ask first by default.
+
+- **Marketplace card.** A skill cannot be shared before it is described: a description of at least 40 characters plus *when to use it*, *inputs*, *outputs* and an *example prompt* (`set_skill_card`, `get_skill_card`). For the organization level also a contact and a domain. A missing card fails the check `description`; the message names what is missing.
+- **Duplicates.** `check_skill_duplicates` compares a planned or existing skill (description, text, domain, tools) with the skills that are shared and with the person's own; `skills_promotion_request` runs the same check as `duplicate`. An identical text fails the request and names the skill to use instead. A similar skill is a warning for the reviewer, unless the new skill declares itself a variant (`variant_of` and `variant_reason`). Individual skills of other people are not compared.
+- **Approval.** `request_skill_promotion`, `decide_skill_request`, `withdraw_skill_request`, `list_skill_requests`. Seven automatic checks (secrets, scripts, permissions, harness, data, description, duplicate); a failed one blocks. The requester never decides: a department admin for the department, the Governance board for the organization.
+- **Retirement.** `deprecate_skill` sets a sunset date and an optional replacement; the sync shows it. `retire_skill` removes a skill from the marketplace and from every sync; a skill published for everyone is deprecated first (its owner may retire it after the sunset date, the Governance board at any time), and a skill with active variants cannot be retired. `restore_skill` undoes a deprecation or brings a retired skill back as an Individual draft that needs a new approval.
+- **History.** Every step is written by database triggers to `skills.lifecycle_event` (who, when, why; append-only) and shown by `get_skill_status`. `list_skill_lifecycle` gives the overview and what needs attention (sunset passed, checks failed, requests waiting).
+- **Not done yet.** The identity is the e-mail the connector sends as `actor`; it is a label, not a login, so production needs SSO (`actorOf` in `connectors/_lib/server/skill-lifecycle.mjs` is the one place to change). The governance screens in the app are still local and not connected to these functions. The migration is not applied to the Supabase project by the repository.
+- **Tests.** `test/skill-lifecycle.test.mjs` runs everywhere. `test/skill-lifecycle-sql.test.mjs` installs all migrations into a real Postgres and walks the whole flow; it is skipped unless `SKILL_SQL_TEST_DSN` names a throw-away database ending in `_test` (`createdb skills_test && SKILL_SQL_TEST_DSN="postgresql:///skills_test" npm test`). It drops the schemas `control_tower`, `sub4me`, `skills` and `werkbank` there. Never point it at Supabase.
 
 ### Sales Knowledge Graph: value, time, questions, stakeholders
 

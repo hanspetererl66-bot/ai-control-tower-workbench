@@ -34,6 +34,12 @@ function loadFile() {
 
 const SUPABASE_TIMEOUT_MS = 8000;
 
+/**
+ * A rule of one of our own database functions ("raise exception", SQLSTATE P0001, answered as HTTP 400), for example
+ * "the requester cannot decide their own request". The text is written by us and safe to show; every other failure stays generic.
+ */
+export class RuleError extends Error {}
+
 /** Call a public RPC function on Supabase with the server-side key. */
 async function supabaseRpc(fn, body, url, key) {
   const endpoint = new URL(`/rest/v1/rpc/${fn}`, normalizeSupabaseUrl(url));
@@ -45,7 +51,13 @@ async function supabaseRpc(fn, body, url, key) {
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(SUPABASE_TIMEOUT_MS),
   });
-  if (!response.ok) throw new Error(`Supabase answered HTTP ${response.status}`);
+  if (!response.ok) {
+    if (response.status === 400) {
+      const failure = await response.json().catch(() => null);
+      if (failure?.code === 'P0001' && typeof failure.message === 'string' && failure.message) throw new RuleError(failure.message.slice(0, 300));
+    }
+    throw new Error(`Supabase answered HTTP ${response.status}`);
+  }
   return response.json();
 }
 
@@ -66,6 +78,7 @@ export const ticketRpc = () => {
     try {
       return await supabaseRpc(fn, body, url, key);
     } catch (error) {
+      if (error instanceof RuleError) throw new ToolError(error.message);
       console.error('supabase call failed:', error.message);
       throw new ToolError(`Supabase call failed: ${error.message}`);
     }
