@@ -13,12 +13,13 @@ tool `predict_late_payments`. It scores open invoices: *will this one be paid mo
 ## Run
 
 ```bash
-cd services/tabpfn
-python -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app:app --host 127.0.0.1 --port 8808
+./services/tabpfn/start.sh
 curl http://127.0.0.1:8808/health
 ```
+
+`start.sh` works from any folder and any terminal. On the first run it creates `.venv` and installs the requirements
+(torch is large, a few minutes). It reads `services/tabpfn/.env` on every start, so nothing has to be activated or
+exported by hand. Copy `.env.example` to `.env` and fill in what you need; `.env` is git-ignored.
 
 ### Getting the real TabPFN engine
 
@@ -26,7 +27,8 @@ The weights are gated on Hugging Face. Once, per machine:
 
 1. Open the model page of the installed `tabpfn` version (the error message in `/health` names it, for example
    `Prior-Labs/tabpfn_3_5`) and accept the terms of use.
-2. `huggingface-cli login` or `export HF_TOKEN=...`.
+2. Give the service your token, once and permanently, in one of two ways: `hf auth login` (older versions:
+   `huggingface-cli login`), which stores it on your machine, or `HF_TOKEN=hf_...` in `services/tabpfn/.env`.
 3. Restart the service. `/health` should now say `"engine": "tabpfn"`.
 
 Licence: check the TabPFN licence for your use. Newer generations are released for research and internal evaluation;
