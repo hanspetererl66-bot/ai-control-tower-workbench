@@ -1,18 +1,57 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { emptyIntent, loadProjects, newProject, saveProjects, upsertProject, type Project, STAGE_LABEL } from '../develop';
+import DevelopWizard from './DevelopWizard';
+
+type Props = {
+  onAgentIntent: (intent: string) => void;
+  onAgent: () => void;
+  onOpenN8n: () => void;
+  onOpenConnectors: () => void;
+  generate: (prompt: string, title: string) => Promise<string>;
+  onStop: () => void;
+  ready: boolean;
+  onRestartAgent: () => Promise<void> | void;
+};
 
 /**
  * Start page of "Develop": three tiles. Agent and Workflow start from a goal ("intent"): the person says what should be
- * achieved and the app turns it into a draft to refine. The third tile explains skills and connectors and opens them.
+ * achieved. An agent goes into the Agent Studio (confirmed steps up to the build). A workflow goes through requirements,
+ * specification and solution architecture in the guided process and ends as an importable n8n workflow.
+ * The third tile explains skills and connectors and opens them.
  */
-export default function DevelopHub({
-  onAgentIntent, onWorkflowIntent, onAgent, onWorkflow, onConnectors,
-}: {
-  onAgentIntent: (intent: string) => void;
-  onWorkflowIntent: (intent: string) => void;
-  onAgent: () => void;
-  onWorkflow: () => void;
-  onConnectors: () => void;
-}) {
+export default function DevelopHub(props: Props) {
+  const [projects, setProjects] = useState<Project[]>(() => loadProjects(window.localStorage));
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState({ ok: true, at: 0 });
+  useEffect(() => { const ok = saveProjects(window.localStorage, projects); setSaveState((s) => ({ ok, at: ok ? Date.now() : s.at })); }, [projects]);
+  const open = projects.find((p) => p.id === openId) ?? null;
+
+  const startWorkflow = (goal: string) => {
+    const p = newProject('workflow');
+    p.intent = { ...emptyIntent(), goal };
+    setProjects((list) => upsertProject(list, p));
+    setOpenId(p.id);
+  };
+
+  if (open) {
+    return (
+      <main className="main develop-main develop-top">
+        <DevelopWizard
+          project={open}
+          onChange={(p) => setProjects((list) => upsertProject(list, p))}
+          saveState={saveState}
+          onClose={() => setOpenId(null)}
+          generate={props.generate}
+          onStop={props.onStop}
+          ready={props.ready}
+          onOpenN8n={props.onOpenN8n}
+          onOpenConnectors={props.onOpenConnectors}
+          onRestartAgent={props.onRestartAgent}
+        />
+      </main>
+    );
+  }
+
   return (
     <main className="main develop-main">
       <div className="develop">
@@ -24,14 +63,14 @@ export default function DevelopHub({
             text="From goal to agent in confirmed steps: requirements, design, architecture, test plan, build."
             placeholder="e.g. Watch our renewals and tell me every Monday which ones are at risk"
             action="Start from this goal" other="or open the Agent Studio"
-            onIntent={onAgentIntent} onOther={onAgent}
+            onIntent={props.onAgentIntent} onOther={props.onAgent}
           />
           <IntentCard
             kind="n8n" logo={<N8nSymbol />} title="Create a Workflow" brand="with n8n"
-            text="A workflow connects systems step by step and runs without you."
+            text="From intent through requirements and specification to an importable n8n workflow."
             placeholder="e.g. When a contract is uploaded, check the notice period and mail the owner"
-            action="Ask Joule for a plan" other="or open n8n"
-            onIntent={onWorkflowIntent} onOther={onWorkflow}
+            action="Start the guided process" other="or open n8n directly"
+            onIntent={startWorkflow} onOther={props.onOpenN8n}
           />
           <section className="develop-card develop-card-skills" aria-label="Skills and Connectors">
             <span className="develop-logo develop-logo-skills" aria-hidden="true"><ConnectorMark /></span>
@@ -42,9 +81,27 @@ export default function DevelopHub({
               <li><b>Connector</b><span>tools: a safe link to an app or a data source</span></li>
               <li><b>Agent</b><span>combines both to do a job on its own</span></li>
             </ul>
-            <button className="dialog-btn dialog-btn-primary develop-go" onClick={onConnectors}>Open Skills &amp; Connectors</button>
+            <button className="dialog-btn dialog-btn-primary develop-go" onClick={props.onOpenConnectors}>Open Skills &amp; Connectors</button>
           </section>
         </div>
+        {projects.length > 0 && (
+          <section className="develop-recent" aria-label="Your projects">
+            <h2>Your projects</h2>
+            <ul>
+              {projects.map((p) => (
+                <li key={p.id}>
+                  <button className="develop-project" onClick={() => setOpenId(p.id)}>
+                    <span className="develop-project-name">{p.intent.name.trim() || `New ${p.kind}`}</span>
+                    <span className="develop-project-meta">{p.kind === 'workflow' ? 'n8n workflow' : 'Agent'} · {STAGE_LABEL[p.stage]}</span>
+                  </button>
+                  <button className="mini-icon mini-icon-danger mini-icon-always" aria-label={`Delete ${p.intent.name || 'project'}`} title="Delete this project" onClick={() => { if (window.confirm('Delete this project and its documents?')) setProjects((list) => list.filter((x) => x.id !== p.id)); }}>
+                    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </main>
   );

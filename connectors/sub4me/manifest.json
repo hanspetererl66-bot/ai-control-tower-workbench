@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "sub4me",
   "display_name": "Sub4Me",
-  "version": "1.0.0",
-  "description": "The Sub4Me test customer (sample data): customers, invoices, contracts, offers, AI consumption and service tickets. Creating a ticket is the only write and goes to a demo table.",
+  "version": "1.1.0",
+  "description": "The Sub4Me test customer (sample data): customers, invoices, contracts, offers, AI consumption, service tickets and a late-payment forecast for open invoices (needs the optional TabPFN service). Creating a ticket is the only write and goes to a demo table.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -19,7 +19,9 @@
       "env": {
         "CONTROL_TOWER_DATA": "${__dirname}/connectors/_lib/data/data.json",
         "SUPABASE_URL": "${user_config.supabase_url}",
-        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}"
+        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}",
+        "TABPFN_SERVICE_URL": "${user_config.tabpfn_service_url}",
+        "TABPFN_SERVICE_TOKEN": "${user_config.tabpfn_service_token}"
       }
     }
   },
@@ -83,6 +85,10 @@
     {
       "name": "enrich_ticket",
       "description": "Enrich one Sub4Me service ticket with AI Control Tower context: contracts and AI-unit consumption of the product, other open tickets, related agents, risks with owner and mitigation, teams over budget, and next steps. Read-only; the links are a heuristic over sample data."
+    },
+    {
+      "name": "predict_late_payments",
+      "description": "Forecast which open Sub4Me invoices will probably be paid more than 14 days late (TabPFN service, synthetic training data). Read only."
     }
   ],
   "user_config": {
@@ -96,6 +102,19 @@
       "type": "string",
       "title": "Supabase secret key",
       "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "tabpfn_service_url": {
+      "type": "string",
+      "title": "Late-payment forecast service",
+      "description": "Optional. Address of services/tabpfn, for example http://127.0.0.1:8808 (https for anything not on this computer). Needed for predict_late_payments.",
+      "required": false
+    },
+    "tabpfn_service_token": {
+      "type": "string",
+      "title": "Forecast service token",
+      "description": "Optional. Bearer token if the service was started with TABPFN_SERVICE_TOKEN. Stored as a secret.",
       "sensitive": true,
       "required": false
     }

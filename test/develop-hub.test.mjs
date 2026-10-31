@@ -22,8 +22,14 @@ test('Develop has the Agent tile first, then the Workflow tile with the n8n symb
   assert.match(hub, /aria-label="n8n"/);
   assert.match(hub, /Skills &amp; Connectors/);
   assert.match(hub, /What should be achieved\?/, 'both tiles start from a goal');
+  assert.match(hub, /startWorkflow/, 'a workflow goal opens the guided process');
+  assert.match(hub, /DevelopWizard/);
+  assert.match(hub, /or open n8n directly/);
+  assert.match(hub, /props\.onOpenConnectors/);
   const app = src('src/App.tsx');
   assert.match(app, /onAgentIntent=\{\(intent\) =>[\s\S]*newProject[\s\S]*setFocusProject[\s\S]*setView\('studio'\)/);
-  assert.match(app, /onWorkflowIntent=\{\(intent\) =>[\s\S]*workflowPlanPrompt\(intent\)/);
+  assert.match(app, /onOpenN8n=\{\(\) => setView\('n8n'\)\}/);
+  assert.match(app, /onOpenConnectors=\{\(\) => setView\('manage'\)\}/);
   assert.match(app, /onBack=\{\(\) => setView\('develop'\)\}/g);
+  assert.match(app, /sendRef\.current\(prompt, \[\], \{ plain: true \}\)/, 'working prompts never become Space requests');
 });

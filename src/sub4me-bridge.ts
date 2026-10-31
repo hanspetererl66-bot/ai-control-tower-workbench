@@ -1,7 +1,7 @@
 /**
  * Bridge between the sandboxed Sub4Me Space and the connector.
  * The Space has no network, so it asks the app by postMessage; the app answers by calling
- * a few fixed tools of the bundled connector (list_tickets, create_ticket, enrich_ticket, find_similar_tickets, search_sap_help, search_sap_community). Nothing else can be reached through here.
+ * a few fixed tools of the bundled connector (list_tickets, create_ticket, enrich_ticket, find_similar_tickets, search_sap_help, search_sap_community, predict_late_payments). Nothing else can be reached through here.
  */
 export const SUB4ME_SPACE = 'sub4me';
 export const SUB4ME_EXTENSION = 'sub4me';
@@ -44,6 +44,35 @@ export function pickEnrichment(raw: unknown): Record<string, unknown> | null {
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** Only the fields the Space renders from a late-payment forecast. */
+export function pickPaymentRisk(raw: unknown): Record<string, unknown> | null {
+  if (!isObject(raw) || !Array.isArray(raw.items)) return null;
+  const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const habit = isObject(raw.customerHabit) ? raw.customerHabit : {};
+  return {
+    asOf: str(raw.asOf, 10),
+    engine: str(raw.engine, 20),
+    engineNote: str(raw.engineNote, 300),
+    trainedOn: str(raw.trainedOn, 80),
+    lateMeansDaysAfterDue: num(raw.lateMeansDaysAfterDue) ?? 14,
+    disclaimer: str(raw.disclaimer, 200),
+    customerHabit: { avgDelayDays: num(habit.avgDelayDays), lateShare: num(habit.lateShare), paidInvoicesSeen: num(habit.paidInvoicesSeen) },
+    items: raw.items.filter(isObject).slice(0, 100).map((i) => ({
+      id: str(i.id, 40),
+      contractId: str(i.contractId, 40),
+      grossEur: num(i.grossEur),
+      due: str(i.due, 10),
+      daysToDue: num(i.daysToDue),
+      alreadyOverdue: i.alreadyOverdue === true,
+      alreadyLate: i.alreadyLate === true,
+      lateProbability: num(i.lateProbability) ?? 0,
+      risk: i.risk === 'high' || i.risk === 'medium' ? i.risk : 'low',
+      drivers: (Array.isArray(i.drivers) ? i.drivers : []).filter(isObject).slice(0, 3).map((d) => ({ label: str(d.label, 60), value: typeof d.value === 'number' ? d.value : str(d.value, 40), effectPct: num(d.effectPct) ?? 0 })),
+    })),
+  };
+}
 
 /** Pull the JSON text out of an MCP tool result; tool errors become exceptions. */
 export function parseToolResult(result: unknown): any {
@@ -164,6 +193,21 @@ export async function handleSub4meMessage(data: unknown, call: BridgeCall | unde
     try {
       const enrichment = pickEnrichment(parseToolResult(await call('enrich_ticket', { ticket_id: data.ticketId })));
       return enrichment ? { type: 's4m:enrichment', requestId, enrichment } : fail('unexpected answer');
+    } catch (error) {
+      return fail(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  if (data.type === 's4m:payment-risk-request') {
+    // Late-payment forecast for the open invoices (TabPFN service behind the connector tool).
+    const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
+    if (!requestId) return null;
+    const fail = (message: string) => ({ type: 's4m:error', requestId, message });
+    if (!call) return fail('The agent is not connected yet.');
+    const customer = typeof data.customer === 'string' && CUSTOMER_ID.test(data.customer) ? data.customer : undefined;
+    try {
+      const forecast = pickPaymentRisk(parseToolResult(await call('predict_late_payments', customer ? { customer } : {})));
+      return forecast ? { type: 's4m:payment-risk', requestId, ...(customer ? { customer } : {}), forecast } : fail('unexpected answer');
     } catch (error) {
       return fail(error instanceof Error ? error.message : String(error));
     }

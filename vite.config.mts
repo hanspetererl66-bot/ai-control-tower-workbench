@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
+import { installSkill } from './shared/skill-install.mjs';
 import { parseSpaceMetadata } from './shared/space-metadata.mjs';
 import { MAX_PACKAGE_BYTES, buildSpacePackage, parseSpacePackage, uniqueSlug } from './shared/space-package.mjs';
 
@@ -179,6 +180,22 @@ function skillsApi(): Plugin {
         }
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.end(text);
+      });
+      // Install a skill the agent drafted: POST /__skills/install?replace=1 with the SKILL.md as the body.
+      server.middlewares.use('/__skills/install', (req, res) => {
+        const json = (status: number, body: unknown) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); };
+        if (req.method !== 'POST') return json(405, { error: 'POST only' });
+        let size = 0;
+        const chunks: Buffer[] = [];
+        req.on('data', (c: Buffer) => { size += c.length; if (size > 200_000) req.destroy(); else chunks.push(c); });
+        req.on('end', () => {
+          try {
+            const replace = new URL(req.url ?? '', 'http://x').searchParams.get('replace') === '1';
+            json(200, installSkill(dir, Buffer.concat(chunks).toString('utf8'), { replace }));
+          } catch (e: any) {
+            json(e?.status ?? 500, { error: e?.message ?? 'The skill could not be installed.', exists: e?.exists === true, name: e?.name });
+          }
+        });
       });
       server.middlewares.use('/__skills', (_req, res) => {
         let skills: unknown[] = [];

@@ -40,7 +40,7 @@ import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type Agent
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
-import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, workflowPlanPrompt, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
+import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -234,6 +234,8 @@ export default function App() {
   const paths = useRef(new Set<string>());
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
+  const developStopped = useRef(false);
+  const sendRef = useRef<(text: string, attachments?: ChatAttachment[], options?: { plain?: boolean }) => Promise<void>>(async () => {});
   const webSearchRef = useRef(true);
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
   askBeforeActionsRef.current = prefs.chat.askBeforeActions;
@@ -557,7 +559,8 @@ export default function App() {
     return loadGov().requests.filter((r) => r.status === 'pending').length + loadGov(undefined, MEMORY_GOV_KEY).requests.filter((r) => r.status === 'pending').length;
   }
 
-  async function send(typed: string, attachments: ChatAttachment[] = []) {
+  /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
+  async function send(typed: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
     if (!agent || busy) return;
     const studioCatalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
     const asAgent = expandAgentCommand(typed, studioAgents, studioCatalog, (id) => govLevelOf(agentGov, id));
@@ -588,7 +591,7 @@ export default function App() {
     ]);
     setBusy(true);
     try {
-      const spaceRequested = wantsSpace(text);
+      const spaceRequested = !options.plain && wantsSpace(text);
       const grounding = dataGroundingContext(attachments);
       const existingSpace = spaceRequested
         ? spaces.find((space) => text.toLocaleLowerCase().includes(space.title.toLocaleLowerCase()))
@@ -711,7 +714,7 @@ export default function App() {
       }
       setBusy(false);
       const nextSpaces = await refreshSpaces();
-      const spaceResult = wantsSpace(text)
+      const spaceResult = !options.plain && wantsSpace(text)
         ? nextSpaces.find((space) => {
             const previousUpdatedAt = previousSpaces.get(space.slug);
             return previousUpdatedAt === undefined || space.updatedAt > previousUpdatedAt;
@@ -732,9 +735,27 @@ export default function App() {
     }
   }
 
+  sendRef.current = send;
+
+  /**
+   * Develop: runs one working prompt through the agent in a conversation of its own, so the person's chats stay
+   * clean, and returns the agent's answer. '' means the person stopped it.
+   */
+  async function developGenerate(prompt: string, title: string): Promise<string> {
+    if (!agent) throw new Error('The agent is not connected yet.');
+    if (busy) throw new Error('The agent is still busy with another answer. Wait until it has finished.');
+    developStopped.current = false;
+    newConversation();
+    await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
+    await sendRef.current(prompt, [], { plain: true });
+    setTitle(title.slice(0, 48));
+    return developStopped.current ? '' : draft.current;
+  }
+
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
+    developStopped.current = true;
     speaker.current?.stop();
     try {
       await agent.cancel();
@@ -1158,19 +1179,18 @@ export default function App() {
       {view === 'develop' ? (
         <DevelopHub
           onAgent={() => setView('studio')}
-          onWorkflow={() => setView('n8n')}
-          onConnectors={() => setView('manage')}
           onAgentIntent={(intent) => {
             const project = newProject(intent);
             changeAgentProjects([project, ...agentProjects]);
             setFocusProject(project.id);
             setView('studio');
           }}
-          onWorkflowIntent={(intent) => {
-            if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; }
-            setView('chat');
-            void send(workflowPlanPrompt(intent));
-          }}
+          onOpenN8n={() => setView('n8n')}
+          onOpenConnectors={() => setView('manage')}
+          generate={developGenerate}
+          onStop={() => void cancelCurrent()}
+          ready={Boolean(agent)}
+          onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
         />
       ) : view === 'n8n' ? (
         <N8nView
