@@ -192,22 +192,27 @@
     {
       "id": "ai-control-tower",
       "name": "AI Control Tower",
-      "tagline": "Risks, agents, budget, Sub4Me sample data, skills, n8n and the knowledge graph",
+      "tagline": "Risks, agents, budget and the what-if on AI credits",
       "category": "Governance and sample data",
       "publisher": "This design study (own connector)",
       "license": "Design study",
       "status": "builtin",
       "statusLabel": "Built in",
-      "source": "connectors/control-tower",
+      "source": "connectors/ai-control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "0.18.0",
-      "summary": "Read-only access to the AI Control Tower (risk register, agent registry, AI budget), the Sub4Me test customer (sample data) your n8n Cloud automation and the Skill Marketplace (impact, governance, lifecycle, gaps, recommendations). Plus two Sub4Me demo-ticket.",
+      "version": "1.0.0",
+      "summary": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits.",
       "install": [
         {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key (optional)."
+        },
+        {
           "label": "Bundle",
-          "how": "npm run build:control-tower-mcpb, then import the bundle in Connectors & Skills.",
-          "note": "Configuration: Supabase URL and key, n8n URL and key (optional)."
+          "how": "npm run build:connectors, then import dist/ai-control-tower.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
         }
       ],
       "tools": [
@@ -254,6 +259,55 @@
           "default": "on"
         },
         {
+          "name": "simulate_credit_cut",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "sub4me",
+      "name": "Sub4Me",
+      "tagline": "Customers, contracts, offers, consumption and demo tickets",
+      "category": "Sample data",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/sub4me",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.1.0",
+      "summary": "The Sub4Me test customer (sample data): customers, invoices, contracts, offers, AI consumption and service tickets. A late-payment forecast for open invoices needs the optional TabPFN service. Creating or linking a ticket is the only write and goes to a demo table.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key (optional)."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/sub4me.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
+        {
           "name": "list_tickets",
           "class": "read",
           "what": "",
@@ -274,30 +328,6 @@
         {
           "name": "link_ticket",
           "class": "write",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "search_skills",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "get_skill_info",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "list_skill_catalog",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "get_skill_ranking",
-          "class": "read",
           "what": "",
           "default": "on"
         },
@@ -361,6 +391,61 @@
           "what": "",
           "default": "on"
         },
+        {
+          "name": "enrich_ticket",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "predict_late_payments",
+          "class": "read",
+          "what": "Forecasts which open Sub4Me invoices will probably be paid late (TabPFN service, synthetic data).",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only except create_ticket and link_ticket, which write to a demo table after a confirmation."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "n8n-automation",
+      "name": "n8n Automation",
+      "tagline": "Your n8n Cloud workflows, runs and demo workflows",
+      "category": "Automation",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/n8n-automation",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "Your n8n Cloud automation: workflows, executions and categories (read), the demo workflows, and planned infrastructure changes handed to n8n in check mode.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: n8n URL and API key; for infrastructure changes also the webhook URL and token (all optional)."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/n8n-automation.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
         {
           "name": "get_n8n_overview",
           "class": "read",
@@ -428,6 +513,85 @@
           "default": "on"
         },
         {
+          "name": "plan_infra_change",
+          "class": "read",
+          "what": "Plans an infrastructure change against the sample inventory: pre-checks, simulated check-mode diff, risk and approvals. Changes nothing.",
+          "default": "on"
+        },
+        {
+          "name": "submit_infra_change",
+          "class": "write",
+          "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
+          "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Reads n8n. The demo workflows only compute; infrastructure changes run in check mode and only after a confirmation."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "skill-marketplace",
+      "name": "Skill Marketplace",
+      "tagline": "The shared skill registry: search, impact, governance, lifecycle, ratings",
+      "category": "Skills",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/skill-marketplace",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.1.0",
+      "summary": "The shared skill registry and marketplace: search, impact, governance, ratings, and the skill lifecycle (marketplace card, duplicate check, approval flow, deprecate, retire, restore, history). The lifecycle tools write to the registry and ask first.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key (optional)."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/skill-marketplace.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
+        {
+          "name": "search_skills",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_info",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_skill_catalog",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_ranking",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
           "name": "get_skill_impact",
           "class": "read",
           "what": "",
@@ -464,6 +628,136 @@
           "default": "on"
         },
         {
+          "name": "get_skill_ratings",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "rate_skill",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "check_skill_duplicates",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "get_skill_card",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "set_skill_card",
+          "class": "write",
+          "what": "Writes the marketplace card of a skill.",
+          "default": "ask"
+        },
+        {
+          "name": "get_skill_status",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_skill_lifecycle",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "list_skill_requests",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "request_skill_promotion",
+          "class": "write",
+          "what": "Asks to share a skill; seven automatic checks run first.",
+          "default": "ask"
+        },
+        {
+          "name": "decide_skill_request",
+          "class": "write",
+          "what": "Approves or rejects a request (never the requester).",
+          "default": "ask"
+        },
+        {
+          "name": "withdraw_skill_request",
+          "class": "write",
+          "what": "Withdraws the requester’s own open request.",
+          "default": "ask"
+        },
+        {
+          "name": "deprecate_skill",
+          "class": "write",
+          "what": "Sets a sunset date; the skill stays usable until it is retired.",
+          "default": "ask"
+        },
+        {
+          "name": "retire_skill",
+          "class": "write",
+          "what": "Takes a skill out of the marketplace and every sync.",
+          "default": "ask"
+        },
+        {
+          "name": "restore_skill",
+          "class": "write",
+          "what": "Undoes a deprecation or restores a retired skill as a draft.",
+          "default": "ask"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "Secrets are stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "medium",
+        "defaultRisk": "low",
+        "why": [
+          "Reads approved skills; rate_skill adds an anonymous star rating.",
+          "The lifecycle tools change the shared registry (card, approval, sunset, retirement) and ask first by default.",
+          "Who may decide is checked in the database: never the requester, the department admin for a department, the Governance board for everyone.",
+          "Identity is an e-mail label for now; real sign-in (SSO) is still to be decided."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "knowledge-graph",
+      "name": "Knowledge Graph",
+      "tagline": "How customers, contracts, skills and agents connect",
+      "category": "Sample data",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/knowledge-graph",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "The knowledge graph that connects the Sub4Me customer, contracts, products, teams and skills: search, neighbours, shortest path and impact analysis (sample data).",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "No configuration needed."
+        },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/knowledge-graph.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
+        {
           "name": "get_graph_overview",
           "class": "read",
           "what": "",
@@ -492,31 +786,50 @@
           "class": "read",
           "what": "",
           "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "None"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "web-sources",
+      "name": "Web Sources",
+      "tagline": "SAP Help, SAP Community and other approved public sites",
+      "category": "Knowledge",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/web-sources",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "Approved public web sources only: SAP Help Portal, SAP Community, other SAP sites and a few news sites. No login; other websites are refused.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "No configuration needed."
         },
         {
-          "name": "get_skill_ratings",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "rate_skill",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "simulate_credit_cut",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
-        {
-          "name": "enrich_ticket",
-          "class": "read",
-          "what": "",
-          "default": "on"
-        },
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/web-sources.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
         {
           "name": "search_sap_help",
           "class": "read",
@@ -546,7 +859,50 @@
           "class": "read",
           "what": "",
           "default": "on"
+        }
+      ],
+      "switches": [],
+      "auth": [
+        "None"
+      ],
+      "assessment": {
+        "verdict": "In use",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Read-only; only approved public sites."
+        ],
+        "plan": [],
+        "checks": []
+      }
+    },
+    {
+      "id": "werkbank-workspace",
+      "name": "Werkbank Workspace",
+      "tagline": "Personal settings sync and shared groups",
+      "category": "Workspace",
+      "publisher": "This design study (own connector)",
+      "license": "Design study",
+      "status": "builtin",
+      "statusLabel": "Built in",
+      "source": "connectors/werkbank-workspace",
+      "docs": "README of this repository",
+      "package": "local .mcpb",
+      "version": "1.0.0",
+      "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
+          "note": "Configuration: Supabase URL and key."
         },
+        {
+          "label": "Bundle",
+          "how": "npm run build:connectors, then import dist/werkbank-workspace.mcpb in Connectors & Skills.",
+          "note": "All seven connectors come from the same shared code and can be added one by one."
+        }
+      ],
+      "tools": [
         {
           "name": "get_preferences",
           "class": "read",
@@ -557,18 +913,6 @@
           "name": "save_preferences",
           "class": "write",
           "what": "",
-          "default": "on"
-        },
-        {
-          "name": "plan_infra_change",
-          "class": "read",
-          "what": "Plans an infrastructure change against the sample inventory: pre-checks, simulated check-mode diff, risk and approvals. Changes nothing.",
-          "default": "on"
-        },
-        {
-          "name": "submit_infra_change",
-          "class": "write",
-          "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
           "default": "on"
         },
         {
@@ -648,12 +992,6 @@
           "class": "write",
           "what": "Deletes a team memory entry.",
           "default": "ask"
-        },
-        {
-          "name": "predict_late_payments",
-          "class": "read",
-          "what": "Forecasts which open Sub4Me invoices will probably be paid late (TabPFN service, synthetic data).",
-          "default": "on"
         }
       ],
       "switches": [],
@@ -665,7 +1003,7 @@
         "risk": "low",
         "defaultRisk": "low",
         "why": [
-          "Read-only except create_ticket, which is created only after a confirmation."
+          "Writes only to the Werkbank tables; changes to groups ask first."
         ],
         "plan": [],
         "checks": []
@@ -835,6 +1173,87 @@
           "Support status: the author gives no guarantee that it keeps working, and the older repository is archived.",
           "Release asset: confirm the .mcpb exists, record version and checksum.",
           "Whose S-user is used, and what the second factor looks like in daily use."
+        ]
+      }
+    },
+    {
+      "id": "cognee-memory",
+      "name": "Cognee Memory",
+      "tagline": "A real open source knowledge graph under the sample data",
+      "category": "Knowledge",
+      "publisher": "topoteretes (Cognee, open source); manifest by this design study",
+      "license": "Apache-2.0",
+      "status": "builtin",
+      "statusLabel": "Manifest bundled, server is third-party",
+      "source": "connectors/cognee-memory",
+      "docs": "https://github.com/topoteretes/cognee",
+      "package": "PyPI: cognee-mcp (run with uvx)",
+      "version": "0.1.0",
+      "summary": "Cognee turns text into entities and relations and answers questions over them. The manifest starts the published cognee-mcp package on this computer. Load the Werkbank sample graph once with npm run cognee:seed and compare its answers with the hand-built Knowledge Graph.",
+      "install": [
+        {
+          "label": "In the app",
+          "how": "Connectors & Skills, Add a connector that comes with Werkbank, Cognee Memory. Enter a memory folder and, if you want answers, an LLM key.",
+          "note": "Needs uv on this computer. The first start downloads about 1 GB (Python packages including torch and an embedding model)."
+        },
+        {
+          "label": "Load the sample data",
+          "how": "npm run cognee:corpus, then pip install cognee and npm run cognee:seed with the same memory folder (SYSTEM_ROOT_DIRECTORY and DATA_ROOT_DIRECTORY).",
+          "note": "Only the fictional sample graph is loaded: 233 short documents."
+        }
+      ],
+      "tools": [
+        {
+          "name": "remember",
+          "class": "write",
+          "what": "Store text or documents in Cognee memory. Without a session it becomes permanent graph memory (entities and relations are extracted); with a session id it only goes to the fast session cache.",
+          "default": "ask"
+        },
+        {
+          "name": "recall",
+          "class": "read",
+          "what": "Ask Cognee a question. It searches the graph, the vectors and the session memory and returns the matching facts or an answer.",
+          "default": "on"
+        },
+        {
+          "name": "forget",
+          "class": "write",
+          "what": "Delete one dataset or everything this connector owns from Cognee memory. Irreversible.",
+          "default": "ask"
+        }
+      ],
+      "switches": [
+        {
+          "name": "LLM_API_KEY",
+          "default": "none",
+          "effect": "Lets Cognee call a model to extract entities and to answer. The stored text is sent to that provider."
+        },
+        {
+          "name": "ENABLE_BACKEND_ACCESS_CONTROL",
+          "default": "false (set by the manifest)",
+          "effect": "Single-user mode on this computer."
+        }
+      ],
+      "auth": [
+        "LLM key is stored in the OS keychain by the app"
+      ],
+      "assessment": {
+        "verdict": "Pilot with sample data only",
+        "risk": "medium",
+        "defaultRisk": "medium",
+        "why": [
+          "Apache-2.0, open source, runs on this computer.",
+          "Third-party code is downloaded and run (cognee-mcp and its dependencies).",
+          "Text you store goes to the LLM provider you configure."
+        ],
+        "plan": [
+          "Use only the fictional sample data first.",
+          "Pin the cognee-mcp version once you are happy with it.",
+          "Do not store customer data until Security has reviewed the provider and the data flow."
+        ],
+        "checks": [
+          "Compare answers for five known questions with the hand-built Knowledge Graph.",
+          "Record the version of cognee-mcp and its dependencies that you tested."
         ]
       }
     }

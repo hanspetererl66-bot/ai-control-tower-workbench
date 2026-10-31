@@ -23,12 +23,8 @@ import StarterPrompts from './StarterPrompts';
 import SchedulePopover from './SchedulePopover';
 import type { Schedule } from '../schedules';
 import BriefingCards from './BriefingCards';
-<<<<<<< HEAD
 import { PRODUCT_TITLE } from '../product';
-=======
-import { PRODUCT_NAME } from '../product';
 import type { Command } from '../chat-context';
->>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
 import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
@@ -421,18 +417,13 @@ export default function Composer({
   }
 
   return (
-<<<<<<< HEAD
     <div
       className={`composer ${dragging ? 'composer-drop' : ''}`}
       onDragOver={(event) => { if (event.dataTransfer?.types?.includes('Files')) { event.preventDefault(); setDragging(true); } }}
       onDragLeave={(event) => { if (event.currentTarget === event.target) setDragging(false); }}
       onDrop={(event) => { if (event.dataTransfer?.files?.length) { event.preventDefault(); setDragging(false); void dropFiles(event.dataTransfer.files); } }}
     >
-      {matches.length > 0 && (
-=======
-    <div className="composer">
       {(matches.length > 0 || cmdMatches.length > 0) && (
->>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
         <div className="picker">
           {cmdMatches.map((c) => (
             <button key={`cmd-${c.name}`} className="picker-item" onClick={() => pickCommand(c.name)}>

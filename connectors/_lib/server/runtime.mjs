@@ -1,0 +1,186 @@
+/**
+ * Shared runtime of the Werkbank connectors: a dependency-free MCP server over stdio
+ * (newline-delimited JSON-RPC 2.0) plus the helpers every connector needs (Supabase calls, sample data).
+ * Each connector in connectors/<name>/server/index.mjs only says which tools it offers.
+ * stdout carries protocol messages only; diagnostics go to stderr.
+ */
+import { existsSync, readFileSync } from 'node:fs';
+import { createInterface } from 'node:readline';
+import { fileURLToPath } from 'node:url';
+import { normalizeSupabaseUrl } from './supabase-url.mjs';
+import { ToolError, callTool } from './tools.mjs';
+
+export { ToolError };
+const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
+
+const here = (relative) => fileURLToPath(new URL(relative, import.meta.url));
+
+/** Bundled copy first, then the repository's source of truth when running from a checkout. */
+function dataPath() {
+  const candidates = [
+    process.env.CONTROL_TOWER_DATA,
+    here('../data/data.json'),
+    here('../../../examples/control-tower/data.json'),
+  ].filter(Boolean);
+  const found = candidates.find((path) => existsSync(path));
+  if (!found) throw new Error(`data.json not found (looked in: ${candidates.join(', ')})`);
+  return found;
+}
+
+/** Read on every call so edits to data.json show up without restarting the agent. */
+function loadFile() {
+  return JSON.parse(readFileSync(dataPath(), 'utf8'));
+}
+
+const SUPABASE_TIMEOUT_MS = 8000;
+
+/**
+ * A rule of one of our own database functions ("raise exception", SQLSTATE P0001, answered as HTTP 400), for example
+ * "the requester cannot decide their own request". The text is written by us and safe to show; every other failure stays generic.
+ */
+export class RuleError extends Error {}
+
+/** Call a public RPC function on Supabase with the server-side key. */
+async function supabaseRpc(fn, body, url, key) {
+  const endpoint = new URL(`/rest/v1/rpc/${fn}`, normalizeSupabaseUrl(url));
+  const local = ['localhost', '127.0.0.1'].includes(endpoint.hostname);
+  if (endpoint.protocol !== 'https:' && !local) throw new Error('SUPABASE_URL must be https');
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(SUPABASE_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    if (response.status === 400) {
+      const failure = await response.json().catch(() => null);
+      if (failure?.code === 'P0001' && typeof failure.message === 'string' && failure.message) throw new RuleError(failure.message.slice(0, 300));
+    }
+    throw new Error(`Supabase answered HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+/** Read-only snapshot from Supabase (public.control_tower_snapshot), server-side key only. */
+async function loadSupabase(url, key) {
+  const data = await supabaseRpc('control_tower_snapshot', {}, url, key);
+  if (!data || !Array.isArray(data.risks) || !data.agents || !data.budget) {
+    throw new Error('Supabase snapshot has an unexpected shape');
+  }
+  return data;
+}
+
+export const ticketRpc = () => {
+  const url = process.env.SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim();
+  if (!url || !key) return null;
+  return async (fn, body) => {
+    try {
+      return await supabaseRpc(fn, body, url, key);
+    } catch (error) {
+      if (error instanceof RuleError) throw new ToolError(error.message);
+      console.error('supabase call failed:', error.message);
+      throw new ToolError(`Supabase call failed: ${error.message}`);
+    }
+  };
+};
+
+/**
+ * Supabase when SUPABASE_URL and SUPABASE_SECRET_KEY are set, otherwise the bundled
+ * sample data. If Supabase is configured but fails, fall back to the file and say so
+ * in the result — never silently.
+ */
+export async function loadData() {
+  const url = process.env.SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim();
+  if (!url || !key) return { data: loadFile(), source: 'data.json (Supabase not configured)' };
+  try {
+    return { data: await loadSupabase(url, key), source: 'supabase' };
+  } catch (error) {
+    // Never echo the key; error messages above do not contain it.
+    console.error('supabase read failed:', error.message);
+    return { data: loadFile(), source: `data.json (Supabase unavailable: ${error.message})` };
+  }
+}
+
+
+const send = (message) => process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
+const reply = (id, result) => send({ id, result });
+const fail = (id, code, message) => send({ id, error: { code, message } });
+
+/**
+ * Start a connector.
+ *  name, version, instructions: what the server tells the client.
+ *  tools: tool definitions (name, description, inputSchema).
+ *  handlers({ rpc, loadTower, ToolError }): map of tool name to async function; built per call so changed settings apply.
+ *  dashboard: true for the AI Control Tower connector, whose risk/agent/budget tools are answered by tools.mjs callTool.
+ */
+export function serve({ name, version, instructions, tools, handlers = () => ({}), dashboard = false }) {
+  const serverInfo = { name, version };
+  async function handle(message) {
+    const { id, method, params } = message;
+    const isRequest = id !== undefined && id !== null;
+    if (typeof method !== 'string') {
+      if (isRequest) fail(id, -32600, 'Invalid request');
+      return;
+    }
+    switch (method) {
+      case 'initialize': {
+        const wanted = params?.protocolVersion;
+        reply(id, {
+          protocolVersion: SUPPORTED_PROTOCOLS.includes(wanted) ? wanted : SUPPORTED_PROTOCOLS[0],
+          capabilities: { tools: {} },
+          serverInfo,
+          instructions,
+        });
+        return;
+      }
+      case 'ping':
+        if (isRequest) reply(id, {});
+        return;
+      case 'tools/list':
+        reply(id, { tools });
+        return;
+      case 'tools/call': {
+        try {
+          const map = handlers({ rpc: ticketRpc(), loadTower: loadData, ToolError });
+          if (Object.hasOwn(map, params?.name)) {
+            const args = params.arguments ?? {};
+            if (typeof args !== 'object' || Array.isArray(args)) throw new ToolError('arguments must be an object');
+            const result = await map[params.name](args);
+            reply(id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] });
+            return;
+          }
+          if (!dashboard) throw new RangeError(`Unknown tool: ${params?.name}`);
+          const { data, source } = await loadData();
+          reply(id, callTool(params?.name, params?.arguments, data, source));
+        } catch (error) {
+          if (error instanceof ToolError) reply(id, { content: [{ type: 'text', text: error.message }], isError: true });
+          else if (error instanceof RangeError) fail(id, -32602, error.message);
+          else fail(id, -32603, `Internal error: ${error.message}`);
+        }
+        return;
+      }
+      default:
+        // Notifications (e.g. notifications/initialized) have no id and need no reply.
+        if (isRequest) fail(id, -32601, `Method not found: ${method}`);
+    }
+  }
+
+  const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
+  lines.on('line', (line) => {
+    if (!line.trim()) return;
+    let message;
+    try {
+      message = JSON.parse(line);
+    } catch {
+      fail(null, -32700, 'Parse error');
+      return;
+    }
+    handle(message).catch((error) => {
+      console.error('unhandled error:', error);
+      if (message?.id !== undefined && message?.id !== null) fail(message.id, -32603, 'Internal error');
+    });
+  });
+  lines.on('close', () => process.exit(0));
+}

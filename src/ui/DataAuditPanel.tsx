@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { AGENT_GOV_KEY, AGENTS_KEY, loadAgents } from '../agent-studio';
 import { MEMORY_GOV_KEY, loadGov } from '../skill-governance';
 import { loadMemory } from '../memory';
+import { loadProjects, projectEvents } from '../agent-project';
 import { PERSONAL_KEYS, auditCsv, buildAudit, clearPersonal, exportPersonal } from '../personalization';
 import { Section } from './PreferencesPanels';
 
@@ -23,7 +24,7 @@ export default function DataAuditPanel() {
       { kind: 'Skill', gov: loadGov(), nameOf: (id) => id },
       { kind: 'Memory', gov: loadGov(undefined, MEMORY_GOV_KEY), nameOf: (id) => mem.entries.find((e) => e.id === id)?.text.slice(0, 60) ?? id },
       { kind: 'Agent', gov: loadGov(undefined, AGENT_GOV_KEY), nameOf: (id) => agents.find((a) => a.id === id)?.name ?? id },
-    ]);
+    ], projectEvents(loadProjects(window.localStorage)));
   }, [tick]);
   const present = PERSONAL_KEYS.filter((k) => { try { return window.localStorage.getItem(k) != null; } catch { return false; } }).length;
   void AGENTS_KEY;
@@ -53,7 +54,7 @@ export default function DataAuditPanel() {
           ? <p className="prefs-note">No approvals yet. Requests and decisions from Skills, Memory and the Agent Studio appear here.</p>
           : <ul className="prefs-list" aria-label="Audit trail">
               {events.slice(0, 100).map((e, i) => (
-                <li key={i}><div><b>{e.kind}: {e.what}</b> <small>{e.action}: {e.from} → {e.to} · {new Date(e.at).toLocaleString()}{e.note ? ` · ${e.note}` : ''}</small></div></li>
+                <li key={i}><div><b>{e.kind}: {e.what}</b> <small>{e.action}{e.from || e.to ? `: ${e.from} → ${e.to}` : ''} · {new Date(e.at).toLocaleString()}{e.note ? ` · ${e.note}` : ''}</small></div></li>
               ))}
             </ul>}
         <p className="prefs-note">In this prototype one person plays every role, so the trail shows the process, not independent control. A real roll-out needs a server with separate approvers.</p>

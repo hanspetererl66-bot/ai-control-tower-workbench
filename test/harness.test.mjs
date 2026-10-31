@@ -146,7 +146,7 @@ test('the app checks every tool call and approval request, sends the note and th
   const app = read('src/App.tsx');
   assert.match(app, /checkToolCall\(harnessRef\.current, req\)[\s\S]*resolve\(rejectOption\(req\.options\)\)/, 'a refused approval request is declined without a dialog');
   assert.match(app, /const verdict = checkToolCall\(profile, tc\)[\s\S]*stepsExceeded\(profile, harnessStepCount\.current\)[\s\S]*agentRef\.current\?\.cancel\(\)/);
-  assert.match(app, /assistantNote\(prefs\), harnessNote\(harnessRef\.current\), memoryNote\(memoryFor\(harnessRef\.current, memory\)\)/);
+  assert.match(app, /assistantNote\(prefs\), harnessNote\(harnessRef\.current\), personaNote\(personas\), currentMemoryNote\(contextSpace, memoryFor\(harnessRef\.current, memory\)\)/);
   assert.match(app, /harnessStepCount\.current = 0;\s*harnessBlock\.current = null;/, 'every answer starts with a fresh count');
   assert.match(app, /draft\.current \+= harnessBlock\.current/, 'the person is told why an answer stopped');
   assert.match(app, /requiresApproval\(harness\) && mode === 'auto'\) void changeMode\('smart_approve'\)/);

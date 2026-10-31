@@ -3,6 +3,8 @@ import { OUTPUTS, TEMPLATES, agentPrompt, buildCatalog, newAgent, problems, simu
 import { decide, levelOf, pendingFor, requestPromotion, type LevelIndex, type SkillGov } from '../skill-governance';
 import type { Schedule } from '../schedules';
 import WerkbankMark from './WerkbankMark';
+import AgentProjectView from './AgentProjectView';
+import { currentStage, newProject, stageLabel, type AgentProject, type DocKey } from '../agent-project';
 
 export type AgentStudioProps = {
   agents: StudioAgent[];
@@ -15,13 +17,21 @@ export type AgentStudioProps = {
   spaces: Array<{ slug: string; title: string }>;
   /** Run the brief for real in the chat (restricted to the ticked sources). */
   onRunInChat: (prompt: string) => void;
+  /** Agent projects: goal, documents and confirmations on the way to an agent. */
+  projects: AgentProject[];
+  onProjects: (next: AgentProject[]) => void;
+  /** Project to open first (from the Develop page). */
+  focusProject?: string | null;
+  /** The document open next to the docked chat, or null. */
+  onDocFocus?: (focus: { projectId: string; docKey: DocKey } | null) => void;
 };
 
 const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', web: 'Web' } as const;
 
 /** Agent Studio: define a simple agent by form, tick its sources, test it in a sandbox, then ask for approval to publish it. */
-export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat }: AgentStudioProps) {
-  const [selected, setSelected] = useState<string | null>(agents[0]?.id ?? null);
+export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null, onDocFocus }: AgentStudioProps) {
+  const [selectedProject, setSelectedProject] = useState<string | null>(focusProject && projects.some((x) => x.id === focusProject) ? focusProject : null);
+  const [selected, setSelected] = useState<string | null>(focusProject ? null : agents[0]?.id ?? null);
   const setGov = (fn: (g: SkillGov) => SkillGov) => onGov(fn(gov));
   const [run, setRun] = useState<RunResult | null>(null);
   const [shown, setShown] = useState(0);
@@ -31,22 +41,30 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
   useEffect(() => () => window.clearInterval(timer.current), []);
 
   const catalog = buildCatalog(connectors, spaces);
-  const agent = agents.find((a) => a.id === selected) ?? null;
+  const project = projects.find((x) => x.id === selectedProject) ?? null;
+  const agent = project ? null : agents.find((a) => a.id === selected) ?? null;
   const patch = (change: Partial<StudioAgent>) => {
     if (!agent) return;
     const touchesSetup = 'sources' in change || 'instruction' in change || 'canWrite' in change || 'askBeforeWrite' in change;
     onAgents(agents.map((a) => (a.id === agent.id ? { ...a, ...change, ...(touchesSetup ? { tested: false } : {}) } : a)));
     if (touchesSetup) setRun(null);
   };
-  const open = (id: string) => { setHelp(false); setSelected(id); setRun(null); setShown(0); setConfirmDelete(false); };
+  const open = (id: string) => { setHelp(false); setSelectedProject(null); setSelected(id); setRun(null); setShown(0); setConfirmDelete(false); };
   const create = (templateId: string | null) => {
     const t = TEMPLATES.find((x) => x.id === templateId) ?? null;
     const existing = t ? agents.find((x) => x.template === t.id) : undefined;
     if (existing) { open(existing.id); return; }
     const a = newAgent(t, catalog);
     onAgents([a, ...agents]);
-    setSelected(a.id); setRun(null); setShown(0); setHelp(false);
+    setSelectedProject(null); setSelected(a.id); setRun(null); setShown(0); setHelp(false);
   };
+  const openProject = (id: string) => { setHelp(false); setSelected(null); setSelectedProject(id); setRun(null); setConfirmDelete(false); };
+  const createProject = () => {
+    const x = newProject('', Date.now());
+    onProjects([x, ...projects]);
+    openProject(x.id);
+  };
+  const changeProject = (next: AgentProject) => onProjects(projects.map((x) => (x.id === next.id ? next : x)));
 
   const test = () => {
     if (!agent || problems(agent).length) return;
@@ -75,6 +93,12 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
         <h2 className="studio-h">Agent Studio</h2>
         <p className="studio-sub">Simple agents by form: brief, sources, rights. Test first, then publish.</p>
         <button className={`studio-tpl ${(!agent || help) ? 'on' : ''}`} onClick={() => setHelp(true)}><b>How does it work?</b><small>start here</small></button>
+        <button className="studio-tpl studio-tpl-main" onClick={createProject} title="Describe a goal, answer a few questions and let the documents lead to the agent"><b>New agent from a goal</b><small>PRD to build</small></button>
+        {projects.map((x) => (
+          <button key={x.id} className={`studio-item ${x.id === selectedProject ? 'on' : ''}`} onClick={() => openProject(x.id)}>
+            <span>{x.answers.name}</span><small className={`mem-badge ${x.agentId ? 'mem-badge-on' : ''}`}>{stageLabel(currentStage(x))}</small>
+          </button>
+        ))}
         <div className="studio-new">
           {TEMPLATES.map((t) => <button key={t.id} className="studio-tpl" onClick={() => create(t.id)} title={agents.some((x) => x.template === t.id) ? 'Already created: opens your agent' : 'Create an agent from this template'}><b>{t.name}</b><small>{agents.some((x) => x.template === t.id) ? 'open' : t.story}</small></button>)}
           <button className="studio-tpl" onClick={() => create(null)}><b>Blank agent</b><small>start empty</small></button>
@@ -98,7 +122,20 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
       </aside>
 
       <section className="studio-edit">
-        {(!agent || help) && (
+        {project && (
+          <AgentProjectView
+            project={project}
+            catalog={catalog}
+            onChange={changeProject}
+            onBuild={(built) => { onAgents([built, ...agents]); changeProject({ ...project, agentId: built.id, updatedAt: Date.now() }); open(built.id); }}
+            onOpenAgent={open}
+            agentExists={project.agentId ? agents.some((x) => x.id === project.agentId) : false}
+            onDelete={() => { onProjects(projects.filter((x) => x.id !== project.id)); setSelectedProject(null); }}
+            onRunInChat={onRunInChat}
+            onFocus={(key) => onDocFocus?.(key ? { projectId: project.id, docKey: key } : null)}
+          />
+        )}
+        {!project && (!agent || help) && (
           <div className="studio-intro">
             <WerkbankMark size={40} className="diamond" />
             <h1>What is an agent, and how do you build one?</h1>
@@ -122,6 +159,9 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
               <li><b>Publish.</b> “Move up” asks for approval for the next level. When it is approved, the agent counts as published: its schedule starts, and it is registered in the AI Control Tower with owner, sources, rights and approval.</li>
             </ol>
 
+            <h2>Or start from a goal</h2>
+            <p>Click <b>New agent from a goal</b> and say what the agent should achieve. You answer a few questions (sources, how often, rights, dependencies). The studio then writes four documents, one after the other: the <b>PRD</b> (requirements), the <b>Technical Functional Document</b>, the <b>Solution Architecture</b> and a <b>Risk and Test Plan</b>. You can edit each one and must confirm it (“Is this document OK?”) before the next is written. Only when all are confirmed is the agent built, as a draft. Then you run the sandbox test and ask for approval.</p>
+
             <h2>Start here</h2>
             <p>Pick a template on the left, then change what you like:</p>
             <ul className="studio-glossary">
@@ -141,6 +181,9 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
               <input className="studio-name" aria-label="Agent name" value={agent.name} maxLength={60} onChange={(e) => patch({ name: e.target.value })} />
               <small className={`mem-badge ${status(agent).cls ? 'mem-badge-on' : ''}`}>{status(agent).text}</small>
             </div>
+            {agent.template.startsWith('project:') && projects.some((x) => x.id === agent.template.slice(8)) && (
+              <p className="studio-from">Built from a project with confirmed documents. <button className="develop-other" onClick={() => openProject(agent.template.slice(8))}>Open the project documents</button></p>
+            )}
 
             <h3 className="studio-step"><span>1</span> Brief <small>Describe the job like an instruction to a colleague: what to do, and what a good result looks like.</small></h3>
             <input className="studio-field" aria-label="Purpose" placeholder="Purpose in one sentence" value={agent.purpose} maxLength={300} onChange={(e) => patch({ purpose: e.target.value })} />

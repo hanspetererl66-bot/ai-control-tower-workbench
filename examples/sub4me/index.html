@@ -3103,7 +3103,7 @@ function similarity(a, b) {
     btn.disabled = true;
     showEnrichMessage('Looking up ' + enrichPending[id] + ' in the AI Control Tower …');
     askParent({type: 's4m:enrich-request', requestId: id, ticketId: enrichPending[id]});
-    setTimeout(function(){ if (enrichPending[id]) { delete enrichPending[id]; btn.disabled = false; showEnrichMessage('No answer from the agent. Is the AI Control Tower connector connected?'); } }, 15000);
+    setTimeout(function(){ if (enrichPending[id]) { delete enrichPending[id]; btn.disabled = false; showEnrichMessage('No answer from the agent. Is the Sub4Me connector connected?'); } }, 15000);
   });
   function finish(){ $('precheck').innerHTML = ''; last = null; checking = null; }
   function setStorage(r){

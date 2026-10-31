@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOARD_AREAS, LOBS, SCOPES, parseSkill, rpc } from './skills-registry.mjs';
 import { installExampleSpace } from './install-example-space.mjs';
-import { catalogEntry } from '../connectors/control-tower/server/skills.mjs';
+import { catalogEntry } from '../connectors/_lib/server/skills.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'examples/skill-marketplace');

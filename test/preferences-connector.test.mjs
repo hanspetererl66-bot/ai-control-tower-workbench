@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PREFERENCE_TOOL_DEFINITIONS, createPreferenceHandlers, findSecretName } from '../connectors/control-tower/server/preferences.mjs';
+import { PREFERENCE_TOOL_DEFINITIONS, createPreferenceHandlers, findSecretName } from '../connectors/_lib/server/preferences.mjs';
 
 test('two tools, one read one write', () => {
   assert.deepEqual(PREFERENCE_TOOL_DEFINITIONS.map((t) => t.name), ['get_preferences', 'save_preferences']);

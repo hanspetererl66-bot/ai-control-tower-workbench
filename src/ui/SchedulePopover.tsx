@@ -16,13 +16,32 @@ export default function SchedulePopover({
   return (
     <div className="schedule-pop" role="dialog" aria-label="Recurring briefing">
       <div className="schedule-head">
-        <b>Recurring briefing</b>
+        <span className="schedule-badge" aria-hidden="true"><ClockIcon /></span>
+        <div className="schedule-title">
+          <b>Recurring briefing</b>
+          <small>Joule asks the same question for you at a set time.</small>
+        </div>
         <button className="schedule-x" onClick={onClose} aria-label="Close">×</button>
       </div>
       <ScheduleEditor schedules={schedules} onChange={onChange} draftPrompt={draftPrompt} />
     </div>
   );
 }
+
+function ClockIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="7.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 5.8V10l2.8 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const PRESETS: Array<{ label: string; time: string; repeat: 'daily' | 'weekly'; days: number[] }> = [
+  { label: 'Weekdays 08:00', time: '08:00', repeat: 'weekly', days: [1, 2, 3, 4, 5] },
+  { label: 'Mondays 07:30', time: '07:30', repeat: 'weekly', days: [1] },
+  { label: 'Every day 18:00', time: '18:00', repeat: 'daily', days: [] },
+];
 
 /** The form and the list of briefings, shared by the clock popover and the side panel. */
 export function ScheduleEditor({
@@ -47,23 +66,36 @@ export function ScheduleEditor({
     setPrompt('');
   }
 
+  const draft: Schedule = { id: 'draft', prompt: 'x', time, repeat, days: repeat === 'weekly' ? [...days].sort() : [], enabled: true };
+  const timeOk = /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
+  const preview = timeOk && (repeat === 'daily' || days.length > 0) ? nextRun(draft, new Date()) : null;
+  const applyPreset = (pr: (typeof PRESETS)[number]) => { setTime(pr.time); setRepeat(pr.repeat); if (pr.days.length) setDays(pr.days); };
+
   return (
     <div className="schedule-editor">
+      <div className="schedule-presets" role="group" aria-label="Quick choices">
+        {PRESETS.map((pr) => (
+          <button key={pr.label} className="schedule-preset" onClick={() => applyPreset(pr)}>{pr.label}</button>
+        ))}
+      </div>
       <label className="schedule-field">
         <span>Question</span>
-        <textarea value={prompt} maxLength={600} rows={2} placeholder="For example: Which renewals have an escalation or an open ticket?" onChange={(e) => setPrompt(e.target.value)} />
+        <textarea value={prompt} maxLength={600} rows={3} placeholder="For example: Which renewals have an escalation or an open ticket?" onChange={(e) => setPrompt(e.target.value)} />
       </label>
       <div className="schedule-row">
         <label className="schedule-field schedule-time">
           <span>Time</span>
           <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </label>
-        <div className="schedule-repeat" role="radiogroup" aria-label="Repeat">
-          {(['daily', 'weekly'] as const).map((r) => (
-            <button key={r} role="radio" aria-checked={repeat === r} className={`day-chip ${repeat === r ? 'day-chip-on' : ''}`} onClick={() => setRepeat(r)}>
-              {r === 'daily' ? 'Daily' : 'Weekly'}
-            </button>
-          ))}
+        <div className="schedule-field schedule-grow">
+          <span>Repeat</span>
+          <div className="schedule-seg" role="radiogroup" aria-label="Repeat">
+            {(['daily', 'weekly'] as const).map((r) => (
+              <button key={r} role="radio" aria-checked={repeat === r} className={`schedule-seg-btn ${repeat === r ? 'schedule-seg-on' : ''}`} onClick={() => setRepeat(r)}>
+                {r === 'daily' ? 'Daily' : 'Weekly'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {repeat === 'weekly' && (
@@ -71,7 +103,7 @@ export function ScheduleEditor({
           {WEEKDAYS.map((w) => (
             <button
               key={w.day}
-              className={`day-chip ${days.includes(w.day) ? 'day-chip-on' : ''}`}
+              className={`day-chip day-circle ${days.includes(w.day) ? 'day-chip-on' : ''}`}
               aria-pressed={days.includes(w.day)}
               title={w.long}
               onClick={() => setDays((cur) => (cur.includes(w.day) ? cur.filter((d) => d !== w.day) : [...cur, w.day]))}
@@ -81,27 +113,34 @@ export function ScheduleEditor({
           ))}
         </div>
       )}
-      <div className="schedule-actions">
-        <button className="dialog-btn dialog-btn-primary" disabled={!valid} onClick={add}>Save briefing</button>
+      <div className="schedule-summary" role="status">
+        {preview
+          ? <><b>{describeSchedule(draft)}</b><span>Next run: {preview.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></>
+          : <span>Choose a time{repeat === 'weekly' ? ' and at least one day' : ''} to see when it runs.</span>}
       </div>
+      <button className="dialog-btn dialog-btn-primary schedule-save" disabled={!valid} onClick={add}>Save briefing</button>
       {schedules.length > 0 && (
-        <ul className="schedule-list">
-          {schedules.map((s) => {
-            const next = nextRun(s, new Date());
-            return (
-              <li key={s.id}>
-                <label className="schedule-toggle">
-                  <input type="checkbox" checked={s.enabled} onChange={(e) => onChange(schedules.map((x) => (x.id === s.id ? { ...x, enabled: e.target.checked } : x)))} aria-label={`Briefing ${s.prompt.slice(0, 30)} on or off`} />
-                  <span>
-                    {s.prompt.length > 70 ? `${s.prompt.slice(0, 69)}…` : s.prompt}
+        <div className="schedule-listwrap">
+          <h4 className="schedule-h">Your briefings <small>{schedules.length}</small></h4>
+          <ul className="schedule-list">
+            {schedules.map((s) => {
+              const next = nextRun(s, new Date());
+              return (
+                <li key={s.id} className={s.enabled ? '' : 'schedule-off'}>
+                  <label className="schedule-switch" title={s.enabled ? 'On' : 'Off'}>
+                    <input type="checkbox" role="switch" checked={s.enabled} onChange={(e) => onChange(schedules.map((x) => (x.id === s.id ? { ...x, enabled: e.target.checked } : x)))} aria-label={`Briefing ${s.prompt.slice(0, 30)} on or off`} />
+                    <span className="schedule-knob" aria-hidden="true" />
+                  </label>
+                  <div className="schedule-item">
+                    <span className="schedule-q">{s.prompt.length > 80 ? `${s.prompt.slice(0, 79)}…` : s.prompt}</span>
                     <small>{describeSchedule(s)}{s.enabled && next ? ` · next ${next.toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : ' · off'}</small>
-                  </span>
-                </label>
-                <button className="schedule-x" onClick={() => onChange(schedules.filter((x) => x.id !== s.id))} aria-label="Delete briefing">×</button>
-              </li>
-            );
-          })}
-        </ul>
+                  </div>
+                  <button className="schedule-x" onClick={() => onChange(schedules.filter((x) => x.id !== s.id))} aria-label="Delete briefing">×</button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
       <p className="schedule-note">The briefing runs in the chat while Werkbank is open. A run missed while it was closed is made up when you start it again, up to six hours later.</p>
     </div>

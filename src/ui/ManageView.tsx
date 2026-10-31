@@ -54,6 +54,8 @@ export default function ManageView({
 }) {
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [bundled, setBundled] = useState<{ id: string; name: string; title: string; description: string; tools: number; needsSetup: boolean }[]>([]);
+  useEffect(() => { void window.host?.listBundledConnectors?.().then((list) => setBundled(list ?? [])); }, []);
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [configuring, setConfiguring] = useState<{
@@ -296,6 +298,40 @@ export default function ManageView({
             </div>
           </div>
         ))}
+
+        {(() => {
+          const installed = new Set(extensions.map((e) => e.configKey));
+          const open = bundled.filter((b) => !installed.has(b.name));
+          if (!open.length) return null;
+          return (
+            <>
+              <h2 className="manage-h">Add a connector that comes with Werkbank</h2>
+              <p className="manage-empty">Each connector does one job. Add only the ones you need; they ask for their own settings, and all of them also work with the sample data.</p>
+              {open.map((b) => (
+                <div key={b.id} className="row">
+                  <div className="row-main">
+                    <span className="row-title">{b.title} <em className="row-off">{b.tools} tools</em></span>
+                    <span className="row-detail">{b.description}</span>
+                  </div>
+                  <div className="row-actions">
+                    <button
+                      className="dialog-btn dialog-btn-primary"
+                      disabled={busy !== null}
+                      onClick={() => run(`add-${b.id}`, async () => {
+                        const result: any = await window.host?.prepareConnector?.(b.id);
+                        if (!result) return;
+                        if (result.error) throw new Error(result.error);
+                        onImport(result);
+                      }, '')}
+                    >
+                      {busy === `add-${b.id}` ? 'Preparing…' : 'Add'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </>
+          );
+        })()}
 
         <h2 className="manage-h">Skills</h2>
         {skills.length === 0 && <p className="manage-empty">No skills installed.</p>}

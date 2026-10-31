@@ -70,20 +70,64 @@ The risk register is data-driven: edit `examples/control-tower/data.json`, then 
 `npm run sync:control-tower` to embed it into the page (a Space cannot fetch files
 from inside the sandbox). `npm test` fails if the two drift apart.
 
-### Control Tower connector (MCP)
+### Werkbank connectors (MCP)
 
-`connectors/control-tower/` is a small, dependency-free MCP server that lets the chat
-query the same `data.json` the Space renders: risks, agent registry, unregistered
-assets, overprivileged agents and the AI budget. All tools are read-only.
+The sample-data tools are split into seven small connectors, each with one job. They are dependency-free MCP
+servers that share the code in `connectors/_lib/`. Add only the ones you need.
+
+| Connector | What it does | Settings (all optional) |
+|---|---|---|
+| `ai-control-tower` | Risks, agent registry, AI budget, what-if on AI credits | Supabase URL and key |
+| `sub4me` | Customers, invoices, contracts, offers, AI consumption, demo tickets | Supabase URL and key |
+| `n8n-automation` | n8n Cloud workflows and executions, demo workflows, infrastructure change plans | n8n URL and key, webhook |
+| `skill-marketplace` | Skill search, impact, governance, gaps, ratings, and the skill lifecycle (card, duplicates, approval, retirement) | Supabase URL and key |
+| `knowledge-graph` | Search, neighbours, paths and impact over the sample data | none |
+| `web-sources` | SAP Help, SAP Community and other approved public sites | none |
+| `werkbank-workspace` | Personal settings sync, groups, shared Spaces and team memory | Supabase URL and key |
+
+Jira, Databricks, Slack and Gmail have their own connectors as before.
+
+In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, then confirm. Or build bundles:
 
 ```
-npm run build:control-tower-mcpb     # writes dist/ai-control-tower.mcpb
+npm run build:connectors                 # writes dist/<connector>.mcpb for all seven
+npm run build:control-tower-mcpb         # only dist/ai-control-tower.mcpb
+node scripts/build-control-tower-mcpb.mjs sub4me
 ```
 
-Then in Werkbank open **Connectors & Skills**, choose **Import MCP bundle**, pick the
-file and confirm. Ask, for example, "Which risks are below 40% mitigated?". Edits to
-the bundled `data.json` apply without restarting the agent. Every result carries a
-`view` field naming the Control Tower tab that shows the same information.
+and import a file with **Import MCP bundle**. Ask, for example, "Which risks are below 40% mitigated?". Edits to the
+bundled `data.json` apply without restarting the agent. Every result carries a `view` field naming the tab that shows
+the same information. A new connector is a folder `connectors/<name>/` with a `manifest.json` and a short
+`server/index.mjs` that calls `serve()` from `connectors/_lib/server/runtime.mjs`.
+
+Coming from the earlier single connector? Remove the old `ai-control-tower` entry once and add the ones you use. Each
+connector keeps its own settings, so enter the Supabase URL and key once per connector that needs them.
+
+### Cognee Memory: an open source knowledge graph underneath (pilot)
+
+`connectors/cognee-memory/` is a manifest that starts the published [Cognee](https://github.com/topoteretes/cognee)
+MCP server (`uvx cognee-mcp`, Apache-2.0) on this computer. Cognee extracts entities and relations from text and
+answers questions over them; its tools are `remember`, `recall` and `forget`. It sits next to the hand-built
+`knowledge-graph` connector so you can compare answers before replacing anything.
+
+1. Install [uv](https://docs.astral.sh/uv/). The first start downloads about 1 GB (Python packages and an embedding model).
+2. In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, **Cognee Memory**. Enter a
+   *memory folder* (for example `/Users/you/cognee-memory`) and, to extract entities and get answers, an LLM key.
+   The text you store is sent to that model provider.
+3. Load the sample graph once, with the same folder:
+
+```
+npm run cognee:corpus                       # 233 short documents from the Knowledge Graph sample data
+pip install cognee                          # Python 3.10 to 3.13
+export LLM_API_KEY=...
+export SYSTEM_ROOT_DIRECTORY=/Users/you/cognee-memory/system
+export DATA_ROOT_DIRECTORY=/Users/you/cognee-memory/data
+npm run cognee:seed                         # add -- --reset to start over
+```
+
+Then ask in the chat, for example: "Use Cognee: which tickets concern the Muster Industrie contracts?" Only the
+fictional sample data is loaded. Not yet tried against a real Cognee run in this repository's tests: the tests cover
+the documents and the manifest, not Cognee itself.
 
 ## Gmail connector (read + drafts)
 
@@ -208,7 +252,7 @@ installed Space contains the updated page.
   "Joule Work X - Next Gen · Design Study · Built by Accenture · Demo only". Click anywhere outside the
   text, "Close" or Esc to dismiss it.
 - If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
-  **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
+  **Jetzt installieren**. That stages the AI Control Tower connector bundled in this repository and opens the usual approve
   dialog; the Supabase URL and key fields can stay empty to use the sample data. No `.mcpb` file is needed.
 
 
@@ -422,6 +466,18 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 - **Sample data:** `examples/skill-marketplace/ratings.json` (fictional), embedded by `npm run sync:skill-marketplace`.
 - **Supabase:** `npm run sync:skill-ratings` writes `supabase/migrations/20261019_013_skill_ratings.sql`. Run it once in the Supabase SQL editor after 012 (safe to run again; it only refreshes the sample rows). It creates `skills.skill_rating` (RLS on, no access for anon/authenticated) and two functions that only the server-side secret key may call: `skills_ratings()` and `skills_rate()`. Only skills in the registry (`skills.skill`, not retired) can be rated.
 - **Chat (connector 0.14.0):** `get_skill_ratings` (ranking, or one skill with distribution and comments) and `rate_skill`; the skill `rate-skill` asks for the stars and confirms before saving. `recommend_skills` and `recommend_skill_workflow` show the rating too. The rater is a hash of the local user and host (override with the env var `SKILL_RATER_ID`); no names are stored. Without a Supabase connection nothing is saved.
+
+### Skill lifecycle: card, duplicates, approval, retirement
+
+A skill in the shared registry (Supabase) has a lifecycle with a state that is derived, not stored twice: `draft` (Individual), `department`, `in_review`, `blocked`, `published` (organization), `deprecated` and `retired`. Migration `20261031_020_skill_lifecycle.sql` builds on the promotion flow of 019; the connector `skill-marketplace` (1.1.0) offers it as 12 tools. Write tools say "Write:" in their description and ask first by default.
+
+- **Marketplace card.** A skill cannot be shared before it is described: a description of at least 40 characters plus *when to use it*, *inputs*, *outputs* and an *example prompt* (`set_skill_card`, `get_skill_card`). For the organization level also a contact and a domain. A missing card fails the check `description`; the message names what is missing.
+- **Duplicates.** `check_skill_duplicates` compares a planned or existing skill (description, text, domain, tools) with the skills that are shared and with the person's own; `skills_promotion_request` runs the same check as `duplicate`. An identical text fails the request and names the skill to use instead. A similar skill is a warning for the reviewer, unless the new skill declares itself a variant (`variant_of` and `variant_reason`). Individual skills of other people are not compared.
+- **Approval.** `request_skill_promotion`, `decide_skill_request`, `withdraw_skill_request`, `list_skill_requests`. Seven automatic checks (secrets, scripts, permissions, harness, data, description, duplicate); a failed one blocks. The requester never decides: a department admin for the department, the Governance board for the organization.
+- **Retirement.** `deprecate_skill` sets a sunset date and an optional replacement; the sync shows it. `retire_skill` removes a skill from the marketplace and from every sync; a skill published for everyone is deprecated first (its owner may retire it after the sunset date, the Governance board at any time), and a skill with active variants cannot be retired. `restore_skill` undoes a deprecation or brings a retired skill back as an Individual draft that needs a new approval.
+- **History.** Every step is written by database triggers to `skills.lifecycle_event` (who, when, why; append-only) and shown by `get_skill_status`. `list_skill_lifecycle` gives the overview and what needs attention (sunset passed, checks failed, requests waiting).
+- **Not done yet.** The identity is the e-mail the connector sends as `actor`; it is a label, not a login, so production needs SSO (`actorOf` in `connectors/_lib/server/skill-lifecycle.mjs` is the one place to change). The governance screens in the app are still local and not connected to these functions. The migration is not applied to the Supabase project by the repository.
+- **Tests.** `test/skill-lifecycle.test.mjs` runs everywhere. `test/skill-lifecycle-sql.test.mjs` installs all migrations into a real Postgres and walks the whole flow; it is skipped unless `SKILL_SQL_TEST_DSN` names a throw-away database ending in `_test` (`createdb skills_test && SKILL_SQL_TEST_DSN="postgresql:///skills_test" npm test`). It drops the schemas `control_tower`, `sub4me`, `skills` and `werkbank` there. Never point it at Supabase.
 
 ### Sales Knowledge Graph: value, time, questions, stakeholders
 

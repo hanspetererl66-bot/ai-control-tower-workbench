@@ -4,34 +4,36 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { buildControlTowerBundle } from '../scripts/build-control-tower-mcpb.mjs';
-import { normalizeSupabaseUrl } from '../connectors/control-tower/server/supabase-url.mjs';
-import { WHAT_IF_TOOL_DEFINITIONS } from '../connectors/control-tower/server/what-if.mjs';
-import { SUB4ME_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sub4me.mjs';
-import { N8N_TOOL_DEFINITIONS } from '../connectors/control-tower/server/n8n.mjs';
-import { SKILL_PROFILE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-profiles.mjs';
-import { GRAPH_TOOL_DEFINITIONS } from '../connectors/control-tower/server/graph.mjs';
-import { SKILL_RATING_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skill-ratings.mjs';
-import { INFRA_TOOL_DEFINITIONS } from '../connectors/control-tower/server/infra-ops.mjs';
-import { SAP_HELP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sap-help.mjs';
-import { WEB_SOURCE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/web-sources.mjs';
-import { PREFERENCE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/preferences.mjs';
-import { GROUP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/groups.mjs';
-import { SKILL_TOOL_DEFINITIONS } from '../connectors/control-tower/server/skills.mjs';
-import { TICKET_TOOL_DEFINITIONS } from '../connectors/control-tower/server/tickets.mjs';
-import { CROSS_SPACE_TOOL_DEFINITIONS } from '../connectors/control-tower/server/cross-space.mjs';
-import { PAYMENT_RISK_TOOL_DEFINITIONS } from '../connectors/control-tower/server/payment-risk.mjs';
-import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/control-tower/server/tools.mjs';
+import { buildConnectorBundle } from '../scripts/build-control-tower-mcpb.mjs';
+import { LIBRARY_CONNECTORS } from '../connectors/_lib/bundle.mjs';
+import { normalizeSupabaseUrl } from '../connectors/_lib/server/supabase-url.mjs';
+import { WHAT_IF_TOOL_DEFINITIONS } from '../connectors/_lib/server/what-if.mjs';
+import { SUB4ME_TOOL_DEFINITIONS } from '../connectors/_lib/server/sub4me.mjs';
+import { N8N_TOOL_DEFINITIONS } from '../connectors/_lib/server/n8n.mjs';
+import { SKILL_PROFILE_TOOL_DEFINITIONS } from '../connectors/_lib/server/skill-profiles.mjs';
+import { GRAPH_TOOL_DEFINITIONS } from '../connectors/_lib/server/graph.mjs';
+import { SKILL_RATING_TOOL_DEFINITIONS } from '../connectors/_lib/server/skill-ratings.mjs';
+import { INFRA_TOOL_DEFINITIONS } from '../connectors/_lib/server/infra-ops.mjs';
+import { SAP_HELP_TOOL_DEFINITIONS } from '../connectors/_lib/server/sap-help.mjs';
+import { WEB_SOURCE_TOOL_DEFINITIONS } from '../connectors/_lib/server/web-sources.mjs';
+import { PREFERENCE_TOOL_DEFINITIONS } from '../connectors/_lib/server/preferences.mjs';
+import { GROUP_TOOL_DEFINITIONS } from '../connectors/_lib/server/groups.mjs';
+import { SKILL_TOOL_DEFINITIONS } from '../connectors/_lib/server/skills.mjs';
+import { TICKET_TOOL_DEFINITIONS } from '../connectors/_lib/server/tickets.mjs';
+import { CROSS_SPACE_TOOL_DEFINITIONS } from '../connectors/_lib/server/cross-space.mjs';
+import { TOOL_DEFINITIONS as DASHBOARD_TOOLS } from '../connectors/_lib/server/tools.mjs';
 
-const TOOL_DEFINITIONS = [...DASHBOARD_TOOLS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...WHAT_IF_TOOL_DEFINITIONS, ...CROSS_SPACE_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS, ...INFRA_TOOL_DEFINITIONS, ...GROUP_TOOL_DEFINITIONS, ...PAYMENT_RISK_TOOL_DEFINITIONS];
+const manifests = Object.fromEntries(LIBRARY_CONNECTORS.map((id) => [id, JSON.parse(readFileSync(join(import.meta.dirname, '..', 'connectors', id, 'manifest.json'), 'utf8'))]));
+const OWNER = new Map(LIBRARY_CONNECTORS.flatMap((id) => manifests[id].tools.map((tool) => [tool.name, id])));
+const manifest = manifests['ai-control-tower'];
 
 const ROOT = join(import.meta.dirname, '..');
-const SERVER = join(ROOT, 'connectors/control-tower/server/index.mjs');
-const manifest = JSON.parse(readFileSync(join(ROOT, 'connectors/control-tower/manifest.json'), 'utf8'));
+const SERVER = Symbol('all connectors');
+const serverOf = (id) => join(ROOT, 'connectors', id, 'server/index.mjs');
 const data = JSON.parse(readFileSync(join(ROOT, 'examples/control-tower/data.json'), 'utf8'));
 
 /** Minimal stdio MCP client: one request per line, responses matched by id. */
-function startServer(scriptPath = SERVER, env = {}) {
+function startOne(scriptPath, env = {}) {
   const child = spawn(process.execPath, [scriptPath], {
     env: { ...process.env, ...env },
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -78,6 +80,32 @@ function startServer(scriptPath = SERVER, env = {}) {
   };
 }
 
+/**
+ * With SERVER (the default) this is every connector at once: each tool call goes to the connector that owns the tool,
+ * started on first use. Anything else (initialize, ping, unknown methods) goes to the AI Control Tower connector.
+ * With a script path it is that one process, as the bundle tests need.
+ */
+function startServer(scriptPath = SERVER, env = {}) {
+  if (scriptPath !== SERVER) return startOne(scriptPath, env);
+  const running = new Map();
+  const get = (id) => { if (!running.has(id)) running.set(id, startOne(serverOf(id), env)); return running.get(id); };
+  return {
+    request(method, params) {
+      if (method === 'tools/list') return Promise.all(LIBRARY_CONNECTORS.map((id) => get(id).request(method, params))).then((all) => ({ result: { tools: all.flatMap((r) => r.result.tools) } }));
+      if (method === 'tools/call') return get(OWNER.get(params?.name) ?? 'ai-control-tower').request(method, params);
+      return get('ai-control-tower').request(method, params);
+    },
+    notify: (method, params) => get('ai-control-tower').notify(method, params),
+    raw: (text) => get('ai-control-tower').raw(text),
+    async call(name, args) {
+      const response = await this.request('tools/call', { name, arguments: args });
+      return response.result;
+    },
+    get anonymous() { return get('ai-control-tower').anonymous; },
+    stop: () => { for (const server of running.values()) server.stop(); },
+  };
+}
+
 const parse = (result) => JSON.parse(result.content[0].text);
 
 test('initialize negotiates the protocol version and advertises tools', async () => {
@@ -95,20 +123,30 @@ test('initialize negotiates the protocol version and advertises tools', async ()
   }
 });
 
-test('tools/list matches the manifest and every tool has a schema', async () => {
-  const server = startServer();
-  try {
-    const { result } = await server.request('tools/list');
-    const names = result.tools.map((tool) => tool.name);
-    assert.deepEqual(names, manifest.tools.map((tool) => tool.name));
-    assert.deepEqual(names, TOOL_DEFINITIONS.map((tool) => tool.name));
-    for (const tool of result.tools) {
-      assert.equal(tool.inputSchema.type, 'object', tool.name);
-      assert.ok(tool.description.length > 20, tool.name);
+test('every connector lists exactly its manifest tools, and every tool has a schema', async () => {
+  for (const id of LIBRARY_CONNECTORS) {
+    const server = startOne(serverOf(id));
+    try {
+      const { result } = await server.request('tools/list');
+      const names = result.tools.map((tool) => tool.name);
+      assert.deepEqual(names, manifests[id].tools.map((tool) => tool.name), id);
+      assert.equal(manifests[id].server.entry_point, `connectors/${id}/server/index.mjs`);
+      assert.ok(names.length > 0, id);
+      for (const tool of result.tools) {
+        assert.equal(tool.inputSchema.type, 'object', tool.name);
+        assert.ok(tool.description.length > 20, tool.name);
+      }
+    } finally {
+      server.stop();
     }
-  } finally {
-    server.stop();
   }
+});
+
+test('the connectors split the tools without overlap or loss', () => {
+  const all = LIBRARY_CONNECTORS.flatMap((id) => manifests[id].tools.map((tool) => tool.name));
+  assert.equal(new Set(all).size, all.length, 'a tool is offered by two connectors');
+  assert.equal(all.length, 86);
+  assert.deepEqual(manifests['ai-control-tower'].tools.map((tool) => tool.name).slice(0, 2), ['get_risks', 'get_risk']);
 });
 
 test('get_risks answers "which risks are below 40% mitigated?" from data.json', async () => {
@@ -234,21 +272,21 @@ test('the built .mcpb is what Werkbank expects and runs as installed', async (t)
   }
   const dir = mkdtempSync(join(tmpdir(), 'ct-bundle-'));
   try {
-    const bundle = buildControlTowerBundle(join(dir, 'ai-control-tower.mcpb'));
+    const bundle = buildConnectorBundle('ai-control-tower', join(dir, 'ai-control-tower.mcpb'));
 
     // Same safety checks as electron/main.mjs: no absolute or parent paths.
     const entries = execFileSync('unzip', ['-Z1', bundle], { encoding: 'utf8' }).split('\n').filter(Boolean);
     for (const entry of entries) {
       assert.ok(!entry.startsWith('/') && !entry.split('/').includes('..'), entry);
     }
-    for (const required of ['manifest.json', 'server/index.mjs', 'server/tools.mjs', 'data/data.json']) {
+    for (const required of ['manifest.json', 'connectors/ai-control-tower/server/index.mjs', 'connectors/_lib/server/tools.mjs', 'connectors/_lib/server/runtime.mjs', 'connectors/_lib/data/data.json']) {
       assert.ok(entries.includes(required), `${required} missing from bundle`);
     }
 
     // Read the manifest from the zip, as Werkbank does.
     const bundled = JSON.parse(execFileSync('unzip', ['-p', bundle, 'manifest.json'], { encoding: 'utf8' }));
     assert.equal(bundled.server.mcp_config.command, 'node'); // in Werkbank's ALLOWED_COMMANDS
-    assert.deepEqual(JSON.parse(execFileSync('unzip', ['-p', bundle, 'data/data.json'], { encoding: 'utf8' })), data);
+    assert.deepEqual(JSON.parse(execFileSync('unzip', ['-p', bundle, 'connectors/_lib/data/data.json'], { encoding: 'utf8' })), data);
 
     // Extract and run with ${__dirname} substituted, exactly like unpackBundle().
     const target = join(dir, 'installed');
@@ -725,10 +763,10 @@ test('Sub4Me offer tool lists two renewals and one new product', async () => {
 test('the .mcpb bundle carries the Sub4Me sample data', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ct-bundle-'));
   try {
-    const bundle = buildControlTowerBundle(join(dir, 'ct.mcpb'));
+    const bundle = buildConnectorBundle('sub4me', join(dir, 'ct.mcpb'));
     const listing = execFileSync('unzip', ['-Z1', bundle], { encoding: 'utf8' });
-    assert.match(listing, /^data\/sub4me\.json$/m);
-    const json = JSON.parse(execFileSync('unzip', ['-p', bundle, 'data/sub4me.json'], { encoding: 'utf8' }));
+    assert.match(listing, /^connectors\/_lib\/data\/sub4me\.json$/m);
+    const json = JSON.parse(execFileSync('unzip', ['-p', bundle, 'connectors/_lib/data/sub4me.json'], { encoding: 'utf8' }));
     assert.equal(json.contracts.length, 6);
   } finally {
     rmSync(dir, { recursive: true, force: true });

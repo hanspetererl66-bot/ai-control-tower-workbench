@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ToolError } from '../connectors/control-tower/server/tools.mjs';
-import { checkForecast, createPaymentRiskHandlers, serviceUrl } from '../connectors/control-tower/server/payment-risk.mjs';
+import { ToolError } from '../connectors/_lib/server/tools.mjs';
+import { checkForecast, createPaymentRiskHandlers, serviceUrl } from '../connectors/_lib/server/payment-risk.mjs';
 
 const invoices = [{ id: 'INV-1', status: 'Open', grossEur: 100, due: '2026-10-31', type: 'Invoice' }];
 const sub4me = { list_invoices: async () => ({ customer: 'Muster', customerId: 'muster', asOf: '2026-10-18', invoices, source: 'sample data' }) };

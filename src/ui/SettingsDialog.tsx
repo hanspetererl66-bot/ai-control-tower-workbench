@@ -8,13 +8,9 @@ import type { Preferences } from '../preferences';
 import MemoryPanel, { type MemoryPanelProps } from './MemoryPanel';
 import DataAuditPanel from './DataAuditPanel';
 import GroupsPanel, { type GroupsPanelProps } from './GroupsPanel';
-<<<<<<< HEAD
 import { TAB_HELP } from '../settings-help';
-import { AssistantPanel, LookPanel, ProfilesPanel, SectionEffect, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
-=======
 import ChatPanel, { type ChatPanelProps } from './ChatPanel';
-import { AssistantPanel, LookPanel, ProfilesPanel, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
->>>>>>> 255f11bc8e750693242c738f4ef76421ee145056
+import { AssistantPanel, LookPanel, ProfilesPanel, SectionEffect, StoragePanel, WorkPanel, type PrefsUpdate, type SkillRef, type SpaceRef, type SyncState } from './PreferencesPanels';
 
 const TABS = [
   { id: 'profiles', title: 'Profiles' },

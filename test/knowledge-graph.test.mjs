@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { createGraphHandlers, extractGraph, NODE_TYPES, EDGE_TYPES } from '../connectors/control-tower/server/graph.mjs';
+import { createGraphHandlers, extractGraph, NODE_TYPES, EDGE_TYPES } from '../connectors/_lib/server/graph.mjs';
 import { repoGraph } from '../scripts/sync-knowledge-graph.mjs';
-import { ToolError } from '../connectors/control-tower/server/tools.mjs';
+import { ToolError } from '../connectors/_lib/server/tools.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const page = readFileSync(join(ROOT, 'examples/knowledge-graph/index.html'), 'utf8');

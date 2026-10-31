@@ -4,7 +4,7 @@
  * a few fixed tools of the bundled connector (list_tickets, create_ticket, enrich_ticket, find_similar_tickets, search_sap_help, search_sap_community, predict_late_payments). Nothing else can be reached through here.
  */
 export const SUB4ME_SPACE = 'sub4me';
-export const SUB4ME_EXTENSION = 'ai-control-tower';
+export const SUB4ME_EXTENSION = 'sub4me';
 
 export type BridgeCall = (tool: string, args: Record<string, unknown>) => Promise<unknown>;
 

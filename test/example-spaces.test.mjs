@@ -67,18 +67,18 @@ test('both Spaces embed the current shared design system and use only tokens for
 
 test('example skills have valid frontmatter, use only real connector tools, and install', async () => {
   const { installExampleSkills } = await import('../scripts/install-example-skills.mjs');
-  const { TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tools.mjs');
-  const { TICKET_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/tickets.mjs');
-  const { SKILL_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skills.mjs');
+  const { TOOL_DEFINITIONS } = await import('../connectors/_lib/server/tools.mjs');
+  const { TICKET_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/tickets.mjs');
+  const { SKILL_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/skills.mjs');
   const { parseSkill, knownTools } = await import('../scripts/skills-registry.mjs');
-  const { SUB4ME_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/sub4me.mjs');
-  const { N8N_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/n8n.mjs');
-  const { SKILL_PROFILE_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skill-profiles.mjs');
-  const { GRAPH_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/graph.mjs');
-  const { SKILL_RATING_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/skill-ratings.mjs');
-  const { SAP_HELP_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/sap-help.mjs');
-  const { WEB_SOURCE_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/web-sources.mjs');
-  const { PREFERENCE_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/preferences.mjs');
+  const { SUB4ME_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/sub4me.mjs');
+  const { N8N_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/n8n.mjs');
+  const { SKILL_PROFILE_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/skill-profiles.mjs');
+  const { GRAPH_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/graph.mjs');
+  const { SKILL_RATING_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/skill-ratings.mjs');
+  const { SAP_HELP_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/sap-help.mjs');
+  const { WEB_SOURCE_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/web-sources.mjs');
+  const { PREFERENCE_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/preferences.mjs');
   const real = new Set([...TOOL_DEFINITIONS, ...TICKET_TOOL_DEFINITIONS, ...SKILL_TOOL_DEFINITIONS, ...SUB4ME_TOOL_DEFINITIONS, ...N8N_TOOL_DEFINITIONS, ...SKILL_PROFILE_TOOL_DEFINITIONS, ...GRAPH_TOOL_DEFINITIONS, ...SKILL_RATING_TOOL_DEFINITIONS, ...SAP_HELP_TOOL_DEFINITIONS, ...WEB_SOURCE_TOOL_DEFINITIONS, ...PREFERENCE_TOOL_DEFINITIONS].map((t) => t.name));
   for (const tool of real) assert.ok(knownTools().has(tool), `manifest lists ${tool}`);
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
@@ -282,7 +282,7 @@ test('MCP Marketplace Space: data is in sync, sourced, and the built-in entries 
   assert.equal(arc.tools.length, 12);
   assert.deepEqual(d.servers.find((s) => s.id === 'sap-notes').tools.map((t) => t.name), ['search', 'fetch']);
   assert.ok(arc.switches.some((w) => w.name === 'SAP_ALLOW_FREE_SQL' && w.default === 'false'));
-  for (const [id, dir] of [['ai-control-tower', 'control-tower'], ['gmail-drafts', 'gmail']]) {
+  for (const [id, dir] of [['ai-control-tower', 'ai-control-tower'], ['sub4me', 'sub4me'], ['n8n-automation', 'n8n-automation'], ['skill-marketplace', 'skill-marketplace'], ['knowledge-graph', 'knowledge-graph'], ['web-sources', 'web-sources'], ['werkbank-workspace', 'werkbank-workspace'], ['cognee-memory', 'cognee-memory'], ['gmail-drafts', 'gmail']]) {
     const m = JSON.parse(readFileSync(join(ROOT, 'connectors', dir, 'manifest.json'), 'utf8'));
     const s = d.servers.find((x) => x.id === id);
     assert.deepEqual(s.tools.map((t) => t.name), m.tools.map((t) => t.name), `${id}: tools equal the manifest`);
@@ -291,7 +291,7 @@ test('MCP Marketplace Space: data is in sync, sourced, and the built-in entries 
 });
 
 test('Sales Space: evidence, inbox and briefing context point to real mails, calls, tickets, invoices and contracts', async () => {
-  const { extractSub4MeData } = await import('../connectors/control-tower/server/sub4me.mjs');
+  const { extractSub4MeData } = await import('../connectors/_lib/server/sub4me.mjs');
   const sales = JSON.parse(readFileSync(join(ROOT, 'examples/sales/pipeline.json'), 'utf8'));
   const sub = extractSub4MeData(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8'));
   sub.otherCustomers ??= [];

@@ -8,9 +8,7 @@ import { parseDocument } from 'yaml';
 import { ATTACHMENT_FILTERS, prepareAttachments, readTables } from './attachments.mjs';
 import { uploadBatches } from './bulk-upload.mjs';
 import { buildBatches } from '../shared/table-ingest.mjs';
-import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
-import { extractMarketplaceData } from '../connectors/control-tower/server/skill-profiles.mjs';
-import { extractGraph } from '../connectors/control-tower/server/graph.mjs';
+import { BUNDLED_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
@@ -481,30 +479,24 @@ ipcMain.handle('import-mcpb', async () => {
 });
 
 /**
- * The AI Control Tower connector ships inside the repository. Stage it the way an
- * extracted .mcpb would look and register it for the normal approve→install dialog,
- * so nobody has to build or find a bundle file first. Supabase URL/key stay optional.
+ * The Werkbank connectors (AI Control Tower, Sub4Me, n8n Automation, Skill Marketplace, Knowledge Graph, Web Sources,
+ * Werkbank Workspace) ship inside the repository. Stage one the way an extracted .mcpb would look and register it for the
+ * normal approve→install dialog, so nobody has to build or find a bundle file first. Settings such as the Supabase URL
+ * and key are optional in that dialog.
  */
-ipcMain.handle('prepare-control-tower-connector', () => {
+function prepareLibraryConnector(id) {
   try {
-    const source = join(ROOT, 'connectors/control-tower');
-    const manifest = JSON.parse(readFileSync(join(source, 'manifest.json'), 'utf8'));
+    if (!BUNDLED_CONNECTORS.includes(id)) return { error: `unknown connector: ${id}` };
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'connectors', id, 'manifest.json'), 'utf8'));
     const mcp = manifest?.server?.mcp_config;
     if (!mcp?.command || !ALLOWED_COMMANDS.has(mcp.command)) {
       return { error: 'the bundled connector manifest is invalid' };
     }
-    const name = String(manifest.name ?? 'ai-control-tower').replace(/[^A-Za-z0-9._-]/g, '-');
+    const name = String(manifest.name ?? id).replace(/[^A-Za-z0-9._-]/g, '-');
     const target = join(BUNDLES_DIR, name);
     rmSync(target, { recursive: true, force: true });
-    mkdirSync(join(target, 'data'), { recursive: true });
-    cpSync(join(source, 'manifest.json'), join(target, 'manifest.json'));
-    cpSync(join(source, 'server'), join(target, 'server'), { recursive: true });
-    cpSync(join(ROOT, 'examples/control-tower/data.json'), join(target, 'data/data.json'));
-    // Sample data the tools read; without these the bundle would look for the repository's examples/ folder, which is not next to it.
-    writeFileSync(join(target, 'data/sub4me.json'), JSON.stringify(extractSub4MeData(readFileSync(join(ROOT, 'examples/sub4me/index.html'), 'utf8')), null, 2));
-    writeFileSync(join(target, 'data/skill-marketplace.json'), JSON.stringify(extractMarketplaceData(readFileSync(join(ROOT, 'examples/skill-marketplace/index.html'), 'utf8')), null, 2));
-    writeFileSync(join(target, 'data/knowledge-graph.json'), JSON.stringify(extractGraph(readFileSync(join(ROOT, 'examples/knowledge-graph/index.html'), 'utf8')), null, 2));
-    cpSync(join(ROOT, 'examples/automation-dashboard/categories.json'), join(target, 'data/n8n-categories.json'));
+    mkdirSync(target, { recursive: true });
+    stageConnector(id, target);
 
     const sub = (s) => String(s).replace(/\$\{__dirname\}/g, target);
     const request = {
@@ -518,13 +510,28 @@ ipcMain.handle('prepare-control-tower-connector', () => {
       fields: fieldsFromUserConfig(manifest.user_config),
       description: manifest.display_name ?? manifest.description ?? '',
     };
-    const id = nextInstallId++;
-    pendingInstalls.set(id, request);
-    return { id, ...request };
+    const requestId = nextInstallId++;
+    pendingInstalls.set(requestId, request);
+    return { id: requestId, ...request };
   } catch (e) {
     return { error: `could not prepare the connector: ${e?.message ?? e}` };
   }
-});
+}
+
+ipcMain.handle('prepare-connector', (_event, id) => prepareLibraryConnector(String(id ?? '')));
+ipcMain.handle('prepare-control-tower-connector', () => prepareLibraryConnector('ai-control-tower'));
+
+/** The connectors that come with Werkbank, for the "Add a bundled connector" list. */
+ipcMain.handle('list-bundled-connectors', () =>
+  BUNDLED_CONNECTORS.map((id) => {
+    try {
+      const m = JSON.parse(readFileSync(join(ROOT, 'connectors', id, 'manifest.json'), 'utf8'));
+      return { id, name: m.name, title: m.display_name ?? m.name, description: m.description ?? '', tools: (m.tools ?? []).length, needsSetup: Object.keys(m.user_config ?? {}).length > 0 };
+    } catch {
+      return null;
+    }
+  }).filter(Boolean)
+);
 
 const LOOKS_SECRET = /password|secret|token|api[-_]?key|authorization|cookie|credential/i;
 const REDACTED = '<redacted>';
@@ -692,6 +699,16 @@ function readSkills() {
 }
 
 ipcMain.handle('list-skills', () => readSkills());
+
+/** Text of one SKILL.md, for the automatic review before a skill is published one level up. */
+ipcMain.handle('read-skill', (_event, dir) => {
+  if (!/^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/.test(dir ?? '')) return null;
+  try {
+    return readFileSync(join(SKILLS_DIR, dir, 'SKILL.md'), 'utf8').slice(0, 40_000);
+  } catch {
+    return null;
+  }
+});
 
 ipcMain.handle('remove-skill', async (_event, name) => {
   if (!/^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/.test(name ?? '')) return { ok: false, detail: 'bad name' };

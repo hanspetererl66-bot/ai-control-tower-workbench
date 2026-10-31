@@ -7,9 +7,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildGraph, extractAutomationData } from '../connectors/control-tower/server/graph.mjs';
-import { extractMarketplaceData } from '../connectors/control-tower/server/skill-profiles.mjs';
-import { extractSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
+import { buildGraph, extractAutomationData } from '../connectors/_lib/server/graph.mjs';
+import { extractMarketplaceData } from '../connectors/_lib/server/skill-profiles.mjs';
+import { extractSub4MeData } from '../connectors/_lib/server/sub4me.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = 'examples/knowledge-graph/index.html';

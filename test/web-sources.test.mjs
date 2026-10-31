@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { SOURCES, WEB_SOURCE_TOOL_DEFINITIONS, checkUrl, createWebSourceHandlers, parsePage, sourceOfHost } from '../connectors/control-tower/server/web-sources.mjs';
+import { SOURCES, WEB_SOURCE_TOOL_DEFINITIONS, checkUrl, createWebSourceHandlers, parsePage, sourceOfHost } from '../connectors/_lib/server/web-sources.mjs';
 import { isWebTool } from '../src/web-search.ts';
 
 const reply = (body, init = {}) => ({ ok: (init.status ?? 200) < 400, status: init.status ?? 200, headers: new Map(Object.entries({ 'content-type': 'text/html; charset=utf-8', ...(init.headers ?? {}) })), text: async () => body });

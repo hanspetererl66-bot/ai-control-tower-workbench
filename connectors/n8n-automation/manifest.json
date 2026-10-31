@@ -1,0 +1,109 @@
+{
+  "manifest_version": "0.2",
+  "name": "n8n-automation",
+  "display_name": "n8n Automation",
+  "version": "1.0.0",
+  "description": "Your n8n Cloud automation: workflows, executions and categories (read), the demo workflows, and planned infrastructure changes handed to n8n.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "connectors/n8n-automation/server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/connectors/n8n-automation/server/index.mjs"
+      ],
+      "env": {
+        "N8N_URL": "${user_config.n8n_url}",
+        "N8N_API_KEY": "${user_config.n8n_api_key}",
+        "N8N_INFRA_WEBHOOK_URL": "${user_config.n8n_infra_webhook_url}",
+        "N8N_INFRA_WEBHOOK_TOKEN": "${user_config.n8n_infra_webhook_token}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_n8n_overview",
+      "description": "n8n Cloud automation overview of the last 14 days: workflows, executions, success rate, categories, needs attention."
+    },
+    {
+      "name": "list_n8n_workflows",
+      "description": "List n8n workflows with category, trigger, apps and run statistics; filter by text, category, active or failing."
+    },
+    {
+      "name": "get_n8n_workflow",
+      "description": "One n8n workflow in detail by id or name, with runs per day and latest executions."
+    },
+    {
+      "name": "list_n8n_executions",
+      "description": "Recent n8n executions, filter by status, workflow or category (no execution contents)."
+    },
+    {
+      "name": "list_n8n_categories",
+      "description": "The categories n8n workflows are sorted into by tag, with their workflows and the uncategorized ones."
+    },
+    {
+      "name": "run_it_ops_triage",
+      "description": "Run the demo n8n workflow \"Demo 4 (IT operations): alert triage\" through its webhook: guardrail against instructions aimed at AI assistants, transparent priority P1 to P3, digest. Uses the fictional sample alerts or alerts you pass. Only computes, nothing is paged or changed. Needs the n8n address and the imported, active workflow."
+    },
+    {
+      "name": "run_vm_maintenance_plan",
+      "description": "Run the demo n8n workflow \"Demo 5 (IT infrastructure): VM maintenance plan\" through its webhook: rules per VM, recommended tasks (certificate, patch, disk, backup), maintenance windows, approvers. Uses the fictional sample VMs without input. Only proposes, nothing is run."
+    },
+    {
+      "name": "run_vm_operator_runbook",
+      "description": "Run the demo n8n workflow \"Demo 6 (IT infrastructure): operator runbook\" through its webhook: check the VM, backup if needed, apply the task (for example the renewed TLS certificate), check again. Simulated, runs only with approved: true."
+    },
+    {
+      "name": "run_contract_notice_check",
+      "description": "Run the demo n8n workflow \"Demo 1 (simple): contract notice check\" through its webhook: notice deadline (contract end minus notice period) and days left per contract, the ones due within a window or already passed. Calculation only, nothing is sent or cancelled."
+    },
+    {
+      "name": "run_communication_digest",
+      "description": "Run the demo n8n workflow \"Demo 2 (complex): customer communication digest with guardrails\" through its webhook: quarantines mails with instructions aimed at AI assistants, classifies the rest, checks the 48 h response target and overdue action items, returns one digest. Nothing is sent."
+    },
+    {
+      "name": "run_sales_pipeline_digest",
+      "description": "Run the demo n8n workflow \"Demo 3 (sales): pipeline digest\" through its webhook: guardrail, transparent lead score (ICP fit, budget, decision maker, need, timing) and routing to opportunity, nurture or watch, as a digest for the weekly sales round. Nothing is sent or written."
+    },
+    {
+      "name": "plan_infra_change",
+      "description": "Plan an infrastructure change (certificate, DNS, VM patch or move) against the sample inventory: pre-checks, simulated check-mode diff, impact, risk and approvals. Read-only."
+    },
+    {
+      "name": "submit_infra_change",
+      "description": "Hand a planned infrastructure change to the n8n workflow (check mode only) after the person confirms. Needs the n8n webhook address."
+    }
+  ],
+  "user_config": {
+    "n8n_url": {
+      "type": "string",
+      "title": "n8n Cloud address",
+      "description": "Optional. Example: https://firma.app.n8n.cloud. Needed for the n8n questions in the chat.",
+      "required": false
+    },
+    "n8n_api_key": {
+      "type": "string",
+      "title": "n8n API key",
+      "description": "Optional. Created in n8n under Settings, n8n API. Read access to workflows and executions. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "n8n_infra_webhook_url": {
+      "type": "string",
+      "title": "n8n webhook for infrastructure changes",
+      "description": "Optional. Production webhook URL of the workflow 08-infra-change-request (https). Without it, submit_infra_change only shows what it would send.",
+      "required": false
+    },
+    "n8n_infra_webhook_token": {
+      "type": "string",
+      "title": "n8n webhook token",
+      "description": "Optional. Sent as header x-infra-token; the workflow checks it. Stored as a secret.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

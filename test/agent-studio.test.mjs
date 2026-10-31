@@ -103,3 +103,9 @@ test('pre-close checker reads the Finance Pre-Close Space and Databricks, is rea
   const none = s.simulateRun({ ...a, sources: ['web'] }, cat);
   assert.equal(none.title, 'No result');
 });
+
+test('a goal becomes a workflow plan request that changes nothing in n8n', () => {
+  const prompt = s.workflowPlanPrompt('Check notice periods of uploaded contracts');
+  assert.match(prompt, /Do not create or change anything in n8n yet/);
+  assert.match(prompt, /Check notice periods/);
+});

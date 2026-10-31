@@ -72,6 +72,15 @@ export function newAgent(t: Template | null, catalog: Source[], now = Date.now()
   };
 }
 
+/** The request to Joule for a workflow plan from a goal. Nothing is created in n8n before the person confirms. */
+export function workflowPlanPrompt(intent: string): string {
+  return [
+    `I want to build an n8n workflow. My goal: ${clean(intent, 400)}`,
+    'Propose it as a short plan: the trigger, the steps (one line each), the data it reads and writes, what happens on errors, and what I need to prepare in n8n.',
+    'Do not create or change anything in n8n yet. Ask me to confirm the plan first.',
+  ].join('\n\n');
+}
+
 export function sanitizeAgents(v: unknown): StudioAgent[] {
   if (!Array.isArray(v)) return [];
   const out: StudioAgent[] = [];

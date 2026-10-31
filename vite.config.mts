@@ -172,6 +172,15 @@ function skillsApi(): Plugin {
   return {
     name: 'skills-api',
     configureServer(server) {
+      server.middlewares.use('/__skill', (req, res) => {
+        const name = new URL(req.url ?? '', 'http://x').searchParams.get('dir') ?? '';
+        let text = '';
+        if (/^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/.test(name)) {
+          try { text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8').slice(0, 40_000); } catch { /* none */ }
+        }
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.end(text);
+      });
       // Install a skill the agent drafted: POST /__skills/install?replace=1 with the SKILL.md as the body.
       server.middlewares.use('/__skills/install', (req, res) => {
         const json = (status: number, body: unknown) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); };

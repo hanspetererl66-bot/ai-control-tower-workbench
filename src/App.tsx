@@ -36,6 +36,9 @@ import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as 
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
+import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { documentNote, isConfirmCommand, type DockFocus } from './dock';
+import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
@@ -49,7 +52,7 @@ import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
-import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
+import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import type { Handoff, IncomingHandoff } from './space-handoff';
 import WerkbankMark from './ui/WerkbankMark';
@@ -185,6 +188,11 @@ export default function App() {
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
   const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
   const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
+  const [agentProjects, setAgentProjectsState] = useState<AgentProject[]>(() => loadProjects(window.localStorage));
+  const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); }, []);
+  const [focusProject, setFocusProject] = useState<string | null>(null);
+  /** The project document open in Agent Studio, so the docked chat can work on it. */
+  const [dockFocus, setDockFocus] = useState<DockFocus | null>(null);
   const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
   const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
   const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
@@ -330,8 +338,8 @@ export default function App() {
 
   /** 'local': groups kept on this computer (sample group, no database). 'server': the connector with Supabase. */
   const [groupMode, setGroupModeState] = useState<'local' | 'server'>(() => { try { return window.localStorage.getItem(GROUP_MODE_KEY) === 'server' ? 'server' : 'local'; } catch { return 'local'; } });
-  const serverGroupCall = useMemo(() => (agent && extensionNames.includes(CONTROL_TOWER_CONNECTOR)
-    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__${tool}`, args))
+  const serverGroupCall = useMemo(() => (agent && extensionNames.includes(WORKSPACE_CONNECTOR)
+    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__${tool}`, args))
     : null), [agent, extensionNames]);
   const localGroupCall = useMemo(() => createLocalGroupCall(window.localStorage), []);
   const groupCall = groupMode === 'server' ? serverGroupCall : localGroupCall;
@@ -356,7 +364,7 @@ export default function App() {
     setSyncState({ busy: true, message: '' });
     try {
       const data = { ...prefs, sync: undefined };
-      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
+      const out = parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
       setSyncState({ busy: false, message: out?.updatedAt ? `Saved to Supabase (${out.updatedAt}).` : 'Saved to Supabase.' });
     } catch (error) {
       setSyncState({ busy: false, message: `Saving failed: ${error instanceof Error ? error.message : String(error)}` });
@@ -366,7 +374,7 @@ export default function App() {
     if (!agent) return;
     setSyncState({ busy: true, message: '' });
     try {
-      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
+      const out = parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
       if (!out || !out.data) {
         setSyncState({ busy: false, message: 'Nothing stored under this key yet.' });
         return;
@@ -541,19 +549,18 @@ export default function App() {
     setAgentEpoch((current) => current + 1);
   }
 
-  /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
-  async function send(text: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
   /** Memory as the assistant gets it: entries for every conversation plus those tied to the Space in context, with agreed levels marked. */
-  function currentMemoryNote(space = contextSpace) {
+  function currentMemoryNote(space = contextSpace, state: MemoryState = memory) {
     const g = loadGov(undefined, MEMORY_GOV_KEY);
     const names = loadGov().levels as string[];
-    return memoryNote(memory, space, (id) => govLevelOf(g, id), names);
+    return memoryNote(state, space, (id) => govLevelOf(g, id), names);
   }
   function openApprovals() {
     return loadGov().requests.filter((r) => r.status === 'pending').length + loadGov(undefined, MEMORY_GOV_KEY).requests.filter((r) => r.status === 'pending').length;
   }
 
-  async function send(typed: string, attachments: ChatAttachment[] = []) {
+  /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
+  async function send(typed: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
     if (!agent || busy) return;
     const studioCatalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
     const asAgent = expandAgentCommand(typed, studioAgents, studioCatalog, (id) => govLevelOf(agentGov, id));
@@ -565,10 +572,9 @@ export default function App() {
     if (messages.length === 0) {
       setTitle((typed || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
-    setMemorySuggestion(suggestMemory(text, memory));
+    setMemorySuggestion(suggestMemory(typed, memory));
     harnessStepCount.current = 0;
     harnessBlock.current = null;
-    setMemorySuggestion(suggestMemory(typed, memory));
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -601,8 +607,9 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), harnessNote(harnessRef.current), memoryNote(memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
-      const prompt = [historyGrounding, text, assistantNote(prefs), personaNote(personas), currentMemoryNote(), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
+      const docContext = dockProject && dockFocus ? documentNote(dockProject, dockFocus.docKey) : '';
+      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -933,10 +940,22 @@ export default function App() {
   }, []);
 
   const empty = messages.length === 0;
+  const dockShown = view === 'studio' || view === 'manage';
+  const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
+  const confirmDockDoc = () => {
+    if (!dockProject || !dockFocus) return;
+    const catalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
+    changeAgentProjects(agentProjects.map((x) => (x.id === dockProject.id ? confirmDoc(x, dockFocus.docKey, catalog, Date.now()) : x)));
+  };
+  /** In the docked chat, "yes, confirm" confirms the document on screen instead of going to the model. */
+  const interceptSend = (typed: string, attachments: ChatAttachment[] = []) => {
+    if (dockProject && dockFocus && attachments.length === 0 && isConfirmCommand(typed)) { confirmDockDoc(); return; }
+    return send(typed, attachments);
+  };
   const composer = (
     <Composer
       commands={allCommands(ownCommands)}
-      onSend={send}
+      onSend={interceptSend}
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
@@ -951,7 +970,7 @@ export default function App() {
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
       onInstallConnector={installControlTowerConnector}
-      starters={empty}
+      starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
       onStopSpeaking={() => speaker.current?.stop()}
@@ -1092,7 +1111,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${showDetails ? 'app-details' : ''}`}>
+    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`}>
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -1159,6 +1178,13 @@ export default function App() {
 
       {view === 'develop' ? (
         <DevelopHub
+          onAgent={() => setView('studio')}
+          onAgentIntent={(intent) => {
+            const project = newProject(intent);
+            changeAgentProjects([project, ...agentProjects]);
+            setFocusProject(project.id);
+            setView('studio');
+          }}
           onOpenN8n={() => setView('n8n')}
           onOpenConnectors={() => setView('manage')}
           generate={developGenerate}
@@ -1190,6 +1216,10 @@ export default function App() {
           onGov={changeAgentGov}
           schedules={schedules}
           onAgents={changeStudioAgents}
+          projects={agentProjects}
+          onProjects={changeAgentProjects}
+          focusProject={focusProject}
+          onDocFocus={setDockFocus}
           connectors={extensionNames}
           spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
           onRunInChat={(prompt) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt); }}
@@ -1307,6 +1337,37 @@ export default function App() {
         </main>
       )}
 
+      {dockShown && (
+        <JouleDock
+          where={view === 'manage' ? 'manage' : 'studio'}
+          empty={empty}
+          busy={busy}
+          focus={dockProject ? dockFocus : null}
+          project={dockProject}
+          lastAnswer={[...messages].reverse().find((m) => m.role === 'agent')?.text ?? ''}
+          onApply={(text) => {
+            if (!dockProject || !dockFocus) return;
+            changeAgentProjects(agentProjects.map((x) => (x.id === dockProject.id ? editDoc(x, dockFocus.docKey, text, Date.now()) : x)));
+            setToast('Document updated. Read it through, then confirm.');
+            setTimeout(() => setToast(null), 4000);
+          }}
+          onConfirm={confirmDockDoc}
+          onAsk={(prompt) => { void send(prompt); }}
+          composer={composer}
+          chat={
+            <Chat
+              messages={messages}
+              busy={busy}
+              onAsk={askFromSpace}
+              onSaveAsSpace={saveAnswerAsSpace}
+              chatTools={prefs.chat}
+              meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
+              onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }}
+            />
+          }
+        />
+      )}
+
       {showDetails && (
         <SidePanel
           tab={sideTab}
@@ -1344,7 +1405,7 @@ export default function App() {
             spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),
             skills: skillList.map((x) => ({ name: x.name, description: x.description })),
             connectors: extensionNames,
-            syncAvailable: Boolean(agent) && extensionNames.includes(CONTROL_TOWER_CONNECTOR),
+            syncAvailable: Boolean(agent) && extensionNames.includes(WORKSPACE_CONNECTOR),
             sync: syncState,
             onSyncSave: () => void syncSave(),
             onSyncLoad: () => void syncLoad(),
