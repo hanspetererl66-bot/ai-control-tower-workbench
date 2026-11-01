@@ -3,6 +3,7 @@
  * Pure functions: the App only puts the result into a <style> element, so the output can be tested.
  */
 import { FONT_STACKS, type Preferences } from './preferences.ts';
+import { DEFAULT_SKIN, skinAppCss, skinSpaceRules, type SkinId } from './skins.ts';
 
 const rgb = (hex: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
 const toHex = (c: number[]) => `#${c.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
@@ -38,7 +39,7 @@ const DENSITY = { compact: 0.75, normal: 1, roomy: 1.3 } as const;
 
 /** CSS for the app window. Empty settings give an empty string. */
 export function buildPreferenceCss(prefs: Preferences): string {
-  const css: string[] = [];
+  const css: string[] = [...skinAppCss(prefs.skin ?? DEFAULT_SKIN)];
   if (prefs.accent) {
     const a = accentVariants(prefs.accent);
     css.push(`:root{--accent:${a.light};--send:${a.light}}`, `:root[data-theme="dark"]{--accent:${a.dark};--send:${a.dark}}`);
@@ -60,9 +61,9 @@ export function buildPreferenceCss(prefs: Preferences): string {
 
 const MARK = 'werkbank-space-prefs';
 
-/** Spaces use --purple, --purple-mid and --purple-light; set them from the accent. Also reduces motion. */
-export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' | 'reduceMotion' | 'contrast' | 'font'>): string {
-  const rules: string[] = [];
+/** Spaces use the design-system tokens: the skin sets the whole palette, the accent then overrides --purple, --purple-mid and --purple-light. Also reduces motion. */
+export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' | 'reduceMotion' | 'contrast' | 'font'> & { skin?: SkinId }): string {
+  const rules: string[] = [...skinSpaceRules(prefs.skin ?? DEFAULT_SKIN)];
   if (prefs.accent) {
     const a = accentVariants(prefs.accent);
     rules.push(

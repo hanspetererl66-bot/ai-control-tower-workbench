@@ -7,6 +7,7 @@ import {
 } from '../preferences';
 import { sectionEffect } from '../settings-help';
 import { SPACE_SCALES } from '../space-scale';
+import { SKIN_LIST } from '../skins';
 
 export type PrefsUpdate = (change: (current: Preferences) => Preferences) => void;
 export type SpaceRef = { slug: string; title: string };
@@ -106,7 +107,25 @@ export function LookPanel({ prefs, update }: Common) {
           {isOriginalLook(prefs) && <span className="prefs-note" style={{ margin: 0 }}>This is the original look.</span>}
         </div>
       </Section>
-      <Section title="Accent colour" hint="Original is the colour the app came with. Violet is a brighter purple. Light colours are darkened so white text stays readable; the accent is used for buttons and highlights, and in all Spaces.">
+      <Section title="Skin" hint="A skin sets the colours of the whole app and of all Spaces: surfaces, text, lines and the accent. Light and dark still follow the Appearance setting. Status colours (green, amber, red) stay the same in every skin.">
+        <div className="skin-options" role="radiogroup" aria-label="Skin">
+          {SKIN_LIST.map((skin) => (
+            <button key={skin.id} type="button" role="radio" aria-checked={prefs.skin === skin.id} className={`skin-option ${prefs.skin === skin.id ? 'skin-option-on' : ''}`} onClick={() => update((p) => ({ ...p, skin: skin.id }))}>
+              <span className="skin-preview" aria-hidden="true" style={{ background: skin.swatch[0], borderColor: skin.swatch[2] + '33' }}>
+                <span className="skin-card" style={{ background: skin.swatch[1] }}>
+                  <i style={{ background: skin.swatch[2] }} />
+                  <i style={{ background: skin.swatch[2], opacity: 0.35, width: '62%' }} />
+                  <b style={{ background: skin.swatch[3] }} />
+                </span>
+              </span>
+              <span className="skin-name">{skin.name}</span>
+              <span className="skin-description">{skin.description}</span>
+              {prefs.skin === skin.id && <span className="skin-check" aria-hidden="true">✓</span>}
+            </button>
+          ))}
+        </div>
+      </Section>
+      <Section title="Accent colour" hint="Original is the accent of the chosen skin. Violet is a brighter purple. Light colours are darkened so white text stays readable; the accent is used for buttons and highlights, and in all Spaces.">
         <div className="prefs-row" role="radiogroup" aria-label="Accent colour">
           <button className={`ghost-btn ${!prefs.accent ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={!prefs.accent} onClick={() => update((p) => ({ ...p, accent: '' }))}>Original</button>
           {ACCENT_PRESETS.map((a) => (

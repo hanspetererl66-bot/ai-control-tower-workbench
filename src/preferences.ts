@@ -7,6 +7,7 @@
  */
 import { DEFAULT_HARNESS_STATE, sanitizeHarnessState, type HarnessState } from './harness.ts';
 import { SPACE_SCALES } from './space-scale.ts';
+import { DEFAULT_SKIN, isSkin, type SkinId } from './skins.ts';
 
 export const PREFERENCES_STORAGE_KEY = 'werkbank.preferences.v1';
 export const PREFERENCES_VERSION = 1;
@@ -66,6 +67,8 @@ export type StorageLocation = { id: string; name: string; purpose: (typeof PURPO
 /** What a profile bundles. */
 export type ProfileSettings = {
   appearance: (typeof APPEARANCES)[number];
+  /** Ready-made palette for the app and the Spaces (see skins.ts). The accent below still overrides its accent colour. */
+  skin: SkinId;
   accent: string;
   appScale: number;
   spaceScale: number;
@@ -107,6 +110,7 @@ export const DEFAULT_ASSISTANT: Assistant = { language: 'auto', length: 'balance
 export const DEFAULT_PREFERENCES: Preferences = {
   version: PREFERENCES_VERSION,
   appearance: 'system',
+  skin: DEFAULT_SKIN,
   accent: '',
   appScale: 1,
   spaceScale: 1.15,
@@ -201,6 +205,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   const v = isObject(value) ? value : {};
   const out: Partial<ProfileSettings> = {};
   if (APPEARANCES.includes(v.appearance as never)) out.appearance = v.appearance as ProfileSettings['appearance'];
+  if (isSkin(v.skin)) out.skin = v.skin;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
   if (SPACE_SCALES.includes(v.spaceScale as never)) out.spaceScale = v.spaceScale as number;
@@ -279,8 +284,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat } = prefs;
-  return { appearance, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
+  const { appearance, skin, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat } = prefs;
+  return { appearance, skin, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -559,7 +564,7 @@ export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pi
 
 // ---------- back to the original ----------
 
-const LOOK_KEYS = ['appearance', 'accent', 'appScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+const LOOK_KEYS = ['appearance', 'skin', 'accent', 'appScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
 
 /** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
 export function resetLook<T extends Preferences>(prefs: T): T {

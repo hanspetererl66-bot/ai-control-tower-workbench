@@ -3375,6 +3375,78 @@ button {
   border-color: var(--ink);
   box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--ink);
 }
+.skin-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.skin-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.skin-option:hover {
+  border-color: var(--muted);
+}
+.skin-option-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.skin-preview {
+  display: block;
+  height: 62px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 100%;
+  padding: 7px 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
+}
+.skin-card i {
+  display: block;
+  width: 84%;
+  height: 4px;
+  border-radius: 99px;
+}
+.skin-card b {
+  display: block;
+  width: 34%;
+  height: 8px;
+  margin-top: auto;
+  border-radius: 99px;
+}
+.skin-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.skin-description {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.skin-check {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
 .prefs-list {
   margin: 10px 0 0;
   padding: 0;
