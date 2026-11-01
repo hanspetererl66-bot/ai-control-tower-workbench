@@ -43,3 +43,18 @@ test('the rail icons grow and get heavier on hover, in light and dark', () => {
   assert.match(css, /\.rail-btn:hover:not\(:disabled\) svg \[stroke\] \{\s*stroke-width: 2\.2/);
   assert.match(css, /:root\[data-theme="dark"\] \.rail-btn:hover:not\(:disabled\)/);
 });
+
+test('the diamond in the rail turns slowly and stops with reduced motion', () => {
+  const css = src('src/theme.css');
+  assert.match(css, /\.rail-logo svg \{[^}]*animation: rail-diamond-turn 9s linear infinite/);
+  assert.match(css, /@keyframes rail-diamond-turn \{ from \{ transform: rotateY\(0deg\); \} to \{ transform: rotateY\(360deg\); \} \}/);
+  assert.match(css, /prefers-reduced-motion: reduce\) \{ \.rail-logo svg \{ animation: none; \} \}/);
+});
+
+test('both flows show their steps as joined circles from one shared component', () => {
+  const stepper = src('src/ui/Stepper.tsx');
+  assert.match(stepper, /stepper-dot/);
+  assert.match(stepper, /'✓'/, 'a finished step shows a check mark');
+  for (const file of ['src/ui/AgentProjectView.tsx', 'src/ui/DevelopWizard.tsx']) assert.match(src(file), /<Stepper/, file);
+  assert.match(src('src/theme.css'), /\.stepper-item \+ \.stepper-item::before/, 'a line joins the circles');
+});

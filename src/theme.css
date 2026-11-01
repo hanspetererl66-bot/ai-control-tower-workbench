@@ -735,6 +735,12 @@ button {
   line-height: 0;
 }
 
+/* The diamond turns slowly around its vertical axis, all the time (not with reduced motion). */
+.rail-logo { perspective: 160px; }
+.rail-logo svg { display: block; transform-style: preserve-3d; animation: rail-diamond-turn 9s linear infinite; filter: drop-shadow(0 3px 6px rgb(109 74 255 / 35%)); }
+@keyframes rail-diamond-turn { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+@media (prefers-reduced-motion: reduce) { .rail-logo svg { animation: none; } }
+
 .rail-logo:hover {
   opacity: 0.8;
 }
@@ -3948,12 +3954,6 @@ button {
 .dev-title { margin: 0; font-size: 22px; font-weight: 600; }
 .dev-kind { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #efeafd; color: var(--accent); }
 :root[data-theme="dark"] .dev-kind { background: rgb(139 92 246 / 20%); }
-.dev-steps { list-style: none; display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; padding: 0; }
-.dev-step { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid rgb(127 127 127 / 28%); border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
-.dev-step:disabled { opacity: .5; cursor: default; }
-.dev-step-on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-.dev-step-n { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgb(127 127 127 / 18%); font-size: 11px; }
-.dev-step-done .dev-step-n { background: #15803d; color: #fff; }
 .dev-lead { color: var(--muted); margin: 0 0 14px; }
 .dev-mask { display: grid; gap: 14px; }
 .dev-mask label, .dev-mask fieldset { display: grid; gap: 5px; font-size: 13px; font-weight: 600; border: 0; padding: 0; margin: 0; }
@@ -4185,13 +4185,6 @@ textarea.studio-field { min-height: 120px; }
 .studio-from { margin: -4px 0 0; font-size: 12.5px; color: var(--muted); }
 .proj { padding: 28px 36px 64px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; max-width: 980px; min-width: 0; }
 .proj > * { flex: none; }
-.proj-steps { list-style: none; margin: 4px 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.proj-step { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; }
-.proj-step span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: var(--ink); font-size: 12px; font-weight: 600; }
-.proj-step:disabled { opacity: 0.5; cursor: not-allowed; }
-.proj-done span { background: var(--lv-green, #1b7f3b); color: #fff; }
-.proj-stale span { background: var(--lv-yellow, #b26a00); color: #fff; }
-.proj-here { border-color: var(--accent); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
 .proj-body { display: flex; flex-direction: column; gap: 10px; }
 .proj-body > * { flex: none; }
 .proj-lead { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); max-width: 70ch; }
@@ -4292,3 +4285,33 @@ textarea.studio-field { min-height: 120px; }
 @keyframes sgov-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @keyframes sgov-pulse { 50% { opacity: .45; } }
 @media (prefers-reduced-motion: reduce) { .sgov-ck { animation: none; opacity: 1; } .sgov-checking { animation: none; } }
+
+
+/* ---------- Steps of an intent-based development: circles joined by a line ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.stepper-wrap { container-type: inline-size; margin: 14px 0 18px; }
+.stepper-now { display: none; margin: 8px 0 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink); }
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--steps, 4), minmax(0, 1fr)); }
+.stepper-item { position: relative; display: flex; justify-content: center; }
+.stepper-item + .stepper-item::before { content: ''; position: absolute; top: 15px; right: 50%; width: 100%; height: 3px; border-radius: 2px; background: var(--line); }
+.stepper-item.stepper-linked::before { background: var(--accent); }
+.stepper-btn { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 0 4px; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; max-width: 100%; }
+.stepper-btn:disabled { cursor: not-allowed; }
+.stepper-btn:disabled .stepper-label { opacity: .6; }
+.stepper-btn:disabled .stepper-dot { background: var(--panel); color: var(--muted); }
+.stepper-dot { display: grid; place-items: center; width: 33px; height: 33px; border-radius: 50%; border: 2px solid var(--line); background: var(--panel); color: var(--muted); font-size: 14px; font-weight: 600; transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease; }
+.stepper-label { font-size: 12.5px; line-height: 1.25; text-align: center; max-width: 15ch; }
+.stepper-btn:not(:disabled):hover .stepper-dot { border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+.stepper-done .stepper-dot { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 16px; }
+.stepper-done .stepper-label { color: var(--ink); }
+.stepper-btn:not(:disabled):hover .stepper-dot { transition-duration: .1s; }
+.stepper-done .stepper-btn:not(:disabled):hover .stepper-dot { color: #fff; }
+.stepper-here .stepper-dot { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 4px rgb(109 74 255 / 18%); background: var(--panel); }
+.stepper-here .stepper-label { color: var(--ink); font-weight: 600; }
+.stepper-stale .stepper-dot { border-color: #b45309; background: #fef3c7; color: #92400e; }
+:root[data-theme="dark"] .stepper-stale .stepper-dot { background: rgb(180 83 9 / 25%); color: #fbbf24; border-color: #d97706; }
+.stepper-stale .stepper-label { color: #b45309; }
+:root[data-theme="dark"] .stepper-stale .stepper-label { color: #fbbf24; }
+/* Narrow place (the Agent Studio column): the circles alone, and the name of the open step under them. */
+@container (max-width: 560px) { .stepper-label { display: none; } .stepper-now { display: block; } .stepper-dot { width: 28px; height: 28px; font-size: 13px; } .stepper-item + .stepper-item::before { top: 13px; } }
+@media (prefers-reduced-motion: reduce) { .stepper-dot { transition: none; } }
