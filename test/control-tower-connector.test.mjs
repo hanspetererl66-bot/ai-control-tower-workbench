@@ -145,7 +145,7 @@ test('every connector lists exactly its manifest tools, and every tool has a sch
 test('the connectors split the tools without overlap or loss', () => {
   const all = LIBRARY_CONNECTORS.flatMap((id) => manifests[id].tools.map((tool) => tool.name));
   assert.equal(new Set(all).size, all.length, 'a tool is offered by two connectors');
-  assert.equal(all.length, 86);
+  assert.equal(all.length, 95);
   assert.deepEqual(manifests['ai-control-tower'].tools.map((tool) => tool.name).slice(0, 2), ['get_risks', 'get_risk']);
 });
 
