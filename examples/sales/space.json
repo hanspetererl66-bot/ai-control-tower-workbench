@@ -1,11 +1,12 @@
 {
   "title": "Sales",
-  "description": "Mockup: the sales process from interest to contract as a funnel and a board, with a deal drawer (gate checklist, timeline, risks, next skill) and the skills and workflow per stage.",
+  "description": "Mockup: the sales process from interest to contract as a funnel and a board, with a deal drawer (gate checklist, timeline, risks, next skill), a late-payment forecast per customer, and the skills and workflow per stage.",
   "domain": "Sales",
   "insights": [
     "Design mockup with fictional data; no CRM is connected and nothing is sent. Offers and contracts mirror the Sub4Me sample data.",
     "Every stage has exit criteria (a gate) and a human approval for the risky steps; the skills only prepare and check.",
-    "Each deal shows the next skill to run, with the sentence to type in the chat."
+    "Each deal shows the next skill to run, with the sentence to type in the chat.",
+    "The Late payments tab asks the Sub4Me connector for the open invoices of a customer and scores them with the forecast service (TabPFN, synthetic training data). It reads only; nothing is sent."
   ],
   "prompt": "Bundled example: Sales (static mockup, data embedded by npm run sync:mockups)."
 }

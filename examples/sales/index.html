@@ -398,6 +398,24 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 .intro h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--purple);margin:0 0 4px}.intro p{margin:0;color:var(--ink-2);line-height:1.5}
 .intro dl{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:4px 14px;margin:10px 0 0;font-size:12px}.intro dt{font-weight:650;color:var(--ink)}.intro dd{margin:0;color:var(--ink-2)}
 .intro summary.t{cursor:pointer;font-weight:650;color:var(--purple);font-size:12px;margin-top:12px}
+/* Late payments: forecast per customer (data comes from the Sub4Me connector through the app) */
+.pay-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.pay-head h2{margin:0 0 2px}
+.pay-pick{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.pay-pick button,.pay-run{font:inherit;font-size:13px;cursor:pointer;border-radius:99px;padding:6px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2)}
+.pay-pick button[aria-pressed="true"]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple);font-weight:600}
+.pay-run{border-color:var(--purple-border);color:var(--purple);font-weight:600}
+.pay-run:hover,.pay-pick button:hover{background:var(--purple-dim)}
+.pay-run:disabled{opacity:.5;cursor:default}
+.pay-meta{margin-top:12px;font-size:12px;color:var(--muted)}
+.pay-prob{display:flex;align-items:center;gap:8px;min-width:170px}
+.pay-prob .pbar{flex:1;min-width:70px;height:6px;border-radius:99px;background:var(--line-2);overflow:hidden}
+.pay-prob .pbar i{display:block;height:100%;background:var(--green)}
+.pay-prob .pbar i.warn{background:var(--amber)}
+.pay-prob .pbar i.bad{background:var(--red)}
+.pay-prob b{min-width:38px;text-align:right}
+.pay-drv{margin:0;padding-left:16px;font-size:12px;color:var(--muted)}
+.pay-sub{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -411,6 +429,7 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 <nav role="tablist" id="tabs">
   <button role="tab" aria-selected="true" data-tab="pipeline">Pipeline</button>
   <button role="tab" aria-selected="false" data-tab="forecast">Forecast</button>
+  <button role="tab" aria-selected="false" data-tab="payments">Late payments</button>
   <button role="tab" aria-selected="false" data-tab="meetings">Meetings</button>
   <button role="tab" aria-selected="false" data-tab="inbox">Inbox <span class="tag purple" id="inbox-n"></span></button>
   <button role="tab" aria-selected="false" data-tab="governance">Governance</button>
@@ -421,7 +440,7 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
   <details class="card intro" open>
     <summary><h2>What is this page?</h2><span class="hint">click to fold</span></summary>
     <div class="body"><p>A <b>sales pipeline</b> shows every open deal by stage, from the first interest to the signed contract. This Space follows the deals of two fictional customers through five stages; each stage ends in a gate with exit criteria, and a person moves a deal on.</p>
-    <div class="cols"><div><h3>Pipeline</h3><p>The funnel counts deals and value per stage; the board shows each deal as a tile. Click a tile for the detail and the gate to the next stage.</p></div><div><h3>Forecast</h3><p>What is likely to close: commit, best case and the rest of the pipeline, by month and against the target.</p></div><div><h3>Meetings and Inbox</h3><p>Meetings to prepare and follow up, and suggestions from agents. A person approves every suggestion.</p></div><div><h3>Governance, Workflow, Rules</h3><p>What the agents did and why, the five gates with their skills, and the safeguards that apply.</p></div></div>
+    <div class="cols"><div><h3>Pipeline</h3><p>The funnel counts deals and value per stage; the board shows each deal as a tile. Click a tile for the detail and the gate to the next stage.</p></div><div><h3>Forecast</h3><p>What is likely to close: commit, best case and the rest of the pipeline, by month and against the target.</p></div><div><h3>Late payments</h3><p>Which open invoices of a customer will probably be paid late, so the account owner can call before the reminder goes out. Needs the agent connection.</p></div><div><h3>Meetings and Inbox</h3><p>Meetings to prepare and follow up, and suggestions from agents. A person approves every suggestion.</p></div><div><h3>Governance, Workflow, Rules</h3><p>What the agents did and why, the five gates with their skills, and the safeguards that apply.</p></div></div>
     <details><summary class="t">Terms used on this page</summary><dl><dt>ACV</dt><dd>Annual contract value: what the deal brings in a year.</dd><dt>TCV</dt><dd>Total contract value over the whole term.</dd><dt>Weighted forecast</dt><dd>ACV times the probability of the deal.</dd><dt>Commit</dt><dd>Cleared and likely to close this period.</dd><dt>Best case</dt><dd>Could close with effort or a decision.</dd><dt>Gate</dt><dd>The check between two stages; a deal moves on when the exit criteria are met.</dd><dt>At risk</dt><dd>A deal with at least one risk flag, for example an overdue next step.</dd></dl></details></div>
   </details>
   <section class="pg on" id="pg-pipeline">
@@ -436,6 +455,7 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
     <div class="board" id="board"></div>
   </section>
   <section class="pg" id="pg-forecast"><div id="fc"></div></section>
+  <section class="pg" id="pg-payments"><div class="card" id="pay"></div></section>
   <section class="pg" id="pg-meetings"><div class="mt" id="mt"></div></section>
   <section class="pg" id="pg-inbox"><div id="ib"></div></section>
   <section class="pg" id="pg-governance"><div id="gv"></div></section>
@@ -688,7 +708,53 @@ function setup() {
     if (state.sel) closeDeal();
   }));
 }
-setup(); renderFunnel(); renderBoard(); renderForecast(); renderMeetings(); renderInbox(); renderGovernance(); renderWorkflow(); renderRules();
+
+// ---- Late payments: the forecast runs in a service (TabPFN) behind the Sub4Me connector; this Space only asks its parent
+const PAY_CUSTOMERS = [{ id: 'muster', name: 'Muster Industrie AG' }, { id: 'hanse', name: 'Hanse Handelsgruppe AG' }];
+const pay = { customer: 'muster', pending: null, pendingCustomer: null, results: {}, error: {} };
+const eurFull = (n) => (n < 0 ? '-' : '') + '€' + Math.abs(n).toLocaleString('en-US');
+const payTag = (risk, late) => late ? '<span class="tag red">already late</span>' : '<span class="tag ' + ({ high: 'red', medium: 'amber' }[risk] || 'green') + '">' + ({ high: 'likely late', medium: 'watch' }[risk] || 'on time') + '</span>';
+function renderPay() {
+  const c = PAY_CUSTOMERS.find((x) => x.id === pay.customer);
+  const loading = pay.pending !== null;
+  const f = pay.results[pay.customer];
+  let body = '';
+  if (loading && pay.pendingCustomer === pay.customer) body = '<div class="pay-meta" role="status">Scoring the open invoices of ' + esc(c.name) + ' …</div>';
+  else if (pay.error[pay.customer]) body = '<div class="pay-meta">' + esc(pay.error[pay.customer]) + '</div>';
+  else if (f) {
+    const items = f.items || [];
+    body = !items.length ? '<div class="pay-meta">No open invoices to score.</div>' : '<div class="tbl" style="margin-top:12px"><table><thead><tr><th>Invoice</th><th class="num">Gross</th><th>Due</th><th>Chance of a late payment</th><th>Main drivers</th></tr></thead><tbody>' + items.map((i) => {
+      const pct = Math.round(i.lateProbability * 100), pctText = i.alreadyLate ? '100%' : pct === 0 ? '<1%' : pct + '%';
+      const due = i.daysToDue === null ? esc(i.due) : esc(i.due) + '<div class="pay-sub">' + (i.daysToDue < 0 ? (-i.daysToDue) + ' days overdue' : 'in ' + i.daysToDue + ' days') + '</div>';
+      const drv = i.alreadyLate ? '<span class="pay-sub">already more than 14 days past due, nothing left to predict</span>' : (i.drivers || []).length ? '<ul class="pay-drv">' + i.drivers.map((d) => '<li>' + esc(d.label) + ' (' + (d.effectPct > 0 ? '+' : '') + d.effectPct + ' pts)</li>').join('') + '</ul>' : '<span class="pay-sub">no single driver stands out</span>';
+      return '<tr><td><b>' + esc(i.id) + '</b><div class="pay-sub">' + esc(i.contractId) + '</div></td><td class="num">' + (i.grossEur === null ? '–' : eurFull(i.grossEur)) + '</td><td>' + due + '</td><td><div class="pay-prob"><div class="pbar"><i class="' + (i.risk === 'high' ? 'bad' : i.risk === 'medium' ? 'warn' : '') + '" style="width:' + pct + '%"></i></div><b>' + pctText + '</b>' + payTag(i.risk, i.alreadyLate) + '</div></td><td>' + drv + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+    const h = f.customerHabit || {};
+    body += '<div class="pay-meta">Engine: <b>' + esc(f.engine === 'tabpfn' ? 'TabPFN' : f.engine === 'baseline' ? 'gradient-boosting baseline (TabPFN not loaded)' : f.engine) + '</b> · trained on ' + esc(f.trainedOn) + ' · as of ' + esc(f.asOf) + (h.paidInvoicesSeen ? ' · ' + esc(c.name) + ' paid ' + h.paidInvoicesSeen + ' invoices so far, on average ' + (h.avgDelayDays > 0 ? h.avgDelayDays + ' days after' : Math.abs(h.avgDelayDays) + ' days before') + ' the due date' : '') + '. ' + esc(f.disclaimer || '') + '</div>';
+    if (f.engine === 'baseline' && f.engineNote) body += '<div class="pay-meta">' + esc(f.engineNote) + '</div>';
+  } else body = '<div class="pay-meta">Pick a customer and run the forecast. Nothing is sent and nothing is changed.</div>';
+  $('#pay').innerHTML = '<div class="pay-head"><div><h2>Late-payment forecast</h2><div class="pay-sub">Which open invoices will probably be paid more than 14 days after the due date. Demo model, trained on synthetic data; not a credit assessment.</div></div><button class="pay-run" type="button" id="pay-run"' + (loading ? ' disabled' : '') + '>' + (f ? 'Run again' : 'Run forecast') + '</button></div>' +
+    '<div class="pay-pick" role="group" aria-label="Customer">' + PAY_CUSTOMERS.map((x) => '<button type="button" data-cust="' + x.id + '" aria-pressed="' + (x.id === pay.customer) + '">' + esc(x.name) + '</button>').join('') + '</div>' + body;
+}
+$('#pay').addEventListener('click', (e) => {
+  const pick = e.target.closest('[data-cust]');
+  if (pick) { pay.customer = pick.dataset.cust; renderPay(); return; }
+  if (!e.target.closest('#pay-run') || pay.pending) return;
+  delete pay.error[pay.customer];
+  if (window.parent === window) { pay.error[pay.customer] = 'The forecast needs the agent connection. Open this Space in the app.'; renderPay(); return; }
+  const id = 'p' + Date.now().toString(36);
+  pay.pending = id; pay.pendingCustomer = pay.customer; renderPay();
+  window.parent.postMessage({ type: 's4m:payment-risk-request', requestId: id, customer: pay.customer }, '*');
+  setTimeout(() => { if (pay.pending === id) { const cu = pay.pendingCustomer; pay.pending = null; pay.error[cu] = 'No answer from the agent. Is the Sub4Me connector connected and the forecast service running?'; renderPay(); } }, 100000);
+});
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (e.source !== window.parent || !d || typeof d.type !== 'string') return;
+  if (d.type === 'ct:open-tab' && typeof d.tab === 'string' && /^[a-z]+$/.test(d.tab)) { const b = document.querySelector('#tabs button[data-tab="' + d.tab + '"]'); if (b) b.click(); }
+  else if (d.type === 's4m:payment-risk' && d.requestId && d.requestId === pay.pending && d.forecast) { const cu = pay.pendingCustomer; pay.pending = null; pay.results[cu] = d.forecast; renderPay(); }
+  else if (d.type === 's4m:error' && d.requestId && d.requestId === pay.pending) { const cu = pay.pendingCustomer; pay.pending = null; pay.error[cu] = 'Could not run the forecast: ' + String(d.message).slice(0, 200); renderPay(); }
+});
+setup(); renderPay(); renderFunnel(); renderBoard(); renderForecast(); renderMeetings(); renderInbox(); renderGovernance(); renderWorkflow(); renderRules();
 </script>
 </body>
 </html>

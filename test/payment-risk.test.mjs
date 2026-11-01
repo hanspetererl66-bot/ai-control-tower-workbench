@@ -32,7 +32,7 @@ test('sends the customer invoices to the service and returns the checked forecas
   assert.equal(result.engine, 'baseline');
   assert.equal(result.internal, undefined);
   assert.equal(result.items[0].drivers[0].secret, undefined);
-  assert.deepEqual(result.view, { space: 'sub4me', tab: 'invoices' });
+  assert.deepEqual(result.view, { space: 'sales', tab: 'payments' });
   assert.match(result.disclaimer, /synthetic/);
 });
 

@@ -51,7 +51,7 @@ import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules'
 import { deliverBriefing, gmailExtension } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
-import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
+import { SALES_SPACE, SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
@@ -1259,7 +1259,7 @@ export default function App() {
             textScale={spaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}

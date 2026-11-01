@@ -1,5 +1,5 @@
 /**
- * Late-payment forecast for the Sub4Me Invoices tab: which open invoices will probably be paid more than 14 days
+ * Late-payment forecast for the Late payments tab of the Sales Space: which open invoices will probably be paid more than 14 days
  * after the due date. The numbers come from the TabPFN service (services/tabpfn); this module only fetches the
  * customer's invoices, sends them there and checks the answer. Read-only. Without a configured service the tool
  * says so — it never invents a forecast.
@@ -109,7 +109,7 @@ export function createPaymentRiskHandlers({ sub4me, ToolError, env = process.env
         highRisk: forecast.items.filter((i) => i.risk === 'high').length,
         invoiceSource: listed.source,
         disclaimer: 'Demo: trained on synthetic data, not a credit assessment.',
-        view: { space: 'sub4me', tab: 'invoices' },
+        view: { space: 'sales', tab: 'payments' },
       };
     },
   };

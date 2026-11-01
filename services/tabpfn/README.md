@@ -1,6 +1,6 @@
 # Late-payment forecast service (TabPFN demo)
 
-Small FastAPI service behind the **Late-payment forecast** card in the Sub4Me Space (tab *Invoices*) and the chat
+Small FastAPI service behind the **Late payments** tab of the Sales Space (one customer at a time) and the chat
 tool `predict_late_payments`. It scores open invoices: *will this one be paid more than 14 days after the due date?*
 
 - **Model:** [TabPFN](https://github.com/PriorLabs/TabPFN) (tabular foundation model, no tuning). If TabPFN or its
@@ -43,7 +43,7 @@ Set the **Sub4Me** connector's **Late-payment forecast service** to `http://127.
 the connector from a checkout), and the same token if you set one. Plain http is accepted for localhost only.
 
 Then ask in the chat *"Welche offenen Rechnungen werden voraussichtlich zu spät bezahlt?"*, or press **Run forecast**
-on the Invoices tab of the Sub4Me Space.
+on the **Late payments** tab of the Sales Space (pick the customer first). The tool lives in the Sub4Me connector, so that connector must be active.
 
 ## API
 

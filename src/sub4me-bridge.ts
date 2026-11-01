@@ -5,6 +5,8 @@
  */
 export const SUB4ME_SPACE = 'sub4me';
 export const SUB4ME_EXTENSION = 'sub4me';
+/** The Sales Space shows the late-payment forecast; it may use the bridge for that one request and nothing else. */
+export const SALES_SPACE = 'sales';
 
 export type BridgeCall = (tool: string, args: Record<string, unknown>) => Promise<unknown>;
 
@@ -213,4 +215,10 @@ export async function handleSub4meMessage(data: unknown, call: BridgeCall | unde
     }
   }
   return null;
+}
+
+/** The bridge for the Sales Space: only the late-payment forecast, no tickets and no enrichment. */
+export async function handleSalesMessage(data: unknown, call: BridgeCall | undefined): Promise<Record<string, unknown> | null> {
+  if (!isObject(data) || data.type !== 's4m:payment-risk-request') return null;
+  return handleSub4meMessage(data, call);
 }
