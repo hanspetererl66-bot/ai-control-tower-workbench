@@ -1,4 +1,5 @@
 import type { GroupCall, GroupRole, MemoryKind } from './groups';
+import { sanitizeGroupHarnesses } from './harness-share.ts';
 
 /**
  * The groups backend on this computer only (localStorage). It answers the same group_* tools as the team server,
@@ -8,7 +9,7 @@ import type { GroupCall, GroupRole, MemoryKind } from './groups';
 type Member = { email: string; name: string; role: GroupRole };
 type Mem = { id: string; kind: MemoryKind; text: string; createdBy: string; createdAt: string };
 type Sp = { slug: string; title: string; version: number; publishedBy: string; publishedAt: string; package: string };
-type Group = { id: string; name: string; description: string; rev: number; members: Member[]; spaces: Sp[]; memory: Mem[]; config: { instructions?: string }; audit: Array<{ actor: string; action: string; detail: string; at: string }> };
+type Group = { id: string; name: string; description: string; rev: number; members: Member[]; spaces: Sp[]; memory: Mem[]; config: { instructions?: string; harnesses?: unknown[] }; audit: Array<{ actor: string; action: string; detail: string; at: string }> };
 type Db = { groups: Group[]; seq: number; seeded: boolean };
 type Store = Pick<Storage, 'getItem' | 'setItem'>;
 
@@ -133,8 +134,9 @@ export function createLocalGroupCall(store: Store, now: () => Date = () => new D
       }
       case 'group_save_config': {
         const g = group(); need(g, 'admin');
-        const cfg = (args.config ?? {}) as { instructions?: unknown };
+        const cfg = (args.config ?? {}) as { instructions?: unknown; harnesses?: unknown };
         g.config = { ...g.config, instructions: clean(cfg.instructions, 1000) };
+        if ('harnesses' in cfg) g.config.harnesses = sanitizeGroupHarnesses(cfg.harnesses);
         log(g, actor, 'config_saved');
         break;
       }

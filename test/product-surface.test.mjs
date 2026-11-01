@@ -36,14 +36,9 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(cover, /Escape/); // closable from the keyboard
 });
 
-test('a missing AI Control Tower connector can be installed in one click', () => {
-  const starters = readFileSync(path.join(root, 'src/ui/StarterPrompts.tsx'), 'utf8');
+test('the one-click install of the AI Control Tower connector stays available in the desktop app, but the chat no longer advertises it', () => {
   const preload = readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
   const main = readFileSync(path.join(root, 'electron/main.mjs'), 'utf8');
-  assert.match(starters, /fehlt oder ist nicht verbunden/);
-  assert.match(starters, /Jetzt installieren/);
-  assert.match(composer, /onInstall=\{onInstallConnector\}/);
-  assert.match(app, /onInstallConnector=\{installControlTowerConnector\}/);
   assert.match(preload, /prepareControlTowerConnector: \(\) => ipcRenderer\.invoke\('prepare-control-tower-connector'\)/);
   // The staged request goes through the same approve→install path as any .mcpb.
   assert.match(main, /ipcMain\.handle\('prepare-control-tower-connector'/);

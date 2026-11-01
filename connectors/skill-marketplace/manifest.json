@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "skill-marketplace",
   "display_name": "Skill Marketplace",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The shared skill registry and marketplace: search, profiles, ranking, impact, governance, lifecycle, gaps, recommendations and ratings, plus the skill lifecycle (marketplace card, duplicate check, approval flow, deprecate, retire, restore, history). Reads approved skills; the lifecycle tools write to the registry.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -118,6 +118,22 @@
     {
       "name": "restore_skill",
       "description": "Undo a deprecation, or bring a retired skill back as an Individual draft. Write."
+    },
+    {
+      "name": "list_skill_files",
+      "description": "The extra files of a skill (scripts, templates) next to SKILL.md."
+    },
+    {
+      "name": "get_skill_file",
+      "description": "Read one extra file of a skill."
+    },
+    {
+      "name": "set_skill_file",
+      "description": "Write: add or replace one extra file of a skill (owner, department admin or Governance board)."
+    },
+    {
+      "name": "delete_skill_file",
+      "description": "Write: remove one extra file of a skill (owner, department admin or Governance board)."
     }
   ],
   "user_config": {
