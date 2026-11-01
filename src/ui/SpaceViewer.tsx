@@ -5,7 +5,7 @@ import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
-import { applySpaceScale, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
+import { applySpaceScale, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
@@ -305,7 +305,7 @@ export default function SpaceViewer({
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceTools(applySpaceScale((() => { const themed = applySpaceTheme(html ?? '', theme); return prefs ? applySpacePrefs(themed, prefs) : themed; })(), textScale))}
+          srcDoc={applySpaceScroll(applySpaceTools(applySpaceScale((() => { const themed = applySpaceTheme(html ?? '', theme); return prefs ? applySpacePrefs(themed, prefs) : themed; })(), textScale)))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"
