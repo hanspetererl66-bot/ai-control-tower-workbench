@@ -3181,13 +3181,13 @@ button {
   gap: 8px;
 }
 
-/* Proactive briefing cards on the empty chat. */
+/* Proactive briefing cards on the empty chat: small and quiet. Outlined, no fill, no entrance animation, a thin colour edge. */
 .briefing {
-  margin-top: 18px;
+  margin-top: 10px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .briefing-title {
@@ -3198,30 +3198,21 @@ button {
 
 .briefing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px;
 }
 
 .briefing-card {
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--muted);
-  border-radius: var(--radius);
-  padding: 12px 14px;
+  border-left: 2px solid var(--muted);
+  border-radius: 8px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  animation: briefing-in 0.35s ease both;
-}
-
-.briefing-card:nth-child(2) {
-  animation-delay: 0.08s;
-}
-.briefing-card:nth-child(3) {
-  animation-delay: 0.16s;
-}
-.briefing-card:nth-child(4) {
-  animation-delay: 0.24s;
+  gap: 2px;
+  /* Text on the cards is 25% smaller than the body text of the chat. */
+  --briefing-text: 0.75;
 }
 
 .briefing-red {
@@ -3233,23 +3224,28 @@ button {
 
 .briefing-card h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--briefing-text));
   font-weight: 600;
   color: var(--ink);
 }
 
 .briefing-card p {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: calc(12px * var(--briefing-text));
+  line-height: 1.4;
   color: var(--muted);
+  /* At most two lines; the full text is in the tooltip. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .briefing-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 2px;
 }
 
 .briefing-action {
@@ -3257,9 +3253,9 @@ button {
   background: transparent;
   color: var(--accent);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 1px 8px;
   font: inherit;
-  font-size: 12px;
+  font-size: calc(12px * var(--briefing-text, 0.75));
   cursor: pointer;
 }
 
@@ -3270,19 +3266,6 @@ button {
 .briefing-action:disabled {
   opacity: 0.5;
   cursor: default;
-}
-
-@keyframes briefing-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .briefing-card {
-    animation: none;
-  }
 }
 
 /* ---------- personal settings: density, pins, profiles ---------- */
@@ -3764,31 +3747,30 @@ button {
 :root[data-theme="dark"] .ghost-btn:hover:not(:disabled) { background: rgb(255 255 255 / 8%); }
 
 .briefing-area {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: calc(11px * var(--briefing-text, 0.75));
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 2px;
 }
 
 .briefing-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 16px;
-  margin-bottom: 8px;
+  gap: 4px 12px;
+  margin-bottom: 2px;
 }
 .briefing-head .briefing-title { margin: 0; }
 .briefing-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
 .briefing-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
+  gap: 5px;
+  padding: 2px 10px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--muted);
   background: transparent;
 }
