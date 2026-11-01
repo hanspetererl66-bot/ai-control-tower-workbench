@@ -3,6 +3,7 @@ import {
   HARNESS_FORMS, HARNESS_MEMORY, HARNESS_PERMISSIONS, activeHarness, allHarnesses, chooseHarness, copyHarness, deleteHarness, harnessNote, isBuiltinHarness, saveHarness,
   type HarnessProfile,
 } from '../harness';
+import { HARNESS_FILE_KIND, addImportedHarness, canAddHarness, exportHarness, harnessPreview, harnessWarnings, parseHarnessFile } from '../harness-share';
 import type { PrefsUpdate } from './PreferencesPanels';
 import type { Preferences } from '../preferences';
 
@@ -18,12 +19,32 @@ const toList = (value: string): string[] => value.split(/[,\n]/).map((s) => s.tr
  */
 export default function HarnessPanel({ prefs, onPrefs }: { prefs: Preferences; onPrefs: PrefsUpdate }) {
   const [copyName, setCopyName] = useState('');
+  const [pasted, setPasted] = useState('');
+  const [incoming, setIncoming] = useState<{ profile: HarnessProfile; source: string } | null>(null);
+  const [shareMessage, setShareMessage] = useState('');
   const state = prefs.harness;
   const profile = activeHarness(state);
   const builtin = isBuiltinHarness(profile.id);
   const setState = (next: (s: Preferences['harness']) => Preferences['harness']) => onPrefs((p) => ({ ...p, harness: next(p.harness) }));
   const change = (patch: Partial<HarnessProfile>) => setState((s) => saveHarness(s, { ...profile, ...patch }));
   const note = harnessNote(profile);
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([exportHarness(profile)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = `werkbank-profile-${profile.id.replace(/[^a-z0-9_-]/g, '')}.json`; a.click();
+    URL.revokeObjectURL(url);
+    setShareMessage('Exported. The file contains only this profile, no settings and no keys.');
+  };
+  const read = (raw: string, source: string) => {
+    try {
+      setIncoming({ profile: parseHarnessFile(raw), source });
+      setShareMessage('');
+    } catch (e) {
+      setIncoming(null);
+      setShareMessage(e instanceof Error ? e.message : String(e));
+    }
+  };
+  const warnings = incoming ? harnessWarnings(incoming.profile) : [];
   return (
     <div className="side-section">
       <h4>Working profile</h4>
@@ -34,6 +55,7 @@ export default function HarnessPanel({ prefs, onPrefs }: { prefs: Preferences; o
         </select>
       </label>
       {profile.description && <p className="side-hint">{profile.description}</p>}
+      {profile.origin && <p className="side-hint">From: {profile.origin}</p>}
       {builtin ? (
         profile.id !== 'standard' && (
           <dl className="approval-params">
@@ -85,6 +107,32 @@ export default function HarnessPanel({ prefs, onPrefs }: { prefs: Preferences; o
       <button className="ghost-btn" disabled={!copyName.trim()} onClick={() => { setState((s) => copyHarness(s, profile.id, copyName)); setCopyName(''); }}>Save copy</button>
       <h4 style={{ marginTop: 14 }}>What the profile adds</h4>
       <pre className="side-pre">{note || 'Nothing: the standard profile adds no rules.'}</pre>
+      <h4 style={{ marginTop: 14 }}>Hand over a profile</h4>
+      <p className="side-hint">Export “{profile.name}” as a file, or add a profile from a file or from pasted text. You see it first, and it is added as a profile of your own. Admins can also publish a profile to a group (Settings → Groups).</p>
+      <button className="ghost-btn" onClick={download}>Export “{profile.name}”</button>
+      <label className="side-field"><span>Import from a file</span>
+        <input type="file" accept="application/json,.json" aria-label="Profile file" onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          if (file) void file.text().then((raw) => read(raw, 'Imported file'), () => setShareMessage('The file could not be read.'));
+        }} />
+      </label>
+      <label className="side-field"><span>Or paste the profile text</span>
+        <textarea className="prefs-area" rows={3} value={pasted} aria-label="Profile text" placeholder={`{ "app": "werkbank", "kind": "${HARNESS_FILE_KIND}", … }`} onChange={(e) => setPasted(e.target.value)} />
+      </label>
+      <button className="ghost-btn" disabled={!pasted.trim()} onClick={() => read(pasted, 'Pasted text')}>Show profile</button>
+      {shareMessage && <p className="side-hint" role="status">{shareMessage}</p>}
+      {incoming && (
+        <div className="side-section" aria-label="Profile to import">
+          <h4>{incoming.profile.name}</h4>
+          {incoming.profile.description && <p className="side-hint">{incoming.profile.description}</p>}
+          <pre className="side-pre">{harnessPreview(incoming.profile)}</pre>
+          {warnings.map((w) => <p key={w} className="side-hint" role="alert">⚠ {w}</p>)}
+          {!canAddHarness(state) && <p className="side-hint" role="alert">You have 10 profiles of your own. Delete one first.</p>}
+          <button className="ghost-btn" disabled={!canAddHarness(state)} onClick={() => { setState((s) => addImportedHarness(s, incoming.profile, incoming.source)); setIncoming(null); setPasted(''); setShareMessage(`Added “${incoming.profile.name}”. Choose it in the chat bar to use it.`); }}>Add to my profiles</button>
+          <button className="ghost-btn" onClick={() => setIncoming(null)}>Cancel</button>
+        </div>
+      )}
     </div>
   );
 }
