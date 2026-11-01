@@ -55,6 +55,9 @@ export default function ManageView({
   /** Which part to scroll to when the page opens (from the Develop tiles). */
   focus?: 'skills' | 'connectors';
 }) {
+  // Opened from a Develop tile: show only that part. Without a focus (other entry points) both parts are shown.
+  const showConnectors = focus !== 'skills';
+  const showSkills = focus !== 'connectors';
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   useEffect(() => { if (focus) document.getElementById(`manage-${focus}`)?.scrollIntoView({ block: 'start' }); }, [focus]);
@@ -125,10 +128,13 @@ export default function ManageView({
           <BackIcon />
         </button>
         <div className="topbar-stack">
-          <h1 className="topbar-title">Connectors &amp; Skills</h1>
+          <h1 className="topbar-title">{focus === 'skills' ? 'Skills' : focus === 'connectors' ? 'Connectors' : 'Connectors & Skills'}</h1>
           <span className="topbar-sub">
-            {connectors.length} connector{connectors.length === 1 ? '' : 's'} · {skills.length} skills
-            · {builtins.length} built-in
+            {focus === 'skills'
+              ? `${skills.length} skill${skills.length === 1 ? '' : 's'}`
+              : focus === 'connectors'
+                ? `${connectors.length} connector${connectors.length === 1 ? '' : 's'} · ${builtins.length} built-in`
+                : `${connectors.length} connector${connectors.length === 1 ? '' : 's'} · ${skills.length} skills · ${builtins.length} built-in`}
           </span>
         </div>
         <button
@@ -163,6 +169,8 @@ export default function ManageView({
       <div className="manage">
         {note && <div className="manage-note">{note}</div>}
 
+        {showConnectors && (
+          <>
         <h2 className="manage-h" id="manage-connectors">Connectors</h2>
         {connectors.length === 0 && <p className="manage-empty">No connectors configured.</p>}
         {connectors.map((e) => (
@@ -337,6 +345,11 @@ export default function ManageView({
           );
         })()}
 
+          </>
+        )}
+
+        {showSkills && (
+          <>
         <h2 className="manage-h" id="manage-skills">Skills</h2>
         {skills.length === 0 && <p className="manage-empty">No skills installed.</p>}
         {skills.length > 0 && (
@@ -390,10 +403,17 @@ export default function ManageView({
           />
         )}
 
+          </>
+        )}
+
+        {showConnectors && (
+          <>
         <h2 className="manage-h">Built in</h2>
         <p className="manage-empty">
           {builtins.join(' · ') || '—'}
         </p>
+          </>
+        )}
       </div>
     </main>
   );
