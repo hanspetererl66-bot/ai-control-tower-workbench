@@ -1073,6 +1073,31 @@ function workspaceFile(path) {
   return rel && !rel.startsWith('..') && !isAbsolute(rel) ? target : null;
 }
 
+/** Briefing as PDF: the HTML comes from the renderer, is drawn in a hidden window without scripts and network, and the PDF is
+ * written to workspace/briefings/. The file name is cleaned here; the bytes go back so they can be attached to a draft. */
+const BRIEFING_PDF_MAX = 5 * 1024 * 1024;
+ipcMain.handle('render-briefing-pdf', async (_event, raw) => {
+  const html = typeof raw?.html === 'string' ? raw.html : '';
+  const name = typeof raw?.fileName === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.pdf$/.test(raw.fileName) ? raw.fileName : '';
+  if (!html || html.length > 2_000_000 || !name) return { ok: false, detail: 'Nothing to render.' };
+  const win = new BrowserWindow({ show: false, width: 900, height: 1200, webPreferences: { sandbox: true, javascript: false, contextIsolation: true, nodeIntegration: false } });
+  try {
+    win.webContents.session.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !details.url.startsWith('data:') }));
+    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    const pdf = await win.webContents.printToPDF({ pageSize: 'A4', printBackground: true, margins: { top: 0.6, bottom: 0.6, left: 0.6, right: 0.6 } });
+    if (pdf.length > BRIEFING_PDF_MAX) return { ok: false, detail: 'The PDF is larger than 5 MB.' };
+    const dir = join(WORKSPACE, 'briefings');
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, name);
+    writeFileSync(path, pdf);
+    return { ok: true, path, base64: pdf.toString('base64') };
+  } catch (error) {
+    return { ok: false, detail: error?.message ?? String(error) };
+  } finally {
+    win.destroy();
+  }
+});
+
 // Open/reveal only inside the agent's workspace — paths come from tool output,
 // which is model-influenced, so never hand arbitrary locations to the OS shell.
 ipcMain.handle('open-file', async (_event, path) => {

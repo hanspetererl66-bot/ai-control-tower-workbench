@@ -19,7 +19,7 @@ import {
   type StarterPrompt,
 } from '../starter-prompts';
 import StarterPrompts from './StarterPrompts';
-import SchedulePopover from './SchedulePopover';
+import SchedulePopover, { type ScheduleRuntime } from './SchedulePopover';
 import type { Schedule } from '../schedules';
 import BriefingCards from './BriefingCards';
 import { PRODUCT_TITLE } from '../product';
@@ -68,6 +68,7 @@ type Props = {
   commands?: Command[];
   schedules?: Schedule[];
   onSchedulesChange?: (next: Schedule[]) => void;
+  scheduleRuntime?: ScheduleRuntime;
 };
 
 export default function Composer({
@@ -92,6 +93,7 @@ export default function Composer({
   hiddenBriefing,
   schedules,
   onSchedulesChange,
+  scheduleRuntime,
   voice,
   onOpenSettings,
   onStopSpeaking,
@@ -517,7 +519,7 @@ export default function Composer({
               </svg>
               {schedules.some((s) => s.enabled) && <span className="chip-badge">{schedules.filter((s) => s.enabled).length}</span>}
             </button>
-            {scheduleOpen && <SchedulePopover schedules={schedules} onChange={onSchedulesChange} draftPrompt={text} onClose={() => setScheduleOpen(false)} />}
+            {scheduleOpen && <SchedulePopover schedules={schedules} onChange={onSchedulesChange} draftPrompt={text} onClose={() => setScheduleOpen(false)} runtime={scheduleRuntime} />}
           </div>
         )}
 

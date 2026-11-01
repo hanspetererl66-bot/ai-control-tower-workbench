@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('host', {
   },
   openFile: (path) => ipcRenderer.invoke('open-file', path),
   revealFile: (path) => ipcRenderer.send('reveal-file', path),
+  renderBriefingPdf: (request) => ipcRenderer.invoke('render-briefing-pdf', request),
   pickChatFiles: () => ipcRenderer.invoke('pick-chat-files'),
   /** Absolute paths of files dropped on the window (the page itself never sees them). */
   pathsOfDroppedFiles: (files) => Array.from(files ?? []).map((f) => webUtils.getPathForFile(f)).filter(Boolean),

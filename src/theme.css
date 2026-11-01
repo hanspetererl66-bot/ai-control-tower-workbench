@@ -3846,6 +3846,19 @@ button {
 
 :root[data-theme="dark"] .settings-intro { background: #171a21; border-color: #2b2f3a; }
 
+/* Recurring briefings: name, result (PDF / email draft), edit and run now */
+.schedule-delivery { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 6px; margin: 0; min-width: 0; }
+.schedule-delivery legend { padding: 0 4px; color: var(--muted); font-size: 11.5px; }
+.schedule-delivery label:not(.schedule-field) { display: flex; gap: 6px; align-items: center; color: var(--ink); }
+.schedule-delivery small, .schedule-item small { color: var(--muted); font-size: 11.5px; }
+.schedule-warn { color: var(--error) !important; }
+.schedule-buttons { display: flex; gap: 8px; }
+.schedule-item { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.schedule-item-actions { display: flex; align-items: center; gap: 2px; }
+.schedule-mini { color: var(--muted); font-size: 12px; line-height: 1; padding: 3px 6px; border-radius: 6px; }
+.schedule-mini:hover:not(:disabled) { color: var(--accent); background: var(--surface); }
+.schedule-mini:disabled { opacity: 0.4; cursor: default; }
+.schedule-editing { outline: 1px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 /* ---------- Develop start page ---------- */
 .develop-main { grid-column: 2 / -1; align-items: center; justify-content: center; overflow: auto; }
 .develop { width: min(1180px, 100%); padding: 32px 24px; text-align: center; }

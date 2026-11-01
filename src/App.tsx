@@ -48,11 +48,15 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
+import { deliverBriefing, gmailExtension } from './schedule-delivery';
+import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
+import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
+import type { ScheduleRuntime } from './ui/SchedulePopover';
 import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import type { Handoff, IncomingHandoff } from './space-handoff';
@@ -918,14 +922,34 @@ export default function App() {
     if (next !== schedules) updateSchedules(next);
   }, [studioAgents, agentGov, schedules, updateSchedules]);
   const dueTick = useRef<() => void>(() => undefined);
-  dueTick.current = () => {
-    if (!agent || busy) return;
-    const now = new Date();
-    const due = schedules.find((s) => isDue(s, now));
-    if (!due) return;
-    updateSchedules(schedules.map((s) => (s.id === due.id ? { ...s, lastRun: now.toISOString() } : s)));
+  const schedulesRef = useRef(schedules);
+  schedulesRef.current = schedules;
+  const [runningSchedule, setRunningSchedule] = useState('');
+  const patchSchedule = (id: string, patch: Partial<Schedule>) => updateSchedules(schedulesRef.current.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  /** One run of a briefing: ask in the chat, then make the PDF and the email draft if the briefing asks for them. */
+  async function runSchedule(due: Schedule, byHand = false) {
+    if (!agent || busy || runningSchedule) return;
+    setRunningSchedule(due.id);
+    patchSchedule(due.id, { lastRun: new Date().toISOString() });
     setView('chat');
-    void send(`${due.prompt}\n\n(Recurring briefing, ${due.time})`);
+    try {
+      await send(`${due.prompt}\n\n(Recurring briefing${byHand ? ', run by hand' : ''}, ${due.time})`);
+      const result = await deliverBriefing(due, draft.current, {
+        buildHtml: (title, text) => answerHtml(title, text, []),
+        renderPdf: (request) => (window.host?.renderBriefingPdf ? window.host.renderBriefingPdf(request) : Promise.resolve({ ok: false, detail: 'PDF export needs the desktop app.' })),
+        callTool: (name, args) => agent.callTool(name, args),
+        gmail: gmailExtension(extensionNames),
+      });
+      patchSchedule(due.id, { lastStatus: result.status, lastNote: result.note });
+    } finally {
+      setRunningSchedule('');
+    }
+  }
+  const scheduleRuntime: ScheduleRuntime = { runningId: runningSchedule, canRun: Boolean(agent) && !busy, onRun: (s) => void runSchedule(s, true), gmail: Boolean(gmailExtension(extensionNames)) };
+  dueTick.current = () => {
+    if (!agent || busy || runningSchedule) return;
+    const due = schedules.find((s) => isDue(s, new Date()));
+    if (due) void runSchedule(due);
   };
   useEffect(() => {
     const id = window.setInterval(() => dueTick.current(), 30_000);
@@ -972,6 +996,7 @@ export default function App() {
       hiddenBriefing={prefs.chat.hiddenBriefing}
       schedules={schedules}
       onSchedulesChange={updateSchedules}
+      scheduleRuntime={scheduleRuntime}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
     />
   );
@@ -1370,6 +1395,7 @@ export default function App() {
           onPrefs={updatePrefs}
           schedules={schedules}
           onSchedules={updateSchedules}
+          scheduleRuntime={scheduleRuntime}
           context={contextItems}
           onClose={() => setDetailsOpen(false)}
           onOpen={(p) => window.host?.openFile?.(p)}

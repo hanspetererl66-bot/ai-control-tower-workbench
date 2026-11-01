@@ -23,7 +23,7 @@
     { "name": "list_labels", "description": "List Gmail labels." },
     { "name": "search_mail", "description": "Search mail with Gmail query syntax." },
     { "name": "read_mail", "description": "Read one message (text body, headers)." },
-    { "name": "create_draft", "description": "Create a draft; never sends." }
+    { "name": "create_draft", "description": "Create a draft, optionally with PDF attachments; never sends." }
   ],
   "user_config": {
     "google_client_id": {
