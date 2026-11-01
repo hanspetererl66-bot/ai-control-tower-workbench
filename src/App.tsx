@@ -29,7 +29,8 @@ import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
-import { activeHarness, allHarnesses, chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
+import { groupChoices, groupProfileMissing, harnessChoices, resolveHarness, sanitizeGroupHarnesses, copyGroupHarness } from './harness-share';
+import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
 import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
@@ -240,7 +241,10 @@ export default function App() {
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
   askBeforeActionsRef.current = prefs.chat.askBeforeActions;
   // Working profile (harness): checked on every tool call and approval request of the running answer.
-  const harness = activeHarness(prefs.harness);
+  // Profiles an admin published to the active group: shown in the chat bar next to the person's own, read only.
+  const groupHarnesses = useMemo(() => sanitizeGroupHarnesses(activeGroup?.config.harnesses), [activeGroup]);
+  const groupName = activeGroup?.group.name ?? '';
+  const harness = resolveHarness(prefs.harness, groupHarnesses, groupName);
   const harnessRef = useRef(harness);
   harnessRef.current = harness;
   const harnessStepCount = useRef(0);
@@ -784,7 +788,7 @@ export default function App() {
 
   /** Choosing a profile that limits actions switches the agent to asking before changes; it never switches it back by itself. */
   function changeHarness(id: string) {
-    updatePrefs((current) => ({ ...current, harness: chooseHarness(current.harness, id) }));
+    updatePrefs((current) => ({ ...current, harness: chooseHarness(current.harness, id, groupChoices(groupHarnesses, groupName).map((p) => p.id)) }));
   }
   useEffect(() => {
     if (agent && requiresApproval(harness) && mode === 'auto') void changeMode('smart_approve');
@@ -962,7 +966,7 @@ export default function App() {
       workdir={WORKDIR}
       mode={mode}
       onModeChange={changeMode}
-      harnesses={allHarnesses(prefs.harness).map(({ id, name, description }) => ({ id, name, description }))}
+      harnesses={harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description }))}
       harnessId={harness.id}
       onHarnessChange={changeHarness}
       webSearch={webSearch}
@@ -1034,7 +1038,7 @@ export default function App() {
   const contextItems: ContextItem[] = [
     { id: 'memory', label: 'Memory', detail: memory.enabled ? memorySummary(memory) : 'Switched off', on: memory.enabled && memory.entries.length > 0, tab: 'memory' },
     { id: 'instructions', label: 'Instructions', detail: instructionsSet ? 'Language, length, tone or standing instructions set' : 'All at their defaults', on: instructionsSet, tab: 'instructions' },
-    { id: 'harness', label: 'Working profile', detail: harnessSummary(harness), on: harness.id !== 'standard', tab: 'instructions' },
+    { id: 'harness', label: 'Working profile', detail: groupProfileMissing(prefs.harness, groupHarnesses) ? 'The chosen group profile is not available now (no group or withdrawn): standard rules apply' : harnessSummary(harness), on: harness.id !== 'standard', tab: 'instructions' },
     { id: 'web', label: 'Web search', detail: webSearch ? 'The assistant may search the web' : 'Switched off for this conversation', on: webSearch },
     { id: 'group', label: 'Group', detail: activeGroup ? activeGroup.group.name : 'No group selected', on: Boolean(activeGroup) },
     { id: 'schedule', label: 'Schedule', detail: activeSchedules ? `${activeSchedules} recurring ${activeSchedules === 1 ? 'briefing' : 'briefings'} active` : 'No recurring briefings', on: activeSchedules > 0, tab: 'schedule' },
@@ -1423,6 +1427,8 @@ export default function App() {
               onActive: chooseActiveGroup,
               onSpaceInstalled: (slug: string) => { void refreshSpaces().then(() => setSelectedSpace(slug)); },
               onDetail: setActiveGroup,
+              ownHarnesses: prefs.harness.custom,
+              onCopyHarness: (profile, name) => updatePrefs((current) => ({ ...current, harness: copyGroupHarness(current.harness, profile, name) })),
             },
           }}
           onClose={() => setSettingsOpen(false)}
