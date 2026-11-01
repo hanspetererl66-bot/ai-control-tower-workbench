@@ -9,11 +9,11 @@ export const PAYMENT_RISK_TOOL_DEFINITIONS = [
   {
     name: 'predict_late_payments',
     description:
-      'Forecast which open Sub4Me invoices will probably be paid more than 14 days after their due date. Returns the late probability per open invoice (highest first) with the main drivers, and which model engine produced it (TabPFN or a fallback baseline). Trained on synthetic invoice history, so it demonstrates the method and is not a real credit assessment. Use it for questions such as "which invoices will be paid late?" or "where should we send a reminder first?". Read-only.',
+      'Forecast which open Sub4Me invoices will probably be paid more than 14 days after their due date. Returns the late probability per open invoice (highest first) with the main drivers, and which model engine produced it (TabPFN or a fallback baseline). Trained on synthetic invoice history, so it demonstrates the method and is not a real credit assessment. The forecast is always for ONE customer: use the customer the person named. If they did not name one, do not guess and do not fall back to the default: call list_customers and ask which customer they mean. Use it for questions such as "which invoices of Muster will be paid late?" or "where should we send a reminder first for Hanse?". Read-only.',
     inputSchema: {
       type: 'object',
       properties: {
-        customer: { type: 'string', description: 'Sub4Me customer id, for example "muster" or "hanse". Defaults to the primary customer.' },
+        customer: { type: 'string', description: 'Sub4Me customer id from list_customers, for example "muster" or "hanse". Take it from the question; ask when it is missing.' },
       },
       additionalProperties: false,
     },
