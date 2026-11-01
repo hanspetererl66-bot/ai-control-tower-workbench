@@ -58,14 +58,18 @@ class LateModel:
     def predict(self, frame: pd.DataFrame, top: int = 3) -> list[Prediction]:
         if frame.empty:
             return []
-        base = self._proba(frame)
         # Driver = how much the score drops when one feature is set to the typical value of the history.
         # Cheap and model-agnostic; it explains this score, it is not a causal statement.
-        shifts = np.zeros((len(frame), len(FEATURES)))
-        for j, name in enumerate(FEATURES):
+        # All variants go through the model in ONE call: TabPFN runs a forward pass over the whole training
+        # context per call, so nine separate calls on a CPU were slow enough to time out the connector.
+        variants = [frame]
+        for name in FEATURES:
             neutral = frame.copy()
             neutral[name] = self._reference[name]
-            shifts[:, j] = base - self._proba(neutral)
+            variants.append(neutral)
+        scored = self._proba(pd.concat(variants, ignore_index=True)).reshape(len(variants), len(frame))
+        base = scored[0]
+        shifts = (base[:, None] - scored[1:].T)
         results = []
         for i, p in enumerate(base):
             order = np.argsort(-np.abs(shifts[i]))[:top]

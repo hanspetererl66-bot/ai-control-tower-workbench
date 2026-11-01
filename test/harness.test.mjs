@@ -106,6 +106,7 @@ test('read only refuses everything that is not clearly a read, and a connector l
   assert.equal(write.ok, false);
   assert.match(write.reason, /read only/);
   assert.equal(checkToolCall(review, { toolName: 'ai-control-tower__frobnicate' }).ok, false, 'unknown counts as not a read');
+  assert.equal(checkToolCall(review, { toolName: 'sub4me__predict_late_payments' }).ok, true, 'a forecast only reads');
   assert.equal(checkToolCall(review, { toolName: 'developer__shell' }).ok, false, 'built-in shell is a change');
   assert.equal(checkToolCall(review, { toolName: 'developer__read_file' }).ok, true, 'built-in tools are not hit by the connector list');
   const other = checkToolCall(review, { toolName: 'gmail__search_messages' });

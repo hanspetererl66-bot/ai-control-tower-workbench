@@ -32,6 +32,13 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 30.10
 - In der Cloud-Sandbox nicht lauffähig (HuggingFace 403). Test läuft auf Hans-Peters Linux-Rechner (venv `.venv-cognee`, wegen PEP 668). Ergebnis des Seed-Laufs: noch offen (erster Versuch scheiterte nur an einem Platzhalter-Key).
 - Schritt 1 ist fertig (eigener Connector + 233 Beispiel-Dokumente). **Schritt 2 erst nach seinem Test:** `knowledge-graph`-Connector fragt Cognee (Fallback: statischer Graph), der Space zeichnet Cognees Knoten und Kanten.
 
+## TabPFN-Zahlungsverzug-Prognose (Stand 01.11.2026)
+- Dienst `services/tabpfn/` (FastAPI). `services/tabpfn/start.sh` startet ihn aus jedem Terminal, legt `.venv` an und lädt `services/tabpfn/.env` (git-ignoriert, Vorlage `.env.example`). Connector-Tool `predict_late_payments` im Connector **sub4me** (Modul `connectors/_lib/server/payment-risk.mjs`, Felder `tabpfn_service_url`/`tabpfn_service_token`). Karte "Late-payment forecast" im Tab Invoices des Sub4Me-Space. Einstieg im Chat: Frage tippen oder unter Einstellungen "Own starter prompts" anlegen, mit aktivem Connector `sub4me`. Es gibt bewusst keinen eingebauten Chip mehr (PR #124 hat die eingebauten Vorschläge entfernt; ein früherer Chip-Fix von mir wurde deshalb zurückgenommen).
+- Trainingsdaten sind synthetisch. Ohne TabPFN-Gewichte läuft ein beschriftetes Ersatzmodell (`engine: baseline` in `/health`, jeder Antwort und im Kartenfuß).
+- **Nicht getestet:** echtes TabPFN (Gewichte bei Hugging Face gesperrt, Cloud-Sandbox 403), Lauf in der Electron-App mit neu installiertem Sub4Me-Connector. Die Karte wurde nur im Headless-Browser mit dem Ersatzmodell gerendert.
+- Lizenz: Gewichte von TabPFN-2.5 bis 3.5 laut Prior-Labs-Doku nur nicht kommerziell. Vor einer öffentlichen Demo klären (gehostete API oder kommerzielle Lizenz).
+- Offen: Beispielkunde mit schlechter Zahlungsmoral (sonst zeigen alle Rechnungen unter 1 %; ändert Sub4Me-Daten und Supabase-Sync), Paketversion pinnen (`tabpfn>=9.2,<10`), optional gehostete API als dritte Engine, Mahnentwurf per Gmail-Entwurf, Kostenprognose im Control Tower.
+
 ## Offen
 - Branches zusammenführen (siehe oben), danach `npm run check`.
 - Skill-Governance in der App (`SkillGovernance.tsx`, noch localStorage) an die Funktionen anbinden (braucht Entscheidung zur Anmeldung); Skill-Sync nach `goose-home/.agents/skills` soll `sunsetAt`/`replacedBy` aus `skills_visible` anzeigen. Migration 020 ist auf dem Supabase-Projekt angewendet.

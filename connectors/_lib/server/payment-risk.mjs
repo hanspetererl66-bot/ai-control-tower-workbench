@@ -20,7 +20,7 @@ export const PAYMENT_RISK_TOOL_DEFINITIONS = [
   },
 ];
 
-const TIMEOUT_MS = 20000;
+const TIMEOUT_MS = 90000; // real TabPFN on a CPU needs a few seconds per call
 const RISKS = ['high', 'medium', 'low'];
 
 /** The service URL must be https, or plain http on this machine. */
