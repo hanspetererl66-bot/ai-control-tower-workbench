@@ -3880,8 +3880,8 @@ button {
 .schedule-mini:disabled { opacity: 0.4; cursor: default; }
 .schedule-editing { outline: 1px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 /* ---------- Develop start page ---------- */
-.develop-main { grid-column: 2 / -1; align-items: center; justify-content: center; overflow: auto; }
-.develop { width: min(1380px, 100%); padding: 32px 24px; text-align: center; }
+.develop-main { grid-column: 2 / -1; align-items: center; justify-content: flex-start; overflow: auto; }
+.develop { margin-block: auto; width: min(1380px, 100%); padding: 32px 24px; text-align: center; }
 .develop-title { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.4px; }
 .develop-sub { margin: 6px auto 30px; color: var(--muted); max-width: 60ch; }
 .develop-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; perspective: 1600px; align-items: stretch; }
@@ -4319,3 +4319,12 @@ textarea.studio-field { min-height: 120px; }
 :root[data-theme="dark"] .stepper-sub-stale button { color: #fbbf24; border-color: #d97706; }
 @container (max-width: 560px) { .stepper-label { display: none; } .stepper-now { display: block; } .stepper-dot { width: 28px; height: 28px; font-size: 13px; } .stepper-item + .stepper-item::before { top: 13px; } }
 @media (prefers-reduced-motion: reduce) { .stepper-dot { transition: none; } }
+
+.shared-save { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 6px 0 14px; font-size: 13px; color: var(--muted); }
+.shared-save form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.shared-save input { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); min-width: 220px; }
+.shared-save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.shared-save-error .shared-save-dot { background: #b45309; }
+.shared-save-error { color: #b45309; }
+:root[data-theme="dark"] .shared-save-error { color: #fbbf24; }
+.shared-save-bad { color: #b45309; }

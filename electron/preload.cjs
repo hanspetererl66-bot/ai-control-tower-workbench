@@ -28,6 +28,10 @@ contextBridge.exposeInMainWorld('host', {
     ipcRenderer.on('bulk-upload-progress', handler);
     return () => ipcRenderer.removeListener('bulk-upload-progress', handler);
   },
+  /** Shared database for projects: status, the e-mail, and the five work item tools. The key and the person stay in the main process. */
+  workStatus: () => ipcRenderer.invoke('work-status'),
+  workSetEmail: (email) => ipcRenderer.invoke('work-set-email', email),
+  workCall: (tool, args) => ipcRenderer.invoke('work-call', { tool, args }),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 
   // Werkbank install deep links. Callbacks receive only

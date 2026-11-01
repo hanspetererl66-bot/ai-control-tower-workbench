@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { PROJECTS_PULLED, schedule as scheduleWorkSync } from '../work-sync-runner';
+import SharedSaveLine from './SharedSaveLine';
 import { emptyIntent, loadProjects, newProject, saveProjects, upsertProject, type Project, STAGE_LABEL } from '../develop';
 import DevelopWizard from './DevelopWizard';
 
@@ -24,7 +26,13 @@ export default function DevelopHub(props: Props) {
   const [projects, setProjects] = useState<Project[]>(() => loadProjects(window.localStorage));
   const [openId, setOpenId] = useState<string | null>(null);
   const [saveState, setSaveState] = useState({ ok: true, at: 0 });
-  useEffect(() => { const ok = saveProjects(window.localStorage, projects); setSaveState((s) => ({ ok, at: ok ? Date.now() : s.at })); }, [projects]);
+  useEffect(() => { const ok = saveProjects(window.localStorage, projects); setSaveState((s) => ({ ok, at: ok ? Date.now() : s.at })); scheduleWorkSync(); }, [projects]);
+  // Projects taken over from the shared database while this view is open.
+  useEffect(() => {
+    const reload = () => setProjects(loadProjects(window.localStorage));
+    window.addEventListener(PROJECTS_PULLED, reload);
+    return () => window.removeEventListener(PROJECTS_PULLED, reload);
+  }, []);
   const open = projects.find((p) => p.id === openId) ?? null;
 
   const startWorkflow = (goal: string) => {
@@ -57,6 +65,7 @@ export default function DevelopHub(props: Props) {
     <main className="main develop-main">
       <div className="develop">
         <h1 className="develop-title">Develop</h1>
+        <SharedSaveLine />
         <p className="develop-sub">Say what you want to achieve. Joule turns the goal into a draft, you refine and approve it.</p>
         <div className="develop-cards">
           <IntentCard

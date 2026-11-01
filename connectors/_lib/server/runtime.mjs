@@ -41,7 +41,7 @@ const SUPABASE_TIMEOUT_MS = 8000;
 export class RuleError extends Error {}
 
 /** Call a public RPC function on Supabase with the server-side key. */
-async function supabaseRpc(fn, body, url, key) {
+export async function supabaseRpc(fn, body, url, key) {
   const endpoint = new URL(`/rest/v1/rpc/${fn}`, normalizeSupabaseUrl(url));
   const local = ['localhost', '127.0.0.1'].includes(endpoint.hostname);
   if (endpoint.protocol !== 'https:' && !local) throw new Error('SUPABASE_URL must be https');

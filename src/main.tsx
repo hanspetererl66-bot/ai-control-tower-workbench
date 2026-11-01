@@ -22,6 +22,9 @@ declare global {
       cancelBulkUpload?: () => void;
       onBulkUploadProgress?: (cb: (p: { batch: number; total: number; sentRows: number; totalRows: number }) => void) => () => void;
       setZoomFactor?: (factor: number) => void;
+      workStatus?: () => Promise<{ configured: boolean; email: string; source: string }>;
+      workSetEmail?: (email: string) => Promise<{ ok: boolean; email?: string; detail?: string }>;
+      workCall?: (tool: string, args: Record<string, unknown>) => Promise<{ ok: true; data: any } | { ok: false; error: string }>;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';
         csvPath?: string;

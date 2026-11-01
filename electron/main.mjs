@@ -10,6 +10,7 @@ import { uploadBatches } from './bulk-upload.mjs';
 import { buildBatches } from '../shared/table-ingest.mjs';
 import { BUNDLED_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
+import { createWorkStore } from './work-store.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
@@ -1302,6 +1303,26 @@ if (!app.requestSingleInstanceLock()) {
 /* ---------------- voice input ----------------
  * Key + settings live in their own encrypted file (not the connector store, which goosed inherits as env).
  * The microphone is granted to the app's own page only; Spaces (sandboxed iframes) never get it. */
+/** Settings of a connector for the shared database: the URL from its config, the key from the encrypted store. */
+function readDatabaseAccess(name) {
+  try {
+    const doc = parseDocument(readFileSync(join(ROOT, 'goose-home/.config/goose/config.yaml'), 'utf8'));
+    const entry = doc.getIn(['extensions', name])?.toJSON?.();
+    if (!entry || entry.enabled === false) return null;
+    const url = String(entry.envs?.SUPABASE_URL ?? secretsFor(name).SUPABASE_URL ?? '').trim();
+    const key = String(secretsFor(name).SUPABASE_SECRET_KEY ?? entry.envs?.SUPABASE_SECRET_KEY ?? '').trim();
+    return { url, key };
+  } catch {
+    return null;
+  }
+}
+const workStore = createWorkStore({ file: join(ROOT, 'goose-home', 'work-sync.json'), readConnector: readDatabaseAccess });
+ipcMain.handle('work-status', () => workStore.status());
+ipcMain.handle('work-set-email', (_event, email) => workStore.setEmail(email));
+ipcMain.handle('work-call', async (_event, { tool, args } = {}) => {
+  try { return { ok: true, data: await workStore.call(String(tool ?? ''), args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+
 const voiceStore = createVoiceStore({ file: join(ROOT, 'goose-home', 'voice.enc'), safeStorage });
 
 ipcMain.handle('voice-get-settings', () => voiceStore.getPublic());
