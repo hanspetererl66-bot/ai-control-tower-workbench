@@ -52,3 +52,25 @@ export function applySpaceTheme(html: string, theme: 'light' | 'dark'): string {
   if (/<html\b/i.test(html)) return html.replace(/<html\b/i, `<html ${attr}`);
   return html;
 }
+
+const SCROLL_MARK = 'werkbank-space-scroll';
+
+/**
+ * Every Space can be moved sideways when the window is narrower than its content. A Space cannot hide the sideways
+ * scroll bar of the page or of a wide row (tabs, boards, tables) any more, and the bar is thick enough to grab.
+ * Only the horizontal bar is touched; vertical bars and the look of the Space are left alone.
+ */
+export const SPACE_SCROLL_CSS =
+  'html{overflow-x:auto!important}body{overflow-x:visible!important}' +
+  '*::-webkit-scrollbar:horizontal{display:block!important;height:10px!important}' +
+  '*::-webkit-scrollbar-track:horizontal{background:rgba(128,128,128,.14)!important}' +
+  '*::-webkit-scrollbar-thumb:horizontal{background:rgba(128,128,128,.55)!important;border-radius:5px!important;min-width:40px}' +
+  '*::-webkit-scrollbar-thumb:horizontal:hover{background:rgba(128,128,128,.8)!important}';
+
+/** Returns the page with the scroll rule added once. */
+export function applySpaceScroll(html: string): string {
+  if (!html || html.includes(`id="${SCROLL_MARK}"`)) return html;
+  const rule = `<style id="${SCROLL_MARK}">${SPACE_SCROLL_CSS}</style>`;
+  if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${rule}</head>`);
+  return rule + html;
+}

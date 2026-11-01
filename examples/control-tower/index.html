@@ -38,7 +38,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 
 /* TABS */
 .tbar{background:var(--surface);border-bottom:1px solid var(--g200);display:flex;overflow-x:auto;padding:0 24px;gap:2px}
-.tbar::-webkit-scrollbar{display:none}
+.tbar::-webkit-scrollbar{height:8px}
+.tbar::-webkit-scrollbar-track{background:var(--g100)}
+.tbar::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}
+.tbar::-webkit-scrollbar-thumb:hover{background:var(--g500)}
 .tb{display:flex;align-items:center;gap:6px;padding:14px 14px 13px;font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s;font-family:var(--font)}
 .tnum{font-family:var(--mono);font-size:10px;background:var(--g100);color:var(--g300);padding:1px 5px;border-radius:3px}
 .tb:hover:not(.on){color:var(--g700)}.tb.on{color:var(--purple);border-bottom-color:var(--purple);font-weight:600}
@@ -163,8 +166,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .cn{font-size:12px;font-weight:700;color:var(--g900);margin-bottom:3px}
 .cd{font-size:11px;color:var(--g500);line-height:1.5;margin-bottom:8px}
 
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:var(--g200);border-radius:4px}
+::-webkit-scrollbar{width:4px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}
 @media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}.bl-w,.bl-n{width:100px}}
 </style>
 <style id="design-system">
