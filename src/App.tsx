@@ -795,17 +795,6 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent, harness.id, harness.permission, mode]);
 
-  /** One click: stage the bundled connector and show the usual approve dialog (URL and key are optional there). */
-  async function installControlTowerConnector() {
-    const result: any = await window.host?.prepareControlTowerConnector?.();
-    if (!result || result.error) {
-      setToast(result?.error ?? 'The connector can only be installed from the desktop app.');
-      setTimeout(() => setToast(null), 6000);
-      return;
-    }
-    setSkillRequest(result as unknown as InstallRequest);
-  }
-
   /** "Joule fragen" in a Space: switch to the chat and send the question, unless the agent is busy or missing. */
   function askFromSpace(prompt: string, spaceSlug?: string) {
     if (!agent || busy) {
@@ -973,7 +962,6 @@ export default function App() {
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
-      onInstallConnector={installControlTowerConnector}
       starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
@@ -981,7 +969,6 @@ export default function App() {
       onVoiceCommand={handleVoiceCommand}
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
-      hiddenStarters={prefs.chat.hiddenStarters}
       hiddenBriefing={prefs.chat.hiddenBriefing}
       schedules={schedules}
       onSchedulesChange={updateSchedules}

@@ -7,7 +7,6 @@ import {
 } from '../preferences';
 import { sectionEffect } from '../settings-help';
 import { SPACE_SCALES } from '../space-scale';
-import { STARTER_PROMPTS } from '../starter-prompts';
 
 export type PrefsUpdate = (change: (current: Preferences) => Preferences) => void;
 export type SpaceRef = { slug: string; title: string };
@@ -173,14 +172,6 @@ export function WorkPanel({ prefs, update, spaces, skills, connectors }: Common 
           <label key={s.name} className="voice-option" title={s.description}>
             <input type="checkbox" checked={prefs.favoriteSkills.includes(s.name)} onChange={() => update((p) => ({ ...p, favoriteSkills: toggle(p.favoriteSkills, s.name, 12) }))} />
             <span>{s.name}</span>
-          </label>
-        ))}
-      </Section>
-      <Section title="Suggestions on the empty chat" hint="Untick a built-in suggestion to hide it.">
-        {STARTER_PROMPTS.map((s) => (
-          <label key={s.label} className="voice-option" title={s.prompt}>
-            <input type="checkbox" checked={!prefs.chat.hiddenStarters.includes(s.label)} onChange={() => update((p) => ({ ...p, chat: { ...p.chat, hiddenStarters: p.chat.hiddenStarters.includes(s.label) ? p.chat.hiddenStarters.filter((x) => x !== s.label) : [...p.chat.hiddenStarters, s.label] } }))} />
-            <span>{s.label}</span>
           </label>
         ))}
       </Section>
