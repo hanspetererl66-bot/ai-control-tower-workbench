@@ -69,7 +69,6 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Start view', 'Decides what you see after the next start. It does not change the current session.'],
   ['Pinned Spaces', 'Pinned Spaces move to the top of the Spaces list in the order you pinned them.'],
   ['Favourite skills', 'Shows a button per skill under the message box. A click inserts the skill into the message.'],
-  ['Suggestions on the empty chat', 'Hides or shows the built-in suggestion buttons on a new conversation.'],
   ['Cards under the chat', 'Hides or shows the briefing cards below the message box on a new conversation. The data behind them is not changed.'],
   ['Own starter prompts', 'Adds a button on the empty chat. A click puts the prompt into the message box so you can edit it before sending.'],
   ['Default setup', 'When several connectors could answer, the assistant is told which ones you prefer. The model itself is still chosen in the model menu of the message box.'],

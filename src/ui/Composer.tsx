@@ -15,7 +15,6 @@ import {
 import { listSkills } from '../skills';
 import SkillIcon from './SkillIcon';
 import {
-  CONTROL_TOWER_CONNECTOR,
   hasControlTowerConnector,
   type StarterPrompt,
 } from '../starter-prompts';
@@ -48,8 +47,6 @@ type Props = {
   onWebSearchChange?: (enabled: boolean) => void;
   onCancel: () => void;
   onManageConnectors?: () => void;
-  /** Stage the bundled AI Control Tower connector for installation. */
-  onInstallConnector?: () => void;
   /** Show suggested Control Tower questions (empty chat only). */
   starters?: boolean;
   voice?: VoiceSettings;
@@ -64,8 +61,6 @@ type Props = {
   /** Own starter prompts and favourite skills from the settings. */
   ownStarters?: StarterPrompt[];
   favoriteStarters?: StarterPrompt[];
-  /** Built-in suggestions the person switched off (by label). */
-  hiddenStarters?: string[];
   /** Briefing cards and groups under the chat that are switched off. */
   hiddenBriefing?: string[];
   /** Recurring briefings (clock button). */
@@ -91,11 +86,9 @@ export default function Composer({
   onWebSearchChange,
   onCancel,
   onManageConnectors,
-  onInstallConnector,
   starters = false,
   ownStarters,
   favoriteStarters,
-  hiddenStarters,
   hiddenBriefing,
   schedules,
   onSchedulesChange,
@@ -373,10 +366,6 @@ export default function Composer({
 
   function pickOwnStarter(starter: StarterPrompt) {
     void submit({ text: starter.prompt });
-  }
-
-  function pickStarter(starter: StarterPrompt) {
-    void submit({ text: starter.prompt, connector: CONTROL_TOWER_CONNECTOR });
   }
 
   async function pickAttachments() {
@@ -761,15 +750,10 @@ export default function Composer({
       )}
       {starters && (
         <StarterPrompts
-          available={connectorsChecked ? hasControlTowerConnector(known.map((k) => k.name)) : null}
           disabled={busy || preparingConnector || !agent}
-          onPick={pickStarter}
-          onInstall={onInstallConnector}
-          onManage={onManageConnectors}
           own={ownStarters}
           favorites={favoriteStarters}
           onPickOwn={pickOwnStarter}
-          hidden={hiddenStarters}
         />
       )}
     </div>
