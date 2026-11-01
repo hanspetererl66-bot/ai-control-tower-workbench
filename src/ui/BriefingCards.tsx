@@ -54,7 +54,7 @@ export default function BriefingCards({ disabled, canAsk, hidden = [], onOpen, o
           <article key={card.id} className={`briefing-card briefing-${card.tone}`}>
             <div className="briefing-area">{card.area}</div>
             <h3>{card.title}</h3>
-            <p>{card.detail}</p>
+            <p title={card.detail}>{card.detail}</p>
             <div className="briefing-actions">
               {card.actions.map((action) => (
                 <button
