@@ -6,6 +6,7 @@ type Props = {
   onAgentIntent: (intent: string) => void;
   onAgent: () => void;
   onOpenN8n: () => void;
+  onOpenSkills: () => void;
   onOpenConnectors: () => void;
   generate: (prompt: string, title: string) => Promise<string>;
   onStop: () => void;
@@ -14,10 +15,10 @@ type Props = {
 };
 
 /**
- * Start page of "Develop": three tiles. Agent and Workflow start from a goal ("intent"): the person says what should be
+ * Start page of "Develop": four tiles. Agent and Workflow start from a goal ("intent"): the person says what should be
  * achieved. An agent goes into the Agent Studio (confirmed steps up to the build). A workflow goes through requirements,
  * specification and solution architecture in the guided process and ends as an importable n8n workflow.
- * The third tile explains skills and connectors and opens them.
+ * Skills and Connectors are two tiles of their own: each explains the building block and opens it.
  */
 export default function DevelopHub(props: Props) {
   const [projects, setProjects] = useState<Project[]>(() => loadProjects(window.localStorage));
@@ -72,17 +73,18 @@ export default function DevelopHub(props: Props) {
             action="Start the guided process" other="or open n8n directly"
             onIntent={startWorkflow} onOther={props.onOpenN8n}
           />
-          <section className="develop-card develop-card-skills" aria-label="Skills and Connectors">
-            <span className="develop-logo develop-logo-skills" aria-hidden="true"><ConnectorMark /></span>
-            <span className="develop-card-title">Skills &amp; Connectors</span>
-            <span className="develop-card-brand">the building blocks</span>
-            <ul className="develop-blocks">
-              <li><b>Skill</b><span>know-how: instructions that tell Joule how to do a task</span></li>
-              <li><b>Connector</b><span>tools: a safe link to an app or a data source</span></li>
-              <li><b>Agent</b><span>combines both to do a job on its own</span></li>
-            </ul>
-            <button className="dialog-btn dialog-btn-primary develop-go" onClick={props.onOpenConnectors}>Open Skills &amp; Connectors</button>
-          </section>
+          <BlockCard
+            kind="skills" logo={<SkillMark />} title="Skills" brand="the know-how" label="Skills"
+            text="Instructions that tell Joule how to do a task, and scripts or templates that come with them."
+            points={['Written once, shared by team and organization', 'Checked and approved before others use them']}
+            action="Open Skills" onOpen={props.onOpenSkills}
+          />
+          <BlockCard
+            kind="connectors" logo={<ConnectorMark />} title="Connectors" brand="the tools" label="Connectors"
+            text="A safe link to an app or a data source, so that Joule can read from it or act in it."
+            points={['SAP, Salesforce, Jira, Slack, Databricks and more', 'You decide which tools ask first']}
+            action="Open Connectors" onOpen={props.onOpenConnectors}
+          />
         </div>
         {projects.length > 0 && (
           <section className="develop-recent" aria-label="Your projects">
@@ -104,6 +106,24 @@ export default function DevelopHub(props: Props) {
         )}
       </div>
     </main>
+  );
+}
+
+function BlockCard(p: {
+  kind: 'skills' | 'connectors'; logo: React.ReactNode; title: string; brand: string; label: string; text: string;
+  points: string[]; action: string; onOpen: () => void;
+}) {
+  return (
+    <section className="develop-card develop-card-block" aria-label={p.label}>
+      <span className={`develop-logo develop-logo-${p.kind}`} aria-hidden="true">{p.logo}</span>
+      <span className="develop-card-title">{p.title}</span>
+      <span className="develop-card-brand">{p.brand}</span>
+      <span className="develop-card-text">{p.text}</span>
+      <ul className="develop-blocks">
+        {p.points.map((x) => <li key={x}><span>{x}</span></li>)}
+      </ul>
+      <button className="dialog-btn dialog-btn-primary develop-go" onClick={p.onOpen}>{p.action}</button>
+    </section>
   );
 }
 
@@ -134,6 +154,17 @@ function N8nSymbol() {
   return (
     <svg viewBox="0 0 304 160" width="88" height="46" role="img" aria-label="n8n">
       <path fillRule="evenodd" clipRule="evenodd" d="M272 64C257.089 64 244.561 53.8018 241.008 40H204.331C196.51 40 189.835 45.6546 188.549 53.3696L187.234 61.2608C185.985 68.7531 182.195 75.2738 176.835 80C182.195 84.7262 185.985 91.2469 187.234 98.7392L188.549 106.63C189.835 114.345 196.51 120 204.331 120H209.008C212.561 106.198 225.089 96 240 96C257.673 96 272 110.327 272 128C272 145.673 257.673 160 240 160C225.089 160 212.56 149.802 209.008 136H204.331C188.688 136 175.338 124.691 172.766 109.261L171.451 101.37C170.165 93.6546 163.49 88 155.669 88H142.992C139.44 101.802 126.911 112 112 112C97.0893 112 84.5605 101.802 81.0081 88H62.9919C59.4395 101.802 46.9107 112 32 112C14.3269 112 0 97.6731 0 80C0 62.3269 14.3269 48 32 48C46.9107 48 59.4395 58.1982 62.9919 72H81.0081C84.5605 58.1982 97.0893 48 112 48C126.911 48 139.44 58.1982 142.992 72H155.669C163.49 72 170.165 66.3454 171.451 58.6304L172.766 50.7392C175.338 35.3092 188.688 24 204.331 24L241.008 24C244.56 10.1982 257.089 0 272 0C289.673 0 304 14.3269 304 32C304 49.6731 289.673 64 272 64ZM272 48C280.837 48 288 40.8366 288 32C288 23.1634 280.837 16 272 16C263.163 16 256 23.1634 256 32C256 40.8366 263.163 48 272 48ZM32 96C40.8366 96 48 88.8366 48 80C48 71.1634 40.8366 64 32 64C23.1634 64 16 71.1634 16 80C16 88.8366 23.1634 96 32 96ZM128 80C128 88.8366 120.837 96 112 96C103.163 96 96 88.8366 96 80C96 71.1634 103.163 64 112 64C120.837 64 128 71.1634 128 80ZM256 128C256 136.837 248.837 144 240 144C231.163 144 224 136.837 224 128C224 119.163 231.163 112 240 112C248.837 112 256 119.163 256 128Z" fill="#EA4B71" />
+    </svg>
+  );
+}
+
+/** An open book with a spark: a generic skill mark. */
+function SkillMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <path d="M8 16c8-3 16-2 24 3v30c-8-5-16-6-24-3z" fill="currentColor" />
+      <path d="M56 16c-8-3-16-2-24 3v30c8-5 16-6 24-3z" fill="currentColor" opacity=".55" />
+      <path d="M46 4l1.8 4.2L52 10l-4.2 1.8L46 16l-1.8-4.2L40 10l4.2-1.8z" fill="currentColor" />
     </svg>
   );
 }
