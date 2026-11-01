@@ -1,0 +1,61 @@
+Contract ID,Customer,Product,Region,Contract end,Notice days,Annual value EUR,Owner
+C-2023-0100,Alpenblick Maschinenbau,Signavio Process Manager,Nordics,2027-03-02,90,359049,L. Fischer
+C-2024-0107,Donau Automotive,Integrated Business Planning,DACH,2026-12-27,60,362180,L. Fischer
+C-2025-0114,Alpenblick Maschinenbau,Ariba Procurement,EMEA,2026-12-12,30,414196,A. Weber
+C-2026-0121,Alpenblick Maschinenbau,S/4HANA Cloud Private Edition,DACH,2027-01-11,60,320128,M. Hoffmann
+C-2023-0128,Baumgart Energie,Ariba Procurement,EMEA,2026-11-15,30,203835,J. Brandt
+C-2024-0135,Baumgart Energie,"AI units (Joule, AI Core, Document AI)",EMEA,2027-01-27,90,485179,A. Weber
+C-2025-0142,Odenwald Bau,Business Technology Platform,DACH,2027-05-24,180,165283,S. Keller
+C-2026-0149,Rheintal Pharma,SuccessFactors Employee Central,DACH,2026-12-15,60,143815,S. Keller
+C-2023-0156,Baumgart Energie,SuccessFactors Employee Central,DACH,2026-11-05,30,23065,S. Keller
+C-2024-0163,Hanse Retail Group,Integrated Business Planning,DACH,2026-12-24,90,405327,J. Brandt
+C-2025-0170,Neckar Software,S/4HANA Cloud Private Edition,Nordics,2026-11-06,30,487211,J. Brandt
+C-2026-0177,Donau Automotive,"AI units (Joule, AI Core, Document AI)",DACH,2026-12-26,90,433180,L. Fischer
+C-2023-0184,Taunus Chemie,Signavio Process Manager,DACH,2028-09-06,60,384769,A. Weber
+C-2024-0191,Kraichgau Foods,SuccessFactors Employee Central,Nordics,2028-10-18,180,342513,J. Brandt
+C-2025-0198,Spreewald Medien,"AI units (Joule, AI Core, Document AI)",EMEA,2027-03-23,90,89853,J. Brandt
+C-2026-0205,Spreewald Medien,S/4HANA Cloud Private Edition,EMEA,2027-10-14,90,487296,L. Fischer
+C-2023-0212,Lindenhof Versicherung,Signavio Process Manager,EMEA,2027-08-01,30,394290,J. Brandt
+C-2024-0219,Lindenhof Versicherung,SuccessFactors Employee Central,EMEA,2028-08-20,60,449294,S. Keller
+C-2025-0226,Hanse Retail Group,"AI units (Joule, AI Core, Document AI)",DACH,2027-03-29,90,128875,A. Weber
+C-2026-0233,Odenwald Bau,Integrated Business Planning,DACH,2027-09-24,60,285783,J. Brandt
+C-2023-0240,Kraichgau Foods,SuccessFactors Employee Central,DACH,2027-04-11,60,334485,A. Weber
+C-2024-0247,Baumgart Energie,Integrated Business Planning,DACH,2027-10-07,180,284113,S. Keller
+C-2025-0254,Kraichgau Foods,Integrated Business Planning,EMEA,2027-05-14,90,102739,S. Keller
+C-2026-0261,Baumgart Energie,Ariba Procurement,DACH,2028-02-14,30,318505,J. Brandt
+C-2023-0268,Baumgart Energie,"AI units (Joule, AI Core, Document AI)",EMEA,2029-01-07,180,27654,J. Brandt
+C-2024-0275,Odenwald Bau,S/4HANA Cloud Private Edition,DACH,2028-03-17,180,218101,L. Fischer
+C-2025-0282,Hanse Retail Group,Integrated Business Planning,Nordics,2028-10-30,90,42671,A. Weber
+C-2026-0289,Baumgart Energie,Ariba Procurement,Nordics,2028-07-15,90,165108,S. Keller
+C-2023-0296,Rheintal Pharma,Integrated Business Planning,EMEA,2028-06-07,30,171678,A. Weber
+C-2024-0303,Nordwind Logistik,Ariba Procurement,Nordics,2028-02-02,180,477979,J. Brandt
+C-2025-0310,Odenwald Bau,Concur Travel,Nordics,2028-02-25,30,228102,S. Keller
+C-2026-0317,Alpenblick Maschinenbau,"AI units (Joule, AI Core, Document AI)",DACH,2028-03-30,180,226911,L. Fischer
+C-2023-0324,Hanse Retail Group,"AI units (Joule, AI Core, Document AI)",DACH,2027-07-16,60,102883,A. Weber
+C-2024-0331,Alpenblick Maschinenbau,Signavio Process Manager,EMEA,2028-06-05,180,367553,J. Brandt
+C-2025-0338,Spreewald Medien,Signavio Process Manager,DACH,2028-04-30,90,340079,A. Weber
+C-2026-0345,Alpenblick Maschinenbau,S/4HANA Cloud Private Edition,Nordics,2027-11-27,90,93628,A. Weber
+C-2023-0352,Spreewald Medien,Ariba Procurement,DACH,2027-09-25,30,438119,J. Brandt
+C-2024-0359,Alpenblick Maschinenbau,Concur Travel,DACH,2028-07-15,30,330302,S. Keller
+C-2025-0366,Lindenhof Versicherung,S/4HANA Cloud Private Edition,DACH,2028-05-18,30,85134,M. Hoffmann
+C-2026-0373,Rheintal Pharma,S/4HANA Cloud Private Edition,DACH,2028-01-15,90,107445,J. Brandt
+C-2023-0380,Rheintal Pharma,Ariba Procurement,EMEA,2028-03-15,90,448559,M. Hoffmann
+C-2024-0387,Kraichgau Foods,"AI units (Joule, AI Core, Document AI)",EMEA,2028-09-11,180,35557,L. Fischer
+C-2025-0394,Lindenhof Versicherung,S/4HANA Cloud Private Edition,DACH,2027-04-05,90,82140,L. Fischer
+C-2026-0401,Taunus Chemie,Business Technology Platform,EMEA,2028-08-02,90,326932,L. Fischer
+C-2023-0408,Alpenblick Maschinenbau,Signavio Process Manager,DACH,2028-03-23,60,297718,M. Hoffmann
+C-2024-0415,Taunus Chemie,Concur Travel,EMEA,2028-09-07,60,190779,A. Weber
+C-2025-0422,Alpenblick Maschinenbau,SuccessFactors Employee Central,Nordics,2027-12-09,60,484618,J. Brandt
+C-2026-0429,Odenwald Bau,"AI units (Joule, AI Core, Document AI)",DACH,2027-12-21,90,333307,S. Keller
+C-2023-0436,Donau Automotive,Signavio Process Manager,DACH,2028-04-09,90,156187,M. Hoffmann
+C-2024-0443,Odenwald Bau,SuccessFactors Employee Central,DACH,2028-01-10,90,62429,A. Weber
+C-2025-0450,Odenwald Bau,Integrated Business Planning,EMEA,2028-10-09,90,211021,L. Fischer
+C-2026-0457,Baumgart Energie,SuccessFactors Employee Central,EMEA,2027-08-27,90,81536,M. Hoffmann
+C-2023-0464,Neckar Software,Ariba Procurement,Nordics,2027-07-04,90,325588,A. Weber
+C-2024-0471,Lindenhof Versicherung,Integrated Business Planning,Nordics,2027-06-26,90,87927,A. Weber
+C-2025-0478,Nordwind Logistik,Concur Travel,EMEA,2027-03-04,60,255489,S. Keller
+C-2026-0485,Alpenblick Maschinenbau,Concur Travel,DACH,2027-04-13,90,198783,J. Brandt
+C-2023-0492,Lindenhof Versicherung,"AI units (Joule, AI Core, Document AI)",Nordics,2028-06-21,30,384251,J. Brandt
+C-2024-0499,Hanse Retail Group,"AI units (Joule, AI Core, Document AI)",EMEA,2028-08-04,60,361212,L. Fischer
+C-2025-0506,Odenwald Bau,Signavio Process Manager,Nordics,2027-07-19,180,271570,M. Hoffmann
+C-2026-0513,Neckar Software,"AI units (Joule, AI Core, Document AI)",DACH,2028-07-06,60,252697,M. Hoffmann

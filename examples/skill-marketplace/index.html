@@ -403,6 +403,34 @@ details.intro .body{margin-top:8px}
 .s4m .trustcard .tgrid .l{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .s4m .trustcard .tgrid .v{margin-top:3px;font-size:13px}
 @media(max-width:640px){.s4m nav.subnav{padding:10px 16px}.s4m .hero-search{flex-direction:column}.s4m .bstep{grid-template-columns:30px 1fr}.s4m .bstep .no{grid-row:1}.s4m .bstep .why,.s4m .bstep .io{grid-column:1/3}}
+/* sandbox, promotion, approvals */
+#impact,#appr-list{overflow-x:auto}#impact td,#impact th{white-space:nowrap}
+.smx-badge[hidden]{display:none}
+.smx-badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:99px;background:var(--purple);color:var(--surface);font-size:11px;font-weight:700;text-align:center;margin-left:4px}
+.sbx textarea{width:100%;min-height:62px;font:inherit;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface);color:var(--ink);resize:vertical}
+.sbx .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.sbx select{max-width:100%;flex:1 1 280px}.sbx .row>button,.sbx .row>label{flex:0 0 auto}.sbx .row>label.chk{display:inline-flex;align-items:center;gap:6px}
+.sbx .log{margin:8px 0 0;padding:10px 12px;background:var(--wash);border:1px solid var(--line);border-radius:10px;font:12px/1.6 ui-monospace,Menlo,monospace;color:var(--ink-2);white-space:pre-wrap;min-height:20px}
+.sbx .out{margin-top:10px;padding:12px 14px;border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:10px}
+.sbx .out ul{margin:6px 0 0;padding-left:18px}
+.sbx .mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px}
+.sbx .mets b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.sbx table{margin-top:10px}
+.lvls{display:flex;gap:0;flex-wrap:wrap;margin:8px 0 12px}
+.lvls span{padding:5px 12px;border:1px solid var(--line);font-size:12px;color:var(--muted);background:var(--surface)}
+.lvls span:first-child{border-radius:99px 0 0 99px}.lvls span:last-child{border-radius:0 99px 99px 0}
+.lvls span.done{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.lvls span.cur{background:var(--purple-dim);color:var(--purple);border-color:var(--purple);font-weight:700}
+.lvls span.next{border-style:dashed;color:var(--ink)}
+.chklist{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:4px}
+.chklist li{display:flex;gap:8px;align-items:flex-start}
+.chklist i{flex:none;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 inherit;font-style:normal;color:var(--surface);margin-top:2px}
+.chklist .ok i{background:var(--green)}.chklist .no i{background:var(--red)}.chklist .na i{background:var(--faint)}
+.apr{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.apr .step{display:inline-flex;gap:5px;align-items:center;padding:2px 9px;border:1px solid var(--line);border-radius:99px;font-size:12px}
+.apr .step.approved{border-color:var(--green-border);background:var(--green-dim);color:var(--green)}
+.apr .step.rejected{border-color:var(--red-border);background:var(--red-dim);color:var(--red)}
+.apr .step.active{border-color:var(--purple);color:var(--purple)}
 </style>
 </head>
 <body class="s4m">
@@ -425,6 +453,7 @@ details.intro .body{margin-top:8px}
   <button data-tab="impact" aria-pressed="false">Impact</button>
   <button data-tab="governance" aria-pressed="false">Governance</button>
   <button data-tab="gaps" aria-pressed="false">Gaps</button>
+  <button data-tab="approvals" aria-pressed="false">Approvals <span class="smx-badge" id="appr-badge" hidden></span></button>
   <button data-tab="hints" aria-pressed="false">Hints</button>
 </nav>
 <main>
@@ -504,10 +533,17 @@ details.intro .body{margin-top:8px}
     <div class="smx-kpis" id="impact-kpis"></div>
     <div class="s" id="impact-note" style="margin:6px 0 12px"></div>
     <div class="card tbl" id="impact"></div>
+    <div id="impact-areas"></div>
   </section>
   <section class="pg" id="pg-governance">
     <div class="smx-kpis" id="gov-kpis"></div>
     <div class="card tbl" id="governance"></div>
+  </section>
+  <section class="pg" id="pg-approvals">
+    <div class="smx-kpis" id="appr-kpis"></div>
+    <div class="filters"><label class="chk"><input type="checkbox" id="appr-auto" checked> Demo: let the approvers answer by themselves</label><span class="s">A skill moves one reach level at a time (individual, team, LOB, board area, company). Each level needs its own approvers.</span></div>
+    <h2>Requests</h2>
+    <div class="card tbl" id="appr-list"></div>
   </section>
   <section class="pg" id="pg-gaps">
     <div class="smx-kpis" id="gap-kpis"></div>
@@ -6935,7 +6971,7 @@ details.intro .body{margin-top:8px}
 
   /* ---------- navigation helpers ---------- */
   var tabs = document.querySelectorAll('#tabs button');
-  var INSIGHTS = ['overview', 'ranking', 'impact', 'governance', 'gaps', 'hints'];
+  var INSIGHTS = ['overview', 'ranking', 'impact', 'governance', 'approvals', 'gaps', 'hints'];
   function go(name){
     var group = INSIGHTS.indexOf(name) >= 0 ? 'overview' : name;
     Array.prototype.forEach.call(tabs, function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === group)); });
@@ -7314,8 +7350,9 @@ details.intro .body{margin-top:8px}
       kpiBox('Value', eur(value), 'at ' + eur(A.hourlyRateEur) + ' per hour') + kpiBox('Run cost', eur(cost), 'model usage, September') + kpiBox('Success rate', Math.round(weighted * 10) / 10 + '%', 'weighted by runs');
     $('impact-note').textContent = 'Last full month (September) as of ' + D.asOf + '. Minutes saved per run are the owners’ estimates; value = hours saved × hourly rate. Fictional sample figures.';
     var idle = withProfile().filter(function(s){ return econ(s).total < 30; });
-    $('impact').innerHTML = '<table><thead><tr><th>Skill</th><th>Runs per month</th><th class="num">Sept.</th><th class="num">Success</th><th class="num">Rating</th><th class="num">Min / run</th><th class="num">Hours saved</th><th class="num">Value</th><th class="num">Run cost</th><th class="num">Net value</th></tr></thead><tbody>' +
-      list.map(function(r){ var i = r.e.i; return '<tr tabindex="0" data-skill="' + esc(r.s.name) + '"><td><b>' + esc(r.s.name) + '</b>' + (r.s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + esc(i.model) + '</div></td><td>' + spark(i.runsPerMonth) + '</td><td class="num">' + r.e.runs + (r.e.change === null ? '' : '<div class="s">' + (r.e.change > 0 ? '+' : '') + r.e.change + '%</div>') + '</td><td class="num">' + pctTag(i.successRatePct, 95, 88) + '</td><td class="num">' + stars(rating(r.s.name)) + '</td><td class="num">' + i.minutesSavedPerRun + '</td><td class="num">' + num(r.e.hours) + '</td><td class="num"><b>' + eur(r.e.value) + '</b></td><td class="num">' + eur(r.e.cost) + '</td><td class="num">' + eur(r.e.net) + '</td></tr>'; }).join('') + '</tbody></table>' +
+    renderImpactAreas();
+    $('impact').innerHTML = '<table><thead><tr><th>Skill</th><th>Runs per month</th><th class="num">Sept.</th><th class="num">Success</th><th class="num">Rating</th><th class="num">Min / run</th><th class="num">Hours saved</th><th class="num">Value</th><th class="num">Run cost</th><th class="num">Net value</th><th class="num">Users</th><th class="num">Corrected</th><th>Verdict</th></tr></thead><tbody>' +
+      list.map(function(r){ var i = r.e.i, u = usage(r.s); return '<tr tabindex="0" data-skill="' + esc(r.s.name) + '"><td><b>' + esc(r.s.name) + '</b>' + (r.s.sample ? ' ' + tag('warn', 'Sample') : '') + '<div class="s">' + esc(i.model) + '</div></td><td>' + spark(i.runsPerMonth) + '</td><td class="num">' + r.e.runs + (r.e.change === null ? '' : '<div class="s">' + (r.e.change > 0 ? '+' : '') + r.e.change + '%</div>') + '</td><td class="num">' + pctTag(i.successRatePct, 95, 88) + '</td><td class="num">' + stars(rating(r.s.name)) + '</td><td class="num">' + i.minutesSavedPerRun + '</td><td class="num">' + num(r.e.hours) + '</td><td class="num"><b>' + eur(r.e.value) + '</b></td><td class="num">' + eur(r.e.cost) + '</td><td class="num">' + eur(r.e.net) + '</td><td class="num">' + u.users + '</td><td class="num">' + u.corr + '%</td><td>' + tag(u.tone, u.verdict) + '</td></tr>'; }).join('') + '</tbody></table>' +
       (idle.length ? '<div class="s" style="margin-top:10px">Little use so far (under 30 runs in six months): ' + idle.map(function(s){ return esc(s.name); }).join(', ') + '</div>' : '');
   }
   function renderGovernance(){
@@ -7374,17 +7411,17 @@ details.intro .body{margin-top:8px}
     var p = prof(s), current = document.querySelector('.pg.on');
     if (current && current.id !== 'pg-detail') backTab = current.id.replace('pg-', '');
     var head = '<div class="smx-head"><span class="smx-title">' + esc(s.name) + '</span>' + tag(MAT_TONE[s.maturity] || 'n', MAT_LABEL[s.maturity]) + (s.sample ? tag('warn', 'Sample') : '') + '</div><p class="s" style="margin:4px 0 0">' + esc(s.description) + '</p><div class="s">' + esc([s.boardArea || UNSORTED, s.lob, s.team].filter(Boolean).join(' / ')) + ' · owner ' + esc(s.owner || 'not set') + ' · v' + esc(s.version || 1) + '</div>';
-    if (!p){ $('detail').innerHTML = '<div class="card">' + head + '<p class="s">No impact, governance, lifecycle or discovery profile yet for this skill.</p></div>' + trustCard(s); go('detail'); return; }
+    if (!p){ $('detail').innerHTML = '<div class="card">' + head + '<p class="s">No impact, governance, lifecycle or discovery profile yet for this skill.</p></div>' + trustCard(s) + sbxCard(s, null); go('detail'); return; }
     var e = econ(s), i = p.impact, g = p.governance, l = p.lifecycle, d = p.discovery;
     var tests = l.tests.total ? Math.round(l.tests.passed / l.tests.total * 100) : 0;
-    var impact = '<div class="card"><h3>1 · Impact</h3>' + spark(i.runsPerMonth) + '<div class="s">Runs per month, May to October (October partial)</div>' + dl([['Runs in September', e.runs + (e.change === null ? '' : ' (' + (e.change > 0 ? '+' : '') + e.change + '%)')], ['Success rate', pctTag(i.successRatePct, 95, 88)], ['Error rate', i.errorRatePct + '%'], ['Rating', stars(rating(s.name))], ['Saved per run', i.minutesSavedPerRun + ' min'], ['Time saved', num(e.hours) + ' h in September'], ['Value', eur(e.value)], ['Run cost', eur(e.cost) + ' (€' + i.costPerRunEur.toFixed(2) + ' per run)'], ['Response time', i.avgSeconds + ' s'], ['Model', esc(i.model)]]) + '</div>';
+    var impact = '<div class="card"><h3>1 · Impact</h3>' + spark(i.runsPerMonth) + '<div class="s">Runs per month, May to October (October partial)</div>' + dl([['Runs in September', e.runs + (e.change === null ? '' : ' (' + (e.change > 0 ? '+' : '') + e.change + '%)')], ['Success rate', pctTag(i.successRatePct, 95, 88)], ['Error rate', i.errorRatePct + '%'], ['Rating', stars(rating(s.name))], ['Active users', usage(s).users + ' in September'], ['Corrected by people', usage(s).corr + '% of runs'], ['Verdict', tag(usage(s).tone, usage(s).verdict)], ['Saved per run', i.minutesSavedPerRun + ' min'], ['Time saved', num(e.hours) + ' h in September'], ['Value', eur(e.value)], ['Run cost', eur(e.cost) + ' (€' + i.costPerRunEur.toFixed(2) + ' per run)'], ['Response time', i.avgSeconds + ' s'], ['Model', esc(i.model)]]) + '</div>';
     var gov = '<div class="card"><h3>2 · Governance</h3>' + dl([['EU AI Act', tag(RISK_TONE[g.aiActRisk] || 'n', g.aiActRisk)], ['DPIA', tag(DPIA_TONE[g.dpia] || 'n', g.dpia)], ['Allowed data', chips(g.allowedDataClasses)], ['Approved models', esc(g.approvedModels.join(', '))], ['Region', esc(g.region)], ['Review cycle', 'every ' + g.reviewIntervalMonths + ' months'], ['Last review', esc(g.lastReview)], ['Next review', esc(g.nextReview) + ' ' + reviewTag(g)], ['Control Tower risks', g.linkedRisks.length ? g.linkedRisks.map(function(r){ return tag('n', r); }).join(' ') : 'none'], ['Agents in the register', chips(g.linkedAgents)]]) +
       '<h3 style="margin-top:12px">Approval history</h3>' + list(g.approvalHistory.map(function(h){ return esc(h.date) + ' · v' + esc(h.version) + ' · ' + esc(h.decision) + ' by ' + esc(h.by); })) + '</div>';
     var life = '<div class="card"><h3>3 · Lifecycle</h3>' + dl([['Tests', l.tests.passed + ' of ' + l.tests.total + ' passed ' + tag(tests >= 95 ? 'ok' : tests >= 80 ? 'warn' : 'bad', tests + '%') + '<div class="s">last run ' + esc(l.tests.lastRun) + '</div>'], ['Needs tools', chips(l.dependencies.tools)], ['Needs connectors', chips(l.dependencies.connectors)], ['Needs skills', l.dependencies.skills.length ? l.dependencies.skills.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Replaced by', l.replacedBy ? skillLink(l.replacedBy) : 'not planned'], ['Sunset', l.sunsetDate ? tag('warn', l.sunsetDate) : 'none'], ['Deputy owner', l.deputy ? esc(l.deputy) : tag('warn', 'not set')], ['Support', l.supportChannel ? esc(l.supportChannel) : '<span class="s">not set</span>'], ['Languages', esc(l.languages.join(', '))]]) +
       '<h3 style="margin-top:12px">Changes</h3>' + list(l.changelog.slice().reverse().map(function(c){ return '<b>v' + esc(c.version) + '</b> · ' + esc(c.date) + ' · ' + esc(c.summary); })) + '</div>';
     var used = D.skills.filter(function(x){ var q = prof(x); return q && (q.lifecycle.dependencies.skills.indexOf(s.name) >= 0); }).map(function(x){ return x.name; });
     var disc = '<div class="card"><h3>4 · Discovery</h3><div class="s">Try asking</div>' + list(d.examplePrompts.map(function(x){ return '“' + esc(x) + '”'; })) + '<div class="s" style="margin-top:10px">Demo flow</div><ol class="smx-list">' + d.demoFlow.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' + dl([['Prerequisites', d.prerequisites.length ? esc(d.prerequisites.join('; ')) : 'none'], ['Tags', chips(d.tags)], ['Industries', chips(d.industries)], ['Recommended for', chips(d.recommendedFor)], ['Related skills', d.related.length ? d.related.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Used by skills', used.length ? used.map(skillLink).join(' ') : '<span class="s">none</span>'], ['Favourites', String(d.favorites)]]) + '</div>';
-    $('detail').innerHTML = '<div class="card">' + head + '</div>' + trustCard(s) + '<div class="smx-grid">' + impact + gov + life + disc + ratingCard(s.name) + '</div>';
+    $('detail').innerHTML = '<div class="card">' + head + '</div>' + trustCard(s) + sbxCard(s, p) + promotionCard(s) + '<div class="smx-grid">' + impact + gov + life + disc + ratingCard(s.name) + '</div>';
     go('detail');
   }
   $('detail-back').addEventListener('click', function(){ go(backTab); });
@@ -7397,7 +7434,182 @@ details.intro .body{margin-top:8px}
     var t = e.target.closest && e.target.closest('tr[data-skill], article[data-skill]');
     if (t){ e.preventDefault(); openSkill(t.getAttribute('data-skill')); }
   });
-  function renderAll(){ renderDiscover(); renderCollections(); renderMine(); renderOverview(); renderCatalog(); renderRanking(); renderImpact(); renderGovernance(); renderGaps(); renderHints(); }
+
+  /* ---------- usage and impact, extended ---------- */
+  function hash(str){ var h = 7; for (var k = 0; k < str.length; k++) h = (h * 31 + str.charCodeAt(k)) % 100003; return h; }
+  function usage(s){
+    var e = econ(s), i = e.i, h = hash(s.name);
+    var users = Math.max(1, Math.round(e.runs / (2.6 + (h % 9) / 10)));
+    var corr = Math.min(40, Math.round(i.errorRatePct * 1.6 + (100 - i.successRatePct) * 0.5 + (h % 4)));
+    var verdict, tone;
+    if (e.total < 30){ verdict = 'Promote or retire'; tone = 'n'; }
+    else if (i.successRatePct < 90 || corr > 12){ verdict = 'Improve'; tone = 'warn'; }
+    else if (e.net > 600 && i.successRatePct >= 95){ verdict = 'Scale up'; tone = 'ok'; }
+    else { verdict = 'Keep'; tone = 'n'; }
+    return {users: users, corr: corr, verdict: verdict, tone: tone, e: e};
+  }
+  function renderImpactAreas(){
+    var rows = {};
+    withProfile().forEach(function(s){ var u = usage(s), a = s.boardArea || UNSORTED, r = rows[a] || (rows[a] = {runs: 0, users: 0, value: 0, cost: 0, skills: 0}); r.runs += u.e.runs; r.users += u.users; r.value += u.e.value; r.cost += u.e.cost; r.skills++; });
+    var list = Object.keys(rows).map(function(k){ return {name: k, r: rows[k]}; }).sort(function(a, b){ return b.r.value - a.r.value; });
+    var max = Math.max.apply(null, list.map(function(x){ return x.r.value; }).concat([1]));
+    $('impact-areas').innerHTML = '<h2>By board area</h2><div class="card tbl"><table><thead><tr><th>Board area</th><th class="num">Skills</th><th class="num">Runs</th><th class="num">Users</th><th>Value in September</th><th class="num">Run cost</th><th class="num">Return</th></tr></thead><tbody>' +
+      list.map(function(x){ return '<tr><td><b>' + esc(x.name) + '</b></td><td class="num">' + x.r.skills + '</td><td class="num">' + num(x.r.runs) + '</td><td class="num">' + num(x.r.users) + '</td><td><div class="bar"><i style="width:' + Math.round(x.r.value / max * 100) + '%"></i></div><div class="s">' + eur(x.r.value) + '</div></td><td class="num">' + eur(x.r.cost) + '</td><td class="num"><b>' + (x.r.cost ? Math.round(x.r.value / x.r.cost) : 0) + '×</b></td></tr>'; }).join('') + '</tbody></table></div>';
+  }
+
+  /* ---------- sandbox ---------- */
+  var SB_PRICE = 0.0045 / 1000; // blended EUR per token, as in the AI Control Tower
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function sbxCard(s, p){
+    var prompts = (p && p.discovery && p.discovery.examplePrompts.length) ? p.discovery.examplePrompts : ['Run ' + s.name + ' with a typical request.'];
+    var ch = p ? p.lifecycle.changelog : [];
+    var prev = ch.length > 1 ? ch[ch.length - 2].version : null;
+    return '<div class="card sbx" id="sbx" data-skill-name="' + esc(s.name) + '"><h3>Sandbox · try it before you install</h3>' +
+      '<p class="s" style="margin:0 0 6px">Runs the skill on sample data. Read-only: no connector is called, nothing is written, nobody is notified. The run is simulated.</p>' +
+      '<div class="row"><label class="s" for="sbx-ex">Example</label><select id="sbx-ex" aria-label="Example prompt">' + prompts.map(function(x, k){ return '<option value="' + k + '">' + esc(x) + '</option>'; }).join('') + '</select></div>' +
+      '<textarea id="sbx-in" aria-label="Request for the sandbox">' + esc(prompts[0]) + '</textarea>' +
+      '<div class="row"><button type="button" class="primary" id="sbx-run">Run in sandbox</button>' + (prev !== null ? '<label class="chk"><input type="checkbox" id="sbx-cmp"> Compare with v' + esc(prev) + '</label>' : '') + '<span class="s" id="sbx-state"></span></div>' +
+      '<div class="log" id="sbx-log" aria-live="polite">Not run yet.</div><div id="sbx-out"></div></div>';
+  }
+  function sbxRun(){
+    var box = $('sbx'); if (!box) return;
+    var s = D.skills.filter(function(x){ return x.name === box.getAttribute('data-skill-name'); })[0], p = s && prof(s); if (!s) return;
+    var i = p ? p.impact : {avgSeconds: 30, costPerRunEur: 0.3, successRatePct: 90, model: 'Claude Sonnet 5.5'}, h = hash(s.name + $('sbx-in').value);
+    var tokens = Math.max(800, Math.round(i.costPerRunEur / SB_PRICE)), tin = Math.round(tokens * 0.72), tout = tokens - tin;
+    var secs = Math.max(4, Math.round(i.avgSeconds * (0.9 + (h % 25) / 100)));
+    var tools = (s.tools || []).slice(0, 6), flow = p ? p.discovery.demoFlow : ['Collect the data', 'Prepare the answer'];
+    var lines = ['Sandbox started: read-only, sample data, no connector is called', 'Skill ' + s.name + ' v' + s.version + ' loaded (' + (500 + h % 900) + ' tokens of instructions)'];
+    tools.forEach(function(t, k){ lines.push('tool ' + t + ': sample response in ' + (0.3 + ((h + k * 7) % 9) / 10).toFixed(1) + ' s'); });
+    lines.push('Model ' + i.model + ' wrote the answer (' + num(tout) + ' output tokens)');
+    var checks = p ? Math.max(1, Math.min(5, Math.round(i.successRatePct / 20))) : 4, passed = Math.min(5, checks);
+    var cmp = $('sbx-cmp') && $('sbx-cmp').checked;
+    function outHtml(){
+      var cost = tokens * SB_PRICE;
+      var html = '<div class="out"><b>Sample answer</b><ul>' + flow.map(function(f){ return '<li>' + esc(f) + '</li>'; }).join('') + '</ul><div class="s" style="margin-top:6px">Request: “' + esc($('sbx-in').value.slice(0, 160)) + '”. Fictional sample output that shows the shape of the result.</div>' +
+        '<div class="mets"><div><b>Duration</b>' + secs + ' s</div><div><b>Tokens</b>' + num(tokens) + '</div><div><b>Cost</b>€' + cost.toFixed(2) + '</div><div><b>Checks</b>' + passed + ' of 5 passed</div><div><b>Tools</b>' + tools.length + ' (simulated)</div></div></div>';
+      if (cmp){
+        var ch = p.lifecycle.changelog, pv = ch[ch.length - 2], cu = ch[ch.length - 1];
+        var secs0 = Math.round(secs * (1.12 + (h % 7) / 100)), tok0 = Math.round(tokens * 1.1), pass0 = Math.max(1, passed - 1);
+        var d = function(a, b, unit, lowerBetter){ var diff = b - a, t = diff === 0 ? 'n' : ((diff < 0) === lowerBetter ? 'ok' : 'bad'); return tag(t, (diff > 0 ? '+' : '') + (unit === '€' ? diff.toFixed(2) : diff) + (unit === '€' ? ' €' : unit ? ' ' + unit : '')); };
+        html += '<table><thead><tr><th></th><th class="num">v' + esc(pv.version) + '</th><th class="num">v' + esc(cu.version) + '</th><th>Change</th></tr></thead><tbody>' +
+          '<tr><td>Duration</td><td class="num">' + secs0 + ' s</td><td class="num">' + secs + ' s</td><td>' + d(secs0, secs, 's', true) + '</td></tr>' +
+          '<tr><td>Tokens</td><td class="num">' + num(tok0) + '</td><td class="num">' + num(tokens) + '</td><td>' + d(tok0, tokens, '', true) + '</td></tr>' +
+          '<tr><td>Cost per run</td><td class="num">€' + (tok0 * SB_PRICE).toFixed(2) + '</td><td class="num">€' + cost.toFixed(2) + '</td><td>' + d(+(tok0 * SB_PRICE).toFixed(2), +cost.toFixed(2), '€', true) + '</td></tr>' +
+          '<tr><td>Checks passed</td><td class="num">' + pass0 + ' of 5</td><td class="num">' + passed + ' of 5</td><td>' + d(pass0, passed, '', false) + '</td></tr></tbody></table>' +
+          '<div class="s" style="margin-top:6px">What changed in v' + esc(cu.version) + ': ' + esc(cu.summary) + '</div>';
+      }
+      return html;
+    }
+    $('sbx-run').disabled = true; $('sbx-out').innerHTML = ''; $('sbx-state').textContent = 'running ...';
+    var shown = 0;
+    (function step(){
+      shown++; $('sbx-log').textContent = lines.slice(0, shown).join('\n');
+      if (shown < lines.length && !reducedMotion) setTimeout(step, 320);
+      else { $('sbx-log').textContent = lines.join('\n') + '\nDone in ' + secs + ' s (simulated).'; $('sbx-out').innerHTML = outHtml(); $('sbx-state').textContent = ''; $('sbx-run').disabled = false; }
+    })();
+  }
+  document.addEventListener('click', function(e){ if (e.target && e.target.id === 'sbx-run') sbxRun(); });
+  document.addEventListener('change', function(e){ if (e.target && e.target.id === 'sbx-ex'){ var s = D.skills.filter(function(x){ return x.name === $('sbx').getAttribute('data-skill-name'); })[0], p = s && prof(s); if (p) $('sbx-in').value = p.discovery.examplePrompts[Number(e.target.value)] || ''; } });
+
+  /* ---------- approval workflow: promote a skill one reach level at a time ---------- */
+  var LEVELS = D.taxonomy.scopes;
+  var APPROVERS = {team: ['Team lead'], lob: ['LOB owner'], 'board-area': ['Board area owner'], company: ['AI Programme Office', 'Security & Compliance']};
+  var MAX_MAT = {pilot: 'lob', empfohlen: 'board-area', approved: 'company'};
+  var REJECT_REASONS = ['Please add a second owner or a deputy first.', 'Tests cover too little. Add cases for the error paths.', 'Data class does not fit this audience yet.', 'Run it with the team for another month, then ask again.'];
+  var W = {requests: [], seq: 1, auto: true, scopes: {}, timers: []};
+  var nextLevel = function(s){ var k = LEVELS.indexOf(s.scope); return k >= 0 && k < LEVELS.length - 1 ? LEVELS[k + 1] : null; };
+  function checklist(s, target){
+    var p = prof(s), g = p && p.governance, l = p && p.lifecycle, r = rating(s.name), items = [];
+    var add = function(ok, label, why){ items.push({ok: ok, label: label, why: why || ''}); };
+    add(!!s.owner, 'Owner named', s.owner ? esc(s.owner) : 'No owner set. Every shared skill needs a person who answers for it.');
+    if (l){ var pct = l.tests.total ? Math.round(l.tests.passed / l.tests.total * 100) : 0; add(pct >= 95, 'Tests passed (95% needed)', l.tests.passed + ' of ' + l.tests.total + ' (' + pct + '%)'); }
+    if (g){
+      add(daysTo(g.nextReview) >= 0, 'Review is not overdue', 'Next review ' + esc(g.nextReview));
+      add(g.dpia === 'Completed' || g.dpia === 'Not required', 'Data protection assessment settled', 'DPIA: ' + esc(g.dpia));
+      add(g.aiActRisk !== 'High' || target !== 'company', 'EU AI Act class fits the audience', 'Class ' + esc(g.aiActRisk) + (g.aiActRisk === 'High' && target === 'company' ? ': high-risk skills are not offered company-wide.' : ''));
+    }
+    add(!(s.dataClass === 'vertraulich' && (target === 'board-area' || target === 'company')), 'Data class fits the audience', 'Data class ' + esc(dc(s.dataClass || 'intern')));
+    var maxIdx = LEVELS.indexOf(MAX_MAT[s.maturity] || 'team');
+    add(LEVELS.indexOf(target) <= maxIdx, 'Maturity is high enough', MAT_LABEL[s.maturity] + ' skills can reach: ' + (SCOPE_LABEL[MAX_MAT[s.maturity] || 'team']) + '.');
+    if (target === 'board-area' || target === 'company') add(r.enough && r.avg >= 3.5, 'Rated well by users (3.5 stars, at least ' + RS.minRatings + ' ratings)', r.n + ' ratings' + (r.n ? ', ' + r.avg.toFixed(1) + ' stars' : ''));
+    return items;
+  }
+  function reqOf(name){ return W.requests.filter(function(r){ return r.skill === name && r.status === 'In review'; })[0] || null; }
+  function aprSteps(r){
+    var act = r.approvers.findIndex(function(a){ return a.status === 'pending'; });
+    return '<div class="apr">' + r.approvers.map(function(a, k){ return '<span class="step ' + (a.status === 'pending' ? (k === act && r.status === 'In review' ? 'active' : '') : a.status) + '">' + (a.status === 'approved' ? '✓ ' : a.status === 'rejected' ? '× ' : '') + esc(a.role) + '</span>'; }).join('') + '</div>';
+  }
+  function promotionCard(s){
+    var cur = s.scope, nxt = nextLevel(s), open = reqOf(s.name);
+    var lv = '<div class="lvls" role="img" aria-label="Reach: ' + esc(SCOPE_LABEL[cur]) + '">' + LEVELS.map(function(l, k){ var ci = LEVELS.indexOf(cur); return '<span class="' + (k < ci ? 'done' : k === ci ? 'cur' : (nxt === l ? 'next' : '')) + '">' + esc(SCOPE_LABEL[l]) + '</span>'; }).join('') + '</div>';
+    var h = '<div class="card" id="promo"><h3>Promotion · approval workflow</h3>' + lv;
+    if (!nxt) return h + '<p class="s">Already available company-wide. Nothing to promote.</p></div>';
+    var items = checklist(s, nxt), blockers = items.filter(function(x){ return !x.ok; });
+    h += '<div class="s">Next level: <b>' + esc(SCOPE_LABEL[nxt]) + '</b>. Approvers: ' + esc(APPROVERS[nxt].join(' and ')) + '.</div><ul class="chklist">' + items.map(function(x){ return '<li class="' + (x.ok ? 'ok' : 'no') + '"><i>' + (x.ok ? '✓' : '×') + '</i><span><b>' + esc(x.label) + '</b><div class="s">' + x.why + '</div></span></li>'; }).join('') + '</ul>';
+    if (open) h += '<div class="s">Request <b>' + esc(open.id) + '</b> is in review.</div>' + aprSteps(open) + '<div style="margin-top:8px"><button type="button" class="lnk" data-go-approvals="1">Open the approvals</button></div>';
+    else h += '<button type="button" class="primary" id="promo-go" data-skill-name="' + esc(s.name) + '"' + (blockers.length ? ' disabled' : '') + '>Request promotion to ' + esc(SCOPE_LABEL[nxt]) + '</button>' + (blockers.length ? ' <span class="s">' + blockers.length + ' open point' + (blockers.length === 1 ? '' : 's') + ' to fix first.</span>' : '');
+    var last = (W.requests.filter(function(r){ return r.skill === s.name && r.status !== 'In review'; }).slice(-1))[0];
+    if (last) h += '<div class="s" style="margin-top:8px">Last request ' + esc(last.id) + ': ' + tag(last.status === 'Approved' ? 'ok' : 'bad', last.status) + (last.note ? ' ' + esc(last.note) : '') + '</div>';
+    return h + '</div>';
+  }
+  function persistW(){
+    if (window.parent === window) return;
+    window.parent.postMessage({type: 'wb:state', state: {requests: W.requests, seq: W.seq, auto: W.auto, scopes: W.scopes}}, '*');
+  }
+  function createRequest(name){
+    var s = D.skills.filter(function(x){ return x.name === name; })[0]; if (!s || reqOf(name)) return;
+    var nxt = nextLevel(s); if (!nxt || checklist(s, nxt).some(function(x){ return !x.ok; })) return;
+    var r = {id: 'PR-' + (200 + W.seq++), skill: name, from: s.scope, to: nxt, requestedBy: 'You', requestedOn: D.asOf, status: 'In review', note: '', approvers: APPROVERS[nxt].map(function(role){ return {role: role, status: 'pending', on: null, comment: ''}; })};
+    W.requests.unshift(r); scheduleAuto(r); afterWorkflow(r);
+  }
+  function decide(id, ok, comment){
+    var r = W.requests.filter(function(x){ return x.id === id; })[0]; if (!r || r.status !== 'In review') return;
+    var a = r.approvers.filter(function(x){ return x.status === 'pending'; })[0]; if (!a) return;
+    a.status = ok ? 'approved' : 'rejected'; a.on = D.asOf; a.comment = comment || '';
+    if (!ok){ r.status = 'Rejected'; r.note = comment || ''; }
+    else if (r.approvers.every(function(x){ return x.status === 'approved'; })){
+      r.status = 'Approved'; var s = D.skills.filter(function(x){ return x.name === r.skill; })[0];
+      if (s){ s.scope = r.to; W.scopes[s.name] = r.to; var p = prof(s); if (p) p.governance.approvalHistory.push({date: D.asOf, version: s.version, by: r.approvers.map(function(x){ return x.role; }).join(' and '), decision: 'Promoted to ' + SCOPE_LABEL[r.to]}); }
+    }
+    afterWorkflow(r);
+  }
+  function scheduleAuto(r){
+    if (!W.auto || r.status !== 'In review') return;
+    var wait = reducedMotion ? 0 : 3500, h = hash(r.id + r.skill);
+    var t = setTimeout(function(){ if (!W.auto || r.status !== 'In review') return; var no = h % 11 === 0; decide(r.id, !no, no ? REJECT_REASONS[h % REJECT_REASONS.length] : 'Looks good.'); if (r.status === 'In review') scheduleAuto(r); }, wait);
+    W.timers.push(t);
+  }
+  function afterWorkflow(r){
+    renderAll();
+    var det = $('pg-detail'); if (det && det.classList.contains('on') && $('promo')){ var nm = ($('promo-go') && $('promo-go').getAttribute('data-skill-name')) || (r && r.skill); if (nm) openSkill(nm); }
+    persistW();
+  }
+  function renderApprovals(){
+    var list = W.requests, inRev = list.filter(function(r){ return r.status === 'In review'; }).length;
+    var b = $('appr-badge'); b.hidden = !inRev; b.textContent = inRev;
+    $('appr-kpis').innerHTML = kpiBox('In review', inRev, 'waiting for an approver') + kpiBox('Approved', list.filter(function(r){ return r.status === 'Approved'; }).length, 'skills promoted') + kpiBox('Rejected', list.filter(function(r){ return r.status === 'Rejected'; }).length, 'with a reason') + kpiBox('Ready to ask', D.skills.filter(function(s){ var n = nextLevel(s); return n && !reqOf(s.name) && !checklist(s, n).some(function(x){ return !x.ok; }); }).length, 'skills pass every check for the next level');
+    if (!list.length){ $('appr-list').innerHTML = '<div class="empty">No requests yet. Open a skill and ask for the next reach level.</div>'; return; }
+    $('appr-list').innerHTML = '<table><thead><tr><th>Request</th><th>Skill</th><th>From → to</th><th>Approvers</th><th>Status</th><th></th></tr></thead><tbody>' + list.map(function(r){
+      var act = r.approvers.filter(function(x){ return x.status === 'pending'; })[0];
+      return '<tr><td><b>' + esc(r.id) + '</b><div class="s">' + esc(r.requestedOn) + '</div></td><td>' + skillLink(r.skill) + '</td><td>' + esc(SCOPE_LABEL[r.from]) + ' → <b>' + esc(SCOPE_LABEL[r.to]) + '</b></td><td>' + aprSteps(r) + (r.note ? '<div class="s">' + esc(r.note) + '</div>' : '') + '</td><td>' + tag(r.status === 'Approved' ? 'ok' : r.status === 'Rejected' ? 'bad' : 'warn', r.status) + '</td><td class="num">' + (r.status === 'In review' && act ? '<button type="button" class="sec" data-appr="' + esc(r.id) + '" data-ok="1">Approve as ' + esc(act.role) + '</button> <button type="button" class="sec" data-appr="' + esc(r.id) + '" data-ok="0">Reject</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
+  document.addEventListener('click', function(e){
+    var t = e.target.closest && e.target.closest('button'); if (!t) return;
+    if (t.id === 'promo-go') createRequest(t.getAttribute('data-skill-name'));
+    else if (t.hasAttribute('data-go-approvals')) go('approvals');
+    else if (t.hasAttribute('data-appr')) decide(t.getAttribute('data-appr'), t.getAttribute('data-ok') === '1', t.getAttribute('data-ok') === '1' ? 'Approved by hand.' : REJECT_REASONS[0]);
+  });
+  $('appr-auto').addEventListener('change', function(e){ W.auto = e.target.checked; if (W.auto) W.requests.forEach(scheduleAuto); persistW(); });
+  window.addEventListener('message', function(e){
+    if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore' || !e.data.state) return;
+    var st = e.data.state; if (!Array.isArray(st.requests)) return;
+    W.timers.forEach(clearTimeout); W.timers = [];
+    W.requests = st.requests; W.seq = st.seq || W.requests.length + 1; W.auto = st.auto !== false; W.scopes = st.scopes || {};
+    $('appr-auto').checked = W.auto;
+    D.skills.forEach(function(s){ if (W.scopes[s.name]) s.scope = W.scopes[s.name]; });
+    renderAll(); W.requests.forEach(scheduleAuto);
+  });
+  function renderAll(){ renderDiscover(); renderCollections(); renderMine(); renderOverview(); renderCatalog(); renderRanking(); renderImpact(); renderGovernance(); renderGaps(); renderHints(); renderApprovals(); }
 
   Array.prototype.forEach.call(tabs, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });
   Array.prototype.forEach.call($('subtabs').children, function(b){ b.addEventListener('click', function(){ go(b.dataset.tab); }); });

@@ -9,7 +9,7 @@ import { dirname } from 'node:path';
 
 export const N8N_EXTENSION = 'n8n';
 
-import { normalizeInstanceUrl } from '../connectors/control-tower/server/n8n.mjs';
+import { normalizeInstanceUrl } from '../connectors/_lib/server/n8n.mjs';
 export { normalizeInstanceUrl };
 
 /** Endpoint of n8n's instance-level MCP server (Settings → Instance-level MCP). */

@@ -37,6 +37,10 @@
       "description": "Search issues with JQL, for example: project = ABC AND statusCategory != Done ORDER BY updated DESC. Returns key, summary, status, type, priority, assignee."
     },
     {
+      "name": "jira_read_backlog",
+      "description": "Read the backlog of a project (epics, stories, tasks, bugs with parent epic, priority and description) for a requirements document. Read only."
+    },
+    {
       "name": "jira_get_issue",
       "description": "Read one issue: description, labels and the last comments."
     },

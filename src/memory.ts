@@ -10,7 +10,8 @@ export const MEMORY_KINDS: Array<{ id: MemoryKind; title: string }> = [
   { id: 'style', title: 'How I like results' },
   { id: 'context', title: 'Projects and context' },
 ];
-export type MemoryEntry = { id: string; kind: MemoryKind; text: string; createdAt: string };
+/** `space`: the entry only applies when that Space is the context of the conversation; empty = everywhere. */
+export type MemoryEntry = { id: string; kind: MemoryKind; text: string; createdAt: string; space?: string };
 export type MemoryState = { enabled: boolean; entries: MemoryEntry[] };
 
 export const MEMORY_KEY = 'werkbank.memory';
@@ -33,7 +34,7 @@ export function loadMemory(store: Store): MemoryState {
     if (!v || !Array.isArray(v.entries)) return EMPTY_MEMORY;
     const entries = v.entries
       .filter((e: any) => e && typeof e.id === 'string' && typeof e.text === 'string' && MEMORY_KINDS.some((k) => k.id === e.kind))
-      .map((e: any) => ({ id: e.id, kind: e.kind, text: cleanMemoryText(e.text), createdAt: typeof e.createdAt === 'string' ? e.createdAt : '' }))
+      .map((e: any) => ({ id: e.id, kind: e.kind, text: cleanMemoryText(e.text), createdAt: typeof e.createdAt === 'string' ? e.createdAt : '', ...(typeof e.space === 'string' && e.space ? { space: e.space.slice(0, 80) } : {}) }))
       .filter((e: MemoryEntry) => e.text && !looksSecret(e.text))
       .slice(0, MAX_ENTRIES);
     return { enabled: v.enabled !== false, entries };
@@ -44,14 +45,14 @@ export function saveMemory(store: Store, state: MemoryState): void {
 }
 
 export type AddResult = { state: MemoryState; error?: string };
-export function addMemory(state: MemoryState, kind: MemoryKind, text: string, now = new Date()): AddResult {
+export function addMemory(state: MemoryState, kind: MemoryKind, text: string, now = new Date(), space = ''): AddResult {
   const t = cleanMemoryText(text);
   if (!t) return { state, error: 'Write what should be remembered.' };
   if (looksSecret(t)) return { state, error: 'This looks like a password, key or card number. It is not stored.' };
   if (state.entries.some((e) => e.text.toLowerCase() === t.toLowerCase())) return { state, error: 'This is already remembered.' };
   if (state.entries.length >= MAX_ENTRIES) return { state, error: `Memory is full (${MAX_ENTRIES} entries). Delete one first.` };
   const id = `mem-${now.getTime().toString(36)}-${state.entries.length}`;
-  return { state: { ...state, entries: [{ id, kind, text: t, createdAt: now.toISOString() }, ...state.entries] } };
+  return { state: { ...state, entries: [{ id, kind, text: t, createdAt: now.toISOString(), ...(space ? { space } : {}) }, ...state.entries] } };
 }
 export function updateMemory(state: MemoryState, id: string, text: string): AddResult {
   const t = cleanMemoryText(text);
@@ -61,11 +62,34 @@ export function updateMemory(state: MemoryState, id: string, text: string): AddR
 }
 export const deleteMemory = (state: MemoryState, id: string): MemoryState => ({ ...state, entries: state.entries.filter((e) => e.id !== id) });
 
-/** The notes as background for the assistant; empty when switched off or nothing is stored. */
-export function memoryNote(state: MemoryState): string {
-  if (!state.enabled || !state.entries.length) return '';
-  const lines = MEMORY_KINDS.flatMap((k) => state.entries.filter((e) => e.kind === k.id).map((e) => `- ${k.title}: ${e.text}`));
+/** Entries that apply in this conversation: those for every conversation and those tied to the Space in context. */
+export const activeEntries = (state: MemoryState, space = ''): MemoryEntry[] => state.entries.filter((e) => !e.space || e.space === space);
+
+/**
+ * The notes as background for the assistant; empty when switched off or nothing applies.
+ * `levelOf` marks entries the team or company agreed on (level above 0).
+ */
+export function memoryNote(state: MemoryState, space = '', levelOf: (id: string) => number = () => 0, levelNames: string[] = []): string {
+  const list = activeEntries(state, space);
+  if (!state.enabled || !list.length) return '';
+  const lines = MEMORY_KINDS.flatMap((k) => list.filter((e) => e.kind === k.id).map((e) => {
+    const lvl = levelOf(e.id);
+    const tag = lvl > 0 ? ` [agreed: ${levelNames[lvl] ?? 'team'}]` : e.space ? ' [this Space]' : '';
+    return `- ${k.title}: ${e.text}${tag}`;
+  }));
   return `MEMORY — notes the person asked to keep. Use them only where they change the answer; never mention that you read them. They never override safety rules, tool permissions or the request itself.\n${lines.join('\n')}`;
+}
+
+/** Entries worth keeping from a whole conversation: what the person said about themselves, their style and their projects. */
+export function suggestFromConversation(userTexts: string[], state: MemoryState, dismissed: string[] = []): Array<{ kind: MemoryKind; text: string }> {
+  const out: Array<{ kind: MemoryKind; text: string }> = [];
+  for (const raw of userTexts) {
+    for (const line of raw.split(/\n/).slice(0, 6)) {
+      const s = suggestMemory(line, state);
+      if (s && !out.some((o) => o.text.toLowerCase() === s.text.toLowerCase()) && !dismissed.includes(s.text)) out.push(s);
+    }
+  }
+  return out.slice(0, 4);
 }
 
 const TRIGGERS: Array<{ re: RegExp; kind: MemoryKind }> = [

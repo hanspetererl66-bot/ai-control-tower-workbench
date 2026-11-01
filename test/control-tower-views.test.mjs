@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { callTool, TOOL_DEFINITIONS } from '../connectors/control-tower/server/tools.mjs';
+import { callTool, TOOL_DEFINITIONS } from '../connectors/_lib/server/tools.mjs';
 import { TAB_LABELS, TOOL_TABS, controlTowerViewFor, controlTowerViews } from '../src/control-tower-views.ts';
 
 const ROOT = join(import.meta.dirname, '..');

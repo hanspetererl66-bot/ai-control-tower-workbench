@@ -5,6 +5,7 @@
  * Kept in localStorage; can be exported, imported and synced to Supabase through the connector (never secrets).
  * Everything coming from storage, a file or Supabase goes through `sanitizePreferences`.
  */
+import { DEFAULT_HARNESS_STATE, sanitizeHarnessState, type HarnessState } from './harness.ts';
 import { SPACE_SCALES } from './space-scale.ts';
 
 export const PREFERENCES_STORAGE_KEY = 'werkbank.preferences.v1';
@@ -96,6 +97,8 @@ export type Preferences = ProfileSettings & {
   storages: StorageLocation[];
   profiles: Profile[];
   activeProfile: string;
+  /** Harness profiles: working rules for the chat (persona, connectors, rights, step limit). Chosen in the chat. */
+  harness: HarnessState;
   sync: { key: string; auto: boolean };
 };
 
@@ -126,6 +129,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   storages: [],
   profiles: [],
   activeProfile: 'standard',
+  harness: { ...DEFAULT_HARNESS_STATE, custom: [] },
   sync: { key: 'default', auto: false },
 };
 
@@ -268,6 +272,7 @@ export function sanitizePreferences(value: unknown): Preferences {
     storages,
     profiles,
     activeProfile,
+    harness: sanitizeHarnessState(v.harness),
     sync: { key: typeof sync.key === 'string' && ID.test(sync.key) ? sync.key : 'default', auto: sync.auto === true },
   };
 }
@@ -569,8 +574,8 @@ export function isOriginalLook(prefs: Preferences): boolean {
 
 /** Everything back to the original; saved profiles and the Supabase key stay. */
 export function resetAll(prefs: Preferences): Preferences {
-  // Archived Spaces stay archived: that is how the person sorted their work, not a look or an assistant setting.
-  return { ...DEFAULT_PREFERENCES, profiles: prefs.profiles, sync: prefs.sync, archivedSpaces: prefs.archivedSpaces };
+  // Harness profiles are saved work setups like the profiles above, so they stay too. Archived Spaces stay archived: that is how the person sorted their work, not a look or an assistant setting.
+  return { ...DEFAULT_PREFERENCES, profiles: prefs.profiles, harness: prefs.harness, sync: prefs.sync, archivedSpaces: prefs.archivedSpaces };
 }
 
 export function isOriginal(prefs: Preferences): boolean {

@@ -58,3 +58,8 @@ goose-home/**
 
 # Also ignore node_modules when it is a symlink (a trailing slash only matches directories).
 /node_modules
+
+# Python service (services/tabpfn)
+__pycache__/
+.pytest_cache/
+.venv/

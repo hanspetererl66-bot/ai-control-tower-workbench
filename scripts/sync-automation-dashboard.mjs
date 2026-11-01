@@ -29,7 +29,7 @@ export function embedData(html, data) {
   return html.replace(BLOCK, (_m, open, _body, close) => `${open}\n${serialise(data)}\n${close}`);
 }
 
-import { DAY, WINDOW_DAYS, buildDashboardData, categorize, deriveNodes, fetchN8n, loadCategories as loadRules, normalizeInstanceUrl, normalizeStatus } from '../connectors/control-tower/server/n8n.mjs';
+import { DAY, WINDOW_DAYS, buildDashboardData, categorize, deriveNodes, fetchN8n, loadCategories as loadRules, normalizeInstanceUrl, normalizeStatus } from '../connectors/_lib/server/n8n.mjs';
 export { WINDOW_DAYS, buildDashboardData, categorize, deriveNodes, fetchN8n, normalizeInstanceUrl, normalizeStatus };
 export const loadCategories = (dir = DIR) => loadRules(join(dir, 'categories.json'));
 

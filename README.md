@@ -1,5 +1,5 @@
 # Joule Work X - Next Gen Design Study
-# Werkbank - Extended by some more capabilities to showcase possible business scenarios
+# Werkbank - Enriched by add. capabilities to showcase possible business scenarios
 
 Joule Work X - Next Gen Design Study (a private design study, based on the open-source [Werkbank](https://github.com/marianfoo/werkbank) by marianfoo) is a local desktop workbench for AI-assisted conversations, file context,
 persistent Spaces, MCP connectors, and reusable agent skills. The renderer talks to
@@ -70,20 +70,64 @@ The risk register is data-driven: edit `examples/control-tower/data.json`, then 
 `npm run sync:control-tower` to embed it into the page (a Space cannot fetch files
 from inside the sandbox). `npm test` fails if the two drift apart.
 
-### Control Tower connector (MCP)
+### Werkbank connectors (MCP)
 
-`connectors/control-tower/` is a small, dependency-free MCP server that lets the chat
-query the same `data.json` the Space renders: risks, agent registry, unregistered
-assets, overprivileged agents and the AI budget. All tools are read-only.
+The sample-data tools are split into seven small connectors, each with one job. They are dependency-free MCP
+servers that share the code in `connectors/_lib/`. Add only the ones you need.
+
+| Connector | What it does | Settings (all optional) |
+|---|---|---|
+| `ai-control-tower` | Risks, agent registry, AI budget, what-if on AI credits | Supabase URL and key |
+| `sub4me` | Customers, invoices, contracts, offers, AI consumption, demo tickets | Supabase URL and key |
+| `n8n-automation` | n8n Cloud workflows and executions, demo workflows, infrastructure change plans | n8n URL and key, webhook |
+| `skill-marketplace` | Skill search, impact, governance, gaps, ratings, and the skill lifecycle (card, duplicates, approval, retirement) | Supabase URL and key |
+| `knowledge-graph` | Search, neighbours, paths and impact over the sample data | none |
+| `web-sources` | SAP Help, SAP Community and other approved public sites | none |
+| `werkbank-workspace` | Personal settings sync, groups, shared Spaces and team memory | Supabase URL and key |
+
+Jira, Databricks, Slack and Gmail have their own connectors as before.
+
+In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, then confirm. Or build bundles:
 
 ```
-npm run build:control-tower-mcpb     # writes dist/ai-control-tower.mcpb
+npm run build:connectors                 # writes dist/<connector>.mcpb for all seven
+npm run build:control-tower-mcpb         # only dist/ai-control-tower.mcpb
+node scripts/build-control-tower-mcpb.mjs sub4me
 ```
 
-Then in Werkbank open **Connectors & Skills**, choose **Import MCP bundle**, pick the
-file and confirm. Ask, for example, "Which risks are below 40% mitigated?". Edits to
-the bundled `data.json` apply without restarting the agent. Every result carries a
-`view` field naming the Control Tower tab that shows the same information.
+and import a file with **Import MCP bundle**. Ask, for example, "Which risks are below 40% mitigated?". Edits to the
+bundled `data.json` apply without restarting the agent. Every result carries a `view` field naming the tab that shows
+the same information. A new connector is a folder `connectors/<name>/` with a `manifest.json` and a short
+`server/index.mjs` that calls `serve()` from `connectors/_lib/server/runtime.mjs`.
+
+Coming from the earlier single connector? Remove the old `ai-control-tower` entry once and add the ones you use. Each
+connector keeps its own settings, so enter the Supabase URL and key once per connector that needs them.
+
+### Cognee Memory: an open source knowledge graph underneath (pilot)
+
+`connectors/cognee-memory/` is a manifest that starts the published [Cognee](https://github.com/topoteretes/cognee)
+MCP server (`uvx cognee-mcp`, Apache-2.0) on this computer. Cognee extracts entities and relations from text and
+answers questions over them; its tools are `remember`, `recall` and `forget`. It sits next to the hand-built
+`knowledge-graph` connector so you can compare answers before replacing anything.
+
+1. Install [uv](https://docs.astral.sh/uv/). The first start downloads about 1 GB (Python packages and an embedding model).
+2. In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, **Cognee Memory**. Enter a
+   *memory folder* (for example `/Users/you/cognee-memory`) and, to extract entities and get answers, an LLM key.
+   The text you store is sent to that model provider.
+3. Load the sample graph once, with the same folder:
+
+```
+npm run cognee:corpus                       # 233 short documents from the Knowledge Graph sample data
+pip install cognee                          # Python 3.10 to 3.13
+export LLM_API_KEY=...
+export SYSTEM_ROOT_DIRECTORY=/Users/you/cognee-memory/system
+export DATA_ROOT_DIRECTORY=/Users/you/cognee-memory/data
+npm run cognee:seed                         # add -- --reset to start over
+```
+
+Then ask in the chat, for example: "Use Cognee: which tickets concern the Muster Industrie contracts?" Only the
+fictional sample data is loaded. Not yet tried against a real Cognee run in this repository's tests: the tests cover
+the documents and the manifest, not Cognee itself.
 
 ## Gmail connector (read + drafts)
 
@@ -133,6 +177,28 @@ npm run check
 ```
 
 This runs the TypeScript check, Node test suite, and production renderer build.
+
+## Develop: intent-based development
+
+The **Develop** icon starts a guided process instead of opening a blank tool. For **Create a Workflow with n8n** and **Create an Agent**:
+
+1. **Intent**: a short form (goal, what starts it, systems, data in and out, how much it may do alone, how you will know it works).
+2. **Requirements**: the chat agent writes a Product Requirements Definition with numbered, testable requirements (REQ-01 …). You read it, edit it, ask for changes and approve it.
+3. **Specification & Architecture**: from the approved PRD, the agent writes the specification and the solution architecture (a diagram, the n8n node plan or the skill outline, data contracts, errors, security, test plan), traced to the REQ IDs. You approve it.
+4. **Build**: from both documents, the agent writes the importable n8n workflow file, or a `SKILL.md`. The result is checked (valid JSON, unique node names, no secrets, front matter) before you can download the workflow or install the skill. Changing an earlier document takes the later approvals back.
+
+The documents are kept per project in this app and can be downloaded as Markdown. Each step runs in its own conversation, named "Develop: …". Experts can still open n8n and Connectors & Skills directly from the Develop page.
+## Mass upload of tables
+
+In the chat, attach up to **25 files** at once (the **+** button or drag and drop). CSV, TSV and Excel files are read locally; the model gets a compact description (rows, columns, types, ranges, sample rows) and the file path, not the whole table.
+When tables are attached, a bar appears under the files:
+
+- **Make a table Space** builds one Space with a tab per file (per sheet for Excel), search, sortable columns and an "Ask about this table" button. A Space holds at most 2,000 rows per table.
+- **Send rows to n8n…** sends the rows of one file in batches (50 to 500 rows) to a webhook, with progress, retries and "Continue at batch N" after an error. Import `examples/n8n-workflows/09-bulk-table-ingest.json` into n8n, run `supabase/migrations/20261028_018_bulk_upload_rows.sql`, set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` in n8n, activate the workflow and paste its production URL. Sending a batch twice does not duplicate rows. The webhook address is remembered on this computer; the optional token is not saved.
+
+### Demo: contract notice check after an upload
+
+`examples/demo-data/contracts-demo.xlsx` (also as `.csv`) holds 60 fictional contracts. Attach it in the chat, click **Send rows to n8n…** and note the **Upload ID** shown when it is done. Then import `examples/n8n-workflows/10-contract-notice-from-upload.json` (needs workflow 09, the migration and the same Supabase variables) and call it with that ID. It reads the uploaded rows from Supabase, computes every notice deadline (reference date 19 Oct 2026 unless you pass `asOf`) and answers with a digest per owner: which contracts must be terminated or renewed soon, which deadlines have passed, how much annual value is affected. Nothing is sent. `node scripts/make-demo-contracts.mjs` writes the files again.
 
 ## Connectors and skills
 
@@ -186,7 +252,7 @@ installed Space contains the updated page.
   "Joule Work X - Next Gen · Design Study · Built by Accenture · Demo only". Click anywhere outside the
   text, "Close" or Esc to dismiss it.
 - If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
-  **Jetzt installieren**. That stages the connector bundled in this repository and opens the usual approve
+  **Jetzt installieren**. That stages the AI Control Tower connector bundled in this repository and opens the usual approve
   dialog; the Supabase URL and key fields can stay empty to use the sample data. No `.mcpb` file is needed.
 
 
@@ -195,14 +261,14 @@ installed Space contains the updated page.
 Skills can be shared with colleagues through the same Supabase project (migration `007`). The Goose agent
 reads skills from files, so colleagues **sync** published skills into their local `goose-home/.agents/skills/`.
 
-- **Read (everyone):** the publishable key can call `skills_list` / `skills_get`, which only return `published` skills.
+- **Read:** `skills_list` / `skills_get` only return `published` skills. Since migration 022 they (and `skills_search`, `skills_ranking`, `skills_track`) are closed to the publishable key; the connectors and the sync scripts use the secret key.
 - **Write (maintainer):** the secret key uploads drafts and releases them (`release`); the agent has no tool for this.
 - **Safety:** every version is checksummed (SHA-256, verified on sync); names must equal the folder name;
   skills that look like they contain credentials are refused; local skills are never overwritten (`--force` to replace).
 
 ```bash
 # Colleague: pull published skills (then restart the agent)
-SUPABASE_URL=https://<ref>.supabase.co SUPABASE_KEY=<publishable key> npm run skills:sync
+SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SECRET_KEY=<secret key> npm run skills:sync
 
 # Maintainer
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills:publish            # upload examples/skills/* as drafts
@@ -248,7 +314,7 @@ anonymous machine hash, with no name or address. One machine counts once per ski
 ten minutes (view, search hit). Score = 3 × installs + 1 × views + 0.5 × search hits over the last 30 days, with the trend against
 the 30 days before. The Space has a **Ranking** tab (top 10, filter by board area); the chat answers
 "Welche Skills sind am stärksten nachgefragt?" with `get_skill_ranking` (connector 0.9.0). The counters are best-effort
-and can be inflated by anyone holding the publishable key, so treat the numbers as a signal, not as proof. The skill itself
+and can be inflated by anyone who can call the tracking function, so treat the numbers as a signal, not as proof. The skill itself
 does not report its use yet.
 
 ### Skill marketplace overview: board areas, LOBs, teams, individual
@@ -262,7 +328,7 @@ A skill without a scope counts as `individual`; a team scope needs a team, a LOB
 
 - **Space "Skill Marketplace":** `npm run install:skill-marketplace` installs it (overview by board area, LOB and team, catalog with filters,
   hints on possible duplicates and gaps). `npm run sync:skill-marketplace` embeds the example skills of the repository;
-  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
+  `SUPABASE_URL=… SUPABASE_SECRET_KEY=<secret key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
   registry into the installed copy only (`workspace/spaces/`), so files tracked by Git stay unchanged and `git pull` never conflicts.
   Skills tagged **Sample** are fictional and only show the structure.
 - **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
@@ -400,6 +466,24 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 - **Sample data:** `examples/skill-marketplace/ratings.json` (fictional), embedded by `npm run sync:skill-marketplace`.
 - **Supabase:** `npm run sync:skill-ratings` writes `supabase/migrations/20261019_013_skill_ratings.sql`. Run it once in the Supabase SQL editor after 012 (safe to run again; it only refreshes the sample rows). It creates `skills.skill_rating` (RLS on, no access for anon/authenticated) and two functions that only the server-side secret key may call: `skills_ratings()` and `skills_rate()`. Only skills in the registry (`skills.skill`, not retired) can be rated.
 - **Chat (connector 0.14.0):** `get_skill_ratings` (ranking, or one skill with distribution and comments) and `rate_skill`; the skill `rate-skill` asks for the stars and confirms before saving. `recommend_skills` and `recommend_skill_workflow` show the rating too. The rater is a hash of the local user and host (override with the env var `SKILL_RATER_ID`); no names are stored. Without a Supabase connection nothing is saved.
+
+### Agents, workflows and code in the shared database
+
+Agents, workflows (n8n JSON) and code of any kind (Python, Markdown, scripts) are meant to live in Supabase, not in the browser. Migration `20261031_021_work_items.sql` adds `werkbank.work_item` (kind `agent`, `workflow` or `code`, owner, visibility private, team or company, stage, intent), `werkbank.work_item_rev` and `werkbank.work_item_file`. Every save is a **new revision with all its files**; nothing is overwritten, an earlier revision can always be read, and a save with an outdated `expected_rev` is refused. Files must not contain keys, tokens or passwords (checked in the connector and again in the database). Extra files of a skill (scripts, templates next to SKILL.md) go to `skills.skill_file`.
+
+Tools: `save_work_item`, `get_work_item`, `list_work_items`, `work_item_history`, `archive_work_item` (connector `werkbank-workspace` 1.1.0) and `list_skill_files`, `get_skill_file`, `set_skill_file`, `delete_skill_file` (connector `skill-marketplace` 1.2.0). Same rules as the skill registry: tables closed to anon/authenticated, functions only for service_role, the actor is an e-mail label until the sign-in is decided. **Not yet connected:** the Develop screens and the Agent Studio still keep their projects in the browser (`localStorage`); the connector tools are the way in for now. Tests: `test/work-items.test.mjs` and, with a throw-away database, the last tests of `test/skill-lifecycle-sql.test.mjs`.
+
+### Skill lifecycle: card, duplicates, approval, retirement
+
+A skill in the shared registry (Supabase) has a lifecycle with a state that is derived, not stored twice: `draft` (Individual), `department`, `in_review`, `blocked`, `published` (organization), `deprecated` and `retired`. Migration `20261031_020_skill_lifecycle.sql` builds on the promotion flow of 019; the connector `skill-marketplace` (1.1.0) offers it as 12 tools. Write tools say "Write:" in their description and ask first by default.
+
+- **Marketplace card.** A skill cannot be shared before it is described: a description of at least 40 characters plus *when to use it*, *inputs*, *outputs* and an *example prompt* (`set_skill_card`, `get_skill_card`). For the organization level also a contact and a domain. A missing card fails the check `description`; the message names what is missing.
+- **Duplicates.** `check_skill_duplicates` compares a planned or existing skill (description, text, domain, tools) with the skills that are shared and with the person's own; `skills_promotion_request` runs the same check as `duplicate`. An identical text fails the request and names the skill to use instead. A similar skill is a warning for the reviewer, unless the new skill declares itself a variant (`variant_of` and `variant_reason`). Individual skills of other people are not compared.
+- **Approval.** `request_skill_promotion`, `decide_skill_request`, `withdraw_skill_request`, `list_skill_requests`. Seven automatic checks (secrets, scripts, permissions, harness, data, description, duplicate); a failed one blocks. The requester never decides: a department admin for the department, the Governance board for the organization.
+- **Retirement.** `deprecate_skill` sets a sunset date and an optional replacement; the sync shows it. `retire_skill` removes a skill from the marketplace and from every sync; a skill published for everyone is deprecated first (its owner may retire it after the sunset date, the Governance board at any time), and a skill with active variants cannot be retired. `restore_skill` undoes a deprecation or brings a retired skill back as an Individual draft that needs a new approval.
+- **History.** Every step is written by database triggers to `skills.lifecycle_event` (who, when, why; append-only) and shown by `get_skill_status`. `list_skill_lifecycle` gives the overview and what needs attention (sunset passed, checks failed, requests waiting).
+- **Not done yet.** The identity is the e-mail the connector sends as `actor`; it is a label, not a login, so production needs SSO (`actorOf` in `connectors/_lib/server/skill-lifecycle.mjs` is the one place to change). The governance screens in the app are still local and not connected to these functions. The migration is not applied to the Supabase project by the repository.
+- **Tests.** `test/skill-lifecycle.test.mjs` runs everywhere. `test/skill-lifecycle-sql.test.mjs` installs all migrations into a real Postgres and walks the whole flow; it is skipped unless `SKILL_SQL_TEST_DSN` names a throw-away database ending in `_test` (`createdb skills_test && SKILL_SQL_TEST_DSN="postgresql:///skills_test" npm test`). It drops the schemas `control_tower`, `sub4me`, `skills` and `werkbank` there. Never point it at Supabase.
 
 ### Sales Knowledge Graph: value, time, questions, stakeholders
 

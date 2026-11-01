@@ -1,0 +1,44 @@
+{
+  "manifest_version": "0.2",
+  "name": "knowledge-graph",
+  "display_name": "Knowledge Graph",
+  "version": "1.0.0",
+  "description": "The knowledge graph that connects the Sub4Me customer, contracts, products, teams and skills: search, neighbours, shortest path and impact analysis (sample data).",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "connectors/knowledge-graph/server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/connectors/knowledge-graph/server/index.mjs"
+      ],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "get_graph_overview",
+      "description": "Overview of the knowledge graph that connects the Sub4Me customer (contracts, offers, products, tickets), the Skill Marketplace (skills, tools), the Control Tower (risks, agent families) and n8n (workflows, apps): counts by node and relation type, the best-connected nodes and nodes without connections. Use it first to see what the graph contains. Sample data."
+    },
+    {
+      "name": "search_graph",
+      "description": "Find nodes in the knowledge graph by name or text, optionally of one type (customer, contract, offer, product, family, ticket, skill, tool, risk, agent, workflow, app, person, system, connector). Returns ids to use with the other graph tools. Sample data."
+    },
+    {
+      "name": "get_graph_neighbors",
+      "description": "One node of the knowledge graph with its direct connections, grouped by node type and written as sentences (\"Offer OFF-2026-0318 renews Contract C-2023-0390\"). Give the node as id or name (for example \"C-2023-0390\", \"renewal-radar\", \"R2\"). Optionally only neighbours of one type. Sample data."
+    },
+    {
+      "name": "find_graph_path",
+      "description": "Shortest connection between two nodes of the knowledge graph, step by step with the relation on each step. Answers \"Wie hängt Risiko R2 mit dem Kunden zusammen?\" or \"Wie ist der Ariba-Vertrag mit dem Skill renewal-radar verbunden?\". Sample data."
+    },
+    {
+      "name": "analyze_graph_impact",
+      "description": "Impact analysis: everything connected to a node within a number of steps, grouped by distance and node type, with the route to each. Answers \"Was ist betroffen, wenn der Ariba-Vertrag nicht verlängert wird?\" or \"Was hängt an Risiko R2?\". Hubs such as the connector and the systems are not followed, so the result stays about business relations. Sample data."
+    }
+  ]
+}

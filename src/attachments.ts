@@ -1,4 +1,25 @@
-export type AttachmentKind = 'presentation' | 'document' | 'text' | 'image';
+export type AttachmentKind = 'presentation' | 'document' | 'text' | 'image' | 'table';
+
+/** Chat files at once (the dialog and drag and drop). Keep in step with MAX_ATTACHMENTS in electron/attachments.mjs. */
+export const MAX_CHAT_ATTACHMENTS = 25;
+
+export type BulkUploadResult = {
+  ok: boolean;
+  cancelled?: boolean;
+  error?: string;
+  failedBatch?: number;
+  nextBatch?: number;
+  sentBatches?: number;
+  sentRows?: number;
+  total?: number;
+  totalRows?: number;
+  batchId?: string;
+};
+
+/** csv, tsv and xlsx files can be turned into a Space or sent to a webhook. */
+export function isTableFile(name: string): boolean {
+  return /\.(csv|tsv|xlsx)$/i.test(name);
+}
 
 export type ChatAttachment = {
   id: string;

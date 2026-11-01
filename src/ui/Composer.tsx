@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Agent, SessionExtension } from '../acp';
-import { formatFileSize, type ChatAttachment } from '../attachments';
+import { MAX_CHAT_ATTACHMENTS, formatFileSize, isTableFile, type ChatAttachment } from '../attachments';
+import TableActions from './TableActions';
 import {
   applyExclusiveConnectorRequest,
   requestedConnectorIsAlreadyExclusive,
@@ -14,7 +15,6 @@ import {
 import { listSkills } from '../skills';
 import SkillIcon from './SkillIcon';
 import {
-  CONTROL_TOWER_CONNECTOR,
   hasControlTowerConnector,
   type StarterPrompt,
 } from '../starter-prompts';
@@ -23,11 +23,14 @@ import SchedulePopover, { type ScheduleRuntime } from './SchedulePopover';
 import type { Schedule } from '../schedules';
 import BriefingCards from './BriefingCards';
 import { PRODUCT_TITLE } from '../product';
+import type { Command } from '../chat-context';
 import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
 type Props = {
   onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void>;
+  /** Install a Space file made from attached tables and open it. */
+  onCreateTableSpace?: (file: File) => void | Promise<void>;
   agent: Agent | null;
   busy: boolean;
   workdir: string;
@@ -35,13 +38,15 @@ type Props = {
    *  empty state, so local mode state would silently reset to the default. */
   mode: string;
   onModeChange: (id: string) => void;
+  /** Working profiles (harness): the choice in the chat bar. */
+  harnesses?: Array<{ id: string; name: string; description: string }>;
+  harnessId?: string;
+  onHarnessChange?: (id: string) => void;
   /** Web Search switch of the current conversation. */
   webSearch?: boolean;
   onWebSearchChange?: (enabled: boolean) => void;
   onCancel: () => void;
   onManageConnectors?: () => void;
-  /** Stage the bundled AI Control Tower connector for installation. */
-  onInstallConnector?: () => void;
   /** Show suggested Control Tower questions (empty chat only). */
   starters?: boolean;
   voice?: VoiceSettings;
@@ -56,32 +61,35 @@ type Props = {
   /** Own starter prompts and favourite skills from the settings. */
   ownStarters?: StarterPrompt[];
   favoriteStarters?: StarterPrompt[];
-  /** Built-in suggestions the person switched off (by label). */
-  hiddenStarters?: string[];
   /** Briefing cards and groups under the chat that are switched off. */
   hiddenBriefing?: string[];
   /** Recurring briefings (clock button). */
+  /** Slash commands (own and built-in): typing / lists them next to the skills. */
+  commands?: Command[];
   schedules?: Schedule[];
   onSchedulesChange?: (next: Schedule[]) => void;
   scheduleRuntime?: ScheduleRuntime;
 };
 
 export default function Composer({
+  commands = [],
   onSend,
+  onCreateTableSpace,
   agent,
   busy,
   workdir,
   mode,
   onModeChange,
+  harnesses,
+  harnessId,
+  onHarnessChange,
   webSearch = true,
   onWebSearchChange,
   onCancel,
   onManageConnectors,
-  onInstallConnector,
   starters = false,
   ownStarters,
   favoriteStarters,
-  hiddenStarters,
   hiddenBriefing,
   schedules,
   onSchedulesChange,
@@ -95,6 +103,7 @@ export default function Composer({
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
+  const [dragging, setDragging] = useState(false);
   const [micState, setMicState] = useState<'idle' | 'recording' | 'transcribing'>('idle');
   const [micError, setMicError] = useState('');
   const recording = useRef<Recording | null>(null);
@@ -300,6 +309,10 @@ export default function Composer({
     ? skills.filter((s) => s.name.toLowerCase().includes(slash[1].toLowerCase())).slice(0, 8)
     : [];
 
+  const cmdMatches = slash ? commands.filter((c) => c.name.includes(slash[1].toLowerCase())).slice(0, 8) : [];
+  const exactCommand = slash ? commands.some((c) => c.name === slash[1].toLowerCase()) : false;
+  const pickCommand = (name: string) => setText(`/${name} `);
+
   function pickSkill(name: string) {
     setText(`Use the ${name} skill to `);
   }
@@ -357,10 +370,6 @@ export default function Composer({
     void submit({ text: starter.prompt });
   }
 
-  function pickStarter(starter: StarterPrompt) {
-    void submit({ text: starter.prompt, connector: CONTROL_TOWER_CONNECTOR });
-  }
-
   async function pickAttachments() {
     if (busy) return;
     setAttachmentError('');
@@ -369,22 +378,50 @@ export default function Composer({
       setAttachmentError('File attachments are available in the Electron app.');
       return;
     }
+    mergeAttachments(result);
+  }
+
+  function mergeAttachments(result: { files: ChatAttachment[]; errors: string[] }) {
     const merged = new Map(attachments.map((attachment) => [attachment.path, attachment]));
     for (const attachment of result.files) merged.set(attachment.path, attachment);
     const next = [...merged.values()];
-    if (next.length > 8) {
-      setAttachmentError('Attach at most 8 files at once.');
-      setAttachments(next.slice(0, 8));
+    if (next.length > MAX_CHAT_ATTACHMENTS) {
+      setAttachmentError(`Attach at most ${MAX_CHAT_ATTACHMENTS} files at once.`);
+      setAttachments(next.slice(0, MAX_CHAT_ATTACHMENTS));
     } else {
       setAttachments(next);
       setAttachmentError(result.errors.join(' '));
     }
   }
 
+  /** Files dropped on the composer, up to the same limit as the dialog. */
+  async function dropFiles(files: FileList) {
+    if (busy || !window.host?.pathsOfDroppedFiles || !window.host.addChatFiles) return;
+    const paths = window.host.pathsOfDroppedFiles(files);
+    if (!paths.length) return;
+    if (paths.length + attachments.length > MAX_CHAT_ATTACHMENTS) {
+      setAttachmentError(`Attach at most ${MAX_CHAT_ATTACHMENTS} files at once.`);
+      return;
+    }
+    setAttachmentError('');
+    mergeAttachments(await window.host.addChatFiles(paths));
+  }
+
   return (
-    <div className="composer">
-      {matches.length > 0 && (
+    <div
+      className={`composer ${dragging ? 'composer-drop' : ''}`}
+      onDragOver={(event) => { if (event.dataTransfer?.types?.includes('Files')) { event.preventDefault(); setDragging(true); } }}
+      onDragLeave={(event) => { if (event.currentTarget === event.target) setDragging(false); }}
+      onDrop={(event) => { if (event.dataTransfer?.files?.length) { event.preventDefault(); setDragging(false); void dropFiles(event.dataTransfer.files); } }}
+    >
+      {(matches.length > 0 || cmdMatches.length > 0) && (
         <div className="picker">
+          {cmdMatches.map((c) => (
+            <button key={`cmd-${c.name}`} className="picker-item" onClick={() => pickCommand(c.name)}>
+              <span className="picker-name">/{c.name}</span>
+              <span className="picker-desc">Command · {c.prompt.replace(/\{[a-z]+\}/g, '').replace(/\s+/g, ' ').trim().slice(0, 100)}</span>
+            </button>
+          ))}
           {matches.map((s) => (
             <button key={s.name} className="picker-item" onClick={() => pickSkill(s.name)}>
               <span className="picker-name"><SkillIcon name={s.name} />/{s.name}</span>
@@ -409,7 +446,7 @@ export default function Composer({
                 />
               ) : (
                 <span className="attachment-icon" aria-hidden="true">
-                  {attachment.kind === 'presentation' ? 'P' : attachment.kind === 'document' ? 'W' : 'T'}
+                  {attachment.kind === 'presentation' ? 'P' : attachment.kind === 'document' ? 'W' : attachment.kind === 'table' || isTableFile(attachment.name) ? 'X' : 'T'}
                 </span>
               )}
               <span className="attachment-body">
@@ -445,18 +482,21 @@ export default function Composer({
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             // While the skill picker is open, Enter takes the top match.
-            if (matches.length > 0) pickSkill(matches[0].name);
+            if (exactCommand) submit();
+            else if (cmdMatches.length > 0) pickCommand(cmdMatches[0].name);
+            else if (matches.length > 0) pickSkill(matches[0].name);
             else submit();
           }
         }}
       />
+      <TableActions attachments={attachments} onCreateSpace={onCreateTableSpace} />
       {(attachmentError || connectorError) && (
         <div className="attachment-error">{attachmentError || connectorError}</div>
       )}
       <div className="composer-bar">
         <button
           className="chip chip-icon"
-          title="Add PowerPoint, Word, text, or picture files"
+          title={`Add up to ${MAX_CHAT_ATTACHMENTS} files: PowerPoint, Word, Excel, CSV, text or pictures (or drop them here)`}
           aria-label="Attach files"
           onClick={pickAttachments}
           disabled={busy || preparingConnector}
@@ -636,6 +676,19 @@ export default function Composer({
           )}
         </div>
 
+        {harnesses && harnesses.length > 1 && onHarnessChange && (
+          <label className="chip chip-select" title={harnesses.find((h) => h.id === harnessId)?.description || 'Working profile'}>
+            <SlidersIcon />
+            <select aria-label="Working profile" value={harnessId} onChange={(e) => onHarnessChange(e.target.value)} disabled={busy}>
+              {harnesses.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <label className="chip chip-select" title="Approval mode">
           <SlidersIcon />
           <select value={mode} onChange={(e) => onModeChange(e.target.value)} disabled={!agent}>
@@ -699,15 +752,10 @@ export default function Composer({
       )}
       {starters && (
         <StarterPrompts
-          available={connectorsChecked ? hasControlTowerConnector(known.map((k) => k.name)) : null}
           disabled={busy || preparingConnector || !agent}
-          onPick={pickStarter}
-          onInstall={onInstallConnector}
-          onManage={onManageConnectors}
           own={ownStarters}
           favorites={favoriteStarters}
           onPickOwn={pickOwnStarter}
-          hidden={hiddenStarters}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSapHelpHandlers, helpUrl, searchUrl, parseResults, parseCommunity, communityUrl, COMMUNITY_ORIGIN, SAP_HELP_TOOL_DEFINITIONS } from '../connectors/control-tower/server/sap-help.mjs';
+import { createSapHelpHandlers, helpUrl, searchUrl, parseResults, parseCommunity, communityUrl, COMMUNITY_ORIGIN, SAP_HELP_TOOL_DEFINITIONS } from '../connectors/_lib/server/sap-help.mjs';
 
 const body = {
   data: {

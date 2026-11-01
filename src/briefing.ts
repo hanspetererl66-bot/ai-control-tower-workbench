@@ -68,6 +68,9 @@ export function daysUntil(isoDate: string, today: Date): number {
 }
 
 const CONNECTOR = 'ai-control-tower';
+/** Customers, contracts and offers come from the Sub4Me connector; infrastructure plans go through n8n Automation. */
+const SUB4ME = 'sub4me';
+const N8N = 'n8n-automation';
 
 /** Customers with at least one red production VM, by the same fixed rules as the Fleet Space. */
 export function redCustomers(fleet: OpsBriefingData['fleet']): string[] {
@@ -97,7 +100,7 @@ function opsCards(ops: OpsBriefingData, today: Date): BriefingCard[] {
       detail: `Als Nächstes: ${first.name} (${first.left < 0 ? `seit ${-first.left} ${-first.left === 1 ? 'Tag' : 'Tagen'} abgelaufen` : first.left === 0 ? 'läuft heute ab' : `noch ${first.left} ${first.left === 1 ? 'Tag' : 'Tagen'}`}).`,
       actions: [
         { kind: 'open', label: 'Infrastructure Operations öffnen', space: 'infra-ops' },
-        { kind: 'ask', label: 'Erneuerung planen', connector: CONNECTOR, prompt: `Plane mit dem Tool plan_infra_change die Erneuerung des Zertifikats ${first.id}. Nur planen und die Prüfungen zeigen, nichts ausführen und nichts an n8n senden.` },
+        { kind: 'ask', label: 'Erneuerung planen', connector: N8N, prompt: `Plane mit dem Tool plan_infra_change die Erneuerung des Zertifikats ${first.id}. Nur planen und die Prüfungen zeigen, nichts ausführen und nichts an n8n senden.` },
       ],
     });
   }
@@ -130,7 +133,7 @@ function salesCards(sales: SalesBriefingData, today: Date): BriefingCard[] {
       detail: `${waiting.map((d) => `${d.account} ${d.id} (${eur(d.value ?? 0)})`).join(', ')}: zusammen ${eur(sum)}.`,
       actions: [
         { kind: 'open', label: 'Pipeline öffnen', space: 'sales' },
-        { kind: 'ask', label: 'Freigabe-Unterlagen vorbereiten', connector: CONNECTOR, prompt: `Bereite für den Deal Desk eine kurze Freigabe-Unterlage für die Angebote ${waiting.map((d) => d.id).join(' und ')} vor: Kunde, Wert, Rabatt, Grund der Prüfung, Risiken. Nur Zahlen aus den Daten, nichts versenden.` },
+        { kind: 'ask', label: 'Freigabe-Unterlagen vorbereiten', connector: SUB4ME, prompt: `Bereite für den Deal Desk eine kurze Freigabe-Unterlage für die Angebote ${waiting.map((d) => d.id).join(' und ')} vor: Kunde, Wert, Rabatt, Grund der Prüfung, Risiken. Nur Zahlen aus den Daten, nichts versenden.` },
       ],
     });
   }
@@ -144,7 +147,7 @@ function salesCards(sales: SalesBriefingData, today: Date): BriefingCard[] {
       detail: overdue.slice(0, 3).map((d) => `${d.account} ${d.id} (seit ${-daysUntil(d.next!.due, today)} ${-daysUntil(d.next!.due, today) === 1 ? 'Tag' : 'Tagen'})`).join('; ') + '.',
       actions: [
         { kind: 'open', label: 'Pipeline öffnen', space: 'sales' },
-        { kind: 'ask', label: 'Mail-Entwurf an Owner', connector: CONNECTOR, prompt: `Erstelle für die überfälligen nächsten Schritte der Deals ${overdue.map((d) => d.id).join(', ')} je einen kurzen Gmail-Entwurf an den Owner mit der Bitte um ein Update. Nur Entwürfe anlegen, nichts senden.` },
+        { kind: 'ask', label: 'Mail-Entwurf an Owner', connector: SUB4ME, prompt: `Erstelle für die überfälligen nächsten Schritte der Deals ${overdue.map((d) => d.id).join(', ')} je einen kurzen Gmail-Entwurf an den Owner mit der Bitte um ein Update. Nur Entwürfe anlegen, nichts senden.` },
       ],
     });
   }
@@ -167,7 +170,7 @@ function renewalCards(renewals: RenewalsBriefingData, today: Date): BriefingCard
       detail: `${first.customer}, ${first.product} (${eur(first.annualEur)}) zuerst. Zusammen ${eur(sum)} pro Jahr.`,
       actions: [
         { kind: 'open', label: 'Renewals öffnen', space: 'renewals' },
-        { kind: 'ask', label: 'Reihenfolge erklären', connector: CONNECTOR, prompt: 'Welche Verlängerungsentscheidungen sind überfällig oder in den nächsten 14 Tagen fällig, und in welcher Reihenfolge sollte ich sie angehen? Begründe kurz mit Wert und Risiko.' },
+        { kind: 'ask', label: 'Reihenfolge erklären', connector: SUB4ME, prompt: 'Welche Verlängerungsentscheidungen sind überfällig oder in den nächsten 14 Tagen fällig, und in welcher Reihenfolge sollte ich sie angehen? Begründe kurz mit Wert und Risiko.' },
       ],
     });
   }
@@ -180,7 +183,7 @@ function renewalCards(renewals: RenewalsBriefingData, today: Date): BriefingCard
       detail: lapsed.map((c) => `${c.product} bei ${c.customer} (${eur(c.annualEur)})`).join(', ') + '.',
       actions: [
         { kind: 'open', label: 'Renewals öffnen', space: 'renewals' },
-        { kind: 'ask', label: 'Rückholplan vorschlagen', connector: CONNECTOR, prompt: 'Schlage für die abgelaufenen Verträge einen Rückholplan vor: nächste Schritte, Ansprechpartner, Risiken. Nur vorschlagen, nichts versenden.' },
+        { kind: 'ask', label: 'Rückholplan vorschlagen', connector: SUB4ME, prompt: 'Schlage für die abgelaufenen Verträge einen Rückholplan vor: nächste Schritte, Ansprechpartner, Risiken. Nur vorschlagen, nichts versenden.' },
       ],
     });
   }

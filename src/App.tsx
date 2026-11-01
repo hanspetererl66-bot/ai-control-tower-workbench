@@ -29,9 +29,23 @@ import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
 import SkillInstallDialog, { type InstallRequest } from './ui/SkillInstallDialog';
 import SettingsDialog from './ui/SettingsDialog';
-import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, MEMORY_KINDS, type MemoryState } from './memory';
+import { groupChoices, groupProfileMissing, harnessChoices, resolveHarness, sanitizeGroupHarnesses, copyGroupHarness } from './harness-share';
+import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
+import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
+import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
+import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
+import ChatContextBar from './ui/ChatContextBar';
+import { contextPreview } from './personalization';
+import AgentStudio from './ui/AgentStudio';
+import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { documentNote, isConfirmCommand, type DockFocus } from './dock';
+import JouleDock from './ui/JouleDock';
+import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
+import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
+import SpacesOverview from './ui/SpacesOverview';
+import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { deliverBriefing, gmailExtension } from './schedule-delivery';
@@ -43,12 +57,14 @@ import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import { CONTROL_TOWER_CONNECTOR } from './starter-prompts';
 import type { ScheduleRuntime } from './ui/SchedulePopover';
+import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import type { Handoff, IncomingHandoff } from './space-handoff';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_TITLE } from './product';
 import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
+import DevelopHub from './ui/DevelopHub';
 import { writeSpaceScale, type SpaceScale } from './space-scale';
 import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
 import { parseNavCommand } from './voice-commands';
@@ -138,6 +154,9 @@ export default function App() {
     saveSchedules(next, window.localStorage);
   }, []);
   const [view, setView] = useState<View>('chat');
+  /** The Spaces landing page (domain tiles) shows until a Space is opened. */
+  const [spacesHome, setSpacesHome] = useState(true);
+  const [overviewDomain, setOverviewDomain] = useState<string | null>(null);
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [rawSpaces, setSpaces] = useState<Space[]>([]);
@@ -172,6 +191,22 @@ export default function App() {
   const [activeGroup, setActiveGroup] = useState<GroupDetail | null>(null);
   // Personal memory: notes kept on this computer; the assistant may suggest an entry, the person decides.
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
+  const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
+  const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
+  const [agentProjects, setAgentProjectsState] = useState<AgentProject[]>(() => loadProjects(window.localStorage));
+  const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); }, []);
+  const [focusProject, setFocusProject] = useState<string | null>(null);
+  /** The project document open in Agent Studio, so the docked chat can work on it. */
+  const [dockFocus, setDockFocus] = useState<DockFocus | null>(null);
+  const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
+  const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
+  const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
+  const changePersonas = useCallback((next: PersonaState) => { setPersonasState(next); savePersonas(window.localStorage, next); }, []);
+  const [ownCommands, setOwnCommandsState] = useState<Command[]>(() => loadCommands(window.localStorage));
+  const changeCommands = useCallback((next: Command[]) => { setOwnCommandsState(next); saveCommands(window.localStorage, next); }, []);
+  /** The Space whose memory entries apply to this conversation (set when a question is asked from a Space). */
+  const [contextSpace, setContextSpace] = useState('');
+  const [dismissedIdeas, setDismissedIdeas] = useState<string[]>([]);
   const [memorySuggestion, setMemorySuggestion] = useState<ReturnType<typeof suggestMemory>>(null);
   const changeMemory = useCallback((next: MemoryState) => { setMemoryState(next); saveMemory(window.localStorage, next); }, []);
   const [voice, setVoice] = useState<VoiceSettings>(DEFAULT_VOICE);
@@ -204,9 +239,20 @@ export default function App() {
   const paths = useRef(new Set<string>());
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
+  const developStopped = useRef(false);
+  const sendRef = useRef<(text: string, attachments?: ChatAttachment[], options?: { plain?: boolean }) => Promise<void>>(async () => {});
   const webSearchRef = useRef(true);
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
   askBeforeActionsRef.current = prefs.chat.askBeforeActions;
+  // Working profile (harness): checked on every tool call and approval request of the running answer.
+  // Profiles an admin published to the active group: shown in the chat bar next to the person's own, read only.
+  const groupHarnesses = useMemo(() => sanitizeGroupHarnesses(activeGroup?.config.harnesses), [activeGroup]);
+  const groupName = activeGroup?.group.name ?? '';
+  const harness = resolveHarness(prefs.harness, groupHarnesses, groupName);
+  const harnessRef = useRef(harness);
+  harnessRef.current = harness;
+  const harnessStepCount = useRef(0);
+  const harnessBlock = useRef<string | null>(null);
   const blockedWebTool = useRef(false);
   const agentRef = useRef<Agent | null>(null);
   const lastGroundedCsvPath = useRef<string | null>(null);
@@ -289,6 +335,7 @@ export default function App() {
     const target = startSpace(prefs, activeSpaces.map((x) => x.slug), last);
     if (target) {
       setSelectedSpace(target);
+      setSpacesHome(false);
       setView('spaces');
     }
   }, [activeSpaces, prefs]);
@@ -297,9 +344,13 @@ export default function App() {
     try { window.localStorage.setItem('werkbank.lastSpace', selectedSpace); } catch { /* ignore */ }
   }, [selectedSpace]);
 
-  const groupCall = useMemo(() => (agent && extensionNames.includes(CONTROL_TOWER_CONNECTOR)
-    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__${tool}`, args))
+  /** 'local': groups kept on this computer (sample group, no database). 'server': the connector with Supabase. */
+  const [groupMode, setGroupModeState] = useState<'local' | 'server'>(() => { try { return window.localStorage.getItem(GROUP_MODE_KEY) === 'server' ? 'server' : 'local'; } catch { return 'local'; } });
+  const serverGroupCall = useMemo(() => (agent && extensionNames.includes(WORKSPACE_CONNECTOR)
+    ? async (tool: string, args: Record<string, unknown>) => parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__${tool}`, args))
     : null), [agent, extensionNames]);
+  const localGroupCall = useMemo(() => createLocalGroupCall(window.localStorage), []);
+  const groupCall = groupMode === 'server' ? serverGroupCall : localGroupCall;
   const chooseActiveGroup = useCallback((id: string | null) => {
     setActiveGroupId(id);
     if (!id) setActiveGroup(null);
@@ -321,7 +372,7 @@ export default function App() {
     setSyncState({ busy: true, message: '' });
     try {
       const data = { ...prefs, sync: undefined };
-      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
+      const out = parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__save_preferences`, { key: prefs.sync.key, data }));
       setSyncState({ busy: false, message: out?.updatedAt ? `Saved to Supabase (${out.updatedAt}).` : 'Saved to Supabase.' });
     } catch (error) {
       setSyncState({ busy: false, message: `Saving failed: ${error instanceof Error ? error.message : String(error)}` });
@@ -331,7 +382,7 @@ export default function App() {
     if (!agent) return;
     setSyncState({ busy: true, message: '' });
     try {
-      const out = parseToolResult(await agent.callTool(`${CONTROL_TOWER_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
+      const out = parseToolResult(await agent.callTool(`${WORKSPACE_CONNECTOR}__get_preferences`, { key: prefs.sync.key }));
       if (!out || !out.data) {
         setSyncState({ busy: false, message: 'Nothing stored under this key yet.' });
         return;
@@ -419,6 +470,14 @@ export default function App() {
         flush();
       },
       onToolCall: (tc: ToolCall) => {
+        const profile = harnessRef.current;
+        harnessStepCount.current += 1;
+        const verdict = checkToolCall(profile, tc);
+        if (!verdict.ok || stepsExceeded(profile, harnessStepCount.current)) {
+          // The working profile does not allow this call (connector, rights) or the step limit is reached: stop the answer here.
+          harnessBlock.current ??= verdict.ok ? harnessStepsNote(profile) : harnessBlockedNote(verdict.reason);
+          void agentRef.current?.cancel().catch(() => undefined);
+        }
         if (!webSearchRef.current && isWebTool(tc)) {
           // Web Search is off for this conversation: stop the turn as soon as a web tool is announced.
           blockedWebTool.current = true;
@@ -436,6 +495,13 @@ export default function App() {
       },
       onPermission: (req: PermissionRequest) =>
         new Promise<string>((resolve) => {
+          // A request the working profile refuses is declined without asking; the person sees why in the answer.
+          const verdict = checkToolCall(harnessRef.current, req);
+          if (!verdict.ok) {
+            harnessBlock.current ??= harnessBlockedNote(verdict.reason);
+            resolve(rejectOption(req.options));
+            return;
+          }
           resolvePermission.current = resolve;
           setPermission(req);
         }),
@@ -491,15 +557,32 @@ export default function App() {
     setAgentEpoch((current) => current + 1);
   }
 
-  async function send(text: string, attachments: ChatAttachment[] = []) {
+  /** Memory as the assistant gets it: entries for every conversation plus those tied to the Space in context, with agreed levels marked. */
+  function currentMemoryNote(space = contextSpace, state: MemoryState = memory) {
+    const g = loadGov(undefined, MEMORY_GOV_KEY);
+    const names = loadGov().levels as string[];
+    return memoryNote(state, space, (id) => govLevelOf(g, id), names);
+  }
+  function openApprovals() {
+    return loadGov().requests.filter((r) => r.status === 'pending').length + loadGov(undefined, MEMORY_GOV_KEY).requests.filter((r) => r.status === 'pending').length;
+  }
+
+  /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
+  async function send(typed: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
     if (!agent || busy) return;
+    const studioCatalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
+    const asAgent = expandAgentCommand(typed, studioAgents, studioCatalog, (id) => govLevelOf(agentGov, id));
+    if (asAgent && 'error' in asAgent) { setToast(asAgent.error); setTimeout(() => setToast(null), 6000); return; }
+    const text = asAgent?.prompt ?? expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
     cancelledByUser.current = false;
     const startedAt = Date.now();
     const previousSpaces = new Map(spaces.map((space) => [space.slug, space.updatedAt]));
     if (messages.length === 0) {
-      setTitle((text || attachments[0]?.name || 'New Conversation').slice(0, 48));
+      setTitle((typed || attachments[0]?.name || 'New Conversation').slice(0, 48));
     }
-    setMemorySuggestion(suggestMemory(text, memory));
+    setMemorySuggestion(suggestMemory(typed, memory));
+    harnessStepCount.current = 0;
+    harnessBlock.current = null;
     draft.current = '';
     tools.current = [];
     speaker.current?.stop();
@@ -508,7 +591,7 @@ export default function App() {
       ...prev,
       {
         role: 'user',
-        text,
+        text: typed,
         tools: [],
         attachments: attachments.map(({ name, kind, mimeType }) => ({ name, kind, mimeType })),
       },
@@ -516,7 +599,7 @@ export default function App() {
     ]);
     setBusy(true);
     try {
-      const spaceRequested = wantsSpace(text);
+      const spaceRequested = !options.plain && wantsSpace(text);
       const grounding = dataGroundingContext(attachments);
       const existingSpace = spaceRequested
         ? spaces.find((space) => text.toLocaleLowerCase().includes(space.title.toLocaleLowerCase()))
@@ -532,7 +615,9 @@ export default function App() {
             .slice(-12_000)}`
         : '';
       blockedWebTool.current = false;
-      const prompt = [historyGrounding, text, assistantNote(prefs), memoryNote(memory), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
+      const docContext = dockProject && dockFocus ? documentNote(dockProject, dockFocus.docKey) : '';
+      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -625,6 +710,11 @@ export default function App() {
       }
     } finally {
       speaker.current?.finish();
+      if (harnessBlock.current) {
+        if (!cancelledByUser.current) draft.current += harnessBlock.current;
+        harnessBlock.current = null;
+        flush();
+      }
       if (blockedWebTool.current) {
         blockedWebTool.current = false;
         if (!cancelledByUser.current) draft.current += WEB_SEARCH_BLOCKED_NOTE;
@@ -632,7 +722,7 @@ export default function App() {
       }
       setBusy(false);
       const nextSpaces = await refreshSpaces();
-      const spaceResult = wantsSpace(text)
+      const spaceResult = !options.plain && wantsSpace(text)
         ? nextSpaces.find((space) => {
             const previousUpdatedAt = previousSpaces.get(space.slug);
             return previousUpdatedAt === undefined || space.updatedAt > previousUpdatedAt;
@@ -653,9 +743,27 @@ export default function App() {
     }
   }
 
+  sendRef.current = send;
+
+  /**
+   * Develop: runs one working prompt through the agent in a conversation of its own, so the person's chats stay
+   * clean, and returns the agent's answer. '' means the person stopped it.
+   */
+  async function developGenerate(prompt: string, title: string): Promise<string> {
+    if (!agent) throw new Error('The agent is not connected yet.');
+    if (busy) throw new Error('The agent is still busy with another answer. Wait until it has finished.');
+    developStopped.current = false;
+    newConversation();
+    await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
+    await sendRef.current(prompt, [], { plain: true });
+    setTitle(title.slice(0, 48));
+    return developStopped.current ? '' : draft.current;
+  }
+
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
+    developStopped.current = true;
     speaker.current?.stop();
     try {
       await agent.cancel();
@@ -682,25 +790,24 @@ export default function App() {
     }
   }
 
-  /** One click: stage the bundled connector and show the usual approve dialog (URL and key are optional there). */
-  async function installControlTowerConnector() {
-    const result: any = await window.host?.prepareControlTowerConnector?.();
-    if (!result || result.error) {
-      setToast(result?.error ?? 'The connector can only be installed from the desktop app.');
-      setTimeout(() => setToast(null), 6000);
-      return;
-    }
-    setSkillRequest(result as unknown as InstallRequest);
+  /** Choosing a profile that limits actions switches the agent to asking before changes; it never switches it back by itself. */
+  function changeHarness(id: string) {
+    updatePrefs((current) => ({ ...current, harness: chooseHarness(current.harness, id, groupChoices(groupHarnesses, groupName).map((p) => p.id)) }));
   }
+  useEffect(() => {
+    if (agent && requiresApproval(harness) && mode === 'auto') void changeMode('smart_approve');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agent, harness.id, harness.permission, mode]);
 
   /** "Joule fragen" in a Space: switch to the chat and send the question, unless the agent is busy or missing. */
-  function askFromSpace(prompt: string) {
+  function askFromSpace(prompt: string, spaceSlug?: string) {
     if (!agent || busy) {
       setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.');
       setTimeout(() => setToast(null), 5000);
       return;
     }
     setView('chat');
+    if (spaceSlug) setContextSpace(spaceSlug);
     void send(prompt);
   }
 
@@ -718,6 +825,7 @@ export default function App() {
     speaker.current?.stop();
     setSelectedSpace(target.space);
     setSpaceTab(target.tab ? { tab: target.tab, nonce: Date.now(), space: target.space } : null);
+    setSpacesHome(false);
     setView('spaces');
     notify(`Öffne ${label}`);
   }
@@ -755,7 +863,7 @@ export default function App() {
     if (!target) { setToast('The Space for this hand-over is not installed.'); setTimeout(() => setToast(null), 6000); return; }
     handoffNonce.current += 1;
     setIncoming((current) => ({ ...current, [handoff.to]: [...(current[handoff.to] ?? []), { from: fromSlug, payload: handoff.payload, nonce: handoffNonce.current }].slice(-20) }));
-    if (handoff.open) { setSelectedSpace(handoff.to); setView('spaces'); }
+    if (handoff.open) { setSelectedSpace(handoff.to); setSpacesHome(false); setView('spaces'); }
     if (handoff.notice) { setToast(handoff.notice); setTimeout(() => setToast(null), 8000); }
   }
 
@@ -808,6 +916,11 @@ export default function App() {
   }
 
   // Recurring briefings: while the app is open, run a due one when the chat is idle (also catches up to six hours).
+  /** Published Studio agents with a trigger run through the schedules; unpublished or deleted ones are removed from them. */
+  useEffect(() => {
+    const next = agentSchedules(studioAgents, (id) => govLevelOf(agentGov, id), schedules);
+    if (next !== schedules) updateSchedules(next);
+  }, [studioAgents, agentGov, schedules, updateSchedules]);
   const dueTick = useRef<() => void>(() => undefined);
   const schedulesRef = useRef(schedules);
   schedulesRef.current = schedules;
@@ -844,32 +957,70 @@ export default function App() {
   }, []);
 
   const empty = messages.length === 0;
+  const dockShown = view === 'studio' || view === 'manage';
+  const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
+  const confirmDockDoc = () => {
+    if (!dockProject || !dockFocus) return;
+    const catalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
+    changeAgentProjects(agentProjects.map((x) => (x.id === dockProject.id ? confirmDoc(x, dockFocus.docKey, catalog, Date.now()) : x)));
+  };
+  /** In the docked chat, "yes, confirm" confirms the document on screen instead of going to the model. */
+  const interceptSend = (typed: string, attachments: ChatAttachment[] = []) => {
+    if (dockProject && dockFocus && attachments.length === 0 && isConfirmCommand(typed)) { confirmDockDoc(); return; }
+    return send(typed, attachments);
+  };
   const composer = (
     <Composer
-      onSend={send}
+      commands={allCommands(ownCommands)}
+      onSend={interceptSend}
+      onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
       workdir={WORKDIR}
       mode={mode}
       onModeChange={changeMode}
+      harnesses={harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description }))}
+      harnessId={harness.id}
+      onHarnessChange={changeHarness}
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
       onManageConnectors={() => setView('manage')}
-      onInstallConnector={installControlTowerConnector}
-      starters={empty}
+      starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
       onStopSpeaking={() => speaker.current?.stop()}
       onVoiceCommand={handleVoiceCommand}
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
-      hiddenStarters={prefs.chat.hiddenStarters}
       hiddenBriefing={prefs.chat.hiddenBriefing}
       schedules={schedules}
       onSchedulesChange={updateSchedules}
       scheduleRuntime={scheduleRuntime}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
+    />
+  );
+  const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
+  const contextBar = (
+    <ChatContextBar
+      memoryEnabled={memory.enabled}
+      memoryCount={activeEntries(memory, contextSpace).length}
+      onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
+      groupName={activeGroup?.group.name ?? null}
+      onGroupOff={() => chooseActiveGroup(null)}
+      personas={allPersonas(personas)}
+      persona={activePersona(personas)?.id ?? ''}
+      onPersona={(id) => changePersonas({ ...personas, active: id })}
+      spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
+      contextSpace={contextSpace}
+      onContextSpace={setContextSpace}
+      ideas={ideas}
+      onRemember={(idea) => { const r = addMemory(memory, idea.kind, idea.text); if (!r.error) changeMemory(r.state); else setDismissedIdeas((d) => [...d, idea.text]); }}
+      onDismissIdea={(idea) => setDismissedIdeas((d) => [...d, idea.text])}
+      onOpenSettings={() => setSettingsOpen(true)}
+      preview={contextPreview({ style: assistantNote(prefs), persona: personaNote(personas), memory: currentMemoryNote(), group: groupNote(activeGroup) })}
+      canMakeSkill={messages.filter((m) => m.role === 'user').length >= 2 && !busy}
+      onMakeSkill={() => { void send('/make-skill'); }}
     />
   );
   const suggestionBar = memorySuggestion && (
@@ -899,6 +1050,7 @@ export default function App() {
   const contextItems: ContextItem[] = [
     { id: 'memory', label: 'Memory', detail: memory.enabled ? memorySummary(memory) : 'Switched off', on: memory.enabled && memory.entries.length > 0, tab: 'memory' },
     { id: 'instructions', label: 'Instructions', detail: instructionsSet ? 'Language, length, tone or standing instructions set' : 'All at their defaults', on: instructionsSet, tab: 'instructions' },
+    { id: 'harness', label: 'Working profile', detail: groupProfileMissing(prefs.harness, groupHarnesses) ? 'The chosen group profile is not available now (no group or withdrawn): standard rules apply' : harnessSummary(harness), on: harness.id !== 'standard', tab: 'instructions' },
     { id: 'web', label: 'Web search', detail: webSearch ? 'The assistant may search the web' : 'Switched off for this conversation', on: webSearch },
     { id: 'group', label: 'Group', detail: activeGroup ? activeGroup.group.name : 'No group selected', on: Boolean(activeGroup) },
     { id: 'schedule', label: 'Schedule', detail: activeSchedules ? `${activeSchedules} recurring ${activeSchedules === 1 ? 'briefing' : 'briefings'} active` : 'No recurring briefings', on: activeSchedules > 0, tab: 'schedule' },
@@ -917,6 +1069,8 @@ export default function App() {
 
   function newConversation() {
     if (busy) return;
+    setContextSpace('');
+    setDismissedIdeas([]);
     const conversation = createConversation();
     setConversationState((state) => ({
       selectedId: conversation.id,
@@ -973,7 +1127,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${showDetails ? 'app-details' : ''}`}>
+    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`}>
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -982,7 +1136,7 @@ export default function App() {
         onAppearance={setAppearance}
         onView={(v) => {
           setView(v);
-          if (v === 'spaces') refreshSpaces();
+          if (v === 'spaces') { setSpacesHome(true); setOverviewDomain(null); refreshSpaces(); }
         }}
       />
 
@@ -1002,7 +1156,7 @@ export default function App() {
         <SpacesList
           spaces={orderedSpaces}
           selected={selectedSpace}
-          onSelect={setSelectedSpace}
+          onSelect={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           onReorder={(from, to, after) => changeSpaceOrder((current) => moveSpace(current, from, to, after))}
           onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
           pinned={prefs.pinnedSpaces}
@@ -1038,8 +1192,25 @@ export default function App() {
         />
       )}
 
-      {view === 'n8n' ? (
+      {view === 'develop' ? (
+        <DevelopHub
+          onAgent={() => setView('studio')}
+          onAgentIntent={(intent) => {
+            const project = newProject(intent);
+            changeAgentProjects([project, ...agentProjects]);
+            setFocusProject(project.id);
+            setView('studio');
+          }}
+          onOpenN8n={() => setView('n8n')}
+          onOpenConnectors={() => setView('manage')}
+          generate={developGenerate}
+          onStop={() => void cancelCurrent()}
+          ready={Boolean(agent)}
+          onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
+        />
+      ) : view === 'n8n' ? (
         <N8nView
+          onBack={() => setView('develop')}
           theme={resolvedTheme}
           visible={!settingsOpen && !coverOpen && !skillRequest && !permission}
           onRestartAgent={async () => {
@@ -1050,9 +1221,35 @@ export default function App() {
       ) : view === 'manage' ? (
         <ManageView
           agent={agent}
-          onBack={() => setView('chat')}
+          onBack={() => setView('develop')}
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
+        />
+      ) : view === 'studio' ? (
+        <AgentStudio
+          agents={studioAgents}
+          gov={agentGov}
+          onGov={changeAgentGov}
+          schedules={schedules}
+          onAgents={changeStudioAgents}
+          projects={agentProjects}
+          onProjects={changeAgentProjects}
+          focusProject={focusProject}
+          onDocFocus={setDockFocus}
+          connectors={extensionNames}
+          spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
+          onRunInChat={(prompt) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt); }}
+        />
+      ) : view === 'spaces' && spacesHome ? (
+        <SpacesOverview
+          domains={domainNames(spaces, prefs).map((name) => ({
+            name,
+            spaces: orderedSpaces.filter((x) => effectiveDomain(x, spaces, prefs) === name),
+          }))}
+          active={overviewDomain}
+          onActive={setOverviewDomain}
+          onOpen={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
+          parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
         />
       ) : view === 'spaces' ? (
         space ? (
@@ -1063,14 +1260,15 @@ export default function App() {
             textScale={spaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE}
-            onAsk={askFromSpace}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE}
+            onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}
             incoming={incoming[space.slug]}
+            studioAgents={space.slug === 'ai-control-tower' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
-            bridge={agent ? (tool, args) => agent.callTool(`${SUB4ME_EXTENSION}__${tool}`, args) : undefined}
+            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? (extensionNames.find((n) => /jira/i.test(n)) ?? JIRA_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
           <main className="main">
@@ -1112,6 +1310,7 @@ export default function App() {
                 to get things done?
               </h2>
               {suggestionBar}
+              {contextBar}
               {composer}
               {disclaimer}
             </div>
@@ -1126,6 +1325,7 @@ export default function App() {
                 meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
+                  setSpacesHome(false);
                   setView('spaces');
                 }}
                 onOpenView={(target) => {
@@ -1136,11 +1336,13 @@ export default function App() {
                   }
                   setSelectedSpace(target.space);
                   setSpaceTab({ tab: target.tab, nonce: Date.now() });
+                  setSpacesHome(false);
                   setView('spaces');
                 }}
               />
               <div className="composer-dock">
                 {suggestionBar}
+                {contextBar}
                 {composer}
                 {disclaimer}
               </div>
@@ -1149,6 +1351,37 @@ export default function App() {
 
           {error && <div className="banner-error">Could not reach the agent: {error}</div>}
         </main>
+      )}
+
+      {dockShown && (
+        <JouleDock
+          where={view === 'manage' ? 'manage' : 'studio'}
+          empty={empty}
+          busy={busy}
+          focus={dockProject ? dockFocus : null}
+          project={dockProject}
+          lastAnswer={[...messages].reverse().find((m) => m.role === 'agent')?.text ?? ''}
+          onApply={(text) => {
+            if (!dockProject || !dockFocus) return;
+            changeAgentProjects(agentProjects.map((x) => (x.id === dockProject.id ? editDoc(x, dockFocus.docKey, text, Date.now()) : x)));
+            setToast('Document updated. Read it through, then confirm.');
+            setTimeout(() => setToast(null), 4000);
+          }}
+          onConfirm={confirmDockDoc}
+          onAsk={(prompt) => { void send(prompt); }}
+          composer={composer}
+          chat={
+            <Chat
+              messages={messages}
+              busy={busy}
+              onAsk={askFromSpace}
+              onSaveAsSpace={saveAnswerAsSpace}
+              chatTools={prefs.chat}
+              meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
+              onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }}
+            />
+          }
+        />
       )}
 
       {showDetails && (
@@ -1189,13 +1422,17 @@ export default function App() {
             spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),
             skills: skillList.map((x) => ({ name: x.name, description: x.description })),
             connectors: extensionNames,
-            syncAvailable: Boolean(agent) && extensionNames.includes(CONTROL_TOWER_CONNECTOR),
+            syncAvailable: Boolean(agent) && extensionNames.includes(WORKSPACE_CONNECTOR),
             sync: syncState,
             onSyncSave: () => void syncSave(),
             onSyncLoad: () => void syncLoad(),
             memory: { memory, onChange: changeMemory },
+            chat: { personas, onPersonas: changePersonas, commands: ownCommands, onCommands: changeCommands, schedules, onSchedules: updateSchedules },
             groups: {
               call: groupCall,
+              mode: groupMode,
+              serverAvailable: !!serverGroupCall,
+              onMode: (m: 'local' | 'server') => { setGroupModeState(m); chooseActiveGroup(null); try { window.localStorage.setItem(GROUP_MODE_KEY, m); } catch { /* ignore */ } },
               identity,
               onIdentity: setIdentity,
               spaces: spaces.map((x) => ({ slug: x.slug, title: x.title })),
@@ -1203,6 +1440,8 @@ export default function App() {
               onActive: chooseActiveGroup,
               onSpaceInstalled: (slug: string) => { void refreshSpaces().then(() => setSelectedSpace(slug)); },
               onDetail: setActiveGroup,
+              ownHarnesses: prefs.harness.custom,
+              onCopyHarness: (profile, name) => updatePrefs((current) => ({ ...current, harness: copyGroupHarness(current.harness, profile, name) })),
             },
           }}
           onClose={() => setSettingsOpen(false)}

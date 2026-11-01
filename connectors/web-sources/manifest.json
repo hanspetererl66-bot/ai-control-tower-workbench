@@ -1,0 +1,44 @@
+{
+  "manifest_version": "0.2",
+  "name": "web-sources",
+  "display_name": "Web Sources",
+  "version": "1.0.0",
+  "description": "Approved public web sources only: SAP Help Portal, SAP Community, other SAP sites and a few news sites. No login, read only.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "connectors/web-sources/server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/connectors/web-sources/server/index.mjs"
+      ],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "search_sap_help",
+      "description": "Search the public SAP Help Portal (help.sap.com, no login) for documentation and support content. Read only."
+    },
+    {
+      "name": "search_sap_community",
+      "description": "Search SAP Community (community.sap.com, no login) for questions, answers and blogs. Read only."
+    },
+    {
+      "name": "list_web_sources",
+      "description": "List the approved web sources: all public SAP sites, Handelsblatt and FAZ."
+    },
+    {
+      "name": "fetch_web_page",
+      "description": "Read one public page of an approved source (SAP sites, Handelsblatt, FAZ). No login or paywall bypass. Read only."
+    },
+    {
+      "name": "search_web_sources",
+      "description": "Search an approved source with its own site search (best effort). Read only."
+    }
+  ]
+}

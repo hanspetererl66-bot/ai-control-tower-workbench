@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import type { AttachmentPickerResult } from './attachments';
+import type { AttachmentPickerResult, BulkUploadResult } from './attachments';
 import type { VoiceSettings } from './voice';
 import './theme.css';
 
@@ -15,6 +15,12 @@ declare global {
       revealFile?: (path: string) => void;
       renderBriefingPdf?: (request: { html: string; fileName: string }) => Promise<{ ok: boolean; detail?: string; path?: string; base64?: string }>;
       pickChatFiles?: () => Promise<AttachmentPickerResult>;
+      pathsOfDroppedFiles?: (files: FileList | File[]) => string[];
+      addChatFiles?: (paths: string[]) => Promise<AttachmentPickerResult>;
+      readTables?: (path: string) => Promise<{ ok: true; tables: { name: string; table: { columns: string[]; rows: string[][]; truncated: boolean } }[] } | { ok: false; detail: string }>;
+      bulkUploadRows?: (request: { path: string; tableIndex: number; url: string; token?: string; batchSize?: number; batchId?: string; startAt?: number }) => Promise<BulkUploadResult>;
+      cancelBulkUpload?: () => void;
+      onBulkUploadProgress?: (cb: (p: { batch: number; total: number; sentRows: number; totalRows: number }) => void) => () => void;
       setZoomFactor?: (factor: number) => void;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';
@@ -52,8 +58,11 @@ declare global {
       ) => () => void;
       decideSkillInstall?: (id: number, approved: boolean, values?: Record<string, string>) => void;
       listSkills?: () => Promise<{ name: string; description: string; dir: string }[]>;
+      readSkill?: (dir: string) => Promise<string | null>;
       importMcpb?: () => Promise<Record<string, unknown> | null>;
       prepareControlTowerConnector?: () => Promise<Record<string, unknown> | null>;
+      prepareConnector?: (id: string) => Promise<Record<string, unknown> | null>;
+      listBundledConnectors?: () => Promise<{ id: string; name: string; title: string; description: string; tools: number; needsSetup: boolean }[]>;
       getConnectorSpec?: (name: string) => Promise<Record<string, unknown> | null>;
       saveConnectorConfig?: (
         name: string,

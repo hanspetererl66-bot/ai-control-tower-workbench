@@ -15,10 +15,11 @@ import {
 import { basename, extname, join, parse } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
+import { parseSharedStrings, parseSheetXml, parseTableText, summarizeTable, toTable } from '../shared/table-ingest.mjs';
 
-export const MAX_ATTACHMENTS = 8;
+export const MAX_ATTACHMENTS = 25;
 export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
-export const MAX_TOTAL_BYTES = 50 * 1024 * 1024;
+export const MAX_TOTAL_BYTES = 100 * 1024 * 1024;
 export const MAX_EXTRACTED_CHARS = 120_000;
 
 export const ATTACHMENT_FILTERS = [
@@ -32,6 +33,8 @@ export const ATTACHMENT_FILTERS = [
       'txt',
       'md',
       'csv',
+      'tsv',
+      'xlsx',
       'json',
       'png',
       'jpg',
@@ -41,7 +44,8 @@ export const ATTACHMENT_FILTERS = [
   },
   { name: 'PowerPoint', extensions: ['pptx', 'ppt'] },
   { name: 'Word', extensions: ['docx', 'doc'] },
-  { name: 'Text', extensions: ['txt', 'md', 'csv', 'json'] },
+  { name: 'Tables', extensions: ['csv', 'tsv', 'xlsx'] },
+  { name: 'Text', extensions: ['txt', 'md', 'json'] },
   { name: 'Pictures', extensions: ['png', 'jpg', 'jpeg', 'webp'] },
 ];
 
@@ -59,6 +63,8 @@ const TYPES = {
   txt: ['text/plain', 'text'],
   md: ['text/markdown', 'text'],
   csv: ['text/csv', 'text'],
+  tsv: ['text/tab-separated-values', 'table'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'table'],
   json: ['application/json', 'text'],
   png: ['image/png', 'image'],
   jpg: ['image/jpeg', 'image'],
@@ -202,7 +208,15 @@ function extractLegacyOffice(path, extension) {
 }
 
 export function extractAttachmentText(path, extension = extensionOf(path)) {
-  if (['txt', 'md', 'csv', 'json'].includes(extension)) return readFileSync(path, 'utf8');
+  if (extension === 'tsv' || extension === 'xlsx') return tableText(path, extension);
+  if (extension === 'csv') {
+    const text = readFileSync(path, 'utf8');
+    // A big csv is described first, so a model sees its shape even when the raw text is clipped.
+    return text.length > MAX_EXTRACTED_CHARS
+      ? `${summarizeTable(basename(path), parseTableText(text))}\n\nRaw text:\n${text}`
+      : text;
+  }
+  if (['txt', 'md', 'json'].includes(extension)) return readFileSync(path, 'utf8');
   if (extension === 'docx') return extractDocxText(path);
   if (extension === 'pptx') return extractPptxText(path);
   if (extension === 'doc' || extension === 'ppt') return extractLegacyOffice(path, extension);
@@ -215,6 +229,37 @@ export function extractAttachmentText(path, extension = extensionOf(path)) {
     }).trim();
   }
   return '';
+}
+
+/** Sheets of an xlsx file as tables, in workbook order (at most five). */
+export function readXlsxTables(path) {
+  const entries = unzipList(path);
+  const sheets = entries.filter((e) => /^xl\/worksheets\/sheet\d+\.xml$/i.test(e)).sort(numericXmlSort).slice(0, 5);
+  if (!sheets.length) throw new Error('The workbook has no readable sheets');
+  const shared = entries.includes('xl/sharedStrings.xml') ? parseSharedStrings(unzipEntry(path, 'xl/sharedStrings.xml')) : [];
+  const names = entries.includes('xl/workbook.xml')
+    ? [...unzipEntry(path, 'xl/workbook.xml').matchAll(/<sheet\b[^>]*\bname="([^"]*)"/g)].map((m) => decodeXml(m[1]))
+    : [];
+  return sheets.map((entry, i) => ({ name: names[i] || `Sheet ${i + 1}`, table: toTable(parseSheetXml(unzipEntry(path, entry), shared)) }));
+}
+
+/** Every table in a file: one for csv/tsv, one per sheet for xlsx. Used by the attachment text and by the mass upload. */
+export function readTables(path, extension = extensionOf(path)) {
+  if (extension === 'xlsx') return readXlsxTables(path);
+  if (extension === 'csv' || extension === 'tsv') {
+    return [{ name: basename(path), table: parseTableText(readFileSync(path, 'utf8')) }];
+  }
+  throw new Error('This file is not a table.');
+}
+
+function tableText(path, extension) {
+  return readTables(path, extension)
+    .map(({ name, table }) => {
+      const label = extension === 'xlsx' ? `${basename(path)} / ${name}` : name;
+      const head = [table.columns, ...table.rows.slice(0, 40)].map((r) => r.join('\t')).join('\n');
+      return `${summarizeTable(label, table)}\n\nFirst rows (tab separated):\n${head}\n\nThe complete file is at ${path}; read it there for more than these rows.`;
+    })
+    .join('\n\n');
 }
 
 function clippedText(text) {
@@ -244,7 +289,7 @@ export function prepareAttachments(selectedPaths, workspaceDir) {
     return { source, stats, extension };
   });
   const total = sources.reduce((bytes, item) => bytes + item.stats.size, 0);
-  if (total > MAX_TOTAL_BYTES) throw new Error('The selected files are larger than 50 MB in total.');
+  if (total > MAX_TOTAL_BYTES) throw new Error('The selected files are larger than 100 MB in total.');
 
   const attachmentDir = join(workspaceDir, 'attachments');
   mkdirSync(attachmentDir, { recursive: true });

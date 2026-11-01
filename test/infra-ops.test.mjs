@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
-import { ORCHESTRATION, PLAYBOOKS, STEPS_DONE, canApprove, certStatus, dependents, findings, planTask, simulateRun } from '../connectors/control-tower/server/infra-ops.mjs';
+import { ORCHESTRATION, PLAYBOOKS, STEPS_DONE, canApprove, certStatus, dependents, findings, planTask, simulateRun } from '../connectors/_lib/server/infra-ops.mjs';
 import { embedInfraOps, modelSource, repoData } from '../scripts/sync-infra-ops.mjs';
 
 const page = readFileSync(new URL('../examples/infra-ops/index.html', import.meta.url), 'utf8');
@@ -120,7 +120,7 @@ test('the page is self-contained, escapes what it prints and offers Ask Joule wi
 });
 
 /* ---------- connector tools: plan_infra_change / submit_infra_change ---------- */
-import { INFRA_TOOL_DEFINITIONS, createInfraOpsHandlers } from '../connectors/control-tower/server/infra-ops.mjs';
+import { INFRA_TOOL_DEFINITIONS, createInfraOpsHandlers } from '../connectors/_lib/server/infra-ops.mjs';
 
 class ToolError extends Error {}
 const okArgs = { template: 'renew-certificate', target: 'bp-s4-prd', window_start: '2026-11-10T22:00', window_end: '2026-11-11T00:00' };
@@ -197,7 +197,7 @@ test('the page offers the n8n hand-off through Joule, in English, and the workfl
 });
 
 test('two approvals: four eyes plus exactly one change manager', async () => {
-  const { approvalHint } = await import('../connectors/control-tower/server/infra-ops.mjs');
+  const { approvalHint } = await import('../connectors/_lib/server/infra-ops.mjs');
   const base = { ...data.tasks.find((t) => t.id === 'CHG-1040') };
   const cm = (id) => ({ ...base, approvals: [id], requester: 'sa' });
   // first approval by the change manager: another change manager must not give the second one

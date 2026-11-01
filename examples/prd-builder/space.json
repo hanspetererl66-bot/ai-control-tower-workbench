@@ -1,0 +1,12 @@
+{
+  "title": "PRD Builder",
+  "description": "Jira-Requirements laden, die relevanten anhaken und daraus ein Product Requirements Document (PRD) erzeugen, mit Ticket-Schlüssel an jeder Anforderung.",
+  "domain": "Sales",
+  "insights": [
+    "Die Tickets kommen aus dem Jira-Connector (nur lesen) oder aus dem Demo-Backlog der Sales-App mit 4 Epics und 14 Stories.",
+    "Das PRD wird nur aus den angehakten Tickets gebaut: Überblick, Ziele, Nutzer, Anforderungen je Epic mit Akzeptanzkriterien, Nicht-Umfang, offene Fragen und Quellen.",
+    "Offene Fragen findet der Builder selbst: Tickets ohne Akzeptanzkriterien, ohne Priorität oder ohne Nutzerrolle.",
+    "Der Entwurf ist bearbeitbar; Joule kann ihn überarbeiten, ohne dass etwas in Jira verändert wird."
+  ],
+  "prompt": "Bundled example: PRD Builder (Jira requirements to a PRD; model and demo data embedded by npm run sync:prd-builder)."
+}

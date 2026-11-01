@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { createCrossSpaceHandlers, enrichTicket } from '../connectors/control-tower/server/cross-space.mjs';
-import { createSub4MeHandlers, loadSub4MeData } from '../connectors/control-tower/server/sub4me.mjs';
+import { createCrossSpaceHandlers, enrichTicket } from '../connectors/_lib/server/cross-space.mjs';
+import { createSub4MeHandlers, loadSub4MeData } from '../connectors/_lib/server/sub4me.mjs';
 
 const tower = JSON.parse(readFileSync(new URL('../examples/control-tower/data.json', import.meta.url), 'utf8'));
 const sub4me = createSub4MeHandlers(undefined, null);
@@ -35,6 +35,6 @@ test('rejects missing and unknown ticket ids with the known ids', async () => {
 });
 
 test('is read-only: the tool takes only a ticket id', async () => {
-  const { CROSS_SPACE_TOOL_DEFINITIONS } = await import('../connectors/control-tower/server/cross-space.mjs');
+  const { CROSS_SPACE_TOOL_DEFINITIONS } = await import('../connectors/_lib/server/cross-space.mjs');
   assert.deepEqual(Object.keys(CROSS_SPACE_TOOL_DEFINITIONS[0].inputSchema.properties), ['ticket_id']);
 });

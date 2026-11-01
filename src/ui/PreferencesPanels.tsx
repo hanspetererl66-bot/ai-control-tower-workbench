@@ -7,7 +7,6 @@ import {
 } from '../preferences';
 import { sectionEffect } from '../settings-help';
 import { SPACE_SCALES } from '../space-scale';
-import { STARTER_PROMPTS } from '../starter-prompts';
 
 export type PrefsUpdate = (change: (current: Preferences) => Preferences) => void;
 export type SpaceRef = { slug: string; title: string };
@@ -176,14 +175,6 @@ export function WorkPanel({ prefs, update, spaces, skills, connectors }: Common 
           </label>
         ))}
       </Section>
-      <Section title="Suggestions on the empty chat" hint="Untick a built-in suggestion to hide it.">
-        {STARTER_PROMPTS.map((s) => (
-          <label key={s.label} className="voice-option" title={s.prompt}>
-            <input type="checkbox" checked={!prefs.chat.hiddenStarters.includes(s.label)} onChange={() => update((p) => ({ ...p, chat: { ...p.chat, hiddenStarters: p.chat.hiddenStarters.includes(s.label) ? p.chat.hiddenStarters.filter((x) => x !== s.label) : [...p.chat.hiddenStarters, s.label] } }))} />
-            <span>{s.label}</span>
-          </label>
-        ))}
-      </Section>
       <Section title="Cards under the chat" hint="The groups of cards under the message box on the empty chat. Untick a group or a single card to hide it.">
         {BRIEFING_CATEGORIES.map((c) => {
           const off = prefs.chat.hiddenBriefing.includes(categoryKey(c.id));
@@ -310,7 +301,7 @@ export function StoragePanel({ prefs, update, syncAvailable, sync, onSave, onLoa
           <button className="ghost-btn" disabled={!name.trim() || !location.trim()} onClick={add}>Add</button>
         </div>
       </Section>
-      <Section title="Sync with Supabase" hint="Saves these settings (never passwords or keys) in the Supabase table werkbank.preferences through the AI Control Tower connector, so every computer can load the same setup. Needs the Supabase connection and migration 016.">
+      <Section title="Sync with Supabase" hint="Saves these settings (never passwords or keys) in the Supabase table werkbank.preferences through the Werkbank Workspace connector, so every computer can load the same setup. Needs the Supabase connection and migration 016.">
         <div className="prefs-row">
           <label htmlFor="sync-key">Settings name</label>
           <input id="sync-key" type="text" value={prefs.sync.key} maxLength={40} onChange={(e) => update((p) => ({ ...p, sync: { ...p.sync, key: e.target.value.toLowerCase() } }))} />
@@ -323,7 +314,7 @@ export function StoragePanel({ prefs, update, syncAvailable, sync, onSave, onLoa
           <input type="checkbox" checked={prefs.sync.auto} onChange={(e) => update((p) => ({ ...p, sync: { ...p.sync, auto: e.target.checked } }))} />
           <span>Load these settings when the app starts</span>
         </label>
-        {!syncAvailable && <p className="prefs-note">The AI Control Tower connector is not connected yet.</p>}
+        {!syncAvailable && <p className="prefs-note">The Werkbank Workspace connector is not connected yet. Add it under Connectors & Skills.</p>}
         {sync.message && <p className="prefs-note" role="status">{sync.message}</p>}
       </Section>
       <Section title="Export and import" hint="A file with all settings, for backup or to give to a colleague. It contains no passwords or keys.">

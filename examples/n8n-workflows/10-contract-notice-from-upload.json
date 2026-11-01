@@ -1,0 +1,234 @@
+{
+  "name": "10 Contract notice check on uploaded table (demo)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Contract notice check on an uploaded table (demo)\nThe use case of the mass upload: attach `examples/demo-data/contracts-demo.xlsx` in the Werkbank, click **Send rows to n8n\u2026** (workflow 09 stores the rows in Supabase), then call this workflow with the upload ID. It reads the rows, computes every notice deadline and answers with a digest per owner. Nothing is sent or changed.\n**Setup:** workflow 09 and its migration, a *Header Auth* credential (header `x-upload-token`) on this webhook, the environment variables `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`. Test: `curl -X POST <production url> -H 'x-upload-token: \u2026' -H 'content-type: application/json' -d '{\"batchId\":\"<upload id>\"}'`.\nOptional: `asOf` (YYYY-MM-DD) and `withinDays` (1-365, default 30). In production, add a Schedule Trigger and a Teams or mail step after *Check deadlines*.",
+        "height": 300,
+        "width": 760,
+        "color": 4
+      },
+      "id": "e7b8d91c-7520-5cea-b156-76f4a17f94ff",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "contract-notice-uploaded",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "04563554-1109-5124-904e-c44a9108e828",
+      "name": "Receive request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "1c0783bf-503d-53df-b578-41d408625e8d"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Which upload to check. The Werkbank shows the upload ID after \"Send rows to n8n\u2026\".\nconst b = $input.first().json.body ?? $input.first().json;\nconst valid = (d) => typeof d === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(d) && !Number.isNaN(Date.parse(d));\nconst errors = [];\nif (typeof b.batchId !== 'string' || !/^[A-Za-z0-9._-]{1,80}$/.test(b.batchId)) errors.push('batchId (the upload ID) is required');\n// Without asOf the reference date is fixed (19 Oct 2026), so the demo file gives the same result every day.\nconst asOf = valid(b.asOf) ? b.asOf : '2026-10-19';\nconst withinDays = Number.isFinite(b.withinDays) ? Math.max(1, Math.min(365, Math.round(b.withinDays))) : 30;\nreturn [{ json: { ok: errors.length === 0, errors, batchId: b.batchId, asOf, withinDays } }];"
+      },
+      "id": "d32ae3bf-9aa6-507b-a35c-d3baeea1d466",
+      "name": "Parameters",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "139d74fe-a1f0-5d88-9748-56fca6107278",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b34968f6-68c0-5d01-9acc-78178b613b02",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bulk_upload_rows?batch_id=eq.{{ encodeURIComponent($json.batchId) }}&select=row_index,data&order=row_index&limit=5000",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0175b94d-650a-53ef-84c2-f076bde59b25",
+      "name": "Read uploaded rows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        780,
+        -100
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reads the rows of the upload (columns as in examples/demo-data/contracts-demo.xlsx) and checks every notice deadline.\n// Ends in \"draft only\": nothing is sent, the owner decides about notice or renewal.\nconst p = $('Parameters').first().json;\nconst num = (v) => Number(String(v ?? '').replace(/\\s/g, '').replace(',', '.'));\nconst day = (v) => {\n  const s = String(v ?? '').trim();\n  if (/^\\d{4}-\\d{2}-\\d{2}/.test(s)) return s.slice(0, 10);\n  // Excel stores dates as day numbers (1900 system). 25569 = 1970-01-01.\n  if (/^\\d{5}(\\.\\d+)?$/.test(s)) return new Date((Math.floor(Number(s)) - 25569) * 864e5).toISOString().slice(0, 10);\n  return '';\n};\nconst rows = $input.all().map((i) => i.json).filter((r) => r && r.data);\nconst skipped = [];\nconst contracts = [];\nfor (const r of rows) {\n  const d = r.data;\n  const end = day(d['Contract end']);\n  const noticeDays = num(d['Notice days']);\n  if (!d['Contract ID'] || !end || !Number.isFinite(noticeDays)) { skipped.push(r.row_index); continue; }\n  const deadline = new Date(Date.parse(end) - noticeDays * 864e5).toISOString().slice(0, 10);\n  const daysLeft = Math.round((Date.parse(deadline) - Date.parse(p.asOf)) / 864e5);\n  contracts.push({\n    id: d['Contract ID'], customer: d['Customer'] ?? '', product: d['Product'] ?? '', owner: d['Owner'] ?? '', end, noticeDays,\n    value: Number.isFinite(num(d['Annual value EUR'])) ? num(d['Annual value EUR']) : 0, noticeDeadline: deadline, daysLeft,\n    status: daysLeft <= p.withinDays ? 'alert' : 'ok',\n  });\n}\ncontracts.sort((a, b) => a.daysLeft - b.daysLeft);\nconst alerts = contracts.filter((c) => c.status === 'alert');\nconst passed = alerts.filter((c) => c.daysLeft < 0);\nconst byOwner = {};\nfor (const a of alerts) (byOwner[a.owner || 'unassigned'] ??= []).push(a.id);\nconst eur = (n) => new Intl.NumberFormat('en-US').format(Math.round(n));\nconst lines = [\n  `Contract notice check for upload ${p.batchId} as of ${p.asOf}: ${contracts.length} contracts, ${alerts.length} with a notice deadline within ${p.withinDays} days or already passed (${passed.length} passed), EUR ${eur(alerts.reduce((s, a) => s + a.value, 0))} annual value affected.`,\n  ...alerts.map((a) => `- ${a.id} ${a.customer}, ${a.product}: deadline ${a.noticeDeadline} (${a.daysLeft < 0 ? `${-a.daysLeft} days ago` : `in ${a.daysLeft} days`}), owner ${a.owner}`),\n  skipped.length ? `${skipped.length} rows were skipped (missing contract ID, end date or notice days).` : '',\n  alerts.length ? 'Draft only: nothing is sent. The owner decides about notice or renewal.' : 'Nothing to do now.',\n].filter(Boolean);\nreturn [{ json: { batchId: p.batchId, asOf: p.asOf, withinDays: p.withinDays, total: contracts.length, alerts: alerts.length, passed: passed.length, skipped: skipped.length, byOwner, alertContracts: alerts, digest: lines.join('\\n') } }];"
+      },
+      "id": "5f8d86f5-29bc-5640-bc62-64fc16bf3c76",
+      "name": "Check deadlines",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "8e22f9c0-beb6-5a24-8e60-75f70b3170a0",
+      "name": "Report",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1300,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, errors: $json.errors }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "66029baa-5889-5982-afd2-edcb677e6aef",
+      "name": "Rejected",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Receive request": {
+      "main": [
+        [
+          {
+            "node": "Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parameters": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Read uploaded rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read uploaded rows": {
+      "main": [
+        [
+          {
+            "node": "Check deadlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check deadlines": {
+      "main": [
+        [
+          {
+            "node": "Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

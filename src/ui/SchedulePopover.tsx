@@ -22,11 +22,24 @@ export default function SchedulePopover({
   return (
     <div className="schedule-pop" role="dialog" aria-label="Recurring briefing">
       <div className="schedule-head">
-        <b>Recurring briefing</b>
+        <span className="schedule-badge" aria-hidden="true"><ClockIcon /></span>
+        <div className="schedule-title">
+          <b>Recurring briefing</b>
+          <small>Joule asks the same question for you at a set time.</small>
+        </div>
         <button className="schedule-x" onClick={onClose} aria-label="Close">×</button>
       </div>
       <ScheduleEditor schedules={schedules} onChange={onChange} draftPrompt={draftPrompt} runtime={runtime} />
     </div>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="7.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 5.8V10l2.8 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -37,6 +50,7 @@ const PRESETS: Array<{ label: string; time: string; repeat: 'daily' | 'weekly'; 
 ];
 
 /** The form and the list of briefings, shared by the clock popover and the side panel. A briefing in the list can be edited, run now, switched off or deleted. */
+/** The form and the list of briefings, shared by the clock popover and the side panel. */
 export function ScheduleEditor({
   schedules,
   onChange,
@@ -81,6 +95,7 @@ export function ScheduleEditor({
   }
 
   const draft: Schedule = { id: 'draft', prompt: 'x', time, repeat, days: repeat === 'weekly' ? [...days].sort() : [], enabled: true };
+  const timeOk = /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
   const preview = timeOk && (repeat === 'daily' || days.length > 0) ? nextRun(draft, new Date()) : null;
   const applyPreset = (pr: (typeof PRESETS)[number]) => { setTime(pr.time); setRepeat(pr.repeat); if (pr.days.length) setDays(pr.days); };
 
@@ -153,6 +168,7 @@ export function ScheduleEditor({
         <button className="dialog-btn dialog-btn-primary schedule-save" disabled={!valid} onClick={save}>{editId ? 'Update briefing' : 'Save briefing'}</button>
         {editId && <button className="dialog-btn" onClick={reset}>Cancel</button>}
       </div>
+      <button className="dialog-btn dialog-btn-primary schedule-save" disabled={!valid} onClick={add}>Save briefing</button>
       {schedules.length > 0 && (
         <div className="schedule-listwrap">
           <h4 className="schedule-h">Your briefings <small>{schedules.length}</small></h4>
@@ -182,6 +198,17 @@ export function ScheduleEditor({
                     <button className="schedule-mini" onClick={() => edit(s)} aria-label={`Edit briefing ${scheduleTitle(s).slice(0, 30)}`} title="Edit">✎</button>
                     <button className="schedule-x" onClick={() => { if (editId === s.id) reset(); onChange(schedules.filter((x) => x.id !== s.id)); }} aria-label="Delete briefing">×</button>
                   </div>
+              return (
+                <li key={s.id} className={s.enabled ? '' : 'schedule-off'}>
+                  <label className="schedule-switch" title={s.enabled ? 'On' : 'Off'}>
+                    <input type="checkbox" role="switch" checked={s.enabled} onChange={(e) => onChange(schedules.map((x) => (x.id === s.id ? { ...x, enabled: e.target.checked } : x)))} aria-label={`Briefing ${s.prompt.slice(0, 30)} on or off`} />
+                    <span className="schedule-knob" aria-hidden="true" />
+                  </label>
+                  <div className="schedule-item">
+                    <span className="schedule-q">{s.prompt.length > 80 ? `${s.prompt.slice(0, 79)}…` : s.prompt}</span>
+                    <small>{describeSchedule(s)}{s.enabled && next ? ` · next ${next.toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : ' · off'}</small>
+                  </div>
+                  <button className="schedule-x" onClick={() => onChange(schedules.filter((x) => x.id !== s.id))} aria-label="Delete briefing">×</button>
                 </li>
               );
             })}

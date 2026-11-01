@@ -1,0 +1,75 @@
+{
+  "manifest_version": "0.2",
+  "name": "ai-control-tower",
+  "display_name": "AI Control Tower",
+  "version": "1.0.0",
+  "description": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits. Uses the bundled sample data, or your Supabase project when configured.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "connectors/ai-control-tower/server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/connectors/ai-control-tower/server/index.mjs"
+      ],
+      "env": {
+        "CONTROL_TOWER_DATA": "${__dirname}/connectors/_lib/data/data.json",
+        "SUPABASE_URL": "${user_config.supabase_url}",
+        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_risks",
+      "description": "List open AI governance risks, optionally filtered by severity, progress or owner."
+    },
+    {
+      "name": "get_risk",
+      "description": "Get one risk by id."
+    },
+    {
+      "name": "get_agent_overview",
+      "description": "Summary of the AI agent registry."
+    },
+    {
+      "name": "list_agents",
+      "description": "List agents (e.g. everything in production) with summary and filters."
+    },
+    {
+      "name": "get_unregistered_assets",
+      "description": "Unregistered AI assets found by the discovery scan."
+    },
+    {
+      "name": "get_overprivileged_agents",
+      "description": "Remediation queue for overprivileged agents."
+    },
+    {
+      "name": "get_budget",
+      "description": "Monthly AI budget by team group with reconciliation."
+    },
+    {
+      "name": "simulate_credit_cut",
+      "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % kürzen?\"."
+    }
+  ],
+  "user_config": {
+    "supabase_url": {
+      "type": "string",
+      "title": "Supabase project URL",
+      "description": "Optional. Example: https://<project-ref>.supabase.co. Leave empty to use the bundled sample data.",
+      "required": false
+    },
+    "supabase_secret_key": {
+      "type": "string",
+      "title": "Supabase secret key",
+      "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}
