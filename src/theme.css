@@ -3212,6 +3212,8 @@ button {
   flex-direction: column;
   gap: 6px;
   animation: briefing-in 0.35s ease both;
+  /* Text on the cards is 25% smaller than the body text of the chat. */
+  --briefing-text: 0.75;
 }
 
 .briefing-card:nth-child(2) {
@@ -3233,14 +3235,14 @@ button {
 
 .briefing-card h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--briefing-text));
   font-weight: 600;
   color: var(--ink);
 }
 
 .briefing-card p {
   margin: 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--briefing-text));
   line-height: 1.45;
   color: var(--muted);
 }
@@ -3259,7 +3261,7 @@ button {
   border-radius: 999px;
   padding: 4px 10px;
   font: inherit;
-  font-size: 12px;
+  font-size: calc(12px * var(--briefing-text, 0.75));
   cursor: pointer;
 }
 
