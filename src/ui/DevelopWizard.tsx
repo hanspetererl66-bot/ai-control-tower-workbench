@@ -8,6 +8,7 @@ import { exportDocument, saveFile, wrapHtml, type ExportFormat } from '../doc-ex
 import { makeZip } from '../zip';
 import { ChatMarkdown } from './ChatMarkdown';
 import { RichDoc } from './RichDoc';
+import Stepper, { type StepItem } from './Stepper';
 
 type Props = {
   project: Project;
@@ -97,15 +98,13 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
       </header>
       {folder && <ProjectFolder project={project} />}
       <SaveLine state={saveState} />
-      <ol className="dev-steps" aria-label="Steps">
-        {STAGES.map((s, i) => (
-          <li key={s}>
-            <button className={`dev-step ${s === stage ? 'dev-step-on' : ''} ${project.approved.includes(s) ? 'dev-step-done' : ''}`} disabled={!canEnter(project, s) || working} onClick={() => go(s)} aria-current={s === stage ? 'step' : undefined}>
-              <span className="dev-step-n">{project.approved.includes(s) ? '✓' : i + 1}</span>{STAGE_LABEL[s]}
-            </button>
-          </li>
-        ))}
-      </ol>
+      <Stepper
+        steps={STAGES.map((s): StepItem => ({
+          id: s, label: STAGE_LABEL[s], enabled: canEnter(project, s) && !working,
+          state: s === stage ? 'here' : project.approved.includes(s) ? 'done' : 'todo',
+        }))}
+        onSelect={(id) => go(id as Stage)}
+      />
       {!ready && <p className="dev-warn" role="status">The agent is not connected yet. You can fill in the intent now and generate the documents once it is.</p>}
       {error && <p className="dev-error" role="alert">{error}</p>}
       {note && <p className="dev-note" role="status">{note}</p>}

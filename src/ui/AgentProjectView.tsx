@@ -5,6 +5,7 @@ import {
   regenerate, setAnswers, stageLabel, type AgentProject, type Answers, type DocKey, type Stage,
 } from '../agent-project';
 import { ChatMarkdown } from './ChatMarkdown';
+import Stepper, { type StepItem } from './Stepper';
 
 export type AgentProjectViewProps = {
   project: AgentProject;
@@ -44,20 +45,14 @@ export default function AgentProjectView(p: AgentProjectViewProps) {
         <input className="studio-name" value={project.answers.name} maxLength={60} aria-label="Agent name" onChange={(e) => p.onChange(setAnswers(project, { name: e.target.value }, now()))} />
         <span className="mem-badge">project</span>
       </div>
-      <ol className="proj-steps" aria-label="Steps">
-        {STAGE_ORDER.map((s, i) => {
+      <Stepper
+        steps={STAGE_ORDER.map((s): StepItem => {
           const done = s === 'questions' ? !!project.confirmed.questions : s === 'build' ? !!project.agentId : !!project.confirmed[s as DocKey] && !project.stale.includes(s as DocKey);
           const outdated = s !== 'questions' && s !== 'build' && project.stale.includes(s as DocKey);
-          const here = s === shown;
-          return (
-            <li key={s}>
-              <button className={`proj-step ${done ? 'proj-done' : ''} ${here ? 'proj-here' : ''} ${outdated ? 'proj-stale' : ''}`} disabled={!reachable(s)} aria-current={here ? 'step' : undefined} onClick={() => { setView(s); setPreview(false); }}>
-                <span>{done ? '✓' : outdated ? '!' : i + 1}</span>{stageLabel(s)}
-              </button>
-            </li>
-          );
+          return { id: s, label: stageLabel(s), enabled: reachable(s), state: outdated ? 'stale' : s === shown ? 'here' : done ? 'done' : 'todo' };
         })}
-      </ol>
+        onSelect={(id) => { setView(id as Stage); setPreview(false); }}
+      />
 
       {shown === 'questions' && <Questions {...p} locked={!!project.confirmed.questions} />}
       {DOC_ORDER.includes(shown as DocKey) && (

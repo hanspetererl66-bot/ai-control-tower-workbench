@@ -239,6 +239,7 @@ export default function App() {
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
   const developStopped = useRef(false);
+  const [manageFocus, setManageFocus] = useState<'skills' | 'connectors' | undefined>(undefined);
   const sendRef = useRef<(text: string, attachments?: ChatAttachment[], options?: { plain?: boolean }) => Promise<void>>(async () => {});
   const webSearchRef = useRef(true);
   const askBeforeActionsRef = useRef(prefs.chat.askBeforeActions);
@@ -984,7 +985,7 @@ export default function App() {
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
-      onManageConnectors={() => setView('manage')}
+      onManageConnectors={() => { setManageFocus('connectors'); setView('manage'); }}
       starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
@@ -1201,7 +1202,8 @@ export default function App() {
             setView('studio');
           }}
           onOpenN8n={() => setView('n8n')}
-          onOpenConnectors={() => setView('manage')}
+          onOpenSkills={() => { setManageFocus('skills'); setView('manage'); }}
+          onOpenConnectors={() => { setManageFocus('connectors'); setView('manage'); }}
           generate={developGenerate}
           onStop={() => void cancelCurrent()}
           ready={Boolean(agent)}
@@ -1223,6 +1225,7 @@ export default function App() {
           onBack={() => setView('develop')}
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
+          focus={manageFocus}
         />
       ) : view === 'studio' ? (
         <AgentStudio

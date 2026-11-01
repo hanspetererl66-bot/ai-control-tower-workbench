@@ -46,14 +46,18 @@ export default function ManageView({
   onBack,
   onAgentRestarted,
   onImport,
+  focus,
 }: {
   agent: Agent | null;
   onBack: () => void;
   onAgentRestarted: () => void;
   onImport: (request: Record<string, unknown>) => void;
+  /** Which part to scroll to when the page opens (from the Develop tiles). */
+  focus?: 'skills' | 'connectors';
 }) {
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  useEffect(() => { if (focus) document.getElementById(`manage-${focus}`)?.scrollIntoView({ block: 'start' }); }, [focus]);
   const [bundled, setBundled] = useState<{ id: string; name: string; title: string; description: string; tools: number; needsSetup: boolean }[]>([]);
   useEffect(() => { void window.host?.listBundledConnectors?.().then((list) => setBundled(list ?? [])); }, []);
   const [busy, setBusy] = useState<string | null>(null);
@@ -159,7 +163,7 @@ export default function ManageView({
       <div className="manage">
         {note && <div className="manage-note">{note}</div>}
 
-        <h2 className="manage-h">Connectors</h2>
+        <h2 className="manage-h" id="manage-connectors">Connectors</h2>
         {connectors.length === 0 && <p className="manage-empty">No connectors configured.</p>}
         {connectors.map((e) => (
           <div key={e.configKey} className="row">
@@ -333,7 +337,7 @@ export default function ManageView({
           );
         })()}
 
-        <h2 className="manage-h">Skills</h2>
+        <h2 className="manage-h" id="manage-skills">Skills</h2>
         {skills.length === 0 && <p className="manage-empty">No skills installed.</p>}
         {skills.length > 0 && (
           <SkillGovernance
