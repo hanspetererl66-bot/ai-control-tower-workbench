@@ -175,3 +175,38 @@ test('manifest declares the three secrets as user config and matches the tools',
   assert.equal(manifest.user_config.google_refresh_token.sensitive, true);
   assert.equal(manifest.server.mcp_config.command, 'node');
 });
+
+const PDF = Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF').toString('base64');
+
+test('create_draft can attach a PDF as multipart mail and still only creates a draft', async () => {
+  await withServer(async (server, google) => {
+    const out = parse(await server.call('create_draft', {
+      to: 'me@example.com', subject: 'Briefing', body: 'Siehe Anhang.',
+      attachments: [{ filename: 'briefing-2026-11-01.pdf', content_base64: PDF, mime_type: 'application/pdf' }],
+    }));
+    assert.equal(out.status, 'draft created, not sent');
+    const raw = Buffer.from(google.seen.drafts.at(-1).message.raw, 'base64url').toString('utf8');
+    assert.match(raw, /Content-Type: multipart\/mixed; boundary="werkbank-/);
+    assert.match(raw, /Content-Disposition: attachment; filename="briefing-2026-11-01\.pdf"/);
+    const attachment = raw.split('Content-Transfer-Encoding: base64\r\n\r\n')[2].split('\r\n--')[0].replaceAll('\r\n', '');
+    assert.equal(attachment, PDF);
+    assert.ok(google.seen.paths.every((p) => !/send|trash/i.test(p)));
+  });
+});
+
+test('attachments are limited to small PDFs given as content, never as a path', async () => {
+  await withServer(async (server) => {
+    const base = { to: 'me@example.com', subject: 's', body: 'b' };
+    const bad = [
+      [{ filename: '../etc/passwd.pdf', content_base64: PDF }],
+      [{ filename: 'x.exe', content_base64: PDF }],
+      [{ filename: 'x.pdf', content_base64: Buffer.from('not a pdf').toString('base64') }],
+      [{ filename: 'x.pdf', content_base64: PDF, mime_type: 'text/html' }],
+      [{ filename: 'x.pdf', path: '/etc/passwd' }],
+      [{ filename: 'x.pdf', content_base64: Buffer.concat([Buffer.from('%PDF-'), Buffer.alloc(5 * 1024 * 1024)]).toString('base64') }],
+      Array(4).fill({ filename: 'x.pdf', content_base64: PDF }),
+      'x.pdf',
+    ];
+    for (const attachments of bad) assert.equal((await server.call('create_draft', { ...base, attachments })).result.isError, true, JSON.stringify(attachments).slice(0, 60));
+  });
+});

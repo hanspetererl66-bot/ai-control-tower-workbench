@@ -4,7 +4,7 @@ import { LANGUAGES, LENGTHS, TONES, assistantNote, type Preferences } from '../p
 import type { Schedule } from '../schedules';
 import MemoryPanel from './MemoryPanel';
 import type { PrefsUpdate } from './PreferencesPanels';
-import { ScheduleEditor } from './SchedulePopover';
+import { ScheduleEditor, type ScheduleRuntime } from './SchedulePopover';
 
 export type GeneratedFile = { path: string };
 export type SidePanelTab = 'memory' | 'context' | 'instructions' | 'schedule';
@@ -32,6 +32,7 @@ type Props = {
   onPrefs: PrefsUpdate;
   schedules: Schedule[];
   onSchedules: (next: Schedule[]) => void;
+  scheduleRuntime?: ScheduleRuntime;
   context: ContextItem[];
 };
 
@@ -66,7 +67,7 @@ export default function SidePanel(props: Props) {
           <div className="side-section">
             <h4>Recurring briefings</h4>
             <p className="side-hint">Ask a question again and again, at a set time. Runs in the chat while Werkbank is open.</p>
-            <ScheduleEditor schedules={props.schedules} onChange={props.onSchedules} draftPrompt="" />
+            <ScheduleEditor schedules={props.schedules} onChange={props.onSchedules} draftPrompt="" runtime={props.scheduleRuntime} />
           </div>
         )}
       </div>

@@ -10,7 +10,32 @@ export type Schedule = {
   enabled: boolean;
   /** ISO time of the last run. */
   lastRun?: string;
+  /** Short name shown in the list; the question is used when it is empty. */
+  name?: string;
+  /** What happens with the answer after a run (apart from showing it in the chat). */
+  delivery?: Delivery;
+  /** How the last run ended; shown in the list. */
+  lastStatus?: 'ok' | 'error';
+  /** One line about the last run, for example where the PDF went or what failed. */
+  lastNote?: string;
 };
+
+/** The answer can be saved as a PDF and put into an email draft with the PDF attached. Nothing is sent without the person. */
+export type Delivery = { pdf: boolean; email: boolean; to: string };
+export const NO_DELIVERY: Delivery = { pdf: false, email: false, to: '' };
+const EMAIL = /^[^@\s,;<>]+@[^@\s,;<>]+\.[^@\s,;<>]+$/;
+export const isEmail = (value: string): boolean => EMAIL.test(value.trim()) && value.trim().length <= 120;
+
+/** Email needs the PDF, so it implies it. An address is required for email; otherwise email is switched off. */
+export function sanitizeDelivery(value: unknown): Delivery {
+  if (typeof value !== 'object' || value === null) return NO_DELIVERY;
+  const r = value as Record<string, unknown>;
+  const to = typeof r.to === 'string' && isEmail(r.to) ? r.to.trim() : '';
+  const email = r.email === true && to !== '';
+  return { pdf: r.pdf === true || email, email, to: email ? to : '' };
+}
+
+export const scheduleTitle = (s: Pick<Schedule, 'name' | 'prompt'>): string => (s.name?.trim() || s.prompt.trim()).slice(0, 80);
 
 export const SCHEDULES_KEY = 'werkbank.schedules.v1';
 export const WEEKDAYS = [
@@ -35,7 +60,17 @@ export function sanitizeSchedules(value: unknown): Schedule[] {
     const repeat = r.repeat === 'weekly' ? 'weekly' : 'daily';
     const days = Array.isArray(r.days) ? [...new Set(r.days.filter((d): d is number => Number.isInteger(d) && d >= 0 && d <= 6))].sort() : [];
     if (repeat === 'weekly' && days.length === 0) continue;
-    out.push({ id, prompt, time, repeat, days, enabled: r.enabled !== false, lastRun: typeof r.lastRun === 'string' && !Number.isNaN(Date.parse(r.lastRun)) ? r.lastRun : undefined });
+    const name = typeof r.name === 'string' ? r.name.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 60) : '';
+    const delivery = sanitizeDelivery(r.delivery);
+    const lastNote = typeof r.lastNote === 'string' ? r.lastNote.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 200) : '';
+    out.push({
+      id, prompt, time, repeat, days, enabled: r.enabled !== false,
+      lastRun: typeof r.lastRun === 'string' && !Number.isNaN(Date.parse(r.lastRun)) ? r.lastRun : undefined,
+      ...(name ? { name } : {}),
+      ...(delivery.pdf ? { delivery } : {}),
+      ...(r.lastStatus === 'ok' || r.lastStatus === 'error' ? { lastStatus: r.lastStatus } : {}),
+      ...(lastNote ? { lastNote } : {}),
+    });
     if (out.length >= MAX_SCHEDULES) break;
   }
   return out;
