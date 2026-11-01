@@ -60,4 +60,8 @@ test('both flows show their steps as joined circles from one shared component', 
   assert.match(stepper, /'✓'/, 'a finished step shows a check mark');
   for (const file of ['src/ui/AgentProjectView.tsx', 'src/ui/DevelopWizard.tsx']) assert.match(src(file), /<Stepper/, file);
   assert.match(src('src/theme.css'), /\.stepper-item \+ \.stepper-item::before/, 'a line joins the circles');
+  assert.match(stepper, /sub\?: StepItem\[\]/, 'a step can show its parts');
+  assert.match(src('src/ui/AgentProjectView.tsx'), /FLOW\.map/, 'the agent project shows the five shared steps');
+  assert.match(src('src/ui/AgentProjectView.tsx'), /SPEC_PARTS\.map/, 'the specification documents are parts of the third step');
+  assert.match(src('src/ui/DevelopWizard.tsx'), /STAGES\.map/, 'the workflow wizard shows the same steps');
 });

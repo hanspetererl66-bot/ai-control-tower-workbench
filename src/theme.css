@@ -4307,5 +4307,15 @@ textarea.studio-field { min-height: 120px; }
 .stepper-stale .stepper-label { color: #b45309; }
 :root[data-theme="dark"] .stepper-stale .stepper-label { color: #fbbf24; }
 /* Narrow place (the Agent Studio column): the circles alone, and the name of the open step under them. */
+.dev-checklist { margin: 10px 0 16px; padding-left: 22px; display: grid; gap: 6px; line-height: 1.45; }
+.stepper-sub { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.stepper-sub button { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; }
+.stepper-sub button:disabled { cursor: not-allowed; opacity: .6; }
+.stepper-sub button:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
+.stepper-sub-done button { color: var(--ink); }
+.stepper-sub-done button span:first-child { color: var(--accent); font-weight: 700; }
+.stepper-sub-here button { border-color: var(--accent); color: var(--accent); font-weight: 600; box-shadow: 0 0 0 3px rgb(109 74 255 / 15%); }
+.stepper-sub-stale button { border-color: #b45309; color: #b45309; }
+:root[data-theme="dark"] .stepper-sub-stale button { color: #fbbf24; border-color: #d97706; }
 @container (max-width: 560px) { .stepper-label { display: none; } .stepper-now { display: block; } .stepper-dot { width: 28px; height: 28px; font-size: 13px; } .stepper-item + .stepper-item::before { top: 13px; } }
 @media (prefers-reduced-motion: reduce) { .stepper-dot { transition: none; } }

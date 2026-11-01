@@ -4,7 +4,7 @@ import { decide, levelOf, pendingFor, requestPromotion, type LevelIndex, type Sk
 import type { Schedule } from '../schedules';
 import WerkbankMark from './WerkbankMark';
 import AgentProjectView from './AgentProjectView';
-import { currentStage, newProject, stageLabel, type AgentProject, type DocKey } from '../agent-project';
+import { currentStage, newProject, stageLabel, type AgentProject, type AgentStatus, type DocKey } from '../agent-project';
 
 export type AgentStudioProps = {
   agents: StudioAgent[];
@@ -84,6 +84,10 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
     if (req) return { text: `in review for ${gov.levels[req.to]}`, cls: '' };
     return { text: a.tested ? 'tested' : 'draft', cls: '' };
   };
+  const statusOf = (x: AgentProject): AgentStatus | undefined => {
+    const a = x.agentId ? agents.find((y) => y.id === x.agentId) : undefined;
+    return a ? { tested: a.tested, published: levelOf(gov, a.id) > 0 } : undefined;
+  };
   const pending = gov.requests.filter((r) => r.status === 'pending');
   const issues = agent ? problems(agent) : [];
 
@@ -96,7 +100,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
         <button className="studio-tpl studio-tpl-main" onClick={createProject} title="Describe a goal, answer a few questions and let the documents lead to the agent"><b>New agent from a goal</b><small>PRD to build</small></button>
         {projects.map((x) => (
           <button key={x.id} className={`studio-item ${x.id === selectedProject ? 'on' : ''}`} onClick={() => openProject(x.id)}>
-            <span>{x.answers.name}</span><small className={`mem-badge ${x.agentId ? 'mem-badge-on' : ''}`}>{stageLabel(currentStage(x))}</small>
+            <span>{x.answers.name}</span><small className={`mem-badge ${x.agentId ? 'mem-badge-on' : ''}`}>{stageLabel(currentStage(x, statusOf(x)))}</small>
           </button>
         ))}
         <div className="studio-new">
@@ -130,6 +134,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
             onBuild={(built) => { onAgents([built, ...agents]); changeProject({ ...project, agentId: built.id, updatedAt: Date.now() }); open(built.id); }}
             onOpenAgent={open}
             agentExists={project.agentId ? agents.some((x) => x.id === project.agentId) : false}
+            agentStatus={statusOf(project)}
             onDelete={() => { onProjects(projects.filter((x) => x.id !== project.id)); setSelectedProject(null); }}
             onRunInChat={onRunInChat}
             onFocus={(key) => onDocFocus?.(key ? { projectId: project.id, docKey: key } : null)}

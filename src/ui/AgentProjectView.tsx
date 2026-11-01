@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { OUTPUTS, type Source, type StudioAgent } from '../agent-studio';
 import {
-  DOC_ORDER, DOC_TITLE, SENSITIVITY, STAGE_ORDER, VOLUME, agentFromProject, allConfirmed, confirmDoc, confirmQuestions, currentStage, editDoc, questionProblems,
-  regenerate, setAnswers, stageLabel, type AgentProject, type Answers, type DocKey, type Stage,
+  DOC_ORDER, DOC_SHORT, DOC_TITLE, FLOW_OF, SENSITIVITY, SPEC_PARTS, VOLUME, agentFromProject, allConfirmed, confirmDoc, confirmQuestions, currentStage, editDoc, questionProblems,
+  regenerate, setAnswers, type AgentProject, type AgentStatus, type Answers, type DocKey, type Stage,
 } from '../agent-project';
+import { FLOW, FLOW_LABEL } from '../flow';
 import { ChatMarkdown } from './ChatMarkdown';
 import Stepper, { type StepItem } from './Stepper';
 
@@ -15,6 +16,8 @@ export type AgentProjectViewProps = {
   onBuild: (agent: StudioAgent) => void;
   onOpenAgent: (id: string) => void;
   agentExists: boolean;
+  /** Sandbox test and publication of the built agent, as the Agent Studio knows them. */
+  agentStatus?: AgentStatus;
   onDelete: () => void;
   onRunInChat: (prompt: string) => void;
   /** Which document is open now (null on the questions and build steps), so the docked chat can work on it. */
@@ -25,16 +28,32 @@ const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', we
 const when = (ms?: number) => (ms ? new Date(ms).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '');
 const NEXT_NAME: Record<DocKey, string> = { prd: 'the Technical Functional Document', tfd: 'the Solution Architecture', arch: 'the Risk and Test Plan', risk: 'the agent' };
 
-/** The path from a goal to an agent: questions, then four documents, each confirmed before the next, then the build. */
+/** The path from a goal to a running agent: the five shared steps. Specification & Architecture holds three documents, each confirmed before the next. */
 export default function AgentProjectView(p: AgentProjectViewProps) {
   const { project } = p;
-  const current = currentStage(project);
+  const current = currentStage(project, p.agentStatus);
   const [view, setView] = useState<Stage>(current);
   const [preview, setPreview] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   useEffect(() => { setView(current); setPreview(false); setConfirmDelete(false); }, [current, project.id]);
-  const reachable = (s: Stage) => s === 'questions' || (s === 'build' ? !!project.docs.risk : !!project.docs[s as DocKey]);
-  const shown: Stage = view === 'done' ? 'build' : view;
+  const reachable = (s: Stage) => s === 'questions' || (s === 'build' ? !!project.docs.risk : s === 'test' ? !!project.agentId : !!project.docs[s as DocKey]);
+  const shown: Stage = view === 'done' ? 'test' : view;
+  const docDone = (k: DocKey) => !!project.confirmed[k] && !project.stale.includes(k);
+  const flowSteps = FLOW.map((f): StepItem => {
+    const here = FLOW_OF[shown] === f;
+    if (f === 'specification') {
+      const sub = SPEC_PARTS.map((k): StepItem => ({ id: k, label: DOC_SHORT[k], enabled: reachable(k), state: project.stale.includes(k) ? 'stale' : k === shown ? 'here' : docDone(k) ? 'done' : 'todo' }));
+      const state = sub.some((x) => x.state === 'stale') ? 'stale' : here ? 'here' : sub.every((x) => x.state === 'done') ? 'done' : 'todo';
+      return { id: f, label: FLOW_LABEL[f], enabled: reachable('tfd'), state, sub };
+    }
+    const stage: Stage = f === 'intent' ? 'questions' : f === 'requirements' ? 'prd' : f;
+    const done = f === 'intent' ? !!project.confirmed.questions : f === 'requirements' ? docDone('prd') : f === 'build' ? !!project.agentId : current === 'done';
+    return { id: f, label: FLOW_LABEL[f], enabled: reachable(stage), state: stage === 'prd' && project.stale.includes('prd') ? 'stale' : here ? 'here' : done ? 'done' : 'todo' };
+  });
+  const select = (id: string) => {
+    const stage: Stage = id === 'intent' ? 'questions' : id === 'requirements' ? 'prd' : id === 'specification' ? (SPEC_PARTS.find((k) => !docDone(k) && project.docs[k]) ?? 'tfd') : (id as Stage);
+    setView(stage); setPreview(false);
+  };
   const { onFocus } = p;
   useEffect(() => { onFocus?.(DOC_ORDER.includes(shown as DocKey) ? (shown as DocKey) : null); return () => onFocus?.(null); }, [shown, project.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const now = () => Date.now();
@@ -45,20 +64,14 @@ export default function AgentProjectView(p: AgentProjectViewProps) {
         <input className="studio-name" value={project.answers.name} maxLength={60} aria-label="Agent name" onChange={(e) => p.onChange(setAnswers(project, { name: e.target.value }, now()))} />
         <span className="mem-badge">project</span>
       </div>
-      <Stepper
-        steps={STAGE_ORDER.map((s): StepItem => {
-          const done = s === 'questions' ? !!project.confirmed.questions : s === 'build' ? !!project.agentId : !!project.confirmed[s as DocKey] && !project.stale.includes(s as DocKey);
-          const outdated = s !== 'questions' && s !== 'build' && project.stale.includes(s as DocKey);
-          return { id: s, label: stageLabel(s), enabled: reachable(s), state: outdated ? 'stale' : s === shown ? 'here' : done ? 'done' : 'todo' };
-        })}
-        onSelect={(id) => { setView(id as Stage); setPreview(false); }}
-      />
+      <Stepper steps={flowSteps} onSelect={select} />
 
       {shown === 'questions' && <Questions {...p} locked={!!project.confirmed.questions} />}
       {DOC_ORDER.includes(shown as DocKey) && (
         <Doc {...p} docKey={shown as DocKey} preview={preview} onPreview={setPreview} />
       )}
       {shown === 'build' && <Build {...p} ready={allConfirmed(project)} />}
+      {shown === 'test' && <TestAndLive {...p} />}
 
       <div className="proj-foot">
         {confirmDelete
@@ -194,6 +207,26 @@ function Doc(p: AgentProjectViewProps & { docKey: DocKey; preview: boolean; onPr
   );
 }
 
+function TestAndLive(p: AgentProjectViewProps) {
+  const { project } = p, st = p.agentStatus;
+  const live = !!st?.tested && !!st.published;
+  const row = (done: boolean, label: string, hint: string) => <li><b>{done ? '✓' : '○'} {label}</b><span>{hint}</span></li>;
+  return (
+    <div className="proj-body">
+      <div className="proj-dochead"><h3>{FLOW_LABEL.test}</h3><span className={`mem-badge ${live ? 'mem-badge-on' : ''}`}>{live ? 'live' : 'not live yet'}</span></div>
+      {live && <p className="proj-banner">The agent is tested and published. Its schedule runs, and it is registered in the AI Control Tower.</p>}
+      <ul className="proj-sum">
+        {row(!!project.agentId && p.agentExists, 'Built as a draft', 'The agent exists in the Agent Studio.')}
+        {row(!!st?.tested, 'Sandbox test', 'Run the test on sample data. Nothing real is touched and nothing is sent.')}
+        {row(!!st?.published, 'Published', 'Ask for approval to move the agent up. Only an approved agent runs on its schedule.')}
+      </ul>
+      <div className="proj-actions">
+        <button className="dialog-btn dialog-btn-primary" disabled={!project.agentId || !p.agentExists} onClick={() => project.agentId && p.onOpenAgent(project.agentId)}>{live ? 'Open the agent' : 'Open the agent to test and publish'}</button>
+      </div>
+    </div>
+  );
+}
+
 function Build(p: AgentProjectViewProps & { ready: boolean }) {
   const { project, catalog } = p;
   const a = project.answers;
@@ -208,7 +241,7 @@ function Build(p: AgentProjectViewProps & { ready: boolean }) {
         <li><b>Sources</b><span>{agent ? agent.sources.map((id) => catalog.find((s) => s.id === id)?.label ?? id).join(', ') || 'none from the catalog' : '—'}</span></li>
         <li><b>Rights</b><span>{a.rights === 'read' ? 'read only' : 'proposes changes, asks before every write'}</span></li>
         <li><b>Runs</b><span>{a.trigger === 'manual' ? 'on demand' : a.trigger === 'daily' ? `every day at ${a.time}` : `every Monday at ${a.time}`}</span></li>
-        <li><b>Next</b><span>The agent starts as a draft. Then you run the sandbox test and ask for approval. Only an approved agent runs on its schedule.</span></li>
+        <li><b>Next</b><span>The agent starts as a draft. Then comes the last step: sandbox test and approval. Only an approved agent runs on its schedule.</span></li>
       </ul>
       <div className="proj-actions">
         {project.agentId && p.agentExists

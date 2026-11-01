@@ -5,15 +5,13 @@
  * extraction of the result from the model's answer, and the project store.
  */
 
+import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
+
 export type Kind = 'workflow' | 'agent';
-export type Stage = 'intent' | 'requirements' | 'specification' | 'build';
-export const STAGES: Stage[] = ['intent', 'requirements', 'specification', 'build'];
-export const STAGE_LABEL: Record<Stage, string> = {
-  intent: 'Intent',
-  requirements: 'Requirements',
-  specification: 'Specification & Architecture',
-  build: 'Build',
-};
+/** The five steps shared with the agent project (see flow.ts). */
+export type Stage = FlowStep;
+export const STAGES: Stage[] = [...FLOW];
+export const STAGE_LABEL: Record<Stage, string> = FLOW_LABEL;
 
 export const TRIGGERS = ['A person asks in the chat', 'On a schedule', 'An event or webhook from a system', 'Started by another workflow or agent'] as const;
 export const GUARDRAILS = [
@@ -257,8 +255,12 @@ export function canEnter(project: Project, stage: Stage): boolean {
   if (i <= 0) return true;
   const need = STAGES[i - 1];
   if (need === 'intent') return intentProblems(project.intent).length === 0;
-  return project.approved.includes(need) && Boolean(need === 'requirements' ? project.docs.prd.trim() : project.docs.spec.trim());
+  const text = need === 'requirements' ? project.docs.prd : need === 'specification' ? project.docs.spec : project.docs.build;
+  return project.approved.includes(need) && Boolean(text.trim());
 }
+
+/** Is the whole path done: built, tested and marked as live? */
+export const isLive = (project: Project) => project.approved.includes('test');
 
 /** Approving a document; changing an earlier document takes the approval of the later ones back. */
 export function setDocument(project: Project, stage: 'requirements' | 'specification' | 'build', text: string, now = Date.now()): Project {
