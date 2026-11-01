@@ -376,7 +376,7 @@ export default function Composer({
   }
 
   function pickStarter(starter: StarterPrompt) {
-    void submit({ text: starter.prompt, connector: CONTROL_TOWER_CONNECTOR });
+    void submit({ text: starter.prompt, connector: starter.connector ?? CONTROL_TOWER_CONNECTOR });
   }
 
   async function pickAttachments() {

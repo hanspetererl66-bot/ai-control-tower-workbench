@@ -39,7 +39,7 @@ Environment: `TABPFN_ENGINE=auto|tabpfn|baseline` (default `auto`; `tabpfn` fail
 
 ## Connect it to the workbench
 
-Set the connector's **Late-payment forecast service** to `http://127.0.0.1:8808` (or `TABPFN_SERVICE_URL` when running
+Set the **Sub4Me** connector's **Late-payment forecast service** to `http://127.0.0.1:8808` (or `TABPFN_SERVICE_URL` when running
 the connector from a checkout), and the same token if you set one. Plain http is accepted for localhost only.
 
 Then ask in the chat *"Welche offenen Rechnungen werden voraussichtlich zu spät bezahlt?"*, or press **Run forecast**

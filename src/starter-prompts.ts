@@ -15,6 +15,8 @@ export type StarterPrompt = {
   label: string;
   /** What is sent to the agent, and shown as the user's message. */
   prompt: string;
+  /** Connector the question is routed to. Defaults to the AI Control Tower connector. */
+  connector?: string;
 };
 
 export const STARTER_PROMPTS: StarterPrompt[] = [
@@ -45,6 +47,8 @@ export const STARTER_PROMPTS: StarterPrompt[] = [
   {
     label: 'Zahlungsverzug-Prognose',
     prompt: 'Welche offenen Sub4Me-Rechnungen werden voraussichtlich mehr als 14 Tage zu spät bezahlt?',
+    // predict_late_payments lives in the Sub4Me connector, not in the AI Control Tower connector.
+    connector: 'sub4me',
   },
 ];
 

@@ -23,3 +23,14 @@ test('connector name matches the bundle manifest', async () => {
   const manifest = JSON.parse(readFileSync(new URL('../connectors/ai-control-tower/manifest.json', import.meta.url), 'utf8'));
   assert.equal(manifest.name, CONTROL_TOWER_CONNECTOR);
 });
+
+test('a starter that names a connector points at a real bundle that owns the tool the question needs', async () => {
+  const { readFileSync } = await import('node:fs');
+  const manifestOf = (name) => JSON.parse(readFileSync(new URL(`../connectors/${name}/manifest.json`, import.meta.url), 'utf8'));
+  for (const s of STARTER_PROMPTS.filter((item) => item.connector)) {
+    assert.equal(manifestOf(s.connector).name, s.connector, s.label);
+  }
+  const late = STARTER_PROMPTS.find((s) => s.label === 'Zahlungsverzug-Prognose');
+  assert.ok(late?.connector, 'the late-payment starter must name its connector');
+  assert.ok(manifestOf(late.connector).tools.some((t) => t.name === 'predict_late_payments'));
+});
