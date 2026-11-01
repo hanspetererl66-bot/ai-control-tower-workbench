@@ -201,13 +201,13 @@
       "source": "connectors/ai-control-tower",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.0.0",
-      "summary": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits.",
+      "version": "1.1.0",
+      "summary": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits, plus two TabPFN forecasts for Controlling (budget overrun per cost group, accrual estimate).",
       "install": [
         {
           "label": "In the app",
           "how": "Connectors & Skills, Add a connector that comes with Werkbank.",
-          "note": "Configuration: Supabase URL and key (optional)."
+          "note": "Configuration: Supabase URL and key, forecast service address (all optional)."
         },
         {
           "label": "Bundle",
@@ -260,6 +260,18 @@
         },
         {
           "name": "simulate_credit_cut",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "forecast_budget",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "estimate_accruals",
           "class": "read",
           "what": "",
           "default": "on"

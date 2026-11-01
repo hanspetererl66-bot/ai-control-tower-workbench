@@ -28,7 +28,10 @@ export const BUNDLED_CONNECTORS = [...LIBRARY_CONNECTORS, ...MANIFEST_ONLY_CONNE
 
 /** Sample data files per connector, written into connectors/_lib/data/. */
 const DATA = {
-  'ai-control-tower': (put) => put.copy('examples/control-tower/data.json', 'data.json'),
+  'ai-control-tower': (put) => {
+    put.copy('examples/control-tower/data.json', 'data.json');
+    put.copy('examples/finance-preclose/preclose.json', 'preclose.json');
+  },
   sub4me: (put) => {
     put.copy('examples/control-tower/data.json', 'data.json');
     put.json('sub4me.json', extractSub4MeData(read('examples/sub4me/index.html')));

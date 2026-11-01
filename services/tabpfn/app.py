@@ -1,6 +1,8 @@
 """Late-payment prediction service for the Sub4Me demo.
 
 POST /predict/late-payment   body: { customer, as_of?, invoices: [ ...Sub4Me invoice objects... ] }
+POST /forecast/budget        body: { day, daysInMonth, groups: [ { name, budgetK, mtdK, historyK } ] }
+POST /estimate/accruals      body: { asOfWd, accruals: [ { id, entity, line, amountK, confidence, fromWd } ] }
 GET  /health                 which engine is loaded, and why
 
 The service only sees invoices the caller sends. It keeps nothing, writes nothing, and trains on synthetic history.
@@ -15,6 +17,8 @@ from datetime import date
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
+import accruals as accrual_model
+import budget as budget_model
 from features import build_features, customer_habit
 from model import LateModel, train
 from synthetic import LATE_DAYS
@@ -114,3 +118,46 @@ def predict(request: Request, authorization: str | None = Header(default=None)):
         "count": len(items),
         "items": items,
     }
+
+
+class BudgetGroup(BaseModel):
+    name: str = Field(max_length=60)
+    budgetK: float = Field(gt=0, le=1e7)
+    mtdK: float = Field(ge=0, le=1e8)
+    historyK: list[float] = Field(default_factory=list, max_length=12)
+
+
+class BudgetRequest(BaseModel):
+    day: int = Field(ge=1, le=31)
+    daysInMonth: int = Field(ge=28, le=31)
+    groups: list[BudgetGroup] = Field(max_length=50)
+
+
+@app.post("/forecast/budget")
+def forecast_budget(request: BudgetRequest, authorization: str | None = Header(default=None)):
+    _check_token(authorization)
+    if request.day > request.daysInMonth:
+        raise HTTPException(status_code=422, detail="day is after the end of the month")
+    return budget_model.forecast([g.model_dump() for g in request.groups], request.day, request.daysInMonth)
+
+
+class Accrual(BaseModel):
+    id: str = Field(max_length=40)
+    entity: str = Field(max_length=10)
+    line: str = Field(max_length=30)
+    amountK: float = Field(gt=0, le=1e7)
+    confidence: str = "medium"
+    fromWd: int = Field(default=0, ge=0, le=31)
+
+    model_config = {"extra": "ignore"}
+
+
+class AccrualRequest(BaseModel):
+    asOfWd: int = Field(ge=1, le=31)
+    accruals: list[Accrual] = Field(max_length=200)
+
+
+@app.post("/estimate/accruals")
+def estimate_accruals(request: AccrualRequest, authorization: str | None = Header(default=None)):
+    _check_token(authorization)
+    return accrual_model.estimate([a.model_dump() for a in request.accruals], request.asOfWd)

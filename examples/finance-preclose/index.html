@@ -405,7 +405,7 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
   <div class="card"><h2>Company codes</h2><p class="sub">Forecast against budget (chip = deviation), close readiness, open items (number · amount) and red alerts. Click a row to filter the page, click the number in the last column to see the alerts.</p><table class="fit dense"><thead><tr><th>Company code</th><th class="n">Revenue</th><th class="n">EBIT</th><th>Readiness</th><th class="n">Open items</th><th class="n">Red alerts</th></tr></thead><tbody id="ents"></tbody></table></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Close calendar</h2><div class="chips" id="task-chips" role="group" aria-label="Filter tasks"></div></div><p class="sub">One bar per task from start to due working day (12 to 25). Working days 23 to 25 are in November. Click a task for details.</p><div class="cal-top" id="cal-top"></div><div id="tasks"></div></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Open items and reconciliations</h2><button class="small spacer" id="items-ask" type="button">Prioritise with Joule</button></div><p class="sub">What must be cleared before the cut-off, the largest first.</p><div id="aging"></div><div class="chips cp" id="item-chips" role="group" aria-label="Filter by type"></div><div class="oi-grid"><div><table class="fit dense"><thead><tr><th>Item</th><th>Company code</th><th class="n">Amount</th><th class="n">Age</th><th>Owner</th><th>Step</th></tr></thead><tbody id="items"></tbody></table><p class="note" id="items-more"></p></div><aside><table id="ic" class="ic"></table><p class="note">Open intercompany differences, thousand EUR.</p></aside></div></div>
-  <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th></th></tr></thead><tbody id="accr"></tbody></table></div></div>
+  <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-est" type="button" title="Asks the forecast service (TabPFN) for the likely final amounts. Nothing is changed.">Estimate with TabPFN</button><button class="small" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th>Likely final amount</th><th>Correction risk</th><th></th></tr></thead><tbody id="accr"></tbody></table></div><div class="note" id="accr-est-note" role="status"></div></div>
   <div class="two">
     <div class="card" id="alerts-card"><div class="bar"><h2 style="margin:0">Alerts and anomalies</h2><div class="chips" id="alert-chips" role="group" aria-label="Filter alerts"></div></div><p class="sub">Found by rules on the postings up to the selected day.</p><div id="alerts"></div></div>
     <div class="card"><h2>What if?</h2><p class="sub">Risks and opportunities that are not in the forecast yet. Tick them to see the effect.</p><div id="scen"></div><div style="overflow:auto"><table id="scen-res"></table></div></div>
@@ -694,11 +694,44 @@ function renderItems() {
   const m = icMatrix(DATA, state.d), ids = DATA.entities.map((e) => e.id);
   $('#ic').innerHTML = `<thead><tr><th>Intercompany</th>${ids.map((i) => `<th class="n">${i}</th>`).join('')}</tr></thead><tbody>${ids.map((a) => `<tr><td><b>${a}</b></td>${ids.map((b) => { const v = m[`${a}>${b}`] || 0; return `<td class="n c ${v > 100 ? 'red' : v ? 'yellow' : ''}">${a === b ? '' : v ? fmtK(v) : '–'}</td>`; }).join('')}</tr>`).join('')}</tbody>`;
 }
+/* ---------- accrual estimate (TabPFN via the host; this page has no network) ---------- */
+const est = { pending: null, byId: {}, meta: null, error: '' };
+function estCells(id) {
+  const e = est.byId[id];
+  if (!e) return '<td class="rng">–</td><td class="rng">–</td>';
+  const cls = e.risk === 'high' ? 'red' : e.risk === 'medium' ? 'yellow' : 'green';
+  return `<td class="rng">${fmtK(e.p10K)} to ${fmtK(e.p90K)}<br>expected ${fmtK(e.p50K)}</td><td><span class="pill ${cls}">${Math.round(e.correctionProbability * 100)} %</span></td>`;
+}
+function renderEstNote() {
+  const m = est.meta, el = $('#accr-est-note');
+  $('#accr-est').disabled = !!est.pending;
+  if (est.pending) { el.textContent = 'Estimating the proposals …'; return; }
+  if (est.error) { el.textContent = est.error; return; }
+  if (!m) { el.textContent = ''; return; }
+  el.textContent = `Interval: ${m.band}. Correction risk = chance that the final amount differs by more than ${m.tolerancePct} %. Engine: ${m.engine === 'tabpfn' ? 'TabPFN' : m.engine === 'baseline' ? 'gradient-boosting baseline (TabPFN not loaded)' : m.engine}, trained on ${m.trainedOn}. Demo only, not an audit statement.${m.engine === 'baseline' && m.engineNote ? ' ' + m.engineNote : ''}`;
+}
+$('#accr-est').onclick = () => {
+  if (est.pending) return;
+  est.error = '';
+  if (window.parent === window) { est.error = 'The estimate needs the agent connection. Open this Space in the app.'; renderEstNote(); return; }
+  const id = 'a' + Date.now().toString(36);
+  est.pending = id; renderEstNote();
+  window.parent.postMessage({ type: 'ct:accrual-estimate-request', requestId: id, workingDay: state.d, ...(state.ent !== 'all' ? { entity: state.ent } : {}) }, '*');
+  setTimeout(() => { if (est.pending === id) { est.pending = null; est.error = 'No answer from the agent. Is the AI Control Tower connector connected and the forecast service running?'; renderEstNote(); } }, 100000);
+};
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (e.source !== window.parent || !d || typeof d.type !== 'string' || !d.requestId || d.requestId !== est.pending) return;
+  if (d.type === 'ct:accrual-estimate' && d.estimate && Array.isArray(d.estimate.items)) {
+    est.pending = null; est.meta = d.estimate; est.byId = Object.fromEntries(d.estimate.items.map((i) => [i.id, i]));
+    renderAccruals(); renderEstNote();
+  } else if (d.type === 'ct:error') { est.pending = null; est.error = 'Could not run the estimate: ' + String(d.message).slice(0, 200); renderEstNote(); }
+});
 /* ---------- accruals ---------- */
 function renderAccruals() {
   const list = accrualsAt(DATA, state.ent, state.d), pend = list.filter((a) => !state.approved[a.id]);
   $('#accr-sub').textContent = `Joule proposes, a person approves. ${pend.length} of ${list.length} proposals wait; approving posts the accrual (simulated) and raises the booked amount of the cost line.`;
-  $('#accr').innerHTML = list.map((a) => `<tr><td>${esc(a.id)}</td><td>${a.entity}</td><td>${esc(DATA.lines.find((l) => l.key === a.line).name)}</td><td>${esc(a.basis)}</td><td><span class="pill ${a.confidence === 'high' ? 'green' : a.confidence === 'medium' ? 'yellow' : 'red'}">${a.confidence}</span></td><td class="n"><b>${fmtK(a.amountK)}</b></td><td>${state.approved[a.id] ? '<span class="pill done">Posted (simulated)</span>' : `<button class="small" data-ap="${a.id}" type="button">Approve</button>`}</td></tr>`).join('') || '<tr><td colspan="7">No proposals yet for this day.</td></tr>';
+  $('#accr').innerHTML = list.map((a) => `<tr><td>${esc(a.id)}</td><td>${a.entity}</td><td>${esc(DATA.lines.find((l) => l.key === a.line).name)}</td><td>${esc(a.basis)}</td><td><span class="pill ${a.confidence === 'high' ? 'green' : a.confidence === 'medium' ? 'yellow' : 'red'}">${a.confidence}</span></td><td class="n"><b>${fmtK(a.amountK)}</b></td>${estCells(a.id)}<td>${state.approved[a.id] ? '<span class="pill done">Posted (simulated)</span>' : `<button class="small" data-ap="${a.id}" type="button">Approve</button>`}</td></tr>`).join('') || '<tr><td colspan="9">No proposals yet for this day.</td></tr>';
   $('#accr').querySelectorAll('[data-ap]').forEach((b) => (b.onclick = () => { state.approved[b.dataset.ap] = true; renderAll(); }));
   $('#accr-all').disabled = !pend.length; $('#accr-all').onclick = () => { pend.filter((a) => a.confidence !== 'low').forEach((a) => (state.approved[a.id] = true)); renderAll(); };
 }

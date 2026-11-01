@@ -75,3 +75,53 @@ def test_an_invoice_more_than_14_days_past_due_is_reported_as_already_late(clien
     body = client.post("/predict/late-payment", json={"as_of": "2026-10-18", "invoices": invoices()}).json()
     item = next(i for i in body["items"] if i["id"] == "INV-2026-10621")
     assert item["alreadyLate"] is True and item["lateProbability"] == 1.0 and item["risk"] == "high" and item["drivers"] == []
+
+
+GROUPS = [
+    {"name": "Engineering", "budgetK": 6566, "mtdK": 7026, "historyK": [5600, 5800, 6000, 6250, 6400, 6500]},
+    {"name": "Sales", "budgetK": 3335, "mtdK": 2935, "historyK": [2900, 3000, 3050, 3100, 3150, 3200]},
+    {"name": "Data", "budgetK": 3587, "mtdK": 680, "historyK": [600, 650, 700, 720, 760, 800]},
+]
+
+
+def test_budget_forecast_has_a_band_and_overrun_probability(client):
+    body = client.post("/forecast/budget", json={"day": 28, "daysInMonth": 31, "groups": GROUPS}).json()
+    assert body["engine"] == "baseline" and "synthetic" in body["trainedOn"]
+    items = {i["name"]: i for i in body["items"]}
+    for i in items.values():
+        assert i["p10K"] <= i["p50K"] <= i["p90K"]
+        assert i["p10K"] >= i["spentK"], "month-end cannot be below what is booked"
+        assert 0 <= i["overrunProbability"] <= 1
+    assert items["Engineering"]["overrunProbability"] > 0.9
+    assert items["Data"]["overrunProbability"] < 0.05
+    assert items["Engineering"]["overrunProbability"] >= items["Sales"]["overrunProbability"] >= items["Data"]["overrunProbability"]
+    assert [i["overrunProbability"] for i in body["items"]] == sorted((i["overrunProbability"] for i in body["items"]), reverse=True)
+
+
+def test_budget_forecast_rejects_bad_input(client):
+    assert client.post("/forecast/budget", json={"day": 40, "daysInMonth": 31, "groups": GROUPS}).status_code == 422
+    assert client.post("/forecast/budget", json={"day": 10, "daysInMonth": 31, "groups": [{"name": "x", "budgetK": 0, "mtdK": 1}]}).status_code == 422
+
+
+ACCRUALS = [
+    {"id": "AC-01", "entity": "UK10", "line": "hosting", "amountK": 75, "confidence": "high", "fromWd": 16},
+    {"id": "AC-10", "entity": "US10", "line": "legal", "amountK": 48, "confidence": "low", "fromWd": 19},
+    {"id": "AC-03", "entity": "DE10", "line": "personnel", "amountK": 420, "confidence": "medium", "fromWd": 18},
+]
+
+
+def test_accrual_estimate_flags_the_uncertain_ones(client):
+    body = client.post("/estimate/accruals", json={"asOfWd": 19, "accruals": ACCRUALS}).json()
+    assert body["engine"] == "baseline" and body["tolerancePct"] == 10
+    items = {i["id"]: i for i in body["items"]}
+    for i in items.values():
+        assert i["p10K"] <= i["p50K"] <= i["p90K"]
+        assert 0 <= i["correctionProbability"] <= 1
+    assert items["AC-10"]["correctionProbability"] > items["AC-01"]["correctionProbability"], "low-confidence legal vs high-confidence hosting"
+    assert body["items"][0]["id"] == "AC-10"
+
+
+def test_accrual_estimate_handles_empty_and_unknown_lines(client):
+    assert client.post("/estimate/accruals", json={"asOfWd": 19, "accruals": []}).json()["count"] == 0
+    odd = [{"id": "X", "entity": "ZZ99", "line": "unheard-of", "amountK": 10, "confidence": "weird", "fromWd": 3}]
+    assert client.post("/estimate/accruals", json={"asOfWd": 19, "accruals": odd}).json()["count"] == 1
