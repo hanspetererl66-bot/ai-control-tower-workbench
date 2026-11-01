@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { handleSub4meMessage, parseToolResult } from '../src/sub4me-bridge.ts';
+import { handleSub4meMessage, handleSalesMessage, parseToolResult } from '../src/sub4me-bridge.ts';
 
 const ok = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value) }], isError: false });
 
@@ -44,11 +44,12 @@ test('reports connector errors and a missing agent back to the page', async () =
   assert.throws(() => parseToolResult({ content: [{ type: 'text', text: 'not json' }] }), /unexpected/);
 });
 
-test('the Space only talks to its parent and the app only wires the bridge for sub4me', () => {
+test('the Space only talks to its parent and the app only wires the bridge for sub4me, the PRD builder and the Sales forecast', () => {
   const html = readFileSync(join(import.meta.dirname, '..', 'examples/sub4me/index.html'), 'utf8');
   assert.match(html, /e\.source !== window\.parent/);
+  assert.match(readFileSync(join(import.meta.dirname, '..', 'examples/sales/index.html'), 'utf8'), /e\.source !== window\.parent/);
   const app = readFileSync(join(import.meta.dirname, '..', 'src/App.tsx'), 'utf8');
-  assert.match(app, /bridgeEnabled=\{space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE\}/);
+  assert.match(app, /bridgeEnabled=\{space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE \|\| space\.slug === SALES_SPACE\}/);
   const viewer = readFileSync(join(import.meta.dirname, '..', 'src/ui/SpaceViewer.tsx'), 'utf8');
   assert.match(viewer, /event\.source !== frame\.current\.contentWindow/);
 });
@@ -127,4 +128,23 @@ test('payment-risk requests call only predict_late_payments and pass on the rend
   const err = await handleSub4meMessage({ type: 's4m:payment-risk-request', requestId: 'p3' }, async () => ({ isError: true, content: [{ type: 'text', text: 'service not configured' }] }));
   assert.equal(err.message, 'service not configured');
   assert.equal(await handleSub4meMessage({ type: 's4m:payment-risk-request', requestId: '../x' }, async () => ok({})), null);
+});
+
+test('the Sales Space may only ask for the late-payment forecast', async () => {
+  const calls = [];
+  const call = async (tool, args) => (calls.push(tool), ok({ items: [], engine: 'tabpfn' }));
+  const reply = await handleSalesMessage({ type: 's4m:payment-risk-request', requestId: 'p1', customer: 'muster' }, call);
+  assert.equal(reply.type, 's4m:payment-risk');
+  for (const type of ['s4m:tickets-request', 's4m:enrich-request', 's4m:create-ticket', 's4m:check-request']) {
+    assert.equal(await handleSalesMessage({ type, requestId: 'x1', customer: 'muster' }, call), null, `${type} is not for the Sales Space`);
+  }
+  assert.deepEqual(calls, ['predict_late_payments']);
+});
+
+test('the late-payment forecast lives in the Sales Space, no longer in Sub4Me', () => {
+  const sales = readFileSync(join(import.meta.dirname, '../examples/sales/index.html'), 'utf8');
+  const sub4me = readFileSync(join(import.meta.dirname, '../examples/sub4me/index.html'), 'utf8');
+  assert.match(sales, /id="pg-payments"/);
+  assert.match(sales, /s4m:payment-risk-request/);
+  assert.doesNotMatch(sub4me, /payment-risk|pay-risk|Late-payment forecast/);
 });

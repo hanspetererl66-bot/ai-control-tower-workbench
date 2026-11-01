@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
-import { handleSub4meMessage, type BridgeCall } from '../sub4me-bridge';
+import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
@@ -112,7 +112,7 @@ export default function SpaceViewer({
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
-      const handle = space.slug === PRD_SPACE ? handlePrdMessage : handleSub4meMessage;
+      const handle = space.slug === PRD_SPACE ? handlePrdMessage : space.slug === SALES_SPACE ? handleSalesMessage : handleSub4meMessage;
       void handle(event.data, bridgeRef.current).then((reply) => {
         if (reply) frame.current?.contentWindow?.postMessage(reply, '*');
       });
