@@ -22,6 +22,7 @@ test('Develop has four tiles: Agent, Workflow with the n8n symbol, Skills and Co
   assert.match(hub, /aria-label="n8n"/);
   assert.match(hub, /props\.onOpenSkills/);
   assert.match(hub, /develop-card-block/);
+  assert.match(hub, /className="develop-explain"/, 'a short explanation sits under the tiles');
   assert.match(hub, /What should be achieved\?/, 'both tiles start from a goal');
   assert.match(hub, /startWorkflow/, 'a workflow goal opens the guided process');
   assert.match(hub, /DevelopWizard/);

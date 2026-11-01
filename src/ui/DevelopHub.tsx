@@ -86,6 +86,10 @@ export default function DevelopHub(props: Props) {
             action="Open Connectors" onOpen={props.onOpenConnectors}
           />
         </div>
+        <p className="develop-explain">
+          Build an agent from a goal, or a workflow that runs on its own in n8n. Agents combine skills (the know-how) with connectors (the tools),
+          so open Skills and Connectors to see, add and manage what is available. Nothing is used before you have confirmed it.
+        </p>
         {projects.length > 0 && (
           <section className="develop-recent" aria-label="Your projects">
             <h2>Your projects</h2>
