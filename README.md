@@ -261,14 +261,14 @@ installed Space contains the updated page.
 Skills can be shared with colleagues through the same Supabase project (migration `007`). The Goose agent
 reads skills from files, so colleagues **sync** published skills into their local `goose-home/.agents/skills/`.
 
-- **Read (everyone):** the publishable key can call `skills_list` / `skills_get`, which only return `published` skills.
+- **Read:** `skills_list` / `skills_get` only return `published` skills. Since migration 022 they (and `skills_search`, `skills_ranking`, `skills_track`) are closed to the publishable key; the connectors and the sync scripts use the secret key.
 - **Write (maintainer):** the secret key uploads drafts and releases them (`release`); the agent has no tool for this.
 - **Safety:** every version is checksummed (SHA-256, verified on sync); names must equal the folder name;
   skills that look like they contain credentials are refused; local skills are never overwritten (`--force` to replace).
 
 ```bash
 # Colleague: pull published skills (then restart the agent)
-SUPABASE_URL=https://<ref>.supabase.co SUPABASE_KEY=<publishable key> npm run skills:sync
+SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SECRET_KEY=<secret key> npm run skills:sync
 
 # Maintainer
 SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run skills:publish            # upload examples/skills/* as drafts
@@ -314,7 +314,7 @@ anonymous machine hash, with no name or address. One machine counts once per ski
 ten minutes (view, search hit). Score = 3 × installs + 1 × views + 0.5 × search hits over the last 30 days, with the trend against
 the 30 days before. The Space has a **Ranking** tab (top 10, filter by board area); the chat answers
 "Welche Skills sind am stärksten nachgefragt?" with `get_skill_ranking` (connector 0.9.0). The counters are best-effort
-and can be inflated by anyone holding the publishable key, so treat the numbers as a signal, not as proof. The skill itself
+and can be inflated by anyone who can call the tracking function, so treat the numbers as a signal, not as proof. The skill itself
 does not report its use yet.
 
 ### Skill marketplace overview: board areas, LOBs, teams, individual
@@ -328,7 +328,7 @@ A skill without a scope counts as `individual`; a team scope needs a team, a LOB
 
 - **Space "Skill Marketplace":** `npm run install:skill-marketplace` installs it (overview by board area, LOB and team, catalog with filters,
   hints on possible duplicates and gaps). `npm run sync:skill-marketplace` embeds the example skills of the repository;
-  `SUPABASE_URL=… SUPABASE_KEY=<publishable key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
+  `SUPABASE_URL=… SUPABASE_SECRET_KEY=<secret key> npm run sync:skill-marketplace -- --registry` installs the Space and writes the published skills of the
   registry into the installed copy only (`workspace/spaces/`), so files tracked by Git stay unchanged and `git pull` never conflicts.
   Skills tagged **Sample** are fictional and only show the structure.
 - **Chat:** `list_skill_catalog` (connector 0.8.0), for example "Welche Skills gibt es in Engineering?" or "Was hat das AI Programme Office gebaut?".
@@ -466,6 +466,12 @@ Skills can be rated with 1 to 5 stars and an optional comment (max 280 character
 - **Sample data:** `examples/skill-marketplace/ratings.json` (fictional), embedded by `npm run sync:skill-marketplace`.
 - **Supabase:** `npm run sync:skill-ratings` writes `supabase/migrations/20261019_013_skill_ratings.sql`. Run it once in the Supabase SQL editor after 012 (safe to run again; it only refreshes the sample rows). It creates `skills.skill_rating` (RLS on, no access for anon/authenticated) and two functions that only the server-side secret key may call: `skills_ratings()` and `skills_rate()`. Only skills in the registry (`skills.skill`, not retired) can be rated.
 - **Chat (connector 0.14.0):** `get_skill_ratings` (ranking, or one skill with distribution and comments) and `rate_skill`; the skill `rate-skill` asks for the stars and confirms before saving. `recommend_skills` and `recommend_skill_workflow` show the rating too. The rater is a hash of the local user and host (override with the env var `SKILL_RATER_ID`); no names are stored. Without a Supabase connection nothing is saved.
+
+### Agents, workflows and code in the shared database
+
+Agents, workflows (n8n JSON) and code of any kind (Python, Markdown, scripts) are meant to live in Supabase, not in the browser. Migration `20261031_021_work_items.sql` adds `werkbank.work_item` (kind `agent`, `workflow` or `code`, owner, visibility private, team or company, stage, intent), `werkbank.work_item_rev` and `werkbank.work_item_file`. Every save is a **new revision with all its files**; nothing is overwritten, an earlier revision can always be read, and a save with an outdated `expected_rev` is refused. Files must not contain keys, tokens or passwords (checked in the connector and again in the database). Extra files of a skill (scripts, templates next to SKILL.md) go to `skills.skill_file`.
+
+Tools: `save_work_item`, `get_work_item`, `list_work_items`, `work_item_history`, `archive_work_item` (connector `werkbank-workspace` 1.1.0) and `list_skill_files`, `get_skill_file`, `set_skill_file`, `delete_skill_file` (connector `skill-marketplace` 1.2.0). Same rules as the skill registry: tables closed to anon/authenticated, functions only for service_role, the actor is an e-mail label until the sign-in is decided. **Not yet connected:** the Develop screens and the Agent Studio still keep their projects in the browser (`localStorage`); the connector tools are the way in for now. Tests: `test/work-items.test.mjs` and, with a throw-away database, the last tests of `test/skill-lifecycle-sql.test.mjs`.
 
 ### Skill lifecycle: card, duplicates, approval, retirement
 

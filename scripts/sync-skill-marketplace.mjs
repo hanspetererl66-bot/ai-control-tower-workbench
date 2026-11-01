@@ -1,7 +1,7 @@
 /**
  * Embeds the skill catalog into the Skill Marketplace Space (a sandboxed page cannot fetch data).
  * Default source: the example skills in the repository, so it works without Supabase.
- * With --registry the published skills are read from the shared registry (SUPABASE_URL, SUPABASE_KEY = publishable key)
+ * With --registry the published skills are read from the shared registry (SUPABASE_URL, SUPABASE_SECRET_KEY; the public functions are closed since migration 022)
  * and written into the INSTALLED copy of the Space (workspace/spaces/skill-marketplace); the files in the repository
  * stay untouched, so a later `git pull` never conflicts.
  * Fictional sample skills from sample-skills.json are always added and marked "sample".
@@ -80,8 +80,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const useRegistry = process.argv.includes('--registry');
   const check = process.argv.includes('--check');
   if (useRegistry) {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) throw new Error('Set SUPABASE_URL and SUPABASE_KEY (publishable key) first.');
-    const registered = await registrySkills({ url: process.env.SUPABASE_URL, key: process.env.SUPABASE_KEY });
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Set SUPABASE_URL and SUPABASE_SECRET_KEY first.');
+    const registered = await registrySkills({ url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SECRET_KEY });
     console.log(`Wrote ${registered.length} registered and ${samples.length} sample skills (registry) to ${installLive({ registered, samples })}`);
   } else {
     const registered = repoSkills();

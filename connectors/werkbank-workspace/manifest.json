@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "werkbank-workspace",
   "display_name": "Werkbank Workspace",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Your personal Werkbank settings and shared groups in Supabase: preferences sync, groups with roles, shared Spaces, configuration and team memory.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -82,6 +82,26 @@
     {
       "name": "group_memory_delete",
       "description": "Delete a team memory entry (its author or an admin). Ask the person first."
+    },
+    {
+      "name": "save_work_item",
+      "description": "Write: save an agent, workflow or code (Python, JSON, Markdown) as a new revision with all its files in the shared database. Ask first."
+    },
+    {
+      "name": "get_work_item",
+      "description": "Read one agent, workflow or code item with its files, current or earlier revision."
+    },
+    {
+      "name": "list_work_items",
+      "description": "List the agents, workflows and code items the person may see."
+    },
+    {
+      "name": "work_item_history",
+      "description": "The revisions of one item with author, note and time."
+    },
+    {
+      "name": "archive_work_item",
+      "description": "Write: archive an item or bring it back. Owner, team admin or Governance board."
     }
   ],
   "user_config": {

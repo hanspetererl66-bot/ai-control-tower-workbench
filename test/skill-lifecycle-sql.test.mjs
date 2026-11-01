@@ -1,5 +1,5 @@
 /**
- * Runs the migrations against a real Postgres and walks the skill lifecycle (migrations 019 and 020).
+ * Runs the migrations against a real Postgres and walks the skill lifecycle (migrations 019 and 020) and the work items (021).
  * Skipped unless SKILL_SQL_TEST_DSN names a THROW-AWAY database whose name ends in _test, for example
  *   createdb skills_test && SKILL_SQL_TEST_DSN="postgresql:///skills_test" npm test
  * The test drops the schemas control_tower, sub4me, skills and werkbank and rebuilds them from supabase/migrations.
@@ -52,9 +52,10 @@ test('set up: the migrations install cleanly, twice', { skip }, () => {
     if not exists (select 1 from pg_roles where rolname = 'service_role') then create role service_role nologin; end if;
   end $$; create extension if not exists pgcrypto`);
   const files = readdirSync(join(ROOT, 'supabase/migrations')).filter((f) => f.endsWith('.sql')).sort();
-  assert.ok(files.includes('20261031_020_skill_lifecycle.sql'));
+  assert.ok(files.includes('20261031_020_skill_lifecycle.sql') && files.includes('20261031_021_work_items.sql'));
   for (const file of files) run(['-f', join(ROOT, 'supabase/migrations', file)]);
   run(['-f', join(ROOT, 'supabase/migrations/20261031_020_skill_lifecycle.sql')]); // re-running changes nothing and does not fail
+  run(['-f', join(ROOT, 'supabase/migrations/20261031_021_work_items.sql')]);
   sql(`insert into werkbank.groups (id, name, created_by) values (${q(BOARD)}, 'Governance board', 'board@x.com'), (${q(FINANCE)}, 'Finance team', 'lead@x.com');
     insert into werkbank.group_members (group_id, email, role) values
       (${q(BOARD)}, 'board@x.com', 'admin'), (${q(FINANCE)}, 'lead@x.com', 'admin'), (${q(FINANCE)}, 'anna@x.com', 'member'), (${q(FINANCE)}, 'ben@x.com', 'member')`);
@@ -222,4 +223,98 @@ test('every step is in the history, with the person who did it', { skip }, () =>
   assert.deepEqual(expense.slice(0, 3), ['created', 'submitted', 'blocked']);
   assert.ok(expense.indexOf('deprecated') < expense.indexOf('undeprecated') && expense.indexOf('undeprecated') < expense.indexOf('retired'));
   assert.equal(Number(sql("select count(*) from skills.lifecycle_event where event = 'retired'")), 3);
+});
+
+// ---------- migration 021: work items and skill files ----------
+const files = (...list) => JSON.stringify(list.map(([path, content, language = '']) => ({ path, content, language })));
+const save = (actor, { id = null, kind = 'workflow', name = 'Renewal watch', visibility = 'private', team = null, expected = null, list = files(['workflow.json', '{"nodes":[]}', 'json']), note = '' } = {}) =>
+  `select public.work_save(${q(actor)}, ${q(id)}, ${q(kind)}, ${q(name)}, ${q(visibility)}, ${team ? q(team) + '::uuid' : 'null'}, 'build', '{"goal":"x"}'::jsonb, array['intent']::text[], ${q(list)}::jsonb, ${q(note)}, ${expected === null ? 'null' : expected})`;
+const itemOf = (actor, id, rev = 'null') => json(`select public.work_get(${q(actor)}, ${q(id)}::uuid, ${rev})`);
+let ITEM;
+
+test('work items: the API roles cannot reach them, only the service role can call the functions', { skip }, () => {
+  for (const table of ['werkbank.work_item', 'werkbank.work_item_file', 'skills.skill_file']) {
+    assert.ok(rule(`set role authenticated; select * from ${table}`), `${table} must be closed to authenticated`);
+  }
+  assert.ok(rule("set role anon; select public.work_list('a@x.com')"), 'anon must not call work_list');
+  assert.equal(rule("set role service_role; select public.work_list('anna@x.com')"), null);
+  assert.ok(rule("set role authenticated; select public.skills_files('a@x.com', 'x')"));
+});
+
+test('work items: every save is a new revision, the earlier ones stay readable', { skip }, () => {
+  const first = json(save('anna@x.com', { note: 'first draft' }));
+  ITEM = first.id;
+  assert.deepEqual([first.rev, first.files], [1, 1]);
+  const second = json(save('anna@x.com', { id: ITEM, expected: 1, name: 'Renewal watch v2', note: 'added the python helper',
+    list: files(['workflow.json', '{"nodes":[1]}', 'json'], ['src/helper.py', 'def f():\n    return 1\n', 'python'], ['README.md', '# Renewal watch']) }));
+  assert.deepEqual([second.rev, second.files], [2, 3]);
+  const now = itemOf('anna@x.com', ITEM);
+  assert.deepEqual([now.name, now.current_rev, now.files.length, now.can_write], ['Renewal watch v2', 2, 3, true]);
+  assert.equal(now.files.find((f) => f.path === 'src/helper.py').content, 'def f():\n    return 1\n');
+  assert.equal(itemOf('anna@x.com', ITEM, 1).files.length, 1, 'revision 1 is unchanged');
+  assert.equal(itemOf('anna@x.com', ITEM, 1).files[0].content, '{"nodes":[]}');
+  const history = json(`select public.work_history('anna@x.com', ${q(ITEM)}::uuid)`);
+  assert.deepEqual(history.map((r) => [r.rev, r.author, r.note]), [[2, 'anna@x.com', 'added the python helper'], [1, 'anna@x.com', 'first draft']]);
+  const light = json(`select public.work_get('anna@x.com', ${q(ITEM)}::uuid, null, false)`);
+  assert.ok(light.files.every((f) => f.content === undefined && f.sha256.length === 64));
+});
+
+test('work items: a stale save is refused instead of overwriting', { skip }, () => {
+  assert.match(rule(save('anna@x.com', { id: ITEM, expected: 1 })), /changed meanwhile \(now revision 2\)/);
+  assert.match(rule(save('anna@x.com', { id: ITEM, kind: 'agent', expected: 2 })), /kind of an item cannot change/);
+  assert.equal(itemOf('anna@x.com', ITEM).current_rev, 2);
+});
+
+test('work items: private, team and company visibility', { skip }, () => {
+  assert.match(rule(`select public.work_get('ben@x.com', ${q(ITEM)}::uuid)`), /not visible/);
+  assert.deepEqual(json("select public.work_list('ben@x.com')"), []);
+  assert.match(rule(save('anna@x.com', { id: ITEM, expected: 2, visibility: 'team', team: BOARD })), /must be a member of that team/);
+  json(save('anna@x.com', { id: ITEM, expected: 2, visibility: 'team', team: FINANCE, note: 'shared with Finance' }));
+  assert.equal(itemOf('ben@x.com', ITEM).can_write, false, 'a team member reads but does not write');
+  assert.match(rule(save('ben@x.com', { id: ITEM, expected: 3 })), /Only the owner, a team admin/);
+  assert.equal(itemOf('lead@x.com', ITEM).can_write, true, 'the team admin may write');
+  json(save('lead@x.com', { id: ITEM, expected: 3, visibility: 'team', team: FINANCE, note: 'fixed by the team admin' }));
+  assert.equal(json("select public.work_list('lead@x.com')").length, 1);
+  assert.match(rule(`select public.work_get('outsider@x.com', ${q(ITEM)}::uuid)`), /not visible/);
+  assert.equal(itemOf('board@x.com', ITEM).current_rev, 4, 'the Governance board sees everything');
+  json(save('anna@x.com', { id: ITEM, expected: 4, visibility: 'company' }));
+  assert.equal(itemOf('outsider@x.com', ITEM).can_write, false, 'company-wide is read only for others');
+});
+
+test('work items: code with a credential is refused with the file name, bad paths too', { skip }, () => {
+  const bad = (list) => rule(save('anna@x.com', { kind: 'code', name: 'Script', list }));
+  assert.match(bad(files(['run.py', 'API_KEY = "abcd1234efgh5678"'])), /run\.py looks like it contains a credential/);
+  assert.match(bad(files(['k.pem', '-----BEGIN PRIVATE KEY-----'])), /credential/);
+  assert.match(bad(files(['../x.py', '1'])), /invalid file path/);
+  assert.match(bad(files(['a.py', '1'], ['a.py', '2'])), /twice/);
+  assert.match(bad('[]'), /non-empty/);
+  assert.match(bad(files(['ä.md', '1'])), /invalid file path/, 'paths are ASCII, the text may contain anything');
+  assert.match(rule(save('anna@x.com', { kind: 'macro' })), /kind must be/);
+  assert.equal(json(save('anna@x.com', { kind: 'code', name: 'Script', list: files(['run.py', 'print("token")'], ['umlaut.md', 'Größe ä']) })).files, 2);
+});
+
+test('work items: archive hides an item from the list, the revisions stay', { skip }, () => {
+  assert.match(rule(`select public.work_archive('ben@x.com', ${q(ITEM)}::uuid, true)`), /Only the owner/);
+  json(`select public.work_archive('anna@x.com', ${q(ITEM)}::uuid, true)`);
+  assert.ok(!json("select public.work_list('anna@x.com')").some((i) => i.id === ITEM));
+  assert.ok(json("select public.work_list('anna@x.com', null, true)").some((i) => i.id === ITEM && i.archived));
+  assert.equal(itemOf('anna@x.com', ITEM, 1).files.length, 1);
+  assert.deepEqual(json("select public.work_list('anna@x.com', 'code')").map((i) => i.kind), ['code']);
+});
+
+test('skill files: the owner adds scripts, others read what they may see, SKILL.md is not a file', { skip }, () => {
+  publish('file-skill', 'Checks travel expense reports with a script and flags missing receipts for the finance team', 'anna@x.com', '# File skill\nRun the script.', { domain: 'Finanzen' });
+  const set = (actor, path, content, language = 'python') => `select public.skills_file_set(${q(actor)}, 'file-skill', ${q(path)}, ${q(language)}, ${q(content)})`;
+  assert.equal(json(set('anna@x.com', 'scripts/check.py', 'print(1)')).chars, 8);
+  json(set('anna@x.com', 'scripts/check.py', 'print(2)'));
+  json(set('anna@x.com', 'templates/report.md', '# Report', 'markdown'));
+  assert.match(rule(set('anna@x.com', 'SKILL.md', 'x')), /SKILL\.md is the skill text/);
+  assert.match(rule(set('ben@x.com', 'a.py', 'x')), /Only the owner/);
+  assert.match(rule(set('anna@x.com', 'a.py', 'password = "hunter2hunter2"')), /credential/);
+  assert.deepEqual(json("select public.skills_files('anna@x.com', 'file-skill')").map((f) => f.path), ['scripts/check.py', 'templates/report.md']);
+  assert.equal(json("select public.skills_files('anna@x.com', 'file-skill', 'scripts/check.py')").content, 'print(2)');
+  assert.match(rule("select public.skills_files('outsider@x.com', 'file-skill')"), /not visible/);
+  json("select public.skills_file_delete('anna@x.com', 'file-skill', 'templates/report.md')");
+  assert.match(rule("select public.skills_file_delete('anna@x.com', 'file-skill', 'templates/report.md')"), /no file/);
+  assert.equal(json("select public.skills_files('anna@x.com', 'file-skill')").length, 1);
 });

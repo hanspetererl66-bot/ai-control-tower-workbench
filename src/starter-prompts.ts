@@ -1,7 +1,6 @@
 /**
- * Suggested questions shown on the empty chat, Joule-style. Each one is routed to
- * the AI Control Tower connector, so it works without the person having to pick
- * a connector or type "Use only …" first.
+ * Names of the connectors the chat knows by name, and the shape of a starter prompt. The empty chat shows no
+ * built-in suggestions; only the person's own prompts and favourite skills appear there.
  */
 
 /** The connector's name as defined in connectors/ai-control-tower/manifest.json. */
