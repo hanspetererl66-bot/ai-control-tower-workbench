@@ -9,7 +9,7 @@ export default function SharedSaveLine() {
   const [editing, setEditing] = useState(false);
   useEffect(() => subscribeSync(setS), []);
   if (s.state === 'off') return null;
-  const needsEmail = s.state === 'needs-email' || editing;
+  const needsEmail = s.state === 'needs-email' || (s.state === 'needs-setup' && !s.email) || editing;
   const save = async (e: React.FormEvent) => { e.preventDefault(); const err = await setSyncEmail(email); setProblem(err); if (!err) { setEditing(false); setEmail(''); } };
   return (
     <div className={`shared-save shared-save-${s.state}`} role="status">
@@ -21,6 +21,7 @@ export default function SharedSaveLine() {
           <button className="ghost-btn small" type="submit">Save</button>
           {editing && <button className="ghost-btn small" type="button" onClick={() => setEditing(false)}>Cancel</button>}
           {problem && <span className="shared-save-bad">{problem}</span>}
+          {s.state === 'needs-setup' && <small className="shared-save-bad">{s.message}</small>}
         </form>
       ) : (
         <>
