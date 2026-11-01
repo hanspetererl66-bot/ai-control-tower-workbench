@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { EMAIL, MEMORY_KINDS, canEditMemory, canWrite, createGroupClient, groupSlug, saveIdentity, type GroupCall, type GroupDetail, type GroupRole, type GroupSummary, type Identity, type MemoryKind } from '../groups';
 import { importSpaceFile } from '../space-share';
 import { simulateColleague } from '../groups-local';
+import { harnessSummary, type HarnessProfile } from '../harness';
+import { MAX_GROUP_HARNESSES, publishGroupHarness, sanitizeGroupHarnesses, unpublishGroupHarness, type GroupHarness } from '../harness-share';
 import { Section, type SpaceRef } from './PreferencesPanels';
 
 export type GroupsPanelProps = {
@@ -19,12 +21,16 @@ export type GroupsPanelProps = {
   onSpaceInstalled: (slug: string) => void;
   /** Called after the open group changed, so the chat uses the new rules. */
   onDetail: (detail: GroupDetail) => void;
+  /** The person's own working profiles: an admin can publish them to the group. */
+  ownHarnesses: HarnessProfile[];
+  /** Copy a group profile into the person's own profiles. */
+  onCopyHarness: (profile: GroupHarness, groupName: string) => void;
 };
 
 const ROLES: GroupRole[] = ['admin', 'member', 'viewer'];
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-export default function GroupsPanel({ call, mode, serverAvailable, onMode, identity, onIdentity, spaces, activeId, onActive, onSpaceInstalled, onDetail }: GroupsPanelProps) {
+export default function GroupsPanel({ call, mode, serverAvailable, onMode, identity, onIdentity, spaces, activeId, onActive, onSpaceInstalled, onDetail, ownHarnesses, onCopyHarness }: GroupsPanelProps) {
   const [email, setEmail] = useState(identity?.email ?? '');
   const [name, setName] = useState(identity?.name ?? '');
   const [groups, setGroups] = useState<GroupSummary[]>([]);
@@ -43,6 +49,7 @@ export default function GroupsPanel({ call, mode, serverAvailable, onMode, ident
   const [instructions, setInstructions] = useState('');
   const [pubSlug, setPubSlug] = useState('');
   const [confirm, setConfirm] = useState<string | null>(null);
+  const [pubHarness, setPubHarness] = useState('');
 
   const client = useMemo(() => (call && identity ? createGroupClient(call, identity.email) : null), [call, identity]);
 
@@ -268,6 +275,42 @@ export default function GroupsPanel({ call, mode, serverAvailable, onMode, ident
               <Section title="Group instructions" hint={admin ? 'Standing instructions for everybody in the group, in addition to their own settings. No keys or passwords.' : 'Set by the group admins.'}>
                 <textarea className="prefs-area" aria-label="Group instructions" rows={3} maxLength={1000} value={instructions} readOnly={!admin} onChange={(e) => setInstructions(e.target.value)} />
                 {admin && <div className="prefs-row"><button className="ghost-btn" disabled={busy || instructions === (detail.config.instructions ?? '')} onClick={() => void run('Saved.', () => client.saveConfig(detail.group.id, { ...detail.config, instructions: instructions.trim() }))}>Save instructions</button></div>}
+              </Section>
+
+              <Section title="Working profiles" hint={admin ? 'Publish one of your own working profiles for everybody in the group. Members choose it in the chat bar and cannot change it; they can copy it. A new publish of the same profile raises its version.' : 'Published by the group admins. Choose them in the chat bar; copy one to change it.'}>
+                {(() => {
+                  const published = sanitizeGroupHarnesses(detail.config.harnesses);
+                  const saveList = (next: GroupHarness[], done: string) => void run(done, () => client.saveConfig(detail.group.id, { ...detail.config, harnesses: next }));
+                  return (
+                    <>
+                      <ul className="prefs-list">
+                        {published.map((h) => (
+                          <li key={h.id}>
+                            <span>{h.name}<small>Version {h.version}{h.publishedBy ? ` · ${h.publishedBy}` : ''}{h.publishedAt ? ` · ${h.publishedAt.slice(0, 10)}` : ''} · {harnessSummary(h).replace(/^[^:]*:?\s*/, '') || 'no restrictions'}</small></span>
+                            <span>
+                              <button className="ghost-btn" onClick={() => { onCopyHarness(h, detail.group.name); setMessage(`Copied "${h.name}" to your profiles.`); }}>Copy to my profiles</button>
+                              {admin && <button className="ghost-btn" disabled={busy} onClick={() => saveList(unpublishGroupHarness(published, h.id), 'Withdrawn.')}>Withdraw</button>}
+                            </span>
+                          </li>
+                        ))}
+                        {!published.length && <li><small>No profile published yet.</small></li>}
+                      </ul>
+                      {admin && (
+                        <div className="prefs-row">
+                          <select aria-label="Own profile to publish" value={pubHarness} onChange={(e) => setPubHarness(e.target.value)}>
+                            <option value="">Choose one of your own profiles…</option>
+                            {ownHarnesses.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+                          </select>
+                          <button className="ghost-btn" disabled={busy || !pubHarness || !identity || (published.length >= MAX_GROUP_HARNESSES && !published.some((p) => p.id === pubHarness))} onClick={() => {
+                            const own = ownHarnesses.find((h) => h.id === pubHarness);
+                            if (own && identity) saveList(publishGroupHarness(published, own, identity.email), `Published "${own.name}".`);
+                          }}>Publish</button>
+                        </div>
+                      )}
+                      {admin && !ownHarnesses.length && <small>You have no profile of your own yet. Copy a ready-made one in the chat panel (Instructions → Working profile), then publish the copy.</small>}
+                    </>
+                  );
+                })()}
               </Section>
 
               <Section title="Recent activity">
