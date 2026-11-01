@@ -3934,7 +3934,7 @@ button {
 /* ---------- Develop: intent-based process ---------- */
 .develop-top { justify-content: flex-start; }
 .develop-explain { max-width: 78ch; margin: 26px auto 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-align: center; }
-.develop-recent { margin: 28px auto 0; max-width: 560px; text-align: left; }
+.develop-recent { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); width: 100%; text-align: left; }
 .develop-recent h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
 .develop-recent ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .develop-recent li { display: flex; align-items: center; gap: 6px; }
