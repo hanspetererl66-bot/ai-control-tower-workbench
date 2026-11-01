@@ -735,12 +735,6 @@ button {
   line-height: 0;
 }
 
-/* The diamond turns slowly around its vertical axis, all the time (not with reduced motion). */
-.rail-logo { perspective: 160px; }
-.rail-logo svg { display: block; transform-style: preserve-3d; animation: rail-diamond-turn 9s linear infinite; filter: drop-shadow(0 3px 6px rgb(109 74 255 / 35%)); }
-@keyframes rail-diamond-turn { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
-@media (prefers-reduced-motion: reduce) { .rail-logo svg { animation: none; } }
-
 .rail-logo:hover {
   opacity: 0.8;
 }

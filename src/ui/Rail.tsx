@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
-import WerkbankMark from './WerkbankMark';
+import SpinningDiamond from './SpinningDiamond';
 
 export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n';
 
@@ -47,7 +47,7 @@ export default function Rail({
   return (
     <nav className="rail">
       <button className="rail-logo" onClick={onOpenCover} title="About this design study" aria-label="About this design study">
-        <WerkbankMark size={24} />
+        <SpinningDiamond size={30} />
       </button>
 
       <div className="rail-nav">
