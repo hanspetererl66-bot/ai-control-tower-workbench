@@ -1,4 +1,4 @@
-export type Skill = { name: string; description: string; dir: string };
+export type Skill = { name: string; description: string; dir: string; /** When SKILL.md last changed (ms). */ updatedAt?: number };
 
 /**
  * Prefers the Electron IPC (works in the packaged app), falls back to the vite
