@@ -3,6 +3,7 @@ import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
+import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
@@ -119,7 +120,7 @@ export default function SpaceViewer({
       const handle = space.slug === PRD_SPACE ? handlePrdMessage
         : space.slug === SALES_SPACE ? handleSalesMessage
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
-        : space.slug === PRECLOSE_SPACE ? handlePrecloseForecastMessage
+        : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)
         : handleSub4meMessage;
       void handle(event.data, bridgeRef.current).then((reply) => {
         if (reply) frame.current?.contentWindow?.postMessage(reply, '*');
