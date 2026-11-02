@@ -4461,3 +4461,8 @@ textarea.studio-field { min-height: 120px; }
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* Conversation name edited in place (double-click or More → Rename) */
+.topbar-rename { flex: 1; min-width: 0; }
+.topbar-rename input { width: 100%; box-sizing: border-box; font: inherit; font-size: 15px; font-weight: 650; color: var(--ink); background: transparent; border: 1px solid var(--accent); border-radius: 8px; padding: 3px 8px; }
+.topbar-rename input:focus { outline: none; }

@@ -179,3 +179,32 @@ export function filterConversations(
     );
   });
 }
+
+/** File name for an exported conversation: the title as a safe slug plus the date. */
+export function conversationFileName(title: string, now = Date.now()): string {
+  const slug = title
+    .replace(/ß/g, 'ss')
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+  return `${slug || 'conversation'}-${new Date(now).toISOString().slice(0, 10)}.md`;
+}
+
+/** A conversation as readable Markdown: title, then each turn under "You" or the assistant's name. Tool calls are listed by name only. */
+export function conversationToMarkdown(conversation: Pick<ConversationRecord, 'title' | 'messages' | 'files'>, assistant = 'Joule'): string {
+  const lines = [`# ${conversation.title.replace(/\s+/g, ' ').trim() || 'Conversation'}`, ''];
+  for (const message of conversation.messages) {
+    const text = (message.text ?? '').trim();
+    const names = (message.tools ?? []).map((tool) => tool.title).filter(Boolean);
+    if (!text && names.length === 0) continue;
+    lines.push(`## ${message.role === 'user' ? 'You' : assistant}`, '');
+    if (message.attachments?.length) lines.push(`_Attached: ${message.attachments.map((a) => a.name).join(', ')}_`, '');
+    if (text) lines.push(text, '');
+    if (names.length) lines.push(`_Used: ${names.join(', ')}_`, '');
+  }
+  if (conversation.files.length) lines.push('## Files', '', ...conversation.files.map((file) => `- ${file.path}`), '');
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+}

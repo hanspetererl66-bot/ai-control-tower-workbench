@@ -4,6 +4,8 @@ import test from 'node:test';
 import {
   CONVERSATION_STORAGE_KEY,
   archiveConversation,
+  conversationFileName,
+  conversationToMarkdown,
   createConversation,
   deleteConversation,
   filterConversations,
@@ -108,4 +110,27 @@ test('conversation search covers titles and message text, filters narrow by time
   assert.deepEqual(ids(filterConversations(items, { range: 'files' }, now)), ['b']);
   assert.deepEqual(ids(filterConversations(items, { query: 'renewal', range: 'files' }, now)), ['b'], 'search and filter combine');
   assert.deepEqual(ids(filterConversations(items, { query: 'nothing like this' })), []);
+});
+
+test('conversationFileName makes a safe slug with the date', () => {
+  const day = Date.UTC(2026, 10, 2, 12);
+  assert.equal(conversationFileName('Größe: Q3 / Plan?', day), 'grosse-q3-plan-2026-11-02.md');
+  assert.equal(conversationFileName('???', day), 'conversation-2026-11-02.md');
+});
+
+test('conversationToMarkdown lists turns, attachments, tools and files', () => {
+  const md = conversationToMarkdown({
+    title: '  Late   payments ',
+    files: [{ path: 'out/report.md' }],
+    messages: [
+      { role: 'user', text: 'Wer zahlt spät?', tools: [], attachments: [{ name: 'a.csv', kind: 'table', mimeType: 'text/csv' }] },
+      { role: 'agent', text: 'Kunde Hanse.', tools: [{ id: '1', title: 'predict_late_payments', status: 'completed' }] },
+      { role: 'agent', text: '', tools: [] },
+    ],
+  });
+  assert.match(md, /^# Late payments\n/);
+  assert.match(md, /## You\n\n_Attached: a\.csv_\n\nWer zahlt spät\?/);
+  assert.match(md, /## Joule\n\nKunde Hanse\.\n\n_Used: predict_late_payments_/);
+  assert.match(md, /## Files\n\n- out\/report\.md\n$/);
+  assert.equal((md.match(/## Joule/g) ?? []).length, 1);
 });

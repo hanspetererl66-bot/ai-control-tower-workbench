@@ -1,4 +1,4 @@
-import { Fragment, useState, type DragEvent, type KeyboardEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { PRODUCT_TITLE } from '../product';
 import { relativeTime, type Space } from '../spaces';
 
@@ -51,6 +51,14 @@ type DropMark = { slug: string; after: boolean };
 
 export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (searchOpen) searchRef.current?.focus(); }, [searchOpen]);
+  const needle = query.trim().toLowerCase();
+  const matches = (x: Space) => !needle || x.title.toLowerCase().includes(needle) || (x.description ?? '').toLowerCase().includes(needle);
+  const shown = spaces.filter(matches);
+  function toggleSearch() { if (searchOpen) setQuery(''); setSearchOpen((v) => !v); }
   const [renamingSpace, setRenamingSpace] = useState<string | null>(null);
   const [spaceName, setSpaceName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -112,8 +120,9 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
   const isSub = (slug: string) => Boolean(parentOf && parentOf(slug));
   const subsOf = (slug: string) => (parentOf ? spaces.filter((x) => parentOf(x.slug) === slug) : []);
   const subKey = (slug: string) => `space:${slug}`;
-  const renderTree = (items: Space[]) => items.filter((x) => !isSub(x.slug)).flatMap((x) => {
-    const subs = items.filter((y) => parentOf?.(y.slug) === x.slug);
+  // While searching, hits are listed flat so a subspace is found even if its parent is not a hit.
+  const renderTree = (items: Space[]) => items.filter((x) => needle || !isSub(x.slug)).flatMap((x) => {
+    const subs = needle ? [] : items.filter((y) => parentOf?.(y.slug) === x.slug);
     return [renderCard(x, subs.length), ...(subs.length && !collapsed.includes(subKey(x.slug)) ? subs.map((y) => renderCard(y, 0)) : [])];
   });
   const renderCard = (s: Space, subCount = 0) => (
@@ -270,13 +279,23 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             <input type="file" accept=".json,application/json" hidden aria-label="Import Space file" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ''; if (f) onImportSpace(f); }} />
           </label>
         )}
-        <button className="icon-btn" title="Search" aria-label="Search">
+        <button className={`icon-btn ${searchOpen ? 'icon-btn-on' : ''}`} title="Search Spaces" aria-label="Search Spaces" aria-expanded={searchOpen} onClick={toggleSearch}>
           <SearchIcon />
         </button>
-        <button className="icon-btn" title="Filter" aria-label="Filter">
-          <FilterIcon />
-        </button>
       </div>
+      {searchOpen && (
+        <input
+          ref={searchRef}
+          className="list-search"
+          type="search"
+          value={query}
+          placeholder="Search names and descriptions"
+          aria-label="Search Spaces"
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => { if (event.key === 'Escape') { setQuery(''); setSearchOpen(false); } }}
+        />
+      )}
+      {needle && <p className="list-empty" role="status">{shown.length === 0 ? `No Spaces match “${query.trim()}”.` : `${shown.length} of ${spaces.length} shown`}</p>}
 
       {spaces.length === 0 ? (
         <p className="list-empty">
@@ -299,7 +318,8 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
               </div>
             )}
             {domains!.map((name) => {
-              const items = spaces.filter((x) => domainOf!(x.slug) === name);
+              const items = shown.filter((x) => domainOf!(x.slug) === name);
+              if (needle && items.length === 0) return null;
               const isCollapsed = collapsed.includes(name);
               return (
                 <section key={name} className={`domain ${overDomain === name ? 'domain-over' : ''}`} aria-label={`Domain ${name}`}>
@@ -331,7 +351,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             })}
           </>
         ) : (
-          spaces.map(renderCard)
+          shown.map((x) => renderCard(x))
         )
       )}
       {archived.length > 0 && (
@@ -409,10 +429,3 @@ function SearchIcon() {
   );
 }
 
-function FilterIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2.2 3.2h11.6L9.5 8.1v3.5l-3 1.5v-5z" fill="currentColor" />
-    </svg>
-  );
-}
