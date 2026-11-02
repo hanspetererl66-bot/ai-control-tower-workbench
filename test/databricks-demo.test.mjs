@@ -314,3 +314,41 @@ test('pre-close SQL objects and the margin flash exist', () => {
   assert.match(recipe, /never post anything without a clear yes/i);
   assert.match(recipe, /v_margin_vs_plan/);
 });
+
+import { STORY_CHECKS, buildCheckSql, expectedFromSql, formatReport, runChecks } from '../scripts/databricks-demo-check.mjs';
+
+test('check: expectations come from the SQL files (objects, columns, rows)', () => {
+  const expected = expectedFromSql();
+  const get = (name) => expected.find((o) => `${o.schema}.${o.name}` === name);
+  assert.equal(get('fin.grir_items').rows, 12);
+  assert.equal(get('fin.intercompany_items').rows, 10);
+  assert.ok(get('fin.grir_items').columns.includes('gr_offset_days') || get('fin.grir_items').columns.length === 9);
+  assert.equal(get('fin.v_ic_differences').kind, 'view');
+  assert.ok(get('fin.v_ic_differences').columns.includes('difference_eur'));
+  assert.equal(get('fin.get_grir_accrual_candidates').kind, 'function');
+  assert.equal(get('ops.rerun_requests').rows, null, 'created empty, no row count expected');
+  assert.equal(expected.filter((o) => o.kind === 'function').length, 7);
+});
+
+test('check: 98_check.sql in the repo is the generated one', () => {
+  assert.equal(readFileSync(join(import.meta.dirname, '../examples/databricks-demo/sql/98_check.sql'), 'utf8'), buildCheckSql(expectedFromSql()));
+});
+
+test('check: a missing table and a missing column are reported, the other checks still run', async () => {
+  const expected = expectedFromSql();
+  const run = async (sql) => {
+    if (/information_schema\.tables/.test(sql)) return expected.filter((o) => o.kind !== 'function' && o.name !== 'vendors').map((o) => [o.schema, o.name]);
+    if (/information_schema\.routines/.test(sql)) return expected.filter((o) => o.kind === 'function').map((o) => [o.schema, o.name]);
+    if (/information_schema\.columns/.test(sql)) return expected.filter((o) => o.kind !== 'function' && o.name !== 'vendors').flatMap((o) => o.columns.filter((c) => !(o.name === 'grir_items' && c === 'vendor_id')).map((c) => [o.schema, o.name, c]));
+    const story = STORY_CHECKS.find(([, text]) => sql === text.replaceAll('{c}', 'werkbank_demo'));
+    if (story) return [[story[2]]];
+    const table = /COUNT\(\*\) FROM werkbank_demo\.(\w+\.\w+)/.exec(sql)?.[1];
+    const found = expected.find((o) => `${o.schema}.${o.name}` === table);
+    return [[found?.rows ?? 0]];
+  };
+  const results = await runChecks(expected, run);
+  const bad = results.filter((r) => r.status !== 'OK');
+  assert.deepEqual(bad.map((r) => `${r.object}: ${r.detail}`).sort(), ['fin.grir_items: columns missing: vendor_id', 'scm.vendors: missing']);
+  assert.ok(results.some((r) => r.area === 'rows' && r.object === 'fin.margin_monthly' && r.status === 'OK'));
+  assert.match(formatReport(results), /2 of \d+ checks need attention/);
+});

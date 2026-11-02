@@ -20,7 +20,7 @@ flag an expedite request sets.
 | `recipes/*.yaml` | The four Goose recipes (`goose run --recipe ...`) |
 | `skills/*/SKILL.md` | The same flows as Werkbank skills (generated from the recipes; the app has no recipe support) |
 | `goose/extensions.yaml` | The two extensions to add to Goose |
-| `sql/` | Setup, tables, seed data, views, UC functions, governance, grants, teardown. `all-in-one.sql` is 00 to 07 |
+| `sql/` | Setup, tables, seed data, views, UC functions, governance, grants, teardown. `all-in-one.sql` is 00 to 07. `98_check.sql` checks the result (generated: `node scripts/databricks-demo-check.mjs --write`) |
 | `genie/space-setup.md` | The Genie space (one UI step) |
 | `seed/data.mjs` | The data generator. SQL files 02, 03, 04, 06 and the skills are generated: `npm run sync:databricks-demo` |
 | `../../connectors/databricks-bridge` | stdio to Streamable HTTP bridge to the Databricks managed MCP endpoints |
@@ -38,6 +38,10 @@ flag an expedite request sets.
    ```
    Dates are day offsets from today and exposed through views, so the data is always "this week". The load is repeatable
    (`INSERT OVERWRITE`). The 02:00 UTC run of the failing job appears once it is past 02:00 UTC on the day.
+   **Check that everything arrived.** `sql/98_check.sql` is read only: paste it into the SQL editor and run its three statements
+   (structure, row counts, story numbers). Every row should say OK. The same check runs from the terminal with
+   `npm run databricks-demo:check` (same environment variables as the load). It reads the expectations from the SQL files, and
+   a missing object does not hide the others. A missing object means the matching SQL file did not run; `all-in-one.sql` runs 00 to 07.
 2. **Using another catalog.** The scripts create `werkbank_demo`. If you may not create catalogs, pass `--catalog <name>` to the
    loader; it renames the catalog everywhere in the SQL it sends. If you paste the SQL by hand, replace `werkbank_demo` in
    all files, and in `DATABRICKS_MCP_PATHS` and the recipes.
