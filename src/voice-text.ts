@@ -122,3 +122,9 @@ export function speakableSentences(markdown: string): string[] {
   const splitter = createSpeechSplitter();
   return [...splitter.push(markdown), ...splitter.flush()];
 }
+
+/** Appends dictated text to what is already typed, separated by one space, cut at `max` characters. */
+export function appendDictation(current: string, heard: string, max: number): string {
+  const joined = [current.trim(), heard.trim()].filter(Boolean).join(' ');
+  return joined.length > max ? joined.slice(0, max).trimEnd() : joined;
+}
