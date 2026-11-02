@@ -89,3 +89,10 @@ test('the embedded n8n view offers Back, Forward and Home so a page without a wa
   }
   assert.match(main, /n8n-nav-state/);
 });
+
+test('every main view shows "Design Study November 2026" in red at the bottom left, as decoration only', () => {
+  const app = readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
+  const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
+  assert.match(app, /<div className="study-badge" aria-hidden="true">Design Study November 2026<\/div>\s*<Rail/);
+  assert.match(css, /\.study-badge \{[^}]*position: fixed;[^}]*left: calc\(var\(--rail-w\) \+ 14px\);[^}]*bottom: 14px;[^}]*color: var\(--error, #c9190b\);[^}]*pointer-events: none;/);
+});
