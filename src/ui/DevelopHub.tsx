@@ -10,7 +10,7 @@ type Props = {
   onOpenN8n: () => void;
   onOpenSkills: () => void;
   onOpenConnectors: () => void;
-  generate: (prompt: string, title: string) => Promise<string>;
+  generate: (prompt: string, title: string, session?: string) => Promise<string>;
   onStop: () => void;
   ready: boolean;
   onRestartAgent: () => Promise<void> | void;

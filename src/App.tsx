@@ -248,6 +248,7 @@ export default function App() {
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
   const developStopped = useRef(false);
+  const developSession = useRef<{ key: string; id: string } | null>(null);
   const [manageFocus, setManageFocus] = useState<'skills' | 'connectors' | undefined>(undefined);
   const sendRef = useRef<(text: string, attachments?: ChatAttachment[], options?: { plain?: boolean }) => Promise<void>>(async () => {});
   const webSearchRef = useRef(true);
@@ -758,14 +759,20 @@ export default function App() {
    * Develop: runs one working prompt through the agent in a conversation of its own, so the person's chats stay
    * clean, and returns the agent's answer. '' means the person stopped it.
    */
-  async function developGenerate(prompt: string, title: string): Promise<string> {
+  async function developGenerate(prompt: string, title: string, session = ''): Promise<string> {
     if (!agent) throw new Error('The agent is not connected yet.');
     if (busy) throw new Error('The agent is still busy with another answer. Wait until it has finished.');
     developStopped.current = false;
-    newConversation();
-    await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
+    // The turns of one process interview share a conversation (as long as the person has not moved to another one);
+    // every other call starts a new one.
+    const reuse = Boolean(session) && developSession.current?.key === session && developSession.current.id === conversationState.selectedId;
+    if (!reuse) {
+      const id = newConversation();
+      developSession.current = session && id ? { key: session, id } : null;
+      await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
+    }
     await sendRef.current(prompt, [], { plain: true });
-    setTitle(title.slice(0, 48));
+    if (!reuse) setTitle(title.slice(0, 48));
     return developStopped.current ? '' : draft.current;
   }
 
@@ -1076,8 +1083,8 @@ export default function App() {
     lastGroundedCsvName.current = null;
   }
 
-  function newConversation() {
-    if (busy) return;
+  function newConversation(): string | null {
+    if (busy) return null;
     setContextSpace('');
     setDismissedIdeas([]);
     const conversation = createConversation();
@@ -1087,6 +1094,7 @@ export default function App() {
     }));
     needsHistoryGrounding.current = true;
     resetConversationSurface();
+    return conversation.id;
   }
 
   function selectConversation(id: string) {
