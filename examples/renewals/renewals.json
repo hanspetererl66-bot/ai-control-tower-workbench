@@ -130,7 +130,20 @@
         "approval": "Deal desk approved"
       },
       "tickets": [],
-      "invoices": []
+      "invoices": [
+        {
+          "id": "INV-2026-10708",
+          "status": "Open",
+          "grossEur": 69020,
+          "due": "2026-10-30"
+        },
+        {
+          "id": "INV-2026-10741",
+          "status": "Open",
+          "grossEur": 76160,
+          "due": "2026-11-24"
+        }
+      ]
     },
     {
       "customerSince": 2019,
@@ -223,7 +236,20 @@
           "status": "In processing"
         }
       ],
-      "invoices": []
+      "invoices": [
+        {
+          "id": "INV-2026-10724",
+          "status": "Open",
+          "grossEur": 66878,
+          "due": "2026-10-31"
+        },
+        {
+          "id": "INV-2026-10738",
+          "status": "Open",
+          "grossEur": 45220,
+          "due": "2026-11-04"
+        }
+      ]
     },
     {
       "customerSince": 2019,
@@ -303,6 +329,18 @@
           "status": "Overdue",
           "grossEur": 86275,
           "due": "2026-08-31"
+        },
+        {
+          "id": "INV-2026-10721",
+          "status": "Open",
+          "grossEur": 14756,
+          "due": "2026-10-31"
+        },
+        {
+          "id": "INV-2026-10735",
+          "status": "Open",
+          "grossEur": 22491,
+          "due": "2026-11-04"
         }
       ]
     },
@@ -450,7 +488,20 @@
       "customerOwner": "Tobias Kraus",
       "offer": null,
       "tickets": [],
-      "invoices": []
+      "invoices": [
+        {
+          "id": "INV-2026-10716",
+          "status": "Open",
+          "grossEur": 49087.5,
+          "due": "2026-10-25"
+        },
+        {
+          "id": "INV-2026-10729",
+          "status": "Open",
+          "grossEur": 114716,
+          "due": "2026-11-01"
+        }
+      ]
     },
     {
       "id": "R-C-2026-0911",
