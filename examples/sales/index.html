@@ -229,8 +229,11 @@ details.intro .body{margin-top:8px}
 *{box-sizing:border-box}
 body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 var(--font)}
 .demo{background:var(--amber-dim);color:var(--amber);font-size:12px;padding:7px 20px;border-bottom:1px solid var(--line)}
-header{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.logo{font-weight:750;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--purple)}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:16px 24px 14px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.hl h1{margin:0;font-size:26px;line-height:1.15;font-weight:750;letter-spacing:-.025em;color:var(--ink)}.hl h1 b{color:var(--purple)}
+.hl p{margin:6px 0 0;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);letter-spacing:.01em}
+.hl p::before{content:"";width:28px;height:3px;border-radius:99px;background:var(--purple);flex:none}
+.hl p b{color:var(--ink-2);font-weight:600}
 .asof{margin-left:auto;font-size:12px;color:var(--muted)}
 nav{display:flex;gap:2px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
 nav button{border:0;background:none;color:var(--muted);padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap;flex:none;border-bottom:3px solid transparent}
@@ -421,9 +424,10 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 <body>
 <div class="demo">Mockup with fictional data. No CRM is connected and nothing is sent. Offers and contracts mirror the Sub4Me sample data; interest, lead and opportunity are made up. Names and domains are fictional.</div>
 <header>
-  <div class="logo">Sales <b>Pipeline</b></div>
-  <span class="tag blue">Interest to contract</span>
-  <span class="tag purple">Mockup</span>
+  <div class="hl">
+    <h1>Sales <b>Pipeline</b></h1>
+    <p><span><b>E2E process:</b> from interest to contract</span></p>
+  </div>
   <div class="asof" id="asof"></div>
 </header>
 <nav role="tablist" id="tabs">
