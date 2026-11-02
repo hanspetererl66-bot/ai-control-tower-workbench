@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { PROJECTS_PULLED, schedule as scheduleWorkSync } from '../work-sync-runner';
+import SharedSaveLine from './SharedSaveLine';
 import { emptyIntent, loadProjects, newProject, saveProjects, upsertProject, type Project, STAGE_LABEL } from '../develop';
 import DevelopWizard from './DevelopWizard';
 
@@ -24,7 +26,13 @@ export default function DevelopHub(props: Props) {
   const [projects, setProjects] = useState<Project[]>(() => loadProjects(window.localStorage));
   const [openId, setOpenId] = useState<string | null>(null);
   const [saveState, setSaveState] = useState({ ok: true, at: 0 });
-  useEffect(() => { const ok = saveProjects(window.localStorage, projects); setSaveState((s) => ({ ok, at: ok ? Date.now() : s.at })); }, [projects]);
+  useEffect(() => { const ok = saveProjects(window.localStorage, projects); setSaveState((s) => ({ ok, at: ok ? Date.now() : s.at })); scheduleWorkSync(); }, [projects]);
+  // Projects taken over from the shared database while this view is open.
+  useEffect(() => {
+    const reload = () => setProjects(loadProjects(window.localStorage));
+    window.addEventListener(PROJECTS_PULLED, reload);
+    return () => window.removeEventListener(PROJECTS_PULLED, reload);
+  }, []);
   const open = projects.find((p) => p.id === openId) ?? null;
 
   const startWorkflow = (goal: string) => {
@@ -57,6 +65,7 @@ export default function DevelopHub(props: Props) {
     <main className="main develop-main">
       <div className="develop">
         <h1 className="develop-title">Develop</h1>
+        <SharedSaveLine />
         <p className="develop-sub">Say what you want to achieve. Joule turns the goal into a draft, you refine and approve it.</p>
         <div className="develop-cards">
           <IntentCard
@@ -72,7 +81,26 @@ export default function DevelopHub(props: Props) {
             placeholder="e.g. When a contract is uploaded, check the notice period and mail the owner"
             action="Start the guided process" other="or open n8n directly"
             onIntent={startWorkflow} onOther={props.onOpenN8n}
-          />
+          >
+            {projects.length > 0 && (
+              <section className="develop-recent" aria-label="Your workflows">
+                <h2>Your workflows</h2>
+                <ul>
+                  {projects.map((p) => (
+                    <li key={p.id}>
+                      <button className="develop-project" onClick={() => setOpenId(p.id)}>
+                        <span className="develop-project-name">{p.intent.name.trim() || `New ${p.kind}`}</span>
+                        <span className="develop-project-meta">{STAGE_LABEL[p.stage]}</span>
+                      </button>
+                      <button className="mini-icon mini-icon-danger mini-icon-always" aria-label={`Delete ${p.intent.name || 'project'}`} title="Delete this workflow project" onClick={() => { if (window.confirm('Delete this project and its documents?')) setProjects((list) => list.filter((x) => x.id !== p.id)); }}>
+                        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </IntentCard>
           <BlockCard
             kind="skills" logo={<SkillMark />} title="Skills" brand="the know-how" label="Skills"
             text="Instructions that tell Joule how to do a task, and scripts or templates that come with them."
@@ -90,24 +118,6 @@ export default function DevelopHub(props: Props) {
           Build an agent from a goal, or a workflow that runs on its own in n8n. Agents combine skills (the know-how) with connectors (the tools),
           so open Skills and Connectors to see, add and manage what is available. Nothing is used before you have confirmed it.
         </p>
-        {projects.length > 0 && (
-          <section className="develop-recent" aria-label="Your projects">
-            <h2>Your projects</h2>
-            <ul>
-              {projects.map((p) => (
-                <li key={p.id}>
-                  <button className="develop-project" onClick={() => setOpenId(p.id)}>
-                    <span className="develop-project-name">{p.intent.name.trim() || `New ${p.kind}`}</span>
-                    <span className="develop-project-meta">{p.kind === 'workflow' ? 'n8n workflow' : 'Agent'} · {STAGE_LABEL[p.stage]}</span>
-                  </button>
-                  <button className="mini-icon mini-icon-danger mini-icon-always" aria-label={`Delete ${p.intent.name || 'project'}`} title="Delete this project" onClick={() => { if (window.confirm('Delete this project and its documents?')) setProjects((list) => list.filter((x) => x.id !== p.id)); }}>
-                    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
     </main>
   );
@@ -133,7 +143,7 @@ function BlockCard(p: {
 
 function IntentCard(p: {
   kind: 'agent' | 'n8n'; logo: React.ReactNode; title: string; brand: string; text: string; placeholder: string;
-  action: string; other: string; onIntent: (intent: string) => void; onOther: () => void;
+  action: string; other: string; onIntent: (intent: string) => void; onOther: () => void; children?: React.ReactNode;
 }) {
   const [goal, setGoal] = useState('');
   const ok = goal.trim().length >= 8;
@@ -149,6 +159,7 @@ function IntentCard(p: {
       </label>
       <button className="dialog-btn dialog-btn-primary develop-go" disabled={!ok} onClick={() => { p.onIntent(goal.trim()); setGoal(''); }}>{p.action}</button>
       <button className="develop-other" onClick={p.onOther}>{p.other}</button>
+      {p.children}
     </section>
   );
 }

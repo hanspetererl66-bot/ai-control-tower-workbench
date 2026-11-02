@@ -44,11 +44,14 @@ test('the rail icons grow and get heavier on hover, in light and dark', () => {
   assert.match(css, /:root\[data-theme="dark"\] \.rail-btn:hover:not\(:disabled\)/);
 });
 
-test('the diamond in the rail turns slowly and stops with reduced motion', () => {
-  const css = src('src/theme.css');
-  assert.match(css, /\.rail-logo svg \{[^}]*animation: rail-diamond-turn 9s linear infinite/);
-  assert.match(css, /@keyframes rail-diamond-turn \{ from \{ transform: rotateY\(0deg\); \} to \{ transform: rotateY\(360deg\); \} \}/);
-  assert.match(css, /prefers-reduced-motion: reduce\) \{ \.rail-logo svg \{ animation: none; \} \}/);
+test('the rail diamond is a three-dimensional gem that turns, flashes when a facet faces front, and stands still with reduced motion', () => {
+  const rail = src('src/ui/Rail.tsx');
+  assert.match(rail, /<SpinningDiamond/);
+  assert.doesNotMatch(src('src/theme.css'), /rail-diamond-turn/, 'the flat CSS turn is gone');
+  const gem = src('src/ui/SpinningDiamond.tsx') + src('src/gem.ts');
+  assert.match(gem, /requestAnimationFrame/);
+  assert.match(gem, /prefers-reduced-motion: reduce/);
+  assert.match(gem, /Math\.pow\(Math\.max\(0, yaw\[2\] \/ around\), 40\)/, 'the flash is strongest when a side looks straight at the viewer');
 });
 
 test('both flows show their steps as joined circles from one shared component', () => {
@@ -57,4 +60,8 @@ test('both flows show their steps as joined circles from one shared component', 
   assert.match(stepper, /'✓'/, 'a finished step shows a check mark');
   for (const file of ['src/ui/AgentProjectView.tsx', 'src/ui/DevelopWizard.tsx']) assert.match(src(file), /<Stepper/, file);
   assert.match(src('src/theme.css'), /\.stepper-item \+ \.stepper-item::before/, 'a line joins the circles');
+  assert.match(stepper, /sub\?: StepItem\[\]/, 'a step can show its parts');
+  assert.match(src('src/ui/AgentProjectView.tsx'), /FLOW\.map/, 'the agent project shows the five shared steps');
+  assert.match(src('src/ui/AgentProjectView.tsx'), /SPEC_PARTS\.map/, 'the specification documents are parts of the third step');
+  assert.match(src('src/ui/DevelopWizard.tsx'), /STAGES\.map/, 'the workflow wizard shows the same steps');
 });

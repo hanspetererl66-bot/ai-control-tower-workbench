@@ -735,12 +735,6 @@ button {
   line-height: 0;
 }
 
-/* The diamond turns slowly around its vertical axis, all the time (not with reduced motion). */
-.rail-logo { perspective: 160px; }
-.rail-logo svg { display: block; transform-style: preserve-3d; animation: rail-diamond-turn 9s linear infinite; filter: drop-shadow(0 3px 6px rgb(109 74 255 / 35%)); }
-@keyframes rail-diamond-turn { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
-@media (prefers-reduced-motion: reduce) { .rail-logo svg { animation: none; } }
-
 .rail-logo:hover {
   opacity: 0.8;
 }
@@ -3886,8 +3880,8 @@ button {
 .schedule-mini:disabled { opacity: 0.4; cursor: default; }
 .schedule-editing { outline: 1px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 /* ---------- Develop start page ---------- */
-.develop-main { grid-column: 2 / -1; align-items: center; justify-content: center; overflow: auto; }
-.develop { width: min(1380px, 100%); padding: 32px 24px; text-align: center; }
+.develop-main { grid-column: 2 / -1; align-items: center; justify-content: flex-start; overflow: auto; }
+.develop { margin-block: auto; width: min(1380px, 100%); padding: 32px 24px; text-align: center; }
 .develop-title { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.4px; }
 .develop-sub { margin: 6px auto 30px; color: var(--muted); max-width: 60ch; }
 .develop-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; perspective: 1600px; align-items: stretch; }
@@ -3940,7 +3934,7 @@ button {
 /* ---------- Develop: intent-based process ---------- */
 .develop-top { justify-content: flex-start; }
 .develop-explain { max-width: 78ch; margin: 26px auto 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-align: center; }
-.develop-recent { margin: 28px auto 0; max-width: 560px; text-align: left; }
+.develop-recent { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); width: 100%; text-align: left; }
 .develop-recent h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
 .develop-recent ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .develop-recent li { display: flex; align-items: center; gap: 6px; }
@@ -4313,5 +4307,24 @@ textarea.studio-field { min-height: 120px; }
 .stepper-stale .stepper-label { color: #b45309; }
 :root[data-theme="dark"] .stepper-stale .stepper-label { color: #fbbf24; }
 /* Narrow place (the Agent Studio column): the circles alone, and the name of the open step under them. */
+.dev-checklist { margin: 10px 0 16px; padding-left: 22px; display: grid; gap: 6px; line-height: 1.45; }
+.stepper-sub { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.stepper-sub button { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; }
+.stepper-sub button:disabled { cursor: not-allowed; opacity: .6; }
+.stepper-sub button:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
+.stepper-sub-done button { color: var(--ink); }
+.stepper-sub-done button span:first-child { color: var(--accent); font-weight: 700; }
+.stepper-sub-here button { border-color: var(--accent); color: var(--accent); font-weight: 600; box-shadow: 0 0 0 3px rgb(109 74 255 / 15%); }
+.stepper-sub-stale button { border-color: #b45309; color: #b45309; }
+:root[data-theme="dark"] .stepper-sub-stale button { color: #fbbf24; border-color: #d97706; }
 @container (max-width: 560px) { .stepper-label { display: none; } .stepper-now { display: block; } .stepper-dot { width: 28px; height: 28px; font-size: 13px; } .stepper-item + .stepper-item::before { top: 13px; } }
 @media (prefers-reduced-motion: reduce) { .stepper-dot { transition: none; } }
+
+.shared-save { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 6px 0 14px; font-size: 13px; color: var(--muted); }
+.shared-save form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.shared-save input { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); min-width: 220px; }
+.shared-save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.shared-save-error .shared-save-dot { background: #b45309; }
+.shared-save-error { color: #b45309; }
+:root[data-theme="dark"] .shared-save-error { color: #fbbf24; }
+.shared-save-bad { color: #b45309; }

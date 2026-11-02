@@ -121,3 +121,26 @@ test('projects survive storage and broken entries are dropped; confirmations bec
   const ev = pr.projectEvents(back);
   assert.deepEqual(ev.map((e) => e.what), ['Watch our renewals and tell me: goal and questions', 'Watch our renewals and tell me: PRD']);
 });
+
+test('after the build the agent is tested and published in the Studio; only then the path is done', () => {
+  let p = pr.confirmQuestions(filled(), catalog, 2000);
+  for (const [k, t] of [['prd', 3000], ['tfd', 4000], ['arch', 5000], ['risk', 6000]]) p = pr.confirmDoc(p, k, catalog, t);
+  assert.equal(pr.currentStage(p), 'build');
+  p = { ...p, agentId: 'a-1' };
+  assert.equal(pr.currentStage(p), 'test', 'no status yet: test and go live is open');
+  assert.equal(pr.currentStage(p, { tested: true, published: false }), 'test');
+  assert.equal(pr.currentStage(p, { tested: false, published: true }), 'test', 'published without a test does not count');
+  assert.equal(pr.currentStage(p, { tested: true, published: true }), 'done');
+  assert.equal(pr.isLive(p, { tested: true, published: true }), true);
+  assert.equal(pr.isLive(p), false);
+  const reopened = pr.editDoc(p, 'arch', p.docs.arch + '\n- change', 7000);
+  assert.equal(pr.currentStage(reopened, { tested: true, published: true }), 'arch', 'a changed document reopens the path');
+});
+
+test('the specification documents are parts of one shared step', () => {
+  assert.deepEqual(pr.SPEC_PARTS, ['tfd', 'arch', 'risk']);
+  assert.equal(pr.FLOW_OF.questions, 'intent');
+  assert.equal(pr.FLOW_OF.prd, 'requirements');
+  assert.equal(pr.FLOW_OF.build, 'build');
+  assert.equal(pr.FLOW_OF.done, 'test');
+});

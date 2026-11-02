@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   GUARDRAILS, STAGES, STAGE_LABEL, SYSTEMS, TRIGGERS, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson,
-  artifactFileName, extraQuestion, intentProblems, prdPrompt, projectFiles, setDocument, skillSlug, specPrompt, type Project, type Stage,
+  artifactFileName, extraQuestion, intentProblems, isLive, prdPrompt, projectFiles, setDocument, skillSlug, specPrompt, type Project, type Stage,
 } from '../develop';
 import { docToMarkdown, htmlToMarkdown, markdownToHtml, toHtml } from '../doc-html';
 import { exportDocument, saveFile, wrapHtml, type ExportFormat } from '../doc-export';
@@ -86,7 +86,7 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
   }
 
   const doc = stage === 'requirements' ? project.docs.prd : stage === 'specification' ? project.docs.spec : project.docs.build;
-  const next: Stage | null = stage === 'requirements' ? 'specification' : stage === 'specification' ? 'build' : null;
+  const next: Stage | null = stage === 'requirements' ? 'specification' : stage === 'specification' ? 'build' : stage === 'build' ? 'test' : null;
 
   return (
     <div className="dev-wizard">
@@ -111,7 +111,9 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
 
       {stage === 'intent' && <IntentMask project={project} onChange={onChange} onDone={startFromIntent} disabled={working || !ready} />}
 
-      {stage !== 'intent' && (
+      {stage === 'test' && <TestAndLive project={project} onChange={onChange} onOpenN8n={onOpenN8n} />}
+
+      {stage !== 'intent' && stage !== 'test' && (
         <section className="dev-doc" aria-label={STAGE_LABEL[stage]}>
           {working ? (
             <div className="dev-busy" role="status"><span className="dev-spinner" aria-hidden="true" />
@@ -198,6 +200,26 @@ function IntentMask({ project, onChange, onDone, disabled }: { project: Project;
       {shown && problems.length > 0 && <ul className="dev-error" role="alert">{problems.map((p) => <li key={p}>{p}</li>)}</ul>}
       <div className="dev-next"><button className="dev-primary" type="submit" disabled={disabled}>Write the requirements</button></div>
     </form>
+  );
+}
+
+function TestAndLive({ project, onChange, onOpenN8n }: { project: Project; onChange: (p: Project) => void; onOpenN8n: () => void }) {
+  const i = project.intent, live = isLive(project), wf = project.kind === 'workflow';
+  const steps = wf
+    ? ['Import the workflow file into n8n (Workflows → Import from file) and connect the credentials.', 'Run it once with sample data, never with real records first.', `Compare the result with your success measure: “${i.success.trim()}”.`, `Check that it stays within the guardrail: “${i.guardrail}”.`, i.extra.trim() ? `Provoke the error case once: “${i.extra.trim()}”.` : 'Provoke an error once (for example a missing credential) and check that it is reported.', 'Activate it in n8n.']
+    : ['Install the skill and restart the agent.', 'Try the example requests from the intent.', `Compare the answers with your success measure: “${i.success.trim()}”.`, `Check that it stays within the guardrail: “${i.guardrail}”.`];
+  return (
+    <section className="dev-doc" aria-label={STAGE_LABEL.test}>
+      <h3>{STAGE_LABEL.test}</h3>
+      <p className="dev-lead">{live ? `The ${wf ? 'workflow' : 'agent'} is marked as tested and live.` : 'Nothing counts as done before it was tried. Work through the checks, then mark it as live.'}</p>
+      <ol className="dev-checklist">{steps.map((t) => <li key={t}>{t}</li>)}</ol>
+      <div className="dev-next">
+        {wf && <button className="ghost-btn" onClick={onOpenN8n}>Open n8n</button>}
+        {live
+          ? <span className="dev-approved">✓ Tested and live</span>
+          : <button className="dev-primary" onClick={() => onChange(approve(project, 'test'))}>I tested it: mark as live</button>}
+      </div>
+    </section>
   );
 }
 

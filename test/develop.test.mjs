@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  STAGES, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson, projectFiles, emptyIntent, extractFence,
+  STAGES, isLive, approve, artifactOf, buildPrompt, canEnter, changeIntent, checkSkillMd, checkWorkflowJson, projectFiles, emptyIntent, extractFence,
   intentProblems, loadProjects, newProject, prdPrompt, sanitizeProject, saveProjects, setDocument, skillSlug, specPrompt, upsertProject,
 } from '../src/develop.ts';
 
@@ -46,12 +46,18 @@ test('feedback and the previous version go into the next try', () => {
 
 test('stages open one after the other, and a changed document takes later approvals back', () => {
   let p = filled();
-  assert.deepEqual(STAGES.map((s) => canEnter(p, s)), [true, true, false, false]);
+  assert.deepEqual(STAGES.map((s) => canEnter(p, s)), [true, true, false, false, false]);
   p = setDocument(p, 'requirements', '# PRD');
   p = approve(p, 'requirements');
-  assert.deepEqual(STAGES.map((s) => canEnter(p, s)), [true, true, true, false]);
+  assert.deepEqual(STAGES.map((s) => canEnter(p, s)), [true, true, true, false, false]);
   p = approve(setDocument(p, 'specification', '# SPEC'), 'specification');
   assert.equal(canEnter(p, 'build'), true);
+  assert.equal(canEnter(p, 'test'), false, 'testing needs an approved build');
+  p = approve(setDocument(p, 'build', 'the build answer'), 'build');
+  assert.equal(canEnter(p, 'test'), true);
+  p = approve(p, 'test');
+  assert.equal(isLive(p), true);
+  assert.equal(isLive(setDocument(p, 'build', 'another build')), false, 'a changed build has to be tested again');
   const edited = setDocument(p, 'requirements', '# PRD v2');
   assert.deepEqual(edited.approved, [], 'editing the PRD takes both approvals back');
   assert.equal(canEnter(edited, 'build'), false);
@@ -122,4 +128,14 @@ test('projects are stored, sorted newest first, capped, and junk is dropped', ()
   assert.equal(sanitizeProject('x'), null);
   store.setItem('werkbank.develop.projects', '{broken');
   assert.deepEqual(loadProjects(store), []);
+});
+
+test('both flows use the same five steps', async () => {
+  const flow = await import('../src/flow.ts');
+  const ap = await import('../src/agent-project.ts');
+  assert.deepEqual(STAGES, ['intent', 'requirements', 'specification', 'build', 'test']);
+  assert.deepEqual(STAGES, [...flow.FLOW]);
+  assert.deepEqual([...new Set(Object.values(ap.FLOW_OF))], [...flow.FLOW], 'every agent stage belongs to one of the five steps');
+  assert.deepEqual(ap.SPEC_PARTS.map((k) => ap.FLOW_OF[k]), ['specification', 'specification', 'specification']);
+  assert.equal(ap.stageLabel('test'), 'Test & go live');
 });

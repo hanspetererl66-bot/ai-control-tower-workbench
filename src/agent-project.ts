@@ -5,6 +5,7 @@
  * one is created. Only when all four are confirmed is the agent built, as a draft in the Agent Studio.
  * The documents are written from the answers by fixed rules, so the result is the same every time and nothing leaves this computer.
  */
+import { FLOW_LABEL, type FlowStep } from './flow.ts';
 import { OUTPUTS, newAgent, type Output, type Source, type StudioAgent, type TriggerType } from './agent-studio.ts';
 
 export type DocKey = 'prd' | 'tfd' | 'arch' | 'risk';
@@ -16,8 +17,13 @@ export const DOC_TITLE: Record<DocKey, string> = {
   risk: 'Risk, Compliance and Test Plan',
 };
 export const DOC_SHORT: Record<DocKey, string> = { prd: 'PRD', tfd: 'TFD', arch: 'Architecture', risk: 'Risk & test' };
-export type Stage = 'questions' | DocKey | 'build' | 'done';
-export const STAGE_ORDER: Stage[] = ['questions', 'prd', 'tfd', 'arch', 'risk', 'build'];
+export type Stage = 'questions' | DocKey | 'build' | 'test' | 'done';
+export const STAGE_ORDER: Stage[] = ['questions', 'prd', 'tfd', 'arch', 'risk', 'build', 'test'];
+/** The five shared steps (flow.ts); the three specification documents are parts of the third. */
+export const FLOW_OF: Record<Stage, FlowStep> = { questions: 'intent', prd: 'requirements', tfd: 'specification', arch: 'specification', risk: 'specification', build: 'build', test: 'test', done: 'test' };
+export const SPEC_PARTS: DocKey[] = ['tfd', 'arch', 'risk'];
+/** What the Agent Studio knows about the built agent: tested in the sandbox, published (approved for a level above personal). */
+export type AgentStatus = { tested: boolean; published: boolean };
 
 export type Sensitivity = 'public' | 'internal' | 'confidential' | 'personal';
 export const SENSITIVITY: Array<{ id: Sensitivity; label: string }> = [
@@ -76,13 +82,19 @@ export function questionProblems(a: Answers): string[] {
   return p;
 }
 
-/** The step the person is at: the first one that is not confirmed yet. */
-export function currentStage(p: AgentProject): Stage {
+/**
+ * The step the person is at: the first one that is not finished yet. After the build the agent is tested in the sandbox and published
+ * in the Agent Studio; that status is read from there, so it cannot drift from what the Studio says.
+ */
+export function currentStage(p: AgentProject, status?: AgentStatus): Stage {
   if (!p.confirmed.questions) return 'questions';
   for (const k of DOC_ORDER) if (!p.confirmed[k]) return k;
-  return p.agentId ? 'done' : 'build';
+  if (!p.agentId) return 'build';
+  return status?.tested && status.published ? 'done' : 'test';
 }
-export const stageLabel = (s: Stage) => (s === 'questions' ? 'Goal and questions' : s === 'build' ? 'Build the agent' : s === 'done' ? 'Built' : DOC_SHORT[s]);
+/** Test & go live is finished: tested and published. */
+export const isLive = (p: AgentProject, status?: AgentStatus) => !!p.agentId && currentStage(p, status) === 'done';
+export const stageLabel = (s: Stage) => (s === 'questions' ? FLOW_LABEL.intent : s === 'prd' ? FLOW_LABEL.requirements : s === 'build' ? FLOW_LABEL.build : s === 'test' || s === 'done' ? FLOW_LABEL.test : DOC_SHORT[s]);
 
 /* ---------- wording helpers ---------- */
 const triggerText = (a: Answers) => (a.trigger === 'manual' ? 'on demand, when a person starts it' : a.trigger === 'daily' ? `every day at ${a.time}` : `every Monday at ${a.time}`);

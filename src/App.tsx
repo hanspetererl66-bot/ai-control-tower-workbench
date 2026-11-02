@@ -38,6 +38,7 @@ import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
 import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
@@ -194,7 +195,14 @@ export default function App() {
   const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
   const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
   const [agentProjects, setAgentProjectsState] = useState<AgentProject[]>(() => loadProjects(window.localStorage));
-  const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); }, []);
+  const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); scheduleWorkSync(); }, []);
+  // Projects are also kept in the shared database (desktop app, once the connector and the e-mail are set).
+  useEffect(() => {
+    const stop = startWorkSync();
+    const reload = () => setAgentProjectsState(loadProjects(window.localStorage));
+    window.addEventListener(PROJECTS_PULLED, reload);
+    return () => { stop(); window.removeEventListener(PROJECTS_PULLED, reload); };
+  }, []);
   const [focusProject, setFocusProject] = useState<string | null>(null);
   /** The project document open in Agent Studio, so the docked chat can work on it. */
   const [dockFocus, setDockFocus] = useState<DockFocus | null>(null);
