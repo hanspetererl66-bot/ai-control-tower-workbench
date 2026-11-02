@@ -16,7 +16,7 @@ test('the rail has one Develop button instead of separate Connectors and n8n but
 
 test('Develop has four tiles: Agent, Workflow with the n8n symbol, Skills and Connectors', () => {
   const hub = src('src/ui/DevelopHub.tsx');
-  const agent = hub.indexOf('title="Create an Agent"'), flow = hub.indexOf('<WorkflowCard'), skills = hub.indexOf('label="Skills"'), connectors = hub.indexOf('label="Connectors"');
+  const agent = hub.indexOf('title="Create an Agent"'), flow = hub.indexOf('title="Create a Workflow"'), skills = hub.indexOf('label="Skills"'), connectors = hub.indexOf('label="Connectors"');
   assert.ok(agent > 0 && flow > agent && skills > flow && connectors > skills, 'order: agent, workflow, skills, connectors');
   assert.match(hub, /with n8n/);
   assert.match(hub, /aria-label="n8n"/);
@@ -26,9 +26,8 @@ test('Develop has four tiles: Agent, Workflow with the n8n symbol, Skills and Co
   assert.match(hub, /What should be achieved\?/, 'both tiles start from a goal');
   assert.match(hub, /startWorkflow/, 'a workflow goal opens the guided process');
   assert.match(hub, /DevelopWizard/);
-  assert.match(hub, /Open n8n directly/);
-  assert.doesNotMatch(hub.slice(hub.indexOf('function WorkflowCard')), /<textarea/, 'the workflow tile has no intent box');
-  assert.match(hub, /Your workflows[\s\S]*develop-tree-list[\s\S]*onDelete\(x\.id\)/, 'the tile lists the workflows with a delete button next to each');
+  assert.match(hub, /other="Direct access to n8n"/, 'a small link below the goal opens n8n directly');
+  assert.doesNotMatch(hub, /Your workflows|develop-tree|WorkflowCard/, 'the tile shows no project list');
   assert.match(hub, /props\.onOpenConnectors/);
   const app = src('src/App.tsx');
   assert.match(app, /onAgentIntent=\{\(intent\) =>[\s\S]*newProject[\s\S]*setFocusProject[\s\S]*setView\('studio'\)/);
