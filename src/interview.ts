@@ -56,7 +56,7 @@ export const SLOTS: SlotDef[] = [
     { en: 'How often does this happen, and how long does one case take?', de: 'Wie oft kommt das vor, und wie lange dauert ein Fall?' }] },
   { key: 'pain', label: 'Pain points', meaning: 'Waiting, media breaks, manual work, errors.', weight: 0.5, required: false, target: 1, questions: [
     { en: 'Where do you wait or do things by hand that annoy you?', de: 'Wo wartest du oder machst du Dinge von Hand, die dich nerven?' }] },
-  { key: 'automation', label: 'Automation potential', meaning: 'Where own judgement is needed, and what could run without the person.', weight: 0.4, required: false, target: 1, questions: [
+  { key: 'automation', label: 'Automation potential', meaning: 'Where own judgement is needed, and what could run without the person.', weight: 0.4, required: true, target: 1, questions: [
     { en: 'Where do you need your own judgement, and what could run without you?', de: 'Wo brauchst du dein eigenes Urteil, und was könnte auch ohne dich laufen?' }] },
 ];
 export const SLOT_BY_KEY = Object.fromEntries(SLOTS.map((s) => [s.key, s])) as Record<SlotKey, SlotDef>;

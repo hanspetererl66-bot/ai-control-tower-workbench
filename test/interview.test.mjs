@@ -230,10 +230,10 @@ test('the process summary lists the entries, what is not covered and who to inte
   assert.match(s, /Hands over to \(not yet interviewed\): Purchasing/);
   assert.match(s, /Source: one interview with the role "Accounts payable"/);
   // The interview ends once the required slots are covered: the optional ones stay open and are reported as such.
-  assert.deepEqual(openSlots(iv), ['volume', 'pain', 'automation']);
-  assert.match(s, /Not covered in the interview: Volume and rhythm, Pain points, Automation potential\./);
+  assert.deepEqual(openSlots(iv), ['volume']);
+  assert.match(s, /Not covered in the interview: Volume and rhythm\./);
   assert.ok(coverage(iv).every((c) => c.fill >= 0 && c.fill <= 1));
-  assert.match(processSummary(nextAction(startInterview('X', 'en')).iv), /Not covered in the interview: .*Steps \(needed\)/);
+  assert.match(processSummary(nextAction(startInterview('X', 'en')).iv), /Not covered in the interview: .*Steps \(needed\).*Automation potential \(needed\)/);
 });
 
 /* ---- in the project ---- */
