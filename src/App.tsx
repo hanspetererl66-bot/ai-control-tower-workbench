@@ -53,7 +53,10 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
-import { deliverBriefing, gmailExtension } from './schedule-delivery';
+import { addRun, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
+import { loadProjects as loadDevelopProjects } from './develop';
+import SchedulerView from './ui/SchedulerView';
+import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SALES_SPACE, SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
@@ -164,6 +167,11 @@ export default function App() {
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
   const [schedules, setSchedules] = useState<Schedule[]>(() => loadSchedules(window.localStorage));
+  const [jobs, setJobsState] = useState<Job[]>(() => loadJobs(window.localStorage));
+  const jobsRef = useRef(jobs);
+  jobsRef.current = jobs;
+  const changeJobs = useCallback((next: Job[]) => { jobsRef.current = next; setJobsState(next); saveJobs(next, window.localStorage); }, []);
+  const [runningJob, setRunningJob] = useState('');
   const updateSchedules = useCallback((next: Schedule[]) => {
     setSchedules(next);
     saveSchedules(next, window.localStorage);
@@ -958,7 +966,7 @@ export default function App() {
   const patchSchedule = (id: string, patch: Partial<Schedule>) => updateSchedules(schedulesRef.current.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   /** One run of a briefing: ask in the chat, then make the PDF and the email draft if the briefing asks for them. */
   async function runSchedule(due: Schedule, byHand = false) {
-    if (!agent || busy || runningSchedule) return;
+    if (!agent || busy || runningSchedule || runningJob) return;
     setRunningSchedule(due.id);
     patchSchedule(due.id, { lastRun: new Date().toISOString() });
     setView('chat');
@@ -976,11 +984,42 @@ export default function App() {
     }
   }
   const scheduleRuntime: ScheduleRuntime = { runningId: runningSchedule, canRun: Boolean(agent) && !busy, onRun: (s) => void runSchedule(s, true), gmail: Boolean(gmailExtension(extensionNames)) };
+  /** One run of a scheduler job (agent, workflow or skill): ask in the chat and write the result into the run history. */
+  async function runJob(job: Job, manual = false) {
+    if (!agent || busy || runningSchedule || runningJob) return;
+    setRunningJob(job.id);
+    const started = Date.now();
+    let status: 'ok' | 'error' = 'ok';
+    let note = 'Answer shown in the chat.';
+    setView('chat');
+    draft.current = '';
+    try {
+      await send(jobPrompt(job, manual));
+      const answer = draft.current;
+      if (isFailedAnswer(answer)) { status = 'error'; note = answer.replace(/^\s*⚠️\s*/, '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No answer. For an agent: is it published in the Studio?'; }
+    } catch (error) {
+      status = 'error'; note = (error instanceof Error ? error.message : 'The run failed.').slice(0, 160);
+    } finally {
+      const run = { id: newId('run'), at: new Date(started).toISOString(), ms: Date.now() - started, status, trigger: manual ? 'manual' as const : 'schedule' as const, note };
+      changeJobs(jobsRef.current.map((j) => (j.id === job.id ? addRun(j, run) : j)));
+      setRunningJob('');
+    }
+  }
   dueTick.current = () => {
-    if (!agent || busy || runningSchedule) return;
+    if (!agent || busy || runningSchedule || runningJob) return;
     const due = schedules.find((s) => isDue(s, new Date()));
     if (due) void runSchedule(due);
+    else {
+      const dueJob = jobsRef.current.find((j) => isJobDue(j, new Date()));
+      if (dueJob) void runJob(dueJob);
+    }
   };
+  /** Everything a job can run: published and draft agents, workflows from Develop, installed skills. */
+  const jobTargets: Target[] = view === 'scheduler' ? [
+    ...studioAgents.map((a): Target => ({ type: 'agent', id: a.id, label: a.name })),
+    ...loadDevelopProjects(window.localStorage).filter((p) => p.kind === 'workflow').map((p): Target => ({ type: 'workflow', id: p.id, label: p.intent.name || 'Untitled workflow' })),
+    ...skillList.map((k): Target => ({ type: 'skill', id: k.name, label: k.name })),
+  ] : [];
   useEffect(() => {
     const id = window.setInterval(() => dueTick.current(), 30_000);
     return () => window.clearInterval(id);
@@ -1256,6 +1295,8 @@ export default function App() {
           ready={Boolean(agent)}
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
         />
+      ) : view === 'scheduler' ? (
+        <SchedulerView jobs={jobs} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onRunNow={(j) => void runJob(j, true)} />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}
