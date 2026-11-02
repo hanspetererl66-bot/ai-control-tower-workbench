@@ -259,6 +259,19 @@ test('install copies skills, merges both extensions with absolute paths, and nev
   }
 });
 
+test('install can leave out the managed MCP bridge for the connector route', () => {
+  const root = fakeCheckout();
+  try {
+    const result = installDatabricksDemo({ root, skip: ['databricks-mcp'] });
+    assert.deepEqual(result.extensions, ['sap-mock']);
+    const config = parse(readFileSync(join(root, 'goose-home/.config/goose/config.yaml'), 'utf8'));
+    assert.equal(config.extensions['databricks-mcp'], undefined);
+    assert.equal(config.extensions['sap-mock'].type, 'stdio');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('connector bundles contain a manifest and the server and nothing else', () => {
   const out = join(mkdtempSync(join(tmpdir(), 'dbx-mcpb-')), 'bridge.mcpb');
   try {

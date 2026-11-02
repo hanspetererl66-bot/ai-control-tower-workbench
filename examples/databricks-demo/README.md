@@ -68,7 +68,7 @@ write of scenario 2: the assistant then shows the INSERT and you run it in the S
 
 To start with the connector route: run `all-in-one.sql`, install the `databricks` connector, enter host, token, warehouse id (and the
 Genie space id for scenario 1), install the skills with `npm run install:databricks-demo -- --skills-only`, and add the `sap-mock` extension
-(the installer without `--skills-only` adds it; `databricks-mcp` can stay unconfigured).
+(run `npm run install:databricks-demo -- --skip databricks-mcp`: it installs the skills and `sap-mock` and leaves the managed MCP bridge out).
 
 ## Goose mode
 
