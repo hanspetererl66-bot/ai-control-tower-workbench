@@ -6,14 +6,14 @@
 # Alternatively import the two .mcpb bundles in Connectors & Skills (npm run build:databricks-bridge-mcpb, build:sap-mock-mcpb).
 #
 # Secrets are NOT written here. Werkbank keeps them in the OS-encrypted store: open Connectors & Skills,
-# choose Configure on "databricks" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).
+# choose Configure on "databricks-mcp" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).
 # Names that look like secrets are moved out of the file automatically. Never put them in this file, .env or a chat.
 #
 # Replace <REPO> by the absolute path of this checkout, and the host by your workspace address.
 extensions:
-  databricks:
+  databricks-mcp:
     type: stdio
-    name: databricks
+    name: databricks-mcp
     enabled: true
     cmd: node
     args:

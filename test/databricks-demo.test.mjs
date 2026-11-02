@@ -116,12 +116,12 @@ test('the bridge manifest default paths match the functions in 07_functions.sql'
     assert.match(functions, new RegExp(`FUNCTION werkbank_demo\\.${schema}\\.${fn}\\(`), path);
   }
   const snippet = parse(read('goose/extensions.yaml')).extensions;
-  assert.equal(snippet.databricks.envs.DATABRICKS_MCP_PATHS.split(',').length, paths.length);
+  assert.equal(snippet['databricks-mcp'].envs.DATABRICKS_MCP_PATHS.split(',').length, paths.length);
 });
 
 test('extension snippet parses, points at real servers and carries no secret', () => {
   const snippet = parse(read('goose/extensions.yaml')).extensions;
-  assert.deepEqual(Object.keys(snippet).sort(), ['databricks', 'sap-mock']);
+  assert.deepEqual(Object.keys(snippet).sort(), ['databricks-mcp', 'sap-mock']);
   for (const entry of Object.values(snippet)) {
     assert.equal(entry.type, 'stdio');
     assert.ok(existsSync(join(ROOT, entry.args[0].replace('<REPO>/', ''))), entry.args[0]);
@@ -235,24 +235,24 @@ test('install copies skills, merges both extensions with absolute paths, and nev
   const root = fakeCheckout();
   try {
     const first = installDatabricksDemo({ root, host: 'https://adb-1.2.azuredatabricks.net/some/path' });
-    assert.deepEqual(first.extensions.sort(), ['databricks', 'sap-mock']);
+    assert.deepEqual(first.extensions.sort(), ['databricks-mcp', 'sap-mock']);
     assert.equal(first.skills.length, 4);
     const configPath = join(root, 'goose-home/.config/goose/config.yaml');
     const config = parse(readFileSync(configPath, 'utf8'));
     assert.equal(config.GOOSE_MODE, 'auto');
     assert.equal(config.extensions.developer.type, 'builtin');
-    assert.equal(config.extensions.databricks.envs.DATABRICKS_HOST, 'https://adb-1.2.azuredatabricks.net');
-    assert.equal(config.extensions.databricks.args[0], `${root}/connectors/databricks-bridge/server/index.mjs`);
+    assert.equal(config.extensions['databricks-mcp'].envs.DATABRICKS_HOST, 'https://adb-1.2.azuredatabricks.net');
+    assert.equal(config.extensions['databricks-mcp'].args[0], `${root}/connectors/databricks-bridge/server/index.mjs`);
     assert.doesNotMatch(readFileSync(configPath, 'utf8'), /<REPO>|SECRET|TOKEN/);
     assert.ok(existsSync(join(root, 'goose-home/.agents/skills/po-expedite/SKILL.md')));
 
-    config.extensions.databricks.envs.DATABRICKS_HOST = 'https://mine.example.com';
+    config.extensions['databricks-mcp'].envs.DATABRICKS_HOST = 'https://mine.example.com';
     writeFileSync(configPath, JSON.stringify(config));
     const second = installDatabricksDemo({ root });
-    assert.deepEqual(second.skipped.sort(), ['databricks', 'sap-mock']);
-    assert.equal(parse(readFileSync(configPath, 'utf8')).extensions.databricks.envs.DATABRICKS_HOST, 'https://mine.example.com');
+    assert.deepEqual(second.skipped.sort(), ['databricks-mcp', 'sap-mock']);
+    assert.equal(parse(readFileSync(configPath, 'utf8')).extensions['databricks-mcp'].envs.DATABRICKS_HOST, 'https://mine.example.com');
     installDatabricksDemo({ root, force: true });
-    assert.notEqual(parse(readFileSync(configPath, 'utf8')).extensions.databricks.envs.DATABRICKS_HOST, 'https://mine.example.com');
+    assert.notEqual(parse(readFileSync(configPath, 'utf8')).extensions['databricks-mcp'].envs.DATABRICKS_HOST, 'https://mine.example.com');
     assert.throws(() => installDatabricksDemo({ root, host: 'http://insecure.example.com', force: true }), /https/);
   } finally {
     rmSync(root, { recursive: true, force: true });

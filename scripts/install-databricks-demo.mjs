@@ -52,7 +52,7 @@ export function installDatabricksDemo({ root = ROOT, host, force = false, skills
       continue;
     }
     const filled = { ...entry, args: entry.args.map((arg) => arg.replace('<REPO>', root)) };
-    if (name === 'databricks' && host) filled.envs = { ...filled.envs, DATABRICKS_HOST: host };
+    if (name === 'databricks-mcp' && host) filled.envs = { ...filled.envs, DATABRICKS_HOST: host };
     config.setIn(['extensions', name], filled);
     result.extensions.push(name);
   }
@@ -71,7 +71,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     console.log(`Skills installed: ${result.skills.join(', ')}`);
     if (result.extensions.length) console.log(`Extensions added to goose-home/.config/goose/config.yaml: ${result.extensions.join(', ')}`);
     if (result.skipped.length) console.log(`Left unchanged (already configured, use --force to replace): ${result.skipped.join(', ')}`);
-    console.log('\nNext: restart Werkbank, open Connectors & Skills, choose Configure on "databricks" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).');
+    console.log('\nNext: restart Werkbank, open Connectors & Skills, choose Configure on "databricks-mcp" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).');
     console.log('The config file now holds paths of this machine. Do not commit it.');
   } catch (error) {
     console.error(`install failed: ${error.message}`);

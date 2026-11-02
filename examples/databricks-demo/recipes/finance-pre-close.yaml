@@ -11,8 +11,13 @@ instructions: |
   Scope: company code {{ company }} (ALL means the whole group: DE01, PL01 and FR01).
 
   Tools
-  - Databricks (extension `databricks`): get_grir_accrual_candidates, get_intercompany_differences and the SQL tool. Read only.
+  - Databricks (extension `databricks-mcp` or `databricks`): get_grir_accrual_candidates (fin), get_intercompany_differences (fin) and the SQL tool. Read only.
   - SAP (extension `sap-mock`): get_open_grir_items, draft_accrual_posting, submit_draft, get_audit_log.
+
+
+  How you reach Databricks
+  - Typed function tools (names below) exist when the managed MCP bridge (extension `databricks-mcp`) is connected. If they are not in your tool list, the Databricks connector (extension `databricks`, tools databricks_run_sql and databricks_ask_genie) is connected instead: call the same function through its read-only SQL tool, for example SELECT * FROM werkbank_demo.fin.get_grir_accrual_candidates(<arguments in the order of the tool>). The result is the same table.
+  - Say at the start which route you used. Never invent a tool or a result.
 
   Work in this order
   1. Call get_grir_accrual_candidates with company = {{ company }}. Show a compact table grouped by classification: ACCRUE, STALE_REVIEW, INVOICE_BEFORE_GOODS. For ACCRUE give the total per company code. Say plainly that STALE_REVIEW items (older than 90 days) are not accrued: they need a clearing review by the owner. INVOICE_BEFORE_GOODS items have nothing to accrue: they are clarified with the vendor.
