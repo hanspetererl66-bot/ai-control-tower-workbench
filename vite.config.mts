@@ -205,7 +205,9 @@ function skillsApi(): Plugin {
             .map((e) => {
               let name = e.name;
               let description = '';
+              let updatedAt = 0;
               try {
+                updatedAt = Math.round(statSync(join(dir, e.name, 'SKILL.md')).mtimeMs);
                 const md = readFileSync(join(dir, e.name, 'SKILL.md'), 'utf8');
                 const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(md);
                 if (fm) {
@@ -219,7 +221,7 @@ function skillsApi(): Plugin {
               } catch {
                 return null;
               }
-              return { name, description: description.slice(0, 240), dir: e.name };
+              return { name, description: description.slice(0, 240), dir: e.name, updatedAt };
             })
             .filter(Boolean)
             .sort((a: any, b: any) => a.name.localeCompare(b.name));
