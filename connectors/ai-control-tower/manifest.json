@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "ai-control-tower",
   "display_name": "AI Control Tower",
-  "version": "1.0.0",
-  "description": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits. Uses the bundled sample data, or your Supabase project when configured.",
+  "version": "1.1.0",
+  "description": "Read-only access to the AI Control Tower: risk register, agent registry and AI budget, plus the what-if on cutting AI credits and two TabPFN forecasts for Controlling (budget overrun per cost group, accrual estimate). Uses the bundled sample data, or your Supabase project when configured.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -19,7 +19,9 @@
       "env": {
         "CONTROL_TOWER_DATA": "${__dirname}/connectors/_lib/data/data.json",
         "SUPABASE_URL": "${user_config.supabase_url}",
-        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}"
+        "SUPABASE_SECRET_KEY": "${user_config.supabase_secret_key}",
+        "TABPFN_SERVICE_URL": "${user_config.tabpfn_service_url}",
+        "TABPFN_SERVICE_TOKEN": "${user_config.tabpfn_service_token}"
       }
     }
   },
@@ -55,6 +57,14 @@
     {
       "name": "simulate_credit_cut",
       "description": "What-if: what happens if the AI credits are cut by a given percentage? Returns the new overall ceiling and headroom, each team's new utilisation, how many agent runs per day and which processes (agent families) would have to be throttled, which risks rise, and the break-even cut at which the ceiling is reached. Read-only; the model is a transparent rule set over sample data (see assumptions in the result), not a forecast. Use it for questions such as \"Was passiert, wenn wir die AI-Credits um 30 % kürzen?\"."
+    },
+    {
+      "name": "forecast_budget",
+      "description": "Forecast the month-end spend of each cost group against its monthly AI budget. Returns, per group, the spend so far, the expected month-end spend with an 80 % band (10th to 90th percentile), the probability of ending above budget and a status (on track, at risk, likely over), plus the model engine (TabPFN or a fallback baseline). Based on the spend so far this month and the last six months; trained on synthetic data, so it shows the method and is not a binding forecast. Use it for questions such as \"Welche Teams überschreiten ihr AI-Budget diesen Monat?\". Read-only."
+    },
+    {
+      "name": "estimate_accruals",
+      "description": "Estimate the proposed month-end accruals of the Finance Pre-Close sample (fictional group \"Nordlicht\"): for each proposal an interval (10th to 90th percentile) for the amount the supplier invoice will probably show, and the probability that the final amount differs by more than 10 % so the accrual has to be corrected. Highest correction risk first. Returns the model engine (TabPFN or a fallback baseline). Trained on synthetic data, so it shows the method and is not an audit statement. Use it for questions such as \"Welche Rückstellungen muss ich wahrscheinlich korrigieren?\". Read-only."
     }
   ],
   "user_config": {
@@ -68,6 +78,19 @@
       "type": "string",
       "title": "Supabase secret key",
       "description": "Optional. Server-side secret key (sb_secret_…) of that project. Stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "tabpfn_service_url": {
+      "type": "string",
+      "title": "Forecast service",
+      "description": "Optional. Address of services/tabpfn, for example http://127.0.0.1:8808 (https for anything not on this computer). Needed for forecast_budget and estimate_accruals.",
+      "required": false
+    },
+    "tabpfn_service_token": {
+      "type": "string",
+      "title": "Forecast service token",
+      "description": "Optional. Bearer token if the service was started with TABPFN_SERVICE_TOKEN. Stored as a secret.",
       "sensitive": true,
       "required": false
     }

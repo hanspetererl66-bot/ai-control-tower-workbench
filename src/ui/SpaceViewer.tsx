@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
+import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
@@ -112,7 +113,11 @@ export default function SpaceViewer({
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
-      const handle = space.slug === PRD_SPACE ? handlePrdMessage : space.slug === SALES_SPACE ? handleSalesMessage : handleSub4meMessage;
+      const handle = space.slug === PRD_SPACE ? handlePrdMessage
+        : space.slug === SALES_SPACE ? handleSalesMessage
+        : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
+        : space.slug === PRECLOSE_SPACE ? handlePrecloseForecastMessage
+        : handleSub4meMessage;
       void handle(event.data, bridgeRef.current).then((reply) => {
         if (reply) frame.current?.contentWindow?.postMessage(reply, '*');
       });

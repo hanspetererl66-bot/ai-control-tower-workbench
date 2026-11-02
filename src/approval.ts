@@ -9,7 +9,7 @@ export type ActionInfo = {
 };
 
 const CHANGES = /(^|_)(create|add|insert|send|delete|remove|update|set|save|write|post|publish|run|execute|trigger|start|stop|approve|reject|submit|sign|move|rename|install|apply|patch|upload|shell|bash|edit)(_|$)/i;
-const READS = /(^|_)(get|list|search|read|show|find|fetch|describe|explain|check|simulate|predict|view|query|enrich|load|summari[sz]e|recall)(_|$)/i;
+const READS = /(^|_)(get|list|search|read|show|find|fetch|describe|explain|check|simulate|predict|forecast|estimate|view|query|enrich|load|summari[sz]e|recall)(_|$)/i;
 
 const clip = (v: unknown, max = 160): string => {
   const s = typeof v === 'string' ? v : JSON.stringify(v);

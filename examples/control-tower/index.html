@@ -148,6 +148,17 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ds{font-size:10px;color:var(--g500);margin-top:4px}
 
 /* TABLE */
+.bf-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.bf-title{font-size:13px;font-weight:700;color:var(--g900)}
+.bf-sub,.bf-meta{font-size:11px;color:var(--g500);line-height:1.6}
+.bf-meta{margin-top:10px}
+.bf-run{font:inherit;font-size:12px;cursor:pointer;border-radius:4px;padding:5px 12px;border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple-mid);font-weight:600}
+.bf-run:disabled{opacity:.5;cursor:default}
+.bf-track{position:relative;height:8px;border-radius:99px;background:var(--g100);min-width:140px}
+.bf-band{position:absolute;top:0;bottom:0;border-radius:99px;background:var(--amber);opacity:.55}
+.bf-band.ok{background:var(--green)}.bf-band.bad{background:var(--red)}
+.bf-mid{position:absolute;top:-2px;width:3px;height:12px;border-radius:2px;background:var(--g900)}
+.bf-cap{position:absolute;top:-4px;width:0;height:16px;border-left:2px dashed var(--g500)}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
 .tbl th{font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;padding:7px 10px;border-bottom:2px solid var(--g200);text-align:left;font-family:var(--mono)}
 .tbl th.r,.tbl td.r{text-align:right}
@@ -1259,6 +1270,10 @@ details.intro .body{margin-top:8px}
     <div>
 <div class="sh">Budget utilisation by team group (monthly, &euro;<span id="budget-total"></span>M total)</div>
       <div class="card" id="budget-groups"></div>
+      <div class="card" id="bf">
+        <div class="bf-head"><div><div class="bf-title">Month-end forecast per team group</div><div class="bf-sub">Where each group will probably end this month, and how likely it is to exceed its budget. Demo model on synthetic history; nothing is changed.</div></div><button type="button" class="bf-run" id="bf-run">Run forecast</button></div>
+        <div id="bf-body"><div class="bf-meta">Press &ldquo;Run forecast&rdquo; to ask the forecast service.</div></div>
+      </div>
       <div class="ns" style="margin-top:12px">
         <div class="ns-title">AI Value Return Ratio (AVRR) &mdash; 5.1&times; this month <span class="tag t-g" style="vertical-align:middle;margin-left:6px">Top-quartile</span></div>
         <div class="ns-why">AVRR measures how many euros of engineering value are recovered for every euro invested in AI tooling. A ratio above 3.5&times; is healthy; above 5&times; is top-quartile for enterprises at this scale. Below 2&times; triggers a cost governance review.</div>
@@ -6038,51 +6053,121 @@ details.intro .body{margin-top:8px}
         "name": "Engineering",
         "budgetK": 6566,
         "utilisationPct": 107,
-        "color": "red"
+        "color": "red",
+        "historyK": [
+          5515,
+          5778,
+          6041,
+          6303,
+          6566,
+          6829
+        ]
       },
       {
         "name": "Sales & Presales",
         "budgetK": 3335,
         "utilisationPct": 88,
-        "color": "amber"
+        "color": "amber",
+        "historyK": [
+          2601,
+          2668,
+          2735,
+          2868,
+          2968,
+          3068
+        ]
       },
       {
         "name": "Product & Design",
         "budgetK": 2519,
         "utilisationPct": 76,
-        "color": "purple"
+        "color": "purple",
+        "historyK": [
+          1713,
+          1763,
+          1814,
+          1864,
+          1889,
+          1940
+        ]
       },
       {
         "name": "Operations",
         "budgetK": 2148,
         "utilisationPct": 62,
-        "color": "green"
+        "color": "green",
+        "historyK": [
+          1181,
+          1224,
+          1246,
+          1289,
+          1332,
+          1353
+        ]
       },
       {
         "name": "Finance",
         "budgetK": 1683,
         "utilisationPct": 104,
-        "color": "red"
+        "color": "red",
+        "historyK": [
+          1447,
+          1515,
+          1582,
+          1649,
+          1700,
+          1733
+        ]
       },
       {
         "name": "HR / L&D",
         "budgetK": 1097,
         "utilisationPct": 46,
-        "color": "green"
+        "color": "green",
+        "historyK": [
+          548,
+          527,
+          516,
+          505,
+          516,
+          527
+        ]
       },
       {
         "name": "Data & AI Platform",
         "budgetK": 3587,
         "utilisationPct": 19,
-        "color": "purple"
+        "color": "purple",
+        "historyK": [
+          287,
+          359,
+          430,
+          502,
+          574,
+          646
+        ]
       },
       {
         "name": "Legal & Compliance",
         "budgetK": 565,
         "utilisationPct": 40,
-        "color": "green"
+        "color": "green",
+        "historyK": [
+          203,
+          215,
+          226,
+          232,
+          237,
+          243
+        ]
       }
-    ]
+    ],
+    "forecastContext": {
+      "month": "2026-10",
+      "day": 28,
+      "daysInMonth": 31,
+      "note": "Group utilisation is the spend booked up to this day of the month; historyK is the month-end spend of the six months before (illustrative sample values)."
+    }
   },
   "compliance": {
     "euAiAct": {
@@ -6195,6 +6280,42 @@ function bindFacts(){
     if(v!==undefined&&v!==null) el.textContent=String(v);
   });
 }
+
+/* Month-end budget forecast: asks the host (bridge to the forecast service); the Space itself has no network. */
+var bf={pending:null,result:null,error:''};
+function renderBF(){
+  var el=document.getElementById('bf-body'); if(!el) return;
+  document.getElementById('bf-run').disabled=!!bf.pending;
+  if(bf.pending){el.innerHTML='<div class="bf-meta" role="status">Forecasting the cost groups &hellip;</div>';return;}
+  if(bf.error){el.innerHTML='<div class="bf-meta">'+esc(bf.error)+'</div>';return;}
+  var f=bf.result; if(!f){return;}
+  var scale=Math.max(130,Math.ceil(Math.max.apply(null,f.items.map(function(i){return i.p90Pct||0;}))/10)*10);
+  function money(k){return k>=1000?'&euro;'+(k/1000).toFixed(1).replace(/\.0$/,'')+'M':'&euro;'+k+'k';}
+  var rows=f.items.map(function(i){
+    var cls=i.status==='likely over'?'bad':i.status==='at risk'?'':'ok';
+    var tag=i.status==='likely over'?'t-r':i.status==='at risk'?'t-a':'t-g';
+    return '<tr><td class="b">'+esc(i.name)+'<div class="bf-sub">budget '+money(i.budgetK)+', booked '+money(i.spentK)+'</div></td>'
+      +'<td style="width:34%"><div class="bf-track" title="10th to 90th percentile: '+i.p10Pct+'% to '+i.p90Pct+'% of budget"><div class="bf-band '+cls+'" style="left:'+(i.p10Pct/scale*100)+'%;width:'+Math.max(1.5,(i.p90Pct-i.p10Pct)/scale*100)+'%"></div><div class="bf-mid" style="left:'+(i.p50Pct/scale*100)+'%"></div><div class="bf-cap" style="left:'+(100/scale*100)+'%"></div></div>'
+      +'<div class="bf-sub">expected '+money(i.p50K)+' ('+i.p50Pct+'%), range '+money(i.p10K)+' to '+money(i.p90K)+'</div></td>'
+      +'<td class="r"><b>'+Math.round(i.overrunProbability*100)+'%</b><div><span class="tag '+tag+'">'+esc(i.status)+'</span></div></td></tr>';
+  }).join('');
+  el.innerHTML='<table class="tbl" style="margin-top:12px"><thead><tr><th>Group</th><th>Month-end spend vs budget (dashed line)</th><th class="r">Chance over budget</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div class="bf-meta">Day '+f.day+' of '+f.daysInMonth+'. Bar: '+esc(f.band)+', the black mark is the expected value. Engine: <b>'+esc(f.engine==='tabpfn'?'TabPFN':f.engine==='baseline'?'gradient-boosting baseline (TabPFN not loaded)':f.engine)+'</b> &middot; trained on '+esc(f.trainedOn)+'. Demo only, not a binding forecast.</div>'
+    +(f.engine==='baseline'&&f.engineNote?'<div class="bf-meta">'+esc(f.engineNote)+'</div>':'');
+}
+document.getElementById('bf-run').addEventListener('click',function(){
+  if(bf.pending) return;
+  bf.error='';
+  if(window.parent===window){bf.error='The forecast needs the agent connection. Open this Space in the app.';renderBF();return;}
+  var id='b'+Date.now().toString(36); bf.pending=id; renderBF();
+  window.parent.postMessage({type:'ct:budget-forecast-request',requestId:id},'*');
+  setTimeout(function(){if(bf.pending===id){bf.pending=null;bf.error='No answer from the agent. Is the AI Control Tower connector connected and the forecast service running?';renderBF();}},100000);
+});
+window.addEventListener('message',function(e){
+  var d=e.data; if(e.source!==window.parent||!d||typeof d.type!=='string'||!d.requestId||d.requestId!==bf.pending) return;
+  if(d.type==='ct:budget-forecast'&&d.forecast&&Array.isArray(d.forecast.items)){bf.pending=null;bf.result=d.forecast;renderBF();}
+  else if(d.type==='ct:error'){bf.pending=null;bf.error='Could not run the forecast: '+String(d.message).slice(0,200);renderBF();}
+});
 renderAgents();
 renderBudget();
 bindFacts();

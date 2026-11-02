@@ -44,14 +44,15 @@ test('reports connector errors and a missing agent back to the page', async () =
   assert.throws(() => parseToolResult({ content: [{ type: 'text', text: 'not json' }] }), /unexpected/);
 });
 
-test('the Space only talks to its parent and the app only wires the bridge for sub4me, the PRD builder and the Sales forecast', () => {
+test('the Space only talks to its parent and the app only wires the bridge for sub4me, the PRD builder, the Sales forecast and the two Controlling forecasts', () => {
   const html = readFileSync(join(import.meta.dirname, '..', 'examples/sub4me/index.html'), 'utf8');
   assert.match(html, /e\.source !== window\.parent/);
   assert.match(readFileSync(join(import.meta.dirname, '..', 'examples/sales/index.html'), 'utf8'), /e\.source !== window\.parent/);
   const app = readFileSync(join(import.meta.dirname, '..', 'src/App.tsx'), 'utf8');
-  assert.match(app, /bridgeEnabled=\{space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE \|\| space\.slug === SALES_SPACE\}/);
+  assert.match(app, /bridgeEnabled=\{space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE \|\| space\.slug === SALES_SPACE \|\| space\.slug === CONTROL_TOWER_BRIDGE_SPACE \|\| space\.slug === PRECLOSE_SPACE\}/);
   const viewer = readFileSync(join(import.meta.dirname, '..', 'src/ui/SpaceViewer.tsx'), 'utf8');
   assert.match(viewer, /event\.source !== frame\.current\.contentWindow/);
+  for (const slug of ['control-tower', 'finance-preclose']) assert.match(readFileSync(join(import.meta.dirname, '..', 'examples', slug, 'index.html'), 'utf8'), /e\.source\s*!==\s*window\.parent/, slug);
 });
 
 test('enrich requests call only enrich_ticket and pass on the fields the Space renders', async () => {

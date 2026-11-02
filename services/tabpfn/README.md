@@ -45,6 +45,28 @@ the connector from a checkout), and the same token if you set one. Plain http is
 Then ask in the chat *"Welche offenen Rechnungen werden voraussichtlich zu spät bezahlt?"*, or press **Run forecast**
 on the **Late payments** tab of the Sales Space (pick the customer first). The tool lives in the Sub4Me connector, so that connector must be active.
 
+## Two Controlling forecasts (same service)
+
+Both use the TabPFN **regressor** with quantile output and share the engine switch (`TABPFN_ENGINE`) with the late-payment model.
+Without weights a labelled gradient-boosting quantile baseline answers instead (`engine: baseline` in every answer and in the card footer).
+The models are trained lazily on the first request, on synthetic history.
+
+| Where | Tool (connector `ai-control-tower`) | What you get |
+|---|---|---|
+| Control Tower, tab Model Governance, card "Month-end forecast per team group" | `forecast_budget` | month-end spend per cost group with an 80 % band and the chance of exceeding the budget |
+| Finance Pre-Close, table "Accrual proposals", button "Estimate with TabPFN" | `estimate_accruals` | interval for the final amount of each accrual proposal and the chance that it differs by more than 10 % |
+
+Connect it like the late-payment forecast: set **Forecast service** in the **AI Control Tower** connector (reinstall or
+re-import the connector once so the new tools and fields appear).
+
+`POST /forecast/budget` with `{ "day": 28, "daysInMonth": 31, "groups": [ { "name", "budgetK", "mtdK", "historyK": [six earlier month-end spends] } ] }`.
+`POST /estimate/accruals` with `{ "asOfWd": 17, "accruals": [ { "id", "entity", "line", "amountK", "confidence", "fromWd" } ] }`.
+The overrun and correction probabilities are read off the predicted quantiles by interpolation, so they are approximate
+(held between 2.5 % and 97.5 %).
+
+**Not verified against real weights:** the call `TabPFNRegressor.predict(X, output_type="quantiles", quantiles=[...])` follows the
+tabpfn 2.x documentation. If it fails when the model is set up, the baseline is used and `engineNote` says why.
+
 ## API
 
 `POST /predict/late-payment` with `{ "customer": "muster", "as_of": "2026-10-18", "invoices": [ ...Sub4Me invoices... ] }`

@@ -4343,51 +4343,121 @@
         "name": "Engineering",
         "budgetK": 6566,
         "utilisationPct": 107,
-        "color": "red"
+        "color": "red",
+        "historyK": [
+          5515,
+          5778,
+          6041,
+          6303,
+          6566,
+          6829
+        ]
       },
       {
         "name": "Sales & Presales",
         "budgetK": 3335,
         "utilisationPct": 88,
-        "color": "amber"
+        "color": "amber",
+        "historyK": [
+          2601,
+          2668,
+          2735,
+          2868,
+          2968,
+          3068
+        ]
       },
       {
         "name": "Product & Design",
         "budgetK": 2519,
         "utilisationPct": 76,
-        "color": "purple"
+        "color": "purple",
+        "historyK": [
+          1713,
+          1763,
+          1814,
+          1864,
+          1889,
+          1940
+        ]
       },
       {
         "name": "Operations",
         "budgetK": 2148,
         "utilisationPct": 62,
-        "color": "green"
+        "color": "green",
+        "historyK": [
+          1181,
+          1224,
+          1246,
+          1289,
+          1332,
+          1353
+        ]
       },
       {
         "name": "Finance",
         "budgetK": 1683,
         "utilisationPct": 104,
-        "color": "red"
+        "color": "red",
+        "historyK": [
+          1447,
+          1515,
+          1582,
+          1649,
+          1700,
+          1733
+        ]
       },
       {
         "name": "HR / L&D",
         "budgetK": 1097,
         "utilisationPct": 46,
-        "color": "green"
+        "color": "green",
+        "historyK": [
+          548,
+          527,
+          516,
+          505,
+          516,
+          527
+        ]
       },
       {
         "name": "Data & AI Platform",
         "budgetK": 3587,
         "utilisationPct": 19,
-        "color": "purple"
+        "color": "purple",
+        "historyK": [
+          287,
+          359,
+          430,
+          502,
+          574,
+          646
+        ]
       },
       {
         "name": "Legal & Compliance",
         "budgetK": 565,
         "utilisationPct": 40,
-        "color": "green"
+        "color": "green",
+        "historyK": [
+          203,
+          215,
+          226,
+          232,
+          237,
+          243
+        ]
       }
-    ]
+    ],
+    "forecastContext": {
+      "month": "2026-10",
+      "day": 28,
+      "daysInMonth": 31,
+      "note": "Group utilisation is the spend booked up to this day of the month; historyK is the month-end spend of the six months before (illustrative sample values)."
+    }
   },
   "compliance": {
     "euAiAct": {
