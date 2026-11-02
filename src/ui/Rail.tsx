@@ -3,7 +3,7 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
@@ -77,6 +77,18 @@ export default function Rail({
           aria-pressed={DEVELOP_VIEWS.includes(view)}
         >
           <DevelopIcon />
+        </button>
+      </div>
+
+      <div className="rail-mid">
+        <button
+          className={`rail-btn ${view === 'scheduler' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('scheduler')}
+          title="Scheduler: run agents, workflows and skills on a schedule"
+          aria-label="Scheduler"
+          aria-pressed={view === 'scheduler'}
+        >
+          <SchedulerIcon />
         </button>
       </div>
 
@@ -171,6 +183,16 @@ export default function Rail({
         </button>
       </div>
     </nav>
+  );
+}
+
+function SchedulerIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <rect x="3" y="4.2" width="14" height="12.6" rx="2.2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3.4 8h13.2M7 2.8v2.8M13 2.8v2.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M10 10.2v2.4l1.6 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
