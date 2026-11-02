@@ -18,6 +18,15 @@ type Props = {
 };
 
 const TAB_KEY = 'werkbank.chatTab';
+
+/** One small line icon per tab. */
+function TabIcon({ id }: { id: TabId }) {
+  const common = { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true };
+  if (id === 'favorites') return <svg {...common}><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.5l-3.8 2.1.7-4.3-3.1-3 4.3-.6z" /></svg>;
+  if (id === 'suggested') return <svg {...common}><path d="M6.5 1.8l1.2 3.1 3.1 1.2-3.1 1.2-1.2 3.1-1.2-3.1L2.2 6.1l3.1-1.2zM12 9.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z" /></svg>;
+  if (id === 'popular') return <svg {...common}><path d="M2 12l4-4 2.5 2.5L14 5M10 5h4v4" /></svg>;
+  return <svg {...common}><path d="M8 2a4 4 0 00-4 4v2.5L2.8 11h10.4L12 8.5V6a4 4 0 00-4-4zM6.5 13a1.6 1.6 0 003 0" /></svg>;
+}
 const EMPTY: Record<TabId, string> = {
   favorites: 'Nothing here yet. Add your own prompts and favourite skills in the settings.',
   suggested: 'Nothing to suggest right now: you already use all installed skills.',
@@ -49,7 +58,7 @@ export default function ChatTabs(p: Props) {
     <section className="chat-tabs" aria-label="Start here">
       <div className="chat-tabs-bar" role="tablist" aria-label="Start here">
         {TABS.map((t) => (
-          <button key={t.id} role="tab" id={`chat-tab-${t.id}`} aria-selected={tab === t.id} aria-controls="chat-tab-panel" className={`chat-tab ${tab === t.id ? 'chat-tab-on' : ''}`} onClick={() => setTab(t.id)}>{t.label}</button>
+          <button key={t.id} role="tab" id={`chat-tab-${t.id}`} aria-selected={tab === t.id} aria-controls="chat-tab-panel" className={`chat-tab ${tab === t.id ? 'chat-tab-on' : ''}`} onClick={() => setTab(t.id)}><TabIcon id={t.id} /><span>{t.label}</span></button>
         ))}
       </div>
       <div className="chat-tab-panel" id="chat-tab-panel" role="tabpanel" aria-labelledby={`chat-tab-${tab}`}>
