@@ -11,6 +11,8 @@ import { isWebTool, webSearchNote, WEB_SEARCH_BLOCKED_NOTE } from './web-search'
 import {
   archiveConversation as archiveConversationState,
   deleteConversation as deleteConversationState,
+  conversationFileName,
+  conversationToMarkdown,
   createConversation,
   loadConversationState,
   restoreConversation as restoreConversationState,
@@ -146,6 +148,17 @@ export default function App() {
     []
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [topMenuOpen, setTopMenuOpen] = useState(false);
+  const [renamingTitle, setRenamingTitle] = useState<string | null>(null);
+  const topMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!topMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (!topMenuRef.current?.contains(event.target as Node)) setTopMenuOpen(false); };
+    const esc = (event: KeyboardEvent) => { if (event.key === 'Escape') setTopMenuOpen(false); };
+    window.addEventListener('pointerdown', outside);
+    window.addEventListener('keydown', esc);
+    return () => { window.removeEventListener('pointerdown', outside); window.removeEventListener('keydown', esc); };
+  }, [topMenuOpen]);
   const [sideTab, setSideTab] = useState<SidePanelTab>('memory');
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
@@ -1106,6 +1119,21 @@ export default function App() {
     resetConversationSurface(conversation.files);
   }
 
+  function exportConversation() {
+    if (!selectedConversation) return;
+    const name = conversationFileName(selectedConversation.title);
+    const url = URL.createObjectURL(new Blob([conversationToMarkdown(selectedConversation, PRODUCT_TITLE)], { type: 'text/markdown' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    setToast(`Saved ${name}`);
+    setTimeout(() => setToast(null), 4000);
+  }
+
   function archiveConversation(id: string) {
     if (busy) return;
     const replacement = createConversation();
@@ -1304,10 +1332,24 @@ export default function App() {
       ) : (
         <main className="main">
           <header className="topbar">
-            <button className="icon-btn topbar-leading" title="Conversations" aria-label="Conversations">
-              <ListIcon />
-            </button>
-            <h1 className="topbar-title">{title}</h1>
+            {renamingTitle !== null ? (
+              <form
+                className="topbar-rename"
+                onSubmit={(event) => { event.preventDefault(); const next = renamingTitle.trim(); if (next) setTitle(next.slice(0, 80)); setRenamingTitle(null); }}
+              >
+                <input
+                  autoFocus
+                  value={renamingTitle}
+                  maxLength={80}
+                  aria-label="Conversation name"
+                  onChange={(event) => setRenamingTitle(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === 'Escape') setRenamingTitle(null); }}
+                  onBlur={() => { const next = renamingTitle.trim(); if (next && next !== title) setTitle(next.slice(0, 80)); setRenamingTitle(null); }}
+                />
+              </form>
+            ) : (
+              <h1 className="topbar-title" onDoubleClick={() => { if (selectedConversation && !busy) setRenamingTitle(title); }} title="Double-click to rename">{title}</h1>
+            )}
             <button
               className={`icon-btn topbar-details ${detailsOpen ? 'icon-btn-on' : ''}`}
               onClick={() => setDetailsOpen((v) => !v)}
@@ -1317,9 +1359,25 @@ export default function App() {
             >
               <DetailsIcon />
             </button>
-            <button className="icon-btn topbar-more" title="More" aria-label="More">
-              ···
-            </button>
+            <div className="chip-wrap" ref={topMenuRef}>
+              <button
+                className={`icon-btn topbar-more ${topMenuOpen ? 'icon-btn-on' : ''}`}
+                title="Conversation actions"
+                aria-label="Conversation actions"
+                aria-haspopup="menu"
+                aria-expanded={topMenuOpen}
+                disabled={!selectedConversation}
+                onClick={() => setTopMenuOpen((v) => !v)}
+              >
+                ···
+              </button>
+              {topMenuOpen && (
+                <div className="menu share-menu" role="menu" style={{ top: 'calc(100% + 6px)', bottom: 'auto', right: 0, left: 'auto' }}>
+                  <button role="menuitem" className="connector-menu-item" disabled={busy} onClick={() => { setTopMenuOpen(false); setRenamingTitle(title); }}>Rename</button>
+                  <button role="menuitem" className="connector-menu-item" disabled={messages.length === 0} onClick={() => { setTopMenuOpen(false); exportConversation(); }}>Export as Markdown</button>
+                </div>
+              )}
+            </div>
           </header>
 
           {empty ? (
@@ -1481,14 +1539,6 @@ export default function App() {
 
       {toast && <div className="toast">{toast}</div>}
     </div>
-  );
-}
-
-function ListIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
   );
 }
 

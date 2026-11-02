@@ -297,9 +297,11 @@ export default function SpaceViewer({
         <button className="icon-btn" onClick={() => setBust(Date.now())} title="Refresh" aria-label="Refresh">
           <RefreshIcon />
         </button>
-        <button className="icon-btn topbar-more" title="More" aria-label="More">
-          ···
-        </button>
+        {onAsk && (
+          <button className="ghost-btn" onClick={() => onAsk(`Ich möchte den Space „${space.title}“ (${space.slug}) ändern. Frag mich kurz, was anders sein soll, und passe ihn danach an.`)} title="Open the chat and describe what should change in this Space">
+            Change with Joule
+          </button>
+        )}
       </header>
 
       {insightsOpen && space.insights.length > 0 && (
