@@ -261,7 +261,7 @@ installed Space contains the updated page.
 ### Cover sheet and one-click connector
 
 - Clicking the diamond at the top of the left rail opens a full-screen cover sheet:
-  "Joule Work X - Next Gen · Design Study · Built by Accenture · Demo only". Click anywhere outside the
+  "Joule Work X - Next Gen · Design Study · from Accenture Germany · Author Hans-Peter Erl · Demo only". Click anywhere outside the
   text, "Close" or Esc to dismiss it.
 - If the AI Control Tower connector is not installed or not connected, the empty chat says so and offers
   **Jetzt installieren**. That stages the AI Control Tower connector bundled in this repository and opens the usual approve

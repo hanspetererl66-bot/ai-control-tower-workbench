@@ -24,6 +24,8 @@ test('grey brightness and lit alpha stay in range, lit cubes fade in and out', (
   assert.equal(litAlpha(1000, 1000), 0);
   assert.ok(litAlpha(50, 2000) < 1 && litAlpha(1000, 2000) === 1 && litAlpha(1900, 2000) < 1);
   assert.ok(GRID_PALETTE.length >= 5);
+  // purple only: red >= green and blue > green for every shade
+  for (const c of GRID_PALETTE) { const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); assert.ok(b > g && r >= g, `${c} is a purple shade`); }
 });
 
 test('the cover sheet shows the grid, respects reduced motion and cleans up', () => {
