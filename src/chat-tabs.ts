@@ -77,3 +77,14 @@ export function loadUse(store: Pick<Storage, 'getItem'>): UseMap {
   } catch { return {}; }
 }
 export function saveUse(store: Pick<Storage, 'setItem'>, used: UseMap): void { try { store.setItem(USE_KEY, JSON.stringify(used)); } catch { /* ignore */ } }
+
+/** A tab opens its list on click and closes it on the next click on the same tab; another tab switches. null = all closed. */
+export function nextTab(current: TabId | null, clicked: TabId): TabId | null {
+  return current === clicked ? null : clicked;
+}
+
+/** Reads the stored choice: a tab id, 'none' (closed) or anything else (first visit: Favorites open). */
+export function readTab(stored: string | null): TabId | null {
+  if (stored === 'none') return null;
+  return TABS.some((x) => x.id === stored) ? (stored as TabId) : 'favorites';
+}
