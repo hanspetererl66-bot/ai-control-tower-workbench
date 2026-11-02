@@ -4179,7 +4179,7 @@ p.dev-error { padding-left: 0; }
 
 /* Context row above the message box */
 .ctxbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; position: relative; margin: 0 0 6px; font-size: 12px; }
-.ctx-chip { font: inherit; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; }
+.ctx-chip { flex: 0 0 auto; white-space: nowrap; line-height: 1.3; overflow: visible; font: inherit; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; }
 .ctx-chip.on { color: var(--ink); border-color: var(--accent); }
 .ctx-hot { color: var(--accent); border-color: var(--accent); font-weight: 600; }
 .ctx-select select { font: inherit; font-size: 12px; border: 0; background: transparent; color: inherit; cursor: pointer; max-width: 140px; }
@@ -4400,3 +4400,10 @@ textarea.studio-field { min-height: 120px; }
 .shared-save-error { color: #b45309; }
 :root[data-theme="dark"] .shared-save-error { color: #fbbf24; }
 .shared-save-bad { color: #b45309; }
+
+/* Quick text-size slider in the Space header: same setting as Settings → Text size in Spaces. */
+.space-zoom { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; color: var(--muted); cursor: pointer; }
+.space-zoom input[type='range'] { width: 84px; accent-color: var(--accent); cursor: pointer; }
+.space-zoom-small { font-size: 11px; }
+.space-zoom-big { font-size: 16px; }
+.space-zoom-value { min-width: 3.2em; font-size: 12px; font-variant-numeric: tabular-nums; }

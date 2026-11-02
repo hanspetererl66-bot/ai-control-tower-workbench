@@ -1269,6 +1269,7 @@ export default function App() {
             space={space}
             tabRequest={spaceTab && (spaceTab.space ?? 'ai-control-tower') === space.slug ? spaceTab : null}
             textScale={spaceScale}
+            onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
             bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE}

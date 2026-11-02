@@ -37,3 +37,21 @@ test('the app theme is pinned on <html>, replacing an existing value', () => {
   assert.ok(applySpaceTheme('<html data-theme="dark" lang="en">', 'light').includes('data-theme="light"'));
   assert.equal(applySpaceTheme('<p>fragment</p>', 'dark'), '<p>fragment</p>');
 });
+
+import { readFileSync as readSource } from 'node:fs';
+import { SPACE_SCALES as ALL_SCALES, parseSpaceScale as parseScale } from '../src/space-scale.ts';
+
+test('the quick slider in the Space header walks through the same sizes as Settings, including smaller ones', () => {
+  assert.ok(ALL_SCALES[0] < 1, 'a smaller-than-original size exists');
+  assert.deepEqual([...ALL_SCALES], [...ALL_SCALES].sort((a, b) => a - b));
+  assert.equal(parseScale(0.85), 0.85);
+  const viewer = readSource(new URL('../src/ui/SpaceViewer.tsx', import.meta.url), 'utf8');
+  assert.match(viewer, /type="range"[\s\S]*SPACE_SCALES\.length - 1/);
+  assert.match(viewer, /onTextScale\(SPACE_SCALES\[Number\(event\.target\.value\)\]\)/);
+  assert.match(readSource(new URL('../src/App.tsx', import.meta.url), 'utf8'), /onTextScale=\{changeSpaceScale\}/);
+});
+
+test('the memory chip says on or off in full and never shrinks', () => {
+  assert.match(readSource(new URL('../src/ui/ChatContextBar.tsx', import.meta.url), 'utf8'), /Memory \{p\.memoryEnabled \? `on · \$\{p\.memoryCount\}` : 'off'\}/);
+  assert.match(readSource(new URL('../src/theme.css', import.meta.url), 'utf8'), /\.ctx-chip \{ flex: 0 0 auto; white-space: nowrap;/);
+});

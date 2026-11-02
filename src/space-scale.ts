@@ -5,7 +5,7 @@
  * Chromium's `zoom` scales text, spacing and charts together, so proportions stay intact.
  */
 export const SPACE_SCALE_STORAGE_KEY = 'werkbank.space-scale';
-export const SPACE_SCALES = [1, 1.15, 1.3] as const;
+export const SPACE_SCALES = [0.85, 1, 1.15, 1.3, 1.5] as const;
 export type SpaceScale = (typeof SPACE_SCALES)[number];
 export const DEFAULT_SPACE_SCALE: SpaceScale = 1.15;
 
