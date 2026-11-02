@@ -9,6 +9,7 @@
  */
 import { sanitizeProjects as sanitizeAgentProjects, DOC_ORDER, type AgentProject } from './agent-project.ts';
 import { sanitizeProject as sanitizeDevelopProject, artifactOf, type Project } from './develop.ts';
+import { interviewMarkdown } from './interview.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
 export type Entry = { itemId: string; rev: number; hash: string };
@@ -47,6 +48,8 @@ export function developUnit(p: Project, toMarkdown: ((stored: string) => string)
   const files = [{ path: 'project.json', content: json, language: 'json' }];
   const art = artifactOf(p.kind, p.docs.build);
   if (art) files.push({ path: p.kind === 'workflow' ? 'workflow.json' : 'SKILL.md', content: art, language: p.kind === 'workflow' ? 'json' : 'markdown' });
+  // The interview result (summary and the full log) is stored as a readable file next to project.json.
+  if (p.interview && (p.interview.entries.length || p.interview.transcript.length)) files.push({ path: 'process-interview.md', content: interviewMarkdown(p.interview), language: 'markdown' });
   if (toMarkdown) {
     if (p.docs.prd.trim()) files.push({ path: 'PRD.md', content: toMarkdown(p.docs.prd), language: 'markdown' });
     if (p.docs.spec.trim()) files.push({ path: 'specification.md', content: toMarkdown(p.docs.spec), language: 'markdown' });
