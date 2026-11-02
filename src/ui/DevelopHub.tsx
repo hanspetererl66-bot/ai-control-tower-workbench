@@ -3,6 +3,8 @@ import { PROJECTS_PULLED, schedule as scheduleWorkSync } from '../work-sync-runn
 import SharedSaveLine from './SharedSaveLine';
 import { emptyIntent, loadProjects, newProject, saveProjects, upsertProject, type Project } from '../develop';
 import DevelopWizard from './DevelopWizard';
+import DictateButton from './DictateButton';
+import { appendDictation } from '../voice-text';
 
 type Props = {
   onAgentIntent: (intent: string) => void;
@@ -136,7 +138,10 @@ function IntentCard(p: {
       <span className="develop-card-text">{p.text}</span>
       <label className="develop-goal">
         <span>What should be achieved?</span>
-        <textarea value={goal} rows={3} maxLength={400} placeholder={p.placeholder} onChange={(e) => setGoal(e.target.value)} />
+        <span className="dictate-wrap">
+          <textarea value={goal} rows={3} maxLength={400} placeholder={p.placeholder} onChange={(e) => setGoal(e.target.value)} />
+          <DictateButton label="Dictate the goal" onText={(heard) => setGoal((g) => appendDictation(g, heard, 400))} />
+        </span>
       </label>
       <button className="dialog-btn dialog-btn-primary develop-go" disabled={!ok} onClick={() => { p.onIntent(goal.trim()); setGoal(''); }}>{p.action}</button>
       <button className="develop-other" onClick={p.onOther}>{p.other}</button>
