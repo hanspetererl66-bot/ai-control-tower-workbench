@@ -11,6 +11,12 @@ export type Space = {
   updatedAt: number;
 };
 
+/** Notes about sample data are no selling point: the overview shows the first insight that says what the Space does. */
+const DISCLAIMER = /mock-?up|fictional|fiktiv|sample data|simuliert|simulated|\bno [\w -]+ (is )?connected|derived from|live monitoring|dummy|demo data/i;
+export function spaceHighlight(insights: readonly string[] | undefined): string {
+  return (insights ?? []).find((line) => line.trim() && !DISCLAIMER.test(line))?.trim() ?? '';
+}
+
 export async function listSpaces(): Promise<Space[]> {
   try {
     const res = await fetch('/__spaces', { cache: 'no-store' });

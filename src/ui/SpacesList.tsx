@@ -16,7 +16,8 @@ type Props = {
   /** Domains: groups of Spaces. All names are in display order; `domainOf` says where a Space lives. */
   domains?: string[];
   domainOf?: (slug: string) => string;
-  onAssign?: (slug: string, domain: string) => void;
+  /** Move a Space (with its subspaces) or a subspace: to the top level of a domain, or under another Space. */
+  onPlace?: (slug: string, to: { domain: string; parent?: string }) => void;
   /** Subspaces: `parentOf` gives the parent slug ('' for top level), `parentCandidates` the Spaces it could be moved under. */
   parentOf?: (slug: string) => string;
   parentCandidates?: (slug: string) => string[];
@@ -47,9 +48,10 @@ function loadCollapsed(): string[] {
   }
 }
 
-type DropMark = { slug: string; after: boolean };
+/** `into`: the middle of a top-level card, dropping there makes the dragged Space a subspace of it. */
+type DropMark = { slug: string; after: boolean; into: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onAssign, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -81,7 +83,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     const from = dragging ?? event.dataTransfer.getData('text/plain');
     endDrag();
     setOverDomain(null);
-    if (from && onAssign) onAssign(from, name);
+    if (from && onPlace) onPlace(from, { domain: name });
   }
   const [dragging, setDragging] = useState<string | null>(null);
   const [mark, setMark] = useState<DropMark | null>(null);
@@ -91,8 +93,19 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     const box = event.currentTarget.getBoundingClientRect();
-    const after = event.clientY > box.top + box.height / 2;
-    setMark((current) => (current?.slug === slug && current.after === after ? current : { slug, after }));
+    const offset = (event.clientY - box.top) / box.height;
+    // Middle of a top-level card: nest. Edges: place before or after.
+    const into = canNest(dragging, slug) && offset > 0.28 && offset < 0.72;
+    const after = offset > 0.5;
+    setMark((current) => (current?.slug === slug && current.after === after && current.into === into ? current : { slug, after, into }));
+  }
+
+  /** A Space can become a subspace of a top-level Space; not one that has subspaces itself, not itself, not twice. */
+  function canNest(from: string, to: string): boolean {
+    if (from === to || !parentOf) return false;
+    if (parentOf(to)) return false;
+    if (subsOf(from).length > 0) return false;
+    return parentOf(from) !== to;
   }
 
   function endDrag() {
@@ -103,10 +116,21 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
   function dropOn(event: DragEvent<HTMLButtonElement>, slug: string) {
     event.preventDefault();
     const from = dragging ?? event.dataTransfer.getData('text/plain');
+    const nest = mark?.slug === slug && mark.into;
     const after = mark?.slug === slug ? mark.after : false;
     endDrag();
-    if (from && domainOf && onAssign && domainOf(from) !== domainOf(slug)) onAssign(from, domainOf(slug));
-    if (from && onReorder) onReorder(from, slug, after);
+    if (!from || from === slug) return;
+    if (nest && onPlace) {
+      onPlace(from, { domain: domainOf!(slug), parent: slug });
+      return;
+    }
+    if (onPlace && domainOf) {
+      // Beside a subspace the dragged Space joins that parent (unless it has subspaces itself); beside a top-level Space it becomes top level.
+      const parent = parentOf?.(slug) ?? '';
+      const joins = parent && subsOf(from).length === 0 ? parent : '';
+      if (domainOf(from) !== domainOf(slug) || (parentOf?.(from) ?? '') !== joins) onPlace(from, joins ? { domain: domainOf(slug), parent: joins } : { domain: domainOf(slug) });
+    }
+    if (onReorder) onReorder(from, slug, after);
   }
 
   function keyDown(event: KeyboardEvent<HTMLButtonElement>, slug: string) {
@@ -133,10 +157,10 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
               isSub(s.slug) ? 'card-sub' : '',
               selected === s.slug ? 'card-on' : '',
               dragging === s.slug ? 'card-dragging' : '',
-              mark?.slug === s.slug && dragging !== s.slug ? (mark.after ? 'card-drop-after' : 'card-drop-before') : '',
+              mark?.slug === s.slug && dragging !== s.slug ? (mark.into ? 'card-drop-into' : mark.after ? 'card-drop-after' : 'card-drop-before') : '',
             ].filter(Boolean).join(' ')}
             draggable={Boolean(onReorder)}
-            title={onReorder ? 'Drag to reorder (or Alt+↑ / Alt+↓)' : undefined}
+            title={onReorder ? 'Drag to move: onto a domain, between Spaces, or onto the middle of a Space to make it a subspace (Alt+↑ / Alt+↓ reorders)' : undefined}
             onClick={() => onSelect(s.slug)}
             onDragStart={(event) => {
               event.dataTransfer.effectAllowed = 'move';
@@ -258,14 +282,6 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
               </label>
             );
           })()}
-          {grouped && onAssign && selected === s.slug && (
-            <label className="domain-move">
-              <span>Domain</span>
-              <select value={domainOf!(s.slug)} onChange={(event) => onAssign(s.slug, event.target.value)} aria-label={`Domain of ${s.title}`}>
-                {domains!.map((name) => <option key={name} value={name}>{name}</option>)}
-              </select>
-            </label>
-          )}
         </Fragment>
   );
 
@@ -295,6 +311,11 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
           onKeyDown={(event) => { if (event.key === 'Escape') { setQuery(''); setSearchOpen(false); } }}
         />
       )}
+      {dragging && grouped && (() => {
+        const n = subsOf(dragging).length;
+        const sub = isSub(dragging);
+        return <p className="list-empty drag-hint" role="status">{n > 0 ? `Moves with its ${n === 1 ? 'subspace' : `${n} subspaces`}. Drop it on a domain or between Spaces.` : sub ? 'Moves alone, out of its parent. Drop it on a domain, between Spaces, or onto another Space.' : 'Drop it on a domain or between Spaces, or onto the middle of a Space to make it a subspace.'}</p>;
+      })()}
       {needle && <p className="list-empty" role="status">{shown.length === 0 ? `No Spaces match “${query.trim()}”.` : `${shown.length} of ${spaces.length} shown`}</p>}
 
       {spaces.length === 0 ? (
@@ -345,7 +366,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                       </span>
                     )}
                   </div>
-                  {!isCollapsed && (items.length ? renderTree(items) : <div className="domain-empty">Drag a Space here</div>)}
+                  {!isCollapsed && (items.length ? renderTree(items) : <div className="domain-empty" onDragOver={(event) => { if (dragging) { event.preventDefault(); setOverDomain(name); } }} onDrop={(event) => dropOnDomain(event, name)}>Drag a Space here</div>)}
                 </section>
               );
             })}

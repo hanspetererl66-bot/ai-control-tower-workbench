@@ -3068,6 +3068,8 @@ button {
 .card-dragging { opacity: 0.45; }
 .card-drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
 .card-drop-after { box-shadow: 0 3px 0 0 var(--accent); }
+.card-drop-into { box-shadow: 0 0 0 2px var(--accent) inset; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.drag-hint { font-size: 12px; color: var(--muted); margin: 4px 12px; }
 /* Small icon next to a skill title */
 .skill-icon {
   display: inline-grid;
@@ -4239,13 +4241,14 @@ p.dev-error { padding-left: 0; }
 .sov-spaces { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .sov-space { display: flex; flex-direction: column; gap: 6px; }
 .sov-card-title { font-weight: 600; font-size: 15px; }
-.sov-card-desc { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sov-card-hint { font-size: 12.5px; line-height: 1.4; color: var(--ink); opacity: .8; border-left: 2px solid color-mix(in srgb, var(--accent) 55%, var(--line)); padding-left: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sov-card-desc { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .sov-card-meta { font-size: 12px; color: var(--muted); }
 .sov-kids { display: flex; flex-direction: column; gap: 6px; margin-left: 16px; border-left: 2px solid var(--line); padding-left: 10px; }
 .sov-kid { padding: 10px 14px; }
 
 .sov-tile { min-height: 168px; }
-.sov-card { min-height: 112px; }
+.sov-card { min-height: 150px; }
 @media (max-width: 1100px) { .sov-grid, .sov-spaces { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .sov-grid, .sov-spaces { grid-template-columns: minmax(0, 1fr); } }
 

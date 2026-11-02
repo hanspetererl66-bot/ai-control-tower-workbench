@@ -489,6 +489,26 @@ export function assignParent<T extends Preferences>(prefs: T, space: DomainSpace
   return { ...prefs, spaceParents };
 }
 
+/**
+ * Move a Space in one step, as a drag and drop does: to the top level of `to.domain`, or under `to.parent` (then in the
+ * domain of that parent). A Space with subspaces takes them along (they follow its domain) but cannot become a subspace
+ * itself; such a request changes nothing. A subspace that is dropped on a domain leaves its parent.
+ */
+export function placeSpace<T extends Preferences>(prefs: T, space: DomainSpace, spaces: DomainSpace[], to: { domain: string; parent?: string }): T {
+  let domain = to.domain;
+  if (to.parent) {
+    const parent = spaces.find((x) => x.slug === to.parent);
+    if (!parent || parent.slug === space.slug || childrenOf(space.slug, spaces, prefs).length) return prefs;
+    domain = effectiveDomain(parent, spaces, prefs);
+  }
+  let next = assignDomain(assignParent(prefs, space, spaces, ''), space, domain);
+  if (to.parent) {
+    next = assignParent(next, space, spaces, to.parent);
+    if (parentOf(space, spaces, next) !== to.parent) return prefs;
+  }
+  return next;
+}
+
 // ---------- rename and delete ----------
 
 export const MAX_SPACE_TITLE = 80;

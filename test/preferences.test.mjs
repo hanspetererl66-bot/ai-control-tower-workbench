@@ -153,3 +153,41 @@ test('subspaces: space.json parent, own override, one level, subspace follows th
   assert.equal(effectiveDomain(spaces[1], spaces, { spaceDomains: { sales: 'Revenue' }, spaceParents: {} }), 'Revenue');
   assert.deepEqual(sanitizePreferences({ spaceParents: { a: 'b', c: 'c', 'Bad Slug': 'b', d: '' } }).spaceParents, { a: 'b', d: '' });
 });
+
+import { placeSpace } from '../src/preferences.ts';
+
+test('placeSpace: drag a Space with its subspaces, a subspace alone, or nest one under another', () => {
+  const spaces = [{ slug: 'sales', domain: 'Sales' }, { slug: 'renewals', domain: 'Sales', parent: 'sales' }, { slug: 'calls', domain: 'Sales' }, { slug: 'fin', domain: 'Finance' }, { slug: 'plan', domain: 'Finance' }];
+  const p = sanitizePreferences({});
+  // A Space with subspaces moves to another domain and takes them along.
+  const moved = placeSpace(p, spaces[0], spaces, { domain: 'Finance' });
+  assert.equal(effectiveDomain(spaces[0], spaces, moved), 'Finance');
+  assert.equal(effectiveDomain(spaces[1], spaces, moved), 'Finance');
+  assert.equal(parentOf(spaces[1], spaces, moved), 'sales');
+  // A subspace dropped on a domain leaves its parent and lands in that domain.
+  const alone = placeSpace(p, spaces[1], spaces, { domain: 'Finance' });
+  assert.equal(parentOf(spaces[1], spaces, alone), '');
+  assert.equal(effectiveDomain(spaces[1], spaces, alone), 'Finance');
+  assert.equal(effectiveDomain(spaces[0], spaces, alone), 'Sales');
+  // Dropped on the middle of a Space in another domain: subspace there, domain of the parent.
+  const nested = placeSpace(p, spaces[2], spaces, { domain: 'Sales', parent: 'fin' });
+  assert.equal(parentOf(spaces[2], spaces, nested), 'fin');
+  assert.equal(effectiveDomain(spaces[2], spaces, nested), 'Finance');
+  // A subspace can move under another parent in one step.
+  const other = placeSpace(p, spaces[1], spaces, { domain: 'Sales', parent: 'calls' });
+  assert.equal(parentOf(spaces[1], spaces, other), 'calls');
+  // Refused, nothing changes: a Space with subspaces cannot become a subspace; a subspace cannot be a parent; not itself.
+  assert.equal(placeSpace(p, spaces[0], spaces, { domain: 'Finance', parent: 'fin' }), p);
+  assert.equal(placeSpace(p, spaces[2], spaces, { domain: 'Sales', parent: 'renewals' }), p);
+  assert.equal(placeSpace(p, spaces[2], spaces, { domain: 'Sales', parent: 'calls' }), p);
+});
+
+import { spaceHighlight } from '../src/spaces.ts';
+
+test('spaceHighlight skips notes about sample data and takes the first line that says what the Space does', () => {
+  assert.equal(spaceHighlight(['Design mockup with fictional data; no CRM is connected.', 'Every stage has exit criteria.']), 'Every stage has exit criteria.');
+  assert.equal(spaceHighlight(['Fictional customers and VMs generated from a fixed seed, no live monitoring.', 'Treemap: one tile per customer.']), 'Treemap: one tile per customer.');
+  assert.equal(spaceHighlight(['Select an object once: source and where-used follow it.']), 'Select an object once: source and where-used follow it.');
+  assert.equal(spaceHighlight(['Design mockup with fictional data.']), '');
+  assert.equal(spaceHighlight(undefined), '');
+});
