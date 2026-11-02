@@ -6,6 +6,7 @@
  */
 
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
+import { mergeProposal, processSummary, sanitizeInterview, type InterviewState } from './interview.ts';
 
 export type Kind = 'workflow' | 'agent';
 /** The five steps shared with the agent project (see flow.ts). */
@@ -37,6 +38,8 @@ export type Intent = {
   outOfScope: string;
   /** Workflow: what happens on errors. Agent: example requests it must handle. */
   extra: string;
+  /** Optional: the process as a person described it in an interview (see interview.ts). Empty when the form was filled in by hand. */
+  process: string;
 };
 
 export type Documents = { prd: string; spec: string; build: string };
@@ -51,9 +54,11 @@ export type Project = {
   approved: Stage[];
   createdAt: number;
   updatedAt: number;
+  /** State of a process interview for the intent step (entries only, never the transcript). */
+  interview?: InterviewState;
 };
 
-export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', stakeholders: '', outOfScope: '', extra: '' });
+export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', stakeholders: '', outOfScope: '', extra: '', process: '' });
 
 export function newProject(kind: Kind, now = Date.now()): Project {
   return { id: `p${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind, stage: 'intent', intent: emptyIntent(), docs: { prd: '', spec: '', build: '' }, approved: [], createdAt: now, updatedAt: now };
@@ -94,6 +99,7 @@ export function intentBlock(kind: Kind, i: Intent): string {
     `Stakeholders named by the person: ${i.stakeholders.trim() || '(not given)'}`,
     `Explicitly out of scope: ${i.outOfScope.trim() || '(not given)'}`,
     `${q.label} ${i.extra.trim() || '(not answered)'}`,
+    ...(i.process.trim() ? ['Process as described by the person in an interview (their own account of today, not checked):', i.process.trim()] : []),
   ].join('\n');
 }
 
@@ -279,6 +285,20 @@ export function changeIntent(project: Project, patch: Partial<Intent>, now = Dat
   return { ...project, intent: { ...project.intent, ...patch }, approved: [], updatedAt: now };
 }
 
+/** Keeps the state of a running interview in the project. Not a change of the intent: approvals stay. */
+export function setInterview(project: Project, interview: InterviewState, now = Date.now()): Project {
+  return { ...project, interview, updatedAt: now };
+}
+
+/**
+ * The interview is finished: its result goes into the form (see mergeProposal) and its process description into the
+ * intent. This is a change of the intent, so later approvals are taken back.
+ */
+export function applyInterview(project: Project, interview: InterviewState, proposal: Partial<Intent>, now = Date.now()): Project {
+  const patch = { ...mergeProposal(project.intent, proposal), process: processSummary(interview) };
+  return { ...changeIntent(project, patch, now), interview };
+}
+
 /* ---------------- store ---------------- */
 
 const KEY = 'werkbank.develop.projects';
@@ -295,14 +315,17 @@ export function sanitizeProject(raw: any): Project | null {
     systems: Array.isArray(i.systems) ? i.systems.filter((s: unknown) => typeof s === 'string').slice(0, 20).map((s: string) => s.slice(0, 60)) : [],
     otherSystems: str(i.otherSystems, 300), data: str(i.data, 1500), guardrail: str(i.guardrail, 160) || base.guardrail,
     success: str(i.success, 1000), stakeholders: str(i.stakeholders, 800), outOfScope: str(i.outOfScope, 800), extra: str(i.extra, 1000),
+    process: str(i.process, 8000),
   };
   const d = raw.docs ?? {};
   const stage: Stage = STAGES.includes(raw.stage) ? raw.stage : 'intent';
+  const interview = sanitizeInterview(raw.interview);
   return {
     id: str(raw.id, 40) || `p${Date.now().toString(36)}`, kind: raw.kind, stage, intent,
     docs: { prd: str(d.prd, 60_000), spec: str(d.spec, 80_000), build: str(d.build, 120_000) },
     approved: Array.isArray(raw.approved) ? raw.approved.filter((s: unknown) => STAGES.includes(s as Stage)) : [],
     createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(), updatedAt: Number.isFinite(raw.updatedAt) ? raw.updatedAt : Date.now(),
+    ...(interview ? { interview } : {}),
   };
 }
 

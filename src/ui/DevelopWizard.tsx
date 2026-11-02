@@ -7,6 +7,7 @@ import { docToMarkdown, htmlToMarkdown, markdownToHtml, toHtml } from '../doc-ht
 import { exportDocument, saveFile, wrapHtml, type ExportFormat } from '../doc-export';
 import { makeZip } from '../zip';
 import { ChatMarkdown } from './ChatMarkdown';
+import InterviewPanel from './InterviewPanel';
 import { RichDoc } from './RichDoc';
 import Stepper, { type StepItem } from './Stepper';
 
@@ -15,7 +16,7 @@ type Props = {
   onChange: (project: Project) => void;
   onClose: () => void;
   /** Runs a prompt through the chat agent and returns its answer ('' when stopped). Rejects when the agent is unavailable. */
-  generate: (prompt: string, title: string) => Promise<string>;
+  generate: (prompt: string, title: string, session?: string) => Promise<string>;
   onStop: () => void;
   ready: boolean;
   onOpenN8n: () => void;
@@ -43,6 +44,8 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
   const [note, setNote] = useState('');
   const [feedback, setFeedback] = useState('');
   const [editing, setEditing] = useState(false);
+  // Intent step of a workflow: fill in the form, or be interviewed about the process. A running interview is resumed.
+  const [intentMode, setIntentMode] = useState<'form' | 'interview'>(() => (project.kind === 'workflow' && project.interview && !project.interview.finished ? 'interview' : 'form'));
   const alive = useRef(true);
   useEffect(() => () => { alive.current = false; }, []);
   const projectRef = useRef(project);
@@ -109,7 +112,17 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
       {error && <p className="dev-error" role="alert">{error}</p>}
       {note && <p className="dev-note" role="status">{note}</p>}
 
-      {stage === 'intent' && <IntentMask project={project} onChange={onChange} onDone={startFromIntent} disabled={working || !ready} />}
+      {stage === 'intent' && project.kind === 'workflow' && (
+        <div className="dev-chips dev-iv-mode" role="group" aria-label="How do you want to describe the intent?">
+          <button type="button" className={`dev-chip ${intentMode === 'form' ? 'dev-chip-on' : ''}`} aria-pressed={intentMode === 'form'} disabled={working} onClick={() => setIntentMode('form')}>Fill in the form</button>
+          <button type="button" className={`dev-chip ${intentMode === 'interview' ? 'dev-chip-on' : ''}`} aria-pressed={intentMode === 'interview'} disabled={working} onClick={() => setIntentMode('interview')}>Be interviewed about the process</button>
+        </div>
+      )}
+
+      {stage === 'intent' && (intentMode === 'interview' && project.kind === 'workflow'
+        ? <InterviewPanel project={project} onChange={onChange} generate={generate} onStop={onStop} ready={ready} onBusy={setWorking}
+            onFinished={() => { setIntentMode('form'); setNote('The form is filled in from the interview. Check every field, then write the requirements.'); }} />
+        : <IntentMask project={project} onChange={onChange} onDone={startFromIntent} disabled={working || !ready} />)}
 
       {stage === 'test' && <TestAndLive project={project} onChange={onChange} onOpenN8n={onOpenN8n} />}
 

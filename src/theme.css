@@ -4127,6 +4127,29 @@ p.dev-error { padding-left: 0; }
 
 .dev-saved { margin: 4px 0 10px; font-size: 12.5px; opacity: .7; }
 .dev-opt { font-weight: 400; font-size: 12px; opacity: .6; margin-left: 6px; }
+
+/* Process interview in the Intent step */
+.dev-iv-mode { margin: 0 0 14px; }
+.dev-iv { display: grid; gap: 12px; }
+.dev-iv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+.dev-iv-head strong { color: inherit; font-weight: 600; }
+.dev-iv .dev-chips { margin-bottom: 0; }
+.dev-iv .dev-chip { cursor: default; }
+.dev-iv-log { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; padding: 4px 2px; }
+.dev-iv-line { margin: 0; padding: 8px 12px; border-radius: 10px; line-height: 1.45; max-width: 88%; white-space: pre-wrap; }
+.dev-iv-interviewer { justify-self: start; background: rgb(127 127 127 / 10%); }
+.dev-iv-person { justify-self: end; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.dev-iv-who { display: block; font-size: 11px; font-weight: 600; opacity: .6; margin-bottom: 2px; }
+.dev-iv-answer { display: grid; gap: 8px; }
+.dev-iv-answer textarea { font: inherit; padding: 7px 10px; border: 1px solid rgb(127 127 127 / 30%); border-radius: 8px; background: transparent; color: inherit; width: 100%; box-sizing: border-box; resize: vertical; }
+.dev-mask .dev-iv-consent { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; }
+.dev-mask .dev-iv-consent input { width: auto; margin-top: 3px; }
+.dev-iv-notes { font-size: 13px; }
+.dev-iv-notes summary { cursor: pointer; color: var(--muted); }
+.dev-iv-notes h4 { margin: 10px 0 2px; font-size: 12px; font-weight: 600; }
+.dev-iv-notes ul { margin: 0; padding-left: 18px; }
+.dev-iv .dev-busy { padding: 8px 0; }
+
 .dev-folder-btn { margin-left: auto; }
 .dev-export { position: relative; }
 .dev-export summary { list-style: none; cursor: pointer; display: inline-block; }
