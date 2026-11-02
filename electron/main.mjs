@@ -1,6 +1,6 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
@@ -680,7 +680,9 @@ function readSkills() {
   for (const e of entries) {
     let name = e.name;
     let description = '';
+    let updatedAt = 0;
     try {
+      updatedAt = Math.round(statSync(join(SKILLS_DIR, e.name, 'SKILL.md')).mtimeMs);
       const md = readFileSync(join(SKILLS_DIR, e.name, 'SKILL.md'), 'utf8');
       const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(md);
       if (fm) {
@@ -694,7 +696,7 @@ function readSkills() {
     } catch {
       continue; // a directory without SKILL.md is not a skill
     }
-    skills.push({ name, description: description.slice(0, 240), dir: e.name });
+    skills.push({ name, description: description.slice(0, 240), dir: e.name, updatedAt });
   }
   return skills.sort((a, b) => a.name.localeCompare(b.name));
 }

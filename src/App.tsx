@@ -1067,6 +1067,8 @@ export default function App() {
       onSchedulesChange={updateSchedules}
       scheduleRuntime={scheduleRuntime}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
+      catalogSkills={skillList}
+      spaces={spaces}
     />
   );
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);

@@ -18,10 +18,10 @@ import {
   hasControlTowerConnector,
   type StarterPrompt,
 } from '../starter-prompts';
-import StarterPrompts from './StarterPrompts';
 import SchedulePopover, { type ScheduleRuntime } from './SchedulePopover';
 import type { Schedule } from '../schedules';
-import BriefingCards from './BriefingCards';
+import ChatTabs from './ChatTabs';
+import type { SkillLike, SpaceLike } from '../chat-tabs';
 import { PRODUCT_TITLE } from '../product';
 import type { Command } from '../chat-context';
 import { MODEL_PROVIDERS } from '../web-search';
@@ -61,6 +61,9 @@ type Props = {
   /** Own starter prompts and favourite skills from the settings. */
   ownStarters?: StarterPrompt[];
   favoriteStarters?: StarterPrompt[];
+  /** Installed skills and Spaces, for the tabs Suggested and What's new. */
+  catalogSkills?: SkillLike[];
+  spaces?: SpaceLike[];
   /** Briefing cards and groups under the chat that are switched off. */
   hiddenBriefing?: string[];
   /** Recurring briefings (clock button). */
@@ -90,6 +93,8 @@ export default function Composer({
   starters = false,
   ownStarters,
   favoriteStarters,
+  catalogSkills,
+  spaces,
   hiddenBriefing,
   schedules,
   onSchedulesChange,
@@ -364,10 +369,6 @@ export default function Composer({
     setText('');
     setAttachments([]);
     setAttachmentError('');
-  }
-
-  function pickOwnStarter(starter: StarterPrompt) {
-    void submit({ text: starter.prompt });
   }
 
   async function pickAttachments() {
@@ -741,21 +742,18 @@ export default function Composer({
           {micError || 'Ich höre zu … zum Beenden das Mikrofon erneut anklicken.'}
         </p>
       )}
-      {starters && onNavigate && (
-        <BriefingCards
+      {starters && (
+        <ChatTabs
           disabled={busy || preparingConnector || !agent}
           canAsk={connectorsChecked && hasControlTowerConnector(known.map((k) => k.name))}
-          hidden={hiddenBriefing}
-          onOpen={onNavigate}
-          onAsk={(prompt, connector) => void submit({ text: prompt, connector })}
-        />
-      )}
-      {starters && (
-        <StarterPrompts
-          disabled={busy || preparingConnector || !agent}
+          hiddenBriefing={hiddenBriefing}
           own={ownStarters}
           favorites={favoriteStarters}
-          onPickOwn={pickOwnStarter}
+          skills={catalogSkills}
+          spaces={spaces}
+          onPrompt={(prompt) => void submit({ text: prompt })}
+          onOpen={onNavigate}
+          onAsk={(prompt, connector) => void submit({ text: prompt, connector })}
         />
       )}
     </div>
