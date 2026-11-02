@@ -2999,9 +2999,21 @@ button {
   display: block;
   margin-top: 10px;
   font-size: 0.42em;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0;
-  color: var(--muted);
+  /* Red and pulsing on purpose: this is a design study, not a product. The pulse is slow (about 1.5 per second)
+     and stops when the person chose reduced motion (here and in the app setting). */
+  color: var(--error, #c9190b);
+  animation: cover-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes cover-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-title-line2 { animation: none; }
 }
 
 .cover-kind {

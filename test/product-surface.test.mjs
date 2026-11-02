@@ -30,6 +30,9 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
   assert.match(app, /\{coverOpen && <CoverSheet/);
   assert.match(cover, /<h1 className="cover-title">\s*\{PRODUCT_NAME\}\s*<span className="cover-title-line2">Design Study November 2026<\/span>/, 'name on the first line, design study and month below');
+  const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
+  assert.match(css, /\.cover-title-line2 \{[^}]*color: var\(--error, #c9190b\);[^}]*animation: cover-blink/, 'second line is red and blinks');
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.cover-title-line2 \{ animation: none; \}/, 'blinking stops for reduced motion');
   assert.doesNotMatch(cover, /[Pp]rototype/);
   assert.match(cover, /Built by Accenture/);
   assert.match(cover, /Demo only/);
