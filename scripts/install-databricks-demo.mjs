@@ -7,7 +7,9 @@
  * Secrets are never written: enter them in Connectors & Skills > Configure, where Werkbank stores them encrypted.
  * An extension that already exists is left alone unless --force is given.
  *
- *   node scripts/install-databricks-demo.mjs --host https://adb-123.4.azuredatabricks.net [--force] [--skills-only]
+ *   node scripts/install-databricks-demo.mjs --host https://adb-123.4.azuredatabricks.net [--force] [--skills-only] [--skip databricks-mcp]
+ *
+ * With the Databricks connector (token, REST) you do not need the managed MCP bridge: --skip databricks-mcp installs the skills and sap-mock only.
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -16,7 +18,7 @@ import { parseDocument } from 'yaml';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-export function installDatabricksDemo({ root = ROOT, host, force = false, skillsOnly = false } = {}) {
+export function installDatabricksDemo({ root = ROOT, host, force = false, skillsOnly = false, skip = [] } = {}) {
   const demo = join(root, 'examples/databricks-demo');
   const result = { skills: [], extensions: [], skipped: [] };
 
@@ -47,12 +49,13 @@ export function installDatabricksDemo({ root = ROOT, host, force = false, skills
   const configPath = join(root, 'goose-home/.config/goose/config.yaml');
   const config = parseDocument(readFileSync(configPath, 'utf8'));
   for (const [name, entry] of Object.entries(snippet)) {
+    if (skip.includes(name)) continue;
     if (config.getIn(['extensions', name]) && !force) {
       result.skipped.push(name);
       continue;
     }
     const filled = { ...entry, args: entry.args.map((arg) => arg.replace('<REPO>', root)) };
-    if (name === 'databricks' && host) filled.envs = { ...filled.envs, DATABRICKS_HOST: host };
+    if (name === 'databricks-mcp' && host) filled.envs = { ...filled.envs, DATABRICKS_HOST: host };
     config.setIn(['extensions', name], filled);
     result.extensions.push(name);
   }
@@ -67,11 +70,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     return index >= 0 ? args[index + 1] : undefined;
   };
   try {
-    const result = installDatabricksDemo({ host: option('--host'), force: args.includes('--force'), skillsOnly: args.includes('--skills-only') });
+    const result = installDatabricksDemo({ host: option('--host'), force: args.includes('--force'), skillsOnly: args.includes('--skills-only'), skip: (option('--skip') ?? '').split(',').map((x) => x.trim()).filter(Boolean) });
     console.log(`Skills installed: ${result.skills.join(', ')}`);
     if (result.extensions.length) console.log(`Extensions added to goose-home/.config/goose/config.yaml: ${result.extensions.join(', ')}`);
     if (result.skipped.length) console.log(`Left unchanged (already configured, use --force to replace): ${result.skipped.join(', ')}`);
-    console.log('\nNext: restart Werkbank, open Connectors & Skills, choose Configure on "databricks" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).');
+    if (result.extensions.includes('databricks-mcp')) console.log('\nNext: restart Werkbank, open Connectors & Skills, choose Configure on "databricks-mcp" and enter DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET (or DATABRICKS_TOKEN).');
+    else console.log('\nNext: restart Werkbank. Set up the Databricks connector (host, token, warehouse id) in Connectors & Skills.');
     console.log('The config file now holds paths of this machine. Do not commit it.');
   } catch (error) {
     console.error(`install failed: ${error.message}`);

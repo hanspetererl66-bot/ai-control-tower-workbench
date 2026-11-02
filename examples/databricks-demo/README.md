@@ -49,10 +49,26 @@ flag an expedite request sets.
    npm run install:databricks-demo -- --host https://<workspace-hostname>
    ```
    This copies the skills and adds both extensions to `goose-home/.config/goose/config.yaml` with absolute paths. It
-   never writes secrets. Restart the app, open Connectors & Skills, choose Configure on `databricks`, and enter the client id and
+   never writes secrets. Restart the app, open Connectors & Skills, choose Configure on `databricks-mcp`, and enter the client id and
    secret (or token). Werkbank keeps them in the OS-encrypted store. Do not commit the config file after this step.
    Alternatively build bundles with `npm run build:databricks-bridge-mcpb` and `npm run build:sap-mock-mcpb` and import them.
 6. **Add the Genie endpoint** to `DATABRICKS_MCP_PATHS` as `genie=<path>` (see the Genie guide).
+
+## Two ways to reach Databricks
+
+| Route | Extension | Login | What you get |
+|-------|-----------|-------|--------------|
+| **Connector (simplest)** | `databricks` (Connectors & Skills, `connectors/databricks`) | workspace address, personal access token, warehouse id, optional Genie space id | Genie questions and read-only SQL over REST. No service principal, no managed MCP endpoint. Works on workspaces where those are not available |
+| **Managed MCP bridge** | `databricks-mcp` (`connectors/databricks-bridge`) | OAuth service principal or token | The same data as typed tools (`get_delay_risk_pos`, `get_grir_accrual_candidates`, ...) plus a SQL tool that can write |
+
+The recipes work with either. Without the typed tools they call the same Unity Catalog functions through the read-only SQL tool
+(`SELECT * FROM werkbank_demo.fin.get_grir_accrual_candidates('ALL')`). What the connector route cannot do is the one approved
+write of scenario 2: the assistant then shows the INSERT and you run it in the SQL editor. Scenarios 1, 3 and 4 are complete on the connector route
+(the writes of 3 and 4 go to the mock SAP, not to Databricks).
+
+To start with the connector route: run `all-in-one.sql`, install the `databricks` connector, enter host, token, warehouse id (and the
+Genie space id for scenario 1), install the skills with `npm run install:databricks-demo -- --skills-only`, and add the `sap-mock` extension
+(run `npm run install:databricks-demo -- --skip databricks-mcp`: it installs the skills and `sap-mock` and leaves the managed MCP bridge out).
 
 ## Goose mode
 
