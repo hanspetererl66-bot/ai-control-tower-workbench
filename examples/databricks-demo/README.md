@@ -86,6 +86,15 @@ accrue (245,775 EUR), 3 stale (17,765 EUR), 1 invoice before goods, and 3 interc
 84,200 EUR missing on the buyer side, an engineering recharge off by 18,650 EUR, a 12.40 EUR rounding difference).
 Accruals are proposals for the controller, not accounting advice. The Databricks figures are a snapshot; SAP is the system of record.
 
+## Result back in a Space
+
+The **Finance Pre-Close** Space has a card "Open goods receipts and intercompany from Databricks". "Load from Databricks" reads the
+GR/IR items and the intercompany differences from the lakehouse (fixed SQL in `src/databricks-preclose-bridge.ts`, read only) and
+compares each item with SAP (`get_open_grir_items`). "Prepare accruals with Joule" opens the conversation with the pre-close skill;
+the Space itself never posts. After you approve in the chat and the accrual is posted, press "Load from Databricks" again: the item
+shows "Accrued ACC-..." from SAP. It needs the connector `databricks` (token, warehouse id) and the extension `sap-mock`; without
+SAP the card still shows the lakehouse view and says it is unchecked.
+
 ## Swapping the risk view for a model
 
 `06_model_view.sql` computes the delay probability with a logistic formula over vendor reliability, confirmation gap, plant

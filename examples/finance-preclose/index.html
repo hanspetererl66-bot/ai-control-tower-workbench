@@ -405,6 +405,7 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
   <div class="card"><div class="bar"><h2 style="margin:0">Close calendar</h2><div class="chips" id="task-chips" role="group" aria-label="Filter tasks"></div></div><p class="sub">One bar per task from start to due working day (12 to 25). Working days 23 to 25 are in November. Click a task for details.</p><div class="cal-top" id="cal-top"></div><div id="tasks"></div></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Open items and reconciliations</h2><button class="small spacer" id="items-ask" type="button">Prioritise with Joule</button></div><p class="sub">What must be cleared before the cut-off, the largest first.</p><div id="aging"></div><div class="chips cp" id="item-chips" role="group" aria-label="Filter by type"></div><div class="oi-grid"><div><table class="fit dense"><thead><tr><th>Item</th><th>Company code</th><th class="n">Amount</th><th class="n">Age</th><th>Owner</th><th>Step</th></tr></thead><tbody id="items"></tbody></table><p class="note" id="items-more"></p></div><aside><table id="ic" class="ic"></table><p class="note">Open intercompany differences, thousand EUR.</p></aside></div></div>
   <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-est" type="button" title="Asks the forecast service (TabPFN) for the likely final amounts. Nothing is changed.">Estimate with TabPFN</button><button class="small" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th>Likely final amount</th><th>Correction risk</th><th></th></tr></thead><tbody id="accr"></tbody></table></div><div class="note" id="accr-est-note" role="status"></div></div>
+  <div class="card" id="dbx-card"><div class="bar"><h2 style="margin:0">Open goods receipts and intercompany from Databricks</h2><button class="small spacer" id="dbx-load" type="button" title="Reads the lakehouse tables and checks them against SAP. Nothing is changed.">Load from Databricks</button><button class="small" id="dbx-ask" type="button" title="Opens the conversation. Joule drafts the accruals; nothing is posted until you say yes there.">Prepare accruals with Joule</button></div><p class="sub" id="dbx-sub">Goods received and not yet invoiced, and intercompany balances that will not eliminate. Read from the governed lakehouse and compared with SAP. Synthetic demo data of a second company group (DE01, PL01, FR01), separate from the company codes above.</p><div id="dbx-sum" class="chips" role="status"></div><table class="fit dense"><thead><tr><th>PO / item</th><th>Code</th><th class="hs">Vendor</th><th class="n hs">Age</th><th class="n">Open value</th><th>Treatment</th><th>SAP</th></tr></thead><tbody id="dbx-grir"><tr><td colspan="7" class="sub">Press “Load from Databricks”.</td></tr></tbody></table><table class="fit dense"><thead><tr><th>Intercompany</th><th>Seller → buyer</th><th class="n hs">Seller</th><th class="n hs">Buyer</th><th class="n">Difference</th><th>Category</th></tr></thead><tbody id="dbx-ic"></tbody></table><div class="note" id="dbx-note" role="status"></div></div>
   <div class="two">
     <div class="card" id="alerts-card"><div class="bar"><h2 style="margin:0">Alerts and anomalies</h2><div class="chips" id="alert-chips" role="group" aria-label="Filter alerts"></div></div><p class="sub">Found by rules on the postings up to the selected day.</p><div id="alerts"></div></div>
     <div class="card"><h2>What if?</h2><p class="sub">Risks and opportunities that are not in the forecast yet. Tick them to see the effect.</p><div id="scen"></div><div style="overflow:auto"><table id="scen-res"></table></div></div>
@@ -709,6 +710,44 @@ function renderEstNote() {
   if (!m) { el.textContent = ''; return; }
   el.textContent = `Interval: ${m.band}. Correction risk = chance that the final amount differs by more than ${m.tolerancePct} %. Engine: ${m.engine === 'tabpfn' ? 'TabPFN' : m.engine === 'baseline' ? 'gradient-boosting baseline (TabPFN not loaded)' : m.engine}, trained on ${m.trainedOn}. Demo only, not an audit statement.${m.engine === 'baseline' && m.engineNote ? ' ' + m.engineNote : ''}`;
 }
+// ---- Open items from Databricks (read only; posting stays in the conversation)
+const dbx = { pending: null, data: null, error: '' };
+const eur = (n) => (n === null || n === undefined ? '–' : n.toLocaleString('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }));
+const DBX_CLASS = { ACCRUE: ['yellow', 'Accrue'], STALE_REVIEW: ['red', 'Review (over 90 days)'], INVOICE_BEFORE_GOODS: ['red', 'Invoice before goods'], UNKNOWN: ['open', 'Unknown'] };
+const DBX_CAT = { MISSING_ON_BUYER_SIDE: 'Missing on buyer side', AMOUNT_MISMATCH: 'Amount differs', ROUNDING: 'Rounding', UNKNOWN: 'Unknown' };
+function renderDbx() {
+  const d = dbx.data, g = $('#dbx-grir'), ic = $('#dbx-ic'), note = $('#dbx-note'), sum = $('#dbx-sum');
+  $('#dbx-load').disabled = !!dbx.pending;
+  if (dbx.pending) { note.textContent = 'Reading from Databricks …'; return; }
+  if (dbx.error) { note.textContent = dbx.error; return; }
+  if (!d) { note.textContent = ''; return; }
+  const s = d.summary;
+  sum.innerHTML = `<span class="pill yellow">To accrue: ${s.accrueCount} · ${esc(eur(s.accrueEur))}</span><span class="pill red">Over 90 days: ${s.staleCount} · ${esc(eur(s.staleEur))}</span><span class="pill red">Invoice first: ${s.invoiceFirstCount}</span>` + (d.sapConnected && s.accruedEur ? `<span class="pill green">Accrued in SAP: ${esc(eur(s.accruedEur))}</span>` : '');
+  g.innerHTML = d.grir.length ? d.grir.map((r) => {
+    const c = DBX_CLASS[r.classification] || DBX_CLASS.UNKNOWN;
+    const sap = r.sapMatch === null ? '<span class="sub">not connected</span>' : r.accrualDocument ? `<span class="pill green" title="${esc(eur(r.accruedEur))}">Accrued ${esc(r.accrualDocument)}</span>` : r.sapMatch ? '<span class="pill green">Matches SAP</span>' : `<span class="pill red">SAP says ${esc(eur(r.sapOpenEur))}</span>`;
+    return `<tr><td>${esc(r.po)} / ${esc(r.item)}<br><span class="sub">${esc(r.description)}</span></td><td>${esc(r.company)}</td><td class="hs">${esc(r.vendor)}</td><td class="n hs">${r.ageDays === null ? '–' : esc(r.ageDays) + ' d'}</td><td class="n">${esc(eur(r.openEur))}</td><td><span class="pill ${c[0]}">${esc(c[1])}</span></td><td>${sap}</td></tr>`;
+  }).join('') : '<tr><td colspan="7" class="sub">No open goods receipts.</td></tr>';
+  ic.innerHTML = d.intercompany.length ? d.intercompany.map((r) => `<tr><td>${esc(r.id)}<br><span class="sub">${esc(r.description)}</span></td><td>${esc(r.seller)} → ${esc(r.buyer)}</td><td class="n hs">${esc(eur(r.sellerEur))}</td><td class="n hs">${r.buyerEur === null ? 'not posted' : esc(eur(r.buyerEur))}</td><td class="n">${esc(eur(r.differenceEur))}</td><td>${esc(DBX_CAT[r.category] || r.category)}</td></tr>`).join('') : '<tr><td colspan="6" class="sub">All intercompany items agree.</td></tr>';
+  note.textContent = (d.sapConnected ? 'Compared with SAP (mock). ' : 'SAP is not connected, so the figures are not checked against it. ') + 'Items over 90 days need a clearing review, not an accrual. Accruals are proposals for the controller, not accounting advice. Synthetic data.';
+}
+$('#dbx-load').onclick = () => {
+  if (dbx.pending) return;
+  dbx.error = '';
+  if (window.parent === window) { dbx.error = 'Reading from Databricks needs the agent connection. Open this Space in the app.'; renderDbx(); return; }
+  const id = 'd' + Date.now().toString(36);
+  dbx.pending = id; renderDbx();
+  window.parent.postMessage({ type: 'ct:databricks-preclose-request', requestId: id }, '*');
+  setTimeout(() => { if (dbx.pending === id) { dbx.pending = null; dbx.error = 'No answer from Databricks. Is the Databricks connector set up with a warehouse id, and did you run the demo SQL?'; renderDbx(); } }, 100000);
+};
+$('#dbx-ask').onclick = () => send('Run the finance pre-close check for company code ALL with the skill finance-pre-close. Prepare the accruals for the items that should be accrued, show me the drafts and wait for my approval before posting anything.');
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (e.source !== window.parent || !d || typeof d.type !== 'string' || !d.requestId || d.requestId !== dbx.pending) return;
+  if (d.type === 'ct:databricks-preclose' && d.data && Array.isArray(d.data.grir)) { dbx.data = d.data; dbx.pending = null; dbx.error = ''; renderDbx(); }
+  else if (d.type === 'ct:error') { dbx.pending = null; dbx.error = 'Could not read from Databricks: ' + String(d.message).slice(0, 240); renderDbx(); }
+});
+renderDbx();
 $('#accr-est').onclick = () => {
   if (est.pending) return;
   est.error = '';
