@@ -4647,3 +4647,10 @@ textarea.studio-field { min-height: 120px; }
 .chat-tab-panel .chat-entry-hint { font-size: max(7.5px, calc(12px * var(--tab-scale))); }
 .chat-tab-panel .chat-entry-kind { font-size: max(7px, calc(11px * var(--tab-scale))); padding: 0 5px; }
 .chat-tab-panel .chat-tab-empty { font-size: max(8px, calc(12.5px * var(--tab-scale))); margin: 4px 0; }
+
+/* Skill import dialog */
+.skill-files { margin: 8px 0; font-size: 13px; color: var(--muted); }
+.skill-files summary { cursor: pointer; }
+.skill-files ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 3px; max-height: 160px; overflow: auto; }
+.skill-files code { color: var(--ink); }
+.skill-replace { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; font-size: 13px; color: var(--ink); }

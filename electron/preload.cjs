@@ -60,6 +60,10 @@ contextBridge.exposeInMainWorld('host', {
   saveConnectorConfig: (name, values, config) =>
     ipcRenderer.invoke('save-connector-config', { name, values, config }),
   removeSkill: (name) => ipcRenderer.invoke('remove-skill', name),
+  skillPackInfo: (dir) => ipcRenderer.invoke('skill-pack-info', dir),
+  exportSkill: (dir) => ipcRenderer.invoke('skill-export', dir),
+  importSkillOpen: () => ipcRenderer.invoke('skill-import-open'),
+  importSkillInstall: (id, overwrite) => ipcRenderer.invoke('skill-import-install', id, overwrite),
   forgetSecrets: (name) => ipcRenderer.invoke('forget-secrets', name),
   setConnectorEnabled: (name, enabled) =>
     ipcRenderer.invoke('set-connector-enabled', { name, enabled }),

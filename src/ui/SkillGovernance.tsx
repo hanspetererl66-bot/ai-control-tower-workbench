@@ -30,7 +30,7 @@ const CHECK_MARK = { pass: '✓', warn: '!', fail: '✕' } as const;
 const CHECK_TITLE: Record<string, string> = { secrets: 'Secrets scan', scripts: 'Script review', permissions: 'Permissions', harness: 'Harness policy', data: 'Data class' };
 
 /** The five automatic checks, revealed one after the other, with what was found. */
-function Checks({ results, version }: { results: { id: string; status: 'pass' | 'warn' | 'fail'; detail: string }[] | null; version?: string }) {
+export function Checks({ results, version }: { results: { id: string; status: 'pass' | 'warn' | 'fail'; detail: string }[] | null; version?: string }) {
   if (!results) return <p className="sgov-checking" role="status">Reading the skill and running the checks…</p>;
   const blocked = results.some((r) => r.status === 'fail'), warns = results.filter((r) => r.status === 'warn').length;
   return (

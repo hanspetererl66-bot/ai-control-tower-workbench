@@ -9,6 +9,8 @@ import {
 import { listSkills, type Skill } from '../skills';
 import SkillIcon from './SkillIcon';
 import SkillGovernance from './SkillGovernance';
+import SkillImportDialog, { type ImportPreview } from './SkillImportDialog';
+import { exportBlocker, reviewPackage } from '../skill-package';
 import SkillInstallDialog, { type InstallRequest } from './SkillInstallDialog';
 
 const LOOKS_SECRET = /password|secret|token|api[-_]?key|authorization|cookie|credential/i;
@@ -65,6 +67,7 @@ export default function ManageView({
   useEffect(() => { void window.host?.listBundledConnectors?.().then((list) => setBundled(list ?? [])); }, []);
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [importing, setImporting] = useState<ImportPreview | null>(null);
   const [configuring, setConfiguring] = useState<{
     request: InstallRequest;
     values: Record<string, string>;
@@ -97,8 +100,8 @@ export default function ManageView({
     setBusy(label);
     setNote(null);
     try {
-      await fn();
-      setNote(after);
+      const result = await fn();
+      setNote(typeof result === 'string' ? result : after);
       if (refreshAfter) await refresh();
     } catch (e: any) {
       setNote(e?.message ?? String(e));
@@ -151,6 +154,22 @@ export default function ManageView({
         >
           {busy === 'import' ? 'Reading…' : 'Import .mcpb…'}
         </button>
+        {showSkills && window.host?.importSkillOpen && (
+          <button
+            className="ghost-btn"
+            disabled={busy !== null}
+            onClick={() =>
+              run('import-skill', async () => {
+                const r = await window.host?.importSkillOpen?.();
+                if (!r) return;
+                if (!r.ok) throw new Error(r.detail ?? 'Could not read the skill package.');
+                setImporting({ id: r.id!, slug: r.slug!, name: r.name!, description: r.description ?? '', files: r.files ?? [], text: r.text ?? '', exists: Boolean(r.exists) });
+              }, '', false)
+            }
+          >
+            {busy === 'import-skill' ? 'Reading…' : 'Import skill…'}
+          </button>
+        )}
         <button
           className="ghost-btn"
           disabled={busy !== null}
@@ -168,6 +187,21 @@ export default function ManageView({
 
       <div className="manage">
         {note && <div className="manage-note">{note}</div>}
+
+        {importing && (
+          <SkillImportDialog
+            preview={importing}
+            busy={busy === 'install-skill'}
+            onCancel={() => setImporting(null)}
+            onInstall={(overwrite) =>
+              run('install-skill', async () => {
+                const r = await window.host?.importSkillInstall?.(importing.id, overwrite);
+                if (!r?.ok) throw new Error(r?.detail ?? 'Install failed.');
+                setImporting(null);
+              }, `Skill “${importing.name}” installed. Restart the agent so it picks it up.`)
+            }
+          />
+        )}
 
         {configuring && (
           <SkillInstallDialog
@@ -385,6 +419,27 @@ export default function ManageView({
                 </div>
                 <div className="row-actions">
                   {extra}
+                  {window.host?.exportSkill && (
+                    <button
+                      className="dialog-btn"
+                      disabled={busy !== null}
+                      title="Save this skill as a .zip you can hand to others"
+                      onClick={() =>
+                        run(`export-skill-${s.dir}`, async () => {
+                          const info = await window.host?.skillPackInfo?.(s.dir);
+                          if (!info?.ok) throw new Error(info?.detail ?? 'Could not read the skill.');
+                          const blocked = exportBlocker(reviewPackage(info.text ?? ''));
+                          if (blocked) throw new Error(blocked);
+                          const r = await window.host?.exportSkill?.(s.dir);
+                          if (r?.canceled) return;
+                          if (!r?.ok) throw new Error(r?.detail ?? 'Export failed.');
+                          return `Exported ${r.files} file${r.files === 1 ? '' : 's'} to ${r.path}`;
+                        }, 'Done.', false)
+                      }
+                    >
+                      Export
+                    </button>
+                  )}
                   <button
                     className="dialog-btn dialog-btn-danger"
                     disabled={busy !== null}

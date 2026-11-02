@@ -11,6 +11,7 @@ import { buildBatches } from '../shared/table-ingest.mjs';
 import { BUNDLED_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
 import { createWorkStore, DEFAULT_EMAIL } from './work-store.mjs';
+import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
@@ -710,6 +711,84 @@ ipcMain.handle('read-skill', (_event, dir) => {
     return readFileSync(join(SKILLS_DIR, dir, 'SKILL.md'), 'utf8').slice(0, 40_000);
   } catch {
     return null;
+  }
+});
+
+/* ---- Hand skills on: export one skill folder as a .zip, import a .zip from someone else ---- */
+const stagedImports = new Map();
+
+/** What an export would contain and its text, so the renderer can run the automatic review first. */
+ipcMain.handle('skill-pack-info', (_event, dir) => {
+  if (!SKILL_SLUG.test(dir ?? '')) return { ok: false, detail: 'bad name' };
+  try {
+    const { files, text } = packSkill(dir, join(SKILLS_DIR, dir));
+    return { ok: true, files, text };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
+  }
+});
+
+ipcMain.handle('skill-export', async (_event, dir) => {
+  if (!SKILL_SLUG.test(dir ?? '')) return { ok: false, detail: 'bad name' };
+  try {
+    const { zip, files } = packSkill(dir, join(SKILLS_DIR, dir));
+    const picked = await dialog.showSaveDialog(mainWindow ?? undefined, {
+      title: 'Export skill',
+      defaultPath: join(app.getPath('downloads'), `${dir}.zip`),
+      filters: [{ name: 'Skill package', extensions: ['zip'] }],
+    });
+    if (picked.canceled || !picked.filePath) return { ok: false, canceled: true };
+    writeFileSync(picked.filePath, zip);
+    return { ok: true, path: picked.filePath, files: files.length };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
+  }
+});
+
+ipcMain.handle('skill-import-open', async () => {
+  const picked = await dialog.showOpenDialog(mainWindow ?? undefined, {
+    title: 'Import skill',
+    filters: [{ name: 'Skill package', extensions: ['zip', 'skill'] }],
+    properties: ['openFile'],
+  });
+  if (picked.canceled || !picked.filePaths[0]) return null;
+  try {
+    const pkg = openSkillPackage(readFileSync(picked.filePaths[0]));
+    const id = randomUUID();
+    stagedImports.clear(); // one pending import at a time
+    stagedImports.set(id, pkg);
+    return { ok: true, id, slug: pkg.slug, name: pkg.name, description: pkg.description, files: listOf(pkg.files), text: joinText(pkg.files), exists: existsSync(join(SKILLS_DIR, pkg.slug)) };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
+  }
+});
+
+ipcMain.handle('skill-import-install', (_event, id, overwrite) => {
+  const pkg = stagedImports.get(id);
+  if (!pkg) return { ok: false, detail: 'The import expired. Choose the file again.' };
+  const target = join(SKILLS_DIR, pkg.slug);
+  try {
+    if (existsSync(target) && !overwrite) return { ok: false, detail: `A skill named “${pkg.slug}” is already installed.` };
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const tmp = join(ROOT, 'goose-home', `.skill-import-${stamp}`);
+    for (const f of pkg.files) {
+      const to = join(tmp, f.path);
+      mkdirSync(dirname(to), { recursive: true });
+      writeFileSync(to, f.data);
+    }
+    mkdirSync(SKILLS_DIR, { recursive: true });
+    if (existsSync(target)) {
+      const backup = join(ROOT, 'goose-home', '.skill-backups', `${pkg.slug}-${stamp}`);
+      mkdirSync(dirname(backup), { recursive: true });
+      cpSync(target, backup, { recursive: true });
+      rmSync(target, { recursive: true, force: true });
+    }
+    cpSync(tmp, target, { recursive: true });
+    rmSync(tmp, { recursive: true, force: true });
+    stagedImports.delete(id);
+    return { ok: true, slug: pkg.slug, replaced: Boolean(overwrite) };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
   }
 });
 
