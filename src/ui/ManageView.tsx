@@ -169,6 +169,28 @@ export default function ManageView({
       <div className="manage">
         {note && <div className="manage-note">{note}</div>}
 
+        {configuring && (
+          <SkillInstallDialog
+            configure
+            request={configuring.request}
+            initialValues={configuring.values}
+            onDecide={(_id, approved, values, config) => {
+              const name = configuring.request.name;
+              setConfiguring(null);
+              if (!approved) return;
+              run(`save-${name}`, async () => {
+                const r = await window.host?.saveConnectorConfig?.(name, values ?? {}, config);
+                if (r && !r.ok) throw new Error(r.detail ?? 'save failed');
+                const restarted = await window.host?.restartAgent?.();
+                if (restarted && !restarted.ok) {
+                  throw new Error(restarted.detail ?? 'agent restart failed');
+                }
+                onAgentRestarted();
+              }, `${name} updated — agent restarted and is reconnecting.`, false);
+            }}
+          />
+        )}
+
         {showConnectors && (
           <>
         <h2 className="manage-h" id="manage-connectors">Connectors</h2>
@@ -381,27 +403,6 @@ export default function ManageView({
           />
         )}
 
-        {configuring && (
-          <SkillInstallDialog
-            configure
-            request={configuring.request}
-            initialValues={configuring.values}
-            onDecide={(_id, approved, values, config) => {
-              const name = configuring.request.name;
-              setConfiguring(null);
-              if (!approved) return;
-              run(`save-${name}`, async () => {
-                const r = await window.host?.saveConnectorConfig?.(name, values ?? {}, config);
-                if (r && !r.ok) throw new Error(r.detail ?? 'save failed');
-                const restarted = await window.host?.restartAgent?.();
-                if (restarted && !restarted.ok) {
-                  throw new Error(restarted.detail ?? 'agent restart failed');
-                }
-                onAgentRestarted();
-              }, `${name} updated — agent restarted and is reconnecting.`, false);
-            }}
-          />
-        )}
 
           </>
         )}
