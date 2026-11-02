@@ -57,7 +57,7 @@ import { deliverBriefing, gmailExtension } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SALES_SPACE, SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
-import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignDomain, assignParent, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
+import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignParent, placeSpace, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
 import type { ScheduleRuntime } from './ui/SchedulePopover';
@@ -1210,7 +1210,7 @@ export default function App() {
           onTogglePin={(slug) => updatePrefs((c) => ({ ...c, pinnedSpaces: togglePin(c.pinnedSpaces, slug) }))}
           domains={domainNames(activeSpaces, prefs)}
           domainOf={(slug) => effectiveDomain(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
-          onAssign={(slug, name) => updatePrefs((c) => { const sp = spaces.find((x) => x.slug === slug) ?? { slug }; return assignDomain(assignParent(c, sp, spaces, ''), sp, name); })}
+          onPlace={(slug, to) => updatePrefs((c) => placeSpace(c, spaces.find((x) => x.slug === slug) ?? { slug }, spaces, to))}
           parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
           parentCandidates={(slug) => parentCandidates(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
           onSetParent={(slug, parent) => updatePrefs((c) => assignParent(c, spaces.find((x) => x.slug === slug) ?? { slug }, spaces, parent))}

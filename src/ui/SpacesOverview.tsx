@@ -1,6 +1,6 @@
 import type { PointerEvent } from 'react';
 import type { Space } from '../spaces';
-import { relativeTime } from '../spaces';
+import { relativeTime, spaceHighlight } from '../spaces';
 
 /** Feeds the pointer position to the CSS spotlight of a tile (no re-render). */
 function track(e: PointerEvent<HTMLElement>) {
@@ -47,7 +47,10 @@ export default function SpacesOverview({
                 <button className="sov-card" onPointerMove={track} onClick={() => onOpen(s.slug)}>
                   <span className="sov-card-title">{s.title}</span>
                   {s.description && <span className="sov-card-desc">{s.description}</span>}
-                  <span className="sov-card-meta">aktualisiert {relativeTime(s.updatedAt)}</span>
+                  {spaceHighlight(s.insights) && <span className="sov-card-hint">{spaceHighlight(s.insights)}</span>}
+                  <span className="sov-card-meta">
+                    {kids(s.slug).length > 0 ? `${kids(s.slug).length} ${kids(s.slug).length === 1 ? 'Subspace' : 'Subspaces'} · ` : ''}aktualisiert {relativeTime(s.updatedAt)}
+                  </span>
                 </button>
                 {kids(s.slug).length > 0 && (
                   <div className="sov-kids">
