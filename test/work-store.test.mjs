@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createWorkStore } from '../electron/work-store.mjs';
+import { createWorkStore, DEFAULT_EMAIL } from '../electron/work-store.mjs';
 
 function database(handler) {
   const seen = [];
@@ -65,4 +65,18 @@ test('the window gets only the three calls, never the key', () => {
   assert.match(preload, /workStatus/); assert.match(preload, /workSetEmail/); assert.match(preload, /workCall/);
   const main = readFileSync(new URL('../electron/main.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(main.slice(main.indexOf("ipcMain.handle('work-status'"), main.indexOf("ipcMain.handle('work-call'") + 400), /return \{[^}]*key[^}]*\}/, 'status does not return the key');
+});
+
+test('with the default e-mail nothing is asked: projects are saved as hanspeter.erl66@gmail.com until another one is stored', async () => {
+  assert.equal(DEFAULT_EMAIL, 'hanspeter.erl66@gmail.com');
+  const file = dir();
+  const store = createWorkStore({ file, readConnector: () => ({ url: 'https://x.supabase.co', key: 'k' }), defaultEmail: DEFAULT_EMAIL });
+  assert.equal(store.status().email, DEFAULT_EMAIL);
+  assert.equal(store.setEmail('anna@example.com').ok, true, 'an explicit e-mail still wins');
+  assert.equal(store.status().email, 'anna@example.com');
+  assert.equal(createWorkStore({ file: dir(), readConnector: () => null, defaultEmail: 'not an email' }).status().email, '', 'a bad default is ignored');
+  const main = readFileSync(new URL('../electron/main.mjs', import.meta.url), 'utf8');
+  assert.match(main, /defaultEmail: DEFAULT_EMAIL/);
+  const line = readFileSync(new URL('../src/ui/SharedSaveLine.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(line, /type="email"|name@company\.com|change/, 'the Develop page no longer asks for an e-mail');
 });

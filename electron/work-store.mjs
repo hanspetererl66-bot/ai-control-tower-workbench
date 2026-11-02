@@ -13,9 +13,13 @@ export const ALLOWED_TOOLS = new Set(WORK_ITEM_TOOL_DEFINITIONS.map((t) => t.nam
 /** Connectors whose settings may hold the database access, in this order. */
 export const CONFIG_SOURCES = ['werkbank-workspace', 'skill-marketplace'];
 
-export function createWorkStore({ file, readConnector }) {
+/** The person every project is saved under, until a real sign-in replaces this (private prototype, one user). */
+export const DEFAULT_EMAIL = 'hanspeter.erl66@gmail.com';
+
+export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
   const readEmail = () => {
-    try { const v = existsSync(file) ? String(JSON.parse(readFileSync(file, 'utf8')).email ?? '') : ''; return EMAIL.test(v) ? v : ''; } catch { return ''; }
+    try { const v = existsSync(file) ? String(JSON.parse(readFileSync(file, 'utf8')).email ?? '') : ''; if (EMAIL.test(v)) return v; } catch { /* fall through to the default */ }
+    return EMAIL.test(defaultEmail) ? defaultEmail : '';
   };
   /** { url, key, source } from the first connector that has both; key is read only here. */
   const access = () => {
