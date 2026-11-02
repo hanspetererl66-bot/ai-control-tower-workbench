@@ -10,7 +10,7 @@ import { uploadBatches } from './bulk-upload.mjs';
 import { buildBatches } from '../shared/table-ingest.mjs';
 import { BUNDLED_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
-import { createWorkStore } from './work-store.mjs';
+import { createWorkStore, DEFAULT_EMAIL } from './work-store.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
@@ -1316,7 +1316,7 @@ function readDatabaseAccess(name) {
     return null;
   }
 }
-const workStore = createWorkStore({ file: join(ROOT, 'goose-home', 'work-sync.json'), readConnector: readDatabaseAccess });
+const workStore = createWorkStore({ file: join(ROOT, 'goose-home', 'work-sync.json'), readConnector: readDatabaseAccess, defaultEmail: DEFAULT_EMAIL });
 ipcMain.handle('work-status', () => workStore.status());
 ipcMain.handle('work-set-email', (_event, email) => workStore.setEmail(email));
 ipcMain.handle('work-call', async (_event, { tool, args } = {}) => {
