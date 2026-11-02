@@ -29,7 +29,7 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(rail, /<button className="rail-logo" onClick=\{onOpenCover\}/);
   assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
   assert.match(app, /\{coverOpen && <CoverSheet/);
-  assert.match(cover, /<h1 className="cover-title">\{PRODUCT_TITLE\}<\/h1>/);
+  assert.match(cover, /<h1 className="cover-title">\s*\{PRODUCT_NAME\}\s*<span className="cover-title-line2">Design Study November 2026<\/span>/, 'name on the first line, design study and month below');
   assert.doesNotMatch(cover, /[Pp]rototype/);
   assert.match(cover, /Built by Accenture/);
   assert.match(cover, /Demo only/);
