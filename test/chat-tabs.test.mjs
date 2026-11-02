@@ -66,3 +66,14 @@ test('the composer shows the tabs on the empty chat and the cards hang under Fav
   assert.match(tabs, /role="tablist"/);
   assert.match(read('electron/main.mjs'), /updatedAt/, 'skills carry the change date');
 });
+
+test('each tab has an icon and a pill; what is under a tab is set 30 % smaller', () => {
+  const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+  const tabs = read('src/ui/ChatTabs.tsx');
+  for (const id of ['favorites', 'suggested', 'popular']) assert.match(tabs, new RegExp(`id === '${id}'`), `icon for ${id}`);
+  assert.match(tabs, /<TabIcon id=\{t\.id\}/);
+  const css = read('src/theme.css');
+  assert.match(css, /\.chat-tab \{[^}]*border-radius: 999px/, 'the tab is an oval button');
+  assert.match(css, /\.chat-tab-panel \{ --tab-scale: 0\.7;/, '70 % of the normal size');
+  assert.match(css, /\.chat-tab-panel \.briefing-card h3 \{ font-size: max\(/, 'the cards are scaled too');
+});
