@@ -94,6 +94,7 @@ export async function runStatement(host, warehouseId, statement, { pollMs = 2000
   if (answer.status?.state !== 'SUCCEEDED') {
     throw new Error(answer.status?.error?.message ?? `statement ended as ${answer.status?.state}`);
   }
+  return answer;
 }
 
 export async function load({ host, warehouseId, sql, onProgress = () => {}, pollMs }) {
