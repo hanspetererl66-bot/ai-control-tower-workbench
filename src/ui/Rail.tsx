@@ -197,10 +197,11 @@ function SchedulerIcon() {
 }
 
 function DevelopIcon() {
+  // Angle brackets around two slashes: <//>
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M7 6 3 10l4 4M13 6l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M11.2 4.5 8.8 15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M5.6 6 1.8 10l3.8 4M14.4 6l3.8 4-3.8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.5 14.2 9.7 5.8M10.8 14.2l1.2-8.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
