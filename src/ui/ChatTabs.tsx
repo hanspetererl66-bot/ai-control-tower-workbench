@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { StarterPrompt } from '../starter-prompts';
-import { TABS, loadUse, popular, recordUse, saveUse, suggested, whatsNew, type Entry, type SkillLike, type SpaceLike, type TabId, type UseMap } from '../chat-tabs';
+import { TABS, nextTab, readTab, loadUse, popular, recordUse, saveUse, suggested, whatsNew, type Entry, type SkillLike, type SpaceLike, type TabId, type UseMap } from '../chat-tabs';
 import BriefingCards from './BriefingCards';
 
 type Props = {
@@ -36,9 +36,9 @@ const EMPTY: Record<TabId, string> = {
 
 /** Under the empty chat: Favorites (own prompts, favourite skills, the cards "Heute für dich"), Suggested, Popular, What's new. */
 export default function ChatTabs(p: Props) {
-  const [tab, setTab] = useState<TabId>(() => { try { const t = window.localStorage.getItem(TAB_KEY); return TABS.some((x) => x.id === t) ? (t as TabId) : 'favorites'; } catch { return 'favorites'; } });
+  const [tab, setTab] = useState<TabId | null>(() => { try { return readTab(window.localStorage.getItem(TAB_KEY)); } catch { return 'favorites'; } });
   const [used, setUsed] = useState<UseMap>(() => loadUse(window.localStorage));
-  useEffect(() => { try { window.localStorage.setItem(TAB_KEY, tab); } catch { /* ignore */ } }, [tab]);
+  useEffect(() => { try { window.localStorage.setItem(TAB_KEY, tab ?? 'none'); } catch { /* ignore */ } }, [tab]);
 
   const skills = p.skills ?? [], spaces = p.spaces ?? [];
   const favNames = (p.favorites ?? []).map((f) => f.label);
@@ -58,10 +58,10 @@ export default function ChatTabs(p: Props) {
     <section className="chat-tabs" aria-label="Start here">
       <div className="chat-tabs-bar" role="tablist" aria-label="Start here">
         {TABS.map((t) => (
-          <button key={t.id} role="tab" id={`chat-tab-${t.id}`} aria-selected={tab === t.id} aria-controls="chat-tab-panel" className={`chat-tab ${tab === t.id ? 'chat-tab-on' : ''}`} onClick={() => setTab(t.id)}><TabIcon id={t.id} /><span>{t.label}</span></button>
+          <button key={t.id} role="tab" id={`chat-tab-${t.id}`} aria-selected={tab === t.id} aria-expanded={tab === t.id} aria-controls="chat-tab-panel" className={`chat-tab ${tab === t.id ? 'chat-tab-on' : ''}`} onClick={() => setTab((cur) => nextTab(cur, t.id))}><TabIcon id={t.id} /><span>{t.label}</span></button>
         ))}
       </div>
-      <div className="chat-tab-panel" id="chat-tab-panel" role="tabpanel" aria-labelledby={`chat-tab-${tab}`}>
+      {tab && <div className="chat-tab-panel" id="chat-tab-panel" role="tabpanel" aria-labelledby={`chat-tab-${tab}`}>
         {tab === 'favorites' ? (
           <>
             {own.length > 0 && <><div className="starters-title">My prompts</div><div className="starters-list">{own.map((s) => chip(s, 'own'))}</div></>}
@@ -84,7 +84,7 @@ export default function ChatTabs(p: Props) {
             ))}
           </ul>
         )}
-      </div>
+      </div>}
     </section>
   );
 }

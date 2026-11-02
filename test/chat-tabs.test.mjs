@@ -77,3 +77,14 @@ test('each tab has an icon and a pill; what is under a tab is set 30 % smaller',
   assert.match(css, /\.chat-tab-panel \{ --tab-scale: 0\.7;/, '70 % of the normal size');
   assert.match(css, /\.chat-tab-panel \.briefing-card h3 \{ font-size: max\(/, 'the cards are scaled too');
 });
+
+test('a tab toggles: click opens, second click closes, another tab switches', async () => {
+  const { nextTab, readTab } = await import('../src/chat-tabs.ts');
+  assert.equal(nextTab(null, 'popular'), 'popular');
+  assert.equal(nextTab('popular', 'popular'), null);
+  assert.equal(nextTab('popular', 'new'), 'new');
+  assert.equal(readTab('none'), null);
+  assert.equal(readTab('suggested'), 'suggested');
+  assert.equal(readTab(null), 'favorites');
+  assert.equal(readTab('bogus'), 'favorites');
+});
