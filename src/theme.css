@@ -4552,8 +4552,10 @@ textarea.studio-field { min-height: 120px; }
 .sched-primary { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; font-weight: 600; }
 .sched-empty { display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 56px 20px; border: 1px dashed var(--line); border-radius: 14px; color: var(--muted); text-align: center; }
 .sched-empty strong { color: var(--ink); }
-.sched-table { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
-.sched-row { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(150px, 1.4fr) minmax(130px, 1.2fr) 135px 135px 80px minmax(220px, auto); gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
+.sched-table { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: auto; max-height: min(58vh, 540px); min-height: 0; }
+.sched-table > .sched-th { position: sticky; top: 0; z-index: 1; background: var(--panel); }
+.sched-table > .sched-item, .sched-table > .sched-th { min-width: 1060px; }
+.sched-row { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(150px, 1.4fr) minmax(130px, 1.2fr) 135px 135px 64px 80px 230px; gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
 .sched-row > span, .sched-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sched-th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--line); }
 .sched-item + .sched-item { border-top: 1px solid var(--line); }
@@ -4589,4 +4591,4 @@ textarea.studio-field { min-height: 120px; }
 .sched .sched-day-on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .sched-problem { margin: 0; color: var(--lv-red); font-size: 13px; }
 .sched-form-foot { display: flex; justify-content: flex-end; gap: 8px; }
-@media (max-width: 1100px) { .sched-th { display: none; } .sched-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } .sched-actions { justify-content: flex-start; } }
+@media (max-width: 1100px) { .sched-table > .sched-item, .sched-table > .sched-th { min-width: 0; } .sched-th { display: none; } .sched-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } .sched-actions { justify-content: flex-start; } }

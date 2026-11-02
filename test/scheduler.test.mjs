@@ -121,5 +121,5 @@ test('the Scheduler sits in the middle of the rail and is wired to the app', () 
   assert.match(app, /view === 'scheduler' \? \(\s*<SchedulerView/);
   assert.match(app, /isJobDue\(j, new Date\(\)\)/, 'the due check also runs jobs');
   const ui = src('src/ui/SchedulerView.tsx');
-  for (const w of ['Run now', 'Pause', 'Resume', 'Delete', 'Run history', 'Create job', 'Cron']) assert.ok(ui.includes(w), w);
+  for (const w of ['Success', 'Created', 'Run now', 'Pause', 'Resume', 'Delete', 'Run history', 'Create job', 'Cron']) assert.ok(ui.includes(w), w);
 });

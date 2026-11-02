@@ -63,9 +63,9 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
           <span>Create a job, pick an agent, a workflow or a skill, and choose when it should run.</span>
         </div>)
       ) : (
-        <div className="sched-table" role="table" aria-label="Scheduled jobs">
+        <div className="sched-table" role="table" aria-label="Scheduled jobs" tabIndex={0}>
           <div className="sched-row sched-th" role="row">
-            <span>Job</span><span>Runs</span><span>Schedule</span><span>Next run</span><span>Last run</span><span>Status</span><span />
+            <span>Job</span><span>Runs</span><span>Schedule</span><span>Next run</span><span>Last run</span><span>Success</span><span>Status</span><span />
           </div>
           {jobs.map((job) => {
             const state = jobState(job, now);
@@ -81,6 +81,7 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
                   <span>{describeCadence(job.cadence)}</span>
                   <span>{next ? fmt(next) : '–'}</span>
                   <span>{last ? <><i className={`sched-dot sched-dot-${last.status}`} />{fmt(last.at)}</> : '–'}</span>
+                  <span title="Succeeded runs of the kept history">{job.runs.length ? `${job.runs.filter((r) => r.status === 'ok').length}/${job.runs.length}` : '–'}</span>
                   <span className={`sched-state sched-state-${runningId === job.id ? 'running' : state}`}>{runningId === job.id ? 'Running' : { scheduled: 'Active', paused: 'Paused', done: 'Done', missed: 'Missed' }[state]}</span>
                   <span className="sched-actions">
                     <button onClick={() => onRunNow(job)} disabled={!canRun || Boolean(runningId)} title={canRun ? 'Run now' : 'The agent is busy or not connected'}>Run now</button>
@@ -92,6 +93,7 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
                 </div>
                 {open === job.id && (
                   <div className="sched-detail">
+                    <p className="sched-muted">Created {fmt(job.createdAt)} · {TARGET_LABEL[job.target.type]} “{job.target.label}” · {describeCadence(job.cadence)}</p>
                     {job.note && <p><strong>Instruction:</strong> {job.note}</p>}
                     <h3>Run history</h3>
                     {job.runs.length === 0 ? <p className="sched-muted">No runs yet.</p> : (
