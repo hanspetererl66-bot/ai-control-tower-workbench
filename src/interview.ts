@@ -8,8 +8,10 @@
  * At the end the model is translated into the Intent form (`intentPrompt`, `parseIntentProposal`) and a process
  * description that the PRD, the specification and the build prompts carry along (`processSummary`).
  *
- * Privacy: only model entries are stored in the project, never the transcript or verbatim quotes, and the person is
- * identified by role, not by name.
+ * The interview is spoken: questions can be read aloud and answers dictated (see InterviewPanel). Every question and
+ * answer is logged word by word (`transcript`) and, with the notes, written to a Markdown result (`interviewMarkdown`)
+ * that feeds the Intent step and the process documentation. The person is identified by role, not by name, and the
+ * interview starts only after the interviewer confirmed that the person agrees to the recording.
  */
 
 import type { Intent } from './develop.ts';
@@ -99,6 +101,9 @@ export type Entry = { id: number; slot: SlotKey; text: string; confidence: numbe
 export type ActionKind = 'question' | 'followup' | 'mirror' | 'closing' | 'done';
 export type Action = { kind: ActionKind; text: string; slot: SlotKey | null };
 
+/** One line of the interview log. `via` tells whether the answer was dictated or typed. */
+export type Turn = { who: 'interviewer' | 'person'; text: string; via?: 'voice' | 'text'; at: number };
+
 export type InterviewState = {
   /** The role of the person (never the name). */
   role: string;
@@ -120,6 +125,8 @@ export type InterviewState = {
   /** The question that waits for an answer, so that a reload does not count it twice. */
   pending: Action | null;
   finished: boolean;
+  /** The whole conversation, word by word, in order. */
+  transcript: Turn[];
 };
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -129,7 +136,7 @@ export function startInterview(role: string, lang: Lang = 'en', budget = DEFAULT
   return {
     role: role.trim().slice(0, 80), lang, budget: Math.min(Math.max(Math.round(budget) || DEFAULT_BUDGET, 3), 20), startedAt: now,
     entries: [], nextId: 1, asked: {}, followups: [], depth: {}, mainQuestions: 0, sinceMirror: 0,
-    closingAsked: false, lastSlot: null, handoffs: [], pending: null, finished: false,
+    closingAsked: false, lastSlot: null, handoffs: [], pending: null, finished: false, transcript: [],
   };
 }
 
@@ -256,6 +263,12 @@ export function ingest(iv: InterviewState, out: ModelOut, answer: string): Inter
   return s;
 }
 
+/** Appends lines to the log. Pure: returns a new state. */
+export function logTurns(iv: InterviewState, turns: { who: Turn['who']; text: string; via?: Turn['via'] }[], now = Date.now()): InterviewState {
+  const add = turns.filter((t) => t.text.trim()).map((t) => ({ who: t.who, text: t.text.trim().slice(0, 3000), ...(t.via ? { via: t.via } : {}), at: now }));
+  return { ...iv, transcript: [...iv.transcript, ...add].slice(-400) };
+}
+
 /** The person skips the question: nothing is added and nothing counts as an answer. */
 export function skip(iv: InterviewState): InterviewState {
   const s = clone(iv);
@@ -315,6 +328,38 @@ export function processSummary(iv: InterviewState): string {
   if (iv.handoffs.length) out.push(`Hands over to (not yet interviewed): ${iv.handoffs.join(', ')}.`);
   out.push(`Source: one interview with the role "${iv.role || 'not given'}". The person describes the process as they experience it; nothing was checked against the systems.`);
   return out.join('\n');
+}
+
+const L = {
+  en: { title: 'Process interview', role: 'Role', date: 'Date', lang: 'Language', summary: 'What the person described', open: 'Not covered', handoffs: 'Hands over to (not yet interviewed)', log: 'Interview log', you: 'Interviewer', person: 'Answer', voice: 'spoken', typed: 'typed', skipped: '(skipped)', none: 'Nothing was noted.', source: 'Source: one interview. The person describes the process as they experience it; nothing was checked against the systems.', use: 'Use: input for the Intent step of the workflow project and for the process documentation.' },
+  de: { title: 'Prozessinterview', role: 'Rolle', date: 'Datum', lang: 'Sprache', summary: 'Was die Person beschrieben hat', open: 'Nicht abgedeckt', handoffs: 'Übergibt an (noch nicht befragt)', log: 'Gesprächsprotokoll', you: 'Interviewer', person: 'Antwort', voice: 'gesprochen', typed: 'getippt', skipped: '(übersprungen)', none: 'Nichts festgehalten.', source: 'Quelle: ein Interview. Die Person beschreibt den Prozess, wie sie ihn erlebt; nichts wurde gegen die Systeme geprüft.', use: 'Verwendung: Eingabe für den Intent-Schritt des Workflow-Projekts und für die Prozessdokumentation.' },
+} as const;
+
+/**
+ * The result of the interview as one Markdown file: the structured process description first, then the full log.
+ * It is the input for the Intent step and for the process documentation.
+ */
+export function interviewMarkdown(iv: InterviewState, now = Date.now()): string {
+  const t = L[iv.lang];
+  const day = new Date(iv.startedAt || now).toISOString().slice(0, 10);
+  const out: string[] = [`# ${t.title}: ${iv.role || '-'}`, '', `- ${t.role}: ${iv.role || '-'}`, `- ${t.date}: ${day}`, `- ${t.lang}: ${iv.lang === 'de' ? 'Deutsch' : 'English'}`, '', `## ${t.summary}`, ''];
+  let any = false;
+  for (const d of SLOTS) {
+    const items = iv.entries.filter((e) => e.slot === d.key);
+    if (!items.length) continue;
+    any = true;
+    out.push(`### ${d.label}`, '', ...items.map((e) => `- ${e.text}${e.confidence < 0.5 ? (iv.lang === 'de' ? ' (unsicher)' : ' (unsure)') : ''}`), '');
+  }
+  if (!any) out.push(t.none, '');
+  const open = SLOTS.filter((d) => fill(iv, d.key) < DONE_THRESHOLD);
+  if (open.length) out.push(`**${t.open}:** ${open.map((d) => d.label).join(', ')}`, '');
+  if (iv.handoffs.length) out.push(`**${t.handoffs}:** ${iv.handoffs.join(', ')}`, '');
+  out.push(`_${t.source}_`, `_${t.use}_`, '', `## ${t.log}`, '');
+  for (const turn of iv.transcript) {
+    const label = turn.who === 'interviewer' ? t.you : `${t.person}${turn.via ? ` (${turn.via === 'voice' ? t.voice : t.typed})` : ''}`;
+    out.push(`**${label}:** ${turn.text.replace(/\s*\n\s*/g, ' ')}`, '');
+  }
+  return out.join('\n').trimEnd() + '\n';
 }
 
 export type IntentLists = { triggers: readonly string[]; systems: readonly string[]; guardrails: readonly string[] };
@@ -428,5 +473,10 @@ export function sanitizeInterview(raw: any): InterviewState | null {
     closingAsked: raw.closingAsked === true, lastSlot: slot(raw.lastSlot),
     handoffs: (Array.isArray(raw.handoffs) ? raw.handoffs : []).map((h: unknown) => cut(h, 80)).filter(Boolean).slice(0, 10),
     pending: action(raw.pending), finished: raw.finished === true,
+    transcript: (Array.isArray(raw.transcript) ? raw.transcript.slice(-400) : []).flatMap((x: any) => {
+      const text = cut(x?.text, 3000);
+      if (!text || (x?.who !== 'interviewer' && x?.who !== 'person')) return [];
+      return [{ who: x.who as Turn['who'], text, ...(x.via === 'voice' || x.via === 'text' ? { via: x.via as 'voice' | 'text' } : {}), at: Number.isFinite(x.at) ? x.at : 0 }];
+    }),
   };
 }
