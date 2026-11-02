@@ -1137,6 +1137,7 @@ export default function App() {
 
   return (
     <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`}>
+      <div className="study-badge" aria-hidden="true">Design Study November 2026</div>
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
