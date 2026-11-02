@@ -6,7 +6,7 @@
  */
 
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
-import { mergeProposal, processSummary, sanitizeInterview, type InterviewState } from './interview.ts';
+import { interviewMarkdown, mergeProposal, processSummary, sanitizeInterview, type InterviewState } from './interview.ts';
 
 export type Kind = 'workflow' | 'agent';
 /** The five steps shared with the agent project (see flow.ts). */
@@ -54,7 +54,7 @@ export type Project = {
   approved: Stage[];
   createdAt: number;
   updatedAt: number;
-  /** State of a process interview for the intent step (entries only, never the transcript). */
+  /** State of a process interview for the intent step: notes plus the word-by-word log. */
   interview?: InterviewState;
 };
 
@@ -359,6 +359,9 @@ export function projectFiles(project: Project, wrap: (html: string, title: strin
   const slug = skillSlug(project.intent.name) || 'project';
   const name = project.intent.name.trim() || slug;
   const out: ProjectFile[] = [{ path: `${slug}/01-intent/intent.md`, text: `# Intent: ${name}\n\n${intentBlock(project.kind, project.intent).split('\n').map((l) => `- ${l}`).join('\n')}\n` }];
+  if (project.interview && (project.interview.entries.length || project.interview.transcript.length)) {
+    out.push({ path: `${slug}/01-intent/process-interview.md`, text: interviewMarkdown(project.interview) });
+  }
   if (project.docs.prd.trim()) {
     out.push({ path: `${slug}/02-requirements/PRD.html`, text: wrap(project.docs.prd, `PRD: ${name}`) });
     if (toMarkdown) out.push({ path: `${slug}/02-requirements/PRD.md`, text: toMarkdown(project.docs.prd) + '\n' });

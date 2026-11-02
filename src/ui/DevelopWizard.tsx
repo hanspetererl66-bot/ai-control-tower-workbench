@@ -113,9 +113,21 @@ export default function DevelopWizard({ project, onChange, onClose, generate, on
       {note && <p className="dev-note" role="status">{note}</p>}
 
       {stage === 'intent' && project.kind === 'workflow' && (
-        <div className="dev-chips dev-iv-mode" role="group" aria-label="How do you want to describe the intent?">
-          <button type="button" className={`dev-chip ${intentMode === 'form' ? 'dev-chip-on' : ''}`} aria-pressed={intentMode === 'form'} disabled={working} onClick={() => setIntentMode('form')}>Fill in the form</button>
-          <button type="button" className={`dev-chip ${intentMode === 'interview' ? 'dev-chip-on' : ''}`} aria-pressed={intentMode === 'interview'} disabled={working} onClick={() => setIntentMode('interview')}>Be interviewed about the process</button>
+        <div className="dev-modes" role="group" aria-label="How do you want to describe the intent?">
+          <button type="button" className={`dev-mode ${intentMode === 'form' ? 'dev-mode-on' : ''}`} aria-pressed={intentMode === 'form'} disabled={working} onClick={() => setIntentMode('form')}>
+            <span className="dev-mode-title">Describe it yourself</span>
+            <span className="dev-mode-what">You fill in a short form: goal, trigger, systems, data.</span>
+            <span className="dev-mode-meta"><strong>Best when</strong> you know the process well and can write it down.</span>
+            <span className="dev-mode-meta"><strong>Takes</strong> about 5 minutes.</span>
+            <span className="dev-mode-meta"><strong>You get</strong> the filled-in intent form.</span>
+          </button>
+          <button type="button" className={`dev-mode ${intentMode === 'interview' ? 'dev-mode-on' : ''}`} aria-pressed={intentMode === 'interview'} disabled={working} onClick={() => setIntentMode('interview')}>
+            <span className="dev-mode-title">Interview the person who does the work</span>
+            <span className="dev-mode-what">Joule asks the questions, out loud if you like. The person answers by voice or text, and every answer shapes the next question.</span>
+            <span className="dev-mode-meta"><strong>Best when</strong> the process lives in someone’s head, or several people take part in it.</span>
+            <span className="dev-mode-meta"><strong>Takes</strong> 10 to 15 minutes per person.</span>
+            <span className="dev-mode-meta"><strong>You get</strong> a written interview (.md) with every question and answer, plus the filled-in form. Both feed the requirements and the process documentation.</span>
+          </button>
         </div>
       )}
 
