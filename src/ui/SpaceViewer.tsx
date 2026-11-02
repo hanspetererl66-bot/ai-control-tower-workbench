@@ -6,7 +6,7 @@ import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastM
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
-import { applySpaceScale, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, type SpaceScale } from '../space-scale';
+import { applySpaceScale, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
@@ -21,6 +21,7 @@ export default function SpaceViewer({
   bridgeEnabled = false,
   onAsk,
   textScale = DEFAULT_SPACE_SCALE,
+  onTextScale,
   theme = 'light',
   prefs,
   onHandoff,
@@ -39,6 +40,8 @@ export default function SpaceViewer({
   onAsk?: (prompt: string) => void;
   /** Text size of the page inside the frame (1 = as authored). */
   textScale?: SpaceScale;
+  /** Shows a small slider in the header; the size applies to every Space (same setting as in Settings). */
+  onTextScale?: (scale: SpaceScale) => void;
   /** The app's resolved theme; the Space follows it instead of the operating system. */
   theme?: 'light' | 'dark';
   /** Personal look (accent, font, contrast); optional. */
@@ -251,6 +254,24 @@ export default function SpaceViewer({
             </button>
           )}
         </div>
+
+        {onTextScale && (
+          <label className="space-zoom" title="Text size in all Spaces">
+            <span aria-hidden="true" className="space-zoom-small">A</span>
+            <input
+              type="range"
+              min={0}
+              max={SPACE_SCALES.length - 1}
+              step={1}
+              value={Math.max(0, SPACE_SCALES.indexOf(textScale))}
+              aria-label="Text size in all Spaces"
+              aria-valuetext={`${Math.round(textScale * 100)}%`}
+              onChange={(event) => onTextScale(SPACE_SCALES[Number(event.target.value)])}
+            />
+            <span aria-hidden="true" className="space-zoom-big">A</span>
+            <span className="space-zoom-value" role="status">{Math.round(textScale * 100)}%</span>
+          </label>
+        )}
 
         <button
           className={`ghost-btn ${insightsOpen ? 'ghost-btn-on' : ''}`}

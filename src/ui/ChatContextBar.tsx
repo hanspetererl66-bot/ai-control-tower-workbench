@@ -40,7 +40,7 @@ export default function ChatContextBar(p: ChatContextBarProps) {
   return (
     <div className="ctxbar" role="group" aria-label="What shapes the answers">
       <button className={`ctx-chip ${p.memoryEnabled ? 'on' : ''}`} aria-pressed={p.memoryEnabled} title="Memory is added to every message. Click to switch it off or on." onClick={() => p.onMemoryEnabled(!p.memoryEnabled)}>
-        Memory {p.memoryEnabled ? p.memoryCount : 'off'}
+        Memory {p.memoryEnabled ? `on · ${p.memoryCount}` : 'off'}
       </button>
       {p.groupName
         ? <button className="ctx-chip on" title="This group's instructions and team memory are used. Click to stop." onClick={p.onGroupOff}>Group: {p.groupName} ×</button>
