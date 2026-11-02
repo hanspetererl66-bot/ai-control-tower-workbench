@@ -2995,6 +2995,15 @@ button {
   color: var(--ink);
 }
 
+.cover-title-line2 {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
 .cover-kind {
   margin: 10px 0 0;
   font-size: clamp(48px, 9vw, 104px);
