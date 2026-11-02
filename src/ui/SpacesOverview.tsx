@@ -1,5 +1,13 @@
+import type { PointerEvent } from 'react';
 import type { Space } from '../spaces';
 import { relativeTime } from '../spaces';
+
+/** Feeds the pointer position to the CSS spotlight of a tile (no re-render). */
+function track(e: PointerEvent<HTMLElement>) {
+  const r = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
+  e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
+}
 
 export type OverviewDomain = { name: string; spaces: Space[] };
 
@@ -36,7 +44,7 @@ export default function SpacesOverview({
           <div className="sov-spaces">
             {top.map((s) => (
               <div key={s.slug} className="sov-space">
-                <button className="sov-card" onClick={() => onOpen(s.slug)}>
+                <button className="sov-card" onPointerMove={track} onClick={() => onOpen(s.slug)}>
                   <span className="sov-card-title">{s.title}</span>
                   {s.description && <span className="sov-card-desc">{s.description}</span>}
                   <span className="sov-card-meta">aktualisiert {relativeTime(s.updatedAt)}</span>
@@ -44,7 +52,7 @@ export default function SpacesOverview({
                 {kids(s.slug).length > 0 && (
                   <div className="sov-kids">
                     {kids(s.slug).map((k) => (
-                      <button key={k.slug} className="sov-kid" onClick={() => onOpen(k.slug)}>
+                      <button key={k.slug} className="sov-kid" onPointerMove={track} onClick={() => onOpen(k.slug)}>
                         <span className="sov-card-title">{k.title}</span>
                         {k.description && <span className="sov-card-desc">{k.description}</span>}
                       </button>
@@ -68,8 +76,11 @@ export default function SpacesOverview({
           {domains.map((d) => {
             const top = d.spaces.filter((s) => !parentOf(s.slug));
             return (
-              <button key={d.name} className="sov-tile" onClick={() => onActive(d.name)}>
-                <span className="sov-tile-name">{d.name}</span>
+              <button key={d.name} className="sov-tile" onPointerMove={track} onClick={() => onActive(d.name)}>
+                <span className="sov-tile-head">
+                  <span className="sov-tile-name">{d.name}</span>
+                  <span className="sov-go" aria-hidden="true">→</span>
+                </span>
                 <span className="sov-tile-count">{d.spaces.length} {d.spaces.length === 1 ? 'Space' : 'Spaces'}</span>
                 <span className="sov-tile-list">
                   {top.slice(0, 4).map((s) => <span key={s.slug}>{s.title}</span>)}
