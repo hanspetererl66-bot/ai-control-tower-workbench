@@ -4,8 +4,8 @@ export const GRID_CELL = 15;
 export const GRID_GAP = 5;
 export const GRID_PITCH = GRID_CELL + GRID_GAP;
 
-/** Colours of the cubes that light up now and then (the rest of the grid stays grey). */
-export const GRID_PALETTE = ['#8b5cf6', '#6d28d9', '#22c55e', '#f59e0b', '#3b82f6', '#ec4899', '#14b8a6'] as const;
+/** Colours of the cubes that light up now and then: shades of purple only (the rest of the grid stays grey). */
+export const GRID_PALETTE = ['#8b5cf6', '#6d28d9', '#a78bfa', '#7c3aed', '#5b21b6', '#c4b5fd'] as const;
 
 /** Columns and rows that fit into a box, never fewer than 1. */
 export function gridSize(width: number, height: number, pitch = GRID_PITCH): { cols: number; rows: number } {

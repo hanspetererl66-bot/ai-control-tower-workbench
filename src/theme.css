@@ -3009,9 +3009,9 @@ button {
   font-size: 0.42em;
   font-weight: 700;
   letter-spacing: 0;
-  /* Red and pulsing on purpose: this is a design study, not a product. The pulse is slow (about 1.5 per second)
+  /* Purple (the accent) and pulsing: this is a design study, not a product. The pulse is slow (about 1.5 per second)
      and stops when the person chose reduced motion (here and in the app setting). */
-  color: var(--error, #c9190b);
+  color: var(--accent);
   animation: cover-blink 1.4s ease-in-out infinite;
 }
 
@@ -3039,6 +3039,12 @@ button {
   font-size: clamp(18px, 2.6vw, 28px);
   font-weight: 400;
   color: var(--ink);
+}
+
+.cover-author {
+  margin: 4px 0 0;
+  font-size: clamp(15px, 2vw, 20px);
+  color: var(--muted);
 }
 
 .cover-note {
