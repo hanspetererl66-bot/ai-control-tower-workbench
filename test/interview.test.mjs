@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  DONE_THRESHOLD, SLOTS, coverage, detectSignals, fill, ingest, intentPrompt, mergeProposal, nextAction, openSlots,
+  DONE_THRESHOLD, SLOTS, coverage, detectSignals, fill, ingest, intentPrompt, interviewMarkdown, logTurns, mergeProposal, nextAction, openSlots,
   parseIntentProposal, parseModelOut, processSummary, requiredDone, sanitizeInterview, skip, startInterview, turnPrompt,
 } from '../src/interview.ts';
 import {
@@ -260,16 +260,19 @@ test('saving the state of a running interview does not touch the approvals', () 
   assert.equal(p.interview.entries.length, iv.entries.length);
 });
 
-test('the interview survives storing and loading, as entries only: no transcript, no name', () => {
-  const { iv } = run();
+test('the interview survives storing and loading: notes and word-by-word log, role instead of name', () => {
+  const run0 = run().iv;
+  const iv = logTurns(run0, [{ who: 'interviewer', text: 'What starts it?' }, { who: 'person', text: 'Yesterday an invoice came in', via: 'voice' }]);
   const store = mem();
   let p = setInterview(newProject('workflow', 5), iv, 7);
   p.intent.process = processSummary(iv);
   assert.equal(saveProjects(store, upsertProject([], p)), true);
   const raw = store.getItem('werkbank.develop.projects');
-  assert.doesNotMatch(raw, /Yesterday an invoice came in|Yes, that is right|quote|transcript|messages/);
+  assert.match(raw, /Yesterday an invoice came in/);
+  assert.doesNotMatch(raw, /messages/);
   const [back] = loadProjects(store);
   assert.deepEqual(back.interview.entries, iv.entries);
+  assert.deepEqual(back.interview.transcript, iv.transcript);
   assert.equal(back.interview.role, 'Accounts payable');
   assert.equal(back.intent.process, p.intent.process);
   assert.deepEqual(back.interview.handoffs, ['Purchasing']);
@@ -286,4 +289,44 @@ test('a broken stored interview is dropped instead of breaking the project', () 
   assert.deepEqual(back.interview.asked, {});
   store.setItem('werkbank.develop.projects', JSON.stringify([{ ...p, interview: 'x' }]));
   assert.equal(loadProjects(store)[0].interview, undefined);
+});
+
+/* ---------------- log and result file ---------------- */
+
+test('logTurns appends in order, ignores empty lines and does not change the old state', () => {
+  const a = startInterview('Clerk', 'en');
+  const b = logTurns(a, [{ who: 'interviewer', text: ' Hello ' }, { who: 'person', text: '', via: 'voice' }, { who: 'person', text: 'Hi', via: 'voice' }], 5);
+  assert.equal(a.transcript.length, 0);
+  assert.deepEqual(b.transcript.map((t) => [t.who, t.text, t.via ?? null, t.at]), [['interviewer', 'Hello', null, 5], ['person', 'Hi', 'voice', 5]]);
+});
+
+test('interviewMarkdown: structured result first, then the full log with voice and text marked', () => {
+  let iv = startInterview('Accounts payable clerk', 'en', 10, Date.UTC(2026, 10, 2));
+  iv = ingest(nextAction(iv).iv, out({ updates: [U('trigger', 'Invoice arrives by mail', 0.9), U('pain', 'Too much copying', 0.3)] }), 'Mail comes in');
+  iv = logTurns(iv, [{ who: 'interviewer', text: 'What starts it?' }, { who: 'person', text: 'Mail comes in', via: 'voice' }, { who: 'person', text: 'And I copy it\nby hand', via: 'text' }]);
+  const md = interviewMarkdown(iv);
+  assert.match(md, /^# Process interview: Accounts payable clerk\n/);
+  assert.match(md, /- Date: 2026-11-02/);
+  assert.match(md, /## What the person described[\s\S]*- Invoice arrives by mail/);
+  assert.match(md, /- Too much copying \(unsure\)/);
+  assert.match(md, /\*\*Not covered:\*\*/);
+  assert.ok(md.indexOf('## What the person described') < md.indexOf('## Interview log'));
+  assert.match(md, /\*\*Interviewer:\*\* What starts it\?/);
+  assert.match(md, /\*\*Answer \(spoken\):\*\* Mail comes in/);
+  assert.match(md, /\*\*Answer \(typed\):\*\* And I copy it by hand/);
+  assert.match(interviewMarkdown({ ...iv, lang: 'de' }), /^# Prozessinterview: /);
+});
+
+test('the transcript survives sanitizing, bad lines are dropped, and the project folder carries the interview file', () => {
+  let iv = startInterview('Clerk', 'de');
+  iv = logTurns(iv, [{ who: 'interviewer', text: 'Frage?' }, { who: 'person', text: 'Antwort', via: 'voice' }]);
+  const clean = sanitizeInterview(JSON.parse(JSON.stringify({ ...iv, transcript: [...iv.transcript, { who: 'robot', text: 'x' }, { who: 'person', text: '' }] })));
+  assert.deepEqual(clean.transcript.map((t) => t.text), ['Frage?', 'Antwort']);
+  assert.equal(sanitizeInterview({ role: 'x' }).transcript.length, 0);
+  let p = newProject('workflow');
+  p = { ...p, intent: { ...emptyIntent(), name: 'Invoice check' } };
+  assert.ok(!projectFiles(p).some((f) => f.path.endsWith('process-interview.md')));
+  const files = projectFiles(setInterview(p, iv));
+  const f = files.find((x) => x.path === 'invoice-check/01-intent/process-interview.md');
+  assert.ok(f && /Antwort/.test(f.text));
 });
