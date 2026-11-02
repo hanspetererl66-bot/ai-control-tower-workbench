@@ -35,6 +35,7 @@ export default function DevelopHub(props: Props) {
   }, []);
   const open = projects.find((p) => p.id === openId) ?? null;
 
+  /** Starts the guided process; an empty goal opens it at the first step, where the intent is written. */
   const startWorkflow = (goal: string) => {
     const p = newProject('workflow');
     p.intent = { ...emptyIntent(), goal };
@@ -75,32 +76,13 @@ export default function DevelopHub(props: Props) {
             action="Start from this goal" other="or open the Agent Studio"
             onIntent={props.onAgentIntent} onOther={props.onAgent}
           />
-          <IntentCard
-            kind="n8n" logo={<N8nSymbol />} title="Create a Workflow" brand="with n8n"
-            text="From intent through requirements and specification to an importable n8n workflow."
-            placeholder="e.g. When a contract is uploaded, check the notice period and mail the owner"
-            action="Start the guided process" other="or open n8n directly"
-            onIntent={startWorkflow} onOther={props.onOpenN8n}
-          >
-            {projects.length > 0 && (
-              <section className="develop-recent" aria-label="Your workflows">
-                <h2>Your workflows</h2>
-                <ul>
-                  {projects.map((p) => (
-                    <li key={p.id}>
-                      <button className="develop-project" onClick={() => setOpenId(p.id)}>
-                        <span className="develop-project-name">{p.intent.name.trim() || `New ${p.kind}`}</span>
-                        <span className="develop-project-meta">{STAGE_LABEL[p.stage]}</span>
-                      </button>
-                      <button className="mini-icon mini-icon-danger mini-icon-always" aria-label={`Delete ${p.intent.name || 'project'}`} title="Delete this workflow project" onClick={() => { if (window.confirm('Delete this project and its documents?')) setProjects((list) => list.filter((x) => x.id !== p.id)); }}>
-                        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </IntentCard>
+          <WorkflowCard
+            projects={projects}
+            onOpenN8n={props.onOpenN8n}
+            onNew={() => startWorkflow('')}
+            onOpen={setOpenId}
+            onDelete={(id) => { if (window.confirm('Delete this project and its documents?')) setProjects((list) => list.filter((x) => x.id !== id)); }}
+          />
           <BlockCard
             kind="skills" logo={<SkillMark />} title="Skills" brand="the know-how" label="Skills"
             text="Instructions that tell Joule how to do a task, and scripts or templates that come with them."
@@ -143,7 +125,7 @@ function BlockCard(p: {
 
 function IntentCard(p: {
   kind: 'agent' | 'n8n'; logo: React.ReactNode; title: string; brand: string; text: string; placeholder: string;
-  action: string; other: string; onIntent: (intent: string) => void; onOther: () => void; children?: React.ReactNode;
+  action: string; other: string; onIntent: (intent: string) => void; onOther: () => void;
 }) {
   const [goal, setGoal] = useState('');
   const ok = goal.trim().length >= 8;
@@ -159,7 +141,51 @@ function IntentCard(p: {
       </label>
       <button className="dialog-btn dialog-btn-primary develop-go" disabled={!ok} onClick={() => { p.onIntent(goal.trim()); setGoal(''); }}>{p.action}</button>
       <button className="develop-other" onClick={p.onOther}>{p.other}</button>
-      {p.children}
+    </section>
+  );
+}
+
+/**
+ * The workflow tile: one tile in two parts. Above, "Open n8n directly". Below, "Your workflows" as a small folder
+ * with one line per project (name, step) and a delete button next to it. The list scrolls inside the tile, so the
+ * tile does not keep growing with every project.
+ */
+function WorkflowCard(p: {
+  projects: Project[]; onOpenN8n: () => void; onNew: () => void; onOpen: (id: string) => void; onDelete: (id: string) => void;
+}) {
+  return (
+    <section className="develop-card develop-card-flow" aria-label="Create a Workflow">
+      <span className="develop-logo develop-logo-n8n" aria-hidden="true"><N8nSymbol /></span>
+      <span className="develop-card-title">Create a Workflow</span>
+      <span className="develop-card-brand">with n8n</span>
+      <span className="develop-card-text">From intent through requirements and specification to an importable n8n workflow.</span>
+      <button className="dialog-btn dialog-btn-primary develop-go" onClick={p.onOpenN8n}>Open n8n directly</button>
+      <section className="develop-recent develop-tree" aria-label="Your workflows">
+        <div className="develop-tree-head">
+          <h2>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.8 4.2h4.2l1.2 1.5h7v6.8a1 1 0 0 1-1 1H2.8a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>
+            Your workflows <span className="develop-tree-count">{p.projects.length}</span>
+          </h2>
+          <button className="develop-other" onClick={p.onNew} title="Start the guided process: intent, requirements, specification">+ New</button>
+        </div>
+        {p.projects.length === 0 ? (
+          <p className="develop-tree-empty">None yet. Press “+ New” to start from a goal.</p>
+        ) : (
+          <ul className="develop-tree-list">
+            {p.projects.map((x) => (
+              <li key={x.id}>
+                <button className="develop-project" onClick={() => p.onOpen(x.id)} title={`Open ${x.intent.name.trim() || `New ${x.kind}`}`}>
+                  <span className="develop-project-name">{x.intent.name.trim() || `New ${x.kind}`}</span>
+                  <span className="develop-project-meta">{STAGE_LABEL[x.stage]}</span>
+                </button>
+                <button className="mini-icon mini-icon-danger mini-icon-always" aria-label={`Delete ${x.intent.name || 'project'}`} title="Delete this workflow project" onClick={() => p.onDelete(x.id)}>
+                  <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </section>
   );
 }

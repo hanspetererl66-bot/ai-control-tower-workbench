@@ -4034,6 +4034,19 @@ button {
 .develop-project { flex: 1; display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 1px solid rgb(127 127 127 / 25%); border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left; }
 .develop-project:hover { border-color: var(--accent); }
 .develop-project-meta { color: var(--muted); font-size: 12.5px; }
+.develop-card-flow { justify-content: flex-start; }
+.develop-tree-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 8px; }
+.develop-tree-head h2 { display: flex; align-items: center; gap: 6px; margin: 0; }
+.develop-tree-count { font-weight: 600; color: var(--ink); }
+.develop-tree-empty { margin: 0; font-size: 12.5px; color: var(--muted); }
+.develop-tree-list { max-height: 214px; overflow: auto; margin-left: 7px !important; padding-left: 10px !important; border-left: 1px solid var(--line); }
+.develop-tree-list { grid-template-columns: minmax(0, 1fr); }
+.develop-tree-list li { min-width: 0; }
+.develop-tree-list .develop-project { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 1px; overflow: hidden; padding: 6px 10px; min-width: 0; }
+.develop-tree-list .develop-project-meta { font-size: 11.5px; }
+.develop-tree-list .mini-icon { color: var(--muted); opacity: 1; }
+.develop-tree-list .mini-icon:hover { color: var(--error, #c9190b); }
+.develop-tree-list .develop-project-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .develop-direct { margin: 22px 0 0; font-size: 12.5px; color: var(--muted); }
 .link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }
 .dev-wizard { width: min(860px, 100%); margin: 0 auto; padding: 22px 24px 48px; text-align: left; }
