@@ -11,7 +11,7 @@ test('the rail has one Develop button instead of separate Connectors and n8n but
   assert.match(rail, /onView\('develop'\)/);
   assert.doesNotMatch(rail, /aria-label="n8n Automation"/);
   assert.doesNotMatch(rail, /aria-label="Connectors and Skills"/);
-  assert.match(rail, /DEVELOP_VIEWS: View\[\] = \['develop', 'studio', 'manage', 'n8n'\]/);
+  assert.match(rail, /DEVELOP_VIEWS: View\[\] = \['develop', 'studio', 'manage', 'n8n', 'skillhealth'\]/);
 });
 
 test('Develop has four tiles: Agent, Workflow with the n8n symbol, Skills and Connectors', () => {
