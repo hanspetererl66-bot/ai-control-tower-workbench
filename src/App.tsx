@@ -53,7 +53,7 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
-import { addRun, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
+import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
@@ -167,7 +167,17 @@ export default function App() {
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
   const [schedules, setSchedules] = useState<Schedule[]>(() => loadSchedules(window.localStorage));
-  const [jobs, setJobsState] = useState<Job[]>(() => loadJobs(window.localStorage));
+  const [jobs, setJobsState] = useState<Job[]>(() => {
+    const stored = loadJobs(window.localStorage);
+    let seeded = false;
+    try { seeded = window.localStorage.getItem(JOBS_SEEDED_KEY) === '1'; } catch { /* no storage */ }
+    if (stored.length > 0 || seeded) return stored;
+    // First start: a few example jobs show what the Scheduler does; they only write mock runs.
+    const examples = exampleJobs();
+    saveJobs(examples, window.localStorage);
+    try { window.localStorage.setItem(JOBS_SEEDED_KEY, '1'); } catch { /* no storage */ }
+    return examples;
+  });
   const jobsRef = useRef(jobs);
   jobsRef.current = jobs;
   const changeJobs = useCallback((next: Job[]) => { jobsRef.current = next; setJobsState(next); saveJobs(next, window.localStorage); }, []);
@@ -986,6 +996,11 @@ export default function App() {
   const scheduleRuntime: ScheduleRuntime = { runningId: runningSchedule, canRun: Boolean(agent) && !busy, onRun: (s) => void runSchedule(s, true), gmail: Boolean(gmailExtension(extensionNames)) };
   /** One run of a scheduler job (agent, workflow or skill): ask in the chat and write the result into the run history. */
   async function runJob(job: Job, manual = false) {
+    if (job.example) {
+      const run = { id: newId('run'), at: new Date().toISOString(), ms: 0, status: 'ok' as const, trigger: manual ? 'manual' as const : 'schedule' as const, note: 'Example run: nothing was started.' };
+      changeJobs(jobsRef.current.map((j) => (j.id === job.id ? addRun(j, run) : j)));
+      return;
+    }
     if (!agent || busy || runningSchedule || runningJob) return;
     setRunningJob(job.id);
     const started = Date.now();
@@ -1006,7 +1021,10 @@ export default function App() {
     }
   }
   dueTick.current = () => {
-    if (!agent || busy || runningSchedule || runningJob) return;
+    if (busy || runningSchedule || runningJob) return;
+    const dueExample = jobsRef.current.find((j) => j.example && isJobDue(j, new Date()));
+    if (dueExample) { void runJob(dueExample); return; }
+    if (!agent) return;
     const due = schedules.find((s) => isDue(s, new Date()));
     if (due) void runSchedule(due);
     else {
@@ -1298,7 +1316,7 @@ export default function App() {
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
         />
       ) : view === 'scheduler' ? (
-        <SchedulerView jobs={jobs} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onRunNow={(j) => void runJob(j, true)} />
+        <SchedulerView jobs={jobs} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onAddExamples={() => changeJobs([...exampleJobs().filter((e) => !jobsRef.current.some((j) => j.id === e.id)), ...jobsRef.current])} onRunNow={(j) => void runJob(j, true)} />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}

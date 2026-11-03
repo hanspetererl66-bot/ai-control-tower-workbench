@@ -26,9 +26,12 @@ export type Job = {
   createdAt: string;
   lastRun?: string;
   runs: JobRun[];
+  /** Sample job: a run only writes a mock entry into the history and starts nothing. */
+  example?: boolean;
 };
 
 export const JOBS_KEY = 'werkbank.jobs.v1';
+export const JOBS_SEEDED_KEY = 'werkbank.jobs.seeded';
 export const MAX_JOBS = 30;
 export const MAX_RUNS = 20;
 export const CATCH_UP_MS = 6 * 3600_000;
@@ -266,6 +269,7 @@ export function sanitizeJobs(value: unknown): Job[] {
       id, name: clean(r.name, 60) || label || targetId, target: { type, id: targetId, label: label || targetId }, note: clean(r.note, 400), cadence,
       enabled: r.enabled !== false, createdAt: created,
       ...(typeof r.lastRun === 'string' && !Number.isNaN(Date.parse(r.lastRun)) ? { lastRun: r.lastRun } : {}), runs,
+      ...(r.example === true ? { example: true } : {}),
     });
     if (out.length >= MAX_JOBS) break;
   }
@@ -277,4 +281,26 @@ export function loadJobs(storage?: Pick<Storage, 'getItem'>): Job[] {
 }
 export function saveJobs(list: Job[], storage?: Pick<Storage, 'setItem'>): void {
   try { storage?.setItem(JOBS_KEY, JSON.stringify(list)); } catch { /* kept in memory only */ }
+}
+
+/* ---- Example jobs: one for each kind of target, with a mock history ---- */
+export function exampleJobs(now = new Date()): Job[] {
+  const ago = (hours: number) => new Date(now.getTime() - hours * 3600_000).toISOString();
+  const run = (n: number, hours: number, ms: number, status: JobRun['status'], note: string, trigger: JobRun['trigger'] = 'schedule'): JobRun => ({ id: `ex-run-${n}`, at: ago(hours), ms, status, trigger, note });
+  const mk = (id: string, name: string, target: Target, cadence: Cadence, runs: JobRun[], note = '', enabled = true): Job =>
+    ({ id, name, target, note, cadence, enabled, createdAt: ago(24 * 9), example: true, ...(runs.length ? { lastRun: runs[0].at } : {}), runs });
+  return [
+    mk('ex-preclose', 'Finance pre-close check', { type: 'agent', id: 'example-agent', label: 'Pre-close agent' }, { kind: 'weekly', time: '07:30', days: [1, 2, 3, 4, 5] },
+      [run(1, 14, 41_000, 'ok', 'Example run'), run(2, 38, 38_000, 'ok', 'Example run'), run(3, 62, 52_000, 'error', 'Example: SAP connector timed out')]),
+    mk('ex-margin', 'Margin report for the board', { type: 'agent', id: 'example-agent-2', label: 'Margin analyst' }, { kind: 'cron', expr: '0 8 1 * *' },
+      [run(4, 24 * 3, 66_000, 'ok', 'Example run')]),
+    mk('ex-reminders', 'Payment reminders', { type: 'workflow', id: 'example-workflow', label: 'Invoice reminder (n8n)' }, { kind: 'daily', time: '09:00' },
+      [run(5, 12, 9_000, 'ok', 'Example run'), run(6, 36, 8_000, 'ok', 'Example run'), run(7, 60, 12_000, 'ok', 'Example run', 'manual')], 'Only overdue invoices above 1,000 EUR.'),
+    mk('ex-sync', 'Ticket sync', { type: 'workflow', id: 'example-workflow-2', label: 'Jira to Sub4Me sync' }, { kind: 'interval', every: 2, unit: 'hours' },
+      [run(8, 1, 6_000, 'ok', 'Example run'), run(9, 3, 7_000, 'ok', 'Example run')]),
+    mk('ex-brief', 'Morning briefing', { type: 'skill', id: 'example-skill', label: 'daily-briefing' }, { kind: 'daily', time: '07:45' },
+      [run(10, 13, 21_000, 'ok', 'Example run'), run(11, 37, 19_000, 'ok', 'Example run')]),
+    mk('ex-cleanup', 'Skill registry clean-up', { type: 'skill', id: 'example-skill-2', label: 'skill-registry-review' }, { kind: 'monthly', time: '06:00', day: 15 },
+      [], 'List skills without owner or description.', false),
+  ];
 }

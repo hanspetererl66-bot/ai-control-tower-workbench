@@ -28,13 +28,14 @@ function defaultCadence(kind: Cadence['kind'], now: Date): Cadence {
   }
 }
 
-export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs, onRunNow }: {
+export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs, onRunNow, onAddExamples }: {
   jobs: Job[];
   targets: Target[];
   runningId: string;
   canRun: boolean;
   onJobs: (next: Job[]) => void;
   onRunNow: (job: Job) => void;
+  onAddExamples: () => void;
 }) {
   const [now, setNow] = useState(() => new Date());
   const [creating, setCreating] = useState(false);
@@ -61,6 +62,7 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
         <div className="sched-empty">
           <strong>Nothing scheduled</strong>
           <span>Create a job, pick an agent, a workflow or a skill, and choose when it should run.</span>
+          <button onClick={onAddExamples}>Add example jobs</button>
         </div>)
       ) : (
         <div className="sched-table" role="table" aria-label="Scheduled jobs" tabIndex={0}>
@@ -77,14 +79,14 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
                   <button className="sched-name" onClick={() => setOpen(open === job.id ? '' : job.id)} aria-expanded={open === job.id}>
                     <span className={`sched-chev ${open === job.id ? 'sched-chev-on' : ''}`} aria-hidden="true">›</span>{job.name}
                   </button>
-                  <span><span className={`sched-type sched-type-${job.target.type}`}>{TARGET_LABEL[job.target.type]}</span> {job.target.label}</span>
+                  <span><span className={`sched-type sched-type-${job.target.type}`}>{TARGET_LABEL[job.target.type]}</span> {job.target.label}{job.example && <span className="sched-example" title="Sample job: a run only writes a mock entry">Example</span>}</span>
                   <span>{describeCadence(job.cadence)}</span>
                   <span>{next ? fmt(next) : '–'}</span>
                   <span>{last ? <><i className={`sched-dot sched-dot-${last.status}`} />{fmt(last.at)}</> : '–'}</span>
                   <span title="Succeeded runs of the kept history">{job.runs.length ? `${job.runs.filter((r) => r.status === 'ok').length}/${job.runs.length}` : '–'}</span>
                   <span className={`sched-state sched-state-${runningId === job.id ? 'running' : state}`}>{runningId === job.id ? 'Running' : { scheduled: 'Active', paused: 'Paused', done: 'Done', missed: 'Missed' }[state]}</span>
                   <span className="sched-actions">
-                    <button onClick={() => onRunNow(job)} disabled={!canRun || Boolean(runningId)} title={canRun ? 'Run now' : 'The agent is busy or not connected'}>Run now</button>
+                    <button onClick={() => onRunNow(job)} disabled={(!canRun && !job.example) || Boolean(runningId)} title={canRun || job.example ? 'Run now' : 'The agent is busy or not connected'}>Run now</button>
                     {job.cadence.kind !== 'once' || !job.lastRun ? (
                       <button onClick={() => patch(job.id, { enabled: !job.enabled })}>{job.enabled ? 'Pause' : 'Resume'}</button>
                     ) : null}
