@@ -56,6 +56,9 @@ import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules'
 import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
+import SkillHealthView from './ui/SkillHealthView';
+import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
+import { loadUse } from './chat-tabs';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
@@ -182,6 +185,16 @@ export default function App() {
   jobsRef.current = jobs;
   const changeJobs = useCallback((next: Job[]) => { jobsRef.current = next; setJobsState(next); saveJobs(next, window.localStorage); }, []);
   const [runningJob, setRunningJob] = useState('');
+  // Skill health: the company catalog (demo data until it is read from the shared database) plus the installed skills.
+  const SKILL_ADMIN = 'hanspeter.erl66@gmail.com';
+  const [skillCatalog, setSkillCatalogState] = useState<Catalog>(() => {
+    const stored = loadCatalog(window.localStorage);
+    if (stored) return stored;
+    const first = exampleCatalog(Date.now());
+    saveCatalog(first, window.localStorage);
+    return first;
+  });
+  const changeSkillCatalog = useCallback((next: Catalog) => { setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
   const updateSchedules = useCallback((next: Schedule[]) => {
     setSchedules(next);
     saveSchedules(next, window.localStorage);
@@ -969,6 +982,14 @@ export default function App() {
     const next = agentSchedules(studioAgents, (id) => govLevelOf(agentGov, id), schedules);
     if (next !== schedules) updateSchedules(next);
   }, [studioAgents, agentGov, schedules, updateSchedules]);
+  useEffect(() => {
+    if (skillList.length === 0) return;
+    setSkillCatalogState((cat) => {
+      const next = syncInstalled(cat, skillList, loadUse(window.localStorage), SKILL_ADMIN, Date.now());
+      if (next !== cat) saveCatalog(next, window.localStorage);
+      return next;
+    });
+  }, [skillList]);
   const dueTick = useRef<() => void>(() => undefined);
   const schedulesRef = useRef(schedules);
   schedulesRef.current = schedules;
@@ -1315,6 +1336,14 @@ export default function App() {
           ready={Boolean(agent)}
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
         />
+      ) : view === 'skillhealth' ? (
+        <SkillHealthView
+          catalog={skillCatalog}
+          actor={SKILL_ADMIN}
+          onCatalog={changeSkillCatalog}
+          onBack={() => { setManageFocus('skills'); setView('manage'); }}
+          onResetExamples={() => { if (window.confirm('Replace the catalog with the example catalog? Your changes in it are lost.')) changeSkillCatalog(syncInstalled(exampleCatalog(Date.now()), skillList, loadUse(window.localStorage), SKILL_ADMIN, Date.now())); }}
+        />
       ) : view === 'scheduler' ? (
         <SchedulerView jobs={jobs} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onAddExamples={() => changeJobs([...exampleJobs().filter((e) => !jobsRef.current.some((j) => j.id === e.id)), ...jobsRef.current])} onRunNow={(j) => void runJob(j, true)} />
       ) : view === 'n8n' ? (
@@ -1332,6 +1361,7 @@ export default function App() {
           agent={agent}
           onBack={() => setView('develop')}
           onAgentRestarted={reconnectAgent}
+          onOpenSkillHealth={() => setView('skillhealth')}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
           focus={manageFocus}
         />
