@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { addRun, cadenceProblems, describeCadence, isDue, jobPrompt, jobState, newJob, nextRun, parseCron, sanitizeJobs, toCron, upcoming } from '../src/jobs.ts';
+import { addRun, exampleJobs, cadenceProblems, describeCadence, isDue, jobPrompt, jobState, newJob, nextRun, parseCron, sanitizeJobs, toCron, upcoming } from '../src/jobs.ts';
 
 const src = (f) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const agent = { type: 'agent', id: 'a-1', label: 'Pre-close check' };
@@ -122,4 +122,15 @@ test('the Scheduler sits in the middle of the rail and is wired to the app', () 
   assert.match(app, /isJobDue\(j, new Date\(\)\)/, 'the due check also runs jobs');
   const ui = src('src/ui/SchedulerView.tsx');
   for (const w of ['Success', 'Created', 'Run now', 'Pause', 'Resume', 'Delete', 'Run history', 'Create job', 'Cron']) assert.ok(ui.includes(w), w);
+});
+
+test('example jobs cover agent, workflow and skill, with every kind of repeat and a history', () => {
+  const jobs = exampleJobs(at('2026-11-03T12:00:00'));
+  assert.deepEqual(new Set(jobs.map((j) => j.target.type)), new Set(['agent', 'workflow', 'skill']));
+  assert.ok(new Set(jobs.map((j) => j.cadence.kind)).size >= 4);
+  assert.ok(jobs.every((j) => j.example && cadenceProblems(j.cadence, at('2026-11-03T12:00:00')).length === 0));
+  assert.ok(jobs.some((j) => j.runs.some((r) => r.status === 'error')));
+  assert.ok(jobs.some((j) => !j.enabled));
+  assert.equal(sanitizeJobs(jobs).length, jobs.length, 'they survive storage');
+  assert.ok(sanitizeJobs(jobs).every((j) => j.example));
 });

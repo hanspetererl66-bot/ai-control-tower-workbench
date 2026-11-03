@@ -3,10 +3,10 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
-const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
+const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n', 'skillhealth'];
 
 export default function Rail({
   view,
