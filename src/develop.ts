@@ -7,6 +7,7 @@
 
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
 import { interviewMarkdown, mergeProposal, processSummary, sanitizeInterview, type InterviewState } from './interview.ts';
+import { sanitizeExtends, sanitizeRefs, type ExtendsRef, type SourceRef } from './requirements.ts';
 
 export type Kind = 'workflow' | 'agent';
 /** The five steps shared with the agent project (see flow.ts). */
@@ -56,6 +57,10 @@ export type Project = {
   updatedAt: number;
   /** State of a process interview for the intent step: notes plus the word-by-word log. */
   interview?: InterviewState;
+  /** Where the project came from (Jira, Slack, Notion), when it was started from the Sources tile. */
+  sources?: SourceRef[];
+  /** The agent or workflow of the registry that this project extends. */
+  extends?: ExtendsRef;
 };
 
 export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', stakeholders: '', outOfScope: '', extra: '', process: '' });
@@ -320,12 +325,14 @@ export function sanitizeProject(raw: any): Project | null {
   const d = raw.docs ?? {};
   const stage: Stage = STAGES.includes(raw.stage) ? raw.stage : 'intent';
   const interview = sanitizeInterview(raw.interview);
+  const sources = sanitizeRefs(raw.sources), ext = sanitizeExtends(raw.extends);
   return {
     id: str(raw.id, 40) || `p${Date.now().toString(36)}`, kind: raw.kind, stage, intent,
     docs: { prd: str(d.prd, 60_000), spec: str(d.spec, 80_000), build: str(d.build, 120_000) },
     approved: Array.isArray(raw.approved) ? raw.approved.filter((s: unknown) => STAGES.includes(s as Stage)) : [],
     createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(), updatedAt: Number.isFinite(raw.updatedAt) ? raw.updatedAt : Date.now(),
     ...(interview ? { interview } : {}),
+    ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}),
   };
 }
 

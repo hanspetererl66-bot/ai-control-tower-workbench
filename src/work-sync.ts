@@ -10,6 +10,7 @@
 import { sanitizeProjects as sanitizeAgentProjects, DOC_ORDER, type AgentProject } from './agent-project.ts';
 import { sanitizeProject as sanitizeDevelopProject, artifactOf, type Project } from './develop.ts';
 import { interviewMarkdown } from './interview.ts';
+import { sourcesOf } from './requirements.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
 export type Entry = { itemId: string; rev: number; hash: string };
@@ -39,7 +40,7 @@ export function agentUnit(p: AgentProject): Unit {
   for (const k of DOC_ORDER) if (p.docs[k]?.trim()) files.push({ path: `${k}.md`, content: p.docs[k]!, language: 'markdown' });
   return {
     key: agentKey(p.id), kind: 'agent', name: nameOf(p.answers.name, 'New agent'), stage: Object.keys(p.confirmed).join(',').slice(0, 40),
-    approved: Object.keys(p.confirmed), intent: { source: 'agent-project', objective: p.answers.objective }, files, hash: hashOf(json),
+    approved: Object.keys(p.confirmed), intent: { source: 'agent-project', objective: p.answers.objective, ...sourcesOf(p) }, files, hash: hashOf(json),
   };
 }
 
@@ -54,7 +55,7 @@ export function developUnit(p: Project, toMarkdown: ((stored: string) => string)
     if (p.docs.prd.trim()) files.push({ path: 'PRD.md', content: toMarkdown(p.docs.prd), language: 'markdown' });
     if (p.docs.spec.trim()) files.push({ path: 'specification.md', content: toMarkdown(p.docs.spec), language: 'markdown' });
   }
-  return { key: developKey(p.id), kind: p.kind, name: nameOf(p.intent.name, `New ${p.kind}`), stage: p.stage, approved: p.approved, intent: { source: 'develop-project', goal: p.intent.goal }, files, hash: hashOf(json) };
+  return { key: developKey(p.id), kind: p.kind, name: nameOf(p.intent.name, `New ${p.kind}`), stage: p.stage, approved: p.approved, intent: { source: 'develop-project', goal: p.intent.goal, ...sourcesOf(p) }, files, hash: hashOf(json) };
 }
 
 /** The project inside an item (project.json), or null when the item is not one of ours. */

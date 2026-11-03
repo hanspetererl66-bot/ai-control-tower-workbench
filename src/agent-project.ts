@@ -7,6 +7,7 @@
  */
 import { FLOW_LABEL, type FlowStep } from './flow.ts';
 import { OUTPUTS, newAgent, type Output, type Source, type StudioAgent, type TriggerType } from './agent-studio.ts';
+import { sanitizeExtends, sanitizeRefs, type ExtendsRef, type SourceRef } from './requirements.ts';
 
 export type DocKey = 'prd' | 'tfd' | 'arch' | 'risk';
 export const DOC_ORDER: DocKey[] = ['prd', 'tfd', 'arch', 'risk'];
@@ -46,6 +47,8 @@ export type AgentProject = {
   /** Documents that were written before an earlier document changed: they have to be reviewed again. */
   stale: DocKey[];
   agentId?: string; createdAt: number; updatedAt: number;
+  /** Where the project came from (Jira, Slack, Notion) and the agent it extends: set when started from the Sources tile. */
+  sources?: SourceRef[]; extends?: ExtendsRef;
 };
 
 export const PROJECTS_KEY = 'werkbank.agentProjects';
@@ -435,7 +438,9 @@ export function sanitizeProjects(v: unknown): AgentProject[] {
     const docs: AgentProject['docs'] = {}, confirmed: AgentProject['confirmed'] = {};
     for (const k of DOC_ORDER) if (typeof r.docs?.[k] === 'string') docs[k] = r.docs[k].slice(0, MAX_DOC);
     for (const k of ['questions', ...DOC_ORDER] as const) if (Number(r.confirmed?.[k]) > 0) confirmed[k] = Number(r.confirmed[k]);
+    const sources = sanitizeRefs(r.sources), ext = sanitizeExtends(r.extends);
     out.push({
+      ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}),
       id: r.id.slice(0, 40), answers, docs, confirmed, stale: Array.isArray(r.stale) ? r.stale.filter((k: unknown) => DOC_ORDER.includes(k as DocKey)) : [],
       ...(typeof r.agentId === 'string' ? { agentId: r.agentId } : {}), createdAt: Number(r.createdAt) || 0, updatedAt: Number(r.updatedAt) || 0,
     });

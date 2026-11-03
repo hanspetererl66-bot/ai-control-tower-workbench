@@ -3,7 +3,7 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'registry';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n', 'skillhealth'];
@@ -77,6 +77,15 @@ export default function Rail({
           aria-pressed={DEVELOP_VIEWS.includes(view)}
         >
           <DevelopIcon />
+        </button>
+        <button
+          className={`rail-btn ${view === 'registry' ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('registry')}
+          title="Registry: agents, workflows and features with their history"
+          aria-label="Registry"
+          aria-pressed={view === 'registry'}
+        >
+          <RegistryIcon />
         </button>
       </div>
 
@@ -202,6 +211,19 @@ function DevelopIcon() {
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <path d="M5.6 6 1.8 10l3.8 4M14.4 6l3.8 4-3.8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M8.5 14.2 9.7 5.8M10.8 14.2l1.2-8.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RegistryIcon() {
+  // A stack of three versions with a clock hand: everything built, with its history.
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="11" height="3.6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="3" y="8.2" width="11" height="3.6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="3" y="13.4" width="6.4" height="3.6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="14.6" cy="14.6" r="3" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M14.6 13v1.7l1.1.7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
