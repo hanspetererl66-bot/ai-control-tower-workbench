@@ -274,7 +274,7 @@ const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        company_code: { type: 'string', description: 'Company code DE01, PL01 or FR01. Omit for all.' },
+        company_code: { type: 'string', description: 'Company code DE10, UK10 or FR10. Omit for all.' },
       },
       additionalProperties: false,
     },

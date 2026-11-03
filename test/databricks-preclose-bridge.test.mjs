@@ -7,10 +7,10 @@ import { handlePrecloseForecastMessage } from '../src/forecast-bridge.ts';
 const text = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 // The Statement API returns every cell as a string.
 const grirRows = [
-  { po_number: '4500001001', item: '10', company_code: 'DE01', vendor_name: 'Nordwerk Metall GmbH', description: 'Metal housings', goods_receipt_date: '2026-10-29', age_days: '4', gr_value_eur: '50700.00', invoiced_value_eur: '0.00', open_value_eur: '50700.0', classification: 'ACCRUE' },
-  { po_number: '4500000871', item: '10', company_code: 'DE01', vendor_name: 'Baltic Fasteners UAB', description: 'Fasteners', goods_receipt_date: '2026-07-07', age_days: '118', gr_value_eur: '6300', invoiced_value_eur: '0', open_value_eur: '6300', classification: 'STALE_REVIEW', extra: 'dropped' },
+  { po_number: '4500001001', item: '10', company_code: 'DE10', vendor_name: 'Nordwerk Metall GmbH', description: 'Metal housings', goods_receipt_date: '2026-10-29', age_days: '4', gr_value_eur: '50700.00', invoiced_value_eur: '0.00', open_value_eur: '50700.0', classification: 'ACCRUE' },
+  { po_number: '4500000871', item: '10', company_code: 'DE10', vendor_name: 'Baltic Fasteners UAB', description: 'Fasteners', goods_receipt_date: '2026-07-07', age_days: '118', gr_value_eur: '6300', invoiced_value_eur: '0', open_value_eur: '6300', classification: 'STALE_REVIEW', extra: 'dropped' },
 ];
-const icRows = [{ item_id: 'IC-0005', seller_company: 'DE01', buyer_company: 'PL01', description: 'Management fee', posting_date: '2026-10-26', seller_amount_eur: '84200', buyer_amount_eur: null, difference_eur: '84200', category: 'MISSING_ON_BUYER_SIDE' }];
+const icRows = [{ item_id: 'IC-0005', seller_company: 'DE10', buyer_company: 'UK10', description: 'Management fee', posting_date: '2026-10-26', seller_amount_eur: '84200', buyer_amount_eur: null, difference_eur: '84200', category: 'MISSING_ON_BUYER_SIDE' }];
 const sapItems = [
   { po_number: '4500001001', item: '10', open_value_eur: 50700, accrued_eur: 0, accrual_document: null },
   { po_number: '4500000871', item: '10', open_value_eur: 6000, accrued_eur: 0, accrual_document: null },
@@ -51,13 +51,13 @@ test('the request returns lakehouse rows with numbers parsed, checked against SA
 
 test('the Space cannot send its own SQL and the company filter is validated', async () => {
   const { call, calls } = fakeCall();
-  await handleDatabricksPrecloseMessage({ type: 'ct:databricks-preclose-request', requestId: 'd2', company: 'DE01', statement: 'DROP TABLE x', sql: 'DELETE FROM y' }, call);
+  await handleDatabricksPrecloseMessage({ type: 'ct:databricks-preclose-request', requestId: 'd2', company: 'DE10', statement: 'DROP TABLE x', sql: 'DELETE FROM y' }, call);
   const sent = calls.filter(([tool]) => tool === 'databricks_run_sql').map(([, args]) => args.statement);
-  assert.equal(sent[0], GRIR_SQL('DE01'));
+  assert.equal(sent[0], GRIR_SQL('DE10'));
   assert.equal(sent[1], IC_SQL);
   assert.ok(sent.every((statement) => /^SELECT /.test(statement) && !/DROP|DELETE|INSERT|UPDATE/i.test(statement)));
   const bad = fakeCall();
-  await handleDatabricksPrecloseMessage({ type: 'ct:databricks-preclose-request', requestId: 'd3', company: "DE01' OR '1'='1" }, bad.call);
+  await handleDatabricksPrecloseMessage({ type: 'ct:databricks-preclose-request', requestId: 'd3', company: "DE10' OR '1'='1" }, bad.call);
   assert.equal(bad.calls[0][1].statement, GRIR_SQL(undefined), 'an invalid company code is ignored');
   assert.equal(bad.calls.some(([, args]) => String(args.statement ?? '').includes("OR '1'")), false);
 });
