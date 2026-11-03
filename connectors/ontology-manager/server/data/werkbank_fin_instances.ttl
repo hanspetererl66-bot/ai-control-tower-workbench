@@ -1,0 +1,50 @@
+@prefix : <https://werkbank.example/ns/fin#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Gesellschaftscodes wie in PR #171 (DE10, FR10, UK10)
+:DE10 a :CompanyCode ; rdfs:label "Werkbank Demo Deutschland"@de ;
+    :code "DE10" ; :country "DE" ; :currency "EUR" .
+:FR10 a :CompanyCode ; rdfs:label "Werkbank Demo Frankreich"@de ;
+    :code "FR10" ; :country "FR" ; :currency "EUR" .
+:UK10 a :CompanyCode ; rdfs:label "Werkbank Demo Vereinigtes Königreich"@de ;
+    :code "UK10" ; :country "GB" ; :currency "GBP" .
+
+# Datenquellen im Katalog werkbank_demo (Schemas fin, ops, scm)
+:ds_invoices a :Dataset ; rdfs:label "Rechnungen"@de ;
+    :tableName "werkbank_demo.fin.invoices" .
+:ds_gl a :Dataset ; rdfs:label "Hauptbuch"@de ;
+    :tableName "werkbank_demo.fin.gl_entries" .
+:ds_po a :Dataset ; rdfs:label "Bestellungen"@de ;
+    :tableName "werkbank_demo.scm.purchase_orders" .
+
+# Zertifizierte Kennzahlen
+:Margin a :Metric ; rdfs:label "Marge"@de, "Margin"@en ;
+    :definition "Deckungsbeitrag I in Prozent des Nettoumsatzes, vor Gemeinkosten, in Gesellschaftswährung."@de ;
+    :formula "(Nettoumsatz - Herstellkosten) / Nettoumsatz" ;
+    :certifiedBy "Group Controlling" ;
+    :derivedFrom :ds_invoices, :ds_gl .
+
+:DSO a :Metric ; rdfs:label "Forderungsreichweite (DSO)"@de, "Days Sales Outstanding"@en ;
+    :definition "Durchschnittliche Anzahl Tage bis zum Zahlungseingang offener Kundenforderungen."@de ;
+    :formula "Offene Forderungen / Nettoumsatz * Tage der Periode" ;
+    :certifiedBy "Group Treasury" ;
+    :derivedFrom :ds_invoices .
+
+:OpenPOExposure a :Metric ; rdfs:label "Offenes Bestellobligo"@de ;
+    :definition "Summe nicht gelieferter und nicht fakturierter Bestellpositionen zum Stichtag."@de ;
+    :certifiedBy "Group Procurement" ;
+    :derivedFrom :ds_po .
+
+:MarginAfterAccruals a :Metric ; rdfs:label "Marge nach Rückstellungen"@de ;
+    :definition "Marge, bereinigt um Rückstellungen für nicht fakturierte Lieferungen im Pre-Close."@de ;
+    :certifiedBy "Group Controlling" ;
+    :dependsOn :Margin .
+
+# Pre-Close-Prüfungen
+:chk_dso a :PreCloseCheck ; rdfs:label "DSO-Plausibilität"@de ;
+    :appliesTo :DE10, :FR10, :UK10 ; :measuredBy :DSO .
+:chk_margin a :PreCloseCheck ; rdfs:label "Margenabweichung"@de ;
+    :appliesTo :DE10, :FR10 ; :measuredBy :Margin, :MarginAfterAccruals .
+:chk_po a :PreCloseCheck ; rdfs:label "Offene Bestellungen"@de ;
+    :appliesTo :UK10 ; :measuredBy :OpenPOExposure .

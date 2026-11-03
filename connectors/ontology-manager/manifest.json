@@ -1,0 +1,106 @@
+{
+  "manifest_version": "0.2",
+  "name": "ontology-manager",
+  "display_name": "Ontology Manager (OntoRAG)",
+  "version": "0.1.0",
+  "description": "Manages ontologies for the Werkbank with OntoRAG (open source, Apache-2.0, pip: ontorag). Browse, search and compose baseline ontologies, register new ones, and query an ontology with its instances over SPARQL. Ships a small Finance Pre-Close baseline (company codes DE10, FR10, UK10, certified metrics such as Margin and DSO, pre-close checks). Runs on this computer through uv (needs uv; the first start downloads the OntoRAG packages). No model key is needed for these tools; building ontologies from documents with the OntoRAG command line is a separate step that does need one.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "python",
+    "entry_point": "server/ontorag_stdio.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-project",
+        "--python",
+        "3.12",
+        "--with",
+        "ontorag",
+        "${__dirname}/server/ontorag_stdio.py"
+      ],
+      "env": {
+        "ONTORAG_FOLDER": "${user_config.ontology_folder}",
+        "ONTORAG_ONTOLOGY_TTL": "${user_config.knowledge_ontology_file}",
+        "ONTORAG_INSTANCES_TTL": "${user_config.knowledge_instances_file}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_ontologies",
+      "description": "List the baseline ontologies registered in the catalog."
+    },
+    {
+      "name": "inspect_ontology",
+      "description": "Show the classes and properties of one registered baseline ontology."
+    },
+    {
+      "name": "search_classes",
+      "description": "Search classes by name or description across all registered baselines."
+    },
+    {
+      "name": "search_properties",
+      "description": "Search properties by name or description across all registered baselines."
+    },
+    {
+      "name": "compose",
+      "description": "Merge selected baselines into one schema card with the origin of every term."
+    },
+    {
+      "name": "add_ontology",
+      "description": "Register a new baseline ontology from Turtle (TTL) text. Adds to the catalog; nothing is overwritten by the connector itself."
+    },
+    {
+      "name": "describe",
+      "description": "Describe one resource (class, metric, company code) by its IRI, as Turtle."
+    },
+    {
+      "name": "list_by_class",
+      "description": "List the instances of a class, for example all company codes."
+    },
+    {
+      "name": "outgoing",
+      "description": "Follow the relations that leave a resource."
+    },
+    {
+      "name": "incoming",
+      "description": "Follow the relations that point to a resource."
+    },
+    {
+      "name": "mentions",
+      "description": "Show where a resource is mentioned (provenance), when the instances carry mention nodes."
+    },
+    {
+      "name": "sparql_select",
+      "description": "Run a read-only SPARQL SELECT over the ontology and its instances."
+    },
+    {
+      "name": "sparql_construct",
+      "description": "Run a read-only SPARQL CONSTRUCT over the ontology and its instances."
+    }
+  ],
+  "user_config": {
+    "ontology_folder": {
+      "type": "string",
+      "title": "Ontology folder",
+      "description": "Absolute path of a folder on this computer where the ontology catalog is kept, for example /home/you/werkbank-ontologies. It is created if it does not exist. The bundled Finance Pre-Close baseline is registered there on the first start.",
+      "required": true
+    },
+    "knowledge_ontology_file": {
+      "type": "string",
+      "title": "Ontology file for queries (optional)",
+      "description": "Absolute path of a Turtle (.ttl) ontology that describe, list_by_class and the SPARQL tools read. Leave empty to use the bundled Finance Pre-Close baseline.",
+      "required": false
+    },
+    "knowledge_instances_file": {
+      "type": "string",
+      "title": "Instances file for queries (optional)",
+      "description": "Absolute path of the Turtle (.ttl) file with the instances of that ontology. Leave empty to use the bundled sample instances. Set both files or neither.",
+      "required": false
+    }
+  }
+}
