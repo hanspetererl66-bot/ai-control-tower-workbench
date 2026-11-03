@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { readSkill, type Skill } from '../skills';
 import { reviewOutcome, reviewSkill, type CheckResult } from '../skill-review';
 import { APPROVER, approvalSteps, type ApprovalStep } from '../skill-approval';
+import { reconcile, dbTarget, type DbRequest } from '../skill-db';
 import { CHECKS, decide, demote, levelOf, loadGov, pendingFor, renameLevel, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 
 type Tab = 'map' | 'approvals';
@@ -62,6 +63,43 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
   const [note, setNote] = useState('');
   const [review, setReview] = useState<CheckResult[] | null>(null);
   const [reasons, setReasons] = useState<Record<number, string>>({});
+  // Shared database: 'unknown' until the first answer, 'off' when it is not set up (the queue then stays a local simulation).
+  const [db, setDb] = useState<'unknown' | 'on' | 'off'>('unknown');
+  const [dbMsg, setDbMsg] = useState('');
+  const [dbBusy, setDbBusy] = useState(false);
+  const [groups, setGroups] = useState<Array<{ id: string; name: string; role: string }>>([]);
+  const [groupId, setGroupId] = useState('');
+  const [canDecide, setCanDecide] = useState<Record<string, boolean>>({});
+  const host = window.host;
+
+  /** Ask the database for the state of the requests and bring the local queue in line. */
+  const syncDb = async () => {
+    if (!host?.skillDbPromotion) { setDb('off'); return; }
+    const r = await host.skillDbPromotion('list_skill_requests', {});
+    if (!r.ok) { setDb('off'); setDbMsg(r.detail ?? ''); return; }
+    const rows = (r.data?.requests ?? []) as Array<DbRequest>;
+    setDb('on'); setDbMsg('');
+    setCanDecide(Object.fromEntries(rows.map((x) => [x.id, !!x.can_decide])));
+    setGov((g) => reconcile(g, rows));
+    const gr = await host.skillDbGroups?.();
+    if (gr?.ok && gr.rows) { setGroups(gr.rows); setGroupId((cur) => cur || gr.rows?.[0]?.id || ''); }
+  };
+  useEffect(() => { void syncDb(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Register the skill in the database (Individual) and ask for the next level there. Returns the database request id. */
+  const submitDb = async (dir: string, lvl: LevelIndex): Promise<{ id?: string; error?: string }> => {
+    const reg = await host!.skillDbRegister?.(dir);
+    if (!reg?.ok) return { error: reg?.detail ?? 'The skill could not be stored in the database.' };
+    const to = dbTarget((lvl + 1) as 1 | 2);
+    const r = await host!.skillDbPromotion!('request_skill_promotion', { name: dir, to, ...(to === 'team' ? { group: groupId } : {}), note });
+    if (!r.ok) return { error: r.detail };
+    const req = r.data?.request;
+    if (req?.status === 'blocked') {
+      await host!.skillDbPromotion!('withdraw_skill_request', { id: req.id });
+      return { error: 'The database’s own automatic checks failed for this version. Fix the skill and ask again.' };
+    }
+    return { id: req?.id };
+  };
 
   useEffect(() => saveGov(gov), [gov]);
   const change = (fn: (g: SkillGov) => SkillGov) => setGov((g) => fn(g));
@@ -152,7 +190,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                     <li><b>{gov.levels[0]} → {gov.levels[1]}</b><span>{APPROVER[1].role}, {APPROVER[1].sla}</span></li>
                     <li><b>{gov.levels[1]} → {gov.levels[2]}</b><span>{APPROVER[2].role}, {APPROVER[2].sla}</span></li>
                   </ul>
-                  <p className="sgov-help">Simulation: in this prototype one person plays every role and the approval is stored on this computer. A real rollout needs the shared database described in the architecture note.</p>
+                  <p className="sgov-help">{db === 'on' ? 'Requests are stored in the shared database under your e-mail address. Another person decides them.' : 'Simulation: without the shared database one person plays every role and the approval is stored on this computer.'}</p>
                 </div>
               );
             }
@@ -182,9 +220,28 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                     {CHECKS.map((c, k) => (
                       <label key={c} className="sgov-check"><input type="checkbox" checked={checked[k]} onChange={() => setChecked((cs) => cs.map((v, j) => (j === k ? !v : v)))} />{c}</label>
                     ))}
+                    {db === 'on' && lvl === 0 && (
+                      <label className="sgov-check"><span>Department</span>
+                        <select value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+                          {groups.length === 0 && <option value="">You are in no department</option>}
+                          {groups.map((x) => <option key={x.id} value={x.id}>{x.name} ({x.role})</option>)}
+                        </select>
+                      </label>
+                    )}
+                    {db === 'off' && <small>Not connected to the shared database: this request is a local simulation{dbMsg ? ` (${dbMsg})` : ''}.</small>}
+                    {dbMsg && db === 'on' && <small role="alert">{dbMsg}</small>}
                     <textarea placeholder="Why should this skill be published? Who will use it?" value={note} maxLength={400} onChange={(e) => setNote(e.target.value)} />
                     <div className="sgov-actions">
-                      <button className="dialog-btn dialog-btn-primary" disabled={!checked.every(Boolean) || !review || reviewOutcome(review) === 'blocked'} onClick={() => { change((g) => requestPromotion(g, s.name, note, Date.now(), review?.map(({ id, status, detail }) => ({ id, status, detail })))); setAsking(null); }}>Submit for approval</button>
+                      <button className="dialog-btn dialog-btn-primary" disabled={dbBusy || !checked.every(Boolean) || !review || reviewOutcome(review) === 'blocked' || (db === 'on' && lvl === 0 && !groupId)} onClick={async () => {
+                        const checksOut = review?.map(({ id, status, detail }) => ({ id, status, detail }));
+                        if (db !== 'on') { change((g) => requestPromotion(g, s.name, note, Date.now(), checksOut)); setAsking(null); return; }
+                        setDbBusy(true); setDbMsg('');
+                        const out = await submitDb(s.dir, lvl);
+                        setDbBusy(false);
+                        if (out.error) { setDbMsg(out.error); return; }
+                        change((g) => requestPromotion(g, s.name, note, Date.now(), checksOut, out.id));
+                        setAsking(null);
+                      }}>{dbBusy ? 'Sending…' : 'Submit for approval'}</button>
                       <button className="dialog-btn" onClick={() => setAsking(null)}>Cancel</button>
                     </div>
                   </div>
@@ -197,6 +254,11 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
 
       {tab === 'approvals' && (
         <div className="sgov-queue">
+          <p className="sgov-help">
+            {db === 'on' ? 'Stored in the shared database. The database decides who may approve: not the requester, only a department admin or a Governance board admin.' : db === 'off' ? `Local simulation: not connected to the shared database${dbMsg ? ` (${dbMsg})` : ''}.` : 'Checking the shared database…'}
+            {db === 'on' && <> <button className="dialog-btn" onClick={() => void syncDb()}>Refresh</button></>}
+          </p>
+          {dbMsg && db === 'on' && <p className="sgov-help" role="alert">{dbMsg}</p>}
           {gov.requests.length === 0 && <p className="manage-empty">No requests yet. Pick a skill on the map and choose “Publish”.</p>}
           {gov.requests.map((r) => (
             <div key={r.id} className="sgov-req">
@@ -212,8 +274,23 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
               {r.status === 'pending' && (
                 <div className="sgov-actions">
                   <input placeholder="Reason (optional)" value={reasons[r.id] ?? ''} onChange={(e) => setReasons((m) => ({ ...m, [r.id]: e.target.value }))} />
-                  <button className="dialog-btn" onClick={() => change((g) => decide(g, r.id, true, reasons[r.id] ?? '', Date.now()))}>Approve</button>
-                  <button className="dialog-btn dialog-btn-danger" onClick={() => change((g) => decide(g, r.id, false, reasons[r.id] ?? '', Date.now()))}>Reject</button>
+                  {(['Approve', 'Reject'] as const).map((label) => {
+                    const approve = label === 'Approve';
+                    const blocked = !!r.dbId && canDecide[r.dbId] === false;
+                    return (
+                      <button key={label} className={`dialog-btn ${approve ? '' : 'dialog-btn-danger'}`} disabled={dbBusy || blocked}
+                        title={blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the organization level).' : undefined}
+                        onClick={async () => {
+                          if (r.dbId && host?.skillDbPromotion) {
+                            setDbBusy(true); setDbMsg('');
+                            const out = await host.skillDbPromotion('decide_skill_request', { id: r.dbId, approve, reason: reasons[r.id] ?? '' });
+                            setDbBusy(false);
+                            if (!out.ok) { setDbMsg(out.detail ?? 'The database refused the decision.'); return; }
+                          }
+                          change((g) => decide(g, r.id, approve, reasons[r.id] ?? '', Date.now()));
+                        }}>{label}</button>
+                    );
+                  })}
                 </div>
               )}
             </div>

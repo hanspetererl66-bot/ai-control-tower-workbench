@@ -100,7 +100,13 @@ declare global {
       skillPackInfo?: (dir: string) => Promise<{ ok: boolean; detail?: string; files?: { path: string; bytes: number }[]; text?: string }>;
       exportSkill?: (dir: string) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; files?: number }>;
       importSkillOpen?: () => Promise<null | { ok: boolean; detail?: string; id?: string; slug?: string; name?: string; description?: string; files?: { path: string; bytes: number }[]; text?: string; exists?: boolean }>;
-      importSkillInstall?: (id: string, overwrite: boolean) => Promise<{ ok: boolean; detail?: string; slug?: string; replaced?: boolean }>;
+      importSkillInstall?: (id: string, overwrite: boolean) => Promise<{ ok: boolean; detail?: string; slug?: string; replaced?: boolean; db?: { ok: boolean; detail?: string; version?: number | null } }>;
+      skillDbSync?: () => Promise<{ ok: boolean; detail?: string; result?: { installed: string[]; updated: string[]; removed: string[]; skipped: string[] } }>;
+      skillDbRegister?: (slug: string) => Promise<{ ok: boolean; detail?: string; version?: number | null }>;
+      skillDbGroups?: () => Promise<{ ok: boolean; detail?: string; rows?: Array<{ id: string; name: string; role: string }> }>;
+      skillDbRanking?: () => Promise<{ ok: boolean; detail?: string; rows?: Array<{ slug: string; description?: string; installs: number; views: number; devices: number; score: number }> }>;
+      skillDbPromotion?: (tool: string, args: Record<string, unknown>) => Promise<{ ok: boolean; detail?: string; data?: any }>;
+      onSkillsSynced?: (cb: () => void) => () => void;
       forgetSecrets?: (name: string) => Promise<{ ok: boolean; detail?: string }>;
       setConnectorEnabled?: (
         name: string,

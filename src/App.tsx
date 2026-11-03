@@ -375,6 +375,8 @@ export default function App() {
   useEffect(() => {
     void listSkills().then(setSkillList).catch(() => undefined);
   }, [settingsOpen]);
+  // The daily registry sync changed the skills folder (new skills, notices): list them again.
+  useEffect(() => window.host?.onSkillsSynced?.(() => { void listSkills().then(setSkillList).catch(() => undefined); }), []);
   useEffect(() => {
     if (!agent || !settingsOpen) return;
     void agent.listExtensions().then((list) => setExtensionNames(list.filter((e) => e.enabled && !e.isPlatform).map((e) => e.name))).catch(() => undefined);

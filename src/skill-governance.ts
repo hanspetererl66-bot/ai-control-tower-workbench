@@ -16,6 +16,8 @@ export type PromotionRequest = {
   createdAt: number;
   decidedAt?: number;
   reason?: string;
+  /** Id of the request in the shared database; set when the database holds this request. */
+  dbId?: string;
   /** Result of the automatic review at the time of the request. */
   checks?: { id: string; status: 'pass' | 'warn' | 'fail'; detail: string }[];
 };
@@ -53,11 +55,11 @@ export function renameLevel(gov: SkillGov, index: LevelIndex, name: string): Ski
 }
 
 /** Ask to move a skill one level up. Refused for the top level and while a request is pending. */
-export function requestPromotion(gov: SkillGov, skill: string, note: string, now: number, checks?: PromotionRequest['checks']): SkillGov {
+export function requestPromotion(gov: SkillGov, skill: string, note: string, now: number, checks?: PromotionRequest['checks'], dbId?: string): SkillGov {
   const from = levelOf(gov, skill);
   if (from >= 2 || pendingFor(gov, skill)) return gov;
   const seq = gov.seq + 1;
-  const req: PromotionRequest = { id: seq, skill, from, to: (from + 1) as LevelIndex, note: note.trim().slice(0, 400), status: 'pending', createdAt: now, ...(checks ? { checks } : {}) };
+  const req: PromotionRequest = { id: seq, skill, from, to: (from + 1) as LevelIndex, note: note.trim().slice(0, 400), status: 'pending', createdAt: now, ...(checks ? { checks } : {}), ...(dbId ? { dbId } : {}) };
   return { ...gov, seq, requests: [req, ...gov.requests].slice(0, 200) };
 }
 
@@ -89,7 +91,7 @@ export function loadGov(storage?: Pick<Storage, 'getItem'>, key: string = GOV_KE
       ? (p.levels.map((n: string) => n.trim().slice(0, 40)) as SkillGov['levels']) : base.levels;
     const skills: Record<string, LevelIndex> = {};
     for (const [k, v] of Object.entries(p.skills ?? {})) if (v === 0 || v === 1 || v === 2) skills[k] = v;
-    const requests = (Array.isArray(p.requests) ? p.requests : []).filter((r: any) => r && typeof r.skill === 'string' && typeof r.id === 'number' && (r.status === 'pending' || r.status === 'approved' || r.status === 'rejected') && [0, 1].includes(r.from) && [1, 2].includes(r.to));
+    const requests = (Array.isArray(p.requests) ? p.requests : []).map((r: any) => (r && typeof r.dbId === 'string' && !/^[0-9a-f-]{36}$/i.test(r.dbId) ? { ...r, dbId: undefined } : r)).filter((r: any) => r && typeof r.skill === 'string' && typeof r.id === 'number' && (r.status === 'pending' || r.status === 'approved' || r.status === 'rejected') && [0, 1].includes(r.from) && [1, 2].includes(r.to));
     return { levels, skills, requests, seq: typeof p.seq === 'number' ? p.seq : requests.reduce((m: number, r: any) => Math.max(m, r.id), 0) };
   } catch {
     return base;
