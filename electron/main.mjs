@@ -11,6 +11,7 @@ import { buildBatches } from '../shared/table-ingest.mjs';
 import { BUNDLED_CONNECTORS, stageConnector } from '../connectors/_lib/bundle.mjs';
 import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry } from './n8n.mjs';
 import { createWorkStore, DEFAULT_EMAIL } from './work-store.mjs';
+import { createSkillStore } from './skill-store.mjs';
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
@@ -697,7 +698,14 @@ function readSkills() {
     } catch {
       continue; // a directory without SKILL.md is not a skill
     }
-    skills.push({ name, description: description.slice(0, 240), dir: e.name, updatedAt });
+    // A skill pulled from the database carries its notice (Auslauf, Ersatz) in the marker file.
+    let sunsetAt = null, replacedBy = null;
+    try {
+      const marker = JSON.parse(readFileSync(join(SKILLS_DIR, e.name, '.synced.json'), 'utf8'));
+      sunsetAt = typeof marker.sunsetAt === 'string' ? marker.sunsetAt.slice(0, 10) : null;
+      replacedBy = typeof marker.replacedBy === 'string' ? marker.replacedBy.slice(0, 64) : null;
+    } catch { /* a local skill has no marker */ }
+    skills.push({ name, description: description.slice(0, 240), dir: e.name, updatedAt, ...(sunsetAt ? { sunsetAt } : {}), ...(replacedBy ? { replacedBy } : {}) });
   }
   return skills.sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -763,7 +771,7 @@ ipcMain.handle('skill-import-open', async () => {
   }
 });
 
-ipcMain.handle('skill-import-install', (_event, id, overwrite) => {
+ipcMain.handle('skill-import-install', async (_event, id, overwrite) => {
   const pkg = stagedImports.get(id);
   if (!pkg) return { ok: false, detail: 'The import expired. Choose the file again.' };
   const target = join(SKILLS_DIR, pkg.slug);
@@ -786,7 +794,9 @@ ipcMain.handle('skill-import-install', (_event, id, overwrite) => {
     cpSync(tmp, target, { recursive: true });
     rmSync(tmp, { recursive: true, force: true });
     stagedImports.delete(id);
-    return { ok: true, slug: pkg.slug, replaced: Boolean(overwrite) };
+    // An import lands at the lowest level (Individual) and is stored in the shared database under the person's e-mail.
+    const db = await skillStore.register(pkg.slug, pkg.files);
+    return { ok: true, slug: pkg.slug, replaced: Boolean(overwrite), db };
   } catch (e) {
     return { ok: false, detail: e?.message ?? String(e) };
   }
@@ -1398,6 +1408,12 @@ function readDatabaseAccess(name) {
   }
 }
 const workStore = createWorkStore({ file: join(ROOT, 'goose-home', 'work-sync.json'), readConnector: readDatabaseAccess, defaultEmail: DEFAULT_EMAIL });
+const skillStore = createSkillStore({ credentials: () => workStore.credentials(), skillsDir: SKILLS_DIR });
+ipcMain.handle('skill-db-sync', async () => { const r = await skillStore.sync().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })); if (r.ok) mainWindow?.webContents.send('skills-synced'); return r; });
+ipcMain.handle('skill-db-register', (_event, slug) => (SKILL_SLUG.test(slug ?? '') ? skillStore.registerInstalled(slug) : { ok: false, detail: 'bad name' }));
+ipcMain.handle('skill-db-groups', () => skillStore.groups().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
+ipcMain.handle('skill-db-ranking', () => skillStore.ranking().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
+ipcMain.handle('skill-db-promotion', (_event, tool, args) => skillStore.promotion(String(tool ?? ''), args).catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
 ipcMain.handle('work-status', () => workStore.status());
 ipcMain.handle('work-set-email', (_event, email) => workStore.setEmail(email));
 ipcMain.handle('work-call', async (_event, { tool, args } = {}) => {
@@ -1613,6 +1629,9 @@ app.whenReady().then(() => {
   startGoosed();
   allowOnlyAppMicrophone();
   createWindow();
+  // The registry is pulled once a day (and shortly after start) so Auslauf and Ersatz notices reach the skills folder.
+  setTimeout(() => void skillStore.sync().then((r) => { if (r.ok) mainWindow?.webContents.send('skills-synced'); }).catch(() => undefined), 30_000);
+  setInterval(() => void skillStore.sync().then((r) => { if (r.ok) mainWindow?.webContents.send('skills-synced'); }).catch(() => undefined), 24 * 3_600_000);
   const cold = process.argv.find((a) => a.startsWith('werkbank://'));
   if (cold) handleDeepLink(cold);
   app.on('activate', () => {

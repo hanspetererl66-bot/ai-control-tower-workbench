@@ -4654,3 +4654,6 @@ textarea.studio-field { min-height: 120px; }
 .skill-files ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 3px; max-height: 160px; overflow: auto; }
 .skill-files code { color: var(--ink); }
 .skill-replace { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; font-size: 13px; color: var(--ink); }
+
+.skill-notice { display: block; margin-top: 2px; font-size: 12px; color: var(--accent); }
+.skill-notice-ended { color: var(--error); }

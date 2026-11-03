@@ -7,6 +7,7 @@ import {
   isMicrosoft365Backend,
 } from '../connector-presentation';
 import { listSkills, type Skill } from '../skills';
+import { skillNotice } from '../skill-notice';
 import SkillIcon from './SkillIcon';
 import SkillGovernance from './SkillGovernance';
 import SkillImportDialog, { type ImportPreview } from './SkillImportDialog';
@@ -90,6 +91,7 @@ export default function ManageView({
   useEffect(() => {
     refresh();
   }, [refresh]);
+  useEffect(() => window.host?.onSkillsSynced?.(() => { void refresh(); }), [refresh]);
 
   async function run(
     label: string,
@@ -198,7 +200,9 @@ export default function ManageView({
                 const r = await window.host?.importSkillInstall?.(importing.id, overwrite);
                 if (!r?.ok) throw new Error(r?.detail ?? 'Install failed.');
                 setImporting(null);
-              }, `Skill “${importing.name}” installed. Restart the agent so it picks it up.`)
+                const where = r.db?.ok ? 'Stored in the shared database at the level Individual.' : `Not stored in the shared database${r.db?.detail ? `: ${r.db.detail}` : '.'}`;
+                return `Skill “${importing.name}” installed. ${where} Restart the agent so it picks it up.`;
+              })
             }
           />
         )}
@@ -416,6 +420,7 @@ export default function ManageView({
                 <div className="row-main">
                   <span className="row-title row-title-skill"><SkillIcon name={s.name} />{s.name}</span>
                   <span className="row-detail">{s.description}</span>
+                  {(() => { const n = skillNotice(s); return n ? <span className={`skill-notice skill-notice-${n.state}`}>{n.text}</span> : null; })()}
                 </div>
                 <div className="row-actions">
                   {extra}

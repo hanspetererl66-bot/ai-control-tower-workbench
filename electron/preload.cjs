@@ -64,6 +64,16 @@ contextBridge.exposeInMainWorld('host', {
   exportSkill: (dir) => ipcRenderer.invoke('skill-export', dir),
   importSkillOpen: () => ipcRenderer.invoke('skill-import-open'),
   importSkillInstall: (id, overwrite) => ipcRenderer.invoke('skill-import-install', id, overwrite),
+  skillDbSync: () => ipcRenderer.invoke('skill-db-sync'),
+  skillDbRegister: (slug) => ipcRenderer.invoke('skill-db-register', slug),
+  skillDbGroups: () => ipcRenderer.invoke('skill-db-groups'),
+  skillDbRanking: () => ipcRenderer.invoke('skill-db-ranking'),
+  skillDbPromotion: (tool, args) => ipcRenderer.invoke('skill-db-promotion', tool, args),
+  onSkillsSynced: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on('skills-synced', handler);
+    return () => ipcRenderer.removeListener('skills-synced', handler);
+  },
   forgetSecrets: (name) => ipcRenderer.invoke('forget-secrets', name),
   setConnectorEnabled: (name, enabled) =>
     ipcRenderer.invoke('set-connector-enabled', { name, enabled }),
