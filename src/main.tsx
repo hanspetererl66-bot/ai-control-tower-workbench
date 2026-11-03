@@ -97,6 +97,10 @@ declare global {
         ) => Promise<{ ok: boolean; text?: string; code?: string; detail?: string }>;
       };
       removeSkill?: (name: string) => Promise<{ ok: boolean; detail?: string }>;
+      skillPackInfo?: (dir: string) => Promise<{ ok: boolean; detail?: string; files?: { path: string; bytes: number }[]; text?: string }>;
+      exportSkill?: (dir: string) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; files?: number }>;
+      importSkillOpen?: () => Promise<null | { ok: boolean; detail?: string; id?: string; slug?: string; name?: string; description?: string; files?: { path: string; bytes: number }[]; text?: string; exists?: boolean }>;
+      importSkillInstall?: (id: string, overwrite: boolean) => Promise<{ ok: boolean; detail?: string; slug?: string; replaced?: boolean }>;
       forgetSecrets?: (name: string) => Promise<{ ok: boolean; detail?: string }>;
       setConnectorEnabled?: (
         name: string,
