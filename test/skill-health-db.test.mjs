@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createSkillStore } from '../electron/skill-store.mjs';
 import { exampleCatalog, healthOf } from '../src/skill-health.ts';
-import { catalogFromDatabase, levelOf, lifecycleCalls, skillsFromRows } from '../src/skill-health-db.ts';
+import { catalogFromDatabase, levelOf, lifecycleCalls, promotionCalls, skillsFromRows, withdrawFlags } from '../src/skill-health-db.ts';
 
 const NOW = Date.parse('2026-11-04T10:00:00Z');
 const rows = [
@@ -65,4 +65,14 @@ test('store reads the health overview and changes the lifecycle with the e-mail 
   assert.equal(l.ok, true);
   assert.equal(seen[1].body.p_action, 'retire');
   assert.equal((await store.lifecycle({ slug: 'a', action: 'delete' })).ok, false);
+});
+
+test('a newly set "request next level" flag becomes a database request, and can be taken back', () => {
+  const prev = catalogFromDatabase(exampleCatalog(NOW), rows, NOW);
+  const next = { ...prev, skills: prev.skills.map((s) => (s.id === 'old-thing' || s.id === 'invoice-summary' ? { ...s, promotionRequested: Math.min(2, s.level + 1) } : s)) };
+  assert.deepEqual(promotionCalls(prev, next), [{ slug: 'old-thing', to: 'team' }]);
+  assert.deepEqual(promotionCalls(next, next), []);
+  const back = withdrawFlags(next, ['old-thing']);
+  assert.equal(back.skills.find((s) => s.id === 'old-thing').promotionRequested, undefined);
+  assert.equal(withdrawFlags(next, []), next);
 });

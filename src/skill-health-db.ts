@@ -82,3 +82,23 @@ export function lifecycleCalls(prev: Catalog, next: Catalog, now: number): Lifec
   }
   return calls;
 }
+
+export type PromotionCall = { slug: string; to: 'team' | 'company' };
+
+/** Skills whose "Request next level" flag was just set: these become a real request in the database. */
+export function promotionCalls(prev: Catalog, next: Catalog): PromotionCall[] {
+  const before = new Map(prev.skills.map((s) => [s.id, s]));
+  const calls: PromotionCall[] = [];
+  for (const s of next.skills) {
+    if (s.promotionRequested === undefined || s.level >= 2) continue;
+    if (before.get(s.id)?.promotionRequested === s.promotionRequested) continue;
+    calls.push({ slug: s.id, to: s.level === 0 ? 'team' : 'company' });
+  }
+  return calls;
+}
+
+/** Takes the flag back for skills whose request did not go through, so the dashboard does not claim one. */
+export function withdrawFlags(catalog: Catalog, slugs: string[]): Catalog {
+  if (!slugs.length) return catalog;
+  return { ...catalog, skills: catalog.skills.map((s) => { if (!slugs.includes(s.id)) return s; const { promotionRequested: _drop, ...rest } = s; return rest as typeof s; }) };
+}
