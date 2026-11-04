@@ -318,3 +318,22 @@ test('skill files: the owner adds scripts, others read what they may see, SKILL.
   assert.match(rule("select public.skills_file_delete('anna@x.com', 'file-skill', 'templates/report.md')"), /no file/);
   assert.equal(json("select public.skills_files('anna@x.com', 'file-skill')").length, 1);
 });
+
+test('skill health overview: usage per skill, only what the actor may see (migration 024)', { skip }, () => {
+  publish('health-check', 'Checks travel expense reports with a script and flags missing receipts for the finance team', 'anna@x.com', '# Health\nCheck.', { domain: 'Finanzen' });
+  sql("update skills.skill set status = 'published' where slug = 'health-check'");
+  sql("insert into skills.event (slug, event, device, at) values " +
+    "('health-check', 'view', 'device-aaaa1', now() - interval '2 days'), ('health-check', 'install', 'device-aaaa2', now() - interval '10 days'), " +
+    "('health-check', 'view', 'device-aaaa1', now() - interval '60 days'), ('health-check', 'view', 'device-aaaa3', now() - interval '200 days')");
+  const row = json("select public.skills_health_overview('anna@x.com')").skills.find((s) => s.slug === 'health-check');
+  assert.deepEqual([row.uses30, row.uses90, row.devices30, row.devices90], [2, 3, 2, 2]);
+  assert.equal(row.state, 'published');
+  assert.ok(row.lastUsedAt && row.createdAt);
+  assert.equal(json("select public.skills_health_overview('anna@x.com', 1)").skills.length, 1);
+  // A draft of someone else is not visible to an outsider.
+  publish('health-private', 'Private draft of Ben that nobody else may see in any overview of the registry', 'ben@x.com', '# Private\nDraft.', { contact: 'ben@x.com' });
+  assert.ok(!json("select public.skills_health_overview('anna@x.com')").skills.some((s) => s.slug === 'health-private'));
+  assert.ok(json("select public.skills_health_overview('ben@x.com')").skills.some((s) => s.slug === 'health-private'));
+  // Not callable with the publishable key.
+  assert.match(rule("set role anon; select public.skills_health_overview('anna@x.com')"), /permission denied/);
+});
