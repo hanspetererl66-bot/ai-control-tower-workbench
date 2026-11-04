@@ -57,6 +57,7 @@ import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loa
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
+import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
@@ -1365,7 +1366,19 @@ export default function App() {
           onStop={() => void cancelCurrent()}
           ready={Boolean(agent)}
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
+          onAgentFrom={(h) => {
+            const project = newProject(h.goal);
+            project.answers = { ...project.answers, name: h.name.slice(0, 60) || project.answers.name };
+            if (h.refs.length) project.sources = h.refs;
+            if (h.extends) project.extends = h.extends;
+            changeAgentProjects([project, ...agentProjects]);
+            setFocusProject(project.id);
+            setView('studio');
+          }}
+          onOpenRegistry={() => setView('registry')}
         />
+      ) : view === 'registry' ? (
+        <RegistryView />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

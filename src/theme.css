@@ -4715,6 +4715,109 @@ textarea.studio-field { min-height: 120px; }
 .sh-back { width: 34px; height: 34px; padding: 0 !important; }
 @media (max-width: 800px) { .sh-props li { grid-template-columns: 22px 1fr; } .sh-row-actions { grid-column: 2; } }
 
+/* ---------- Develop: tile 0 (Sources) ---------- */
+.develop-card-wide { flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; padding: 20px 28px; margin: 0 0 22px; text-align: left; }
+.develop-card-wide:hover, .develop-card-wide:focus-within { transform: translateY(-3px); }
+.develop-wide-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.develop-card-wide .develop-card-text { max-width: 78ch; min-height: 0; }
+.develop-go-wide { width: auto; min-width: 170px; margin-top: 0; flex: none; }
+@media (max-width: 700px) { .develop-card-wide { flex-direction: column; align-items: stretch; } .develop-go-wide { width: 100%; } }
+
+/* ---------- Sources view (start from requirements) ---------- */
+.sx-steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.sx-steps li { display: flex; align-items: center; gap: 7px; padding: 4px 12px 4px 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); }
+.sx-steps li span { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line); font-size: 11px; }
+.sx-step-on { color: var(--ink); border-color: var(--accent) !important; font-weight: 600; }
+.sx-step-on span { background: var(--accent); border-color: var(--accent) !important; color: #fff; }
+.sx-step-done span { background: color-mix(in srgb, var(--lv-green) 18%, transparent); border-color: var(--lv-green) !important; }
+.sx-hint { margin: 0; padding: 8px 12px; border: 1px solid var(--line); border-left: 4px solid var(--lv-yellow); border-radius: 8px; background: var(--panel); font-size: 13px; color: var(--muted); }
+.sx-warn { margin: 0; padding: 8px 12px 8px 28px; border: 1px solid var(--line); border-left: 4px solid var(--lv-yellow); border-radius: 8px; background: var(--panel); font-size: 13px; }
+.sx-note { white-space: pre-wrap; }
+.sx-tabs { display: flex; gap: 4px; }
+.sh .sx-tabs button { border-radius: 999px; padding: 4px 14px; color: var(--muted); }
+.sh .sx-tabs .sx-tab-on { border-color: var(--accent); color: var(--accent); font-weight: 600; background: color-mix(in srgb, var(--accent) 9%, var(--panel)); }
+.sx-q { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.sx-qrow { display: flex; gap: 8px; }
+.sx-qrow input { flex: 1; font-weight: 400; }
+.sx-listhead { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sx-listhead h2 { margin-right: auto; }
+.sx-reqs { list-style: none; margin: 0; padding: 0; max-height: min(46vh, 460px); overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.sx-reqs li { border-bottom: 1px solid var(--line); }
+.sx-reqs li:last-child { border-bottom: 0; }
+.sx-reqs label { display: grid; grid-template-columns: 20px 86px 1fr; gap: 10px; align-items: start; padding: 9px 12px; cursor: pointer; font-size: 13px; }
+.sx-reqs label:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.sx-key { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--accent); overflow-wrap: anywhere; }
+.sx-rtext { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sx-rtext small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.sx-rtext a { color: var(--accent); }
+.sx-clusters { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 14px; align-items: start; }
+.sx-chead { display: flex; gap: 10px; align-items: center; }
+.sh .sx-title { flex: 1; font-size: 15px; font-weight: 600; }
+.sx-class { padding: 2px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); white-space: nowrap; }
+.sx-class-agent { color: var(--accent); border-color: var(--accent); }
+.sx-class-workflow { color: var(--lv-yellow); border-color: var(--lv-yellow); }
+.sx-class-feature { color: var(--lv-green); border-color: var(--lv-green); }
+.sx-summary { margin: 0; font-size: 13px; color: var(--muted); }
+.sx-members { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.sx-members li { display: grid; grid-template-columns: 80px 1fr auto; gap: 8px; align-items: center; font-size: 13px; }
+.sx-mt { min-width: 0; overflow-wrap: anywhere; }
+.sx-sugg { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; font-size: 13px; }
+.sx-sugg-row { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+.sx-sugg-row > span { flex: 1; min-width: 0; } .sx-sugg-row small { display: block; color: var(--muted); font-size: 12px; }
+.sx-classify { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.sx-classify label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+.sx-conf { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); min-width: 140px; }
+.sx-conf i { display: block; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.sx-conf b { display: block; height: 100%; background: var(--accent); }
+.sx-cwarn { margin: 0; font-size: 12.5px; color: var(--lv-red); }
+.sx-comment { margin: 0; padding: 9px 12px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px; background: var(--bg); font: inherit; font-size: 12.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* ---------- Registry view ---------- */
+.rg-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.rg-filters input { flex: 1; min-width: 220px; }
+.rg-error { margin: 0; color: var(--lv-red); font-size: 13px; }
+.rg-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+.rg-split-open { grid-template-columns: minmax(0, 1.2fr) minmax(360px, 1fr); }
+@media (max-width: 1100px) { .rg-split-open { grid-template-columns: minmax(0, 1fr); } }
+.rg-row { cursor: pointer; }
+.rg-row:hover td, .rg-row-on td { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.sh .rg-name { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 600; text-align: left; }
+.sh .rg-name:hover { color: var(--accent); }
+.rg-type { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 11.5px; border: 1px solid var(--line); color: var(--muted); }
+.rg-type-agent { color: var(--accent); border-color: var(--accent); }
+.rg-type-workflow { color: var(--lv-yellow); border-color: var(--lv-yellow); }
+.rg-type-feature { color: var(--lv-green); border-color: var(--lv-green); }
+.rg-detail { position: sticky; top: 0; max-height: calc(100vh - 150px); overflow: auto; }
+.rg-detail-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.rg-h { margin: 6px 0 0; font-size: 13px; color: var(--muted); font-weight: 600; }
+.rg-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.rg-chip { display: inline-flex; gap: 4px; align-items: center; padding: 1px 4px 1px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; background: var(--bg); }
+.sh .rg-chip button { border: 0; background: none; padding: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--accent); }
+.rg-chip a { color: var(--muted); text-decoration: none; padding: 0 5px; }
+.rg-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 330px; overflow: auto; }
+.sh .rg-timeline button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%; text-align: left; padding: 7px 10px; background: var(--bg); }
+.sh .rg-rev-on button { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
+.rg-timeline small { color: var(--muted); font-size: 11.5px; }
+.rg-diffs { display: flex; flex-direction: column; gap: 6px; }
+.rg-diffs summary { cursor: pointer; font-size: 13px; }
+.rg-st { font-size: 11.5px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.rg-st-added { color: var(--lv-green); border-color: var(--lv-green); } .rg-st-removed { color: var(--lv-red); border-color: var(--lv-red); } .rg-st-changed { color: var(--lv-yellow); border-color: var(--lv-yellow); }
+.rg-diff { margin: 6px 0 0; padding: 8px 0; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 12px; line-height: 1.5; overflow: auto; max-height: 280px; }
+.rg-l { display: block; padding: 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rg-l-add { background: color-mix(in srgb, var(--lv-green) 16%, transparent); }
+.rg-l-del { background: color-mix(in srgb, var(--lv-red) 14%, transparent); }
+.rg-l-gap { color: var(--muted); font-style: italic; }
+.rg-feature { display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.rg-frow { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.rg-feature label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+.rg-grow { flex: 1 1 200px; }
+.sh .rg-feature input:not([type=checkbox]):not([type=radio]) { width: 100%; min-width: 150px; box-sizing: border-box; }
+.rg-feature .rg-error { margin: 0; }
+.rg-row td:last-child { white-space: nowrap; }
+.rg-restore { align-self: flex-start; }
+.rg-refresh { margin-left: auto; }
+@media (prefers-reduced-motion: reduce) { .sx-conf b { transition: none; } }
+
 .sh-source { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius, 8px); background: var(--panel); color: var(--muted); font-size: 12.5px; }
 .sh-source-database { border-color: var(--lv-green, var(--line)); }
 .sh-source-offline { border-color: var(--lv-red, var(--line)); }

@@ -5,6 +5,9 @@ import { emptyIntent, loadProjects, newProject, saveProjects, upsertProject, typ
 import DevelopWizard from './DevelopWizard';
 import DictateButton from './DictateButton';
 import { appendDictation } from '../voice-text';
+import SourcesView from './SourcesView';
+import { requirementLines, SOURCES, type Handover } from '../requirements';
+import { featureArgs, hostApi, newFeature } from '../registry';
 
 type Props = {
   onAgentIntent: (intent: string) => void;
@@ -16,6 +19,9 @@ type Props = {
   onStop: () => void;
   ready: boolean;
   onRestartAgent: () => Promise<void> | void;
+  /** An agent from a cluster of requirements: the Agent Studio takes over. */
+  onAgentFrom: (h: Handover) => void;
+  onOpenRegistry: () => void;
 };
 
 /**
@@ -36,12 +42,33 @@ export default function DevelopHub(props: Props) {
     return () => window.removeEventListener(PROJECTS_PULLED, reload);
   }, []);
   const open = projects.find((p) => p.id === openId) ?? null;
+  const [mode, setMode] = useState<'hub' | 'sources'>('hub');
 
   const startWorkflow = (goal: string) => {
     const p = newProject('workflow');
     p.intent = { ...emptyIntent(), goal };
     setProjects((list) => upsertProject(list, p));
     setOpenId(p.id);
+  };
+
+  /** Where a cluster from the Sources tile goes: Agent Studio, the workflow process, or the registry (features). */
+  const handOver = async (h: Handover): Promise<string> => {
+    if (h.base === 'agent') { props.onAgentFrom(h); return ''; }
+    if (h.base === 'workflow') {
+      const p = newProject('workflow');
+      const lines = requirementLines(h);
+      p.intent = { ...emptyIntent(), name: h.name, goal: `${h.goal}${lines ? `\n\nRequirements from the sources:\n${lines}` : ''}`.slice(0, 1500) };
+      if (h.refs.length) p.sources = h.refs;
+      if (h.extends) p.extends = h.extends;
+      setProjects((list) => upsertProject(list, p));
+      setMode('hub');
+      setOpenId(p.id);
+      return '';
+    }
+    const api = hostApi();
+    if (!api) throw new Error('A feature is kept in the registry. That needs the desktop app and the shared database (connector "werkbank-workspace").');
+    const res = await api.call('save_work_item', featureArgs(newFeature(h), { note: `Created from Sources: ${h.refs.length} requirement${h.refs.length === 1 ? '' : 's'}` }));
+    return `"${h.name}" is a feature in the registry now (revision ${Number(res?.rev) || 1}).`;
   };
 
   if (open) {
@@ -63,12 +90,24 @@ export default function DevelopHub(props: Props) {
     );
   }
 
+  if (mode === 'sources') {
+    return <SourcesView generate={props.generate} onStop={props.onStop} ready={props.ready} onBack={() => setMode('hub')} onHandover={handOver} onOpenRegistry={props.onOpenRegistry} />;
+  }
+
   return (
     <main className="main develop-main">
       <div className="develop">
         <h1 className="develop-title">Develop</h1>
         <SharedSaveLine />
         <p className="develop-sub">Say what you want to achieve. Joule turns the goal into a draft, you refine and approve it.</p>
+        <section className="develop-card develop-card-wide" aria-label="Start from requirements">
+          <div className="develop-wide-text">
+            <span className="develop-card-title">Start from requirements</span>
+            <span className="develop-card-brand">from {SOURCES.map((s) => s.label).join(', ')}</span>
+            <span className="develop-card-text">Read the requirements you already have, tick the ones that belong together, and let Joule cluster them and propose what each cluster is: an agent, a workflow, an extension of one, or a feature.</span>
+          </div>
+          <button className="dialog-btn dialog-btn-primary develop-go develop-go-wide" onClick={() => setMode('sources')}>Open Sources</button>
+        </section>
         <div className="develop-cards">
           <IntentCard
             kind="agent" logo={<AgentMark />} title="Create an Agent" brand="with the Agent Studio"
