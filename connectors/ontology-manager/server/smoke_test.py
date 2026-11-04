@@ -19,6 +19,8 @@ from fastmcp.client.transports import PythonStdioTransport
 SERVER = Path(__file__).resolve().parent / "ontorag_stdio.py"
 NS = "https://werkbank.example/ns/fin#"
 EXPECTED_TOOLS = {
+    "propose_ontology_from_documents", "list_ontology_proposals", "show_ontology_proposal",
+    "apply_ontology_proposal", "discard_ontology_proposal", "document_ontology_settings",
     "list_ontologies", "inspect_ontology", "search_classes", "search_properties", "compose", "add_ontology",
     "describe", "list_by_class", "outgoing", "incoming", "mentions", "sparql_select", "sparql_construct",
 }
@@ -60,6 +62,25 @@ async def main():
             await call(c, "describe", {"iri": NS + "DSO"}, "Days Sales Outstanding")
             q = (f"PREFIX : <{NS}> SELECT ?m WHERE {{ ?m a :Metric ; :certifiedBy \"Group Treasury\" }}")
             await call(c, "sparql_select", {"query": q}, "DSO")
+            # relations, construct, mentions
+            await call(c, "outgoing", {"iri": NS + "DSO"}, "ds_invoices")
+            await call(c, "incoming", {"iri": NS + "DSO"}, "chk_dso")
+            await call(c, "sparql_construct",
+                       {"query": f"PREFIX : <{NS}> CONSTRUCT {{ ?m :certifiedBy ?who }} WHERE {{ ?m a :Metric ; :certifiedBy ?who }}"},
+                       "Group Controlling")
+            await call(c, "mentions", {"iris": [NS + "DSO"]}, "")
+            # catalog management: add a second baseline, then compose both
+            extra = (
+                "@prefix : <https://werkbank.example/ns/proc#> .\n"
+                "@prefix owl: <http://www.w3.org/2002/07/owl#> .\n"
+                "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+                ":Supplier a owl:Class ; rdfs:label \"Supplier\"@en ; rdfs:comment \"Vendor of goods or services.\"@en .\n"
+            )
+            await call(c, "add_ontology", {"slug": "werkbank_proc", "ttl_content": extra, "label": "Procurement"}, "werkbank_proc")
+            await call(c, "list_ontologies", {}, "werkbank_proc")
+            await call(c, "search_classes", {"query": "Supplier"}, "werkbank_proc")
+            await call(c, "compose", {"slugs": ["werkbank_fin", "werkbank_proc"]}, "Supplier")
+            await call(c, "compose", {"slugs": ["werkbank_fin", "werkbank_proc"]}, "CompanyCode")
     total = failures + failures_tools
     print("\nFailures:", total)
     sys.exit(1 if total else 0)

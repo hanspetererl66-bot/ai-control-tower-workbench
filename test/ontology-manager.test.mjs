@@ -13,22 +13,36 @@ const ONTORAG_TOOLS = [
   'list_ontologies', 'inspect_ontology', 'search_classes', 'search_properties', 'compose', 'add_ontology',
   'describe', 'list_by_class', 'outgoing', 'incoming', 'mentions', 'sparql_select', 'sparql_construct',
 ];
+const DOCUMENT_TOOLS = [
+  'propose_ontology_from_documents', 'list_ontology_proposals', 'show_ontology_proposal',
+  'apply_ontology_proposal', 'discard_ontology_proposal', 'document_ontology_settings',
+];
 
-test('the Ontology Manager starts the launcher with uv and OntoRAG, over stdio, with no secret', () => {
+test('the Ontology Manager starts the launcher with uv and OntoRAG, over stdio, with the model key as its only (optional) secret', () => {
   assert.equal(manifest.name, 'ontology-manager');
   assert.equal(manifest.server.mcp_config.command, 'uv');
   const args = manifest.server.mcp_config.args;
-  assert.ok(args.includes('--with') && args.includes('ontorag'));
+  assert.ok(args.includes('--with') && args.includes('ontorag[pdf]'));
   assert.ok(args.includes('${__dirname}/server/ontorag_stdio.py'));
   assert.equal(manifest.server.entry_point, 'server/ontorag_stdio.py');
   assert.equal(manifest.user_config.ontology_folder.required, true);
-  assert.ok(!Object.values(manifest.user_config).some((f) => f.sensitive), 'no secret is needed');
+  // only the model key is a secret, and it is optional: reading and querying work without any key
+  const secrets = Object.entries(manifest.user_config).filter(([, f]) => f.sensitive).map(([k]) => k);
+  assert.deepEqual(secrets, ['llm_api_key']);
+  assert.ok(!manifest.user_config.llm_api_key.required);
   assert.deepEqual(Object.keys(manifest.server.mcp_config.env).sort(),
-    ['ONTORAG_FOLDER', 'ONTORAG_INSTANCES_TTL', 'ONTORAG_ONTOLOGY_TTL']);
+    ['ONTORAG_DOCUMENTS_FOLDER', 'ONTORAG_FOLDER', 'ONTORAG_INSTANCES_TTL', 'ONTORAG_ONTOLOGY_TTL',
+      'OPENROUTER_API_KEY', 'OPENROUTER_BASE_URL', 'OPENROUTER_MODEL'].sort());
+  for (const [name, ref] of Object.entries(manifest.server.mcp_config.env)) {
+    const key = /^\$\{user_config\.(\w+)\}$/.exec(ref)?.[1];
+    assert.ok(key && manifest.user_config[key], `${name} points at a real setting`);
+  }
 });
 
-test('the manifest lists exactly the thirteen OntoRAG tools the launcher mounts', () => {
-  assert.deepEqual(manifest.tools.map((t) => t.name).sort(), [...ONTORAG_TOOLS].sort());
+test('the manifest lists the thirteen OntoRAG tools and the six document tools, and the launcher registers each one', () => {
+  assert.deepEqual(manifest.tools.map((t) => t.name).sort(), [...ONTORAG_TOOLS, ...DOCUMENT_TOOLS].sort());
+  const py = readFileSync(join(DIR, 'server/ontorag_stdio.py'), 'utf8');
+  for (const t of DOCUMENT_TOOLS) assert.match(py, new RegExp(`async def ${t}\\(`), `${t} is registered`);
   for (const t of manifest.tools) assert.ok(t.description.length > 10, `${t.name} has a description`);
 });
 
@@ -57,4 +71,31 @@ test('the launcher keeps stdout free for the protocol and never deletes catalog 
   assert.match(py, /transport="stdio"/);
   for (const line of py.split('\n').filter((l) => /\bprint\(/.test(l))) assert.match(line, /file=sys\.stderr/, line);
   assert.doesNotMatch(py, /rmtree|unlink|os\.remove|shutil\.rmtree/);
+});
+
+test('document proposals never change the catalog without a confirmation, and delete only their own folder', () => {
+  const py = readFileSync(join(DIR, 'server/doc_to_ontology.py'), 'utf8');
+  // the only functions that write to the catalog take the confirmed flag
+  assert.match(py, /def apply_proposal\(ws: Workspace, proposal_id: str, confirmed: bool\)/);
+  assert.match(py, /if not confirmed:\s+return \{\s+"status": "needs_confirmation"/);
+  assert.match(py, /def discard_proposal\(ws: Workspace, proposal_id: str, confirmed: bool\)/);
+  // propose() never registers anything
+  const propose = py.slice(py.indexOf('def propose('), py.indexOf('# -------------------------------------------------------- list / show / apply'));
+  assert.doesNotMatch(propose, /register_ontology\(/);
+  // every deletion targets a proposal folder
+  const deletions = py.split('\n').filter((l) => /rmtree\(|\.unlink\(|os\.remove\(/.test(l));
+  assert.equal(deletions.length, 2);
+  for (const l of deletions) assert.match(l, /rmtree\(pdir\)/);
+  // baselines are never fetched from a remote catalog: unknown slugs are refused before composing
+  assert.match(py, /Baseline\(s\) not in the local catalog/);
+});
+
+test('the end-to-end test and its mock model exist and are not part of the bundle', () => {
+  assert.ok(existsSync(join(DIR, 'test/e2e_documents.py')) && existsSync(join(DIR, 'test/mock_llm.py')));
+  const target = mkdtempSync(join(tmpdir(), 'ontology-manager-'));
+  try {
+    stageConnector('ontology-manager', target);
+    assert.ok(!existsSync(join(target, 'test')), 'tests are not shipped');
+    assert.ok(existsSync(join(target, 'server/doc_to_ontology.py')), 'the document module is shipped');
+  } finally { rmSync(target, { recursive: true, force: true }); }
 });

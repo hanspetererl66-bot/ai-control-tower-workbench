@@ -40,11 +40,15 @@ def build_app():
     from ontorag.ontology_catalog import load_catalog, register_ontology
     from ontorag.ontology_mcp import create_ontology_mcp
 
+    sys.path.insert(0, str(HERE))
+    import doc_to_ontology as d2o
+
     folder = _env("ONTORAG_FOLDER")
     if not folder:
         raise SystemExit("ONTORAG_FOLDER is not set: choose a folder for the ontology catalog.")
-    catalog = Path(folder).expanduser() / "ontologies"
-    catalog.mkdir(parents=True, exist_ok=True)
+    d2o.clean_llm_env()
+    ws = d2o.Workspace(folder, _env("ONTORAG_DOCUMENTS_FOLDER"))
+    catalog = ws.catalog
 
     onto = _env("ONTORAG_ONTOLOGY_TTL", str(DATA / "werkbank_fin.ttl"))
     inst = _env("ONTORAG_INSTANCES_TTL", str(DATA / "werkbank_fin_instances.ttl"))
@@ -66,7 +70,83 @@ def build_app():
     app = FastMCP("werkbank-ontology-manager")
     app.mount(create_ontology_mcp(str(catalog)))
     app.mount(create_mcp_app(LocalRdfBackend(onto, inst)))
+    register_document_tools(app, ws, d2o)
     return app
+
+
+def register_document_tools(app, ws, d2o) -> None:
+    """Tools that grow ontologies from documents: propose, review, apply."""
+    import asyncio
+
+    from fastmcp.exceptions import ToolError
+
+    async def run(fn, *args, **kwargs):
+        try:
+            return await asyncio.to_thread(fn, *args, **kwargs)
+        except d2o.UserError as e:
+            raise ToolError(str(e)) from e
+
+    @app.tool()
+    async def propose_ontology_from_documents(
+        slug: str,
+        mode: str = "new",
+        documents: list[str] | None = None,
+        texts: dict[str, str] | None = None,
+        baselines: list[str] | None = None,
+        namespace: str = "",
+        label: str = "",
+        description: str = "",
+        max_chunks: int = d2o.DEFAULT_MAX_CHUNKS,
+    ) -> dict:
+        """Read documents and propose an ontology from them. Changes nothing in the catalog.
+
+        mode "new": propose a new ontology called slug (optionally aligned with existing
+        ones named in baselines). mode "extend": propose additions to the existing
+        ontology slug; terms that already exist are reused, specialisations are marked.
+        documents are file names or paths inside the connector's documents folder or inbox
+        (.md .txt .html .epub .pdf); texts maps a name to pasted text. Every chunk of text
+        is one call to the configured language model, and the text is sent to that model
+        endpoint. Returns a review report: new, extending and reused terms with the quotes
+        they come from, plus items that need a human look. Then call
+        apply_ontology_proposal to adopt it."""
+        return await run(
+            d2o.propose, ws, slug=slug, mode=mode, documents=documents, texts=texts, baselines=baselines,
+            namespace=namespace, label=label, description=description, max_chunks=max_chunks)
+
+    @app.tool()
+    async def list_ontology_proposals() -> dict:
+        """List the ontology proposals made so far with their status (proposed, applied, failed)."""
+        return {"proposals": await run(d2o.list_proposals, ws)}
+
+    @app.tool()
+    async def show_ontology_proposal(proposal_id: str) -> dict:
+        """Show the review report of one proposal again."""
+        return await run(d2o.show_proposal, ws, proposal_id)
+
+    @app.tool()
+    async def apply_ontology_proposal(proposal_id: str, confirmed: bool = False) -> dict:
+        """Adopt a reviewed proposal. Without confirmed=true it only says what would happen.
+
+        With confirmed=true a "new" proposal is registered as a new ontology; an "extend"
+        proposal is merged into the existing one after the previous version has been saved
+        in the catalog's _history folder. Only ask for confirmed=true after the person has
+        seen the review report and agreed."""
+        return await run(d2o.apply_proposal, ws, proposal_id, confirmed)
+
+    @app.tool()
+    async def discard_ontology_proposal(proposal_id: str, confirmed: bool = False) -> dict:
+        """Delete one proposal's working files (confirmed=true). The catalog is not touched."""
+        return await run(d2o.discard_proposal, ws, proposal_id, confirmed)
+
+    @app.tool()
+    async def document_ontology_settings() -> dict:
+        """Say whether a language model is configured and which folders documents may come from."""
+        return {
+            "model": d2o.llm_settings(),
+            "documents_folders": [str(p) for p in ws.allowed_roots()],
+            "supported_types": sorted(d2o.ALLOWED_SUFFIXES),
+            "limits": {"documents": d2o.MAX_FILES, "default_max_chunks": d2o.DEFAULT_MAX_CHUNKS},
+        }
 
 
 if __name__ == "__main__":
