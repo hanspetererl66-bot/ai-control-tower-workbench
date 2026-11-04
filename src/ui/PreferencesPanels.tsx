@@ -53,9 +53,12 @@ const PURPOSE_NAMES: Record<(typeof PURPOSES)[number], string> = { reports: 'Rep
 export function ProfilesPanel({ prefs, update }: Common) {
   const [name, setName] = useState('');
   const [confirm, setConfirm] = useState(false);
+  const [used, setUsed] = useState<string | null>(null);
+  const usedProfile = used ? allProfiles(prefs).find((p) => p.id === used && prefs.activeProfile === p.id) : undefined;
   return (
     <>
       <Section title="Profiles" hint="A profile bundles look, start view, pinned Spaces, favourite skills and assistant instructions. Switch with one click.">
+        <p className="side-hint" role="status" aria-live="polite">{usedProfile ? `Profile “${usedProfile.name}” is active and saved.` : ''}</p>
         <ul className="prefs-list">
           {allProfiles(prefs).map((profile) => {
             const custom = prefs.profiles.some((p) => p.id === profile.id);
@@ -66,7 +69,7 @@ export function ProfilesPanel({ prefs, update }: Common) {
                   <small>{custom ? 'Your profile' : 'Ready-made'}{prefs.activeProfile === profile.id ? ' · active' : ''}</small>
                 </span>
                 <span>
-                  <button className="ghost-btn" disabled={JSON.stringify(applyProfile(prefs, profile.id)) === JSON.stringify(prefs)} onClick={() => update((p) => applyProfile(p, profile.id))}>Use</button>
+                  <button className={`ghost-btn ${prefs.activeProfile === profile.id ? 'ghost-btn-on' : ''}`} disabled={JSON.stringify(applyProfile(prefs, profile.id)) === JSON.stringify(prefs)} onClick={() => { update((p) => applyProfile(p, profile.id)); setUsed(profile.id); }}>{prefs.activeProfile === profile.id ? 'Active ✓' : 'Use'}</button>
                   {custom && <button className="ghost-btn" onClick={() => update((p) => deleteProfile(p, profile.id))} aria-label={`Delete ${profile.name}`}>Delete</button>}
                 </span>
               </li>
