@@ -30,6 +30,11 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     return null;
   };
   return {
+    /** { url, key, email } for other main-process stores (skills), or null when the database or the e-mail is missing. */
+    credentials() {
+      const acc = access(), email = readEmail();
+      return acc && email ? { url: acc.url, key: acc.key, email } : null;
+    },
     status() { return { configured: !!access(), email: readEmail(), source: access()?.source ?? '' }; },
     setEmail(raw) {
       const email = String(raw ?? '').trim().toLowerCase();

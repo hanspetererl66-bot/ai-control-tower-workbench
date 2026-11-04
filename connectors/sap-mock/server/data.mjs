@@ -15,7 +15,7 @@ export const BUYERS = [
 
 export const PLANTS = [
   { id: '1010', name: 'Heidelberg Assembly', country: 'DE' },
-  { id: '1020', name: 'Gdansk Plant', country: 'PL' },
+  { id: '1020', name: 'Manchester Plant', country: 'GB' },
   { id: '1030', name: 'Lyon Plant', country: 'FR' },
 ];
 
@@ -40,8 +40,8 @@ export const MATERIALS = [
 
 /** Lanes with a customs or port backlog (synthetic). 1 = congested. */
 export const LANE_CONGESTION = {
-  'DE-DE': 0, 'DE-PL': 0, 'CH-PL': 0, 'CH-DE': 0, 'LT-FR': 0, 'LT-DE': 0,
-  'HU-DE': 1, 'HU-FR': 1, 'TR-DE': 1, 'TR-FR': 1, 'TR-PL': 1,
+  'DE-DE': 0, 'DE-GB': 0, 'CH-GB': 0, 'CH-DE': 0, 'LT-FR': 0, 'LT-DE': 0,
+  'HU-DE': 1, 'HU-FR': 1, 'TR-DE': 1, 'TR-FR': 1, 'TR-GB': 1,
 };
 
 /** Qualified alternatives per material; priceDeltaPct is relative to the current vendor. */
@@ -77,11 +77,11 @@ export const DRIVER_LABELS = {
 const ROWS = [
   // Buyer B-100 (the demo persona): twelve open orders, six of them at high risk.
   ['4500001001', '10', 'M-2001', 'V-1001', '1010', 'B-100', 600, 84.5, -24, 6, 12, 'DE-DE', 'OPEN'],
-  ['4500001002', '10', 'M-2001', 'V-1001', '1020', 'B-100', 900, 84.5, -20, 9, 16, 'DE-PL', 'OPEN'],
+  ['4500001002', '10', 'M-2001', 'V-1001', '1020', 'B-100', 900, 84.5, -20, 9, 16, 'DE-GB', 'OPEN'],
   ['4500001003', '10', 'M-2005', 'V-1005', '1010', 'B-100', 4800, 6.2, -18, 5, 9, 'HU-DE', 'OPEN'],
   ['4500001004', '10', 'M-2006', 'V-1006', '1030', 'B-100', 6500, 3.1, -15, 8, 8, 'TR-FR', 'OPEN'],
   ['4500001005', '10', 'M-2002', 'V-1002', '1010', 'B-100', 2500, 18.9, -12, 12, 12, 'DE-DE', 'OPEN'],
-  ['4500001006', '10', 'M-2004', 'V-1004', '1020', 'B-100', 300, 142.0, -10, 15, 15, 'CH-PL', 'OPEN'],
+  ['4500001006', '10', 'M-2004', 'V-1004', '1020', 'B-100', 300, 142.0, -10, 15, 15, 'CH-GB', 'OPEN'],
   ['4500001007', '20', 'M-2001', 'V-1001', '1010', 'B-100', 1100, 84.5, -8, 20, 30, 'DE-DE', 'OPEN'],
   ['4500001008', '10', 'M-2003', 'V-1003', '1030', 'B-100', 36000, 0.42, -14, 10, 13, 'LT-FR', 'PARTIALLY_DELIVERED'],
   ['4500001009', '10', 'M-2005', 'V-1005', '1030', 'B-100', 5700, 6.2, -9, 7, 14, 'HU-FR', 'OPEN'],
@@ -90,11 +90,11 @@ const ROWS = [
   ['4500001012', '10', 'M-2004', 'V-1004', '1010', 'B-100', 250, 142.0, -3, 25, 25, 'CH-DE', 'OPEN'],
 
   // Buyer B-200: a mixed book with two orders that deserve attention.
-  ['4500002001', '10', 'M-2001', 'V-1001', '1020', 'B-200', 700, 84.5, -22, 11, 19, 'DE-PL', 'OPEN'],
-  ['4500002002', '10', 'M-2002', 'V-1002', '1020', 'B-200', 2200, 18.9, -17, 14, 14, 'DE-PL', 'OPEN'],
+  ['4500002001', '10', 'M-2001', 'V-1001', '1020', 'B-200', 700, 84.5, -22, 11, 19, 'DE-GB', 'OPEN'],
+  ['4500002002', '10', 'M-2002', 'V-1002', '1020', 'B-200', 2200, 18.9, -17, 14, 14, 'DE-GB', 'OPEN'],
   ['4500002003', '10', 'M-2003', 'V-1003', '1010', 'B-200', 28000, 0.42, -13, 9, 9, 'LT-DE', 'OPEN'],
   ['4500002004', '10', 'M-2005', 'V-1005', '1020', 'B-200', 3900, 6.2, -11, 13, 15, 'HU-DE', 'OPEN'],
-  ['4500002005', '10', 'M-2006', 'V-1006', '1020', 'B-200', 5200, 3.1, -10, 16, 16, 'TR-PL', 'OPEN'],
+  ['4500002005', '10', 'M-2006', 'V-1006', '1020', 'B-200', 5200, 3.1, -10, 16, 16, 'TR-GB', 'OPEN'],
   ['4500002006', '10', 'M-2004', 'V-1004', '1030', 'B-200', 280, 142.0, -9, 19, 19, 'CH-DE', 'OPEN'],
   ['4500002007', '10', 'M-2002', 'V-1002', '1030', 'B-200', 1800, 18.9, -7, 21, 21, 'DE-DE', 'OPEN'],
   ['4500002008', '10', 'M-2003', 'V-1003', '1020', 'B-200', 31000, 0.42, -4, 23, 23, 'LT-DE', 'OPEN'],
@@ -103,7 +103,7 @@ const ROWS = [
   ['4500003001', '10', 'M-2002', 'V-1002', '1010', 'B-300', 1500, 18.9, -15, 10, 10, 'DE-DE', 'OPEN'],
   ['4500003002', '10', 'M-2003', 'V-1003', '1010', 'B-300', 22000, 0.42, -12, 12, 12, 'LT-DE', 'OPEN'],
   ['4500003003', '10', 'M-2004', 'V-1004', '1030', 'B-300', 200, 142.0, -9, 17, 17, 'CH-DE', 'OPEN'],
-  ['4500003004', '10', 'M-2002', 'V-1002', '1020', 'B-300', 1700, 18.9, -6, 20, 20, 'DE-PL', 'OPEN'],
+  ['4500003004', '10', 'M-2002', 'V-1002', '1020', 'B-300', 1700, 18.9, -6, 20, 20, 'DE-GB', 'OPEN'],
   ['4500003005', '10', 'M-2003', 'V-1003', '1030', 'B-300', 25000, 0.42, -3, 24, 24, 'LT-FR', 'OPEN'],
   ['4500003006', '10', 'M-2005', 'V-1005', '1010', 'B-300', 2100, 6.2, -2, 26, 27, 'HU-DE', 'OPEN'],
 ];
@@ -163,9 +163,9 @@ export function scorePo(row, model = RISK_MODEL) {
 
 /** Company codes of the fictional group; each owns one plant. */
 export const COMPANY_CODES = [
-  { id: 'DE01', name: 'Demo Industrial GmbH', plant: '1010' },
-  { id: 'PL01', name: 'Demo Industrial Polska Sp. z o.o.', plant: '1020' },
-  { id: 'FR01', name: 'Demo Industrial France SAS', plant: '1030' },
+  { id: 'DE10', name: 'Nordlicht Software GmbH', plant: '1010' },
+  { id: 'UK10', name: 'Nordlicht UK Ltd', plant: '1020' },
+  { id: 'FR10', name: 'Nordlicht France SAS', plant: '1030' },
 ];
 
 /**
@@ -175,18 +175,18 @@ export const COMPANY_CODES = [
  */
 export const STALE_AFTER_DAYS = 90;
 export const GRIR_ITEMS = [
-  ['4500001001', '10', 'V-1001', 'DE01', -4, 50700, 0, 'Metal housings, 600 pcs received'],
-  ['4500001003', '10', 'V-1005', 'DE01', -3, 29760, 0, 'Cable harness, 4,800 pcs received'],
-  ['4500001005', '10', 'V-1002', 'DE01', -5, 47250, 0, 'Control boards, 2,500 pcs received'],
-  ['4500003001', '10', 'V-1002', 'DE01', -11, 28350, 0, 'Control boards, 1,500 pcs received'],
-  ['4500002001', '10', 'V-1001', 'PL01', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'],
-  ['4500002004', '10', 'V-1005', 'PL01', -7, 24180, 0, 'Cable harness, 3,900 pcs received'],
-  ['4500003004', '10', 'V-1002', 'PL01', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'],
-  ['4500001008', '10', 'V-1003', 'FR01', -6, 7560, 0, 'Fasteners, 18,000 pcs received'],
-  ['4500003003', '10', 'V-1004', 'FR01', -2, 28400, 0, 'Precision shafts, 200 pcs received'],
-  ['4500000871', '10', 'V-1003', 'DE01', -118, 6300, 0, 'Fasteners, received, invoice never arrived'],
-  ['4500000902', '10', 'V-1006', 'PL01', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'],
-  ['4500000955', '10', 'V-1002', 'FR01', -97, 9450, 0, 'Control boards, received, invoice missing'],
+  ['4500001001', '10', 'V-1001', 'DE10', -4, 50700, 0, 'Metal housings, 600 pcs received'],
+  ['4500001003', '10', 'V-1005', 'DE10', -3, 29760, 0, 'Cable harness, 4,800 pcs received'],
+  ['4500001005', '10', 'V-1002', 'DE10', -5, 47250, 0, 'Control boards, 2,500 pcs received'],
+  ['4500003001', '10', 'V-1002', 'DE10', -11, 28350, 0, 'Control boards, 1,500 pcs received'],
+  ['4500002001', '10', 'V-1001', 'UK10', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'],
+  ['4500002004', '10', 'V-1005', 'UK10', -7, 24180, 0, 'Cable harness, 3,900 pcs received'],
+  ['4500003004', '10', 'V-1002', 'UK10', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'],
+  ['4500001008', '10', 'V-1003', 'FR10', -6, 7560, 0, 'Fasteners, 18,000 pcs received'],
+  ['4500003003', '10', 'V-1004', 'FR10', -2, 28400, 0, 'Precision shafts, 200 pcs received'],
+  ['4500000871', '10', 'V-1003', 'DE10', -118, 6300, 0, 'Fasteners, received, invoice never arrived'],
+  ['4500000902', '10', 'V-1006', 'UK10', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'],
+  ['4500000955', '10', 'V-1002', 'FR10', -97, 9450, 0, 'Control boards, received, invoice missing'],
 ].map(([po, item, vendor, companyCode, grOffset, grValueEur, invoicedValueEur, description]) => ({
   po,
   item,

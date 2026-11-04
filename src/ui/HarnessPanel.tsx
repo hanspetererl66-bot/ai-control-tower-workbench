@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   HARNESS_FORMS, HARNESS_MEMORY, HARNESS_PERMISSIONS, activeHarness, allHarnesses, chooseHarness, copyHarness, deleteHarness, harnessNote, isBuiltinHarness, saveHarness,
   type HarnessProfile,
@@ -26,7 +26,13 @@ export default function HarnessPanel({ prefs, onPrefs }: { prefs: Preferences; o
   const profile = activeHarness(state);
   const builtin = isBuiltinHarness(profile.id);
   const setState = (next: (s: Preferences['harness']) => Preferences['harness']) => onPrefs((p) => ({ ...p, harness: next(p.harness) }));
-  const change = (patch: Partial<HarnessProfile>) => setState((s) => saveHarness(s, { ...profile, ...patch }));
+  const [savedAt, setSavedAt] = useState(0);
+  useEffect(() => {
+    if (!savedAt) return undefined;
+    const t = window.setTimeout(() => setSavedAt(0), 2500);
+    return () => window.clearTimeout(t);
+  }, [savedAt]);
+  const change = (patch: Partial<HarnessProfile>) => { setState((s) => saveHarness(s, { ...profile, ...patch })); setSavedAt(Date.now()); };
   const note = harnessNote(profile);
   const download = () => {
     const url = URL.createObjectURL(new Blob([exportHarness(profile)], { type: 'application/json' }));
@@ -47,10 +53,10 @@ export default function HarnessPanel({ prefs, onPrefs }: { prefs: Preferences; o
   const warnings = incoming ? harnessWarnings(incoming.profile) : [];
   return (
     <div className="side-section">
-      <h4>Working profile</h4>
+      <h4>Working profile{savedAt ? <small role="status" style={{ marginLeft: 8, fontWeight: 400 }}>Saved ✓</small> : null}</h4>
       <p className="side-hint">Rules for one kind of work: persona, connectors, rights, memory and the number of steps. Choose it in the chat bar. A profile only narrows what the assistant does.</p>
       <label className="side-field"><span>Profile</span>
-        <select value={profile.id} onChange={(e) => setState((s) => chooseHarness(s, e.target.value))}>
+        <select value={profile.id} onChange={(e) => { setState((s) => chooseHarness(s, e.target.value)); setSavedAt(Date.now()); }}>
           {allHarnesses(state).map((p) => <option key={p.id} value={p.id}>{p.name}{isBuiltinHarness(p.id) ? '' : ' (mine)'}</option>)}
         </select>
       </label>

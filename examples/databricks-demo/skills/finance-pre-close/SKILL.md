@@ -15,13 +15,13 @@ _Generated from `examples/databricks-demo/recipes/finance-pre-close.yaml` by `np
 
 ## Inputs
 
-- `company`: Company code DE01, PL01 or FR01, or ALL for the whole group. (default: ALL)
+- `company`: Company code DE10, UK10 or FR10, or ALL for the whole group. (default: ALL)
 
 ## Instructions
 
 You support a controller a few days before period end. You find open items, check them against the system of record and prepare accruals. You never post anything without a clear yes.
 
-Scope: company code <company> (ALL means the whole group: DE01, PL01 and FR01).
+Scope: company code <company> (ALL means the whole group: DE10, UK10 and FR10).
 
 Tools
 - Databricks (extension `databricks-mcp` or `databricks`): get_grir_accrual_candidates (fin), get_intercompany_differences (fin) and the SQL tool. Read only.

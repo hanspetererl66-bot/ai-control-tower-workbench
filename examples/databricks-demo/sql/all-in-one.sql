@@ -166,7 +166,7 @@ CREATE OR REPLACE TABLE werkbank_demo.fin.grir_items (
   item STRING COMMENT 'Item number within the purchase order.',
   vendor_id STRING COMMENT 'Vendor id.',
   vendor_name STRING COMMENT 'Vendor name (fictional).',
-  company_code STRING COMMENT 'Company code that owns the liability: DE01, PL01 or FR01.',
+  company_code STRING COMMENT 'Company code that owns the liability: DE10, UK10 or FR10.',
   gr_offset_days INT COMMENT 'Goods receipt date as days from today (negative = in the past).',
   gr_value_eur DECIMAL(14,2) COMMENT 'Value of the goods received in EUR.',
   invoiced_value_eur DECIMAL(14,2) COMMENT 'Value invoiced by the vendor so far in EUR.',
@@ -176,7 +176,7 @@ COMMENT 'Goods received and not fully invoiced (GR/IR), the same rows SAP holds.
 
 CREATE OR REPLACE TABLE werkbank_demo.fin.intercompany_items (
   item_id STRING COMMENT 'Intercompany document id.',
-  seller_company STRING COMMENT 'Company code that billed: DE01, PL01 or FR01.',
+  seller_company STRING COMMENT 'Company code that billed: DE10, UK10 or FR10.',
   buyer_company STRING COMMENT 'Company code that was billed.',
   description STRING COMMENT 'What was charged.',
   posting_offset_days INT COMMENT 'Posting date on the seller side as days from today (negative = in the past).',
@@ -393,30 +393,30 @@ INSERT OVERWRITE TABLE werkbank_demo.fin.large_discount_deals VALUES
   ('D-26-0832', DATE'2026-09-01', 'FR', 'Industrial Sensors', 'Mid-Market', 'C-FR-0107', 58000, 11.5, 12, 'Standard', 'Sales Manager');
 
 INSERT OVERWRITE TABLE werkbank_demo.fin.grir_items VALUES
-  ('4500001001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'DE01', -4, 50700, 0, 'Metal housings, 600 pcs received'),
-  ('4500001003', '10', 'V-1005', 'Pannonia Cables Kft', 'DE01', -3, 29760, 0, 'Cable harness, 4,800 pcs received'),
-  ('4500001005', '10', 'V-1002', 'Neckar Elektronik AG', 'DE01', -5, 47250, 0, 'Control boards, 2,500 pcs received'),
-  ('4500003001', '10', 'V-1002', 'Neckar Elektronik AG', 'DE01', -11, 28350, 0, 'Control boards, 1,500 pcs received'),
-  ('4500002001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'PL01', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'),
-  ('4500002004', '10', 'V-1005', 'Pannonia Cables Kft', 'PL01', -7, 24180, 0, 'Cable harness, 3,900 pcs received'),
-  ('4500003004', '10', 'V-1002', 'Neckar Elektronik AG', 'PL01', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'),
-  ('4500001008', '10', 'V-1003', 'Baltic Fasteners UAB', 'FR01', -6, 7560, 0, 'Fasteners, 18,000 pcs received'),
-  ('4500003003', '10', 'V-1004', 'Tessin Precision SA', 'FR01', -2, 28400, 0, 'Precision shafts, 200 pcs received'),
-  ('4500000871', '10', 'V-1003', 'Baltic Fasteners UAB', 'DE01', -118, 6300, 0, 'Fasteners, received, invoice never arrived'),
-  ('4500000902', '10', 'V-1006', 'Anatolia Plastics A.S.', 'PL01', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'),
-  ('4500000955', '10', 'V-1002', 'Neckar Elektronik AG', 'FR01', -97, 9450, 0, 'Control boards, received, invoice missing');
+  ('4500001001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'DE10', -4, 50700, 0, 'Metal housings, 600 pcs received'),
+  ('4500001003', '10', 'V-1005', 'Pannonia Cables Kft', 'DE10', -3, 29760, 0, 'Cable harness, 4,800 pcs received'),
+  ('4500001005', '10', 'V-1002', 'Neckar Elektronik AG', 'DE10', -5, 47250, 0, 'Control boards, 2,500 pcs received'),
+  ('4500003001', '10', 'V-1002', 'Neckar Elektronik AG', 'DE10', -11, 28350, 0, 'Control boards, 1,500 pcs received'),
+  ('4500002001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'UK10', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'),
+  ('4500002004', '10', 'V-1005', 'Pannonia Cables Kft', 'UK10', -7, 24180, 0, 'Cable harness, 3,900 pcs received'),
+  ('4500003004', '10', 'V-1002', 'Neckar Elektronik AG', 'UK10', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'),
+  ('4500001008', '10', 'V-1003', 'Baltic Fasteners UAB', 'FR10', -6, 7560, 0, 'Fasteners, 18,000 pcs received'),
+  ('4500003003', '10', 'V-1004', 'Tessin Precision SA', 'FR10', -2, 28400, 0, 'Precision shafts, 200 pcs received'),
+  ('4500000871', '10', 'V-1003', 'Baltic Fasteners UAB', 'DE10', -118, 6300, 0, 'Fasteners, received, invoice never arrived'),
+  ('4500000902', '10', 'V-1006', 'Anatolia Plastics A.S.', 'UK10', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'),
+  ('4500000955', '10', 'V-1002', 'Neckar Elektronik AG', 'FR10', -97, 9450, 0, 'Control boards, received, invoice missing');
 
 INSERT OVERWRITE TABLE werkbank_demo.fin.intercompany_items VALUES
-  ('IC-0001', 'DE01', 'PL01', 'Contract assembly services', -12, 120000, 120000),
-  ('IC-0002', 'DE01', 'FR01', 'Software licence recharge', -10, 45000, 45000),
-  ('IC-0003', 'PL01', 'DE01', 'Sub-assembly delivery', -9, 210400, 210400),
-  ('IC-0004', 'FR01', 'DE01', 'Field service recharge', -8, 33800, 33800),
-  ('IC-0005', 'DE01', 'PL01', 'Management fee Q3', -7, 84200, NULL),
-  ('IC-0006', 'PL01', 'FR01', 'Component transfer', -6, 96250.4, 96238),
-  ('IC-0007', 'DE01', 'FR01', 'Engineering services', -5, 78650, 60000),
-  ('IC-0008', 'FR01', 'PL01', 'Tooling recharge', -4, 15400, 15400),
-  ('IC-0009', 'DE01', 'PL01', 'IT services', -3, 22000, 22000),
-  ('IC-0010', 'PL01', 'DE01', 'Logistics recharge', -2, 18900, 18900);
+  ('IC-0001', 'DE10', 'UK10', 'Contract assembly services', -12, 120000, 120000),
+  ('IC-0002', 'DE10', 'FR10', 'Software licence recharge', -10, 45000, 45000),
+  ('IC-0003', 'UK10', 'DE10', 'Sub-assembly delivery', -9, 210400, 210400),
+  ('IC-0004', 'FR10', 'DE10', 'Field service recharge', -8, 33800, 33800),
+  ('IC-0005', 'DE10', 'UK10', 'Management fee Q3', -7, 84200, NULL),
+  ('IC-0006', 'UK10', 'FR10', 'Component transfer', -6, 96250.4, 96238),
+  ('IC-0007', 'DE10', 'FR10', 'Engineering services', -5, 78650, 60000),
+  ('IC-0008', 'FR10', 'UK10', 'Tooling recharge', -4, 15400, 15400),
+  ('IC-0009', 'DE10', 'UK10', 'IT services', -3, 22000, 22000),
+  ('IC-0010', 'UK10', 'DE10', 'Logistics recharge', -2, 18900, 18900);
 
 -- ======================================================================== 03_seed_ops.sql
 -- 03_seed_ops.sql: jobs, 14 nights of runs, task results, lineage and downstream assets. Offsets are days from today.
@@ -610,29 +610,29 @@ INSERT OVERWRITE TABLE werkbank_demo.scm.vendors VALUES
 
 INSERT OVERWRITE TABLE werkbank_demo.scm.purchase_orders_seed VALUES
   ('4500001001', '10', 'M-2001', 'Aluminium housing 4U', 'V-1001', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 600, 84.5, -24, 6, 12, 'DE-DE', 0, 'OPEN'),
-  ('4500001002', '10', 'M-2001', 'Aluminium housing 4U', 'V-1001', '1020', 'Gdansk Plant', 'B-100', 'M. Keller', 900, 84.5, -20, 9, 16, 'DE-PL', 0, 'OPEN'),
+  ('4500001002', '10', 'M-2001', 'Aluminium housing 4U', 'V-1001', '1020', 'Manchester Plant', 'B-100', 'M. Keller', 900, 84.5, -20, 9, 16, 'DE-GB', 0, 'OPEN'),
   ('4500001003', '10', 'M-2005', 'Cable harness 12-pin', 'V-1005', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 4800, 6.2, -18, 5, 9, 'HU-DE', 1, 'OPEN'),
   ('4500001004', '10', 'M-2006', 'ABS enclosure', 'V-1006', '1030', 'Lyon Plant', 'B-100', 'M. Keller', 6500, 3.1, -15, 8, 8, 'TR-FR', 1, 'OPEN'),
   ('4500001005', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 2500, 18.9, -12, 12, 12, 'DE-DE', 0, 'OPEN'),
-  ('4500001006', '10', 'M-2004', 'Precision encoder', 'V-1004', '1020', 'Gdansk Plant', 'B-100', 'M. Keller', 300, 142, -10, 15, 15, 'CH-PL', 0, 'OPEN'),
+  ('4500001006', '10', 'M-2004', 'Precision encoder', 'V-1004', '1020', 'Manchester Plant', 'B-100', 'M. Keller', 300, 142, -10, 15, 15, 'CH-GB', 0, 'OPEN'),
   ('4500001007', '20', 'M-2001', 'Aluminium housing 4U', 'V-1001', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 1100, 84.5, -8, 20, 30, 'DE-DE', 0, 'OPEN'),
   ('4500001008', '10', 'M-2003', 'M6 fastener kit', 'V-1003', '1030', 'Lyon Plant', 'B-100', 'M. Keller', 36000, 0.42, -14, 10, 13, 'LT-FR', 0, 'PARTIALLY_DELIVERED'),
   ('4500001009', '10', 'M-2005', 'Cable harness 12-pin', 'V-1005', '1030', 'Lyon Plant', 'B-100', 'M. Keller', 5700, 6.2, -9, 7, 14, 'HU-FR', 1, 'OPEN'),
   ('4500001010', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 3000, 18.9, -6, 18, 18, 'DE-DE', 0, 'OPEN'),
   ('4500001011', '10', 'M-2006', 'ABS enclosure', 'V-1006', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 7800, 3.1, -5, 22, 25, 'TR-DE', 1, 'OPEN'),
   ('4500001012', '10', 'M-2004', 'Precision encoder', 'V-1004', '1010', 'Heidelberg Assembly', 'B-100', 'M. Keller', 250, 142, -3, 25, 25, 'CH-DE', 0, 'OPEN'),
-  ('4500002001', '10', 'M-2001', 'Aluminium housing 4U', 'V-1001', '1020', 'Gdansk Plant', 'B-200', 'S. Okafor', 700, 84.5, -22, 11, 19, 'DE-PL', 0, 'OPEN'),
-  ('4500002002', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1020', 'Gdansk Plant', 'B-200', 'S. Okafor', 2200, 18.9, -17, 14, 14, 'DE-PL', 0, 'OPEN'),
+  ('4500002001', '10', 'M-2001', 'Aluminium housing 4U', 'V-1001', '1020', 'Manchester Plant', 'B-200', 'S. Okafor', 700, 84.5, -22, 11, 19, 'DE-GB', 0, 'OPEN'),
+  ('4500002002', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1020', 'Manchester Plant', 'B-200', 'S. Okafor', 2200, 18.9, -17, 14, 14, 'DE-GB', 0, 'OPEN'),
   ('4500002003', '10', 'M-2003', 'M6 fastener kit', 'V-1003', '1010', 'Heidelberg Assembly', 'B-200', 'S. Okafor', 28000, 0.42, -13, 9, 9, 'LT-DE', 0, 'OPEN'),
-  ('4500002004', '10', 'M-2005', 'Cable harness 12-pin', 'V-1005', '1020', 'Gdansk Plant', 'B-200', 'S. Okafor', 3900, 6.2, -11, 13, 15, 'HU-DE', 1, 'OPEN'),
-  ('4500002005', '10', 'M-2006', 'ABS enclosure', 'V-1006', '1020', 'Gdansk Plant', 'B-200', 'S. Okafor', 5200, 3.1, -10, 16, 16, 'TR-PL', 1, 'OPEN'),
+  ('4500002004', '10', 'M-2005', 'Cable harness 12-pin', 'V-1005', '1020', 'Manchester Plant', 'B-200', 'S. Okafor', 3900, 6.2, -11, 13, 15, 'HU-DE', 1, 'OPEN'),
+  ('4500002005', '10', 'M-2006', 'ABS enclosure', 'V-1006', '1020', 'Manchester Plant', 'B-200', 'S. Okafor', 5200, 3.1, -10, 16, 16, 'TR-GB', 1, 'OPEN'),
   ('4500002006', '10', 'M-2004', 'Precision encoder', 'V-1004', '1030', 'Lyon Plant', 'B-200', 'S. Okafor', 280, 142, -9, 19, 19, 'CH-DE', 0, 'OPEN'),
   ('4500002007', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1030', 'Lyon Plant', 'B-200', 'S. Okafor', 1800, 18.9, -7, 21, 21, 'DE-DE', 0, 'OPEN'),
-  ('4500002008', '10', 'M-2003', 'M6 fastener kit', 'V-1003', '1020', 'Gdansk Plant', 'B-200', 'S. Okafor', 31000, 0.42, -4, 23, 23, 'LT-DE', 0, 'OPEN'),
+  ('4500002008', '10', 'M-2003', 'M6 fastener kit', 'V-1003', '1020', 'Manchester Plant', 'B-200', 'S. Okafor', 31000, 0.42, -4, 23, 23, 'LT-DE', 0, 'OPEN'),
   ('4500003001', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1010', 'Heidelberg Assembly', 'B-300', 'L. Brandt', 1500, 18.9, -15, 10, 10, 'DE-DE', 0, 'OPEN'),
   ('4500003002', '10', 'M-2003', 'M6 fastener kit', 'V-1003', '1010', 'Heidelberg Assembly', 'B-300', 'L. Brandt', 22000, 0.42, -12, 12, 12, 'LT-DE', 0, 'OPEN'),
   ('4500003003', '10', 'M-2004', 'Precision encoder', 'V-1004', '1030', 'Lyon Plant', 'B-300', 'L. Brandt', 200, 142, -9, 17, 17, 'CH-DE', 0, 'OPEN'),
-  ('4500003004', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1020', 'Gdansk Plant', 'B-300', 'L. Brandt', 1700, 18.9, -6, 20, 20, 'DE-PL', 0, 'OPEN'),
+  ('4500003004', '10', 'M-2002', 'Industrial PCB rev C', 'V-1002', '1020', 'Manchester Plant', 'B-300', 'L. Brandt', 1700, 18.9, -6, 20, 20, 'DE-GB', 0, 'OPEN'),
   ('4500003005', '10', 'M-2003', 'M6 fastener kit', 'V-1003', '1030', 'Lyon Plant', 'B-300', 'L. Brandt', 25000, 0.42, -3, 24, 24, 'LT-FR', 0, 'OPEN'),
   ('4500003006', '10', 'M-2005', 'Cable harness 12-pin', 'V-1005', '1010', 'Heidelberg Assembly', 'B-300', 'L. Brandt', 2100, 6.2, -2, 26, 27, 'HU-DE', 1, 'OPEN');
 
@@ -1115,7 +1115,7 @@ RETURN
 -- ---------------------------------------------------------------- fin: pre-close
 
 CREATE OR REPLACE FUNCTION werkbank_demo.fin.get_grir_accrual_candidates(
-  company STRING DEFAULT 'ALL' COMMENT 'Company code DE01, PL01 or FR01, or ALL for the whole group. Default ALL.'
+  company STRING DEFAULT 'ALL' COMMENT 'Company code DE10, UK10 or FR10, or ALL for the whole group. Default ALL.'
 )
 RETURNS TABLE (
   po_number STRING COMMENT 'Ten-digit purchase order number; the key to use in SAP.',
