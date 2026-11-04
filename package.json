@@ -47,6 +47,7 @@
     "build:jira-mcpb": "node scripts/build-control-tower-mcpb.mjs --jira",
     "build:slack-mcpb": "node scripts/build-control-tower-mcpb.mjs --slack",
     "build:notion-mcpb": "node scripts/build-control-tower-mcpb.mjs --notion",
+    "build:sap-sandbox-mcpb": "node scripts/build-control-tower-mcpb.mjs --sap-sandbox",
     "sync:databricks-demo": "node scripts/gen-databricks-demo.mjs",
     "build:databricks-bridge-mcpb": "node scripts/build-connector-mcpb.mjs databricks-bridge",
     "build:sap-mock-mcpb": "node scripts/build-connector-mcpb.mjs sap-mock",

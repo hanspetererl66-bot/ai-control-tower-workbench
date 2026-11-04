@@ -1,0 +1,55 @@
+{
+  "manifest_version": "0.2",
+  "name": "sap-sandbox",
+  "display_name": "SAP S/4HANA sandbox",
+  "version": "0.1.0",
+  "description": "SAP Business Accelerator Hub sandbox (read only): real S/4HANA OData APIs (business partners, sales orders, purchase orders, billing, products, journal entries) with SAP sample data. Needs your personal API key from api.sap.com. The sandbox data is fixed and cannot be changed.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "SAP_API_KEY": "${user_config.sap_api_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "sap_sandbox_check_connection",
+      "description": "Check the SAP API key against the S/4HANA sandbox with one small request."
+    },
+    {
+      "name": "sap_sandbox_list_apis",
+      "description": "List the suggested S/4HANA APIs and their main entity sets (local list)."
+    },
+    {
+      "name": "sap_sandbox_list_entity_sets",
+      "description": "List the entity sets of one S/4HANA API in the sandbox. Read only."
+    },
+    {
+      "name": "sap_sandbox_query",
+      "description": "Read rows of an entity set with OData options (filter, select, orderby, expand, top, skip, count). Read only."
+    },
+    {
+      "name": "sap_sandbox_get",
+      "description": "Read one entity by key, for example one sales order. Read only."
+    }
+  ],
+  "user_config": {
+    "sap_api_key": {
+      "type": "string",
+      "title": "SAP API key",
+      "description": "api.sap.com: log in, open your profile (top right), Show API Key, copy it. Stored as a secret. The key is only sent to sandbox.api.sap.com.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}
