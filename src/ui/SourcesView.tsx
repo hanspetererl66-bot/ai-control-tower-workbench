@@ -6,6 +6,7 @@ import {
 } from '../requirements';
 import { hostApi, loadRegistry, targetsOf } from '../registry';
 import { loadMap } from '../work-sync';
+import { handoverComment, handoverLabels, handoverMarker, handoverTickets, isDone, parseWriteback, summaryOf, writebackPrompt, type WriteResult } from '../writeback';
 
 const SESSION = 'sources';
 const msg = (e: unknown) => String((e as any)?.message ?? e).slice(0, 240);
@@ -82,9 +83,31 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
 
   const update = (id: string, f: (c: Cluster) => Cluster) => setClusters((cur) => cur && cur.map((c) => (c.id === id ? f(c) : c)));
 
-  const give = async (c: Cluster) => {
+  /** Hand-over with a note on Jira: `pending` is the cluster whose note the person is looking at. */
+  const [pending, setPending] = useState<{ id: string; comment: string; picked: string[]; step: 'review' | 'writing' | 'failed'; results?: WriteResult[]; problem?: string } | null>(null);
+
+  const handOverNow = async (c: Cluster) => {
     setNote('');
     try { const line = await onHandover(handover(c, reqs)); if (line) setDone((d) => ({ ...d, [c.id]: line })); } catch (e) { setNote(msg(e)); }
+  };
+  const give = async (c: Cluster, withNote: boolean) => {
+    const h = handover(c, reqs);
+    if (withNote && handoverTickets(h).length > 0) { setPending({ id: c.id, comment: handoverComment(h), picked: handoverTickets(h).map((t) => t.key), step: 'review' }); return; }
+    await handOverNow(c);
+  };
+  /** Writes the note first; hands over only when every picked ticket is noted. A failure keeps the person here with the choice to go on. */
+  const writeThenGive = async (c: Cluster) => {
+    if (!pending) return;
+    const h = handover(c, reqs);
+    setPending({ ...pending, step: 'writing', problem: undefined });
+    try {
+      const text = await generate(writebackPrompt(pending.picked, handoverLabels(h), pending.comment), 'Note on Jira', 'jira-writeback');
+      if (!text) { setPending({ ...pending, step: 'failed', problem: 'Stopped. Some tickets may already be noted; a second try skips those.' }); return; }
+      const got = parseWriteback(text, pending.picked);
+      if (!got) { setPending({ ...pending, step: 'failed', problem: 'The answer could not be read. Check the tickets in Jira before you try again.' }); return; }
+      if (got.every(isDone)) { setPending(null); await handOverNow(c); setNote(`${summaryOf(got)} Handed over.`); return; }
+      setPending({ ...pending, step: 'failed', results: got, picked: got.filter((r) => !isDone(r)).map((r) => r.key) });
+    } catch (e) { setPending({ ...pending, step: 'failed', problem: msg(e) }); }
   };
 
   return (
@@ -158,7 +181,13 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
                 onTarget={(t) => update(c.id, (x) => setTarget(x, t))}
                 onMove={(reqId, to) => setClusters((cur) => cur && moveRequirement(cur, reqId, to))}
                 onDismiss={(reqId) => setClusters((cur) => cur && dismissSuggestion(cur, c.id, reqId))}
-                onGive={() => void give(c)} />
+                onGive={(withNote) => void give(c, withNote)}
+                pending={pending?.id === c.id ? pending : null} ready={ready} onStop={onStop}
+                onComment={(t) => setPending((p) => (p ? { ...p, comment: t } : p))}
+                onPick={(k) => setPending((p) => (p ? { ...p, picked: p.picked.includes(k) ? p.picked.filter((x) => x !== k) : [...p.picked, k] } : p))}
+                onCancel={() => setPending(null)}
+                onWrite={() => void writeThenGive(c)}
+                onSkip={() => { setPending(null); void handOverNow(c); }} />
             ))}
           </div>
           {Object.keys(done).length > 0 && <p className="sh-note"><button onClick={onOpenRegistry}>Open the registry</button> to see what was created and its history.</p>}
@@ -169,14 +198,21 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
   );
 }
 
-function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTarget, onMove, onDismiss, onGive }: {
+type Pending = { id: string; comment: string; picked: string[]; step: 'review' | 'writing' | 'failed'; results?: WriteResult[]; problem?: string };
+
+function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTarget, onMove, onDismiss, onGive, pending, ready, onStop, onComment, onPick, onCancel, onWrite, onSkip }: {
   c: Cluster; reqs: Requirement[]; clusters: Cluster[]; registry: RegistryRef[]; done?: string;
   onTitle: (t: string) => void; onClass: (cls: ReqClass) => void; onTarget: (t: { id: string; name: string } | null) => void;
-  onMove: (reqId: string, to: string) => void; onDismiss: (reqId: string) => void; onGive: () => void;
+  onMove: (reqId: string, to: string) => void; onDismiss: (reqId: string) => void; onGive: (withNote: boolean) => void;
+  pending: Pending | null; ready: boolean; onStop: () => void; onComment: (t: string) => void; onPick: (key: string) => void; onCancel: () => void; onWrite: () => void; onSkip: () => void;
 }) {
   const byId = (id: string) => reqs.find((r) => r.id === id);
   const targets = registry.filter((r) => r.kind === classBase(c.cls));
   const pct = Math.round(c.confidence * 100);
+  const h = useMemo(() => handover(c, reqs), [c, reqs]);
+  const tickets = handoverTickets(h);
+  const [wantNote, setWantNote] = useState(false);
+  const valid = pending ? pending.comment.startsWith(handoverMarker(h)) && pending.comment.length <= 2000 : false;
   const inPlace = Boolean(isExtension(c.cls) && c.target && localTarget(loadMap(window.localStorage), c.target.id));
   return (
     <article className="sh-card sx-cluster" aria-label={c.title}>
@@ -244,8 +280,35 @@ function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTa
       )}
       <pre className="sx-comment" aria-label="Comment">{commentOf(c)}</pre>
 
+      {tickets.length > 0 && !done && !pending && (
+        <label className="sx-note-opt">
+          <input type="checkbox" checked={wantNote} onChange={(e) => setWantNote(e.target.checked)} />
+          Also note it on the {tickets.length} Jira ticket{tickets.length === 1 ? '' : 's'} ({tickets.slice(0, 4).map((t) => t.key).join(', ')}{tickets.length > 4 ? ', …' : ''}). You see the text first.
+        </label>
+      )}
+      {pending && (
+        <div className="rg-jira-confirm" role="group" aria-label="Note on Jira">
+          <p className="sx-cwarn" role="alert">This changes Jira. Label {handoverLabels(h).join(', ')} and this comment are added to the ticket{pending.picked.length === 1 ? '' : 's'} {pending.picked.join(', ') || '(none ticked)'}. Nothing else is touched. The hand-over follows when it worked.</p>
+          {pending.step === 'review' && (
+            <div className="rg-jira-tickets">{tickets.map((t) => <label key={t.key}><input type="checkbox" checked={pending.picked.includes(t.key)} onChange={() => onPick(t.key)} />{t.key}</label>)}</div>
+          )}
+          <textarea aria-label="Comment for Jira" rows={5} value={pending.comment} disabled={pending.step === 'writing'} onChange={(e) => onComment(e.target.value)} />
+          {!valid && <small className="sx-cwarn">The comment has to start with {handoverMarker(h)} (it tells a repeat that the ticket was noted already) and stay under 2000 characters.</small>}
+          {pending.results && <ul className="rg-jira-results">{pending.results.map((r) => <li key={r.key}><b>{r.key}</b> {isDone(r) ? 'noted' : 'not done'}{r.skipped ? ` · ${r.skipped}` : ''}{r.error ? ` · ${r.error}` : ''}</li>)}</ul>}
+          {pending.problem && <p className="rg-error" role="alert">{pending.problem}</p>}
+          <div className="sh-bulk">
+            {pending.step === 'writing'
+              ? <><button onClick={onStop}>Stop</button><span className="sh-note">Writing…</span></>
+              : <>
+                  <button className="sh-primary" onClick={onWrite} disabled={!ready || !valid || pending.picked.length === 0}>{pending.step === 'failed' ? 'Try again' : 'Write to Jira, then hand over'}</button>
+                  <button onClick={onSkip}>{pending.step === 'failed' ? 'Hand over anyway' : 'Hand over without the note'}</button>
+                  <button onClick={onCancel}>Cancel</button>
+                </>}
+          </div>
+        </div>
+      )}
       <div className="sh-bulk">
-        <button className="sh-primary" onClick={onGive} disabled={!CAN_HAND_OVER(c) || Boolean(done)}>{done ? 'Handed over ✓' : inPlace ? `Extend "${c.target!.name.slice(0, 40)}"` : ACTION[c.cls]}</button>
+        <button className="sh-primary" onClick={() => onGive(wantNote)} disabled={!CAN_HAND_OVER(c) || Boolean(done) || Boolean(pending)}>{done ? 'Handed over ✓' : inPlace ? `Extend "${c.target!.name.slice(0, 40)}"` : ACTION[c.cls]}</button>
         {done && <span className="sh-note">{done}</span>}
       </div>
     </article>

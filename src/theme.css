@@ -4845,3 +4845,6 @@ textarea.studio-field { min-height: 120px; }
 .sh-source-database { border-color: var(--lv-green, var(--line)); }
 .sh-source-offline { border-color: var(--lv-red, var(--line)); }
 .sh-source button { flex: none; }
+
+/* Sources: optional note on Jira at hand-over */
+.sx-note-opt { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; color: var(--ink); }

@@ -5,7 +5,7 @@
  * The Jira connector (0.2.0) has the tools jira_add_labels and jira_add_comment; Werkbank never gets the Jira token.
  */
 import { stageText, TYPE_LABEL, type RItem } from './registry.ts';
-import type { SourceRef } from './requirements.ts';
+import type { Handover, SourceRef } from './requirements.ts';
 
 export const BASE_LABEL = 'werkbank';
 export const MAX_TICKETS = 20;
@@ -76,6 +76,32 @@ export function summaryOf(results: WriteResult[]): string {
   const done = results.filter(isDone).length;
   const failed = results.filter((r) => r.error);
   return `${done} of ${results.length} ticket${results.length === 1 ? '' : 's'} noted${failed.length ? `; failed: ${failed.map((r) => `${r.key} (${r.error})`).join(', ')}` : ''}.`.slice(0, 600);
+}
+
+// ---------- note at hand-over (before the registry entry exists) ----------
+
+/** The Jira tickets among the sources of a hand-over (at most MAX_TICKETS). */
+export const handoverTickets = (h: Pick<Handover, 'refs'>): SourceRef[] => ticketsOf({ refs: h.refs });
+
+/** Labels at hand-over: the same two as in the registry, so later notes and searches in Jira line up. */
+export const handoverLabels = (h: Pick<Handover, 'base'>): string[] => [BASE_LABEL, `${BASE_LABEL}-${h.base}`];
+
+/** A short stable code of what is handed over (type, name, tickets): the same hand-over always gets the same marker, so a repeat is skipped. */
+export function handoverMarker(h: Pick<Handover, 'base' | 'name' | 'refs'>): string {
+  const text = `${h.base}|${h.name}|${handoverTickets(h).map((t) => t.key).sort().join(',')}`;
+  let x = 5381;
+  for (let i = 0; i < text.length; i += 1) x = ((x * 33) ^ text.charCodeAt(i)) >>> 0;
+  return `[Werkbank ${x.toString(36).padStart(7, '0').slice(0, 7)}]`;
+}
+
+const BASE_TEXT: Record<Handover['base'], string> = { agent: 'an agent', workflow: 'a workflow', feature: 'a feature' };
+
+export function handoverComment(h: Pick<Handover, 'base' | 'name' | 'refs' | 'summary' | 'extends'>): string {
+  return [
+    `${handoverMarker(h)} This requirement is being picked up in the Werkbank as ${BASE_TEXT[h.base]}: "${h.name}".`,
+    `${h.extends ? `It extends "${h.extends.name}". ` : ''}${h.summary ? `Goal: ${h.summary}` : ''}`.trim(),
+    'Added from the Werkbank after the owner confirmed it. The registry keeps the history.',
+  ].filter(Boolean).join('\n').slice(0, 1800);
 }
 
 // ---------- what was written, on this computer ----------
