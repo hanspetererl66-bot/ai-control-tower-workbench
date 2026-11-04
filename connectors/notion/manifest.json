@@ -1,0 +1,51 @@
+{
+  "manifest_version": "0.2",
+  "name": "notion",
+  "display_name": "Notion",
+  "version": "0.1.0",
+  "description": "Notion (read only): search pages and databases, read a page or the rows of a database through an internal integration. Needs the integration secret; the pages must be shared with the integration.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "NOTION_TOKEN": "${user_config.notion_token}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "notion_check_connection",
+      "description": "Check the Notion connection (token) and show the integration and workspace."
+    },
+    {
+      "name": "notion_search",
+      "description": "Search the pages and databases that are shared with the integration, newest edit first. Read only."
+    },
+    {
+      "name": "notion_read_page",
+      "description": "Read one page: title, properties and the text of its blocks. Read only."
+    },
+    {
+      "name": "notion_query_database",
+      "description": "Read the rows of a database with their properties (first rows, no filter). Read only."
+    }
+  ],
+  "user_config": {
+    "notion_token": {
+      "type": "string",
+      "title": "Integration secret",
+      "description": "notion.so/profile/integrations, New integration (internal), copy the secret. Then share each page or database with it (page menu, Connections). Stored as a secret. Read access is enough.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

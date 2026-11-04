@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ExtensionList from './ExtensionList';
 import { OUTPUTS, type Source, type StudioAgent } from '../agent-studio';
 import {
   DOC_ORDER, DOC_SHORT, DOC_TITLE, FLOW_OF, SENSITIVITY, SPEC_PARTS, VOLUME, agentFromProject, allConfirmed, confirmDoc, confirmQuestions, currentStage, editDoc, questionProblems,
@@ -90,6 +91,7 @@ function Questions({ project, catalog, onChange, locked }: AgentProjectViewProps
   return (
     <div className="proj-body">
       <p className="proj-lead">Start with the goal. The questions below are what the documents are written from: the more precise the answers, the better the first draft.</p>
+      <ExtensionList list={project.extensions} />
       {locked && <p className="proj-banner">These answers are confirmed. If you change one, the documents written from them are marked outdated and have to be confirmed again.</p>}
 
       <h3 className="studio-step"><span>1</span> Goal <small>What should the agent achieve, and for whom?</small></h3>

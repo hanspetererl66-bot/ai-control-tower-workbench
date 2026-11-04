@@ -35,11 +35,13 @@ import { groupChoices, groupProfileMissing, harnessChoices, resolveHarness, sani
 import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
-import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
+import { MEMORY_GOV_KEY, loadGov, saveGov, requestPromotion as govRequestPromotion, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
-import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { confirmDoc, editDoc, extendProject as extendAgentProject, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { loadMap as loadSyncMap } from './work-sync';
+import { localTarget, newExtension } from './requirements';
 import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
@@ -59,7 +61,7 @@ import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
-import { catalogFromDatabase, lifecycleCalls, type SkillSource } from './skill-health-db';
+import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
@@ -221,7 +223,28 @@ export default function App() {
       const r = await window.host?.skillDbLifecycle?.(call).catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
       if (!r?.ok) problems.push(`${call.slug}: ${r?.detail ?? 'no answer'}`);
     }
-    await loadSkillHealth(problems.length ? `Not saved in the database: ${problems.slice(0, 3).join(' · ')}` : '');
+    // "Request next level" becomes a real request: register the skill (Individual) and ask in the database; the Approvals tab shows it.
+    const failed: string[] = [];
+    const wanted = promotionCalls(prev, next);
+    if (wanted.length) {
+      const groups = await window.host?.skillDbGroups?.().catch(() => undefined);
+      const group = groups?.ok ? groups.rows?.[0]?.id : undefined;
+      for (const call of wanted) {
+        try {
+          const reg = await window.host?.skillDbRegister?.(call.slug);
+          if (!reg?.ok) throw new Error(reg?.detail ?? 'The skill could not be stored in the database.');
+          if (call.to === 'team' && !group) throw new Error('You are not in a department group, so there is nobody to approve a team request.');
+          const r = await window.host?.skillDbPromotion?.('request_skill_promotion', { name: call.slug, to: call.to, ...(call.to === 'team' ? { group } : {}), note: 'Requested from Skill health' });
+          if (!r?.ok) throw new Error(r?.detail ?? 'The database did not answer.');
+          const req = r.data?.request;
+          if (req?.status === 'blocked') { await window.host?.skillDbPromotion?.('withdraw_skill_request', { id: req.id }); throw new Error('the database’s automatic checks failed for this version'); }
+          saveGov(govRequestPromotion(loadGov(), call.slug, 'Requested from Skill health', Date.now(), undefined, req?.id));
+        } catch (e) { failed.push(`${call.slug}: ${(e as Error).message}`); }
+      }
+      if (failed.length) changeSkillCatalog(withdrawFlags(skillCatalogRef.current, wanted.map((c) => c.slug).filter((slug) => failed.some((f) => f.startsWith(slug + ':')))));
+    }
+    const all = [...problems.map((p) => `Not saved in the database: ${p}`), ...failed.map((f) => `No request: ${f}`)];
+    await loadSkillHealth(all.slice(0, 3).join(' · '));
   }, [changeSkillCatalog, loadSkillHealth, skillSource.kind]);
   const updateSchedules = useCallback((next: Schedule[]) => {
     setSchedules(next);
@@ -1367,6 +1390,15 @@ export default function App() {
           ready={Boolean(agent)}
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
           onAgentFrom={(h) => {
+            // An extension of an agent that is on this computer: add it to that project (the next save is a new revision of the same entry).
+            const here = h.extends ? localTarget(loadSyncMap(window.localStorage), h.extends.id) : null;
+            const mine = here?.kind === 'agent' ? agentProjects.find((x) => x.id === here.id) : undefined;
+            if (mine) {
+              changeAgentProjects(agentProjects.map((x) => (x.id === mine.id ? extendAgentProject(mine, newExtension(h), Date.now()) : x)));
+              setFocusProject(mine.id);
+              setView('studio');
+              return;
+            }
             const project = newProject(h.goal);
             project.answers = { ...project.answers, name: h.name.slice(0, 60) || project.answers.name };
             if (h.refs.length) project.sources = h.refs;
@@ -1378,7 +1410,7 @@ export default function App() {
           onOpenRegistry={() => setView('registry')}
         />
       ) : view === 'registry' ? (
-        <RegistryView />
+        <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

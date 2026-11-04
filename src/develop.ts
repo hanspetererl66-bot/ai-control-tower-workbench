@@ -7,7 +7,7 @@
 
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
 import { interviewMarkdown, mergeProposal, processSummary, sanitizeInterview, type InterviewState } from './interview.ts';
-import { sanitizeExtends, sanitizeRefs, type ExtendsRef, type SourceRef } from './requirements.ts';
+import { extensionText, mergeRefs, sanitizeExtends, sanitizeExtensions, sanitizeRefs, MAX_EXTENSIONS, type Extension, type ExtendsRef, type SourceRef } from './requirements.ts';
 
 export type Kind = 'workflow' | 'agent';
 /** The five steps shared with the agent project (see flow.ts). */
@@ -41,6 +41,8 @@ export type Intent = {
   extra: string;
   /** Optional: the process as a person described it in an interview (see interview.ts). Empty when the form was filled in by hand. */
   process: string;
+  /** Optional: requirements that were added later to this existing workflow (see extendProject). Empty for a new one. */
+  extension: string;
 };
 
 export type Documents = { prd: string; spec: string; build: string };
@@ -61,9 +63,11 @@ export type Project = {
   sources?: SourceRef[];
   /** The agent or workflow of the registry that this project extends. */
   extends?: ExtendsRef;
+  /** Extensions that were added to this project from the Sources tile. Each one is a new revision of the same registry item. */
+  extensions?: Extension[];
 };
 
-export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', stakeholders: '', outOfScope: '', extra: '', process: '' });
+export const emptyIntent = (): Intent => ({ name: '', goal: '', trigger: TRIGGERS[0], systems: [], otherSystems: '', data: '', guardrail: GUARDRAILS[1], success: '', stakeholders: '', outOfScope: '', extra: '', process: '', extension: '' });
 
 export function newProject(kind: Kind, now = Date.now()): Project {
   return { id: `p${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`, kind, stage: 'intent', intent: emptyIntent(), docs: { prd: '', spec: '', build: '' }, approved: [], createdAt: now, updatedAt: now };
@@ -104,6 +108,7 @@ export function intentBlock(kind: Kind, i: Intent): string {
     `Stakeholders named by the person: ${i.stakeholders.trim() || '(not given)'}`,
     `Explicitly out of scope: ${i.outOfScope.trim() || '(not given)'}`,
     `${q.label} ${i.extra.trim() || '(not answered)'}`,
+    ...(i.extension.trim() ? ['Requirements added later to this existing workflow (they extend what it does today; keep what already works):', i.extension.trim()] : []),
     ...(i.process.trim() ? ['Process as described by the person in an interview (their own account of today, not checked):', i.process.trim()] : []),
   ].join('\n');
 }
@@ -290,6 +295,17 @@ export function changeIntent(project: Project, patch: Partial<Intent>, now = Dat
   return { ...project, intent: { ...project.intent, ...patch }, approved: [], updatedAt: now };
 }
 
+/**
+ * Adds an extension to an existing project: its requirements go into the intent (so the next documents are written with them),
+ * the sources are added, and everything approved so far is taken back, because the intent changed. The work item stays the same;
+ * the next sync saves this as its next revision.
+ */
+export function extendProject(project: Project, ext: Extension, now = Date.now()): Project {
+  const extensions = [...(project.extensions ?? []), ext].slice(-MAX_EXTENSIONS);
+  const sources = mergeRefs(project.sources, ext.refs);
+  return { ...changeIntent(project, { extension: extensionText(extensions) }, now), stage: 'intent', extensions, ...(sources.length ? { sources } : {}) };
+}
+
 /** Keeps the state of a running interview in the project. Not a change of the intent: approvals stay. */
 export function setInterview(project: Project, interview: InterviewState, now = Date.now()): Project {
   return { ...project, interview, updatedAt: now };
@@ -320,19 +336,19 @@ export function sanitizeProject(raw: any): Project | null {
     systems: Array.isArray(i.systems) ? i.systems.filter((s: unknown) => typeof s === 'string').slice(0, 20).map((s: string) => s.slice(0, 60)) : [],
     otherSystems: str(i.otherSystems, 300), data: str(i.data, 1500), guardrail: str(i.guardrail, 160) || base.guardrail,
     success: str(i.success, 1000), stakeholders: str(i.stakeholders, 800), outOfScope: str(i.outOfScope, 800), extra: str(i.extra, 1000),
-    process: str(i.process, 8000),
+    process: str(i.process, 8000), extension: str(i.extension, 4000),
   };
   const d = raw.docs ?? {};
   const stage: Stage = STAGES.includes(raw.stage) ? raw.stage : 'intent';
   const interview = sanitizeInterview(raw.interview);
-  const sources = sanitizeRefs(raw.sources), ext = sanitizeExtends(raw.extends);
+  const sources = sanitizeRefs(raw.sources), ext = sanitizeExtends(raw.extends), extensions = sanitizeExtensions(raw.extensions);
   return {
     id: str(raw.id, 40) || `p${Date.now().toString(36)}`, kind: raw.kind, stage, intent,
     docs: { prd: str(d.prd, 60_000), spec: str(d.spec, 80_000), build: str(d.build, 120_000) },
     approved: Array.isArray(raw.approved) ? raw.approved.filter((s: unknown) => STAGES.includes(s as Stage)) : [],
     createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(), updatedAt: Number.isFinite(raw.updatedAt) ? raw.updatedAt : Date.now(),
     ...(interview ? { interview } : {}),
-    ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}),
+    ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}), ...(extensions.length ? { extensions } : {}),
   };
 }
 

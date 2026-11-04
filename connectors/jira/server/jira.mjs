@@ -40,6 +40,7 @@ export function textToAdf(text) {
 
 const KEY = /^[A-Z][A-Z0-9_]{1,19}-\d{1,8}$/;
 const PROJECT = /^[A-Z][A-Z0-9_]{1,19}$/;
+const LABEL = /^[A-Za-z0-9_.:-]{1,60}$/;
 
 export function createJiraHandlers({ env = process.env, fetchImpl = globalThis.fetch } = {}) {
   const config = () => {
@@ -144,6 +145,16 @@ export function createJiraHandlers({ env = process.env, fetchImpl = globalThis.f
       await api('POST', `/rest/api/3/issue/${key}/comment`, { body: textToAdf(comment.slice(0, 8000)) });
       return { commented: true, key };
     },
+    async jira_add_labels(args) {
+      const key = keyOf(args);
+      const list = Array.isArray(args.labels) ? args.labels : [args.label];
+      const labels = [...new Set(list.map((l) => String(l ?? '').trim()).filter(Boolean))];
+      if (!labels.length) throw new JiraError('labels is required, for example ["werkbank"].');
+      if (labels.length > 10) throw new JiraError('At most 10 labels at once.');
+      for (const l of labels) if (!LABEL.test(l)) throw new JiraError(`"${l.slice(0, 40)}" is not a valid label (letters, digits, - _ . : only, no spaces, at most 60 characters).`);
+      await api('PUT', `/rest/api/3/issue/${key}`, { update: { labels: labels.map((add) => ({ add })) } });
+      return { labelled: true, key, labels };
+    },
     async jira_set_status(args) {
       const key = keyOf(args);
       const wanted = String(args.status ?? '').trim().toLowerCase();
@@ -167,5 +178,6 @@ export const TOOL_DEFINITIONS = [
   { name: 'jira_get_issue', description: 'Read one issue: description, labels and the last comments.', inputSchema: obj({ key: { type: 'string', description: 'Issue key such as ABC-123.' } }, ['key']) },
   { name: 'jira_create_issue', description: 'Create an issue (this changes Jira). Ask the person before using it.', inputSchema: obj({ project: { type: 'string', description: 'Project key such as ABC.' }, summary: { type: 'string' }, description: { type: 'string' }, issue_type: { type: 'string', description: 'Task, Bug, Story … (default Task).' }, priority: { type: 'string' } }, ['project', 'summary']) },
   { name: 'jira_add_comment', description: 'Add a comment to an issue (this changes Jira). Ask the person before using it.', inputSchema: obj({ key: { type: 'string' }, comment: { type: 'string' } }, ['key', 'comment']) },
+  { name: 'jira_add_labels', description: 'Add labels to an issue; existing labels stay (this changes Jira). Ask the person before using it.', inputSchema: obj({ key: { type: 'string' }, labels: { type: 'array', items: { type: 'string' }, description: 'Labels without spaces, at most 10.' } }, ['key', 'labels']) },
   { name: 'jira_set_status', description: 'Move an issue to another status, for example "In Progress" or "Done" (this changes Jira). Ask the person before using it.', inputSchema: obj({ key: { type: 'string' }, status: { type: 'string' } }, ['key', 'status']) },
 ];

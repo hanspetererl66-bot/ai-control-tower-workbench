@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { PROJECTS_PULLED, schedule as scheduleWorkSync } from '../work-sync-runner';
 import SharedSaveLine from './SharedSaveLine';
-import { emptyIntent, loadProjects, newProject, saveProjects, upsertProject, type Project } from '../develop';
+import { emptyIntent, extendProject, loadProjects, newProject, saveProjects, upsertProject, type Project } from '../develop';
+import { loadMap } from '../work-sync';
 import DevelopWizard from './DevelopWizard';
 import DictateButton from './DictateButton';
 import { appendDictation } from '../voice-text';
 import SourcesView from './SourcesView';
-import { requirementLines, SOURCES, type Handover } from '../requirements';
+import { localTarget, newExtension, requirementLines, SOURCES, type Handover } from '../requirements';
 import { featureArgs, hostApi, newFeature } from '../registry';
 
 type Props = {
@@ -55,6 +56,16 @@ export default function DevelopHub(props: Props) {
   const handOver = async (h: Handover): Promise<string> => {
     if (h.base === 'agent') { props.onAgentFrom(h); return ''; }
     if (h.base === 'workflow') {
+      // An extension of a workflow that is on this computer: add it to that project (the next save is a new revision of the same entry).
+      const here = h.extends ? localTarget(loadMap(window.localStorage), h.extends.id) : null;
+      const mine = here?.kind === 'dev' ? projects.find((x) => x.id === here.id && x.kind === 'workflow') : undefined;
+      if (mine) {
+        const next = extendProject(mine, newExtension(h));
+        setProjects((list) => upsertProject(list, next));
+        setMode('hub');
+        setOpenId(next.id);
+        return '';
+      }
       const p = newProject('workflow');
       const lines = requirementLines(h);
       p.intent = { ...emptyIntent(), name: h.name, goal: `${h.goal}${lines ? `\n\nRequirements from the sources:\n${lines}` : ''}`.slice(0, 1500) };

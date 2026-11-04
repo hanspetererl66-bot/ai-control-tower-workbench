@@ -7,7 +7,7 @@
  */
 import { FLOW_LABEL, type FlowStep } from './flow.ts';
 import { OUTPUTS, newAgent, type Output, type Source, type StudioAgent, type TriggerType } from './agent-studio.ts';
-import { sanitizeExtends, sanitizeRefs, type ExtendsRef, type SourceRef } from './requirements.ts';
+import { extensionText, mergeRefs, sanitizeExtends, sanitizeExtensions, sanitizeRefs, MAX_EXTENSIONS, type Extension, type ExtendsRef, type SourceRef } from './requirements.ts';
 
 export type DocKey = 'prd' | 'tfd' | 'arch' | 'risk';
 export const DOC_ORDER: DocKey[] = ['prd', 'tfd', 'arch', 'risk'];
@@ -49,6 +49,8 @@ export type AgentProject = {
   agentId?: string; createdAt: number; updatedAt: number;
   /** Where the project came from (Jira, Slack, Notion) and the agent it extends: set when started from the Sources tile. */
   sources?: SourceRef[]; extends?: ExtendsRef;
+  /** Extensions added to this existing agent from the Sources tile; each one is a new revision of the same registry item. */
+  extensions?: Extension[];
 };
 
 export const PROJECTS_KEY = 'werkbank.agentProjects';
@@ -173,7 +175,7 @@ ${a.dependencies.trim() || 'None named.'}
 - The sources contain the data the success measure needs.
 ${list(open)}
 
-## 9. Approval
+${p.extensions?.length ? `## 9. Extensions\nRequirements added later to this existing agent. Keep what already works.\n\n${extensionText(p.extensions)}\n\n` : ''}## ${p.extensions?.length ? 10 : 9}. Approval
 | Role | Name | Date |
 |---|---|---|
 | Owner | ${a.owner.trim() || ''} | |
@@ -352,6 +354,17 @@ export function setAnswers(p: AgentProject, change: Partial<Answers>, now: numbe
   return touch({ ...p, answers: { ...p.answers, ...change }, confirmed: wasConfirmed ? {} : p.confirmed, stale: wasConfirmed ? written : p.stale }, now);
 }
 
+/**
+ * Adds an extension to an existing agent project: the sources are added and the documents written from the answers are marked
+ * outdated (the PRD gets an "Extensions" section when the questions are confirmed again). The work item stays the same;
+ * the next sync saves this as its next revision.
+ */
+export function extendProject(p: AgentProject, ext: Extension, now: number): AgentProject {
+  const extensions = [...(p.extensions ?? []), ext].slice(-MAX_EXTENSIONS);
+  const sources = mergeRefs(p.sources, ext.refs);
+  return { ...setAnswers(p, {}, now), extensions, ...(sources.length ? { sources } : {}) };
+}
+
 export function confirmQuestions(p: AgentProject, catalog: Source[], now: number): AgentProject {
   if (questionProblems(p.answers).length) return p;
   const docs = { ...p.docs };
@@ -438,9 +451,9 @@ export function sanitizeProjects(v: unknown): AgentProject[] {
     const docs: AgentProject['docs'] = {}, confirmed: AgentProject['confirmed'] = {};
     for (const k of DOC_ORDER) if (typeof r.docs?.[k] === 'string') docs[k] = r.docs[k].slice(0, MAX_DOC);
     for (const k of ['questions', ...DOC_ORDER] as const) if (Number(r.confirmed?.[k]) > 0) confirmed[k] = Number(r.confirmed[k]);
-    const sources = sanitizeRefs(r.sources), ext = sanitizeExtends(r.extends);
+    const sources = sanitizeRefs(r.sources), ext = sanitizeExtends(r.extends), extensions = sanitizeExtensions(r.extensions);
     out.push({
-      ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}),
+      ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}), ...(extensions.length ? { extensions } : {}),
       id: r.id.slice(0, 40), answers, docs, confirmed, stale: Array.isArray(r.stale) ? r.stale.filter((k: unknown) => DOC_ORDER.includes(k as DocKey)) : [],
       ...(typeof r.agentId === 'string' ? { agentId: r.agentId } : {}), createdAt: Number(r.createdAt) || 0, updatedAt: Number(r.updatedAt) || 0,
     });
