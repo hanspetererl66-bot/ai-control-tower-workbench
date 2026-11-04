@@ -1,0 +1,159 @@
+{
+  "manifest_version": "0.2",
+  "name": "ontology-manager",
+  "display_name": "Ontology Manager (OntoRAG)",
+  "version": "0.2.0",
+  "description": "Manages ontologies for the Werkbank with OntoRAG (open source, Apache-2.0, pip: ontorag). Browse, search and compose baseline ontologies, register new ones, and query an ontology with its instances over SPARQL. Can also grow ontologies from documents: it reads documents, proposes new or extended ontology terms with the quotes they come from, and changes the catalog only after you confirm the reviewed proposal. Ships a small Finance Pre-Close baseline (company codes DE10, FR10, UK10, certified metrics such as Margin and DSO, pre-close checks). Runs on this computer through uv (needs uv; the first start downloads the OntoRAG packages). Reading and querying need no key. Proposing from documents needs a language model: the text of the documents is sent to the model endpoint you configure.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "python",
+    "entry_point": "server/ontorag_stdio.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-project",
+        "--python",
+        "3.12",
+        "--with",
+        "ontorag[pdf]",
+        "${__dirname}/server/ontorag_stdio.py"
+      ],
+      "env": {
+        "ONTORAG_FOLDER": "${user_config.ontology_folder}",
+        "ONTORAG_ONTOLOGY_TTL": "${user_config.knowledge_ontology_file}",
+        "ONTORAG_INSTANCES_TTL": "${user_config.knowledge_instances_file}",
+        "ONTORAG_DOCUMENTS_FOLDER": "${user_config.documents_folder}",
+        "OPENROUTER_API_KEY": "${user_config.llm_api_key}",
+        "OPENROUTER_MODEL": "${user_config.llm_model}",
+        "OPENROUTER_BASE_URL": "${user_config.llm_base_url}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_ontologies",
+      "description": "List the baseline ontologies registered in the catalog."
+    },
+    {
+      "name": "inspect_ontology",
+      "description": "Show the classes and properties of one registered baseline ontology."
+    },
+    {
+      "name": "search_classes",
+      "description": "Search classes by name or description across all registered baselines."
+    },
+    {
+      "name": "search_properties",
+      "description": "Search properties by name or description across all registered baselines."
+    },
+    {
+      "name": "compose",
+      "description": "Merge selected baselines into one schema card with the origin of every term."
+    },
+    {
+      "name": "add_ontology",
+      "description": "Register a new baseline ontology from Turtle (TTL) text. Adds to the catalog; nothing is overwritten by the connector itself."
+    },
+    {
+      "name": "describe",
+      "description": "Describe one resource (class, metric, company code) by its IRI, as Turtle."
+    },
+    {
+      "name": "list_by_class",
+      "description": "List the instances of a class, for example all company codes."
+    },
+    {
+      "name": "outgoing",
+      "description": "Follow the relations that leave a resource."
+    },
+    {
+      "name": "incoming",
+      "description": "Follow the relations that point to a resource."
+    },
+    {
+      "name": "mentions",
+      "description": "Show where a resource is mentioned (provenance), when the instances carry mention nodes."
+    },
+    {
+      "name": "sparql_select",
+      "description": "Run a read-only SPARQL SELECT over the ontology and its instances."
+    },
+    {
+      "name": "sparql_construct",
+      "description": "Run a read-only SPARQL CONSTRUCT over the ontology and its instances."
+    },
+    {
+      "name": "propose_ontology_from_documents",
+      "description": "Read documents or pasted text and propose a new ontology, or additions to an existing one, with the quotes each term comes from. Changes nothing in the catalog. Needs a model key; the text is sent to the model endpoint."
+    },
+    {
+      "name": "list_ontology_proposals",
+      "description": "List the proposals made so far and their status."
+    },
+    {
+      "name": "show_ontology_proposal",
+      "description": "Show the review report of one proposal again."
+    },
+    {
+      "name": "apply_ontology_proposal",
+      "description": "Adopt a reviewed proposal, only with confirmed=true: register it as a new ontology or merge it into an existing one. The previous version is saved first."
+    },
+    {
+      "name": "discard_ontology_proposal",
+      "description": "Delete one proposal's working files (confirmed=true). The catalog is not touched."
+    },
+    {
+      "name": "document_ontology_settings",
+      "description": "Say whether a model is configured and which folders documents may come from."
+    }
+  ],
+  "user_config": {
+    "ontology_folder": {
+      "type": "string",
+      "title": "Ontology folder",
+      "description": "Absolute path of a folder on this computer where the ontology catalog is kept, for example /home/you/werkbank-ontologies. It is created if it does not exist. The bundled Finance Pre-Close baseline is registered there on the first start.",
+      "required": true
+    },
+    "knowledge_ontology_file": {
+      "type": "string",
+      "title": "Ontology file for queries (optional)",
+      "description": "Absolute path of a Turtle (.ttl) ontology that describe, list_by_class and the SPARQL tools read. Leave empty to use the bundled Finance Pre-Close baseline.",
+      "required": false
+    },
+    "knowledge_instances_file": {
+      "type": "string",
+      "title": "Instances file for queries (optional)",
+      "description": "Absolute path of the Turtle (.ttl) file with the instances of that ontology. Leave empty to use the bundled sample instances. Set both files or neither.",
+      "required": false
+    },
+    "documents_folder": {
+      "type": "string",
+      "title": "Documents folder (optional)",
+      "description": "Absolute path of a folder with the documents you want to turn into ontology proposals (.md, .txt, .html, .epub, .pdf). Only files below this folder and the connector's own inbox can be read. Leave empty to use pasted text only.",
+      "required": false
+    },
+    "llm_api_key": {
+      "type": "string",
+      "title": "Model API key (for documents)",
+      "description": "Key for the OpenAI-compatible model endpoint that proposes ontology terms from documents (OpenRouter by default). The text of your documents is sent to that provider. Not needed for a local server without a key requirement; stored as a secret, never written to config files.",
+      "sensitive": true,
+      "required": false
+    },
+    "llm_model": {
+      "type": "string",
+      "title": "Model name (optional)",
+      "description": "Model the endpoint should use, for example openai/gpt-4o-mini. Leave empty for the OntoRAG default.",
+      "required": false
+    },
+    "llm_base_url": {
+      "type": "string",
+      "title": "Model endpoint (optional)",
+      "description": "Base URL of an OpenAI-compatible endpoint. Leave empty for OpenRouter. For a model on this computer use its address, for example http://localhost:11434/v1.",
+      "required": false
+    }
+  }
+}
