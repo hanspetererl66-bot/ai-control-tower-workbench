@@ -8,8 +8,7 @@
  * Conflicts: if the project changed here and somewhere else, the other version is loaded and the local one is kept as a copy.
  */
 import { sanitizeProjects as sanitizeAgentProjects, DOC_ORDER, type AgentProject } from './agent-project.ts';
-import { sanitizeProject as sanitizeDevelopProject, artifactOf, type Project } from './develop.ts';
-import { interviewMarkdown } from './interview.ts';
+import { sanitizeProject as sanitizeDevelopProject, artifactOf, interviewFiles, type Project } from './develop.ts';
 import { extensionNote, sourcesOf } from './requirements.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
@@ -52,7 +51,7 @@ export function developUnit(p: Project, toMarkdown: ((stored: string) => string)
   const art = artifactOf(p.kind, p.docs.build);
   if (art) files.push({ path: p.kind === 'workflow' ? 'workflow.json' : 'SKILL.md', content: art, language: p.kind === 'workflow' ? 'json' : 'markdown' });
   // The interview result (summary and the full log) is stored as a readable file next to project.json.
-  if (p.interview && (p.interview.entries.length || p.interview.transcript.length)) files.push({ path: 'process-interview.md', content: interviewMarkdown(p.interview), language: 'markdown' });
+  for (const f of interviewFiles(p)) files.push({ path: f.name, content: f.text, language: 'markdown' });
   if (toMarkdown) {
     if (p.docs.prd.trim()) files.push({ path: 'PRD.md', content: toMarkdown(p.docs.prd), language: 'markdown' });
     if (p.docs.spec.trim()) files.push({ path: 'specification.md', content: toMarkdown(p.docs.spec), language: 'markdown' });

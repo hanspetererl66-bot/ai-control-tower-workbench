@@ -37,7 +37,7 @@ const SCRIPT = {
 
 function run(lang = 'en') {
   const queues = Object.fromEntries(Object.entries(SCRIPT).map(([k, v]) => [k, [...v]]));
-  let iv = startInterview('Accounts payable', lang, 10, 1);
+  let iv = startInterview('Accounts payable', lang, 10, Date.now());
   const log = [];
   for (let n = 0; n < 60; n++) {
     const r = nextAction(iv);
@@ -311,9 +311,9 @@ test('interviewMarkdown: structured result first, then the full log with voice a
   assert.match(md, /- Too much copying \(unsure\)/);
   assert.match(md, /\*\*Not covered:\*\*/);
   assert.ok(md.indexOf('## What the person described') < md.indexOf('## Interview log'));
-  assert.match(md, /\*\*Interviewer:\*\* What starts it\?/);
-  assert.match(md, /\*\*Answer \(spoken\):\*\* Mail comes in/);
-  assert.match(md, /\*\*Answer \(typed\):\*\* And I copy it by hand/);
+  assert.match(md, /\*\*\[\d+\] Interviewer:\*\* What starts it\?/);
+  assert.match(md, /\*\*\[\d+\] Answer \(spoken\):\*\* Mail comes in/);
+  assert.match(md, /\*\*\[\d+\] Answer \(typed\):\*\* And I copy it by hand/);
   assert.match(interviewMarkdown({ ...iv, lang: 'de' }), /^# Prozessinterview: /);
 });
 
