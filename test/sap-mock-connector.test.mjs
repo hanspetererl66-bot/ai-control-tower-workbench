@@ -191,8 +191,8 @@ test('GR/IR: SAP and the lakehouse agree on the classification and the open valu
     assert.equal(byClass('ACCRUE').length, 8);
     assert.equal(byClass('STALE_REVIEW').length, 3);
     assert.equal(byClass('INVOICE_BEFORE_GOODS').length, 1);
-    const pl = await server.tool('get_open_grir_items', { company_code: 'PL01' });
-    assert.ok(pl.json.items.every((item) => item.company_code === 'PL01'));
+    const pl = await server.tool('get_open_grir_items', { company_code: 'UK10' });
+    assert.ok(pl.json.items.every((item) => item.company_code === 'UK10'));
     assert.equal((await server.tool('get_open_grir_items', { company_code: 'XX99' })).isError, true);
     const first = all.json.items.find((item) => item.po_number === '4500001001');
     assert.equal(first.goods_receipt_date, '2026-10-23'); // today - 4
@@ -217,8 +217,8 @@ test('an accrual follows the same gate and is limited to the open value', async 
     const draft = await server.tool('draft_accrual_posting', { ...base, amount_eur: 50700 });
     assert.equal(draft.isError, false);
     assert.match(draft.json.status, /nothing has been posted/);
-    assert.equal(draft.json.preview.company_code, 'DE01');
-    let item = (await server.tool('get_open_grir_items', { company_code: 'DE01' })).json.items.find((entry) => entry.po_number === '4500001001');
+    assert.equal(draft.json.preview.company_code, 'DE10');
+    let item = (await server.tool('get_open_grir_items', { company_code: 'DE10' })).json.items.find((entry) => entry.po_number === '4500001001');
     assert.equal(item.accrued_eur, 0, 'drafting changes nothing');
 
     const rejected = await server.tool('submit_draft', { draft_id: draft.json.draft_id, confirmation_token: draft.json.confirmation_token, confirmed: false });
@@ -227,7 +227,7 @@ test('an accrual follows the same gate and is limited to the open value', async 
     assert.equal(posted.json.status, 'POSTED');
     assert.match(posted.json.accrual_document, /^ACC-\d+$/);
 
-    item = (await server.tool('get_open_grir_items', { company_code: 'DE01' })).json.items.find((entry) => entry.po_number === '4500001001');
+    item = (await server.tool('get_open_grir_items', { company_code: 'DE10' })).json.items.find((entry) => entry.po_number === '4500001001');
     assert.equal(item.accrued_eur, 50700);
     assert.equal(item.accrual_document, posted.json.accrual_document);
     // One accrual per item: a second one is refused.

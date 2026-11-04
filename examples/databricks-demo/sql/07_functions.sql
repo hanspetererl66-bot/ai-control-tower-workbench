@@ -184,7 +184,7 @@ RETURN
 -- ---------------------------------------------------------------- fin: pre-close
 
 CREATE OR REPLACE FUNCTION werkbank_demo.fin.get_grir_accrual_candidates(
-  company STRING DEFAULT 'ALL' COMMENT 'Company code DE01, PL01 or FR01, or ALL for the whole group. Default ALL.'
+  company STRING DEFAULT 'ALL' COMMENT 'Company code DE10, UK10 or FR10, or ALL for the whole group. Default ALL.'
 )
 RETURNS TABLE (
   po_number STRING COMMENT 'Ten-digit purchase order number; the key to use in SAP.',
