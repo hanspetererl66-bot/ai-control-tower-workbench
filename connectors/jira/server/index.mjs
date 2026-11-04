@@ -6,7 +6,7 @@
 import { createInterface } from 'node:readline';
 import { JiraError, TOOL_DEFINITIONS, createJiraHandlers } from './jira.mjs';
 
-const SERVER_INFO = { name: 'jira', version: '0.1.0' };
+const SERVER_INFO = { name: 'jira', version: '0.2.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const send = (message) => process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
 const reply = (id, result) => send({ id, result });
@@ -22,7 +22,7 @@ async function handle({ id, method, params }) {
         protocolVersion: SUPPORTED_PROTOCOLS.includes(params?.protocolVersion) ? params.protocolVersion : SUPPORTED_PROTOCOLS[0],
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO,
-        instructions: 'Jira Cloud: search and read issues with JQL; creating issues, commenting and changing status change Jira, so ask the person first. Start with jira_check_connection if something fails.',
+        instructions: 'Jira Cloud: search and read issues with JQL; creating issues, commenting, adding labels and changing status change Jira, so ask the person first. Start with jira_check_connection if something fails.',
       });
       return;
     case 'ping': if (isRequest) reply(id, {}); return;

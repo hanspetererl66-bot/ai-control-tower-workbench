@@ -39,7 +39,9 @@ import { MEMORY_GOV_KEY, loadGov, saveGov, levelOf as govLevelOf, pendingFor as 
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
 import AgentStudio from './ui/AgentStudio';
-import { confirmDoc, editDoc, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { confirmDoc, editDoc, extendProject as extendAgentProject, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
+import { loadMap as loadSyncMap } from './work-sync';
+import { localTarget, newExtension } from './requirements';
 import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
@@ -1337,6 +1339,15 @@ export default function App() {
           ready={Boolean(agent)}
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
           onAgentFrom={(h) => {
+            // An extension of an agent that is on this computer: add it to that project (the next save is a new revision of the same entry).
+            const here = h.extends ? localTarget(loadSyncMap(window.localStorage), h.extends.id) : null;
+            const mine = here?.kind === 'agent' ? agentProjects.find((x) => x.id === here.id) : undefined;
+            if (mine) {
+              changeAgentProjects(agentProjects.map((x) => (x.id === mine.id ? extendAgentProject(mine, newExtension(h), Date.now()) : x)));
+              setFocusProject(mine.id);
+              setView('studio');
+              return;
+            }
             const project = newProject(h.goal);
             project.answers = { ...project.answers, name: h.name.slice(0, 60) || project.answers.name };
             if (h.refs.length) project.sources = h.refs;
@@ -1348,7 +1359,7 @@ export default function App() {
           onOpenRegistry={() => setView('registry')}
         />
       ) : view === 'registry' ? (
-        <RegistryView />
+        <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

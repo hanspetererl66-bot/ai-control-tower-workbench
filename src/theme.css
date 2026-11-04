@@ -4807,3 +4807,20 @@ textarea.studio-field { min-height: 120px; }
 .rg-restore { align-self: flex-start; }
 .rg-refresh { margin-left: auto; }
 @media (prefers-reduced-motion: reduce) { .sx-conf b { transition: none; } }
+
+/* Extensions of an existing agent or workflow (read only list) */
+.ext-list { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.ext-list small { color: var(--muted); font-size: 12.5px; }
+.ext-list ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.ext-list li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 13.5px; }
+.ext-list .ext-keys { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--accent); }
+
+/* Registry: note an entry on its Jira tickets */
+.rg-jira { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.rg-jira .rg-h { margin: 0; }
+.rg-jira-tickets { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.rg-jira-tickets label { display: inline-flex; gap: 6px; align-items: baseline; font-size: 13.5px; }
+.rg-jira-tickets small { color: var(--muted); font-size: 12px; }
+.rg-jira-confirm { display: flex; flex-direction: column; gap: 8px; }
+.rg-jira-confirm textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); resize: vertical; }
+.rg-jira-results { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }

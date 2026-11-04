@@ -8,6 +8,7 @@ import { exportDocument, saveFile, wrapHtml, type ExportFormat } from '../doc-ex
 import { makeZip } from '../zip';
 import { ChatMarkdown } from './ChatMarkdown';
 import InterviewPanel from './InterviewPanel';
+import ExtensionList from './ExtensionList';
 import { RichDoc } from './RichDoc';
 import Stepper, { type StepItem } from './Stepper';
 
@@ -204,6 +205,7 @@ function IntentMask({ project, onChange, onDone, disabled }: { project: Project;
   return (
     <form className="dev-mask" onSubmit={(e) => { e.preventDefault(); if (problems.length) setShown(true); else onDone(); }}>
       <p className="dev-lead">Tell me what you want to achieve. Nothing is built yet: first the requirements are written, then the specification and the solution architecture. You approve each step.</p>
+      <ExtensionList list={project.extensions} />
       <label>Short name<input value={i.name} onChange={(e) => set({ name: e.target.value })} maxLength={80} placeholder={project.kind === 'workflow' ? 'Contract notice check' : 'Contract assistant'} /></label>
       <label>What should be achieved?<textarea rows={3} value={i.goal} onChange={(e) => set({ goal: e.target.value })} placeholder="In one or two sentences: the result you want, and for whom." /></label>
       <label>What starts it?

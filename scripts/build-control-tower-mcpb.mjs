@@ -7,7 +7,7 @@ import { BUNDLED_CONNECTORS, LIBRARY_CONNECTORS, stageConnector } from '../conne
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MAIN = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
-const FLAGS = ['--gmail', '--databricks', '--jira', '--slack'];
+const FLAGS = ['--gmail', '--databricks', '--jira', '--slack', '--notion'];
 
 /**
  * Build one connector as a .mcpb bundle (a plain zip; Werkbank reads manifest.json and extracts the rest).
@@ -126,4 +126,25 @@ export function buildSlackBundle(output = join(ROOT, 'dist/slack.mcpb')) {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--slack')) {
   console.log(`Built ${buildSlackBundle()}`);
+}
+
+/** Notion connector bundle: manifest + server only (no data). */
+export function buildNotionBundle(output = join(ROOT, 'dist/notion.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'notion-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/notion');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--notion')) {
+  console.log(`Built ${buildNotionBundle()}`);
 }
