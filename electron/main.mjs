@@ -1413,6 +1413,8 @@ ipcMain.handle('skill-db-sync', async () => { const r = await skillStore.sync().
 ipcMain.handle('skill-db-register', (_event, slug) => (SKILL_SLUG.test(slug ?? '') ? skillStore.registerInstalled(slug) : { ok: false, detail: 'bad name' }));
 ipcMain.handle('skill-db-groups', () => skillStore.groups().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
 ipcMain.handle('skill-db-ranking', () => skillStore.ranking().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
+ipcMain.handle('skill-db-health', () => skillStore.health().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
+ipcMain.handle('skill-db-lifecycle', (_event, args) => (args && typeof args === 'object' && SKILL_SLUG.test(args.slug ?? '') ? skillStore.lifecycle(args).catch((e) => ({ ok: false, detail: String(e?.message ?? e) })) : { ok: false, detail: 'bad name' }));
 ipcMain.handle('skill-db-promotion', (_event, tool, args) => skillStore.promotion(String(tool ?? ''), args).catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
 ipcMain.handle('work-status', () => workStore.status());
 ipcMain.handle('work-set-email', (_event, email) => workStore.setEmail(email));

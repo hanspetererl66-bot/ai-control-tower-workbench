@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { SkillSource } from '../skill-health-db';
 import {
   HEALTH_LABEL, LEVEL_NAMES, PROPOSAL_LABEL, act, applyProposal, clusters, daysSince, dismiss, healthOf, metrics, proposals, reviewDue,
   type ActionKind, type Catalog, type CSkill, type Health, type Policy, type Proposal,
@@ -13,12 +14,14 @@ const date = (t: number | null | undefined) => (t ? new Date(t).toLocaleDateStri
 const ago = (t: number | null | undefined, now: number) => (t == null ? 'never' : `${daysSince(t, now)} d ago`);
 const HEALTH_ORDER: Health[] = ['active', 'rare', 'unused', 'orphan', 'broken', 'deprecated', 'retired'];
 
-export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onResetExamples }: {
+export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onResetExamples, source, onReload }: {
   catalog: Catalog;
   actor: string;
   onCatalog: (next: Catalog) => void;
   onBack: () => void;
   onResetExamples: () => void;
+  source: SkillSource;
+  onReload: () => void;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [now] = useState(() => Date.now());
@@ -34,6 +37,14 @@ export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onR
           <p>{m.total} skills in the catalog · {m.live} in use · {m.openProposals} proposals waiting</p>
         </div>
       </header>
+      <div className={`sh-source sh-source-${source.kind}`} role="status">
+        <span>
+          {source.kind === 'database' ? 'Live data from the shared database. Phase out, retire and restore are saved there; reviews, reminders and owner changes stay on this computer.'
+            : source.kind === 'offline' ? 'Database not reachable: this is the last stored copy.' : 'Example data: the numbers are invented.'}
+          {source.detail ? ` ${source.detail}` : ''}
+        </span>
+        <button onClick={onReload}>Reload</button>
+      </div>
       <nav className="sh-tabs" role="tablist">
         {TABS.map((t) => (
           <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'sh-tab-on' : ''} onClick={() => setTab(t.id)}>

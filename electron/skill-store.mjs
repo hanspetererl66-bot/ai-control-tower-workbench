@@ -69,6 +69,21 @@ export function createSkillStore({ credentials, skillsDir, fetchImpl = fetch }) 
       try { return { ok: true, rows: (await registryRpc({ url: c.url, key: c.key, fn: 'skills_ranking', args: { p_days: 30, p_limit: 50 }, fetchImpl })) ?? [] }; }
       catch (e) { return { ok: false, detail: say(e) }; }
     },
+    /** Everything the Skill Health dashboard needs: one row per visible skill with usage, owner, department and lifecycle state. */
+    async health() {
+      const c = need();
+      try { return { ok: true, data: (await registryRpc({ url: c.url, key: c.key, fn: 'skills_health_overview', args: { p_actor: c.email, p_limit: 1000 }, fetchImpl })) ?? { skills: [] }, actor: c.email }; }
+      catch (e) { return { ok: false, detail: say(e) }; }
+    },
+    /** Phase out, retire or restore one skill; the database checks who may do it. */
+    async lifecycle({ slug, action, reason, sunsetAt, replacedBy }) {
+      if (!['deprecate', 'retire', 'restore'].includes(action)) return { ok: false, detail: 'This action is not allowed.' };
+      const c = need();
+      try {
+        const args = { p_actor: c.email, p_slug: String(slug), p_action: action, p_reason: String(reason || '').slice(0, 400) || 'Changed in Skill health', p_sunset: sunsetAt || null, p_replaced_by: replacedBy || null };
+        return { ok: true, data: await registryRpc({ url: c.url, key: c.key, fn: 'skills_lifecycle_change', args, fetchImpl }) };
+      } catch (e) { return { ok: false, detail: say(e) }; }
+    },
     async promotion(tool, args) {
       if (!PROMOTION_TOOLS.has(tool)) return { ok: false, detail: 'This call is not allowed.' };
       const c = need();

@@ -4714,3 +4714,8 @@ textarea.studio-field { min-height: 120px; }
 .sh-policy label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; } .sh-policy small { color: var(--muted); font-size: 11.5px; } .sh-policy input { width: 140px; }
 .sh-back { width: 34px; height: 34px; padding: 0 !important; }
 @media (max-width: 800px) { .sh-props li { grid-template-columns: 22px 1fr; } .sh-row-actions { grid-column: 2; } }
+
+.sh-source { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius, 8px); background: var(--panel); color: var(--muted); font-size: 12.5px; }
+.sh-source-database { border-color: var(--lv-green, var(--line)); }
+.sh-source-offline { border-color: var(--lv-red, var(--line)); }
+.sh-source button { flex: none; }
