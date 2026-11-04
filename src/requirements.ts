@@ -10,7 +10,7 @@ export type SourceKind = 'jira' | 'slack' | 'notion';
 export const SOURCES: Array<{ id: SourceKind; label: string; query: string; placeholder: string; help: string }> = [
   { id: 'jira', label: 'Jira', query: 'Project key, JQL or search words', placeholder: 'e.g. ABC, or: project = ABC AND labels = joule ORDER BY updated DESC', help: 'Uses the Jira connector (read only).' },
   { id: 'slack', label: 'Slack', query: 'Channel, thread link or search words', placeholder: 'e.g. #requirements, or a link to a thread', help: 'Uses the Slack connector (read only).' },
-  { id: 'notion', label: 'Notion', query: 'Page, database or search words', placeholder: 'e.g. the name of your requirements database', help: 'Needs a Notion connector in the agent. This repository has none yet; without one the agent says so.' },
+  { id: 'notion', label: 'Notion', query: 'Page, database or search words', placeholder: 'e.g. the name of your requirements database', help: 'Uses the Notion connector (read only). Share the pages with its integration first.' },
 ];
 
 export type Requirement = { id: string; source: SourceKind; key: string; title: string; text: string; url: string; author: string; date: string };
@@ -43,7 +43,7 @@ export function fetchPrompt(source: SourceKind, query: string): string {
   if (source === 'slack') {
     return ['Read requirements from Slack.', `Source: ${query.trim()}`, 'Use slack_read_channel or slack_read_thread for a channel or thread, slack_search_messages for search words. Keep messages that state a need, a wish, a problem or a rule; skip chatter. As key use the channel and the message time (for example "#req 1730640000").', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
   }
-  return ['Read requirements from Notion.', `Source: ${query.trim()}`, 'Use whichever Notion tool is available to you (search, fetch a page, query a database). Each page or row that states a requirement becomes one item; the page title is the title, the page id the key.', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
+  return ['Read requirements from Notion.', `Source: ${query.trim()}`, 'Use the Notion connector: notion_search to find pages or databases (a link or id can go straight to notion_read_page or notion_query_database), notion_read_page for the text of a page, notion_query_database for the rows of a database. If a Notion tool is not available to you, return an empty list and say so in "error". Each page or row that states a requirement becomes one item; the page title is the title, the page id the key, the page link the url. A page that only holds several requirements as a list becomes one item per list entry (key: page id plus a number).', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
 }
 
 function jsonOf(text: string): any | null {
@@ -270,6 +270,8 @@ export type Handover = {
   name: string;
   /** At most 400 characters: the goal field of the Develop tiles. */
   goal: string;
+  /** What the cluster is about, without the "Extend ..." lead. */
+  summary: string;
   refs: SourceRef[];
   extends?: ExtendsRef;
   /** The full text: cluster, requirements with their sources, the comment. Goes into the feature brief and the project. */
@@ -291,10 +293,62 @@ export function handover(c: Cluster, reqs: Requirement[]): Handover {
     '## Requirements',
     ...mine.map((r) => `- **${r.key}** (${r.source}) ${r.title}${r.text && r.text !== r.title ? `: ${r.text}` : ''}${r.url ? ` ${r.url}` : ''}`),
   ].join('\n');
-  return { base: classBase(c.cls), name: c.title.slice(0, 80), goal, refs: mine.map(refOf), ...(ext ? { extends: ext } : {}), brief };
+  return { base: classBase(c.cls), name: c.title.slice(0, 80), goal, summary: (c.summary || c.title).replace(/\s+/g, ' ').trim().slice(0, 400), refs: mine.map(refOf), ...(ext ? { extends: ext } : {}), brief };
 }
 
 /** The requirement lines of a hand-over, for the goal of a workflow project (which has room for them). */
 export const requirementLines = (h: Handover): string => (h.brief.split('## Requirements\n')[1] ?? '').trim();
 
 export const CAN_HAND_OVER = (c: Cluster) => !(isExtension(c.cls) && !c.target) && c.reqIds.length > 0;
+
+// ---------- extension of an existing agent or workflow ----------
+
+/** One extension that was added to an existing project: it becomes a new revision of the same registry item. */
+export type Extension = { at: number; title: string; summary: string; refs: SourceRef[]; lines: string };
+export const MAX_EXTENSIONS = 20;
+
+export function sanitizeExtensions(v: any): Extension[] {
+  if (!Array.isArray(v)) return [];
+  const out: Extension[] = [];
+  for (const e of v) {
+    if (!e || typeof e !== 'object') continue;
+    const title = cut(e.title, 120);
+    if (!title) continue;
+    out.push({ at: Number.isFinite(e.at) ? e.at : 0, title, summary: cut(e.summary, 400), refs: sanitizeRefs(e.refs).slice(0, 40), lines: String(e.lines ?? '').trim().slice(0, 3000) });
+    if (out.length >= MAX_EXTENSIONS) break;
+  }
+  return out;
+}
+
+export function newExtension(h: Handover, now = Date.now()): Extension {
+  return { at: now, title: h.name.slice(0, 120), summary: h.summary, refs: h.refs.slice(0, 40), lines: requirementLines(h).slice(0, 3000) };
+}
+
+/** The extensions as text for prompts and documents: oldest first, each with its requirements. */
+export function extensionText(list: Extension[]): string {
+  return list.map((e, i) => [`Extension ${i + 1}: ${e.title}${e.at ? ` (${new Date(e.at).toISOString().slice(0, 10)})` : ''}`, e.summary, e.lines].filter(Boolean).join('\n')).join('\n\n').slice(0, 4000);
+}
+
+/** The note of the revision that an extension causes (shown in the registry timeline). */
+export function extensionNote(e: Extension): string {
+  const keys = e.refs.map((r) => r.key).slice(0, 6).join(', ');
+  return `Extended: ${e.title.slice(0, 80)}${keys ? ` (${keys}${e.refs.length > 6 ? ', …' : ''})` : ''}`.slice(0, 200);
+}
+
+/** Existing sources plus the new ones, without duplicates. */
+export function mergeRefs(have: SourceRef[] | undefined, add: SourceRef[]): SourceRef[] {
+  return sanitizeRefs([...(have ?? []), ...add]);
+}
+
+/**
+ * Where the registry item of an extension lives on this computer: the sync map links work item ids to local projects
+ * ("a:<id>" agent project, "d:<id>" Develop project). null = not here (another computer, or never synced).
+ */
+export function localTarget(map: Record<string, { itemId: string }>, itemId: string): { kind: 'agent' | 'dev'; id: string } | null {
+  for (const [key, entry] of Object.entries(map)) {
+    if (entry.itemId !== itemId) continue;
+    if (key.startsWith('a:')) return { kind: 'agent', id: key.slice(2) };
+    if (key.startsWith('d:')) return { kind: 'dev', id: key.slice(2) };
+  }
+  return null;
+}

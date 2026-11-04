@@ -51,6 +51,19 @@ test('status change finds the transition by name and explains when none fits', a
   await assert.rejects(h.jira_set_status({ key: 'ABC-1', status: 'Done' }), /Possible: In Progress/);
 });
 
+test('adding labels keeps the existing ones and validates every label', async () => {
+  const calls = [];
+  const h = make(json({}, 204), calls);
+  assert.deepEqual(await h.jira_add_labels({ key: 'abc-1', labels: ['werkbank', 'werkbank', 'joule:agent'] }), { labelled: true, key: 'ABC-1', labels: ['werkbank', 'joule:agent'] });
+  assert.equal(calls[0].init.method, 'PUT');
+  assert.equal(calls[0].url, 'https://firma.atlassian.net/rest/api/3/issue/ABC-1');
+  assert.deepEqual(JSON.parse(calls[0].init.body), { update: { labels: [{ add: 'werkbank' }, { add: 'joule:agent' }] } });
+  await assert.rejects(h.jira_add_labels({ key: 'ABC-1', labels: ['two words'] }), /not a valid label/);
+  await assert.rejects(h.jira_add_labels({ key: 'ABC-1', labels: [] }), /labels is required/);
+  await assert.rejects(h.jira_add_labels({ key: 'ABC-1', labels: Array.from({ length: 11 }, (_, i) => `l${i}`) }), /At most 10/);
+  assert.equal(calls.length, 1);
+});
+
 test('errors are readable and never contain the token', async () => {
   await assert.rejects(make(json({}, 401)).jira_check_connection(), /refused the login/);
   await assert.rejects(make(json({}, 404)).jira_get_issue({ key: 'ABC-1' }), /HTTP 404/);

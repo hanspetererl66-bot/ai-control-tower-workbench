@@ -4,6 +4,7 @@ import {
   TYPES, TYPE_LABEL, addLink, diffRevisions, featureArgs, filterItems, hostApi, itemsForRef, loadHistory, loadRegistry, loadRevFiles, noFilter, parseFeature,
   restoreRevision, setStage, stageText, type FileDiff, type Filter, type RItem, type Rev, type RevFile,
 } from '../registry';
+import { commentFor, isDone, labelsFor, loadLog, markerOf, notedAt, parseWriteback, record, saveLog, summaryOf, ticketsOf, writebackPrompt, type WriteResult } from '../writeback';
 
 const when = (t: number) => (t ? new Date(t).toLocaleString([], { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–');
 const msg = (e: unknown) => String((e as any)?.message ?? e).slice(0, 240);
@@ -13,7 +14,9 @@ const msg = (e: unknown) => String((e as any)?.message ?? e).slice(0, 240);
  * shared database; every save there is a revision with author, time and note. Nothing here deletes a revision: "Restore" saves an old
  * revision as the newest one.
  */
-export default function RegistryView() {
+type GenerateProps = { generate?: (prompt: string, title: string, session?: string) => Promise<string>; onStop?: () => void; ready?: boolean };
+
+export default function RegistryView({ generate, onStop, ready = false }: GenerateProps) {
   const api = useMemo(() => hostApi(), []);
   const [items, setItems] = useState<RItem[] | null>(null);
   const [error, setError] = useState('');
@@ -78,7 +81,7 @@ export default function RegistryView() {
                   </table>
                 )}
               </div>
-              {open && <Detail key={open.id} item={open} all={items} onClose={() => setOpenId(null)} onChanged={load} onFind={(key) => { setFilter({ ...noFilter(), status: 'all', query: key }); setOpenId(null); }} />}
+              {open && <Detail key={open.id} item={open} all={items} generate={generate} onStop={onStop} ready={ready} onClose={() => setOpenId(null)} onChanged={load} onFind={(key) => { setFilter({ ...noFilter(), status: 'all', query: key }); setOpenId(null); }} />}
             </div>
           )}
         </>
@@ -87,7 +90,7 @@ export default function RegistryView() {
   );
 }
 
-function Detail({ item, all, onClose, onChanged, onFind }: { item: RItem; all: RItem[]; onClose: () => void; onChanged: () => Promise<void>; onFind: (key: string) => void }) {
+function Detail({ item, all, onClose, onChanged, onFind, generate, onStop, ready }: { item: RItem; all: RItem[]; onClose: () => void; onChanged: () => Promise<void>; onFind: (key: string) => void } & GenerateProps) {
   const api = useMemo(() => hostApi()!, []);
   const [revs, setRevs] = useState<Rev[] | null>(null);
   const [sel, setSel] = useState<number>(item.rev);
@@ -144,6 +147,8 @@ function Detail({ item, all, onClose, onChanged, onFind }: { item: RItem; all: R
         </div>
       )}
       {same.length > 0 && <p className="sh-note">Same source: {same.map((i) => i.name).join(', ')}</p>}
+
+      {generate && !item.archived && item.type !== 'code' && ticketsOf(item).length > 0 && <JiraPanel item={item} generate={generate} onStop={onStop} ready={Boolean(ready)} />}
 
       {item.type === 'feature' && <FeaturePanel item={item} api={api} onSaved={async (text) => { setNote(text); await onChanged(); }} />}
 
@@ -226,5 +231,77 @@ function FeaturePanel({ item, api, onSaved }: { item: RItem; api: NonNullable<Re
       </div>
       {problem && <p className="rg-error" role="alert">{problem}</p>}
     </div>
+  );
+}
+
+/**
+ * Note this entry on the Jira tickets it came from: one label and one comment. Two steps on purpose: first the exact text and the
+ * tickets are shown, only the second click lets the agent write. The agent may use three Jira tools and touch only these tickets.
+ */
+function JiraPanel({ item, generate, onStop, ready }: { item: RItem; generate: NonNullable<GenerateProps['generate']>; onStop?: () => void; ready: boolean }) {
+  const tickets = ticketsOf(item);
+  const [log, setLog] = useState(() => loadLog(window.localStorage));
+  const [picked, setPicked] = useState<string[]>(() => tickets.map((t) => t.key).filter((k) => !notedAt(loadLog(window.localStorage), item.id, k)));
+  const [edited, setEdited] = useState<string | null>(null);
+  const [step, setStep] = useState<'idle' | 'confirm' | 'running'>('idle');
+  const [results, setResults] = useState<WriteResult[] | null>(null);
+  const [problem, setProblem] = useState('');
+  const comment = edited ?? commentFor(item);
+  const labels = labelsFor(item);
+  const valid = comment.startsWith(markerOf(item)) && comment.length <= 2000;
+
+  const write = async () => {
+    setStep('running'); setProblem(''); setResults(null);
+    try {
+      const text = await generate(writebackPrompt(picked, labels, comment), 'Note on Jira', 'jira-writeback');
+      if (!text) { setProblem('Stopped. Some tickets may already have been changed; the agent skips what is already there when you try again.'); return; }
+      const got = parseWriteback(text, picked);
+      if (!got) { setProblem('The answer could not be read. Check the tickets in Jira before you try again.'); return; }
+      setResults(got);
+      const next = record(log, item.id, item.rev, got);
+      setLog(next); saveLog(window.localStorage, next);
+      setPicked((cur) => cur.filter((k) => !got.some((r) => r.key === k && isDone(r))));
+    } catch (e) { setProblem(msg(e)); } finally { setStep('idle'); }
+  };
+
+  return (
+    <section className="rg-jira" aria-label="Note on Jira">
+      <h3 className="rg-h">Note on Jira</h3>
+      <div className="rg-jira-tickets">
+        {tickets.map((t) => {
+          const was = notedAt(log, item.id, t.key);
+          return (
+            <label key={t.key} title={t.title}>
+              <input type="checkbox" checked={picked.includes(t.key)} disabled={step !== 'idle'} onChange={() => setPicked((cur) => (cur.includes(t.key) ? cur.filter((k) => k !== t.key) : [...cur, t.key]))} />
+              {t.key}{was && <small>noted {when(was.at)} (rev {was.rev})</small>}
+            </label>
+          );
+        })}
+      </div>
+      {step === 'idle' && (
+        <button className="sh-primary" disabled={!ready || picked.length === 0} onClick={() => { setResults(null); setProblem(''); setStep('confirm'); }}>Review the note for {picked.length} ticket{picked.length === 1 ? '' : 's'}…</button>
+      )}
+      {!ready && <small className="sh-note">The agent is not connected yet.</small>}
+      {step !== 'idle' && (
+        <div className="rg-jira-confirm">
+          <p className="sx-cwarn" role="alert">This changes Jira. Label {labels.join(', ')} and this comment are added to {picked.join(', ')}. Nothing else is touched.</p>
+          <textarea aria-label="Comment for Jira" rows={6} value={comment} disabled={step === 'running'} onChange={(e) => setEdited(e.target.value)} />
+          {!valid && <small className="sx-cwarn">The comment has to start with {markerOf(item)} (it tells the next run that this ticket was noted already) and stay under 2000 characters.</small>}
+          <div className="sh-bulk">
+            {step === 'running'
+              ? <button onClick={onStop}>Stop</button>
+              : <><button className="sh-primary" onClick={() => void write()} disabled={!valid || picked.length === 0}>Write to Jira</button><button onClick={() => setStep('idle')}>Cancel</button></>}
+            {step === 'running' && <span className="sh-note">Writing…</span>}
+          </div>
+        </div>
+      )}
+      {results && (
+        <div role="status">
+          <p className="sh-note">{summaryOf(results)}</p>
+          <ul className="rg-jira-results">{results.map((r) => <li key={r.key}><b>{r.key}</b> {isDone(r) ? 'noted' : 'not done'}{r.skipped ? ` · ${r.skipped}` : ''}{r.error ? ` · ${r.error}` : ''}</li>)}</ul>
+        </div>
+      )}
+      {problem && <p className="rg-error" role="alert">{problem}</p>}
+    </section>
   );
 }

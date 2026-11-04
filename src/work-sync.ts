@@ -10,10 +10,11 @@
 import { sanitizeProjects as sanitizeAgentProjects, DOC_ORDER, type AgentProject } from './agent-project.ts';
 import { sanitizeProject as sanitizeDevelopProject, artifactOf, type Project } from './develop.ts';
 import { interviewMarkdown } from './interview.ts';
-import { sourcesOf } from './requirements.ts';
+import { extensionNote, sourcesOf } from './requirements.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
-export type Entry = { itemId: string; rev: number; hash: string };
+/** `ext` = how many extensions the project had when it was last saved; a higher number now means the next revision is an extension. */
+export type Entry = { itemId: string; rev: number; hash: string; ext?: number };
 export type SyncMap = Record<string, Entry>;
 export type Local = { agent: AgentProject[]; dev: Project[]; map: SyncMap };
 export type SyncResult = Local & { pushed: number; pulled: number; removed: number; errors: string[] };
@@ -30,7 +31,7 @@ export function hashOf(text: string): string {
   return (h >>> 0).toString(36) + ':' + text.length;
 }
 
-export type Unit = { key: string; kind: 'agent' | 'workflow'; name: string; stage: string; approved: string[]; intent: Record<string, unknown>; files: Array<{ path: string; content: string; language: string }>; hash: string };
+export type Unit = { key: string; kind: 'agent' | 'workflow'; name: string; stage: string; approved: string[]; intent: Record<string, unknown>; files: Array<{ path: string; content: string; language: string }>; hash: string; ext: number; extNote: string };
 
 const nameOf = (n: string, fallback: string) => (n.trim() || fallback).slice(0, 120);
 
@@ -41,6 +42,7 @@ export function agentUnit(p: AgentProject): Unit {
   return {
     key: agentKey(p.id), kind: 'agent', name: nameOf(p.answers.name, 'New agent'), stage: Object.keys(p.confirmed).join(',').slice(0, 40),
     approved: Object.keys(p.confirmed), intent: { source: 'agent-project', objective: p.answers.objective, ...sourcesOf(p) }, files, hash: hashOf(json),
+    ext: p.extensions?.length ?? 0, extNote: p.extensions?.length ? extensionNote(p.extensions[p.extensions.length - 1]) : '',
   };
 }
 
@@ -55,7 +57,7 @@ export function developUnit(p: Project, toMarkdown: ((stored: string) => string)
     if (p.docs.prd.trim()) files.push({ path: 'PRD.md', content: toMarkdown(p.docs.prd), language: 'markdown' });
     if (p.docs.spec.trim()) files.push({ path: 'specification.md', content: toMarkdown(p.docs.spec), language: 'markdown' });
   }
-  return { key: developKey(p.id), kind: p.kind, name: nameOf(p.intent.name, `New ${p.kind}`), stage: p.stage, approved: p.approved, intent: { source: 'develop-project', goal: p.intent.goal, ...sourcesOf(p) }, files, hash: hashOf(json) };
+  return { key: developKey(p.id), kind: p.kind, name: nameOf(p.intent.name, `New ${p.kind}`), stage: p.stage, approved: p.approved, intent: { source: 'develop-project', goal: p.intent.goal, ...sourcesOf(p) }, files, hash: hashOf(json), ext: p.extensions?.length ?? 0, extNote: p.extensions?.length ? extensionNote(p.extensions[p.extensions.length - 1]) : '' };
 }
 
 /** The project inside an item (project.json), or null when the item is not one of ours. */
@@ -128,7 +130,7 @@ export async function syncOnce(api: Api, local: Local, toMarkdown: ((stored: str
       }
       replace(k, r);
       const fresh = r.agent ? agentUnit(r.agent) : developUnit(r.dev!, toMarkdown);
-      map[k] = { itemId: row.id, rev: row.current_rev, hash: fresh.hash };
+      map[k] = { itemId: row.id, rev: row.current_rev, hash: fresh.hash, ...(fresh.ext ? { ext: fresh.ext } : {}) };
       if (key && key !== k) delete map[key];
       out.pulled++;
     } catch (e) { out.errors.push(`${String(row.name ?? 'item')}: ${msg(e)}`); }
@@ -148,9 +150,10 @@ export async function syncOnce(api: Api, local: Local, toMarkdown: ((stored: str
     try {
       const res = await api.call('save_work_item', {
         ...(entry ? { id: entry.itemId, expected_rev: entry.rev } : {}),
-        kind: u.kind, name: u.name, files: u.files, stage: u.stage, approved: u.approved, intent: u.intent, note: 'Saved from the Werkbank',
+        kind: u.kind, name: u.name, files: u.files, stage: u.stage, approved: u.approved, intent: u.intent,
+        note: entry && u.ext > (entry.ext ?? 0) && u.extNote ? u.extNote : 'Saved from the Werkbank',
       });
-      map[u.key] = { itemId: String(res?.id ?? entry?.itemId), rev: Number(res?.rev ?? (entry?.rev ?? 0) + 1), hash: u.hash };
+      map[u.key] = { itemId: String(res?.id ?? entry?.itemId), rev: Number(res?.rev ?? (entry?.rev ?? 0) + 1), hash: u.hash, ...(u.ext ? { ext: u.ext } : {}) };
       out.pushed++;
     } catch (e) { out.errors.push(`${u.name}: ${msg(e)}`); }
   }
@@ -162,7 +165,7 @@ export function loadMap(store: Pick<Storage, 'getItem'>): SyncMap {
   try {
     const raw = JSON.parse(store.getItem(SYNC_MAP_KEY) ?? '{}');
     const out: SyncMap = {};
-    for (const [k, v] of Object.entries(raw ?? {}) as Array<[string, any]>) if (/^[ad]:/.test(k) && typeof v?.itemId === 'string' && Number.isInteger(v.rev)) out[k] = { itemId: v.itemId, rev: v.rev, hash: String(v.hash ?? '') };
+    for (const [k, v] of Object.entries(raw ?? {}) as Array<[string, any]>) if (/^[ad]:/.test(k) && typeof v?.itemId === 'string' && Number.isInteger(v.rev)) out[k] = { itemId: v.itemId, rev: v.rev, hash: String(v.hash ?? ''), ...(Number.isInteger(v.ext) && v.ext > 0 ? { ext: v.ext } : {}) };
     return out;
   } catch { return {}; }
 }

@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "jira",
   "display_name": "Jira",
-  "version": "0.1.0",
-  "description": "Jira Cloud: search and read issues with JQL, create issues, comment and change status. Needs the site address, the account e-mail and an API token.",
+  "version": "0.2.0",
+  "description": "Jira Cloud: search and read issues with JQL, create issues, comment, add labels and change status. Needs the site address, the account e-mail and an API token.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -51,6 +51,10 @@
     {
       "name": "jira_add_comment",
       "description": "Add a comment to an issue (this changes Jira). Ask the person before using it."
+    },
+    {
+      "name": "jira_add_labels",
+      "description": "Add labels to an issue; existing labels stay (this changes Jira). Ask the person before using it."
     },
     {
       "name": "jira_set_status",

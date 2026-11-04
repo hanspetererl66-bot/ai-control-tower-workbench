@@ -25,7 +25,7 @@ test('fetchPrompt: names the tools, stays read only and asks for JSON', () => {
   assert.match(j, /project = ABC/);
   assert.match(j, /never create, change, comment on or post/);
   assert.match(fetchPrompt('slack', '#req'), /slack_read_channel/);
-  assert.match(fetchPrompt('notion', 'Requirements DB'), /Notion tool/);
+  assert.match(fetchPrompt('notion', 'Requirements DB'), /notion_read_page/);
   assert.match(fetchPrompt('notion', 'x'), /"error"/);
 });
 

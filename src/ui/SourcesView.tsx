@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  CAN_HAND_OVER, CLASSES, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
+  CAN_HAND_OVER, CLASSES, localTarget, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
   mergeRequirements, moveRequirement, overrideClass, parseClusters, parseRequirements, setTarget,
   type Cluster, type Handover, type RegistryRef, type ReqClass, type Requirement, type SourceKind,
 } from '../requirements';
 import { hostApi, loadRegistry, targetsOf } from '../registry';
+import { loadMap } from '../work-sync';
 
 const SESSION = 'sources';
 const msg = (e: unknown) => String((e as any)?.message ?? e).slice(0, 240);
@@ -176,6 +177,7 @@ function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTa
   const byId = (id: string) => reqs.find((r) => r.id === id);
   const targets = registry.filter((r) => r.kind === classBase(c.cls));
   const pct = Math.round(c.confidence * 100);
+  const inPlace = Boolean(isExtension(c.cls) && c.target && localTarget(loadMap(window.localStorage), c.target.id));
   return (
     <article className="sh-card sx-cluster" aria-label={c.title}>
       <div className="sx-chead">
@@ -235,10 +237,15 @@ function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTa
       </div>
       <small className="sh-note">{CLASS_RULE[c.cls]}</small>
       {c.warning && <p className="sx-cwarn" role="alert">{c.warning}</p>}
+      {isExtension(c.cls) && c.target && (
+        <small className="sh-note">{inPlace
+          ? `"${c.target.name}" is on this computer: the requirements are added to it, and the next save is a new revision of the same registry entry. What was approved there has to be approved again.`
+          : `"${c.target.name}" is not on this computer (yet). A new project linked to it is started; it does not change the existing revision.`}</small>
+      )}
       <pre className="sx-comment" aria-label="Comment">{commentOf(c)}</pre>
 
       <div className="sh-bulk">
-        <button className="sh-primary" onClick={onGive} disabled={!CAN_HAND_OVER(c) || Boolean(done)}>{done ? 'Handed over ✓' : ACTION[c.cls]}</button>
+        <button className="sh-primary" onClick={onGive} disabled={!CAN_HAND_OVER(c) || Boolean(done)}>{done ? 'Handed over ✓' : inPlace ? `Extend "${c.target!.name.slice(0, 40)}"` : ACTION[c.cls]}</button>
         {done && <span className="sh-note">{done}</span>}
       </div>
     </article>
