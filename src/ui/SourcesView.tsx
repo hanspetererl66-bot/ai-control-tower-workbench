@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  CAN_HAND_OVER, CLASSES, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
+  CAN_HAND_OVER, CLASSES, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension, jiraComments, parseWriteback, writebackPrompt, type JiraComment,
   mergeRequirements, moveRequirement, overrideClass, parseClusters, parseRequirements, setTarget,
   type Cluster, type Handover, type RegistryRef, type ReqClass, type Requirement, type SourceKind,
 } from '../requirements';
@@ -38,6 +38,9 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
   const [busy, setBusy] = useState<'' | 'load' | 'cluster'>('');
   const [note, setNote] = useState('');
   const [done, setDone] = useState<Record<string, string>>({});
+  /** Jira comments waiting for the person's confirmation (per cluster), and the clusters already commented. */
+  const [pending, setPending] = useState<Record<string, JiraComment[]>>({});
+  const [commented, setCommented] = useState<Record<string, string>>({});
 
   const meta = SOURCES.find((s) => s.id === source)!;
   const selected = useMemo(() => reqs.filter((r) => checked.has(r.id)), [reqs, checked]);
@@ -84,6 +87,19 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
   const give = async (c: Cluster) => {
     setNote('');
     try { const line = await onHandover(handover(c, reqs)); if (line) setDone((d) => ({ ...d, [c.id]: line })); } catch (e) { setNote(msg(e)); }
+  };
+
+  const postBack = async (c: Cluster) => {
+    const comments = pending[c.id];
+    if (!comments?.length) return;
+    setNote(''); setBusy('load');
+    const text = await ask(writebackPrompt(comments), 'Comment on Jira tickets');
+    setBusy('');
+    if (text === null) return;
+    const got = parseWriteback(text, comments);
+    if (!got) { setNote('The answer could not be read. Check the tickets in Jira before trying again.'); return; }
+    setCommented((d) => ({ ...d, [c.id]: `${got.posted.length} comment${got.posted.length === 1 ? '' : 's'} posted${got.failed.length ? `, not posted: ${got.failed.map((f) => `${f.key} (${f.reason})`).join(', ')}` : ''}` }));
+    setPending((p) => { const { [c.id]: _x, ...rest } = p; return rest; });
   };
 
   return (
@@ -157,7 +173,11 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
                 onTarget={(t) => update(c.id, (x) => setTarget(x, t))}
                 onMove={(reqId, to) => setClusters((cur) => cur && moveRequirement(cur, reqId, to))}
                 onDismiss={(reqId) => setClusters((cur) => cur && dismissSuggestion(cur, c.id, reqId))}
-                onGive={() => void give(c)} />
+                onGive={() => void give(c)}
+                jira={done[c.id] ? jiraComments(c, reqs, done[c.id]) : []} preview={pending[c.id]} posted={commented[c.id]} busy={busy !== ''}
+                onPreview={() => setPending((p) => ({ ...p, [c.id]: jiraComments(c, reqs, done[c.id] ?? '') }))}
+                onCancelPreview={() => setPending((p) => { const { [c.id]: _x, ...rest } = p; return rest; })}
+                onPost={() => void postBack(c)} />
             ))}
           </div>
           {Object.keys(done).length > 0 && <p className="sh-note"><button onClick={onOpenRegistry}>Open the registry</button> to see what was created and its history.</p>}
@@ -168,7 +188,8 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
   );
 }
 
-function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTarget, onMove, onDismiss, onGive }: {
+function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTarget, onMove, onDismiss, onGive, jira, preview, posted, busy, onPreview, onCancelPreview, onPost }: {
+  jira: JiraComment[]; preview?: JiraComment[]; posted?: string; busy: boolean; onPreview: () => void; onCancelPreview: () => void; onPost: () => void;
   c: Cluster; reqs: Requirement[]; clusters: Cluster[]; registry: RegistryRef[]; done?: string;
   onTitle: (t: string) => void; onClass: (cls: ReqClass) => void; onTarget: (t: { id: string; name: string } | null) => void;
   onMove: (reqId: string, to: string) => void; onDismiss: (reqId: string) => void; onGive: () => void;
@@ -240,6 +261,16 @@ function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTa
       <div className="sh-bulk">
         <button className="sh-primary" onClick={onGive} disabled={!CAN_HAND_OVER(c) || Boolean(done)}>{done ? 'Handed over ✓' : ACTION[c.cls]}</button>
         {done && <span className="sh-note">{done}</span>}
+        {done && jira.length > 0 && !posted && !preview && <button onClick={onPreview}>Comment on the Jira tickets…</button>}
+        {posted && <span className="sh-note">{posted}</span>}
+        {preview && (
+          <div className="sx-writeback" role="group" aria-label="Comments for Jira">
+            <p className="sh-note">These comments will be posted to Jira. Nothing else is changed.</p>
+            <ul>{preview.map((p) => <li key={p.key}><b>{p.key}</b> {p.text}</li>)}</ul>
+            <button className="sh-primary" disabled={busy} onClick={onPost}>Post {preview.length} comment{preview.length === 1 ? '' : 's'}</button>
+            <button disabled={busy} onClick={onCancelPreview}>Cancel</button>
+          </div>
+        )}
       </div>
     </article>
   );

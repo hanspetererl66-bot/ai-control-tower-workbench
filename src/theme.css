@@ -4822,3 +4822,7 @@ textarea.studio-field { min-height: 120px; }
 .sh-source-database { border-color: var(--lv-green, var(--line)); }
 .sh-source-offline { border-color: var(--lv-red, var(--line)); }
 .sh-source button { flex: none; }
+
+.sx-writeback { flex-basis: 100%; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius, 8px); background: var(--panel); }
+.sx-writeback ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); }
+.sx-writeback .sh-primary, .sx-writeback button:not(.sh-primary) { align-self: flex-start; }

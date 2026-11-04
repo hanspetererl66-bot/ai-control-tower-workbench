@@ -2,7 +2,7 @@
  * Requirements from the tools people already use (Jira, Slack, Notion): load them, cluster them, classify each cluster and hand it over.
  * Pure functions only: prompts for the agent, tolerant reading of its JSON answers, validation, and the hand-over text.
  * The agent reads the sources with the connectors that exist (jira_*, slack_*; a Notion tool if one is installed) and answers
- * with JSON, the same pattern as the process interview. Nothing is written back to the sources here.
+ * with JSON, the same pattern as the process interview. Writing back (a comment on the Jira tickets) is a separate step the person confirms after seeing the exact text.
  */
 
 export type SourceKind = 'jira' | 'slack' | 'notion';
@@ -298,3 +298,52 @@ export function handover(c: Cluster, reqs: Requirement[]): Handover {
 export const requirementLines = (h: Handover): string => (h.brief.split('## Requirements\n')[1] ?? '').trim();
 
 export const CAN_HAND_OVER = (c: Cluster) => !(isExtension(c.cls) && !c.target) && c.reqIds.length > 0;
+
+
+/** One Jira ticket of a cluster and the comment it would get. Only Jira tickets with a key are ever commented. */
+export type JiraComment = { key: string; text: string };
+
+/** The comments for a handed-over cluster, one per Jira ticket. Shown to the person before anything is posted. */
+export function jiraComments(c: Cluster, reqs: Requirement[], outcome: string): JiraComment[] {
+  const text = [
+    `Werkbank: this requirement was picked up in "${c.title}" (${CLASS_LABEL[c.cls]}).`,
+    outcome ? outcome.replace(/\s+/g, ' ').trim().slice(0, 200) : '',
+    'Posted by Joule after confirmation.',
+  ].filter(Boolean).join(' ');
+  const seen = new Set<string>();
+  const out: JiraComment[] = [];
+  for (const id of c.reqIds) {
+    const r = reqs.find((x) => x.id === id);
+    if (!r || r.source !== 'jira' || !/^[A-Z][A-Z0-9_]*-\d+$/.test(r.key) || seen.has(r.key)) continue;
+    seen.add(r.key);
+    out.push({ key: r.key, text });
+  }
+  return out;
+}
+
+/** Asks the agent to post exactly these comments with jira_add_comment, nothing else, and to answer with JSON. */
+export function writebackPrompt(comments: JiraComment[]): string {
+  return [
+    'Post the following comments on Jira tickets with the tool jira_add_comment. Post exactly this text, one comment per ticket, and do nothing else:',
+    'do not change any status, field or other ticket, and do not post a comment twice.',
+    '',
+    ...comments.map((c) => `- ${c.key}: ${JSON.stringify(c.text)}`),
+    '',
+    'Answer with JSON only: {"posted": ["KEY", ...], "failed": [{"key": "KEY", "reason": "..."}]}',
+  ].join('\n');
+}
+
+/** Reads the agent's answer. Only keys that were asked for count as posted, a missing answer for a key counts as failed. */
+export function parseWriteback(text: string, comments: JiraComment[]): { posted: string[]; failed: Array<{ key: string; reason: string }> } | null {
+  const m = String(text ?? '').match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  let j: any;
+  try { j = JSON.parse(m[0]); } catch { return null; }
+  if (!j || typeof j !== 'object') return null;
+  const asked = new Set(comments.map((c) => c.key));
+  const posted = (Array.isArray(j.posted) ? j.posted : []).map(String).filter((k: string) => asked.has(k));
+  const failed: Array<{ key: string; reason: string }> = [];
+  for (const f of Array.isArray(j.failed) ? j.failed : []) if (f && asked.has(String(f.key)) && !posted.includes(String(f.key))) failed.push({ key: String(f.key), reason: cut(f.reason, 200) || 'unknown' });
+  for (const k of asked) if (!posted.includes(k) && !failed.some((f) => f.key === k)) failed.push({ key: k, reason: 'no answer from the agent' });
+  return { posted: [...new Set<string>(posted)], failed };
+}

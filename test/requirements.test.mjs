@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   CAN_HAND_OVER, CLASSES, MAX_ITEMS, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, jqlOf, mergeRequirements, moveRequirement,
-  overrideClass, parseClusters, parseRequirements, sanitizeExtends, sanitizeRefs, setTarget, sourcesOf,
+  jiraComments, overrideClass, parseClusters, parseRequirements, parseWriteback, sanitizeExtends, sanitizeRefs, setTarget, sourcesOf, writebackPrompt,
 } from '../src/requirements.ts';
 
 const R = (key, title, extra = {}) => ({ id: `jira:${key}`, source: 'jira', key, title, text: '', url: '', author: '', date: '', ...extra });
@@ -183,4 +183,22 @@ test('handover: goal within 400 characters, links, extension and brief', () => {
   const long = handover({ ...clusters[1], summary: 'word '.repeat(200) }, reqs);
   assert.ok(long.goal.length <= 400);
   assert.equal(handover({ ...clusters[0], cls: 'workflow-extension' }, reqs).base, 'workflow');
+});
+
+test('jira write-back: one comment per Jira ticket, never for other sources or odd keys', () => {
+  const slack = { id: 'slack:1', source: 'slack', key: 'C1-123', title: 'From Slack', text: '', url: '', author: '', date: '', };
+  const odd = R('not a key', 'Odd');
+  const all = [...sel, slack, odd];
+  const c = { id: 'c1', title: 'Renewals', summary: 's', cls: 'agent', confidence: 0.8, reasons: [], reqIds: [...all.map((r) => r.id), 'jira:A-1'], suggestions: [] };
+  const comments = jiraComments(c, all, 'Agent Studio project created.');
+  assert.deepEqual(comments.map((x) => x.key), ['A-1', 'A-2', 'A-3']);
+  assert.match(comments[0].text, /"Renewals"/);
+  assert.match(comments[0].text, /Posted by Joule after confirmation/);
+  const prompt = writebackPrompt(comments);
+  assert.match(prompt, /jira_add_comment/);
+  assert.match(prompt, /do nothing else/);
+  const got = parseWriteback('```json\n{"posted":["A-1","ZZ-9"],"failed":[{"key":"A-2","reason":"403"}]}\n```', comments);
+  assert.deepEqual(got.posted, ['A-1']);
+  assert.deepEqual(got.failed.map((f) => f.key).sort(), ['A-2', 'A-3']);
+  assert.equal(parseWriteback('no json', comments), null);
 });
