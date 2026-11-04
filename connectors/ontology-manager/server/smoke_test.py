@@ -23,6 +23,7 @@ EXPECTED_TOOLS = {
     "apply_ontology_proposal", "discard_ontology_proposal", "document_ontology_settings",
     "list_ontologies", "inspect_ontology", "search_classes", "search_properties", "compose", "add_ontology",
     "describe", "list_by_class", "outgoing", "incoming", "mentions", "sparql_select", "sparql_construct",
+    "impact_of_term",
 }
 
 failures = 0
@@ -69,6 +70,11 @@ async def main():
                        {"query": f"PREFIX : <{NS}> CONSTRUCT {{ ?m :certifiedBy ?who }} WHERE {{ ?m a :Metric ; :certifiedBy ?who }}"},
                        "Group Controlling")
             await call(c, "mentions", {"iris": [NS + "DSO"]}, "")
+            # impact of a term: who hangs on it, who to ask
+            await call(c, "impact_of_term", {"term": "DSO"}, "chk_dso")
+            await call(c, "impact_of_term", {"term": "Margin", "depth": 2}, "MarginAfterAccruals")
+            await call(c, "impact_of_term", {"term": "Margin"}, "Group Controlling")
+            await call(c, "impact_of_term", {"term": "Metric"}, "MarginAfterAccruals")
             # catalog management: add a second baseline, then compose both
             extra = (
                 "@prefix : <https://werkbank.example/ns/proc#> .\n"

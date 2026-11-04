@@ -153,6 +153,22 @@ async def main():
             rep3 = await call(c, "propose_ontology_from_documents", {"slug": "pdf_docs", "documents": ["policy.pdf"]})
             check("Supplier" in {i["name"] for i in rep3["classes"]}, "D: classes proposed from a PDF")
 
+            # --- E: the demo handbook shipped in examples/ is readable and yields the expected terms
+            handbook = Path(__file__).resolve().parent.parent / "examples" / "finance-closing-handbook.md"
+            Path(docs, handbook.name).write_text(handbook.read_text(encoding="utf-8"), encoding="utf-8")
+            rep4 = await call(c, "propose_ontology_from_documents",
+                              {"slug": "werkbank_fin", "mode": "extend", "baselines": ["procurement_docs"],
+                               "documents": [handbook.name]})
+            acts4 = {i["name"]: i["action"] for i in rep4["classes"]}
+            check(acts4.get("IntercompanyDifference") == "extend" and acts4.get("Supplier") == "reuse",
+                  "E: handbook gives an extended and a reused term", str(acts4))
+
+            # --- F: impact_of_term refuses bad input in plain words and never changes anything
+            for args, needle in (({"term": "nope"}, "No term"), ({"term": ""}, "Give a term"),
+                                 ({"term": "DSO", "depth": 0}, "depth must be")):
+                msg = await call_error(c, "impact_of_term", args)
+                check(needle in msg, f"F: impact_of_term {args} refused", msg)
+
     server.shutdown()
     print("\nFailures:", failures)
     sys.exit(1 if failures else 0)
