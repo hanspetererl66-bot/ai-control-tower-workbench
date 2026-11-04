@@ -63,3 +63,6 @@ goose-home/**
 __pycache__/
 .pytest_cache/
 .venv/
+
+# SAP sandbox snapshot (SAP sample data fetched with a personal API key).
+examples/sap-sandbox/snapshot.json
