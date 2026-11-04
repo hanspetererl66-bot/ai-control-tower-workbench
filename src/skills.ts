@@ -1,4 +1,4 @@
-export type Skill = { name: string; description: string; dir: string; /** When SKILL.md last changed (ms). */ updatedAt?: number };
+export type Skill = { name: string; description: string; dir: string; /** When SKILL.md last changed (ms). */ updatedAt?: number; /** Set when the shared registry announced an end date (YYYY-MM-DD). */ sunsetAt?: string; /** Name of the skill that replaces this one. */ replacedBy?: string };
 
 /**
  * Prefers the Electron IPC (works in the packaged app), falls back to the vite

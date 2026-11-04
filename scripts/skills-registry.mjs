@@ -116,8 +116,11 @@ export async function rpc({ url, key, fn, args = {}, fetchImpl = fetch }) {
  * Only folders carrying a .synced.json marker are ever updated or removed; local skills are left alone
  * unless force is set.
  */
-export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force = false, log = () => {} }) {
-  const list = await rpc({ url, key, fn: 'skills_list', fetchImpl });
+export async function syncSkills({ url, key, skillsDir, actor = '', fetchImpl = fetch, force = false, log = () => {} }) {
+  // With an actor the person's own view is pulled (company skills, own department, own skills); without one only published skills.
+  const list = actor
+    ? await rpc({ url, key, fn: 'skills_visible', args: { p_actor: actor }, fetchImpl })
+    : await rpc({ url, key, fn: 'skills_list', fetchImpl });
   const result = { installed: [], updated: [], unchanged: [], skipped: [], removed: [] };
   mkdirSync(skillsDir, { recursive: true });
   const published = new Set();
@@ -136,11 +139,17 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
       result.skipped.push(`${slug} (a local skill with this name exists, use --force to replace it)`);
       continue;
     }
+    const notice = { sunsetAt: entry.sunsetAt ?? null, replacedBy: entry.replacedBy ?? null };
     if (marker && marker.sha256 === entry.sha256 && marker.version === entry.version) {
+      if (marker.sunsetAt !== notice.sunsetAt || marker.replacedBy !== notice.replacedBy) {
+        writeFileSync(markerPath, JSON.stringify({ ...marker, ...notice }, null, 2) + '\n');
+      }
       result.unchanged.push(slug);
       continue;
     }
-    const full = await rpc({ url, key, fn: 'skills_get', args: { p_slug: slug }, fetchImpl });
+    const full = actor
+      ? await rpc({ url, key, fn: 'skills_get_visible', args: { p_actor: actor, p_slug: slug }, fetchImpl })
+      : await rpc({ url, key, fn: 'skills_get', args: { p_slug: slug }, fetchImpl });
     if (!full || sha256(full.body) !== entry.sha256 || full.sha256 !== entry.sha256) {
       result.skipped.push(`${slug} (checksum mismatch)`);
       continue;
@@ -153,7 +162,7 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
     }
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'SKILL.md'), full.body);
-    writeFileSync(markerPath, JSON.stringify({ source: 'supabase', version: full.version, sha256: full.sha256 }, null, 2) + '\n');
+    writeFileSync(markerPath, JSON.stringify({ source: 'supabase', version: full.version, sha256: full.sha256, ...notice }, null, 2) + '\n');
     (marker ? result.updated : result.installed).push(`${slug}@v${full.version}`);
     log(`${slug} v${full.version}`);
   }
@@ -175,13 +184,14 @@ export async function syncSkills({ url, key, skillsDir, fetchImpl = fetch, force
  * Before uploading, similar existing skills are looked up; if one is similar the author must say why
  * a new skill is needed (`reason`) or mark it as a variant (`variantOf`), otherwise the skill is not uploaded.
  */
-export async function publishSkills({ url, key, dirs, owner = '', reason = '', variantOf = '', tools = knownTools(), fetchImpl = fetch }) {
+export async function publishSkills({ url, key, dirs, owner = '', reason = '', variantOf = '', forceScope = '', tools = knownTools(), fetchImpl = fetch }) {
   const out = [];
   for (const dir of dirs) {
     const slug = dir.replace(/\/+$/, '').split('/').pop();
     const text = readFileSync(join(dir, 'SKILL.md'), 'utf8');
     const { description, meta } = validateSkill(slug, text, { tools });
     const effective = { ...meta };
+    if (forceScope === 'individual') { effective.scope = 'individual'; delete effective.team; } // an import never claims a higher level
     if (variantOf) effective.variant_of = variantOf;
     if (reason) effective.variant_reason = reason;
     const similar = await rpc({

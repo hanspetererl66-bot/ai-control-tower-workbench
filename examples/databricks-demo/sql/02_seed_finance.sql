@@ -206,27 +206,27 @@ INSERT OVERWRITE TABLE werkbank_demo.fin.large_discount_deals VALUES
   ('D-26-0832', DATE'2026-09-01', 'FR', 'Industrial Sensors', 'Mid-Market', 'C-FR-0107', 58000, 11.5, 12, 'Standard', 'Sales Manager');
 
 INSERT OVERWRITE TABLE werkbank_demo.fin.grir_items VALUES
-  ('4500001001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'DE01', -4, 50700, 0, 'Metal housings, 600 pcs received'),
-  ('4500001003', '10', 'V-1005', 'Pannonia Cables Kft', 'DE01', -3, 29760, 0, 'Cable harness, 4,800 pcs received'),
-  ('4500001005', '10', 'V-1002', 'Neckar Elektronik AG', 'DE01', -5, 47250, 0, 'Control boards, 2,500 pcs received'),
-  ('4500003001', '10', 'V-1002', 'Neckar Elektronik AG', 'DE01', -11, 28350, 0, 'Control boards, 1,500 pcs received'),
-  ('4500002001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'PL01', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'),
-  ('4500002004', '10', 'V-1005', 'Pannonia Cables Kft', 'PL01', -7, 24180, 0, 'Cable harness, 3,900 pcs received'),
-  ('4500003004', '10', 'V-1002', 'Neckar Elektronik AG', 'PL01', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'),
-  ('4500001008', '10', 'V-1003', 'Baltic Fasteners UAB', 'FR01', -6, 7560, 0, 'Fasteners, 18,000 pcs received'),
-  ('4500003003', '10', 'V-1004', 'Tessin Precision SA', 'FR01', -2, 28400, 0, 'Precision shafts, 200 pcs received'),
-  ('4500000871', '10', 'V-1003', 'Baltic Fasteners UAB', 'DE01', -118, 6300, 0, 'Fasteners, received, invoice never arrived'),
-  ('4500000902', '10', 'V-1006', 'Anatolia Plastics A.S.', 'PL01', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'),
-  ('4500000955', '10', 'V-1002', 'Neckar Elektronik AG', 'FR01', -97, 9450, 0, 'Control boards, received, invoice missing');
+  ('4500001001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'DE10', -4, 50700, 0, 'Metal housings, 600 pcs received'),
+  ('4500001003', '10', 'V-1005', 'Pannonia Cables Kft', 'DE10', -3, 29760, 0, 'Cable harness, 4,800 pcs received'),
+  ('4500001005', '10', 'V-1002', 'Neckar Elektronik AG', 'DE10', -5, 47250, 0, 'Control boards, 2,500 pcs received'),
+  ('4500003001', '10', 'V-1002', 'Neckar Elektronik AG', 'DE10', -11, 28350, 0, 'Control boards, 1,500 pcs received'),
+  ('4500002001', '10', 'V-1001', 'Nordwerk Metall GmbH', 'UK10', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'),
+  ('4500002004', '10', 'V-1005', 'Pannonia Cables Kft', 'UK10', -7, 24180, 0, 'Cable harness, 3,900 pcs received'),
+  ('4500003004', '10', 'V-1002', 'Neckar Elektronik AG', 'UK10', -1, 16065, 32130, 'Control boards, 850 of 1,700 pcs received, fully invoiced'),
+  ('4500001008', '10', 'V-1003', 'Baltic Fasteners UAB', 'FR10', -6, 7560, 0, 'Fasteners, 18,000 pcs received'),
+  ('4500003003', '10', 'V-1004', 'Tessin Precision SA', 'FR10', -2, 28400, 0, 'Precision shafts, 200 pcs received'),
+  ('4500000871', '10', 'V-1003', 'Baltic Fasteners UAB', 'DE10', -118, 6300, 0, 'Fasteners, received, invoice never arrived'),
+  ('4500000902', '10', 'V-1006', 'Anatolia Plastics A.S.', 'UK10', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'),
+  ('4500000955', '10', 'V-1002', 'Neckar Elektronik AG', 'FR10', -97, 9450, 0, 'Control boards, received, invoice missing');
 
 INSERT OVERWRITE TABLE werkbank_demo.fin.intercompany_items VALUES
-  ('IC-0001', 'DE01', 'PL01', 'Contract assembly services', -12, 120000, 120000),
-  ('IC-0002', 'DE01', 'FR01', 'Software licence recharge', -10, 45000, 45000),
-  ('IC-0003', 'PL01', 'DE01', 'Sub-assembly delivery', -9, 210400, 210400),
-  ('IC-0004', 'FR01', 'DE01', 'Field service recharge', -8, 33800, 33800),
-  ('IC-0005', 'DE01', 'PL01', 'Management fee Q3', -7, 84200, NULL),
-  ('IC-0006', 'PL01', 'FR01', 'Component transfer', -6, 96250.4, 96238),
-  ('IC-0007', 'DE01', 'FR01', 'Engineering services', -5, 78650, 60000),
-  ('IC-0008', 'FR01', 'PL01', 'Tooling recharge', -4, 15400, 15400),
-  ('IC-0009', 'DE01', 'PL01', 'IT services', -3, 22000, 22000),
-  ('IC-0010', 'PL01', 'DE01', 'Logistics recharge', -2, 18900, 18900);
+  ('IC-0001', 'DE10', 'UK10', 'Contract assembly services', -12, 120000, 120000),
+  ('IC-0002', 'DE10', 'FR10', 'Software licence recharge', -10, 45000, 45000),
+  ('IC-0003', 'UK10', 'DE10', 'Sub-assembly delivery', -9, 210400, 210400),
+  ('IC-0004', 'FR10', 'DE10', 'Field service recharge', -8, 33800, 33800),
+  ('IC-0005', 'DE10', 'UK10', 'Management fee Q3', -7, 84200, NULL),
+  ('IC-0006', 'UK10', 'FR10', 'Component transfer', -6, 96250.4, 96238),
+  ('IC-0007', 'DE10', 'FR10', 'Engineering services', -5, 78650, 60000),
+  ('IC-0008', 'FR10', 'UK10', 'Tooling recharge', -4, 15400, 15400),
+  ('IC-0009', 'DE10', 'UK10', 'IT services', -3, 22000, 22000),
+  ('IC-0010', 'UK10', 'DE10', 'Logistics recharge', -2, 18900, 18900);

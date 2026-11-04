@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { StarterPrompt } from '../starter-prompts';
-import { TABS, nextTab, readTab, loadUse, popular, recordUse, saveUse, suggested, whatsNew, type Entry, type SkillLike, type SpaceLike, type TabId, type UseMap } from '../chat-tabs';
+import { TABS, nextTab, readTab, loadUse, popular, recordUse, saveUse, suggested, whatsNew, type Entry, type SkillLike, type SpaceLike, type RankRow, type TabId, type UseMap } from '../chat-tabs';
 import BriefingCards from './BriefingCards';
 
 type Props = {
@@ -39,10 +39,17 @@ export default function ChatTabs(p: Props) {
   const [tab, setTab] = useState<TabId | null>(() => { try { return readTab(window.localStorage.getItem(TAB_KEY)); } catch { return 'favorites'; } });
   const [used, setUsed] = useState<UseMap>(() => loadUse(window.localStorage));
   useEffect(() => { try { window.localStorage.setItem(TAB_KEY, tab ?? 'none'); } catch { /* ignore */ } }, [tab]);
+  // The organisation's ranking from the shared database; without it (not set up, offline) Popular shows local use only.
+  const [ranking, setRanking] = useState<RankRow[]>([]);
+  useEffect(() => {
+    let live = true;
+    void window.host?.skillDbRanking?.().then((r) => { if (live && r?.ok && Array.isArray(r.rows)) setRanking(r.rows); }).catch(() => undefined);
+    return () => { live = false; };
+  }, []);
 
   const skills = p.skills ?? [], spaces = p.spaces ?? [];
   const favNames = (p.favorites ?? []).map((f) => f.label);
-  const lists: Record<Exclude<TabId, 'favorites'>, Entry[]> = { suggested: suggested(skills, favNames, used), popular: popular(used), new: whatsNew(skills, spaces) };
+  const lists: Record<Exclude<TabId, 'favorites'>, Entry[]> = { suggested: suggested(skills, favNames, used), popular: popular(used, ranking, skills), new: whatsNew(skills, spaces) };
 
   const use = (e: Entry) => {
     const next = recordUse(used, e);

@@ -60,6 +60,22 @@ contextBridge.exposeInMainWorld('host', {
   saveConnectorConfig: (name, values, config) =>
     ipcRenderer.invoke('save-connector-config', { name, values, config }),
   removeSkill: (name) => ipcRenderer.invoke('remove-skill', name),
+  skillPackInfo: (dir) => ipcRenderer.invoke('skill-pack-info', dir),
+  exportSkill: (dir) => ipcRenderer.invoke('skill-export', dir),
+  importSkillOpen: () => ipcRenderer.invoke('skill-import-open'),
+  importSkillInstall: (id, overwrite) => ipcRenderer.invoke('skill-import-install', id, overwrite),
+  skillDbSync: () => ipcRenderer.invoke('skill-db-sync'),
+  skillDbRegister: (slug) => ipcRenderer.invoke('skill-db-register', slug),
+  skillDbGroups: () => ipcRenderer.invoke('skill-db-groups'),
+  skillDbRanking: () => ipcRenderer.invoke('skill-db-ranking'),
+  skillDbHealth: () => ipcRenderer.invoke('skill-db-health'),
+  skillDbLifecycle: (args) => ipcRenderer.invoke('skill-db-lifecycle', args),
+  skillDbPromotion: (tool, args) => ipcRenderer.invoke('skill-db-promotion', tool, args),
+  onSkillsSynced: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on('skills-synced', handler);
+    return () => ipcRenderer.removeListener('skills-synced', handler);
+  },
   forgetSecrets: (name) => ipcRenderer.invoke('forget-secrets', name),
   setConnectorEnabled: (name, enabled) =>
     ipcRenderer.invoke('set-connector-enabled', { name, enabled }),

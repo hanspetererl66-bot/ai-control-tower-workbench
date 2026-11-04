@@ -61,6 +61,7 @@ import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
+import { catalogFromDatabase, lifecycleCalls, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
@@ -197,12 +198,39 @@ export default function App() {
     saveCatalog(first, window.localStorage);
     return first;
   });
-  const changeSkillCatalog = useCallback((next: Catalog) => { setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
+  const skillCatalogRef = useRef(skillCatalog);
+  skillCatalogRef.current = skillCatalog;
+  const [skillSource, setSkillSource] = useState<SkillSource>({ kind: 'example', detail: '' });
+  const changeSkillCatalog = useCallback((next: Catalog) => { skillCatalogRef.current = next; setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
+  /** Reads the registry from the shared database. Without one the example catalog stays and the page says why. */
+  const loadSkillHealth = useCallback(async (note = '') => {
+    type Read = NonNullable<Awaited<ReturnType<NonNullable<NonNullable<typeof window.host>['skillDbHealth']>>>>;
+    const read: Read | undefined = await window.host?.skillDbHealth?.().catch((e: unknown): Read => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
+    if (!read) { setSkillSource({ kind: 'example', detail: 'The shared database is only available in the desktop app.' }); return; }
+    if (!read.ok || !Array.isArray(read.data?.skills)) { setSkillSource({ kind: skillCatalogRef.current.skills.some((s) => s.example) ? 'example' : 'offline', detail: read.detail ?? 'The database did not answer.' }); return; }
+    if (read.data.skills.length === 0) { setSkillSource({ kind: 'example', detail: 'The database has no skills you can see yet. Example data is shown.' }); return; }
+    const base = skillCatalogRef.current.skills.some((s) => s.example) ? { ...skillCatalogRef.current, skills: [], log: [] } : skillCatalogRef.current;
+    changeSkillCatalog(catalogFromDatabase(base, read.data.skills, Date.now()));
+    setSkillSource({ kind: 'database', detail: note, loadedAt: Date.now() });
+  }, [changeSkillCatalog]);
+  /** With a database, phase-out, retire and restore are written there first; the rest stays on this computer. */
+  const changeSkillCatalogShared = useCallback(async (next: Catalog) => {
+    const prev = skillCatalogRef.current;
+    if (skillSource.kind !== 'database') { changeSkillCatalog(next); return; }
+    changeSkillCatalog(next);
+    const problems: string[] = [];
+    for (const call of lifecycleCalls(prev, next, Date.now())) {
+      const r = await window.host?.skillDbLifecycle?.(call).catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
+      if (!r?.ok) problems.push(`${call.slug}: ${r?.detail ?? 'no answer'}`);
+    }
+    await loadSkillHealth(problems.length ? `Not saved in the database: ${problems.slice(0, 3).join(' · ')}` : '');
+  }, [changeSkillCatalog, loadSkillHealth, skillSource.kind]);
   const updateSchedules = useCallback((next: Schedule[]) => {
     setSchedules(next);
     saveSchedules(next, window.localStorage);
   }, []);
   const [view, setView] = useState<View>('chat');
+  useEffect(() => { if (view === 'skillhealth') void loadSkillHealth(); }, [view, loadSkillHealth]);
   /** The Spaces landing page (domain tiles) shows until a Space is opened. */
   const [spacesHome, setSpacesHome] = useState(true);
   const [overviewDomain, setOverviewDomain] = useState<string | null>(null);
@@ -378,6 +406,8 @@ export default function App() {
   useEffect(() => {
     void listSkills().then(setSkillList).catch(() => undefined);
   }, [settingsOpen]);
+  // The daily registry sync changed the skills folder (new skills, notices): list them again.
+  useEffect(() => window.host?.onSkillsSynced?.(() => { void listSkills().then(setSkillList).catch(() => undefined); }), []);
   useEffect(() => {
     if (!agent || !settingsOpen) return;
     void agent.listExtensions().then((list) => setExtensionNames(list.filter((e) => e.enabled && !e.isPlatform).map((e) => e.name))).catch(() => undefined);
@@ -1364,7 +1394,9 @@ export default function App() {
         <SkillHealthView
           catalog={skillCatalog}
           actor={SKILL_ADMIN}
-          onCatalog={changeSkillCatalog}
+          onCatalog={(next) => void changeSkillCatalogShared(next)}
+          source={skillSource}
+          onReload={() => void loadSkillHealth()}
           onBack={() => { setManageFocus('skills'); setView('manage'); }}
           onResetExamples={() => { if (window.confirm('Replace the catalog with the example catalog? Your changes in it are lost.')) changeSkillCatalog(syncInstalled(exampleCatalog(Date.now()), skillList, loadUse(window.localStorage), SKILL_ADMIN, Date.now())); }}
         />

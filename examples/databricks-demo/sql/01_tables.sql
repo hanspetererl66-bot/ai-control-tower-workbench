@@ -142,7 +142,7 @@ CREATE OR REPLACE TABLE werkbank_demo.fin.grir_items (
   item STRING COMMENT 'Item number within the purchase order.',
   vendor_id STRING COMMENT 'Vendor id.',
   vendor_name STRING COMMENT 'Vendor name (fictional).',
-  company_code STRING COMMENT 'Company code that owns the liability: DE01, PL01 or FR01.',
+  company_code STRING COMMENT 'Company code that owns the liability: DE10, UK10 or FR10.',
   gr_offset_days INT COMMENT 'Goods receipt date as days from today (negative = in the past).',
   gr_value_eur DECIMAL(14,2) COMMENT 'Value of the goods received in EUR.',
   invoiced_value_eur DECIMAL(14,2) COMMENT 'Value invoiced by the vendor so far in EUR.',
@@ -152,7 +152,7 @@ COMMENT 'Goods received and not fully invoiced (GR/IR), the same rows SAP holds.
 
 CREATE OR REPLACE TABLE werkbank_demo.fin.intercompany_items (
   item_id STRING COMMENT 'Intercompany document id.',
-  seller_company STRING COMMENT 'Company code that billed: DE01, PL01 or FR01.',
+  seller_company STRING COMMENT 'Company code that billed: DE10, UK10 or FR10.',
   buyer_company STRING COMMENT 'Company code that was billed.',
   description STRING COMMENT 'What was charged.',
   posting_offset_days INT COMMENT 'Posting date on the seller side as days from today (negative = in the past).',

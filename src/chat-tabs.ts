@@ -33,12 +33,26 @@ export function suggested(skills: SkillLike[], favoriteNames: string[], used: Us
     .slice(0, MAX_ENTRIES).map(skillEntry);
 }
 
-/** What the person used most on this computer. */
-export function popular(used: UseMap): Entry[] {
-  return Object.entries(used)
+/** One row of the usage ranking in the shared database (skills_ranking, last 30 days). */
+export type RankRow = { slug: string; description?: string; installs: number; views: number; devices: number; score: number };
+
+/**
+ * What is used most: the organisation's ranking (when the database answered) first, then what the person used on this computer.
+ * Only skills that are installed here are listed from the ranking, so every entry can be started. A skill in both lists appears once.
+ */
+export function popular(used: UseMap, ranking: RankRow[] = [], installed: SkillLike[] = []): Entry[] {
+  const have = new Set(installed.map((s) => s.name));
+  const org: Entry[] = ranking
+    .filter((r) => r.score > 0 && have.has(r.slug))
+    .slice(0, MAX_ENTRIES)
+    .map((r) => ({ key: `skill:${r.slug}`, label: r.slug, hint: `${r.devices} ${r.devices === 1 ? 'device' : 'devices'} · ${r.installs} installs`, prompt: `Nutze den Skill ${r.slug}.` }));
+  const seen = new Set(org.map((e) => e.key));
+  const mine = Object.entries(used)
     .sort((a, b) => b[1].count - a[1].count || b[1].last - a[1].last)
+    .filter(([key]) => !seen.has(key))
     .slice(0, MAX_ENTRIES)
     .map(([key, u]) => ({ key, label: u.label, hint: `${u.count}× used`, prompt: u.prompt, open: u.open, at: u.last }));
+  return [...org, ...mine].slice(0, MAX_ENTRIES);
 }
 
 /** Skills and Spaces added or changed in the last NEW_DAYS days, newest first. */
