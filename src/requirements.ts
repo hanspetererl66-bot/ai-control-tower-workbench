@@ -43,7 +43,7 @@ export function fetchPrompt(source: SourceKind, query: string): string {
   if (source === 'slack') {
     return ['Read requirements from Slack.', `Source: ${query.trim()}`, 'Use slack_read_channel or slack_read_thread for a channel or thread, slack_search_messages for search words. Keep messages that state a need, a wish, a problem or a rule; skip chatter. As key use the channel and the message time (for example "#req 1730640000").', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
   }
-  return ['Read requirements from Notion.', `Source: ${query.trim()}`, 'Use whichever Notion tool is available to you (search, fetch a page, query a database). Each page or row that states a requirement becomes one item; the page title is the title, the page id the key.', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
+  return ['Read requirements from Notion.', `Source: ${query.trim()}`, 'Use notion_search and notion_get_page (the Notion connector); if they are not installed, use whichever other Notion tool you have (search, fetch a page, query a database). Each page or row that states a requirement becomes one item; the page title is the title, the page id the key.', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
 }
 
 function jsonOf(text: string): any | null {
