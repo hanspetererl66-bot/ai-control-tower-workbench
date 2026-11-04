@@ -2297,6 +2297,12 @@ button {
   background: #f5f4f9;
 }
 
+/* Add-context menu behind the first "+" in the chat bar */
+.context-menu { min-width: 200px; }
+.context-form { display: flex; gap: 6px; align-items: center; padding: 6px 4px 2px; border-top: 1px solid var(--line); margin-top: 4px; }
+.context-input { flex: 1; min-width: 0; height: 28px; padding: 0 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 12.5px; }
+.context-form .menu-item { width: auto; padding: 5px 10px; }
+
 .builtin-source {
   cursor: default;
 }
