@@ -36,5 +36,5 @@ test('the Cognee connector is a manifest that starts the published package, with
   assert.equal(m.user_config.memory_folder.required, true);
   assert.deepEqual(m.tools.map((t) => t.name), ['remember', 'recall', 'forget']);
   assert.ok(MANIFEST_ONLY_CONNECTORS.includes('cognee-memory') && !LIBRARY_CONNECTORS.includes('cognee-memory'));
-  assert.equal(BUNDLED_CONNECTORS.length, LIBRARY_CONNECTORS.length + 1);
+  assert.equal(BUNDLED_CONNECTORS.length, LIBRARY_CONNECTORS.length + MANIFEST_ONLY_CONNECTORS.length);
 });

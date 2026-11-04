@@ -1,0 +1,94 @@
+@prefix : <https://werkbank.example/ns/fin#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://werkbank.example/ns/fin> a owl:Ontology ;
+    rdfs:label "Werkbank Finance Pre-Close"@en ;
+    rdfs:comment "Baseline-Ontologie für den Finance-Pre-Close-Space: Gesellschaften, Konten, Kennzahlen, Belege, Prüfungen."@de .
+
+# --- Klassen -----------------------------------------------------------
+:CompanyCode a owl:Class ;
+    rdfs:label "Gesellschaft"@de, "Company Code"@en ;
+    rdfs:comment "Buchungskreis bzw. rechtliche Einheit, z. B. DE10, FR10, UK10."@de .
+
+:GLAccount a owl:Class ;
+    rdfs:label "Sachkonto"@de, "G/L Account"@en .
+
+:Metric a owl:Class ;
+    rdfs:label "Kennzahl"@de, "Metric"@en ;
+    rdfs:comment "Zertifizierte Geschäftskennzahl mit eindeutiger Definition."@de .
+
+:FinancialDocument a owl:Class ;
+    rdfs:label "Beleg"@de, "Financial Document"@en .
+
+:Invoice a owl:Class ;
+    rdfs:subClassOf :FinancialDocument ;
+    rdfs:label "Rechnung"@de, "Invoice"@en .
+
+:JournalEntry a owl:Class ;
+    rdfs:subClassOf :FinancialDocument ;
+    rdfs:label "Buchungsbeleg"@de, "Journal Entry"@en .
+
+:PreCloseCheck a owl:Class ;
+    rdfs:label "Pre-Close-Prüfung"@de, "Pre-Close Check"@en ;
+    rdfs:comment "Prüfschritt vor dem Periodenabschluss, z. B. offene Posten, Rückstellungen, Abstimmung."@de .
+
+:Dataset a owl:Class ;
+    rdfs:label "Datenquelle"@de, "Dataset"@en ;
+    rdfs:comment "Tabelle oder View im Katalog werkbank_demo (Databricks)."@de .
+
+# --- Objekteigenschaften ----------------------------------------------
+:postedIn a owl:ObjectProperty ;
+    rdfs:domain :FinancialDocument ; rdfs:range :CompanyCode ;
+    rdfs:label "gebucht in"@de .
+
+:postedOnAccount a owl:ObjectProperty ;
+    rdfs:domain :JournalEntry ; rdfs:range :GLAccount ;
+    rdfs:label "gebucht auf Konto"@de .
+
+:appliesTo a owl:ObjectProperty ;
+    rdfs:domain :PreCloseCheck ; rdfs:range :CompanyCode ;
+    rdfs:label "gilt für"@de .
+
+:measuredBy a owl:ObjectProperty ;
+    rdfs:domain :PreCloseCheck ; rdfs:range :Metric ;
+    rdfs:label "gemessen durch"@de .
+
+:derivedFrom a owl:ObjectProperty ;
+    rdfs:domain :Metric ; rdfs:range :Dataset ;
+    rdfs:label "abgeleitet aus"@de, "lineage"@en .
+
+:dependsOn a owl:ObjectProperty ;
+    rdfs:domain :Metric ; rdfs:range :Metric ;
+    rdfs:label "hängt ab von"@de .
+
+# --- Datentypeigenschaften --------------------------------------------
+:code a owl:DatatypeProperty ;
+    rdfs:range xsd:string ; rdfs:label "Code"@de .
+
+:definition a owl:DatatypeProperty ;
+    rdfs:domain :Metric ; rdfs:range xsd:string ;
+    rdfs:label "Definition"@de ;
+    rdfs:comment "Verbindliche fachliche Definition der Kennzahl."@de .
+
+:formula a owl:DatatypeProperty ;
+    rdfs:domain :Metric ; rdfs:range xsd:string ;
+    rdfs:label "Formel"@de .
+
+:certifiedBy a owl:DatatypeProperty ;
+    rdfs:domain :Metric ; rdfs:range xsd:string ;
+    rdfs:label "zertifiziert durch"@de .
+
+:currency a owl:DatatypeProperty ;
+    rdfs:domain :CompanyCode ; rdfs:range xsd:string ;
+    rdfs:label "Währung"@de .
+
+:country a owl:DatatypeProperty ;
+    rdfs:domain :CompanyCode ; rdfs:range xsd:string ;
+    rdfs:label "Land"@de .
+
+:tableName a owl:DatatypeProperty ;
+    rdfs:domain :Dataset ; rdfs:range xsd:string ;
+    rdfs:label "Tabellenname"@de .

@@ -6,7 +6,7 @@
  *   connectors/<id>/server/index.mjs  the connector itself
  * Used by `npm run build:connectors` (zip) and by the one-click install in the desktop app (no zip).
  */
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractSub4MeData } from './server/sub4me.mjs';
@@ -21,7 +21,7 @@ export const LIBRARY_CONNECTORS = ['ai-control-tower', 'sub4me', 'n8n-automation
 const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 
 /** Connectors that only bring a manifest: the server is a published package that the manifest starts (for example with uvx). */
-export const MANIFEST_ONLY_CONNECTORS = ['cognee-memory'];
+export const MANIFEST_ONLY_CONNECTORS = ['cognee-memory', 'ontology-manager'];
 
 /** Every connector Werkbank ships, in the order they are shown. */
 export const BUNDLED_CONNECTORS = [...LIBRARY_CONNECTORS, ...MANIFEST_ONLY_CONNECTORS];
@@ -51,7 +51,11 @@ export function stageConnector(id, target) {
   if (!BUNDLED_CONNECTORS.includes(id)) throw new Error(`unknown connector: ${id}`);
   const source = join(ROOT, 'connectors', id);
   cpSync(join(source, 'manifest.json'), join(target, 'manifest.json'));
-  if (MANIFEST_ONLY_CONNECTORS.includes(id)) return target;
+  if (MANIFEST_ONLY_CONNECTORS.includes(id)) {
+    // A manifest-only connector may still bring a small launcher script next to its manifest (ontology-manager).
+    if (existsSync(join(source, 'server'))) cpSync(join(source, 'server'), join(target, 'server'), { recursive: true });
+    return target;
+  }
   cpSync(join(ROOT, 'connectors/_lib/server'), join(target, 'connectors/_lib/server'), { recursive: true });
   cpSync(join(source, 'server'), join(target, 'connectors', id, 'server'), { recursive: true });
   const dataDir = join(target, 'connectors/_lib/data');
