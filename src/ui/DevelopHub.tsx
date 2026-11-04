@@ -6,6 +6,8 @@ import DevelopWizard from './DevelopWizard';
 import DictateButton from './DictateButton';
 import { appendDictation } from '../voice-text';
 import SourcesView from './SourcesView';
+import { extendWorkflow, localProjectOf } from '../extend-project';
+import { loadMap } from '../work-sync';
 import { requirementLines, SOURCES, type Handover } from '../requirements';
 import { featureArgs, hostApi, newFeature } from '../registry';
 
@@ -55,6 +57,15 @@ export default function DevelopHub(props: Props) {
   const handOver = async (h: Handover): Promise<string> => {
     if (h.base === 'agent') { props.onAgentFrom(h); return ''; }
     if (h.base === 'workflow') {
+      // An extension of a workflow that sits on this computer changes that workflow (the next sync saves a new revision of it).
+      const localId = h.extends ? localProjectOf(loadMap(window.localStorage), h.extends.id, 'workflow') : undefined;
+      const existing = localId ? projects.find((x) => x.id === localId) : undefined;
+      if (existing) {
+        setProjects((list) => upsertProject(list, extendWorkflow(existing, h)));
+        setMode('hub');
+        setOpenId(existing.id);
+        return `"${existing.intent.name}" was extended. It is saved as a new revision on the next sync; the earlier approvals were withdrawn.`;
+      }
       const p = newProject('workflow');
       const lines = requirementLines(h);
       p.intent = { ...emptyIntent(), name: h.name, goal: `${h.goal}${lines ? `\n\nRequirements from the sources:\n${lines}` : ''}`.slice(0, 1500) };

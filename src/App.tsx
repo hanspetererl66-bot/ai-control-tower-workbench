@@ -59,6 +59,8 @@ import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
+import { extendAgent, localProjectOf } from './extend-project';
+import { loadMap } from './work-sync';
 import { catalogFromDatabase, lifecycleCalls, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
@@ -1367,6 +1369,15 @@ export default function App() {
           ready={Boolean(agent)}
           onRestartAgent={async () => { await window.host?.restartAgent?.(); reconnectAgent(); }}
           onAgentFrom={(h) => {
+            // An extension of an agent that sits on this computer changes that agent (the next sync saves a new revision of it).
+            const localId = h.extends ? localProjectOf(loadMap(window.localStorage), h.extends.id, 'agent') : undefined;
+            const existing = localId ? agentProjects.find((x) => x.id === localId) : undefined;
+            if (existing) {
+              changeAgentProjects(agentProjects.map((x) => (x.id === existing.id ? extendAgent(x, h) : x)));
+              setFocusProject(existing.id);
+              setView('studio');
+              return;
+            }
             const project = newProject(h.goal);
             project.answers = { ...project.answers, name: h.name.slice(0, 60) || project.answers.name };
             if (h.refs.length) project.sources = h.refs;
