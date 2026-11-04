@@ -18,8 +18,6 @@ import {
   hasControlTowerConnector,
   type StarterPrompt,
 } from '../starter-prompts';
-import SchedulePopover, { type ScheduleRuntime } from './SchedulePopover';
-import type { Schedule } from '../schedules';
 import ChatTabs from './ChatTabs';
 import type { SkillLike, SpaceLike } from '../chat-tabs';
 import { PRODUCT_TITLE } from '../product';
@@ -66,13 +64,22 @@ type Props = {
   spaces?: SpaceLike[];
   /** Briefing cards and groups under the chat that are switched off. */
   hiddenBriefing?: string[];
-  /** Recurring briefings (clock button). */
   /** Slash commands (own and built-in): typing / lists them next to the skills. */
   commands?: Command[];
-  schedules?: Schedule[];
-  onSchedulesChange?: (next: Schedule[]) => void;
-  scheduleRuntime?: ScheduleRuntime;
+  /** Keep the typed text as an own starter prompt (the star button). */
+  onSaveStarter?: (prompt: string) => void;
+  /** Start a fresh conversation (the new-chat button). */
+  onNewChat?: () => void;
 };
+
+/** Whether the buttons under the input (Favorites, Suggested, …) are shown. */
+const BUTTONS_KEY = 'werkbank.chatButtons';
+/** Sources the person can name as context; the text goes into the message, the agent reads them with the connector. */
+const CONTEXT_SOURCES = [
+  { id: 'jira', label: 'Jira ticket', placeholder: 'Ticket key, e.g. ABC-123', prompt: (v: string) => `Read the Jira ticket ${v} first and use it as context. ` },
+  { id: 'notion', label: 'Notion page', placeholder: 'Page title or link', prompt: (v: string) => `Read the Notion page "${v}" first and use it as context. ` },
+  { id: 'slack', label: 'Slack thread', placeholder: 'Channel or search term', prompt: (v: string) => `Read the Slack thread about "${v}" first and use it as context. ` },
+] as const;
 
 export default function Composer({
   commands = [],
@@ -96,9 +103,8 @@ export default function Composer({
   catalogSkills,
   spaces,
   hiddenBriefing,
-  schedules,
-  onSchedulesChange,
-  scheduleRuntime,
+  onSaveStarter,
+  onNewChat,
   voice,
   onOpenSettings,
   onStopSpeaking,
@@ -172,14 +178,36 @@ export default function Composer({
   const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  const [sourcePick, setSourcePick] = useState<(typeof CONTEXT_SOURCES)[number]['id'] | null>(null);
+  const [sourceValue, setSourceValue] = useState('');
+  const [buttonsShown, setButtonsShown] = useState<boolean>(() => {
+    try { return window.localStorage.getItem(BUTTONS_KEY) !== 'off'; } catch { return true; }
+  });
+  const toggleButtons = () => {
+    const next = !buttonsShown;
+    setButtonsShown(next);
+    try { window.localStorage.setItem(BUTTONS_KEY, next ? 'on' : 'off'); } catch { /* ignore */ }
+  };
 
-  // Both popovers close on Escape or a click anywhere outside them.
+  /** Put the named source into the message as context for the agent. */
+  function addSourceContext() {
+    const source = CONTEXT_SOURCES.find((s) => s.id === sourcePick);
+    const value = sourceValue.trim().slice(0, 200);
+    if (!source || !value) return;
+    setText((current) => `${source.prompt(value)}${current}`);
+    setSourcePick(null);
+    setSourceValue('');
+    setContextOpen(false);
+  }
+
+  // The popovers close on Escape or a click anywhere outside them.
   useEffect(() => {
-    if (!integrationsOpen && !connectorsOpen) return;
+    if (!integrationsOpen && !connectorsOpen && !contextOpen) return;
     const close = () => {
       setIntegrationsOpen(false);
       setConnectorsOpen(false);
+      setContextOpen(false);
     };
     const onPointer = (event: MouseEvent) => {
       const target = event.target as Node | null;
@@ -195,7 +223,7 @@ export default function Composer({
       document.removeEventListener('mousedown', onPointer);
       document.removeEventListener('keydown', onKey);
     };
-  }, [integrationsOpen, connectorsOpen]);
+  }, [integrationsOpen, connectorsOpen, contextOpen]);
   // All connectors ever seen this session, plus which are currently active.
   // Removing one drops it from the session list, so we keep the config around
   // to be able to switch it back on.
@@ -495,33 +523,100 @@ export default function Composer({
         <div className="attachment-error">{attachmentError || connectorError}</div>
       )}
       <div className="composer-bar">
+        <div className="chip-wrap">
+          <button
+            className={`chip chip-icon ${contextOpen ? 'chip-on' : ''}`}
+            title="Add context: files, a Jira ticket, a Notion page or a Slack thread"
+            aria-label="Add context"
+            aria-expanded={contextOpen}
+            onClick={() => {
+              setContextOpen((value) => !value);
+              setSourcePick(null);
+              setIntegrationsOpen(false);
+              setConnectorsOpen(false);
+            }}
+            disabled={busy || preparingConnector}
+          >
+            +
+          </button>
+          {contextOpen && (
+            <div className="menu context-menu" aria-label="Add context menu">
+              <button
+                className="menu-item"
+                title={`Add up to ${MAX_CHAT_ATTACHMENTS} files: PowerPoint, Word, Excel, CSV, text or pictures (or drop them here)`}
+                onClick={() => { setContextOpen(false); void pickAttachments(); }}
+              >
+                Files…
+              </button>
+              {CONTEXT_SOURCES.map((source) => (
+                <button key={source.id} className="menu-item" onClick={() => { setSourcePick(source.id); setSourceValue(''); }}>
+                  {source.label}
+                </button>
+              ))}
+              {sourcePick && (
+                <form
+                  className="context-form"
+                  onSubmit={(event) => { event.preventDefault(); addSourceContext(); }}
+                >
+                  <input
+                    autoFocus
+                    className="context-input"
+                    aria-label={CONTEXT_SOURCES.find((s) => s.id === sourcePick)?.label}
+                    placeholder={CONTEXT_SOURCES.find((s) => s.id === sourcePick)?.placeholder}
+                    value={sourceValue}
+                    onChange={(event) => setSourceValue(event.target.value)}
+                  />
+                  <button className="menu-item menu-item-action" type="submit" disabled={!sourceValue.trim()}>Add</button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+
+        {starters && (
+          <button
+            className={`chip chip-icon ${buttonsShown ? 'chip-on' : ''}`}
+            title={buttonsShown ? 'Hide the buttons under the input' : 'Show the buttons under the input'}
+            aria-label={buttonsShown ? 'Hide buttons' : 'Show buttons'}
+            aria-pressed={buttonsShown}
+            onClick={toggleButtons}
+          >
+            <span aria-hidden="true">{buttonsShown ? '−' : '+'}</span>
+          </button>
+        )}
+
         <button
           className="chip chip-icon"
-          title={`Add up to ${MAX_CHAT_ATTACHMENTS} files: PowerPoint, Word, Excel, CSV, text or pictures (or drop them here)`}
-          aria-label="Attach files"
-          onClick={pickAttachments}
-          disabled={busy || preparingConnector}
+          title="Pick a skill (or type / in the input)"
+          aria-label="Pick a skill"
+          onClick={() => setText((current) => (current.startsWith('/') ? current : '/'))}
+          disabled={!agent || busy || preparingConnector}
         >
-          +
+          <SkillBoltIcon />
         </button>
 
-        {schedules && onSchedulesChange && (
-          <div className="chip-wrap">
-            <button
-              className={`chip chip-icon ${scheduleOpen ? 'chip-on' : ''}`}
-              title={`Recurring briefing${schedules.some((s) => s.enabled) ? ` · ${schedules.filter((s) => s.enabled).length} active` : ''}`}
-              aria-label="Recurring briefing"
-              aria-expanded={scheduleOpen}
-              onClick={() => setScheduleOpen((value) => !value)}
-            >
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
-                <path d="M8 4.6V8l2.3 1.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {schedules.some((s) => s.enabled) && <span className="chip-badge">{schedules.filter((s) => s.enabled).length}</span>}
-            </button>
-            {scheduleOpen && <SchedulePopover schedules={schedules} onChange={onSchedulesChange} draftPrompt={text} onClose={() => setScheduleOpen(false)} runtime={scheduleRuntime} />}
-          </div>
+        {onSaveStarter && (
+          <button
+            className="chip chip-icon"
+            title="Keep this text as a favourite prompt"
+            aria-label="Save as favourite prompt"
+            onClick={() => { const t = text.trim(); if (t && !t.startsWith('/')) onSaveStarter(t); }}
+            disabled={!text.trim() || text.trim().startsWith('/')}
+          >
+            <StarIcon />
+          </button>
+        )}
+
+        {onNewChat && (
+          <button
+            className="chip chip-icon"
+            title="New conversation"
+            aria-label="New conversation"
+            onClick={onNewChat}
+            disabled={busy}
+          >
+            <NewChatIcon />
+          </button>
         )}
 
         <div className="chip-wrap">
@@ -742,7 +837,7 @@ export default function Composer({
           {micError || 'Ich höre zu … zum Beenden das Mikrofon erneut anklicken.'}
         </p>
       )}
-      {starters && (
+      {starters && buttonsShown && (
         <ChatTabs
           disabled={busy || preparingConnector || !agent}
           canAsk={connectorsChecked && hasControlTowerConnector(known.map((k) => k.name))}
@@ -767,6 +862,30 @@ function connectorLabel(known: SessionExtension[], active: Set<string>) {
     return name ? connectorDisplayName(name) : '1 Connector';
   }
   return `${active.size} Connectors`;
+}
+
+function SkillBoltIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 1.8 3.6 9h3.8L7 14.2 12.4 7H8.6z" />
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.5l-3.8 2.1.7-4.3-3.1-3 4.3-.6z" />
+    </svg>
+  );
+}
+
+function NewChatIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M13.5 9v3.2c0 .7-.6 1.3-1.3 1.3H3.8c-.7 0-1.3-.6-1.3-1.3V3.8c0-.7.6-1.3 1.3-1.3H7M11.5 2.2l2.3 2.3-4.8 4.8-2.7.4.4-2.7z" />
+    </svg>
+  );
 }
 
 function SlidersIcon() {

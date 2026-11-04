@@ -1156,9 +1156,8 @@ export default function App() {
       onNavigate={navigateTo}
       ownStarters={prefs.starters}
       hiddenBriefing={prefs.chat.hiddenBriefing}
-      schedules={schedules}
-      onSchedulesChange={updateSchedules}
-      scheduleRuntime={scheduleRuntime}
+      onSaveStarter={(prompt) => updatePrefs((current) => ({ ...current, starters: [...current.starters, { label: prompt.replace(/\s+/g, ' ').slice(0, 40), prompt }] }))}
+      onNewChat={() => { newConversation(); }}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
       catalogSkills={skillList}
       spaces={spaces}
