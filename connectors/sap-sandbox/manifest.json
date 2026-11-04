@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "sap-sandbox",
   "display_name": "SAP S/4HANA sandbox",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SAP Business Accelerator Hub sandbox (read only): real S/4HANA OData APIs (business partners, sales orders, purchase orders, billing, products, journal entries) with SAP sample data. Needs your personal API key from api.sap.com. The sandbox data is fixed and cannot be changed.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -41,6 +41,18 @@
     {
       "name": "sap_sandbox_get",
       "description": "Read one entity by key, for example one sales order. Read only."
+    },
+    {
+      "name": "sap_sandbox_o2c_scan",
+      "description": "Order-to-cash overview of the latest sales orders and which ones need attention. Read only."
+    },
+    {
+      "name": "sap_sandbox_order_to_cash",
+      "description": "Trace one sales order through delivery, goods issue and invoice and show where it is stuck. Read only."
+    },
+    {
+      "name": "sap_sandbox_customer_360",
+      "description": "One customer from partner, orders and invoices with totals and orders needing attention. Read only."
     }
   ],
   "user_config": {

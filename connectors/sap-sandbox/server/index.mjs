@@ -6,7 +6,7 @@
 import { createInterface } from 'node:readline';
 import { SapSandboxError, TOOL_DEFINITIONS, createSandboxHandlers } from './sandbox.mjs';
 
-const SERVER_INFO = { name: 'sap-sandbox', version: '0.1.0' };
+const SERVER_INFO = { name: 'sap-sandbox', version: '0.2.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const send = (message) => process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
 const reply = (id, result) => send({ id, result });
@@ -22,7 +22,7 @@ async function handle({ id, method, params }) {
         protocolVersion: SUPPORTED_PROTOCOLS.includes(params?.protocolVersion) ? params.protocolVersion : SUPPORTED_PROTOCOLS[0],
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO,
-        instructions: 'SAP S/4HANA sandbox (read only, SAP sample data): start with sap_sandbox_check_connection if something fails, sap_sandbox_list_apis for the suggested APIs, sap_sandbox_list_entity_sets for one API, then sap_sandbox_query (filter, select, top) or sap_sandbox_get (one entity by key). Values are SAP sample data, not customer data. Nothing can be changed.',
+        instructions: 'SAP S/4HANA sandbox (read only, SAP sample data): start with sap_sandbox_check_connection if something fails, sap_sandbox_list_apis for the suggested APIs, sap_sandbox_list_entity_sets for one API, then sap_sandbox_query (filter, select, top) or sap_sandbox_get (one entity by key). For the business story use sap_sandbox_o2c_scan, sap_sandbox_order_to_cash (one order through delivery and invoice) and sap_sandbox_customer_360. Values are SAP sample data, not customer data. Nothing can be changed.',
       });
       return;
     case 'ping': if (isRequest) reply(id, {}); return;

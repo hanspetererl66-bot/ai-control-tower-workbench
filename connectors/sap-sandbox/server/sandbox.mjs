@@ -5,7 +5,10 @@
  * The key is sent only to sandbox.api.sap.com and never appears in results or errors.
  * Only GET is ever used. The sandbox data is SAP's fixed sample data and cannot be changed.
  */
+import { classify, flagStage, summarizeCustomer, STATUS_TEXT } from './o2c.mjs';
+
 export class SapSandboxError extends Error {}
+const fatal = (message) => Object.assign(new SapSandboxError(message), { fatal: true });
 
 export const DEFAULT_BASE = 'https://sandbox.api.sap.com/s4hanacloud';
 const SANDBOX_HOST = 'sandbox.api.sap.com';
@@ -107,11 +110,11 @@ export function createSandboxHandlers({ env = process.env, fetchImpl = globalThi
     try {
       response = await fetchImpl(url, { method: 'GET', headers: { APIKey: k, Accept: 'application/json' }, signal: AbortSignal.timeout(30_000) });
     } catch (error) {
-      throw new SapSandboxError(`Could not reach the SAP sandbox: ${String(error.message).split(k).join('***')}`);
+      throw fatal(`Could not reach the SAP sandbox: ${String(error.message).split(k).join('***')}`);
     }
-    if (response.status === 401 || response.status === 403) throw new SapSandboxError(`The sandbox does not accept the API key (HTTP ${response.status}). Copy it again from api.sap.com (profile, "Show API Key").`);
+    if (response.status === 401 || response.status === 403) throw fatal(`The sandbox does not accept the API key (HTTP ${response.status}). Copy it again from api.sap.com (profile, "Show API Key").`);
     if (response.status === 404) throw new SapSandboxError('The sandbox did not find that (HTTP 404): wrong service, entity set or key. Check sap_sandbox_list_apis and sap_sandbox_list_entity_sets; not every API is offered in the sandbox.');
-    if (response.status === 429) throw new SapSandboxError('The sandbox asks to slow down (rate limit). Try again in a minute.');
+    if (response.status === 429) throw fatal('The sandbox asks to slow down (rate limit). Try again in a minute.');
     if (!response.ok) {
       let detail = '';
       try { const b = await response.json(); detail = String(b?.error?.message?.value ?? b?.error?.message ?? ''); } catch { /* no body */ }
@@ -119,6 +122,21 @@ export function createSandboxHandlers({ env = process.env, fetchImpl = globalThi
     }
     try { return await response.json(); } catch { throw new SapSandboxError('The sandbox did not answer with JSON.'); }
   }
+
+  const rows = async (svc, ent, query) => ((await get(`${svc}/${ent}`, query))?.d?.results ?? []).map(cleanEntity);
+  const one = async (svc, ent, keyValue) => cleanEntity((await get(`${svc}/${ent}${keyPart(keyValue)}`))?.d);
+  const orFilter = (field, values) => values.map((v) => `${field} eq '${v}'`).join(' or ');
+  const safeId = (v) => (/^[A-Za-z0-9]{1,20}$/.test(String(v ?? '')) ? String(v) : null);
+  const docNo = (v, name) => { const id = safeId(String(v ?? '').trim()); if (!id) throw new SapSandboxError(`${name} must be a document or partner number (letters and digits only).`); return id; };
+  /** A step that may fail without spoiling the rest (the sandbox does not offer every API or field). Key, network and rate-limit errors still stop everything. */
+  const attempt = async (label, fn, notes, fallback) => {
+    try { return await fn(); } catch (error) {
+      if (!(error instanceof SapSandboxError) || error.fatal) throw error;
+      notes.push(`${label}: ${error.message}`);
+      return fallback;
+    }
+  };
+  const uniq = (list, field) => [...new Set(list.map((r) => safeId(r[field])).filter(Boolean))];
 
   return {
     async sap_sandbox_check_connection() {
@@ -162,6 +180,57 @@ export function createSandboxHandlers({ env = process.env, fetchImpl = globalThi
       const res = await get(`${s}/${e}${keyPart(args.key)}`, { $select: optionText(args.select, 'select', 300), $expand: optionText(args.expand, 'expand', 200) });
       return { service: s, entity_set: e, entity: cleanEntity(res?.d) };
     },
+
+    async sap_sandbox_o2c_scan(args) {
+      const top = Math.min(50, Math.max(1, Number.isInteger(args.top) ? args.top : 25));
+      const filter = args.customer ? `SoldToParty eq '${docNo(args.customer, 'customer')}'` : undefined;
+      const flagged = (await rows('API_SALES_ORDER_SRV', 'A_SalesOrder', { $top: top, $orderby: 'CreationDate desc', $filter: filter })).map(flagStage);
+      const list = args.only_attention === true ? flagged.filter((o) => o.attention) : flagged;
+      return { read: flagged.length, attention: flagged.filter((o) => o.attention).length, orders: list, note: 'Stage comes from the status flags of the order header only; use sap_sandbox_order_to_cash for the document chain of one order.' };
+    },
+    async sap_sandbox_order_to_cash(args) {
+      const so = docNo(args.sales_order, 'sales_order');
+      const notes = [];
+      const order = await one('API_SALES_ORDER_SRV', 'A_SalesOrder', so);
+      const items = await attempt('items', () => rows('API_SALES_ORDER_SRV', 'A_SalesOrderItem', { $filter: `SalesOrder eq '${so}'`, $top: 50 }), notes, []);
+      const dItems = await attempt('deliveries', () => rows('API_OUTBOUND_DELIVERY_SRV', 'A_OutbDeliveryItem', { $filter: `ReferenceSDDocument eq '${so}'`, $top: 100 }), notes, []);
+      const delNos = uniq(dItems, 'DeliveryDocument').slice(0, 5);
+      const dHeads = delNos.length ? await attempt('delivery headers', () => rows('API_OUTBOUND_DELIVERY_SRV', 'A_OutbDeliveryHeader', { $filter: orFilter('DeliveryDocument', delNos) }), notes, []) : [];
+      const orderDelivered = String(order.OverallDeliveryStatus ?? '').toUpperCase() === 'C';
+      const deliveries = delNos.map((no) => {
+        const h = dHeads.find((x) => x.DeliveryDocument === no);
+        const date = h?.ActualGoodsMovementDate ?? null;
+        return { delivery: no, goods_issue_date: date, goods_issued: h ? (String(h.OverallGoodsMovementStatus ?? '').toUpperCase() === 'C' || Boolean(date)) : orderDelivered };
+      });
+      const bItems = await attempt('billing items', () => rows('API_BILLING_DOCUMENT_SRV', 'A_BillingDocumentItem', { $filter: orFilter('ReferenceSDDocument', [so, ...delNos]), $top: 100 }), notes, []);
+      const bNos = uniq(bItems, 'BillingDocument').slice(0, 5);
+      const bHeads = bNos.length ? await attempt('billing documents', () => rows('API_BILLING_DOCUMENT_SRV', 'A_BillingDocument', { $filter: orFilter('BillingDocument', bNos) }), notes, []) : [];
+      const billings = bNos.map((no) => {
+        const h = bHeads.find((x) => x.BillingDocument === no);
+        const fromItems = bItems.filter((i) => i.BillingDocument === no).reduce((sum, i) => sum + (Number(i.NetAmount) || 0), 0);
+        return { billing_document: no, date: h?.BillingDocumentDate ?? null, amount: h ? h.TotalNetAmount : fromItems, currency: h?.TransactionCurrency ?? order.TransactionCurrency ?? null, cancelled: h ? (h.BillingDocumentIsCancelled === true || String(h.BillingDocumentIsCancelled).toLowerCase() === 'true') : false };
+      });
+      return {
+        sales_order: so,
+        customer: order.SoldToParty ?? null,
+        order: { type: order.SalesOrderType ?? null, created: order.CreationDate ?? null, net_amount: order.TotalNetAmount ?? null, currency: order.TransactionCurrency ?? null, delivery_status: STATUS_TEXT[String(order.OverallDeliveryStatus ?? '').toUpperCase()] ?? order.OverallDeliveryStatus ?? null, billing_status: STATUS_TEXT[String(order.OverallOrdReltdBillgStatus ?? '').toUpperCase()] ?? order.OverallOrdReltdBillgStatus ?? null },
+        items: { count: items.length, first: items.slice(0, 10).map((i) => ({ item: i.SalesOrderItem ?? null, material: i.Material ?? null, quantity: i.RequestedQuantity ?? null, net_amount: i.NetAmount ?? null })) },
+        deliveries,
+        billings,
+        status: classify({ order, deliveries, billings }),
+        notes,
+      };
+    },
+    async sap_sandbox_customer_360(args) {
+      const c = docNo(args.customer, 'customer');
+      const notes = [];
+      const partner = await attempt('business partner', () => one('API_BUSINESS_PARTNER', 'A_BusinessPartner', c), notes, {});
+      const customer = await attempt('customer', () => one('API_BUSINESS_PARTNER', 'A_Customer', c), notes, {});
+      const orders = await attempt('sales orders', () => rows('API_SALES_ORDER_SRV', 'A_SalesOrder', { $filter: `SoldToParty eq '${c}'`, $orderby: 'CreationDate desc', $top: 20 }), notes, []);
+      const billings = await attempt('billing documents', () => rows('API_BILLING_DOCUMENT_SRV', 'A_BillingDocument', { $filter: `SoldToParty eq '${c}'`, $orderby: 'BillingDocumentDate desc', $top: 20 }), notes, []);
+      const found = Boolean(Object.keys(partner).length || Object.keys(customer).length || orders.length || billings.length);
+      return { found, ...summarizeCustomer({ partner, customer, orders, billings }), recent_orders: orders.slice(0, 10).map(flagStage), notes };
+    },
   };
 }
 
@@ -174,4 +243,7 @@ export const TOOL_DEFINITIONS = [
   { name: 'sap_sandbox_list_entity_sets', description: 'List the entity sets of one S/4HANA API in the sandbox. Read only.', inputSchema: obj({ service: SVC }, ['service']) },
   { name: 'sap_sandbox_query', description: 'Read rows of an entity set with OData V2 options (filter, select, orderby, expand, top, skip, count). At most 100 rows. Read only; the sandbox cannot be changed.', inputSchema: obj({ service: SVC, entity_set: ENT, filter: { type: 'string', description: "OData $filter, e.g. \"SoldToParty eq '10100001' and TotalNetAmount gt 1000\"." }, select: { type: 'string', description: 'Comma-separated fields to return.' }, orderby: { type: 'string', description: 'e.g. "CreationDate desc".' }, expand: { type: 'string', description: 'Navigation property, e.g. "to_Item".' }, top: { type: 'integer', description: '1 to 100 (default 20).' }, skip: { type: 'integer', description: 'Rows to skip.' }, count: { type: 'boolean', description: 'Also return the total number of matching rows.' } }, ['service', 'entity_set']) },
   { name: 'sap_sandbox_get', description: 'Read one entity by key, e.g. one sales order. Key = one value, or an object with the key fields for a composite key. Read only.', inputSchema: obj({ service: SVC, entity_set: ENT, key: { description: "One key value ('1' becomes ('1')) or an object like {\"SalesOrder\":\"1\",\"SalesOrderItem\":\"10\"}.", oneOf: [{ type: 'string' }, { type: 'object' }] }, select: { type: 'string', description: 'Comma-separated fields to return.' }, expand: { type: 'string', description: 'Navigation property to include.' } }, ['service', 'entity_set', 'key']) },
+  { name: 'sap_sandbox_o2c_scan', description: 'Order-to-cash overview: the latest sales orders with delivery and billing status from the order header, and which ones need attention (delivered but not fully invoiced, delivery blocked). One request. Read only.', inputSchema: obj({ customer: { type: 'string', description: 'Only this sold-to party (customer number).' }, top: { type: 'integer', description: '1 to 50 (default 25).' }, only_attention: { type: 'boolean', description: 'Return only the orders that need attention.' } }) },
+  { name: 'sap_sandbox_order_to_cash', description: 'Trace one sales order through delivery, goods issue and invoice, and say where it is stuck and how much is not yet invoiced. Steps the sandbox does not offer are listed in "notes". Read only.', inputSchema: obj({ sales_order: { type: 'string', description: 'Sales order number.' } }, ['sales_order']) },
+  { name: 'sap_sandbox_customer_360', description: 'One customer from business partner, sales orders and invoices: totals per currency, orders needing attention, latest order. Payment behaviour is not part of these APIs. Read only.', inputSchema: obj({ customer: { type: 'string', description: 'Customer / business partner number.' } }, ['customer']) },
 ];
