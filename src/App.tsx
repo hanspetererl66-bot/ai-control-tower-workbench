@@ -59,6 +59,8 @@ import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loa
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
+import OntologyManagerView from './ui/OntologyManagerView';
+import { exampleOntologies } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
@@ -200,6 +202,7 @@ export default function App() {
   });
   const skillCatalogRef = useRef(skillCatalog);
   skillCatalogRef.current = skillCatalog;
+  const ontologies = useMemo(() => exampleOntologies(), []);
   const [skillSource, setSkillSource] = useState<SkillSource>({ kind: 'example', detail: '' });
   const changeSkillCatalog = useCallback((next: Catalog) => { skillCatalogRef.current = next; setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
   /** Reads the registry from the shared database. Without one the example catalog stays and the page says why. */
@@ -1407,9 +1410,12 @@ export default function App() {
             setView('studio');
           }}
           onOpenRegistry={() => setView('registry')}
+          onOpenOntology={() => setView('ontology')}
         />
       ) : view === 'registry' ? (
         <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} />
+      ) : view === 'ontology' ? (
+        <OntologyManagerView ontologies={ontologies} onBack={() => setView('develop')} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

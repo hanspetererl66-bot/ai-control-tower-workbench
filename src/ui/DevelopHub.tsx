@@ -23,6 +23,7 @@ type Props = {
   /** An agent from a cluster of requirements: the Agent Studio takes over. */
   onAgentFrom: (h: Handover) => void;
   onOpenRegistry: () => void;
+  onOpenOntology: () => void;
 };
 
 /**
@@ -146,6 +147,12 @@ export default function DevelopHub(props: Props) {
             points={['SAP, Salesforce, Jira, Slack, Databricks and more', 'You decide which tools ask first']}
             action="Open Connectors" onOpen={props.onOpenConnectors}
           />
+          <BlockCard
+            kind="ontologies" logo={<OntologyMark />} title="Ontologies" brand="the vocabulary" label="Ontologies"
+            text="The shared meaning of your terms, so that every agent reads a metric or a class the same way."
+            points={['Owned terms with a definition and a source', 'See what depends on a term before you change it']}
+            action="Open Ontologies" onOpen={props.onOpenOntology}
+          />
         </div>
         <p className="develop-explain">
           Build an agent from a goal, or a workflow that runs on its own in n8n. Agents combine skills (the know-how) with connectors (the tools),
@@ -157,7 +164,7 @@ export default function DevelopHub(props: Props) {
 }
 
 function BlockCard(p: {
-  kind: 'skills' | 'connectors'; logo: React.ReactNode; title: string; brand: string; label: string; text: string;
+  kind: 'skills' | 'connectors' | 'ontologies'; logo: React.ReactNode; title: string; brand: string; label: string; text: string;
   points: string[]; action: string; onOpen: () => void;
 }) {
   return (
@@ -215,6 +222,18 @@ function SkillMark() {
       <path d="M8 16c8-3 16-2 24 3v30c-8-5-16-6-24-3z" fill="currentColor" />
       <path d="M56 16c-8-3-16-2-24 3v30c8-5 16-6 24-3z" fill="currentColor" opacity=".55" />
       <path d="M46 4l1.8 4.2L52 10l-4.2 1.8L46 16l-1.8-4.2L40 10l4.2-1.8z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Three linked nodes: a generic ontology mark. */
+function OntologyMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <path d="M32 18L16 46M32 18l16 28M16 46h32" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" opacity=".55" />
+      <circle cx="32" cy="16" r="9" fill="currentColor" />
+      <circle cx="15" cy="47" r="8" fill="currentColor" opacity=".75" />
+      <circle cx="49" cy="47" r="8" fill="currentColor" opacity=".55" />
     </svg>
   );
 }
