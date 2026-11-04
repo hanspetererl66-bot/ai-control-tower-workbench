@@ -7,6 +7,7 @@
 
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
 import { interviewMarkdown, mergeProposal, processSummary, sanitizeInterview, type InterviewState } from './interview.ts';
+import { agendaFor, priorNote, synthesisMarkdown, synthesisSummary, synthesize, type Synthesis } from './interview-synthesis.ts';
 import { extensionText, mergeRefs, sanitizeExtends, sanitizeExtensions, sanitizeRefs, MAX_EXTENSIONS, type Extension, type ExtendsRef, type SourceRef } from './requirements.ts';
 
 export type Kind = 'workflow' | 'agent';
@@ -59,6 +60,8 @@ export type Project = {
   updatedAt: number;
   /** State of a process interview for the intent step: notes plus the word-by-word log. */
   interview?: InterviewState;
+  /** Earlier, finished interviews about the same process (other roles). Together with `interview` they are combined into one process. */
+  interviews?: InterviewState[];
   /** Where the project came from (Jira, Slack, Notion), when it was started from the Sources tile. */
   sources?: SourceRef[];
   /** The agent or workflow of the registry that this project extends. */
@@ -311,12 +314,43 @@ export function setInterview(project: Project, interview: InterviewState, now = 
   return { ...project, interview, updatedAt: now };
 }
 
+const hasContent = (iv: InterviewState) => iv.entries.length > 0 || iv.transcript.length > 0 || iv.steps.length > 0;
+/** All interviews of the project: the archived ones, then the current one. */
+export const allInterviews = (p: Project): InterviewState[] => [...(p.interviews ?? []), ...(p.interview && hasContent(p.interview) ? [p.interview] : [])];
+export const projectSynthesis = (p: Project): Synthesis | null => (allInterviews(p).length > 1 ? synthesize(allInterviews(p)) : null);
+
+/** Puts the current interview into the archive and clears it, so that another person can be interviewed. */
+export function archiveInterview(project: Project, now = Date.now()): Project {
+  if (!project.interview || !hasContent(project.interview)) return project;
+  const { interview: _done, ...rest } = project;
+  return { ...rest, interviews: [...(project.interviews ?? []), project.interview].slice(-8), updatedAt: now };
+}
+
+/** Start values for the next interview, taken from the earlier ones: agenda questions and a short note on what they said. */
+export function nextInterviewSeed(project: Project): { role: string; agenda: string[]; prior: string } | null {
+  const all = allInterviews(project);
+  if (!all.length) return null;
+  const syn = synthesize(all);
+  return { role: syn.open[0] ?? '', agenda: agendaFor(syn), prior: priorNote(syn) };
+}
+
+/** Readable files of the interviews: one per interview and, from two on, the combined process. */
+export function interviewFiles(project: Project): { name: string; text: string }[] {
+  const all = allInterviews(project);
+  const out = all.map((iv, i) => ({ name: all.length > 1 ? `process-interview-${i + 1}-${skillSlug(iv.role) || 'role'}.md` : 'process-interview.md', text: interviewMarkdown(iv) }));
+  const syn = projectSynthesis(project);
+  if (syn) out.push({ name: 'process-synthesis.md', text: synthesisMarkdown(syn) });
+  return out;
+}
+
 /**
  * The interview is finished: its result goes into the form (see mergeProposal) and its process description into the
  * intent. This is a change of the intent, so later approvals are taken back.
  */
 export function applyInterview(project: Project, interview: InterviewState, proposal: Partial<Intent>, now = Date.now()): Project {
-  const patch = { ...mergeProposal(project.intent, proposal), process: processSummary(interview) };
+  const withCurrent = { ...project, interview };
+  const syn = projectSynthesis(withCurrent);
+  const patch = { ...mergeProposal(project.intent, proposal), process: syn ? synthesisSummary(syn) : processSummary(interview) };
   return { ...changeIntent(project, patch, now), interview };
 }
 
@@ -341,13 +375,14 @@ export function sanitizeProject(raw: any): Project | null {
   const d = raw.docs ?? {};
   const stage: Stage = STAGES.includes(raw.stage) ? raw.stage : 'intent';
   const interview = sanitizeInterview(raw.interview);
+  const interviews = Array.isArray(raw.interviews) ? raw.interviews.slice(0, 8).map((x: unknown) => sanitizeInterview(x)).filter((x: InterviewState | null): x is InterviewState => !!x) : [];
   const sources = sanitizeRefs(raw.sources), ext = sanitizeExtends(raw.extends), extensions = sanitizeExtensions(raw.extensions);
   return {
     id: str(raw.id, 40) || `p${Date.now().toString(36)}`, kind: raw.kind, stage, intent,
     docs: { prd: str(d.prd, 60_000), spec: str(d.spec, 80_000), build: str(d.build, 120_000) },
     approved: Array.isArray(raw.approved) ? raw.approved.filter((s: unknown) => STAGES.includes(s as Stage)) : [],
     createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(), updatedAt: Number.isFinite(raw.updatedAt) ? raw.updatedAt : Date.now(),
-    ...(interview ? { interview } : {}),
+    ...(interview ? { interview } : {}), ...(interviews.length ? { interviews } : {}),
     ...(sources.length ? { sources } : {}), ...(ext ? { extends: ext } : {}), ...(extensions.length ? { extensions } : {}),
   };
 }
@@ -382,9 +417,7 @@ export function projectFiles(project: Project, wrap: (html: string, title: strin
   const slug = skillSlug(project.intent.name) || 'project';
   const name = project.intent.name.trim() || slug;
   const out: ProjectFile[] = [{ path: `${slug}/01-intent/intent.md`, text: `# Intent: ${name}\n\n${intentBlock(project.kind, project.intent).split('\n').map((l) => `- ${l}`).join('\n')}\n` }];
-  if (project.interview && (project.interview.entries.length || project.interview.transcript.length)) {
-    out.push({ path: `${slug}/01-intent/process-interview.md`, text: interviewMarkdown(project.interview) });
-  }
+  for (const f of interviewFiles(project)) out.push({ path: `${slug}/01-intent/${f.name}`, text: f.text });
   if (project.docs.prd.trim()) {
     out.push({ path: `${slug}/02-requirements/PRD.html`, text: wrap(project.docs.prd, `PRD: ${name}`) });
     if (toMarkdown) out.push({ path: `${slug}/02-requirements/PRD.md`, text: toMarkdown(project.docs.prd) + '\n' });

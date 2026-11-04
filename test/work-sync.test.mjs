@@ -150,7 +150,7 @@ test('a project with an interview stores the result as a readable file and resto
   const p = dv.setInterview({ ...dv.newProject('workflow', 5), id: 'p-iv' }, iv);
   const unit = ws.developUnit(p);
   const md = unit.files.find((f) => f.path === 'process-interview.md');
-  assert.ok(md && md.language === 'markdown' && /\*\*Answer \(spoken\):\*\* An e-mail/.test(md.content));
+  assert.ok(md && md.language === 'markdown' && /\*\*\[\d+\] Answer \(spoken\):\*\* An e-mail/.test(md.content));
   const back = ws.restore(unit.files);
   assert.deepEqual(back.dev.interview.transcript, iv.transcript);
   assert.ok(!ws.developUnit(dv.newProject('workflow', 6)).files.some((f) => f.path === 'process-interview.md'));

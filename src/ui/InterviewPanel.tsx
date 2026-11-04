@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { GUARDRAILS, SYSTEMS, TRIGGERS, applyInterview, setInterview, skillSlug, type Project } from '../develop';
+import { GUARDRAILS, SYSTEMS, TRIGGERS, applyInterview, archiveInterview, allInterviews, interviewFiles, nextInterviewSeed, projectSynthesis, setInterview, skillSlug, type Project } from '../develop';
 import {
   DONE_THRESHOLD, INTRO, SLOTS, coverage, intentPrompt, interviewMarkdown, logTurns, nextAction, parseIntentProposal, parseModelOut, skip, startInterview, turnPrompt, ingest,
-  type Lang,
+  purgeLog, type Lang,
 } from '../interview';
+import { DEFAULT_RETENTION_DAYS, NOTICE, RETENTION_CHOICES, retentionLabel } from '../interview-privacy';
 import { ReplySpeaker, speechSupported, startRecording, type Recording } from '../voice';
 import { saveFile } from '../doc-export';
 
@@ -37,6 +38,10 @@ export default function InterviewPanel({ project, onChange, generate, onStop, re
   const [role, setRole] = useState('');
   const [lang, setLang] = useState<Lang>('en');
   const [consent, setConsent] = useState(false);
+  const [retain, setRetain] = useState<number>(DEFAULT_RETENTION_DAYS);
+  const [redactOn, setRedactOn] = useState(true);
+  const seed = !iv ? nextInterviewSeed(project) : null;
+  const archived = project.interviews ?? [];
   const lines: Line[] = iv?.transcript.length ? iv.transcript : iv?.pending ? [{ who: 'interviewer', text: iv.pending.text }] : [];
   const canSpeak = speechSupported();
   const [speakOn, setSpeakOn] = useState(canSpeak);
@@ -55,6 +60,7 @@ export default function InterviewPanel({ project, onChange, generate, onStop, re
   const answerRef = useRef<HTMLTextAreaElement>(null);
   const projectRef = useRef(project);
   projectRef.current = project;
+  useEffect(() => { if (!iv && seed?.role && !role) setRole(seed.role); }, [seed?.role]);
   useEffect(() => () => { alive.current = false; recording.current?.cancel(); if (speechSupported()) window.speechSynthesis.cancel(); }, []);
   useEffect(() => { void window.host?.voice?.getSettings().then((v) => { if (alive.current) setHasKey(Boolean(v?.hasKey)); }).catch(() => undefined); }, []);
   useEffect(() => { if (!speakOn && speechSupported()) window.speechSynthesis.cancel(); }, [speakOn]);
@@ -77,7 +83,7 @@ export default function InterviewPanel({ project, onChange, generate, onStop, re
 
   function begin() {
     if (!role.trim() || !consent) return;
-    const first = nextAction(startInterview(role, lang));
+    const first = nextAction(startInterview(role, lang, undefined, Date.now(), { retainDays: retain, redact: redactOn, agenda: seed?.agenda, prior: seed?.prior }));
     const started = logTurns(first.iv, [{ who: 'interviewer', text: INTRO[lang] }, { who: 'interviewer', text: first.action.text }]);
     setError(''); setNote('');
     onChange(setInterview(projectRef.current, started));
@@ -180,6 +186,25 @@ export default function InterviewPanel({ project, onChange, generate, onStop, re
     saveFile(`process-interview-${skillSlug(cur.role) || 'role'}.md`, interviewMarkdown(cur), 'text/markdown;charset=utf-8');
   }
 
+  function saveSynthesis() {
+    const f = interviewFiles(projectRef.current).find((x) => x.name === 'process-synthesis.md');
+    if (f) saveFile('process-synthesis.md', f.text, 'text/markdown;charset=utf-8');
+  }
+
+  /** Puts this interview into the archive so that the next person can be interviewed; the combined process grows. */
+  function addAnother() {
+    if (busy) return;
+    recording.current?.cancel(); recording.current = null; setMic('idle'); if (speechSupported()) window.speechSynthesis.cancel();
+    setAnswer(''); setError(''); setNote(''); setConsent(false); setRole('');
+    onChange(archiveInterview(projectRef.current));
+  }
+
+  function deleteLog() {
+    const cur = projectRef.current.interview;
+    if (!cur || busy || !window.confirm('Delete the word-by-word log of this interview? The notes and steps stay. This cannot be undone here.')) return;
+    onChange(setInterview(projectRef.current, purgeLog(cur)));
+  }
+
   function again() {
     if (busy || !window.confirm('Start a new interview? The log and the notes of this one are removed. Save the interview as a file first if you want to keep it. The form keeps what is in it.')) return;
     const { interview: _dropped, ...rest } = projectRef.current;
@@ -203,7 +228,21 @@ export default function InterviewPanel({ project, onChange, generate, onStop, re
           <label>Language of the questions
             <select value={lang} onChange={(e) => setLang(e.target.value as Lang)}><option value="en">English</option><option value="de">Deutsch</option></select>
           </label>
-          <p className="dev-note">The whole conversation is saved word by word in this project, and the voice answers are sent to the speech service to be turned into text. Use the role instead of the name, and tell the person this before you start.</p>
+          {archived.length > 0 && (
+            <div className="dev-iv-prior" role="status">
+              <p className="dev-note">{archived.length} earlier interview(s): {archived.map((a) => a.role).join(', ')}. Their answers are combined into one process.</p>
+              {seed && seed.agenda.length > 0 && <><p className="dev-note">Questions for this interview, from where the earlier ones differ or are incomplete:</p><ul>{seed.agenda.map((q, n) => <li key={n}>{q}</li>)}</ul></>}
+              <button className="ghost-btn small" type="button" onClick={saveSynthesis}>Save the combined process (.md)</button>
+            </div>
+          )}
+          <label>Keep the word-by-word log
+            <select value={retain} onChange={(e) => setRetain(Number(e.target.value))}>{RETENTION_CHOICES.map((d) => <option key={d} value={d}>{retentionLabel(d, lang)}</option>)}</select>
+          </label>
+          <label className="dev-iv-consent"><input type="checkbox" checked={redactOn} onChange={(e) => setRedactOn(e.target.checked)} />
+            <span>Remove e-mail addresses, phone numbers, IBANs and named persons from the stored text. This finds patterns only, it is not a guarantee.</span>
+          </label>
+          <p className="dev-note">{NOTICE[lang]}</p>
+          <p className="dev-note">The conversation is saved in this project and in the shared work database; the notes stay when the log is deleted, and earlier saved versions in the database history are not deleted from here. Voice answers are sent to the speech service. Use the role instead of the name. Where a works council applies, agree on the use with it before real interviews.</p>
           <label className="dev-iv-consent"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             <span>I have told the person what this is used for and that the conversation is recorded as text, and they agree.</span>
           </label>
@@ -263,8 +302,12 @@ export default function InterviewPanel({ project, onChange, generate, onStop, re
           {over ? 'Fill in the form from the interview' : 'Finish now and fill in the form'}
         </button>
         {iv.transcript.length > 0 && <button className="ghost-btn" onClick={saveResult}>Save the interview (.md)</button>}
+        {(over || iv.entries.length > 0) && <button className="ghost-btn" onClick={addAnother} disabled={busy}>Interview another person</button>}
+        {iv.transcript.length > 0 && <button className="ghost-btn ghost-danger" onClick={deleteLog} disabled={busy}>Delete the log</button>}
+        {iv.purgedAt > 0 && <span className="dev-note">The log was deleted; notes and steps are kept.</span>}
         {hasForm && !busy && <span className="dev-note">The form already holds a process description from an earlier interview.</span>}
       </div>
+      {allInterviews(project).length > 1 && <Combined project={project} onSave={saveSynthesis} />}
       <Notes iv={iv} />
     </section>
   );
@@ -274,12 +317,29 @@ function Notes({ iv }: { iv: NonNullable<Project['interview']> }) {
   return (
     <details className="dev-iv-notes">
       <summary>What I have noted so far ({iv.entries.length})</summary>
+      {iv.steps.length > 0 && <div><h4>Steps in order</h4><ol>{iv.steps.map((st) => <li key={st.id}>{st.text}{[st.actor, st.system].filter(Boolean).length ? ` (${[st.actor, st.system].filter(Boolean).join(', ')})` : ''}{st.decision ? `, rule: ${st.decision}` : ''}{st.confidence < 0.5 ? ' (unsure)' : ''}{st.turn !== undefined && iv.transcript.length > 0 ? ` [${st.turn + 1}]` : ''}</li>)}</ol></div>}
       {SLOTS.map((s) => {
         const items = iv.entries.filter((e) => e.slot === s.key);
-        return items.length ? <div key={s.key}><h4>{s.label}</h4><ul>{items.map((e) => <li key={e.id}>{e.text}{e.confidence < 0.5 ? ' (unsure)' : ''}</li>)}</ul></div> : null;
+        return items.length ? <div key={s.key}><h4>{s.label}</h4><ul>{items.map((e) => <li key={e.id}>{e.text}{e.confidence < 0.5 ? ' (unsure)' : ''}{e.turn !== undefined && iv.transcript.length > 0 ? ` [${e.turn + 1}]` : ''}</li>)}</ul></div> : null;
       })}
       {iv.handoffs.length > 0 && <p className="dev-note">Hands over to (candidates for the next interview): {iv.handoffs.join(', ')}</p>}
       {iv.entries.length === 0 && <p className="dev-note">Nothing yet.</p>}
+    </details>
+  );
+}
+
+/** The combined view of all interviews of the project: disagreements and roles still to ask. */
+function Combined({ project, onSave }: { project: Project; onSave: () => void }) {
+  const syn = projectSynthesis(project);
+  if (!syn) return null;
+  return (
+    <details className="dev-iv-notes" open>
+      <summary>Combined process from {syn.roles.length} interviews ({syn.conflicts.length} disagreement{syn.conflicts.length === 1 ? '' : 's'})</summary>
+      <ol>{syn.steps.map((m, n) => <li key={n}>{m.text} <span className="dev-note">({m.sources.length} of {syn.roles.length})</span></li>)}</ol>
+      {syn.conflicts.length > 0 && <><h4>Where they disagree</h4><ul>{syn.conflicts.map((c, n) => <li key={n}>{c.text}</li>)}</ul></>}
+      {syn.open.length > 0 && <p className="dev-note">Named but not yet interviewed: {syn.open.join(', ')}</p>}
+      <p className="dev-note">Steps are matched by similar wording, not by meaning. Check the matches.</p>
+      <button className="ghost-btn small" type="button" onClick={onSave}>Save the combined process (.md)</button>
     </details>
   );
 }

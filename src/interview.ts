@@ -15,6 +15,7 @@
  */
 
 import type { Intent } from './develop.ts';
+import { DEFAULT_RETENTION_DAYS, isExpired, redact } from './interview-privacy.ts';
 
 export type Lang = 'en' | 'de';
 export type Bi = { en: string; de: string };
@@ -97,8 +98,17 @@ export function detectSignals(text: string): string[] {
 
 /* ---------------- state ---------------- */
 
-export type Entry = { id: number; slot: SlotKey; text: string; confidence: number };
-export type ActionKind = 'question' | 'followup' | 'mirror' | 'closing' | 'done';
+export type Entry = { id: number; slot: SlotKey; text: string; confidence: number; /** Index of the log line the entry comes from. */ turn?: number };
+/** One step of the process, as the person described it. Roles, never names. */
+export type Step = {
+  id: number; text: string; actor: string; system: string; input: string; output: string;
+  /** The rule or decision at this step, if any. */
+  decision: string; exception: string;
+  /** How the person sees that the step is done (record, mail, file). */
+  evidence: string; confidence: number; turn?: number;
+};
+export type StepField = 'actor' | 'system' | 'evidence';
+export type ActionKind = 'question' | 'followup' | 'mirror' | 'playback' | 'probe' | 'agenda' | 'closing' | 'done';
 export type Action = { kind: ActionKind; text: string; slot: SlotKey | null };
 
 /** One line of the interview log. `via` tells whether the answer was dictated or typed. */
@@ -127,16 +137,40 @@ export type InterviewState = {
   finished: boolean;
   /** The whole conversation, word by word, in order. */
   transcript: Turn[];
+  /** The process as a list of steps (see Step). */
+  steps: Step[];
+  nextStepId: number;
+  /** Which step fields were already asked about ("id:field"), so that nothing is asked twice. */
+  probed: string[];
+  playbackAsked: boolean;
+  /** Questions from earlier interviews (conflicts, gaps) that this interview should clear up. */
+  agenda: string[];
+  /** Short note on what other interviews said; goes into the analyst prompt. */
+  prior: string;
+  /** Personal data is removed from stored text. */
+  redact: boolean;
+  /** Days after which the log is deleted (0 = until deleted by hand). */
+  retainDays: number;
+  /** When the person agreed. */
+  consentAt: number;
+  /** Set when the log was deleted, by hand or by the retention period. */
+  purgedAt: number;
 };
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 const pick = (b: Bi, lang: Lang) => b[lang];
 
-export function startInterview(role: string, lang: Lang = 'en', budget = DEFAULT_BUDGET, now = Date.now()): InterviewState {
+export type StartOptions = { retainDays?: number; redact?: boolean; agenda?: string[]; prior?: string };
+
+export function startInterview(role: string, lang: Lang = 'en', budget = DEFAULT_BUDGET, now = Date.now(), opts: StartOptions = {}): InterviewState {
   return {
     role: role.trim().slice(0, 80), lang, budget: Math.min(Math.max(Math.round(budget) || DEFAULT_BUDGET, 3), 20), startedAt: now,
     entries: [], nextId: 1, asked: {}, followups: [], depth: {}, mainQuestions: 0, sinceMirror: 0,
     closingAsked: false, lastSlot: null, handoffs: [], pending: null, finished: false, transcript: [],
+    steps: [], nextStepId: 1, probed: [], playbackAsked: false,
+    agenda: (opts.agenda ?? []).map((q) => q.trim().slice(0, 300)).filter(Boolean).slice(0, 6), prior: (opts.prior ?? '').slice(0, 1500),
+    redact: opts.redact !== false, retainDays: Number.isFinite(opts.retainDays) ? Math.max(0, Math.round(opts.retainDays!)) : DEFAULT_RETENTION_DAYS,
+    consentAt: now, purgedAt: 0,
   };
 }
 
@@ -149,6 +183,87 @@ export const gapScore = (iv: InterviewState, key: SlotKey) => SLOT_BY_KEY[key].w
 export const requiredDone = (iv: InterviewState) => SLOTS.filter((s) => s.required).every((s) => fill(iv, s.key) >= DONE_THRESHOLD);
 export const openSlots = (iv: InterviewState): SlotKey[] => SLOTS.filter((s) => fill(iv, s.key) < DONE_THRESHOLD).map((s) => s.key);
 export const coverage = (iv: InterviewState) => SLOTS.map((s) => ({ key: s.key, label: s.label, required: s.required, fill: Math.round(fill(iv, s.key) * 100) / 100 }));
+
+/* ---------------- steps ---------------- */
+
+const STOP = new Set('the a an and or of to in on for with is are was were it this that then als und oder der die das den dem des ein eine einen einem ich wir dann wird werden mit von zu im in auf für'.split(' '));
+const tokens = (t: string) => new Set(t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, ' ').split(/\s+/).filter((w) => w.length > 2 && !STOP.has(w)));
+/** Word overlap of two texts, 0 to 1. */
+export function similarity(a: string, b: string): number {
+  const x = tokens(a); const y = tokens(b);
+  if (!x.size || !y.size) return 0;
+  let both = 0;
+  for (const w of x) if (y.has(w)) both += 1;
+  return both / (x.size + y.size - both);
+}
+const short = (t: string, n = 70) => (t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t);
+const STEP_FIELDS = ['actor', 'system', 'input', 'output', 'decision', 'exception', 'evidence'] as const;
+const stepMissing = (st: Step, f: StepField) => !st[f].trim();
+/** Probe questions per interview, so that the step detail does not make the interview endless. */
+export const MAX_PROBES = 4;
+const PROBE: Record<StepField, Bi> = {
+  system: { en: 'In which system do you do this: "{s}"?', de: 'In welchem System machst du das: "{s}"?' },
+  evidence: { en: 'How do you see that this is done: "{s}"? (a record, a mail, a file)', de: 'Woran siehst du, dass das erledigt ist: "{s}"? (ein Eintrag, eine Mail, eine Datei)' },
+  actor: { en: 'Who does this: "{s}"?', de: 'Wer macht das: "{s}"?' },
+};
+
+/** The next step detail worth asking about: steps in order, fields in order of use, each only once. */
+function probeFor(s: InterviewState): { stepId: number; field: StepField } | null {
+  if (s.probed.length >= MAX_PROBES) return null;
+  for (const field of ['system', 'evidence', 'actor'] as StepField[]) {
+    for (const st of s.steps) if (stepMissing(st, field) && !s.probed.includes(`${st.id}:${field}`)) return { stepId: st.id, field };
+  }
+  return null;
+}
+
+/** The process read back, one line per step. The person corrects what is wrong. */
+export function playbackText(iv: Pick<InterviewState, 'steps' | 'lang'>): string {
+  const lines = iv.steps.map((st, i) => `${i + 1}. ${[st.actor, st.text].filter(Boolean).join(': ')}${st.system ? ` (${st.system})` : ''}${st.decision ? `, ${iv.lang === 'de' ? 'Regel' : 'rule'}: ${st.decision}` : ''}`);
+  return iv.lang === 'de'
+    ? `Ich lese den Ablauf noch einmal vor:\n${lines.join('\n')}\nStimmt die Reihenfolge? Was fehlt oder ist falsch?`
+    : `Let me read the process back:\n${lines.join('\n')}\nIs the order right? What is missing or wrong?`;
+}
+
+/** Adds or merges a step the agent reported. A step is matched by id, else by similar text. */
+function putStep(s: InterviewState, u: ModelOut['steps'][number], certain: boolean, turn: number) {
+  const clean = (v: string) => (s.redact ? redact(v) : v);
+  const text = clean(u.text);
+  const hit = s.steps.find((x) => x.id === u.id) ?? s.steps.find((x) => similarity(x.text, text) >= 0.6);
+  const conf = certain ? 1 : u.confidence;
+  if (hit) {
+    hit.text = hit.text.length >= text.length ? hit.text : text;
+    for (const f of STEP_FIELDS) if (u[f].trim()) hit[f] = clean(u[f]);
+    hit.confidence = Math.max(hit.confidence, conf);
+    return;
+  }
+  const st: Step = { id: s.nextStepId++, text, actor: clean(u.actor), system: clean(u.system), input: clean(u.input), output: clean(u.output), decision: clean(u.decision), exception: clean(u.exception), evidence: clean(u.evidence), confidence: conf, turn };
+  const at = u.position > 0 ? Math.min(u.position - 1, s.steps.length) : s.steps.length;
+  s.steps.splice(at, 0, st);
+}
+
+const mm = (t: string) => short(t.replace(/["\[\]{}()<>|#&]/g, ' ').replace(/\s+/g, ' ').trim(), 60);
+
+/** The process as a Mermaid flowchart. Decisions are diamonds, exceptions dashed side branches. */
+export function interviewMermaid(iv: Pick<InterviewState, 'steps' | 'entries' | 'lang'>): string {
+  if (!iv.steps.length) return '';
+  const trigger = iv.entries.find((e) => e.slot === 'trigger');
+  const result = iv.entries.find((e) => e.slot === 'result');
+  const out = ['flowchart TD', `  S0(["${mm(trigger?.text ?? (iv.lang === 'de' ? 'Start' : 'Start'))}"])`];
+  let prev = 'S0';
+  iv.steps.forEach((st, i) => {
+    const id = `S${i + 1}`;
+    const label = `${i + 1}. ${mm(st.text)}${st.actor || st.system ? `<br/>${mm([st.actor, st.system].filter(Boolean).join(' / '))}` : ''}${st.decision ? `<br/>${iv.lang === 'de' ? 'Regel' : 'Rule'}: ${mm(st.decision)}` : ''}`;
+    out.push(st.decision ? `  ${id}{"${label}"}` : `  ${id}["${label}"]`);
+    out.push(`  ${prev} --> ${id}`);
+    if (st.exception) { out.push(`  X${i + 1}["${mm(st.exception)}"]`, `  ${id} -.-> X${i + 1}`); }
+    prev = id;
+  });
+  out.push(`  E(["${mm(result?.text ?? (iv.lang === 'de' ? 'Erledigt' : 'Done'))}"])`, `  ${prev} --> E`);
+  return out.join('\n');
+}
+
+/** Index of the log line that the next answer will get: call right before the answer is logged. */
+const nextTurn = (s: InterviewState) => s.transcript.length;
 
 function mirrorText(iv: InterviewState): string {
   const parts = iv.entries.slice(-MIRROR_EVERY).map((e) => e.text.replace(/[.\s]+$/, '')).join('; ');
@@ -165,6 +280,15 @@ function choose(s: InterviewState): Action {
     return { kind: 'mirror', text: mirrorText(s), slot: null };
   }
   if (requiredDone(s) || s.mainQuestions >= s.budget) {
+    // Before closing: one detail question per weak step (few), the process read back once, then what earlier interviews left open.
+    const probe = probeFor(s);
+    if (probe) {
+      const st = s.steps.find((x) => x.id === probe.stepId)!;
+      s.probed.push(`${probe.stepId}:${probe.field}`);
+      return { kind: 'probe', text: pick(PROBE[probe.field], s.lang).replace('{s}', short(st.text, 80)), slot: 'steps' };
+    }
+    if (s.steps.length >= 3 && !s.playbackAsked) { s.playbackAsked = true; return { kind: 'playback', text: playbackText(s), slot: 'steps' }; }
+    if (s.agenda.length) return { kind: 'agenda', text: s.agenda.shift()!, slot: null };
     if (!s.closingAsked) { s.closingAsked = true; return { kind: 'closing', text: pick(CLOSING, s.lang), slot: null }; }
     return { kind: 'done', text: pick(DONE, s.lang), slot: null };
   }
@@ -205,6 +329,10 @@ export type ModelOut = {
   handoffTo: string;
   /** Only when the answer replies to a summary: did the person confirm it? */
   confirmed: boolean | null;
+  /** Steps of the process the answer mentions (new, or details for an existing one). */
+  steps: { id: number; position: number; text: string; actor: string; system: string; input: string; output: string; decision: string; exception: string; evidence: string; confidence: number }[];
+  /** Ids of steps the answer removes (the person says they do not exist). */
+  removeSteps: number[];
 };
 
 const cut = (v: unknown, n: number) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
@@ -224,8 +352,21 @@ export function parseModelOut(text: string): ModelOut | null {
     const c = Number(u?.confidence);
     updates.push({ slot, text: t, confidence: Number.isFinite(c) ? Math.min(1, Math.max(0.1, c)) : 0.6 });
   }
+  const steps: ModelOut['steps'] = [];
+  for (const u of Array.isArray(raw.steps) ? raw.steps.slice(0, 12) : []) {
+    const text = cut(u?.text, 300);
+    if (!text) continue;
+    const c = Number(u?.confidence);
+    steps.push({
+      id: Number.isInteger(u?.id) ? u.id : 0, position: Number.isInteger(u?.position) && u.position > 0 ? u.position : 0, text,
+      actor: cut(u?.actor, 80), system: cut(u?.system, 80), input: cut(u?.input, 200), output: cut(u?.output, 200),
+      decision: cut(u?.decision, 300), exception: cut(u?.exception, 300), evidence: cut(u?.evidence, 200),
+      confidence: Number.isFinite(c) ? Math.min(1, Math.max(0.1, c)) : 0.6,
+    });
+  }
   return {
-    updates,
+    updates, steps,
+    removeSteps: (Array.isArray(raw.remove_steps) ? raw.remove_steps : []).filter((n: unknown) => Number.isInteger(n)).slice(0, 12),
     supersedes: (Array.isArray(raw.supersedes) ? raw.supersedes : []).filter((n: unknown) => Number.isInteger(n)).slice(0, 12),
     signals: (Array.isArray(raw.signals) ? raw.signals : []).filter((s: unknown) => typeof s === 'string' && RULE_IDS.includes(s)).slice(0, 3),
     handoffTo: cut(raw.handoff_to, 80),
@@ -236,21 +377,26 @@ export function parseModelOut(text: string): ModelOut | null {
 /** Puts one answer into the model: new entries, corrections, handover, and the follow-up the signal words call for. */
 export function ingest(iv: InterviewState, out: ModelOut, answer: string): InterviewState {
   const s = clone(iv);
-  const replyToMirror = s.pending?.kind === 'mirror';
+  const replyToMirror = s.pending?.kind === 'mirror' || s.pending?.kind === 'playback';
+  const turn = nextTurn(s);
+  const clean = (t: string) => (s.redact ? redact(t) : t);
   // A confirmed summary makes the entries behind it more certain.
-  if (replyToMirror && out.confirmed === true) for (const e of s.entries.slice(-MIRROR_EVERY)) e.confidence = Math.min(1, e.confidence + 0.2);
+  if (s.pending?.kind === 'mirror' && out.confirmed === true) for (const e of s.entries.slice(-MIRROR_EVERY)) e.confidence = Math.min(1, e.confidence + 0.2);
+  if (s.pending?.kind === 'playback' && out.confirmed === true) for (const st of s.steps) st.confidence = 1;
   if (out.supersedes.length) s.entries = s.entries.filter((e) => !out.supersedes.includes(e.id));
+  if (out.removeSteps?.length) s.steps = s.steps.filter((st) => !out.removeSteps.includes(st.id));
   for (const u of out.updates) {
     // What the person says to correct a summary is the most reliable thing in the model.
-    s.entries.push({ id: s.nextId++, slot: u.slot, text: u.text, confidence: replyToMirror ? 1 : u.confidence });
+    s.entries.push({ id: s.nextId++, slot: u.slot, text: clean(u.text), confidence: replyToMirror ? 1 : u.confidence, turn });
   }
+  for (const u of out.steps ?? []) putStep(s, u, replyToMirror, turn);
   if (out.updates.length) s.lastSlot = out.updates[out.updates.length - 1].slot;
   // The reply to a summary is a check of what was already said, so it does not count towards the next summary.
   if (!replyToMirror) s.sinceMirror += 1;
-  if (out.handoffTo && !s.handoffs.some((h) => h.toLowerCase() === out.handoffTo.toLowerCase())) s.handoffs.push(out.handoffTo);
+  if (out.handoffTo && !s.handoffs.some((h) => h.toLowerCase() === out.handoffTo.toLowerCase())) s.handoffs.push(clean(out.handoffTo));
 
   const kind = s.pending?.kind;
-  if (kind === 'question' || kind === 'followup') {
+  if (kind === 'question' || kind === 'followup' || kind === 'probe' || kind === 'agenda') {
     const ids = new Set([...detectSignals(answer), ...out.signals]);
     const rule = SIGNAL_RULES.find((r) => ids.has(r.id));
     const slot = out.updates.length ? out.updates[out.updates.length - 1].slot : s.pending?.slot ?? s.lastSlot;
@@ -265,7 +411,7 @@ export function ingest(iv: InterviewState, out: ModelOut, answer: string): Inter
 
 /** Appends lines to the log. Pure: returns a new state. */
 export function logTurns(iv: InterviewState, turns: { who: Turn['who']; text: string; via?: Turn['via'] }[], now = Date.now()): InterviewState {
-  const add = turns.filter((t) => t.text.trim()).map((t) => ({ who: t.who, text: t.text.trim().slice(0, 3000), ...(t.via ? { via: t.via } : {}), at: now }));
+  const add = turns.filter((t) => t.text.trim()).map((t) => ({ who: t.who, text: (iv.redact && t.who === 'person' ? redact(t.text.trim()) : t.text.trim()).slice(0, 3000), ...(t.via ? { via: t.via } : {}), at: now }));
   return { ...iv, transcript: [...iv.transcript, ...add].slice(-400) };
 }
 
@@ -284,7 +430,9 @@ export function turnPrompt(iv: InterviewState, answer: string): string {
   const entries = iv.entries.length
     ? iv.entries.map((e) => `[${e.id}] ${e.slot}: ${e.text}`).join('\n')
     : '(nothing yet)';
-  const asked = iv.pending ? `${iv.pending.kind === 'mirror' ? 'Summary that the interviewer read out' : 'Question'}: ${iv.pending.text}` : 'Question: (none)';
+  const readOut = iv.pending?.kind === 'mirror' || iv.pending?.kind === 'playback';
+  const asked = iv.pending ? `${iv.pending.kind === 'playback' ? 'Process that the interviewer read back' : readOut ? 'Summary that the interviewer read out' : 'Question'}: ${iv.pending.text}` : 'Question: (none)';
+  const steps = iv.steps.length ? iv.steps.map((st, i) => `[${st.id}] #${i + 1} ${st.text} | actor: ${st.actor || '?'} | system: ${st.system || '?'} | decision: ${st.decision || '-'} | evidence: ${st.evidence || '?'}`).join('\n') : '(none yet)';
   return [
     'You are the analyst behind a process interview. A person describes how a business process runs today. Turn their latest answer into entries of a process model. You do not talk to the person.',
     '',
@@ -296,6 +444,10 @@ export function turnPrompt(iv: InterviewState, answer: string): string {
     '## Model so far (id, slot, entry)',
     entries,
     '',
+    '## Steps so far (id, order, details)',
+    steps,
+    ...(iv.prior ? ['', '## What other interviews said (do not copy it into this person\'s model; use it only to see where this answer agrees or differs)', iv.prior] : []),
+    '',
     '## Latest exchange',
     asked,
     `Answer of the person: ${answer.trim().slice(0, 3000)}`,
@@ -306,11 +458,14 @@ export function turnPrompt(iv: InterviewState, answer: string): string {
     '- Replace persons by roles. Do not record opinions about colleagues or the performance of people; record the process only.',
     '- confidence: 0.9 explicit and concrete, 0.6 plausible but vague, 0.3 hinted only.',
     '- If the answer corrects or replaces an earlier entry, list its id in "supersedes" and add the corrected entry.',
+    '- "steps": the process steps the answer mentions, in order, one per action. Fields: text (what is done), actor (a role), system, input, output, decision (the rule at this step, if any), exception (what goes wrong here, if said), evidence (how the person sees it is done), position (1-based place in the process, only when it must go between existing steps), id (of an existing step when the answer adds details to it), confidence. Leave a field "" when the person did not say it: never guess.',
+    '- "remove_steps": ids of steps the person says do not exist or were wrong.',
+    '- When the answer replies to a read-back of the process, apply the corrections to the steps (details, order via position, removals).',
     '- "handoff_to": the role the work goes to, if one is named, else "".',
     '- "confirmed": only when the answer replies to a summary: true if the person agrees, false if not, else null.',
     `- "signals": optional; ids from ${RULE_IDS.join(', ')} when the answer contains vague wording that hides a rule.`,
     '',
-    'Format: {"updates":[{"slot":"steps","text":"...","confidence":0.9}],"supersedes":[],"signals":[],"handoff_to":"","confirmed":null}',
+    'Format: {"updates":[{"slot":"steps","text":"...","confidence":0.9}],"steps":[{"text":"...","actor":"","system":"","input":"","output":"","decision":"","exception":"","evidence":"","confidence":0.8}],"remove_steps":[],"supersedes":[],"signals":[],"handoff_to":"","confirmed":null}',
     JSON_ONLY,
   ].join('\n');
 }
@@ -323,6 +478,9 @@ export function processSummary(iv: InterviewState): string {
     if (!items.length) continue;
     out.push(`${d.label}:`, ...items.map((e) => `- ${e.text}${e.confidence < 0.5 ? ' (unsure)' : ''}`));
   }
+  if (iv.steps.length) {
+    out.push('Process steps in order:', ...iv.steps.map((st, i) => `${i + 1}. ${st.text}${[st.actor && `by ${st.actor}`, st.system && `in ${st.system}`, st.decision && `rule: ${st.decision}`, st.exception && `exception: ${st.exception}`, st.evidence && `done when: ${st.evidence}`].filter(Boolean).map((x) => ` (${x})`).join('')}`));
+  }
   const open = SLOTS.filter((d) => fill(iv, d.key) < DONE_THRESHOLD);
   if (open.length) out.push(`Not covered in the interview: ${open.map((d) => d.label + (d.required ? ' (needed)' : '')).join(', ')}.`);
   if (iv.handoffs.length) out.push(`Hands over to (not yet interviewed): ${iv.handoffs.join(', ')}.`);
@@ -331,8 +489,8 @@ export function processSummary(iv: InterviewState): string {
 }
 
 const L = {
-  en: { title: 'Process interview', role: 'Role', date: 'Date', lang: 'Language', summary: 'What the person described', open: 'Not covered', handoffs: 'Hands over to (not yet interviewed)', log: 'Interview log', you: 'Interviewer', person: 'Answer', voice: 'spoken', typed: 'typed', skipped: '(skipped)', none: 'Nothing was noted.', source: 'Source: one interview. The person describes the process as they experience it; nothing was checked against the systems.', use: 'Use: input for the Intent step of the workflow project and for the process documentation.' },
-  de: { title: 'Prozessinterview', role: 'Rolle', date: 'Datum', lang: 'Sprache', summary: 'Was die Person beschrieben hat', open: 'Nicht abgedeckt', handoffs: 'Übergibt an (noch nicht befragt)', log: 'Gesprächsprotokoll', you: 'Interviewer', person: 'Antwort', voice: 'gesprochen', typed: 'getippt', skipped: '(übersprungen)', none: 'Nichts festgehalten.', source: 'Quelle: ein Interview. Die Person beschreibt den Prozess, wie sie ihn erlebt; nichts wurde gegen die Systeme geprüft.', use: 'Verwendung: Eingabe für den Intent-Schritt des Workflow-Projekts und für die Prozessdokumentation.' },
+  en: { title: 'Process interview', role: 'Role', date: 'Date', lang: 'Language', summary: 'What the person described', open: 'Not covered', handoffs: 'Hands over to (not yet interviewed)', log: 'Interview log', you: 'Interviewer', person: 'Answer', voice: 'spoken', typed: 'typed', skipped: '(skipped)', none: 'Nothing was noted.', stepsH: 'Process steps', diagram: 'Diagram', cols: ['#', 'Step', 'Role', 'System', 'Rule', 'Exception', 'Done when', 'Log'], consent: 'Consent and data handling', agreed: 'Person agreed on', keep: 'Log kept', redacted: 'Personal data removed from stored text (pattern-based, not a guarantee)', notRedacted: 'Personal data not removed', purged: 'The log was deleted on', untilDeleted: 'until deleted by hand', daysWord: 'days', ref: 'Numbers in brackets refer to the lines of the log below.', source: 'Source: one interview. The person describes the process as they experience it; nothing was checked against the systems.', use: 'Use: input for the Intent step of the workflow project and for the process documentation.' },
+  de: { title: 'Prozessinterview', role: 'Rolle', date: 'Datum', lang: 'Sprache', summary: 'Was die Person beschrieben hat', open: 'Nicht abgedeckt', handoffs: 'Übergibt an (noch nicht befragt)', log: 'Gesprächsprotokoll', you: 'Interviewer', person: 'Antwort', voice: 'gesprochen', typed: 'getippt', skipped: '(übersprungen)', none: 'Nichts festgehalten.', stepsH: 'Prozessschritte', diagram: 'Diagramm', cols: ['#', 'Schritt', 'Rolle', 'System', 'Regel', 'Ausnahme', 'Erledigt wenn', 'Protokoll'], consent: 'Einwilligung und Umgang mit den Daten', agreed: 'Person hat zugestimmt am', keep: 'Protokoll aufbewahrt', redacted: 'Personenbezogene Angaben im gespeicherten Text entfernt (musterbasiert, keine Garantie)', notRedacted: 'Personenbezogene Angaben nicht entfernt', purged: 'Das Protokoll wurde gelöscht am', untilDeleted: 'bis zum manuellen Löschen', daysWord: 'Tage', ref: 'Zahlen in eckigen Klammern verweisen auf die Zeilen des Protokolls unten.', source: 'Quelle: ein Interview. Die Person beschreibt den Prozess, wie sie ihn erlebt; nichts wurde gegen die Systeme geprüft.', use: 'Verwendung: Eingabe für den Intent-Schritt des Workflow-Projekts und für die Prozessdokumentation.' },
 } as const;
 
 /**
@@ -342,29 +500,55 @@ const L = {
 export function interviewMarkdown(iv: InterviewState, now = Date.now()): string {
   const t = L[iv.lang];
   const day = new Date(iv.startedAt || now).toISOString().slice(0, 10);
+  const date = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  const ref = (turn?: number) => (turn !== undefined && !iv.purgedAt && iv.transcript[turn] ? ` [${turn + 1}]` : '');
+  const cell = (v: string) => (v || '-').replace(/\|/g, '/').replace(/\s*\n\s*/g, ' ');
   const out: string[] = [`# ${t.title}: ${iv.role || '-'}`, '', `- ${t.role}: ${iv.role || '-'}`, `- ${t.date}: ${day}`, `- ${t.lang}: ${iv.lang === 'de' ? 'Deutsch' : 'English'}`, '', `## ${t.summary}`, ''];
   let any = false;
   for (const d of SLOTS) {
     const items = iv.entries.filter((e) => e.slot === d.key);
     if (!items.length) continue;
     any = true;
-    out.push(`### ${d.label}`, '', ...items.map((e) => `- ${e.text}${e.confidence < 0.5 ? (iv.lang === 'de' ? ' (unsicher)' : ' (unsure)') : ''}`), '');
+    out.push(`### ${d.label}`, '', ...items.map((e) => `- ${e.text}${e.confidence < 0.5 ? (iv.lang === 'de' ? ' (unsicher)' : ' (unsure)') : ''}${ref(e.turn)}`), '');
   }
   if (!any) out.push(t.none, '');
+  if (iv.steps.length) {
+    out.push(`## ${t.stepsH}`, '', `| ${t.cols.join(' | ')} |`, `|${t.cols.map(() => '---').join('|')}|`,
+      ...iv.steps.map((st, i) => `| ${i + 1} | ${cell(st.text)} | ${cell(st.actor)} | ${cell(st.system)} | ${cell(st.decision)} | ${cell(st.exception)} | ${cell(st.evidence)} | ${st.turn !== undefined && !iv.purgedAt && iv.transcript[st.turn] ? `[${st.turn + 1}]` : '-'} |`), '',
+      `### ${t.diagram}`, '', '```mermaid', interviewMermaid(iv), '```', '');
+  }
   const open = SLOTS.filter((d) => fill(iv, d.key) < DONE_THRESHOLD);
   if (open.length) out.push(`**${t.open}:** ${open.map((d) => d.label).join(', ')}`, '');
   if (iv.handoffs.length) out.push(`**${t.handoffs}:** ${iv.handoffs.join(', ')}`, '');
-  out.push(`_${t.source}_`, `_${t.use}_`, '', `## ${t.log}`, '');
-  for (const turn of iv.transcript) {
-    const label = turn.who === 'interviewer' ? t.you : `${t.person}${turn.via ? ` (${turn.via === 'voice' ? t.voice : t.typed})` : ''}`;
-    out.push(`**${label}:** ${turn.text.replace(/\s*\n\s*/g, ' ')}`, '');
+  out.push(`_${t.source}_`, `_${t.use}_`, '', `## ${t.consent}`, '',
+    `- ${t.agreed}: ${date(iv.consentAt || iv.startedAt || now)}`,
+    `- ${t.keep}: ${iv.retainDays === 0 ? t.untilDeleted : `${iv.retainDays} ${t.daysWord}`}`,
+    `- ${iv.redact ? t.redacted : t.notRedacted}`, '');
+  if (iv.purgedAt) out.push(`**${t.purged} ${date(iv.purgedAt)}.**`, '');
+  else {
+    out.push(`## ${t.log}`, '', `_${t.ref}_`, '');
+    iv.transcript.forEach((turn, i) => {
+      const label = turn.who === 'interviewer' ? t.you : `${t.person}${turn.via ? ` (${turn.via === 'voice' ? t.voice : t.typed})` : ''}`;
+      out.push(`**[${i + 1}] ${label}:** ${turn.text.replace(/\s*\n\s*/g, ' ')}`, '');
+    });
   }
   return out.join('\n').trimEnd() + '\n';
 }
 
+/** Deletes the log (not the notes). Used by the "delete log" button and by the retention period. */
+export function purgeLog(iv: InterviewState, now = Date.now()): InterviewState {
+  if (iv.purgedAt) return iv;
+  return { ...iv, transcript: [], pending: iv.pending, purgedAt: now };
+}
+/** Applies the retention period: after it, the log is deleted automatically. */
+export function purgeExpired(iv: InterviewState, now = Date.now()): InterviewState {
+  return !iv.purgedAt && isExpired(iv.startedAt, iv.retainDays, now) ? purgeLog(iv, now) : iv;
+}
+
 export type IntentLists = { triggers: readonly string[]; systems: readonly string[]; guardrails: readonly string[] };
 
-export function intentPrompt(iv: InterviewState, kind: 'workflow' | 'agent', statedGoal: string, lists: IntentLists): string {
+/** `modelText` replaces the single interview's description, for example with the synthesis of several interviews. */
+export function intentPrompt(iv: InterviewState, kind: 'workflow' | 'agent', statedGoal: string, lists: IntentLists, modelText?: string): string {
   return [
     `A process interview was held to prepare an ${kind === 'workflow' ? 'n8n workflow' : 'agent'}. Fill in the intent form from it.`,
     '',
@@ -372,7 +556,7 @@ export function intentPrompt(iv: InterviewState, kind: 'workflow' | 'agent', sta
     statedGoal.trim() || '(not given)',
     '',
     '## Process model from the interview',
-    processSummary(iv),
+    modelText ?? processSummary(iv),
     '',
     '## Form fields',
     '- name: short name, at most 6 words',
@@ -443,17 +627,17 @@ export function mergeProposal(current: Intent, proposal: Partial<Intent>): Parti
 /* ---------------- store ---------------- */
 
 /** Cleans a stored interview state. Anything unreadable gives null (the interview can be started again). */
-export function sanitizeInterview(raw: any): InterviewState | null {
+export function sanitizeInterview(raw: any, now = Date.now()): InterviewState | null {
   if (!raw || typeof raw !== 'object') return null;
   const slot = (v: unknown): SlotKey | null => (SLOT_KEYS.includes(v as SlotKey) ? (v as SlotKey) : null);
-  const base = startInterview(cut(raw.role, 80), raw.lang === 'de' ? 'de' : 'en', Number(raw.budget), Number.isFinite(raw.startedAt) ? raw.startedAt : Date.now());
+  const base = startInterview(cut(raw.role, 80), raw.lang === 'de' ? 'de' : 'en', Number(raw.budget), Number.isFinite(raw.startedAt) ? raw.startedAt : Date.now(), { retainDays: Number.isFinite(raw.retainDays) ? raw.retainDays : DEFAULT_RETENTION_DAYS, redact: raw.redact !== false });
   const entries: Entry[] = [];
   for (const e of Array.isArray(raw.entries) ? raw.entries.slice(0, 200) : []) {
     const k = slot(e?.slot);
     const t = cut(e?.text, 400);
     if (!k || !t) continue;
     const c = Number(e?.confidence);
-    entries.push({ id: Number.isInteger(e?.id) ? e.id : entries.length + 1, slot: k, text: t, confidence: Number.isFinite(c) ? Math.min(1, Math.max(0.1, c)) : 0.6 });
+    entries.push({ id: Number.isInteger(e?.id) ? e.id : entries.length + 1, slot: k, text: t, confidence: Number.isFinite(c) ? Math.min(1, Math.max(0.1, c)) : 0.6, ...(Number.isInteger(e?.turn) && e.turn >= 0 ? { turn: e.turn } : {}) });
   }
   const counts = (v: any): Partial<Record<SlotKey, number>> => {
     const o: Partial<Record<SlotKey, number>> = {};
@@ -461,11 +645,29 @@ export function sanitizeInterview(raw: any): InterviewState | null {
     return o;
   };
   const action = (a: any): Action | null => {
-    const kinds: ActionKind[] = ['question', 'followup', 'mirror', 'closing', 'done'];
+    const kinds: ActionKind[] = ['question', 'followup', 'mirror', 'playback', 'probe', 'agenda', 'closing', 'done'];
     return a && kinds.includes(a.kind) && cut(a.text, 800) ? { kind: a.kind, text: cut(a.text, 800), slot: slot(a.slot) } : null;
   };
-  return {
-    ...base, entries, nextId: Math.max(Number.isInteger(raw.nextId) ? raw.nextId : 1, ...entries.map((e) => e.id + 1)),
+  const steps: Step[] = [];
+  for (const x of Array.isArray(raw.steps) ? raw.steps.slice(0, 60) : []) {
+    const text = cut(x?.text, 300);
+    if (!text) continue;
+    const c = Number(x?.confidence);
+    steps.push({
+      id: Number.isInteger(x?.id) ? x.id : steps.length + 1, text, actor: cut(x?.actor, 80), system: cut(x?.system, 80), input: cut(x?.input, 200), output: cut(x?.output, 200),
+      decision: cut(x?.decision, 300), exception: cut(x?.exception, 300), evidence: cut(x?.evidence, 200), confidence: Number.isFinite(c) ? Math.min(1, Math.max(0.1, c)) : 0.6,
+      ...(Number.isInteger(x?.turn) && x.turn >= 0 ? { turn: x.turn } : {}),
+    });
+  }
+  const result: InterviewState = {
+    ...base, entries, steps, nextStepId: Math.max(Number.isInteger(raw.nextStepId) ? raw.nextStepId : 1, ...steps.map((x) => x.id + 1)),
+    probed: (Array.isArray(raw.probed) ? raw.probed : []).filter((v: unknown) => typeof v === 'string' && /^\d+:(actor|system|evidence)$/.test(v)).slice(0, 20),
+    playbackAsked: raw.playbackAsked === true,
+    agenda: (Array.isArray(raw.agenda) ? raw.agenda : []).map((q: unknown) => cut(q, 300)).filter(Boolean).slice(0, 6),
+    prior: cut(raw.prior, 1500),
+    consentAt: Number.isFinite(raw.consentAt) ? raw.consentAt : base.startedAt,
+    purgedAt: Number.isFinite(raw.purgedAt) ? raw.purgedAt : 0,
+    nextId: Math.max(Number.isInteger(raw.nextId) ? raw.nextId : 1, ...entries.map((e) => e.id + 1)),
     asked: counts(raw.asked), depth: counts(raw.depth),
     followups: (Array.isArray(raw.followups) ? raw.followups.slice(0, 5) : []).flatMap((f: any) => { const k = slot(f?.slot); const t = cut(f?.text, 300); return k && t ? [{ slot: k, text: t }] : []; }),
     mainQuestions: Math.min(Math.max(Number.isInteger(raw.mainQuestions) ? raw.mainQuestions : 0, 0), 50),
@@ -479,4 +681,5 @@ export function sanitizeInterview(raw: any): InterviewState | null {
       return [{ who: x.who as Turn['who'], text, ...(x.via === 'voice' || x.via === 'text' ? { via: x.via as 'voice' | 'text' } : {}), at: Number.isFinite(x.at) ? x.at : 0 }];
     }),
   };
+  return purgeExpired(result, now);
 }
