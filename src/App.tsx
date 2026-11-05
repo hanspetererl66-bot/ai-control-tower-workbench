@@ -1225,7 +1225,6 @@ export default function App() {
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
-      onManageConnectors={() => { setManageFocus('connectors'); setView('manage'); }}
       starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}

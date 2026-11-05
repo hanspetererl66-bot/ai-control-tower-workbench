@@ -4837,6 +4837,17 @@ textarea.studio-field { min-height: 120px; }
 .sh .rg-timeline button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%; text-align: left; padding: 7px 10px; background: var(--bg); }
 .sh .rg-rev-on button { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
 .rg-timeline small { color: var(--muted); font-size: 11.5px; }
+.rg-policy { display: flex; flex-direction: column; gap: 6px; }
+.rg-policy .rg-h { margin: 0; }
+.rg-pol-line { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
+.rg-policy .rg-chip { padding: 1px 10px; }
+.rg-pol-head { margin: 2px 0 0; font-size: 13px; font-weight: 600; }
+.rg-pol-wider { color: var(--lv-yellow); }
+.rg-pol-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.rg-pol-list li { padding: 4px 8px; border: 1px solid var(--line); border-left-width: 3px; border-radius: 6px; background: var(--bg); }
+.rg-pol-list .rg-pol-wider { border-left-color: var(--lv-yellow); color: inherit; }
+.rg-pol-list .rg-pol-narrower { border-left-color: var(--lv-green); }
+.rg-pol-list .rg-pol-neutral { border-left-color: var(--line); }
 .rg-diffs { display: flex; flex-direction: column; gap: 6px; }
 .rg-diffs summary { cursor: pointer; font-size: 13px; }
 .rg-st { font-size: 11.5px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
@@ -5036,3 +5047,7 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .list-item-act-armed { background: rgb(220 38 38 / 16%); color: #b91c1c; }
 :root[data-theme="dark"] .list-item-act-armed { color: #f87171; }
 @media (prefers-reduced-motion: reduce) { .list-item-actions { transition: none; } }
+
+/* The top bar drags the window; controls inside it must opt out or Electron swallows their mouse events
+   (the text-size slider, the search field and the filters of a Space did not react). */
+.topbar input, .topbar select, .topbar label, .topbar button, .topbar .space-tools, .topbar .space-zoom { -webkit-app-region: no-drag; }

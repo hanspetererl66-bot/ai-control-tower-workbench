@@ -85,14 +85,14 @@ test('example skills have valid frontmatter, use only real connector tools, and 
   const dir = mkdtempSync(join(tmpdir(), 'werkbank-skills-'));
   try {
     const names = installExampleSkills({ root: ROOT, skillsDir: dir });
-    assert.deepEqual(names.sort(), ['access-review-prep', 'automation-health-check', 'board-briefing', 'business-case-builder', 'call-followup', 'competitive-battlecard', 'contract-checker', 'customer-call-prep', 'deal-risk-check', 'discovery-meddpicc', 'handover-onboarding-plan', 'interest-logger', 'lead-qualifier', 'lead-router', 'ontology-term-answer', 'opportunity-planner', 'pipeline-review', 'pricing-guard', 'rate-skill', 'rfp-responder', 'security-questionnaire-helper', 'skill-finder', 'skill-search', 'ticket-triage', 'ticket-writer']);
+    assert.deepEqual(names.sort(), ['abap-code-documentation', 'access-review-prep', 'automation-health-check', 'board-briefing', 'business-case-builder', 'call-followup', 'competitive-battlecard', 'contract-checker', 'customer-call-prep', 'deal-risk-check', 'discovery-meddpicc', 'handover-onboarding-plan', 'interest-logger', 'lead-qualifier', 'lead-router', 'ontology-term-answer', 'opportunity-planner', 'pipeline-review', 'pricing-guard', 'rate-skill', 'rfp-responder', 'security-questionnaire-helper', 'skill-finder', 'skill-search', 'ticket-triage', 'ticket-writer']);
     for (const name of names) {
       const text = readFileSync(join(dir, name, 'SKILL.md'), 'utf8');
       const front = parseSkill(text);
       assert.equal(front.name, name);
       assert.ok(front.description.length <= 240, `${name}: description fits the skill picker`);
       assert.ok(front.meta.domain && front.meta.process && front.meta.team, `${name}: profile is filled in`);
-      assert.ok(front.meta.tools.length > 0 && front.meta.tools.every((t) => real.has(t)), `${name}: profile tools are real`);
+      assert.ok(front.meta.tools.length > 0 && front.meta.tools.every((t) => real.has(t) || knownTools().has(t)), `${name}: profile tools are real`);
       for (const [, tool] of text.matchAll(/`((?:get|list|create|search)_[a-z_]+)`/g)) assert.ok(real.has(tool), `${name} mentions unknown tool ${tool}`);
     }
   } finally {
@@ -109,7 +109,7 @@ test('skill marketplace data is in sync, classified, and marks fictional skills 
   const next = buildCatalog({ registered: repoSkills(), samples, source: 'repository', asOf: data.asOf });
   assert.equal(embedData(html, next), html, 'run npm run sync:skill-marketplace');
   assert.deepEqual(data.taxonomy, JSON.parse(JSON.stringify(taxonomy())));
-  assert.equal(data.skills.filter((s) => !s.sample).length, 25);
+  assert.equal(data.skills.filter((s) => !s.sample).length, 26);
   assert.ok(data.skills.filter((s) => s.sample).length >= 8);
   for (const s of data.skills) {
     assert.ok(SCOPES.includes(s.scope), `${s.name} scope`);

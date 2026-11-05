@@ -702,6 +702,16 @@
           "version": 1
         }
       ]
+    },
+    "abap-code-documentation": {
+      "distribution": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "comments": []
     }
   }
 }
