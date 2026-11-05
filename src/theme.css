@@ -4850,6 +4850,8 @@ textarea.studio-field { min-height: 120px; }
 .sh-source-offline { border-color: var(--lv-red, var(--line)); }
 .sh-source button { flex: none; }
 
+/* Sources: optional note on Jira at hand-over */
+.sx-note-opt { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; color: var(--ink); }
 /* ---- Ontology Manager: catalog (Develop). Tokens only; the status colours and the black hero are tokens of this view. ---- */
 .om { --om-ok: #1b7f3b; --om-warn: #9a5a00; --om-bad: #b3261e; --om-hero: #000000; --om-hero-ink: #ffffff; --om-hero-soft: #cfcddb; --om-hero-hl: #dcafff; grid-column: 2 / -1; overflow: auto; display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 0 32px 40px; color: var(--ink); }
 :root[data-theme="dark"] .om { --om-ok: #5fd08a; --om-warn: #f2b24a; --om-bad: #ff8a80; }

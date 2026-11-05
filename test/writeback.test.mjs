@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { commentFor, isDone, labelsFor, loadLog, markerOf, notedAt, parseWriteback, record, saveLog, summaryOf, ticketsOf, writebackPrompt } from '../src/writeback.ts';
+import { handoverComment, handoverLabels, handoverMarker, handoverTickets, commentFor, isDone, labelsFor, loadLog, markerOf, notedAt, parseWriteback, record, saveLog, summaryOf, ticketsOf, writebackPrompt } from '../src/writeback.ts';
 
 const ref = (source, key) => ({ source, key, title: `${key} t`, url: '' });
 const item = { id: 'abcdef12-0000-4000-8000-000000000001', type: 'agent', name: 'Renewal watcher', rev: 3, stage: 'prd', approved: ['prd'], refs: [ref('jira', 'AB-1'), ref('slack', '#req 1700'), ref('jira', 'BC-22'), ref('jira', 'bad key')] };
@@ -48,4 +48,28 @@ test('the log remembers what was written per entry and ticket, survives storage 
   saveLog(store, { ...log, 'bad': { at: 1 } });
   assert.deepEqual(loadLog(store), log);
   assert.deepEqual(loadLog({ getItem: () => 'not json' }), {});
+});
+
+const H = (over = {}) => ({ base: 'agent', name: 'Renewal watcher', summary: 'Remind owners every Monday.', refs: [ref('jira', 'AB-1'), ref('slack', '#req 1700'), ref('jira', 'BC-22')], ...over });
+
+test('hand-over: tickets, labels and a stable marker that changes with what is handed over', () => {
+  assert.deepEqual(handoverTickets(H()).map((r) => r.key), ['AB-1', 'BC-22']);
+  assert.deepEqual(handoverTickets(H({ refs: [ref('slack', '#x 1')] })), []);
+  assert.deepEqual(handoverLabels(H()), ['werkbank', 'werkbank-agent']);
+  assert.deepEqual(handoverLabels(H({ base: 'feature' })), ['werkbank', 'werkbank-feature']);
+  const m = handoverMarker(H());
+  assert.match(m, /^\[Werkbank [0-9a-z]{7}\]$/);
+  assert.equal(handoverMarker(H({ refs: [ref('jira', 'BC-22'), ref('jira', 'AB-1')] })), m, 'order of the tickets does not matter');
+  assert.notEqual(handoverMarker(H({ name: 'Other' })), m); assert.notEqual(handoverMarker(H({ base: 'workflow' })), m);
+});
+
+test('hand-over comment: marker first, type, name, goal and the extended item; no e-mail address', () => {
+  const c = handoverComment(H({ extends: { id: 'x', name: 'Contract upload' } }));
+  assert.ok(c.startsWith(handoverMarker(H({ extends: { id: 'x', name: 'Contract upload' } }))));
+  assert.match(c, /as an agent: "Renewal watcher"/); assert.match(c, /extends "Contract upload"/); assert.match(c, /Goal: Remind owners every Monday\./);
+  assert.doesNotMatch(c, /@/); assert.ok(c.length < 1800);
+  assert.match(handoverComment(H({ base: 'feature', summary: '' })), /as a feature/);
+  // the prompt for the agent carries it verbatim and the skip rule names the marker part
+  const p = writebackPrompt(['AB-1'], handoverLabels(H()), c);
+  assert.ok(p.includes(`<<<COMMENT\n${c}\nCOMMENT>>>`));
 });
