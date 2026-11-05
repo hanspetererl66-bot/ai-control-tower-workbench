@@ -86,11 +86,21 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
                   <span title="Succeeded runs of the kept history">{job.runs.length ? `${job.runs.filter((r) => r.status === 'ok').length}/${job.runs.length}` : '–'}</span>
                   <span className={`sched-state sched-state-${runningId === job.id ? 'running' : state}`}>{runningId === job.id ? 'Running' : { scheduled: 'Active', paused: 'Paused', done: 'Done', missed: 'Missed' }[state]}</span>
                   <span className="sched-actions">
-                    <button onClick={() => onRunNow(job)} disabled={(!canRun && !job.example) || Boolean(runningId)} title={canRun || job.example ? 'Run now' : 'The agent is busy or not connected'}>Run now</button>
+                    <button className="sched-icon" onClick={() => onRunNow(job)} disabled={(!canRun && !job.example) || Boolean(runningId)} title={canRun || job.example ? 'Run now' : 'The agent is busy or not connected'} aria-label={`Run now ${job.name}`}>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4a.5.5 0 0 0 .77.42l8-5.2a.5.5 0 0 0 0-.84l-8-5.2a.5.5 0 0 0-.77.42z" /></svg>
+                    </button>
                     {job.cadence.kind !== 'once' || !job.lastRun ? (
-                      <button onClick={() => patch(job.id, { enabled: !job.enabled })}>{job.enabled ? 'Pause' : 'Resume'}</button>
+                      <button className="sched-icon" onClick={() => patch(job.id, { enabled: !job.enabled })} title={job.enabled ? 'Pause' : 'Resume'} aria-label={`${job.enabled ? 'Pause' : 'Resume'} ${job.name}`}>
+                        {job.enabled ? (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="1" /><rect x="9.5" y="2.5" width="3" height="11" rx="1" /></svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.7-4M13 2.5v3h-3" /></svg>
+                        )}
+                      </button>
                     ) : null}
-                    <button className="sched-del" onClick={() => { if (window.confirm(`Delete job "${job.name}"?`)) onJobs(jobs.filter((j) => j.id !== job.id)); }} aria-label={`Delete ${job.name}`}>Delete</button>
+                    <button className="sched-icon sched-del" onClick={() => { if (window.confirm(`Delete job "${job.name}"?`)) onJobs(jobs.filter((j) => j.id !== job.id)); }} title="Delete" aria-label={`Delete ${job.name}`}>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4M6.8 6.8v4.2M9.2 6.8v4.2" /></svg>
+                    </button>
                   </span>
                 </div>
                 {open === job.id && (

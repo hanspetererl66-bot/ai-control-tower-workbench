@@ -4592,6 +4592,7 @@ textarea.studio-field { min-height: 120px; }
 .sched-state-missed { color: var(--lv-red); }
 .sched-state-paused, .sched-state-done { color: var(--muted); }
 .sched-actions { display: flex; gap: 6px; justify-content: flex-end; overflow: visible !important; }
+.sched button.sched-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; }
 .sched .sched-del:hover:not(:disabled) { border-color: var(--lv-red); color: var(--lv-red); }
 .sched-detail { padding: 4px 14px 16px 36px; font-size: 13px; }
 .sched-detail h3 { margin: 10px 0 6px; font-size: 13px; }
