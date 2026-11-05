@@ -27,6 +27,7 @@ export default function ConversationList({
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [menu, setMenu] = useState<ContextMenu | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -100,15 +101,9 @@ export default function ConversationList({
     openMenu(conversation, event.clientX, event.clientY);
   }
 
-  function showButtonMenu(event: MouseEvent<HTMLButtonElement>, conversation: ConversationRecord) {
-    event.preventDefault();
-    event.stopPropagation();
-    const rect = event.currentTarget.getBoundingClientRect();
-    openMenu(conversation, rect.right - 2, rect.bottom + 3);
-  }
-
   function conversationButton(conversation: ConversationRecord) {
     const selected = conversation.id === selectedId;
+    const confirming = confirmId === conversation.id;
     return (
       <div
         key={conversation.id}
@@ -123,16 +118,38 @@ export default function ConversationList({
         >
           <span>{conversation.title}</span>
         </button>
-        <button
-          className="list-item-more"
-          type="button"
-          disabled={disabled}
-          title={conversation.archived ? 'Conversation options' : 'Archive conversation'}
-          aria-label={`Options for ${conversation.title}`}
-          onClick={(event) => showButtonMenu(event, conversation)}
-        >
-          ···
-        </button>
+        <div className="list-item-actions">
+          <button
+            className="list-item-act"
+            type="button"
+            disabled={disabled}
+            title={conversation.archived ? 'Restore conversation' : 'Archive conversation'}
+            aria-label={`${conversation.archived ? 'Restore' : 'Archive'} ${conversation.title}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (conversation.archived) onRestore(conversation.id);
+              else onArchive(conversation.id);
+            }}
+          >
+            {conversation.archived ? <RestoreIcon /> : <ArchiveIcon />}
+          </button>
+          <button
+            className={`list-item-act list-item-act-danger ${confirming ? 'list-item-act-armed' : ''}`}
+            type="button"
+            disabled={disabled}
+            title={confirming ? 'Click again to delete for good' : 'Delete conversation'}
+            aria-label={confirming ? `Confirm delete ${conversation.title}` : `Delete ${conversation.title}`}
+            onBlur={() => setConfirmId((id) => (id === conversation.id ? null : id))}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (!confirming) { setConfirmId(conversation.id); return; }
+              setConfirmId(null);
+              onDelete(conversation.id);
+            }}
+          >
+            <TrashIcon />
+          </button>
+        </div>
       </div>
     );
   }
@@ -311,6 +328,31 @@ function ChevronIcon({ right = false }: { right?: boolean }) {
       style={right ? undefined : { transform: 'rotate(90deg)' }}
     >
       <path d="m6 3 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ArchiveIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1.8" y="2.5" width="12.4" height="3.2" rx="1" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3 5.7v6.3a1.3 1.3 0 0 0 1.3 1.3h7.4A1.3 1.3 0 0 0 13 12V5.7M6.3 8.6h3.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RestoreIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
