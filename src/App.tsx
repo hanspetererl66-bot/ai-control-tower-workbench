@@ -1451,9 +1451,9 @@ export default function App() {
           onOpenRegistry={() => setView('registry')}
         />
       ) : view === 'registry' ? (
-        <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} />
+        <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} onBack={() => setView('admin')} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} />
       ) : view === 'ontology' ? (
         <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
       ) : view === 'skillhealth' ? (

@@ -16,7 +16,7 @@ const msg = (e: unknown) => String((e as any)?.message ?? e).slice(0, 240);
  */
 type GenerateProps = { generate?: (prompt: string, title: string, session?: string) => Promise<string>; onStop?: () => void; ready?: boolean };
 
-export default function RegistryView({ generate, onStop, ready = false }: GenerateProps) {
+export default function RegistryView({ generate, onStop, ready = false, onBack }: GenerateProps & { onBack?: () => void }) {
   const api = useMemo(() => hostApi(), []);
   const [items, setItems] = useState<RItem[] | null>(null);
   const [error, setError] = useState('');
@@ -37,6 +37,7 @@ export default function RegistryView({ generate, onStop, ready = false }: Genera
     <main className="sh rg">
       <header className="sh-head">
         <div>
+          {onBack && <button className="ghost-btn" onClick={onBack} aria-label="Back to Admin">← Admin</button>}
           <h1>Registry</h1>
           <p>{items ? `${items.filter((i) => !i.archived).length} items · agents, workflows and features with their history` : 'Agents, workflows and features with their history'}</p>
         </div>
