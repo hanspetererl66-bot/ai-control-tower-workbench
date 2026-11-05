@@ -40,6 +40,8 @@ Gezählt wird nur, was in der Ontologie und ihren Instanzen steht (die beiden Da
 
 ## Demo-Dokument
 
+`examples/procurement-handbook.md` ist ein zweites, erfundenes Handbuch (Lieferanten, Bestellungen, Wareneingang, Terminverfolgung) zur zweiten Beispiel-Ontologie `werkbank_scm` (wird beim ersten Start zusätzlich im Katalog angelegt, nie überschrieben); Demo: `propose_ontology_from_documents` im Modus `extend` auf `werkbank_scm` mit diesem Dokument, dann in der Werkbank unter Admin → Ontologies → Proposals prüfen und bestätigen.
+
 `examples/finance-closing-handbook.md` ist ein erfundenes Closing-Handbuch (Rückstellungen, GR/IR, Intercompany-Differenzen, offene Bestellungen, DSO mit DE10/FR10/UK10). Es gehört nicht zum Bündel. Für die Demo den **Documents folder** auf `examples/` zeigen lassen und `propose_ontology_from_documents` im Modus `extend` auf `werkbank_fin` anwenden. Danach `impact_of_term` auf einen bestehenden Begriff.
 
 ## Beispieldaten

@@ -1,41 +1,40 @@
 import { useMemo, useState } from 'react';
 import {
-  HEALTH_LABEL, companyCodesIn, filterTerms, healthOf, impactOf, kpis, ownerLabel, propLabel, usedLabel,
-  type Ontology, type OntologySource, type Term, type TermFilter,
+  HEALTH_LABEL, filterTerms, healthOf, kpis, ownerLabel, qualityFindings, setMeta, usedLabel,
+  type Governance, type Ontology, type OntologyData, type TermFilter,
 } from '../ontology-manager';
+import OntologyDetails from './OntologyDetails';
+import OntologyHistory from './OntologyHistory';
+import OntologyProposals from './OntologyProposals';
+import OntologyQuality from './OntologyQuality';
+import OntologyUse from './OntologyUse';
+
+type Generate = (prompt: string, title: string, session?: string) => Promise<string>;
+type Tab = 'catalog' | 'proposals' | 'quality' | 'use' | 'history';
 
 const FILTERS: Array<{ id: TermFilter; label: string }> = [
   { id: 'all', label: 'All' }, { id: 'metrics', label: 'Metrics' }, { id: 'classes', label: 'Classes' }, { id: 'attention', label: 'Needs attention' },
 ];
 
 /**
- * Ontology Manager, catalog (design proposal 1): the ontologies, every term with its owner, use and health, and the
- * details of the selected term including what depends on it. Read-only. It shows the catalog of the Ontology Manager
- * connector; when the catalog cannot be read it shows the bundled Finance Pre-Close sample and says why.
+ * Ontology Manager: catalog, proposals from documents (review and confirm), quality rules, who uses which term (and
+ * the view each agent gets), and the history of each ontology. It shows the catalog of the Ontology Manager connector;
+ * when that cannot be read it shows the bundled Finance Pre-Close sample and says why. Owners, declared users, views
+ * and plans are saved in `governance.json` next to the catalog; the catalog itself is only changed by the connector.
  */
-export default function OntologyManagerView({ ontologies, source, onReload, onBack }: {
-  ontologies: Ontology[]; source: OntologySource; onReload: () => void; onBack: () => void;
+export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills }: {
+  data: OntologyData; onReload: () => void; onBack: () => void; onGovernance: (g: Governance) => void; saveNote: string;
+  generate?: Generate; onStop?: () => void; ready: boolean; knownSkills: string[];
 }) {
-  const [slug, setSlug] = useState(ontologies[0]?.slug ?? '');
-  const [filter, setFilter] = useState<TermFilter>('all');
-  const [query, setQuery] = useState('');
-  const [picked, setPicked] = useState('DSO');
-  const onto = ontologies.find((o) => o.slug === slug) ?? ontologies[0];
-  const k = useMemo(() => (onto ? kpis(onto) : null), [onto]);
-  const rows = useMemo(() => (onto ? filterTerms(onto, filter, query) : []), [onto, filter, query]);
-  if (source.kind === 'loading' && !onto) return <main className="om"><p className="om-note" role="status">Reading the ontology catalog…</p></main>;
-  if (!onto || !k) {
-    return (
-      <main className="om">
-        <p className="om-note">No ontology in the catalog yet. Ask the Ontology Manager in the chat to register one or to propose one from a document.</p>
-        <div className="om-source"><button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin</button></div>
-      </main>
-    );
-  }
-  const selected = onto.terms.find((t) => t.id === picked) ?? rows[0] ?? onto.terms[0];
-  const counts: Record<TermFilter, number> = {
-    all: onto.terms.length, metrics: k.metrics, classes: k.classes, attention: k.needAttention,
-  };
+  const { ontologies, source, proposals, history, governance } = data;
+  const [tab, setTab] = useState<Tab>('catalog');
+  const [focus, setFocus] = useState<{ slug: string; term: string } | null>(null);
+  const toReview = proposals.filter((p) => p.status === 'proposed').length;
+  const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
+  const TABS: Array<{ id: Tab; label: string; n?: number }> = [
+    { id: 'catalog', label: 'Catalog' }, { id: 'proposals', label: 'Proposals', n: toReview }, { id: 'quality', label: 'Quality', n: findings },
+    { id: 'use', label: 'Use' }, { id: 'history', label: 'History' },
+  ];
 
   return (
     <main className="om">
@@ -46,26 +45,65 @@ export default function OntologyManagerView({ ontologies, source, onReload, onBa
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
           <p className="om-lede">The shared vocabulary of your agents in one place: owned, reviewed and traceable to the document it came from.</p>
         </div>
-        <label className="om-search">
-          <span className="om-sr">Search terms</span>
-          <input type="search" value={query} placeholder="Search terms, definitions, owners" onChange={(e) => setQuery(e.target.value)} />
-        </label>
       </header>
 
       <div className="om-source">
-        {source.kind === 'example' && <p className="om-note" role="note">Example data: the bundled Finance Pre-Close sample. {source.reason} Nothing here can be changed.</p>}
+        {source.kind === 'example' && <p className="om-note" role="note">Example data: the bundled Finance Pre-Close sample. {source.reason} Changes you make here stay on this screen and are not saved.</p>}
         {source.kind === 'loading' && <p className="om-note" role="status">Reading the ontology catalog…</p>}
         {source.kind === 'catalog' && (
           <p className="om-note" role="note">
-            Read from your ontology catalog{source.folder ? ` (${source.folder})` : ''}. Read-only.
+            Read from your ontology catalog{source.folder ? ` (${source.folder})` : ''}. The catalog is changed only by the connector, after you confirm a proposal.
             {source.instances === 'bundled' && ' Metrics, checks and links come from the bundled Finance Pre-Close instances.'}
             {source.instances === 'none' && ' No instances file was found, so metrics and links are not shown.'}
             {source.warnings.length > 0 && ` Skipped: ${source.warnings.join('; ')}.`}
           </p>
         )}
+        {saveNote && <span className="om-chip" role="status">{saveNote}</span>}
         <button className="om-filter" onClick={onReload} disabled={source.kind === 'loading'}>Reload</button>
       </div>
 
+      <nav className="om-tabs" aria-label="Ontology Manager sections">
+        {TABS.map((t) => (
+          <button key={t.id} className={`om-tab ${tab === t.id ? 'om-tab-on' : ''}`} aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>
+            {t.label}{t.n ? <span className="om-badge">{t.n}</span> : null}
+          </button>
+        ))}
+      </nav>
+
+      {tab === 'catalog' && <Catalog ontologies={ontologies} gov={governance} onGovernance={onGovernance} focus={focus} onReload={onReload} onBack={onBack} loading={source.kind === 'loading'} />}
+      {tab === 'proposals' && <OntologyProposals proposals={proposals} ontologies={ontologies} generate={generate} onStop={onStop} ready={ready} onReload={onReload} />}
+      {tab === 'quality' && <OntologyQuality ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
+      {tab === 'use' && <OntologyUse ontologies={ontologies} gov={governance} onGovernance={onGovernance} knownSkills={knownSkills} generate={generate} ready={ready} />}
+      {tab === 'history' && <OntologyHistory ontologies={ontologies} history={history} />}
+    </main>
+  );
+}
+
+function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loading }: {
+  ontologies: Ontology[]; gov: Governance; onGovernance: (g: Governance) => void; focus: { slug: string; term: string } | null;
+  onReload: () => void; onBack: () => void; loading: boolean;
+}) {
+  const [slug, setSlug] = useState(focus?.slug ?? ontologies[0]?.slug ?? '');
+  const [filter, setFilter] = useState<TermFilter>('all');
+  const [query, setQuery] = useState('');
+  const [picked, setPicked] = useState(focus?.term ?? 'DSO');
+  const onto = ontologies.find((o) => o.slug === slug) ?? ontologies[0];
+  const k = useMemo(() => (onto ? kpis(onto) : null), [onto]);
+  const rows = useMemo(() => (onto ? filterTerms(onto, filter, query) : []), [onto, filter, query]);
+  if (loading && !onto) return <p className="om-note" role="status">Reading the ontology catalog…</p>;
+  if (!onto || !k) {
+    return (
+      <div className="om-source">
+        <p className="om-note">No ontology in the catalog yet. Create one from a document in the tab Proposals.</p>
+        <button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin</button>
+      </div>
+    );
+  }
+  const selected = onto.terms.find((t) => t.id === picked) ?? rows[0] ?? onto.terms[0];
+  const counts: Record<TermFilter, number> = { all: onto.terms.length, metrics: k.metrics, classes: k.classes, attention: k.needAttention };
+
+  return (
+    <>
       <section className="om-kpis" aria-label="Summary">
         <div className="om-kpi"><span>Classes</span><b>{k.classes}</b></div>
         <div className="om-kpi"><span>Properties</span><b>{k.properties}</b></div>
@@ -88,17 +126,21 @@ export default function OntologyManagerView({ ontologies, source, onReload, onBa
                 onClick={() => { setSlug(o.slug); setFilter('all'); setQuery(''); setPicked(o.terms[0]?.id ?? ''); }}>
                 <span className="om-ont-top"><b>{o.title}</b><span className={`om-chip ${o.status === 'published' ? 'om-ok' : 'om-warn'}`}>{o.status === 'published' ? 'Published' : 'Draft'}</span></span>
                 <span className="om-sub">{o.slug} · {ok.classes} classes · {o.properties} properties</span>
-                <span className="om-sub">Owner: {o.owner || 'not assigned'}</span>
+                <span className="om-sub">Owner: {o.owner || 'not assigned'}{o.domain ? ` · ${o.domain}` : ''}</span>
                 <i className="om-meter"><i style={{ width: `${Math.round(ok.coverage * 100)}%` }} /></i>
               </button>
             );
           })}
-          <p className="om-note-small">Each ontology gets an owner and a domain. An agent receives a view composed from the ontologies it needs.</p>
+          <OwnerForm key={onto.slug} onto={onto} gov={gov} onGovernance={onGovernance} />
         </aside>
 
         <section className="om-table" aria-label="Terms">
           <div className="om-table-head">
             <h2>Terms in {onto.slug}</h2>
+            <label className="om-search om-search-inline">
+              <span className="om-sr">Search terms</span>
+              <input type="search" value={query} placeholder="Search terms, definitions, owners" onChange={(e) => setQuery(e.target.value)} />
+            </label>
             <div className="om-filters" role="group" aria-label="Filter terms">
               {FILTERS.map((f) => (
                 <button key={f.id} className={`om-filter ${filter === f.id ? 'om-filter-on' : ''} ${f.id === 'attention' ? 'om-filter-warn' : ''}`}
@@ -121,69 +163,25 @@ export default function OntologyManagerView({ ontologies, source, onReload, onBa
           <p className="om-foot">Showing {rows.length} of {onto.terms.length} terms</p>
         </section>
 
-        {selected && <Details key={selected.id} onto={onto} term={selected} />}
+        {selected && <OntologyDetails key={`${onto.slug}:${selected.id}`} onto={onto} term={selected} gov={gov} onGovernance={onGovernance} />}
       </div>
-    </main>
+    </>
   );
 }
 
-function Details({ onto, term }: { onto: Ontology; term: Term }) {
-  const impact = useMemo(() => impactOf(onto, term.id), [onto, term.id]);
-  const codes = useMemo(() => companyCodesIn(onto, impact), [onto, impact]);
-  const health = healthOf(term);
+/** Owner, domain and approver of one ontology (saved in governance.json, not in the Turtle). */
+function OwnerForm({ onto, gov, onGovernance }: { onto: Ontology; gov: Governance; onGovernance: (g: Governance) => void }) {
+  const [owner, setOwner] = useState(onto.owner);
+  const [domain, setDomain] = useState(onto.domain);
+  const [approver, setApprover] = useState(onto.approver);
+  const changed = owner !== onto.owner || domain !== onto.domain || approver !== onto.approver;
   return (
-    <aside className="om-detail" aria-label="Term details">
-      <div className="om-detail-top">
-        <span className="om-dim">{term.kind === 'metric' ? 'Metric' : 'Class'}</span>
-        <span className={`om-chip ${health === 'complete' ? 'om-ok' : 'om-warn'}`}>{HEALTH_LABEL[health]}</span>
-      </div>
-      <h2>{term.label}</h2>
-      <p className="om-sub">{term.id}</p>
-
-      <h3>Definition</h3>
-      <p>{term.definition || <span className="om-dim">Missing. A steward can propose one from a document.</span>}</p>
-
-      {term.kind === 'metric' && (
-        <>
-          <h3>Formula</h3>
-          <code className="om-code">{term.formula || 'Not stated'}</code>
-          <h3>Certified by</h3>
-          <p>{ownerLabel(term)}</p>
-        </>
-      )}
-      {term.kind === 'class' && term.members.length > 0 && (
-        <>
-          <h3>{term.membersKind === 'subclasses' ? 'Subclasses' : 'Instances'}</h3>
-          <p>{term.members.join(', ')}</p>
-        </>
-      )}
-
-      {term.kind === 'metric' && (
-        <section className="om-impact" aria-label="What depends on this term">
-          <h3>What hangs on it</h3>
-          <div className="om-impact-nums">
-            <div><b>{impact.usedBy.length}</b><span>things depend on it</span></div>
-            <div><b>{codes.length}</b><span>company codes in scope</span></div>
-          </div>
-          <h4>Depends on</h4>
-          <ul className="om-list">
-            {impact.dependsOn.length === 0 && <li className="om-dim">Nothing</li>}
-            {impact.dependsOn.map((d) => <li key={d.node.id + d.prop}><b>{d.node.label}</b> <span className="om-dim">{d.node.type}, {propLabel(d.prop)}{d.node.note ? ` · ${d.node.note}` : ''}</span></li>)}
-          </ul>
-          <h4>Used by</h4>
-          <ul className="om-list">
-            {impact.usedBy.length === 0 && <li className="om-dim">Nothing is modelled as using it</li>}
-            {impact.usedBy.map((d) => (
-              <li key={d.node.id}><b>{d.node.label}</b> <span className="om-chip">Step {d.hop}</span>
-                <span className="om-dim"> {d.node.type}</span>
-                {d.links.filter((l) => l.prop === 'appliesTo').length > 0 && <span className="om-dim"> · applies to {d.links.filter((l) => l.prop === 'appliesTo').map((l) => l.to).join(', ')}</span>}
-              </li>
-            ))}
-          </ul>
-          {impact.ask.length > 0 && <p><span className="om-chip om-warn">Ask first</span> <b>{impact.ask.join(', ')}</b></p>}
-          <p className="om-note-small">Only what is modelled in this ontology counts. Agents, skills and reports that use the term but are not modelled here are not listed.</p>
-        </section>
-      )}
-    </aside>
+    <section className="om-new" aria-label="Owner and approver">
+      <h3>About {onto.slug}</h3>
+      <label className="om-field"><span>Owner</span><input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="Team or person" /></label>
+      <label className="om-field"><span>Domain</span><input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="Finance, Procurement …" /></label>
+      <label className="om-field"><span>Approves changes</span><input value={approver} onChange={(e) => setApprover(e.target.value)} placeholder="Who must agree" /></label>
+      <button className="om-filter om-filter-on" disabled={!changed} onClick={() => onGovernance(setMeta(gov, onto.slug, { owner, domain, approver }))}>Save</button>
+    </section>
   );
 }

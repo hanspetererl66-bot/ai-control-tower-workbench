@@ -2095,6 +2095,66 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "skill:ontology-term-answer",
+   "type": "skill",
+   "label": "ontology-term-answer",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "board-area",
+    "Team": "AI Programme Office",
+    "Rating": "4.4 of 5 (9 ratings)",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-05-20",
+    "Value last full month": "€238",
+    "Runs last full month": "14"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:search_classes",
+   "type": "tool",
+   "label": "search_classes",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:describe",
+   "type": "tool",
+   "label": "describe",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:impact_of_term",
+   "type": "tool",
+   "label": "impact_of_term",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:search_skills",
+   "type": "tool",
+   "label": "search_skills",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
+   "id": "tool:get_skill_info",
+   "type": "tool",
+   "label": "get_skill_info",
+   "meta": {
+    "System": "Skill Marketplace"
+   }
+  },
+  {
    "id": "skill:opportunity-planner",
    "type": "skill",
    "label": "opportunity-planner",
@@ -2191,14 +2251,6 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
-   "id": "tool:get_skill_info",
-   "type": "tool",
-   "label": "get_skill_info",
-   "meta": {
-    "System": "Skill Marketplace"
-   }
-  },
-  {
    "id": "skill:rfp-responder",
    "type": "skill",
    "label": "rfp-responder",
@@ -2256,14 +2308,6 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "view": {
     "space": "skill-marketplace",
     "tab": "catalog"
-   }
-  },
-  {
-   "id": "tool:search_skills",
-   "type": "tool",
-   "label": "search_skills",
-   "meta": {
-    "System": "Skill Marketplace"
    }
   },
   {
@@ -5174,6 +5218,86 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "SERVES"
   },
   {
+   "source": "skill:ontology-term-answer",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:search_classes",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_classes",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ontology-term-answer",
+   "target": "tool:search_classes",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:describe",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:describe",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ontology-term-answer",
+   "target": "tool:describe",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:impact_of_term",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:impact_of_term",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ontology-term-answer",
+   "target": "tool:impact_of_term",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:search_skills",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:search_skills",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ontology-term-answer",
+   "target": "tool:search_skills",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:get_skill_info",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:get_skill_info",
+   "target": "system:marketplace",
+   "type": "READS"
+  },
+  {
+   "source": "skill:ontology-term-answer",
+   "target": "tool:get_skill_info",
+   "type": "USES_TOOL"
+  },
+  {
    "source": "skill:opportunity-planner",
    "target": "system:marketplace",
    "type": "LISTED_IN"
@@ -5289,16 +5413,6 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "USES_TOOL"
   },
   {
-   "source": "tool:get_skill_info",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:get_skill_info",
-   "target": "system:marketplace",
-   "type": "READS"
-  },
-  {
    "source": "skill:rate-skill",
    "target": "tool:get_skill_info",
    "type": "USES_TOOL"
@@ -5347,16 +5461,6 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "source": "skill:skill-finder",
    "target": "system:marketplace",
    "type": "LISTED_IN"
-  },
-  {
-   "source": "tool:search_skills",
-   "target": "connector:ai-control-tower",
-   "type": "PROVIDED_BY"
-  },
-  {
-   "source": "tool:search_skills",
-   "target": "system:marketplace",
-   "type": "READS"
   },
   {
    "source": "skill:skill-finder",

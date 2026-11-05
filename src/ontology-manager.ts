@@ -47,6 +47,10 @@ export interface Ontology {
   status: 'published' | 'draft';
   /** Owner of the whole ontology; empty when not assigned. */
   owner: string;
+  /** Business domain, e.g. Finance; empty when not assigned. */
+  domain: string;
+  /** Who approves changes to it; empty when not assigned. */
+  approver: string;
   properties: number;
   openProposals: number;
   example: boolean;
@@ -210,20 +214,38 @@ export interface CatalogAnswer {
   warnings?: string[];
   folder?: string;
   instances?: 'bundled' | 'configured' | 'none';
+  proposals?: Proposal[];
+  history?: Record<string, VersionEntry[]>;
+  governance?: Governance;
+}
+
+/** Everything the Ontology screens show. */
+export interface OntologyData {
+  ontologies: Ontology[];
+  source: OntologySource;
+  proposals: Proposal[];
+  history: Record<string, VersionEntry[]>;
+  governance: Governance;
 }
 
 /** The real catalog when the app could read it, otherwise the bundled example with the reason, never a silent mix. */
-export function resolveCatalog(answer: CatalogAnswer | null | undefined): { ontologies: Ontology[]; source: OntologySource } {
+export function resolveCatalog(answer: CatalogAnswer | null | undefined): OntologyData {
   if (answer?.ok && Array.isArray(answer.ontologies)) {
+    const governance = answer.governance ?? emptyGovernance();
     return {
-      ontologies: answer.ontologies,
+      ontologies: applyGovernance(answer.ontologies, governance),
       source: { kind: 'catalog', folder: answer.folder ?? '', instances: answer.instances ?? 'none', warnings: answer.warnings ?? [] },
+      proposals: answer.proposals ?? [], history: answer.history ?? {}, governance,
     };
   }
   const reason = answer
     ? (answer.detail || 'The catalog could not be read.')
     : 'The catalog can only be read in the desktop app.';
-  return { ontologies: exampleOntologies(), source: { kind: 'example', reason } };
+  const governance = exampleGovernance();
+  return {
+    ontologies: applyGovernance(exampleOntologies(), governance), source: { kind: 'example', reason },
+    proposals: exampleProposals(), history: exampleHistory(), governance,
+  };
 }
 
 // ---------------------------------------------------------------- example data (bundled Finance Pre-Close sample)
@@ -239,7 +261,7 @@ export function exampleOntologies(): Ontology[] {
     slug: 'werkbank_fin',
     title: 'Werkbank Finance Pre-Close',
     status: 'published',
-    owner: '',
+    owner: '', domain: '', approver: '',
     properties: 13,
     openProposals: 1,
     example: true,
@@ -292,7 +314,7 @@ export function exampleOntologies(): Ontology[] {
     slug: 'procurement_docs',
     title: 'Procurement (from documents)',
     status: 'draft',
-    owner: '',
+    owner: '', domain: '', approver: '',
     properties: 2,
     openProposals: 0,
     example: true,
@@ -304,4 +326,237 @@ export function exampleOntologies(): Ontology[] {
     edges: [],
   };
   return [fin, proc];
+}
+
+
+// ---------------------------------------------------------------- governance: owners, bindings, views, plans
+
+export type ConsumerKind = 'agent' | 'skill' | 'report';
+export const CONSUMER_KINDS: ConsumerKind[] = ['agent', 'skill', 'report'];
+
+/** An agent, skill or report that declares it uses a term. Declared by a person; the app cannot see inside an agent. */
+export interface Binding { slug: string; term: string; kind: ConsumerKind; name: string }
+/** The ontologies an agent gets as its view (`compose` in the connector). */
+export interface AgentView { name: string; slugs: string[] }
+export type PlanStatus = 'draft' | 'asked' | 'approved' | 'rejected';
+export interface Plan { id: string; slug: string; term: string; change: string; status: PlanStatus; createdAt: string; asked: string[] }
+export interface OntologyMeta { owner: string; domain: string; approver: string }
+export interface Governance {
+  version: number;
+  ontologies: Record<string, OntologyMeta>;
+  bindings: Binding[];
+  views: AgentView[];
+  plans: Plan[];
+}
+
+export const emptyGovernance = (): Governance => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [] });
+
+/** Owner, domain and approver per ontology come from the governance file, not from the Turtle. */
+export function applyGovernance(ontologies: Ontology[], gov: Governance): Ontology[] {
+  return ontologies.map((o) => {
+    const m = gov.ontologies[o.slug];
+    return m ? { ...o, owner: m.owner, domain: m.domain, approver: m.approver } : o;
+  });
+}
+
+export function setMeta(gov: Governance, slug: string, meta: Partial<OntologyMeta>): Governance {
+  const cur = gov.ontologies[slug] ?? { owner: '', domain: '', approver: '' };
+  return { ...gov, ontologies: { ...gov.ontologies, [slug]: { ...cur, ...meta } } };
+}
+
+const sameBinding = (a: Binding, b: Binding) =>
+  a.slug === b.slug && a.term === b.term && a.kind === b.kind && a.name.toLowerCase() === b.name.toLowerCase();
+
+export function addBinding(gov: Governance, b: Binding): Governance {
+  const item = { ...b, name: b.name.trim() };
+  if (!item.name || gov.bindings.some((x) => sameBinding(x, item))) return gov;
+  return { ...gov, bindings: [...gov.bindings, item] };
+}
+export const removeBinding = (gov: Governance, b: Binding): Governance => ({ ...gov, bindings: gov.bindings.filter((x) => !sameBinding(x, b)) });
+
+export function upsertView(gov: Governance, v: AgentView): Governance {
+  const name = v.name.trim();
+  if (!name) return gov;
+  const rest = gov.views.filter((x) => x.name.toLowerCase() !== name.toLowerCase());
+  return { ...gov, views: [...rest, { name, slugs: [...new Set(v.slugs)] }] };
+}
+export const removeView = (gov: Governance, name: string): Governance => ({ ...gov, views: gov.views.filter((x) => x.name !== name) });
+
+/** Who declares a term: those bound to the term itself and, in `viaDependents`, those bound to something that depends on it. */
+export interface Consumer { kind: ConsumerKind; name: string; term: string; direct: boolean }
+export function consumersOf(gov: Governance, o: Ontology, termId: string, impact: Impact): Consumer[] {
+  const dependents = new Set(impact.usedBy.map((d) => d.node.id));
+  const out: Consumer[] = [];
+  for (const b of gov.bindings) {
+    if (b.slug !== o.slug) continue;
+    if (b.term === termId) out.push({ kind: b.kind, name: b.name, term: b.term, direct: true });
+    else if (dependents.has(b.term)) out.push({ kind: b.kind, name: b.name, term: b.term, direct: false });
+  }
+  return out.sort((a, b) => Number(b.direct) - Number(a.direct) || a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name));
+}
+
+/** The agent's view: the ontologies it gets, as the connector's `compose` takes them. */
+export function viewPrompt(v: AgentView): string {
+  return `Use the Ontology Manager tool compose with slugs ${JSON.stringify(v.slugs)} and show me which classes and properties the agent "${v.name}" would see. Change nothing.`;
+}
+
+// ---------------------------------------------------------------- change plans
+
+/** A readable request to the people who stand behind a term, built from the impact. Nothing is sent by the app. */
+export function planRequest(o: Ontology, termId: string, change: string, impact: Impact, consumers: Consumer[], codes: string[]): string {
+  const t = o.terms.find((x) => x.id === termId);
+  const lines = [
+    `Proposed change to "${t?.label ?? termId}" in ${o.title} (${o.slug}):`,
+    change.trim(),
+    '',
+    `Reaches ${impact.usedBy.length} modelled ${impact.usedBy.length === 1 ? 'thing' : 'things'}${codes.length ? ` and the company codes ${codes.join(', ')}` : ''}.`,
+  ];
+  if (impact.usedBy.length) lines.push(`Affected: ${impact.usedBy.map((d) => d.node.label).join(', ')}.`);
+  if (consumers.length) lines.push(`Declared users: ${consumers.map((c) => `${c.name} (${c.kind})`).join(', ')}.`);
+  lines.push(`Please confirm or object. Approver for this ontology: ${o.approver || 'not assigned'}.`);
+  return lines.join('\n');
+}
+
+export function newPlan(o: Ontology, termId: string, change: string, impact: Impact, now: number): Plan {
+  return {
+    id: `p${now.toString(36)}`, slug: o.slug, term: termId, change: change.trim(), status: 'draft',
+    createdAt: new Date(now).toISOString(), asked: [...new Set([...impact.ask, ...(o.approver ? [o.approver] : [])])],
+  };
+}
+export const setPlanStatus = (gov: Governance, id: string, status: PlanStatus): Governance =>
+  ({ ...gov, plans: gov.plans.map((p) => (p.id === id ? { ...p, status } : p)) });
+export const addPlan = (gov: Governance, plan: Plan): Governance => ({ ...gov, plans: [plan, ...gov.plans] });
+export const PLAN_LABEL: Record<PlanStatus, string> = { draft: 'Draft', asked: 'Owners asked', approved: 'Approved', rejected: 'Rejected' };
+
+// ---------------------------------------------------------------- quality rules
+
+export type Severity = 'high' | 'medium' | 'low';
+export interface Finding { id: string; severity: Severity; rule: string; slug: string; term: string; message: string }
+export const RULE_LABEL: Record<string, string> = {
+  'no-owner': 'Metric without owner', 'no-definition': 'No definition', 'no-formula': 'Metric without formula',
+  unused: 'Not used anywhere', duplicate: 'Possible duplicate', 'ontology-owner': 'Ontology without owner',
+};
+
+const words = (s: string): Set<string> => new Set(s.toLowerCase().replace(/[^a-z0-9äöüß ]+/g, ' ').split(/\s+/).filter((w) => w.length > 1));
+function similar(a: string, b: string): boolean {
+  const x = words(a); const y = words(b);
+  if (!x.size || !y.size) return false;
+  const both = [...x].filter((w) => y.has(w)).length;
+  return both / (x.size + y.size - both) >= 0.8;
+}
+
+/** What a steward should look at, per rule. Rules: owner, definition, formula, use, duplicates (also across ontologies), ontology owner. */
+export function qualityFindings(ontologies: Ontology[], gov: Governance): Finding[] {
+  const out: Finding[] = [];
+  const add = (severity: Severity, rule: string, o: Ontology, term: string, message: string) =>
+    out.push({ id: `${rule}:${o.slug}:${term}`, severity, rule, slug: o.slug, term, message });
+  for (const o of ontologies) {
+    if (!o.owner.trim()) add('medium', 'ontology-owner', o, '', `${o.title} has no owner. Nobody is asked before it changes.`);
+    for (const t of o.terms) {
+      if (t.kind === 'metric' && !t.owner.trim()) add('high', 'no-owner', o, t.id, `${t.label} is a metric but nobody certified it.`);
+      if (!t.definition.trim()) add('medium', 'no-definition', o, t.id, `${t.label} has no definition.`);
+      if (t.kind === 'metric' && !t.formula.trim()) add('medium', 'no-formula', o, t.id, `${t.label} has no formula.`);
+      const bound = gov.bindings.some((b) => b.slug === o.slug && b.term === t.id);
+      const used = t.kind === 'metric' ? incoming(o, t.id).length > 0 : t.members.length > 0 || incoming(o, t.id).length > 0;
+      if (!used && !bound) add('low', 'unused', o, t.id, `${t.label} is not linked from anything modelled and no agent, skill or report declares it.`);
+    }
+  }
+  const flat = ontologies.flatMap((o) => o.terms.map((t) => ({ o, t })));
+  for (let i = 0; i < flat.length; i++) {
+    for (let j = i + 1; j < flat.length; j++) {
+      const a = flat[i]; const b = flat[j];
+      if (a.t.kind === b.t.kind && similar(a.t.label, b.t.label)) {
+        add('medium', 'duplicate', a.o, a.t.id, `${a.t.label} looks like ${b.t.label}${b.o.slug !== a.o.slug ? ` in ${b.o.slug}` : ''}. One term should win.`);
+      }
+    }
+  }
+  const rank: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
+  return out.sort((a, b) => rank[a.severity] - rank[b.severity] || a.slug.localeCompare(b.slug) || a.term.localeCompare(b.term));
+}
+
+// ---------------------------------------------------------------- proposals and history
+
+export interface ProposalItem {
+  name: string; action: 'new' | 'extend' | 'reuse'; description: string; evidence: string[];
+  domain: string; range: string; baseline: string; confidence: string; rationale: string;
+}
+export interface Proposal {
+  id: string; slug: string; mode: 'new' | 'extend'; label: string; status: string; createdAt: string; model: string; error: string;
+  documents: Array<{ file: string; chunks: number }>;
+  counts: Record<string, { new?: number; extend?: number; reuse?: number }>;
+  classes: ProposalItem[]; datatypeProperties: ProposalItem[]; objectProperties: ProposalItem[];
+  needsAttention: Array<{ kind: string; name: string; why: string }>;
+  warnings: string[];
+}
+export interface VersionEntry { file: string; at: string; terms: number; added: string[]; removed: string[] }
+
+/** Totals over the three groups for the review header. */
+export function proposalTotals(p: Proposal): { new: number; extend: number; reuse: number; total: number } {
+  const t = { new: 0, extend: 0, reuse: 0, total: 0 };
+  for (const it of [...p.classes, ...p.datatypeProperties, ...p.objectProperties]) { t[it.action] += 1; t.total += 1; }
+  return t;
+}
+
+/** An item needs a look when it has no evidence quote or the alignment was not confident. */
+export function needsLook(p: Proposal, it: ProposalItem): boolean {
+  return it.evidence.length === 0 || it.confidence === 'low' || p.needsAttention.some((n) => n.name === it.name);
+}
+
+// The agent runs these only after the person pressed the button next to them. Applying and discarding need confirmed=true.
+export const applyPrompt = (p: Proposal): string =>
+  `The person reviewed the ontology proposal ${p.id} (${p.mode} ${p.slug}) and confirmed it. Call apply_ontology_proposal with proposal_id "${p.id}" and confirmed=true. Then say in two sentences what was applied. Do nothing else.`;
+export const discardPrompt = (p: Proposal): string =>
+  `The person decided to throw away the ontology proposal ${p.id}. Call discard_ontology_proposal with proposal_id "${p.id}" and confirmed=true. Then confirm in one sentence. Do nothing else.`;
+export function proposePrompt(slug: string, mode: 'new' | 'extend', docsHint: string): string {
+  return `Call propose_ontology_from_documents with slug "${slug}", mode "${mode}"${docsHint.trim() ? ` and the documents ${docsHint.trim()}` : ' (use document_ontology_settings first to see the documents folder and take the files in it)'}. Do not apply anything. Then say how many classes and properties were proposed and which need attention.`;
+}
+
+// ---------------------------------------------------------------- example data for governance, proposals, history
+
+export function exampleGovernance(): Governance {
+  return {
+    version: 1,
+    ontologies: {
+      werkbank_fin: { owner: 'Group Controlling', domain: 'Finance', approver: 'Group Controlling' },
+      procurement_docs: { owner: '', domain: 'Procurement', approver: '' },
+    },
+    bindings: [
+      { slug: 'werkbank_fin', term: 'DSO', kind: 'agent', name: 'Finance Pre-Close agent' },
+      { slug: 'werkbank_fin', term: 'chk_dso', kind: 'skill', name: 'dso-plausibility' },
+      { slug: 'werkbank_fin', term: 'Margin', kind: 'agent', name: 'Margin analyst' },
+      { slug: 'werkbank_fin', term: 'Margin', kind: 'report', name: 'Monthly margin report' },
+    ],
+    views: [{ name: 'Finance Pre-Close agent', slugs: ['werkbank_fin'] }],
+    plans: [],
+  };
+}
+
+export function exampleProposals(): Proposal[] {
+  const item = (name: string, action: ProposalItem['action'], description: string, evidence: string[], extra: Partial<ProposalItem> = {}): ProposalItem =>
+    ({ name, action, description, evidence, domain: '', range: '', baseline: '', confidence: '', rationale: '', ...extra });
+  return [{
+    id: 'werkbank_fin-20261105T091500Z-a1b2', slug: 'werkbank_fin', mode: 'extend', label: 'Werkbank Finance Pre-Close', status: 'proposed',
+    createdAt: '2026-11-05T09:15:00Z', model: 'example', error: '',
+    documents: [{ file: 'finance-closing-handbook.md', chunks: 6 }],
+    counts: { classes: { new: 2, extend: 1, reuse: 1 }, datatype_properties: { new: 1, extend: 0, reuse: 0 }, object_properties: { new: 1, extend: 0, reuse: 0 } },
+    classes: [
+      item('Accrual', 'new', 'An amount booked for a delivery that was received but not yet invoiced.', ['An accrual is booked for every delivery that has been received but not yet invoiced.']),
+      item('GR/IR Item', 'new', 'An open balance between goods received and invoices received for one purchase order line.', ['A GR/IR item is an open balance between goods received and invoices received for one purchase order line.']),
+      item('Pre-Close Check', 'extend', 'Check run before the period is closed; the handbook adds working day 3 as the timing.', ['The pre-close runs on working day 3 before the period is closed.'], { baseline: 'PreCloseCheck [werkbank_fin]', confidence: 'high', rationale: 'Same concept, more detail.' }),
+      item('Company Code', 'reuse', 'Legal entity such as DE10, FR10, UK10.', ['Company codes are DE10, FR10 and UK10.'], { baseline: 'CompanyCode [werkbank_fin]', confidence: 'high', rationale: 'Identical.' }),
+    ],
+    datatypeProperties: [item('approvalThreshold', 'new', 'Amount above which an accrual needs approval.', [], { domain: 'Accrual', range: 'decimal' })],
+    objectProperties: [item('escalatedTo', 'new', 'The team a GR/IR item is escalated to.', ['Items open for more than 60 days are escalated to Group Procurement.'], { domain: 'GR/IR Item', range: 'Team' })],
+    needsAttention: [{ kind: 'datatype_properties', name: 'approvalThreshold', why: 'no evidence quote' }],
+    warnings: [],
+  }];
+}
+
+export function exampleHistory(): Record<string, VersionEntry[]> {
+  return {
+    werkbank_fin: [
+      { file: 'werkbank_fin-20261101T080000Z.ttl', at: '2026-11-01T08:00:00Z', terms: 21, added: [], removed: [] },
+      { file: 'current', at: '', terms: 24, added: ['Accrual', 'GR/IR Item', 'escalatedTo'], removed: [] },
+    ],
+  };
 }

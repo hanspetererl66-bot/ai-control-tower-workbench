@@ -67,6 +67,16 @@ def build_app():
             tags=["finance", "preclose", "werkbank"],
         )
 
+    if "werkbank_scm" not in known:  # the second sample ontology; added once, never replaced
+        register_ontology(
+            str(catalog),
+            "werkbank_scm",
+            str(DATA / "werkbank_scm.ttl"),
+            label="Werkbank Procurement",
+            description="Suppliers, purchase orders and goods receipts (sample)",
+            tags=["procurement", "werkbank"],
+        )
+
     app = FastMCP("werkbank-ontology-manager")
     app.mount(create_ontology_mcp(str(catalog)))
     app.mount(create_mcp_app(LocalRdfBackend(onto, inst)))

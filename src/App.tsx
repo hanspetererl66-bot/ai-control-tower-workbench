@@ -61,7 +61,7 @@ import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
 import AdminView from './ui/AdminView';
-import { resolveCatalog, type OntologySource, type Ontology } from './ontology-manager';
+import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type OntologyData } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
@@ -203,12 +203,21 @@ export default function App() {
   });
   const skillCatalogRef = useRef(skillCatalog);
   skillCatalogRef.current = skillCatalog;
-  const [ontologyData, setOntologyData] = useState<{ ontologies: Ontology[]; source: OntologySource }>({ ontologies: [], source: { kind: 'loading' } });
+  const [ontologyData, setOntologyData] = useState<OntologyData>({ ontologies: [], source: { kind: 'loading' }, proposals: [], history: {}, governance: emptyGovernance() });
+  const [ontologyNote, setOntologyNote] = useState('');
   const loadOntologies = useCallback(async () => {
     setOntologyData((d) => ({ ...d, source: { kind: 'loading' } }));
     const answer = await window.host?.ontologyCatalog?.().catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
     setOntologyData(resolveCatalog(answer));
   }, []);
+  /** Owners, declared users, views and plans: shown at once, saved to governance.json next to the catalog (not for example data). */
+  const changeGovernance = useCallback(async (next: Governance) => {
+    setOntologyData((d) => ({ ...d, governance: next, ontologies: applyGovernance(d.ontologies, next) }));
+    if (ontologyData.source.kind !== 'catalog' || !window.host?.ontologyGovernanceSave) { setOntologyNote('Not saved (example data)'); return; }
+    setOntologyNote('Saving…');
+    const res = await window.host.ontologyGovernanceSave(next).catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
+    setOntologyNote(res.ok ? 'Saved' : `Not saved: ${res.detail ?? 'unknown error'}`);
+  }, [ontologyData.source.kind]);
   const [skillSource, setSkillSource] = useState<SkillSource>({ kind: 'example', detail: '' });
   const changeSkillCatalog = useCallback((next: Catalog) => { skillCatalogRef.current = next; setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
   /** Reads the registry from the shared database. Without one the example catalog stays and the page says why. */
@@ -1423,7 +1432,7 @@ export default function App() {
       ) : view === 'admin' ? (
         <AdminView onOpenOntology={() => setView('ontology')} />
       ) : view === 'ontology' ? (
-        <OntologyManagerView ontologies={ontologyData.ontologies} source={ontologyData.source} onReload={() => void loadOntologies()} onBack={() => setView('admin')} />
+        <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

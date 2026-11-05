@@ -129,7 +129,8 @@ test('the real catalog is shown when the app answers; otherwise the example with
   const real = [{ ...fin, example: false }];
   const ok = resolveCatalog({ ok: true, ontologies: real, folder: '/x', instances: 'bundled', warnings: ['bad: not readable'] });
   assert.equal(ok.source.kind, 'catalog');
-  assert.equal(ok.ontologies, real);
+  assert.deepEqual(ok.ontologies.map((o) => o.slug), real.map((o) => o.slug));
+  assert.ok(ok.ontologies.every((o) => !o.example));
   assert.equal(ok.source.folder, '/x');
   const empty = resolveCatalog({ ok: true, ontologies: [] });
   assert.equal(empty.source.kind, 'catalog');
