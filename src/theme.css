@@ -475,6 +475,7 @@
 :root[data-theme="dark"] .dialog,
 :root[data-theme="dark"] .source-popover,
 :root[data-theme="dark"] .file-popover,
+:root[data-theme="dark"] .add-context-menu,
 :root[data-theme="dark"] .context-menu {
   border-color: #343944;
   background: #13161c;
@@ -2297,8 +2298,8 @@ button {
   background: #f5f4f9;
 }
 
-/* Add-context menu behind the first "+" in the chat bar */
-.context-menu { min-width: 200px; }
+/* Add-context menu behind the first "+" in the chat bar (own class: .context-menu is the fixed right-click menu) */
+.add-context-menu { min-width: 200px; }
 .context-form { display: flex; gap: 6px; align-items: center; padding: 6px 4px 2px; border-top: 1px solid var(--line); margin-top: 4px; }
 .context-input { flex: 1; min-width: 0; height: 28px; padding: 0 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 12.5px; }
 .context-form .menu-item { width: auto; padding: 5px 10px; }
