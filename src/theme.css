@@ -2387,20 +2387,6 @@ button {
   white-space: nowrap;
 }
 
-.list-item-more {
-  flex: none;
-  width: 32px;
-  align-self: stretch;
-  border-radius: 7px;
-  color: var(--muted);
-  letter-spacing: 1px;
-}
-
-.list-item-more:hover:not(:disabled) {
-  background: rgb(109 40 217 / 8%);
-  color: var(--accent);
-}
-
 .list-section-button {
   width: 100%;
   text-align: left;
@@ -4990,3 +4976,16 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 /* Duplicate button in the skills list */
 .dup-btn { display: inline-flex; align-items: center; gap: 6px; }
 .dup-btn svg { flex: none; }
+
+/* Conversation rows: archive and delete icons instead of the "···" menu */
+.list-item-actions { flex: none; display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity 120ms ease; }
+.list-item:hover .list-item-actions,
+.list-item:focus-within .list-item-actions,
+.list-item-on .list-item-actions { opacity: 1; }
+.list-item-act { width: 26px; align-self: center; height: 26px; display: grid; place-items: center; border-radius: 7px; color: var(--muted); }
+.list-item-act:hover:not(:disabled) { background: rgb(109 40 217 / 8%); color: var(--accent); }
+.list-item-act-danger:hover:not(:disabled) { background: rgb(220 38 38 / 12%); color: #b91c1c; }
+:root[data-theme="dark"] .list-item-act-danger:hover:not(:disabled) { color: #f87171; }
+.list-item-act-armed { background: rgb(220 38 38 / 16%); color: #b91c1c; }
+:root[data-theme="dark"] .list-item-act-armed { color: #f87171; }
+@media (prefers-reduced-motion: reduce) { .list-item-actions { transition: none; } }
