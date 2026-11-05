@@ -4,6 +4,7 @@ import {
   TYPES, TYPE_LABEL, addLink, diffRevisions, featureArgs, filterItems, hostApi, itemsForRef, loadHistory, loadRegistry, loadRevFiles, noFilter, parseFeature,
   restoreRevision, setStage, stageText, type FileDiff, type Filter, type RItem, type Rev, type RevFile,
 } from '../registry';
+import { MODE_LABEL, policyGaps, revisionPolicy, widens, type RevisionPolicy } from '../policy-manifest';
 import { commentFor, isDone, labelsFor, loadLog, markerOf, notedAt, parseWriteback, record, saveLog, summaryOf, ticketsOf, writebackPrompt, type WriteResult } from '../writeback';
 
 const when = (t: number) => (t ? new Date(t).toLocaleString([], { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–');
@@ -96,6 +97,7 @@ function Detail({ item, all, onClose, onChanged, onFind, generate, onStop, ready
   const [revs, setRevs] = useState<Rev[] | null>(null);
   const [sel, setSel] = useState<number>(item.rev);
   const [diff, setDiff] = useState<FileDiff[] | null>(null);
+  const [pol, setPol] = useState<RevisionPolicy | null>(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -107,14 +109,14 @@ function Detail({ item, all, onClose, onChanged, onFind, generate, onStop, ready
   // The differences of the chosen revision to the one before it.
   useEffect(() => {
     let live = true;
-    setDiff(null);
+    setDiff(null); setPol(null);
     if (!sel) return;
     (async () => {
       try {
         const now = await loadRevFiles(api, item.id, sel);
         const before: RevFile[] = sel > 1 ? await loadRevFiles(api, item.id, sel - 1) : [];
-        if (live) setDiff(diffRevisions(before, now));
-      } catch (e) { if (live) { setDiff([]); setNote(msg(e)); } }
+        if (live) { setDiff(diffRevisions(before, now)); setPol(revisionPolicy(before, now)); }
+      } catch (e) { if (live) { setDiff([]); setPol(null); setNote(msg(e)); } }
     })();
     return () => { live = false; };
   }, [api, item.id, sel]);
@@ -168,6 +170,8 @@ function Detail({ item, all, onClose, onChanged, onFind, generate, onStop, ready
         </ol>
       )}
 
+      {sel > 0 && item.type !== 'feature' && item.type !== 'code' && pol && (pol.policy || pol.note) && <PolicyPanel rev={sel} pol={pol} />}
+
       {sel > 0 && (
         <>
           <h3 className="rg-h">What changed in revision {sel}{sel > 1 ? ` (compared with ${sel - 1})` : ''}</h3>
@@ -186,6 +190,43 @@ function Detail({ item, all, onClose, onChanged, onFind, generate, onStop, ready
       )}
       {note && <p className="sh-note" role="status">{note}</p>}
     </aside>
+  );
+}
+
+/**
+ * What the revision declares it may do (policy.json, derived from the project) and what became wider or narrower since the revision
+ * before. Declared, not enforced: nothing here stops an action. Undeclared limits are named as gaps, never shown as limits.
+ */
+function PolicyPanel({ rev, pol }: { rev: number; pol: RevisionPolicy }) {
+  const m = pol.policy;
+  if (!m) return <><h3 className="rg-h">Declared rights</h3><p className="sh-note">{pol.note}</p></>;
+  const gaps = policyGaps(m);
+  const wider = widens(pol.changes);
+  return (
+    <section className="rg-policy" aria-label={`Declared rights of revision ${rev}`}>
+      <h3 className="rg-h">Declared rights in revision {rev}</h3>
+      <p className="rg-pol-line">
+        <span className="rg-chip">{MODE_LABEL[m.mode]}</span>
+        <span className="rg-chip">{m.humanApproval ? 'A person approves changes' : 'No approval step'}</span>
+        <span className="rg-chip">{m.run.unattended ? 'Can run without a person' : 'Started by a person'}</span>
+        {m.limits.maxSteps !== null && <span className="rg-chip">Up to {m.limits.maxSteps} steps</span>}
+      </p>
+      <p className="sh-note">{m.systems.length ? `Systems: ${m.systems.map((s) => `${s.label} (${s.access})`).join(', ')}` : 'No systems named.'}</p>
+      {gaps.length > 0 && <p className="sh-note">Not declared yet: {gaps.join(', ')}. These are not limits.</p>}
+      {pol.note && <p className="sh-note">{pol.note}</p>}
+      {pol.changes.length > 0 && (
+        <>
+          <p className={`rg-pol-head${wider ? ' rg-pol-wider' : ''}`}>{wider ? 'This revision gives the item more room' : 'Rights changed in this revision'}</p>
+          <ul className="rg-pol-list">
+            {pol.changes.map((c) => (
+              <li key={c.field} className={`rg-pol-${c.direction}`}>
+                <b>{c.direction === 'wider' ? '↑ wider' : c.direction === 'narrower' ? '↓ narrower' : 'changed'}</b> {c.label}: {c.from} → {c.to}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
   );
 }
 

@@ -4794,6 +4794,17 @@ textarea.studio-field { min-height: 120px; }
 .sh .rg-timeline button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%; text-align: left; padding: 7px 10px; background: var(--bg); }
 .sh .rg-rev-on button { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
 .rg-timeline small { color: var(--muted); font-size: 11.5px; }
+.rg-policy { display: flex; flex-direction: column; gap: 6px; }
+.rg-policy .rg-h { margin: 0; }
+.rg-pol-line { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
+.rg-policy .rg-chip { padding: 1px 10px; }
+.rg-pol-head { margin: 2px 0 0; font-size: 13px; font-weight: 600; }
+.rg-pol-wider { color: var(--lv-yellow); }
+.rg-pol-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.rg-pol-list li { padding: 4px 8px; border: 1px solid var(--line); border-left-width: 3px; border-radius: 6px; background: var(--bg); }
+.rg-pol-list .rg-pol-wider { border-left-color: var(--lv-yellow); color: inherit; }
+.rg-pol-list .rg-pol-narrower { border-left-color: var(--lv-green); }
+.rg-pol-list .rg-pol-neutral { border-left-color: var(--line); }
 .rg-diffs { display: flex; flex-direction: column; gap: 6px; }
 .rg-diffs summary { cursor: pointer; font-size: 13px; }
 .rg-st { font-size: 11.5px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
