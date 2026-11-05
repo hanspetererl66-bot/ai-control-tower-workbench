@@ -63,6 +63,7 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Back to the original', 'Resets the listed settings on this computer. Saved profiles, memory and keys stay, so you can switch back to a profile afterwards.'],
   ['Save the current settings as a profile', 'Stores a named copy of your current settings. It stays on this computer and travels with Sync and Export.'],
   ['Original look', 'Only colours, sizes, font, density, contrast and motion are reset. Pins, starters and profiles stay.'],
+  ['Layout', 'Changes the shape, spacing and depth of the whole app and of all Spaces at once: corners, padding, shadows, header, tabs and the size of the big numbers. Colours stay with the skin, so every layout works with every skin.'],
   ['Skin', 'Changes the whole palette of the app and of all Spaces at once: surfaces, text, lines and accent. The accent colour below still overrides the accent of the skin.'],
   ['Accent colour', 'Changes the colour of buttons, selected tabs and highlights, in the app and in all Spaces.'],
   ['Text and layout', 'App text size zooms the whole window. Text size in Spaces scales only the Spaces. Density changes the spacing in lists and cards. Font changes the typeface of the app.'],

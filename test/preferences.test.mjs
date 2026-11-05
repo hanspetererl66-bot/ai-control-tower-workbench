@@ -71,7 +71,7 @@ test('style: accent, contrast, motion reach app and Spaces', () => {
   const html = applySpacePrefs('<html><head></head><body></body></html>', p);
   assert.match(html, /id="werkbank-space-prefs"/);
   assert.match(html, /--purple/);
-  assert.equal(applySpacePrefs('<html><head></head></html>', DEFAULT_PREFERENCES).includes('werkbank-space-prefs'), false);
+  assert.equal(/--canvas|--purple/.test(applySpacePrefs('<html><head></head></html>', DEFAULT_PREFERENCES)), false, 'the default adds layout rules but no colours');
   assert.ok(accentVariants('#ffff00').dark);
 });
 

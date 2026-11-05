@@ -7,6 +7,7 @@ import {
 } from '../preferences';
 import { sectionEffect } from '../settings-help';
 import { SPACE_SCALES } from '../space-scale';
+import { LAYOUT_LIST } from '../layouts';
 import { SKIN_LIST } from '../skins';
 
 export type PrefsUpdate = (change: (current: Preferences) => Preferences) => void;
@@ -108,6 +109,28 @@ export function LookPanel({ prefs, update }: Common) {
         <div className="prefs-row">
           <button className="ghost-btn" disabled={isOriginalLook(prefs)} onClick={() => update((p) => resetLook(p))}>Back to the original look</button>
           {isOriginalLook(prefs) && <span className="prefs-note" style={{ margin: 0 }}>This is the original look.</span>}
+        </div>
+      </Section>
+      <Section title="Layout" hint="A layout sets the shape of the whole app and of all Spaces: corners, spacing, shadows, header and tabs. Colours stay with the skin below, so every layout works with every skin.">
+        <div className="skin-options" role="radiogroup" aria-label="Layout">
+          {LAYOUT_LIST.map((layout) => (
+            <button key={layout.id} type="button" role="radio" aria-checked={prefs.layout === layout.id} className={`skin-option ${prefs.layout === layout.id ? 'skin-option-on' : ''}`} onClick={() => update((p) => ({ ...p, layout: layout.id }))}>
+              <span className={`layout-preview ${layout.preview.glass ? 'layout-preview-glass' : ''} ${layout.preview.shadow ? 'layout-preview-depth' : ''}`} aria-hidden="true" style={{ gap: layout.preview.gap }}>
+                <span className="layout-tabs">
+                  <i className="layout-tab layout-tab-on" style={{ borderRadius: layout.preview.pill ? 99 : layout.preview.radius }} />
+                  <i className="layout-tab" style={{ borderRadius: layout.preview.pill ? 99 : layout.preview.radius }} />
+                  <i className="layout-tab" style={{ borderRadius: layout.preview.pill ? 99 : layout.preview.radius }} />
+                </span>
+                <span className="layout-tiles" style={{ gap: layout.preview.gap }}>
+                  <b className="layout-tile" style={{ borderRadius: layout.preview.radius }} />
+                  <b className="layout-tile" style={{ borderRadius: layout.preview.radius }} />
+                </span>
+              </span>
+              <span className="skin-name">{layout.name}</span>
+              <span className="skin-description">{layout.description}</span>
+              {prefs.layout === layout.id && <span className="skin-check" aria-hidden="true">✓</span>}
+            </button>
+          ))}
         </div>
       </Section>
       <Section title="Skin" hint="A skin sets the colours of the whole app and of all Spaces: surfaces, text, lines and the accent. Light and dark still follow the Appearance setting. Status colours (green, amber, red) stay the same in every skin.">

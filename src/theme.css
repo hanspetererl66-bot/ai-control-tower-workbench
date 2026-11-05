@@ -3454,6 +3454,45 @@ button {
   margin-top: auto;
   border-radius: 99px;
 }
+.layout-preview {
+  display: flex;
+  flex-direction: column;
+  height: 62px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.layout-tabs {
+  display: flex;
+  gap: 4px;
+}
+.layout-tab {
+  display: block;
+  width: 22px;
+  height: 6px;
+  background: var(--line);
+}
+.layout-tab-on {
+  background: var(--accent);
+}
+.layout-tiles {
+  display: flex;
+  flex: 1;
+}
+.layout-tile {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.layout-preview-depth .layout-tile {
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+.layout-preview-glass .layout-tile {
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 8%, transparent);
+}
 .skin-name {
   font-weight: 600;
   font-size: 13px;

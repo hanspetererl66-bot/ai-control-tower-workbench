@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { layoutAppCss, layoutSpaceRules } from '../src/layouts.ts';
 import { DEFAULT_SKIN, SKINS, SKIN_DEFS, skinAppCss, skinSpaceRules } from '../src/skins.ts';
 import { DEFAULT_PREFERENCES, resetLook, sanitizePreferences, isOriginalLook } from '../src/preferences.ts';
 import { applySpacePrefs, buildPreferenceCss, luminance } from '../src/preferences-style.ts';
@@ -42,7 +43,7 @@ test('a skin is saved, validated and part of the look', () => {
 });
 
 test('the app gets the skin tokens, then the accent colour overrides the skin accent', () => {
-  assert.equal(buildPreferenceCss(DEFAULT_PREFERENCES), '');
+  assert.equal(buildPreferenceCss(DEFAULT_PREFERENCES), layoutAppCss('minimal').join('\n'), 'the default skin adds nothing, only the default layout');
   const css = buildPreferenceCss({ ...DEFAULT_PREFERENCES, skin: 'signal', accent: '#0070F2' });
   assert.match(css, /--bg:#eef3f5/);
   assert.match(css, /:root\[data-theme="dark"\]\{--bg:#06222f/);
@@ -51,7 +52,8 @@ test('the app gets the skin tokens, then the accent colour overrides the skin ac
 
 test('Spaces get the whole palette from the skin and the accent on top', () => {
   const html = '<html><head></head><body></body></html>';
-  assert.equal(applySpacePrefs(html, { ...DEFAULT_PREFERENCES }), html);
+  const plain = applySpacePrefs(html, { ...DEFAULT_PREFERENCES });
+  assert.ok(plain.includes(layoutSpaceRules('minimal').join('')) && !plain.includes('--canvas'), 'the default skin adds no palette, only the default layout');
   const azure = applySpacePrefs(html, { ...DEFAULT_PREFERENCES, skin: 'azure' });
   assert.match(azure, /--canvas:#f3f8fc/);
   assert.match(azure, /html:root\[data-theme="dark"\]\{--canvas:#0b1722/);
