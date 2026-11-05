@@ -543,7 +543,7 @@ export default function Composer({
             +
           </button>
           {contextOpen && (
-            <div className="menu context-menu" aria-label="Add context menu">
+            <div className="menu add-context-menu" aria-label="Add context menu">
               <button
                 className="menu-item"
                 title={`Add up to ${MAX_CHAT_ATTACHMENTS} files: PowerPoint, Word, Excel, CSV, text or pictures (or drop them here)`}
