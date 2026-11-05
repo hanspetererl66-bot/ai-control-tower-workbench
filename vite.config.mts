@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 import { installSkill } from './shared/skill-install.mjs';
 import { parseSpaceMetadata } from './shared/space-metadata.mjs';
+import { copySlug, copyTitle, retitleSpaceJson } from './shared/duplicate.mjs';
 import { MAX_PACKAGE_BYTES, buildSpacePackage, parseSpacePackage, uniqueSlug } from './shared/space-package.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -47,6 +48,28 @@ function spacesApi(): Plugin {
             return json(200, buildSpacePackage({ slug: pkg[1], title, files }));
           } catch {
             return json(404, { error: 'space not found' });
+          }
+        }
+        // Duplicate a Space: POST /<slug>/duplicate copies index.html and space.json under a free name and title.
+        const dup = /^\/([A-Za-z0-9._-]+)\/duplicate$/.exec((req.url ?? '').split('?')[0]);
+        if (dup && req.method === 'POST') {
+          const from = join(SPACES, dup[1]);
+          if (dup[1] === '.' || dup[1] === '..' || !existsSync(join(from, 'index.html'))) return json(404, { error: 'space not found' });
+          try {
+            const dirs = readdirSync(SPACES, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+            const titles = dirs.map((d) => { try { const t = parseSpaceMetadata(readFileSync(join(SPACES, d, 'space.json'), 'utf8')).title; return typeof t === 'string' ? t : d; } catch { return d; } });
+            let sourceTitle = dup[1];
+            let sourceJson = '';
+            try { sourceJson = readFileSync(join(from, 'space.json'), 'utf8'); const t = parseSpaceMetadata(sourceJson).title; if (typeof t === 'string' && t.trim()) sourceTitle = t; } catch { /* slug */ }
+            const slug = copySlug(dup[1], dirs);
+            const title = copyTitle(sourceTitle, titles);
+            const to = join(SPACES, slug);
+            mkdirSync(to, { recursive: true });
+            writeFileSync(join(to, 'index.html'), readFileSync(join(from, 'index.html')));
+            writeFileSync(join(to, 'space.json'), retitleSpaceJson(sourceJson, title));
+            return json(200, { slug, title });
+          } catch (error) {
+            return json(500, { error: error instanceof Error ? error.message : 'duplicate failed' });
           }
         }
         // Delete a Space: DELETE /<slug> removes its folder. The page asks the person first.

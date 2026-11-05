@@ -427,6 +427,23 @@ export default function ManageView({
                 </div>
                 <div className="row-actions">
                   {extra}
+                  {window.host?.duplicateSkill && (
+                    <button
+                      className="dialog-btn dup-btn"
+                      disabled={busy !== null}
+                      title="Make an editable copy of this skill (a new local skill)"
+                      onClick={() =>
+                        run(`dup-skill-${s.dir}`, async () => {
+                          const r = await window.host?.duplicateSkill?.(s.dir);
+                          if (!r?.ok) throw new Error(r?.detail ?? 'Duplicate failed.');
+                          return `Created "${r.slug}". Restart the agent to use it.`;
+                        }, 'Done.', true)
+                      }
+                    >
+                      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M10.5 3.5v-.4A1.6 1.6 0 0 0 8.9 1.5H3.6A1.6 1.6 0 0 0 2 3.1v5.3a1.6 1.6 0 0 0 1.6 1.6h.4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+                      Duplicate
+                    </button>
+                  )}
                   {window.host?.exportSkill && (
                     <button
                       className="dialog-btn"
