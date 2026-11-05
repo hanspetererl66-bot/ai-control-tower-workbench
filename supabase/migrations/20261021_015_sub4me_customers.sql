@@ -17,7 +17,8 @@ revoke all on sub4me.customers from anon, authenticated;
 
 insert into sub4me.customers (id, name, number, sap_customer_id, contact, country, profile) values
   ('muster', 'Muster Industrie AG', '100-482-117', '0010048211', 'A. Beispiel', 'Germany', '{"industry":"Industrial manufacturing (machinery)","employees":11500,"headquarters":"Mannheim, Germany","customerSince":2014,"segment":"Large enterprise","fiscalYearEnd":"12-31","legalEntities":["Muster Industrie AG, Mannheim","Muster Industrie Services GmbH, Heilbronn"],"accountTeam":[{"name":"Katrin Lindner","role":"Account Executive, SAP","email":"katrin.lindner@example.com"},{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"},{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"},{"name":"Lukas Fischer","role":"Solution Consultant, SAP","email":"lukas.fischer@example.com"}],"contacts":[{"name":"Anna Beispiel","role":"Head of IT Procurement","email":"a.beispiel@muster-industrie.example"},{"name":"Dr. Anja Berger","role":"CIO","email":"dr.anja.berger@muster-industrie.example"},{"name":"Lena Hoffmann","role":"Platform Lead","email":"l.hoffmann@muster-industrie.example"},{"name":"Felix Brandt","role":"Head of IT Security","email":"f.brandt@muster-industrie.example"}],"landscape":["S/4HANA Cloud Private Edition (DEV, QAS, PRD)","Business Technology Platform in eu10","SuccessFactors Employee Central","Ariba Procurement","Joule, AI Core and Document AI under one AI-unit contract"],"notes":"Reference customer for the platform. Renewals of SuccessFactors and Ariba fall into the next 120 days.","sapCustomerId":"0010048211"}'::jsonb),
-  ('hanse', 'Hanse Handelsgruppe AG', '100-731-904', '0010073904', 'M. Sander', 'Germany', '{"industry":"Retail (food and household goods)","employees":6200,"headquarters":"Hamburg, Germany","customerSince":2019,"segment":"Large enterprise","fiscalYearEnd":"12-31","legalEntities":["Hanse Handelsgruppe AG, Hamburg","Hanse Logistik GmbH, Bremen"],"accountTeam":[{"name":"Sven Albrecht","role":"Account Executive, SAP","email":"sven.albrecht@example.com"},{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"},{"name":"Nina Kessler","role":"Customer Success Manager, SAP","email":"nina.kessler@example.com"},{"name":"Lukas Fischer","role":"Solution Consultant, SAP","email":"lukas.fischer@example.com"}],"contacts":[{"name":"Mirko Sander","role":"Head of Procurement","email":"m.sander@hanse-handel.example"},{"name":"Dr. Henrik Lorenz","role":"CIO","email":"h.lorenz@hanse-handel.example"},{"name":"Julia Westphal","role":"Head of E-Commerce","email":"j.westphal@hanse-handel.example"},{"name":"Tom Ahlers","role":"Platform Lead","email":"t.ahlers@hanse-handel.example"},{"name":"Ines Carstens","role":"Head of Accounts Payable","email":"i.carstens@hanse-handel.example"}],"landscape":["S/4HANA Cloud Public Edition for 140 stores and 3 distribution centres","Ariba with Supplier Risk for 3,800 suppliers","SAP Commerce Cloud with three storefronts","SAP Analytics Cloud planning","AI units for Document AI (invoices), Joule and AI Core in eu10"],"notes":"Retail group with strong seasonality. Commerce Cloud renewal and the Document AI volume are the topics this quarter.","sapCustomerId":"0010073904"}'::jsonb)
+  ('hanse', 'Hanse Handelsgruppe AG', '100-731-904', '0010073904', 'M. Sander', 'Germany', '{"industry":"Retail (food and household goods)","employees":6200,"headquarters":"Hamburg, Germany","customerSince":2019,"segment":"Large enterprise","fiscalYearEnd":"12-31","legalEntities":["Hanse Handelsgruppe AG, Hamburg","Hanse Logistik GmbH, Bremen"],"accountTeam":[{"name":"Sven Albrecht","role":"Account Executive, SAP","email":"sven.albrecht@example.com"},{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"},{"name":"Nina Kessler","role":"Customer Success Manager, SAP","email":"nina.kessler@example.com"},{"name":"Lukas Fischer","role":"Solution Consultant, SAP","email":"lukas.fischer@example.com"}],"contacts":[{"name":"Mirko Sander","role":"Head of Procurement","email":"m.sander@hanse-handel.example"},{"name":"Dr. Henrik Lorenz","role":"CIO","email":"h.lorenz@hanse-handel.example"},{"name":"Julia Westphal","role":"Head of E-Commerce","email":"j.westphal@hanse-handel.example"},{"name":"Tom Ahlers","role":"Platform Lead","email":"t.ahlers@hanse-handel.example"},{"name":"Ines Carstens","role":"Head of Accounts Payable","email":"i.carstens@hanse-handel.example"}],"landscape":["S/4HANA Cloud Public Edition for 140 stores and 3 distribution centres","Ariba with Supplier Risk for 3,800 suppliers","SAP Commerce Cloud with three storefronts","SAP Analytics Cloud planning","AI units for Document AI (invoices), Joule and AI Core in eu10"],"notes":"Retail group with strong seasonality. Commerce Cloud renewal and the Document AI volume are the topics this quarter.","sapCustomerId":"0010073904"}'::jsonb),
+  ('lindenau', 'Lindenau Pharma AG', '100-905-326', '0010090532', 'Dr. S. Roth', 'Germany', '{"industry":"Life sciences (pharmaceuticals and biologics manufacturing)","employees":3900,"headquarters":"Heidelberg, Germany","customerSince":2017,"segment":"Mid-size enterprise","fiscalYearEnd":"12-31","legalEntities":["Lindenau Pharma AG, Heidelberg","Lindenau Biologics GmbH, Penzberg","Lindenau Pharma Schweiz AG, Basel"],"accountTeam":[{"name":"Clara Neumann","role":"Account Executive, SAP","email":"clara.neumann@example.com"},{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"},{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"},{"name":"Lukas Fischer","role":"Solution Consultant, SAP","email":"lukas.fischer@example.com"}],"contacts":[{"name":"Dr. Sabine Roth","role":"Head of IT Procurement","email":"s.roth@lindenau-pharma.example"},{"name":"Dr. Matthias Vogel","role":"CIO","email":"m.vogel@lindenau-pharma.example"},{"name":"Dr. Petra Ostermann","role":"Head of Quality Assurance and GxP Compliance","email":"p.ostermann@lindenau-pharma.example"},{"name":"Ralf Kessel","role":"Head of Manufacturing IT","email":"r.kessel@lindenau-pharma.example"},{"name":"Anika Brandl","role":"Platform Lead","email":"a.brandl@lindenau-pharma.example"},{"name":"Thomas Engel","role":"Head of Accounts Payable","email":"t.engel@lindenau-pharma.example"}],"landscape":["S/4HANA Cloud Private Edition, validated GxP environment (DEV, QAS, PRD) for 3 plants","Integrated Business Planning for 14 markets with cold-chain constraints","SuccessFactors Learning for GxP training and qualification","Advanced Track and Trace for EU and US serialization on 9 packaging lines","AI units for Document AI (batch records), Joule and AI Core in eu10"],"notes":"Regulated manufacturer: every change to a validated system needs a validation concept and change control. AI use cases are released step by step by Quality Assurance. The expired Ariba contract and the Document AI volume are the topics this quarter.","sapCustomerId":"0010090532"}'::jsonb)
 on conflict (id) do update set
   name = excluded.name,
   number = excluded.number,
@@ -182,6 +183,124 @@ insert into sub4me.offer_lines (offer_id, position, component, quantity, unit, u
   ('OFF-2026-0415', 1, 'AI units, top-up', 30000, 'units', 3, 90000),
   ('OFF-2026-0415', 2, 'Joule for Procurement skills', 1, 'service', 36000, 36000);
 
+insert into sub4me.contracts (id, sort_order, product, scope, start_date, end_date, annual_eur, status, notice_days, contract_type, signed_on, currency, billing_cycle, payment_terms, po_number, cost_center, legal_entity, governing_law, auto_renew, renewal_term_months, price_uplift_cap_pct, discount_pct, sap_owner, csm, customer_owner, sla, data_center, deployment, licensed_units, used_units, unit, invoicing, termination, notes, customer_id) values
+  ('C-2024-0905', 100, 'S/4HANA Cloud Private Edition (manufacturing, quality, batch management)', '1,100 users, 3 plants (Heidelberg, Penzberg, Basel), DEV/QAS/PRD', '2024-07-01', '2029-06-30', 2150000, 'Active', 180, 'Subscription (RISE with SAP)', '2024-04-22', 'EUR', 'Annual in advance', '30 days net', 'PO-8800905120', 'CC-1000 IT and Manufacturing', 'Lindenau Pharma AG, Heidelberg', 'German law', false, 12, 3, 13, '{"name":"Clara Neumann","role":"Account Executive, SAP","email":"clara.neumann@example.com"}'::jsonb, '{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"}'::jsonb, '{"name":"Dr. Matthias Vogel","role":"CIO","email":"m.vogel@lindenau-pharma.example"}'::jsonb, '{"tier":"Premium Plus","availabilityPct":99.9,"supportHours":"24/7","responseVeryHighMin":30}'::jsonb, 'Frankfurt (EU, DE)', 'Private cloud, validated environment (GxP)', 1100, 987, 'users', '{"nextInvoiceOn":"2027-07-01","openInvoices":1,"openAmountEur":96000,"paymentStatus":"Overdue"}'::jsonb, 'No termination for convenience in the first 48 months; extraordinary termination for cause with 30 days cure period.', 'Validated GxP environment with change control per release. Two releases a year are validated by Quality Assurance before go-live.', 'lindenau'),
+  ('C-2025-0612', 101, 'SAP Integrated Business Planning', '240 planners, demand and supply planning for 14 markets', '2025-04-01', '2028-03-31', 324000, 'Active', 120, 'Subscription', '2025-01-30', 'EUR', 'Annual in advance', '30 days net', 'PO-8800612044', 'CC-1300 Supply Chain', 'Lindenau Pharma AG, Heidelberg', 'German law', false, 12, 3, 10, '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, '{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"}'::jsonb, '{"name":"Ralf Kessel","role":"Head of Manufacturing IT","email":"r.kessel@lindenau-pharma.example"}'::jsonb, '{"tier":"Premium","availabilityPct":99.7,"supportHours":"Mon-Fri 7-19 CET, P1 24/7","responseVeryHighMin":60}'::jsonb, 'Frankfurt (EU, DE)', 'Public cloud', 240, 201, 'planners', '{"nextInvoiceOn":"2027-04-01","openInvoices":1,"openAmountEur":36500,"paymentStatus":"Invoice open"}'::jsonb, 'Termination at the end of the term with 120 days notice.', 'Cold-chain constraints in the supply plan are the topic of the current use case.', 'lindenau'),
+  ('C-2025-0718', 102, 'SuccessFactors Learning (GxP training and qualification)', '3,900 employees, 6 learning curricula', '2025-07-01', '2028-06-30', 139050, 'Active', 90, 'Subscription', '2025-05-12', 'EUR', 'Annual in advance', '30 days net', 'PO-8800718093', 'CC-2100 HR and Quality', 'Lindenau Pharma AG, Heidelberg', 'German law', false, 12, 3, 8, '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, '{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"}'::jsonb, '{"name":"Dr. Petra Ostermann","role":"Head of Quality Assurance and GxP Compliance","email":"p.ostermann@lindenau-pharma.example"}'::jsonb, '{"tier":"Standard","availabilityPct":99.5,"supportHours":"Mon-Fri 8-18 CET","responseVeryHighMin":120}'::jsonb, 'Amsterdam (EU, NL)', 'Public cloud', 3900, 3412, 'employees', '{"nextInvoiceOn":"2027-07-01","openInvoices":1,"openAmountEur":139050,"paymentStatus":"Overdue"}'::jsonb, 'Termination at the end of the term with 90 days notice.', 'Training records are part of the inspection file; completion data must be kept for 10 years.', 'lindenau'),
+  ('C-2025-0833', 103, 'SAP Advanced Track and Trace (serialization)', '9 packaging lines, 31 markets', '2025-10-01', '2027-12-31', 414000, 'Active', 120, 'Subscription', '2025-08-19', 'EUR', 'Annual in advance', '30 days net', 'PO-8800833217', 'CC-1300 Supply Chain', 'Lindenau Pharma AG, Heidelberg', 'German law', false, 12, 3, 9, '{"name":"Clara Neumann","role":"Account Executive, SAP","email":"clara.neumann@example.com"}'::jsonb, '{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"}'::jsonb, '{"name":"Ralf Kessel","role":"Head of Manufacturing IT","email":"r.kessel@lindenau-pharma.example"}'::jsonb, '{"tier":"Premium","availabilityPct":99.7,"supportHours":"Mon-Fri 7-19 CET, P1 24/7","responseVeryHighMin":60}'::jsonb, 'Frankfurt (EU, DE)', 'Public cloud', 9, 9, 'packaging lines', '{"nextInvoiceOn":"2027-10-01","openInvoices":1,"openAmountEur":414000,"paymentStatus":"Invoice open"}'::jsonb, 'Termination at the end of the term with 120 days notice.', 'EU Falsified Medicines Directive and US DSCSA reporting. All lines are in use, a tenth line is planned for 2027.', 'lindenau'),
+  ('C-2026-0051', 104, 'AI units (Joule, AI Core, Document AI, Business AI)', '60,000 AI units, calendar year 2026', '2026-01-01', '2026-12-31', 180000, 'Active', 60, 'Consumption (prepaid)', '2025-12-09', 'EUR', 'Annual in advance', '30 days net', 'PO-8800051660', 'CC-1000 IT and Manufacturing', 'Lindenau Pharma AG, Heidelberg', 'German law', true, 12, 3, 6, '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, '{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"}'::jsonb, '{"name":"Anika Brandl","role":"Platform Lead","email":"a.brandl@lindenau-pharma.example"}'::jsonb, '{"tier":"Premium","availabilityPct":99.5,"supportHours":"Mon-Fri 7-19 CET","responseVeryHighMin":60}'::jsonb, 'Frankfurt (EU, DE)', 'Public cloud', 60000, 46750, 'AI units', '{"nextInvoiceOn":"2027-01-01","openInvoices":1,"openAmountEur":41800,"paymentStatus":"Invoice open"}'::jsonb, 'Termination at the end of term with 60 days notice. Unused units do not carry over.', 'Document AI for batch records and regulatory submissions drives the usage. Every AI use case needs a validation concept from Quality Assurance.', 'lindenau'),
+  ('C-2023-0344', 105, 'Ariba Procurement', '210 buyers, 1,900 suppliers', '2023-02-01', '2026-01-31', 127200, 'Expired', 90, 'Subscription', '2022-12-05', 'EUR', 'Quarterly in advance', '30 days net', 'PO-8800344501', 'CC-3100 Procurement', 'Lindenau Pharma AG, Heidelberg', 'German law', false, 12, 3, 7, '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, '{"name":"Jonas Weber","role":"Customer Success Manager, SAP","email":"jonas.weber@example.com"}'::jsonb, '{"name":"Dr. Sabine Roth","role":"Head of IT Procurement","email":"s.roth@lindenau-pharma.example"}'::jsonb, '{"tier":"Standard","availabilityPct":99.5,"supportHours":"Mon-Fri 8-18 CET","responseVeryHighMin":120}'::jsonb, 'Amsterdam (EU, NL)', 'Public cloud', 210, 210, 'buyers', '{"nextInvoiceOn":null,"openInvoices":0,"openAmountEur":0,"paymentStatus":"Closed"}'::jsonb, 'Expired. Suppliers still order on a trial tenant.', 'Expired in January; the customer asked for a reactivation offer that includes supplier qualification for GxP suppliers.', 'lindenau')
+on conflict (id) do update set
+  sort_order = excluded.sort_order,
+  product = excluded.product,
+  scope = excluded.scope,
+  start_date = excluded.start_date,
+  end_date = excluded.end_date,
+  annual_eur = excluded.annual_eur,
+  status = excluded.status,
+  notice_days = excluded.notice_days,
+  contract_type = excluded.contract_type,
+  signed_on = excluded.signed_on,
+  currency = excluded.currency,
+  billing_cycle = excluded.billing_cycle,
+  payment_terms = excluded.payment_terms,
+  po_number = excluded.po_number,
+  cost_center = excluded.cost_center,
+  legal_entity = excluded.legal_entity,
+  governing_law = excluded.governing_law,
+  auto_renew = excluded.auto_renew,
+  renewal_term_months = excluded.renewal_term_months,
+  price_uplift_cap_pct = excluded.price_uplift_cap_pct,
+  discount_pct = excluded.discount_pct,
+  sap_owner = excluded.sap_owner,
+  csm = excluded.csm,
+  customer_owner = excluded.customer_owner,
+  sla = excluded.sla,
+  data_center = excluded.data_center,
+  deployment = excluded.deployment,
+  licensed_units = excluded.licensed_units,
+  used_units = excluded.used_units,
+  unit = excluded.unit,
+  invoicing = excluded.invoicing,
+  termination = excluded.termination,
+  notes = excluded.notes,
+  customer_id = excluded.customer_id;
+
+delete from sub4me.contract_lines where contract_id in ('C-2024-0905', 'C-2025-0612', 'C-2025-0718', 'C-2025-0833', 'C-2026-0051', 'C-2023-0344');
+
+insert into sub4me.contract_lines (contract_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('C-2024-0905', 1, 'S/4HANA Cloud Private Edition, core', 1100, 'users', 1450, 1595000),
+  ('C-2024-0905', 2, 'Validated environment and change-control service', 1, 'service', 310000, 310000),
+  ('C-2024-0905', 3, 'Premium Plus support', 1, 'service', 245000, 245000);
+
+insert into sub4me.contract_lines (contract_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('C-2025-0612', 1, 'Integrated Business Planning, planner licenses', 240, 'planners', 1150, 276000),
+  ('C-2025-0612', 2, 'Control tower and alerts', 1, 'service', 48000, 48000);
+
+insert into sub4me.contract_lines (contract_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('C-2025-0718', 1, 'Learning, employee licenses', 3900, 'employees', 29.5, 115050),
+  ('C-2025-0718', 2, 'Content integration and e-signature', 1, 'service', 24000, 24000);
+
+insert into sub4me.contract_lines (contract_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('C-2025-0833', 1, 'Serialization, packaging lines', 9, 'packaging lines', 38000, 342000),
+  ('C-2025-0833', 2, 'Regulatory reporting packages (EU, US)', 1, 'service', 72000, 72000);
+
+insert into sub4me.contract_lines (contract_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('C-2026-0051', 1, 'AI units, yearly allotment', 60000, 'units', 3, 180000);
+
+insert into sub4me.contract_lines (contract_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('C-2023-0344', 1, 'Ariba Buying and Invoicing', 210, 'buyers', 520, 109200),
+  ('C-2023-0344', 2, 'Supplier qualification content', 1, 'service', 18000, 18000);
+
+insert into sub4me.offers (id, sort_order, type, product, contract_id, scope, start_date, end_date, annual_eur, current_annual_eur, valid_until, status, created_on, owner, stage, probability_pct, list_price_eur, discount_pct, billing_cycle, payment_terms, term_months, auto_renew, price_uplift_cap_pct, price_guarantee_months, approval, competitor, next_step, conditions, customer_id) values
+  ('OFF-2026-0510', 100, 'Renewal', 'Ariba Procurement', 'C-2023-0344', '240 buyers, 2,300 suppliers including GxP supplier qualification, 3-year term', '2026-12-01', '2029-11-30', 229200, 127200, '2026-11-25', 'Open', '2026-10-02', '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, 'Proposal sent', 60, 251868, 9, 'Annual in advance', '30 days net', 36, false, 3, 36, 'Deal desk approved', 'None', 'Review of the supplier qualification workflow with Quality Assurance by 2026-11-06', 'Replaces the expired contract; supplier master data is migrated from the trial tenant.', 'lindenau'),
+  ('OFF-2026-0518', 101, 'New product', 'Joule for Quality (batch-record review) and AI units top-up', 'C-2026-0051', '25,000 additional AI units until 2026-12-31 and Joule skills for deviation and batch-record review', '2026-11-15', '2026-12-31', 129000, 0, '2026-11-30', 'In negotiation', '2026-10-09', '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, 'Negotiation', 55, 138710, 7, 'Annual in advance', '30 days net', 2, false, 0, 0, 'Pending deal desk (non-standard top-up terms) and validation concept from Quality Assurance', 'Own build on a hyperscaler (evaluation)', 'Validation concept review with Quality Assurance by 2026-10-30', 'Top-up units expire with the main allotment; productive use only after the validation concept is approved.', 'lindenau'),
+  ('OFF-2026-0526', 102, 'Expansion', 'SAP Integrated Business Planning', 'C-2025-0612', '60 additional planners and a cold-chain scenario package for 5 markets', '2027-01-01', '2028-03-31', 98000, 0, '2026-12-15', 'Open', '2026-10-12', '{"name":"Mira Hoffmann","role":"Account Executive Platform, SAP","email":"mira.hoffmann@example.com"}'::jsonb, 'Proposal sent', 45, 106522, 8, 'Annual in advance', '30 days net', 15, false, 3, 15, 'Deal desk approved', 'None', 'Workshop with Manufacturing IT on the cold-chain scenarios by 2026-11-12', 'Co-terminous with the existing contract; price per planner as in the current contract.', 'lindenau')
+on conflict (id) do update set
+  sort_order = excluded.sort_order,
+  type = excluded.type,
+  product = excluded.product,
+  contract_id = excluded.contract_id,
+  scope = excluded.scope,
+  start_date = excluded.start_date,
+  end_date = excluded.end_date,
+  annual_eur = excluded.annual_eur,
+  current_annual_eur = excluded.current_annual_eur,
+  valid_until = excluded.valid_until,
+  status = excluded.status,
+  created_on = excluded.created_on,
+  owner = excluded.owner,
+  stage = excluded.stage,
+  probability_pct = excluded.probability_pct,
+  list_price_eur = excluded.list_price_eur,
+  discount_pct = excluded.discount_pct,
+  billing_cycle = excluded.billing_cycle,
+  payment_terms = excluded.payment_terms,
+  term_months = excluded.term_months,
+  auto_renew = excluded.auto_renew,
+  price_uplift_cap_pct = excluded.price_uplift_cap_pct,
+  price_guarantee_months = excluded.price_guarantee_months,
+  approval = excluded.approval,
+  competitor = excluded.competitor,
+  next_step = excluded.next_step,
+  conditions = excluded.conditions,
+  customer_id = excluded.customer_id;
+
+delete from sub4me.offer_lines where offer_id in ('OFF-2026-0510', 'OFF-2026-0518', 'OFF-2026-0526');
+
+insert into sub4me.offer_lines (offer_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('OFF-2026-0510', 1, 'Ariba Buying and Invoicing', 240, 'buyers', 540, 129600),
+  ('OFF-2026-0510', 2, 'Supplier qualification content', 1, 'service', 26000, 26000),
+  ('OFF-2026-0510', 3, 'Supplier Risk module', 2300, 'suppliers', 32, 73600);
+
+insert into sub4me.offer_lines (offer_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('OFF-2026-0518', 1, 'AI units, top-up', 25000, 'units', 3, 75000),
+  ('OFF-2026-0518', 2, 'Joule skills for deviation and batch-record review', 1, 'service', 54000, 54000);
+
+insert into sub4me.offer_lines (offer_id, position, component, quantity, unit, unit_price_eur, annual_eur) values
+  ('OFF-2026-0526', 1, 'Integrated Business Planning, additional planners', 60, 'planners', 1150, 69000),
+  ('OFF-2026-0526', 2, 'Cold-chain scenario package', 1, 'service', 29000, 29000);
+
 insert into sub4me.invoices (id, customer_id, contract_id, type, period, issued_on, due_on, net_eur, vat_pct, gross_eur, status, paid_on, po_number, description) values
   ('INV-2026-10412', 'muster', 'C-2024-0187', 'Invoice', '2026-01-01 to 2026-12-31', '2026-01-01', '2026-01-31', 2840000, 19, 3379600, 'Paid', '2026-01-28', 'PO-4500187231', 'S/4HANA Cloud Private Edition, annual in advance'),
   ('INV-2026-10655', 'muster', 'C-2024-0233', 'Invoice', '2026-04-01 to 2027-03-31', '2026-04-01', '2026-05-01', 640000, 19, 761600, 'Paid', '2026-04-27', 'PO-4500233908', 'Business Technology Platform, annual in advance'),
@@ -267,12 +386,48 @@ on conflict (id) do update set
   po_number = excluded.po_number,
   description = excluded.description;
 
+insert into sub4me.invoices (id, customer_id, contract_id, type, period, issued_on, due_on, net_eur, vat_pct, gross_eur, status, paid_on, po_number, description) values
+  ('INV-2026-40110', 'lindenau', 'C-2026-0051', 'Invoice', 'month of 2026-09', '2026-10-06', '2026-11-05', 41800, 19, 49742, 'Open', null, 'PO-8800051660', 'Document AI overage, Q3'),
+  ('INV-2026-40104', 'lindenau', 'C-2025-0833', 'Invoice', '2026-10-01 to 2027-09-30', '2026-10-01', '2026-10-31', 414000, 19, 492660, 'Open', null, 'PO-8800833217', 'Advanced Track and Trace, annual in advance'),
+  ('INV-2026-40109', 'lindenau', 'C-2025-0612', 'Invoice', 'month of 2026-09', '2026-09-21', '2026-10-21', 36500, 19, 43435, 'Open', null, 'PO-8800612044', 'IBP additional demand-sensing capacity, Q3'),
+  ('INV-2026-40108', 'lindenau', 'C-2024-0905', 'Invoice', '2026-07-01 to 2027-06-30', '2026-09-14', '2026-10-14', 96000, 19, 114240, 'Overdue', null, 'PO-8800905120', 'S/4HANA validation package for release 2608 (change control and test evidence)'),
+  ('INV-2026-40102', 'lindenau', 'C-2025-0718', 'Invoice', '2026-07-01 to 2027-06-30', '2026-07-01', '2026-07-31', 139050, 19, 165469.5, 'Overdue', null, 'PO-8800718093', 'SuccessFactors Learning, annual in advance'),
+  ('INV-2026-40100', 'lindenau', 'C-2024-0905', 'Invoice', '2026-07-01 to 2027-06-30', '2026-07-01', '2026-07-31', 2150000, 19, 2558500, 'Paid', '2026-07-28', 'PO-8800905120', 'S/4HANA Cloud Private Edition, annual in advance'),
+  ('INV-2026-40101', 'lindenau', 'C-2025-0612', 'Invoice', '2026-04-01 to 2027-03-31', '2026-04-01', '2026-05-01', 324000, 19, 385560, 'Paid', '2026-04-29', 'PO-8800612044', 'Integrated Business Planning, annual in advance'),
+  ('CN-2026-00533', 'lindenau', 'C-2024-0905', 'Credit note', '2025-07-01 to 2026-06-30', '2026-03-02', '2026-04-01', -18700, 19, -22253, 'Settled', '2026-03-02', 'PO-8800905120', 'Credit for the planned maintenance window that exceeded the agreed 4 hours on 2026-02-14 (SLA 99.9 %)'),
+  ('INV-2026-40105', 'lindenau', 'C-2026-0051', 'Invoice', '2026-01-01 to 2026-12-31', '2026-01-01', '2026-01-31', 180000, 19, 214200, 'Paid', '2026-02-05', 'PO-8800051660', 'AI units 2026, annual in advance'),
+  ('INV-2026-40106', 'lindenau', 'C-2023-0344', 'Invoice', 'quarter starting 2025-11-01', '2025-11-01', '2025-12-01', 22400, 19, 26656, 'Paid', '2025-12-02', 'PO-8800344501', 'Ariba Procurement, quarterly in advance'),
+  ('INV-2026-40103', 'lindenau', 'C-2025-0833', 'Invoice', '2025-10-01 to 2026-09-30', '2025-10-01', '2025-10-31', 414000, 19, 492660, 'Paid', '2025-11-19', 'PO-8800833217', 'Advanced Track and Trace, annual in advance'),
+  ('INV-2026-40107', 'lindenau', 'C-2023-0344', 'Invoice', 'quarter starting 2025-08-01', '2025-08-01', '2025-08-31', 22400, 19, 26656, 'Paid', '2025-09-17', 'PO-8800344501', 'Ariba Procurement, quarterly in advance')
+on conflict (id) do update set
+  customer_id = excluded.customer_id,
+  contract_id = excluded.contract_id,
+  type = excluded.type,
+  period = excluded.period,
+  issued_on = excluded.issued_on,
+  due_on = excluded.due_on,
+  net_eur = excluded.net_eur,
+  vat_pct = excluded.vat_pct,
+  gross_eur = excluded.gross_eur,
+  status = excluded.status,
+  paid_on = excluded.paid_on,
+  po_number = excluded.po_number,
+  description = excluded.description;
+
 insert into sub4me.tickets (id, title, product, priority, status, description, created_on, updated_on, created_at, customer_id) values
   ('TKT-48166', 'SAP Commerce Cloud: storefront search returns no results after catalog import', 'SAP Commerce Cloud', 'High', 'In processing', 'After the nightly catalog import on 2026-10-09 the storefront search for the hanse-nord shop returns no hits. The index shows 0 documents.', '2026-10-10', '2026-10-16', '2026-10-10 08:00+00', 'hanse'),
   ('TKT-48041', 'Ariba Supplier Risk: risk scores not updated since 2026-10-01', 'Ariba Procurement and Supplier Risk', 'Medium', 'Waiting for customer', 'Scores for 3,800 suppliers show the date 2026-10-01. We need the list of suppliers with changed scores for the category review.', '2026-10-06', '2026-10-14', '2026-10-06 08:00+00', 'hanse'),
   ('TKT-47932', 'Document AI: VAT ID not extracted from scanned invoices of two suppliers', 'Document AI', 'High', 'In processing', 'Invoices from two logistics suppliers come back without the VAT ID field. Other fields are fine.', '2026-10-01', '2026-10-12', '2026-10-01 08:00+00', 'hanse'),
   ('TKT-47777', 'S/4HANA Cloud Public Edition: Fiori tile for supplier invoices missing after the upgrade', 'S/4HANA Cloud Public Edition', 'Low', 'Solution provided', 'After the 2608 upgrade the app Manage Supplier Invoices is not in the launchpad for the AP team.', '2026-09-24', '2026-10-02', '2026-09-24 08:00+00', 'hanse'),
   ('TKT-47120', 'Request: more Joule copilot agents for the shared service centre', 'Joule copilots', 'Medium', 'Closed', 'We want to run six agents in parallel instead of four.', '2026-08-18', '2026-08-29', '2026-08-18 08:00+00', 'hanse')
+on conflict (id) do nothing;
+
+insert into sub4me.tickets (id, title, product, priority, status, description, created_on, updated_on, created_at, customer_id) values
+  ('TKT-48212', 'S/4HANA Cloud Private Edition: batch release transaction ends with a short dump after the 2608 upgrade', 'S/4HANA Cloud Private Edition', 'High', 'In processing', 'After the 2608 upgrade in QAS the batch release (usage decision) dumps for batches with more than 40 characteristics. PRD is not yet upgraded; the validation run is blocked.', '2026-10-12', '2026-10-17', '2026-10-12 08:00+00', 'lindenau'),
+  ('TKT-48188', 'Advanced Track and Trace: serial number requests are rejected for the Swiss market', 'SAP Advanced Track and Trace', 'High', 'Waiting for customer', 'Since 2026-10-08 uploads for the Swiss repository are answered with a schema error. We need the failing messages from the packaging line 6 log.', '2026-10-09', '2026-10-15', '2026-10-09 08:00+00', 'lindenau'),
+  ('TKT-48097', 'Document AI: handwritten corrections on scanned batch records are not read', 'Document AI', 'Medium', 'In processing', 'Handwritten corrections with initials on the second page of the batch record come back as empty fields. Typed fields are read correctly.', '2026-10-05', '2026-10-13', '2026-10-05 08:00+00', 'lindenau'),
+  ('TKT-47921', 'SuccessFactors Learning: qualification status not updated after e-signature', 'SuccessFactors Learning', 'Medium', 'Solution provided', 'After the e-signature of a curriculum the status stays "in progress" until the nightly job. Quality Assurance needs it immediately for the line release.', '2026-09-29', '2026-10-08', '2026-09-29 08:00+00', 'lindenau'),
+  ('TKT-47340', 'Request: audit log export of all Joule agent actions for the next inspection', 'Joule copilots', 'Low', 'Closed', 'The inspection team asks for an export of all actions taken by Joule agents in the validated systems, with user and timestamp.', '2026-08-24', '2026-09-04', '2026-08-24 08:00+00', 'lindenau')
 on conflict (id) do nothing;
 
 

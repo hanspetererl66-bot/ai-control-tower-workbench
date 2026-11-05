@@ -24,10 +24,10 @@ test('data and page are in sync with the Sub4Me sample data and the design syste
   assert.ok(space.title && space.insights.length >= 3);
 });
 
-test('cases: both customers with SAP customer IDs, unique ids, decision date = end minus notice period', () => {
-  assert.deepEqual([...new Set(data.cases.map((c) => c.customerId))].sort(), ['hanse', 'muster']);
+test('cases: all customers with SAP customer IDs, unique ids, decision date = end minus notice period', () => {
+  assert.deepEqual([...new Set(data.cases.map((c) => c.customerId))].sort(), ['hanse', 'lindenau', 'muster']);
   assert.equal(new Set(data.cases.map((c) => c.id)).size, data.cases.length);
-  assert.equal(new Set(data.cases.map((c) => c.sapCustomerId)).size, 2);
+  assert.equal(new Set(data.cases.map((c) => c.sapCustomerId)).size, 3);
   for (const c of data.cases) {
     assert.match(c.sapCustomerId, /^00\d{8}$/);
     assert.equal(logic.daysBetween(c.decisionDate, c.end), c.noticeDays, c.id);
@@ -114,7 +114,7 @@ test('page: the switch exists, is off by default and nothing is really sent', ()
 
 test('customer situation: escalation, payment, usage and growth are derived from the contracts', () => {
   const sit = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; customerSituation`);
-  assert.deepEqual(data.customers.map((c) => c.id).sort(), ['hanse', 'muster']);
+  assert.deepEqual(data.customers.map((c) => c.id).sort(), ['hanse', 'lindenau', 'muster']);
   const muster = sit(data.customers.find((c) => c.id === 'muster'), data.cases), hanse = sit(data.customers.find((c) => c.id === 'hanse'), data.cases);
   assert.equal(muster.primary.key, 'escalation');
   assert.ok(muster.list.some((s) => s.key === 'payment') && muster.list.some((s) => s.key === 'usage'));
