@@ -184,3 +184,64 @@ test('handover: goal within 400 characters, links, extension and brief', () => {
   assert.ok(long.goal.length <= 400);
   assert.equal(handover({ ...clusters[0], cls: 'workflow-extension' }, reqs).base, 'workflow');
 });
+
+// ---------- signals ----------
+
+test('slack and notion prompts ask for mentions and quotes, jira does not; all say never to estimate', async () => {
+  const R = await import('../src/requirements.ts');
+  for (const s of ['slack', 'notion']) {
+    const p = R.fetchPrompt(s, 'x');
+    assert.match(p, /"mentions"/);
+    assert.match(p, /"quotes"/);
+    assert.match(p, /never estimate/);
+  }
+  assert.doesNotMatch(R.fetchPrompt('jira', 'ABC'), /mentions/);
+});
+
+test('mentions and quotes are read tolerantly: clamped, bounded, ignored for jira, default 1', async () => {
+  const R = await import('../src/requirements.ts');
+  const text = '```json\n' + JSON.stringify({ items: [
+    { key: 'a', title: 'A', text: 'x', mentions: 5, quotes: ['one', 'two', 'three', 'four', ''] },
+    { key: 'b', title: 'B', text: 'x', mentions: -3 },
+    { key: 'c', title: 'C', text: 'x', mentions: 'many' },
+    { key: 'd', title: 'D', text: 'x', mentions: 5000 },
+  ] }) + '\n```';
+  const s = R.parseRequirements(text, 'slack').items;
+  assert.equal(s[0].mentions, 5);
+  assert.deepEqual(s[0].quotes, ['one', 'two', 'three']);
+  assert.equal(R.mentionsOf(s[1]), 1);
+  assert.equal(R.mentionsOf(s[2]), 1);
+  assert.equal(s[3].mentions, 99);
+  const j = R.parseRequirements(text, 'jira').items;
+  assert.equal(R.mentionsOf(j[0]), 1, 'a Jira ticket is one voice');
+});
+
+test('a cluster adds up its requirements per source and shows the evidence, and says nothing for a single voice', async () => {
+  const R = await import('../src/requirements.ts');
+  const reqs = [
+    { id: 'slack:a', source: 'slack', key: '#req 1', title: 'A', text: '', url: 'https://x.test/a', author: '', date: '', mentions: 4, quotes: ['we need X (Ann, Mon)'] },
+    { id: 'notion:b', source: 'notion', key: 'p1', title: 'B', text: '', url: '', author: '', date: '', mentions: 2, quotes: ['X is missing'] },
+    { id: 'jira:C-1', source: 'jira', key: 'C-1', title: 'C', text: '', url: '', author: '', date: '' },
+    { id: 'slack:z', source: 'slack', key: '#req 9', title: 'Z', text: '', url: '', author: '', date: '' },
+  ];
+  const sig = R.signalOf({ reqIds: ['slack:a', 'notion:b', 'jira:C-1'] }, reqs);
+  assert.equal(sig.total, 7);
+  assert.deepEqual(sig.bySource, { slack: 4, notion: 2, jira: 1 });
+  assert.equal(sig.evidence.length, 2);
+  assert.equal(R.signalLine(sig), '7 mentions · Jira 1 · Slack 4 · Notion 2');
+  assert.equal(R.signalLine(R.signalOf({ reqIds: ['slack:z'] }, reqs)), '', 'one message from one source is not a signal');
+  assert.equal(R.signalOf({ reqIds: ['missing'] }, reqs).total, 0);
+});
+
+test('the hand-over brief carries the signal line and per-requirement counts', async () => {
+  const R = await import('../src/requirements.ts');
+  const reqs = [
+    { id: 'slack:a', source: 'slack', key: '#req 1', title: 'A', text: '', url: '', author: '', date: '', mentions: 4 },
+    { id: 'notion:b', source: 'notion', key: 'p1', title: 'B', text: '', url: '', author: '', date: '', mentions: 2 },
+  ];
+  const c = { id: 'c1', title: 'T', summary: 'S', reqIds: ['slack:a', 'notion:b'], suggestions: [], cls: 'feature', confidence: 0.8, reason: 'r', target: null };
+  const h = R.handover(c, reqs);
+  assert.match(h.brief, /\*\*Signals:\*\* 6 mentions · Slack 4 · Notion 2/);
+  assert.match(h.brief, /\[4 mentions\]/);
+  assert.match(R.clusterPrompt(reqs, [], []), /said 4 times/);
+});

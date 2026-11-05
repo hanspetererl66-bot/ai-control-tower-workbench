@@ -4977,6 +4977,10 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .dup-btn { display: inline-flex; align-items: center; gap: 6px; }
 .dup-btn svg { flex: none; }
 
+.sx-signal { font-size: 13px; color: var(--ink); background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.sx-signal small { color: var(--muted); }
+.sx-signal details { margin-top: 6px; }
+.sx-signal ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 /* Conversation rows: archive and delete icons instead of the "···" menu */
 .list-item-actions { flex: none; display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity 120ms ease; }
 .list-item:hover .list-item-actions,

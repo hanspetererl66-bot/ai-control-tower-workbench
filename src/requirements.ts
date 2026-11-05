@@ -13,7 +13,13 @@ export const SOURCES: Array<{ id: SourceKind; label: string; query: string; plac
   { id: 'notion', label: 'Notion', query: 'Page, database or search words', placeholder: 'e.g. the name of your requirements database', help: 'Uses the Notion connector (read only). Share the pages with its integration first.' },
 ];
 
-export type Requirement = { id: string; source: SourceKind; key: string; title: string; text: string; url: string; author: string; date: string };
+export type Requirement = {
+  id: string; source: SourceKind; key: string; title: string; text: string; url: string; author: string; date: string;
+  /** How many distinct messages or pages said the same thing (counted by the agent; 1 when unknown). */
+  mentions?: number;
+  /** Up to three short verbatim quotes that back the count. */
+  quotes?: string[];
+};
 /** The link from a project or feature back to what it came from. Small on purpose: it is stored with every revision. */
 export type SourceRef = { source: SourceKind; key: string; title: string; url: string };
 export type ExtendsRef = { id: string; name: string };
@@ -35,8 +41,10 @@ export function jqlOf(query: string): string {
 const JSON_ONLY = 'Answer with one JSON object only, inside a ```json block. No other text. Use read-only tools only: never create, change, comment on or post anything.';
 
 export function fetchPrompt(source: SourceKind, query: string): string {
-  const shape = `{"items":[{"key":"<id in the source, e.g. ABC-12>","title":"<one line>","text":"<the requirement in at most 500 characters, in the original language>","url":"<link or empty>","author":"<name or empty>","date":"<YYYY-MM-DD or empty>"}],"error":"<empty, or why nothing could be read>"}`;
-  const limit = `Return at most ${MAX_ITEMS} items. Shorten long texts; do not invent anything. If you cannot read the source (no tool, no access, nothing found), return an empty list and say why in "error".`;
+  const signal = source === 'jira' ? '' : ',"mentions":<whole number: how many different messages or pages say the same thing, 1 if only one>,"quotes":["<up to 3 short verbatim quotes, each with who and when if known, at most 160 characters>"]';
+  const shape = `{"items":[{"key":"<id in the source, e.g. ABC-12>","title":"<one line>","text":"<the requirement in at most 500 characters, in the original language>","url":"<link or empty>","author":"<name or empty>","date":"<YYYY-MM-DD or empty>"${signal}}],"error":"<empty, or why nothing could be read>"}`;
+  const merge = source === 'jira' ? '' : ' When several messages or pages state the same need, return ONE item for them, set "mentions" to the real number of different messages or pages and put up to three of them as verbatim quotes. Count only what you read; never estimate.';
+  const limit = `Return at most ${MAX_ITEMS} items. Shorten long texts; do not invent anything. If you cannot read the source (no tool, no access, nothing found), return an empty list and say why in "error".${merge}`;
   if (source === 'jira') {
     return ['Read requirements from Jira.', `Run jira_search_issues with this JQL: ${jqlOf(query)}`, 'Use jira_get_issue only where the description is needed to understand the requirement (at most 10 issues).', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
   }
@@ -69,7 +77,10 @@ export function parseRequirements(text: string, source: SourceKind): { items: Re
     const id = `${source}:${key}`;
     if (seen.has(id) || items.length >= MAX_ITEMS) return;
     seen.add(id);
-    items.push({ id, source, key, title: title || body.slice(0, 80), text: body, url: urlOf(r.url), author: cut(r.author, 80), date: cut(r.date, 20) });
+    const quotes = Array.isArray(r.quotes) ? r.quotes.map((q: unknown) => cut(q, 200)).filter(Boolean).slice(0, 3) : [];
+    const n = Math.floor(Number(r.mentions));
+    const mentions = source === 'jira' || !Number.isFinite(n) || n < 1 ? 1 : Math.min(n, 99);
+    items.push({ id, source, key, title: title || body.slice(0, 80), text: body, url: urlOf(r.url), author: cut(r.author, 80), date: cut(r.date, 20), ...(mentions > 1 ? { mentions } : {}), ...(quotes.length ? { quotes } : {}) });
   });
   return { items, error: cut(raw.error, 300) };
 }
@@ -140,7 +151,7 @@ export type Cluster = {
   warning?: string;
 };
 
-const entry = (r: Requirement) => `- ${r.id} | ${r.title}${r.text ? ` | ${r.text.slice(0, 300)}` : ''}`;
+const entry = (r: Requirement) => `- ${r.id} | ${r.title}${r.text ? ` | ${r.text.slice(0, 300)}` : ''}${r.mentions && r.mentions > 1 ? ` | said ${r.mentions} times` : ''}`;
 
 export function clusterPrompt(selected: Requirement[], others: Requirement[], registry: RegistryRef[]): string {
   const known = registry.filter((r) => r.kind === 'agent' || r.kind === 'workflow');
@@ -264,6 +275,34 @@ export function dismissSuggestion(clusters: Cluster[], clusterId: string, reqId:
 
 // ---------- hand-over ----------
 
+// ---------- signals: how often a need was voiced, and where ----------
+
+export type Signal = { total: number; bySource: Partial<Record<SourceKind, number>>; evidence: Array<{ source: SourceKind; key: string; quote: string; url: string }> };
+export const mentionsOf = (r: Requirement): number => Math.max(1, r.mentions ?? 1);
+
+/** What a cluster adds up to. Computed from its requirements, so it can never claim more than the agent reported for them. */
+export function signalOf(c: Pick<Cluster, 'reqIds'>, reqs: Requirement[]): Signal {
+  const bySource: Signal['bySource'] = {};
+  const evidence: Signal['evidence'] = [];
+  let total = 0;
+  for (const id of c.reqIds) {
+    const r = reqs.find((x) => x.id === id);
+    if (!r) continue;
+    const n = mentionsOf(r);
+    total += n;
+    bySource[r.source] = (bySource[r.source] ?? 0) + n;
+    for (const q of r.quotes ?? []) if (evidence.length < 8) evidence.push({ source: r.source, key: r.key, quote: q, url: r.url });
+  }
+  return { total, bySource, evidence };
+}
+
+/** One line for the card: "7 mentions · Slack 5 · Notion 2". Empty for a single mention from a single source. */
+export function signalLine(s: Signal): string {
+  const parts = SOURCES.filter((x) => s.bySource[x.id]).map((x) => `${x.label} ${s.bySource[x.id]}`);
+  if (s.total < 2 && parts.length < 2) return '';
+  return `${s.total} mention${s.total === 1 ? '' : 's'} · ${parts.join(' · ')}`;
+}
+
 export type Handover = {
   /** Which door it goes through. Extensions start a normal agent or workflow project and keep the link to the one they extend. */
   base: 'agent' | 'workflow' | 'feature';
@@ -290,8 +329,10 @@ export function handover(c: Cluster, reqs: Requirement[]): Handover {
     '',
     `**${commentOf(c).split('\n').join('  \n')}**`,
     '',
+    ...(signalLine(signalOf(c, reqs)) ? ['', `**Signals:** ${signalLine(signalOf(c, reqs))} (counted by the agent from what it read)`] : []),
+    '',
     '## Requirements',
-    ...mine.map((r) => `- **${r.key}** (${r.source}) ${r.title}${r.text && r.text !== r.title ? `: ${r.text}` : ''}${r.url ? ` ${r.url}` : ''}`),
+    ...mine.map((r) => `- **${r.key}** (${r.source}) ${r.title}${r.text && r.text !== r.title ? `: ${r.text}` : ''}${r.url ? ` ${r.url}` : ''}${r.mentions && r.mentions > 1 ? ` [${r.mentions} mentions]` : ''}`),
   ].join('\n');
   return { base: classBase(c.cls), name: c.title.slice(0, 80), goal, summary: (c.summary || c.title).replace(/\s+/g, ' ').trim().slice(0, 400), refs: mine.map(refOf), ...(ext ? { extends: ext } : {}), brief };
 }
