@@ -6,19 +6,19 @@
 
 <https://werkbank.example/ns/fin> a owl:Ontology ;
     rdfs:label "Werkbank Finance Pre-Close"@en ;
-    rdfs:comment "Baseline-Ontologie für den Finance-Pre-Close-Space: Gesellschaften, Konten, Kennzahlen, Belege, Prüfungen."@de .
+    rdfs:comment "Baseline-Ontologie für den Finance-Pre-Close-Space: Gesellschaften, Konten, Kennzahlen, Belege, Prüfungen."@de, "Baseline ontology for the Finance Pre-Close space: company codes, accounts, metrics, documents and checks."@en .
 
 # --- Klassen -----------------------------------------------------------
 :CompanyCode a owl:Class ;
     rdfs:label "Gesellschaft"@de, "Company Code"@en ;
-    rdfs:comment "Buchungskreis bzw. rechtliche Einheit, z. B. DE10, FR10, UK10."@de .
+    rdfs:comment "Buchungskreis bzw. rechtliche Einheit, z. B. DE10, FR10, UK10."@de, "Legal entity or posting unit, e.g. DE10, FR10, UK10."@en .
 
 :GLAccount a owl:Class ;
     rdfs:label "Sachkonto"@de, "G/L Account"@en .
 
 :Metric a owl:Class ;
     rdfs:label "Kennzahl"@de, "Metric"@en ;
-    rdfs:comment "Zertifizierte Geschäftskennzahl mit eindeutiger Definition."@de .
+    rdfs:comment "Zertifizierte Geschäftskennzahl mit eindeutiger Definition."@de, "Certified business metric with one binding definition."@en .
 
 :FinancialDocument a owl:Class ;
     rdfs:label "Beleg"@de, "Financial Document"@en .
@@ -33,28 +33,28 @@
 
 :PreCloseCheck a owl:Class ;
     rdfs:label "Pre-Close-Prüfung"@de, "Pre-Close Check"@en ;
-    rdfs:comment "Prüfschritt vor dem Periodenabschluss, z. B. offene Posten, Rückstellungen, Abstimmung."@de .
+    rdfs:comment "Prüfschritt vor dem Periodenabschluss, z. B. offene Posten, Rückstellungen, Abstimmung."@de, "Check run before the period is closed, e.g. open items, accruals, reconciliation."@en .
 
 :Dataset a owl:Class ;
     rdfs:label "Datenquelle"@de, "Dataset"@en ;
-    rdfs:comment "Tabelle oder View im Katalog werkbank_demo (Databricks)."@de .
+    rdfs:comment "Tabelle oder View im Katalog werkbank_demo (Databricks)."@de, "Table or view in the werkbank_demo catalog (Databricks)."@en .
 
 # --- Objekteigenschaften ----------------------------------------------
 :postedIn a owl:ObjectProperty ;
     rdfs:domain :FinancialDocument ; rdfs:range :CompanyCode ;
-    rdfs:label "gebucht in"@de .
+    rdfs:label "gebucht in"@de, "posted in"@en .
 
 :postedOnAccount a owl:ObjectProperty ;
     rdfs:domain :JournalEntry ; rdfs:range :GLAccount ;
-    rdfs:label "gebucht auf Konto"@de .
+    rdfs:label "gebucht auf Konto"@de, "posted on account"@en .
 
 :appliesTo a owl:ObjectProperty ;
     rdfs:domain :PreCloseCheck ; rdfs:range :CompanyCode ;
-    rdfs:label "gilt für"@de .
+    rdfs:label "gilt für"@de, "applies to"@en .
 
 :measuredBy a owl:ObjectProperty ;
     rdfs:domain :PreCloseCheck ; rdfs:range :Metric ;
-    rdfs:label "gemessen durch"@de .
+    rdfs:label "gemessen durch"@de, "measured by"@en .
 
 :derivedFrom a owl:ObjectProperty ;
     rdfs:domain :Metric ; rdfs:range :Dataset ;
@@ -62,33 +62,33 @@
 
 :dependsOn a owl:ObjectProperty ;
     rdfs:domain :Metric ; rdfs:range :Metric ;
-    rdfs:label "hängt ab von"@de .
+    rdfs:label "hängt ab von"@de, "depends on"@en .
 
 # --- Datentypeigenschaften --------------------------------------------
 :code a owl:DatatypeProperty ;
-    rdfs:range xsd:string ; rdfs:label "Code"@de .
+    rdfs:range xsd:string ; rdfs:label "Code"@de, "Code"@en .
 
 :definition a owl:DatatypeProperty ;
     rdfs:domain :Metric ; rdfs:range xsd:string ;
-    rdfs:label "Definition"@de ;
-    rdfs:comment "Verbindliche fachliche Definition der Kennzahl."@de .
+    rdfs:label "Definition"@de, "Definition"@en ;
+    rdfs:comment "Verbindliche fachliche Definition der Kennzahl."@de, "Binding business definition of the metric."@en .
 
 :formula a owl:DatatypeProperty ;
     rdfs:domain :Metric ; rdfs:range xsd:string ;
-    rdfs:label "Formel"@de .
+    rdfs:label "Formel"@de, "Formula"@en .
 
 :certifiedBy a owl:DatatypeProperty ;
     rdfs:domain :Metric ; rdfs:range xsd:string ;
-    rdfs:label "zertifiziert durch"@de .
+    rdfs:label "zertifiziert durch"@de, "certified by"@en .
 
 :currency a owl:DatatypeProperty ;
     rdfs:domain :CompanyCode ; rdfs:range xsd:string ;
-    rdfs:label "Währung"@de .
+    rdfs:label "Währung"@de, "Currency"@en .
 
 :country a owl:DatatypeProperty ;
     rdfs:domain :CompanyCode ; rdfs:range xsd:string ;
-    rdfs:label "Land"@de .
+    rdfs:label "Land"@de, "Country"@en .
 
 :tableName a owl:DatatypeProperty ;
     rdfs:domain :Dataset ; rdfs:range xsd:string ;
-    rdfs:label "Tabellenname"@de .
+    rdfs:label "Tabellenname"@de, "Table name"@en .

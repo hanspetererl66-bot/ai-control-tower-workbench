@@ -50,7 +50,7 @@ test('class members: subclasses when there are any, instances otherwise; definit
   assert.deepEqual(t('FinancialDocument').members, ['Invoice', 'JournalEntry']);
   assert.equal(t('FinancialDocument').membersKind, 'subclasses');
   assert.deepEqual(t('CompanyCode').members, ['DE10', 'FR10', 'UK10']);
-  assert.match(t('CompanyCode').definition, /Buchungskreis/);
+  assert.match(t('CompanyCode').definition, /Legal entity/); // English first, German stays in the file
   assert.equal(t('Invoice').definition, '');
 });
 
