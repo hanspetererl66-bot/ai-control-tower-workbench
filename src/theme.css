@@ -4993,3 +4993,7 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .list-item-act-armed { background: rgb(220 38 38 / 16%); color: #b91c1c; }
 :root[data-theme="dark"] .list-item-act-armed { color: #f87171; }
 @media (prefers-reduced-motion: reduce) { .list-item-actions { transition: none; } }
+
+/* The top bar drags the window; controls inside it must opt out or Electron swallows their mouse events
+   (the text-size slider, the search field and the filters of a Space did not react). */
+.topbar input, .topbar select, .topbar label, .topbar button, .topbar .space-tools, .topbar .space-zoom { -webkit-app-region: no-drag; }
