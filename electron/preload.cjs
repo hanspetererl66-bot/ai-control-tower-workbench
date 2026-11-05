@@ -61,6 +61,7 @@ contextBridge.exposeInMainWorld('host', {
     ipcRenderer.invoke('save-connector-config', { name, values, config }),
   removeSkill: (name) => ipcRenderer.invoke('remove-skill', name),
   skillPackInfo: (dir) => ipcRenderer.invoke('skill-pack-info', dir),
+  duplicateSkill: (dir) => ipcRenderer.invoke('skill-duplicate', dir),
   exportSkill: (dir) => ipcRenderer.invoke('skill-export', dir),
   importSkillOpen: () => ipcRenderer.invoke('skill-import-open'),
   importSkillInstall: (id, overwrite) => ipcRenderer.invoke('skill-import-install', id, overwrite),

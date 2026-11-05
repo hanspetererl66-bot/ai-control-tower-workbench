@@ -1,6 +1,6 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
@@ -15,6 +15,7 @@ import { createSkillStore } from './skill-store.mjs';
 import { createOntologyStore } from './ontology-store.mjs';
 import { createGovernanceSync, createSharedGovernance } from './ontology-shared.mjs';
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
+import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
@@ -799,6 +800,30 @@ ipcMain.handle('skill-import-install', async (_event, id, overwrite) => {
     // An import lands at the lowest level (Individual) and is stored in the shared database under the person's e-mail.
     const db = await skillStore.register(pkg.slug, pkg.files);
     return { ok: true, slug: pkg.slug, replaced: Boolean(overwrite), db };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
+  }
+});
+
+/** Duplicate a skill: a plain local copy (no database marker, no dot folders, no symlinks) under a free name. */
+ipcMain.handle('skill-duplicate', async (_event, dir) => {
+  if (!SKILL_SLUG.test(dir ?? '')) return { ok: false, detail: 'bad name' };
+  const from = join(SKILLS_DIR, dir);
+  if (!existsSync(join(from, 'SKILL.md'))) return { ok: false, detail: 'The skill has no SKILL.md.' };
+  try {
+    const slug = copySlug(dir, readdirSync(SKILLS_DIR));
+    const to = join(SKILLS_DIR, slug);
+    cpSync(from, to, {
+      recursive: true,
+      filter: (src) => {
+        const rel = relative(from, src);
+        if (!rel) return true;
+        if (rel.split(/[\\/]/).some((part) => part.startsWith('.') || part === 'node_modules')) return false;
+        return !lstatSync(src).isSymbolicLink();
+      },
+    });
+    writeFileSync(join(to, 'SKILL.md'), renameSkillMd(readFileSync(join(to, 'SKILL.md'), 'utf8'), slug));
+    return { ok: true, slug };
   } catch (e) {
     return { ok: false, detail: e?.message ?? String(e) };
   }
