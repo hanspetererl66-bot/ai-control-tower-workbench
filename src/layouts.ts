@@ -5,12 +5,12 @@
  * Pure data and functions, so the output can be tested.
  *
  *   minimal        flat, small corners, tight spacing, hairlines instead of shadows, calm type. The default.
- *   expressive     big corners, soft accent-tinted cards, depth, pill tabs and pill buttons, large numbers.
+ *   bold           graphic and loud: square corners, thick outlines, hard offset shadows, monospace numbers, graph paper.
  *   contemporary   "bento and glass": translucent cards with a blur, soft accent glow in the background, segmented tabs.
  *
  * Original CSS written for this app; it imitates the general direction of current product design, no site or asset.
  */
-export const LAYOUTS = ['minimal', 'expressive', 'contemporary'] as const;
+export const LAYOUTS = ['minimal', 'bold', 'contemporary'] as const;
 export type LayoutId = (typeof LAYOUTS)[number];
 export const DEFAULT_LAYOUT: LayoutId = 'minimal';
 
@@ -18,7 +18,7 @@ type LayoutDef = {
   name: string;
   description: string;
   /** What the little preview in the settings draws. */
-  preview: { radius: number; shadow: boolean; glass: boolean; pill: boolean; gap: number };
+  preview: { radius: number; shadow: boolean; glass: boolean; pill: boolean; hard?: boolean; gap: number };
   /** Rules for a Space page (design-system classes; `html` in front raises the weight above the Space's own styles). */
   space: string[];
   /** Rules for the app window. */
@@ -74,40 +74,47 @@ export const LAYOUT_DEFS: Record<LayoutId, LayoutDef> = {
       '.sov-tile,.sov-card,.sov-kid{border-radius:8px;box-shadow:none}',
     ],
   },
-  expressive: {
-    name: 'Expressive',
-    description: 'Rich and confident. Big rounded cards with a soft accent tint and depth, pill tabs and buttons, large numbers.',
-    preview: { radius: 11, shadow: true, glass: false, pill: true, gap: 6 },
+  bold: {
+    name: 'Bold',
+    description: 'Graphic and loud. Square corners, thick outlines, hard offset shadows, monospace numbers and a graph-paper background.',
+    preview: { radius: 0, shadow: true, glass: false, pill: false, hard: true, gap: 5 },
     space: [
-      'html:root{--radius:28px;--radius-s:16px;--shadow:0 2px 4px rgba(20,18,30,.05),0 14px 36px rgba(60,0,110,.12);--shadow-lg:0 32px 80px rgba(60,0,110,.32)}',
-      `${CARDS}{background:linear-gradient(160deg,var(--surface) 0%,color-mix(in srgb,var(--purple) 7%,var(--surface)) 100%);border-color:var(--purple-border)}`,
-      'html .card,html .ns{padding:30px;margin-bottom:22px}',
-      'html .mc{padding:26px 28px}',
-      'html .dtier,html .pc,html .cc{padding:22px}',
-      `${BIG}{font-size:40px;font-weight:700;letter-spacing:-.035em}`,
-      `${HEAD}{margin:44px 0 18px;font-size:16px;font-weight:700}`,
-      `${HEADER}{background:color-mix(in srgb,var(--purple) 9%,var(--surface));border-bottom:2px solid var(--purple-border)}`,
-      'html .ct .hdr{height:72px;padding:0 40px}',
-      'html .s4m header{min-height:72px;padding:0 40px}',
-      `${TABBAR}{padding:10px 40px;gap:6px}`,
-      `${TAB}{padding:9px 18px;margin:0;border-radius:99px;border-bottom:2px solid transparent}`,
-      `${TAB_ON}{background:var(--purple-dim);border-bottom-color:transparent}`,
-      `${PAGE}{padding:56px 40px 88px}`,
-      'html .ct .mr{gap:22px;margin-bottom:40px}',
-      'html .ct .g2,html .ct .g3,html .ct .g4{gap:26px}',
-      'html .s4m .grid{gap:22px;margin-bottom:36px}',
-      'html .tag{padding:4px 12px}',
-      `${BUTTONS}{border-radius:99px}`,
-      'html button.primary{padding:11px 22px;background:linear-gradient(135deg,var(--purple),var(--purple-mid));box-shadow:0 6px 18px var(--purple-border)}',
-      'html .ab{padding:22px 24px}',
-      `${NO_MOTION}{${CARDS}{transition:transform .2s ease,box-shadow .2s ease}${CARDS.split(',').map((s) => `${s}:hover`).join(',')}{transform:translateY(-3px);box-shadow:var(--shadow-lg)}}`,
+      'html:root,html:root[data-theme="light"],html:root[data-theme="dark"]{--radius:0px;--radius-s:0px;--shadow:4px 4px 0 var(--ink);--shadow-lg:8px 8px 0 var(--ink)}',
+      '@media (prefers-color-scheme:dark){html:root:not([data-theme="light"]){--shadow:4px 4px 0 var(--purple);--shadow-lg:8px 8px 0 var(--purple)}}',
+      'html:root[data-theme="dark"]{--shadow:4px 4px 0 var(--purple);--shadow-lg:8px 8px 0 var(--purple)}',
+      'html body{background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:16px 16px}',
+      `${CARDS}{border:2px solid var(--ink)}`,
+      'html .card,html .ns{padding:20px;margin-bottom:20px}',
+      'html .mc{padding:16px 18px}',
+      'html .dtier,html .pc,html .cc{padding:16px}',
+      `${BIG}{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:34px;font-weight:800;letter-spacing:-.03em}`,
+      `${HEAD}{margin:34px 0 16px;padding-bottom:6px;font-size:14px;font-weight:800;border-bottom:2px solid var(--ink)}`,
+      `${HEADER}{background:var(--surface);border-bottom:3px solid var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}`,
+      'html .ct .hdr-title,html .s4m .logo{font-weight:800}',
+      `${TABBAR}{padding:10px 24px;gap:6px;border-bottom:2px solid var(--ink)}`,
+      `${TAB}{padding:8px 14px;border:2px solid transparent;border-radius:0;font-weight:700}`,
+      `${TAB_ON}{background:var(--ink);color:var(--surface);border-color:var(--ink)}`,
+      `${PAGE}{padding:32px 28px 56px}`,
+      'html .ct .mr{gap:20px;margin-bottom:32px}',
+      'html .ct .g2,html .ct .g3,html .ct .g4{gap:20px}',
+      'html .s4m .grid{gap:20px;margin-bottom:30px}',
+      'html .tag{border:2px solid currentColor;border-radius:0;font-weight:700;padding:1px 8px}',
+      `${BUTTONS}{border:2px solid var(--ink);border-radius:0;font-weight:700;box-shadow:2px 2px 0 var(--ink)}`,
+      'html button.primary{border-color:var(--ink)}',
+      `${NO_MOTION}{${BUTTONS.split(',').map((x) => `${x}:hover:not(:disabled)`).join(',')}{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}}`,
+      `${BUTTONS.split(',').map((x) => `${x}:active:not(:disabled)`).join(',')}{transform:translate(2px,2px);box-shadow:none}`,
+      'html input,html select,html textarea{border:2px solid var(--ink);border-radius:0}',
+      'html .tbl th,html table th{border-bottom:2px solid var(--ink);color:var(--ink);font-weight:700}',
+      'html .ab{border-width:2px;border-radius:0}',
+      'html .ag-box{border:2px solid var(--ink);border-radius:0}',
     ],
     app: [
-      ':root{--radius:20px}',
-      '.composer{border-radius:26px;border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 10px 32px color-mix(in srgb,var(--accent) 16%,transparent)}',
-      '.msg-user{border-radius:22px;padding:11px 18px}',
-      '.briefing-card{border-radius:22px;box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 12%,transparent)}',
-      '.sov-tile,.sov-card,.sov-kid{border-radius:24px}',
+      ':root{--radius:2px}',
+      '.composer{border:2px solid var(--ink);border-radius:2px;box-shadow:4px 4px 0 var(--ink)}',
+      '.composer:focus-within{border-color:var(--accent);box-shadow:4px 4px 0 var(--accent)}',
+      '.msg-user{border:2px solid var(--ink);border-radius:2px;padding:8px 14px}',
+      '.briefing-card{border:2px solid var(--ink);border-radius:2px;box-shadow:3px 3px 0 var(--ink)}',
+      '.sov-tile,.sov-card,.sov-kid{border:2px solid var(--ink);border-radius:2px;box-shadow:3px 3px 0 var(--ink)}',
     ],
   },
   contemporary: {

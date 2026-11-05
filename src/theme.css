@@ -3489,6 +3489,10 @@ button {
 .layout-preview-depth .layout-tile {
   box-shadow: 0 4px 10px color-mix(in srgb, var(--ink) 14%, transparent);
 }
+.layout-preview-hard .layout-tile {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
 .layout-preview-glass .layout-tile {
   background: color-mix(in srgb, var(--panel) 60%, transparent);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 8%, transparent);
