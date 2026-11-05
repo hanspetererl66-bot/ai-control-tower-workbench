@@ -1,20 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applySpaceScale, DEFAULT_SPACE_SCALE, parseSpaceScale, readSpaceScale, writeSpaceScale } from '../src/space-scale.ts';
+import { applySpaceScale, DEFAULT_SPACE_SCALE, parseSpaceScale, readSpaceScale, SPACE_SCALES, writeSpaceScale } from '../src/space-scale.ts';
 
 test('default is 115% and unknown values fall back to it', () => {
   assert.equal(DEFAULT_SPACE_SCALE, 1.15);
-  assert.equal(parseSpaceScale('1.3'), 1.3);
+  assert.equal(parseSpaceScale('1.25'), 1.25);
   assert.equal(parseSpaceScale(1), 1);
-  for (const bad of ['abc', '2', null, undefined, '', 0]) assert.equal(parseSpaceScale(bad), 1.15);
+  for (const bad of ['abc', '2', '0.2', null, undefined, '', 0, NaN, Infinity]) assert.equal(parseSpaceScale(bad), 1.15, String(bad));
 });
 
 test('scale is read and written through storage and survives a broken storage', () => {
   const data = new Map();
   const storage = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => data.set(k, v) };
   assert.equal(readSpaceScale(storage), 1.15);
-  writeSpaceScale(1.3, storage);
-  assert.equal(readSpaceScale(storage), 1.3);
+  writeSpaceScale(1.25, storage);
+  assert.equal(readSpaceScale(storage), 1.25);
   const broken = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
   assert.equal(readSpaceScale(broken), 1.15);
   assert.doesNotThrow(() => writeSpaceScale(1, broken));
@@ -25,9 +25,9 @@ test('the rule is injected once into the head, or in front of a page without hea
   const page = '<!doctype html><html><head><meta charset="utf-8"><title>x</title></head><body>hi</body></html>';
   const scaled = applySpaceScale(page, 1.15);
   assert.ok(scaled.includes('<head><style id="werkbank-space-scale">html{zoom:1.15}</style><meta'));
-  assert.equal(applySpaceScale(scaled, 1.3), scaled, 'idempotent');
+  assert.equal(applySpaceScale(scaled, 1.25), scaled, 'idempotent');
   assert.equal(applySpaceScale(page, 1), page);
-  assert.ok(applySpaceScale('<p>fragment</p>', 1.3).startsWith('<style id="werkbank-space-scale">html{zoom:1.3}</style>'));
+  assert.ok(applySpaceScale('<p>fragment</p>', 1.25).startsWith('<style id="werkbank-space-scale">html{zoom:1.25}</style>'));
   assert.ok(applySpaceScale('<HEAD lang="de"><title>x</title>', 1.15).includes('<HEAD lang="de"><style'));
 });
 
@@ -54,4 +54,19 @@ test('the quick slider in the Space header walks through the same sizes as Setti
 test('the memory chip says on or off in full and never shrinks', () => {
   assert.match(readSource(new URL('../src/ui/ChatContextBar.tsx', import.meta.url), 'utf8'), /Memory \{p\.memoryEnabled \? `on · \$\{p\.memoryCount\}` : 'off'\}/);
   assert.match(readSource(new URL('../src/theme.css', import.meta.url), 'utf8'), /\.ctx-chip \{ flex: 0 0 auto; white-space: nowrap;/);
+});
+
+test('the range is 75% to 125% in five steps, and the default is one of them', () => {
+  assert.deepEqual([...SPACE_SCALES], [0.75, 0.85, 1, 1.15, 1.25]);
+  assert.ok(SPACE_SCALES.includes(DEFAULT_SPACE_SCALE));
+  for (const step of SPACE_SCALES) assert.equal(parseSpaceScale(step), step);
+  assert.equal(applySpaceScale('<head></head>', 0.75), '<head><style id="werkbank-space-scale">html{zoom:0.75}</style></head>');
+});
+
+test('values saved with the old range move to the nearest step instead of resetting', () => {
+  assert.equal(parseSpaceScale(1.3), 1.25);
+  assert.equal(parseSpaceScale('1.5'), 1.25);
+  assert.equal(parseSpaceScale(0.5), 0.75);
+  assert.equal(parseSpaceScale(1.08), 1.15);
+  assert.equal(parseSpaceScale(0.92), 0.85);
 });

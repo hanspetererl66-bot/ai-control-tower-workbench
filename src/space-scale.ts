@@ -5,13 +5,18 @@
  * Chromium's `zoom` scales text, spacing and charts together, so proportions stay intact.
  */
 export const SPACE_SCALE_STORAGE_KEY = 'werkbank.space-scale';
-export const SPACE_SCALES = [0.85, 1, 1.15, 1.3, 1.5] as const;
+export const SPACE_SCALES = [0.75, 0.85, 1, 1.15, 1.25] as const;
 export type SpaceScale = (typeof SPACE_SCALES)[number];
 export const DEFAULT_SPACE_SCALE: SpaceScale = 1.15;
 
+/**
+ * A stored value as one of the steps. Values saved before the range was 75% to 125% (130% and 150%) are moved to the
+ * nearest step instead of being thrown away; anything that is not a sensible number gives the default.
+ */
 export function parseSpaceScale(value: unknown): SpaceScale {
-  const number = typeof value === 'string' ? Number(value) : value;
-  return SPACE_SCALES.find((scale) => scale === number) ?? DEFAULT_SPACE_SCALE;
+  const number = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+  if (typeof number !== 'number' || !Number.isFinite(number) || number < 0.5 || number > 1.5) return DEFAULT_SPACE_SCALE;
+  return SPACE_SCALES.reduce((best, scale) => (Math.abs(scale - number) < Math.abs(best - number) ? scale : best), SPACE_SCALES[0]);
 }
 
 export function readSpaceScale(storage?: Pick<Storage, 'getItem'>): SpaceScale {

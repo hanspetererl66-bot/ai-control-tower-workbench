@@ -6,7 +6,7 @@
  * Everything coming from storage, a file or Supabase goes through `sanitizePreferences`.
  */
 import { DEFAULT_HARNESS_STATE, sanitizeHarnessState, type HarnessState } from './harness.ts';
-import { SPACE_SCALES } from './space-scale.ts';
+import { parseSpaceScale } from './space-scale.ts';
 import { DEFAULT_SKIN, isSkin, type SkinId } from './skins.ts';
 
 export const PREFERENCES_STORAGE_KEY = 'werkbank.preferences.v1';
@@ -150,11 +150,11 @@ export const BUILTIN_PROFILES: Profile[] = [
   },
   {
     id: 'demo', name: 'Demo on a big screen',
-    settings: { appScale: 1.25, spaceScale: 1.3, density: 'roomy', accent: '#A100FF', reduceMotion: false },
+    settings: { appScale: 1.25, spaceScale: 1.25, density: 'roomy', accent: '#A100FF', reduceMotion: false },
   },
   {
     id: 'accessible', name: 'High contrast and large text',
-    settings: { appScale: 1.25, spaceScale: 1.3, contrast: 'high', reduceMotion: true, font: 'readable' },
+    settings: { appScale: 1.25, spaceScale: 1.25, contrast: 'high', reduceMotion: true, font: 'readable' },
   },
 ];
 
@@ -208,7 +208,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (isSkin(v.skin)) out.skin = v.skin;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
-  if (SPACE_SCALES.includes(v.spaceScale as never)) out.spaceScale = v.spaceScale as number;
+  if (typeof v.spaceScale === 'number' && Number.isFinite(v.spaceScale) && v.spaceScale >= 0.5 && v.spaceScale <= 1.5) out.spaceScale = parseSpaceScale(v.spaceScale);
   if (FONTS.includes(v.font as never)) out.font = v.font as ProfileSettings['font'];
   if (DENSITIES.includes(v.density as never)) out.density = v.density as ProfileSettings['density'];
   if (CONTRASTS.includes(v.contrast as never)) out.contrast = v.contrast as ProfileSettings['contrast'];

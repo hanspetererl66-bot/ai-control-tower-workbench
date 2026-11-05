@@ -191,3 +191,14 @@ test('spaceHighlight skips notes about sample data and takes the first line that
   assert.equal(spaceHighlight(['Design mockup with fictional data.']), '');
   assert.equal(spaceHighlight(undefined), '');
 });
+
+import { sanitizePreferences as sanitizeForScale, sanitizeProfileSettings, DEFAULT_PREFERENCES as DEFAULTS_FOR_SCALE } from '../src/preferences.ts';
+import { SPACE_SCALES as SCALES_FOR_PREFS } from '../src/space-scale.ts';
+test('text size in Spaces: every step is kept, old 130% and 150% move to 125%, nonsense is ignored', () => {
+  for (const step of SCALES_FOR_PREFS) assert.equal(sanitizeProfileSettings({ spaceScale: step }).spaceScale, step);
+  assert.equal(sanitizeProfileSettings({ spaceScale: 1.3 }).spaceScale, 1.25);
+  assert.equal(sanitizeProfileSettings({ spaceScale: 1.5 }).spaceScale, 1.25);
+  for (const bad of [2, 0.1, '1.15', null, NaN]) assert.equal('spaceScale' in sanitizeProfileSettings({ spaceScale: bad }), false, String(bad));
+  assert.equal(sanitizeForScale({ spaceScale: 1.3 }).spaceScale, 1.25);
+  assert.equal(sanitizeForScale({}).spaceScale, DEFAULTS_FOR_SCALE.spaceScale);
+});
