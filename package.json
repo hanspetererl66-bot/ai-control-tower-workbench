@@ -100,6 +100,7 @@
   "dependencies": {
     "@aaif/goose-sdk": "^0.20.2",
     "@agentclientprotocol/sdk": "^0.19.2",
+    "n3": "^2.13.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",

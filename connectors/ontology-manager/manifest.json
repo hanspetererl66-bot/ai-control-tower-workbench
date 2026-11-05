@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "ontology-manager",
   "display_name": "Ontology Manager (OntoRAG)",
-  "version": "0.2.0",
-  "description": "Manages ontologies for the Werkbank with OntoRAG (open source, Apache-2.0, pip: ontorag). Browse, search and compose baseline ontologies, register new ones, and query an ontology with its instances over SPARQL. Can also grow ontologies from documents: it reads documents, proposes new or extended ontology terms with the quotes they come from, and changes the catalog only after you confirm the reviewed proposal. Ships a small Finance Pre-Close baseline (company codes DE10, FR10, UK10, certified metrics such as Margin and DSO, pre-close checks). Runs on this computer through uv (needs uv; the first start downloads the OntoRAG packages). Reading and querying need no key. Proposing from documents needs a language model: the text of the documents is sent to the model endpoint you configure.",
+  "version": "0.3.0",
+  "description": "Manages ontologies for the Werkbank with OntoRAG (open source, Apache-2.0, pip: ontorag). Browse, search and compose baseline ontologies, register new ones, query an ontology with its instances over SPARQL, and see what depends on a term before it is changed. Can also grow ontologies from documents: it reads documents, proposes new or extended ontology terms with the quotes they come from, and changes the catalog only after you confirm the reviewed proposal. Ships a small Finance Pre-Close baseline (company codes DE10, FR10, UK10, certified metrics such as Margin and DSO, pre-close checks). Runs on this computer through uv (needs uv; the first start downloads the OntoRAG packages). Reading and querying need no key. Proposing from documents needs a language model: the text of the documents is sent to the model endpoint you configure.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -85,6 +85,10 @@
     {
       "name": "sparql_construct",
       "description": "Run a read-only SPARQL CONSTRUCT over the ontology and its instances."
+    },
+    {
+      "name": "impact_of_term",
+      "description": "Show what depends on a term before it is changed: what it depends on, what points at it (other metrics, pre-close checks), and the owners to ask. Read-only; counts only what is modelled in the ontology."
     },
     {
       "name": "propose_ontology_from_documents",

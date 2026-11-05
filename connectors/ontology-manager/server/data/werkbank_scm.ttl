@@ -1,0 +1,49 @@
+@prefix : <https://werkbank.example/ns/scm#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://werkbank.example/ns/scm> a owl:Ontology ;
+    rdfs:label "Werkbank Procurement"@en ;
+    rdfs:comment "Second sample ontology: suppliers, purchase orders and goods receipts. Invented for the Werkbank demo."@en ,
+        "Zweite Beispiel-Ontologie: Lieferanten, Bestellungen und Wareneingänge. Für die Werkbank-Demo erfunden."@de .
+
+# --- Classes ------------------------------------------------------------
+:Supplier a owl:Class ;
+    rdfs:label "Lieferant"@de, "Supplier"@en ;
+    rdfs:comment "Ein Unternehmen, das Waren oder Dienstleistungen liefert."@de, "A company that delivers goods or services."@en .
+
+:PurchaseOrder a owl:Class ;
+    rdfs:label "Bestellung"@de, "Purchase Order"@en ;
+    rdfs:comment "Verbindliche Bestellung bei einem Lieferanten mit einer oder mehreren Positionen."@de, "A binding order placed with one supplier, with one or more lines."@en .
+
+:PurchaseOrderLine a owl:Class ;
+    rdfs:label "Bestellposition"@de, "Purchase Order Line"@en ;
+    rdfs:comment "Eine Position einer Bestellung mit Material, Menge und Preis."@de, "One line of a purchase order with material, quantity and price."@en .
+
+:GoodsReceipt a owl:Class ;
+    rdfs:label "Wareneingang"@de, "Goods Receipt"@en ;
+    rdfs:comment "Buchung, dass bestellte Ware angekommen ist."@de, "The posting that ordered goods have arrived."@en .
+
+# --- Object properties ----------------------------------------------------
+:orderedFrom a owl:ObjectProperty ;
+    rdfs:domain :PurchaseOrder ; rdfs:range :Supplier ;
+    rdfs:label "bestellt bei"@de, "ordered from"@en .
+
+:hasLine a owl:ObjectProperty ;
+    rdfs:domain :PurchaseOrder ; rdfs:range :PurchaseOrderLine ;
+    rdfs:label "hat Position"@de, "has line"@en .
+
+:receivesGoodsFor a owl:ObjectProperty ;
+    rdfs:domain :GoodsReceipt ; rdfs:range :PurchaseOrderLine ;
+    rdfs:label "bucht Ware zu"@de, "receives goods for"@en .
+
+# --- Datatype properties --------------------------------------------------
+:supplierNumber a owl:DatatypeProperty ;
+    rdfs:domain :Supplier ; rdfs:range xsd:string ;
+    rdfs:label "Lieferantennummer"@de, "supplier number"@en .
+
+:orderDate a owl:DatatypeProperty ;
+    rdfs:domain :PurchaseOrder ; rdfs:range xsd:date ;
+    rdfs:label "Bestelldatum"@de, "order date"@en .

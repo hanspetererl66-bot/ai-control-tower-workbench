@@ -685,6 +685,23 @@
           "date": "2026-10-20"
         }
       ]
+    },
+    "ontology-term-answer": {
+      "distribution": [
+        0,
+        0,
+        1,
+        3,
+        5
+      ],
+      "comments": [
+        {
+          "stars": 5,
+          "text": "Gives the certified definition and says who owns it, instead of guessing.",
+          "date": "2026-10-30",
+          "version": 1
+        }
+      ]
     }
   }
 }
