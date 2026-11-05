@@ -28,6 +28,7 @@ export const EXAMPLE_SPACES = {
   'mcp-marketplace': 'mcp-marketplace',
   'calm-alm': 'calm-alm',
   'abap-workbench': 'abap-workbench',
+  'design-study': 'design-study',
 };
 
 /**
