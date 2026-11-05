@@ -60,7 +60,8 @@ import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
-import { exampleOntologies } from './ontology-manager';
+import AdminView from './ui/AdminView';
+import { resolveCatalog, type OntologySource, type Ontology } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
@@ -202,7 +203,12 @@ export default function App() {
   });
   const skillCatalogRef = useRef(skillCatalog);
   skillCatalogRef.current = skillCatalog;
-  const ontologies = useMemo(() => exampleOntologies(), []);
+  const [ontologyData, setOntologyData] = useState<{ ontologies: Ontology[]; source: OntologySource }>({ ontologies: [], source: { kind: 'loading' } });
+  const loadOntologies = useCallback(async () => {
+    setOntologyData((d) => ({ ...d, source: { kind: 'loading' } }));
+    const answer = await window.host?.ontologyCatalog?.().catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
+    setOntologyData(resolveCatalog(answer));
+  }, []);
   const [skillSource, setSkillSource] = useState<SkillSource>({ kind: 'example', detail: '' });
   const changeSkillCatalog = useCallback((next: Catalog) => { skillCatalogRef.current = next; setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
   /** Reads the registry from the shared database. Without one the example catalog stays and the page says why. */
@@ -254,6 +260,7 @@ export default function App() {
     saveSchedules(next, window.localStorage);
   }, []);
   const [view, setView] = useState<View>('chat');
+  useEffect(() => { if (view === 'ontology') void loadOntologies(); }, [view, loadOntologies]);
   useEffect(() => { if (view === 'skillhealth') void loadSkillHealth(); }, [view, loadSkillHealth]);
   /** The Spaces landing page (domain tiles) shows until a Space is opened. */
   const [spacesHome, setSpacesHome] = useState(true);
@@ -1410,12 +1417,13 @@ export default function App() {
             setView('studio');
           }}
           onOpenRegistry={() => setView('registry')}
-          onOpenOntology={() => setView('ontology')}
         />
       ) : view === 'registry' ? (
         <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} />
+      ) : view === 'admin' ? (
+        <AdminView onOpenOntology={() => setView('ontology')} />
       ) : view === 'ontology' ? (
-        <OntologyManagerView ontologies={ontologies} onBack={() => setView('develop')} />
+        <OntologyManagerView ontologies={ontologyData.ontologies} source={ontologyData.source} onReload={() => void loadOntologies()} onBack={() => setView('admin')} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

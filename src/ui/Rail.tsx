@@ -3,10 +3,12 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'admin';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
-const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n', 'skillhealth', 'ontology'];
+const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n', 'skillhealth'];
+/** Screens that belong to Admin: its start page and the tiles it leads to. */
+const ADMIN_VIEWS: View[] = ['admin', 'ontology'];
 
 export default function Rail({
   view,
@@ -98,6 +100,15 @@ export default function Rail({
           aria-pressed={view === 'scheduler'}
         >
           <SchedulerIcon />
+        </button>
+        <button
+          className={`rail-btn ${ADMIN_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
+          onClick={() => onView('admin')}
+          title="Admin: manage what the agents share, such as ontologies"
+          aria-label="Admin"
+          aria-pressed={ADMIN_VIEWS.includes(view)}
+        >
+          <AdminIcon />
         </button>
       </div>
 
@@ -211,6 +222,16 @@ function DevelopIcon() {
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <path d="M5.6 6 1.8 10l3.8 4M14.4 6l3.8 4-3.8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M8.5 14.2 9.7 5.8M10.8 14.2l1.2-8.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AdminIcon() {
+  // A shield with a check: the place for those who look after the shared parts.
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2.5l6 2.3v4.6c0 3.7-2.5 6.6-6 8.1-3.5-1.5-6-4.4-6-8.1V4.8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M7.2 10l2 2 3.6-3.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

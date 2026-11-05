@@ -68,6 +68,7 @@ contextBridge.exposeInMainWorld('host', {
   skillDbRegister: (slug) => ipcRenderer.invoke('skill-db-register', slug),
   skillDbGroups: () => ipcRenderer.invoke('skill-db-groups'),
   skillDbRanking: () => ipcRenderer.invoke('skill-db-ranking'),
+  ontologyCatalog: () => ipcRenderer.invoke('ontology-catalog'),
   skillDbHealth: () => ipcRenderer.invoke('skill-db-health'),
   skillDbLifecycle: (args) => ipcRenderer.invoke('skill-db-lifecycle', args),
   skillDbPromotion: (tool, args) => ipcRenderer.invoke('skill-db-promotion', tool, args),

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { companyCodesIn, exampleOntologies, filterTerms, healthOf, impactOf, kpis, ownerLabel, usedLabel } from '../src/ontology-manager.ts';
+import { companyCodesIn, exampleOntologies, filterTerms, healthOf, impactOf, kpis, ownerLabel, resolveCatalog, usedLabel } from '../src/ontology-manager.ts';
 
 const root = join(import.meta.dirname, '..');
 const read = (f) => readFileSync(join(root, f), 'utf8');
@@ -106,7 +106,7 @@ test('the draft from documents has its two classes and no links', () => {
   assert.equal(impactOf(proc, 'Supplier').usedBy.length, 0);
 });
 
-test('the view uses tokens only (no hex colours), respects reduced motion, and is reachable from Develop', () => {
+test('the view uses tokens only (no hex colours), respects reduced motion, and is reachable from Admin, not from Develop', () => {
   const css = read('src/theme.css');
   const om = css.split('\n').filter((l) => /^\.om[-\s{.]|^:root\[data-theme="dark"\] \.om/.test(l)).join('\n');
   assert.ok(om.length > 200, 'the om styles exist');
@@ -114,12 +114,37 @@ test('the view uses tokens only (no hex colours), respects reduced motion, and i
   assert.match(css, /prefers-reduced-motion[^{]*\{[^}]*\.om/s);
   assert.match(read('src/ui/Rail.tsx'), /'ontology'/);
   assert.match(read('src/App.tsx'), /view === 'ontology'/);
-  assert.match(read('src/ui/DevelopHub.tsx'), /onOpenOntology/);
+  // Admin owns the way in: a rail button, an Admin page with the Ontologies tile, and nothing in the Develop hub
+  const rail = read('src/ui/Rail.tsx');
+  assert.match(rail, /View = [^;]*'admin'/);
+  assert.match(rail, /ADMIN_VIEWS: View\[\] = \['admin', 'ontology'\]/);
+  assert.match(rail, /onView\('admin'\)/);
+  assert.doesNotMatch(rail, /DEVELOP_VIEWS: View\[\] = [^;]*'ontology'/);
+  assert.match(read('src/App.tsx'), /view === 'admin'/);
+  assert.match(read('src/ui/AdminView.tsx'), /Open Ontologies/);
+  assert.doesNotMatch(read('src/ui/DevelopHub.tsx'), /ntolog/);
+});
+
+test('the real catalog is shown when the app answers; otherwise the example with the reason, never a silent mix', () => {
+  const real = [{ ...fin, example: false }];
+  const ok = resolveCatalog({ ok: true, ontologies: real, folder: '/x', instances: 'bundled', warnings: ['bad: not readable'] });
+  assert.equal(ok.source.kind, 'catalog');
+  assert.equal(ok.ontologies, real);
+  assert.equal(ok.source.folder, '/x');
+  const empty = resolveCatalog({ ok: true, ontologies: [] });
+  assert.equal(empty.source.kind, 'catalog');
+  assert.equal(empty.ontologies.length, 0);
+  const failed = resolveCatalog({ ok: false, code: 'not-configured', detail: 'The connector is not installed.' });
+  assert.equal(failed.source.kind, 'example');
+  assert.equal(failed.source.reason, 'The connector is not installed.');
+  assert.ok(failed.ontologies.every((o) => o.example));
+  assert.match(resolveCatalog(null).source.reason, /desktop app/);
 });
 
 test('the view labels its data as example data and has no dead buttons', () => {
   const v = read('src/ui/OntologyManagerView.tsx');
   assert.match(v, /Example data/);
+  assert.match(v, /Read from your ontology catalog/);
   // every button has a handler
   for (const m of v.matchAll(/<button\b[^>]*>/g)) assert.match(m[0], /onClick|disabled/, m[0]);
 });

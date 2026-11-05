@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   HEALTH_LABEL, companyCodesIn, filterTerms, healthOf, impactOf, kpis, ownerLabel, propLabel, usedLabel,
-  type Ontology, type Term, type TermFilter,
+  type Ontology, type OntologySource, type Term, type TermFilter,
 } from '../ontology-manager';
 
 const FILTERS: Array<{ id: TermFilter; label: string }> = [
@@ -10,10 +10,12 @@ const FILTERS: Array<{ id: TermFilter; label: string }> = [
 
 /**
  * Ontology Manager, catalog (design proposal 1): the ontologies, every term with its owner, use and health, and the
- * details of the selected term including what depends on it. Read-only. Until the view is connected to the connector's
- * catalog it shows the bundled Finance Pre-Close sample and says so.
+ * details of the selected term including what depends on it. Read-only. It shows the catalog of the Ontology Manager
+ * connector; when the catalog cannot be read it shows the bundled Finance Pre-Close sample and says why.
  */
-export default function OntologyManagerView({ ontologies, onBack }: { ontologies: Ontology[]; onBack: () => void }) {
+export default function OntologyManagerView({ ontologies, source, onReload, onBack }: {
+  ontologies: Ontology[]; source: OntologySource; onReload: () => void; onBack: () => void;
+}) {
   const [slug, setSlug] = useState(ontologies[0]?.slug ?? '');
   const [filter, setFilter] = useState<TermFilter>('all');
   const [query, setQuery] = useState('');
@@ -21,7 +23,15 @@ export default function OntologyManagerView({ ontologies, onBack }: { ontologies
   const onto = ontologies.find((o) => o.slug === slug) ?? ontologies[0];
   const k = useMemo(() => (onto ? kpis(onto) : null), [onto]);
   const rows = useMemo(() => (onto ? filterTerms(onto, filter, query) : []), [onto, filter, query]);
-  if (!onto || !k) return <main className="om"><p className="om-note">No ontology in the catalog yet.</p></main>;
+  if (source.kind === 'loading' && !onto) return <main className="om"><p className="om-note" role="status">Reading the ontology catalog…</p></main>;
+  if (!onto || !k) {
+    return (
+      <main className="om">
+        <p className="om-note">No ontology in the catalog yet. Ask the Ontology Manager in the chat to register one or to propose one from a document.</p>
+        <div className="om-source"><button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin</button></div>
+      </main>
+    );
+  }
   const selected = onto.terms.find((t) => t.id === picked) ?? rows[0] ?? onto.terms[0];
   const counts: Record<TermFilter, number> = {
     all: onto.terms.length, metrics: k.metrics, classes: k.classes, attention: k.needAttention,
@@ -30,9 +40,9 @@ export default function OntologyManagerView({ ontologies, onBack }: { ontologies
   return (
     <main className="om">
       <header className="om-hero">
-        <button className="om-back" onClick={onBack} aria-label="Back to Develop">←</button>
+        <button className="om-back" onClick={onBack} aria-label="Back to Admin">←</button>
         <div className="om-hero-text">
-          <p className="om-crumb">Develop</p>
+          <p className="om-crumb">Admin</p>
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
           <p className="om-lede">The shared vocabulary of your agents in one place: owned, reviewed and traceable to the document it came from.</p>
         </div>
@@ -42,7 +52,19 @@ export default function OntologyManagerView({ ontologies, onBack }: { ontologies
         </label>
       </header>
 
-      {onto.example && <p className="om-note" role="note">Example data: the bundled Finance Pre-Close sample. It is not yet read from your ontology catalog, and nothing here can be changed.</p>}
+      <div className="om-source">
+        {source.kind === 'example' && <p className="om-note" role="note">Example data: the bundled Finance Pre-Close sample. {source.reason} Nothing here can be changed.</p>}
+        {source.kind === 'loading' && <p className="om-note" role="status">Reading the ontology catalog…</p>}
+        {source.kind === 'catalog' && (
+          <p className="om-note" role="note">
+            Read from your ontology catalog{source.folder ? ` (${source.folder})` : ''}. Read-only.
+            {source.instances === 'bundled' && ' Metrics, checks and links come from the bundled Finance Pre-Close instances.'}
+            {source.instances === 'none' && ' No instances file was found, so metrics and links are not shown.'}
+            {source.warnings.length > 0 && ` Skipped: ${source.warnings.join('; ')}.`}
+          </p>
+        )}
+        <button className="om-filter" onClick={onReload} disabled={source.kind === 'loading'}>Reload</button>
+      </div>
 
       <section className="om-kpis" aria-label="Summary">
         <div className="om-kpi"><span>Classes</span><b>{k.classes}</b></div>

@@ -105,6 +105,7 @@ declare global {
       skillDbRegister?: (slug: string) => Promise<{ ok: boolean; detail?: string; version?: number | null }>;
       skillDbGroups?: () => Promise<{ ok: boolean; detail?: string; rows?: Array<{ id: string; name: string; role: string }> }>;
       skillDbRanking?: () => Promise<{ ok: boolean; detail?: string; rows?: Array<{ slug: string; description?: string; installs: number; views: number; devices: number; score: number }> }>;
+      ontologyCatalog?: () => Promise<import('./ontology-manager').CatalogAnswer>;
       skillDbHealth?: () => Promise<{ ok: boolean; detail?: string; actor?: string; data?: { generatedAt?: string; total?: number; skills?: unknown[] } }>;
       skillDbLifecycle?: (args: { slug: string; action: string; reason?: string; sunsetAt?: string; replacedBy?: string }) => Promise<{ ok: boolean; detail?: string; data?: unknown }>;
       skillDbPromotion?: (tool: string, args: Record<string, unknown>) => Promise<{ ok: boolean; detail?: string; data?: any }>;

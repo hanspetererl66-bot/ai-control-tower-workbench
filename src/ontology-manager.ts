@@ -193,6 +193,39 @@ export function companyCodesIn(o: Ontology, impact: Impact): string[] {
   return [...codes].sort();
 }
 
+// ---------------------------------------------------------------- where the data comes from
+
+/** Where the shown ontologies come from. */
+export type OntologySource =
+  | { kind: 'loading' }
+  | { kind: 'catalog'; folder: string; instances: 'bundled' | 'configured' | 'none'; warnings: string[] }
+  | { kind: 'example'; reason: string };
+
+/** What the desktop app answers when the view asks for the catalog (`electron/ontology-store.mjs`). */
+export interface CatalogAnswer {
+  ok: boolean;
+  code?: string;
+  detail?: string;
+  ontologies?: Ontology[];
+  warnings?: string[];
+  folder?: string;
+  instances?: 'bundled' | 'configured' | 'none';
+}
+
+/** The real catalog when the app could read it, otherwise the bundled example with the reason, never a silent mix. */
+export function resolveCatalog(answer: CatalogAnswer | null | undefined): { ontologies: Ontology[]; source: OntologySource } {
+  if (answer?.ok && Array.isArray(answer.ontologies)) {
+    return {
+      ontologies: answer.ontologies,
+      source: { kind: 'catalog', folder: answer.folder ?? '', instances: answer.instances ?? 'none', warnings: answer.warnings ?? [] },
+    };
+  }
+  const reason = answer
+    ? (answer.detail || 'The catalog could not be read.')
+    : 'The catalog can only be read in the desktop app.';
+  return { ontologies: exampleOntologies(), source: { kind: 'example', reason } };
+}
+
 // ---------------------------------------------------------------- example data (bundled Finance Pre-Close sample)
 
 const cls = (id: string, label: string, definition: string, members: string[] = [], membersKind: Term['membersKind'] = 'instances'): Term =>
