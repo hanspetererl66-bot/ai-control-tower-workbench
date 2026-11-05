@@ -3967,6 +3967,114 @@
         ],
         "favorites": 11
       }
+    },
+    "ontology-term-answer": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          3,
+          8,
+          14,
+          19
+        ],
+        "successRatePct": 94,
+        "avgRating": 4.4,
+        "ratings": 9,
+        "minutesSavedPerRun": 12,
+        "errorRatePct": 1,
+        "avgSeconds": 12,
+        "costPerRunEur": 0.06,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5",
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-05-20",
+        "nextReview": "2027-05-20",
+        "linkedRisks": [],
+        "linkedAgents": [],
+        "approvalHistory": [
+          {
+            "date": "2026-05-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-05-20",
+            "summary": "Search the registry before building a new skill."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "search_skills",
+            "get_skill_info"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-12"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Gibt es einen Skill für Reisekostenprüfung?",
+          "Ich will einen Skill für Rechnungsabgleich bauen, gibt es das schon?"
+        ],
+        "demoFlow": [
+          "Aufgabe in einem Satz beschreiben",
+          "Review the hits with owner and maturity",
+          "Install the matching skill or ask the owner"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower with Supabase"
+        ],
+        "tags": [
+          "Registry",
+          "Wiederverwendung"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "board-briefing"
+        ],
+        "recommendedFor": [
+          "Platform Engineer",
+          "AI Programme Manager",
+          "Product Manager"
+        ],
+        "favorites": 22
+      }
     }
   },
   "processGaps": [
@@ -4632,7 +4740,8 @@
       "skills": [
         "board-briefing",
         "access-review-prep",
-        "automation-health-check"
+        "automation-health-check",
+        "ontology-term-answer"
       ]
     },
     {

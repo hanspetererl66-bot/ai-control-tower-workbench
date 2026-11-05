@@ -67,11 +67,48 @@ def build_app():
             tags=["finance", "preclose", "werkbank"],
         )
 
+    if "werkbank_scm" not in known:  # the second sample ontology; added once, never replaced
+        register_ontology(
+            str(catalog),
+            "werkbank_scm",
+            str(DATA / "werkbank_scm.ttl"),
+            label="Werkbank Procurement",
+            description="Suppliers, purchase orders and goods receipts (sample)",
+            tags=["procurement", "werkbank"],
+        )
+
     app = FastMCP("werkbank-ontology-manager")
     app.mount(create_ontology_mcp(str(catalog)))
     app.mount(create_mcp_app(LocalRdfBackend(onto, inst)))
     register_document_tools(app, ws, d2o)
+    register_impact_tool(app, onto, inst)
     return app
+
+
+def register_impact_tool(app, onto: str, inst: str) -> None:
+    """Read-only impact analysis over the same two files the knowledge tools read."""
+    import asyncio
+
+    import impact
+    from fastmcp.exceptions import ToolError
+
+    @app.tool()
+    async def impact_of_term(term: str, depth: int = 3) -> dict:
+        """Show what depends on a term before it is changed. Read-only.
+
+        term is a full IRI, a local name such as DSO, or a label such as "Days Sales
+        Outstanding". Returns what the term depends on, everything that points at it
+        (up to depth hops: other metrics, pre-close checks, ...) with the links of each,
+        counts by kind, and the owners (certifiedBy) to ask before a change. For a class
+        it also lists subclasses, instances and properties. Only what is modelled in the
+        ontology and its instances is counted; agents and skills that are not modelled
+        there are not listed."""
+        def run():
+            return impact.impact_of_term(impact.load_graph(onto, inst), term, depth)
+        try:
+            return await asyncio.to_thread(run)
+        except impact.ImpactError as e:
+            raise ToolError(str(e)) from e
 
 
 def register_document_tools(app, ws, d2o) -> None:

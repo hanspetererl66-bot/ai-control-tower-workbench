@@ -13,6 +13,7 @@ const ONTORAG_TOOLS = [
   'list_ontologies', 'inspect_ontology', 'search_classes', 'search_properties', 'compose', 'add_ontology',
   'describe', 'list_by_class', 'outgoing', 'incoming', 'mentions', 'sparql_select', 'sparql_construct',
 ];
+const IMPACT_TOOLS = ['impact_of_term'];
 const DOCUMENT_TOOLS = [
   'propose_ontology_from_documents', 'list_ontology_proposals', 'show_ontology_proposal',
   'apply_ontology_proposal', 'discard_ontology_proposal', 'document_ontology_settings',
@@ -39,10 +40,11 @@ test('the Ontology Manager starts the launcher with uv and OntoRAG, over stdio, 
   }
 });
 
-test('the manifest lists the thirteen OntoRAG tools and the six document tools, and the launcher registers each one', () => {
-  assert.deepEqual(manifest.tools.map((t) => t.name).sort(), [...ONTORAG_TOOLS, ...DOCUMENT_TOOLS].sort());
+test('the manifest lists the thirteen OntoRAG tools, the impact tool and the six document tools, and the launcher registers each one', () => {
+  assert.deepEqual(manifest.tools.map((t) => t.name).sort(), [...ONTORAG_TOOLS, ...IMPACT_TOOLS, ...DOCUMENT_TOOLS].sort());
+  assert.equal(manifest.tools.length, 20);
   const py = readFileSync(join(DIR, 'server/ontorag_stdio.py'), 'utf8');
-  for (const t of DOCUMENT_TOOLS) assert.match(py, new RegExp(`async def ${t}\\(`), `${t} is registered`);
+  for (const t of [...DOCUMENT_TOOLS, ...IMPACT_TOOLS]) assert.match(py, new RegExp(`async def ${t}\\(`), `${t} is registered`);
   for (const t of manifest.tools) assert.ok(t.description.length > 10, `${t.name} has a description`);
 });
 
@@ -98,4 +100,29 @@ test('the end-to-end test and its mock model exist and are not part of the bundl
     assert.ok(!existsSync(join(target, 'test')), 'tests are not shipped');
     assert.ok(existsSync(join(target, 'server/doc_to_ontology.py')), 'the document module is shipped');
   } finally { rmSync(target, { recursive: true, force: true }); }
+});
+
+test('impact_of_term is read-only: no writes, no deletions, no network', () => {
+  const py = readFileSync(join(DIR, 'server/impact.py'), 'utf8');
+  assert.doesNotMatch(py, /\.serialize\(|open\([^)]*['"]w|write_text|rmtree|unlink|os\.remove|requests|urllib|http/);
+  assert.match(py, /\.parse\(/);
+  const launcher = readFileSync(join(DIR, 'server/ontorag_stdio.py'), 'utf8');
+  assert.match(launcher, /register_impact_tool\(app, onto, inst\)/);
+  const stage = mkdtempSync(join(tmpdir(), 'ontology-manager-'));
+  try {
+    stageConnector('ontology-manager', stage);
+    assert.ok(existsSync(join(stage, 'server/impact.py')), 'the impact module is shipped');
+  } finally { rmSync(stage, { recursive: true, force: true }); }
+});
+
+test('the demo handbook exists, uses the demo company codes and is not part of the bundle', () => {
+  const md = readFileSync(join(DIR, 'examples/finance-closing-handbook.md'), 'utf8');
+  for (const code of ['DE10', 'FR10', 'UK10']) assert.match(md, new RegExp(code));
+  for (const w of ['accrual', 'GR/IR', 'intercompany difference', 'Group Controlling']) assert.match(md.toLowerCase(), new RegExp(w.toLowerCase()));
+  assert.match(md, /invented/);
+  const stage = mkdtempSync(join(tmpdir(), 'ontology-manager-'));
+  try {
+    stageConnector('ontology-manager', stage);
+    assert.ok(!existsSync(join(stage, 'examples')), 'examples are not shipped');
+  } finally { rmSync(stage, { recursive: true, force: true }); }
 });

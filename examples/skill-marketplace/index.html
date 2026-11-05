@@ -561,7 +561,7 @@ details.intro .body{margin-top:8px}
 </main>
 <script type="application/json" id="sm-data">
 {
-  "asOf": "2026-10-25",
+  "asOf": "2026-11-05",
   "source": "repository",
   "taxonomy": {
     "boardAreas": [
@@ -990,6 +990,35 @@ details.intro .body{margin-top:8px}
       "tools": [
         "get_customer_overview",
         "list_offers"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "ontology-term-answer",
+      "description": "Answers \"What is DSO?\" or \"Who owns Margin?\" with the certified definition, formula and owner from the Ontology Manager, and names who to ask before a change. Nutzen bei \"Was bedeutet\", \"wer verantwortet\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Governance & Risiko",
+      "process": "Business terms",
+      "boardArea": "Engineering",
+      "lob": "",
+      "team": "AI Programme Office",
+      "scope": "board-area",
+      "dataClass": "intern",
+      "tools": [
+        "search_classes",
+        "describe",
+        "impact_of_term"
       ],
       "demand": {
         "installs": 0,
@@ -5531,6 +5560,114 @@ details.intro .body{margin-top:8px}
         ],
         "favorites": 11
       }
+    },
+    "ontology-term-answer": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          3,
+          8,
+          14,
+          19
+        ],
+        "successRatePct": 94,
+        "avgRating": 4.4,
+        "ratings": 9,
+        "minutesSavedPerRun": 12,
+        "errorRatePct": 1,
+        "avgSeconds": 12,
+        "costPerRunEur": 0.06,
+        "model": "Claude Haiku 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Haiku 5.5",
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-05-20",
+        "nextReview": "2027-05-20",
+        "linkedRisks": [],
+        "linkedAgents": [],
+        "approvalHistory": [
+          {
+            "date": "2026-05-20",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-05-20",
+            "summary": "Search the registry before building a new skill."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "search_skills",
+            "get_skill_info"
+          ],
+          "connectors": [
+            "ai-control-tower"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "S. Roth",
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "de",
+          "en"
+        ],
+        "tests": {
+          "total": 8,
+          "passed": 8,
+          "lastRun": "2026-10-12"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Gibt es einen Skill für Reisekostenprüfung?",
+          "Ich will einen Skill für Rechnungsabgleich bauen, gibt es das schon?"
+        ],
+        "demoFlow": [
+          "Aufgabe in einem Satz beschreiben",
+          "Review the hits with owner and maturity",
+          "Install the matching skill or ask the owner"
+        ],
+        "prerequisites": [
+          "Connector ai-control-tower with Supabase"
+        ],
+        "tags": [
+          "Registry",
+          "Wiederverwendung"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [
+          "board-briefing"
+        ],
+        "recommendedFor": [
+          "Platform Engineer",
+          "AI Programme Manager",
+          "Product Manager"
+        ],
+        "favorites": 22
+      }
     }
   },
   "processGaps": [
@@ -6196,7 +6333,8 @@ details.intro .body{margin-top:8px}
       "skills": [
         "board-briefing",
         "access-review-prep",
-        "automation-health-check"
+        "automation-health-check",
+        "ontology-term-answer"
       ]
     },
     {
@@ -6936,6 +7074,23 @@ details.intro .body{margin-top:8px}
             "text": "Ein Duplikat weniger pro Woche, und die Note kommt direkt mit.",
             "version": 1,
             "date": "2026-10-20"
+          }
+        ]
+      },
+      "ontology-term-answer": {
+        "distribution": [
+          0,
+          0,
+          1,
+          3,
+          5
+        ],
+        "comments": [
+          {
+            "stars": 5,
+            "text": "Gives the certified definition and says who owns it, instead of guessing.",
+            "date": "2026-10-30",
+            "version": 1
           }
         ]
       }

@@ -3,48 +3,48 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 # Gesellschaftscodes wie in PR #171 (DE10, FR10, UK10)
-:DE10 a :CompanyCode ; rdfs:label "Werkbank Demo Deutschland"@de ;
+:DE10 a :CompanyCode ; rdfs:label "Werkbank Demo Deutschland"@de, "Werkbank Demo Germany"@en ;
     :code "DE10" ; :country "DE" ; :currency "EUR" .
-:FR10 a :CompanyCode ; rdfs:label "Werkbank Demo Frankreich"@de ;
+:FR10 a :CompanyCode ; rdfs:label "Werkbank Demo Frankreich"@de, "Werkbank Demo France"@en ;
     :code "FR10" ; :country "FR" ; :currency "EUR" .
-:UK10 a :CompanyCode ; rdfs:label "Werkbank Demo Vereinigtes Königreich"@de ;
+:UK10 a :CompanyCode ; rdfs:label "Werkbank Demo Vereinigtes Königreich"@de, "Werkbank Demo United Kingdom"@en ;
     :code "UK10" ; :country "GB" ; :currency "GBP" .
 
 # Datenquellen im Katalog werkbank_demo (Schemas fin, ops, scm)
-:ds_invoices a :Dataset ; rdfs:label "Rechnungen"@de ;
+:ds_invoices a :Dataset ; rdfs:label "Rechnungen"@de, "Invoices"@en ;
     :tableName "werkbank_demo.fin.invoices" .
-:ds_gl a :Dataset ; rdfs:label "Hauptbuch"@de ;
+:ds_gl a :Dataset ; rdfs:label "Hauptbuch"@de, "General ledger"@en ;
     :tableName "werkbank_demo.fin.gl_entries" .
-:ds_po a :Dataset ; rdfs:label "Bestellungen"@de ;
+:ds_po a :Dataset ; rdfs:label "Bestellungen"@de, "Purchase orders"@en ;
     :tableName "werkbank_demo.scm.purchase_orders" .
 
 # Zertifizierte Kennzahlen
 :Margin a :Metric ; rdfs:label "Marge"@de, "Margin"@en ;
-    :definition "Deckungsbeitrag I in Prozent des Nettoumsatzes, vor Gemeinkosten, in Gesellschaftswährung."@de ;
-    :formula "(Nettoumsatz - Herstellkosten) / Nettoumsatz" ;
+    :definition "Deckungsbeitrag I in Prozent des Nettoumsatzes, vor Gemeinkosten, in Gesellschaftswährung."@de, "Contribution margin I as a percentage of net revenue, before overheads, in company code currency."@en ;
+    :formula "(Nettoumsatz - Herstellkosten) / Nettoumsatz", "(Net revenue - Cost of goods) / Net revenue"@en ;
     :certifiedBy "Group Controlling" ;
     :derivedFrom :ds_invoices, :ds_gl .
 
 :DSO a :Metric ; rdfs:label "Forderungsreichweite (DSO)"@de, "Days Sales Outstanding"@en ;
-    :definition "Durchschnittliche Anzahl Tage bis zum Zahlungseingang offener Kundenforderungen."@de ;
-    :formula "Offene Forderungen / Nettoumsatz * Tage der Periode" ;
+    :definition "Durchschnittliche Anzahl Tage bis zum Zahlungseingang offener Kundenforderungen."@de, "Average number of days until open customer receivables are paid."@en ;
+    :formula "Offene Forderungen / Nettoumsatz * Tage der Periode", "Open receivables / Net revenue * Days in period"@en ;
     :certifiedBy "Group Treasury" ;
     :derivedFrom :ds_invoices .
 
-:OpenPOExposure a :Metric ; rdfs:label "Offenes Bestellobligo"@de ;
-    :definition "Summe nicht gelieferter und nicht fakturierter Bestellpositionen zum Stichtag."@de ;
+:OpenPOExposure a :Metric ; rdfs:label "Offenes Bestellobligo"@de, "Open PO exposure"@en ;
+    :definition "Summe nicht gelieferter und nicht fakturierter Bestellpositionen zum Stichtag."@de, "Sum of purchase order lines not yet delivered and not yet invoiced at the key date."@en ;
     :certifiedBy "Group Procurement" ;
     :derivedFrom :ds_po .
 
-:MarginAfterAccruals a :Metric ; rdfs:label "Marge nach Rückstellungen"@de ;
-    :definition "Marge, bereinigt um Rückstellungen für nicht fakturierte Lieferungen im Pre-Close."@de ;
+:MarginAfterAccruals a :Metric ; rdfs:label "Marge nach Rückstellungen"@de, "Margin after accruals"@en ;
+    :definition "Marge, bereinigt um Rückstellungen für nicht fakturierte Lieferungen im Pre-Close."@de, "Margin adjusted for accruals on deliveries not yet invoiced in the pre-close."@en ;
     :certifiedBy "Group Controlling" ;
     :dependsOn :Margin .
 
 # Pre-Close-Prüfungen
-:chk_dso a :PreCloseCheck ; rdfs:label "DSO-Plausibilität"@de ;
+:chk_dso a :PreCloseCheck ; rdfs:label "DSO-Plausibilität"@de, "DSO plausibility"@en ;
     :appliesTo :DE10, :FR10, :UK10 ; :measuredBy :DSO .
-:chk_margin a :PreCloseCheck ; rdfs:label "Margenabweichung"@de ;
+:chk_margin a :PreCloseCheck ; rdfs:label "Margenabweichung"@de, "Margin deviation"@en ;
     :appliesTo :DE10, :FR10 ; :measuredBy :Margin, :MarginAfterAccruals .
-:chk_po a :PreCloseCheck ; rdfs:label "Offene Bestellungen"@de ;
+:chk_po a :PreCloseCheck ; rdfs:label "Offene Bestellungen"@de, "Open purchase orders"@en ;
     :appliesTo :UK10 ; :measuredBy :OpenPOExposure .

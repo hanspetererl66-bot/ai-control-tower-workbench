@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Agent, SessionExtension } from '../acp';
 import { MAX_CHAT_ATTACHMENTS, formatFileSize, isTableFile, type ChatAttachment } from '../attachments';
 import TableActions from './TableActions';
@@ -47,6 +47,8 @@ type Props = {
   onManageConnectors?: () => void;
   /** Show suggested Control Tower questions (empty chat only). */
   starters?: boolean;
+  /** Extra control for the bar under the input (the chat context switches). */
+  contextSlot?: ReactNode;
   voice?: VoiceSettings;
   /** Opens the settings dialog (where the voice key is entered). */
   onOpenSettings?: () => void;
@@ -82,6 +84,7 @@ const CONTEXT_SOURCES = [
 ] as const;
 
 export default function Composer({
+  contextSlot,
   commands = [],
   onSend,
   onCreateTableSpace,
@@ -540,7 +543,7 @@ export default function Composer({
             +
           </button>
           {contextOpen && (
-            <div className="menu context-menu" aria-label="Add context menu">
+            <div className="menu add-context-menu" aria-label="Add context menu">
               <button
                 className="menu-item"
                 title={`Add up to ${MAX_CHAT_ATTACHMENTS} files: PowerPoint, Word, Excel, CSV, text or pictures (or drop them here)`}
@@ -594,6 +597,8 @@ export default function Composer({
         >
           <SkillBoltIcon />
         </button>
+
+        {contextSlot}
 
         {onSaveStarter && (
           <button

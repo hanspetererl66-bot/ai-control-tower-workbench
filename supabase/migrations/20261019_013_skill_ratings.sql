@@ -495,7 +495,16 @@ from (values
   ('ticket-triage', 'sample-ticket-triage-4-3', 4, '', 1, '2026-10-01T10:00:00Z'),
   ('ticket-triage', 'sample-ticket-triage-5-1', 5, 'Ein Duplikat weniger pro Woche, und die Note kommt direkt mit.', 1, '2026-10-20T10:00:00Z'),
   ('ticket-triage', 'sample-ticket-triage-5-2', 5, '', 1, '2026-10-01T10:00:00Z'),
-  ('ticket-triage', 'sample-ticket-triage-5-3', 5, '', 1, '2026-10-01T10:00:00Z')
+  ('ticket-triage', 'sample-ticket-triage-5-3', 5, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-3-1', 3, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-4-1', 4, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-4-2', 4, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-4-3', 4, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-5-1', 5, 'Gives the certified definition and says who owns it, instead of guessing.', 1, '2026-10-30T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-5-2', 5, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-5-3', 5, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-5-4', 5, '', 1, '2026-10-01T10:00:00Z'),
+  ('ontology-term-answer', 'sample-ontology-term-answer-5-5', 5, '', 1, '2026-10-01T10:00:00Z')
 ) as v(skill, rater, stars, comment, skill_version, at)
 on conflict (skill, rater) do update
   set stars = excluded.stars, comment = excluded.comment, skill_version = excluded.skill_version, created_at = excluded.created_at, updated_at = excluded.updated_at;
