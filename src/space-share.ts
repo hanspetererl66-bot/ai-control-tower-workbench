@@ -49,3 +49,11 @@ export async function deleteSpaceFolder(slug: string): Promise<void> {
     throw new Error(body?.error ?? 'The Space could not be deleted.');
   }
 }
+
+/** Copy a Space into a new folder named "<title> copy". Returns the new slug and title. */
+export async function duplicateSpaceFolder(slug: string): Promise<{ slug: string; title: string }> {
+  const res = await fetch(`/__spaces/${encodeURIComponent(slug)}/duplicate`, { method: 'POST' });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error ?? 'The Space could not be duplicated.');
+  return body;
+}

@@ -66,6 +66,7 @@
     "install:mcp-marketplace": "node scripts/install-example-space.mjs mcp-marketplace",
     "install:calm-alm": "node scripts/install-example-space.mjs calm-alm",
     "install:abap-workbench": "node scripts/install-example-space.mjs abap-workbench",
+    "install:design-study": "node scripts/install-example-space.mjs design-study",
     "install:skills": "node scripts/install-example-skills.mjs",
     "install:databricks-demo": "node scripts/install-databricks-demo.mjs",
     "databricks-demo:load": "node scripts/databricks-demo-load.mjs",

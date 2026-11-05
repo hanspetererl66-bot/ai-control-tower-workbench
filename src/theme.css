@@ -4986,3 +4986,7 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .ctx-chip:disabled { opacity: 0.5; cursor: default; }
 .ctx-sent { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 10px; max-height: min(40vh, 340px); overflow: auto; }
 .composer-bar .chip { white-space: nowrap; }
+
+/* Duplicate button in the skills list */
+.dup-btn { display: inline-flex; align-items: center; gap: 6px; }
+.dup-btn svg { flex: none; }

@@ -32,6 +32,7 @@ type Props = {
   originalTitle?: (slug: string) => string;
   /** Delete a Space for good; called only after the person confirmed in the dialog. */
   onDeleteSpace?: (slug: string) => void;
+  onDuplicateSpace?: (slug: string) => void;
   /** Archive a Space: it leaves the list and can be restored from the Archived Spaces section. */
   onArchiveSpace?: (slug: string) => void;
   archived?: Space[];
@@ -51,7 +52,7 @@ function loadCollapsed(): string[] {
 /** `into`: the middle of a top-level card, dropping there makes the dragged Space a subspace of it. */
 type DropMark = { slug: string; after: boolean; into: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -214,6 +215,17 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                     onClick={(event) => { event.stopPropagation(); onRenameSpace(s.slug, ''); }}
                     onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onRenameSpace(s.slug, ''); } }}
                   ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+                )}
+                {onDuplicateSpace && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="mini-icon mini-icon-always"
+                    aria-label={`Duplicate ${s.title}`}
+                    title="Duplicate this Space (an editable copy)"
+                    onClick={(event) => { event.stopPropagation(); onDuplicateSpace(s.slug); }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onDuplicateSpace(s.slug); } }}
+                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M10.5 3.5v-.4A1.6 1.6 0 0 0 8.9 1.5H3.6A1.6 1.6 0 0 0 2 3.1v5.3a1.6 1.6 0 0 0 1.6 1.6h.4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg></span>
                 )}
                 {onArchiveSpace && (
                   <span

@@ -8,7 +8,7 @@ export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' |
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n', 'skillhealth'];
 /** Screens that belong to Admin: its start page and the tiles it leads to. */
-const ADMIN_VIEWS: View[] = ['admin', 'ontology'];
+const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry'];
 
 export default function Rail({
   view,
@@ -80,15 +80,6 @@ export default function Rail({
         >
           <DevelopIcon />
         </button>
-        <button
-          className={`rail-btn ${view === 'registry' ? 'rail-btn-on' : ''}`}
-          onClick={() => onView('registry')}
-          title="Registry: agents, workflows and features with their history"
-          aria-label="Registry"
-          aria-pressed={view === 'registry'}
-        >
-          <RegistryIcon />
-        </button>
       </div>
 
       <div className="rail-mid">
@@ -104,7 +95,7 @@ export default function Rail({
         <button
           className={`rail-btn ${ADMIN_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
           onClick={() => onView('admin')}
-          title="Admin: manage what the agents share, such as ontologies"
+          title="Admin: ontologies and the registry of agents, workflows and features"
           aria-label="Admin"
           aria-pressed={ADMIN_VIEWS.includes(view)}
         >
@@ -232,19 +223,6 @@ function AdminIcon() {
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <path d="M10 2.5l6 2.3v4.6c0 3.7-2.5 6.6-6 8.1-3.5-1.5-6-4.4-6-8.1V4.8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
       <path d="M7.2 10l2 2 3.6-3.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function RegistryIcon() {
-  // A stack of three versions with a clock hand: everything built, with its history.
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="11" height="3.6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="3" y="8.2" width="11" height="3.6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="3" y="13.4" width="6.4" height="3.6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="14.6" cy="14.6" r="3" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M14.6 13v1.7l1.1.7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

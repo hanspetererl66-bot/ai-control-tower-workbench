@@ -53,7 +53,7 @@ import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type Grou
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
-import { deleteSpaceFolder, importSpaceFile } from './space-share';
+import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
 import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
@@ -1030,6 +1030,19 @@ export default function App() {
   }
 
   /** Delete a Space for good. SpacesList has already asked the person to confirm. */
+  /** Copy a Space into a new one ("<title> copy") and open it; domain and parent from space.json come along. */
+  async function duplicateSpace(slug: string) {
+    const say = (message: string) => { setToast(message); setTimeout(() => setToast(null), 6000); };
+    try {
+      const copy = await duplicateSpaceFolder(slug);
+      await refreshSpaces();
+      setSelectedSpace(copy.slug);
+      say(`Created "${copy.title}".`);
+    } catch (e: any) {
+      say(e?.message ?? 'The Space could not be duplicated.');
+    }
+  }
+
   async function deleteSpace(slug: string) {
     const say = (message: string) => { setToast(message); setTimeout(() => setToast(null), 6000); };
     const title = spaces.find((x) => x.slug === slug)?.title ?? slug;
@@ -1396,6 +1409,7 @@ export default function App() {
           onRenameSpace={renameSpaceTitle}
           originalTitle={(slug) => rawSpaces.find((x) => x.slug === slug)?.title ?? slug}
           onDeleteSpace={(slug) => void deleteSpace(slug)}
+          onDuplicateSpace={(slug) => void duplicateSpace(slug)}
           onArchiveSpace={archiveOne}
           archived={archivedSpaces}
           onRestoreSpace={restoreOne}
@@ -1451,9 +1465,9 @@ export default function App() {
           onOpenRegistry={() => setView('registry')}
         />
       ) : view === 'registry' ? (
-        <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} />
+        <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} onBack={() => setView('admin')} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} />
       ) : view === 'ontology' ? (
         <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
       ) : view === 'skillhealth' ? (
