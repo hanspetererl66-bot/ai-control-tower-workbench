@@ -6,9 +6,9 @@ import SpinningDiamond from './SpinningDiamond';
 export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'admin';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
-const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n', 'skillhealth'];
+const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
 /** Screens that belong to Admin: its start page and the tiles it leads to. */
-const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry'];
+const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry', 'skillhealth'];
 
 export default function Rail({
   view,
