@@ -23,6 +23,10 @@ ARC-1 (`arc-mcp/arc-1`, MIT, `npx arc-1`) ist ein MCP-Server für SAP ABAP Devel
 ## Zentral (mehrere Entwickler)
 ARC-1 läuft zentral (z. B. BTP Cloud Foundry) mit OAuth/OIDC; in Joule als Connector mit URL, die auf `/mcp` endet. Die Werkbank erlaubt für Remote-Connectoren nur HTTPS ohne Zugangsdaten in der URL und keine geheimen Header ("use connector OAuth"). API-Schlüssel mit Profilen (`ARC1_API_KEYS`, z. B. viewer, developer) und Audit-Protokoll (`ARC1_LOG_*`) sind serverseitig. **Nicht erprobt.**
 
+## Skill "abap-code-documentation"
+Liest ein ABAP-Objekt über ARC-1 (SAPSearch, SAPRead, SAPContext, SAPNavigate, SAPDiagnose) und schreibt einen Dokumentationsentwurf: Zweck, Schnittstelle, Abhängigkeiten, Datenzugriffe, ATC-Befunde, Risiken und offene Fragen. Jede Aussage trägt die Zeile, auf der sie beruht; was nur aus Namen geschlossen ist, steht als "Inference". Der Skill ruft nichts auf, das schreibt, und liest keine Tabelleninhalte. Installieren mit `npm run install:skills`. Idee zur Dokumentation jedes Objekts nach Vorlage vom AWS ABAP Accelerator; gebaut nur auf ARC-1.
+**Nicht getestet:** Lauf mit einem echten ARC-1 und einem echten Objekt (Argumente der Werkzeuge stehen bewusst nicht im Skill, der Agent liest die Werkzeugbeschreibung). Im Marketplace steht der Skill mit Null-Nutzung und ohne Bewertung (keine erfundenen Zahlen); die Review-Daten 05.11.2026 / 05.11.2027 sind Platzhalter, es gab keine Prüfung.
+
 ## Grenzen
 - Kein echter ARC-1-Lauf, nicht in der Electron-App (nur Logik per Test und Space im Headless-Browser).
 - Argumentnamen (`action`, `type`) stammen aus der Konfigurationsreferenz. Ändern sie sich, greift bei Transporten die Vorsicht: eine unbekannte Aktion gilt als Änderung.

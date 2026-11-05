@@ -1615,6 +1615,66 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "skill:abap-code-documentation",
+   "type": "skill",
+   "label": "abap-code-documentation",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "Engineering",
+    "Reach": "team",
+    "Team": "AI Programme Office",
+    "Rating": "not rated yet",
+    "EU AI Act": "Minimal",
+    "Next review": "2027-11-05",
+    "Value last full month": "€0",
+    "Runs last full month": "0"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:SAPSearch",
+   "type": "tool",
+   "label": "SAPSearch",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:SAPRead",
+   "type": "tool",
+   "label": "SAPRead",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:SAPContext",
+   "type": "tool",
+   "label": "SAPContext",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:SAPNavigate",
+   "type": "tool",
+   "label": "SAPNavigate",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
+   "id": "tool:SAPDiagnose",
+   "type": "tool",
+   "label": "SAPDiagnose",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
    "id": "skill:access-review-prep",
    "type": "skill",
    "label": "access-review-prep",
@@ -4586,6 +4646,86 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "source": "risk:R6",
    "target": "agent:contract-drafter",
    "type": "AFFECTS"
+  },
+  {
+   "source": "skill:abap-code-documentation",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:SAPSearch",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:SAPSearch",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:abap-code-documentation",
+   "target": "tool:SAPSearch",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:SAPRead",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:SAPRead",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:abap-code-documentation",
+   "target": "tool:SAPRead",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:SAPContext",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:SAPContext",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:abap-code-documentation",
+   "target": "tool:SAPContext",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:SAPNavigate",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:SAPNavigate",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:abap-code-documentation",
+   "target": "tool:SAPNavigate",
+   "type": "USES_TOOL"
+  },
+  {
+   "source": "tool:SAPDiagnose",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:SAPDiagnose",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:abap-code-documentation",
+   "target": "tool:SAPDiagnose",
+   "type": "USES_TOOL"
   },
   {
    "source": "skill:access-review-prep",

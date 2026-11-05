@@ -585,6 +585,37 @@ details.intro .body{margin-top:8px}
   },
   "skills": [
     {
+      "name": "abap-code-documentation",
+      "description": "Documents a custom ABAP object from the system: purpose, interface, dependencies, ATC findings and open questions, with the line each statement rests on. Nutzen bei \"ABAP dokumentieren\", \"was macht dieser Report\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "Entwicklung",
+      "process": "Legacy-Code dokumentieren",
+      "boardArea": "Engineering",
+      "lob": "",
+      "team": "AI Programme Office",
+      "scope": "team",
+      "dataClass": "intern",
+      "tools": [
+        "SAPSearch",
+        "SAPRead",
+        "SAPContext",
+        "SAPNavigate",
+        "SAPDiagnose"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
       "name": "access-review-prep",
       "description": "Prepares the access review: over-privileged agents with access level, owner, deadline and order of clean-up. Nutzen bei \"Berechtigungsreview\", \"überprivilegierte Agenten\", \"Least Privilege prüfen\".",
       "owner": "",
@@ -5668,6 +5699,107 @@ details.intro .body{margin-top:8px}
         ],
         "favorites": 22
       }
+    },
+    "abap-code-documentation": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "successRatePct": 0,
+        "avgRating": 0,
+        "ratings": 0,
+        "minutesSavedPerRun": 0,
+        "errorRatePct": 0,
+        "avgSeconds": 0,
+        "costPerRunEur": 0,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Minimal",
+        "dpia": "Not required",
+        "allowedDataClasses": [
+          "öffentlich",
+          "intern"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 12,
+        "lastReview": "2026-11-05",
+        "nextReview": "2027-11-05",
+        "linkedRisks": [],
+        "linkedAgents": [],
+        "approvalHistory": []
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-11-05",
+            "summary": "First draft, not yet run against a real ABAP system."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "SAPSearch",
+            "SAPRead",
+            "SAPContext",
+            "SAPNavigate",
+            "SAPDiagnose"
+          ],
+          "connectors": [
+            "arc-1"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": null,
+        "supportChannel": "#ai-programme-office",
+        "languages": [
+          "en",
+          "de"
+        ],
+        "tests": {
+          "total": 0,
+          "passed": 0,
+          "lastRun": null
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Dokumentiere den Report ZORDER_REPORT.",
+          "What does class ZCL_ORDER_HANDLER do and what depends on it?"
+        ],
+        "demoFlow": [
+          "Name the ABAP object",
+          "Review the draft with the line each statement rests on",
+          "Hand the open questions to the owner"
+        ],
+        "prerequisites": [
+          "Connector arc-1 with a display-only user on a development system"
+        ],
+        "tags": [
+          "ABAP",
+          "Dokumentation",
+          "ARC-1"
+        ],
+        "industries": [
+          "Cross-industry"
+        ],
+        "related": [],
+        "recommendedFor": [
+          "ABAP Developer",
+          "Solution Architect"
+        ],
+        "favorites": 0
+      }
     }
   },
   "processGaps": [
@@ -6354,7 +6486,8 @@ details.intro .body{margin-top:8px}
       "blurb": "Watch cloud capacity and keep sprints and releases on track.",
       "skills": [
         "btp-quota-watch",
-        "my-sprint-digest"
+        "my-sprint-digest",
+        "abap-code-documentation"
       ]
     },
     {
@@ -7093,6 +7226,16 @@ details.intro .body{margin-top:8px}
             "version": 1
           }
         ]
+      },
+      "abap-code-documentation": {
+        "distribution": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "comments": []
       }
     }
   }
