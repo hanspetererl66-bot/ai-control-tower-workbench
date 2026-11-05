@@ -85,6 +85,6 @@ test('a tab toggles: click opens, second click closes, another tab switches', as
   assert.equal(nextTab('popular', 'new'), 'new');
   assert.equal(readTab('none'), null);
   assert.equal(readTab('suggested'), 'suggested');
-  assert.equal(readTab(null), 'favorites');
-  assert.equal(readTab('bogus'), 'favorites');
+  assert.equal(readTab(null), null, 'first visit: everything closed');
+  assert.equal(readTab('nonsense'), null);
 });
