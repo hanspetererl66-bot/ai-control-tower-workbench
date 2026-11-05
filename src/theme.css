@@ -475,6 +475,7 @@
 :root[data-theme="dark"] .dialog,
 :root[data-theme="dark"] .source-popover,
 :root[data-theme="dark"] .file-popover,
+:root[data-theme="dark"] .add-context-menu,
 :root[data-theme="dark"] .context-menu {
   border-color: #343944;
   background: #13161c;
@@ -2297,8 +2298,8 @@ button {
   background: #f5f4f9;
 }
 
-/* Add-context menu behind the first "+" in the chat bar */
-.context-menu { min-width: 200px; }
+/* Add-context menu behind the first "+" in the chat bar (own class: .context-menu is the fixed right-click menu) */
+.add-context-menu { min-width: 200px; }
 .context-form { display: flex; gap: 6px; align-items: center; padding: 6px 4px 2px; border-top: 1px solid var(--line); margin-top: 4px; }
 .context-input { flex: 1; min-width: 0; height: 28px; padding: 0 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 12.5px; }
 .context-form .menu-item { width: auto; padding: 5px 10px; }
@@ -4593,6 +4594,7 @@ textarea.studio-field { min-height: 120px; }
 .sched-state-missed { color: var(--lv-red); }
 .sched-state-paused, .sched-state-done { color: var(--muted); }
 .sched-actions { display: flex; gap: 6px; justify-content: flex-end; overflow: visible !important; }
+.sched button.sched-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; }
 .sched .sched-del:hover:not(:disabled) { border-color: var(--lv-red); color: var(--lv-red); }
 .sched-detail { padding: 4px 14px 16px 36px; font-size: 13px; }
 .sched-detail h3 { margin: 10px 0 6px; font-size: 13px; }
@@ -4970,3 +4972,15 @@ textarea.studio-field { min-height: 120px; }
 .om-dot { width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; background: var(--accent); }
 .om-diff { margin: 6px 0 0; font-size: 13px; }
 textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size: 12px; resize: vertical; }
+/* Chat context: one icon in the composer bar, the details in a popover above it */
+.ctxslot { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.ctx-icon { position: relative; }
+.ctx-badge { position: absolute; top: -5px; right: -5px; min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box; border-radius: 999px; background: var(--accent); color: var(--surface, #fff); font-size: 10px; line-height: 15px; text-align: center; }
+.ctx-panel { position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 20; width: min(380px, 80vw); display: flex; flex-direction: column; gap: 2px; padding: 6px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
+.ctx-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.ctx-panel > .ctx-row:last-child { border-bottom: 0; }
+.ctx-row-label { display: flex; flex-direction: column; color: var(--ink); font-size: 13px; }
+.ctx-row-label small { color: var(--muted); font-size: 11px; }
+.ctx-chip:disabled { opacity: 0.5; cursor: default; }
+.ctx-sent { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 10px; max-height: min(40vh, 340px); overflow: auto; }
+.composer-bar .chip { white-space: nowrap; }

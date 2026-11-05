@@ -1172,8 +1172,32 @@ export default function App() {
     if (dockProject && dockFocus && attachments.length === 0 && isConfirmCommand(typed)) { confirmDockDoc(); return; }
     return send(typed, attachments);
   };
+  const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
+  const contextBar = (
+    <ChatContextBar
+      memoryEnabled={memory.enabled}
+      memoryCount={activeEntries(memory, contextSpace).length}
+      onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
+      groupName={activeGroup?.group.name ?? null}
+      onGroupOff={() => chooseActiveGroup(null)}
+      personas={allPersonas(personas)}
+      persona={activePersona(personas)?.id ?? ''}
+      onPersona={(id) => changePersonas({ ...personas, active: id })}
+      spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
+      contextSpace={contextSpace}
+      onContextSpace={setContextSpace}
+      ideas={ideas}
+      onRemember={(idea) => { const r = addMemory(memory, idea.kind, idea.text); if (!r.error) changeMemory(r.state); else setDismissedIdeas((d) => [...d, idea.text]); }}
+      onDismissIdea={(idea) => setDismissedIdeas((d) => [...d, idea.text])}
+      onOpenSettings={() => setSettingsOpen(true)}
+      preview={contextPreview({ style: assistantNote(prefs), persona: personaNote(personas), memory: currentMemoryNote(), group: groupNote(activeGroup) })}
+      canMakeSkill={messages.filter((m) => m.role === 'user').length >= 2 && !busy}
+      onMakeSkill={() => { void send('/make-skill'); }}
+    />
+  );
   const composer = (
     <Composer
+      contextSlot={contextBar}
       commands={allCommands(ownCommands)}
       onSend={interceptSend}
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
@@ -1202,29 +1226,6 @@ export default function App() {
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
       catalogSkills={skillList}
       spaces={spaces}
-    />
-  );
-  const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
-  const contextBar = (
-    <ChatContextBar
-      memoryEnabled={memory.enabled}
-      memoryCount={activeEntries(memory, contextSpace).length}
-      onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
-      groupName={activeGroup?.group.name ?? null}
-      onGroupOff={() => chooseActiveGroup(null)}
-      personas={allPersonas(personas)}
-      persona={activePersona(personas)?.id ?? ''}
-      onPersona={(id) => changePersonas({ ...personas, active: id })}
-      spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
-      contextSpace={contextSpace}
-      onContextSpace={setContextSpace}
-      ideas={ideas}
-      onRemember={(idea) => { const r = addMemory(memory, idea.kind, idea.text); if (!r.error) changeMemory(r.state); else setDismissedIdeas((d) => [...d, idea.text]); }}
-      onDismissIdea={(idea) => setDismissedIdeas((d) => [...d, idea.text])}
-      onOpenSettings={() => setSettingsOpen(true)}
-      preview={contextPreview({ style: assistantNote(prefs), persona: personaNote(personas), memory: currentMemoryNote(), group: groupNote(activeGroup) })}
-      canMakeSkill={messages.filter((m) => m.role === 'user').length >= 2 && !busy}
-      onMakeSkill={() => { void send('/make-skill'); }}
     />
   );
   const suggestionBar = memorySuggestion && (
@@ -1602,7 +1603,6 @@ export default function App() {
                 to get things done?
               </h2>
               {suggestionBar}
-              {contextBar}
               {composer}
               {disclaimer}
             </div>
@@ -1634,7 +1634,6 @@ export default function App() {
               />
               <div className="composer-dock">
                 {suggestionBar}
-                {contextBar}
                 {composer}
                 {disclaimer}
               </div>
