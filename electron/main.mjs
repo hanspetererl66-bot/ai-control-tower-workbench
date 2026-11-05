@@ -1461,6 +1461,12 @@ ipcMain.handle('skill-db-health', () => skillStore.health().catch((e) => ({ ok: 
 ipcMain.handle('skill-db-lifecycle', (_event, args) => (args && typeof args === 'object' && SKILL_SLUG.test(args.slug ?? '') ? skillStore.lifecycle(args).catch((e) => ({ ok: false, detail: String(e?.message ?? e) })) : { ok: false, detail: 'bad name' }));
 ipcMain.handle('skill-db-promotion', (_event, tool, args) => skillStore.promotion(String(tool ?? ''), args).catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
 ipcMain.handle('work-status', () => workStore.status());
+ipcMain.handle('job-runs-record', async (_event, runs) => {
+  try { return { ok: true, data: await workStore.recordRuns(runs) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('job-runs-list', async (_event, args) => {
+  try { return { ok: true, data: await workStore.listRuns(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
 ipcMain.handle('work-set-email', (_event, email) => workStore.setEmail(email));
 ipcMain.handle('work-call', async (_event, { tool, args } = {}) => {
   try { return { ok: true, data: await workStore.call(String(tool ?? ''), args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }

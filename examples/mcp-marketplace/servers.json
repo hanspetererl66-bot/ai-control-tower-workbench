@@ -924,7 +924,7 @@
       "source": "connectors/werkbank-workspace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory. Agents, workflows and code of any kind are saved as revisions in the shared database; saving asks first.",
       "install": [
         {
@@ -1058,6 +1058,12 @@
           "class": "write",
           "what": "Archives an item or brings it back; all revisions stay.",
           "default": "ask"
+        },
+        {
+          "name": "list_job_runs",
+          "class": "read",
+          "what": "",
+          "default": "on"
         }
       ],
       "switches": [],

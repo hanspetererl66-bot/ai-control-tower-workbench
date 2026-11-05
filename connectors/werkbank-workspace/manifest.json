@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "werkbank-workspace",
   "display_name": "Werkbank Workspace",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Your personal Werkbank settings and shared groups in Supabase: preferences sync, groups with roles, shared Spaces, configuration and team memory.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -102,6 +102,10 @@
     {
       "name": "archive_work_item",
       "description": "Write: archive an item or bring it back. Owner, team admin or Governance board."
+    },
+    {
+      "name": "list_job_runs",
+      "description": "Read: the Scheduler run log (who ran which job, when, how it ended). Filter by days, job, result and trigger. Read only."
     }
   ],
   "user_config": {

@@ -337,3 +337,40 @@ test('skill health overview: usage per skill, only what the actor may see (migra
   // Not callable with the publishable key.
   assert.match(rule("set role anon; select public.skills_health_overview('anna@x.com')"), /permission denied/);
 });
+
+test('scheduler run log: append only, people see their own runs, the board sees all (migration 027)', { skip }, () => {
+  const run = (id, extra = {}) => ({ id, jobId: 'job-1', jobName: 'Pre-close check', targetType: 'agent', targetLabel: 'Pre-close agent', at: new Date().toISOString(), ms: 1200, status: 'ok', trigger: 'schedule', note: '', ...extra });
+  const record = (actor, runs) => json(`select public.job_runs_record(${q(actor)}, ${q(JSON.stringify(runs))}::jsonb)`);
+  assert.deepEqual(record('anna@x.com', [run('r1'), run('r2', { status: 'error', note: 'No answer', trigger: 'manual', at: new Date(Date.now() - 3 * 86400000).toISOString() })]), { received: 2, stored: 2 });
+  assert.deepEqual(record('anna@x.com', [run('r1'), run('r3')]), { received: 2, stored: 1 }, 'sending a run again changes nothing');
+  record('ben@x.com', [run('r1', { jobName: 'Invoice reminder', targetType: 'workflow', status: 'error' })]);
+  const list = (actor, args = 'null, null, null, null, false, 200') => json(`select public.job_runs_list(${q(actor)}, ${args})`);
+  assert.equal(list('anna@x.com').length, 3, 'a person sees only their own runs');
+  assert.ok(list('anna@x.com').every((r) => r.who === 'anna@x.com'));
+  assert.equal(list('board@x.com').length, 4, 'the Governance board sees everybody’s');
+  assert.equal(list('board@x.com', 'null, null, null, null, true, 200').length, 0, 'only_mine limits the board to its own');
+  assert.deepEqual(list('board@x.com', "null, null, 'error', null, false, 200").map((r) => r.who).sort(), ['anna@x.com', 'ben@x.com']);
+  assert.equal(list('board@x.com', "null, 'invoice', null, null, false, 200").length, 1, 'job filter matches part of the name');
+  assert.equal(list('board@x.com', `${q(new Date(Date.now() - 86400000).toISOString())}, null, null, null, false, 200`).length, 3, 'period filter');
+  assert.equal(list('board@x.com', "null, null, null, 'manual', false, 200").length, 1);
+  assert.equal(list('board@x.com', 'null, null, null, null, false, 2').length, 2, 'limit');
+  // Newest first.
+  const times = list('board@x.com').map((r) => Date.parse(r.at));
+  assert.deepEqual(times, [...times].sort((a, b) => b - a));
+  // A credential in the note is replaced, the entry is kept.
+  record('anna@x.com', [run('r4', { note: 'token: abcdefgh12345678' })]);
+  assert.match(list('anna@x.com').find((r) => r.id === 'r4').note, /removed/);
+  // Bad input is refused with a reason; nothing is stored.
+  assert.match(rule(`select public.job_runs_record('not-an-email', '[]'::jsonb)`), /e-mail/);
+  assert.match(rule(`select public.job_runs_record('anna@x.com', ${q(JSON.stringify([run('x', { status: 'weird' })]))}::jsonb)`), /status/);
+  assert.match(rule(`select public.job_runs_list('anna@x.com', null, null, 'weird')`), /status/);
+  // Append only, even for the table owner; closed to the API roles.
+  assert.match(rule("update werkbank.job_run set note = 'changed'"), /append only/);
+  assert.match(rule('delete from werkbank.job_run'), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'werkbank.job_run', 'select')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.job_runs_record(text,jsonb)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.job_runs_list(text,timestamptz,text,text,text,boolean,integer)', 'execute')`), 'f', role);
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.job_runs_list(text,timestamptz,text,text,text,boolean,integer)', 'execute')"), 't');
+});

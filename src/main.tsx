@@ -25,6 +25,8 @@ declare global {
       workStatus?: () => Promise<{ configured: boolean; email: string; source: string }>;
       workSetEmail?: (email: string) => Promise<{ ok: boolean; email?: string; detail?: string }>;
       workCall?: (tool: string, args: Record<string, unknown>) => Promise<{ ok: true; data: any } | { ok: false; error: string }>;
+      jobRunsRecord?: (runs: Array<Record<string, unknown>>) => Promise<{ ok: true; data: { received: number; stored: number } } | { ok: false; error: string }>;
+      jobRunsList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; failed: number; runs: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';
         csvPath?: string;
