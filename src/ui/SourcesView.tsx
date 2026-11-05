@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  CAN_HAND_OVER, CLASSES, localTarget, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
+  CAN_HAND_OVER, CLASSES, signalLine, signalOf, localTarget, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
   mergeRequirements, moveRequirement, overrideClass, parseClusters, parseRequirements, setTarget,
   type Cluster, type Handover, type RegistryRef, type ReqClass, type Requirement, type SourceKind,
 } from '../requirements';
@@ -157,7 +157,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
                       <input type="checkbox" checked={checked.has(r.id)} onChange={() => toggle(r.id)} />
                       <span className="sx-key">{r.key}</span>
                       <span className="sx-rtext"><b>{r.title}</b>{r.text && r.text !== r.title && <small>{r.text}</small>}
-                        <small className="sx-meta">{SOURCES.find((s) => s.id === r.source)?.label}{r.author ? ` · ${r.author}` : ''}{r.date ? ` · ${r.date}` : ''}{r.url && <> · <a href={r.url} target="_blank" rel="noreferrer">open</a></>}</small></span>
+                        <small className="sx-meta">{SOURCES.find((s) => s.id === r.source)?.label}{r.author ? ` · ${r.author}` : ''}{r.date ? ` · ${r.date}` : ''}{r.mentions && r.mentions > 1 ? ` · ${r.mentions} mentions` : ''}{r.url && <> · <a href={r.url} target="_blank" rel="noreferrer">open</a></>}</small></span>
                     </label>
                   </li>
                 ))}
@@ -211,6 +211,7 @@ function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTa
   const pct = Math.round(c.confidence * 100);
   const h = useMemo(() => handover(c, reqs), [c, reqs]);
   const tickets = handoverTickets(h);
+  const signal = useMemo(() => signalOf(c, reqs), [c, reqs]);
   const [wantNote, setWantNote] = useState(false);
   const valid = pending ? pending.comment.startsWith(handoverMarker(h)) && pending.comment.length <= 2000 : false;
   const inPlace = Boolean(isExtension(c.cls) && c.target && localTarget(loadMap(window.localStorage), c.target.id));
@@ -221,6 +222,18 @@ function ClusterCard({ c, reqs, clusters, registry, done, onTitle, onClass, onTa
         <span className={`sx-class sx-class-${classBase(c.cls)}`}>{CLASS_LABEL[c.cls]}</span>
       </div>
       {c.summary && <p className="sx-summary">{c.summary}</p>}
+      {signalLine(signal) && (
+        <div className="sx-signal">
+          <b>{signalLine(signal)}</b>
+          <small> counted by the agent from what it read; check the quotes</small>
+          {signal.evidence.length > 0 && (
+            <details>
+              <summary>Show what was said</summary>
+              <ul>{signal.evidence.map((e, i) => <li key={i}><span className="sx-key">{e.key}</span> “{e.quote}”{e.url && <> · <a href={e.url} target="_blank" rel="noreferrer">open</a></>}</li>)}</ul>
+            </details>
+          )}
+        </div>
+      )}
 
       <ul className="sx-members">
         {c.reqIds.map((id) => {
