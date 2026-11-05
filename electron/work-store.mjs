@@ -6,6 +6,7 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connectors/_lib/server/work-items.mjs';
+import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -15,6 +16,8 @@ export const CONFIG_SOURCES = ['werkbank-workspace', 'skill-marketplace'];
 
 /** The person every project is saved under, until a real sign-in replaces this (private prototype, one user). */
 export const DEFAULT_EMAIL = 'hanspeter.erl66@gmail.com';
+
+const RUN_LIST_ARGS = new Set(['days', 'job', 'status', 'trigger', 'only_mine', 'limit']);
 
 export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
   const readEmail = () => {
@@ -29,6 +32,18 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     }
     return null;
   };
+  /** rpc bound to the database access and the stored e-mail; throws a readable message when either is missing. */
+  const connect = () => {
+    const acc = access();
+    if (!acc) throw new Error('The shared database is not set up: enter the Supabase URL and the secret key in the settings of the connector "werkbank-workspace".');
+    const email = readEmail();
+    if (!email) throw new Error('Enter your e-mail first. It names you as the author of every saved revision.');
+    const rpc = async (fn, body) => {
+      try { return await supabaseRpc(fn, body, acc.url, acc.key); }
+      catch (e) { if (e instanceof RuleError) throw new Error(e.message); throw new Error(`The database did not answer: ${e?.message ?? e}`); }
+    };
+    return { rpc, email };
+  };
   return {
     /** { url, key, email } for other main-process stores (skills), or null when the database or the e-mail is missing. */
     credentials() {
@@ -42,16 +57,21 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
       writeFileSync(file, JSON.stringify({ email }), 'utf8');
       return { ok: true, email };
     },
+    /** Writes finished Scheduler runs to the run log (append only). Not a tool: the agent cannot call this. */
+    async recordRuns(runs) {
+      const { rpc, email } = connect();
+      return recordJobRuns(rpc, email, runs);
+    },
+    /** Reads the run log for the Activity tab: only the filters of list_job_runs, always as the stored e-mail. */
+    async listRuns(args) {
+      const { rpc, email } = connect();
+      const clean = {};
+      for (const [k, v] of Object.entries(args && typeof args === 'object' ? args : {})) if (RUN_LIST_ARGS.has(k)) clean[k] = v;
+      return createJobRunHandlers(rpc).list_job_runs({ ...clean, actor: email });
+    },
     async call(tool, args) {
       if (!ALLOWED_TOOLS.has(tool)) throw new Error('This call is not allowed.');
-      const acc = access();
-      if (!acc) throw new Error('The shared database is not set up: enter the Supabase URL and the secret key in the settings of the connector "werkbank-workspace".');
-      const email = readEmail();
-      if (!email) throw new Error('Enter your e-mail first. It names you as the author of every saved revision.');
-      const rpc = async (fn, body) => {
-        try { return await supabaseRpc(fn, body, acc.url, acc.key); }
-        catch (e) { if (e instanceof RuleError) throw new Error(e.message); throw new Error(`The database did not answer: ${e?.message ?? e}`); }
-      };
+      const { rpc, email } = connect();
       const handler = createWorkItemHandlers(rpc)[tool];
       return handler({ ...(args && typeof args === 'object' ? args : {}), actor: email });
     },

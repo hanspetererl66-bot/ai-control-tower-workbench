@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('host', {
   workStatus: () => ipcRenderer.invoke('work-status'),
   workSetEmail: (email) => ipcRenderer.invoke('work-set-email', email),
   workCall: (tool, args) => ipcRenderer.invoke('work-call', { tool, args }),
+  /** Scheduler run log: send finished runs (append only) and read the log for the Activity tab. */
+  jobRunsRecord: (runs) => ipcRenderer.invoke('job-runs-record', runs),
+  jobRunsList: (args) => ipcRenderer.invoke('job-runs-list', args),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 
   // Werkbank install deep links. Callbacks receive only

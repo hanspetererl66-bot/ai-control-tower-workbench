@@ -4600,6 +4600,22 @@ textarea.studio-field { min-height: 120px; }
 .sched .sched-day-on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .sched-problem { margin: 0; color: var(--lv-red); font-size: 13px; }
 .sched-form-foot { display: flex; justify-content: flex-end; gap: 8px; }
+.sched-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.sched .sched-tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted); padding: 8px 14px; font-size: 13px; cursor: pointer; }
+.sched .sched-tabs button:hover { color: var(--ink); }
+.sched .sched-tabs button.sched-tab-on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.sact { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.sact-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.sact-stats > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.sact-stats strong { font-size: 20px; color: var(--ink); }
+.sact-stats span { font-size: 12px; color: var(--muted); }
+.sact-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sact-filters input { flex: 1 1 200px; min-width: 160px; }
+.sact-table { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: auto; max-height: min(52vh, 520px); min-height: 0; }
+.sact-row { display: grid; grid-template-columns: 130px minmax(130px, 1.2fr) minmax(130px, 1.2fr) 110px 90px 80px minmax(120px, 1fr) minmax(160px, 1.6fr); gap: 10px; align-items: center; padding: 9px 14px; font-size: 13px; min-width: 980px; border-top: 1px solid var(--line); }
+.sact-row > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sact-th { position: sticky; top: 0; z-index: 1; background: var(--panel); border-top: 0; color: var(--muted); font-size: 12px; }
+.sact-more { align-self: center; }
 @media (max-width: 1100px) { .sched-table > .sched-item, .sched-table > .sched-th { min-width: 0; } .sched-th { display: none; } .sched-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } .sched-actions { justify-content: flex-start; } }
 
 /* Tabs under the empty chat: Favorites, Suggested, Popular, What's new. */

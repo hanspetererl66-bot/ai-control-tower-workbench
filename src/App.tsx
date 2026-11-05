@@ -55,9 +55,10 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
-import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
+import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type JobRun, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
+import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
 import AdminView from './ui/AdminView';
@@ -200,6 +201,31 @@ export default function App() {
   jobsRef.current = jobs;
   const changeJobs = useCallback((next: Job[]) => { jobsRef.current = next; setJobsState(next); saveJobs(next, window.localStorage); }, []);
   const [runningJob, setRunningJob] = useState('');
+  // Activity log of the Scheduler: every real run, kept apart from the jobs; sent to the shared database when the desktop app has access.
+  const [jobLog, setJobLogState] = useState<LogEntry[]>(() => loadLog(window.localStorage));
+  const jobLogRef = useRef(jobLog);
+  const logFlushing = useRef(false);
+  const changeJobLog = useCallback((next: LogEntry[]) => { jobLogRef.current = next; setJobLogState(next); saveLog(next, window.localStorage); }, []);
+  const flushJobLog = useCallback(async () => {
+    const host = window.host;
+    if (!host?.jobRunsRecord || logFlushing.current) return;
+    logFlushing.current = true;
+    try {
+      for (let i = 0; i < 20; i++) {
+        const batch = pending(jobLogRef.current);
+        if (!batch.length) break;
+        const res = await host.jobRunsRecord(batch.map(toRecord));
+        if (!res.ok) break; // not set up or offline: the entries stay local and go out with the next run
+        changeJobLog(markSent(jobLogRef.current, batch.map((e) => e.id)));
+      }
+    } catch { /* stays local */ } finally { logFlushing.current = false; }
+  }, [changeJobLog]);
+  const logRun = useCallback((job: Job, run: JobRun) => {
+    if (job.example) return;
+    changeJobLog(appendEntry(jobLogRef.current, entryOf(job, run)));
+    void flushJobLog();
+  }, [changeJobLog, flushJobLog]);
+  useEffect(() => { void flushJobLog(); }, [flushJobLog]);
   // Skill health: the company catalog (demo data until it is read from the shared database) plus the installed skills.
   const SKILL_ADMIN = 'hanspeter.erl66@gmail.com';
   const [skillCatalog, setSkillCatalogState] = useState<Catalog>(() => {
@@ -1146,6 +1172,7 @@ export default function App() {
     } finally {
       const run = { id: newId('run'), at: new Date(started).toISOString(), ms: Date.now() - started, status, trigger: manual ? 'manual' as const : 'schedule' as const, note };
       changeJobs(jobsRef.current.map((j) => (j.id === job.id ? addRun(j, run) : j)));
+      logRun(job, run);
       setRunningJob('');
     }
   }
@@ -1480,7 +1507,7 @@ export default function App() {
           onResetExamples={() => { if (window.confirm('Replace the catalog with the example catalog? Your changes in it are lost.')) changeSkillCatalog(syncInstalled(exampleCatalog(Date.now()), skillList, loadUse(window.localStorage), SKILL_ADMIN, Date.now())); }}
         />
       ) : view === 'scheduler' ? (
-        <SchedulerView jobs={jobs} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onAddExamples={() => changeJobs([...exampleJobs().filter((e) => !jobsRef.current.some((j) => j.id === e.id)), ...jobsRef.current])} onRunNow={(j) => void runJob(j, true)} />
+        <SchedulerView jobs={jobs} log={jobLog} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onAddExamples={() => changeJobs([...exampleJobs().filter((e) => !jobsRef.current.some((j) => j.id === e.id)), ...jobsRef.current])} onRunNow={(j) => void runJob(j, true)} />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}
