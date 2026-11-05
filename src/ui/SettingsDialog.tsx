@@ -162,7 +162,7 @@ export default function SettingsDialog({
           <div className="settings-section settings-voice">
             <div className="settings-section-copy">
               <h4>Text size in Spaces</h4>
-              <p>Scales text and layout of every Space, including ones the agent builds. Default is 115%.</p>
+              <p>Scales text and layout of every Space, including ones the agent builds. 75% to 125%, default is 115%.</p>
               <SectionEffect title="Text size in Spaces" />
             </div>
             <div className="scale-options" role="radiogroup" aria-label="Text size in Spaces">
