@@ -50,7 +50,6 @@ export default function ManageView({
   onAgentRestarted,
   onImport,
   focus,
-  onOpenSkillHealth,
 }: {
   agent: Agent | null;
   onBack: () => void;
@@ -58,7 +57,6 @@ export default function ManageView({
   onImport: (request: Record<string, unknown>) => void;
   /** Which part to scroll to when the page opens (from the Develop tiles). */
   focus?: 'skills' | 'connectors';
-  onOpenSkillHealth?: () => void;
 }) {
   // Opened from a Develop tile: show only that part. Without a focus (other entry points) both parts are shown.
   const showConnectors = focus !== 'skills';
@@ -413,7 +411,6 @@ export default function ManageView({
         {showSkills && (
           <>
         <h2 className="manage-h" id="manage-skills">Skills</h2>
-        {onOpenSkillHealth && <p className="manage-empty"><button className="dialog-btn" onClick={onOpenSkillHealth}>Skill health dashboard</button> Duplicates, unused and outdated skills, owners and actions for managers.</p>}
         {skills.length === 0 && <p className="manage-empty">No skills installed.</p>}
         {skills.length > 0 && (
           <SkillGovernance

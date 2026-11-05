@@ -1467,7 +1467,7 @@ export default function App() {
       ) : view === 'registry' ? (
         <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} onBack={() => setView('admin')} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
       ) : view === 'ontology' ? (
         <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
       ) : view === 'skillhealth' ? (
@@ -1477,7 +1477,7 @@ export default function App() {
           onCatalog={(next) => void changeSkillCatalogShared(next)}
           source={skillSource}
           onReload={() => void loadSkillHealth()}
-          onBack={() => { setManageFocus('skills'); setView('manage'); }}
+          onBack={() => setView('admin')}
           onResetExamples={() => { if (window.confirm('Replace the catalog with the example catalog? Your changes in it are lost.')) changeSkillCatalog(syncInstalled(exampleCatalog(Date.now()), skillList, loadUse(window.localStorage), SKILL_ADMIN, Date.now())); }}
         />
       ) : view === 'scheduler' ? (
@@ -1497,7 +1497,6 @@ export default function App() {
           agent={agent}
           onBack={() => setView('develop')}
           onAgentRestarted={reconnectAgent}
-          onOpenSkillHealth={() => setView('skillhealth')}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
           focus={manageFocus}
         />

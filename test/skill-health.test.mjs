@@ -130,9 +130,9 @@ test('storage: bad data is cleaned and the policy stays in range', () => {
   assert.equal(sanitizeCatalog(null).skills.length, 0);
 });
 
-test('the dashboard is wired: Manage button, Rail group, five tabs, bulk actions', () => {
-  assert.match(src('src/ui/ManageView.tsx'), /Skill health dashboard/);
-  assert.match(src('src/ui/Rail.tsx'), /DEVELOP_VIEWS: View\[\] = \[[^\]]*'skillhealth'/);
+test('the dashboard is wired: Admin tile, Rail group, five tabs, bulk actions', () => {
+  assert.match(src('src/ui/AdminView.tsx'), /Skill management/);
+  assert.match(src('src/ui/Rail.tsx'), /ADMIN_VIEWS: View\[\] = \[[^\]]*'skillhealth'/);
   assert.match(src('src/App.tsx'), /view === 'skillhealth' \? \(\s*<SkillHealthView/);
   const ui = src('src/ui/SkillHealthView.tsx');
   for (const w of ['Overview', 'Actions', 'Duplicates', 'Catalog', 'Policy & log', 'Confirm', 'Not duplicates', 'Phase out', 'Retire', 'Restore', 'Reassign', 'Mark as reviewed', 'Request next level']) assert.ok(ui.includes(w), w);
