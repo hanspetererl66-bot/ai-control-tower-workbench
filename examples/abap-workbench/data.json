@@ -1,15 +1,77 @@
 {
   "asOf": "2026-10-28",
-  "system": { "sid": "DEV", "client": "100", "release": "SAP_BASIS 816", "kind": "on-premise", "mode": "read-only" },
+  "system": {
+    "sid": "DEV",
+    "client": "100",
+    "release": "SAP_BASIS 816",
+    "kind": "on-premise",
+    "mode": "read-only"
+  },
   "objects": [
-    { "name": "ZCL_ORDER_HANDLER", "type": "CLAS", "pkg": "ZORDER", "desc": "Order processing: validation and booking", "changedBy": "DEVELOPER1", "changedOn": "2026-10-21" },
-    { "name": "ZCL_ORDER_VALIDATOR", "type": "CLAS", "pkg": "ZORDER", "desc": "Validation rules for orders", "changedBy": "DEVELOPER1", "changedOn": "2026-10-20" },
-    { "name": "ZI_SALESORDER", "type": "DDLS", "pkg": "ZORDER", "desc": "Interface view sales order", "changedBy": "DEVELOPER2", "changedOn": "2026-10-24" },
-    { "name": "ZC_SALESORDER", "type": "DDLS", "pkg": "ZORDER", "desc": "Consumption view sales order", "changedBy": "DEVELOPER2", "changedOn": "2026-10-24" },
-    { "name": "ZR_SALESORDER", "type": "BDEF", "pkg": "ZORDER", "desc": "Behavior definition sales order", "changedBy": "DEVELOPER2", "changedOn": "2026-10-18" },
-    { "name": "ZORDER_REPORT", "type": "PROG", "pkg": "ZORDER", "desc": "Order list as ALV report", "changedBy": "DEVELOPER2", "changedOn": "2026-10-26" },
-    { "name": "ZTB_ORDER_LOG", "type": "TABL", "pkg": "ZORDER", "desc": "Order log table", "changedBy": "DEVELOPER1", "changedOn": "2026-09-30" },
-    { "name": "ZMSG_ORDER", "type": "MSAG", "pkg": "ZORDER", "desc": "Message class for orders", "changedBy": "DEVELOPER1", "changedOn": "2026-09-30" }
+    {
+      "name": "ZCL_ORDER_HANDLER",
+      "type": "CLAS",
+      "pkg": "ZORDER",
+      "desc": "Order processing: validation and booking",
+      "changedBy": "DEVELOPER1",
+      "changedOn": "2026-10-21"
+    },
+    {
+      "name": "ZCL_ORDER_VALIDATOR",
+      "type": "CLAS",
+      "pkg": "ZORDER",
+      "desc": "Validation rules for orders",
+      "changedBy": "DEVELOPER1",
+      "changedOn": "2026-10-20"
+    },
+    {
+      "name": "ZI_SALESORDER",
+      "type": "DDLS",
+      "pkg": "ZORDER",
+      "desc": "Interface view sales order",
+      "changedBy": "DEVELOPER2",
+      "changedOn": "2026-10-24"
+    },
+    {
+      "name": "ZC_SALESORDER",
+      "type": "DDLS",
+      "pkg": "ZORDER",
+      "desc": "Consumption view sales order",
+      "changedBy": "DEVELOPER2",
+      "changedOn": "2026-10-24"
+    },
+    {
+      "name": "ZR_SALESORDER",
+      "type": "BDEF",
+      "pkg": "ZORDER",
+      "desc": "Behavior definition sales order",
+      "changedBy": "DEVELOPER2",
+      "changedOn": "2026-10-18"
+    },
+    {
+      "name": "ZORDER_REPORT",
+      "type": "PROG",
+      "pkg": "ZORDER",
+      "desc": "Order list as ALV report",
+      "changedBy": "DEVELOPER2",
+      "changedOn": "2026-10-26"
+    },
+    {
+      "name": "ZTB_ORDER_LOG",
+      "type": "TABL",
+      "pkg": "ZORDER",
+      "desc": "Order log table",
+      "changedBy": "DEVELOPER1",
+      "changedOn": "2026-09-30"
+    },
+    {
+      "name": "ZMSG_ORDER",
+      "type": "MSAG",
+      "pkg": "ZORDER",
+      "desc": "Message class for orders",
+      "changedBy": "DEVELOPER1",
+      "changedOn": "2026-09-30"
+    }
   ],
   "sources": {
     "ZCL_ORDER_HANDLER": [
@@ -53,6 +115,30 @@
       "  cl_salv_table=>factory( IMPORTING r_salv_table = DATA(lo_alv)",
       "                          CHANGING  t_table      = lt_orders ).",
       "  lo_alv->display( )."
+    ],
+    "ZCL_ORDER_VALIDATOR": [
+      "CLASS zcl_order_validator IMPLEMENTATION.",
+      "",
+      "  METHOD check.",
+      "    rv_valid = xsdbool( is_order-net_amount > 0 AND is_order-currency IS NOT INITIAL ).",
+      "  ENDMETHOD.",
+      "",
+      "ENDCLASS."
+    ],
+    "ZR_SALESORDER": [
+      "managed implementation in class zbp_r_salesorder unique;",
+      "strict ( 2 );",
+      "",
+      "define behavior for ZR_SalesOrder alias SalesOrder",
+      "persistent table zsalesorder",
+      "lock master",
+      "authorization master ( instance )",
+      "{",
+      "  create;",
+      "  update;",
+      "  delete;",
+      "  validation validateCurrency on save { create; field Currency; }",
+      "}"
     ]
   },
   "ktd": {
@@ -61,31 +147,108 @@
   },
   "uses": {
     "ZCL_ORDER_HANDLER": [
-      { "name": "ZORDER_REPORT", "type": "PROG", "pkg": "ZORDER", "ctx": "Line 14: NEW zcl_order_handler( )" },
-      { "name": "ZCL_ORDER_API", "type": "CLAS", "pkg": "ZORDER_API", "ctx": "Method CREATE_ORDER" },
-      { "name": "ZCL_ORDER_HANDLER_TEST", "type": "CLAS", "pkg": "ZORDER", "ctx": "Local test class" }
+      {
+        "name": "ZORDER_REPORT",
+        "type": "PROG",
+        "pkg": "ZORDER",
+        "ctx": "Line 14: NEW zcl_order_handler( )"
+      },
+      {
+        "name": "ZCL_ORDER_API",
+        "type": "CLAS",
+        "pkg": "ZORDER_API",
+        "ctx": "Method CREATE_ORDER"
+      },
+      {
+        "name": "ZCL_ORDER_HANDLER_TEST",
+        "type": "CLAS",
+        "pkg": "ZORDER",
+        "ctx": "Local test class"
+      }
     ],
     "ZI_SALESORDER": [
-      { "name": "ZC_SALESORDER", "type": "DDLS", "pkg": "ZORDER", "ctx": "Consumption view reads from this view" },
-      { "name": "ZR_SALESORDER", "type": "BDEF", "pkg": "ZORDER", "ctx": "Behavior definition on this entity" },
-      { "name": "ZORDER_REPORT", "type": "PROG", "pkg": "ZORDER", "ctx": "Line 4: SELECT FROM zi_salesorder" }
+      {
+        "name": "ZC_SALESORDER",
+        "type": "DDLS",
+        "pkg": "ZORDER",
+        "ctx": "Consumption view reads from this view"
+      },
+      {
+        "name": "ZR_SALESORDER",
+        "type": "BDEF",
+        "pkg": "ZORDER",
+        "ctx": "Behavior definition on this entity"
+      },
+      {
+        "name": "ZORDER_REPORT",
+        "type": "PROG",
+        "pkg": "ZORDER",
+        "ctx": "Line 4: SELECT FROM zi_salesorder"
+      }
     ],
     "ZTB_ORDER_LOG": [
-      { "name": "ZCL_ORDER_HANDLER", "type": "CLAS", "pkg": "ZORDER", "ctx": "Method BOOK_ORDER: INSERT" }
+      {
+        "name": "ZCL_ORDER_HANDLER",
+        "type": "CLAS",
+        "pkg": "ZORDER",
+        "ctx": "Method BOOK_ORDER: INSERT"
+      }
     ]
   },
   "transports": [
-    { "id": "DEVK900231", "owner": "DEVELOPER1", "status": "modifiable", "desc": "Order: extend validation", "objects": ["ZCL_ORDER_HANDLER", "ZCL_ORDER_VALIDATOR", "ZORDER_REPORT"] },
-    { "id": "DEVK900244", "owner": "DEVELOPER2", "status": "modifiable", "desc": "CDS: add net amount", "objects": ["ZI_SALESORDER", "ZC_SALESORDER"] },
-    { "id": "DEVK900252", "owner": "DEVELOPER2", "status": "modifiable", "desc": "Report: adjust ALV layout", "objects": ["ZORDER_REPORT"] },
-    { "id": "DEVK900198", "owner": "DEVELOPER1", "status": "released", "desc": "Order: initial delivery", "objects": ["ZCL_ORDER_HANDLER", "ZORDER_REPORT", "ZTB_ORDER_LOG", "ZMSG_ORDER"] }
+    {
+      "id": "DEVK900231",
+      "owner": "DEVELOPER1",
+      "status": "modifiable",
+      "desc": "Order: extend validation",
+      "objects": [
+        "ZCL_ORDER_HANDLER",
+        "ZCL_ORDER_VALIDATOR",
+        "ZORDER_REPORT"
+      ]
+    },
+    {
+      "id": "DEVK900244",
+      "owner": "DEVELOPER2",
+      "status": "modifiable",
+      "desc": "CDS: add net amount",
+      "objects": [
+        "ZI_SALESORDER",
+        "ZC_SALESORDER"
+      ]
+    },
+    {
+      "id": "DEVK900252",
+      "owner": "DEVELOPER2",
+      "status": "modifiable",
+      "desc": "Report: adjust ALV layout",
+      "objects": [
+        "ZORDER_REPORT"
+      ]
+    },
+    {
+      "id": "DEVK900198",
+      "owner": "DEVELOPER1",
+      "status": "released",
+      "desc": "Order: initial delivery",
+      "objects": [
+        "ZCL_ORDER_HANDLER",
+        "ZORDER_REPORT",
+        "ZTB_ORDER_LOG",
+        "ZMSG_ORDER"
+      ]
+    }
   ],
   "questions": [
     {
       "id": "q1",
       "q": "What does ZCL_ORDER_HANDLER do?",
       "calls": [
-        { "tool": "SAPContext", "args": "{\"action\":\"deps\",\"type\":\"CLAS\",\"name\":\"ZCL_ORDER_HANDLER\"}", "result": "KTD found; 2 dependencies (ZCL_ORDER_VALIDATOR, ZTB_ORDER_LOG)" }
+        {
+          "tool": "SAPContext",
+          "args": "{\"action\":\"deps\",\"type\":\"CLAS\",\"name\":\"ZCL_ORDER_HANDLER\"}",
+          "result": "KTD found; 2 dependencies (ZCL_ORDER_VALIDATOR, ZTB_ORDER_LOG)"
+        }
       ],
       "answer": [
         "ZCL_ORDER_HANDLER is the central class for validating and booking orders. It is owned by team Order-to-Cash.",
@@ -96,7 +259,11 @@
       "id": "q2",
       "q": "Where is ZI_SALESORDER used?",
       "calls": [
-        { "tool": "SAPContext", "args": "{\"action\":\"impact\",\"type\":\"DDLS\",\"name\":\"ZI_SALESORDER\"}", "result": "3 usages: 1 consumption view, 1 behavior definition, 1 program" }
+        {
+          "tool": "SAPContext",
+          "args": "{\"action\":\"impact\",\"type\":\"DDLS\",\"name\":\"ZI_SALESORDER\"}",
+          "result": "3 usages: 1 consumption view, 1 behavior definition, 1 program"
+        }
       ],
       "answer": [
         "Three objects depend on ZI_SALESORDER: the consumption view ZC_SALESORDER, the behavior definition ZR_SALESORDER and the report ZORDER_REPORT.",
@@ -107,7 +274,11 @@
       "id": "q3",
       "q": "Can I change ZORDER_REPORT? Check the transports.",
       "calls": [
-        { "tool": "SAPTransport", "args": "{\"action\":\"list\"}", "result": "3 modifiable, 1 released request; ZORDER_REPORT is in DEVK900231, DEVK900252 and DEVK900198" }
+        {
+          "tool": "SAPTransport",
+          "args": "{\"action\":\"list\"}",
+          "result": "3 modifiable, 1 released request; ZORDER_REPORT is in DEVK900231, DEVK900252 and DEVK900198"
+        }
       ],
       "answer": [
         "ZORDER_REPORT is in two modifiable requests with different owners: DEVK900231 (DEVELOPER1) and DEVK900252 (DEVELOPER2). Agree the change with both before you edit.",
@@ -118,11 +289,194 @@
       "id": "q4",
       "q": "Which classes are in package ZORDER?",
       "calls": [
-        { "tool": "SAPSearch", "args": "{\"query\":\"Z*\",\"type\":\"CLAS\"}", "result": "2 objects in package ZORDER" }
+        {
+          "tool": "SAPSearch",
+          "args": "{\"query\":\"Z*\",\"type\":\"CLAS\"}",
+          "result": "2 objects in package ZORDER"
+        }
       ],
       "answer": [
         "Package ZORDER contains two classes in the sample: ZCL_ORDER_HANDLER and ZCL_ORDER_VALIDATOR."
       ]
+    },
+    {
+      "id": "q5",
+      "q": "Does the system match specification TFD-0142?",
+      "calls": [
+        {
+          "tool": "SAPRead",
+          "args": "{\"type\":\"CLAS\",\"name\":\"ZCL_ORDER_VALIDATOR\"}",
+          "result": "Method CHECK found; no CHECK_CREDIT_LIMIT"
+        },
+        {
+          "tool": "SAPRead",
+          "args": "{\"type\":\"MSAG\",\"name\":\"ZMSG_ORDER\"}",
+          "result": "Messages 001 to 003; 010 is missing"
+        },
+        {
+          "tool": "SAPSearch",
+          "args": "{\"query\":\"ZCL_ORDER_VALIDATOR_TEST\"}",
+          "result": "0 objects"
+        }
+      ],
+      "answer": [
+        "3 of 7 requirements are met (R1, R2, R4), 1 is partly met (R5) and 3 are missing (R3, R6, R7).",
+        "Missing: the credit limit check in the validator, the validation validateCredit in ZR_SALESORDER and a unit test class. Message 010 is not in ZMSG_ORDER yet."
+      ]
+    },
+    {
+      "id": "q6",
+      "q": "Which ATC findings stand in the way of changing ZORDER_REPORT?",
+      "calls": [
+        {
+          "tool": "SAPDiagnose",
+          "args": "{\"action\":\"atc\",\"type\":\"PROG\",\"name\":\"ZORDER_REPORT\",\"variant\":\"ZDEFAULT\"}",
+          "result": "1 finding, priority 3 (performance, line 4)"
+        },
+        {
+          "tool": "SAPTransport",
+          "args": "{\"action\":\"list\"}",
+          "result": "ZORDER_REPORT is in DEVK900231 and DEVK900252"
+        }
+      ],
+      "answer": [
+        "One ATC finding, priority 3: the SELECT in line 4 has no WHERE condition or row limit.",
+        "The code fix is small, but ZORDER_REPORT sits in two modifiable requests with different owners (DEVK900231 / DEVELOPER1, DEVK900252 / DEVELOPER2). Agree the change with both first."
+      ]
     }
-  ]
+  ],
+  "messages": {
+    "ZMSG_ORDER": {
+      "001": "Order &1 is invalid",
+      "002": "Currency &1 is not allowed",
+      "003": "Order &1 booked"
+    }
+  },
+  "spec": {
+    "id": "TFD-0142",
+    "title": "Order validation: currency and credit limit",
+    "owner": "team Order-to-Cash",
+    "note": "Technical functional design as written in the Werkbank (fictional). Status of each requirement is computed from the sample system data.",
+    "requirements": [
+      {
+        "id": "R1",
+        "text": "A validation class ZCL_ORDER_VALIDATOR with a method CHECK exists.",
+        "checks": [
+          {
+            "kind": "object",
+            "name": "ZCL_ORDER_VALIDATOR"
+          },
+          {
+            "kind": "source",
+            "object": "ZCL_ORDER_VALIDATOR",
+            "needle": "METHOD check"
+          }
+        ]
+      },
+      {
+        "id": "R2",
+        "text": "The validator rejects orders without a currency.",
+        "checks": [
+          {
+            "kind": "source",
+            "object": "ZCL_ORDER_VALIDATOR",
+            "needle": "is_order-currency"
+          }
+        ]
+      },
+      {
+        "id": "R3",
+        "text": "The validator checks the customer credit limit (method CHECK_CREDIT_LIMIT).",
+        "checks": [
+          {
+            "kind": "source",
+            "object": "ZCL_ORDER_VALIDATOR",
+            "needle": "METHOD check_credit_limit"
+          }
+        ]
+      },
+      {
+        "id": "R4",
+        "text": "Booking an order writes a log entry to ZTB_ORDER_LOG.",
+        "checks": [
+          {
+            "kind": "source",
+            "object": "ZCL_ORDER_HANDLER",
+            "needle": "INSERT ztb_order_log"
+          }
+        ]
+      },
+      {
+        "id": "R5",
+        "text": "Message 010 \"Credit limit exceeded\" exists in ZMSG_ORDER.",
+        "checks": [
+          {
+            "kind": "object",
+            "name": "ZMSG_ORDER"
+          },
+          {
+            "kind": "message",
+            "msag": "ZMSG_ORDER",
+            "no": "010"
+          }
+        ]
+      },
+      {
+        "id": "R6",
+        "text": "ZR_SALESORDER has a RAP validation validateCredit.",
+        "checks": [
+          {
+            "kind": "source",
+            "object": "ZR_SALESORDER",
+            "needle": "validateCredit"
+          }
+        ]
+      },
+      {
+        "id": "R7",
+        "text": "A unit test class ZCL_ORDER_VALIDATOR_TEST exists.",
+        "checks": [
+          {
+            "kind": "object",
+            "name": "ZCL_ORDER_VALIDATOR_TEST"
+          }
+        ]
+      }
+    ]
+  },
+  "atc": {
+    "variant": "ZDEFAULT",
+    "findings": [
+      {
+        "id": "F1",
+        "object": "ZCL_ORDER_HANDLER",
+        "line": 12,
+        "needle": "INSERT ztb_order_log",
+        "prio": 2,
+        "check": "Security",
+        "text": "Database write without an authority check.",
+        "fix": "Add an AUTHORITY-CHECK before the INSERT, or move the write behind a RAP authorization."
+      },
+      {
+        "id": "F2",
+        "object": "ZORDER_REPORT",
+        "line": 4,
+        "needle": "SELECT order_id",
+        "prio": 3,
+        "check": "Performance",
+        "text": "SELECT without WHERE condition or row limit on a transactional view.",
+        "fix": "Add a selection screen with a date range, or UP TO n ROWS."
+      },
+      {
+        "id": "F3",
+        "object": "ZCL_ORDER_HANDLER",
+        "line": 10,
+        "needle": "RAISE EXCEPTION TYPE zcx_order_invalid",
+        "prio": 3,
+        "check": "Robustness",
+        "text": "Exception is raised without a message text.",
+        "fix": "Pass a message from ZMSG_ORDER (001) to the exception."
+      }
+    ]
+  }
 }
