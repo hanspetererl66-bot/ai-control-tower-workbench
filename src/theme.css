@@ -4845,3 +4845,16 @@ textarea.studio-field { min-height: 120px; }
 .sh-source-database { border-color: var(--lv-green, var(--line)); }
 .sh-source-offline { border-color: var(--lv-red, var(--line)); }
 .sh-source button { flex: none; }
+
+/* Chat context: one icon in the composer bar, the details in a popover above it */
+.ctxslot { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.ctx-icon { position: relative; }
+.ctx-badge { position: absolute; top: -5px; right: -5px; min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box; border-radius: 999px; background: var(--accent); color: var(--surface, #fff); font-size: 10px; line-height: 15px; text-align: center; }
+.ctx-panel { position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 20; width: min(380px, 80vw); display: flex; flex-direction: column; gap: 2px; padding: 6px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
+.ctx-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.ctx-panel > .ctx-row:last-child { border-bottom: 0; }
+.ctx-row-label { display: flex; flex-direction: column; color: var(--ink); font-size: 13px; }
+.ctx-row-label small { color: var(--muted); font-size: 11px; }
+.ctx-chip:disabled { opacity: 0.5; cursor: default; }
+.ctx-sent { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 10px; max-height: min(40vh, 340px); overflow: auto; }
+.composer-bar .chip { white-space: nowrap; }
