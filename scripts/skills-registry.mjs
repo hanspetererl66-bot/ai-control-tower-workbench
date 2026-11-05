@@ -50,6 +50,11 @@ export function knownTools(root = ROOT) {
       for (const tool of JSON.parse(readFileSync(manifest, 'utf8')).tools ?? []) names.add(tool.name);
     }
   }
+  // External MCP servers from the catalog (for example ARC-1) have no manifest in this repository; a skill may name their tools.
+  const catalog = join(root, 'examples/mcp-marketplace/servers.json');
+  if (existsSync(catalog)) {
+    for (const server of JSON.parse(readFileSync(catalog, 'utf8')).servers ?? []) for (const tool of server.tools ?? []) if (tool.name) names.add(tool.name);
+  }
   return names;
 }
 
