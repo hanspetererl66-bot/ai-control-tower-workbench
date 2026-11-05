@@ -105,7 +105,8 @@ declare global {
       skillDbRegister?: (slug: string) => Promise<{ ok: boolean; detail?: string; version?: number | null }>;
       skillDbGroups?: () => Promise<{ ok: boolean; detail?: string; rows?: Array<{ id: string; name: string; role: string }> }>;
       skillDbRanking?: () => Promise<{ ok: boolean; detail?: string; rows?: Array<{ slug: string; description?: string; installs: number; views: number; devices: number; score: number }> }>;
-      ontologyGovernanceSave?: (governance: import('./ontology-manager').Governance) => Promise<{ ok: boolean; detail?: string; governance?: import('./ontology-manager').Governance }>;
+      ontologyGovernanceSave?: (governance: import('./ontology-manager').Governance) => Promise<{ ok: boolean; detail?: string; governance?: import('./ontology-manager').Governance; state?: 'synced' | 'local' | 'conflict'; rev?: number; by?: string; localCopy?: boolean }>;
+      ontologyGovernanceSync?: () => Promise<{ ok: boolean; detail?: string; governance?: import('./ontology-manager').Governance; state?: 'synced' | 'local' | 'conflict'; rev?: number; by?: string; localCopy?: boolean; updated?: boolean }>;
       ontologyCatalog?: () => Promise<import('./ontology-manager').CatalogAnswer>;
       skillDbHealth?: () => Promise<{ ok: boolean; detail?: string; actor?: string; data?: { generatedAt?: string; total?: number; skills?: unknown[] } }>;
       skillDbLifecycle?: (args: { slug: string; action: string; reason?: string; sunsetAt?: string; replacedBy?: string }) => Promise<{ ok: boolean; detail?: string; data?: unknown }>;

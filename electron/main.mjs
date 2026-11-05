@@ -13,6 +13,7 @@ import { createN8nStore, isAllowedNavigation, N8N_EXTENSION, n8nExtensionEntry }
 import { createWorkStore, DEFAULT_EMAIL } from './work-store.mjs';
 import { createSkillStore } from './skill-store.mjs';
 import { createOntologyStore } from './ontology-store.mjs';
+import { createGovernanceSync, createSharedGovernance } from './ontology-shared.mjs';
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
@@ -1422,7 +1423,9 @@ function readOntologySettings() {
 }
 const ontologyStore = createOntologyStore({ readSettings: readOntologySettings, bundledInstances: join(ROOT, 'connectors/ontology-manager/server/data/werkbank_fin_instances.ttl') });
 ipcMain.handle('ontology-catalog', () => ontologyStore.read());
-ipcMain.handle('ontology-governance-save', (_event, governance) => ontologyStore.saveGovernance(governance));
+const ontologySync = createGovernanceSync({ store: ontologyStore, shared: createSharedGovernance({ credentials: () => workStore.credentials() }) });
+ipcMain.handle('ontology-governance-save', (_event, governance) => ontologySync.save(governance));
+ipcMain.handle('ontology-governance-sync', () => ontologySync.open());
 const workStore = createWorkStore({ file: join(ROOT, 'goose-home', 'work-sync.json'), readConnector: readDatabaseAccess, defaultEmail: DEFAULT_EMAIL });
 const skillStore = createSkillStore({ credentials: () => workStore.credentials(), skillsDir: SKILLS_DIR });
 ipcMain.handle('skill-db-sync', async () => { const r = await skillStore.sync().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })); if (r.ok) mainWindow?.webContents.send('skills-synced'); return r; });

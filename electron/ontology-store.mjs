@@ -299,6 +299,31 @@ export function createOntologyStore({ readSettings, bundledInstances }) {
       }
     },
 
+    /** Which shared revision the local governance.json is based on, and whether it has changes the database does not have yet. */
+    sharedMeta() {
+      const s = readSettings();
+      if (!s?.folder) return { rev: 0, dirty: false };
+      try {
+        const m = readJson(join(dirOf(s), 'governance.shared.json'));
+        return { rev: Math.max(0, Number(m?.rev) || 0), dirty: m?.dirty === true };
+      } catch { return { rev: 0, dirty: false }; }
+    },
+    setSharedMeta(meta) {
+      const s = readSettings();
+      if (!s?.folder) return false;
+      const dir = dirOf(s);
+      if (!existsSync(dir)) return false;
+      writeFileSync(join(dir, 'governance.shared.json'), `${JSON.stringify({ rev: Math.max(0, Number(meta?.rev) || 0), dirty: meta?.dirty === true })}\n`, 'utf8');
+      return true;
+    },
+    /** Keeps the person's own version next to the shared one when somebody else saved first. */
+    saveLocalCopy(input) {
+      const s = readSettings();
+      if (!s?.folder || !existsSync(dirOf(s))) return false;
+      writeFileSync(join(dirOf(s), 'governance.local-copy.json'), `${JSON.stringify(normalizeGovernance(input), null, 2)}\n`, 'utf8');
+      return true;
+    },
+
     /** Writes our own `governance.json` next to the catalog (never the catalog). Returns the stored, normalized content. */
     saveGovernance(input) {
       const s = readSettings();

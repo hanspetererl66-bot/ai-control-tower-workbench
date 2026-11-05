@@ -97,6 +97,14 @@ const WANTS_PRESENTATION = /\b(powerpoint|pptx|slide deck|presentation|slides?)\
 const WANTS_MEETING_DOCUMENT = /\b(fill|complete|create|save|word|docx|document|meeting brief)\b/i;
 const SHIPMENT_WORKFLOW = /\b(customer shipment defects?|shipment defects?|returns?\.csv)\b/i;
 
+/** One line for the Ontology page: where the governance data lives after a save or a sync. */
+function sharedNote(r: { ok: boolean; state?: 'synced' | 'local' | 'conflict'; detail?: string; rev?: number; by?: string; localCopy?: boolean }): string {
+  if (!r.ok) return `Not saved: ${r.detail ?? 'unknown error'}`;
+  if (r.state === 'synced') return r.rev ? `Saved · shared (revision ${r.rev}${r.by ? `, ${r.by}` : ''})` : 'Saved';
+  if (r.state === 'conflict') return `Somebody saved first. Their version is loaded${r.localCopy ? ' and yours is kept as governance.local-copy.json' : ''}.`;
+  return `Saved on this computer only${r.detail ? ` (${r.detail})` : ''}`;
+}
+
 export default function App() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [agentEpoch, setAgentEpoch] = useState(0);
@@ -208,15 +216,29 @@ export default function App() {
   const loadOntologies = useCallback(async () => {
     setOntologyData((d) => ({ ...d, source: { kind: 'loading' } }));
     const answer = await window.host?.ontologyCatalog?.().catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
-    setOntologyData(resolveCatalog(answer));
+    const resolved = resolveCatalog(answer);
+    setOntologyData(resolved);
+    // Shared governance: adopt newer shared data, or upload ours when nothing is shared yet (the local file stays the fallback).
+    if (resolved.source.kind === 'catalog' && window.host?.ontologyGovernanceSync) {
+      const sync = await window.host.ontologyGovernanceSync().catch((e: unknown): { ok: boolean; detail?: string; governance?: Governance; state?: 'synced' | 'local' | 'conflict'; rev?: number; by?: string; localCopy?: boolean } => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
+      if (sync.ok && sync.governance) {
+        const g = sync.governance;
+        setOntologyData((d) => ({ ...d, governance: g, ontologies: applyGovernance(d.ontologies, g) }));
+      }
+      setOntologyNote(sharedNote(sync));
+    }
   }, []);
   /** Owners, declared users, views and plans: shown at once, saved to governance.json next to the catalog (not for example data). */
   const changeGovernance = useCallback(async (next: Governance) => {
     setOntologyData((d) => ({ ...d, governance: next, ontologies: applyGovernance(d.ontologies, next) }));
     if (ontologyData.source.kind !== 'catalog' || !window.host?.ontologyGovernanceSave) { setOntologyNote('Not saved (example data)'); return; }
     setOntologyNote('Saving…');
-    const res = await window.host.ontologyGovernanceSave(next).catch((e: unknown) => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
-    setOntologyNote(res.ok ? 'Saved' : `Not saved: ${res.detail ?? 'unknown error'}`);
+    const res = await window.host.ontologyGovernanceSave(next).catch((e: unknown): { ok: boolean; detail?: string; governance?: Governance; state?: 'synced' | 'local' | 'conflict'; rev?: number; by?: string; localCopy?: boolean } => ({ ok: false, detail: String((e as Error)?.message ?? e) }));
+    if (res.ok && res.state === 'conflict' && res.governance) {
+      const g = res.governance;
+      setOntologyData((d) => ({ ...d, governance: g, ontologies: applyGovernance(d.ontologies, g) }));
+    }
+    setOntologyNote(res.ok ? sharedNote(res) : `Not saved: ${res.detail ?? 'unknown error'}`);
   }, [ontologyData.source.kind]);
   const [skillSource, setSkillSource] = useState<SkillSource>({ kind: 'example', detail: '' });
   const changeSkillCatalog = useCallback((next: Catalog) => { skillCatalogRef.current = next; setSkillCatalogState(next); saveCatalog(next, window.localStorage); }, []);
