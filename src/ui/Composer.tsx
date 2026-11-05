@@ -8,7 +8,6 @@ import {
 } from '../connector-selection';
 import {
   INTEGRATION_MENU_ITEMS,
-  connectorDisplayName,
   connectorDisplayOrder,
   isMicrosoft365Backend,
 } from '../connector-presentation';
@@ -44,7 +43,6 @@ type Props = {
   webSearch?: boolean;
   onWebSearchChange?: (enabled: boolean) => void;
   onCancel: () => void;
-  onManageConnectors?: () => void;
   /** Show suggested Control Tower questions (empty chat only). */
   starters?: boolean;
   /** Extra control for the bar under the input (the chat context switches). */
@@ -99,7 +97,6 @@ export default function Composer({
   webSearch = true,
   onWebSearchChange,
   onCancel,
-  onManageConnectors,
   starters = false,
   ownStarters,
   favoriteStarters,
@@ -178,7 +175,6 @@ export default function Composer({
   const [connectorError, setConnectorError] = useState('');
   const [preparingConnector, setPreparingConnector] = useState(false);
   const [skills, setSkills] = useState<{ name: string; description: string }[]>([]);
-  const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
@@ -206,10 +202,9 @@ export default function Composer({
 
   // The popovers close on Escape or a click anywhere outside them.
   useEffect(() => {
-    if (!integrationsOpen && !connectorsOpen && !contextOpen) return;
+    if (!integrationsOpen && !contextOpen) return;
     const close = () => {
       setIntegrationsOpen(false);
-      setConnectorsOpen(false);
       setContextOpen(false);
     };
     const onPointer = (event: MouseEvent) => {
@@ -226,7 +221,7 @@ export default function Composer({
       document.removeEventListener('mousedown', onPointer);
       document.removeEventListener('keydown', onKey);
     };
-  }, [integrationsOpen, connectorsOpen, contextOpen]);
+  }, [integrationsOpen, contextOpen]);
   // All connectors ever seen this session, plus which are currently active.
   // Removing one drops it from the session list, so we keep the config around
   // to be able to switch it back on.
@@ -315,23 +310,6 @@ export default function Composer({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent]);
-
-  async function toggleConnector(e: SessionExtension) {
-    const on = active.has(e.name);
-    // Optimistic: the dropdown should feel instant.
-    setActive((prev) => {
-      const next = new Set(prev);
-      on ? next.delete(e.name) : next.add(e.name);
-      return next;
-    });
-    try {
-      if (on) await agent!.removeSessionExtension(e.name);
-      else await agent!.addSessionExtension(e.config);
-    } catch {
-      /* fall through to refresh, which restores the truth */
-    }
-    refreshConnectors();
-  }
 
   useEffect(() => {
     listSkills().then(setSkills);
@@ -536,8 +514,7 @@ export default function Composer({
               setContextOpen((value) => !value);
               setSourcePick(null);
               setIntegrationsOpen(false);
-              setConnectorsOpen(false);
-            }}
+                    }}
             disabled={busy || preparingConnector}
           >
             +
@@ -633,8 +610,7 @@ export default function Composer({
             onClick={() => {
               setIntegrationsOpen((value) => !value);
               setModelOpen(false);
-              setConnectorsOpen(false);
-            }}
+                    }}
           >
             <IntegrationsIcon />
           </button>
@@ -714,68 +690,6 @@ export default function Composer({
         <button className="chip" title={workdir}>
           <FolderIcon /> Default
         </button>
-
-        <div className="chip-wrap">
-          <button
-            className={`chip ${connectorsOpen ? 'chip-on' : ''}`}
-            onClick={() => {
-              setConnectorsOpen((value) => !value);
-              setIntegrationsOpen(false);
-            }}
-            title="Choose connectors for this conversation"
-            aria-expanded={connectorsOpen}
-            aria-busy={preparingConnector}
-            disabled={preparingConnector}
-          >
-            <PlugIcon />{' '}
-            {preparingConnector ? 'Selecting…' : connectorLabel(known, active)}
-            {active.size > 0 && (
-              <span
-                className="online-dot"
-                aria-label="MCP process online"
-                title="MCP process connected; the downstream service login is checked on the first tool call."
-              />
-            )}
-          </button>
-          {connectorsOpen && (
-            <div className="menu connector-menu">
-              <div className="connector-menu-head">
-                <span className="connector-menu-mark"><PlugIcon /></span>
-                <span>
-                  <strong>Connectors</strong>
-                  <small title="MCP processes are connected; downstream service logins are checked on tool calls.">
-                    <span className="online-dot" /> Online
-                  </small>
-                </span>
-              </div>
-              {known.length === 0 && <div className="menu-empty">No connectors configured.</div>}
-              {known.map((item) => (
-                <button key={item.name} className="menu-item connector-menu-item" onClick={() => toggleConnector(item)}>
-                  <span className="connector-name">{connectorDisplayName(item.name)}</span>
-                  {active.has(item.name) && (
-                    <span
-                      className="connector-online"
-                      title="MCP process connected; downstream authentication is checked on the first tool call."
-                    >
-                      <span className="online-dot" /> Online
-                    </span>
-                  )}
-                  {active.has(item.name) && <CheckIcon />}
-                </button>
-              ))}
-              <div className="menu-sep" />
-              <button
-                className="menu-item menu-item-action"
-                onClick={() => {
-                  setConnectorsOpen(false);
-                  onManageConnectors?.();
-                }}
-              >
-                Manage Connectors
-              </button>
-            </div>
-          )}
-        </div>
 
         {harnesses && harnesses.length > 1 && onHarnessChange && (
           <label className="chip chip-select" title={harnesses.find((h) => h.id === harnessId)?.description || 'Working profile'}>
@@ -858,15 +772,6 @@ export default function Composer({
       )}
     </div>
   );
-}
-
-function connectorLabel(known: SessionExtension[], active: Set<string>) {
-  if (active.size === 0) return 'No Connector';
-  if (active.size === 1) {
-    const name = known.find((item) => active.has(item.name))?.name;
-    return name ? connectorDisplayName(name) : '1 Connector';
-  }
-  return `${active.size} Connectors`;
 }
 
 function SkillBoltIcon() {
@@ -961,15 +866,6 @@ function FolderIcon() {
         stroke="currentColor"
         strokeWidth="1.3"
       />
-    </svg>
-  );
-}
-
-function PlugIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="2.5" y="2.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="6.5" y="6.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
     </svg>
   );
 }
