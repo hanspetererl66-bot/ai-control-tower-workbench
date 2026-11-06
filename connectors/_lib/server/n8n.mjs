@@ -47,9 +47,9 @@ export function categorize(tags, config) {
   return config.categories.find((c) => c.tags.some((tag) => lower.has(tag.toLowerCase())))?.name ?? config.fallback;
 }
 
-const GENERIC_NODES = new Set(['set', 'if', 'switch', 'merge', 'code', 'function', 'functionitem', 'noop', 'stickynote', 'wait', 'splitinbatches', 'respondtowebhook', 'executeworkflow', 'executeworkflowtrigger', 'filter', 'aggregate', 'splitout', 'sort', 'limit', 'removeduplicates', 'datetime', 'editfields', 'comparedatasets', 'summarize', 'itemlists']);
+const GENERIC_NODES = new Set(['set', 'if', 'switch', 'merge', 'code', 'function', 'functionitem', 'noop', 'stickynote', 'wait', 'splitinbatches', 'respondtowebhook', 'executeworkflow', 'executeworkflowtrigger', 'filter', 'aggregate', 'splitout', 'sort', 'limit', 'removeduplicates', 'datetime', 'editfields', 'comparedatasets', 'summarize', 'itemlists', 'agent', 'chainllm', 'memorybufferwindow', 'outputparserstructured']);
 
-const APP_NAMES = { sap: 'SAP', openAi: 'OpenAI', httpRequest: 'HTTP', successFactors: 'SuccessFactors', concur: 'Concur', salesforce: 'Salesforce', gmail: 'Gmail', slack: 'Slack', notion: 'Notion', emailReadImap: 'Email (IMAP)' };
+const APP_NAMES = { sap: 'SAP', openAi: 'OpenAI', lmChatOpenAi: 'OpenAI', lmChatAnthropic: 'Anthropic', anthropic: 'Anthropic', lmChatGoogleGemini: 'Google Gemini', googleGemini: 'Google Gemini', lmChatMistralCloud: 'Mistral', httpRequest: 'HTTP', successFactors: 'SuccessFactors', concur: 'Concur', salesforce: 'Salesforce', gmail: 'Gmail', slack: 'Slack', notion: 'Notion', emailReadImap: 'Email (IMAP)' };
 const prettyApp = (type) => APP_NAMES[type] ?? type.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
 /** Trigger kind and connected apps from the node types (what the public API returns with each workflow). */
@@ -61,6 +61,35 @@ export function deriveNodes(nodes = []) {
   const apps = [...new Set(types.filter((type) => type && !GENERIC_NODES.has(type.toLowerCase()) && !plainTrigger(type)).map((type) => prettyApp(type.replace(/(Trigger|Tool)$/, ''))))];
   return { trigger, apps: apps.slice(0, 6), nodeCount: nodes.length };
 }
+
+/**
+ * Model nodes (chat models and the plain AI nodes). Agents and chains use a connected model node, so only model nodes count:
+ * "calls" is the number of model nodes in the workflow, a statement about the workflow, not a measured token count.
+ */
+export function deriveLlm(nodes = []) {
+  const types = nodes.map((node) => String(node.type ?? '').split('.').pop());
+  const hits = types.filter((type) => /^lm[A-Z]/.test(type) || /^(openAi|anthropic|googleGemini|mistralAi|ollama)$/.test(type));
+  const provider = (type) => (/anthropic/i.test(type) ? 'Anthropic' : /gemini|vertex|palm/i.test(type) ? 'Google' : /mistral/i.test(type) ? 'Mistral' : /ollama/i.test(type) ? 'Ollama' : /openai/i.test(type) ? 'OpenAI' : 'Other');
+  return { calls: hits.length, providers: [...new Set(hits.map(provider))] };
+}
+
+/** Conventions in n8n tags: "owner:<name>", "project:<name>", "reviewed:<YYYY-MM-DD>" (like "cat:<name>" for the category). */
+export function tagValue(tags, key) {
+  const pattern = new RegExp(`^${key}:\\s*(.+)$`, 'i');
+  return tags.map((tag) => pattern.exec(tag)?.[1]?.trim()).find(Boolean) ?? null;
+}
+
+/** Upper edges in seconds of the duration histogram; the last bucket is "longer than the last edge". */
+export const DURATION_EDGES = [1, 2, 5, 10, 30, 60];
+const bucketOf = (seconds) => {
+  const index = DURATION_EDGES.findIndex((edge) => seconds < edge);
+  return index < 0 ? DURATION_EDGES.length : index;
+};
+const percentile = (values, p) => {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)];
+};
 
 /** n8n statuses -> success | error | running | canceled */
 export function normalizeStatus(status) {
@@ -74,7 +103,7 @@ export function normalizeStatus(status) {
 const dateKey = (ms) => new Date(ms).toISOString().slice(0, 10);
 
 /** Pure aggregation: raw n8n workflows + executions -> the shape the Space renders. */
-export function buildDashboardData({ workflows, executions, asOf, source, instance, windowDays = WINDOW_DAYS, categories = loadCategories() }) {
+export function buildDashboardData({ workflows, executions, asOf, source, instance, windowDays = WINDOW_DAYS, categories = loadCategories(), includeOwners = false }) {
   const end = Date.parse(`${asOf}T00:00:00Z`) + DAY; // exclusive: the whole of asOf counts
   const start = end - windowDays * DAY;
   const days = Array.from({ length: windowDays }, (_, i) => ({ date: dateKey(start + i * DAY), success: 0, error: 0, other: 0 }));
@@ -98,12 +127,20 @@ export function buildDashboardData({ workflows, executions, asOf, source, instan
     .filter((execution) => Number.isFinite(execution.started) && execution.started >= start && execution.started < end)
     .sort((a, b) => b.started - a.started);
 
+  // When the runs started, by weekday (Monday first) and hour, in UTC: all runs and failed runs.
+  const heat = { runs: Array.from({ length: 7 }, () => Array(24).fill(0)), errors: Array.from({ length: 7 }, () => Array(24).fill(0)) };
+  const allSeconds = [];
   for (const execution of inWindow) {
     const day = byDay.get(dateKey(execution.started));
     if (!day) continue;
     if (execution.status === 'success') day.success += 1;
     else if (execution.status === 'error') day.error += 1;
     else day.other += 1;
+    const when = new Date(execution.started);
+    const weekday = (when.getUTCDay() + 6) % 7;
+    heat.runs[weekday][when.getUTCHours()] += 1;
+    if (execution.status === 'error') heat.errors[weekday][when.getUTCHours()] += 1;
+    if (execution.seconds !== null && execution.status !== 'running') allSeconds.push(execution.seconds);
   }
 
   const stats = workflows.map((workflow) => {
@@ -114,19 +151,51 @@ export function buildDashboardData({ workflows, executions, asOf, source, instan
     const rule = categories.categories.find((c) => c.name === category);
     const daily = days.map((day) => {
       const ofDay = mine.filter((execution) => dateKey(execution.started) === day.date);
-      return { success: ofDay.filter((e) => e.status === 'success').length, error: ofDay.filter((e) => e.status === 'error').length, other: ofDay.filter((e) => e.status !== 'success' && e.status !== 'error').length };
+      const timed = ofDay.filter((e) => e.seconds !== null && e.status !== 'running');
+      return {
+        success: ofDay.filter((e) => e.status === 'success').length,
+        error: ofDay.filter((e) => e.status === 'error').length,
+        other: ofDay.filter((e) => e.status !== 'success' && e.status !== 'error').length,
+        sec: round1(timed.reduce((sum, e) => sum + e.seconds, 0)), // run time of the finished runs that day
+        n: timed.length,
+      };
     });
     const success = mine.filter((execution) => execution.status === 'success').length;
+    const hours = Array(24).fill(0);
+    for (const execution of mine) hours[new Date(execution.started).getUTCHours()] += 1;
+    const buckets = Array(DURATION_EDGES.length + 1).fill(0);
+    for (const execution of finished) buckets[bucketOf(execution.seconds)] += 1;
+    const judged = mine.filter((execution) => execution.status === 'success' || execution.status === 'error'); // newest first
+    const streak = judged.findIndex((execution) => execution.status === 'success');
+    const created = Date.parse(workflow.createdAt);
+    const updated = Date.parse(workflow.updatedAt);
+    const reviewed = tagValue(tags, 'reviewed');
+    const owner = tagValue(tags, 'owner');
     return {
       ...deriveNodes(workflow.nodes),
+      llm: deriveLlm(workflow.nodes),
       category,
+      project: tagValue(tags, 'project'),
+      hasOwner: owner !== null,
+      owner: includeOwners ? owner : null,
+      reviewedAt: reviewed && !Number.isNaN(Date.parse(reviewed)) ? reviewed : null,
+      createdAt: Number.isFinite(created) ? new Date(created).toISOString() : null,
+      updatedAt: Number.isFinite(updated) ? new Date(updated).toISOString() : null,
+      // true / false when the API returned the workflow settings, null when it did not (unknown, not "no")
+      errorWorkflow: workflow.settings && typeof workflow.settings === 'object' ? Boolean(workflow.settings.errorWorkflow) : null,
       daily,
+      hours,
+      buckets,
+      p95Seconds: percentile(finished.map((execution) => execution.seconds), 0.95),
+      lastErrorAt: mine.find((execution) => execution.status === 'error')?.startedAt ?? null,
+      lastSuccessAt: mine.find((execution) => execution.status === 'success')?.startedAt ?? null,
+      errorStreak: streak < 0 ? judged.length : streak,
       minutesSaved: Math.round(success * (rule?.minutesPerRun ?? categories.fallbackMinutesPerRun)),
       recent: mine.slice(0, 8).map(({ id, status, mode, startedAt, seconds }) => ({ id, status, mode, startedAt, seconds })),
       id: String(workflow.id),
       name: workflow.name,
       active: workflow.active === true,
-      tags,
+      tags: includeOwners ? tags : tags.filter((t) => !/^owner\s*:/i.test(t)), // the name must not leak through the tag list
       executions: mine.length,
       success,
       error: mine.filter((execution) => execution.status === 'error').length,
@@ -141,6 +210,10 @@ export function buildDashboardData({ workflows, executions, asOf, source, instan
     instance,
     asOf,
     windowDays,
+    peopleIncluded: includeOwners,
+    durationEdges: DURATION_EDGES,
+    heat,
+    stats: { p50Seconds: percentile(allSeconds, 0.5), p95Seconds: percentile(allSeconds, 0.95) },
     days,
     categories: categories.categories.map(({ name, tags: ruleTags, minutesPerRun }) => ({ name, tags: ruleTags, minutesPerRun })).concat([{ name: categories.fallback, tags: [], minutesPerRun: categories.fallbackMinutesPerRun }]),
     workflows: stats.sort((a, b) => b.executions - a.executions || a.name.localeCompare(b.name)),
@@ -174,7 +247,7 @@ async function getAll({ origin, key, path, params, fetchImpl, stop }) {
   return rows;
 }
 
-export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays = WINDOW_DAYS, categories = loadCategories() }) {
+export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays = WINDOW_DAYS, categories = loadCategories(), includeOwners = false }) {
   if (!key) throw new Error('Set N8N_API_KEY first (n8n: Settings -> n8n API).');
   const origin = normalizeInstanceUrl(url);
   const start = Date.parse(`${asOf}T00:00:00Z`) + DAY - windowDays * DAY;
@@ -188,7 +261,7 @@ export async function fetchN8n({ url, key, asOf, fetchImpl = fetch, windowDays =
     fetchImpl,
     stop: (rows) => rows.length > 0 && rows.every((row) => Date.parse(row.startedAt) < start),
   });
-  return buildDashboardData({ workflows, executions, asOf, source: 'n8n', instance: new URL(origin).host, windowDays, categories });
+  return buildDashboardData({ workflows, executions, asOf, source: 'n8n', instance: new URL(origin).host, windowDays, categories, includeOwners });
 }
 
 /* ---------------- chat tools ---------------- */

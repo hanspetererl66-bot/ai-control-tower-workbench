@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { makeMetrics } from '../connectors/_lib/server/automation-metrics.mjs';
 import { buildDashboardData, categorize, deriveNodes, embeddedData, fetchN8n, installLive, loadCategories, normalizeStatus, sampleData } from '../scripts/sync-automation-dashboard.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -142,4 +143,47 @@ test('time saved uses the category assumption and only counts successful runs', 
   assert.equal(data.categories.at(-1).name, 'Uncategorized');
   assert.deepEqual(data.workflows[0].daily.map((d) => [d.success, d.error]), [[0, 0], [2, 1]]);
   assert.equal(data.workflows[0].recent.length, 3);
+});
+
+test('page logic is the same code as the metrics module', () => {
+  const m = /\/\/ @logic-start\n([\s\S]*?)\n\s*\/\/ @logic-end/.exec(page);
+  assert.ok(m, 'logic markers');
+  assert.equal(m[1].trim(), makeMetrics.toString().trim());
+});
+
+test('page: six KPIs open a detail page with a single click, no storage, no network, people switch is off', () => {
+  for (const k of ['active', 'executions', 'rate', 'failed', 'duration', 'saved']) assert.ok(page.includes(`'${k}'`) && new RegExp(`kpiCard\\('${k}'`).test(page), k);
+  assert.ok(!/dblclick/.test(page) && !/localStorage|sessionStorage|fetch\(|XMLHttpRequest/.test(page));
+  assert.ok(/data-people aria-pressed="' \+ state\.people/.test(page) && /people: false/.test(page));
+  assert.ok(page.includes('Estimate.') && page.includes('(estimate)'));
+  for (const id of ['pg-errors', 'pg-connections', 'pg-schedules', 'pg-capacity', 'pg-llm', 'pg-builders', 'pg-governance']) assert.ok(page.includes(`id="${id}"`), id);
+});
+
+test('metrics: period change, attention, estimates and governance behave', () => {
+  const D = sampleData('2026-11-06');
+  const M = makeMetrics(D);
+  assert.equal(M.kpis(14).hasPrevious, false);
+  assert.equal(M.kpis(7).hasPrevious, true);
+  const att = M.attention(14, 10);
+  assert.ok(att.items.some((i) => i.title === 'Invoice intake and OCR routing' && i.key === 'target'));
+  const llm = M.llm(14);
+  assert.ok(llm.total > 0 && llm.rows.every((r) => r.providers.length && r.cost >= 0));
+  const g = M.governance();
+  assert.ok(g.rows.every((r) => r.score === null || (r.score >= 0 && r.score <= 100)));
+  const b = M.builders(14);
+  assert.equal(b.projects.reduce((s, r) => s + r.count, 0), D.workflows.length);
+  assert.deepEqual(b.people.map((r) => r.owner), b.people.map((r) => r.owner).slice().sort());
+});
+
+test('owner names stay out unless asked for, hours and buckets add up', () => {
+  const input = { asOf: '2026-10-18', source: 'n8n', instance: 'x', windowDays: 3,
+    workflows: [{ id: 1, name: 'A', active: true, tags: [{ name: 'owner:Pat' }, { name: 'project:P1' }] }],
+    executions: [{ id: 1, workflowId: 1, status: 'success', startedAt: '2026-10-18T10:00:00.000Z', stoppedAt: '2026-10-18T10:00:04.000Z' }] };
+  const off = buildDashboardData(input), on = buildDashboardData({ ...input, includeOwners: true });
+  assert.equal(off.workflows[0].owner, null); assert.equal(off.workflows[0].hasOwner, true); assert.equal(off.workflows[0].project, 'P1');
+  assert.ok(!JSON.stringify(off).includes('Pat'));
+  assert.equal(on.workflows[0].owner, 'Pat');
+  const w = on.workflows[0];
+  assert.equal(w.hours.reduce((a, b) => a + b, 0), 1);
+  assert.equal(w.buckets.reduce((a, b) => a + b, 0), 1);
 });
