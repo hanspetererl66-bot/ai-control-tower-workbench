@@ -1,0 +1,120 @@
+{
+  "asOf": "2026-11-06",
+  "company": "Rheinsoft Solutions (fictional)",
+  "system": "S/4HANA Cloud + subscription and provisioning tools (sample data)",
+  "currency": "EUR",
+  "closing": "2026-12-31",
+  "case": {
+    "id": "ORDER-2026-0731",
+    "customer": "Kestrel Versicherung AG",
+    "customerNo": "100871",
+    "product": "LeanIX Enterprise Architecture, user licenses",
+    "received": "2026-11-05",
+    "summary": "A signed order for 500 LeanIX user licenses. At confirmation two tracks start in parallel: the commercial one (credit, billing, revenue) and the technical one (tenant, access, licenses)."
+  },
+  "persons": {
+    "mira": { "name": "Mira Hahn", "role": "Order desk clerk", "limits": { "credit": 50000, "bill": 250000, "revenue": false, "tenant": true, "config": true, "entitle": 100, "reply": true } },
+    "tobias": { "name": "Tobias Krämer", "role": "Credit manager", "limits": { "credit": 300000, "bill": 1000000, "revenue": true, "tenant": true, "config": true, "entitle": 1000, "reply": true } },
+    "claude": { "name": "Claude", "role": "AI assistant", "agent": true, "limits": { "credit": false, "bill": false, "revenue": false, "tenant": false, "config": false, "entitle": false, "reply": false } },
+    "joule": { "name": "Joule agent", "role": "AI agent in the systems", "agent": true, "limits": { "credit": false, "bill": false, "revenue": false, "tenant": false, "config": false, "entitle": false, "reply": false } }
+  },
+  "docs": [
+    { "id": "Q1", "kind": "Quote Q-2026-5521", "date": "2026-10-20", "lines": [
+      "Quote Q-2026-5521 for Kestrel Versicherung AG",
+      "LeanIX Enterprise Architecture, 500 user licenses, term 36 months from 01.12.2026",
+      "List price 42.00 EUR per user per month, discount 10% approved by Sales Director, net 37.80 EUR",
+      "Onboarding workshop (2 days): 8,000.00 EUR fixed, one-time. Billing: annually in advance"
+    ] },
+    { "id": "O1", "kind": "Order form OF-7731 (signed)", "date": "2026-11-04", "lines": [
+      "Order form OF-7731, Kestrel Versicherung AG, signed 04.11.2026",
+      "500 user licenses LeanIX Enterprise Architecture, 37.80 EUR per user per month, 36 months",
+      "Subscription start 01.12.2026. Invoice annually in advance.",
+      "Customer data is hosted in the EU region only.",
+      "Single sign-on with the customer's identity provider is required."
+    ] },
+    { "id": "E1", "kind": "Customer email", "date": "2026-11-05", "lines": [
+      "Subject: OF-7731 - invoicing and access",
+      "Please send all invoices to Kestrel Group Services GmbH, Mainzer Str. 12, 60311 Frankfurt.",
+      "Our admins are Anna Brandt and Jonas Weiss. Please set up access before 01.12."
+    ] },
+    { "id": "E2", "kind": "Credit memo (finance)", "date": "2026-11-05", "lines": [
+      "Credit check Kestrel Versicherung AG (100871)",
+      "Credit limit 200,000.00 EUR, open items 0.00 EUR",
+      "Exposure above the limit needs the credit manager.",
+      "Licenses are activated only after the credit decision. The tenant may be prepared before."
+    ] },
+    { "id": "W1", "kind": "Operations wiki: tenant template", "date": "2026-09-12", "lines": [
+      "Template standard-tenant",
+      "Region: us-east (default)",
+      "Allowed regions: eu-central, eu-west, us-east",
+      "Set the region from the order form before the tenant is created."
+    ] }
+  ],
+  "systems": {
+    "salesOrder": { "id": "10003120", "date": "2026-11-04", "contractRef": "OF-7731", "soldTo": "Kestrel Versicherung AG", "billTo": "Kestrel Versicherung AG",
+      "items": [
+        { "item": 10, "text": "LeanIX Enterprise Architecture, user license", "qty": 500, "unit": "user", "price": 37.80, "months": 36, "start": "2026-12-01" },
+        { "item": 20, "text": "Onboarding workshop (2 days)", "qty": 1, "unit": "service", "price": 8000.00 }
+      ] },
+    "account": { "creditLimit": 200000, "openItems": 0 },
+    "tenant": { "templateRegion": "us-east", "planRegion": "eu-central", "allowedRegions": ["eu-central", "eu-west", "us-east"], "euRegions": ["eu-central", "eu-west"] },
+    "requestedBillTo": "Kestrel Group Services GmbH",
+    "admins": ["Anna Brandt", "Jonas Weiss"]
+  },
+  "findings": [
+    { "id": "F1", "text": "The order matches the quote: 500 licenses, 37.80 EUR per user and month, 36 months.", "inference": false,
+      "checks": [ { "kind": "line", "doc": "Q1", "line": 2, "needle": "500 user licenses" }, { "kind": "line", "doc": "Q1", "line": 3, "needle": "net 37.80" }, { "kind": "line", "doc": "O1", "line": 2, "needle": "37.80 EUR per user per month" }, { "kind": "orderQty", "equals": 500 }, { "kind": "orderPrice", "equals": 37.8 }, { "kind": "orderMonths", "equals": 36 } ] },
+    { "id": "F2", "text": "The 10% discount is already approved by the Sales Director, so the order needs no new discount approval.", "inference": false,
+      "checks": [ { "kind": "line", "doc": "Q1", "line": 3, "needle": "approved by Sales Director" } ] },
+    { "id": "F3", "text": "The customer wants all invoices sent to Kestrel Group Services GmbH. The order in S/4 still has the sold-to party as bill-to.", "inference": false,
+      "checks": [ { "kind": "line", "doc": "E1", "line": 2, "needle": "Kestrel Group Services GmbH" }, { "kind": "line", "doc": "O1", "line": 3, "needle": "annually in advance" }, { "kind": "billToUnchanged" } ] },
+    { "id": "F4", "text": "Data must stay in the EU, but the standard tenant template defaults to us-east. The region has to be set before the tenant is created.", "inference": false,
+      "checks": [ { "kind": "line", "doc": "O1", "line": 4, "needle": "EU region only" }, { "kind": "line", "doc": "W1", "line": 2, "needle": "us-east (default)" }, { "kind": "templateOutsideEu" } ] },
+    { "id": "F5", "text": "First year plus onboarding is above the credit limit. Licenses are activated only after the credit manager has decided; the tenant can be prepared in the meantime.", "inference": false,
+      "checks": [ { "kind": "line", "doc": "E2", "line": 2, "needle": "Credit limit 200,000.00" }, { "kind": "line", "doc": "E2", "line": 4, "needle": "activated only after the credit decision" }, { "kind": "creditOver" } ] },
+    { "id": "F6", "text": "The subscription is earned over the 36 months. The onboarding workshop is a separate obligation and is recognised when it is done. Revenue accounting should confirm this.", "inference": true,
+      "checks": [ { "kind": "line", "doc": "O1", "line": 3, "needle": "Subscription start 01.12.2026" }, { "kind": "line", "doc": "Q1", "line": 4, "needle": "Onboarding workshop" }, { "kind": "orderMonths", "equals": 36 } ] }
+  ],
+  "tasks": [
+    { "id": "T1", "track": "commercial", "type": "credit", "tool": "s4_release_credit_block", "label": "Changes something", "requires": [],
+      "done": "Credit block released on order 10003120 for the credit manager's decision (sample)." },
+    { "id": "T2", "track": "commercial", "type": "bill", "tool": "sub_create_billing_plan", "label": "Changes something", "requires": ["T1"],
+      "done": "Billing plan created: three annual invoices in advance, bill-to Kestrel Group Services GmbH (sample)." },
+    { "id": "T3", "track": "commercial", "type": "revenue", "tool": "rev_create_revenue_schedule", "label": "Changes something", "requires": ["T2"],
+      "done": "Revenue schedule created: 36 monthly postings from Dec 2026; onboarding on completion (sample)." },
+    { "id": "T4", "track": "technical", "type": "tenant", "tool": "prov_create_tenant", "label": "Changes something", "requires": [],
+      "done": "Tenant created in the planned region (sample)." },
+    { "id": "T5", "track": "technical", "type": "config", "tool": "prov_configure_sso", "label": "Changes something", "requires": ["T4"],
+      "done": "Single sign-on set up, two administrators invited (sample)." },
+    { "id": "T6", "track": "technical", "type": "entitle", "tool": "ent_activate_licenses", "label": "Changes something", "requires": ["T4", "T1"],
+      "done": "500 user licenses activated for Kestrel Versicherung AG (sample)." },
+    { "id": "T7", "track": "customer", "type": "reply", "tool": "send_customer_reply", "label": "Sends a message", "requires": ["T2", "T5", "T6"],
+      "done": "Welcome message with access and invoice dates sent to Kestrel Versicherung AG (sample)." }
+  ],
+  "history": [
+    { "t": "09:02", "who": "mira", "what": "Order OF-7731 is confirmed. Asks Claude to check the order.", "tool": "", "mode": "task" },
+    { "t": "09:03", "who": "claude", "what": "Reads quote, order form, two emails and the tenant template.", "tool": "mail, files", "mode": "read" },
+    { "t": "09:05", "who": "claude", "what": "Asks the Joule agent for order 10003120 and the customer's credit data.", "tool": "s4_get_sales_order", "mode": "read" },
+    { "t": "09:05", "who": "joule", "what": "Returns order, account and tenant template under Mira's rights.", "tool": "s4_get_sales_order", "mode": "read" },
+    { "t": "09:08", "who": "claude", "what": "Builds the case file; every finding carries its proof line.", "tool": "", "mode": "draft" },
+    { "t": "09:09", "who": "joule", "what": "Prepares seven steps in two parallel tracks. Nothing is written yet.", "tool": "", "mode": "draft" }
+  ],
+  "questions": [
+    { "id": "q1", "q": "What did Kestrel order and what is it worth?",
+      "calls": [ { "tool": "s4_get_sales_order", "args": "{\"order\":\"10003120\"}", "result": "item 10: 500 user x 37.80 EUR, 36 months; item 20: onboarding 8,000.00 EUR" } ],
+      "answer": [ "500 LeanIX user licenses for 36 months at 37.80 EUR per user and month (proof: O1 line 2). That is 18,900.00 EUR per month, 226,800.00 EUR per year and 680,400.00 EUR for the term.",
+                  "With the onboarding workshop (8,000.00 EUR, Q1 line 4) the contract is worth 688,400.00 EUR." ] },
+    { "id": "q2", "q": "Why can the licenses not be activated yet?",
+      "calls": [ { "tool": "s4_get_credit_account", "args": "{\"customer\":\"100871\"}", "result": "limit 200,000.00 EUR, open items 0.00 EUR" } ],
+      "answer": [ "First year (226,800.00 EUR) plus onboarding (8,000.00 EUR) is 234,800.00 EUR and the credit limit is 200,000.00 EUR (proof: E2 lines 2 and 4).",
+                  "Licenses wait for the credit manager. The clerk's limit is 50,000.00 EUR, so Tobias Krämer has to decide. The tenant and the single sign-on can be prepared in parallel." ] },
+    { "id": "q3", "q": "How much revenue is recognised by 31 December 2026?",
+      "calls": [ { "tool": "rev_get_schedule_preview", "args": "{\"order\":\"10003120\",\"to\":\"2026-12-31\"}", "result": "1 month of 36, 18,900.00 EUR" } ],
+      "answer": [ "Billed: 226,800.00 EUR (first annual invoice). Recognised: 18,900.00 EUR, one month of 36. Deferred: 207,900.00 EUR.",
+                  "Billing and revenue are different numbers. The invoice is a claim on the customer, revenue follows the service over the term. The split of the onboarding workshop is an inference to be confirmed." ] },
+    { "id": "q4", "q": "In which region should the tenant be created?",
+      "calls": [ { "tool": "prov_get_template", "args": "{\"template\":\"standard-tenant\"}", "result": "region us-east (default); allowed eu-central, eu-west, us-east" } ],
+      "answer": [ "In eu-central. The order form says the data is hosted in the EU region only (proof: O1 line 4), and the template default is us-east (proof: W1 line 2).",
+                  "The step to create the tenant sets the region from the order form. A region outside the EU is blocked by the same rule." ] }
+  ]
+}
