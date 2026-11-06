@@ -1,0 +1,19 @@
+{
+  "note": "Assumptions behind some figures of the Automation Dashboard. They are NOT measurements. Replace them with your own values, then run: npm run sync:automation (sample) or npm run sync:automation -- --live. Prices are placeholders, not a price list: use the prices of your contract.",
+  "successTargetPct": 98,
+  "hourlyRateEur": 65,
+  "plan": { "label": "Assumed plan limit", "executionsPerMonth": 10000 },
+  "llm": {
+    "note": "Estimated model cost = runs x model nodes in the workflow x assumed tokens per call x assumed price. n8n does not report tokens in the data this dashboard reads, so every run is assumed to call every model node once.",
+    "tokensPerCall": { "input": 2500, "output": 600 },
+    "monthlyBudgetEur": 40,
+    "pricePer1MTokensEur": {
+      "OpenAI": { "input": 2.5, "output": 10 },
+      "Anthropic": { "input": 3, "output": 15 },
+      "Google": { "input": 1.25, "output": 5 },
+      "Mistral": { "input": 2, "output": 6 },
+      "Ollama": { "input": 0, "output": 0 },
+      "Other": { "input": 2, "output": 8 }
+    }
+  }
+}
