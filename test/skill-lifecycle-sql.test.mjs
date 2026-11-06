@@ -492,3 +492,44 @@ test('recruiting import: a first import of the mock updates the sample rows, a n
   assert.match(rule(imp(MGR, { requisitions: 'x' })), /payload/);
   for (const role of ['anon', 'authenticated']) assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_import(text,jsonb)', 'execute')`), 'f');
 });
+
+
+test('recruiting criteria: only the hiring manager sets them, ids are assigned, changes are logged, protected traits are refused', { skip }, () => {
+  const set = (actor, args) => `select public.recruiting_criterion_set(${q(actor)}, ${q(args.req ?? 'REQ-2206')}, ${args.id ? q(args.id) : 'null'}, ${args.must ?? false}, ${q(args.label ?? 'Knows payroll')}, ${q(args.kind ?? 'text')}, ${args.min ?? 'null'}, ${arr(args.needles ?? ['payroll'])}, ${arr(args.partial ?? [])})`;
+  sql("delete from recruiting.criterion where requisition_id = 'REQ-2206'");
+  const first = json(set(MGR, { must: true, label: 'Payroll experience' }));
+  assert.equal(first.id, 'M1'); assert.equal(first.created, true);
+  assert.equal(json(set(MGR, { must: true, label: 'German C1', needles: ['German native', 'German C1'] })).id, 'M2');
+  assert.equal(json(set(MGR, { must: false, label: 'SAP HCM', needles: ['HCM'] })).id, 'N1');
+  const years = json(set(MGR, { must: true, label: 'At least 3 years', kind: 'years', min: 3, needles: [] }));
+  assert.equal(years.id, 'M3');
+  assert.equal(json(set(MGR, { id: 'M1', must: true, label: 'Payroll experience (DE)', needles: ['payroll', 'Lohn'] })).created, false);
+  assert.equal(sql("select label from recruiting.criterion where requisition_id = 'REQ-2206' and crit_id = 'M1'"), 'Payroll experience (DE)');
+  assert.match(rule(set('stranger@x.com', { must: true })), /only the hiring manager/);
+  assert.match(rule(set('board@x.com', { must: true })), /only the hiring manager/, 'not even the board sets them');
+  assert.match(rule(set(MGR, { req: 'REQ-1901', must: true })), /only the hiring manager/, 'a closed requisition has no criteria to set');
+  assert.ok(rule(set(MGR, { must: false, label: 'Younger than 35', needles: ['young'] })), 'protected trait');
+  assert.match(rule(set(MGR, { id: 'M1', must: false })), /cannot change between/);
+  assert.match(rule(set(MGR, { id: 'M9', must: true })), /unknown criterion/);
+  assert.match(rule(set(MGR, { must: true, kind: 'weeks' })), /kind must be/);
+  assert.ok(rule(set(MGR, { must: true, label: 'x', kind: 'text', needles: [] })), 'a text criterion needs a needle');
+  assert.match(rule(`select public.recruiting_criterion_delete('stranger@x.com', 'REQ-2206', 'M1')`), /only the hiring manager/);
+  assert.equal(json(`select public.recruiting_criterion_delete(${q(MGR)}, 'REQ-2206', 'N1')`).deleted, true);
+  assert.match(rule(`select public.recruiting_criterion_delete(${q(MGR)}, 'REQ-2206', 'N1')`), /unknown criterion/);
+  // new ids never reuse a deleted number of the highest id
+  assert.equal(json(set(MGR, { must: false, label: 'Payroll software', needles: ['software'] })).id, 'N1');
+  const log = json(`select to_json(array_agg(action || ':' || crit_id order by id)) from recruiting.criterion_event where requisition_id = 'REQ-2206'`);
+  assert.ok(log.includes('deleted:N1') && log.includes('set:M1'));
+  assert.match(rule(`update recruiting.criterion_event set actor = 'x@y.de'`), /append only/);
+  assert.match(rule(`delete from recruiting.criterion_event`), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_criterion_set(text,text,text,boolean,text,text,integer,text[],text[])', 'execute')`), 'f');
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.criterion_event', 'select')`), 'f');
+  }
+  // the shortlist can use them: the snapshot of the manager carries the new criteria
+  assert.ok(snap(MGR).criteria['REQ-2206'].length >= 3);
+  const mine = json(`select public.recruiting_criteria_mine(${q(MGR)})`);
+  assert.ok(mine.some((r) => r.id === 'REQ-2206' && r.criteria.length >= 3 && r.criteria[0].must === true));
+  assert.ok(mine.every((r) => r.id !== 'REQ-1901'), 'closed requisitions are not listed');
+  assert.deepEqual(json(`select public.recruiting_criteria_mine('stranger@x.com')`), []);
+});

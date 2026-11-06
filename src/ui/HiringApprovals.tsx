@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import HiringCriteria from './HiringCriteria';
 import { KIND_LABEL, countByStatus, decisionError, groupByRequisition, readProposals, type Proposal } from '../hiring';
 
 const fmt = (iso: string) => (iso ? new Date(iso).toLocaleString([], { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '');
@@ -9,7 +10,7 @@ const fmt = (iso: string) => (iso ? new Date(iso).toLocaleString([], { day: '2-d
  * Releasing does not change anything in a recruiting system yet (no SmartRecruiters connection exists).
  */
 export default function HiringApprovals({ onBack }: { onBack: () => void }) {
-  const [tab, setTab] = useState<'proposed' | 'decided'>('proposed');
+  const [tab, setTab] = useState<'proposed' | 'decided' | 'criteria'>('proposed');
   const [all, setAll] = useState<Proposal[]>([]);
   const [note, setNote] = useState<Record<number, string>>({});
   const [busy, setBusy] = useState<number | null>(null);
@@ -72,8 +73,10 @@ export default function HiringApprovals({ onBack }: { onBack: () => void }) {
       <div className="hr-tabs" role="tablist">
         <button role="tab" aria-selected={tab === 'proposed'} className={tab === 'proposed' ? 'on' : ''} onClick={() => setTab('proposed')}>Waiting <b>{counts.proposed}</b></button>
         <button role="tab" aria-selected={tab === 'decided'} className={tab === 'decided' ? 'on' : ''} onClick={() => setTab('decided')}>Decided <b>{counts.released + counts.declined}</b></button>
+        <button role="tab" aria-selected={tab === 'criteria'} className={tab === 'criteria' ? 'on' : ''} onClick={() => setTab('criteria')}>Criteria</button>
         <button className="hr-reload" onClick={() => void load()}>Reload</button>
       </div>
+      {tab === 'criteria' ? <HiringCriteria /> : <>
       <div className="hr-source">
         <span className="hr-tag">Source: SmartRecruiters (mock)</span>
         <button className="dialog-btn" disabled={busy === -1 || !window.host?.recruitingImport} onClick={() => void runImport()}>Import from the mock</button>
@@ -109,6 +112,7 @@ export default function HiringApprovals({ onBack }: { onBack: () => void }) {
           ))}
         </section>
       ))}
+      </>}
     </main>
   );
 }

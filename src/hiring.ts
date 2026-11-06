@@ -50,3 +50,58 @@ export function decisionError(raw: string): string {
   if (/already decided/i.test(raw)) return 'This proposal was already decided. Reload the list.';
   return raw;
 }
+
+/** One criterion of a requisition, as the criteria editor shows it (same shape as the snapshot). */
+export type Criterion = { id: string; must: boolean; text: string; kind: 'text' | 'years'; min: number | null; needles: string[]; partial: string[] };
+export type MyRequisition = { id: string; title: string; dept: string; criteria: Criterion[] };
+
+export function readMyRequisitions(rows: unknown): MyRequisition[] {
+  if (!Array.isArray(rows)) return [];
+  const out: MyRequisition[] = [];
+  for (const r of rows as Array<Record<string, unknown>>) {
+    if (!r || typeof r.id !== 'string' || typeof r.title !== 'string' || !Array.isArray(r.criteria)) continue;
+    const criteria: Criterion[] = [];
+    for (const c of r.criteria as Array<Record<string, unknown>>) {
+      if (!c || typeof c.id !== 'string' || typeof c.text !== 'string' || typeof c.must !== 'boolean' || (c.kind !== 'text' && c.kind !== 'years')) continue;
+      const strs = (v: unknown) => (Array.isArray(v) ? v.filter((t): t is string => typeof t === 'string') : []);
+      criteria.push({ id: c.id, must: c.must, text: c.text, kind: c.kind, min: Number.isInteger(c.min) ? (c.min as number) : null, needles: strs(c.needles), partial: strs(c.partial) });
+    }
+    out.push({ id: r.id, title: r.title, dept: String(r.dept ?? ''), criteria });
+  }
+  return out;
+}
+
+/** Splits a typed list (commas or new lines) into terms: trimmed, no empty ones, no repeats, at most ten. */
+export function parseNeedles(text: string): string[] {
+  const seen = new Set<string>(); const out: string[] = [];
+  for (const raw of text.split(/[\n,;]/)) {
+    const t = raw.trim().slice(0, 80);
+    if (t && !seen.has(t.toLowerCase())) { seen.add(t.toLowerCase()); out.push(t); }
+  }
+  return out.slice(0, 10);
+}
+
+// Mirrors the database check (migration 028) so the screen can say no early. The database stays the authority.
+const PROTECTED = /\b(age|aged|young|younger|older|gender|sex|sexual|nationality|ethnicity|ethnic|religion|religious|marital|married|pregnant|pregnancy|disability|photo|born|alter|geschlecht|staatsangeh\w*|familienstand|schwanger\w*|behinderung)\b/i;
+
+export type CriterionDraft = { label: string; kind: 'text' | 'years'; minYears: string; needles: string; partial: string };
+
+/** Returns a message when the draft cannot be saved, otherwise ''. */
+export function validateCriterion(d: CriterionDraft, existing: number): string {
+  if (!d.label.trim()) return 'Describe the criterion in a few words.';
+  if (existing >= 12) return 'A requisition can have at most 12 criteria.';
+  if (d.kind === 'years') {
+    const n = Number(d.minYears);
+    if (!Number.isInteger(n) || n < 1 || n > 40) return 'Give the minimum number of years as a whole number between 1 and 40.';
+  } else if (parseNeedles(d.needles).length === 0) return 'Give at least one word or phrase to look for in the CV.';
+  const all = [d.label, d.needles, d.partial].join(' ');
+  if (PROTECTED.test(all)) return 'Criteria must not refer to age, gender, nationality, religion, family status, health or similar traits.';
+  return '';
+}
+
+export function criterionError(raw: string): string {
+  if (/only the hiring manager/i.test(raw)) return 'Only the hiring manager of this open requisition can change its criteria.';
+  if (/cannot change between/i.test(raw)) return 'A must-have cannot become a nice-to-have. Delete it and add a new one.';
+  if (/at most 12/i.test(raw)) return 'A requisition can have at most 12 criteria.';
+  return raw;
+}

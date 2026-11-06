@@ -85,6 +85,27 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
       const fixture = JSON.parse(readFileSync(new URL('../connectors/_lib/server/smartrecruiters-mock.json', import.meta.url), 'utf8'));
       return importFromSmartRecruiters({ client: createMockClient(fixture), rpc, actor: email });
     },
+    /** The open requisitions of the stored e-mail with their criteria, for the criteria editor. */
+    async listCriteria() {
+      const { rpc, email } = connect();
+      const rows = await rpc('recruiting_criteria_mine', { p_actor: email });
+      return Array.isArray(rows) ? rows : [];
+    },
+    /** Creates or edits one criterion. Not a tool. Arguments are whitelisted and the actor is the stored e-mail; the database allows only the hiring manager. */
+    async setCriterion(a) {
+      const { rpc, email } = connect();
+      const x = a && typeof a === 'object' ? a : {};
+      const list = (v) => (Array.isArray(v) ? v.filter((t) => typeof t === 'string').map((t) => t.slice(0, 80)).slice(0, 10) : []);
+      return rpc('recruiting_criterion_set', {
+        p_actor: email, p_requisition: String(x.requisition ?? ''), p_crit_id: x.id ? String(x.id) : null, p_must: x.must === true,
+        p_label: String(x.label ?? '').slice(0, 120), p_kind: String(x.kind ?? ''),
+        p_min_years: Number.isInteger(x.minYears) ? x.minYears : null, p_needles: list(x.needles), p_partial: list(x.partial),
+      });
+    },
+    async deleteCriterion(requisition, id) {
+      const { rpc, email } = connect();
+      return rpc('recruiting_criterion_delete', { p_actor: email, p_requisition: String(requisition ?? ''), p_crit_id: String(id ?? '') });
+    },
     /** The hiring manager's decision after a click. Not a tool: the agent cannot call this. The database only accepts the manager of the requisition. */
     async decideProposal(id, decision, note) {
       const { rpc, email } = connect();

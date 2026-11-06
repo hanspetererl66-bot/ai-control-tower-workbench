@@ -1473,6 +1473,15 @@ ipcMain.handle('recruiting-import', async () => {
 ipcMain.handle('recruiting-decide', async (_event, id, decision, note) => {
   try { return { ok: true, data: await workStore.decideProposal(id, decision, note) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
+ipcMain.handle('recruiting-criteria', async () => {
+  try { return { ok: true, data: await workStore.listCriteria() }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-criterion-set', async (_event, args) => {
+  try { return { ok: true, data: await workStore.setCriterion(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-criterion-delete', async (_event, requisition, id) => {
+  try { return { ok: true, data: await workStore.deleteCriterion(requisition, id) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
 ipcMain.handle('job-runs-list', async (_event, args) => {
   try { return { ok: true, data: await workStore.listRuns(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
