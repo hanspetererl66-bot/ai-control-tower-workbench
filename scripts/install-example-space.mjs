@@ -30,6 +30,7 @@ export const EXAMPLE_SPACES = {
   'abap-workbench': 'abap-workbench',
   'design-study': 'design-study',
   'recruiting-workbench': 'recruiting-workbench',
+  'order-to-cash': 'order-to-cash',
 };
 
 /**
