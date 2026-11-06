@@ -14,9 +14,9 @@
 import { ToolError } from './tools.mjs';
 import { actorOf } from './skill-lifecycle.mjs';
 
-/** SmartRecruiters candidate status -> our four stages. Anything else (hired, rejected, withdrawn, unknown) is not in the process. */
+/** SmartRecruiters candidate status -> our six stages. INTERVIEW_2 and FINAL are names of the mock only (the real API has one INTERVIEW status plus custom sub-statuses, unchecked). Anything else (hired, rejected, withdrawn, unknown) is not in the process. */
 export const STAGE_OF = {
-  LEAD: 'Applied', NEW: 'Applied', IN_REVIEW: 'Screening', PHONE_SCREEN: 'Screening', INTERVIEW: 'Interview', OFFER: 'Offer',
+  LEAD: 'Applied', NEW: 'Applied', IN_REVIEW: 'Screening', PHONE_SCREEN: 'Screening', INTERVIEW: 'Online interview', INTERVIEW_2: 'In-person interview', FINAL: 'Final conversation', OFFER: 'Offer',
 };
 
 const EMAIL = /[^\s@]+@[^\s@]+\.[A-Za-z]{2,}/;

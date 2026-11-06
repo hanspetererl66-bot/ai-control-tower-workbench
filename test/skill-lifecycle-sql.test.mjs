@@ -533,3 +533,25 @@ test('recruiting criteria: only the hiring manager sets them, ids are assigned, 
   assert.ok(mine.every((r) => r.id !== 'REQ-1901'), 'closed requisitions are not listed');
   assert.deepEqual(json(`select public.recruiting_criteria_mine('stranger@x.com')`), []);
 });
+
+test('recruiting stages: the three interview rounds are stages, an old "Interview" candidate moves to the first round, re-running changes nothing', { skip }, () => {
+  const order = () => sql("select string_agg(stage || ':' || days, ', ' order by ord) from recruiting.stage_target");
+  const want = 'Applied:3, Screening:5, Online interview:7, In-person interview:7, Final conversation:5, Offer:4';
+  assert.equal(order(), want);
+  assert.ok(rule("update recruiting.candidate set stage = 'Interview' where id = 'C-4201'"), 'the old stage name is refused');
+  // simulate a database from before this migration: the old stage exists and a candidate stands in it
+  sql(`alter table recruiting.stage_target drop constraint stage_target_stage_check;
+    update recruiting.stage_target set ord = ord + 20 where stage in ('Offer');
+    insert into recruiting.stage_target (stage, days, ord) values ('Interview', 7, 3 + 0) on conflict do nothing`.replace("3 + 0", '13'));
+  sql("update recruiting.candidate set stage = 'Interview' where id in ('C-4201', 'C-4101')");
+  run(['-f', join(ROOT, 'supabase/migrations/20261106_031_recruiting_stages.sql')]);
+  assert.equal(order(), want);
+  assert.equal(sql("select stage from recruiting.candidate where id = 'C-4201'"), 'Online interview');
+  assert.equal(sql("select stage from recruiting.candidate where id = 'C-4101'"), 'Final conversation');
+  run(['-f', join(ROOT, 'supabase/migrations/20261106_031_recruiting_stages.sql')]);
+  assert.equal(order(), want, 'a second run changes nothing');
+  assert.equal(sql("select count(*) from recruiting.candidate where stage not in (select stage from recruiting.stage_target)"), '0');
+  const snap = json("select public.recruiting_snapshot('board@x.com')");
+  assert.deepEqual(snap.stages, ['Applied', 'Screening', 'Online interview', 'In-person interview', 'Final conversation', 'Offer']);
+  assert.equal(snap.sla['Final conversation'], 5);
+});

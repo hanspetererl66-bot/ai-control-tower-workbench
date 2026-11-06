@@ -197,9 +197,10 @@ test('recruiting-workbench closed counts, channels and rounds are consistent', (
     const ch = Object.values(data.channels[j.id]).reduce((a, b) => a + b, 0);
     assert.equal(ch, apps, `${j.id}: channels must add up to all applications`);
   }
-  for (const [id, r] of Object.entries(data.rounds)) {
-    assert.equal(data.candidates.find((c) => c.id === id).stage, 'Interview', `${id} has a round but is not in Interview`);
-    assert.ok(r >= 1 && r <= data.roundLabels.length);
-  }
+  assert.deepEqual(data.stages, ['Applied', 'Screening', 'Online interview', 'In-person interview', 'Final conversation', 'Offer'], 'the three interview rounds are stages');
+  assert.deepEqual(Object.keys(data.sla), data.stages, 'every stage has a target');
+  assert.deepEqual(Object.keys(data.stageLabels), data.stages, 'every stage has a label');
+  assert.ok(data.candidates.every((c) => data.stages.includes(c.stage)), 'no candidate stands in an unknown stage');
+  assert.ok(!('rounds' in data) && !('roundLabels' in data), 'rounds are no longer a tag');
   assert.ok(!/@|\+?\d{6,}/.test(JSON.stringify(data.consent)), 'no contact data');
 });

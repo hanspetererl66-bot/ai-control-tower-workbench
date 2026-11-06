@@ -4,13 +4,17 @@
   "stages": [
     "Applied",
     "Screening",
-    "Interview",
+    "Online interview",
+    "In-person interview",
+    "Final conversation",
     "Offer"
   ],
   "sla": {
     "Applied": 3,
     "Screening": 5,
-    "Interview": 7,
+    "Online interview": 7,
+    "In-person interview": 7,
+    "Final conversation": 5,
     "Offer": 4
   },
   "privacy": {
@@ -340,7 +344,7 @@
     {
       "id": "C-4101",
       "job": "REQ-2201",
-      "stage": "Interview",
+      "stage": "Final conversation",
       "since": "2026-10-27",
       "applied": "2026-09-22",
       "years": 7,
@@ -432,7 +436,7 @@
     {
       "id": "C-4201",
       "job": "REQ-2203",
-      "stage": "Interview",
+      "stage": "Online interview",
       "since": "2026-11-02",
       "applied": "2026-10-01",
       "years": 4,
@@ -543,7 +547,7 @@
     {
       "id": "C-4303",
       "job": "REQ-2204",
-      "stage": "Interview",
+      "stage": "In-person interview",
       "since": "2026-11-03",
       "applied": "2026-10-15",
       "years": 11,
@@ -558,7 +562,7 @@
     {
       "id": "C-4304",
       "job": "REQ-2204",
-      "stage": "Interview",
+      "stage": "In-person interview",
       "since": "2026-10-20",
       "applied": "2026-09-30",
       "years": 5,
@@ -597,7 +601,7 @@
     {
       "id": "C-4402",
       "job": "REQ-2202",
-      "stage": "Interview",
+      "stage": "Online interview",
       "since": "2026-11-05",
       "applied": "2026-10-16"
     },
@@ -618,7 +622,7 @@
     {
       "id": "C-4501",
       "job": "REQ-2205",
-      "stage": "Interview",
+      "stage": "Online interview",
       "since": "2026-10-30",
       "applied": "2026-10-19"
     },
@@ -771,7 +775,9 @@
   "stageLabels": {
     "Applied": "New",
     "Screening": "In review",
-    "Interview": "Interview",
+    "Online interview": "Online interview",
+    "In-person interview": "In-person interview",
+    "Final conversation": "Final conversation",
     "Offer": "Offered"
   },
   "outcomes": {
@@ -858,18 +864,5 @@
       "Social": 0,
       "Referral": 1
     }
-  },
-  "rounds": {
-    "C-4101": 3,
-    "C-4201": 1,
-    "C-4303": 2,
-    "C-4304": 2,
-    "C-4402": 1,
-    "C-4501": 1
-  },
-  "roundLabels": [
-    "Online interview",
-    "In-person interview",
-    "Final conversation"
-  ]
+  }
 }
