@@ -561,7 +561,9 @@ export default function Composer({
             aria-pressed={buttonsShown}
             onClick={toggleButtons}
           >
-            <span aria-hidden="true">{buttonsShown ? '−' : '+'}</span>
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {buttonsShown ? <polyline points="3,10.5 8,5.5 13,10.5" /> : <polyline points="3,5.5 8,10.5 13,5.5" />}
+            </svg>
           </button>
         )}
 
