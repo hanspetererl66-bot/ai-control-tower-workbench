@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('host', {
     if (f >= 0.8 && f <= 1.5) webFrame.setZoomFactor(f);
   },
   openFile: (path) => ipcRenderer.invoke('open-file', path),
+  openWorkspace: () => ipcRenderer.invoke('open-workspace'),
   revealFile: (path) => ipcRenderer.send('reveal-file', path),
   renderBriefingPdf: (request) => ipcRenderer.invoke('render-briefing-pdf', request),
   pickChatFiles: () => ipcRenderer.invoke('pick-chat-files'),
