@@ -1226,6 +1226,11 @@ ipcMain.handle('open-file', async (_event, path) => {
   return detail ? { ok: false, detail } : { ok: true };
 });
 
+ipcMain.handle('open-workspace', async () => {
+  const detail = await shell.openPath(WORKSPACE);
+  return detail ? { ok: false, detail } : { ok: true };
+});
+
 ipcMain.on('reveal-file', (_event, path) => {
   const target = workspaceFile(path);
   if (target) shell.showItemInFolder(target);

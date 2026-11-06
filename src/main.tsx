@@ -12,6 +12,7 @@ declare global {
       platform: string;
       workspacePath: string;
       openFile?: (path: string) => Promise<{ ok: boolean; detail?: string }>;
+      openWorkspace?: () => Promise<{ ok: boolean; detail?: string }>;
       revealFile?: (path: string) => void;
       renderBriefingPdf?: (request: { html: string; fileName: string }) => Promise<{ ok: boolean; detail?: string; path?: string; base64?: string }>;
       pickChatFiles?: () => Promise<AttachmentPickerResult>;

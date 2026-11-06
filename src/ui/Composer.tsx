@@ -118,6 +118,7 @@ export default function Composer({
   const [micState, setMicState] = useState<'idle' | 'recording' | 'transcribing'>('idle');
   const [micError, setMicError] = useState('');
   const recording = useRef<Recording | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const textRef = useRef(text);
   textRef.current = text;
   useEffect(() => () => recording.current?.cancel(), []);
@@ -481,6 +482,7 @@ export default function Composer({
         </div>
       )}
       <textarea
+        ref={inputRef}
         className="composer-input"
         placeholder={agent ? `Message ${PRODUCT_TITLE}…` : 'Connecting…'}
         rows={1}
@@ -567,9 +569,12 @@ export default function Composer({
 
         <button
           className="chip chip-icon"
-          title="Pick a skill (or type / in the input)"
+          title={agent ? 'Pick a skill (or type / in the input)' : 'Joule is not connected yet, so skills cannot be picked (is a model key set in .env?)'}
           aria-label="Pick a skill"
-          onClick={() => setText((current) => (current.startsWith('/') ? current : '/'))}
+          onClick={() => {
+            setText((current) => (current.startsWith('/') ? current : '/'));
+            inputRef.current?.focus();
+          }}
           disabled={!agent || busy || preparingConnector}
         >
           <SkillBoltIcon />
@@ -638,7 +643,7 @@ export default function Composer({
                     </div>
                     {modelOpen && (
                       <div className="integration-submenu" role="menu" aria-label="Model provider">
-                        {MODEL_PROVIDERS.map((provider) => (
+                        {MODEL_PROVIDERS.filter((provider) => provider.available).map((provider) => (
                           <div
                             key={provider.id}
                             className={`integration-sub-item ${provider.available ? '' : 'integration-sub-disabled'}`}
@@ -687,9 +692,11 @@ export default function Composer({
           )}
         </div>
 
-        <button className="chip" title={workdir}>
-          <FolderIcon /> Default
-        </button>
+        {window.host?.openWorkspace && (
+          <button className="chip" title={`Open the working folder: ${workdir}`} onClick={() => void window.host?.openWorkspace?.()}>
+            <FolderIcon /> Default
+          </button>
+        )}
 
         {harnesses && harnesses.length > 1 && onHarnessChange && (
           <label className="chip chip-select" title={harnesses.find((h) => h.id === harnessId)?.description || 'Working profile'}>
