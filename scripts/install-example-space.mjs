@@ -29,6 +29,7 @@ export const EXAMPLE_SPACES = {
   'calm-alm': 'calm-alm',
   'abap-workbench': 'abap-workbench',
   'design-study': 'design-study',
+  'recruiting-workbench': 'recruiting-workbench',
 };
 
 /**
