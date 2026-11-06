@@ -82,6 +82,16 @@ export function makeLogic(D) {
     list.forEach(function (e, i) { e.rank = i + 1; });
     return list;
   }
+  // The match agent: the best n candidates of a requisition by the stated rule only. onlyNew keeps candidates still in the first stage.
+  function topMatches(jobId, n, opts) {
+    var o = opts || {};
+    var all = shortlist(jobId).filter(function (e) { return !o.onlyNew || e.cand.stage === STAGES[0]; });
+    var pool = o.onlyMeets ? all.filter(function (e) { return e.group === 'A'; }) : all.filter(function (e) { return e.group !== 'C'; });
+    var want = Math.max(0, Math.min(Math.floor(n) || 0, pool.length));
+    return { requested: Math.max(0, Math.floor(n) || 0), candidates: all.length,
+      meetsAll: all.filter(function (e) { return e.group === 'A'; }).length, needsLook: all.filter(function (e) { return e.group === 'B'; }).length,
+      notAsWritten: all.filter(function (e) { return e.group === 'C'; }).length, shown: want, list: pool.slice(0, want) };
+  }
   function nextStage(s) { return STAGES[STAGES.indexOf(s) + 1]; }
   function proposals() {
     var out = [];
@@ -147,6 +157,6 @@ export function makeLogic(D) {
     return items;
   }
   return { STAGES: STAGES, job: job, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
-    jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, proposals: proposals, funnel: funnel,
+    jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, topMatches: topMatches, proposals: proposals, funnel: funnel,
     stalledList: stalledList, bestWaiting: bestWaiting, brief: brief, daysBetween: daysBetween };
 }

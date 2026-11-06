@@ -172,3 +172,34 @@ test('recruiting-workbench is a static, sandbox-safe page', () => {
   assert.match(page, /e\.source|window\.parent/);
   assert.match(page, /slice\(0, 600\)/);
 });
+
+test('recruiting-workbench match agent returns the number asked for, by the stated rule, and never the weak fits', () => {
+  const all = L.shortlist('REQ-2204');
+  const r = L.topMatches('REQ-2204', 2, {});
+  assert.equal(r.requested, 2);
+  assert.equal(r.shown, 2);
+  assert.deepEqual(ids(r.list), ids(all.slice(0, 2)), 'same order as the shortlist');
+  assert.equal(r.meetsAll + r.needsLook + r.notAsWritten, r.candidates);
+  const big = L.topMatches('REQ-2201', 99, {});
+  assert.equal(big.shown, big.meetsAll + big.needsLook, 'group C is never filled in');
+  assert.ok(big.list.every((e) => e.group !== 'C'));
+  const only = L.topMatches('REQ-2201', 99, { onlyMeets: true });
+  assert.ok(only.list.every((e) => e.group === 'A'));
+  const fresh = L.topMatches('REQ-2201', 99, { onlyNew: true });
+  assert.ok(fresh.list.every((e) => e.cand.stage === 'Applied'));
+  assert.equal(L.topMatches('REQ-2201', 0, {}).shown, 0);
+});
+
+test('recruiting-workbench closed counts, channels and rounds are consistent', () => {
+  for (const j of data.jobs) {
+    const o = data.outcomes[j.id];
+    const apps = data.candidates.filter((c) => c.job === j.id).length + o.hired + o.withdrawn + o.rejected;
+    const ch = Object.values(data.channels[j.id]).reduce((a, b) => a + b, 0);
+    assert.equal(ch, apps, `${j.id}: channels must add up to all applications`);
+  }
+  for (const [id, r] of Object.entries(data.rounds)) {
+    assert.equal(data.candidates.find((c) => c.id === id).stage, 'Interview', `${id} has a round but is not in Interview`);
+    assert.ok(r >= 1 && r <= data.roundLabels.length);
+  }
+  assert.ok(!/@|\+?\d{6,}/.test(JSON.stringify(data.consent)), 'no contact data');
+});

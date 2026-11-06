@@ -767,5 +767,109 @@
       "name": "sr_send_message",
       "what": "Would message the hiring manager or a candidate after release. Not built"
     }
+  ],
+  "stageLabels": {
+    "Applied": "New",
+    "Screening": "In review",
+    "Interview": "Interview",
+    "Offer": "Offered"
+  },
+  "outcomes": {
+    "REQ-2201": {
+      "hired": 0,
+      "withdrawn": 3,
+      "rejected": 9
+    },
+    "REQ-2202": {
+      "hired": 1,
+      "withdrawn": 2,
+      "rejected": 6
+    },
+    "REQ-2203": {
+      "hired": 0,
+      "withdrawn": 1,
+      "rejected": 7
+    },
+    "REQ-2204": {
+      "hired": 0,
+      "withdrawn": 2,
+      "rejected": 11
+    },
+    "REQ-2205": {
+      "hired": 1,
+      "withdrawn": 4,
+      "rejected": 14
+    },
+    "REQ-2206": {
+      "hired": 0,
+      "withdrawn": 0,
+      "rejected": 2
+    }
+  },
+  "consent": {
+    "default": "given",
+    "requested": [
+      "C-4105",
+      "C-4404",
+      "C-4602"
+    ]
+  },
+  "contactNote": "Name, e-mail and phone are not stored. They stay in the recruiting system.",
+  "channels": {
+    "REQ-2201": {
+      "LinkedIn": 5,
+      "Career site": 4,
+      "Job board": 6,
+      "Social": 1,
+      "Referral": 2
+    },
+    "REQ-2202": {
+      "LinkedIn": 1,
+      "Career site": 3,
+      "Job board": 4,
+      "Social": 3,
+      "Referral": 2
+    },
+    "REQ-2203": {
+      "LinkedIn": 6,
+      "Career site": 3,
+      "Job board": 2,
+      "Social": 0,
+      "Referral": 2
+    },
+    "REQ-2204": {
+      "LinkedIn": 8,
+      "Career site": 4,
+      "Job board": 2,
+      "Social": 0,
+      "Referral": 4
+    },
+    "REQ-2205": {
+      "LinkedIn": 3,
+      "Career site": 5,
+      "Job board": 8,
+      "Social": 6,
+      "Referral": 2
+    },
+    "REQ-2206": {
+      "LinkedIn": 1,
+      "Career site": 2,
+      "Job board": 1,
+      "Social": 0,
+      "Referral": 1
+    }
+  },
+  "rounds": {
+    "C-4101": 3,
+    "C-4201": 1,
+    "C-4303": 2,
+    "C-4304": 2,
+    "C-4402": 1,
+    "C-4501": 1
+  },
+  "roundLabels": [
+    "Online interview",
+    "In-person interview",
+    "Final conversation"
   ]
 }
