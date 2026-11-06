@@ -62,6 +62,7 @@ import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, ty
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
 import AdminView from './ui/AdminView';
+import HiringApprovals from './ui/HiringApprovals';
 import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type OntologyData } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
@@ -1492,8 +1493,10 @@ export default function App() {
         />
       ) : view === 'registry' ? (
         <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} onBack={() => setView('admin')} />
+      ) : view === 'hiring' ? (
+        <HiringApprovals onBack={() => setView('admin')} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenHiring={() => setView('hiring')} />
       ) : view === 'ontology' ? (
         <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
       ) : view === 'skillhealth' ? (

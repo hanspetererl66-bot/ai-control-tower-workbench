@@ -7,6 +7,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connectors/_lib/server/work-items.mjs';
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
+import { createRecruitingHandlers, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -17,6 +18,7 @@ export const CONFIG_SOURCES = ['werkbank-workspace', 'skill-marketplace'];
 /** The person every project is saved under, until a real sign-in replaces this (private prototype, one user). */
 export const DEFAULT_EMAIL = 'hanspeter.erl66@gmail.com';
 
+const PROPOSAL_LIST_ARGS = new Set(['status', 'requisition', 'limit']);
 const RUN_LIST_ARGS = new Set(['days', 'job', 'status', 'trigger', 'only_mine', 'limit']);
 
 export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
@@ -68,6 +70,18 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
       const clean = {};
       for (const [k, v] of Object.entries(args && typeof args === 'object' ? args : {})) if (RUN_LIST_ARGS.has(k)) clean[k] = v;
       return createJobRunHandlers(rpc).list_job_runs({ ...clean, actor: email });
+    },
+    /** Joule's recruiting proposals for the approval screen: fixed filters, always as the stored e-mail. */
+    async listProposals(args) {
+      const { rpc, email } = connect();
+      const clean = {};
+      for (const [k, v] of Object.entries(args && typeof args === 'object' ? args : {})) if (PROPOSAL_LIST_ARGS.has(k)) clean[k] = v;
+      return createRecruitingHandlers(rpc).recruiting_list_proposals({ limit: 200, ...clean, actor: email });
+    },
+    /** The hiring manager's decision after a click. Not a tool: the agent cannot call this. The database only accepts the manager of the requisition. */
+    async decideProposal(id, decision, note) {
+      const { rpc, email } = connect();
+      return decideProposal(rpc, email, id, decision, note);
     },
     async call(tool, args) {
       if (!ALLOWED_TOOLS.has(tool)) throw new Error('This call is not allowed.');

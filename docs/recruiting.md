@@ -21,10 +21,10 @@ Stand 06.11.2026. Gehört zum Space **Recruiting Workbench** (`examples/recruiti
 
 ## Grenzen
 - **Kein Import aus SmartRecruiters** (die API ist nicht geprüft); die Daten kommen aus dem Seed. Freigeben ändert in keinem Recruiting-System etwas.
-- **Keine Oberfläche und kein IPC** zum Freigeben oder Ablehnen. Der Vorschlag wartet in der Datenbank; `decideProposal` ist da, aber nirgends angebunden. Der Space zeigt eine Simulation.
+- **Freigabe-Oberfläche:** Admin → Kachel "Hiring approvals" (`src/ui/HiringApprovals.tsx`, Logik `src/hiring.ts`). Reiter Waiting/Decided, Release oder Decline mit Notiz; Weg: IPC `recruiting-proposals` / `recruiting-decide` → `work-store.mjs` (feste Filter, E-Mail erzwungen) → `decideProposal`. Entscheiden klappt nur mit der E-Mail, die als Hiring Manager im Seed steht (die Datenbank sagt sonst "only the hiring manager"). Die Kachel liegt im Admin-Bereich, ist aber nicht an eine Admin-Rolle gebunden. Der Space zeigt weiter eine Simulation.
 - Identität nur die E-Mail (kein SSO), wie bei den anderen Tabellen.
 - Kriterienprüfung ist Textsuche ohne Synonyme. Die Schutzlisten (Merkmale, Telefonformate) sind Wortlisten und Muster, keine Garantie.
 - EU AI Act (Einstellung gilt als Hochrisiko), Betriebsrat und Datenschutz vor echter Nutzung klären.
 
 ## Nicht getestet
-Echtes Supabase, Electron-App, echter Agent mit den Werkzeugen. Getestet: Migration und alle Regeln gegen Postgres 16 (`test/skill-lifecycle-sql.test.mjs`, SQL-Teil "recruiting"), Connector mit Fake-Datenbank (`test/recruiting-connector.test.mjs`), Space (`test/recruiting-workbench.test.mjs`).
+Echtes Supabase, die Freigabe-Ansicht in der Electron-App (nur Typecheck und Logik-Test), echter Agent mit den Werkzeugen. Getestet: Migration und alle Regeln gegen Postgres 16 (`test/skill-lifecycle-sql.test.mjs`, SQL-Teil "recruiting"), Connector mit Fake-Datenbank (`test/recruiting-connector.test.mjs`), Space (`test/recruiting-workbench.test.mjs`).
