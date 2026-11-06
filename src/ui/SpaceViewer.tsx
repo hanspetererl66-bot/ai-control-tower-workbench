@@ -31,8 +31,11 @@ export default function SpaceViewer({
   incoming,
   studioAgents,
   onIncomingDelivered,
+  onEditDesign,
 }: {
   space: Space;
+  /** Opens the Space in the Designer (only given for Spaces made there). */
+  onEditDesign?: () => void;
   tabRequest?: SpaceTabRequest | null;
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
@@ -298,6 +301,7 @@ export default function SpaceViewer({
         <button className="icon-btn" onClick={() => setBust(Date.now())} title="Refresh" aria-label="Refresh">
           <RefreshIcon />
         </button>
+        {onEditDesign && <button className="ghost-btn" onClick={onEditDesign} title="Edit this Space in the Designer">Edit design</button>}
         {onAsk && (
           <button className="ghost-btn" onClick={() => onAsk(`Ich möchte den Space „${space.title}“ (${space.slug}) ändern. Frag mich kurz, was anders sein soll, und passe ihn danach an.`)} title="Open the chat and describe what should change in this Space">
             Change with Joule
