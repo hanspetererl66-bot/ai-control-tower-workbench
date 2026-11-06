@@ -2,20 +2,30 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { embedMockupData } from '../scripts/sync-mockup-spaces.mjs';
+import { embedLogic, embedMockupData } from '../scripts/sync-mockup-spaces.mjs';
+import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
+import { RECRUITING_TOOL_DEFINITIONS } from '../connectors/_lib/server/recruiting.mjs';
+import { buildSeedSql } from '../scripts/recruiting-seed.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const page = readFileSync(join(ROOT, 'examples/recruiting-workbench/index.html'), 'utf8');
 const data = JSON.parse(readFileSync(join(ROOT, 'examples/recruiting-workbench/data.json'), 'utf8'));
 
-// The page logic sits between two markers, so the test runs the real code, not a copy.
-const src = /\/\/ @logic-start([\s\S]*?)\/\/ @logic-end/.exec(page)[1];
-const L = new Function(`${src}; return makeLogic;`)()(data);
+// The logic lives in the connector module; the page carries an embedded copy that must be identical.
+const L = makeLogic(data);
 
 const ids = (list) => list.map((e) => e.cand.id);
 
 test('recruiting-workbench page embeds the current sample data', () => {
   assert.equal(embedMockupData(page, data), page, 'run: npm run sync:mockups');
+});
+
+test('recruiting-workbench page logic is the connector module, embedded', () => {
+  assert.equal(embedLogic(page, makeLogic.toString()), page, 'run: npm run sync:mockups');
+});
+
+test('recruiting-workbench committed seed.sql matches data.json', () => {
+  assert.equal(readFileSync(join(ROOT, 'examples/recruiting-workbench/seed.sql'), 'utf8'), buildSeedSql(data), 'run: npm run recruiting:seed');
 });
 
 test('recruiting-workbench sample data is internally consistent', () => {
@@ -111,6 +121,7 @@ test('recruiting-workbench Joule only proposes, never rejects or acts alone', ()
   assert.equal(pr.length, 13);
   assert.equal(new Set(pr.map((p) => p.id)).size, pr.length, 'proposal ids are unique');
   const writes = new Set(data.tools.filter((t) => t.kind === 'write').map((t) => t.name));
+  assert.deepEqual([...writes], ['recruiting_create_proposal'], 'the only write tool writes a proposal');
   for (const p of pr) {
     assert.ok(writes.has(p.tool), `${p.tool} is not a declared write tool`);
     assert.ok(['move', 'remind', 'ask'].includes(p.type));
@@ -140,13 +151,15 @@ test('recruiting-workbench keeps personal data out and states what it is', () =>
   const keys = new Set(data.candidates.flatMap((c) => Object.keys(c)));
   for (const k of ['name', 'email', 'phone', 'photo', 'birthdate', 'address', 'gender']) assert.ok(!keys.has(k), `candidate data holds ${k}`);
   assert.match(page, /No SmartRecruiters or SuccessFactors system is called/);
-  assert.match(page, /illustrative/i);
   assert.match(page, /EU AI Act/);
 });
 
-test('recruiting-workbench tools are named as illustrative and write tools need a release', () => {
+test('recruiting-workbench tools are the real connector tools and the write tool needs a release', () => {
   assert.ok(data.tools.some((t) => t.kind === 'read') && data.tools.some((t) => t.kind === 'write'));
   for (const t of data.tools.filter((x) => x.kind === 'write')) assert.match(t.what, /release/i, `${t.name} must say it needs a release`);
+  const real = new Set(RECRUITING_TOOL_DEFINITIONS.map((t) => t.name));
+  assert.deepEqual(data.tools.map((t) => t.name).sort(), [...real].sort(), 'the Space lists exactly the connector tools');
+  for (const t of data.later) assert.match(t.what, /Not built/);
   for (const q of data.questions) for (const c of q.calls) {
     assert.ok(data.tools.some((t) => t.name === c.tool && t.kind === 'read'), `${c.tool} in questions must be a read tool`);
     JSON.parse(c.args);

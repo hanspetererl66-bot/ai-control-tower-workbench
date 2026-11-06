@@ -1,0 +1,682 @@
+{
+  "note": "SmartRecruiters-shaped MOCK. Invented people. Not verified against the real API.",
+  "jobs": [
+    {
+      "id": "mock-job-2201",
+      "refNumber": "REQ-2201",
+      "title": "Warehouse Shift Lead",
+      "status": "SOURCING",
+      "createdOn": "2026-09-14T08:00:00.000Z",
+      "department": {
+        "label": "Operations"
+      },
+      "location": {
+        "city": "Hamburg",
+        "remote": false
+      },
+      "customField": {
+        "hiringManagerRole": "Head of Operations Hamburg",
+        "targetDays": 45
+      }
+    },
+    {
+      "id": "mock-job-2202",
+      "refNumber": "REQ-2202",
+      "title": "Forklift Operator",
+      "status": "SOURCING",
+      "createdOn": "2026-10-05T08:00:00.000Z",
+      "department": {
+        "label": "Operations"
+      },
+      "location": {
+        "city": "Bremen",
+        "remote": false
+      },
+      "customField": {
+        "hiringManagerRole": "Site manager Bremen",
+        "targetDays": 30
+      }
+    },
+    {
+      "id": "mock-job-2203",
+      "refNumber": "REQ-2203",
+      "title": "Supply Chain Analyst",
+      "status": "SOURCING",
+      "createdOn": "2026-09-21T08:00:00.000Z",
+      "department": {
+        "label": "Planning"
+      },
+      "location": {
+        "city": "Hamburg",
+        "remote": false
+      },
+      "customField": {
+        "hiringManagerRole": "Head of Supply Chain Planning",
+        "targetDays": 50
+      }
+    },
+    {
+      "id": "mock-job-2204",
+      "refNumber": "REQ-2204",
+      "title": "SAP Logistics Consultant (internal IT)",
+      "status": "SOURCING",
+      "createdOn": "2026-08-24T08:00:00.000Z",
+      "department": {
+        "label": "IT"
+      },
+      "location": {
+        "city": "Hamburg",
+        "remote": true
+      },
+      "customField": {
+        "hiringManagerRole": "Head of IT Business Applications",
+        "targetDays": 60
+      }
+    },
+    {
+      "id": "mock-job-2205",
+      "refNumber": "REQ-2205",
+      "title": "Customer Service Agent (DE/EN)",
+      "status": "SOURCING",
+      "createdOn": "2026-10-12T08:00:00.000Z",
+      "department": {
+        "label": "Service"
+      },
+      "location": {
+        "city": "Köln",
+        "remote": false
+      },
+      "customField": {
+        "hiringManagerRole": "Team lead Customer Service",
+        "targetDays": 30
+      }
+    },
+    {
+      "id": "mock-job-2206",
+      "refNumber": "REQ-2206",
+      "title": "Payroll Specialist",
+      "status": "SOURCING",
+      "createdOn": "2026-10-19T08:00:00.000Z",
+      "department": {
+        "label": "HR"
+      },
+      "location": {
+        "city": "Hamburg",
+        "remote": false
+      },
+      "customField": {
+        "hiringManagerRole": "Head of HR Operations",
+        "targetDays": 40
+      }
+    }
+  ],
+  "candidates": {
+    "mock-job-2201": [
+      {
+        "id": "mock-cand-4101",
+        "firstName": "Anna",
+        "lastName": "Probst",
+        "email": "anna.probst@example.org",
+        "phoneNumber": "+49 40 5550 1000",
+        "appliedOn": "2026-09-22T09:00:00.000Z",
+        "status": "INTERVIEW",
+        "primaryAssignment": {
+          "status": "INTERVIEW",
+          "createdOn": "2026-09-22T09:00:00.000Z",
+          "statusChangedOn": "2026-10-27T09:00:00.000Z"
+        },
+        "experienceYears": 7,
+        "resumeLines": [
+          "Warehouse operations, 7 years",
+          "Shift supervisor, team of 12 (2021-2026)",
+          "WMS: SAP EWM, Manhattan",
+          "Languages: German native, English B2",
+          "Forklift licence class 2",
+          "Lean basics certificate (2023)",
+          "Contact: anna.probst@example.org, +49 40 5550 1000"
+        ]
+      },
+      {
+        "id": "mock-cand-4102",
+        "firstName": "Jonas",
+        "lastName": "Winter",
+        "email": "jonas.winter@example.org",
+        "phoneNumber": "+49 40 5550 1007",
+        "appliedOn": "2026-10-08T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-08T09:00:00.000Z",
+          "statusChangedOn": "2026-11-03T09:00:00.000Z"
+        },
+        "experienceYears": 4,
+        "resumeLines": [
+          "Logistics operations, 4 years",
+          "Team lead inbound, team of 8",
+          "WMS: SAP EWM",
+          "Languages: German C1, English C1",
+          "Forklift licence class 1"
+        ]
+      },
+      {
+        "id": "mock-cand-4103",
+        "firstName": "Mira",
+        "lastName": "Muster",
+        "email": "mira.muster@example.org",
+        "phoneNumber": "+49 40 5550 1014",
+        "appliedOn": "2026-11-02T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-02T09:00:00.000Z",
+          "statusChangedOn": "2026-11-02T09:00:00.000Z"
+        },
+        "experienceYears": 2,
+        "resumeLines": [
+          "Warehouse operations, 2 years",
+          "Team lead, team of 5",
+          "WMS: in-house system",
+          "Languages: German native"
+        ]
+      },
+      {
+        "id": "mock-cand-4104",
+        "firstName": "Tobias",
+        "lastName": "Demir",
+        "email": "tobias.demir@example.org",
+        "phoneNumber": "+49 40 5550 1021",
+        "appliedOn": "2026-10-12T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-12T09:00:00.000Z",
+          "statusChangedOn": "2026-10-26T09:00:00.000Z"
+        },
+        "experienceYears": 9,
+        "resumeLines": [
+          "Warehouse and yard operations, 9 years",
+          "Shift planning for 20 staff (no formal lead title)",
+          "WMS: SAP EWM",
+          "Languages: German native",
+          "Forklift licence class 2"
+        ]
+      },
+      {
+        "id": "mock-cand-4105",
+        "firstName": "Selin",
+        "lastName": "Brandt",
+        "email": "selin.brandt@example.org",
+        "phoneNumber": "+49 40 5550 1028",
+        "appliedOn": "2026-11-05T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-05T09:00:00.000Z",
+          "statusChangedOn": "2026-11-05T09:00:00.000Z"
+        },
+        "experienceYears": 5,
+        "resumeLines": [
+          "Warehouse operations, 5 years",
+          "Team lead outbound, team of 10",
+          "WMS: Manhattan",
+          "Languages: German B1, English C2"
+        ]
+      },
+      {
+        "id": "mock-cand-4106",
+        "firstName": "Lukas",
+        "lastName": "Nordmann",
+        "email": "lukas.nordmann@example.org",
+        "phoneNumber": "+49 40 5550 1035",
+        "appliedOn": "2026-11-04T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-04T09:00:00.000Z",
+          "statusChangedOn": "2026-11-04T09:00:00.000Z"
+        },
+        "experienceYears": 1,
+        "resumeLines": [
+          "Warehouse associate, 1 year",
+          "Languages: German native"
+        ]
+      },
+      {
+        "id": "mock-cand-9001",
+        "firstName": "Ex",
+        "lastName": "Kandidat",
+        "email": "ex.kandidat@example.org",
+        "appliedOn": "2026-09-20T09:00:00.000Z",
+        "status": "HIRED",
+        "primaryAssignment": {
+          "status": "HIRED",
+          "createdOn": "2026-09-20T09:00:00.000Z",
+          "statusChangedOn": "2026-10-01T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-9002",
+        "firstName": "Ex",
+        "lastName": "Kandidat",
+        "email": "ex.kandidat@example.org",
+        "appliedOn": "2026-09-20T09:00:00.000Z",
+        "status": "REJECTED",
+        "primaryAssignment": {
+          "status": "REJECTED",
+          "createdOn": "2026-09-20T09:00:00.000Z",
+          "statusChangedOn": "2026-10-01T09:00:00.000Z"
+        },
+        "resumeLines": []
+      }
+    ],
+    "mock-job-2203": [
+      {
+        "id": "mock-cand-4201",
+        "firstName": "Nadia",
+        "lastName": "Falk",
+        "email": "nadia.falk@example.org",
+        "phoneNumber": "+49 40 5550 1042",
+        "appliedOn": "2026-10-01T09:00:00.000Z",
+        "status": "INTERVIEW",
+        "primaryAssignment": {
+          "status": "INTERVIEW",
+          "createdOn": "2026-10-01T09:00:00.000Z",
+          "statusChangedOn": "2026-11-02T09:00:00.000Z"
+        },
+        "experienceYears": 4,
+        "resumeLines": [
+          "Demand planning, 4 years",
+          "SQL, Power BI",
+          "Languages: German native, English C1",
+          "Degree: Business informatics",
+          "SAP IBP (2 projects)",
+          "Python (pandas)"
+        ]
+      },
+      {
+        "id": "mock-cand-4202",
+        "firstName": "Felix",
+        "lastName": "Testmann",
+        "email": "felix.testmann@example.org",
+        "phoneNumber": "+49 40 5550 1049",
+        "appliedOn": "2026-10-14T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-14T09:00:00.000Z",
+          "statusChangedOn": "2026-10-30T09:00:00.000Z"
+        },
+        "experienceYears": 2,
+        "resumeLines": [
+          "Supply chain controlling, 2 years",
+          "SQL (basic), Excel/VBA",
+          "Languages: German native, English B2",
+          "Degree: Industrial engineering"
+        ]
+      },
+      {
+        "id": "mock-cand-4203",
+        "firstName": "Clara",
+        "lastName": "Sommer",
+        "email": "clara.sommer@example.org",
+        "phoneNumber": "+49 40 5550 1056",
+        "appliedOn": "2026-11-03T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-03T09:00:00.000Z",
+          "statusChangedOn": "2026-11-03T09:00:00.000Z"
+        },
+        "experienceYears": 3,
+        "resumeLines": [
+          "Logistics planning, 3 years",
+          "Excel, Tableau, Access databases",
+          "Languages: German native, English C1",
+          "Degree: Logistics",
+          "Python (scripts)"
+        ]
+      },
+      {
+        "id": "mock-cand-4204",
+        "firstName": "Omar",
+        "lastName": "Beispiel",
+        "email": "omar.beispiel@example.org",
+        "phoneNumber": "+49 40 5550 1063",
+        "appliedOn": "2026-09-29T09:00:00.000Z",
+        "status": "OFFER",
+        "primaryAssignment": {
+          "status": "OFFER",
+          "createdOn": "2026-09-29T09:00:00.000Z",
+          "statusChangedOn": "2026-11-01T09:00:00.000Z"
+        },
+        "experienceYears": 6,
+        "resumeLines": [
+          "Analytics, 6 years",
+          "SQL, dbt",
+          "Languages: German native, English C2",
+          "Training: IHK Fachwirt Logistik",
+          "Python (pandas)"
+        ]
+      },
+      {
+        "id": "mock-cand-4205",
+        "firstName": "Hanna",
+        "lastName": "Kuhn",
+        "email": "hanna.kuhn@example.org",
+        "phoneNumber": "+49 40 5550 1070",
+        "appliedOn": "2026-10-27T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-27T09:00:00.000Z",
+          "statusChangedOn": "2026-11-04T09:00:00.000Z"
+        },
+        "experienceYears": 0,
+        "resumeLines": [
+          "Graduate, 0 years of work experience; thesis on inventory optimisation",
+          "SQL (course)",
+          "Languages: German native, English B2",
+          "Degree: M.Sc. Supply Chain Management"
+        ]
+      }
+    ],
+    "mock-job-2204": [
+      {
+        "id": "mock-cand-4301",
+        "firstName": "Paul",
+        "lastName": "Lorenz",
+        "email": "paul.lorenz@example.org",
+        "phoneNumber": "+49 40 5550 1077",
+        "appliedOn": "2026-10-09T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-09T09:00:00.000Z",
+          "statusChangedOn": "2026-10-28T09:00:00.000Z"
+        },
+        "experienceYears": 8,
+        "resumeLines": [
+          "SAP logistics consulting, 8 years",
+          "S/4HANA migrations, 3 projects",
+          "EWM rollout (2 sites)",
+          "Languages: German native, English C1",
+          "Fiori app configuration"
+        ]
+      },
+      {
+        "id": "mock-cand-4302",
+        "firstName": "Iris",
+        "lastName": "Probst",
+        "email": "iris.probst@example.org",
+        "phoneNumber": "+49 40 5550 1084",
+        "appliedOn": "2026-10-30T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-10-30T09:00:00.000Z",
+          "statusChangedOn": "2026-10-30T09:00:00.000Z"
+        },
+        "experienceYears": 6,
+        "resumeLines": [
+          "SAP ECC logistics, 6 years",
+          "S/4 Cloud trainings (2025)",
+          "EWM design workshops",
+          "Languages: German native, English C1",
+          "ABAP (reading, small enhancements)"
+        ]
+      },
+      {
+        "id": "mock-cand-4303",
+        "firstName": "Mats",
+        "lastName": "Winter",
+        "email": "mats.winter@example.org",
+        "phoneNumber": "+49 40 5550 1091",
+        "appliedOn": "2026-10-15T09:00:00.000Z",
+        "status": "INTERVIEW",
+        "primaryAssignment": {
+          "status": "INTERVIEW",
+          "createdOn": "2026-10-15T09:00:00.000Z",
+          "statusChangedOn": "2026-11-03T09:00:00.000Z"
+        },
+        "experienceYears": 11,
+        "resumeLines": [
+          "SAP logistics, 11 years",
+          "S/4HANA conversion, 2 projects",
+          "Materials Management and Sales",
+          "Languages: German native, English B2"
+        ]
+      },
+      {
+        "id": "mock-cand-4304",
+        "firstName": "Anna",
+        "lastName": "Muster",
+        "email": "anna.muster@example.org",
+        "phoneNumber": "+49 40 5550 1098",
+        "appliedOn": "2026-09-30T09:00:00.000Z",
+        "status": "INTERVIEW",
+        "primaryAssignment": {
+          "status": "INTERVIEW",
+          "createdOn": "2026-09-30T09:00:00.000Z",
+          "statusChangedOn": "2026-10-20T09:00:00.000Z"
+        },
+        "experienceYears": 5,
+        "resumeLines": [
+          "SAP logistics consulting, 5 years",
+          "S/4HANA greenfield, 2 projects",
+          "EWM and Materials Management",
+          "Languages: German native, English C2",
+          "Fiori and RAP (2 apps)",
+          "ABAP (daily)"
+        ]
+      },
+      {
+        "id": "mock-cand-4305",
+        "firstName": "Jonas",
+        "lastName": "Demir",
+        "email": "jonas.demir@example.org",
+        "phoneNumber": "+49 40 5550 1105",
+        "appliedOn": "2026-11-05T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-05T09:00:00.000Z",
+          "statusChangedOn": "2026-11-05T09:00:00.000Z"
+        },
+        "experienceYears": 3,
+        "resumeLines": [
+          "SAP logistics, 3 years",
+          "S/4HANA greenfield, 1 project",
+          "EWM (training)",
+          "Languages: German native, English B1"
+        ]
+      }
+    ],
+    "mock-job-2202": [
+      {
+        "id": "mock-cand-4401",
+        "firstName": "Mira",
+        "lastName": "Brandt",
+        "email": "mira.brandt@example.org",
+        "phoneNumber": "+49 40 5550 1112",
+        "appliedOn": "2026-10-12T09:00:00.000Z",
+        "status": "OFFER",
+        "primaryAssignment": {
+          "status": "OFFER",
+          "createdOn": "2026-10-12T09:00:00.000Z",
+          "statusChangedOn": "2026-11-04T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4402",
+        "firstName": "Tobias",
+        "lastName": "Nordmann",
+        "email": "tobias.nordmann@example.org",
+        "phoneNumber": "+49 40 5550 1119",
+        "appliedOn": "2026-10-16T09:00:00.000Z",
+        "status": "INTERVIEW",
+        "primaryAssignment": {
+          "status": "INTERVIEW",
+          "createdOn": "2026-10-16T09:00:00.000Z",
+          "statusChangedOn": "2026-11-05T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4403",
+        "firstName": "Selin",
+        "lastName": "Falk",
+        "email": "selin.falk@example.org",
+        "phoneNumber": "+49 40 5550 1126",
+        "appliedOn": "2026-10-20T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-20T09:00:00.000Z",
+          "statusChangedOn": "2026-10-29T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4404",
+        "firstName": "Lukas",
+        "lastName": "Testmann",
+        "email": "lukas.testmann@example.org",
+        "phoneNumber": "+49 40 5550 1133",
+        "appliedOn": "2026-11-06T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-06T09:00:00.000Z",
+          "statusChangedOn": "2026-11-06T09:00:00.000Z"
+        },
+        "resumeLines": []
+      }
+    ],
+    "mock-job-2205": [
+      {
+        "id": "mock-cand-4501",
+        "firstName": "Nadia",
+        "lastName": "Sommer",
+        "email": "nadia.sommer@example.org",
+        "phoneNumber": "+49 40 5550 1140",
+        "appliedOn": "2026-10-19T09:00:00.000Z",
+        "status": "INTERVIEW",
+        "primaryAssignment": {
+          "status": "INTERVIEW",
+          "createdOn": "2026-10-19T09:00:00.000Z",
+          "statusChangedOn": "2026-10-30T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4502",
+        "firstName": "Felix",
+        "lastName": "Beispiel",
+        "email": "felix.beispiel@example.org",
+        "phoneNumber": "+49 40 5550 1147",
+        "appliedOn": "2026-10-26T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-26T09:00:00.000Z",
+          "statusChangedOn": "2026-11-05T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4503",
+        "firstName": "Clara",
+        "lastName": "Kuhn",
+        "email": "clara.kuhn@example.org",
+        "phoneNumber": "+49 40 5550 1154",
+        "appliedOn": "2026-11-01T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-01T09:00:00.000Z",
+          "statusChangedOn": "2026-11-01T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4504",
+        "firstName": "Omar",
+        "lastName": "Lorenz",
+        "email": "omar.lorenz@example.org",
+        "phoneNumber": "+49 40 5550 1161",
+        "appliedOn": "2026-11-04T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-04T09:00:00.000Z",
+          "statusChangedOn": "2026-11-04T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4505",
+        "firstName": "Hanna",
+        "lastName": "Probst",
+        "email": "hanna.probst@example.org",
+        "phoneNumber": "+49 40 5550 1168",
+        "appliedOn": "2026-11-05T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-05T09:00:00.000Z",
+          "statusChangedOn": "2026-11-05T09:00:00.000Z"
+        },
+        "resumeLines": []
+      }
+    ],
+    "mock-job-2206": [
+      {
+        "id": "mock-cand-4601",
+        "firstName": "Paul",
+        "lastName": "Winter",
+        "email": "paul.winter@example.org",
+        "phoneNumber": "+49 40 5550 1175",
+        "appliedOn": "2026-10-28T09:00:00.000Z",
+        "status": "IN_REVIEW",
+        "primaryAssignment": {
+          "status": "IN_REVIEW",
+          "createdOn": "2026-10-28T09:00:00.000Z",
+          "statusChangedOn": "2026-11-02T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4602",
+        "firstName": "Iris",
+        "lastName": "Muster",
+        "email": "iris.muster@example.org",
+        "phoneNumber": "+49 40 5550 1182",
+        "appliedOn": "2026-11-05T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-05T09:00:00.000Z",
+          "statusChangedOn": "2026-11-05T09:00:00.000Z"
+        },
+        "resumeLines": []
+      },
+      {
+        "id": "mock-cand-4603",
+        "firstName": "Mats",
+        "lastName": "Demir",
+        "email": "mats.demir@example.org",
+        "phoneNumber": "+49 40 5550 1189",
+        "appliedOn": "2026-11-06T09:00:00.000Z",
+        "status": "NEW",
+        "primaryAssignment": {
+          "status": "NEW",
+          "createdOn": "2026-11-06T09:00:00.000Z",
+          "statusChangedOn": "2026-11-06T09:00:00.000Z"
+        },
+        "resumeLines": []
+      }
+    ]
+  }
+}

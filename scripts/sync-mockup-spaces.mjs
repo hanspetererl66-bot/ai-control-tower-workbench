@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const MOCKUPS = [
@@ -21,6 +22,14 @@ export const CATALOGS = [
   { page: 'examples/mcp-marketplace/index.html', data: 'examples/mcp-marketplace/servers.json' },
 ];
 const BLOCK = /<script type="application\/json" id="data">[\s\S]*?<\/script>/;
+/** Pages whose logic has one source in a module (the page cannot import): the code between the two markers is copied from it. */
+export const LOGIC_PAGES = { 'examples/recruiting-workbench/index.html': () => makeLogic.toString() };
+const LOGIC = /\/\/ @logic-start\n[\s\S]*?\n\s*\/\/ @logic-end/;
+
+export function embedLogic(html, source) {
+  if (!LOGIC.test(html)) throw new Error('page has no @logic-start / @logic-end markers');
+  return html.replace(LOGIC, () => `// @logic-start\n${source}\n  // @logic-end`);
+}
 
 export function embedMockupData(html, data) {
   if (!BLOCK.test(html)) throw new Error('page has no <script id="data"> block');
@@ -34,7 +43,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   let stale = false;
   for (const { page, data } of [...MOCKUPS, ...CATALOGS]) {
     const html = readFileSync(join(ROOT, page), 'utf8');
-    const next = embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8')));
+    let next = embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8')));
+    if (LOGIC_PAGES[page]) next = embedLogic(next, LOGIC_PAGES[page]());
     if (next !== html) { stale = true; if (!check) writeFileSync(join(ROOT, page), next); }
   }
   if (check && stale) { console.error('Mockup Spaces are out of sync — run: npm run sync:mockups'); process.exit(1); }

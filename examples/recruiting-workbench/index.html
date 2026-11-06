@@ -322,7 +322,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
   <div><div class="logo">Recruiting <b>Workbench</b></div><div class="sub">SmartRecruiters and SuccessFactors seen by Joule · control tower and evidence-based shortlist</div></div>
   <div class="hr"><span class="tag ok">read-only</span><span class="sub" id="sys"></span></div>
 </header>
-<div class="demo">Mockup with fictional data and pseudonymous candidates. No SmartRecruiters or SuccessFactors system is called and nothing is changed. Tool names are illustrative until a connector exists.</div>
+<div class="demo">Mockup with fictional data and pseudonymous candidates. No SmartRecruiters or SuccessFactors system is called and nothing is changed. The recruiting_* tools exist in the Werkbank connector; the SmartRecruiters import does not.</div>
 <nav role="tablist" aria-label="Sections" id="tabs"></nav>
 <div class="intro-wrap"><details class="intro" open><summary>What is this page?<span class="hint">click to collapse</span></summary><div class="body">
 <div><h4>Two views of the same hiring pipeline</h4><p><b>Control tower</b> (Overview, Pipeline, Time to fill, Morning brief) shows where hiring is stuck, on aggregated numbers. <b>Hiring manager</b> (Shortlist, Approvals) compares CV text with the criteria the manager set and shows the proof line for each result.</p></div>
@@ -330,157 +330,157 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
 <div><h4>Demo or real?</h4><p>All numbers are computed from fictional sample data. With a SmartRecruiters connector and the Werkbank approval rules, Joule would run the same questions on your system. That connector does not exist yet.</p></div>
 </div></details></div>
 <main id="main"></main>
-<script type="application/json" id="data">{"asOf":"2026-11-06","company":"Hanse Logistik (fictional)","stages":["Applied","Screening","Interview","Offer"],"sla":{"Applied":3,"Screening":5,"Interview":7,"Offer":4},"privacy":{"removed":["name","photo","date of birth","gender","address","nationality","gaps in the CV"],"orderRule":"Order inside a group: (1) must-haves met, (2) must-haves partly met, (3) nice-to-haves met, (4) earlier application first. Nothing else is used."},"jobs":[{"id":"REQ-2201","title":"Warehouse Shift Lead","dept":"Operations","location":"Hamburg","manager":"Head of Operations Hamburg","opened":"2026-09-14","target":45},{"id":"REQ-2202","title":"Forklift Operator","dept":"Operations","location":"Bremen","manager":"Site manager Bremen","opened":"2026-10-05","target":30},{"id":"REQ-2203","title":"Supply Chain Analyst","dept":"Planning","location":"Hamburg","manager":"Head of Supply Chain Planning","opened":"2026-09-21","target":50},{"id":"REQ-2204","title":"SAP Logistics Consultant (internal IT)","dept":"IT","location":"Hamburg / remote","manager":"Head of IT Business Applications","opened":"2026-08-24","target":60},{"id":"REQ-2205","title":"Customer Service Agent (DE/EN)","dept":"Service","location":"Köln","manager":"Team lead Customer Service","opened":"2026-10-12","target":30},{"id":"REQ-2206","title":"Payroll Specialist","dept":"HR","location":"Hamburg","manager":"Head of HR Operations","opened":"2026-10-19","target":40}],"history":[{"id":"REQ-1901","dept":"Operations","days":24,"offers":2,"accepted":2},{"id":"REQ-1907","dept":"Operations","days":31,"offers":2,"accepted":1},{"id":"REQ-1915","dept":"Operations","days":38,"offers":3,"accepted":2},{"id":"REQ-1903","dept":"Planning","days":44,"offers":1,"accepted":1},{"id":"REQ-1912","dept":"Planning","days":52,"offers":2,"accepted":1},{"id":"REQ-1902","dept":"IT","days":55,"offers":3,"accepted":2},{"id":"REQ-1909","dept":"IT","days":61,"offers":2,"accepted":2},{"id":"REQ-1917","dept":"IT","days":66,"offers":3,"accepted":2},{"id":"REQ-1905","dept":"Service","days":22,"offers":2,"accepted":2},{"id":"REQ-1911","dept":"Service","days":27,"offers":2,"accepted":1},{"id":"REQ-1906","dept":"HR","days":35,"offers":1,"accepted":1},{"id":"REQ-1914","dept":"HR","days":41,"offers":1,"accepted":1}],"criteria":{"REQ-2201":[{"id":"M1","must":true,"text":"At least 3 years in warehouse operations","kind":"years","min":3},{"id":"M2","must":true,"text":"Has led a team","needles":["team of"],"partial":["shift planning"]},{"id":"M3","must":true,"text":"Experience with a warehouse management system (WMS)","needles":["WMS"]},{"id":"M4","must":true,"text":"German at C1 level or native","needles":["German native","German C1","German C2"]},{"id":"N1","must":false,"text":"Forklift licence","needles":["Forklift licence"]},{"id":"N2","must":false,"text":"Lean or continuous-improvement training","needles":["Lean"]}],"REQ-2203":[{"id":"M1","must":true,"text":"At least 2 years in planning or analysis","kind":"years","min":2},{"id":"M2","must":true,"text":"Works with SQL","needles":["SQL"],"partial":["database"]},{"id":"M3","must":true,"text":"English at B2 level or higher","needles":["English B2","English C1","English C2"]},{"id":"M4","must":true,"text":"Degree in a related field","needles":["Degree"],"partial":["IHK"]},{"id":"N1","must":false,"text":"SAP IBP","needles":["IBP"]},{"id":"N2","must":false,"text":"Python","needles":["Python"]}],"REQ-2204":[{"id":"M1","must":true,"text":"At least 5 years in SAP logistics","kind":"years","min":5},{"id":"M2","must":true,"text":"S/4HANA project experience","needles":["S/4HANA"],"partial":["S/4 "]},{"id":"M3","must":true,"text":"EWM or Materials Management","needles":["EWM","Materials Management"]},{"id":"M4","must":true,"text":"English at C1 level or higher","needles":["English C1","English C2","English native"]},{"id":"N1","must":false,"text":"Fiori or RAP","needles":["Fiori","RAP"]},{"id":"N2","must":false,"text":"ABAP basics","needles":["ABAP"]}]},"candidates":[{"id":"C-4101","job":"REQ-2201","stage":"Interview","since":"2026-10-27","applied":"2026-09-22","years":7,"yearsLine":1,"cv":["Warehouse operations, 7 years","Shift supervisor, team of 12 (2021-2026)","WMS: SAP EWM, Manhattan","Languages: German native, English B2","Forklift licence class 2","Lean basics certificate (2023)"]},{"id":"C-4102","job":"REQ-2201","stage":"Screening","since":"2026-11-03","applied":"2026-10-08","years":4,"yearsLine":1,"cv":["Logistics operations, 4 years","Team lead inbound, team of 8","WMS: SAP EWM","Languages: German C1, English C1","Forklift licence class 1"]},{"id":"C-4103","job":"REQ-2201","stage":"Applied","since":"2026-11-02","applied":"2026-11-02","years":2,"yearsLine":1,"cv":["Warehouse operations, 2 years","Team lead, team of 5","WMS: in-house system","Languages: German native"]},{"id":"C-4104","job":"REQ-2201","stage":"Screening","since":"2026-10-26","applied":"2026-10-12","years":9,"yearsLine":1,"cv":["Warehouse and yard operations, 9 years","Shift planning for 20 staff (no formal lead title)","WMS: SAP EWM","Languages: German native","Forklift licence class 2"]},{"id":"C-4105","job":"REQ-2201","stage":"Applied","since":"2026-11-05","applied":"2026-11-05","years":5,"yearsLine":1,"cv":["Warehouse operations, 5 years","Team lead outbound, team of 10","WMS: Manhattan","Languages: German B1, English C2"]},{"id":"C-4106","job":"REQ-2201","stage":"Applied","since":"2026-11-04","applied":"2026-11-04","years":1,"yearsLine":1,"cv":["Warehouse associate, 1 year","Languages: German native"]},{"id":"C-4201","job":"REQ-2203","stage":"Interview","since":"2026-11-02","applied":"2026-10-01","years":4,"yearsLine":1,"cv":["Demand planning, 4 years","SQL, Power BI","Languages: German native, English C1","Degree: Business informatics","SAP IBP (2 projects)","Python (pandas)"]},{"id":"C-4202","job":"REQ-2203","stage":"Screening","since":"2026-10-30","applied":"2026-10-14","years":2,"yearsLine":1,"cv":["Supply chain controlling, 2 years","SQL (basic), Excel/VBA","Languages: German native, English B2","Degree: Industrial engineering"]},{"id":"C-4203","job":"REQ-2203","stage":"Applied","since":"2026-11-03","applied":"2026-11-03","years":3,"yearsLine":1,"cv":["Logistics planning, 3 years","Excel, Tableau, Access databases","Languages: German native, English C1","Degree: Logistics","Python (scripts)"]},{"id":"C-4204","job":"REQ-2203","stage":"Offer","since":"2026-11-01","applied":"2026-09-29","years":6,"yearsLine":1,"cv":["Analytics, 6 years","SQL, dbt","Languages: German native, English C2","Training: IHK Fachwirt Logistik","Python (pandas)"]},{"id":"C-4205","job":"REQ-2203","stage":"Screening","since":"2026-11-04","applied":"2026-10-27","years":0,"yearsLine":1,"cv":["Graduate, 0 years of work experience; thesis on inventory optimisation","SQL (course)","Languages: German native, English B2","Degree: M.Sc. Supply Chain Management"]},{"id":"C-4301","job":"REQ-2204","stage":"Screening","since":"2026-10-28","applied":"2026-10-09","years":8,"yearsLine":1,"cv":["SAP logistics consulting, 8 years","S/4HANA migrations, 3 projects","EWM rollout (2 sites)","Languages: German native, English C1","Fiori app configuration"]},{"id":"C-4302","job":"REQ-2204","stage":"Applied","since":"2026-10-30","applied":"2026-10-30","years":6,"yearsLine":1,"cv":["SAP ECC logistics, 6 years","S/4 Cloud trainings (2025)","EWM design workshops","Languages: German native, English C1","ABAP (reading, small enhancements)"]},{"id":"C-4303","job":"REQ-2204","stage":"Interview","since":"2026-11-03","applied":"2026-10-15","years":11,"yearsLine":1,"cv":["SAP logistics, 11 years","S/4HANA conversion, 2 projects","Materials Management and Sales","Languages: German native, English B2"]},{"id":"C-4304","job":"REQ-2204","stage":"Interview","since":"2026-10-20","applied":"2026-09-30","years":5,"yearsLine":1,"cv":["SAP logistics consulting, 5 years","S/4HANA greenfield, 2 projects","EWM and Materials Management","Languages: German native, English C2","Fiori and RAP (2 apps)","ABAP (daily)"]},{"id":"C-4305","job":"REQ-2204","stage":"Applied","since":"2026-11-05","applied":"2026-11-05","years":3,"yearsLine":1,"cv":["SAP logistics, 3 years","S/4HANA greenfield, 1 project","EWM (training)","Languages: German native, English B1"]},{"id":"C-4401","job":"REQ-2202","stage":"Offer","since":"2026-11-04","applied":"2026-10-12"},{"id":"C-4402","job":"REQ-2202","stage":"Interview","since":"2026-11-05","applied":"2026-10-16"},{"id":"C-4403","job":"REQ-2202","stage":"Screening","since":"2026-10-29","applied":"2026-10-20"},{"id":"C-4404","job":"REQ-2202","stage":"Applied","since":"2026-11-06","applied":"2026-11-06"},{"id":"C-4501","job":"REQ-2205","stage":"Interview","since":"2026-10-30","applied":"2026-10-19"},{"id":"C-4502","job":"REQ-2205","stage":"Screening","since":"2026-11-05","applied":"2026-10-26"},{"id":"C-4503","job":"REQ-2205","stage":"Applied","since":"2026-11-01","applied":"2026-11-01"},{"id":"C-4504","job":"REQ-2205","stage":"Applied","since":"2026-11-04","applied":"2026-11-04"},{"id":"C-4505","job":"REQ-2205","stage":"Applied","since":"2026-11-05","applied":"2026-11-05"},{"id":"C-4601","job":"REQ-2206","stage":"Screening","since":"2026-11-02","applied":"2026-10-28"},{"id":"C-4602","job":"REQ-2206","stage":"Applied","since":"2026-11-05","applied":"2026-11-05"},{"id":"C-4603","job":"REQ-2206","stage":"Applied","since":"2026-11-06","applied":"2026-11-06"}],"tools":[{"name":"sr_list_jobs","kind":"read","what":"Open requisitions with owner and status"},{"name":"sr_get_job","kind":"read","what":"One requisition with its stated criteria"},{"name":"sr_list_candidates","kind":"read","what":"Candidates of a requisition with stage and date"},{"name":"sr_get_candidate","kind":"read","what":"CV text of one candidate, personal fields removed before the model sees it"},{"name":"sr_update_candidate_status","kind":"write","what":"Move a candidate to another stage. Needs release by the hiring manager"},{"name":"sr_send_message","kind":"write","what":"Message to the hiring manager or a candidate. Needs release"}],"questions":[{"id":"q1","q":"Which requisitions are late, and why?","calls":[{"tool":"sr_list_jobs","args":"{\"status\":\"open\"}"},{"tool":"sr_list_candidates","args":"{\"job\":\"REQ-2201\"}"}]},{"id":"q2","q":"Who has waited longer than the target?","calls":[{"tool":"sr_list_candidates","args":"{\"status\":\"in_process\"}"}]},{"id":"q3","q":"Who fits REQ-2204 best, and on what evidence?","calls":[{"tool":"sr_get_job","args":"{\"job\":\"REQ-2204\"}"},{"tool":"sr_get_candidate","args":"{\"candidate\":\"C-4304\"}"}]},{"id":"q4","q":"What should I do this morning?","calls":[{"tool":"sr_list_jobs","args":"{\"status\":\"open\"}"},{"tool":"sr_list_candidates","args":"{\"status\":\"in_process\"}"}]},{"id":"q5","q":"Why is C-4106 not on the shortlist for REQ-2201?","calls":[{"tool":"sr_get_candidate","args":"{\"candidate\":\"C-4106\"}"}]}]}</script>
+<script type="application/json" id="data">{"asOf":"2026-11-06","company":"Hanse Logistik (fictional)","stages":["Applied","Screening","Interview","Offer"],"sla":{"Applied":3,"Screening":5,"Interview":7,"Offer":4},"privacy":{"removed":["name","photo","date of birth","gender","address","nationality","gaps in the CV"],"orderRule":"Order inside a group: (1) must-haves met, (2) must-haves partly met, (3) nice-to-haves met, (4) earlier application first. Nothing else is used."},"jobs":[{"id":"REQ-2201","title":"Warehouse Shift Lead","dept":"Operations","location":"Hamburg","manager":"Head of Operations Hamburg","opened":"2026-09-14","target":45},{"id":"REQ-2202","title":"Forklift Operator","dept":"Operations","location":"Bremen","manager":"Site manager Bremen","opened":"2026-10-05","target":30},{"id":"REQ-2203","title":"Supply Chain Analyst","dept":"Planning","location":"Hamburg","manager":"Head of Supply Chain Planning","opened":"2026-09-21","target":50},{"id":"REQ-2204","title":"SAP Logistics Consultant (internal IT)","dept":"IT","location":"Hamburg / remote","manager":"Head of IT Business Applications","opened":"2026-08-24","target":60},{"id":"REQ-2205","title":"Customer Service Agent (DE/EN)","dept":"Service","location":"Köln","manager":"Team lead Customer Service","opened":"2026-10-12","target":30},{"id":"REQ-2206","title":"Payroll Specialist","dept":"HR","location":"Hamburg","manager":"Head of HR Operations","opened":"2026-10-19","target":40}],"history":[{"id":"REQ-1901","dept":"Operations","days":24,"offers":2,"accepted":2},{"id":"REQ-1907","dept":"Operations","days":31,"offers":2,"accepted":1},{"id":"REQ-1915","dept":"Operations","days":38,"offers":3,"accepted":2},{"id":"REQ-1903","dept":"Planning","days":44,"offers":1,"accepted":1},{"id":"REQ-1912","dept":"Planning","days":52,"offers":2,"accepted":1},{"id":"REQ-1902","dept":"IT","days":55,"offers":3,"accepted":2},{"id":"REQ-1909","dept":"IT","days":61,"offers":2,"accepted":2},{"id":"REQ-1917","dept":"IT","days":66,"offers":3,"accepted":2},{"id":"REQ-1905","dept":"Service","days":22,"offers":2,"accepted":2},{"id":"REQ-1911","dept":"Service","days":27,"offers":2,"accepted":1},{"id":"REQ-1906","dept":"HR","days":35,"offers":1,"accepted":1},{"id":"REQ-1914","dept":"HR","days":41,"offers":1,"accepted":1}],"criteria":{"REQ-2201":[{"id":"M1","must":true,"text":"At least 3 years in warehouse operations","kind":"years","min":3},{"id":"M2","must":true,"text":"Has led a team","needles":["team of"],"partial":["shift planning"]},{"id":"M3","must":true,"text":"Experience with a warehouse management system (WMS)","needles":["WMS"]},{"id":"M4","must":true,"text":"German at C1 level or native","needles":["German native","German C1","German C2"]},{"id":"N1","must":false,"text":"Forklift licence","needles":["Forklift licence"]},{"id":"N2","must":false,"text":"Lean or continuous-improvement training","needles":["Lean"]}],"REQ-2203":[{"id":"M1","must":true,"text":"At least 2 years in planning or analysis","kind":"years","min":2},{"id":"M2","must":true,"text":"Works with SQL","needles":["SQL"],"partial":["database"]},{"id":"M3","must":true,"text":"English at B2 level or higher","needles":["English B2","English C1","English C2"]},{"id":"M4","must":true,"text":"Degree in a related field","needles":["Degree"],"partial":["IHK"]},{"id":"N1","must":false,"text":"SAP IBP","needles":["IBP"]},{"id":"N2","must":false,"text":"Python","needles":["Python"]}],"REQ-2204":[{"id":"M1","must":true,"text":"At least 5 years in SAP logistics","kind":"years","min":5},{"id":"M2","must":true,"text":"S/4HANA project experience","needles":["S/4HANA"],"partial":["S/4 "]},{"id":"M3","must":true,"text":"EWM or Materials Management","needles":["EWM","Materials Management"]},{"id":"M4","must":true,"text":"English at C1 level or higher","needles":["English C1","English C2","English native"]},{"id":"N1","must":false,"text":"Fiori or RAP","needles":["Fiori","RAP"]},{"id":"N2","must":false,"text":"ABAP basics","needles":["ABAP"]}]},"candidates":[{"id":"C-4101","job":"REQ-2201","stage":"Interview","since":"2026-10-27","applied":"2026-09-22","years":7,"yearsLine":1,"cv":["Warehouse operations, 7 years","Shift supervisor, team of 12 (2021-2026)","WMS: SAP EWM, Manhattan","Languages: German native, English B2","Forklift licence class 2","Lean basics certificate (2023)"]},{"id":"C-4102","job":"REQ-2201","stage":"Screening","since":"2026-11-03","applied":"2026-10-08","years":4,"yearsLine":1,"cv":["Logistics operations, 4 years","Team lead inbound, team of 8","WMS: SAP EWM","Languages: German C1, English C1","Forklift licence class 1"]},{"id":"C-4103","job":"REQ-2201","stage":"Applied","since":"2026-11-02","applied":"2026-11-02","years":2,"yearsLine":1,"cv":["Warehouse operations, 2 years","Team lead, team of 5","WMS: in-house system","Languages: German native"]},{"id":"C-4104","job":"REQ-2201","stage":"Screening","since":"2026-10-26","applied":"2026-10-12","years":9,"yearsLine":1,"cv":["Warehouse and yard operations, 9 years","Shift planning for 20 staff (no formal lead title)","WMS: SAP EWM","Languages: German native","Forklift licence class 2"]},{"id":"C-4105","job":"REQ-2201","stage":"Applied","since":"2026-11-05","applied":"2026-11-05","years":5,"yearsLine":1,"cv":["Warehouse operations, 5 years","Team lead outbound, team of 10","WMS: Manhattan","Languages: German B1, English C2"]},{"id":"C-4106","job":"REQ-2201","stage":"Applied","since":"2026-11-04","applied":"2026-11-04","years":1,"yearsLine":1,"cv":["Warehouse associate, 1 year","Languages: German native"]},{"id":"C-4201","job":"REQ-2203","stage":"Interview","since":"2026-11-02","applied":"2026-10-01","years":4,"yearsLine":1,"cv":["Demand planning, 4 years","SQL, Power BI","Languages: German native, English C1","Degree: Business informatics","SAP IBP (2 projects)","Python (pandas)"]},{"id":"C-4202","job":"REQ-2203","stage":"Screening","since":"2026-10-30","applied":"2026-10-14","years":2,"yearsLine":1,"cv":["Supply chain controlling, 2 years","SQL (basic), Excel/VBA","Languages: German native, English B2","Degree: Industrial engineering"]},{"id":"C-4203","job":"REQ-2203","stage":"Applied","since":"2026-11-03","applied":"2026-11-03","years":3,"yearsLine":1,"cv":["Logistics planning, 3 years","Excel, Tableau, Access databases","Languages: German native, English C1","Degree: Logistics","Python (scripts)"]},{"id":"C-4204","job":"REQ-2203","stage":"Offer","since":"2026-11-01","applied":"2026-09-29","years":6,"yearsLine":1,"cv":["Analytics, 6 years","SQL, dbt","Languages: German native, English C2","Training: IHK Fachwirt Logistik","Python (pandas)"]},{"id":"C-4205","job":"REQ-2203","stage":"Screening","since":"2026-11-04","applied":"2026-10-27","years":0,"yearsLine":1,"cv":["Graduate, 0 years of work experience; thesis on inventory optimisation","SQL (course)","Languages: German native, English B2","Degree: M.Sc. Supply Chain Management"]},{"id":"C-4301","job":"REQ-2204","stage":"Screening","since":"2026-10-28","applied":"2026-10-09","years":8,"yearsLine":1,"cv":["SAP logistics consulting, 8 years","S/4HANA migrations, 3 projects","EWM rollout (2 sites)","Languages: German native, English C1","Fiori app configuration"]},{"id":"C-4302","job":"REQ-2204","stage":"Applied","since":"2026-10-30","applied":"2026-10-30","years":6,"yearsLine":1,"cv":["SAP ECC logistics, 6 years","S/4 Cloud trainings (2025)","EWM design workshops","Languages: German native, English C1","ABAP (reading, small enhancements)"]},{"id":"C-4303","job":"REQ-2204","stage":"Interview","since":"2026-11-03","applied":"2026-10-15","years":11,"yearsLine":1,"cv":["SAP logistics, 11 years","S/4HANA conversion, 2 projects","Materials Management and Sales","Languages: German native, English B2"]},{"id":"C-4304","job":"REQ-2204","stage":"Interview","since":"2026-10-20","applied":"2026-09-30","years":5,"yearsLine":1,"cv":["SAP logistics consulting, 5 years","S/4HANA greenfield, 2 projects","EWM and Materials Management","Languages: German native, English C2","Fiori and RAP (2 apps)","ABAP (daily)"]},{"id":"C-4305","job":"REQ-2204","stage":"Applied","since":"2026-11-05","applied":"2026-11-05","years":3,"yearsLine":1,"cv":["SAP logistics, 3 years","S/4HANA greenfield, 1 project","EWM (training)","Languages: German native, English B1"]},{"id":"C-4401","job":"REQ-2202","stage":"Offer","since":"2026-11-04","applied":"2026-10-12"},{"id":"C-4402","job":"REQ-2202","stage":"Interview","since":"2026-11-05","applied":"2026-10-16"},{"id":"C-4403","job":"REQ-2202","stage":"Screening","since":"2026-10-29","applied":"2026-10-20"},{"id":"C-4404","job":"REQ-2202","stage":"Applied","since":"2026-11-06","applied":"2026-11-06"},{"id":"C-4501","job":"REQ-2205","stage":"Interview","since":"2026-10-30","applied":"2026-10-19"},{"id":"C-4502","job":"REQ-2205","stage":"Screening","since":"2026-11-05","applied":"2026-10-26"},{"id":"C-4503","job":"REQ-2205","stage":"Applied","since":"2026-11-01","applied":"2026-11-01"},{"id":"C-4504","job":"REQ-2205","stage":"Applied","since":"2026-11-04","applied":"2026-11-04"},{"id":"C-4505","job":"REQ-2205","stage":"Applied","since":"2026-11-05","applied":"2026-11-05"},{"id":"C-4601","job":"REQ-2206","stage":"Screening","since":"2026-11-02","applied":"2026-10-28"},{"id":"C-4602","job":"REQ-2206","stage":"Applied","since":"2026-11-05","applied":"2026-11-05"},{"id":"C-4603","job":"REQ-2206","stage":"Applied","since":"2026-11-06","applied":"2026-11-06"}],"tools":[{"name":"recruiting_get_pipeline","kind":"read","what":"Control tower numbers per requisition, funnel, longest waiting, offer acceptance"},{"name":"recruiting_get_shortlist","kind":"read","what":"Shortlist against the stated criteria with the CV line as proof; personal fields never stored"},{"name":"recruiting_list_proposals","kind":"read","what":"Joule's proposals and the hiring manager's decisions"},{"name":"recruiting_create_proposal","kind":"write","what":"Writes a proposal only. Nothing changes for the candidate until the hiring manager releases it (release is not a tool)"}],"questions":[{"id":"q1","q":"Which requisitions are late, and why?","calls":[{"tool":"recruiting_get_pipeline","args":"{\"actor\":\"you@example.com\"}"},{"tool":"recruiting_get_pipeline","args":"{\"actor\":\"you@example.com\"}"}]},{"id":"q2","q":"Who has waited longer than the target?","calls":[{"tool":"recruiting_get_pipeline","args":"{\"actor\":\"you@example.com\"}"}]},{"id":"q3","q":"Who fits REQ-2204 best, and on what evidence?","calls":[{"tool":"recruiting_get_shortlist","args":"{\"actor\":\"you@example.com\",\"requisition\":\"REQ-2204\"}"},{"tool":"recruiting_get_shortlist","args":"{\"actor\":\"you@example.com\",\"requisition\":\"REQ-2204\"}"}]},{"id":"q4","q":"What should I do this morning?","calls":[{"tool":"recruiting_get_pipeline","args":"{\"actor\":\"you@example.com\"}"},{"tool":"recruiting_get_pipeline","args":"{\"actor\":\"you@example.com\"}"}]},{"id":"q5","q":"Why is C-4106 not on the shortlist for REQ-2201?","calls":[{"tool":"recruiting_get_shortlist","args":"{\"actor\":\"you@example.com\",\"requisition\":\"REQ-2204\"}"}]}],"later":[{"name":"sr_update_candidate_status","what":"Would move a candidate after release. Not built"},{"name":"sr_send_message","what":"Would message the hiring manager or a candidate after release. Not built"}]}</script>
 <script>
 (function () {
   'use strict';
   var D = JSON.parse(document.getElementById('data').textContent);
 
   // @logic-start
-  function makeLogic(D) {
-    var STAGES = D.stages;
-    function ms(s) { var p = s.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
-    function daysBetween(a, b) { return Math.round((ms(b) - ms(a)) / 86400000); }
-    function job(id) { return D.jobs.filter(function (j) { return j.id === id; })[0]; }
-    function cands(id) { return D.candidates.filter(function (c) { return c.job === id; }); }
-    function daysIn(c) { return daysBetween(c.since, D.asOf); }
-    function over(c) { return daysIn(c) - D.sla[c.stage]; }
-    function stalled(c) { return over(c) > 0; }
-    function median(a) {
-      var s = a.slice().sort(function (x, y) { return x - y; });
-      var m = Math.floor(s.length / 2);
-      return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-    }
-    function baseline(dept) {
-      var h = D.history.filter(function (x) { return x.dept === dept; });
-      return { median: h.length ? median(h.map(function (x) { return x.days; })) : null, n: h.length };
-    }
-    function acceptance(dept) {
-      var h = D.history.filter(function (x) { return dept === 'all' || x.dept === dept; });
-      var o = 0, a = 0;
-      h.forEach(function (x) { o += x.offers; a += x.accepted; });
-      return { offers: o, accepted: a, rate: o ? a / o : null };
-    }
-    function furthest(list) {
-      var f = -1;
-      list.forEach(function (c) { f = Math.max(f, STAGES.indexOf(c.stage)); });
-      return f < 0 ? null : STAGES[f];
-    }
-    function jobStatus(j) {
-      var list = cands(j.id);
-      var elapsed = daysBetween(j.opened, D.asOf);
-      var offer = list.some(function (c) { return c.stage === 'Offer'; });
-      var st = offer ? 'offer' : elapsed > j.target ? 'late' : elapsed >= 0.7 * j.target ? 'watch' : 'ok';
-      var waiting = list.filter(stalled).length;
-      var fr = furthest(list);
-      return { job: j, elapsed: elapsed, status: st, offer: offer, waiting: waiting, furthest: fr, count: list.length,
-        driver: (fr ? 'Furthest candidate: ' + fr : 'No candidates') + (waiting ? ' · ' + waiting + ' past target' : ' · none past target') };
-    }
-    function evalCrit(crit, cand) {
-      if (crit.kind === 'years') {
-        var ok = cand.years >= crit.min;
-        return { crit: crit, status: ok ? 'met' : 'missing', line: cand.yearsLine, text: cand.cv[cand.yearsLine - 1] };
-      }
-      function find(list) {
-        for (var i = 0; i < cand.cv.length; i++) {
-          for (var k = 0; k < (list || []).length; k++) if (cand.cv[i].toLowerCase().indexOf(list[k].toLowerCase()) >= 0) return i + 1;
-        }
-        return 0;
-      }
-      var l = find(crit.needles);
-      if (l) return { crit: crit, status: 'met', line: l, text: cand.cv[l - 1] };
-      var p = find(crit.partial);
-      if (p) return { crit: crit, status: 'partly', line: p, text: cand.cv[p - 1] };
-      return { crit: crit, status: 'missing', line: 0, text: '' };
-    }
-    function evalCand(jobId, cand) {
-      var crits = D.criteria[jobId] || [];
-      var res = crits.map(function (c) { return evalCrit(c, cand); });
-      function n(must, s) { return res.filter(function (r) { return r.crit.must === must && r.status === s; }).length; }
-      var mustN = crits.filter(function (c) { return c.must; }).length;
-      var e = { cand: cand, res: res, mustN: mustN, niceN: crits.length - mustN,
-        mustMet: n(true, 'met'), mustPartly: n(true, 'partly'), mustMissing: n(true, 'missing'), niceMet: n(false, 'met') };
-      e.group = e.mustMissing >= 2 ? 'C' : (e.mustMissing === 1 || e.mustPartly > 0) ? 'B' : 'A';
-      return e;
-    }
-    function hasCriteria(jobId) { return !!(D.criteria[jobId] && cands(jobId).every(function (c) { return c.cv; })); }
-    function shortlist(jobId) {
-      var list = cands(jobId).map(function (c) { return evalCand(jobId, c); });
-      list.sort(function (a, b) {
-        return (a.group < b.group ? -1 : a.group > b.group ? 1 : 0) || (b.mustMet - a.mustMet) || (b.mustPartly - a.mustPartly) ||
-          (b.niceMet - a.niceMet) || (ms(a.cand.applied) - ms(b.cand.applied));
-      });
-      list.forEach(function (e, i) { e.rank = i + 1; });
-      return list;
-    }
-    function nextStage(s) { return STAGES[STAGES.indexOf(s) + 1]; }
-    function proposals() {
-      var out = [];
-      D.jobs.forEach(function (j) {
-        if (!hasCriteria(j.id)) return;
-        shortlist(j.id).forEach(function (e) {
-          var c = e.cand;
-          if (e.group === 'A') {
-            if (c.stage === 'Applied' || c.stage === 'Screening') {
-              out.push({ id: c.id + ':move', job: j.id, cand: c.id, type: 'move', tool: 'sr_update_candidate_status', label: 'Changes something',
-                text: 'Move ' + c.id + ' from ' + c.stage + ' to ' + nextStage(c.stage) + '.',
-                basis: 'All ' + e.mustN + ' must-haves met, with proof lines.' });
-            } else if (stalled(c)) {
-              out.push({ id: c.id + ':remind', job: j.id, cand: c.id, type: 'remind', tool: 'sr_send_message', label: 'Sends a message',
-                text: 'Remind the hiring manager about ' + c.id + ': ' + daysIn(c) + ' days in ' + c.stage + ' (target ' + D.sla[c.stage] + ').',
-                basis: 'All ' + e.mustN + ' must-haves met. The candidate is waiting.' });
-            }
-          } else if (e.group === 'B') {
-            var parts = e.res.filter(function (r) { return r.crit.must && r.status !== 'met'; }).map(function (r) {
-              return (r.status === 'partly' ? 'is this enough for "' : 'is it acceptable that "') + r.crit.text + (r.status === 'partly' ? '"?' : '" is not met?') +
-                (r.text ? ' (CV: "' + r.text + '")' : '');
-            });
-            out.push({ id: c.id + ':ask', job: j.id, cand: c.id, type: 'ask', tool: 'sr_send_message', label: 'Sends a message',
-              text: 'Ask the hiring manager about ' + c.id + ': ' + parts.join(' ; '),
-              basis: e.mustMet + ' of ' + e.mustN + ' must-haves met, ' + e.mustPartly + ' partly, ' + e.mustMissing + ' missing.' });
-          }
-        });
-      });
-      return out;
-    }
-    function funnel() {
-      return STAGES.map(function (s) {
-        var l = D.candidates.filter(function (c) { return c.stage === s; });
-        return { stage: s, count: l.length, stalled: l.filter(stalled).length, sla: D.sla[s] };
-      });
-    }
-    function stalledList() {
-      return D.candidates.filter(stalled).sort(function (a, b) { return over(b) - over(a); });
-    }
-    function bestWaiting() {
-      var best = null;
-      D.jobs.forEach(function (j) {
-        if (!hasCriteria(j.id)) return;
-        shortlist(j.id).forEach(function (e) {
-          if (e.group === 'A' && stalled(e.cand) && (!best || daysIn(e.cand) > daysIn(best.cand))) best = e;
-        });
-      });
-      return best;
-    }
-    function brief() {
-      var st = D.jobs.map(jobStatus);
-      var late = st.filter(function (s) { return s.status === 'late'; });
-      var st2 = stalledList();
-      var best = bestWaiting();
-      var offers = D.candidates.filter(function (c) { return c.stage === 'Offer'; });
-      var pr = proposals();
-      var items = [];
-      items.push({ head: 'Late requisitions', text: late.length ? late.map(function (s) { return s.job.id + ' ' + s.job.title + ' (' + s.elapsed + ' of ' + s.job.target + ' days)'; }).join('; ') + '.' : 'None.' });
-      items.push({ head: 'Waiting past target', text: st2.length + ' of ' + D.candidates.length + ' candidates have waited longer than the target for their stage. Longest: ' + (st2[0] ? st2[0].id + ', ' + over(st2[0]) + ' days over (' + st2[0].stage + ', ' + D.jobs.filter(function (j) { return j.id === st2[0].job; })[0].id + ')' : 'none') + '.' });
-      items.push({ head: 'Best match waiting longest', text: best ? best.cand.id + ' for ' + best.cand.job + ' meets all ' + best.mustN + ' must-haves and has waited ' + daysIn(best.cand) + ' days in ' + best.cand.stage + ' (target ' + D.sla[best.cand.stage] + ').' : 'None.' });
-      items.push({ head: 'Offers out', text: offers.map(function (c) { return c.id + ' (' + c.job + '): ' + daysIn(c) + ' days, target ' + D.sla.Offer + (stalled(c) ? ', over target' : ', within target'); }).join('; ') + '.' });
-      items.push({ head: 'Waiting for your release', text: pr.length + ' proposals from Joule wait in Approvals. Nothing has been changed.' });
-      return items;
-    }
-    return { STAGES: STAGES, job: job, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
-      jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, proposals: proposals, funnel: funnel,
-      stalledList: stalledList, bestWaiting: bestWaiting, brief: brief, daysBetween: daysBetween };
+function makeLogic(D) {
+  var STAGES = D.stages;
+  function ms(s) { var p = s.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function daysBetween(a, b) { return Math.round((ms(b) - ms(a)) / 86400000); }
+  function job(id) { return D.jobs.filter(function (j) { return j.id === id; })[0]; }
+  function cands(id) { return D.candidates.filter(function (c) { return c.job === id; }); }
+  function daysIn(c) { return daysBetween(c.since, D.asOf); }
+  function over(c) { return daysIn(c) - D.sla[c.stage]; }
+  function stalled(c) { return over(c) > 0; }
+  function median(a) {
+    var s = a.slice().sort(function (x, y) { return x - y; });
+    var m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
   }
+  function baseline(dept) {
+    var h = D.history.filter(function (x) { return x.dept === dept; });
+    return { median: h.length ? median(h.map(function (x) { return x.days; })) : null, n: h.length };
+  }
+  function acceptance(dept) {
+    var h = D.history.filter(function (x) { return dept === 'all' || x.dept === dept; });
+    var o = 0, a = 0;
+    h.forEach(function (x) { o += x.offers; a += x.accepted; });
+    return { offers: o, accepted: a, rate: o ? a / o : null };
+  }
+  function furthest(list) {
+    var f = -1;
+    list.forEach(function (c) { f = Math.max(f, STAGES.indexOf(c.stage)); });
+    return f < 0 ? null : STAGES[f];
+  }
+  function jobStatus(j) {
+    var list = cands(j.id);
+    var elapsed = daysBetween(j.opened, D.asOf);
+    var offer = list.some(function (c) { return c.stage === 'Offer'; });
+    var st = offer ? 'offer' : elapsed > j.target ? 'late' : elapsed >= 0.7 * j.target ? 'watch' : 'ok';
+    var waiting = list.filter(stalled).length;
+    var fr = furthest(list);
+    return { job: j, elapsed: elapsed, status: st, offer: offer, waiting: waiting, furthest: fr, count: list.length,
+      driver: (fr ? 'Furthest candidate: ' + fr : 'No candidates') + (waiting ? ' · ' + waiting + ' past target' : ' · none past target') };
+  }
+  function evalCrit(crit, cand) {
+    if (crit.kind === 'years') {
+      var ok = cand.years >= crit.min;
+      return { crit: crit, status: ok ? 'met' : 'missing', line: cand.yearsLine, text: cand.cv[cand.yearsLine - 1] };
+    }
+    function find(list) {
+      for (var i = 0; i < cand.cv.length; i++) {
+        for (var k = 0; k < (list || []).length; k++) if (cand.cv[i].toLowerCase().indexOf(list[k].toLowerCase()) >= 0) return i + 1;
+      }
+      return 0;
+    }
+    var l = find(crit.needles);
+    if (l) return { crit: crit, status: 'met', line: l, text: cand.cv[l - 1] };
+    var p = find(crit.partial);
+    if (p) return { crit: crit, status: 'partly', line: p, text: cand.cv[p - 1] };
+    return { crit: crit, status: 'missing', line: 0, text: '' };
+  }
+  function evalCand(jobId, cand) {
+    var crits = D.criteria[jobId] || [];
+    var res = crits.map(function (c) { return evalCrit(c, cand); });
+    function n(must, s) { return res.filter(function (r) { return r.crit.must === must && r.status === s; }).length; }
+    var mustN = crits.filter(function (c) { return c.must; }).length;
+    var e = { cand: cand, res: res, mustN: mustN, niceN: crits.length - mustN,
+      mustMet: n(true, 'met'), mustPartly: n(true, 'partly'), mustMissing: n(true, 'missing'), niceMet: n(false, 'met') };
+    e.group = e.mustMissing >= 2 ? 'C' : (e.mustMissing === 1 || e.mustPartly > 0) ? 'B' : 'A';
+    return e;
+  }
+  function hasCriteria(jobId) { return !!(D.criteria[jobId] && cands(jobId).every(function (c) { return c.cv; })); }
+  function shortlist(jobId) {
+    var list = cands(jobId).map(function (c) { return evalCand(jobId, c); });
+    list.sort(function (a, b) {
+      return (a.group < b.group ? -1 : a.group > b.group ? 1 : 0) || (b.mustMet - a.mustMet) || (b.mustPartly - a.mustPartly) ||
+        (b.niceMet - a.niceMet) || (ms(a.cand.applied) - ms(b.cand.applied));
+    });
+    list.forEach(function (e, i) { e.rank = i + 1; });
+    return list;
+  }
+  function nextStage(s) { return STAGES[STAGES.indexOf(s) + 1]; }
+  function proposals() {
+    var out = [];
+    D.jobs.forEach(function (j) {
+      if (!hasCriteria(j.id)) return;
+      shortlist(j.id).forEach(function (e) {
+        var c = e.cand;
+        if (e.group === 'A') {
+          if (c.stage === 'Applied' || c.stage === 'Screening') {
+            out.push({ id: c.id + ':move', job: j.id, cand: c.id, type: 'move', tool: 'recruiting_create_proposal', label: 'Changes something',
+              text: 'Move ' + c.id + ' from ' + c.stage + ' to ' + nextStage(c.stage) + '.',
+              basis: 'All ' + e.mustN + ' must-haves met, with proof lines.' });
+          } else if (stalled(c)) {
+            out.push({ id: c.id + ':remind', job: j.id, cand: c.id, type: 'remind', tool: 'recruiting_create_proposal', label: 'Sends a message',
+              text: 'Remind the hiring manager about ' + c.id + ': ' + daysIn(c) + ' days in ' + c.stage + ' (target ' + D.sla[c.stage] + ').',
+              basis: 'All ' + e.mustN + ' must-haves met. The candidate is waiting.' });
+          }
+        } else if (e.group === 'B') {
+          var parts = e.res.filter(function (r) { return r.crit.must && r.status !== 'met'; }).map(function (r) {
+            return (r.status === 'partly' ? 'is this enough for "' : 'is it acceptable that "') + r.crit.text + (r.status === 'partly' ? '"?' : '" is not met?') +
+              (r.text ? ' (CV: "' + r.text + '")' : '');
+          });
+          out.push({ id: c.id + ':ask', job: j.id, cand: c.id, type: 'ask', tool: 'recruiting_create_proposal', label: 'Sends a message',
+            text: 'Ask the hiring manager about ' + c.id + ': ' + parts.join(' ; '),
+            basis: e.mustMet + ' of ' + e.mustN + ' must-haves met, ' + e.mustPartly + ' partly, ' + e.mustMissing + ' missing.' });
+        }
+      });
+    });
+    return out;
+  }
+  function funnel() {
+    return STAGES.map(function (s) {
+      var l = D.candidates.filter(function (c) { return c.stage === s; });
+      return { stage: s, count: l.length, stalled: l.filter(stalled).length, sla: D.sla[s] };
+    });
+  }
+  function stalledList() {
+    return D.candidates.filter(stalled).sort(function (a, b) { return over(b) - over(a); });
+  }
+  function bestWaiting() {
+    var best = null;
+    D.jobs.forEach(function (j) {
+      if (!hasCriteria(j.id)) return;
+      shortlist(j.id).forEach(function (e) {
+        if (e.group === 'A' && stalled(e.cand) && (!best || daysIn(e.cand) > daysIn(best.cand))) best = e;
+      });
+    });
+    return best;
+  }
+  function brief() {
+    var st = D.jobs.map(jobStatus);
+    var late = st.filter(function (s) { return s.status === 'late'; });
+    var st2 = stalledList();
+    var best = bestWaiting();
+    var offers = D.candidates.filter(function (c) { return c.stage === 'Offer'; });
+    var pr = proposals();
+    var items = [];
+    items.push({ head: 'Late requisitions', text: late.length ? late.map(function (s) { return s.job.id + ' ' + s.job.title + ' (' + s.elapsed + ' of ' + s.job.target + ' days)'; }).join('; ') + '.' : 'None.' });
+    items.push({ head: 'Waiting past target', text: st2.length + ' of ' + D.candidates.length + ' candidates have waited longer than the target for their stage. Longest: ' + (st2[0] ? st2[0].id + ', ' + over(st2[0]) + ' days over (' + st2[0].stage + ', ' + D.jobs.filter(function (j) { return j.id === st2[0].job; })[0].id + ')' : 'none') + '.' });
+    items.push({ head: 'Best match waiting longest', text: best ? best.cand.id + ' for ' + best.cand.job + ' meets all ' + best.mustN + ' must-haves and has waited ' + daysIn(best.cand) + ' days in ' + best.cand.stage + ' (target ' + D.sla[best.cand.stage] + ').' : 'None.' });
+    items.push({ head: 'Offers out', text: offers.map(function (c) { return c.id + ' (' + c.job + '): ' + daysIn(c) + ' days, target ' + D.sla.Offer + (stalled(c) ? ', over target' : ', within target'); }).join('; ') + '.' });
+    items.push({ head: 'Waiting for your release', text: pr.length + ' proposals from Joule wait in Approvals. Nothing has been changed.' });
+    return items;
+  }
+  return { STAGES: STAGES, job: job, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
+    jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, proposals: proposals, funnel: funnel,
+    stalledList: stalledList, bestWaiting: bestWaiting, brief: brief, daysBetween: daysBetween };
+}
   // @logic-end
   var L = makeLogic(D);
 
@@ -522,7 +522,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
       '<div class="kpi' + (late ? ' warn' : '') + '"><b>' + late + '</b><span>requisitions late, ' + offers + ' with an offer out</span></div>' +
       '<div class="kpi"><b>' + pct(acc.rate) + '</b><span>offers accepted in closed requisitions (' + acc.accepted + ' of ' + acc.offers + ')</span></div></div>' +
       '<div class="two"><div class="card"><h2>Requisitions</h2><p class="note">Status follows a plain rule: an offer is out; past the target; 70% of the target used; otherwise on track.</p>' +
-      strip('sr_list_jobs', JSON.stringify({ status: 'open' })) +
+      strip('recruiting_get_pipeline', JSON.stringify({ actor: 'you@example.com' })) +
       '<div class="scroll"><table><thead><tr><th>Requisition</th><th>Department</th><th>Days open</th><th>Status</th><th>Why</th></tr></thead><tbody>' +
       st.map(function (s) {
         var w = Math.min(100, Math.round(s.elapsed / s.job.target * 100));
@@ -543,7 +543,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
       .sort(function (a, b) { return L.over(b) - L.over(a); });
     var seg = [['all', 'All stages']].concat(L.STAGES.map(function (s) { return [s, s]; }));
     return '<div class="card"><h2>Pipeline</h2><p class="note">Candidates are pseudonymous. Time is counted from the day a candidate entered the current stage.</p>' +
-      strip('sr_list_candidates', JSON.stringify({ status: 'in_process' })) +
+      strip('recruiting_get_pipeline', JSON.stringify({ actor: 'you@example.com' })) +
       '<div class="tools"><div class="seg" role="group" aria-label="Stage">' + seg.map(function (x) { return '<button type="button" data-stage="' + x[0] + '" aria-pressed="' + (S.stage === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>' +
       '<div class="seg" role="group" aria-label="Filter"><button type="button" data-only="1" aria-pressed="' + S.only + '">Past target only</button><button type="button" data-only="0" aria-pressed="' + !S.only + '">Everyone</button></div></div>' +
       '<p class="note" aria-live="polite">' + list.length + (list.length === 1 ? ' candidate' : ' candidates') + '</p>' +
@@ -560,7 +560,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
     var st = D.jobs.map(L.jobStatus);
     var depts = []; D.jobs.forEach(function (j) { if (depts.indexOf(j.dept) < 0) depts.push(j.dept); });
     return '<div class="card"><h2>Time to fill</h2><p class="note">A rule of thumb on fictional history, not a forecast model. A model such as TabPFN could replace the rule once real history exists; it was not run here.</p>' +
-      strip('sr_list_jobs', JSON.stringify({ status: 'open', include: 'history' })) +
+      strip('recruiting_get_pipeline', JSON.stringify({ actor: 'you@example.com' })) +
       '<div class="scroll"><table><thead><tr><th>Requisition</th><th>Open</th><th>Target</th><th>Department median (closed)</th><th>Status</th><th>Driver</th></tr></thead><tbody>' +
       st.map(function (s) {
         var b = L.baseline(s.job.dept);
@@ -577,7 +577,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
     var b = L.brief();
     var prompt = 'Every weekday at 07:30 read the open requisitions and candidates, read only, and write a short morning brief: late requisitions, candidates waiting past the target, the best match waiting longest, offers out. Do not change any status. Propose actions for release.';
     return '<div class="card"><h2>Morning brief, ' + esc(D.asOf) + '</h2><p class="note">Written from the same data as the other tabs. Joule would send it as a scheduled task.</p>' +
-      strip('sr_list_jobs', JSON.stringify({ status: 'open' })) +
+      strip('recruiting_get_pipeline', JSON.stringify({ actor: 'you@example.com' })) +
       b.map(function (x) { return '<div class="box"><div class="h"><b>' + esc(x.head) + '</b></div><div>' + esc(x.text) + '</div></div>'; }).join('') +
       '<div class="row"><button class="btn primary" type="button" data-prompt="' + esc(prompt) + '">Ask Joule to schedule this brief</button><button class="btn" type="button" data-go="approvals">Open Approvals</button></div></div>';
   }
@@ -599,7 +599,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
       '<div class="box"><div class="h"><b>' + esc(j.title) + '</b><span class="tag blue">' + esc(j.dept) + '</span><span class="sub">' + esc(j.location) + ' · hiring manager: ' + esc(j.manager) + '</span></div>' +
       '<div class="legend">' + crits.map(function (c) { return '<span><span class="tag ' + (c.must ? 'tool' : '') + '">' + c.id + (c.must ? ' must' : ' nice') + '</span>' + esc(c.text) + '</span>'; }).join('') + '</div>' +
       '<p class="note" style="margin:0">Joule compares only these criteria, as the hiring manager set them. ' + esc(D.privacy.orderRule) + ' Removed before reading: ' + esc(D.privacy.removed.join(', ')) + '.</p></div>' +
-      strip('sr_get_candidate', JSON.stringify({ candidate: S.cand })) +
+      strip('recruiting_get_shortlist', JSON.stringify({ actor: 'you@example.com', requisition: S.job })) +
       '<div class="two"><div><div class="scroll"><table><thead><tr><th>#</th><th>Candidate</th><th>Stage</th>' + crits.map(function (c) { return '<th title="' + esc(c.text) + '">' + c.id + '</th>'; }).join('') + '</tr></thead><tbody>';
     var lastG = '';
     list.forEach(function (e) {
@@ -642,8 +642,8 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
         h += '<div class="box"><div class="h"><b class="mono">' + p.cand + '</b><span class="tag ' + (p.type === 'move' ? 'amber' : 'blue') + '">' + p.label + '</span><span class="tag tool">' + p.tool + '</span>' +
           (d ? '<span class="tag ' + (d === 'released' ? 'ok' : '') + '">' + (d === 'released' ? 'Released (simulated)' : 'Declined') + '</span>' : '') + '</div>' +
           '<div>' + esc(p.text) + '</div><div class="sub">Basis: ' + esc(p.basis) + '</div>' +
-          (d === 'released' ? '<div class="sub" style="margin-top:4px">With a connector, ' + p.tool + ' would run now, for ' + p.cand + ' only. Not executed in this Space.</div>' : '') +
-          (d ? '<div class="row"><button class="btn" type="button" data-undo="' + p.id + '">Undo</button></div>' : '<div class="row"><button class="btn primary" type="button" data-rel="' + p.id + '">Release</button><button class="btn" type="button" data-dec="' + p.id + '">Decline</button><button class="btn" type="button" data-open="' + p.cand + '">Show proof</button></div>') + '</div>';
+          (d === 'released' ? '<div class="sub" style="margin-top:4px">In the database a decision is final. Releasing does not change anything in a recruiting system: that part is not built.</div>' : '') +
+          (d ? '' : '<div class="row"><button class="btn primary" type="button" data-rel="' + p.id + '">Release</button><button class="btn" type="button" data-dec="' + p.id + '">Decline</button><button class="btn" type="button" data-open="' + p.cand + '">Show proof</button></div>') + '</div>';
       });
     });
     return h + '</div>';
@@ -694,18 +694,20 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
   }
 
   function vGuard() {
-    var nodes = [['Joule', 'asks in the chat'], ['Recruiting connector', 'read-only by default (not built)'], ['SmartRecruiters API', 'to be verified'], ['SuccessFactors', 'later: onboarding hand-over']];
-    return '<div class="card"><h2>How the pieces would fit</h2><p class="note">Nothing is stored in the Space. This is the target picture, not an existing connector.</p><div class="flow">' +
+    var nodes = [['Joule', 'asks in the chat'], ['werkbank-workspace', 'recruiting_* tools: 3 read, 1 proposal'], ['Supabase, schema recruiting', 'criteria, CV text, proposals, log'], ['SmartRecruiters import', 'not built']];
+    return '<div class="card"><h2>How the pieces would fit</h2><p class="note">Nothing is stored in the Space. The tools and tables exist (migration 028); the import from SmartRecruiters does not.</p><div class="flow">' +
       nodes.map(function (n) { return '<div class="node"><b>' + esc(n[0]) + '</b><small>' + esc(n[1]) + '</small></div>'; }).join('') + '</div></div>' +
-      '<div class="two"><div class="card"><h2>Tools (illustrative names)</h2><table><tbody>' + D.tools.map(function (t) {
+      '<div class="two"><div class="card"><h2>Tools in the connector</h2><table><tbody>' + D.tools.map(function (t) {
         return '<tr><td><code>' + esc(t.name) + '</code></td><td><span class="tag ' + (t.kind === 'read' ? 'ok' : 'amber') + '">' + (t.kind === 'read' ? 'Only reads' : 'Changes something') + '</span></td><td>' + esc(t.what) + '</td></tr>';
+      }).join('') + D.later.map(function (t) {
+        return '<tr><td><code>' + esc(t.name) + '</code></td><td><span class="tag">Not built</span></td><td>' + esc(t.what) + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
       '<div class="card"><h2>What Joule does not do</h2><ol class="steps2"><li>It does not reject candidates.</li><li>It does not score people. It shows which stated criteria are met, with the CV line as proof.</li><li>It does not read name, photo, date of birth, gender, address, nationality or CV gaps.</li><li>It does not change a status or send a message without a release.</li></ol></div></div>' +
       '<div class="card"><h2>Before real use</h2><ol class="steps2">' +
       '<li>Recruitment and selection fall in a category the EU AI Act treats as high-risk. Check the duties with legal first.</li>' +
       '<li>Involve the works council and data protection. Candidates need to be informed how their data is read.</li>' +
-      '<li>Check the SmartRecruiters API: the tool names above are not verified, and no connector exists yet.</li>' +
-      '<li>The approval rules of the Werkbank know the ARC-1 tool names only. These tool names must be added there so that writing tools show as "Changes something".</li>' +
+      '<li>There is no import from SmartRecruiters. The sample data was loaded by hand; the API is not checked. Releasing a proposal changes nothing in the recruiting system yet.</li>' +
+      '<li>The approval rules of the Werkbank classify <code>recruiting_create_proposal</code> as a change by its name. The later tools that would act in SmartRecruiters (<code>sr_update_candidate_status</code>, <code>sr_send_message</code>) do not exist.</li>' +
       '<li>Test the criteria matching on real CVs. It matches text and misses synonyms, so "no formal lead title" style cases land in "Needs a human look".</li></ol></div>';
   }
 
@@ -726,7 +728,7 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
   }
 
   document.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-tab],[data-stage],[data-only],[data-open],[data-go],[data-job],[data-cand],[data-rel],[data-dec],[data-undo],[data-q],[data-live],[data-prompt]');
+    var el = e.target.closest('[data-tab],[data-stage],[data-only],[data-open],[data-go],[data-job],[data-cand],[data-rel],[data-dec],[data-q],[data-live],[data-prompt]');
     if (!el) return;
     var d = el.dataset;
     if (d.tab) go(d.tab);
@@ -738,7 +740,6 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
     else if (d.cand) { S.cand = d.cand; render(); }
     else if (d.rel) { S.dec[d.rel] = 'released'; render(); }
     else if (d.dec) { S.dec[d.dec] = 'declined'; render(); }
-    else if (d.undo) { delete S.dec[d.undo]; render(); }
     else if (d.q) { S.qid = d.q; render(); }
     else if (d.prompt) ask(d.prompt);
     else if (d.live) { var q = D.questions.filter(function (x) { return x.id === d.live; })[0]; if (q) ask(q.q); }

@@ -5067,3 +5067,24 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 /* The top bar drags the window; controls inside it must opt out or Electron swallows their mouse events
    (the text-size slider, the search field and the filters of a Space did not react). */
 .topbar input, .topbar select, .topbar label, .topbar button, .topbar .space-tools, .topbar .space-zoom { -webkit-app-region: no-drag; }
+
+/* Hiring approvals */
+.hr { max-width: 860px; }
+.hr-head { display: flex; align-items: center; gap: 10px; }
+.hr-tabs { display: flex; gap: 8px; align-items: center; margin: 14px 0; }
+.hr-tabs button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; }
+.hr-tabs button.on { border-color: var(--accent); color: var(--accent); }
+.hr-tabs button b { margin-left: 6px; }
+.hr-tabs .hr-reload { margin-left: auto; }
+.hr-group h2 { font-size: 14px; color: var(--muted); margin: 18px 0 8px; }
+.hr-card { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+.hr-card p { margin: 6px 0; }
+.hr-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hr-cand { font-family: ui-monospace, monospace; }
+.hr-tag { border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 12px; color: var(--muted); }
+.hr-tag.ok { color: var(--lv-green); border-color: var(--lv-green); }
+.hr-basis, .hr-note { color: var(--muted); font-size: 12.5px; }
+.hr-error { color: var(--lv-red); }
+.hr-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hr-actions input { flex: 1 1 200px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: inherit; }
+.hr-source { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px; }

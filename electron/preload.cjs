@@ -35,6 +35,12 @@ contextBridge.exposeInMainWorld('host', {
   /** Scheduler run log: send finished runs (append only) and read the log for the Activity tab. */
   jobRunsRecord: (runs) => ipcRenderer.invoke('job-runs-record', runs),
   jobRunsList: (args) => ipcRenderer.invoke('job-runs-list', args),
+  recruitingProposals: (args) => ipcRenderer.invoke('recruiting-proposals', args),
+  recruitingImport: () => ipcRenderer.invoke('recruiting-import'),
+  recruitingCriteria: () => ipcRenderer.invoke('recruiting-criteria'),
+  recruitingCriterionSet: (args) => ipcRenderer.invoke('recruiting-criterion-set', args),
+  recruitingCriterionDelete: (requisition, id) => ipcRenderer.invoke('recruiting-criterion-delete', requisition, id),
+  recruitingDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-decide', id, decision, note),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 
   // Werkbank install deep links. Callbacks receive only

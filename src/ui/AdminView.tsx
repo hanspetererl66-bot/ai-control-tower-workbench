@@ -1,8 +1,8 @@
 /**
- * Start page of "Admin": the places for those who look after what is shared. Three tiles today: Ontologies, Registry and Skill management;
+ * Start page of "Admin": the places for those who look after what is shared. Four tiles today: Ontologies, Registry, Skill management and Hiring approvals;
  * more can follow. Admin is not part of Develop.
  */
-export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void }) {
+export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills, onOpenHiring }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void; onOpenHiring: () => void }) {
   return (
     <main className="develop develop-main adm">
       <h1 className="develop-title">Admin</h1>
@@ -41,6 +41,17 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
           </ul>
           <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkills}>Open Skill management</button>
         </section>
+        <section className="develop-card develop-card-block" aria-label="Hiring approvals">
+          <span className="develop-logo develop-logo-ontologies" aria-hidden="true"><HiringMark /></span>
+          <span className="develop-card-title">Hiring approvals</span>
+          <span className="develop-card-brand">the decision</span>
+          <span className="develop-card-text">What Joule proposes for open requisitions waits here for the hiring manager. Nothing happens to a candidate without a click.</span>
+          <ul className="develop-blocks">
+            <li><span>Release or decline a proposal, with a note</span></li>
+            <li><span>Only the hiring manager of a requisition decides</span></li>
+          </ul>
+          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenHiring}>Open Hiring approvals</button>
+        </section>
       </div>
     </main>
   );
@@ -78,6 +89,17 @@ function SkillMark() {
       <rect x="10" y="9" width="30" height="40" rx="5" fill="currentColor" opacity=".55" />
       <rect x="17" y="15" width="30" height="40" rx="5" fill="currentColor" opacity=".75" />
       <path d="M22 38h6l3-8 5 14 3-6h4" stroke="var(--surface, #fff)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** A tick inside a card: a proposal that waits for a person's decision. */
+function HiringMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <rect x="12" y="8" width="36" height="46" rx="5" fill="currentColor" opacity=".55" />
+      <rect x="18" y="14" width="36" height="46" rx="5" fill="currentColor" opacity=".75" />
+      <path d="M26 38l7 7 13-15" stroke="var(--surface, #fff)" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

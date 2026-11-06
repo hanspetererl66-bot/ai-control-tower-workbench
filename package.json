@@ -67,6 +67,8 @@
     "install:calm-alm": "node scripts/install-example-space.mjs calm-alm",
     "install:abap-workbench": "node scripts/install-example-space.mjs abap-workbench",
     "install:design-study": "node scripts/install-example-space.mjs design-study",
+    "recruiting:seed": "node scripts/recruiting-seed.mjs",
+    "smartrecruiters:mock": "node scripts/smartrecruiters-mock-build.mjs",
     "install:recruiting-workbench": "node scripts/install-example-space.mjs recruiting-workbench",
     "install:skills": "node scripts/install-example-skills.mjs",
     "install:databricks-demo": "node scripts/install-databricks-demo.mjs",

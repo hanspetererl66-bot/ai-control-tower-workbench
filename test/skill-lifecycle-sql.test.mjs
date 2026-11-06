@@ -7,9 +7,13 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
+import { buildSeedSql } from '../scripts/recruiting-seed.mjs';
+import { createMockClient, mapToRecruiting } from '../connectors/_lib/server/smartrecruiters.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const dsn = process.env.SKILL_SQL_TEST_DSN?.trim();
@@ -45,7 +49,7 @@ const events = (slug) => state('board@x.com', slug).events.map((e) => e.event);
 const day = (offset) => json(`select to_json((current_date + ${offset})::text)`);
 
 test('set up: the migrations install cleanly, twice', { skip }, () => {
-  sql('drop schema if exists control_tower, sub4me, skills, werkbank cascade');
+  sql('drop schema if exists control_tower, sub4me, skills, werkbank, recruiting cascade');
   sql(`do $$ begin
     if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
     if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
@@ -373,4 +377,159 @@ test('scheduler run log: append only, people see their own runs, the board sees 
     assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.job_runs_list(text,timestamptz,text,text,text,boolean,integer)', 'execute')`), 'f', role);
   }
   assert.equal(sql("select has_function_privilege('service_role', 'public.job_runs_list(text,timestamptz,text,text,text,boolean,integer)', 'execute')"), 't');
+});
+
+
+// ---- recruiting (migration 028) ---------------------------------------------------------------------------------------------------
+const recData = JSON.parse(readFileSync(join(ROOT, 'examples/recruiting-workbench/data.json'), 'utf8'));
+const MGR = 'mgr@x.com';
+const snap = (actor, cv = true) => json(`select public.recruiting_snapshot(${q(actor)}, ${cv}, date '2026-11-06')`);
+const propose = (actor, req, cand, kind = 'move', body = 'Move C to the next stage.') => `select public.recruiting_proposal_create(${q(actor)}, ${q(req)}, ${q(cand)}, ${q(kind)}, 'recruiting_create_proposal', ${q(body)}, 'basis')`;
+
+test('recruiting: the sample data loads, and the database snapshot gives the same answers as the Space', { skip }, () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'rec-')), 'seed.sql');
+  writeFileSync(file, buildSeedSql(recData, { manager: MGR }));
+  run(['-f', file]); run(['-f', file]); // loading twice changes nothing
+  assert.equal(sql('select count(*) from recruiting.candidate'), String(recData.candidates.length));
+  const fromDb = makeLogic(snap(MGR));
+  const fromFile = makeLogic(recData);
+  assert.deepEqual(recData.jobs.map((j) => fromDb.jobStatus(j).status), recData.jobs.map((j) => fromFile.jobStatus(j).status));
+  for (const job of Object.keys(recData.criteria)) {
+    const key = (L) => L.shortlist(job).map((e) => `${e.cand.id}:${e.group}:${e.rank}`);
+    assert.deepEqual(key(fromDb), key(fromFile), job);
+  }
+  assert.equal(fromDb.proposals().length, fromFile.proposals().length);
+});
+
+test('recruiting: visibility is the hiring manager and the Governance board; CV text only on request', { skip }, () => {
+  assert.equal(snap(MGR).jobs.length, recData.jobs.length);
+  assert.equal(snap('board@x.com').jobs.length, recData.jobs.length);
+  assert.equal(snap('stranger@x.com').jobs.length, 0, 'a stranger sees no requisition');
+  assert.ok(snap(MGR, false).candidates.every((c) => !c.cv), 'no CV text without the flag');
+  assert.ok(snap(MGR, true).candidates.some((c) => c.cv));
+});
+
+test('recruiting: the API roles cannot reach the tables or the functions', { skip }, () => {
+  for (const role of ['anon', 'authenticated']) {
+    for (const t of ['requisition', 'candidate', 'criterion', 'proposal', 'proposal_event']) assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.${t}', 'select')`), 'f', `${role} ${t}`);
+    for (const f of ['recruiting_snapshot(text,boolean,date)', 'recruiting_proposal_create(text,text,text,text,text,text,text)', 'recruiting_proposals_list(text,text,text,integer)', 'recruiting_proposal_decide(text,bigint,text,text)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
+    }
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_proposal_decide(text,bigint,text,text)', 'execute')"), 't');
+});
+
+test('recruiting: a proposal is written once per candidate and kind; rejection wording and other people’s requisitions are refused', { skip }, () => {
+  const first = json(propose(MGR, 'REQ-2201', 'C-4101'));
+  assert.equal(first.created, true);
+  assert.equal(json(propose(MGR, 'REQ-2201', 'C-4101')).id, first.id, 'asking twice returns the open proposal');
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4102', 'move', 'Reject this candidate.')), /check|proposal_body|violates/i);
+  assert.match(rule(propose('stranger@x.com', 'REQ-2201', 'C-4102')), /no access/);
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4201')), /does not belong/);
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4102', 'reject')), /kind/);
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4102', 'move', 'token: abcdefgh12345678')), /credential/);
+  assert.equal(json(`select public.recruiting_proposals_list(${q(MGR)})`).length, 1);
+  assert.equal(json(`select public.recruiting_proposals_list('stranger@x.com')`).length, 0);
+});
+
+test('recruiting: only the hiring manager decides, the decision is final, the log is append-only', { skip }, () => {
+  const id = json(propose(MGR, 'REQ-2201', 'C-4102')).id;
+  const decideSql = (actor, decision, note = '') => `select public.recruiting_proposal_decide(${q(actor)}, ${id}, ${q(decision)}, ${q(note)})`;
+  assert.match(rule(decideSql('stranger@x.com', 'released')), /only the hiring manager/);
+  assert.match(rule(decideSql('board@x.com', 'released')), /only the hiring manager/, 'not even the board decides for the manager');
+  assert.match(rule(decideSql(MGR, 'rejected')), /decision/);
+  assert.equal(json(decideSql(MGR, 'declined', 'not now')).status, 'declined');
+  assert.match(rule(decideSql(MGR, 'released')), /already decided/);
+  assert.match(rule(`update recruiting.proposal set status = 'released' where id = ${id}`), /./, 'a decided proposal cannot be flipped');
+  assert.match(rule(`delete from recruiting.proposal where id = ${id}`), /./, 'proposals are never deleted');
+  assert.deepEqual(json(`select to_json(array_agg(event order by id)) from recruiting.proposal_event where proposal_id = ${id}`), ['proposed', 'declined']);
+  assert.match(rule('update recruiting.proposal_event set note = \'x\''), /append only/);
+  assert.match(rule('delete from recruiting.proposal_event'), /append only/);
+  // After a decision a new proposal for the same candidate and kind is possible again.
+  assert.equal(json(propose(MGR, 'REQ-2201', 'C-4102')).created, true);
+});
+
+test('recruiting: no personal data in CV text, no protected trait as a criterion', { skip }, () => {
+  const cv = (lines) => `update recruiting.candidate set cv_lines = ${arr(lines)} where id = 'C-4101'`;
+  assert.ok(rule(cv(['Reach me at anna@example.com'])), 'e-mail address');
+  assert.ok(rule(cv(['Phone 0151 2345 6789 0'])), 'phone number');
+  assert.ok(rule(cv(['See https://linkedin.com/in/x'])), 'link');
+  assert.ok(rule(cv(['x'.repeat(301)])), 'long line');
+  const crit = (label, needles) => `insert into recruiting.criterion (requisition_id, crit_id, must, label, kind, needles) values ('REQ-2206', 'N9', false, ${q(label)}, 'text', ${arr(needles)})`;
+  assert.ok(rule(crit('Younger than 35', ['young'])), 'age as label');
+  assert.ok(rule(crit('Has experience', ['married'])), 'protected trait as needle');
+  assert.equal(rule(crit('Knows forklift safety', ['forklift'])), null, 'an ordinary criterion is fine');
+});
+
+
+test('recruiting import: a first import of the mock updates the sample rows, a new job is created, personal data never arrives', { skip }, async () => {
+  const fixture = JSON.parse(readFileSync(join(ROOT, 'connectors/_lib/server/smartrecruiters-mock.json'), 'utf8'));
+  const client = createMockClient(fixture);
+  const jobs = (await client.listJobs()).content;
+  const byJob = Object.fromEntries(await Promise.all(jobs.map(async (j) => [j.id, (await client.listCandidates(j.id)).content])));
+  const { payload } = mapToRecruiting(jobs, byJob, { asOf: '2026-11-06' });
+  const imp = (actor, p) => `select public.recruiting_import(${q(actor)}, ${q(JSON.stringify(p))}::jsonb)`;
+  const before = sql('select count(*) from recruiting.candidate');
+  const first = json(imp(MGR, payload));
+  assert.equal(first.requisitionsNew, 0); assert.equal(first.candidatesNew, 0);
+  assert.equal(first.requisitionsUpdated, 6); assert.equal(first.candidatesUpdated, 28);
+  assert.equal(sql('select count(*) from recruiting.candidate'), before, 'no duplicates');
+  // a new job and a new candidate from the source system: a pseudonym is assigned here
+  const extra = { requisitions: [{ ref: 'new-1', title: 'Night Shift Lead', dept: 'Operations', location: 'Kiel', openedOn: '2026-11-01', targetDays: 40 }],
+    candidates: [{ ref: 'cand-new-1', requisitionRef: 'new-1', stage: 'Applied', stageSince: '2026-11-03', appliedOn: '2026-11-03', years: 3, yearsLine: 1, cv: ['Warehouse, 3 years'] }] };
+  const second = json(imp(MGR, extra));
+  assert.deepEqual([second.requisitionsNew, second.candidatesNew], [1, 1]);
+  assert.match(sql("select id from recruiting.candidate where source_ref = 'sr:cand-new-1'"), /^C-5\d{3}$/);
+  assert.equal(json(imp(MGR, extra)).candidatesNew, 0, 'running it again duplicates nothing');
+  // a stage change moves stage_since, an unchanged stage keeps it
+  const moved = { ...extra, candidates: [{ ...extra.candidates[0], stage: 'Screening', stageSince: '2026-11-05' }] };
+  json(imp(MGR, moved));
+  assert.equal(sql("select stage || ' ' || stage_since from recruiting.candidate where source_ref = 'sr:cand-new-1'"), 'Screening 2026-11-05');
+  // someone else cannot import into another manager's requisition, and the tables still refuse personal data
+  assert.match(rule(imp('stranger@x.com', extra)), /another hiring manager/);
+  const dirty = { ...extra, candidates: [{ ...extra.candidates[0], cv: ['Mail anna@example.org'] }] };
+  assert.ok(rule(imp(MGR, dirty)), 'an e-mail address in CV text is refused by the table');
+  assert.match(rule(imp(MGR, { requisitions: 'x' })), /payload/);
+  for (const role of ['anon', 'authenticated']) assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_import(text,jsonb)', 'execute')`), 'f');
+});
+
+
+test('recruiting criteria: only the hiring manager sets them, ids are assigned, changes are logged, protected traits are refused', { skip }, () => {
+  const set = (actor, args) => `select public.recruiting_criterion_set(${q(actor)}, ${q(args.req ?? 'REQ-2206')}, ${args.id ? q(args.id) : 'null'}, ${args.must ?? false}, ${q(args.label ?? 'Knows payroll')}, ${q(args.kind ?? 'text')}, ${args.min ?? 'null'}, ${arr(args.needles ?? ['payroll'])}, ${arr(args.partial ?? [])})`;
+  sql("delete from recruiting.criterion where requisition_id = 'REQ-2206'");
+  const first = json(set(MGR, { must: true, label: 'Payroll experience' }));
+  assert.equal(first.id, 'M1'); assert.equal(first.created, true);
+  assert.equal(json(set(MGR, { must: true, label: 'German C1', needles: ['German native', 'German C1'] })).id, 'M2');
+  assert.equal(json(set(MGR, { must: false, label: 'SAP HCM', needles: ['HCM'] })).id, 'N1');
+  const years = json(set(MGR, { must: true, label: 'At least 3 years', kind: 'years', min: 3, needles: [] }));
+  assert.equal(years.id, 'M3');
+  assert.equal(json(set(MGR, { id: 'M1', must: true, label: 'Payroll experience (DE)', needles: ['payroll', 'Lohn'] })).created, false);
+  assert.equal(sql("select label from recruiting.criterion where requisition_id = 'REQ-2206' and crit_id = 'M1'"), 'Payroll experience (DE)');
+  assert.match(rule(set('stranger@x.com', { must: true })), /only the hiring manager/);
+  assert.match(rule(set('board@x.com', { must: true })), /only the hiring manager/, 'not even the board sets them');
+  assert.match(rule(set(MGR, { req: 'REQ-1901', must: true })), /only the hiring manager/, 'a closed requisition has no criteria to set');
+  assert.ok(rule(set(MGR, { must: false, label: 'Younger than 35', needles: ['young'] })), 'protected trait');
+  assert.match(rule(set(MGR, { id: 'M1', must: false })), /cannot change between/);
+  assert.match(rule(set(MGR, { id: 'M9', must: true })), /unknown criterion/);
+  assert.match(rule(set(MGR, { must: true, kind: 'weeks' })), /kind must be/);
+  assert.ok(rule(set(MGR, { must: true, label: 'x', kind: 'text', needles: [] })), 'a text criterion needs a needle');
+  assert.match(rule(`select public.recruiting_criterion_delete('stranger@x.com', 'REQ-2206', 'M1')`), /only the hiring manager/);
+  assert.equal(json(`select public.recruiting_criterion_delete(${q(MGR)}, 'REQ-2206', 'N1')`).deleted, true);
+  assert.match(rule(`select public.recruiting_criterion_delete(${q(MGR)}, 'REQ-2206', 'N1')`), /unknown criterion/);
+  // new ids never reuse a deleted number of the highest id
+  assert.equal(json(set(MGR, { must: false, label: 'Payroll software', needles: ['software'] })).id, 'N1');
+  const log = json(`select to_json(array_agg(action || ':' || crit_id order by id)) from recruiting.criterion_event where requisition_id = 'REQ-2206'`);
+  assert.ok(log.includes('deleted:N1') && log.includes('set:M1'));
+  assert.match(rule(`update recruiting.criterion_event set actor = 'x@y.de'`), /append only/);
+  assert.match(rule(`delete from recruiting.criterion_event`), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_criterion_set(text,text,text,boolean,text,text,integer,text[],text[])', 'execute')`), 'f');
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.criterion_event', 'select')`), 'f');
+  }
+  // the shortlist can use them: the snapshot of the manager carries the new criteria
+  assert.ok(snap(MGR).criteria['REQ-2206'].length >= 3);
+  const mine = json(`select public.recruiting_criteria_mine(${q(MGR)})`);
+  assert.ok(mine.some((r) => r.id === 'REQ-2206' && r.criteria.length >= 3 && r.criteria[0].must === true));
+  assert.ok(mine.every((r) => r.id !== 'REQ-1901'), 'closed requisitions are not listed');
+  assert.deepEqual(json(`select public.recruiting_criteria_mine('stranger@x.com')`), []);
 });
