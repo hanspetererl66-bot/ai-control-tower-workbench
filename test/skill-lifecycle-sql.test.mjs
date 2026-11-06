@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
 import { buildSeedSql } from '../scripts/recruiting-seed.mjs';
+import { createMockClient, mapToRecruiting } from '../connectors/_lib/server/smartrecruiters.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const dsn = process.env.SKILL_SQL_TEST_DSN?.trim();
@@ -458,4 +459,36 @@ test('recruiting: no personal data in CV text, no protected trait as a criterion
   assert.ok(rule(crit('Younger than 35', ['young'])), 'age as label');
   assert.ok(rule(crit('Has experience', ['married'])), 'protected trait as needle');
   assert.equal(rule(crit('Knows forklift safety', ['forklift'])), null, 'an ordinary criterion is fine');
+});
+
+
+test('recruiting import: a first import of the mock updates the sample rows, a new job is created, personal data never arrives', { skip }, async () => {
+  const fixture = JSON.parse(readFileSync(join(ROOT, 'connectors/_lib/server/smartrecruiters-mock.json'), 'utf8'));
+  const client = createMockClient(fixture);
+  const jobs = (await client.listJobs()).content;
+  const byJob = Object.fromEntries(await Promise.all(jobs.map(async (j) => [j.id, (await client.listCandidates(j.id)).content])));
+  const { payload } = mapToRecruiting(jobs, byJob, { asOf: '2026-11-06' });
+  const imp = (actor, p) => `select public.recruiting_import(${q(actor)}, ${q(JSON.stringify(p))}::jsonb)`;
+  const before = sql('select count(*) from recruiting.candidate');
+  const first = json(imp(MGR, payload));
+  assert.equal(first.requisitionsNew, 0); assert.equal(first.candidatesNew, 0);
+  assert.equal(first.requisitionsUpdated, 6); assert.equal(first.candidatesUpdated, 28);
+  assert.equal(sql('select count(*) from recruiting.candidate'), before, 'no duplicates');
+  // a new job and a new candidate from the source system: a pseudonym is assigned here
+  const extra = { requisitions: [{ ref: 'new-1', title: 'Night Shift Lead', dept: 'Operations', location: 'Kiel', openedOn: '2026-11-01', targetDays: 40 }],
+    candidates: [{ ref: 'cand-new-1', requisitionRef: 'new-1', stage: 'Applied', stageSince: '2026-11-03', appliedOn: '2026-11-03', years: 3, yearsLine: 1, cv: ['Warehouse, 3 years'] }] };
+  const second = json(imp(MGR, extra));
+  assert.deepEqual([second.requisitionsNew, second.candidatesNew], [1, 1]);
+  assert.match(sql("select id from recruiting.candidate where source_ref = 'sr:cand-new-1'"), /^C-5\d{3}$/);
+  assert.equal(json(imp(MGR, extra)).candidatesNew, 0, 'running it again duplicates nothing');
+  // a stage change moves stage_since, an unchanged stage keeps it
+  const moved = { ...extra, candidates: [{ ...extra.candidates[0], stage: 'Screening', stageSince: '2026-11-05' }] };
+  json(imp(MGR, moved));
+  assert.equal(sql("select stage || ' ' || stage_since from recruiting.candidate where source_ref = 'sr:cand-new-1'"), 'Screening 2026-11-05');
+  // someone else cannot import into another manager's requisition, and the tables still refuse personal data
+  assert.match(rule(imp('stranger@x.com', extra)), /another hiring manager/);
+  const dirty = { ...extra, candidates: [{ ...extra.candidates[0], cv: ['Mail anna@example.org'] }] };
+  assert.ok(rule(imp(MGR, dirty)), 'an e-mail address in CV text is refused by the table');
+  assert.match(rule(imp(MGR, { requisitions: 'x' })), /payload/);
+  for (const role of ['anon', 'authenticated']) assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_import(text,jsonb)', 'execute')`), 'f');
 });

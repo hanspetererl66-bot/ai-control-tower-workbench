@@ -15,6 +15,7 @@ export default function HiringApprovals({ onBack }: { onBack: () => void }) {
   const [busy, setBusy] = useState<number | null>(null);
   const [state, setState] = useState<{ kind: 'loading' | 'ready' | 'offline'; detail: string }>({ kind: 'loading', detail: 'Reading the proposals…' });
   const [error, setError] = useState('');
+  const [imp, setImp] = useState('');
 
   const load = useCallback(async () => {
     const host = window.host;
@@ -47,6 +48,20 @@ export default function HiringApprovals({ onBack }: { onBack: () => void }) {
     } finally { setBusy(null); }
   };
 
+  const runImport = async () => {
+    const host = window.host;
+    if (!host?.recruitingImport) return;
+    setBusy(-1); setError(''); setImp('');
+    try {
+      const res = await host.recruitingImport();
+      if (!res.ok) { setError(res.error); return; }
+      const d = res.data as Record<string, unknown> & { dropped?: Record<string, number> };
+      setImp(`Mock import done: ${d.requisitionsNew ?? 0} new and ${d.requisitionsUpdated ?? 0} updated requisitions, ${d.candidatesNew ?? 0} new and ${d.candidatesUpdated ?? 0} updated candidates; `
+        + `${d.dropped?.notInProcess ?? 0} candidates not in the process and ${d.dropped?.personalLines ?? 0} CV lines with personal data were left out.`);
+      await load();
+    } finally { setBusy(null); }
+  };
+
   return (
     <main className="develop develop-main hr">
       <div className="hr-head">
@@ -59,6 +74,12 @@ export default function HiringApprovals({ onBack }: { onBack: () => void }) {
         <button role="tab" aria-selected={tab === 'decided'} className={tab === 'decided' ? 'on' : ''} onClick={() => setTab('decided')}>Decided <b>{counts.released + counts.declined}</b></button>
         <button className="hr-reload" onClick={() => void load()}>Reload</button>
       </div>
+      <div className="hr-source">
+        <span className="hr-tag">Source: SmartRecruiters (mock)</span>
+        <button className="dialog-btn" disabled={busy === -1 || !window.host?.recruitingImport} onClick={() => void runImport()}>Import from the mock</button>
+        <span className="hr-basis">A made-up SmartRecruiters answer with invented people. Names, e-mail and phone numbers are removed before anything is saved. No real connection exists.</span>
+      </div>
+      {imp && <p className="hr-note" role="status">{imp}</p>}
       {state.kind !== 'ready' && <p className="hr-note" role="status">{state.detail}</p>}
       {error && <p className="hr-error" role="alert">{error}</p>}
       {state.kind === 'ready' && shown.length === 0 && <p className="hr-note">{tab === 'proposed' ? 'Nothing is waiting. Ask Joule in the chat, for example for the shortlist of a requisition.' : 'No decisions yet.'}</p>}

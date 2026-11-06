@@ -3,12 +3,13 @@
  *   npm run recruiting:seed                          writes examples/recruiting-workbench/seed.sql for the placeholder manager
  *   npm run recruiting:seed -- --manager you@x.com   writes the same file for YOUR e-mail (only that person can release proposals)
  *   npm run recruiting:seed -- --manager you@x.com --out /tmp/seed.sql
- * Then run the file in the Supabase SQL editor. It can be run again: rows are updated, nothing is duplicated, proposals are untouched.
+ * Needs migrations 028 and 029 first. Then run the file in the Supabase SQL editor. It can be run again: rows are updated, nothing is duplicated, proposals are untouched.
  * The data is invented: pseudonymous candidates, a fictional company. Do not use it for real people.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { candRef, jobRef } from './smartrecruiters-mock-build.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const PLACEHOLDER_MANAGER = 'hiring.manager@hanse-logistik.example';
@@ -27,14 +28,15 @@ export function buildSeedSql(data, { manager = PLACEHOLDER_MANAGER } = {}) {
     `-- Hiring manager of every sample requisition: ${mail}. Only this person can release or decline proposals.`,
     'begin;',
   ];
-  const reqs = data.jobs.map((j) => `(${[q(j.id), q(j.title), q(j.dept), q(j.location), q(mail), q(j.manager), date(j.opened), j.target, q('open'), 'null', 0, 0].join(', ')})`);
-  const closed = data.history.map((h) => `(${[q(h.id), q('Closed requisition (sample)'), q(h.dept), q(''), q(mail), q(''), date(minus(FILLED_ON, h.days)), h.days, q('filled'), date(FILLED_ON), h.offers, h.accepted].join(', ')})`);
+  // Open sample rows are marked as already imported from the SmartRecruiters mock (source_ref), so a first import updates them.
+  const reqs = data.jobs.map((j) => `(${[q(j.id), q(j.title), q(j.dept), q(j.location), q(mail), q(j.manager), date(j.opened), j.target, q('open'), 'null', 0, 0, q(`sr:${jobRef(j.id)}`)].join(', ')})`);
+  const closed = data.history.map((h) => `(${[q(h.id), q('Closed requisition (sample)'), q(h.dept), q(''), q(mail), q(''), date(minus(FILLED_ON, h.days)), h.days, q('filled'), date(FILLED_ON), h.offers, h.accepted, 'null'].join(', ')})`);
   out.push(
-    'insert into recruiting.requisition (id, title, dept, location, manager_email, manager_role, opened_on, target_days, status, filled_on, offers_made, offers_accepted) values',
+    'insert into recruiting.requisition (id, title, dept, location, manager_email, manager_role, opened_on, target_days, status, filled_on, offers_made, offers_accepted, source_ref) values',
     [...reqs, ...closed].join(',\n'),
     `on conflict (id) do update set title = excluded.title, dept = excluded.dept, location = excluded.location, manager_email = excluded.manager_email,
   manager_role = excluded.manager_role, opened_on = excluded.opened_on, target_days = excluded.target_days, status = excluded.status,
-  filled_on = excluded.filled_on, offers_made = excluded.offers_made, offers_accepted = excluded.offers_accepted;`,
+  filled_on = excluded.filled_on, offers_made = excluded.offers_made, offers_accepted = excluded.offers_accepted, source_ref = excluded.source_ref;`,
   );
   const crits = Object.entries(data.criteria).flatMap(([job, list]) => list.map((c) =>
     `(${[q(job), q(c.id), c.must, q(c.text), q(c.kind === 'years' ? 'years' : 'text'), c.kind === 'years' ? c.min : 'null', arr(c.needles), arr(c.partial)].join(', ')})`));
@@ -44,11 +46,11 @@ export function buildSeedSql(data, { manager = PLACEHOLDER_MANAGER } = {}) {
     'on conflict (requisition_id, crit_id) do update set must = excluded.must, label = excluded.label, kind = excluded.kind, min_years = excluded.min_years, needles = excluded.needles, partial = excluded.partial;',
   );
   const cands = data.candidates.map((c) =>
-    `(${[q(c.id), q(c.job), q(c.stage), date(c.since), date(c.applied), c.years ?? 'null', c.yearsLine ?? 'null', arr(c.cv)].join(', ')})`);
+    `(${[q(c.id), q(c.job), q(c.stage), date(c.since), date(c.applied), c.years ?? 'null', c.yearsLine ?? 'null', arr(c.cv), q(`sr:${candRef(c.id)}`)].join(', ')})`);
   out.push(
-    'insert into recruiting.candidate (id, requisition_id, stage, stage_since, applied_on, years, years_line, cv_lines) values',
+    'insert into recruiting.candidate (id, requisition_id, stage, stage_since, applied_on, years, years_line, cv_lines, source_ref) values',
     cands.join(',\n'),
-    'on conflict (id) do update set requisition_id = excluded.requisition_id, stage = excluded.stage, stage_since = excluded.stage_since, applied_on = excluded.applied_on, years = excluded.years, years_line = excluded.years_line, cv_lines = excluded.cv_lines;',
+    'on conflict (id) do update set requisition_id = excluded.requisition_id, stage = excluded.stage, stage_since = excluded.stage_since, applied_on = excluded.applied_on, years = excluded.years, years_line = excluded.years_line, cv_lines = excluded.cv_lines, source_ref = excluded.source_ref;',
     'commit;',
     '',
   );

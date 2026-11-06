@@ -19,8 +19,16 @@ Stand 06.11.2026. Gehört zum Space **Recruiting Workbench** (`examples/recruiti
 3. Connector `werkbank-workspace` neu installieren (die Werkzeugliste wird bei der Installation gespeichert).
 4. Im Chat fragen, z. B. "Which requisitions are late?" oder "Show the shortlist for REQ-2204".
 
+## SmartRecruiters (Mock)
+Es gibt **keine echte Verbindung**; Hans-Peter hat keinen Zugang und wollte keinen anfragen. Gebaut ist der ganze Weg gegen einen Mock:
+- `connectors/_lib/server/smartrecruiters.mjs`: Mock-Client (liest `smartrecruiters-mock.json`, erzeugt mit `npm run smartrecruiters:mock`; Form wie Antworten der Customer API, **erfundene** Namen, E-Mails und Telefonnummern), `mapToRecruiting` (kopiert nur erlaubte Felder, Statusabbildung NEW→Applied, IN_REVIEW/PHONE_SCREEN→Screening, INTERVIEW→Interview, OFFER→Offer; HIRED, REJECTED, WITHDRAWN werden nicht importiert; CV-Zeilen mit E-Mail, Link oder Telefon werden gestrichen und gezählt) und `importFromSmartRecruiters`.
+- Migration `20261106_029_recruiting_import.sql` (**von Hand anzuwenden, nach 028**): `source_ref` an Stellen und Kandidaten, Funktion `recruiting_import` (nur service_role; neue Kandidaten bekommen das Pseudonym C-5001 ff.; ein zweiter Lauf aktualisiert statt zu doppeln; `stage_since` ändert sich nur bei neuer Stufe; fremde Stellen anderer Hiring Manager werden abgelehnt). `seed.sql` markiert die Beispielzeilen als schon importiert, ein erster Mock-Import ändert sie also nur, statt Dubletten anzulegen.
+- App: Knopf **Import from the mock** in Hiring approvals (IPC `recruiting-import`, nur der Mock, nie das Netz).
+- `createHttpClient` ist die Vorlage für später (Header `X-SmartToken`, Basis `api.smartrecruiters.com`, Key geht nur an smartrecruiters.com). **Pfade und Feldnamen sind nicht gegen die echte API geprüft**, nur mit Fake-`fetch` getestet, und sie ist nirgends angeschlossen.
+- **Offen für eine echte Anbindung:** Der Mock liefert CV-Text (`resumeLines`), die echte API liefert Anhänge; dafür bräuchte es eine Textextraktion samt Datenschutzklärung. Kriterien der Hiring Manager kommen nicht aus SmartRecruiters, sondern müssen bei uns gesetzt werden (eine Oberfläche dafür gibt es noch nicht, importierte neue Stellen haben deshalb keine Kriterien und keine Shortlist).
+
 ## Grenzen
-- **Kein Import aus SmartRecruiters** (die API ist nicht geprüft); die Daten kommen aus dem Seed. Freigeben ändert in keinem Recruiting-System etwas.
+- **Kein echter Import aus SmartRecruiters**, nur der Mock (siehe oben); die Daten kommen aus dem Seed oder dem Mock. Freigeben ändert in keinem Recruiting-System etwas.
 - **Freigabe-Oberfläche:** Admin → Kachel "Hiring approvals" (`src/ui/HiringApprovals.tsx`, Logik `src/hiring.ts`). Reiter Waiting/Decided, Release oder Decline mit Notiz; Weg: IPC `recruiting-proposals` / `recruiting-decide` → `work-store.mjs` (feste Filter, E-Mail erzwungen) → `decideProposal`. Entscheiden klappt nur mit der E-Mail, die als Hiring Manager im Seed steht (die Datenbank sagt sonst "only the hiring manager"). Die Kachel liegt im Admin-Bereich, ist aber nicht an eine Admin-Rolle gebunden. Der Space zeigt weiter eine Simulation.
 - Identität nur die E-Mail (kein SSO), wie bei den anderen Tabellen.
 - Kriterienprüfung ist Textsuche ohne Synonyme. Die Schutzlisten (Merkmale, Telefonformate) sind Wortlisten und Muster, keine Garantie.

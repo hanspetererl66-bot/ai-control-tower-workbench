@@ -7,6 +7,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connectors/_lib/server/work-items.mjs';
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
+import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
 import { createRecruitingHandlers, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
@@ -77,6 +78,12 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
       const clean = {};
       for (const [k, v] of Object.entries(args && typeof args === 'object' ? args : {})) if (PROPOSAL_LIST_ARGS.has(k)) clean[k] = v;
       return createRecruitingHandlers(rpc).recruiting_list_proposals({ limit: 200, ...clean, actor: email });
+    },
+    /** Import from SmartRecruiters. Only the MOCK client exists in the app today (no account, no key): it reads a fixture, never the network. */
+    async importSmartRecruiters() {
+      const { rpc, email } = connect();
+      const fixture = JSON.parse(readFileSync(new URL('../connectors/_lib/server/smartrecruiters-mock.json', import.meta.url), 'utf8'));
+      return importFromSmartRecruiters({ client: createMockClient(fixture), rpc, actor: email });
     },
     /** The hiring manager's decision after a click. Not a tool: the agent cannot call this. The database only accepts the manager of the requisition. */
     async decideProposal(id, decision, note) {

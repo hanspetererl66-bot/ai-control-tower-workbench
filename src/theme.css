@@ -5087,3 +5087,4 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .hr-error { color: var(--lv-red); }
 .hr-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .hr-actions input { flex: 1 1 200px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: inherit; }
+.hr-source { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px; }

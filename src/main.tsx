@@ -28,6 +28,7 @@ declare global {
       jobRunsRecord?: (runs: Array<Record<string, unknown>>) => Promise<{ ok: true; data: { received: number; stored: number } } | { ok: false; error: string }>;
       jobRunsList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; failed: number; runs: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
       recruitingProposals?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; proposals: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
+      recruitingImport?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       recruitingDecide?: (id: number, decision: 'released' | 'declined', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';

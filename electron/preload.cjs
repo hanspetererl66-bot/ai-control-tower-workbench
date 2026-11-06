@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('host', {
   jobRunsRecord: (runs) => ipcRenderer.invoke('job-runs-record', runs),
   jobRunsList: (args) => ipcRenderer.invoke('job-runs-list', args),
   recruitingProposals: (args) => ipcRenderer.invoke('recruiting-proposals', args),
+  recruitingImport: () => ipcRenderer.invoke('recruiting-import'),
   recruitingDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-decide', id, decision, note),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 
