@@ -204,3 +204,54 @@ test('recruiting-workbench closed counts, channels and rounds are consistent', (
   assert.ok(!('rounds' in data) && !('roundLabels' in data), 'rounds are no longer a tag');
   assert.ok(!/@|\+?\d{6,}/.test(JSON.stringify(data.consent)), 'no contact data');
 });
+
+// ---- Job posting (the step before the process) ----
+const tplStd = data.posting.templates.find((t) => t.kind === 'standard' || t.id === 'tpl-sap');
+const briefFor = (job, extra = {}) => ({ ...L.postingBrief(job), role: 'You steer the regional freight network.', pay: '60,000 to 75,000 EUR', ...extra });
+
+test('job posting: the standard template is the one the database seeds, its locked sections and the channels line up', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261107_033_job_postings.sql'), 'utf8');
+  const seed = JSON.parse(/\$json\$(.*?)\$json\$/s.exec(sql)[1]);
+  assert.deepEqual(seed.map((s) => [s.key, s.label, !!s.locked, s.text]), tplStd.sections.map((s) => [s.key, s.label, !!s.locked, s.text]));
+  assert.ok(tplStd.sections.some((s) => s.locked));
+  const sources = new Set(Object.values(data.channels).flatMap((m) => Object.keys(m)));
+  for (const c of data.posting.channels) assert.ok(sources.has(c.source), `${c.id}: source "${c.source}" must be a channel name in the dashboard`);
+  for (const t of data.posting.templates) for (const s of t.sections.filter((x) => x.locked)) {
+    assert.equal(s.text, tplStd.sections.find((x) => x.key === s.key).text, `${t.id}: ${s.key} is locked`);
+  }
+});
+
+test('job posting: a draft fills the requisition, lints clean, and the template round trip returns the template', () => {
+  const b = briefFor('REQ-2203');
+  const draft = L.draftPosting(tplStd, b);
+  assert.deepEqual(L.lintPosting(draft, tplStd), []);
+  assert.deepEqual(L.templatize(draft.sections, b).map((s) => s.text), tplStd.sections.map((s) => s.text));
+});
+
+test('job posting: lint finds a missing marker, an open field, a trait, a changed locked text; empty pay is only a warning', () => {
+  const b = briefFor('REQ-2203');
+  const edit = (key, text) => ({ sections: L.draftPosting(tplStd, b).sections.map((s) => (s.key === key ? { ...s, text } : s)) });
+  const find = (post, level) => L.lintPosting(post, tplStd).filter((f) => f.level === level);
+  assert.ok(find(edit('title', 'Planner'), 'error').some((f) => f.key === 'title'));
+  assert.ok(find(edit('role', 'Lead {{role}}'), 'error').some((f) => f.key === 'role'));
+  assert.ok(find(edit('role', 'We look for a young, dynamic person.'), 'error').some((f) => f.key === 'role'));
+  const lockedKey = tplStd.sections.find((s) => s.locked).key;
+  assert.ok(find(edit(lockedKey, 'Changed.'), 'error').some((f) => f.key === lockedKey));
+  assert.ok(!find(edit('pay', ''), 'error').length && find(edit('pay', ''), 'warn').some((f) => f.key === 'pay'));
+  assert.ok(find(edit('apply', 'Apply here: {{apply}}'), 'error').length === 0, '{{apply}} is filled per channel');
+});
+
+test('job posting: channel texts respect each limit, carry a link with the source, and publishing needs release and a clean text', () => {
+  const b = briefFor('REQ-2203');
+  const post = L.draftPosting(tplStd, b);
+  for (const ch of data.posting.channels) {
+    const pk = L.channelPackage(post, ch, 'REQ-2203');
+    assert.equal(pk.fits, pk.length <= ch.limit);
+    assert.ok(pk.text.includes(data.posting.apply + 'REQ-2203') || ch.format === 'short' || pk.link.includes('?src='));
+    assert.ok(!/\{\{apply\}\}/.test(pk.text), 'the apply field is filled');
+  }
+  const ids = data.posting.channels.map((c) => c.id);
+  assert.equal(L.publishReady(post, tplStd, ids, true, 'REQ-2203').ok, true);
+  assert.equal(L.publishReady(post, tplStd, ids, false, 'REQ-2203').ok, false, 'not released');
+  assert.equal(L.publishReady(post, tplStd, [], true, 'REQ-2203').ok, false, 'no channel');
+});

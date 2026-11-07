@@ -864,5 +864,359 @@
       "Social": 0,
       "Referral": 1
     }
+  },
+  "posting": {
+    "note": "Sample template and sample channels. The SAP standard template here is a fictional stand-in with the same kind of structure; replace its text with your real template. No channel is connected: publishing is simulated.",
+    "apply": "https://careers.hanse-logistik.example/jobs/",
+    "templates": [
+      {
+        "id": "tpl-sap",
+        "name": "SAP standard (sample)",
+        "kind": "standard",
+        "owner": null,
+        "shared": true,
+        "uses": 13,
+        "lastUsed": "2026-10-19",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, a training budget and a team that shares what it knows."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      },
+      {
+        "id": "tpl-ops",
+        "name": "Operations – shift roles",
+        "kind": "saved",
+        "owner": "Head of Operations Hamburg",
+        "shared": true,
+        "uses": 6,
+        "lastUsed": "2026-10-05",
+        "basedOn": "tpl-sap",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "safety",
+            "label": "Safety first",
+            "locked": false,
+            "text": "Every new colleague gets a site induction in the first week and works with a mentor until the induction is signed off."
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, shift allowances as set by the works agreement, paid training for equipment licences."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      },
+      {
+        "id": "tpl-it",
+        "name": "IT – SAP consulting",
+        "kind": "saved",
+        "owner": "Head of IT Business Applications",
+        "shared": true,
+        "uses": 3,
+        "lastUsed": "2026-08-24",
+        "basedOn": "tpl-sap",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "tools",
+            "label": "Tools you will work with",
+            "locked": false,
+            "text": "SAP S/4HANA, SAP Business Technology Platform, Git, Jira."
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, a certification budget and two days a month for your own learning."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      },
+      {
+        "id": "tpl-svc",
+        "name": "Service – DE/EN agents",
+        "kind": "saved",
+        "owner": "Team lead Customer Service",
+        "shared": false,
+        "uses": 4,
+        "lastUsed": "2026-10-12",
+        "basedOn": "tpl-sap",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "langs",
+            "label": "Languages",
+            "locked": false,
+            "text": "You work in German and English. Both are used every day."
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, a structured two-week onboarding and a team that rotates the difficult calls."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      }
+    ],
+    "channels": [
+      {
+        "id": "sap-portal",
+        "name": "SAP career portal",
+        "kind": "own",
+        "format": "full",
+        "limit": 12000,
+        "source": "Career site",
+        "adapter": "Own portal"
+      },
+      {
+        "id": "linkedin",
+        "name": "LinkedIn",
+        "kind": "portal",
+        "format": "full",
+        "limit": 6000,
+        "source": "LinkedIn",
+        "adapter": "Job board API"
+      },
+      {
+        "id": "xing",
+        "name": "Xing",
+        "kind": "portal",
+        "format": "full",
+        "limit": 6000,
+        "source": "Job board",
+        "adapter": "Job board API"
+      },
+      {
+        "id": "monster",
+        "name": "Monster.de",
+        "kind": "portal",
+        "format": "full",
+        "limit": 6000,
+        "source": "Job board",
+        "adapter": "Job board API"
+      },
+      {
+        "id": "social",
+        "name": "Company social posts",
+        "kind": "social",
+        "format": "short",
+        "limit": 700,
+        "source": "Social",
+        "adapter": "Social scheduler"
+      }
+    ],
+    "briefs": {
+      "REQ-2201": {
+        "role": "You lead a shift of about twenty people in the Hamburg warehouse: planning the shift, keeping inbound and outbound on time, and coaching the team."
+      },
+      "REQ-2202": {
+        "role": "You load, unload and move goods safely in the Bremen warehouse and keep your equipment checked and clean."
+      },
+      "REQ-2203": {
+        "role": "You turn planning data into forecasts and clear recommendations for the supply chain planners in Hamburg."
+      },
+      "REQ-2204": {
+        "role": "You advise internal teams on SAP logistics processes and deliver changes from design to go-live."
+      },
+      "REQ-2205": {
+        "role": "You answer customer questions by phone and e-mail in German and English and solve them on the first contact where you can."
+      },
+      "REQ-2206": {
+        "role": "You run the monthly payroll for our sites in Hamburg and answer payroll questions from employees."
+      }
+    }
   }
 }

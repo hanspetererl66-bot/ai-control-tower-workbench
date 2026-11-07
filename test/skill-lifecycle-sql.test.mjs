@@ -544,14 +544,93 @@ test('recruiting stages: the three interview rounds are stages, an old "Intervie
     update recruiting.stage_target set ord = ord + 20 where stage in ('Offer');
     insert into recruiting.stage_target (stage, days, ord) values ('Interview', 7, 3 + 0) on conflict do nothing`.replace("3 + 0", '13'));
   sql("update recruiting.candidate set stage = 'Interview' where id in ('C-4201', 'C-4101')");
-  run(['-f', join(ROOT, 'supabase/migrations/20261106_031_recruiting_stages.sql')]);
+  run(['-f', join(ROOT, 'supabase/migrations/20261106_032_recruiting_stages.sql')]);
   assert.equal(order(), want);
   assert.equal(sql("select stage from recruiting.candidate where id = 'C-4201'"), 'Online interview');
   assert.equal(sql("select stage from recruiting.candidate where id = 'C-4101'"), 'Final conversation');
-  run(['-f', join(ROOT, 'supabase/migrations/20261106_031_recruiting_stages.sql')]);
+  run(['-f', join(ROOT, 'supabase/migrations/20261106_032_recruiting_stages.sql')]);
   assert.equal(order(), want, 'a second run changes nothing');
   assert.equal(sql("select count(*) from recruiting.candidate where stage not in (select stage from recruiting.stage_target)"), '0');
   const snap = json("select public.recruiting_snapshot('board@x.com')");
   assert.deepEqual(snap.stages, ['Applied', 'Screening', 'Online interview', 'In-person interview', 'Final conversation', 'Offer']);
   assert.equal(snap.sla['Final conversation'], 5);
+});
+
+const POST_LOGIC = makeLogic({ ...recData, company: 'Hanse Logistik' });
+const stdTemplate = () => json("select to_json(t) from recruiting.posting_template t where kind = 'standard'");
+const goodSections = (job = 'REQ-2206', extra = {}) => {
+  const std = stdTemplate();
+  const b = POST_LOGIC.postingBrief(job);
+  b.role = 'You plan and steer our regional freight network.'; b.pay = '60,000 to 75,000 EUR'; b.must = ['Payroll experience']; b.nice = ['SAP knowledge'];
+  return POST_LOGIC.draftPosting({ ...std, sections: std.sections }, { ...b, ...extra }).sections;
+};
+const pcreate = (actor, sections, job = 'REQ-2206', tpl = null) => `select public.recruiting_posting_create(${q(actor)}, ${q(job)}, ${tpl ?? '(select id from recruiting.posting_template where kind = \'standard\')'}, ${q(JSON.stringify(sections))}::jsonb)`;
+const pid = (actor, sections, job) => json(pcreate(actor, sections, job)).id;
+
+test('job postings: draft, review, release and mock publication follow the rules; only the hiring manager decides', { skip }, () => {
+  const sections = goodSections();
+  const id = pid(MGR, sections);
+  assert.equal(json(`select public.recruiting_posting_context(${q(MGR)})`).templates.some((t) => t.kind === 'standard'), true);
+  // someone else cannot see or edit it
+  assert.match(rule(`select public.recruiting_posting_update('stranger@x.com', ${id}, ${q(JSON.stringify(sections))}::jsonb)`), /no access/);
+  assert.match(rule(`select public.recruiting_posting_release(${q(MGR)}, ${id})`), /only a posting in review/);
+  assert.match(rule(`select public.recruiting_posting_publish(${q(MGR)}, ${id}, '[{"channel":"sap-portal","chars":500}]')`), /only a released/);
+  json(`select public.recruiting_posting_submit(${q(MGR)}, ${id})`);
+  // the board can see it but not release it
+  assert.match(rule(`select public.recruiting_posting_release('board@x.com', ${id})`), /only the hiring manager/);
+  assert.match(rule(`select public.recruiting_posting_release('stranger@x.com', ${id})`), /only the hiring manager/);
+  json(`select public.recruiting_posting_release(${q(MGR)}, ${id}, 'ok')`);
+  assert.match(rule(`select public.recruiting_posting_update(${q(MGR)}, ${id}, ${q(JSON.stringify(sections))}::jsonb)`), /only a draft/);
+  assert.match(rule(`update recruiting.job_posting set sections = '[]'::jsonb where id = ${id}`), /./);
+  // mock publication: too long is refused, a repeat changes nothing
+  assert.match(rule(`select public.recruiting_posting_publish(${q(MGR)}, ${id}, '[{"channel":"sap-portal","chars":999999}]')`), /accepts up to/);
+  assert.match(rule(`select public.recruiting_posting_publish(${q(MGR)}, ${id}, '[{"channel":"nope","chars":50}]')`), /unknown or inactive/);
+  const first = json(`select public.recruiting_posting_publish(${q(MGR)}, ${id}, '[{"channel":"sap-portal","chars":900}]')`);
+  assert.deepEqual([first.mode, first.simulated], ['mock', ['sap-portal']]);
+  assert.deepEqual(json(`select public.recruiting_posting_publish(${q(MGR)}, ${id}, '[{"channel":"sap-portal","chars":900}]')`).simulated, []);
+  assert.match(rule(`insert into recruiting.posting_publication (posting_id, channel_id, mode, status, chars, published_by) values (${id}, 'xing', 'live', 'sent', 10, 'a@b.co')`), /./);
+  assert.match(rule(`select public.recruiting_posting_withdraw(${q(MGR)}, ${id}, '')`), /reason/);
+  json(`select public.recruiting_posting_withdraw(${q(MGR)}, ${id}, 'role filled')`);
+  const log = json(`select to_json(array_agg(event order by id)) from recruiting.posting_event where posting_id = ${id}`);
+  assert.deepEqual(log, ['drafted', 'submitted', 'released', 'published', 'withdrawn']);
+  assert.match(rule(`delete from recruiting.posting_event`), /append only/);
+});
+
+test('job postings: the text checks run in the database (marker, empty field, traits, credentials) and locked sections stay word for word', { skip }, () => {
+  const good = goodSections();
+  const withText = (key, text) => good.map((s) => (s.key === key ? { ...s, text } : s));
+  assert.match(rule(pcreate(MGR, withText('title', 'Logistics Planner'))), /gender-neutral marker/, 'no marker: refused already as a draft');
+  const hole = pid(MGR, withText('role', '{{role}}'));
+  assert.match(rule(`select public.recruiting_posting_submit(${q(MGR)}, ${hole})`), /empty|role|fill/i);
+  assert.match(rule(pcreate(MGR, withText('role', 'We want a young, energetic person.'))), /./, 'a personal trait is refused');
+  assert.match(rule(pcreate(MGR, withText('role', 'password=hunter2hunter2 for the portal'))), /./, 'credentials are refused');
+  const lockedKey = good.find((s) => s.locked).key;
+  assert.match(rule(pcreate(MGR, withText(lockedKey, 'Changed company text'))), /locked|word/i);
+  assert.match(rule(pcreate('stranger@x.com', good)), /access/);
+  assert.match(rule(pcreate(MGR, good, 'REQ-1901')), /not open|access/);
+});
+
+test('job postings: templates keep the locked sections, the standard cannot change, names are unique per owner, API roles have no access', { skip }, () => {
+  const std = stdTemplate();
+  const mine = std.sections.filter((s) => !s.locked).slice(0, 2).concat(std.sections.filter((s) => s.locked));
+  const name = `Test template ${Date.now()}`;
+  const saved = json(`select public.recruiting_posting_template_save(${q(MGR)}, ${q(name)}, ${q(JSON.stringify(mine))}::jsonb, false)`);
+  assert.ok(saved.id);
+  assert.match(rule(`select public.recruiting_posting_template_save(${q(MGR)}, ${q(name)}, ${q(JSON.stringify(mine))}::jsonb, false)`), /already have/);
+  const changed = mine.map((s) => (s.locked ? { ...s, text: `${s.text} extra` } : s));
+  assert.match(rule(`select public.recruiting_posting_template_save(${q(MGR)}, ${q(name + ' b')}, ${q(JSON.stringify(changed))}::jsonb, false)`), /./);
+  assert.match(rule(`select public.recruiting_posting_template_save(${q(MGR)}, ${q(name + ' c')}, ${q(JSON.stringify(mine.filter((s) => !s.locked)))}::jsonb, false)`), /./, 'dropping the locked sections is refused');
+  assert.match(rule(`update recruiting.posting_template set sections = '[]'::jsonb where kind = 'standard'`), /./);
+  assert.match(rule(`select public.recruiting_posting_template_delete(${q(MGR)}, ${std.id})`), /standard/);
+  assert.match(rule(`select public.recruiting_posting_template_delete('other@x.com', ${saved.id})`), /owner/);
+  // a private template is invisible to others, a shared one is not
+  assert.equal(json(`select public.recruiting_posting_context('other@x.com')`).templates.some((t) => t.id === saved.id), false);
+  assert.equal(json(`select public.recruiting_posting_template_delete(${q(MGR)}, ${saved.id})`).removed, true);
+  for (const role of ['anon', 'authenticated']) {
+    for (const fn of ['recruiting_posting_context(text)', 'recruiting_posting_release(text,bigint,text)', 'recruiting_posting_publish(text,bigint,jsonb)', 'recruiting_posting_create(text,text,bigint,jsonb)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${fn}', 'execute')`), 'f', `${role} ${fn}`);
+    }
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.job_posting', 'select')`), 'f');
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_posting_publish(text,bigint,jsonb)', 'execute')"), 't');
 });

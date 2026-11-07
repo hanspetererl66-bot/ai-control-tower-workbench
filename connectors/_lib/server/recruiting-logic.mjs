@@ -156,7 +156,91 @@ export function makeLogic(D) {
     items.push({ head: 'Waiting for your release', text: pr.length + ' proposals from Joule wait in Approvals. Nothing has been changed.' });
     return items;
   }
-  return { STAGES: STAGES, job: job, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
+  // ---------- Job posting (step before the process): fill a template from the requisition, check it, prepare one text per channel ----------
+  // Joule drafts and prepares; it never publishes. Locked sections of the standard template (company text, equal-opportunity text) stay
+  // word for word. Pay is never filled in by Joule: if the person leaves it empty, the posting is flagged.
+  var POSTING_GENDER = /\((?:m\/f\/d|m\/w\/d|f\/m\/d|w\/m\/d|all genders|gn)\)/i;
+  var POSTING_TRAITS = /\b(age|aged|young|younger|older|gender|sex|sexual|nationality|ethnicity|ethnic|religion|religious|marital|married|pregnant|pregnancy|disability|photo|born|alter|geschlecht|staatsangeh\w*|familienstand|schwanger\w*|behinderung|digital natives?|junges team|young team)\b/i;
+  var POSTING_HOLES = /\{\{\s*([a-z_]+)\s*\}\}/g;
+  function bullets(list) { return list.map(function (t) { return '• ' + t; }).join('\n'); }
+  function companyName() { return String((D.company || '')).replace(/\s*\(fictional\)\s*/i, '').trim() || 'Our company'; }
+  /** What a requisition already says: title, department, place, team, and its criteria as bullet lists. */
+  function postingBrief(jobId) {
+    var j = job(jobId), cr = (D.criteria && D.criteria[jobId]) || [];
+    var extra = ((D.posting && D.posting.briefs) || {})[jobId] || {};
+    return { job: j ? j.id : '', title: j ? j.title : '', dept: j ? j.dept : '', location: j ? j.location : '', team: j ? j.manager : '',
+      role: extra.role || '', must: cr.filter(function (c) { return c.must; }).map(function (c) { return c.text; }),
+      nice: cr.filter(function (c) { return !c.must; }).map(function (c) { return c.text; }), pay: '' };
+  }
+  function templateById(id) { return ((D.posting && D.posting.templates) || []).filter(function (t) { return t.id === id; })[0]; }
+  function fillText(text, b) {
+    var vals = { company: companyName(), title: b.title, dept: b.dept, location: b.location, team: b.team, role: b.role,
+      must: b.must && b.must.length ? bullets(b.must) : '', nice: b.nice && b.nice.length ? bullets(b.nice) : '', pay: b.pay };
+    return text.replace(POSTING_HOLES, function (all, k) { return k === 'apply' ? all : (vals[k] ? vals[k] : all); });
+  }
+  /** A draft from a template: every {{field}} the brief can fill is filled; what it cannot fill stays visible as {{field}}. */
+  function draftPosting(tpl, b) {
+    return { job: b.job || '', template: tpl.id, sections: tpl.sections.map(function (s) {
+      return { key: s.key, label: s.label, locked: !!s.locked, text: fillText(s.text, b) };
+    }) };
+  }
+  function lintPosting(post, tpl) {
+    var f = [];
+    var t = post.sections.filter(function (s) { return s.key === 'title'; })[0];
+    if (!t || !t.text.trim()) f.push({ level: 'error', key: 'title', msg: 'The posting needs a title.' });
+    else if (!POSTING_GENDER.test(t.text)) f.push({ level: 'error', key: 'title', msg: 'The title needs a gender-neutral marker such as (m/f/d).' });
+    post.sections.forEach(function (s) {
+      var holes = []; s.text.replace(POSTING_HOLES, function (all, k) { if (k !== 'apply') holes.push(k); return all; });
+      if (holes.length) f.push({ level: 'error', key: s.key, msg: '“' + s.label + '” still has an empty field: ' + holes.map(function (h) { return '{{' + h + '}}'; }).join(', ') + '.' });
+      if (!s.locked && POSTING_TRAITS.test(s.text)) f.push({ level: 'error', key: s.key, msg: '“' + s.label + '” names a personal trait (' + s.text.match(POSTING_TRAITS)[0] + '). Describe the work and the skills instead.' });
+      if (s.key === 'pay' && !s.text.trim()) f.push({ level: 'warn', key: s.key, msg: 'No pay range. Check whether your country or your company requires one in the posting.' });
+      if (s.text.length > 2500) f.push({ level: 'warn', key: s.key, msg: '“' + s.label + '” is long (' + s.text.length + ' characters). Short sections are read more often.' });
+    });
+    if (tpl) tpl.sections.forEach(function (ts) {
+      if (!ts.locked) return;
+      var s = post.sections.filter(function (x) { return x.key === ts.key; })[0];
+      if (!s || s.text !== fillText(ts.text, { title: '', dept: '', location: '', team: '', role: '', must: [], nice: [], pay: '' })) f.push({ level: 'error', key: ts.key, msg: '“' + ts.label + '” is a locked section of the standard template and has been changed.' });
+    });
+    return f;
+  }
+  /** A finished posting back into a template: what came from the brief becomes {{field}} again, so the template works for the next job. */
+  function templatize(sections, b) {
+    var pairs = [];
+    if (b.must && b.must.length) pairs.push([bullets(b.must), '{{must}}']);
+    if (b.nice && b.nice.length) pairs.push([bullets(b.nice), '{{nice}}']);
+    [['role', 'role'], ['team', 'team'], ['location', 'location'], ['dept', 'dept'], ['title', 'title'], ['pay', 'pay']].forEach(function (k) { if (b[k[0]]) pairs.push([b[k[0]], '{{' + k[1] + '}}']); });
+    pairs.push([companyName(), '{{company}}']);
+    return sections.map(function (s) {
+      var t = s.text;
+      pairs.forEach(function (p) { t = t.split(p[0]).join(p[1]); });
+      return { key: s.key, label: s.label, locked: !!s.locked, text: t };
+    });
+  }
+  /** One text per channel. A short channel gets title, place, three must-haves and the link; a full channel gets the whole posting. */
+  function channelPackage(post, ch, jobId) {
+    var link = ((D.posting && D.posting.apply) || '') + (jobId || post.job || 'new') + '?src=' + encodeURIComponent(ch.id);
+    var get = function (k) { var s = post.sections.filter(function (x) { return x.key === k; })[0]; return s ? s.text : ''; };
+    var text;
+    if (ch.format === 'short') {
+      var must = get('must').split('\n').filter(function (l) { return l.indexOf('•') === 0; }).slice(0, 3).join('\n');
+      text = get('title') + '\n' + must + '\nApply: ' + link;
+    } else {
+      text = post.sections.map(function (s) { return s.key === 'title' ? s.text : s.label + '\n' + s.text; }).join('\n\n').replace(/\{\{\s*apply\s*\}\}/g, link);
+    }
+    return { channel: ch.id, name: ch.name, source: ch.source, text: text, length: text.length, limit: ch.limit, fits: text.length <= ch.limit, link: link };
+  }
+  /** What stands between a draft and "publish": the person's release, a clean check, a chosen channel, a text that fits. */
+  function publishReady(post, tpl, channelIds, released, jobId) {
+    var why = [];
+    if (lintPosting(post, tpl).some(function (x) { return x.level === 'error'; })) why.push('The check still has errors.');
+    if (!released) why.push('The hiring manager has not released the posting.');
+    if (!channelIds.length) why.push('No channel is selected.');
+    (D.posting.channels || []).filter(function (c) { return channelIds.indexOf(c.id) >= 0; }).forEach(function (c) {
+      var p = channelPackage(post, c, jobId); if (!p.fits) why.push(c.name + ': the text is ' + (p.length - p.limit) + ' characters too long.');
+    });
+    return { ok: !why.length, why: why };
+  }
+  return { STAGES: STAGES, job: job, postingBrief: postingBrief, templateById: templateById, fillText: fillText, draftPosting: draftPosting, templatize: templatize, lintPosting: lintPosting, channelPackage: channelPackage, publishReady: publishReady, companyName: companyName, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
     jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, topMatches: topMatches, proposals: proposals, funnel: funnel,
     stalledList: stalledList, bestWaiting: bestWaiting, brief: brief, daysBetween: daysBetween };
 }
