@@ -76,3 +76,13 @@ test('the page keeps the Space rules: no network, no storage, tokens only, only 
   const types = [...own.matchAll(/type: '(ha:[a-z-]+|wb:ask)'/g)].map((m) => m[1]).sort();
   assert.deepEqual([...new Set(types)], ['ha:decide-request', 'ha:list-request', 'ha:open-tools', 'wb:ask']);
 });
+
+test('notice events in the sample log are valid and every event has a label', () => {
+  const labels = [...page.matchAll(/(\w+): '[A-Z][^']*'/g)].map((m) => m[1]);
+  for (const r of data.requests) {
+    assert.deepEqual([...r.events].sort((a, b) => a.at.localeCompare(b.at)).map((e) => e.event), r.events.map((e) => e.event), `${r.id}: log in time order`);
+    for (const e of r.events) assert.ok(labels.includes(e.event), `${e.event} has a label`);
+    assert.equal(r.events[0].event, 'requested');
+    if (r.status === 'pending') assert.ok(!r.events.some((e) => e.event === 'informed'), 'nobody is told a result before it exists');
+  }
+});

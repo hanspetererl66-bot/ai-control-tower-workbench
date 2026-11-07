@@ -30,7 +30,7 @@ export function pickHireRequests(raw: unknown): Record<string, unknown>[] {
       evidence: str(r.evidence, 600), status: str(r.status, 20), currentStep: num(r.currentStep), createdBy: str(r.createdBy, 120),
       at: str(r.at, 40), decidedAt: str(r.decidedAt, 40), mine: r.mine === true,
       steps: rows(r.steps, 6).map((s) => ({ ord: num(s.ord), role: str(s.role, 20), approver: str(s.approver, 120), status: str(s.status, 20), decidedAt: str(s.decidedAt, 40), note: str(s.note, 300) })),
-      events: rows(r.events, 40).map((e) => ({ event: str(e.event, 30), role: str(e.role, 20), actor: str(e.actor, 120), at: str(e.at, 40), note: str(e.note, 300) })),
+      events: rows(r.events, 80).map((e) => ({ event: str(e.event, 30), role: str(e.role, 20), actor: str(e.actor, 120), at: str(e.at, 40), note: str(e.note, 300) })),
     };
   });
 }

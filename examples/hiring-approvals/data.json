@@ -46,7 +46,7 @@
           "role": "hiring_manager",
           "approver": "head.planning@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-03T09:10",
+          "decidedAt": "2026-11-03T14:10",
           "note": ""
         },
         {
@@ -76,18 +76,39 @@
       ],
       "events": [
         {
-          "event": "created",
+          "event": "requested",
           "role": "hiring_manager",
           "actor": "head.planning@hanse.example",
           "at": "2026-11-03T09:00",
           "note": ""
         },
         {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.planning@hanse.example",
+          "at": "2026-11-03T09:15",
+          "note": "n8n, incoming webhook"
+        },
+        {
           "event": "approved",
           "role": "hiring_manager",
           "actor": "head.planning@hanse.example",
-          "at": "2026-11-03T09:10",
+          "at": "2026-11-03T14:10",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-03T14:15",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "reminded",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-05T14:10",
+          "note": "n8n, incoming webhook"
         }
       ]
     },
@@ -116,7 +137,7 @@
           "role": "hiring_manager",
           "approver": "site.manager.bremen@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-03T09:10",
+          "decidedAt": "2026-11-04T13:30",
           "note": ""
         },
         {
@@ -124,7 +145,7 @@
           "role": "hr",
           "approver": "hr.lead@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-04T09:20",
+          "decidedAt": "2026-11-04T19:30",
           "note": ""
         },
         {
@@ -138,25 +159,46 @@
       ],
       "events": [
         {
-          "event": "created",
+          "event": "requested",
           "role": "hiring_manager",
           "actor": "site.manager.bremen@hanse.example",
           "at": "2026-11-04T08:20",
           "note": ""
         },
         {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T08:35",
+          "note": "n8n, incoming webhook"
+        },
+        {
           "event": "approved",
           "role": "hiring_manager",
           "actor": "site.manager.bremen@hanse.example",
-          "at": "2026-11-03T09:10",
+          "at": "2026-11-04T13:30",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-04T13:35",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "approved",
           "role": "hr",
           "actor": "hr.lead@hanse.example",
-          "at": "2026-11-04T09:20",
+          "at": "2026-11-04T19:30",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-11-04T19:35",
+          "note": "n8n, incoming webhook"
         }
       ]
     },
@@ -178,14 +220,14 @@
       "currentStep": 4,
       "createdBy": "head.it.apps@hanse.example",
       "at": "2026-10-27T10:00",
-      "decidedAt": "2026-11-02T14:10",
+      "decidedAt": "2026-10-28T12:00",
       "steps": [
         {
           "ord": 1,
           "role": "hiring_manager",
           "approver": "head.it.apps@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-03T09:10",
+          "decidedAt": "2026-10-27T15:00",
           "note": ""
         },
         {
@@ -193,7 +235,7 @@
           "role": "hr",
           "approver": "hr.lead@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-04T09:20",
+          "decidedAt": "2026-10-27T21:00",
           "note": ""
         },
         {
@@ -201,7 +243,7 @@
           "role": "finance",
           "approver": "finance.bp@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-05T09:30",
+          "decidedAt": "2026-10-28T04:00",
           "note": ""
         },
         {
@@ -209,45 +251,87 @@
           "role": "department_head",
           "approver": "director.planning@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-06T09:40",
+          "decidedAt": "2026-10-28T12:00",
           "note": ""
         }
       ],
       "events": [
         {
-          "event": "created",
+          "event": "requested",
           "role": "hiring_manager",
           "actor": "head.it.apps@hanse.example",
           "at": "2026-10-27T09:50",
           "note": ""
         },
         {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-27T10:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
           "event": "approved",
           "role": "hiring_manager",
           "actor": "head.it.apps@hanse.example",
-          "at": "2026-11-03T09:10",
+          "at": "2026-10-27T15:00",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-27T15:05",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "approved",
           "role": "hr",
           "actor": "hr.lead@hanse.example",
-          "at": "2026-11-04T09:20",
+          "at": "2026-10-27T21:00",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-10-27T21:05",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "approved",
           "role": "finance",
           "actor": "finance.bp@hanse.example",
-          "at": "2026-11-05T09:30",
+          "at": "2026-10-28T04:00",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "department_head",
+          "actor": "director.planning@hanse.example",
+          "at": "2026-10-28T04:05",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "approved",
           "role": "department_head",
           "actor": "director.planning@hanse.example",
-          "at": "2026-11-06T09:40",
+          "at": "2026-10-28T12:00",
           "note": ""
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-28T12:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "informed",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-28T12:05",
+          "note": "n8n, incoming webhook"
         }
       ]
     },
@@ -269,14 +353,14 @@
       "currentStep": 2,
       "createdBy": "head.service@hanse.example",
       "at": "2026-10-29T11:00",
-      "decidedAt": "2026-11-03T09:20",
+      "decidedAt": "2026-10-29T22:00",
       "steps": [
         {
           "ord": 1,
           "role": "hiring_manager",
           "approver": "head.service@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-03T09:10",
+          "decidedAt": "2026-10-29T16:00",
           "note": ""
         },
         {
@@ -284,7 +368,7 @@
           "role": "hr",
           "approver": "hr.lead@hanse.example",
           "status": "returned",
-          "decidedAt": "2026-11-04T09:20",
+          "decidedAt": "2026-10-29T22:00",
           "note": "Start date is before the notice period ends. Please check and ask again."
         },
         {
@@ -298,25 +382,46 @@
       ],
       "events": [
         {
-          "event": "created",
+          "event": "requested",
           "role": "hiring_manager",
           "actor": "head.service@hanse.example",
           "at": "2026-10-29T10:50",
           "note": ""
         },
         {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.service@hanse.example",
+          "at": "2026-10-29T11:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
           "event": "approved",
           "role": "hiring_manager",
           "actor": "head.service@hanse.example",
-          "at": "2026-11-03T09:10",
+          "at": "2026-10-29T16:00",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-29T16:05",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "returned",
           "role": "hr",
           "actor": "hr.lead@hanse.example",
-          "at": "2026-11-04T09:20",
+          "at": "2026-10-29T22:00",
           "note": "Start date is before the notice period ends. Please check and ask again."
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.service@hanse.example",
+          "at": "2026-10-29T22:05",
+          "note": "n8n, incoming webhook"
         }
       ]
     },
@@ -338,14 +443,14 @@
       "currentStep": 3,
       "createdBy": "head.hr.ops@hanse.example",
       "at": "2026-10-30T13:00",
-      "decidedAt": "2026-11-04T16:40",
+      "decidedAt": "2026-10-31T07:00",
       "steps": [
         {
           "ord": 1,
           "role": "hiring_manager",
           "approver": "head.hr.ops@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-03T09:10",
+          "decidedAt": "2026-10-30T18:00",
           "note": ""
         },
         {
@@ -353,7 +458,7 @@
           "role": "hr",
           "approver": "hr.lead@hanse.example",
           "status": "approved",
-          "decidedAt": "2026-11-04T09:20",
+          "decidedAt": "2026-10-31T00:00",
           "note": ""
         },
         {
@@ -361,38 +466,66 @@
           "role": "finance",
           "approver": "finance.bp@hanse.example",
           "status": "declined",
-          "decidedAt": "2026-11-05T09:30",
+          "decidedAt": "2026-10-31T07:00",
           "note": "The position is frozen until the next budget round."
         }
       ],
       "events": [
         {
-          "event": "created",
+          "event": "requested",
           "role": "hiring_manager",
           "actor": "head.hr.ops@hanse.example",
           "at": "2026-10-30T12:50",
           "note": ""
         },
         {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.hr.ops@hanse.example",
+          "at": "2026-10-30T13:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
           "event": "approved",
           "role": "hiring_manager",
           "actor": "head.hr.ops@hanse.example",
-          "at": "2026-11-03T09:10",
+          "at": "2026-10-30T18:00",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-30T18:05",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "approved",
           "role": "hr",
           "actor": "hr.lead@hanse.example",
-          "at": "2026-11-04T09:20",
+          "at": "2026-10-31T00:00",
           "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-10-31T00:05",
+          "note": "n8n, incoming webhook"
         },
         {
           "event": "declined",
           "role": "finance",
           "actor": "finance.bp@hanse.example",
-          "at": "2026-11-05T09:30",
+          "at": "2026-10-31T07:00",
           "note": "The position is frozen until the next budget round."
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.hr.ops@hanse.example",
+          "at": "2026-10-31T07:05",
+          "note": "n8n, incoming webhook"
         }
       ]
     }

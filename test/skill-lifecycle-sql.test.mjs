@@ -532,6 +532,74 @@ test('hiring approvals: return and decline need a reason and end the request; a 
   assert.deepEqual(hireList(MGR).map((h) => h.status).sort(), ['approved', 'declined', 'returned']);
 });
 
+const due = (extra = '') => json(`select public.recruiting_hire_due(now() ${extra})`);
+const dueAt = (days, remind = 2, escalate = 5, max = 3) => json(`select public.recruiting_hire_due(now() + interval '${days} days', ${remind}, ${escalate}, ${max})`);
+const notice = (id, kind, to, channel = 'Teams') => `select public.recruiting_hire_notice_record(${id}, ${q(kind)}, ${q(to)}, ${q(channel)})`;
+const kinds = (rows, id) => rows.filter((r) => r.id === id).map((r) => `${r.kind}:${r.to}`).sort();
+
+test('hiring notices: notify once, remind after the set days (capped), escalate once to the requester; the log shows it', { skip }, () => {
+  const id = json(hireNew(MGR)).id;
+  json(hireDo(MGR, id, 'approve'));
+  assert.deepEqual(kinds(due(), id), [`notify:${HR}`], 'the approver whose turn it is gets the first notice');
+  assert.equal(json(notice(id, 'notify', HR)).created, true);
+  assert.equal(json(notice(id, 'notify', HR)).created, false, 'a repeated record does nothing');
+  assert.deepEqual(kinds(due(), id), [], 'nothing is due right after the notice');
+  assert.deepEqual(kinds(dueAt(1), id), []);
+  assert.deepEqual(kinds(dueAt(3), id), [`remind:${HR}`], 'after two days: a reminder');
+  assert.deepEqual(kinds(dueAt(6), id), [`escalate:${MGR}`, `remind:${HR}`], 'after five days: the requester is told as well');
+  assert.match(rule(notice(id, 'remind', FIN)), /whose turn/, 'only the current approver can be reminded');
+  assert.match(rule(notice(id, 'escalate', HR)), /goes to the requester/);
+  assert.match(rule(notice(id, 'notify', 'nobody')), /e-mail address/);
+  assert.equal(json(notice(id, 'escalate', MGR)).created, true);
+  assert.equal(json(notice(id, 'escalate', MGR)).created, false, 'one escalation per step');
+  assert.deepEqual(kinds(dueAt(6), id), [`remind:${HR}`], 'the escalation is not due again');
+  assert.equal(json(notice(id, 'remind', HR)).created, false, 'two reminders within an hour are one');
+  assert.deepEqual(dueAt(3, 2, 5, 0).filter((r) => r.id === id && r.kind === 'remind'), [], 'zero reminders allowed means none');
+  assert.match(rule("select public.recruiting_hire_due(now(), 0, 5, 3)"), /at least 1/);
+  const row = hireList(MGR, 'pending').find((r) => r.id === id);
+  assert.deepEqual(row.events.map((e) => e.event), ['requested', 'approved', 'notified', 'escalated']);
+  assert.equal(row.events.at(-1).actor, MGR);
+  assert.equal(row.currentStep, 2, 'notices never move a request');
+  // the next approver is told once their turn begins; the old step is not asked again
+  json(hireDo(HR, id, 'approve'));
+  assert.deepEqual(kinds(due(), id), [`notify:${FIN}`]);
+  assert.equal(json(notice(id, 'notify', FIN)).created, true);
+  json(hireDo(FIN, id, 'decline', 'Closing this case so the next test can start.'));
+});
+
+test('hiring notices: when the requester is the approver nobody is escalated to; ended requests are reported once', { skip }, () => {
+  const id = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN }, terms({ note: 'second round' }))).id;
+  assert.deepEqual(kinds(dueAt(10), id), [`notify:${MGR}`], 'step 1 is the requester: a notice, but no escalation to themselves');
+  json(hireDo(MGR, id, 'approve'));
+  json(hireDo(HR, id, 'decline', 'Position is frozen until the next budget round.'));
+  assert.deepEqual(kinds(due(), id), [`inform:${MGR}`], 'a declined request is reported to the requester only');
+  assert.match(rule(notice(id, 'inform', HR)), /not a recipient/);
+  assert.match(rule(notice(id, 'notify', HR)), /already decided/);
+  assert.equal(json(notice(id, 'inform', MGR)).created, true);
+  assert.equal(json(notice(id, 'inform', MGR)).created, false);
+  assert.deepEqual(kinds(due(), id), []);
+  const okId = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN })).id;
+  json(hireDo(MGR, okId, 'approve')); json(hireDo(HR, okId, 'approve')); json(hireDo(FIN, okId, 'approve'));
+  assert.deepEqual(kinds(due(), okId), [`inform:${HR}`, `inform:${MGR}`], 'an approval is reported to the requester and to HR');
+  assert.match(rule(notice(okId, 'inform', FIN)), /not a recipient/, 'finance is not told by the rules');
+  assert.deepEqual(kinds(dueAt(20), okId), [], 'old results are not reported after 14 days');
+  assert.match(rule(`delete from recruiting.hire_event where event = 'informed'`), /append only/);
+});
+
+test('hiring notices: they cannot decide, the log text is scrubbed, the API roles cannot call them', { skip }, () => {
+  const id = json(hireNew(MGR)).id;
+  json(notice(id, 'notify', MGR, 'Teams token=abcdefghijklmnop1234'));
+  const note = hireList(MGR, 'pending').find((r) => r.id === id).events.find((e) => e.event === 'notified').note;
+  assert.doesNotMatch(note, /abcdefghijklmnop/);
+  assert.equal(hireList(MGR, 'pending').find((r) => r.id === id).status, 'pending');
+  for (const role of ['anon', 'authenticated']) {
+    for (const f of ['recruiting_hire_due(timestamptz,integer,integer,integer)', 'recruiting_hire_notice_record(bigint,text,text,text)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
+    }
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_hire_due(timestamptz,integer,integer,integer)', 'execute')"), 't');
+});
+
 test('hiring approvals: the API roles cannot reach the tables or the functions', { skip }, () => {
   for (const role of ['anon', 'authenticated']) {
     for (const t of ['hire_request', 'hire_step', 'hire_event']) assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.${t}', 'select')`), 'f', `${role} ${t}`);
