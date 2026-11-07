@@ -55,7 +55,7 @@ test('link_ticket validates its arguments and calls the link function', async ()
 
 test('every Sub4Me tool accepts a customer and answers for that customer', async () => {
   const h = createSub4MeHandlers(load);
-  assert.equal((await h.list_customers()).count, 2);
+  assert.equal((await h.list_customers()).count, 3);
   const a = await h.list_contracts({ customer: 'hanse' });
   const b = await h.list_contracts({});
   assert.notEqual(a.customer, b.customer);
