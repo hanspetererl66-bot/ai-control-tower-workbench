@@ -28,11 +28,17 @@ export type Job = {
   runs: JobRun[];
   /** Sample job: a run only writes a mock entry into the history and starts nothing. */
   example?: boolean;
+  /** Sample job that keeps failing: its mock runs are written as failed, so the "failing" state stays visible. */
+  fails?: boolean;
+  /** Values for the groupings that are not derived (business area, organization unit, own groupings): dimension id to value. */
+  groups?: Record<string, string>;
 };
 
 export const JOBS_KEY = 'werkbank.jobs.v1';
 export const JOBS_SEEDED_KEY = 'werkbank.jobs.seeded';
-export const MAX_JOBS = 30;
+/** Set once the larger sample set (groupings, many states) has replaced the first seven sample jobs. */
+export const JOBS_EXAMPLES_KEY = 'werkbank.jobs.examples.v2';
+export const MAX_JOBS = 120;
 export const MAX_RUNS = 20;
 export const CATCH_UP_MS = 6 * 3600_000;
 export const TARGET_LABEL: Record<TargetType, string> = { agent: 'Agent', workflow: 'Workflow', skill: 'Skill' };
@@ -196,13 +202,92 @@ export function isDue(job: Job, now: Date): boolean {
   return !job.lastRun || Date.parse(job.lastRun) < planned.getTime();
 }
 
-export type JobState = 'scheduled' | 'paused' | 'done' | 'missed';
+export type JobState = 'scheduled' | 'failing' | 'paused' | 'done' | 'missed';
+export const STATE_LABEL: Record<JobState, string> = { scheduled: 'Active', failing: 'Failing', paused: 'Paused', done: 'Done', missed: 'Missed' };
+/** Failing = active, but the latest run failed. A one-time job is done after its run and missed when its time passed unnoticed. */
 export function jobState(job: Job, now: Date): JobState {
   if (job.cadence.kind === 'once') {
     if (job.lastRun) return 'done';
     if (new Date(job.cadence.at).getTime() + CATCH_UP_MS < now.getTime()) return 'missed';
   }
-  return job.enabled ? 'scheduled' : 'paused';
+  if (!job.enabled) return 'paused';
+  return job.runs[0]?.status === 'error' ? 'failing' : 'scheduled';
+}
+
+/* ---- Groupings: functional type (derived), business area, organization unit, and groupings the user defines ---- */
+export type GroupDim = { id: string; label: string; kind: 'type' | 'field'; builtin: boolean };
+export const BUILTIN_DIMS: GroupDim[] = [
+  { id: 'type', label: 'Functional type', kind: 'type', builtin: true },
+  { id: 'area', label: 'Business area', kind: 'field', builtin: true },
+  { id: 'unit', label: 'Organization unit', kind: 'field', builtin: true },
+];
+export const GROUPS_KEY = 'werkbank.jobGroups.v1';
+export const GROUP_BY_KEY = 'werkbank.jobGroupBy';
+export const MAX_CUSTOM_DIMS = 6;
+export const UNASSIGNED = 'Unassigned';
+export const TYPE_PLURAL: Record<TargetType, string> = { workflow: 'Workflows', agent: 'Agents', skill: 'Skills' };
+const TYPE_ORDER: TargetType[] = ['workflow', 'agent', 'skill'];
+
+export function newDim(label: string, existing: GroupDim[]): GroupDim | null {
+  const text = clean(label, 30);
+  if (!text || existing.some((d) => d.label.toLowerCase() === text.toLowerCase()) || existing.filter((d) => !d.builtin).length >= MAX_CUSTOM_DIMS) return null;
+  return { id: newId('g'), label: text, kind: 'field', builtin: false };
+}
+/** The built-in groupings followed by the user's own; broken stored entries are dropped. */
+export function loadDims(storage?: Pick<Storage, 'getItem'>): GroupDim[] {
+  let raw: unknown = [];
+  try { raw = JSON.parse(storage?.getItem(GROUPS_KEY) ?? '[]'); } catch { raw = []; }
+  const custom: GroupDim[] = [];
+  for (const x of Array.isArray(raw) ? raw : []) {
+    const r = (x ?? {}) as Record<string, unknown>;
+    const id = typeof r.id === 'string' && /^[a-z0-9-]{1,40}$/i.test(r.id) ? r.id : '';
+    const label = clean(r.label, 30);
+    if (!id || !label || BUILTIN_DIMS.some((d) => d.id === id) || custom.some((d) => d.id === id || d.label.toLowerCase() === label.toLowerCase())) continue;
+    custom.push({ id, label, kind: 'field', builtin: false });
+    if (custom.length >= MAX_CUSTOM_DIMS) break;
+  }
+  return [...BUILTIN_DIMS, ...custom];
+}
+export function saveDims(dims: GroupDim[], storage?: Pick<Storage, 'setItem'>): void {
+  try { storage?.setItem(GROUPS_KEY, JSON.stringify(dims.filter((d) => !d.builtin).map(({ id, label }) => ({ id, label })))); } catch { /* kept in memory only */ }
+}
+
+export function groupValue(job: Job, dim: GroupDim): string {
+  return dim.kind === 'type' ? TYPE_PLURAL[job.target.type] : job.groups?.[dim.id] || UNASSIGNED;
+}
+/** Every value used for one grouping, for the suggestions in the form. */
+export function groupValues(jobs: Job[], dimId: string): string[] {
+  return [...new Set(jobs.map((j) => j.groups?.[dimId]).filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b));
+}
+/** Set or clear one value of one grouping on a job. */
+export function withGroup(job: Job, dimId: string, value: string): Job {
+  const groups = { ...(job.groups ?? {}) }, v = clean(value, 40);
+  if (v) groups[dimId] = v; else delete groups[dimId];
+  const { groups: _old, ...rest } = job;
+  return Object.keys(groups).length ? { ...rest, groups } : rest;
+}
+/** Remove a user's own grouping from every job. */
+export function withoutDim(jobs: Job[], dimId: string): Job[] { return jobs.map((j) => withGroup(j, dimId, '')); }
+
+export type GroupStats = { total: number; active: number; failing: number; paused: number; ok: number; runs: number };
+export type JobGroup = { key: string; label: string; jobs: Job[]; stats: GroupStats };
+export function groupStats(jobs: Job[], now: Date): GroupStats {
+  const states = jobs.map((j) => jobState(j, now));
+  const runs = jobs.flatMap((j) => j.runs);
+  return { total: jobs.length, active: states.filter((s) => s === 'scheduled' || s === 'failing').length, failing: states.filter((s) => s === 'failing').length, paused: states.filter((s) => s === 'paused').length, ok: runs.filter((r) => r.status === 'ok').length, runs: runs.length };
+}
+/** Jobs sorted into groups of one grouping. No grouping = one group. Functional type keeps the order workflows, agents, skills; the others are alphabetical with "Unassigned" last. */
+export function groupJobs(jobs: Job[], dim: GroupDim | null, now: Date): JobGroup[] {
+  if (!dim) return jobs.length ? [{ key: '', label: 'All jobs', jobs, stats: groupStats(jobs, now) }] : [];
+  const map = new Map<string, Job[]>();
+  for (const j of jobs) { const k = groupValue(j, dim); map.set(k, [...(map.get(k) ?? []), j]); }
+  const keys = [...map.keys()].sort((a, b) => {
+    if (dim.kind === 'type') return TYPE_ORDER.findIndex((t) => TYPE_PLURAL[t] === a) - TYPE_ORDER.findIndex((t) => TYPE_PLURAL[t] === b);
+    if (a === UNASSIGNED) return 1;
+    if (b === UNASSIGNED) return -1;
+    return a.localeCompare(b);
+  });
+  return keys.map((k) => ({ key: k, label: k, jobs: map.get(k) ?? [], stats: groupStats(map.get(k) ?? [], now) }));
 }
 
 /* ---- What a run asks the agent ---- */
@@ -221,8 +306,9 @@ export function addRun(job: Job, run: JobRun): Job {
 let counter = 0;
 export const newId = (prefix: string, now = Date.now()) => `${prefix}-${now.toString(36)}${(counter++ % 1296).toString(36)}`;
 
-export function newJob(input: { name: string; target: Target; note?: string; cadence: Cadence }, now = new Date()): Job {
-  return { id: newId('job', now.getTime()), name: clean(input.name, 60) || `${TARGET_LABEL[input.target.type]}: ${input.target.label}`.slice(0, 60), target: input.target, note: clean(input.note, 400), cadence: input.cadence, enabled: true, createdAt: now.toISOString(), runs: [] };
+export function newJob(input: { name: string; target: Target; note?: string; cadence: Cadence; groups?: Record<string, string> }, now = new Date()): Job {
+  const groups = Object.fromEntries(Object.entries(input.groups ?? {}).map(([k, v]) => [k, clean(v, 40)]).filter(([k, v]) => v && /^[a-z0-9-]{1,40}$/i.test(k as string) && k !== 'type'));
+  return { id: newId('job', now.getTime()), name: clean(input.name, 60) || `${TARGET_LABEL[input.target.type]}: ${input.target.label}`.slice(0, 60), target: input.target, note: clean(input.note, 400), cadence: input.cadence, enabled: true, createdAt: now.toISOString(), runs: [], ...(Object.keys(groups).length ? { groups } : {}) };
 }
 
 /* ---- Storage ---- */
@@ -245,6 +331,16 @@ function sanitizeCadence(raw: unknown): Cadence | null {
     case 'cron': return typeof r.expr === 'string' && parseCron(r.expr) ? { kind: 'cron', expr: clean(r.expr, 60) } : null;
     default: return null;
   }
+}
+
+function sanitizeGroups(raw: unknown): { groups?: Record<string, string> } {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return {};
+  const groups: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>).slice(0, 12)) {
+    const val = clean(v, 40);
+    if (/^[a-z0-9-]{1,40}$/i.test(k) && k !== 'type' && val) groups[k] = val;
+  }
+  return Object.keys(groups).length ? { groups } : {};
 }
 
 export function sanitizeJobs(value: unknown): Job[] {
@@ -270,6 +366,8 @@ export function sanitizeJobs(value: unknown): Job[] {
       enabled: r.enabled !== false, createdAt: created,
       ...(typeof r.lastRun === 'string' && !Number.isNaN(Date.parse(r.lastRun)) ? { lastRun: r.lastRun } : {}), runs,
       ...(r.example === true ? { example: true } : {}),
+      ...(r.fails === true && r.example === true ? { fails: true } : {}),
+      ...sanitizeGroups(r.groups),
     });
     if (out.length >= MAX_JOBS) break;
   }
@@ -283,26 +381,99 @@ export function saveJobs(list: Job[], storage?: Pick<Storage, 'setItem'>): void 
   try { storage?.setItem(JOBS_KEY, JSON.stringify(list)); } catch { /* kept in memory only */ }
 }
 
-/* ---- Example jobs: one for each kind of target, with a mock history ---- */
+/* ---- Example jobs: every kind of target, repeat and state, with a mock history ---- */
+type Profile = 'good' | 'flaky' | 'failing' | 'new' | 'paused' | 'done' | 'missed' | 'upcoming';
+const ERROR_NOTES = ['Example: connector timed out', 'Example: target system answered 503', 'Example: approval was not given in time', 'Example: input file was empty', 'Example: rate limit reached'];
+
 export function exampleJobs(now = new Date()): Job[] {
   const ago = (hours: number) => new Date(now.getTime() - hours * 3600_000).toISOString();
+  const inH = (hours: number) => toLocalInput(new Date(now.getTime() + hours * 3600_000));
   const run = (n: number, hours: number, ms: number, status: JobRun['status'], note: string, trigger: JobRun['trigger'] = 'schedule'): JobRun => ({ id: `ex-run-${n}`, at: ago(hours), ms, status, trigger, note });
-  const mk = (id: string, name: string, target: Target, cadence: Cadence, runs: JobRun[], note = '', enabled = true): Job =>
-    ({ id, name, target, note, cadence, enabled, createdAt: ago(24 * 9), example: true, ...(runs.length ? { lastRun: runs[0].at } : {}), runs });
-  return [
+  const mk = (id: string, name: string, target: Target, cadence: Cadence, runs: JobRun[], note = '', enabled = true, groups?: Record<string, string>, extra: Partial<Job> = {}): Job =>
+    ({ id, name, target, note, cadence, enabled, createdAt: ago(24 * 9), example: true, ...(runs.length ? { lastRun: runs[0].at } : {}), runs, ...(groups ? { groups } : {}), ...extra });
+  const g = (area: string, unit: string) => ({ area, unit });
+
+  const base: Job[] = [
     mk('ex-preclose', 'Finance pre-close check', { type: 'agent', id: 'example-agent', label: 'Pre-close agent' }, { kind: 'weekly', time: '07:30', days: [1, 2, 3, 4, 5] },
-      [run(1, 14, 41_000, 'ok', 'Example run'), run(2, 38, 38_000, 'ok', 'Example run'), run(3, 62, 52_000, 'error', 'Example: SAP connector timed out')]),
+      [run(1, 14, 41_000, 'ok', 'Example run'), run(2, 38, 38_000, 'ok', 'Example run'), run(3, 62, 52_000, 'error', 'Example: SAP connector timed out')], '', true, g('Financial close', 'Finance')),
     mk('ex-margin', 'Margin report for the board', { type: 'agent', id: 'example-agent-2', label: 'Margin analyst' }, { kind: 'cron', expr: '0 8 1 * *' },
-      [run(4, 24 * 3, 66_000, 'ok', 'Example run')]),
+      [run(4, 24 * 3, 66_000, 'ok', 'Example run')], '', true, g('Financial close', 'Finance')),
     mk('ex-reminders', 'Payment reminders', { type: 'workflow', id: 'example-workflow', label: 'Invoice reminder (n8n)' }, { kind: 'daily', time: '09:00' },
-      [run(5, 12, 9_000, 'ok', 'Example run'), run(6, 36, 8_000, 'ok', 'Example run'), run(7, 60, 12_000, 'ok', 'Example run', 'manual')], 'Only overdue invoices above 1,000 EUR.'),
+      [run(5, 12, 9_000, 'ok', 'Example run'), run(6, 36, 8_000, 'ok', 'Example run'), run(7, 60, 12_000, 'ok', 'Example run', 'manual')], 'Only overdue invoices above 1,000 EUR.', true, g('Order-to-Cash', 'Finance')),
     mk('ex-sync', 'Ticket sync', { type: 'workflow', id: 'example-workflow-2', label: 'Jira to Sub4Me sync' }, { kind: 'interval', every: 2, unit: 'hours' },
-      [run(8, 1, 6_000, 'ok', 'Example run'), run(9, 3, 7_000, 'ok', 'Example run')]),
+      [run(8, 1, 6_000, 'ok', 'Example run'), run(9, 3, 7_000, 'ok', 'Example run')], '', true, g('Service & support', 'Customer Service')),
     mk('ex-monday', 'Monday close briefing', { type: 'skill', id: 'monday-close', label: 'monday-close' }, { kind: 'weekly', time: '06:30', days: [1] },
-      [run(12, 34, 74_000, 'ok', 'Example run: 8 accruals, 1 item differs from SAP'), run(13, 34 + 168, 71_000, 'ok', 'Example run')], 'Overnight check before the close: load, orders, accruals. Reads only; booking needs your yes in the chat.'),
+      [run(12, 34, 74_000, 'ok', 'Example run: 8 accruals, 1 item differs from SAP'), run(13, 34 + 168, 71_000, 'ok', 'Example run')], 'Overnight check before the close: load, orders, accruals. Reads only; booking needs your yes in the chat.', true, g('Financial close', 'Finance')),
     mk('ex-brief', 'Morning briefing', { type: 'skill', id: 'example-skill', label: 'daily-briefing' }, { kind: 'daily', time: '07:45' },
-      [run(10, 13, 21_000, 'ok', 'Example run'), run(11, 37, 19_000, 'ok', 'Example run')]),
+      [run(10, 13, 21_000, 'ok', 'Example run'), run(11, 37, 19_000, 'ok', 'Example run')], '', true, g('Management reporting', 'Finance')),
     mk('ex-cleanup', 'Skill registry clean-up', { type: 'skill', id: 'example-skill-2', label: 'skill-registry-review' }, { kind: 'monthly', time: '06:00', day: 15 },
-      [], 'List skills without owner or description.', false),
+      [], 'List skills without owner or description.', false, g('Governance & compliance', 'IT & Platform')),
   ];
+
+  let n = 100;
+  /** A deterministic mock history for one profile; `step` is the usual gap between two runs in hours. */
+  const history = (profile: Profile, step: number, ms: number): JobRun[] => {
+    const first = Math.min(step * 0.4, 20);
+    const seq: JobRun['status'][] = { good: ['ok', 'ok', 'ok', 'ok'], flaky: ['ok', 'skipped', 'ok', 'error', 'ok'], failing: ['error', 'error', 'ok', 'ok'], paused: ['ok', 'ok', 'error'], new: [], done: [], missed: [], upcoming: [] }[profile] as JobRun['status'][];
+    return seq.map((status, k) => {
+      n += 1;
+      const note = status === 'error' ? ERROR_NOTES[n % ERROR_NOTES.length] : status === 'skipped' ? 'Example: skipped, the agent was busy' : 'Example run';
+      return run(n, first + k * step, ms + (k % 3) * 2_000, status, note);
+    });
+  };
+  // id, name, type, target id, target label, repeat, area, unit, profile, hours between runs, run time in ms, instruction
+  type Row = [string, string, TargetType, string, string, Cadence, string, string, Profile, number, number, string?];
+  const rows: Row[] = [
+    // agents
+    ['ex-a-credit', 'Credit limit review', 'agent', 'example-agent-3', 'Credit risk agent', { kind: 'daily', time: '06:15' }, 'Order-to-Cash', 'Finance', 'good', 24, 47_000],
+    ['ex-a-dunning', 'Dunning proposals', 'agent', 'example-agent-4', 'Dunning agent', { kind: 'weekly', time: '08:00', days: [1, 4] }, 'Order-to-Cash', 'Finance', 'flaky', 84, 58_000],
+    ['ex-a-forecast', 'Weekly sales forecast', 'agent', 'example-agent-5', 'Forecast agent', { kind: 'weekly', time: '07:00', days: [1] }, 'Customer & sales', 'Sales', 'good', 168, 83_000],
+    ['ex-a-porisk', 'PO delay risk scan', 'agent', 'example-agent-6', 'PO risk agent', { kind: 'daily', time: '05:30' }, 'Procure-to-Pay', 'Supply Chain', 'failing', 24, 64_000],
+    ['ex-a-joiner', 'New joiner checklist', 'agent', 'example-agent-7', 'Onboarding agent', { kind: 'daily', time: '07:00' }, 'Hire-to-Retire', 'HR', 'good', 24, 29_000],
+    ['ex-a-shortlist', 'Candidate shortlist refresh', 'agent', 'example-agent-8', 'Shortlist agent', { kind: 'interval', every: 4, unit: 'hours' }, 'Hire-to-Retire', 'HR', 'flaky', 4, 36_000],
+    ['ex-a-access', 'Access review reminders', 'agent', 'example-agent-9', 'Access review agent', { kind: 'monthly', time: '09:00', day: 1 }, 'Governance & compliance', 'IT & Platform', 'paused', 720, 52_000],
+    ['ex-a-renewal', 'Contract renewal watch', 'agent', 'example-agent-10', 'Renewal agent', { kind: 'weekly', time: '07:30', days: [2] }, 'Contract management', 'Legal & Compliance', 'good', 168, 71_000],
+    ['ex-a-triage', 'Ticket triage', 'agent', 'example-agent-11', 'Triage agent', { kind: 'interval', every: 30, unit: 'minutes' }, 'IT operations', 'IT & Platform', 'good', 0.5, 14_000],
+    ['ex-a-esg', 'ESG data collection', 'agent', 'example-agent-12', 'ESG agent', { kind: 'monthly', time: '08:00', day: 5 }, 'Governance & compliance', 'Legal & Compliance', 'new', 720, 0],
+    ['ex-a-variance', 'Budget variance explainer', 'agent', 'example-agent-13', 'Variance agent', { kind: 'monthly', time: '07:00', day: 3 }, 'Financial close', 'Finance', 'good', 720, 91_000],
+    ['ex-a-rehearsal', 'Quarter-end accrual rehearsal', 'agent', 'example-agent-14', 'Accrual agent', { kind: 'once', at: inH(52) }, 'Financial close', 'Finance', 'upcoming', 0, 0],
+    // workflows
+    ['ex-w-grir', 'GR/IR clearing export', 'workflow', 'example-workflow-3', 'GR/IR export (n8n)', { kind: 'daily', time: '02:00' }, 'Procure-to-Pay', 'Procurement', 'good', 24, 18_000],
+    ['ex-w-vendor', 'Vendor master sync', 'workflow', 'example-workflow-4', 'Vendor sync (n8n)', { kind: 'interval', every: 6, unit: 'hours' }, 'Procure-to-Pay', 'Procurement', 'good', 6, 12_000],
+    ['ex-w-leads', 'Lead routing', 'workflow', 'example-workflow-5', 'Lead router (n8n)', { kind: 'interval', every: 15, unit: 'minutes' }, 'Customer & sales', 'Sales', 'flaky', 0.25, 5_000],
+    ['ex-w-quote', 'Quote follow-up', 'workflow', 'example-workflow-6', 'Quote follow-up (n8n)', { kind: 'daily', time: '10:00' }, 'Customer & sales', 'Sales', 'good', 24, 9_000, 'Quotes older than five days without an answer.'],
+    ['ex-w-invoice', 'Invoice dispatch', 'workflow', 'example-workflow-7', 'Invoice dispatch (n8n)', { kind: 'cron', expr: '0 6 * * 1-5' }, 'Order-to-Cash', 'Finance', 'failing', 24, 22_000],
+    ['ex-w-shipment', 'Shipment status mails', 'workflow', 'example-workflow-8', 'Shipment notice (n8n)', { kind: 'cron', expr: '*/20 6-20 * * 1-5' }, 'Order-to-Cash', 'Supply Chain', 'good', 0.33, 7_000],
+    ['ex-w-timesheet', 'Timesheet reminder', 'workflow', 'example-workflow-9', 'Timesheet reminder (n8n)', { kind: 'weekly', time: '14:00', days: [5] }, 'Hire-to-Retire', 'HR', 'good', 168, 6_000],
+    ['ex-w-backup', 'Backup check', 'workflow', 'example-workflow-10', 'Backup check (n8n)', { kind: 'daily', time: '03:30' }, 'IT operations', 'IT & Platform', 'good', 24, 31_000],
+    ['ex-w-cert', 'Certificate expiry scan', 'workflow', 'example-workflow-11', 'Certificate scan (n8n)', { kind: 'weekly', time: '06:00', days: [1] }, 'IT operations', 'IT & Platform', 'flaky', 168, 24_000],
+    ['ex-w-nps', 'NPS survey send', 'workflow', 'example-workflow-12', 'NPS survey (n8n)', { kind: 'monthly', time: '09:30', day: 10 }, 'Service & support', 'Customer Service', 'paused', 720, 16_000],
+    ['ex-w-migration', 'Data migration, wave 3', 'workflow', 'example-workflow-13', 'Migration wave (n8n)', { kind: 'once', at: inH(-20) }, 'IT operations', 'IT & Platform', 'done', 0, 4_200_000],
+    ['ex-w-cutover', 'Cut-over rehearsal', 'workflow', 'example-workflow-14', 'Cut-over rehearsal (n8n)', { kind: 'once', at: inH(-30) }, 'IT operations', 'IT & Platform', 'missed', 0, 0, 'Was planned for the weekend; nobody had the app open.'],
+    ['ex-w-newsletter', 'Partner newsletter', 'workflow', 'example-workflow-15', 'Newsletter (n8n)', { kind: 'once', at: inH(30) }, 'Marketing & content', 'Marketing', 'upcoming', 0, 0],
+    // skills
+    ['ex-s-kpi', 'KPI summary', 'skill', 'kpi-summary', 'kpi-summary', { kind: 'weekly', time: '07:15', days: [1] }, 'Management reporting', 'Finance', 'good', 168, 33_000],
+    ['ex-s-risk', 'Risk register digest', 'skill', 'risk-digest', 'risk-digest', { kind: 'weekly', time: '15:00', days: [5] }, 'Governance & compliance', 'Legal & Compliance', 'good', 168, 28_000],
+    ['ex-s-health', 'Skill health report', 'skill', 'skill-health-report', 'skill-health-report', { kind: 'weekly', time: '08:30', days: [1] }, 'Governance & compliance', 'IT & Platform', 'good', 168, 26_000],
+    ['ex-s-news', 'Customer news scan', 'skill', 'customer-news', 'customer-news', { kind: 'daily', time: '06:45' }, 'Customer & sales', 'Sales', 'flaky', 24, 23_000],
+    ['ex-s-hiring', 'Hiring pipeline digest', 'skill', 'hiring-digest', 'hiring-digest', { kind: 'weekly', time: '08:00', days: [1, 3] }, 'Hire-to-Retire', 'HR', 'good', 84, 19_000],
+    ['ex-s-policy', 'Policy change check', 'skill', 'policy-change-check', 'policy-change-check', { kind: 'cron', expr: '0 7 * * 1' }, 'Governance & compliance', 'Legal & Compliance', 'failing', 168, 30_000],
+    ['ex-s-docs', 'Documentation freshness', 'skill', 'doc-freshness', 'doc-freshness', { kind: 'monthly', time: '07:00', day: 20 }, 'IT operations', 'IT & Platform', 'paused', 720, 41_000],
+    ['ex-s-cases', 'Open case digest', 'skill', 'case-digest', 'case-digest', { kind: 'daily', time: '07:30' }, 'Service & support', 'Customer Service', 'good', 24, 17_000],
+    ['ex-s-spend', 'Spend anomaly report', 'skill', 'spend-anomaly', 'spend-anomaly', { kind: 'weekly', time: '09:00', days: [4] }, 'Procure-to-Pay', 'Procurement', 'good', 168, 38_000],
+    ['ex-s-board', 'Board one-pager', 'skill', 'board-briefing', 'board-briefing', { kind: 'once', at: inH(80) }, 'Management reporting', 'Finance', 'upcoming', 0, 0],
+    ['ex-s-close', 'Close checklist status', 'skill', 'close-status', 'close-status', { kind: 'cron', expr: '0 8 25-31 * *' }, 'Financial close', 'Finance', 'new', 720, 0],
+  ];
+  const more = rows.map(([id, name, type, tid, label, cadence, area, unit, profile, step, ms, note]) => {
+    let runs = history(profile, step, ms);
+    if (profile === 'done') { n += 1; runs = [run(n, 19.9, ms, 'ok', 'Example run: 14,200 records moved')]; }
+    const created = profile === 'upcoming' ? ago(4) : profile === 'done' || profile === 'missed' ? ago(24 * 3) : undefined;
+    return { ...mk(id, name, { type, id: tid, label }, cadence, runs, note ?? '', profile !== 'paused', g(area, unit), profile === 'failing' ? { fails: true } : {}), ...(created ? { createdAt: created } : {}) };
+  });
+  return [...base, ...more];
+}
+
+/** The sample jobs are renewed (new set, new states); the user's own jobs stay and come first. */
+export function mergeExamples(stored: Job[], fresh: Job[]): Job[] {
+  return [...stored.filter((j) => !j.example), ...fresh];
 }
