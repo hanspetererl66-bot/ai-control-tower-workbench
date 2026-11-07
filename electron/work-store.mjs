@@ -9,6 +9,7 @@ import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connector
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
 import { createRecruitingHandlers, decideHire, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
+import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -106,6 +107,11 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async deleteCriterion(requisition, id) {
       const { rpc, email } = connect();
       return rpc('recruiting_criterion_delete', { p_actor: email, p_requisition: String(requisition ?? ''), p_crit_id: String(id ?? '') });
+    },
+    /** Keeps the record of an online interview for the hiring manager. Not a tool: the agent cannot write one. The database accepts only the manager of the requisition and refuses an e-mail address. */
+    async saveInterview(requisition, record) {
+      const { rpc, email } = connect();
+      return saveInterviewRecord(rpc, email, requisition, record);
     },
     /** Hiring approvals for the Hiring Approvals space: fixed filters, always as the stored e-mail. */
     async listHireRequests(args) {

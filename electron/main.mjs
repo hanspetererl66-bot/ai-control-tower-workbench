@@ -1484,6 +1484,9 @@ ipcMain.handle('recruiting-import', async () => {
 ipcMain.handle('recruiting-decide', async (_event, id, decision, note) => {
   try { return { ok: true, data: await workStore.decideProposal(id, decision, note) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
+ipcMain.handle('recruiting-interview-save', async (_event, requisition, record) => {
+  try { return { ok: true, data: await workStore.saveInterview(requisition, record) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
 ipcMain.handle('recruiting-criteria', async () => {
   try { return { ok: true, data: await workStore.listCriteria() }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });

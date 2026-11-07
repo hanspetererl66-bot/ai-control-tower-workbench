@@ -48,6 +48,7 @@ import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { HIRING_SPACE } from './hiring-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
+import { INTERVIEW_SPACE } from './interview-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
@@ -944,6 +945,21 @@ export default function App() {
     return developStopped.current ? '' : draft.current;
   }
 
+  /** What the online interview in the Recruiting Workbench may use: the agent for the checks, the database for the record, the Gmail connector for a draft. */
+  function interviewDeps() {
+    const host = (window as any).host as { recruitingInterviewSave?: (r: string, rec: Record<string, unknown>) => Promise<{ ok: boolean; data?: { saved?: boolean; note?: string }; error?: string }> } | undefined;
+    const gmail = extensionNames.find((n) => /gmail/i.test(n));
+    return {
+      ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined,
+      save: host?.recruitingInterviewSave ? async (requisition: string, record: Record<string, unknown>) => {
+        const res = await host.recruitingInterviewSave!(requisition, record);
+        if (!res.ok) throw new Error(res.error || 'The record could not be saved.');
+        return { saved: res.data?.saved === true, note: res.data?.note ?? '' };
+      } : undefined,
+      draft: agent && gmail ? (tool: string, args: Record<string, unknown>) => agent.callTool(`${gmail}__${tool}`, args) : undefined,
+    };
+  }
+
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
@@ -1572,7 +1588,8 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === HIRING_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE}
+            interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
