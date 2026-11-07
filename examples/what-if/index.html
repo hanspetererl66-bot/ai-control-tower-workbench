@@ -287,8 +287,8 @@ details ul{margin:8px 0 0;padding-left:18px}
 <body>
 <main>
   <p class="demo">Beispieldaten und ein offenes Regelmodell, keine Prognose: Die Annahmen stehen unten. Dieselbe Rechnung beantwortet die Frage im Chat („Was passiert, wenn wir die AI-Credits um 30 % kürzen?“).</p>
-  <details class="card intro" open>
-    <summary><h2>Was ist diese Seite?</h2><span class="hint">zum Einklappen klicken</span></summary>
+  <details class="card intro">
+    <summary><h2>Was ist diese Seite?</h2><span class="hint">zum Auf- oder Zuklappen klicken</span></summary>
     <div class="body"><p>Der <b>What-if Simulator</b> beantwortet eine Frage des Boards: Was passiert, wenn die AI-Credits gekürzt werden? Der Schieberegler senkt die Obergrenze (heute 21,5 Mio. € pro Monat, davon 16,37 Mio. € verbraucht, 92 % davon Token-API-Kosten) und zeigt live, welche Teams, Agenten-Prozesse und Risiken es trifft.</p>
     <div class="cols"><div><h3>Kürzung</h3><p>Ab der Kürzung, bei der die Obergrenze unter den Verbrauch fällt (Break-even), müssen Teams ihre Agenten drosseln. Das Modell verteilt die Lücke auf die Teams über ihrem Budget.</p></div><div><h3>Gegenmaßnahmen</h3><p>Cache, Modell-Routing, Kompression und harte Limits senken den Verbrauch, ohne einen Agenten zu drosseln. Schalte sie ein und sieh, wie viel von der Lücke sie schließen.</p></div><div><h3>Kürzungskurve</h3><p>Zeigt für jede Kürzung von 0 bis 60 %, wie groß die Lücke zur Obergrenze ist, mit und ohne Gegenmaßnahmen.</p></div></div>
     <details><summary class="t">Begriffe</summary><dl><dt>Obergrenze</dt><dd>Das vom Board genehmigte Monatsbudget für alle KI-Werkzeuge.</dd><dt>Break-even</dt><dd>Die Kürzung, ab der die Obergrenze den heutigen Verbrauch nicht mehr trägt.</dd><dt>Drosselung</dt><dd>Agenten eines Teams führen weniger Aufrufe pro Tag aus.</dd><dt>Gegenmaßnahme</dt><dd>Eine Änderung, die Kosten spart, ohne Aufrufe zu streichen.</dd></dl></details>
