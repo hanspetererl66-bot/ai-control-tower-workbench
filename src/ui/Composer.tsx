@@ -557,7 +557,7 @@ export default function Composer({
 
         {starters && (
           <button
-            className={`chip chip-icon ${buttonsShown ? 'chip-on' : ''}`}
+            className={`chip chip-icon tabs-toggle ${buttonsShown ? 'tabs-toggle-shown' : 'tabs-toggle-hidden'}`}
             title={buttonsShown ? 'Hide the buttons under the input' : 'Show the buttons under the input'}
             aria-label={buttonsShown ? 'Hide buttons' : 'Show buttons'}
             aria-pressed={buttonsShown}
@@ -781,14 +781,13 @@ export default function Composer({
   );
 }
 
-/** The row of chat buttons under the input (Favorites, Suggested, Popular, What's new): little pills, with a chevron that shows what a click does. */
+/** Two long, slightly offset pills stand for the row of chat buttons under the input. Bright and fanned out while the buttons are hidden (a click brings them back); greyed and pushed together while they are shown. */
 function TabsRowIcon({ open }: { open: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="7" height="4" rx="2" />
-      <rect x="12" y="4" width="9" height="4" rx="2" />
-      <path d={open ? 'M7 14l5 5 5-5' : 'M7 19l5-5 5 5'} />
-    </svg>
+    <span className={`tabs-pills ${open ? 'tabs-pills-shown' : ''}`} aria-hidden="true">
+      <span className="tabs-pill tabs-pill-back" />
+      <span className="tabs-pill tabs-pill-front" />
+    </span>
   );
 }
 
