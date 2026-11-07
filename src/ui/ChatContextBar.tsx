@@ -2,9 +2,27 @@ import { useState } from 'react';
 import type { Persona } from '../chat-context';
 import type { MemoryKind } from '../memory';
 import type { PreviewSection } from '../personalization';
+import { safetyLine, safetyNotable } from '../chat-safety';
 
 export type MemoryIdea = { kind: MemoryKind; text: string };
+/** Working profile, approval mode and working folder: set in the panel, not in the bar. */
+export type SafetyProps = {
+  profiles: Array<{ id: string; name: string; description: string }>;
+  profileId: string;
+  onProfile: (id: string) => void;
+  modes: Array<{ id: string; name: string }>;
+  modeId: string;
+  onMode: (id: string) => void;
+  /** Mode cannot be changed (agent not connected). */
+  modeDisabled: boolean;
+  /** A working-profile switch is locked while an answer is running. */
+  busy: boolean;
+  workdir: string;
+  /** Only given in the desktop app. */
+  onOpenFolder?: () => void;
+};
 export type ChatContextBarProps = {
+  safety: SafetyProps;
   memoryEnabled: boolean;
   /** Entries that apply in this conversation. */
   memoryCount: number;
@@ -41,6 +59,10 @@ export default function ChatContextBar(p: ChatContextBarProps) {
   const activeCount = p.preview.filter((x) => x.active).length;
   // How many of the four switches are doing something right now.
   const inUse = [p.memoryEnabled, !!p.groupName, !!p.persona, !!p.contextSpace].filter(Boolean).length;
+  const sf = p.safety;
+  const profile = sf.profiles.find((x) => x.id === sf.profileId);
+  const mode = sf.modes.find((x) => x.id === sf.modeId);
+  const notable = safetyNotable(sf.profileId, sf.modeId);
   return (
     <div className="chip-wrap ctxslot" role="group" aria-label="What shapes the answers">
       <button className={`chip chip-icon ctx-icon ${panelOpen ? 'chip-on' : ''}`} aria-expanded={panelOpen} aria-controls="ctx-panel" aria-label="Context: memory, group, persona, Space" title={`Context: memory, group, persona, Space (${inUse} of 4 in use)`} onClick={() => setPanelOpen((o) => !o)}>
@@ -49,6 +71,11 @@ export default function ChatContextBar(p: ChatContextBarProps) {
         </svg>
         {inUse > 0 && <span className="ctx-badge" aria-hidden="true">{inUse}</span>}
       </button>
+      {notable && (
+        <button className="chip chip-icon ctx-shield" aria-label="Safety settings are not the usual ones. Open the settings." title={`${safetyLine({ profileId: sf.profileId, profileName: profile?.name ?? '', modeId: sf.modeId, modeName: mode?.name ?? '' })}. Click to change.`} onClick={() => setPanelOpen(true)}>
+          <ShieldIcon />
+        </button>
+      )}
       {p.ideas.length > 0 && (
         <button className="ctx-chip ctx-hot" aria-expanded={open} onClick={() => setIdeasOpen((o) => !o)}>Memory ideas {p.ideas.length}</button>
       )}
@@ -99,6 +126,26 @@ export default function ChatContextBar(p: ChatContextBarProps) {
               <button className="ghost-btn" onClick={p.onOpenSettings}>Change in settings</button>
             </div>
           )}
+          {sf.profiles.length > 1 && (
+            <label className="ctx-row">
+              <span className="ctx-row-label">Working profile<small>{profile?.description || 'Rules for this kind of work'}</small></span>
+              <select aria-label="Working profile" value={sf.profileId} onChange={(e) => sf.onProfile(e.target.value)} disabled={sf.busy}>
+                {sf.profiles.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+              </select>
+            </label>
+          )}
+          <label className="ctx-row">
+            <span className="ctx-row-label">Approval mode<small>When Joule has to ask before it acts</small></span>
+            <select aria-label="Approval mode" value={sf.modeId} onChange={(e) => sf.onMode(e.target.value)} disabled={sf.modeDisabled}>
+              {sf.modes.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            </select>
+          </label>
+          {sf.onOpenFolder && (
+            <div className="ctx-row">
+              <span className="ctx-row-label">Working folder<small title={sf.workdir}>Where files Joule makes are kept</small></span>
+              <button className="ctx-chip" onClick={sf.onOpenFolder}>Open</button>
+            </div>
+          )}
           <div className="ctx-row">
             <span className="ctx-row-label">Make skill<small>{p.canMakeSkill ? 'Draft a reusable skill from this conversation (nothing is saved)' : 'Available after two messages'}</small></span>
             <button className="ctx-chip" disabled={!p.canMakeSkill} onClick={() => { setPanelOpen(false); p.onMakeSkill(); }}>Make skill</button>
@@ -118,5 +165,13 @@ export default function ChatContextBar(p: ChatContextBarProps) {
         </div>
       )}
     </div>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 1.8 3 3.6v4c0 3 2.2 5.2 5 6.6 2.8-1.4 5-3.6 5-6.6v-4z" /><path d="M5.8 8.2 7.4 9.8 10.4 6.6" />
+    </svg>
   );
 }

@@ -46,6 +46,7 @@ import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
+import { HIRING_SPACE } from './hiring-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
 import { INTERVIEW_SPACE } from './interview-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
@@ -1232,6 +1233,18 @@ export default function App() {
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
   const contextBar = (
     <ChatContextBar
+      safety={{
+        profiles: harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description })),
+        profileId: harness.id,
+        onProfile: changeHarness,
+        modes: agent?.modes ?? [{ id: 'auto', name: 'auto' }],
+        modeId: mode,
+        onMode: changeMode,
+        modeDisabled: !agent,
+        busy,
+        workdir: WORKDIR,
+        onOpenFolder: window.host?.openWorkspace ? () => { void window.host?.openWorkspace?.(); } : undefined,
+      }}
       memoryEnabled={memory.enabled}
       memoryCount={activeEntries(memory, contextSpace).length}
       onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
@@ -1260,12 +1273,6 @@ export default function App() {
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
-      workdir={WORKDIR}
-      mode={mode}
-      onModeChange={changeMode}
-      harnesses={harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description }))}
-      harnessId={harness.id}
-      onHarnessChange={changeHarness}
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
@@ -1510,9 +1517,9 @@ export default function App() {
       ) : view === 'registry' ? (
         <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} onBack={() => setView('admin')} />
       ) : view === 'hiring' ? (
-        <HiringApprovals onBack={() => setView('admin')} />
+        <HiringApprovals onBack={() => { setSelectedSpace(HIRING_SPACE); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenHiring={() => setView('hiring')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
       ) : view === 'ontology' ? (
         <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
       ) : view === 'skillhealth' ? (
@@ -1581,8 +1588,9 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
+            onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}

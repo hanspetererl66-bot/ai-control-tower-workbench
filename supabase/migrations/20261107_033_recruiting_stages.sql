@@ -1,4 +1,4 @@
--- Recruiting (032): the three interview rounds become real stages.
+-- Recruiting (033): the three interview rounds become real stages.
 -- Before: Applied, Screening, Interview, Offer (the round was only a tag in the sample).
 -- After:  Applied, Screening, Online interview, In-person interview, Final conversation, Offer.
 -- Candidates that stood in "Interview" move to "Online interview" (the first round) unless the sample names the round:

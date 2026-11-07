@@ -97,8 +97,7 @@ export function nextTab(current: TabId | null, clicked: TabId): TabId | null {
   return current === clicked ? null : clicked;
 }
 
-/** Reads the stored choice: a tab id, 'none' (closed) or anything else (first visit: Favorites open). */
+/** Reads the stored choice. The chat starts minimal: only a tab the person opened and left open stays open; a first visit or anything unknown is closed. */
 export function readTab(stored: string | null): TabId | null {
-  if (stored === 'none') return null;
-  return TABS.some((x) => x.id === stored) ? (stored as TabId) : 'favorites';
+  return TABS.some((x) => x.id === stored) ? (stored as TabId) : null;
 }

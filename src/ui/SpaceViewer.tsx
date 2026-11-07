@@ -3,6 +3,7 @@ import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
+import { HIRING_SPACE, handleHiringMessage, type HiringHost } from '../hiring-bridge';
 import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
@@ -22,6 +23,7 @@ export default function SpaceViewer({
   bridge,
   bridgeEnabled = false,
   interviewDeps,
+  onOpenHiringTools,
   onAsk,
   textScale = DEFAULT_SPACE_SCALE,
   onTextScale,
@@ -40,6 +42,8 @@ export default function SpaceViewer({
   bridge?: BridgeCall;
   bridgeEnabled?: boolean;
   interviewDeps?: InterviewDeps;
+  /** Hiring Approvals Space: open the proposals and criteria screen. */
+  onOpenHiringTools?: () => void;
   /** A Space asks Joule a question ("Joule fragen"): the host opens the chat and sends it. */
   onAsk?: (prompt: string) => void;
   /** Text size of the page inside the frame (1 = as authored). */
@@ -128,6 +132,13 @@ export default function SpaceViewer({
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
         : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)
         : handleSub4meMessage;
+      if (space.slug === HIRING_SPACE) {
+        // Reads and decisions go through the main process as the stored e-mail, never through the agent.
+        const h = window.host;
+        const host: HiringHost | undefined = h?.recruitingHireList && h.recruitingHireDecide ? { list: h.recruitingHireList, decide: h.recruitingHireDecide } : undefined;
+        void handleHiringMessage(event.data, host, onOpenHiringTools).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
+        return;
+      }
       void handle(event.data, bridgeRef.current).then((reply) => {
         if (reply) frame.current?.contentWindow?.postMessage(reply, '*');
       });

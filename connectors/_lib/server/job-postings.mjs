@@ -1,5 +1,5 @@
 /**
- * Job postings in the shared database (Supabase, migration 033): the step before the recruiting process.
+ * Job postings in the shared database (Supabase, migration 034): the step before the recruiting process.
  * A posting is written from a template, checked, released by the hiring manager and published on channels.
  *
  * What the agent may do: READ templates, postings and the per-channel texts; WRITE a template of the person, a DRAFT, an edit of a
@@ -119,7 +119,7 @@ export function createPostingHandlers(rpc) {
   };
   const context = async (actor) => {
     const c = await call('recruiting_posting_context', { p_actor: actor });
-    if (!c || !Array.isArray(c.templates)) throw new ToolError('The database returned no posting data. Is migration 033 applied?');
+    if (!c || !Array.isArray(c.templates)) throw new ToolError('The database returned no posting data. Is migration 034 applied?');
     return c;
   };
   const listPostings = async (actor, args = {}) => {

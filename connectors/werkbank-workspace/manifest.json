@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "werkbank-workspace",
   "display_name": "Werkbank Workspace",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Your personal Werkbank settings and shared groups in Supabase: preferences sync, groups with roles, shared Spaces, configuration and team memory.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -122,6 +122,14 @@
     {
       "name": "recruiting_create_proposal",
       "description": "Write a proposal for the hiring manager (move, remind, ask). Changes nothing for the candidate; a person decides."
+    },
+    {
+      "name": "recruiting_list_hire_requests",
+      "description": "Read hiring approvals: requests to hire a candidate who reached the stage Offer, the approval chain and who is next. Read only."
+    },
+    {
+      "name": "recruiting_create_hire_request",
+      "description": "Write a hiring request for a candidate in the stage Offer (hiring manager only). The approvers decide in the Hiring Approvals space; the agent cannot approve, return or decline."
     },
     {
       "name": "recruiting_list_posting_templates",

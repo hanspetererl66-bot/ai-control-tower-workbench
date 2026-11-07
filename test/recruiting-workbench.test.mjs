@@ -121,7 +121,7 @@ test('recruiting-workbench Joule only proposes, never rejects or acts alone', ()
   assert.equal(pr.length, 13);
   assert.equal(new Set(pr.map((p) => p.id)).size, pr.length, 'proposal ids are unique');
   const writes = new Set(data.tools.filter((t) => t.kind === 'write').map((t) => t.name));
-  assert.deepEqual([...writes], ['recruiting_create_proposal'], 'the only write tool writes a proposal');
+  assert.deepEqual([...writes].sort(), ['recruiting_create_hire_request', 'recruiting_create_proposal'], 'the only write tools write a proposal or a hiring request, never a decision');
   for (const p of pr) {
     assert.ok(writes.has(p.tool), `${p.tool} is not a declared write tool`);
     assert.ok(['move', 'remind', 'ask'].includes(p.type));
@@ -210,7 +210,7 @@ const tplStd = data.posting.templates.find((t) => t.kind === 'standard' || t.id 
 const briefFor = (job, extra = {}) => ({ ...L.postingBrief(job), role: 'You steer the regional freight network.', pay: '60,000 to 75,000 EUR', ...extra });
 
 test('job posting: the standard template is the one the database seeds, its locked sections and the channels line up', () => {
-  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261107_033_job_postings.sql'), 'utf8');
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261107_034_job_postings.sql'), 'utf8');
   const seed = JSON.parse(/\$json\$(.*?)\$json\$/s.exec(sql)[1]);
   assert.deepEqual(seed.map((s) => [s.key, s.label, !!s.locked, s.text]), tplStd.sections.map((s) => [s.key, s.label, !!s.locked, s.text]));
   assert.ok(tplStd.sections.some((s) => s.locked));

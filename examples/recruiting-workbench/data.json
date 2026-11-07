@@ -696,6 +696,16 @@
       "name": "recruiting_create_proposal",
       "kind": "write",
       "what": "Writes a proposal only. Nothing changes for the candidate until the hiring manager releases it (release is not a tool)"
+    },
+    {
+      "name": "recruiting_list_hire_requests",
+      "kind": "read",
+      "what": "Hiring approvals: who has to decide next for a candidate in the stage Offer"
+    },
+    {
+      "name": "recruiting_create_hire_request",
+      "kind": "write",
+      "what": "Writes a hiring request only (hiring manager). Nothing is released until the approvers decide in the Hiring Approvals space (deciding is not a tool)"
     }
   ],
   "questions": [

@@ -924,7 +924,7 @@
       "source": "connectors/werkbank-workspace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory. Agents, workflows and code of any kind are saved as revisions in the shared database; saving asks first.",
       "install": [
         {
@@ -1087,6 +1087,18 @@
           "name": "recruiting_create_proposal",
           "class": "write",
           "what": "Writes a proposal for the hiring manager only; changes nothing for the candidate.",
+          "default": "ask"
+        },
+        {
+          "name": "recruiting_list_hire_requests",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "recruiting_create_hire_request",
+          "class": "write",
+          "what": "Writes a hiring request for a candidate in the stage Offer (hiring manager only); the approvers decide in the Hiring Approvals space.",
           "default": "ask"
         },
         {

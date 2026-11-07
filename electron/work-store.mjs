@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connectors/_lib/server/work-items.mjs';
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
-import { createRecruitingHandlers, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
+import { createRecruitingHandlers, decideHire, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
 import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
@@ -21,6 +21,7 @@ export const CONFIG_SOURCES = ['werkbank-workspace', 'skill-marketplace'];
 export const DEFAULT_EMAIL = 'hanspeter.erl66@gmail.com';
 
 const PROPOSAL_LIST_ARGS = new Set(['status', 'requisition', 'limit']);
+const HIRE_LIST_ARGS = new Set(['status', 'limit']);
 const RUN_LIST_ARGS = new Set(['days', 'job', 'status', 'trigger', 'only_mine', 'limit']);
 
 export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
@@ -111,6 +112,18 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async saveInterview(requisition, record) {
       const { rpc, email } = connect();
       return saveInterviewRecord(rpc, email, requisition, record);
+    },
+    /** Hiring approvals for the Hiring Approvals space: fixed filters, always as the stored e-mail. */
+    async listHireRequests(args) {
+      const { rpc, email } = connect();
+      const clean = {};
+      for (const [k, v] of Object.entries(args && typeof args === 'object' ? args : {})) if (HIRE_LIST_ARGS.has(k)) clean[k] = v;
+      return createRecruitingHandlers(rpc).recruiting_list_hire_requests({ limit: 200, ...clean, actor: email });
+    },
+    /** One approver's decision after a click. Not a tool: the agent cannot call this. The database accepts only the approver whose turn it is. */
+    async decideHire(id, decision, note) {
+      const { rpc, email } = connect();
+      return decideHire(rpc, email, id, decision, note);
     },
     /** The hiring manager's decision after a click. Not a tool: the agent cannot call this. The database only accepts the manager of the requisition. */
     async decideProposal(id, decision, note) {
