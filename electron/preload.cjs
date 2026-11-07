@@ -37,6 +37,8 @@ contextBridge.exposeInMainWorld('host', {
   jobRunsRecord: (runs) => ipcRenderer.invoke('job-runs-record', runs),
   jobRunsList: (args) => ipcRenderer.invoke('job-runs-list', args),
   recruitingProposals: (args) => ipcRenderer.invoke('recruiting-proposals', args),
+  recruitingHireList: (args) => ipcRenderer.invoke('recruiting-hire-list', args),
+  recruitingHireDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-hire-decide', id, decision, note),
   recruitingImport: () => ipcRenderer.invoke('recruiting-import'),
   recruitingCriteria: () => ipcRenderer.invoke('recruiting-criteria'),
   recruitingCriterionSet: (args) => ipcRenderer.invoke('recruiting-criterion-set', args),

@@ -121,7 +121,7 @@ test('recruiting-workbench Joule only proposes, never rejects or acts alone', ()
   assert.equal(pr.length, 13);
   assert.equal(new Set(pr.map((p) => p.id)).size, pr.length, 'proposal ids are unique');
   const writes = new Set(data.tools.filter((t) => t.kind === 'write').map((t) => t.name));
-  assert.deepEqual([...writes], ['recruiting_create_proposal'], 'the only write tool writes a proposal');
+  assert.deepEqual([...writes].sort(), ['recruiting_create_hire_request', 'recruiting_create_proposal'], 'the only write tools write a proposal or a hiring request, never a decision');
   for (const p of pr) {
     assert.ok(writes.has(p.tool), `${p.tool} is not a declared write tool`);
     assert.ok(['move', 'remind', 'ask'].includes(p.type));
