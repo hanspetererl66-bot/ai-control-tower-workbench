@@ -152,9 +152,9 @@ test('the app checks every tool call and approval request, sends the note and th
   assert.match(app, /draft\.current \+= harnessBlock\.current/, 'the person is told why an answer stopped');
   assert.match(app, /requiresApproval\(harness\) && mode === 'auto'\) void changeMode\('smart_approve'\)/);
   assert.match(app, /id: 'harness', label: 'Working profile'/);
-  assert.match(app, /onHarnessChange=\{changeHarness\}/);
-  const composer = read('src/ui/Composer.tsx');
-  assert.match(composer, /aria-label="Working profile"/);
-  assert.match(composer, /harnesses\.length > 1/);
+  assert.match(app, /onProfile: changeHarness/, 'the profile is chosen in the context panel');
+  const contextBar = read('src/ui/ChatContextBar.tsx');
+  assert.match(contextBar, /aria-label="Working profile"/);
+  assert.match(contextBar, /sf\.profiles\.length > 1/);
   assert.match(read('src/ui/SidePanel.tsx'), /<HarnessPanel prefs=\{prefs\} onPrefs=\{onPrefs\} \/>/);
 });
