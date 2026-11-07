@@ -4624,7 +4624,7 @@ textarea.studio-field { min-height: 120px; }
 .sched-primary { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; font-weight: 600; }
 .sched-empty { display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 56px 20px; border: 1px dashed var(--line); border-radius: 14px; color: var(--muted); text-align: center; }
 .sched-empty strong { color: var(--ink); }
-.sched-table { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: auto; max-height: min(58vh, 540px); min-height: 0; }
+.sched-table { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: auto; max-height: max(360px, calc(100vh - 340px)); min-height: 0; }
 .sched-table > .sched-th { position: sticky; top: 0; z-index: 1; background: var(--panel); }
 .sched-table > .sched-item, .sched-table > .sched-th { min-width: 1060px; }
 .sched-row { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(150px, 1.4fr) minmax(130px, 1.2fr) 135px 135px 64px 80px 230px; gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
@@ -4641,12 +4641,34 @@ textarea.studio-field { min-height: 120px; }
 .sched-dot-skipped { background: var(--lv-yellow); }
 .sched-state-scheduled { color: var(--lv-green); }
 .sched-state-running { color: var(--accent); font-weight: 600; }
-.sched-state-missed { color: var(--lv-red); }
+.sched-state-missed, .sched-state-failing { color: var(--lv-red); }
+.sched-state-failing { font-weight: 600; }
 .sched-state-paused, .sched-state-done { color: var(--muted); }
 .sched-actions { display: flex; gap: 6px; justify-content: flex-end; overflow: visible !important; }
 .sched button.sched-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; }
 .sched .sched-del:hover:not(:disabled) { border-color: var(--lv-red); color: var(--lv-red); }
 .sched-detail { padding: 4px 14px 16px 36px; font-size: 13px; }
+.sched-sub { display: block; margin: 1px 0 0 14px; color: var(--muted); font-size: 11px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
+.sched-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; }
+.sched-tools label { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--muted); }
+.sched-tools select, .sched-search, .sched-gm-add input, .sched-groupedit input { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 6px 9px; font-size: 13px; min-width: 0; }
+.sched-search { width: min(280px, 100%); }
+.sched-count { margin: 0 0 6px auto !important; }
+.sched-group-block + .sched-group-block { border-top: 1px solid var(--line); }
+.sched .sched-group { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: var(--bg); padding: 8px 14px; text-align: left; font-size: 13px; position: sticky; top: 38px; z-index: 1; }
+.sched .sched-group:hover:not(:disabled) { border-color: var(--line); background: var(--accent-soft, rgb(109 40 217 / 8%)); }
+.sched-group-stats { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.sched-group-bad { color: var(--lv-red); font-weight: 600; }
+.sched-group-block > .sched-item:first-of-type { border-top: 0; }
+.sched-gm { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); max-width: 720px; }
+.sched-gm .sched-muted { margin: 0; }
+.sched-gm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sched-gm-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.sched-gm-add { display: flex; gap: 8px; }
+.sched-gm-add input { flex: 1; }
+.sched-groupedit { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 14px; }
+.sched-groupedit > .sched-muted { flex-basis: 100%; margin: 0; }
+.sched-groupedit label { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--muted); }
 .sched-detail h3 { margin: 10px 0 6px; font-size: 13px; }
 .sched-detail table { width: 100%; border-collapse: collapse; }
 .sched-detail th, .sched-detail td { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); }

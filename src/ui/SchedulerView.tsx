@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  MAX_JOBS, TARGET_LABEL, WEEKDAYS, cadenceProblems, describeCadence, jobState, newJob, nextRun, toLocalInput, upcoming,
-  type Cadence, type Job, type Target, type TargetType,
+  GROUP_BY_KEY, MAX_CUSTOM_DIMS, MAX_JOBS, STATE_LABEL, TARGET_LABEL, UNASSIGNED, WEEKDAYS, cadenceProblems, describeCadence, groupJobs, groupValue, groupValues, jobState,
+  loadDims, newDim, newJob, nextRun, saveDims, toLocalInput, upcoming, withGroup, withoutDim,
+  type Cadence, type GroupDim, type Job, type JobState, type Target, type TargetType,
 } from '../jobs';
 import type { LogEntry } from '../job-log';
 import SchedulerActivity from './SchedulerActivity';
@@ -44,16 +45,35 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState('');
   const [tab, setTab] = useState<'jobs' | 'activity'>('jobs');
+  const [dims, setDims] = useState<GroupDim[]>(() => loadDims(window.localStorage));
+  const [groupBy, setGroupByState] = useState<string>(() => { try { return window.localStorage.getItem(GROUP_BY_KEY) || 'type'; } catch { return 'type'; } });
+  const [query, setQuery] = useState('');
+  const [stateFilter, setStateFilter] = useState<'all' | JobState>('all');
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const [managing, setManaging] = useState(false);
+  const dim = dims.find((d) => d.id === groupBy) ?? null;
+  const setGroupBy = (id: string) => { setGroupByState(id); setCollapsed(new Set()); try { window.localStorage.setItem(GROUP_BY_KEY, id); } catch { /* not kept */ } };
+  const changeDims = (next: GroupDim[]) => { setDims(next); saveDims(next, window.localStorage); };
   useEffect(() => { const id = window.setInterval(() => setNow(new Date()), 30_000); return () => window.clearInterval(id); }, []);
   const patch = (id: string, p: Partial<Job>) => onJobs(jobs.map((j) => (j.id === id ? { ...j, ...p } : j)));
-  const active = jobs.filter((j) => j.enabled && jobState(j, now) === 'scheduled').length;
+  const states = jobs.map((j) => jobState(j, now));
+  const active = states.filter((x) => x === 'scheduled' || x === 'failing').length;
+  const failing = states.filter((x) => x === 'failing').length;
+  const q = query.trim().toLowerCase();
+  const shown = jobs.filter((j) => {
+    if (stateFilter !== 'all' && jobState(j, now) !== stateFilter) return false;
+    if (!q) return true;
+    return [j.name, j.target.label, j.note, ...Object.values(j.groups ?? {})].some((t) => t.toLowerCase().includes(q));
+  });
+  const groups = groupJobs(shown, dim, now);
+  const toggle = (key: string) => setCollapsed((c) => { const n = new Set(c); if (n.has(key)) n.delete(key); else n.add(key); return n; });
 
   return (
     <main className="sched">
       <header className="sched-head">
         <div>
           <h1>Scheduler</h1>
-          <p>Run any agent, workflow or skill at a set time. {jobs.length ? `${active} of ${jobs.length} jobs active.` : 'No jobs yet.'}</p>
+          <p>Run any agent, workflow or skill at a set time. {jobs.length ? `${active} of ${jobs.length} jobs active${failing ? `, ${failing} failing` : ''}.` : 'No jobs yet.'}</p>
         </div>
         <button className="sched-primary" onClick={() => setCreating(true)} disabled={jobs.length >= MAX_JOBS || creating}>+ Create job</button>
       </header>
@@ -64,7 +84,7 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
       {tab === 'activity' ? <SchedulerActivity log={log} /> : <>
       <p className="sched-note">Jobs run in the chat while Werkbank is open. A run that was missed while the app was closed is made up for up to six hours.</p>
 
-      {creating && <JobForm targets={targets} now={now} onCancel={() => setCreating(false)} onSave={(job) => { onJobs([job, ...jobs]); setCreating(false); setOpen(job.id); }} />}
+      {creating && <JobForm targets={targets} now={now} dims={dims} jobs={jobs} onCancel={() => setCreating(false)} onSave={(job) => { onJobs([job, ...jobs]); setCreating(false); setOpen(job.id); }} />}
 
       {jobs.length === 0 ? (
         creating ? null : (
@@ -74,26 +94,63 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
           <button onClick={onAddExamples}>Add example jobs</button>
         </div>)
       ) : (
-        <div className="sched-table" role="table" aria-label="Scheduled jobs" tabIndex={0}>
+        <>
+        <div className="sched-tools">
+          <input type="search" className="sched-search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search jobs, targets, groups…" aria-label="Search jobs" />
+          <label>Group by
+            <select value={dim ? dim.id : 'none'} onChange={(e) => setGroupBy(e.target.value)}>
+              <option value="none">No grouping</option>
+              {dims.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
+            </select>
+          </label>
+          <label>Status
+            <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value as 'all' | JobState)}>
+              <option value="all">All</option>
+              {(Object.keys(STATE_LABEL) as JobState[]).map((k) => <option key={k} value={k}>{STATE_LABEL[k]}</option>)}
+            </select>
+          </label>
+          {dim && groups.length > 1 && <button onClick={() => setCollapsed(collapsed.size ? new Set() : new Set(groups.map((x) => x.key)))}>{collapsed.size ? 'Expand all' : 'Collapse all'}</button>}
+          <button onClick={() => setManaging(!managing)} aria-expanded={managing}>Groupings…</button>
+          <span className="sched-muted sched-count">{shown.length === jobs.length ? `${jobs.length} jobs` : `${shown.length} of ${jobs.length} jobs`}</span>
+        </div>
+        {managing && <GroupManager dims={dims} onAdd={(label) => { const d = newDim(label, dims); if (d) { changeDims([...dims, d]); setGroupBy(d.id); } return Boolean(d); }}
+          onRemove={(d) => { if (!window.confirm(`Remove the grouping "${d.label}"? The values on the jobs are deleted too.`)) return; changeDims(dims.filter((x) => x.id !== d.id)); onJobs(withoutDim(jobs, d.id)); if (groupBy === d.id) setGroupBy('type'); }} />}
+        {shown.length === 0 && <div className="sched-empty"><strong>No job matches</strong><span>Change the search or the status filter.</span></div>}
+        <div className="sched-table" role="table" aria-label="Scheduled jobs" tabIndex={0} hidden={shown.length === 0}>
           <div className="sched-row sched-th" role="row">
             <span>Job</span><span>Runs</span><span>Schedule</span><span>Next run</span><span>Last run</span><span>Success</span><span>Status</span><span />
           </div>
-          {jobs.map((job) => {
+          {groups.map((grp) => (
+            <div key={grp.key || 'all'} className="sched-group-block">
+              {dim && (
+                <button className="sched-group" onClick={() => toggle(grp.key)} aria-expanded={!collapsed.has(grp.key)}>
+                  <span className={`sched-chev ${collapsed.has(grp.key) ? '' : 'sched-chev-on'}`} aria-hidden="true">›</span>
+                  <strong>{grp.label}</strong>
+                  <span className="sched-group-stats">
+                    {grp.stats.total} {grp.stats.total === 1 ? 'job' : 'jobs'} · {grp.stats.active} active
+                    {grp.stats.failing > 0 && <span className="sched-group-bad"> · {grp.stats.failing} failing</span>}
+                    {grp.stats.paused > 0 && <> · {grp.stats.paused} paused</>}
+                    {grp.stats.runs > 0 && <> · {Math.round((grp.stats.ok / grp.stats.runs) * 100)}% succeeded</>}
+                  </span>
+                </button>
+              )}
+              {!collapsed.has(grp.key) && grp.jobs.map((job) => {
             const state = jobState(job, now);
-            const next = state === 'scheduled' ? nextRun(job, now) : null;
+            const next = state === 'scheduled' || state === 'failing' ? nextRun(job, now) : null;
             const last = job.runs[0];
             return (
               <div key={job.id} className="sched-item">
                 <div className="sched-row" role="row">
                   <button className="sched-name" onClick={() => setOpen(open === job.id ? '' : job.id)} aria-expanded={open === job.id}>
                     <span className={`sched-chev ${open === job.id ? 'sched-chev-on' : ''}`} aria-hidden="true">›</span>{job.name}
+                    {(job.example || job.groups?.unit || job.groups?.area) && <span className="sched-sub" title={job.example ? 'Sample job: a run only writes a mock entry' : undefined}>{[job.example ? 'Example' : '', job.groups?.unit, job.groups?.area].filter(Boolean).join(' · ')}</span>}
                   </button>
-                  <span><span className={`sched-type sched-type-${job.target.type}`}>{TARGET_LABEL[job.target.type]}</span> {job.target.label}{job.example && <span className="sched-example" title="Sample job: a run only writes a mock entry">Example</span>}</span>
+                  <span><span className={`sched-type sched-type-${job.target.type}`}>{TARGET_LABEL[job.target.type]}</span> {job.target.label}</span>
                   <span>{describeCadence(job.cadence)}</span>
                   <span>{next ? fmt(next) : '–'}</span>
                   <span>{last ? <><i className={`sched-dot sched-dot-${last.status}`} />{fmt(last.at)}</> : '–'}</span>
                   <span title="Succeeded runs of the kept history">{job.runs.length ? `${job.runs.filter((r) => r.status === 'ok').length}/${job.runs.length}` : '–'}</span>
-                  <span className={`sched-state sched-state-${runningId === job.id ? 'running' : state}`}>{runningId === job.id ? 'Running' : { scheduled: 'Active', paused: 'Paused', done: 'Done', missed: 'Missed' }[state]}</span>
+                  <span className={`sched-state sched-state-${runningId === job.id ? 'running' : state}`}>{runningId === job.id ? 'Running' : STATE_LABEL[state]}</span>
                   <span className="sched-actions">
                     <button className="sched-icon" onClick={() => onRunNow(job)} disabled={(!canRun && !job.example) || Boolean(runningId)} title={canRun || job.example ? 'Run now' : 'The agent is busy or not connected'} aria-label={`Run now ${job.name}`}>
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4a.5.5 0 0 0 .77.42l8-5.2a.5.5 0 0 0 0-.84l-8-5.2a.5.5 0 0 0-.77.42z" /></svg>
@@ -116,6 +173,18 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
                   <div className="sched-detail">
                     <p className="sched-muted">Created {fmt(job.createdAt)} · {TARGET_LABEL[job.target.type]} “{job.target.label}” · {describeCadence(job.cadence)}</p>
                     {job.note && <p><strong>Instruction:</strong> {job.note}</p>}
+                    <h3>Groupings</h3>
+                    <div className="sched-groupedit">
+                      <span className="sched-muted">Functional type: {groupValue(job, dims[0])} (from what the job runs)</span>
+                      {dims.filter((d) => d.kind === 'field').map((d) => (
+                        <label key={`${job.id}-${d.id}`}>{d.label}
+                          <input list={`sched-gv-${d.id}`} defaultValue={job.groups?.[d.id] ?? ''} maxLength={40} placeholder={UNASSIGNED} spellCheck={false}
+                            onBlur={(e) => { if (e.target.value.trim() !== (job.groups?.[d.id] ?? '')) onJobs(jobs.map((j) => (j.id === job.id ? withGroup(j, d.id, e.target.value) : j))); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
+                          <datalist id={`sched-gv-${d.id}`}>{groupValues(jobs, d.id).map((v) => <option key={v} value={v} />)}</datalist>
+                        </label>
+                      ))}
+                    </div>
                     <h3>Run history</h3>
                     {job.runs.length === 0 ? <p className="sched-muted">No runs yet.</p> : (
                       <table>
@@ -133,14 +202,17 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
               </div>
             );
           })}
+            </div>
+          ))}
         </div>
+        </>
       )}
       </>}
     </main>
   );
 }
 
-function JobForm({ targets, now, onCancel, onSave }: { targets: Target[]; now: Date; onCancel: () => void; onSave: (job: Job) => void }) {
+function JobForm({ targets, now, dims, jobs, onCancel, onSave }: { targets: Target[]; now: Date; dims: GroupDim[]; jobs: Job[]; onCancel: () => void; onSave: (job: Job) => void }) {
   const firstType = (['agent', 'workflow', 'skill'] as TargetType[]).find((t) => targets.some((x) => x.type === t)) ?? 'agent';
   const [type, setType] = useState<TargetType>(firstType);
   const options = useMemo(() => targets.filter((t) => t.type === type), [targets, type]);
@@ -148,13 +220,14 @@ function JobForm({ targets, now, onCancel, onSave }: { targets: Target[]; now: D
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [cadence, setCadence] = useState<Cadence>(() => defaultCadence('daily', now));
+  const [groups, setGroups] = useState<Record<string, string>>({});
   const target = options.find((t) => t.id === targetId) ?? options[0];
   const problems = cadenceProblems(cadence, now);
   const preview = problems.length ? [] : upcoming(cadence, now, 3);
   const canSave = Boolean(target) && problems.length === 0;
 
   return (
-    <form className="sched-form" onSubmit={(e) => { e.preventDefault(); if (canSave && target) onSave(newJob({ name, target, note: type === 'agent' ? '' : note, cadence }, new Date())); }}>
+    <form className="sched-form" onSubmit={(e) => { e.preventDefault(); if (canSave && target) onSave(newJob({ name, target, note: type === 'agent' ? '' : note, cadence, groups }, new Date())); }}>
       <h2>New job</h2>
       <label>Name<input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} placeholder={target ? `${TARGET_LABEL[type]}: ${target.label}` : 'Job name'} /></label>
       <div className="sched-form-grid">
@@ -207,10 +280,47 @@ function JobForm({ targets, now, onCancel, onSave }: { targets: Target[]; now: D
         )}
         {problems.length > 0 ? <p className="sched-problem" role="alert">{problems[0]}</p> : <p className="sched-muted">Next runs: {preview.map((d) => fmt(d)).join(' · ')}</p>}
       </fieldset>
+      <fieldset>
+        <legend>Groupings (optional)</legend>
+        <div className="sched-form-grid">
+          {dims.filter((d) => d.kind === 'field').map((d) => (
+            <label key={d.id}>{d.label}
+              <input list={`sched-form-gv-${d.id}`} value={groups[d.id] ?? ''} maxLength={40} placeholder={UNASSIGNED} onChange={(e) => setGroups({ ...groups, [d.id]: e.target.value })} />
+              <datalist id={`sched-form-gv-${d.id}`}>{groupValues(jobs, d.id).map((v) => <option key={v} value={v} />)}</datalist>
+            </label>
+          ))}
+        </div>
+        <p className="sched-muted">The functional type (workflow, agent, skill) comes from what the job runs.</p>
+      </fieldset>
       <div className="sched-form-foot">
         <button type="button" onClick={onCancel}>Cancel</button>
         <button type="submit" className="sched-primary" disabled={!canSave}>Create job</button>
       </div>
     </form>
+  );
+}
+
+function GroupManager({ dims, onAdd, onRemove }: { dims: GroupDim[]; onAdd: (label: string) => boolean; onRemove: (dim: GroupDim) => void }) {
+  const [label, setLabel] = useState('');
+  const [problem, setProblem] = useState('');
+  const custom = dims.filter((d) => !d.builtin);
+  const add = () => {
+    if (!label.trim()) return;
+    if (onAdd(label)) { setLabel(''); setProblem(''); } else setProblem(custom.length >= MAX_CUSTOM_DIMS ? `At most ${MAX_CUSTOM_DIMS} own groupings.` : 'That name is already used.');
+  };
+  return (
+    <div className="sched-gm">
+      <p className="sched-muted">Functional type, business area and organization unit are built in. Add your own groupings, for example project, cost center or owner, then set the value on each job (open a job, section Groupings).</p>
+      {custom.length > 0 && (
+        <ul className="sched-gm-list">
+          {custom.map((d) => <li key={d.id}><span>{d.label}</span><button onClick={() => onRemove(d)} aria-label={`Remove grouping ${d.label}`}>Remove</button></li>)}
+        </ul>
+      )}
+      <div className="sched-gm-add">
+        <input value={label} maxLength={30} onChange={(e) => { setLabel(e.target.value); setProblem(''); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }} placeholder="New grouping, for example Cost center" aria-label="Name of the new grouping" />
+        <button onClick={add} disabled={!label.trim() || custom.length >= MAX_CUSTOM_DIMS}>Add grouping</button>
+      </div>
+      {problem && <p className="sched-problem" role="alert">{problem}</p>}
+    </div>
   );
 }

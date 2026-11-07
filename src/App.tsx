@@ -56,7 +56,7 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
-import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type JobRun, type Target } from './jobs';
+import { JOBS_EXAMPLES_KEY, JOBS_SEEDED_KEY, addRun, exampleJobs, mergeExamples, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type JobRun, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
@@ -192,11 +192,21 @@ export default function App() {
     const stored = loadJobs(window.localStorage);
     let seeded = false;
     try { seeded = window.localStorage.getItem(JOBS_SEEDED_KEY) === '1'; } catch { /* no storage */ }
-    if (stored.length > 0 || seeded) return stored;
-    // First start: a few example jobs show what the Scheduler does; they only write mock runs.
+    let renewed = false;
+    try { renewed = window.localStorage.getItem(JOBS_EXAMPLES_KEY) === '1'; } catch { /* no storage */ }
+    if (stored.length > 0 || seeded) {
+      if (renewed) return stored;
+      try { window.localStorage.setItem(JOBS_EXAMPLES_KEY, '1'); } catch { /* no storage */ }
+      // Once: the first seven sample jobs give way to the larger set (own jobs stay; nobody who deleted all samples gets them back).
+      if (!stored.some((j) => j.example)) return stored;
+      const merged = mergeExamples(stored, exampleJobs());
+      saveJobs(merged, window.localStorage);
+      return merged;
+    }
+    // First start: example jobs show what the Scheduler does; they only write mock runs.
     const examples = exampleJobs();
     saveJobs(examples, window.localStorage);
-    try { window.localStorage.setItem(JOBS_SEEDED_KEY, '1'); } catch { /* no storage */ }
+    try { window.localStorage.setItem(JOBS_SEEDED_KEY, '1'); window.localStorage.setItem(JOBS_EXAMPLES_KEY, '1'); } catch { /* no storage */ }
     return examples;
   });
   const jobsRef = useRef(jobs);
@@ -1154,7 +1164,8 @@ export default function App() {
   /** One run of a scheduler job (agent, workflow or skill): ask in the chat and write the result into the run history. */
   async function runJob(job: Job, manual = false) {
     if (job.example) {
-      const run = { id: newId('run'), at: new Date().toISOString(), ms: 0, status: 'ok' as const, trigger: manual ? 'manual' as const : 'schedule' as const, note: 'Example run: nothing was started.' };
+      const failed = job.fails === true;
+      const run = { id: newId('run'), at: new Date().toISOString(), ms: 0, status: failed ? 'error' as const : 'ok' as const, trigger: manual ? 'manual' as const : 'schedule' as const, note: failed ? 'Example run: shown as failed on purpose, nothing was started.' : 'Example run: nothing was started.' };
       changeJobs(jobsRef.current.map((j) => (j.id === job.id ? addRun(j, run) : j)));
       return;
     }
