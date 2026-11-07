@@ -5,12 +5,13 @@ import {
 } from '../ontology-manager';
 import OntologyDetails from './OntologyDetails';
 import OntologyHistory from './OntologyHistory';
+import OntologyMap from './OntologyMap';
 import OntologyProposals from './OntologyProposals';
 import OntologyQuality from './OntologyQuality';
 import OntologyUse from './OntologyUse';
 
 type Generate = (prompt: string, title: string, session?: string) => Promise<string>;
-type Tab = 'catalog' | 'proposals' | 'quality' | 'use' | 'history';
+type Tab = 'catalog' | 'map' | 'proposals' | 'quality' | 'use' | 'history';
 
 const FILTERS: Array<{ id: TermFilter; label: string }> = [
   { id: 'all', label: 'All' }, { id: 'metrics', label: 'Metrics' }, { id: 'classes', label: 'Classes' }, { id: 'attention', label: 'Needs attention' },
@@ -32,7 +33,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   const toReview = proposals.filter((p) => p.status === 'proposed').length;
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
   const TABS: Array<{ id: Tab; label: string; n?: number }> = [
-    { id: 'catalog', label: 'Catalog' }, { id: 'proposals', label: 'Proposals', n: toReview }, { id: 'quality', label: 'Quality', n: findings },
+    { id: 'catalog', label: 'Catalog' }, { id: 'map', label: 'Map' }, { id: 'proposals', label: 'Proposals', n: toReview }, { id: 'quality', label: 'Quality', n: findings },
     { id: 'use', label: 'Use' }, { id: 'history', label: 'History' },
   ];
 
@@ -71,6 +72,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
       </nav>
 
       {tab === 'catalog' && <Catalog ontologies={ontologies} gov={governance} onGovernance={onGovernance} focus={focus} onReload={onReload} onBack={onBack} loading={source.kind === 'loading'} />}
+      {tab === 'map' && <OntologyMap ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'proposals' && <OntologyProposals proposals={proposals} ontologies={ontologies} generate={generate} onStop={onStop} ready={ready} onReload={onReload} />}
       {tab === 'quality' && <OntologyQuality ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'use' && <OntologyUse ontologies={ontologies} gov={governance} onGovernance={onGovernance} knownSkills={knownSkills} generate={generate} ready={ready} />}
