@@ -4,6 +4,7 @@ import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall }
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
 import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
+import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
@@ -20,6 +21,7 @@ export default function SpaceViewer({
   tabRequest,
   bridge,
   bridgeEnabled = false,
+  interviewDeps,
   onAsk,
   textScale = DEFAULT_SPACE_SCALE,
   onTextScale,
@@ -37,6 +39,7 @@ export default function SpaceViewer({
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
   bridgeEnabled?: boolean;
+  interviewDeps?: InterviewDeps;
   /** A Space asks Joule a question ("Joule fragen"): the host opens the chat and sends it. */
   onAsk?: (prompt: string) => void;
   /** Text size of the page inside the frame (1 = as authored). */
@@ -112,12 +115,15 @@ export default function SpaceViewer({
 
   const bridgeRef = useRef(bridge);
   bridgeRef.current = bridge;
+  const interviewRef = useRef(interviewDeps);
+  interviewRef.current = interviewDeps;
   useEffect(() => {
     if (!bridgeEnabled) return;
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
-      const handle = space.slug === PRD_SPACE ? handlePrdMessage
+      const handle = space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
+        : space.slug === PRD_SPACE ? handlePrdMessage
         : space.slug === SALES_SPACE ? handleSalesMessage
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
         : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)

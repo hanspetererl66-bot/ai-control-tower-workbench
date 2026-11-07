@@ -634,3 +634,33 @@ test('job postings: templates keep the locked sections, the standard cannot chan
   }
   assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_posting_publish(text,bigint,jsonb)', 'execute')"), 't');
 });
+
+const ivRec = (session, extra = {}) => ({ job: 'REQ-2203', session, mode: 'ai', result: [{ id: 'c1', verdict: 'correct' }], answers: [{ id: 'q1', answer: 'text' }], ...extra });
+const ivSave = (actor, req, session, payload, summary = 'A summary.', mode = 'ai') =>
+  `select public.recruiting_interview_save(${q(actor)}, ${q(req)}, ${q(session)}, ${q(mode)}, '', ${q(JSON.stringify(payload))}::jsonb, ${q(summary)})`;
+
+test('interview records: only the hiring manager keeps and reads them, one per session code, never changed, never with an address (migration 034)', { skip }, () => {
+  const code = `IV-T${Date.now().toString(36).toUpperCase().slice(-6)}`;
+  const first = json(ivSave(MGR, 'REQ-2203', code, ivRec(code)));
+  assert.equal(first.saved, true);
+  const again = json(ivSave(MGR, 'REQ-2203', code, ivRec(code, { mode: 'mock' })));
+  assert.equal(again.saved, false, 'a second save with the same code does not overwrite');
+  const mine = json(`select public.recruiting_interview_records(${q(MGR)}, 'REQ-2203', 50)`);
+  const row = mine.find((r) => r.session === code);
+  assert.ok(row);
+  assert.equal(row.mode, 'ai');
+  assert.equal(row.record.result[0].verdict, 'correct');
+  assert.match(rule(ivSave('stranger@x.com', 'REQ-2203', `${code}X`, ivRec(`${code}X`))), /hiring manager/);
+  assert.deepEqual(json(`select public.recruiting_interview_records('stranger@x.com', 'REQ-2203', 50)`), [], 'others read nothing');
+  assert.match(rule(ivSave(MGR, 'REQ-2203', `${code}Y`, ivRec(`${code}Y`, { note: 'write to jane@example.org' }))), /e-mail address/);
+  assert.match(rule(ivSave(MGR, 'REQ-2203', `${code}Z`, ivRec(`${code}Z`), 'mail me: a@b.io')), /e-mail address/);
+  assert.match(rule(ivSave(MGR, 'REQ-2203', 'bad code', ivRec('x'))), /./);
+  assert.match(rule(ivSave(MGR, 'REQ-2203', `${code}M`, ivRec(`${code}M`), 'S', 'human')), /./);
+  assert.match(rule(`update recruiting.interview_record set summary = 'x' where session_code = ${q(code)}`), /append only/);
+  assert.match(rule(`delete from recruiting.interview_record where session_code = ${q(code)}`), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_interview_save(text,text,text,text,text,jsonb,text)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_interview_records(text,text,integer)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.interview_record', 'select')`), 'f');
+  }
+});

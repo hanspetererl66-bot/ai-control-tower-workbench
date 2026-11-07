@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "werkbank-workspace",
   "display_name": "Werkbank Workspace",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Your personal Werkbank settings and shared groups in Supabase: preferences sync, groups with roles, shared Spaces, configuration and team memory.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -150,6 +150,10 @@
     {
       "name": "recruiting_submit_job_posting",
       "description": "Write: send a draft to the hiring manager. Only the hiring manager can release and publish; not a tool."
+    },
+    {
+      "name": "recruiting_interview_records",
+      "description": "Read: saved online interview records of the requisitions the person manages: answers, task result per criterion with a quote, counts, summary. No score; saving is not a tool."
     }
   ],
   "user_config": {

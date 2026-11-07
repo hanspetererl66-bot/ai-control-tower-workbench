@@ -924,7 +924,7 @@
       "source": "connectors/werkbank-workspace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory. Agents, workflows and code of any kind are saved as revisions in the shared database; saving asks first.",
       "install": [
         {
@@ -1130,6 +1130,12 @@
           "class": "write",
           "what": "Sends a draft to the hiring manager. Only the hiring manager can release and publish; that is not a tool.",
           "default": "ask"
+        },
+        {
+          "name": "recruiting_interview_records",
+          "class": "read",
+          "what": "Reads saved online interview records of your requisitions: answers, task result per criterion with a quote, counts, summary. No score. Saving is not a tool.",
+          "default": "on"
         }
       ],
       "switches": [],

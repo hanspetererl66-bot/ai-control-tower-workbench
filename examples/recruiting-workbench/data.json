@@ -1220,7 +1220,7 @@
     }
   },
   "interview": {
-    "note": "Sample guides. The avatar is a mock: no Synthesia connection exists yet. The task check below is a text search that stands in for the AI check; it never decides about a person.",
+    "note": "Sample guides. The avatar is a mock: no Synthesia connection exists yet. In the Werkbank app the task check, the summary and the letter text come from Joule (an AI). Without the app, or if the AI is not reachable, a text search stands in for the check and says so. It never decides about a person.",
     "avatar": {
       "name": "Mira",
       "provider": "Mock avatar (no Synthesia connection)"
@@ -1230,7 +1230,9 @@
       "points": [
         "You are speaking with an AI avatar, not with a person. The questions come from a guide the hiring manager approved.",
         "Your answers are written down as text so the hiring manager can read them. Do not share health, family or other personal data.",
-        "Your task result is checked by an AI against the criteria listed with the task. The check says correct, partly correct, wrong or not present for each criterion. It gives no score and rejects nobody.",
+        "Your task result is checked by an AI against the criteria listed with the task. The check says correct, partly correct, wrong or not present for each criterion. It gives no score and rejects nobody. You see the result too.",
+        "To do this, your answers and your task text are sent to an AI model provider (OpenRouter, through Joule). The hiring manager keeps a record of answers, task text, result and a short summary. It holds no name and no e-mail address; a session code stands for you.",
+        "If you want a letter with the summary and your result, you type an e-mail address for that. It is used to create a mail draft and is not stored. A person sends the mail.",
         "A person, the hiring manager, makes every decision about your application. You can ask for a conversation with a person instead at any time."
       ]
     },
