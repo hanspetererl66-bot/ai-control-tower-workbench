@@ -39,14 +39,14 @@ export default function RegistryView({ generate, onStop, ready = false, onBack }
       <header className="sh-head">
         <div>
           {onBack && <button className="ghost-btn" onClick={onBack} aria-label="Back to Admin">← Admin</button>}
-          <h1>Registry</h1>
+          <h1>Solution register</h1>
           <p>{items ? `${items.filter((i) => !i.archived).length} items · agents, workflows and features with their history` : 'Agents, workflows and features with their history'}</p>
         </div>
         <button className="rg-refresh" onClick={() => void load()} disabled={!api}>Refresh</button>
       </header>
 
       {!api ? (
-        <p className="sh-empty">The registry reads the shared database. It is available in the desktop app, once the connector "werkbank-workspace" has the Supabase URL and the secret key.</p>
+        <p className="sh-empty">The solution register reads the shared database. It is available in the desktop app, once the connector "werkbank-workspace" has the Supabase URL and the secret key.</p>
       ) : (
         <>
           <div className="rg-filters">

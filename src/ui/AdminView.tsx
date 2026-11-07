@@ -1,15 +1,15 @@
 /**
- * Start page of "Admin": the places for those who look after what is shared. Four tiles today: Ontologies, Registry, Skill management and Hiring approvals;
- * more can follow. Admin is not part of Develop.
+ * Start page of "Admin": the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and Skill management;
+ * more can follow. Hiring approvals is a Space of its own, not part of Admin. Admin is not part of Develop.
  */
-export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills, onOpenHiring }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void; onOpenHiring: () => void }) {
+export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void }) {
   return (
     <main className="develop develop-main adm">
       <h1 className="develop-title">Admin</h1>
       <p className="develop-sub">Look after what everyone shares. More tiles will follow.</p>
       <div className="adm-grid">
         <section className="develop-card develop-card-block" aria-label="Ontologies">
-          <span className="develop-logo develop-logo-ontologies" aria-hidden="true"><OntologyMark /></span>
+          <span className="develop-logo adm-logo adm-logo-ontology" aria-hidden="true"><OntologyMark /></span>
           <span className="develop-card-title">Ontologies</span>
           <span className="develop-card-brand">the vocabulary</span>
           <span className="develop-card-text">The shared meaning of your terms, so that every agent reads a metric or a class the same way.</span>
@@ -19,19 +19,19 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
           </ul>
           <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenOntology}>Open Ontologies</button>
         </section>
-        <section className="develop-card develop-card-block" aria-label="Registry">
-          <span className="develop-logo develop-logo-ontologies" aria-hidden="true"><RegistryMark /></span>
-          <span className="develop-card-title">Registry</span>
-          <span className="develop-card-brand">the history</span>
-          <span className="develop-card-text">Every agent, workflow and feature that was built, with its revisions, owner and the tickets it came from.</span>
+        <section className="develop-card develop-card-block" aria-label="Solution register">
+          <span className="develop-logo adm-logo adm-logo-register" aria-hidden="true"><RegistryMark /></span>
+          <span className="develop-card-title">Solution register</span>
+          <span className="develop-card-brand">what was built</span>
+          <span className="develop-card-text">The register of every agent, workflow and feature that was built in the Werkbank, with its revisions, its owner and the Jira, Slack or Notion items it came from.</span>
           <ul className="develop-blocks">
             <li><span>Compare a revision with the one before</span></li>
             <li><span>Restore an old revision as the newest</span></li>
           </ul>
-          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenRegistry}>Open Registry</button>
+          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenRegistry}>Open Solution register</button>
         </section>
         <section className="develop-card develop-card-block" aria-label="Skill management">
-          <span className="develop-logo develop-logo-ontologies" aria-hidden="true"><SkillMark /></span>
+          <span className="develop-logo adm-logo adm-logo-skills" aria-hidden="true"><SkillMark /></span>
           <span className="develop-card-title">Skill management</span>
           <span className="develop-card-brand">the health</span>
           <span className="develop-card-text">Which skills are used, duplicated, unowned or outdated, and what to do about it.</span>
@@ -41,65 +41,46 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
           </ul>
           <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkills}>Open Skill management</button>
         </section>
-        <section className="develop-card develop-card-block" aria-label="Hiring approvals">
-          <span className="develop-logo develop-logo-ontologies" aria-hidden="true"><HiringMark /></span>
-          <span className="develop-card-title">Hiring approvals</span>
-          <span className="develop-card-brand">the decision</span>
-          <span className="develop-card-text">What Joule proposes for open requisitions waits here for the hiring manager. Nothing happens to a candidate without a click.</span>
-          <ul className="develop-blocks">
-            <li><span>Release or decline a proposal, with a note</span></li>
-            <li><span>Only the hiring manager of a requisition decides</span></li>
-          </ul>
-          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenHiring}>Open Hiring approvals</button>
-        </section>
       </div>
     </main>
   );
 }
 
-/** Three linked nodes: a generic ontology mark. */
+/** A term with its definition at the centre, three related terms around it: the shared vocabulary. */
 function OntologyMark() {
   return (
     <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
-      <path d="M32 18L16 46M32 18l16 28M16 46h32" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" opacity=".55" />
-      <circle cx="32" cy="16" r="9" fill="currentColor" />
-      <circle cx="15" cy="47" r="8" fill="currentColor" opacity=".75" />
-      <circle cx="49" cy="47" r="8" fill="currentColor" opacity=".55" />
+      <path d="M32 32L12 15M32 32l22-14M32 32l-14 21M32 32l21 20" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" opacity=".5" />
+      <circle cx="12" cy="15" r="5.5" fill="currentColor" opacity=".6" />
+      <circle cx="54" cy="18" r="4.5" fill="currentColor" opacity=".8" />
+      <circle cx="18" cy="53" r="4.5" fill="currentColor" opacity=".8" />
+      <circle cx="53" cy="52" r="5.5" fill="currentColor" opacity=".6" />
+      <circle cx="32" cy="32" r="14" fill="currentColor" />
+      <path d="M25 29h14M25 35h9" stroke="var(--panel)" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }
 
-/** A stack of three versions with a clock hand: everything built, with its history. */
+/** Three layers in perspective with a return arrow: what was built, and every version of it. */
 function RegistryMark() {
   return (
     <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
-      <rect x="9" y="10" width="34" height="11" rx="4" fill="currentColor" />
-      <rect x="9" y="26" width="34" height="11" rx="4" fill="currentColor" opacity=".75" />
-      <rect x="9" y="42" width="20" height="11" rx="4" fill="currentColor" opacity=".55" />
-      <circle cx="46" cy="45" r="10" stroke="currentColor" strokeWidth="3.4" />
-      <path d="M46 39v6.5l4 2.5" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M32 8l22 10-22 10L10 18z" fill="currentColor" />
+      <path d="M10 28l22 10 22-10" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity=".75" />
+      <path d="M10 38l22 10 22-10" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity=".5" />
+      <path d="M10 48l22 10 22-10" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity=".3" />
     </svg>
   );
 }
 
-/** A skill card with a health pulse: the catalog and its state. */
+/** A hexagonal badge with a pulse line and a status dot: a skill, and how healthy it is. */
 function SkillMark() {
   return (
     <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
-      <rect x="10" y="9" width="30" height="40" rx="5" fill="currentColor" opacity=".55" />
-      <rect x="17" y="15" width="30" height="40" rx="5" fill="currentColor" opacity=".75" />
-      <path d="M22 38h6l3-8 5 14 3-6h4" stroke="var(--surface, #fff)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-/** A tick inside a card: a proposal that waits for a person's decision. */
-function HiringMark() {
-  return (
-    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
-      <rect x="12" y="8" width="36" height="46" rx="5" fill="currentColor" opacity=".55" />
-      <rect x="18" y="14" width="36" height="46" rx="5" fill="currentColor" opacity=".75" />
-      <path d="M26 38l7 7 13-15" stroke="var(--surface, #fff)" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M32 6l22 12.5v27L32 58 10 45.5v-27z" fill="currentColor" />
+      <path d="M17 33h9l4-10 6 19 4-9h7" stroke="var(--panel)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="51" cy="14" r="6.5" fill="var(--panel)" />
+      <circle cx="51" cy="14" r="3.6" fill="currentColor" opacity=".75" />
     </svg>
   );
 }

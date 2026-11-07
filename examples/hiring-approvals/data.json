@@ -1,0 +1,533 @@
+{
+  "asOf": "2026-11-07",
+  "company": "Hanse Logistik (fictional)",
+  "viewers": [
+    {
+      "email": "head.planning@hanse.example",
+      "label": "Hiring manager (Planning)"
+    },
+    {
+      "email": "hr.lead@hanse.example",
+      "label": "HR"
+    },
+    {
+      "email": "finance.bp@hanse.example",
+      "label": "Finance business partner"
+    },
+    {
+      "email": "director.planning@hanse.example",
+      "label": "Department head (Planning)"
+    }
+  ],
+  "defaultViewer": "hr.lead@hanse.example",
+  "requests": [
+    {
+      "id": 1,
+      "requisition": "REQ-2203",
+      "title": "Supply Chain Analyst",
+      "dept": "Planning",
+      "candidate": "C-4204",
+      "terms": {
+        "level": "Professional",
+        "band": "Band 4",
+        "start_on": "2027-01-15",
+        "contract": "permanent",
+        "note": "Replaces a leaver, budget line exists."
+      },
+      "evidence": "C-4204 is in the stage Offer of REQ-2203. Meets all must-haves (must-haves met 4 of 4, nice-to-haves 2 of 2). A person decides.",
+      "status": "pending",
+      "currentStep": 2,
+      "createdBy": "head.planning@hanse.example",
+      "at": "2026-11-03T09:10",
+      "decidedAt": null,
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "head.planning@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-03T14:10",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "waiting",
+          "decidedAt": null,
+          "note": ""
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "waiting",
+          "decidedAt": null,
+          "note": ""
+        },
+        {
+          "ord": 4,
+          "role": "department_head",
+          "approver": "director.planning@hanse.example",
+          "status": "waiting",
+          "decidedAt": null,
+          "note": ""
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "hiring_manager",
+          "actor": "head.planning@hanse.example",
+          "at": "2026-11-03T09:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.planning@hanse.example",
+          "at": "2026-11-03T09:15",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "head.planning@hanse.example",
+          "at": "2026-11-03T14:10",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-03T14:15",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "reminded",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-05T14:10",
+          "note": "n8n, incoming webhook"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "requisition": "REQ-2202",
+      "title": "Forklift Operator",
+      "dept": "Operations",
+      "candidate": "C-4401",
+      "terms": {
+        "level": "Operator",
+        "band": "Band 2",
+        "start_on": "2026-12-01",
+        "contract": "fixed-term",
+        "note": "Twelve months, may become permanent."
+      },
+      "evidence": "C-4401 is in the stage Offer of REQ-2202. No criteria are stored for this requisition, so no comparison was made.",
+      "status": "pending",
+      "currentStep": 3,
+      "createdBy": "site.manager.bremen@hanse.example",
+      "at": "2026-11-04T08:30",
+      "decidedAt": null,
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "site.manager.bremen@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-04T13:30",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-04T19:30",
+          "note": ""
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "waiting",
+          "decidedAt": null,
+          "note": ""
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T08:20",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T08:35",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T13:30",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-04T13:35",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-04T19:30",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-11-04T19:35",
+          "note": "n8n, incoming webhook"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "requisition": "REQ-2108",
+      "title": "SAP Logistics Consultant (internal IT)",
+      "dept": "IT",
+      "candidate": "C-3908",
+      "terms": {
+        "level": "Senior",
+        "band": "Band 5",
+        "start_on": "2026-12-15",
+        "contract": "permanent",
+        "note": ""
+      },
+      "evidence": "C-3908 is in the stage Offer of REQ-2108. Meets all must-haves (must-haves met 4 of 4, nice-to-haves 1 of 2). A person decides.",
+      "status": "approved",
+      "currentStep": 4,
+      "createdBy": "head.it.apps@hanse.example",
+      "at": "2026-10-27T10:00",
+      "decidedAt": "2026-10-28T12:00",
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "head.it.apps@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-27T15:00",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-27T21:00",
+          "note": ""
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-28T04:00",
+          "note": ""
+        },
+        {
+          "ord": 4,
+          "role": "department_head",
+          "approver": "director.planning@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-28T12:00",
+          "note": ""
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-27T09:50",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-27T10:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-27T15:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-27T15:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-27T21:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-10-27T21:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-10-28T04:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "department_head",
+          "actor": "director.planning@hanse.example",
+          "at": "2026-10-28T04:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "department_head",
+          "actor": "director.planning@hanse.example",
+          "at": "2026-10-28T12:00",
+          "note": ""
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-28T12:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "informed",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-28T12:05",
+          "note": "n8n, incoming webhook"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "requisition": "REQ-2105",
+      "title": "Customer Service Agent (DE/EN)",
+      "dept": "Service",
+      "candidate": "C-3511",
+      "terms": {
+        "level": "Agent",
+        "band": "Band 2",
+        "start_on": "2026-11-16",
+        "contract": "permanent",
+        "note": ""
+      },
+      "evidence": "C-3511 is in the stage Offer of REQ-2105. No criteria are stored for this requisition, so no comparison was made.",
+      "status": "returned",
+      "currentStep": 2,
+      "createdBy": "head.service@hanse.example",
+      "at": "2026-10-29T11:00",
+      "decidedAt": "2026-10-29T22:00",
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "head.service@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-29T16:00",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "returned",
+          "decidedAt": "2026-10-29T22:00",
+          "note": "Start date is before the notice period ends. Please check and ask again."
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "waiting",
+          "decidedAt": null,
+          "note": ""
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "hiring_manager",
+          "actor": "head.service@hanse.example",
+          "at": "2026-10-29T10:50",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.service@hanse.example",
+          "at": "2026-10-29T11:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "head.service@hanse.example",
+          "at": "2026-10-29T16:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-29T16:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "returned",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-29T22:00",
+          "note": "Start date is before the notice period ends. Please check and ask again."
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.service@hanse.example",
+          "at": "2026-10-29T22:05",
+          "note": "n8n, incoming webhook"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "requisition": "REQ-2106",
+      "title": "Payroll Specialist",
+      "dept": "HR",
+      "candidate": "C-3604",
+      "terms": {
+        "level": "Specialist",
+        "band": "Band 3",
+        "start_on": "2027-01-01",
+        "contract": "permanent",
+        "note": ""
+      },
+      "evidence": "C-3604 is in the stage Offer of REQ-2106. No criteria are stored for this requisition, so no comparison was made.",
+      "status": "declined",
+      "currentStep": 3,
+      "createdBy": "head.hr.ops@hanse.example",
+      "at": "2026-10-30T13:00",
+      "decidedAt": "2026-10-31T07:00",
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "head.hr.ops@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-30T18:00",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-10-31T00:00",
+          "note": ""
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "declined",
+          "decidedAt": "2026-10-31T07:00",
+          "note": "The position is frozen until the next budget round."
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "hiring_manager",
+          "actor": "head.hr.ops@hanse.example",
+          "at": "2026-10-30T12:50",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.hr.ops@hanse.example",
+          "at": "2026-10-30T13:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "head.hr.ops@hanse.example",
+          "at": "2026-10-30T18:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-30T18:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-31T00:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-10-31T00:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "declined",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-10-31T07:00",
+          "note": "The position is frozen until the next budget round."
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.hr.ops@hanse.example",
+          "at": "2026-10-31T07:05",
+          "note": "n8n, incoming webhook"
+        }
+      ]
+    }
+  ]
+}

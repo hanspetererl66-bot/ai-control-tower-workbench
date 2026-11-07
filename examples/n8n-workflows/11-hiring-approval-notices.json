@@ -1,0 +1,256 @@
+{
+  "name": "Demo 11 (hiring): approval notices",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Hiring approvals: notices\nEvery 15 minutes asks the database **what is due** (`recruiting_hire_due`): the first notice to the approver whose turn it is, a reminder after 2 days, an escalation to the requester after 5 days, and the result when a request ended. It sends one message per item and **records that it did** (`recruiting_hire_notice_record`), which also lands in the log of the request in the Hiring Approvals space.\n**This workflow cannot approve, return or decline anything** and cannot message a person who is not named by the rules in the database. The decisions are made by people in the Werkbank.\n**Setup:** set the environment variables `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (service role key, keep it out of the workflow), `HIRING_NOTIFY_WEBHOOK_URL` (Teams or Slack incoming webhook; it receives `text` and `to`), optional `HIRING_REMIND_DAYS` (2) and `HIRING_ESCALATE_DAYS` (5). n8n must allow `$env` in expressions (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`). Apply migration 032 first, then activate the workflow. Messages contain the candidate pseudonym, requisition, title and step, never a name or an amount.",
+        "height": 330,
+        "width": 760,
+        "color": 4
+      },
+      "id": "f8a676f4-6d24-5f21-9e2a-75ca70da1773",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "cbf9cf88-7d85-5e17-996c-34a336c4cce9",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6d79cf06-735d-5e40-9c57-4968fe545e58",
+      "name": "Run now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_due",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_remind_days: Number($env.HIRING_REMIND_DAYS || 2), p_escalate_days: Number($env.HIRING_ESCALATE_DAYS || 5) }) }}",
+        "options": {}
+      },
+      "id": "6264e55b-6f5d-5dec-ac12-111060028c98",
+      "name": "What is due?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One message per due item. The database decided WHO and WHEN; this only words it.\nconst ROLE = { hiring_manager: 'the hiring manager', hr: 'HR', finance: 'finance', department_head: 'the department head' };\nconst days = (iso) => Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 864e5));\nreturn $input.all().map(({ json: d }) => {\n  const what = `${d.candidate} for ${d.title} (${d.requisition}, ${d.dept})`;\n  const where = `step ${d.step} of ${d.steps}, ${ROLE[d.role] || d.role}`;\n  let text;\n  if (d.kind === 'notify') text = `Hiring approval waiting for you: ${what}. Your turn: ${where}. Open Hiring Approvals in the Werkbank.`;\n  else if (d.kind === 'remind') text = `Reminder: the hiring approval for ${what} has waited ${days(d.since)} days for you (${where}).`;\n  else if (d.kind === 'escalate') text = `Overdue: the hiring approval for ${what} has been open ${days(d.since)} days at ${where} (${d.approver}).`;\n  else text = `Hiring approval ${d.status}: ${what}.` + (d.status === 'approved' ? ' The chain is complete.' : ' The request is closed; a changed request is a new request.');\n  return { json: { id: d.id, kind: d.kind, to: d.to, text } };\n});"
+      },
+      "id": "bca50e21-0f7e-52c1-bd39-c89e75f8a227",
+      "name": "Write the message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.HIRING_NOTIFY_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, to: $json.to }) }}",
+        "options": {}
+      },
+      "id": "86ad8b46-4c7d-5a57-a726-ae3efaf63883",
+      "name": "Send the message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        80
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_notice_record",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_id: $('Write the message').item.json.id, p_kind: $('Write the message').item.json.kind, p_to: $('Write the message').item.json.to, p_channel: 'n8n, incoming webhook' }) }}",
+        "options": {}
+      },
+      "id": "e480e9d8-5bd0-5abd-830a-2fcf40abfa28",
+      "name": "Record the notice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run report: how many notices were recorded this run (created = false means someone had already recorded it).\nconst rows = $input.all().map(({ json }) => json);\nreturn [{ json: { recorded: rows.filter((r) => r.created === true).length, alreadyRecorded: rows.filter((r) => r.created === false).length } }];"
+      },
+      "id": "361a3921-8bfe-5dbe-b386-49a524af4c8a",
+      "name": "Run report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// A message that could not be sent is NOT recorded, so the next run tries again. This only lists them.\nconst failed = $input.all().map(({ json }) => ({ id: $('Write the message').item.json.id, kind: $('Write the message').item.json.kind, error: json.error?.message || 'send failed' }));\nreturn [{ json: { failed: failed.length, items: failed } }];"
+      },
+      "id": "28beb6dc-a5e5-5990-a49d-00859c698617",
+      "name": "Not sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "What is due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run now": {
+      "main": [
+        [
+          {
+            "node": "What is due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "What is due?": {
+      "main": [
+        [
+          {
+            "node": "Write the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write the message": {
+      "main": [
+        [
+          {
+            "node": "Send the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send the message": {
+      "main": [
+        [
+          {
+            "node": "Record the notice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record the notice": {
+      "main": [
+        [
+          {
+            "node": "Run report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
