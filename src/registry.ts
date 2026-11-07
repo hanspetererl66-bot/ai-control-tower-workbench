@@ -11,6 +11,7 @@ import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
 import { agentUnit, developUnit, restore } from './work-sync.ts';
 import { sanitizeExtends, sanitizeRefs, sourcesOf, type ExtendsRef, type SourceRef } from './requirements.ts';
 import { cardWords, flagsOf, phaseOf, policyBriefOf, sanitizeCard, type FlagId, type Phase, type PolicyBrief, type RegisterCard } from './registry-card.ts';
+import { cardNote, registerFrom, withRegister } from './register-store.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
 export type RType = 'agent' | 'workflow' | 'feature' | 'code';
@@ -178,6 +179,8 @@ export function rollbackArgs(cur: { id: string; kind: string; name: string; curr
     const f = parseFeature(files);
     if (f) { const a = featureArgs(f, { note: '' }); stage = String(a.stage); approved = a.approved as string[]; intent = a.intent as Record<string, unknown>; }
   }
+  const card = registerFrom(files);
+  if (card) intent = { ...intent, register: card };
   return {
     id: cur.id, expected_rev: cur.currentRev, kind: cur.kind, name: cur.name, stage, approved, intent,
     files: files.map((f) => ({ path: f.path, language: f.language ?? '', content: f.content })), note: `Restored revision ${toRev}`,
@@ -281,4 +284,29 @@ export async function restoreRevision(api: Api, item: Pick<RItem, 'id' | 'type' 
   const kind = item.type === 'agent' ? 'agent' : item.type === 'workflow' ? 'workflow' : 'code';
   const res = await api.call('save_work_item', rollbackArgs({ id: item.id, kind, name: item.name, currentRev: Number(cur?.current_rev) || item.rev, intent: cur?.intent }, files, rev));
   return Number(res?.rev) || 0;
+}
+
+// ---------- the register card ----------
+
+/** save_work_item arguments that put `card` into the item as a new revision; every other file is copied exactly from the revision it is based on. */
+export function saveCardArgs(cur: { id: string; kind: string; name: string; currentRev: number; intent?: Record<string, unknown> }, files: RevFile[], card: RegisterCard, note: string): Record<string, unknown> {
+  const next = withRegister(files, card) as RevFile[];
+  return { ...rollbackArgs(cur, next, 0), note: note.slice(0, 300) };
+}
+
+/** Save the card as a new revision of the item. Returns the new revision number. Needs the newest revision (a newer one somewhere else is a conflict the database reports). */
+export async function saveCard(api: Api, item: Pick<RItem, 'id' | 'type' | 'name' | 'rev' | 'card'>, card: RegisterCard): Promise<number> {
+  const cur = await api.call('get_work_item', { id: item.id });
+  const files: RevFile[] = (Array.isArray(cur?.files) ? cur.files : []).filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string').map((f: any) => ({ path: f.path, language: str(f.language, 30), content: f.content }));
+  if (!files.length) throw new Error('This item has no files to keep the card with.');
+  const kind = item.type === 'agent' ? 'agent' : item.type === 'workflow' ? 'workflow' : 'code';
+  const res = await api.call('save_work_item', saveCardArgs({ id: item.id, kind, name: item.name, currentRev: Number(cur?.current_rev) || item.rev, intent: cur?.intent }, files, card, cardNote(registerFrom(files) ?? item.card, card)));
+  return Number(res?.rev) || 0;
+}
+
+/** save_work_item arguments of another writer (a feature change, say) with the register card of the revision it is based on kept, so no writer wipes it. */
+export function keepCard(args: Record<string, unknown>, basedOn: Array<{ path: string; content?: string }>): Record<string, unknown> {
+  const card = registerFrom(basedOn);
+  if (!card) return args;
+  return { ...args, files: withRegister((args.files as RevFile[]) ?? [], card), intent: { ...((args.intent as Record<string, unknown>) ?? {}), register: card } };
 }

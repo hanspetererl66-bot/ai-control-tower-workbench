@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { FLOW, FLOW_LABEL, type FlowStep } from '../flow';
 import {
-  TYPES, TYPE_LABEL, addLink, diffRevisions, featureArgs, filterItems, hostApi, itemsForRef, loadHistory, loadRegistry, loadRevFiles, noFilter, parseFeature,
+  TYPES, TYPE_LABEL, addLink, diffRevisions, featureArgs, filterItems, hostApi, itemsForRef, keepCard, loadHistory, loadRegistry, loadRevFiles, noFilter, parseFeature,
   restoreRevision, setStage, stageText, type FileDiff, type Filter, type RItem, type Rev, type RevFile,
 } from '../registry';
 import { MODE_LABEL, policyGaps, revisionPolicy, widens, type RevisionPolicy } from '../policy-manifest';
@@ -9,6 +9,7 @@ import {
   CRITICALITY_LABEL, DISCOVERY_LABEL, FLAGS, FLAG_LABEL, PHASES, PHASE_LABEL, REL_KINDS, REL_LABEL, RISK_LABEL, VERIFICATION_LABEL, euro, profileOf, similarItems, summarize, type Profile,
 } from '../registry-card';
 import { exampleRegistry } from '../registry-examples';
+import RegistryCardEditor from './RegistryCardEditor';
 import { commentFor, isDone, labelsFor, loadLog, markerOf, notedAt, parseWriteback, record, saveLog, summaryOf, ticketsOf, writebackPrompt, type WriteResult } from '../writeback';
 
 const when = (t: number) => (t ? new Date(t).toLocaleString([], { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–');
@@ -164,7 +165,10 @@ function Field({ label, children, wide }: { label: string; children: ReactNode; 
  * what it connects to and what it did in the last 30 days. Read only. A field nobody declared says so ("not declared"); nothing is guessed.
  * The hints at the top are computed (registry-card.ts) and only ask for a look, they block nothing.
  */
-function CardPanel({ item, all, profile, now, example, onOpen }: { item: RItem; all: RItem[]; profile: Profile; now: number; example: boolean; onOpen: (id: string) => void }) {
+function CardPanel({ item, all, profile, now, example, onOpen, onSaved }: { item: RItem; all: RItem[]; profile: Profile; now: number; example: boolean; onOpen: (id: string) => void; onSaved: (text: string) => Promise<void> }) {
+  const api = useMemo(() => hostApi(), []);
+  const [editing, setEditing] = useState(false);
+  const canEdit = !!api && !example && !item.archived;
   const c = item.card;
   const solution = item.type === 'agent' || item.type === 'workflow';
   const twins = similarItems(all, item.id);
@@ -174,9 +178,21 @@ function CardPanel({ item, all, profile, now, example, onOpen }: { item: RItem; 
   const dueOver = !!c?.reviewDue && Date.parse(c.reviewDue) + 86_400_000 <= now;
   const dates = c ? PHASES.filter((p) => c.dates[p]) : [];
 
+  if (editing && api) {
+    return (
+      <section className="rg-card" aria-label="Register card">
+        <div className="rg-card-head"><h3 className="rg-h">Register card · editing</h3></div>
+        <RegistryCardEditor item={item} api={api} solution={solution} onCancel={() => setEditing(false)} onSaved={async (t) => { setEditing(false); await onSaved(t); }} />
+      </section>
+    );
+  }
+
   return (
     <section className="rg-card" aria-label="Register card">
-      <h3 className="rg-h">Register card{example ? ' · example' : ''}</h3>
+      <div className="rg-card-head">
+        <h3 className="rg-h">Register card{example ? ' · example' : ''}</h3>
+        {canEdit && !editing && <button onClick={() => setEditing(true)}>{c ? 'Edit the card' : 'Fill in the card'}</button>}
+      </div>
       {profile.flags.length > 0 && (
         <ul className="rg-flags" aria-label="Hints">
           {profile.flags.map((f) => <li key={f.id}><b>{f.label}</b> {f.why}</li>)}
@@ -348,7 +364,7 @@ function Detail({ item, all, profile, now, exampleRevs, onClose, onChanged, onFi
       )}
       {same.length > 0 && <p className="sh-note">Same source: {same.map((i) => i.name).join(', ')}</p>}
 
-      <CardPanel item={item} all={all} profile={profile} now={now} example={isExample} onOpen={onOpen} />
+      <CardPanel key={`${item.id}:${item.rev}`} item={item} all={all} profile={profile} now={now} example={isExample} onOpen={onOpen} onSaved={async (text) => { setNote(text); await onChanged(); }} />
 
       {generate && !isExample && !item.archived && item.type !== 'code' && ticketsOf(item).length > 0 && <JiraPanel item={item} generate={generate} onStop={onStop} ready={Boolean(ready)} />}
 
@@ -445,7 +461,7 @@ function FeaturePanel({ item, api, onSaved }: { item: RItem; api: NonNullable<Re
       if (!doc) throw new Error('This item is not a feature of the Werkbank.');
       const out = change(doc);
       if (!out.doc) throw new Error(out.note);
-      await api.call('save_work_item', featureArgs(out.doc, { id: item.id, expectedRev: Number(cur.current_rev) || item.rev, note: out.note }));
+      await api.call('save_work_item', keepCard(featureArgs(out.doc, { id: item.id, expectedRev: Number(cur.current_rev) || item.rev, note: out.note }), cur?.files ?? []));
       setLabel(''); setUrl('');
       await onSaved(out.note);
     } catch (e) { setProblem(msg(e)); } finally { setBusy(false); }

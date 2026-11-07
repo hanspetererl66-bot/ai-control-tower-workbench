@@ -4900,6 +4900,19 @@ textarea.studio-field { min-height: 120px; }
 .rg-grow { flex: 1 1 200px; }
 .sh .rg-feature input:not([type=checkbox]):not([type=radio]) { width: 100%; min-width: 150px; box-sizing: border-box; }
 .rg-feature .rg-error { margin: 0; }
+.rg-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rg-edit { display: flex; flex-direction: column; gap: 8px; }
+.rg-edit label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); min-width: 0; }
+.rg-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+.rg-edit-wide { grid-column: 1 / -1; }
+.rg-edit-act { display: flex; align-items: flex-end; }
+.rg-edit-chips { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.rg-edit-chips .rg-chip button { margin-left: 6px; padding: 0 2px; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.rg-edit-chips .rg-chip button:hover, .rg-edit-chips .rg-chip button:focus-visible { color: var(--text); }
+.sh .rg-edit input:not([type=checkbox]):not([type=radio]), .sh .rg-edit select, .sh .rg-edit textarea { width: 100%; box-sizing: border-box; }
+ul.rg-error { padding-left: 18px; }
+.rg-edit textarea { font: inherit; resize: vertical; }
+@media (max-width: 520px) { .rg-edit-grid { grid-template-columns: minmax(0, 1fr); } }
 .rg-row td:last-child { white-space: nowrap; }
 .rg-restore { align-self: flex-start; }
 .rg-refresh { margin-left: auto; }

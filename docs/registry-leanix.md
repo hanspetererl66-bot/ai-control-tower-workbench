@@ -60,15 +60,24 @@ Features and code items are not judged. Archived items are not judged.
 
 ## Where the data lives
 
-The card is read from `intent.register` of the work item. **Nothing in the app writes it yet.** An item built in the Werkbank therefore shows what can be derived (owner, build step, rights from the policy summary) and says "not declared" for the rest; it never invents a value. In particular an agent is never shown as *Active* unless somebody declares it, because "live" is read from the Studio and not saved.
+The card is the file `register.json` of the work item (like `policy.json`), and `intent.register` repeats it so the list can show it without reading files. **It is written from the registry**: open an item, "Fill in the card" or "Edit the card", "Save as a new revision". The change is a revision of its own (note, for example, "Register card: lifecycle, risk"), so it shows in the history, in the diff and can be restored. Nothing else of the item changes.
 
-Why it is not written yet: the project sync rewrites the intent of an item from the project on every save, so a card kept only in the intent would be erased by the next sync. The safe way is a file `register.json` in the work item (like `policy.json`) or a table. That is the next decision; see "Next".
+How the card survives the other writers:
 
-Without the database (a plain browser) the register shows 19 invented example items (`src/registry-examples.ts`), marked "Example". They cover every phase, criticality, verification state and risk class and every hint, so the register can be tried and tested. With the database but nothing saved, a button offers the examples.
+- **Project sync.** It rewrites `project.json`, the documents and `policy.json` from the project, but it cannot know the card. On every push it reads `register.json` from the newest revision and sends it along; if that file exists but cannot be read, the push is refused with an error instead of overwriting it. A revision that only changed the card is not a conflict: the local project is kept and its own changes are sent on top.
+- **Feature panel** (stage, links) and **Restore**: both carry the card of the revision they are based on. Restoring an old revision brings back the card as it was then; a revision without a card restores to no card.
+
+An item without a card shows what can be derived (owner, build step, rights from the policy summary) and "not declared" for the rest; it never invents a value. In particular an agent is never shown as *Active* unless somebody declares it.
+
+What the editor does not do: the **run numbers of the last 30 days** are not typed in (they should come from the scheduler log, see "Next"); **who** verifies is only a text the person types, because the app has no sign-in yet (the same limit as the e-mail identity of the work items), so "Verified by" is not proof; there is **no role check** (anybody who can save the item can change the card); and there is no reminder yet when a review date passes.
+
+Checks before saving (`cardProblems`): verified needs who and when, the next review must be after the verification day, a high risk class needs a reason, phase dates must not run backwards, a connection must not be listed twice.
+
+Without the database (a plain browser) the register shows 19 invented example items (`src/registry-examples.ts`), marked "Example"; they cannot be edited. With the database but nothing saved, a button offers the examples.
 
 ## Next (not built)
 
-1. Where to store the card (`register.json` per item is the likely answer) and an editor on the card, with a revision per change.
+1. A role check for who may change a card, and real identity for "Verified by" (needs the sign-in decision).
 2. Check the field names against the SAP Help Portal pages and, if useful, an export in LeanIX shape (Excel import exists there).
 3. Real telemetry: run counts and cost per item from the scheduler log and the model usage, instead of values typed in.
 4. Review reminders (the next-review date already exists; sending reminders would use the n8n notices pattern of the hiring approvals).
