@@ -202,6 +202,30 @@ test('GR/IR: SAP and the lakehouse agree on the classification and the open valu
   }
 });
 
+test('planted difference: SAP knows a late invoice the lakehouse snapshot does not', async () => {
+  const server = startStdioServer(SERVER, PIN);
+  try {
+    const all = await server.tool('get_open_grir_items', {});
+    const trap = all.json.items.find((item) => item.po_number === '4500001005');
+    const lake = GRIR_ITEMS.find((item) => item.po === '4500001005');
+    assert.equal(lake.grValueEur - lake.invoicedValueEur, 47250, 'lakehouse open value');
+    assert.equal(trap.open_value_eur, 41250, 'SAP open value');
+    assert.match(trap.note, /after the lakehouse snapshot/);
+    // exactly one item differs, so the agent has one clear thing to stop at
+    const differing = all.json.items.filter((item) => {
+      const row = GRIR_ITEMS.find((r) => r.po === item.po_number && r.item === item.item);
+      return Math.abs(item.open_value_eur - (row.grValueEur - row.invoicedValueEur)) > 0.005;
+    });
+    assert.equal(differing.length, 1);
+    // the old lakehouse amount is refused, the SAP amount is accepted as a draft
+    const base = { po_number: '4500001005', item: '10', reason: 'GR/IR accrual, invoice pending' };
+    assert.equal((await server.tool('draft_accrual_posting', { ...base, amount_eur: 47250 })).isError, true);
+    assert.notEqual((await server.tool('draft_accrual_posting', { ...base, amount_eur: 41250 })).isError, true);
+  } finally {
+    server.close();
+  }
+});
+
 test('an accrual follows the same gate and is limited to the open value', async () => {
   const server = startStdioServer(SERVER, PIN);
   try {

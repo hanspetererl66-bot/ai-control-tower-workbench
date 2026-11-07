@@ -298,6 +298,8 @@ export function exampleJobs(now = new Date()): Job[] {
       [run(5, 12, 9_000, 'ok', 'Example run'), run(6, 36, 8_000, 'ok', 'Example run'), run(7, 60, 12_000, 'ok', 'Example run', 'manual')], 'Only overdue invoices above 1,000 EUR.'),
     mk('ex-sync', 'Ticket sync', { type: 'workflow', id: 'example-workflow-2', label: 'Jira to Sub4Me sync' }, { kind: 'interval', every: 2, unit: 'hours' },
       [run(8, 1, 6_000, 'ok', 'Example run'), run(9, 3, 7_000, 'ok', 'Example run')]),
+    mk('ex-monday', 'Monday close briefing', { type: 'skill', id: 'monday-close', label: 'monday-close' }, { kind: 'weekly', time: '06:30', days: [1] },
+      [run(12, 34, 74_000, 'ok', 'Example run: 8 accruals, 1 item differs from SAP'), run(13, 34 + 168, 71_000, 'ok', 'Example run')], 'Overnight check before the close: load, orders, accruals. Reads only; booking needs your yes in the chat.'),
     mk('ex-brief', 'Morning briefing', { type: 'skill', id: 'example-skill', label: 'daily-briefing' }, { kind: 'daily', time: '07:45' },
       [run(10, 13, 21_000, 'ok', 'Example run'), run(11, 37, 19_000, 'ok', 'Example run')]),
     mk('ex-cleanup', 'Skill registry clean-up', { type: 'skill', id: 'example-skill-2', label: 'skill-registry-review' }, { kind: 'monthly', time: '06:00', day: 15 },
