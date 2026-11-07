@@ -4,11 +4,11 @@ import { DEFAULT_LAYOUT, LAYOUTS, LAYOUT_DEFS, LAYOUT_LIST, isLayout, layoutAppC
 import { DEFAULT_PREFERENCES, isOriginalLook, resetLook, sanitizePreferences, profileSettingsOf } from '../src/preferences.ts';
 import { applySpacePrefs, buildPreferenceCss } from '../src/preferences-style.ts';
 
-test('three layouts, the quiet one is the default', () => {
-  assert.deepEqual([...LAYOUTS], ['minimal', 'bold', 'contemporary']);
+test('five layouts, the quiet one is the default', () => {
+  assert.deepEqual([...LAYOUTS], ['minimal', 'structural', 'contemporary', 'aurora', 'clay']);
   assert.equal(DEFAULT_LAYOUT, 'minimal');
   assert.equal(DEFAULT_PREFERENCES.layout, 'minimal');
-  assert.equal(LAYOUT_LIST.length, 3);
+  assert.equal(LAYOUT_LIST.length, 5);
   for (const l of LAYOUT_LIST) assert.ok(l.name && l.description && l.space.length && l.app.length);
 });
 
@@ -20,19 +20,39 @@ test('layouts never set colours: only tokens, no hex values', () => {
   }
 });
 
-test('layouts differ in character: bold is square and outlined, minimal small, contemporary rounder', () => {
+test('layouts differ in character: structural is square and ruled, minimal small, contemporary rounder', () => {
   const radius = (id) => Number(/--radius:(\d+)px/.exec(layoutSpaceRules(id)[0])[1]);
-  assert.ok(radius('bold') < radius('minimal') && radius('minimal') < radius('contemporary'));
-  assert.match(layoutSpaceRules('bold').join(''), /border:2px solid var\(--ink\)/);
-  assert.match(layoutSpaceRules('bold').join(''), /--shadow:4px 4px 0/, 'hard offset shadow, no blur');
+  assert.ok(radius('structural') < radius('minimal') && radius('minimal') < radius('contemporary'));
+  assert.match(layoutSpaceRules('structural').join(''), /border-top:1px solid var\(--ink\)/, 'fine rules instead of boxes');
+  assert.match(layoutSpaceRules('structural').join(''), /serif/, 'serif headlines and numbers');
+  assert.doesNotMatch(layoutSpaceRules('structural').join(''), /\d+px solid var\(--ink\)[^}]*box-shadow:\d/, 'no thick outlines with hard shadows');
   assert.match(layoutSpaceRules('minimal').join(''), /--shadow:none/);
   assert.match(layoutSpaceRules('contemporary').join(''), /backdrop-filter/);
-  assert.match(layoutSpaceRules('bold').join(''), /prefers-reduced-motion:no-preference/, 'button nudge on hover only without reduced motion');
+  assert.doesNotMatch(layoutSpaceRules('structural').join(''), /(?<!text-)transform|transition/, 'no motion at all');
   assert.doesNotMatch(layoutSpaceRules('minimal').join(''), /transform/);
 });
 
+test('aurora glows and is round, clay is puffy; both keep motion behind the motion query', () => {
+  const a = layoutSpaceRules('aurora').join('');
+  const c = layoutSpaceRules('clay').join('');
+  assert.match(a, /radial-gradient/);
+  assert.match(a, /999px/);
+  assert.match(a, /background-clip:text/);
+  assert.match(c, /inset 0 3px/, 'inner highlight');
+  assert.match(c, /border-radius:28px/);
+  for (const css of [a, c]) {
+    const outside = css.replace(/@media \(prefers-reduced-motion:no-preference\)\{.*\}$/, '');
+    assert.doesNotMatch(outside, /(?<!text-)transform|transition/, 'motion only inside the media query');
+  }
+  assert.ok(radiusOf('aurora') > radiusOf('contemporary') && radiusOf('clay') > radiusOf('aurora'));
+});
+
+function radiusOf(id) {
+  return Number(/--radius:(\d+)px/.exec(layoutSpaceRules(id)[0])[1]);
+}
+
 test('a layout is saved, validated, part of the profile and of the look', () => {
-  assert.equal(sanitizePreferences({ layout: 'bold' }).layout, 'bold');
+  assert.equal(sanitizePreferences({ layout: 'structural' }).layout, 'structural');
   assert.equal(sanitizePreferences({ layout: 'baroque' }).layout, 'minimal', 'unknown layouts fall back');
   assert.equal(sanitizePreferences({ layout: 7 }).layout, 'minimal');
   assert.equal(isLayout('contemporary'), true);
@@ -47,7 +67,7 @@ test('the app and the Spaces get the chosen layout, after the skin and before th
     assert.ok(buildPreferenceCss({ ...DEFAULT_PREFERENCES, layout: id }).includes(LAYOUT_DEFS[id].app[0]));
     assert.ok(applySpacePrefs('<html><head></head></html>', { ...DEFAULT_PREFERENCES, layout: id }).includes(LAYOUT_DEFS[id].space[0]));
   }
-  const html = applySpacePrefs('<html><head></head></html>', { ...DEFAULT_PREFERENCES, skin: 'mono', layout: 'bold', accent: '#C2185B' });
-  assert.ok(html.indexOf('--canvas:#f5f5f5') < html.indexOf('--radius:0px'), 'skin first, then layout');
-  assert.ok(html.indexOf('--radius:0px') < html.indexOf('--purple:#C2185B'), 'accent last');
+  const html = applySpacePrefs('<html><head></head></html>', { ...DEFAULT_PREFERENCES, skin: 'mono', layout: 'structural', accent: '#C2185B' });
+  assert.ok(html.indexOf('--canvas:#f5f5f5') < html.indexOf('--radius:2px'), 'skin first, then layout');
+  assert.ok(html.indexOf('--radius:2px') < html.indexOf('--purple:#C2185B'), 'accent last');
 });
