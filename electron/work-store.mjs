@@ -9,6 +9,7 @@ import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connector
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
 import { createRecruitingHandlers, decideHire, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
+import { observeCall } from '../connectors/_lib/server/observability.mjs';
 import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
@@ -112,6 +113,14 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async saveInterview(requisition, record) {
       const { rpc, email } = connect();
       return saveInterviewRecord(rpc, email, requisition, record);
+    },
+    /**
+     * Agent observability for the Observability space: seven fixed reading functions, whitelisted arguments, always as the stored e-mail.
+     * Read only. Nothing here writes, and the run history in the database is append only anyway.
+     */
+    async observe(view, params) {
+      const { rpc, email } = connect();
+      return observeCall(rpc, email, view, params);
     },
     /** Hiring approvals for the Hiring Approvals space: fixed filters, always as the stored e-mail. */
     async listHireRequests(args) {

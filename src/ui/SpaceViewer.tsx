@@ -4,6 +4,7 @@ import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall }
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
 import { HIRING_SPACE, handleHiringMessage, type HiringHost } from '../hiring-bridge';
+import { OBSERVABILITY_SPACE, handleObservabilityMessage, type ObservabilityHost } from '../observability-bridge';
 import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
@@ -135,6 +136,13 @@ export default function SpaceViewer({
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
         : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)
         : handleSub4meMessage;
+      if (space.slug === OBSERVABILITY_SPACE) {
+        // Read only, through the main process as the stored e-mail, never through the agent.
+        const h = window.host;
+        const host: ObservabilityHost | undefined = h?.observabilityCall ? { observe: h.observabilityCall } : undefined;
+        void handleObservabilityMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
+        return;
+      }
       if (space.slug === HIRING_SPACE) {
         // Reads and decisions go through the main process as the stored e-mail, never through the agent.
         const h = window.host;
