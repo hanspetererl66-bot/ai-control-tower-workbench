@@ -9,10 +9,13 @@
  *   contemporary   "bento and glass": translucent cards with a blur, soft accent glow in the background, segmented tabs.
  *   aurora         glowing mesh background, luminous glass cards with a coloured rim, gradient numbers, pill tabs.
  *   clay           soft 3D: puffy, rounded, pillowy cards and buttons with inner highlights and soft shadows.
+ *   kinetic        type as the picture: huge tight numbers, heavy headlines, uppercase labels; numbers and tabs move on hover.
+ *   tactile        light skeuomorphism: bevelled buttons, embossed numbers, recessed input wells, hardware-style segmented tabs.
+ *   assistant      AI-native: gradient-rimmed cards, spark marks on headings, suggestion-chip tags, pill inputs.
  *
  * Original CSS written for this app; it imitates the general direction of current product design, no site or asset.
  */
-export const LAYOUTS = ['minimal', 'structural', 'contemporary', 'aurora', 'clay'] as const;
+export const LAYOUTS = ['minimal', 'structural', 'contemporary', 'aurora', 'clay', 'kinetic', 'tactile', 'assistant'] as const;
 export type LayoutId = (typeof LAYOUTS)[number];
 export const DEFAULT_LAYOUT: LayoutId = 'minimal';
 
@@ -20,7 +23,7 @@ type LayoutDef = {
   name: string;
   description: string;
   /** What the little preview in the settings draws. */
-  preview: { radius: number; shadow: boolean; glass: boolean; pill: boolean; ledger?: boolean; aurora?: boolean; clay?: boolean; gap: number };
+  preview: { radius: number; shadow: boolean; glass: boolean; pill: boolean; ledger?: boolean; aurora?: boolean; clay?: boolean; kinetic?: boolean; tactile?: boolean; assistant?: boolean; gap: number };
   /** Rules for a Space page (design-system classes; `html` in front raises the weight above the Space's own styles). */
   space: string[];
   /** Rules for the app window. */
@@ -211,6 +214,104 @@ export const LAYOUT_DEFS: Record<LayoutId, LayoutDef> = {
       '.msg-user{border-radius:24px;box-shadow:inset 0 3px 5px rgba(255,255,255,.35),0 6px 12px rgba(20,18,30,.10)}',
       '.briefing-card{border:0;border-radius:24px;box-shadow:0 12px 22px rgba(20,18,30,.12),inset 0 3px 5px rgba(255,255,255,.4)}',
       '.sov-tile,.sov-card,.sov-kid{border:0;border-radius:26px;box-shadow:0 12px 22px rgba(20,18,30,.12),inset 0 3px 5px rgba(255,255,255,.4)}',
+    ],
+  },
+  kinetic: {
+    name: 'Kinetic',
+    description: 'Type is the picture. Huge, tight, heavy numbers and headlines, uppercase labels, a single rule under each block. Numbers and tabs move on hover.',
+    preview: { radius: 0, shadow: false, glass: false, pill: false, kinetic: true, gap: 6 },
+    space: [
+      'html:root{--radius:2px;--radius-s:2px;--shadow:none;--shadow-lg:0 12px 32px rgba(20,18,30,.14)}',
+      `${CARDS}{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;padding:16px 0 18px}`,
+      'html .card,html .ns{margin-bottom:22px}',
+      `${BIG}{font-size:clamp(30px,3.6vw,48px);font-weight:800;letter-spacing:-.05em;line-height:.95;font-variant-numeric:tabular-nums}`,
+      `${HEAD}{margin:48px 0 18px;font-size:28px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--ink)}`,
+      `${HEADER}{background:var(--canvas);border-bottom:1px solid var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}`,
+      'html .ct .hdr-title,html .s4m .logo{font-size:22px;font-weight:800;letter-spacing:-.04em}',
+      `${TABBAR}{padding:0 40px;gap:28px;border-bottom:1px solid var(--line)}`,
+      `${TAB}{padding:16px 0 12px;border:0;border-bottom:3px solid transparent;border-radius:0;font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--muted)}`,
+      `${TAB_ON}{background:transparent;color:var(--ink);border-bottom-color:var(--purple)}`,
+      `${PAGE}{padding:40px 40px 80px}`,
+      'html .ct .mr{gap:34px;margin-bottom:34px}',
+      'html .ct .g2,html .ct .g3,html .ct .g4{gap:30px}',
+      'html .s4m .grid{gap:30px;margin-bottom:34px}',
+      'html .tag{background:transparent;border:0;border-radius:0;padding:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}',
+      `${BUTTONS}{border-radius:0;font-weight:800;letter-spacing:.06em;text-transform:uppercase;box-shadow:none}`,
+      'html button.primary{background:var(--ink);color:var(--surface);border:1px solid var(--ink)}',
+      'html .tbl th,html table th{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}',
+      'html .ab{border-radius:0}',
+      `${NO_MOTION}{html .mv,html .v{transition:letter-spacing .35s ease,transform .35s ease}html .mc:hover .mv,html .mc:hover .v,html .card:hover .mv,html .card:hover .v{letter-spacing:-.02em;transform:translateX(6px)}html .ct .tb,html .s4m nav button{transition:letter-spacing .25s ease,color .25s ease}html .ct .tb:hover,html .s4m nav button:hover{letter-spacing:.02em;color:var(--ink)}}`,
+    ],
+    app: [
+      ':root{--radius:2px}',
+      '.composer{border:0;border-bottom:2px solid var(--ink);border-radius:0;box-shadow:none}',
+      '.msg-user{border-radius:2px;font-weight:600}',
+      '.briefing-card{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}',
+      '.sov-tile,.sov-card,.sov-kid{border-radius:2px;box-shadow:none}',
+    ],
+  },
+  tactile: {
+    name: 'Tactile',
+    description: 'Light skeuomorphism. Bevelled buttons, embossed numbers, recessed input wells and hardware-style segmented tabs. Looks like something you can press.',
+    preview: { radius: 5, shadow: true, glass: false, pill: false, tactile: true, gap: 4 },
+    space: [
+      'html:root{--radius:10px;--radius-s:8px;--shadow:0 1px 1px rgba(20,18,30,.12),0 3px 8px rgba(20,18,30,.08)}',
+      `${CARDS}{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 100%,white),color-mix(in srgb,var(--surface) 93%,var(--ink)));border:1px solid color-mix(in srgb,var(--line) 85%,var(--ink));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 1px rgba(20,18,30,.12),0 4px 10px rgba(20,18,30,.07)}`,
+      'html .card,html .ns{padding:18px;margin-bottom:12px}',
+      `${BIG}{font-weight:700;letter-spacing:-.02em;text-shadow:0 1px 0 rgba(255,255,255,.45)}`,
+      `${HEAD}{margin:24px 0 10px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-shadow:0 1px 0 rgba(255,255,255,.4)}`,
+      `${HEADER}{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 92%,var(--ink)));border-bottom:1px solid var(--line);box-shadow:0 1px 3px rgba(20,18,30,.10)}`,
+      `${TABBAR}{margin:14px 24px 0;padding:4px;gap:2px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--canvas) 92%,var(--ink));box-shadow:inset 0 2px 4px rgba(20,18,30,.12);overflow-x:auto}`,
+      `${TAB}{padding:8px 14px;border:0;border-radius:9px}`,
+      `${TAB_ON}{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 90%,var(--ink)));color:var(--ink);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 2px rgba(20,18,30,.25)}`,
+      `${PAGE}{padding:22px 24px 48px}`,
+      `${BUTTONS}{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,var(--ink)));color:var(--ink);border:1px solid color-mix(in srgb,var(--line) 70%,var(--ink));border-radius:9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 2px rgba(20,18,30,.2)}`,
+      'html button.primary{background:linear-gradient(180deg,var(--purple-mid),var(--purple));color:white;border-color:var(--purple);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 2px rgba(20,18,30,.3)}',
+      'html input,html select,html textarea{border:1px solid color-mix(in srgb,var(--line) 70%,var(--ink));border-radius:8px;background:color-mix(in srgb,var(--surface) 96%,var(--ink));box-shadow:inset 0 2px 3px rgba(20,18,30,.14)}',
+      'html .tag{border-radius:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 1px rgba(20,18,30,.12)}',
+      'html .ab{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 2px rgba(20,18,30,.10)}',
+      `${NO_MOTION}{html button.primary,html button.ghost,html button.small{transition:transform .08s ease,box-shadow .08s ease}html button.primary:active,html button.ghost:active,html button.small:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(20,18,30,.3)}}`,
+    ],
+    app: [
+      ':root{--radius:10px}',
+      '.composer{border-radius:12px;box-shadow:inset 0 2px 4px rgba(20,18,30,.12),0 1px 0 rgba(255,255,255,.3)}',
+      '.msg-user{border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 2px rgba(20,18,30,.25)}',
+      '.briefing-card{border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 2px rgba(20,18,30,.12),0 4px 10px rgba(20,18,30,.06)}',
+      '.sov-tile,.sov-card,.sov-kid{border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 2px rgba(20,18,30,.14)}',
+    ],
+  },
+  assistant: {
+    name: 'Assistant',
+    description: 'AI-native. Cards with a gradient rim, a spark on every heading, suggestion-chip tags and pill-shaped inputs. The page feels like it is talking to you.',
+    preview: { radius: 8, shadow: false, glass: false, pill: true, assistant: true, gap: 5 },
+    space: [
+      'html:root{--radius:16px;--radius-s:12px;--shadow:none;--shadow-lg:0 12px 32px rgba(20,18,30,.14)}',
+      'html body{background:radial-gradient(900px 360px at 50% -120px,var(--purple-dim),transparent 70%),var(--canvas)}',
+      `${CARDS}{background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(135deg,var(--purple-mid),var(--blue),transparent 65%) border-box;border:1px solid transparent;border-radius:16px;box-shadow:none}`,
+      'html .card,html .ns{padding:20px;margin-bottom:14px}',
+      `${BIG}{font-weight:600;letter-spacing:-.025em}`,
+      `${HEAD}{margin:28px 0 12px;font-size:15px;font-weight:600;color:var(--ink)}`,
+      'html .sh::before,html .s4m h2::before{content:"\\2726\\00a0";color:var(--purple)}',
+      `${HEADER}{background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}`,
+      `${TABBAR}{background:transparent;border-bottom:0;padding:14px 28px 0;gap:8px}`,
+      `${TAB}{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-weight:500}`,
+      `${TAB_ON}{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border);font-weight:600}`,
+      `${PAGE}{padding:24px 28px 56px}`,
+      'html .tag{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border);border-radius:999px;padding:1px 10px}',
+      `${BUTTONS}{border-radius:999px}`,
+      'html button.primary{background:linear-gradient(110deg,var(--purple),var(--blue),var(--purple));background-size:220% 100%;border:0;color:white;box-shadow:none}',
+      'html input,html select,html textarea{border-radius:999px;padding-left:16px;padding-right:16px}',
+      'html textarea{border-radius:18px}',
+      'html input:focus,html select:focus,html textarea:focus{outline:0;border-color:var(--purple-mid);box-shadow:0 0 0 3px var(--purple-dim)}',
+      'html .ab{border-radius:16px;background:linear-gradient(135deg,var(--purple-dim),transparent 60%)}',
+      `${NO_MOTION}{html button.primary{transition:background-position .6s ease}html button.primary:hover{background-position:100% 0}}`,
+    ],
+    app: [
+      ':root{--radius:16px}',
+      '.composer{border-radius:26px;border:1px solid transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,linear-gradient(135deg,var(--accent),var(--blue,var(--accent)),transparent 70%) border-box;box-shadow:none}',
+      '.msg-user{border-radius:18px 18px 4px 18px}',
+      '.briefing-card{border-radius:16px;border:1px solid transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,linear-gradient(135deg,var(--accent),transparent 65%) border-box}',
+      '.sov-tile,.sov-card,.sov-kid{border-radius:16px}',
     ],
   },
 };

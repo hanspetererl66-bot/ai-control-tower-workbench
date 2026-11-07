@@ -5,10 +5,10 @@ import { DEFAULT_PREFERENCES, isOriginalLook, resetLook, sanitizePreferences, pr
 import { applySpacePrefs, buildPreferenceCss } from '../src/preferences-style.ts';
 
 test('five layouts, the quiet one is the default', () => {
-  assert.deepEqual([...LAYOUTS], ['minimal', 'structural', 'contemporary', 'aurora', 'clay']);
+  assert.deepEqual([...LAYOUTS], ['minimal', 'structural', 'contemporary', 'aurora', 'clay', 'kinetic', 'tactile', 'assistant']);
   assert.equal(DEFAULT_LAYOUT, 'minimal');
   assert.equal(DEFAULT_PREFERENCES.layout, 'minimal');
-  assert.equal(LAYOUT_LIST.length, 5);
+  assert.equal(LAYOUT_LIST.length, 8);
   for (const l of LAYOUT_LIST) assert.ok(l.name && l.description && l.space.length && l.app.length);
 });
 
@@ -50,6 +50,22 @@ test('aurora glows and is round, clay is puffy; both keep motion behind the moti
 function radiusOf(id) {
   return Number(/--radius:(\d+)px/.exec(layoutSpaceRules(id)[0])[1]);
 }
+
+test('kinetic, tactile and assistant each have their own signature, motion only behind the motion query', () => {
+  const k = layoutSpaceRules('kinetic').join('');
+  const t = layoutSpaceRules('tactile').join('');
+  const a = layoutSpaceRules('assistant').join('');
+  assert.match(k, /font-size:clamp\(/, 'huge numbers');
+  assert.match(k, /text-transform:uppercase/);
+  assert.match(t, /inset 0 2px 3px/, 'recessed wells');
+  assert.match(t, /linear-gradient\(180deg/, 'bevelled surfaces');
+  assert.match(a, /\\2726/, 'spark on headings');
+  assert.match(a, /border-box/, 'gradient rim');
+  for (const css of [k, t, a]) {
+    const outside = css.replace(/@media \(prefers-reduced-motion:no-preference\)\{.*\}$/, '');
+    assert.doesNotMatch(outside, /(?<!text-)transform|transition|animation/, 'motion only inside the media query');
+  }
+});
 
 test('a layout is saved, validated, part of the profile and of the look', () => {
   assert.equal(sanitizePreferences({ layout: 'structural' }).layout, 'structural');

@@ -115,7 +115,7 @@ export function LookPanel({ prefs, update }: Common) {
         <div className="skin-options" role="radiogroup" aria-label="Layout">
           {LAYOUT_LIST.map((layout) => (
             <button key={layout.id} type="button" role="radio" aria-checked={prefs.layout === layout.id} className={`skin-option ${prefs.layout === layout.id ? 'skin-option-on' : ''}`} onClick={() => update((p) => ({ ...p, layout: layout.id }))}>
-              <span className={`layout-preview ${layout.preview.glass ? 'layout-preview-glass' : ''} ${layout.preview.shadow ? 'layout-preview-depth' : ''} ${layout.preview.ledger ? 'layout-preview-ledger' : ''} ${layout.preview.aurora ? 'layout-preview-aurora' : ''} ${layout.preview.clay ? 'layout-preview-clay' : ''}`} aria-hidden="true" style={{ gap: layout.preview.gap }}>
+              <span className={`layout-preview ${layout.preview.glass ? 'layout-preview-glass' : ''} ${layout.preview.shadow ? 'layout-preview-depth' : ''} ${layout.preview.ledger ? 'layout-preview-ledger' : ''} ${layout.preview.aurora ? 'layout-preview-aurora' : ''} ${layout.preview.clay ? 'layout-preview-clay' : ''} ${layout.preview.kinetic ? 'layout-preview-kinetic' : ''} ${layout.preview.tactile ? 'layout-preview-tactile' : ''} ${layout.preview.assistant ? 'layout-preview-assistant' : ''}`} aria-hidden="true" style={{ gap: layout.preview.gap }}>
                 <span className="layout-tabs">
                   <i className="layout-tab layout-tab-on" style={{ borderRadius: layout.preview.pill ? 99 : layout.preview.radius }} />
                   <i className="layout-tab" style={{ borderRadius: layout.preview.pill ? 99 : layout.preview.radius }} />
