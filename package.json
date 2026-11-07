@@ -72,6 +72,8 @@
     "smartrecruiters:mock": "node scripts/smartrecruiters-mock-build.mjs",
     "install:recruiting-workbench": "node scripts/install-example-space.mjs recruiting-workbench",
     "install:hiring-approvals": "node scripts/install-example-space.mjs hiring-approvals",
+    "install:order-to-cash": "node scripts/install-example-space.mjs order-to-cash",
+    "install:order-to-cash-software": "node scripts/install-example-space.mjs order-to-cash-software",
     "install:skills": "node scripts/install-example-skills.mjs",
     "install:databricks-demo": "node scripts/install-databricks-demo.mjs",
     "databricks-demo:load": "node scripts/databricks-demo-load.mjs",

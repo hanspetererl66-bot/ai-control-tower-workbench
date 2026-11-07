@@ -1,0 +1,12 @@
+{
+  "title": "Order-to-Cash (Software)",
+  "description": "Mockup of a software order (500 LeanIX user licenses): at order confirmation a commercial track (credit, billing plan, revenue schedule) and a technical track (tenant, single sign-on, licenses) run in parallel, and a person releases each step within their own limits. Fictional sample data.",
+  "domain": "Finance",
+  "insights": [
+    "A software order has no delivery: the signed order form is the order, activating the licenses takes the place of the goods issue.",
+    "Two tracks start together at order confirmation. License activation waits for the credit decision (234,800.00 EUR against a limit of 200,000.00 EUR).",
+    "Billed, recognised and deferred are different numbers: 226,800.00 billed, 18,900.00 recognised, 207,900.00 deferred at year end.",
+    "Fictional sample data. No SAP system is called; tool names, prices and document numbers are illustrative."
+  ],
+  "prompt": "Bundled example: Order-to-Cash for a software company (static mockup, data embedded by npm run sync:mockups)."
+}
