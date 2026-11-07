@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { addRun, exampleJobs, cadenceProblems, describeCadence, isDue, jobPrompt, jobState, newJob, nextRun, parseCron, sanitizeJobs, toCron, upcoming } from '../src/jobs.ts';
+import { BUILTIN_DIMS, UNASSIGNED, addRun, exampleJobs, groupJobs, groupStats, groupValue, groupValues, loadDims, mergeExamples, newDim, saveDims, withGroup, withoutDim, cadenceProblems, describeCadence, isDue, jobPrompt, jobState, newJob, nextRun, parseCron, sanitizeJobs, toCron, upcoming } from '../src/jobs.ts';
 
 const src = (f) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const agent = { type: 'agent', id: 'a-1', label: 'Pre-close check' };
@@ -128,7 +128,7 @@ test('example jobs cover agent, workflow and skill, with every kind of repeat an
   const jobs = exampleJobs(at('2026-11-03T12:00:00'));
   assert.deepEqual(new Set(jobs.map((j) => j.target.type)), new Set(['agent', 'workflow', 'skill']));
   assert.ok(new Set(jobs.map((j) => j.cadence.kind)).size >= 4);
-  assert.ok(jobs.every((j) => j.example && cadenceProblems(j.cadence, at('2026-11-03T12:00:00')).length === 0));
+  assert.ok(jobs.every((j) => j.example && cadenceProblems(j.cadence, new Date(0)).length === 0), 'valid; one-time samples may lie in the past (done, missed)');
   assert.ok(jobs.some((j) => j.runs.some((r) => r.status === 'error')));
   assert.ok(jobs.some((j) => !j.enabled));
   assert.equal(sanitizeJobs(jobs).length, jobs.length, 'they survive storage');
@@ -141,4 +141,111 @@ test('an example job runs the monday-close skill every Monday morning', () => {
   assert.equal(job.target.type, 'skill');
   assert.deepEqual(job.cadence, { kind: 'weekly', time: '06:30', days: [1] });
   assert.match(jobPrompt(job), /monday-close/);
+});
+
+const NOW = at('2026-11-07T12:00:00');
+const samples = exampleJobs(NOW);
+
+test('many sample jobs, in every state and for every kind of repeat', () => {
+  assert.ok(samples.length >= 40);
+  assert.equal(new Set(samples.map((j) => j.id)).size, samples.length, 'ids are unique');
+  const states = new Set(samples.map((j) => jobState(j, NOW)));
+  for (const st of ['scheduled', 'failing', 'paused', 'done', 'missed']) assert.ok(states.has(st), st);
+  assert.deepEqual(new Set(samples.map((j) => j.cadence.kind)), new Set(['once', 'interval', 'daily', 'weekly', 'monthly', 'cron']));
+  assert.ok(samples.some((j) => j.cadence.kind === 'once' && !j.lastRun && nextRun(j, NOW)), 'a one-time job still ahead');
+  assert.ok(samples.some((j) => j.enabled && j.runs.length === 0 && j.cadence.kind !== 'once'), 'an active job that never ran');
+  assert.ok(samples.every((j) => !j.fails || jobState(j, NOW) === 'failing'), 'a job marked as failing is failing');
+  assert.ok(samples.filter((j) => j.fails).length >= 3);
+});
+
+test('failing means: active and the latest run failed', () => {
+  const failing = samples.find((j) => j.fails);
+  assert.equal(jobState(failing, NOW), 'failing');
+  assert.equal(jobState({ ...failing, enabled: false }, NOW), 'paused');
+  const healed = addRun(failing, { id: 'ok', at: NOW.toISOString(), ms: 1, status: 'ok', trigger: 'manual', note: '' });
+  assert.equal(jobState(healed, NOW), 'scheduled');
+});
+
+test('every sample job has a business area and an organization unit; the groups are many', () => {
+  assert.ok(samples.every((j) => j.groups?.area && j.groups?.unit));
+  assert.ok(new Set(samples.map((j) => j.groups.unit)).size >= 6);
+  assert.ok(new Set(samples.map((j) => j.groups.area)).size >= 6);
+});
+
+test('grouping by functional type gives workflows, agents, skills in that order', () => {
+  const [type, area, unit] = BUILTIN_DIMS;
+  const groups = groupJobs(samples, type, NOW);
+  assert.deepEqual(groups.map((g) => g.label), ['Workflows', 'Agents', 'Skills']);
+  assert.equal(groups.reduce((n, g) => n + g.jobs.length, 0), samples.length);
+  assert.ok(groups.every((g) => g.jobs.every((j) => groupValue(j, type) === g.label)));
+  const byUnit = groupJobs(samples, unit, NOW).map((g) => g.label);
+  assert.deepEqual(byUnit, [...byUnit].sort((a, b) => a.localeCompare(b)), 'alphabetical');
+  assert.equal(groupJobs(samples, null, NOW).length, 1);
+  assert.equal(groupJobs([], area, NOW).length, 0);
+});
+
+test('jobs without a value land in "Unassigned", which comes last', () => {
+  const [, area] = BUILTIN_DIMS;
+  const jobs = [...samples.slice(0, 3), withGroup(samples[3], 'area', '')];
+  const labels = groupJobs(jobs, area, NOW).map((g) => g.label);
+  assert.equal(labels.at(-1), UNASSIGNED);
+});
+
+test('group figures count active, failing, paused and the success rate', () => {
+  const stats = groupStats(samples, NOW);
+  assert.equal(stats.total, samples.length);
+  assert.equal(stats.failing, samples.filter((j) => jobState(j, NOW) === 'failing').length);
+  assert.equal(stats.paused, samples.filter((j) => jobState(j, NOW) === 'paused').length);
+  assert.equal(stats.runs, samples.reduce((n, j) => n + j.runs.length, 0));
+  assert.ok(stats.ok <= stats.runs);
+});
+
+test('own groupings: add, set a value on a job, group by it, remove it again', () => {
+  const store = new Map();
+  const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
+  let dims = loadDims(storage);
+  assert.deepEqual(dims.map((d) => d.id), ['type', 'area', 'unit']);
+  const cc = newDim('  Cost   center ', dims);
+  assert.equal(cc.label, 'Cost center');
+  assert.equal(newDim('cost center', [...dims, cc]), null, 'no duplicate names');
+  assert.equal(newDim('Business area', dims), null, 'not a built-in name either');
+  dims = [...dims, cc];
+  saveDims(dims, storage);
+  assert.deepEqual(loadDims(storage).map((d) => d.label), ['Functional type', 'Business area', 'Organization unit', 'Cost center']);
+  let jobs = samples.slice(0, 4).map((j, i) => withGroup(j, cc.id, i < 2 ? 'CC-1000' : 'CC-2000'));
+  assert.deepEqual(groupValues(jobs, cc.id), ['CC-1000', 'CC-2000']);
+  assert.deepEqual(groupJobs(jobs, cc, NOW).map((g) => [g.label, g.jobs.length]), [['CC-1000', 2], ['CC-2000', 2]]);
+  jobs = withoutDim(jobs, cc.id);
+  assert.ok(jobs.every((j) => !j.groups?.[cc.id]) && jobs.every((j) => j.groups?.area), 'only the removed grouping is gone');
+});
+
+test('at most six own groupings', () => {
+  let dims = loadDims();
+  for (let i = 0; i < 6; i += 1) dims = [...dims, newDim(`G${i}`, dims)];
+  assert.equal(newDim('One more', dims), null);
+});
+
+test('storage keeps group values, drops broken ones and never accepts a value for the derived type', () => {
+  const out = sanitizeJobs([{ ...samples[0], groups: { area: ' Finance ', unit: '', type: 'Hack', 'bad key!': 'x', 'g-1': 'CC-1' } }]);
+  assert.deepEqual(out[0].groups, { area: 'Finance', 'g-1': 'CC-1' });
+  assert.equal(newJob({ name: 'J', target: agent, cadence: { kind: 'daily', time: '09:00' }, groups: { area: 'Finance', type: 'x', unit: ' ' } }, NOW).groups?.type, undefined);
+  assert.equal(sanitizeJobs([{ ...samples[0], fails: true }])[0].fails, true);
+  assert.equal(sanitizeJobs([{ ...make({ kind: 'daily', time: '09:00' }), fails: true }])[0]?.fails, undefined, 'only samples can fail on purpose');
+});
+
+test('the larger sample set replaces the old samples once and keeps the own jobs', () => {
+  const mine = make({ kind: 'daily', time: '09:00' });
+  const merged = mergeExamples([mine, samples[0]], samples);
+  assert.equal(merged[0].id, mine.id);
+  assert.equal(merged.length, samples.length + 1);
+  assert.equal(merged.filter((j) => j.example).length, samples.length);
+  const app = src('src/App.tsx');
+  assert.match(app, /JOBS_EXAMPLES_KEY/);
+  assert.match(app, /job\.fails === true/, 'a failing sample writes failed mock runs');
+});
+
+test('the Scheduler offers grouping, filter and own groupings', () => {
+  const ui = src('src/ui/SchedulerView.tsx');
+  for (const w of ['Group by', 'No grouping', 'Groupings…', 'Add grouping', 'Collapse all', 'Search jobs', 'Status']) assert.ok(ui.includes(w), w);
+  assert.match(ui, /groupJobs\(shown, dim, now\)/);
 });

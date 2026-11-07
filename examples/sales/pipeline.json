@@ -1,7 +1,7 @@
 {
   "asOf": "2026-10-19",
   "me": "Mara Weber",
-  "customerNote": "Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG. Interest, lead and opportunity are made up. Values are illustrative ACV and TCV, ten times the Sub4Me amounts (see valueNote).",
+  "customerNote": "Offers and contracts mirror the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Interest, lead and opportunity are made up. Values are illustrative ACV and TCV, ten times the Sub4Me amounts (see valueNote).",
   "discountThresholdPct": 15,
   "stages": [
     {
@@ -1661,6 +1661,495 @@
         }
       ],
       "termMonths": 24
+    },
+    {
+      "id": "INT-206",
+      "stage": "interest",
+      "account": "Lindenau Pharma AG",
+      "title": "Joule for deviation management",
+      "value": null,
+      "score": null,
+      "owner": "Clara Neumann",
+      "source": "Event",
+      "existing": true,
+      "met": [
+        true,
+        true,
+        false
+      ],
+      "next": {
+        "text": "Check duplicates and log the contact from the quality round table",
+        "due": "2026-10-22",
+        "skill": "interest-logger",
+        "prompt": "Log: Dr. Petra Ostermann (Head of Quality Assurance and GxP Compliance, Lindenau Pharma AG) asked about Joule for deviation management at the quality round table."
+      },
+      "contact": "Dr. Petra Ostermann, Head of Quality Assurance and GxP Compliance",
+      "strength": "medium",
+      "risks": [],
+      "timeline": [
+        {
+          "date": "2026-10-15",
+          "kind": "note",
+          "text": "Question about Joule for deviation handling at the quality round table."
+        }
+      ]
+    },
+    {
+      "id": "LEAD-305",
+      "stage": "lead",
+      "account": "Lindenau Pharma AG",
+      "title": "Document AI for batch records",
+      "value": 640000,
+      "score": 70,
+      "owner": "Mira Hoffmann",
+      "source": "Ticket",
+      "existing": true,
+      "breakdown": [
+        [
+          "ICP fit",
+          25,
+          30,
+          "Pharma manufacturer, existing customer, 3,900 employees"
+        ],
+        [
+          "Budget",
+          14,
+          20,
+          "AI budget exists in the platform team, not confirmed for this"
+        ],
+        [
+          "Decision maker",
+          12,
+          20,
+          "Head of Quality Assurance involved, CIO not yet"
+        ],
+        [
+          "Need",
+          14,
+          20,
+          "Handwritten corrections on scanned batch records are not read (TKT-48097)"
+        ],
+        [
+          "Timing",
+          5,
+          10,
+          "Go-live wish before the next inspection, no date named"
+        ]
+      ],
+      "met": [
+        true,
+        true,
+        false
+      ],
+      "next": {
+        "text": "Ask two questions: budget owner and date of the next inspection",
+        "due": "2026-10-27",
+        "skill": "lead-qualifier",
+        "prompt": "Score the lead Lindenau Pharma, Document AI for batch records, and name the two questions that change the score most."
+      },
+      "contact": "Dr. Petra Ostermann, Head of Quality Assurance and GxP Compliance",
+      "risks": [
+        "The open ticket TKT-48097 shapes the first impression of Document AI in a regulated process."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-05",
+          "kind": "note",
+          "text": "Ticket TKT-48097: handwritten corrections on scanned batch records are not read."
+        },
+        {
+          "date": "2026-10-19",
+          "kind": "skill",
+          "text": "Score 70: follow up with two questions."
+        }
+      ],
+      "evidence": [
+        {
+          "claim": "Lead score 70 of 100",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "ticket",
+              "ref": "TKT-48097",
+              "text": "The customer reports empty fields for handwritten corrections: a clear need and a precise requirement."
+            },
+            {
+              "kind": "crm",
+              "ref": "LEAD-305",
+              "text": "Score is a suggestion: fit, budget, decision maker, need and timing."
+            }
+          ]
+        }
+      ],
+      "termMonths": 36
+    },
+    {
+      "id": "OPP-405",
+      "stage": "opportunity",
+      "account": "Lindenau Pharma AG",
+      "title": "Business Data Cloud for clinical and manufacturing analytics",
+      "value": 1200000,
+      "score": 40,
+      "owner": "Clara Neumann",
+      "source": "Contract",
+      "existing": true,
+      "met": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "next": {
+        "text": "Account plan with the manufacturing analytics use case as the anchor",
+        "due": "2026-10-29",
+        "skill": "opportunity-planner",
+        "prompt": "Create the account plan for the opportunity Lindenau Pharma, Business Data Cloud for clinical and manufacturing analytics."
+      },
+      "contact": "Dr. Matthias Vogel, CIO",
+      "competitor": "Own data platform on a hyperscaler (evaluation)",
+      "risks": [
+        "Data from the validated environment may only leave it with an approved data-integrity concept."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-08",
+          "kind": "note",
+          "text": "CIO asks for a landscape for batch and quality analytics."
+        },
+        {
+          "date": "2026-10-16",
+          "kind": "note",
+          "text": "Manufacturing IT names the yield analysis as the first use case."
+        }
+      ],
+      "closeDate": "2027-03-31",
+      "category": "pipeline",
+      "prev": null,
+      "changeWhy": {
+        "text": "Opened this week after the CIO request.",
+        "ref": "CRM"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 40 %, pipeline",
+          "confidence": "low",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2024-0905",
+              "text": "S/4HANA Cloud Private Edition runs until 2029-06-30 and delivers the manufacturing data."
+            },
+            {
+              "kind": "crm",
+              "ref": "OPP-405",
+              "text": "No budget named; the customer also evaluates an own platform."
+            }
+          ]
+        }
+      ],
+      "termMonths": 36
+    },
+    {
+      "id": "OFF-2026-0510",
+      "stage": "sell",
+      "account": "Lindenau Pharma AG",
+      "title": "Ariba renewal with GxP supplier qualification",
+      "value": 2292000,
+      "score": 60,
+      "owner": "Mira Hoffmann",
+      "source": "Offer",
+      "existing": true,
+      "offerId": "OFF-2026-0510",
+      "contractId": "C-2023-0344",
+      "met": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "discountPct": 9,
+      "approval": "Deal desk approved",
+      "competitor": "None",
+      "valid": "2026-11-25",
+      "stageLabel": "Proposal sent",
+      "next": {
+        "text": "Walk through the supplier qualification workflow with Quality Assurance",
+        "due": "2026-11-06",
+        "skill": "pricing-guard",
+        "prompt": "Check offer OFF-2026-0510 for prices and discount."
+      },
+      "contact": "Dr. Sabine Roth, Head of IT Procurement",
+      "risks": [
+        "The contract expired on 31 January; suppliers still order on a trial tenant.",
+        "Quality Assurance wants the supplier qualification content as part of the price."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-02",
+          "kind": "note",
+          "text": "Offer sent with the supplier qualification package."
+        },
+        {
+          "date": "2026-10-16",
+          "kind": "note",
+          "text": "Customer asks to confirm that the qualification workflow is in scope."
+        }
+      ],
+      "closeDate": "2026-11-25",
+      "category": "best",
+      "prev": {
+        "score": 50,
+        "category": "best",
+        "value": 2292000,
+        "closeDate": "2026-12-15"
+      },
+      "changeWhy": {
+        "text": "The customer confirmed the scope and the budget; only the workflow review is open.",
+        "ref": "OFF-2026-0510"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 60 %, best case (up from 50 %)",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2023-0344",
+              "text": "The Ariba contract expired on 2026-01-31; the trial tenant is a stop-gap."
+            },
+            {
+              "kind": "offer",
+              "ref": "OFF-2026-0510",
+              "text": "Open, discount 9 %, deal desk approved, valid until 2026-11-25."
+            }
+          ]
+        }
+      ],
+      "termMonths": 36
+    },
+    {
+      "id": "OFF-2026-0518",
+      "stage": "sell",
+      "account": "Lindenau Pharma AG",
+      "title": "Joule for Quality and AI units top-up",
+      "value": 1290000,
+      "score": 55,
+      "owner": "Mira Hoffmann",
+      "source": "Offer",
+      "existing": true,
+      "offerId": "OFF-2026-0518",
+      "contractId": "C-2026-0051",
+      "met": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "discountPct": 7,
+      "approval": "Pending deal desk (non-standard top-up terms) and validation concept from Quality Assurance",
+      "competitor": "Own build on a hyperscaler (evaluation)",
+      "valid": "2026-11-30",
+      "stageLabel": "Negotiation",
+      "next": {
+        "text": "Review the validation concept with Quality Assurance",
+        "due": "2026-10-30",
+        "skill": "pricing-guard",
+        "prompt": "Check offer OFF-2026-0518 for prices and discount."
+      },
+      "contact": "Anika Brandl, Platform Lead",
+      "risks": [
+        "Productive use needs the approved validation concept; without it the top-up cannot be used.",
+        "The customer evaluates an own build on a hyperscaler."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-09",
+          "kind": "note",
+          "text": "Customer asks for a top-up and Joule skills for deviation and batch-record review."
+        },
+        {
+          "date": "2026-10-14",
+          "kind": "note",
+          "text": "Template for the validation concept sent."
+        }
+      ],
+      "closeDate": "2026-11-30",
+      "category": "best",
+      "prev": {
+        "score": 45,
+        "category": "pipeline",
+        "value": 1290000,
+        "closeDate": "2026-11-30"
+      },
+      "changeWhy": {
+        "text": "Quality Assurance accepted the structure of the validation concept.",
+        "ref": "OFF-2026-0518"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 55 %, best case (up from 45 %)",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2026-0051",
+              "text": "Document AI is at 88 % of its 22,000 units; the new agents need more."
+            },
+            {
+              "kind": "offer",
+              "ref": "OFF-2026-0518",
+              "text": "In negotiation, discount 7 %; non-standard top-up terms are with the deal desk."
+            }
+          ]
+        }
+      ],
+      "termMonths": 2
+    },
+    {
+      "id": "OFF-2026-0526",
+      "stage": "sell",
+      "account": "Lindenau Pharma AG",
+      "title": "Integrated Business Planning: 60 planners and cold-chain scenarios",
+      "value": 980000,
+      "score": 45,
+      "owner": "Mira Hoffmann",
+      "source": "Offer",
+      "existing": true,
+      "offerId": "OFF-2026-0526",
+      "contractId": "C-2025-0612",
+      "met": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "discountPct": 8,
+      "approval": "Deal desk approved",
+      "competitor": "None",
+      "valid": "2026-12-15",
+      "stageLabel": "Proposal sent",
+      "next": {
+        "text": "Workshop with Manufacturing IT on the cold-chain scenarios",
+        "due": "2026-11-12",
+        "skill": "deal-risk-check",
+        "prompt": "Check the open risks of offer OFF-2026-0526."
+      },
+      "contact": "Ralf Kessel, Head of Manufacturing IT",
+      "risks": [
+        "The scenario package depends on the temperature data of the new loggers."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-12",
+          "kind": "note",
+          "text": "Offer sent after the planning team asked for 60 additional planners."
+        }
+      ],
+      "closeDate": "2026-12-15",
+      "category": "pipeline",
+      "prev": null,
+      "changeWhy": {
+        "text": "New offer this week.",
+        "ref": "OFF-2026-0526"
+      },
+      "evidence": [
+        {
+          "claim": "Probability 45 %, pipeline",
+          "confidence": "medium",
+          "basis": [
+            {
+              "kind": "contract",
+              "ref": "C-2025-0612",
+              "text": "201 of 240 planner licences are in use; the demand comes from the new markets."
+            },
+            {
+              "kind": "offer",
+              "ref": "OFF-2026-0526",
+              "text": "Open, discount 8 %, deal desk approved."
+            }
+          ]
+        }
+      ],
+      "termMonths": 15
+    },
+    {
+      "id": "C-2026-0051",
+      "stage": "contract",
+      "account": "Lindenau Pharma AG",
+      "title": "AI units (Joule, AI Core, Document AI, Business AI)",
+      "value": 1800000,
+      "score": null,
+      "owner": "Mira Hoffmann",
+      "source": "Contract",
+      "existing": true,
+      "contractId": "C-2026-0051",
+      "met": [
+        true,
+        false,
+        false,
+        true
+      ],
+      "end": "2026-12-31",
+      "noticeDays": 60,
+      "autoRenew": true,
+      "next": {
+        "text": "AI units contract ends; notice period ends 2026-11-01",
+        "due": "2026-11-01",
+        "skill": "renewal-radar",
+        "prompt": "Which deadlines run on contract C-2026-0051?"
+      },
+      "contact": "Anika Brandl, Platform Lead",
+      "risks": [
+        "The top-up offer OFF-2026-0518 is still in negotiation.",
+        "Auto-renewal: the notice period is 60 days before 2026-12-31."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-09",
+          "kind": "note",
+          "text": "Top-up requested."
+        }
+      ],
+      "termMonths": 24
+    },
+    {
+      "id": "C-2025-0833",
+      "stage": "contract",
+      "account": "Lindenau Pharma AG",
+      "title": "Advanced Track and Trace (serialization)",
+      "value": 4140000,
+      "score": null,
+      "owner": "Clara Neumann",
+      "source": "Contract",
+      "existing": true,
+      "contractId": "C-2025-0833",
+      "met": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "end": "2027-12-31",
+      "noticeDays": 120,
+      "autoRenew": false,
+      "next": {
+        "text": "Track the notice date and plan the tenth packaging line",
+        "due": "2027-08-31",
+        "skill": "renewal-radar",
+        "prompt": "Which deadlines run on contract C-2025-0833?"
+      },
+      "contact": "Ralf Kessel, Head of Manufacturing IT",
+      "risks": [
+        "Open High ticket TKT-48188: serial number requests for the Swiss market are rejected."
+      ],
+      "timeline": [
+        {
+          "date": "2026-10-09",
+          "kind": "note",
+          "text": "Ticket TKT-48188 opened: schema error for the Swiss repository."
+        }
+      ],
+      "termMonths": 27
     }
   ],
   "automation": {
@@ -1706,7 +2195,7 @@
       }
     ],
     "quotaEur": 15000000,
-    "quotaNote": "Fictional target for Q4 2026 and Q1 2027 closes, both accounts.",
+    "quotaNote": "Fictional target for Q4 2026 and Q1 2027 closes, all three accounts.",
     "previousAsOf": "2026-10-12"
   },
   "meetings": [
@@ -2191,6 +2680,94 @@
           "note": "Document AI is part of the AI-unit pool and has an open ticket on scanned invoices."
         }
       }
+    },
+    {
+      "id": "M-508",
+      "date": "2026-10-30",
+      "time": "10:00",
+      "minutes": 60,
+      "title": "Validation concept for AI use cases",
+      "kind": "customer",
+      "dealId": "OFF-2026-0518",
+      "people": [
+        {
+          "name": "Dr. Petra Ostermann",
+          "side": "customer"
+        },
+        {
+          "name": "Anika Brandl",
+          "side": "customer"
+        },
+        {
+          "name": "Mira Hoffmann",
+          "side": "us"
+        }
+      ],
+      "skill": "customer-call-prep",
+      "prep": {
+        "brief": [
+          "Top-up and Joule for Quality €1.29M, discount 7 %, in negotiation.",
+          "Productive use of the agents needs the approved validation concept.",
+          "Document AI is at 88 % of the 22,000 units; the batch record agent adds about 2,250 units a month."
+        ],
+        "questions": [
+          "Which AI use cases does Quality Assurance want to release first?",
+          "What evidence does the validation concept need for a Joule agent?"
+        ],
+        "flags": [
+          "Do not promise a validation date; it is the decision of Quality Assurance"
+        ],
+        "context": {
+          "tickets": [
+            "TKT-48097"
+          ],
+          "invoices": [],
+          "note": "The open Document AI ticket about handwritten corrections affects the batch record use case."
+        }
+      }
+    },
+    {
+      "id": "M-509",
+      "date": "2026-11-06",
+      "time": "09:30",
+      "minutes": 45,
+      "title": "Ariba renewal: supplier qualification workflow",
+      "kind": "customer",
+      "dealId": "OFF-2026-0510",
+      "people": [
+        {
+          "name": "Dr. Sabine Roth",
+          "side": "customer"
+        },
+        {
+          "name": "Dr. Petra Ostermann",
+          "side": "customer"
+        },
+        {
+          "name": "Mira Hoffmann",
+          "side": "us"
+        }
+      ],
+      "skill": "customer-call-prep",
+      "prep": {
+        "brief": [
+          "Ariba renewal €2.29M, discount 9 %, deal desk approved; valid until 25 November.",
+          "The contract expired on 31 January; suppliers still order on a trial tenant.",
+          "Quality Assurance wants GxP supplier qualification in the scope."
+        ],
+        "questions": [
+          "Which suppliers need the qualification workflow first?",
+          "Who signs the order form for the three-year term?"
+        ],
+        "flags": [
+          "Do not confirm the qualification content as validated; the customer validates it"
+        ],
+        "context": {
+          "tickets": [],
+          "invoices": [],
+          "note": "No open ticket for Ariba; the overdue invoice of the Learning contract is a separate topic for Accounts Payable."
+        }
+      }
     }
   ],
   "sub4me": {
@@ -2242,6 +2819,30 @@
         "priority": "Medium",
         "status": "Waiting for customer",
         "customer": "hanse"
+      },
+      {
+        "id": "TKT-48212",
+        "title": "S/4HANA Cloud Private Edition: batch release transaction ends with a short dump after the 2608 upgrade",
+        "product": "S/4HANA Cloud Private Edition",
+        "priority": "High",
+        "status": "In processing",
+        "customer": "lindenau"
+      },
+      {
+        "id": "TKT-48188",
+        "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+        "product": "SAP Advanced Track and Trace",
+        "priority": "High",
+        "status": "Waiting for customer",
+        "customer": "lindenau"
+      },
+      {
+        "id": "TKT-48097",
+        "title": "Document AI: handwritten corrections on scanned batch records are not read",
+        "product": "Document AI",
+        "priority": "Medium",
+        "status": "In processing",
+        "customer": "lindenau"
       }
     ],
     "invoices": [
@@ -2276,11 +2877,52 @@
         "due": "2026-10-31",
         "grossEur": 261502.5,
         "customer": "hanse"
+      },
+      {
+        "id": "INV-2026-40110",
+        "contractId": "C-2026-0051",
+        "status": "Open",
+        "due": "2026-11-05",
+        "grossEur": 49742,
+        "customer": "lindenau"
+      },
+      {
+        "id": "INV-2026-40104",
+        "contractId": "C-2025-0833",
+        "status": "Open",
+        "due": "2026-10-31",
+        "grossEur": 492660,
+        "customer": "lindenau"
+      },
+      {
+        "id": "INV-2026-40109",
+        "contractId": "C-2025-0612",
+        "status": "Open",
+        "due": "2026-10-21",
+        "grossEur": 43435,
+        "customer": "lindenau"
+      },
+      {
+        "id": "INV-2026-40108",
+        "contractId": "C-2024-0905",
+        "status": "Overdue",
+        "due": "2026-10-14",
+        "grossEur": 114240,
+        "customer": "lindenau"
+      },
+      {
+        "id": "INV-2026-40102",
+        "contractId": "C-2025-0718",
+        "status": "Overdue",
+        "due": "2026-07-31",
+        "grossEur": 165469.5,
+        "customer": "lindenau"
       }
     ],
     "customers": [
       "Muster Industrie AG",
-      "Hanse Handelsgruppe AG"
+      "Hanse Handelsgruppe AG",
+      "Lindenau Pharma AG"
     ]
   },
   "inbox": [
@@ -2456,6 +3098,41 @@
       "policy": "approve",
       "status": "pending",
       "approver": "Deal desk"
+    },
+    {
+      "id": "S-11",
+      "kind": "risk",
+      "dealId": "OFF-2026-0518",
+      "summary": "New risk from the validation thread",
+      "field": "Risk",
+      "from": "none noted",
+      "to": "Productive use only after the validation concept is approved",
+      "source": {
+        "kind": "offer",
+        "ref": "OFF-2026-0518",
+        "text": "Conditions: productive use only after the validation concept is approved."
+      },
+      "confidence": "high",
+      "policy": "suggest",
+      "status": "pending"
+    },
+    {
+      "id": "S-12",
+      "kind": "deal",
+      "dealId": "OFF-2026-0510",
+      "summary": "Supplier qualification content is part of the scope",
+      "field": "Scope",
+      "from": "Ariba renewal",
+      "to": "Ariba renewal with GxP supplier qualification",
+      "source": {
+        "kind": "offer",
+        "ref": "OFF-2026-0510",
+        "text": "Scope: 240 buyers, 2,300 suppliers including GxP supplier qualification."
+      },
+      "confidence": "medium",
+      "policy": "approve",
+      "status": "pending",
+      "approver": "Deal desk"
     }
   ],
   "governance": {
@@ -2524,6 +3201,9 @@
     },
     "Hanse Handelsgruppe AG": {
       "sapCustomerId": "0010073904"
+    },
+    "Lindenau Pharma AG": {
+      "sapCustomerId": "0010090532"
     }
   }
 }

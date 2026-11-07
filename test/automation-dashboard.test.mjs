@@ -187,3 +187,10 @@ test('owner names stay out unless asked for, hours and buckets add up', () => {
   assert.equal(w.hours.reduce((a, b) => a + b, 0), 1);
   assert.equal(w.buckets.reduce((a, b) => a + b, 0), 1);
 });
+
+test('page: named n8n Performance Dashboard, motion respects reduced-motion and changes no numbers', () => {
+  assert.ok(page.includes('<title>n8n Performance Dashboard</title>'));
+  assert.ok(/prefers-reduced-motion:reduce\)\{\*,\*::before,\*::after\{animation:none!important;transition:none!important/.test(page));
+  assert.ok(/calm\s*=\s*window\.matchMedia/.test(page) && /final = el\.textContent/.test(page), 'count-up ends on the real text');
+  assert.ok(!/setInterval/.test(page), 'no ticking that could pass for live data');
+});

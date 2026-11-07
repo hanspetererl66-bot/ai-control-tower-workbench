@@ -18,7 +18,7 @@ test('the Space is registered and its page is in sync with data and design syste
 });
 
 test('customer, AI units, offers and renewals are pulled from Sub4Me and Renewals, not copied by hand', () => {
-  const by = { muster: sub4me, hanse: sub4me.otherCustomers[0] };
+  const by = { muster: sub4me, hanse: sub4me.otherCustomers[0], lindenau: sub4me.otherCustomers[1] };
   const hand = JSON.parse(read(DATA));
   for (const c of hand.customers) assert.deepEqual(Object.keys(c).sort(), ['agents', 'bdc', 'contractModels', 'decisions', 'id', 'packages']);
   for (const c of data.customers) {

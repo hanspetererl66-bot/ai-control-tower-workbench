@@ -24,7 +24,7 @@ test('the rule keeps the page scrollable sideways and shows a horizontal bar tha
 });
 
 test('the viewer applies it to every Space, and the AI Control Tower no longer hides the bar of its tab row', () => {
-  assert.match(read('src/ui/SpaceViewer.tsx'), /srcDoc=\{applySpaceScroll\(applySpaceTools\(applySpaceScale\(/);
+  assert.match(read('src/ui/SpaceViewer.tsx'), /srcDoc=\{applySpaceScroll\(applySpaceTools\(applySpaceFit\(/);
   const ct = read('examples/control-tower/index.html');
   assert.doesNotMatch(ct, /\.tbar::-webkit-scrollbar\{display:none\}/);
   assert.match(ct, /\.tbar::-webkit-scrollbar\{height:8px\}/);

@@ -48,6 +48,41 @@ export function applySpaceScale(html: string, scale: SpaceScale): string {
 }
 
 /**
+ * Fit to window. A Space is laid out for a window about SPACE_FIT_WIDTH wide. In a narrower window the whole page
+ * (text, spacing, charts) shrinks in proportion so the full content stays in view, and in a wider one it grows again.
+ * The text size from the settings stays on top as a multiplier. Below SPACE_FIT_MIN the text would get too small to
+ * read, so the page stops shrinking there and can be moved sideways instead (see applySpaceScroll).
+ */
+export const SPACE_FIT_WIDTH = 1280;
+export const SPACE_FIT_MIN = 0.5;
+export const SPACE_FIT_MAX = 1.5;
+
+/** The zoom for a window of this width (in CSS pixels), including the text size from the settings. */
+export function fitZoom(windowWidth: number, textScale: number = 1): number {
+  const width = Number.isFinite(windowWidth) && windowWidth > 0 ? windowWidth : SPACE_FIT_WIDTH;
+  const fit = Math.min(SPACE_FIT_MAX, Math.max(SPACE_FIT_MIN, width / SPACE_FIT_WIDTH));
+  return Math.round(fit * textScale * 1000) / 1000;
+}
+
+const FIT_MARK = 'werkbank-space-fit';
+
+/**
+ * Returns the page with the fit rule added once. A small script follows the window width, because a style rule alone
+ * cannot do that for a page that is zoomed. The rule in the style tag is only the starting value and the fallback if
+ * scripts are blocked. `zoom` does not change the window width the script reads, so there is no feedback loop.
+ */
+export function applySpaceFit(html: string, textScale: SpaceScale): string {
+  if (!html || html.includes(`id="${FIT_MARK}"`)) return html;
+  const script =
+    `(function(){var T=${textScale},W=${SPACE_FIT_WIDTH},LO=${SPACE_FIT_MIN},HI=${SPACE_FIT_MAX},d=document.documentElement;` +
+    `function f(){var w=window.innerWidth;if(!(w>0))w=W;d.style.zoom=String(Math.round(Math.min(HI,Math.max(LO,w/W))*T*1000)/1000)}` +
+    `f();window.addEventListener('resize',f)})();`;
+  const rule = `<style id="${FIT_MARK}">html{zoom:${textScale}}</style><script>${script}</script>`;
+  if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (open) => `${open}${rule}`);
+  return rule + html;
+}
+
+/**
  * Pins the page to the app's theme. Spaces are sandboxed pages that only see the operating system's colour scheme,
  * so without this a Space stays dark when the app is set to Light. The design system reads data-theme on <html>.
  */

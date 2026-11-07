@@ -10,7 +10,7 @@ import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
-import { applySpaceScale, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
+import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
@@ -36,8 +36,11 @@ export default function SpaceViewer({
   incoming,
   studioAgents,
   onIncomingDelivered,
+  onEditDesign,
 }: {
   space: Space;
+  /** Opens the Space in the Designer (only given for Spaces made there). */
+  onEditDesign?: () => void;
   tabRequest?: SpaceTabRequest | null;
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
@@ -323,6 +326,7 @@ export default function SpaceViewer({
         <button className="icon-btn" onClick={() => setBust(Date.now())} title="Refresh" aria-label="Refresh">
           <RefreshIcon />
         </button>
+        {onEditDesign && <button className="ghost-btn" onClick={onEditDesign} title="Edit this Space in the Designer">Edit design</button>}
         {onAsk && (
           <button className="ghost-btn" onClick={() => onAsk(`Ich möchte den Space „${space.title}“ (${space.slug}) ändern. Frag mich kurz, was anders sein soll, und passe ihn danach an.`)} title="Open the chat and describe what should change in this Space">
             Change with Joule
@@ -359,7 +363,7 @@ export default function SpaceViewer({
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScroll(applySpaceTools(applySpaceScale((() => { const themed = applySpaceTheme(html ?? '', theme); return prefs ? applySpacePrefs(themed, prefs) : themed; })(), textScale)))}
+          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(html ?? '', theme); return prefs ? applySpacePrefs(themed, prefs) : themed; })(), textScale)))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

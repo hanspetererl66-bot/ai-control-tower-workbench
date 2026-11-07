@@ -32,6 +32,8 @@ export const EXAMPLE_SPACES = {
   'recruiting-workbench': 'recruiting-workbench',
   'hiring-approvals': 'hiring-approvals',
   'agent-observability': 'agent-observability',
+  'order-to-cash': 'order-to-cash',
+  'order-to-cash-software': 'order-to-cash-software',
 };
 
 /**

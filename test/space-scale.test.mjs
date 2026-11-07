@@ -77,3 +77,26 @@ test('controls in the top bar opt out of window dragging, or Electron ignores th
   assert.match(css, /\.topbar \.space-zoom[^{}]*\{[^}]*-webkit-app-region:\s*no-drag/);
   for (const el of ['input', 'select', 'button']) assert.match(css, new RegExp(`\\.topbar ${el}[^{}]*\\{[^}]*-webkit-app-region:\\s*no-drag`), el);
 });
+
+import { applySpaceFit, fitZoom, SPACE_FIT_MAX, SPACE_FIT_MIN, SPACE_FIT_WIDTH } from '../src/space-scale.ts';
+test('fit zoom follows the window width, stays inside its limits and multiplies the text size', () => {
+  assert.equal(fitZoom(SPACE_FIT_WIDTH, 1), 1);
+  assert.equal(fitZoom(SPACE_FIT_WIDTH, 1.15), 1.15);
+  assert.equal(fitZoom(640, 1), 0.5);
+  assert.equal(fitZoom(960, 1), 0.75);
+  assert.equal(fitZoom(100, 1), SPACE_FIT_MIN, 'never smaller than the floor');
+  assert.equal(fitZoom(5000, 1), SPACE_FIT_MAX, 'never larger than the ceiling');
+  assert.equal(fitZoom(960, 1.25), 0.938);
+  for (const bad of [0, -5, NaN, Infinity]) assert.equal(fitZoom(bad, 1), fitZoom(SPACE_FIT_WIDTH, 1), String(bad));
+});
+
+test('the fit script is injected once, at the start of the head, and carries the text size', () => {
+  const page = '<!doctype html><html><head><meta charset="utf-8"></head><body>hi</body></html>';
+  const fitted = applySpaceFit(page, 1.15);
+  assert.ok(fitted.includes('<head><style id="werkbank-space-fit">html{zoom:1.15}</style><script>'));
+  assert.ok(fitted.includes('var T=1.15,W=1280,LO=0.5,HI=1.5'));
+  assert.ok(fitted.includes("addEventListener('resize'"));
+  assert.equal(applySpaceFit(fitted, 1.25), fitted, 'idempotent');
+  assert.equal(applySpaceFit('', 1), '');
+  assert.ok(applySpaceFit('<p>fragment</p>', 0.85).startsWith('<style id="werkbank-space-fit">html{zoom:0.85}</style><script>'));
+});
