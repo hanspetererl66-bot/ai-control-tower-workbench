@@ -1,0 +1,13 @@
+{
+  "title": "Agent Observability",
+  "description": "What the agents, workflows and skills of the Werkbank actually did: every run as a trace, whether the outcome was right, cost, speed, and where an agent touched the edge of its rights. Reads a generated sample history from the shared database.",
+  "domain": "Admin",
+  "insights": [
+    "Fleet: runs, result, outcome rate, speed, cost and rights of every agent, with a 14-day trend per row.",
+    "Traces: each run as a tree of steps (agent call, guardrail, model calls, tool calls, wait for approval) in the OpenTelemetry GenAI naming. Prompt and answer text are not stored.",
+    "Quality: a green run is not a right answer. The outcome check, nightly cases (pass^3), and a human review queue sit next to the traces.",
+    "Cost, Safety and Alerts: cost spikes and cost per green run, blocked actions and agents that act alone, and alerts in three tiers (page, ticket, info).",
+    "The data is a generated, fictional 90-day history from migration 037 (about 25,000 runs). It needs the desktop app and the shared database; in a plain browser the page says so."
+  ],
+  "prompt": "Bundled example: Agent Observability (reads the shared database through a fixed read-only bridge)."
+}

@@ -72,6 +72,7 @@
     "smartrecruiters:mock": "node scripts/smartrecruiters-mock-build.mjs",
     "install:recruiting-workbench": "node scripts/install-example-space.mjs recruiting-workbench",
     "install:hiring-approvals": "node scripts/install-example-space.mjs hiring-approvals",
+    "install:agent-observability": "node scripts/install-example-space.mjs agent-observability",
     "install:skills": "node scripts/install-example-skills.mjs",
     "install:databricks-demo": "node scripts/install-databricks-demo.mjs",
     "databricks-demo:load": "node scripts/databricks-demo-load.mjs",
