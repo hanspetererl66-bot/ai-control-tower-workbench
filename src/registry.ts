@@ -10,6 +10,7 @@
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
 import { agentUnit, developUnit, restore } from './work-sync.ts';
 import { sanitizeExtends, sanitizeRefs, sourcesOf, type ExtendsRef, type SourceRef } from './requirements.ts';
+import { cardWords, flagsOf, phaseOf, policyBriefOf, sanitizeCard, type FlagId, type Phase, type PolicyBrief, type RegisterCard } from './registry-card.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
 export type RType = 'agent' | 'workflow' | 'feature' | 'code';
@@ -23,6 +24,10 @@ export type RItem = {
   refs: SourceRef[];
   /** The agent or workflow this one extends. */
   extendsItem?: ExtendsRef;
+  /** The register card (intent.register); null when nobody has declared one. See registry-card.ts. */
+  card: RegisterCard | null;
+  /** What the policy manifest summary says (mode, systems, unattended); null for items saved before manifests existed. */
+  policy: PolicyBrief | null;
 };
 
 const str = (v: unknown, n = 200) => String(v ?? '').slice(0, n);
@@ -39,6 +44,7 @@ export function itemFrom(row: any, detail: any = null): RItem {
     visibility: str(row.visibility, 20), archived: row.archived === true, rev: Number(row.current_rev) || 0, updatedAt: time(row.updated_at), files: Number(row.files) || 0,
     approved: Array.isArray(detail?.approved) ? detail.approved.filter((s: unknown) => typeof s === 'string').slice(0, 20) : [],
     refs: sanitizeRefs(intent.sources), ...(ext ? { extendsItem: ext } : {}),
+    card: sanitizeCard(intent.register), policy: policyBriefOf(intent.policy),
   };
 }
 
@@ -49,14 +55,22 @@ export function stageText(i: Pick<RItem, 'type' | 'stage' | 'approved'>): string
   return (FLOW as readonly string[]).includes(i.stage) ? FLOW_LABEL[i.stage as FlowStep] : i.stage || 'Draft';
 }
 
-export type Filter = { type: RType | 'all'; status: 'active' | 'archived' | 'all'; query: string };
+/** `phase` and `flag` are optional so older callers keep working: left out means "all". `flag: 'any'` = at least one flag. */
+export type Filter = { type: RType | 'all'; status: 'active' | 'archived' | 'all'; query: string; phase?: Phase | 'all'; flag?: FlagId | 'any' | 'all' };
 export const noFilter = (): Filter => ({ type: 'all', status: 'active', query: '' });
 
-export function filterItems(items: RItem[], f: Filter): RItem[] {
+export function filterItems(items: RItem[], f: Filter, now = Date.now()): RItem[] {
   const q = f.query.trim().toLowerCase();
+  const phase = f.phase ?? 'all', flag = f.flag ?? 'all';
   return items
     .filter((i) => (f.type === 'all' || i.type === f.type) && (f.status === 'all' || (f.status === 'archived') === i.archived))
-    .filter((i) => !q || [i.name, i.owner, TYPE_LABEL[i.type], i.extendsItem?.name ?? '', ...i.refs.flatMap((r) => [r.key, r.title])].some((t) => t.toLowerCase().includes(q)))
+    .filter((i) => phase === 'all' || phaseOf(i).phase === phase)
+    .filter((i) => {
+      if (flag === 'all') return true;
+      const flags = flagsOf(i, items, now);
+      return flag === 'any' ? flags.length > 0 : flags.some((x) => x.id === flag);
+    })
+    .filter((i) => !q || [i.name, i.owner, TYPE_LABEL[i.type], i.extendsItem?.name ?? '', ...i.refs.flatMap((r) => [r.key, r.title]), ...cardWords(i.card)].some((t) => t.toLowerCase().includes(q)))
     .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 

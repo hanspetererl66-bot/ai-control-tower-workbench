@@ -95,8 +95,8 @@ export default function Rail({
         <button
           className={`rail-btn ${ADMIN_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
           onClick={() => onView('admin')}
-          title="Admin: ontologies and the registry of agents, workflows and features"
-          aria-label="Admin"
+          title="Admin console: ontologies, the register of agents, workflows and features, and skill management"
+          aria-label="Admin console"
           aria-pressed={ADMIN_VIEWS.includes(view)}
         >
           <AdminIcon />

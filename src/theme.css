@@ -4922,6 +4922,69 @@ textarea.studio-field { min-height: 120px; }
 .rg-jira-confirm textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); resize: vertical; }
 .rg-jira-results { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
 
+/* Registry: example banner, numbers on top, lifecycle and verification chips, register card (tokens only) */
+.rg-example { display: flex; gap: 4px 10px; align-items: center; flex-wrap: wrap; margin: 0; padding: 8px 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--bg); color: var(--muted); font-size: 13px; }
+.rg-chip-ex { padding: 1px 10px; color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.rg-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.sh .rg-kpi { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; padding: 9px 12px; border-radius: 10px; background: var(--panel); }
+.sh .rg-kpi-static { border: 1px solid var(--line); cursor: default; }
+.sh .rg-kpi-on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+.rg-kpi-label { color: var(--muted); font-size: 12px; }
+.rg-kpi-value { font-size: 22px; font-weight: 650; line-height: 1.25; }
+.rg-kpi-small { font-size: 15px; line-height: 1.7; }
+.rg-kpi-warn { color: var(--lv-yellow); }
+.rg-kpi small { color: var(--muted); font-size: 11.5px; }
+.rg-miss { color: var(--muted); font-size: 12.5px; }
+.rg-miss-warn { color: var(--lv-yellow); font-weight: 600; }
+.rg-ph, .rg-vf, .rg-rk { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 11.5px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.rg-ph-phase-in { color: var(--accent); border-color: var(--accent); }
+.rg-ph-active { color: var(--lv-green); border-color: var(--lv-green); }
+.rg-ph-phase-out { color: var(--lv-yellow); border-color: var(--lv-yellow); }
+.rg-ph-end-of-life { color: var(--lv-red); border-color: var(--lv-red); }
+.rg-vf-verified { color: var(--lv-green); border-color: var(--lv-green); }
+.rg-vf-expired { color: var(--lv-yellow); border-color: var(--lv-yellow); }
+.rg-vf-broken { color: var(--lv-red); border-color: var(--lv-red); }
+.rg-rk-minimal { color: var(--lv-green); border-color: var(--lv-green); }
+.rg-rk-limited { color: var(--ink); }
+.rg-rk-high { color: var(--lv-red); border-color: var(--lv-red); }
+.rg-rk-not-assessed { border-style: dashed; }
+.rg-flagcount { display: inline-block; min-width: 20px; padding: 0 6px; text-align: center; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--lv-yellow); border: 1px solid var(--lv-yellow); background: color-mix(in srgb, var(--lv-yellow) 12%, transparent); }
+.rg-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.rg-card .rg-h { margin: 0; }
+.rg-sub { margin: 8px 0 0; font-size: 12px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--muted); }
+.rg-purpose { margin: 0; font-size: 13.5px; line-height: 1.5; }
+.rg-flags { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.rg-flags li { padding: 5px 9px; border: 1px solid var(--line); border-left: 3px solid var(--lv-yellow); border-radius: 6px; background: var(--panel); }
+.rg-dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+.rg-dl-tight { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rg-field { min-width: 0; }
+.rg-field-wide { grid-column: 1 / -1; }
+.rg-field dt { color: var(--muted); font-size: 11.5px; }
+.rg-field dd { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+.rg-note { color: var(--muted); font-size: 12px; }
+.rg-note-warn { color: var(--lv-yellow); font-weight: 600; }
+.rg-life { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.rg-life li { display: flex; flex-direction: column; padding: 3px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 12px; }
+.rg-life li span { color: var(--muted); font-size: 11px; }
+.rg-life .rg-life-on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+.rg-rels { display: flex; flex-direction: column; gap: 6px; }
+.rg-rel { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.rg-rel-label { color: var(--muted); font-size: 12px; }
+.rg-rel > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.rg-chip-rel { padding: 1px 10px; }
+.sh .rg-chip-rel button { font-family: inherit; font-size: 12px; }
+.rg-chip-write { border-color: var(--lv-yellow); }
+.rg-similar { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.sh .rg-similar button { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; }
+.rg-similar small { color: var(--muted); }
+.rg-tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 0; }
+.rg-tags .rg-chip { padding: 1px 10px; }
+.rg-foot { margin: 6px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.5; }
+/* With the card open the list keeps what identifies and what needs attention; the rest returns when it is closed. */
+.rg-split-open .rg-opt { display: none; }
+@media (max-width: 1100px) { .rg-rel { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+@media (max-width: 520px) { .rg-dl, .rg-dl-tight { grid-template-columns: minmax(0, 1fr); } }
+
 .sh-source { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius, 8px); background: var(--panel); color: var(--muted); font-size: 12.5px; }
 .sh-source-database { border-color: var(--lv-green, var(--line)); }
 .sh-source-offline { border-color: var(--lv-red, var(--line)); }
