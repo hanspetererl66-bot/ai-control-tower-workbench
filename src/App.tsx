@@ -67,6 +67,7 @@ import AdminView from './ui/AdminView';
 import HiringApprovals from './ui/HiringApprovals';
 import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type OntologyData } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
+import SpaceDesigner from './ui/SpaceDesigner';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
@@ -335,6 +336,9 @@ export default function App() {
   /** The Spaces landing page (domain tiles) shows until a Space is opened. */
   const [spacesHome, setSpacesHome] = useState(true);
   const [overviewDomain, setOverviewDomain] = useState<string | null>(null);
+  /** Space Designer: folder name of the Space being edited; null = a new one. */
+  const [designSlug, setDesignSlug] = useState<string | null>(null);
+  const [designKey, setDesignKey] = useState(0);
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [rawSpaces, setSpaces] = useState<Space[]>([]);
@@ -1588,12 +1592,29 @@ export default function App() {
           onActive={setOverviewDomain}
           onOpen={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
+          onDesign={() => { setDesignSlug(null); setDesignKey((k) => k + 1); setView('designer'); }}
+        />
+      ) : view === 'designer' ? (
+        <SpaceDesigner
+          key={designKey}
+          slug={designSlug}
+          spaces={spaces}
+          domains={domainNames(spaces, prefs)}
+          theme={resolvedTheme}
+          prefs={prefs}
+          textScale={spaceScale}
+          generate={developGenerate}
+          onStop={() => void cancelCurrent()}
+          ready={Boolean(agent)}
+          onBack={() => setView('spaces')}
+          onSaved={async (slug) => { await refreshSpaces(); setSelectedSpace(slug); setDesignSlug(slug); }}
         />
       ) : view === 'spaces' ? (
         space ? (
           <SpaceViewer
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
+            onEditDesign={space.designer ? () => { setDesignSlug(space.slug); setDesignKey((k) => k + 1); setView('designer'); } : undefined}
             tabRequest={spaceTab && (spaceTab.space ?? 'ai-control-tower') === space.slug ? spaceTab : null}
             textScale={spaceScale}
             onTextScale={changeSpaceScale}

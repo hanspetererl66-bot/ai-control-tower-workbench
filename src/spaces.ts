@@ -9,6 +9,8 @@ export type Space = {
   parent?: string;
   cardCount: number;
   updatedAt: number;
+  /** Made in the Space Designer: the page carries its layout and can be opened there again. */
+  designer?: boolean;
 };
 
 /** Notes about sample data are no selling point: the overview shows the first insight that says what the Space does. */
