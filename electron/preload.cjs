@@ -43,6 +43,7 @@ contextBridge.exposeInMainWorld('host', {
   recruitingCriteria: () => ipcRenderer.invoke('recruiting-criteria'),
   recruitingCriterionSet: (args) => ipcRenderer.invoke('recruiting-criterion-set', args),
   recruitingCriterionDelete: (requisition, id) => ipcRenderer.invoke('recruiting-criterion-delete', requisition, id),
+  recruitingInterviewSave: (requisition, record) => ipcRenderer.invoke('recruiting-interview-save', requisition, record),
   recruitingDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-decide', id, decision, note),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 

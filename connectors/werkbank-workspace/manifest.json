@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "werkbank-workspace",
   "display_name": "Werkbank Workspace",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "description": "Your personal Werkbank settings and shared groups in Supabase: preferences sync, groups with roles, shared Spaces, configuration and team memory.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -130,6 +130,38 @@
     {
       "name": "recruiting_create_hire_request",
       "description": "Write a hiring request for a candidate in the stage Offer (hiring manager only). The approvers decide in the Hiring Approvals space; the agent cannot approve, return or decline."
+    },
+    {
+      "name": "recruiting_list_posting_templates",
+      "description": "Read: job posting templates (company standard and saved ones), with locked sections."
+    },
+    {
+      "name": "recruiting_save_posting_template",
+      "description": "Write: save a template of your own. Locked company sections are kept as they are."
+    },
+    {
+      "name": "recruiting_draft_job_posting",
+      "description": "Write a draft posting from a template and the requisition. Never invents tasks or pay. Nothing becomes public."
+    },
+    {
+      "name": "recruiting_update_job_posting",
+      "description": "Write: change unlocked sections of a draft posting."
+    },
+    {
+      "name": "recruiting_list_job_postings",
+      "description": "Read: job postings with status and simulated publications."
+    },
+    {
+      "name": "recruiting_preview_posting_channels",
+      "description": "Read: the text per channel (career portal, LinkedIn, Xing, Monster.de, social) with length and link. Sends nothing."
+    },
+    {
+      "name": "recruiting_submit_job_posting",
+      "description": "Write: send a draft to the hiring manager. Only the hiring manager can release and publish; not a tool."
+    },
+    {
+      "name": "recruiting_interview_records",
+      "description": "Read: saved online interview records of the requisitions the person manages: answers, task result per criterion with a quote, counts, summary. No score; saving is not a tool."
     }
   ],
   "user_config": {
