@@ -158,3 +158,13 @@ test('Sales regions and quarter-end data: accounts carry a region, contracts car
   for (const c of contracts) assert.ok(c.sales.end && c.sales.noticeDays > 0, `${c.id} has end and notice period`);
   assert.ok(graph.regionNote);
 });
+
+test('3D view: toggle exists, stays offline and honours reduced motion', async () => {
+  const { readFileSync } = await import('node:fs');
+  const html = readFileSync(new URL('../examples/knowledge-graph/index.html', import.meta.url), 'utf8');
+  assert.match(html, /id="d3"[^>]*aria-pressed="false"/);
+  assert.match(html, /function draw3d\(/);
+  assert.match(html, /V3\.auto = !reduced/);
+  assert.match(html, /!reduced && !S\.paused/);
+  assert.doesNotMatch(html, /<script[^>]+src=/);
+});
