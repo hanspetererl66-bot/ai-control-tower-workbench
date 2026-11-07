@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Automation Dashboard</title>
+<title>n8n Performance Dashboard</title>
 <style>
 *{box-sizing:border-box}
 :root{--logo-bg:#171322;--backdrop:rgba(10,8,16,.45)
@@ -137,6 +137,32 @@ button.att-i strong{font-size:13px}
 .mx td,.mx th{text-align:center}.mx td:first-child,.mx th:first-child{text-align:left}
 .sub2{font-size:12px;color:var(--mut);margin:-4px 0 10px}
 @media(max-width:600px){.wk{grid-template-columns:28px repeat(24,minmax(0,1fr));gap:2px}.hb{grid-template-columns:1fr 1fr auto}}
+
+/* motion: small, purposeful, never faking live data. Every keyframe starts from a state and ends in the normal one, so no motion = the finished page */
+nav{position:relative}
+nav button[aria-selected=true]{border-bottom-color:transparent}
+nav .ink{position:absolute;bottom:0;left:0;height:3px;width:0;background:var(--brand);border-radius:2px 2px 0 0;transition:transform .3s cubic-bezier(.2,.8,.2,1),width .3s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes grow{from{transform:scaleY(.02)}}
+@keyframes fill{from{transform:scaleX(.02)}}
+@keyframes draw{from{stroke-dashoffset:1}}
+@keyframes pop{from{opacity:0;transform:scale(.4)}}
+@keyframes slidein{from{opacity:0;transform:translateX(24px)}}
+.pg.on .card,.pg.on .att-i,.pg.on .calm,.pg.on .info,.pg.on .note{animation:rise .45s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*45ms)}
+.pg.on tbody tr{animation:rise .35s ease-out backwards;animation-delay:calc(var(--i,0)*28ms)}
+.pg.on .days .day .stack{transform-origin:bottom}
+.pg.on .days .day .stack i{transform-origin:bottom;animation:grow .6s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--k,0)*30ms + 120ms)}
+.pg.on .hb .track i,.pg.on .meter i,.pg.on .bar i{transform-origin:left;animation:fill .8s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*45ms + 150ms)}
+.sl polyline{stroke-dasharray:1;animation:draw 1s ease-out .25s backwards}
+.pg.on .wk .cell{animation:pop .4s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc((var(--c,0) + var(--r,0))*16ms)}
+#pg-detail.on{animation:slidein .35s cubic-bezier(.2,.8,.2,1)}
+button.kpi{transition:border-color .15s,box-shadow .15s,transform .2s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+button.kpi:hover{transform:translateY(-3px)}
+button.kpi::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;background:radial-gradient(200px circle at var(--mx,50%) var(--my,0%),color-mix(in srgb,var(--brand) 13%,transparent),transparent 70%)}
+button.kpi:hover::before{opacity:1}
+button.kpi .go{transition:transform .2s cubic-bezier(.2,.8,.2,1),color .15s}
+button.kpi:hover .go{transform:translateX(5px)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
@@ -361,7 +387,7 @@ details.intro .body{margin-top:8px}
 </head>
 <body>
 <header>
-  <div class="logo">Automation <b>Dashboard</b></div>
+  <div class="logo">n8n Performance <b>Dashboard</b></div>
   <span class="badge" title="Data source: n8n"><svg class="n8n-logo" role="img" aria-label="n8n" viewBox="0 0 576 160" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_4630_46)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M272 64C257.089 64 244.561 53.8018 241.008 40H204.331C196.51 40 189.835 45.6546 188.549 53.3696L187.234 61.2608C185.985 68.7531 182.195 75.2738 176.835 80C182.195 84.7262 185.985 91.2469 187.234 98.7392L188.549 106.63C189.835 114.345 196.51 120 204.331 120H209.008C212.561 106.198 225.089 96 240 96C257.673 96 272 110.327 272 128C272 145.673 257.673 160 240 160C225.089 160 212.56 149.802 209.008 136H204.331C188.688 136 175.338 124.691 172.766 109.261L171.451 101.37C170.165 93.6546 163.49 88 155.669 88H142.992C139.44 101.802 126.911 112 112 112C97.0893 112 84.5605 101.802 81.0081 88H62.9919C59.4395 101.802 46.9107 112 32 112C14.3269 112 0 97.6731 0 80C0 62.3269 14.3269 48 32 48C46.9107 48 59.4395 58.1982 62.9919 72H81.0081C84.5605 58.1982 97.0893 48 112 48C126.911 48 139.44 58.1982 142.992 72H155.669C163.49 72 170.165 66.3454 171.451 58.6304L172.766 50.7392C175.338 35.3092 188.688 24 204.331 24L241.008 24C244.56 10.1982 257.089 0 272 0C289.673 0 304 14.3269 304 32C304 49.6731 289.673 64 272 64ZM272 48C280.837 48 288 40.8366 288 32C288 23.1634 280.837 16 272 16C263.163 16 256 23.1634 256 32C256 40.8366 263.163 48 272 48ZM32 96C40.8366 96 48 88.8366 48 80C48 71.1634 40.8366 64 32 64C23.1634 64 16 71.1634 16 80C16 88.8366 23.1634 96 32 96ZM128 80C128 88.8366 120.837 96 112 96C103.163 96 96 88.8366 96 80C96 71.1634 103.163 64 112 64C120.837 64 128 71.1634 128 80ZM256 128C256 136.837 248.837 144 240 144C231.163 144 224 136.837 224 128C224 119.163 231.163 112 240 112C248.837 112 256 119.163 256 128Z" fill="#EA4B71"/>
@@ -378,7 +404,7 @@ details.intro .body{margin-top:8px}
   <div class="meta"><strong id="instance"></strong><span id="asof"></span></div>
 </header>
 <div class="demo" id="sample" hidden>Sample data: fictional workflows and executions that only illustrate the layout. See "About" for how to load your n8n data.</div>
-<nav role="tablist" aria-label="Automation Dashboard">
+<nav role="tablist" aria-label="n8n Performance Dashboard">
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="workflows" aria-selected="false">Workflows</button>
   <button role="tab" data-tab="categories" aria-selected="false">Categories</button>
@@ -476,7 +502,7 @@ details.intro .body{margin-top:8px}
 {
   "source": "sample",
   "instance": "sample",
-  "asOf": "2026-11-06",
+  "asOf": "2026-11-07",
   "windowDays": 14,
   "peopleIncluded": true,
   "durationEdges": [
@@ -490,53 +516,105 @@ details.intro .body{margin-top:8px}
   "heat": {
     "runs": [
       [
+        6,
         4,
         4,
         4,
-        4,
-        3,
+        5,
         4,
         6,
         8,
-        20,
-        17,
-        18,
-        16,
-        19,
+        24,
         22,
-        26,
-        21,
-        25,
+        18,
+        13,
+        19,
+        18,
         20,
+        18,
+        23,
+        26,
+        4,
+        5,
+        4,
+        4,
+        6,
+        6
+      ],
+      [
+        4,
+        4,
         4,
         3,
         4,
+        3,
+        5,
+        8,
+        18,
+        16,
+        11,
+        29,
+        25,
+        15,
+        20,
+        23,
+        23,
+        18,
+        4,
+        4,
+        3,
         4,
         6,
         4
       ],
       [
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
         6,
-        4,
-        4,
-        5,
-        4,
-        4,
-        8,
-        8,
-        22,
-        18,
-        21,
+        7,
         20,
-        22,
+        14,
+        17,
         19,
         24,
         24,
+        16,
+        19,
         20,
-        17,
-        5,
+        21,
         4,
         5,
+        4,
+        4,
+        6,
+        3
+      ],
+      [
+        6,
+        4,
+        4,
+        4,
+        6,
+        4,
+        6,
+        8,
+        24,
+        17,
+        20,
+        17,
+        15,
+        22,
+        17,
+        21,
+        23,
+        22,
+        4,
+        6,
+        4,
         4,
         6,
         6
@@ -545,125 +623,73 @@ details.intro .body{margin-top:8px}
         5,
         4,
         4,
+        3,
+        4,
+        4,
         5,
-        4,
-        4,
-        7,
         8,
-        19,
-        13,
-        14,
-        25,
-        27,
-        19,
-        19,
+        28,
+        17,
+        17,
+        15,
+        21,
+        21,
+        22,
         26,
-        24,
-        13,
-        5,
-        5,
+        20,
+        15,
         4,
-        5,
+        4,
+        3,
+        4,
         6,
         5
       ],
       [
-        5,
-        5,
-        4,
+        2,
+        2,
+        1,
+        1,
+        2,
         3,
+        2,
         4,
-        4,
-        5,
-        8,
-        12,
-        26,
-        18,
-        16,
-        18,
-        21,
-        15,
-        18,
-        20,
-        24,
-        4,
-        5,
-        3,
-        4,
-        6,
-        4
-      ],
-      [
-        6,
-        5,
-        5,
-        5,
-        8,
         9,
-        20,
-        15,
-        30,
-        30,
-        22,
-        23,
-        14,
-        16,
-        15,
-        16,
-        13,
-        8,
-        2,
-        3,
-        2,
-        2,
-        3,
-        3
-      ],
-      [
-        2,
-        2,
-        0,
-        2,
-        2,
-        0,
-        2,
-        3,
-        4,
         7,
-        9,
-        4,
-        8,
-        4,
-        6,
         5,
+        10,
         7,
         4,
-        1,
+        3,
         2,
+        4,
+        4,
         1,
+        0,
         1,
-        2,
+        0,
+        1,
         0
       ],
       [
         2,
-        2,
-        0,
-        2,
-        0,
-        2,
-        0,
-        4,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
         5,
         6,
+        6,
+        6,
         8,
-        5,
-        7,
-        7,
+        6,
+        6,
         2,
+        7,
         5,
-        9,
-        2,
         2,
         0,
         2,
@@ -674,24 +700,128 @@ details.intro .body{margin-top:8px}
     ],
     "errors": [
       [
-        0,
-        0,
-        0,
         1,
         0,
         0,
         0,
         0,
-        1,
+        0,
+        0,
         0,
         1,
         0,
         1,
+        2,
+        4,
+        2,
+        2,
+        2,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        3,
+        0,
+        0,
+        3,
+        3,
+        1,
+        1,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        4,
+        2,
         0,
         1,
         1,
         2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
         1,
+        1,
+        0,
+        1,
+        3,
+        1,
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        2,
         0,
         0,
         0,
@@ -701,84 +831,6 @@ details.intro .body{margin-top:8px}
       ],
       [
         0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        1,
-        2,
-        1,
-        3,
-        0,
-        1,
-        2,
-        2,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        3,
-        0,
-        0,
-        1,
-        1,
-        3,
-        0,
-        3,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        0,
-        2,
-        1,
-        0,
-        1,
-        1,
-        4,
-        1,
-        4,
-        0,
-        2,
-        0,
-        0,
-        0,
-        1
-      ],
-      [
-        0,
         0,
         0,
         0,
@@ -787,12 +839,12 @@ details.intro .body{margin-top:8px}
         0,
         1,
         2,
-        2,
-        2,
-        1,
         1,
         0,
-        2,
+        0,
+        0,
+        0,
+        0,
         0,
         1,
         0,
@@ -815,32 +867,6 @@ details.intro .body{margin-top:8px}
         1,
         0,
         0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
         0,
         0,
         0,
@@ -858,92 +884,92 @@ details.intro .body{margin-top:8px}
     ]
   },
   "stats": {
-    "p50Seconds": 2.6,
+    "p50Seconds": 2.7,
     "p95Seconds": 15
   },
   "days": [
     {
-      "date": "2026-10-24",
-      "success": 37,
-      "error": 3,
-      "other": 0
-    },
-    {
       "date": "2026-10-25",
-      "success": 37,
+      "success": 34,
       "error": 1,
       "other": 0
     },
     {
       "date": "2026-10-26",
       "success": 127,
-      "error": 8,
+      "error": 9,
       "other": 0
     },
     {
       "date": "2026-10-27",
-      "success": 137,
-      "error": 6,
+      "success": 121,
+      "error": 8,
       "other": 0
     },
     {
       "date": "2026-10-28",
-      "success": 124,
-      "error": 5,
+      "success": 113,
+      "error": 9,
       "other": 0
     },
     {
       "date": "2026-10-29",
-      "success": 114,
-      "error": 8,
+      "success": 126,
+      "error": 7,
       "other": 0
     },
     {
       "date": "2026-10-30",
-      "success": 136,
-      "error": 4,
+      "success": 125,
+      "error": 8,
       "other": 0
     },
     {
       "date": "2026-10-31",
-      "success": 37,
-      "error": 1,
-      "other": 0
-    },
-    {
-      "date": "2026-11-01",
-      "success": 35,
-      "error": 1,
-      "other": 0
-    },
-    {
-      "date": "2026-11-02",
-      "success": 129,
+      "success": 38,
       "error": 2,
       "other": 0
     },
     {
+      "date": "2026-11-01",
+      "success": 39,
+      "error": 0,
+      "other": 0
+    },
+    {
+      "date": "2026-11-02",
+      "success": 125,
+      "error": 10,
+      "other": 0
+    },
+    {
       "date": "2026-11-03",
-      "success": 128,
-      "error": 9,
+      "success": 119,
+      "error": 10,
       "other": 0
     },
     {
       "date": "2026-11-04",
-      "success": 132,
-      "error": 9,
+      "success": 130,
+      "error": 4,
       "other": 0
     },
     {
       "date": "2026-11-05",
-      "success": 119,
-      "error": 11,
+      "success": 131,
+      "error": 6,
       "other": 0
     },
     {
       "date": "2026-11-06",
-      "success": 127,
-      "error": 8,
+      "success": 128,
+      "error": 4,
+      "other": 0
+    },
+    {
+      "date": "2026-11-07",
+      "success": 32,
+      "error": 3,
       "other": 0
     }
   ],
@@ -1037,138 +1063,138 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Dmitri Volkov",
       "reviewedAt": "2026-07-15",
-      "createdAt": "2025-10-02T00:00:00.000Z",
-      "updatedAt": "2026-08-28T00:00:00.000Z",
+      "createdAt": "2025-10-03T00:00:00.000Z",
+      "updatedAt": "2026-08-29T00:00:00.000Z",
       "errorWorkflow": true,
       "daily": [
         {
-          "success": 14,
+          "success": 12,
+          "error": 0,
+          "other": 0,
+          "sec": 10.3,
+          "n": 12
+        },
+        {
+          "success": 51,
           "error": 2,
           "other": 0,
-          "sec": 15.2,
-          "n": 16
-        },
-        {
-          "success": 13,
-          "error": 0,
-          "other": 0,
-          "sec": 11.6,
-          "n": 13
-        },
-        {
-          "success": 45,
-          "error": 1,
-          "other": 0,
-          "sec": 41.4,
-          "n": 46
-        },
-        {
-          "success": 55,
-          "error": 0,
-          "other": 0,
-          "sec": 47.5,
-          "n": 55
-        },
-        {
-          "success": 48,
-          "error": 0,
-          "other": 0,
-          "sec": 42.1,
-          "n": 48
-        },
-        {
-          "success": 40,
-          "error": 1,
-          "other": 0,
-          "sec": 37.6,
-          "n": 41
-        },
-        {
-          "success": 53,
-          "error": 0,
-          "other": 0,
-          "sec": 45.6,
+          "sec": 47.2,
           "n": 53
         },
         {
-          "success": 14,
+          "success": 43,
           "error": 1,
           "other": 0,
-          "sec": 12.7,
-          "n": 15
+          "sec": 40.2,
+          "n": 44
+        },
+        {
+          "success": 44,
+          "error": 0,
+          "other": 0,
+          "sec": 39.3,
+          "n": 44
+        },
+        {
+          "success": 52,
+          "error": 1,
+          "other": 0,
+          "sec": 48.3,
+          "n": 53
+        },
+        {
+          "success": 50,
+          "error": 1,
+          "other": 0,
+          "sec": 43.9,
+          "n": 51
+        },
+        {
+          "success": 14,
+          "error": 0,
+          "other": 0,
+          "sec": 12.9,
+          "n": 14
         },
         {
           "success": 13,
           "error": 0,
           "other": 0,
-          "sec": 12.3,
+          "sec": 12,
           "n": 13
         },
         {
-          "success": 43,
+          "success": 51,
           "error": 0,
           "other": 0,
-          "sec": 37.2,
-          "n": 43
+          "sec": 45.3,
+          "n": 51
         },
         {
-          "success": 50,
-          "error": 2,
+          "success": 41,
+          "error": 0,
           "other": 0,
-          "sec": 44.3,
-          "n": 52
-        },
-        {
-          "success": 54,
-          "error": 2,
-          "other": 0,
-          "sec": 47.7,
-          "n": 56
-        },
-        {
-          "success": 47,
-          "error": 3,
-          "other": 0,
-          "sec": 44.8,
-          "n": 50
+          "sec": 37.1,
+          "n": 41
         },
         {
           "success": 45,
-          "error": 3,
+          "error": 0,
           "other": 0,
-          "sec": 44.1,
-          "n": 48
+          "sec": 39.7,
+          "n": 45
+        },
+        {
+          "success": 52,
+          "error": 1,
+          "other": 0,
+          "sec": 47.8,
+          "n": 53
+        },
+        {
+          "success": 41,
+          "error": 0,
+          "other": 0,
+          "sec": 38.9,
+          "n": 41
+        },
+        {
+          "success": 11,
+          "error": 1,
+          "other": 0,
+          "sec": 10.3,
+          "n": 12
         }
       ],
       "hours": [
-        30,
+        29,
+        23,
+        22,
+        20,
         25,
         21,
-        26,
-        23,
-        23,
-        24,
-        24,
-        22,
-        26,
-        22,
-        23,
-        28,
+        20,
         21,
-        24,
-        23,
+        25,
+        25,
+        20,
+        20,
         24,
         19,
+        26,
+        21,
+        24,
+        17,
         23,
-        20,
+        23,
         21,
         20,
-        22,
+        23,
         15
       ],
       "buckets": [
-        343,
-        206,
+        308,
+        219,
         0,
         0,
         0,
@@ -1176,66 +1202,66 @@ details.intro .body{margin-top:8px}
         0
       ],
       "p95Seconds": 1.2,
-      "lastErrorAt": "2026-11-06T16:06:00.000Z",
-      "lastSuccessAt": "2026-11-06T16:26:59.999Z",
+      "lastErrorAt": "2026-11-07T07:00:00.000Z",
+      "lastSuccessAt": "2026-11-07T15:24:00.000Z",
       "errorStreak": 0,
-      "minutesSaved": 1602,
+      "minutesSaved": 1560,
       "recent": [
         {
-          "id": "42491",
+          "id": "42468",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T16:26:59.999Z",
-          "seconds": 1
+          "startedAt": "2026-11-07T15:24:00.000Z",
+          "seconds": 0.7
         },
         {
-          "id": "42490",
-          "status": "error",
+          "id": "42467",
+          "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T16:06:00.000Z",
+          "startedAt": "2026-11-07T14:00:00.000Z",
           "seconds": 0.6
         },
         {
-          "id": "42489",
+          "id": "42466",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T15:45:00.000Z",
-          "seconds": 1
+          "startedAt": "2026-11-07T12:36:00.000Z",
+          "seconds": 0.8
         },
         {
-          "id": "42488",
+          "id": "42465",
           "status": "success",
           "mode": "manual",
-          "startedAt": "2026-11-06T15:24:00.000Z",
+          "startedAt": "2026-11-07T11:12:00.000Z",
           "seconds": 0.9
         },
         {
-          "id": "42487",
+          "id": "42464",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T15:03:00.000Z",
-          "seconds": 1.2
+          "startedAt": "2026-11-07T09:48:00.000Z",
+          "seconds": 0.8
         },
         {
-          "id": "42486",
+          "id": "42463",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T08:23:59.999Z",
+          "seconds": 0.6
+        },
+        {
+          "id": "42462",
           "status": "error",
           "mode": "trigger",
-          "startedAt": "2026-11-06T14:42:00.000Z",
-          "seconds": 1.2
+          "startedAt": "2026-11-07T07:00:00.000Z",
+          "seconds": 0.6
         },
         {
-          "id": "42485",
+          "id": "42461",
           "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T14:21:00.000Z",
-          "seconds": 1
-        },
-        {
-          "id": "42484",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T14:00:00.000Z",
-          "seconds": 0.7
+          "mode": "manual",
+          "startedAt": "2026-11-07T05:36:00.000Z",
+          "seconds": 0.9
         }
       ],
       "id": "s7",
@@ -1248,10 +1274,10 @@ details.intro .body{margin-top:8px}
         "project:Platform & AI Ops",
         "reviewed:2026-07-15"
       ],
-      "executions": 549,
-      "success": 534,
-      "error": 15,
-      "lastRun": "2026-11-06T16:26:59.999Z",
+      "executions": 527,
+      "success": 520,
+      "error": 7,
+      "lastRun": "2026-11-07T15:24:00.000Z",
       "lastStatus": "success",
       "avgSeconds": 0.9
     },
@@ -1275,107 +1301,107 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Ben Okafor",
       "reviewedAt": "2026-05-04",
-      "createdAt": "2026-06-19T00:00:00.000Z",
-      "updatedAt": "2026-10-28T00:00:00.000Z",
+      "createdAt": "2026-06-20T00:00:00.000Z",
+      "updatedAt": "2026-10-29T00:00:00.000Z",
       "errorWorkflow": true,
       "daily": [
-        {
-          "success": 10,
-          "error": 0,
-          "other": 0,
-          "sec": 115.8,
-          "n": 10
-        },
-        {
-          "success": 9,
-          "error": 1,
-          "other": 0,
-          "sec": 118.5,
-          "n": 10
-        },
-        {
-          "success": 34,
-          "error": 3,
-          "other": 0,
-          "sec": 433.5,
-          "n": 37
-        },
-        {
-          "success": 29,
-          "error": 5,
-          "other": 0,
-          "sec": 390.4,
-          "n": 34
-        },
-        {
-          "success": 28,
-          "error": 3,
-          "other": 0,
-          "sec": 367,
-          "n": 31
-        },
-        {
-          "success": 27,
-          "error": 5,
-          "other": 0,
-          "sec": 396.7,
-          "n": 32
-        },
-        {
-          "success": 29,
-          "error": 2,
-          "other": 0,
-          "sec": 356.1,
-          "n": 31
-        },
         {
           "success": 8,
           "error": 0,
           "other": 0,
-          "sec": 104,
+          "sec": 85,
           "n": 8
         },
         {
-          "success": 9,
-          "error": 1,
-          "other": 0,
-          "sec": 110.6,
-          "n": 10
-        },
-        {
-          "success": 31,
-          "error": 1,
-          "other": 0,
-          "sec": 382.8,
-          "n": 32
-        },
-        {
-          "success": 30,
+          "success": 24,
           "error": 4,
           "other": 0,
-          "sec": 372,
-          "n": 34
+          "sec": 341.6,
+          "n": 28
         },
         {
-          "success": 29,
-          "error": 6,
+          "success": 33,
+          "error": 2,
           "other": 0,
-          "sec": 431.6,
+          "sec": 438.5,
           "n": 35
         },
         {
-          "success": 30,
-          "error": 3,
+          "success": 25,
+          "error": 6,
           "other": 0,
-          "sec": 388.4,
-          "n": 33
+          "sec": 367.8,
+          "n": 31
         },
         {
-          "success": 28,
+          "success": 23,
+          "error": 5,
+          "other": 0,
+          "sec": 327.1,
+          "n": 28
+        },
+        {
+          "success": 30,
+          "error": 0,
+          "other": 0,
+          "sec": 358.9,
+          "n": 30
+        },
+        {
+          "success": 8,
           "error": 2,
           "other": 0,
-          "sec": 339.3,
+          "sec": 129.6,
+          "n": 10
+        },
+        {
+          "success": 9,
+          "error": 0,
+          "other": 0,
+          "sec": 84.8,
+          "n": 9
+        },
+        {
+          "success": 23,
+          "error": 7,
+          "other": 0,
+          "sec": 328.8,
           "n": 30
+        },
+        {
+          "success": 31,
+          "error": 4,
+          "other": 0,
+          "sec": 421.6,
+          "n": 35
+        },
+        {
+          "success": 34,
+          "error": 2,
+          "other": 0,
+          "sec": 419,
+          "n": 36
+        },
+        {
+          "success": 33,
+          "error": 3,
+          "other": 0,
+          "sec": 409.1,
+          "n": 36
+        },
+        {
+          "success": 36,
+          "error": 1,
+          "other": 0,
+          "sec": 438.6,
+          "n": 37
+        },
+        {
+          "success": 8,
+          "error": 1,
+          "other": 0,
+          "sec": 98.8,
+          "n": 9
         }
       ],
       "hours": [
@@ -1384,19 +1410,19 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        3,
-        7,
-        4,
-        34,
-        31,
-        42,
-        29,
-        40,
-        39,
-        35,
-        36,
+        0,
+        0,
+        1,
+        47,
+        28,
+        33,
+        41,
         43,
-        24,
+        32,
+        32,
+        25,
+        44,
+        36,
         0,
         0,
         0,
@@ -1408,72 +1434,72 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        120,
-        247,
+        113,
+        249,
         0,
         0
       ],
       "p95Seconds": 16.1,
-      "lastErrorAt": "2026-11-06T10:09:51.966Z",
-      "lastSuccessAt": "2026-11-06T11:34:00.063Z",
+      "lastErrorAt": "2026-11-07T09:45:36.217Z",
+      "lastSuccessAt": "2026-11-07T11:51:40.211Z",
       "errorStreak": 0,
-      "minutesSaved": 2648,
+      "minutesSaved": 2600,
       "recent": [
         {
-          "id": "42396",
+          "id": "42442",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T11:34:00.063Z",
-          "seconds": 7.2
-        },
-        {
-          "id": "42404",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T11:21:46.345Z",
-          "seconds": 9
-        },
-        {
-          "id": "42400",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T10:55:59.738Z",
-          "seconds": 14.2
-        },
-        {
-          "id": "42415",
-          "status": "error",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T10:09:51.966Z",
-          "seconds": 10.7
-        },
-        {
-          "id": "42389",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T10:04:37.131Z",
+          "startedAt": "2026-11-07T11:51:40.211Z",
           "seconds": 10.9
         },
         {
-          "id": "42395",
+          "id": "42447",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T09:33:50.320Z",
-          "seconds": 13
+          "startedAt": "2026-11-07T11:49:29.381Z",
+          "seconds": 7.6
         },
         {
-          "id": "42401",
+          "id": "42446",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-11-07T11:13:44.136Z",
+          "seconds": 12.8
+        },
+        {
+          "id": "42449",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T09:31:31.537Z",
+          "startedAt": "2026-11-07T11:02:22.846Z",
+          "seconds": 7.8
+        },
+        {
+          "id": "42448",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-11-07T09:46:05.902Z",
           "seconds": 9.2
         },
         {
-          "id": "42398",
+          "id": "42445",
+          "status": "error",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T09:45:36.217Z",
+          "seconds": 12.6
+        },
+        {
+          "id": "42443",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T09:17:02.497Z",
-          "seconds": 13.5
+          "startedAt": "2026-11-07T09:14:31.556Z",
+          "seconds": 15.5
+        },
+        {
+          "id": "42444",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T08:50:40.157Z",
+          "seconds": 14.5
         }
       ],
       "id": "s2",
@@ -1486,10 +1512,10 @@ details.intro .body{margin-top:8px}
         "project:Finance Close",
         "reviewed:2026-05-04"
       ],
-      "executions": 367,
-      "success": 331,
-      "error": 36,
-      "lastRun": "2026-11-06T11:34:00.063Z",
+      "executions": 362,
+      "success": 325,
+      "error": 37,
+      "lastRun": "2026-11-07T11:51:40.211Z",
       "lastStatus": "success",
       "avgSeconds": 11.7
     },
@@ -1510,107 +1536,107 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Anja Keller",
       "reviewedAt": "2026-09-12",
-      "createdAt": "2026-03-31T00:00:00.000Z",
-      "updatedAt": "2026-10-25T00:00:00.000Z",
+      "createdAt": "2026-04-01T00:00:00.000Z",
+      "updatedAt": "2026-10-26T00:00:00.000Z",
       "errorWorkflow": true,
       "daily": [
         {
           "success": 6,
           "error": 0,
           "other": 0,
-          "sec": 34.9,
+          "sec": 35.2,
           "n": 6
         },
         {
-          "success": 8,
-          "error": 0,
+          "success": 25,
+          "error": 1,
           "other": 0,
-          "sec": 48.8,
-          "n": 8
+          "sec": 168.8,
+          "n": 26
         },
         {
-          "success": 25,
-          "error": 0,
+          "success": 20,
+          "error": 3,
           "other": 0,
-          "sec": 158.1,
-          "n": 25
-        },
-        {
-          "success": 25,
-          "error": 0,
-          "other": 0,
-          "sec": 151.5,
-          "n": 25
+          "sec": 146.3,
+          "n": 23
         },
         {
           "success": 18,
-          "error": 2,
+          "error": 1,
           "other": 0,
-          "sec": 125.9,
-          "n": 20
+          "sec": 118,
+          "n": 19
+        },
+        {
+          "success": 23,
+          "error": 0,
+          "other": 0,
+          "sec": 143,
+          "n": 23
         },
         {
           "success": 17,
-          "error": 1,
+          "error": 4,
           "other": 0,
-          "sec": 112.3,
-          "n": 18
-        },
-        {
-          "success": 25,
-          "error": 1,
-          "other": 0,
-          "sec": 153.5,
-          "n": 26
+          "sec": 143.3,
+          "n": 21
         },
         {
           "success": 7,
           "error": 0,
           "other": 0,
-          "sec": 42.4,
+          "sec": 43.8,
           "n": 7
+        },
+        {
+          "success": 8,
+          "error": 0,
+          "other": 0,
+          "sec": 46.5,
+          "n": 8
+        },
+        {
+          "success": 20,
+          "error": 2,
+          "other": 0,
+          "sec": 133.8,
+          "n": 22
+        },
+        {
+          "success": 23,
+          "error": 1,
+          "other": 0,
+          "sec": 141.6,
+          "n": 24
+        },
+        {
+          "success": 26,
+          "error": 0,
+          "other": 0,
+          "sec": 158.4,
+          "n": 26
+        },
+        {
+          "success": 18,
+          "error": 1,
+          "other": 0,
+          "sec": 115.3,
+          "n": 19
+        },
+        {
+          "success": 22,
+          "error": 0,
+          "other": 0,
+          "sec": 131.5,
+          "n": 22
         },
         {
           "success": 6,
           "error": 0,
           "other": 0,
-          "sec": 28.1,
+          "sec": 39.2,
           "n": 6
-        },
-        {
-          "success": 25,
-          "error": 1,
-          "other": 0,
-          "sec": 158.7,
-          "n": 26
-        },
-        {
-          "success": 24,
-          "error": 1,
-          "other": 0,
-          "sec": 163,
-          "n": 25
-        },
-        {
-          "success": 19,
-          "error": 0,
-          "other": 0,
-          "sec": 117,
-          "n": 19
-        },
-        {
-          "success": 17,
-          "error": 1,
-          "other": 0,
-          "sec": 107.1,
-          "n": 18
-        },
-        {
-          "success": 24,
-          "error": 2,
-          "other": 0,
-          "sec": 152.3,
-          "n": 26
         }
       ],
       "hours": [
@@ -1620,18 +1646,18 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        5,
-        2,
-        23,
-        27,
-        23,
-        32,
+        1,
+        1,
+        26,
         20,
-        27,
-        25,
-        26,
-        26,
-        19,
+        14,
+        21,
+        29,
+        31,
+        18,
+        33,
+        30,
+        28,
         0,
         0,
         0,
@@ -1642,73 +1668,73 @@ details.intro .body{margin-top:8px}
       "buckets": [
         0,
         0,
-        74,
-        181,
+        67,
+        185,
         0,
         0,
         0
       ],
-      "p95Seconds": 8.4,
-      "lastErrorAt": "2026-11-06T11:14:49.831Z",
-      "lastSuccessAt": "2026-11-06T11:45:02.655Z",
+      "p95Seconds": 8.5,
+      "lastErrorAt": "2026-11-05T12:42:33.913Z",
+      "lastSuccessAt": "2026-11-07T11:42:24.549Z",
       "errorStreak": 0,
-      "minutesSaved": 2952,
+      "minutesSaved": 2868,
       "recent": [
         {
-          "id": "42376",
+          "id": "42439",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T11:45:02.655Z",
-          "seconds": 7.2
-        },
-        {
-          "id": "42381",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T11:42:10.144Z",
+          "startedAt": "2026-11-07T11:42:24.549Z",
           "seconds": 7.5
         },
         {
-          "id": "42368",
+          "id": "42440",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T11:41:45.846Z",
-          "seconds": 4.5
+          "startedAt": "2026-11-07T10:55:30.083Z",
+          "seconds": 7.3
         },
         {
-          "id": "42371",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T11:23:47.746Z",
-          "seconds": 4.5
-        },
-        {
-          "id": "42382",
-          "status": "error",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T11:14:49.831Z",
-          "seconds": 5.1
-        },
-        {
-          "id": "42365",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T10:08:38.419Z",
-          "seconds": 8.5
-        },
-        {
-          "id": "42378",
+          "id": "42435",
           "status": "success",
           "mode": "manual",
-          "startedAt": "2026-11-06T10:03:13.064Z",
+          "startedAt": "2026-11-07T10:21:54.021Z",
+          "seconds": 4.6
+        },
+        {
+          "id": "42438",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T09:25:56.351Z",
+          "seconds": 6.2
+        },
+        {
+          "id": "42437",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T07:55:21.354Z",
+          "seconds": 6.7
+        },
+        {
+          "id": "42436",
+          "status": "success",
+          "mode": "manual",
+          "startedAt": "2026-11-07T06:01:42.197Z",
+          "seconds": 6.9
+        },
+        {
+          "id": "42315",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-06T17:56:39.742Z",
           "seconds": 5.2
         },
         {
-          "id": "42366",
+          "id": "42317",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T10:00:14.505Z",
-          "seconds": 5.2
+          "startedAt": "2026-11-06T17:52:59.203Z",
+          "seconds": 5.8
         }
       ],
       "id": "s1",
@@ -1721,12 +1747,12 @@ details.intro .body{margin-top:8px}
         "project:Quote-to-Cash",
         "reviewed:2026-09-12"
       ],
-      "executions": 255,
-      "success": 246,
-      "error": 9,
-      "lastRun": "2026-11-06T11:45:02.655Z",
+      "executions": 252,
+      "success": 239,
+      "error": 13,
+      "lastRun": "2026-11-07T11:42:24.549Z",
       "lastStatus": "success",
-      "avgSeconds": 6.1
+      "avgSeconds": 6.2
     },
     {
       "trigger": "Webhook",
@@ -1747,51 +1773,44 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Dmitri Volkov",
       "reviewedAt": null,
-      "createdAt": "2026-09-07T00:00:00.000Z",
-      "updatedAt": "2026-11-03T00:00:00.000Z",
+      "createdAt": "2026-09-08T00:00:00.000Z",
+      "updatedAt": "2026-11-04T00:00:00.000Z",
       "errorWorkflow": false,
       "daily": [
         {
-          "success": 4,
+          "success": 5,
           "error": 1,
           "other": 0,
-          "sec": 10.3,
-          "n": 5
+          "sec": 14.2,
+          "n": 6
         },
         {
-          "success": 4,
-          "error": 0,
+          "success": 15,
+          "error": 2,
           "other": 0,
-          "sec": 9.2,
-          "n": 4
+          "sec": 33,
+          "n": 17
         },
         {
-          "success": 12,
-          "error": 3,
+          "success": 14,
+          "error": 1,
           "other": 0,
-          "sec": 30.6,
+          "sec": 27.2,
           "n": 15
         },
         {
-          "success": 17,
-          "error": 0,
-          "other": 0,
-          "sec": 33.1,
-          "n": 17
-        },
-        {
-          "success": 17,
-          "error": 0,
-          "other": 0,
-          "sec": 38.3,
-          "n": 17
-        },
-        {
-          "success": 18,
+          "success": 15,
           "error": 1,
           "other": 0,
-          "sec": 37.1,
-          "n": 19
+          "sec": 37.4,
+          "n": 16
+        },
+        {
+          "success": 16,
+          "error": 1,
+          "other": 0,
+          "sec": 33.3,
+          "n": 17
         },
         {
           "success": 17,
@@ -1801,53 +1820,60 @@ details.intro .body{margin-top:8px}
           "n": 18
         },
         {
-          "success": 5,
+          "success": 6,
           "error": 0,
           "other": 0,
-          "sec": 12.1,
-          "n": 5
+          "sec": 14.7,
+          "n": 6
         },
         {
-          "success": 4,
+          "success": 6,
           "error": 0,
           "other": 0,
-          "sec": 8.3,
-          "n": 4
+          "sec": 13.1,
+          "n": 6
         },
         {
           "success": 19,
-          "error": 0,
+          "error": 1,
           "other": 0,
-          "sec": 37.5,
-          "n": 19
+          "sec": 39.5,
+          "n": 20
         },
         {
           "success": 14,
-          "error": 1,
+          "error": 3,
           "other": 0,
-          "sec": 31.3,
-          "n": 15
-        },
-        {
-          "success": 20,
-          "error": 0,
-          "other": 0,
-          "sec": 41.1,
-          "n": 20
+          "sec": 36.5,
+          "n": 17
         },
         {
           "success": 14,
           "error": 2,
           "other": 0,
-          "sec": 34.8,
+          "sec": 34.1,
           "n": 16
         },
         {
-          "success": 18,
+          "success": 17,
           "error": 1,
           "other": 0,
-          "sec": 36.4,
-          "n": 19
+          "sec": 41.3,
+          "n": 18
+        },
+        {
+          "success": 18,
+          "error": 2,
+          "other": 0,
+          "sec": 40.7,
+          "n": 20
+        },
+        {
+          "success": 4,
+          "error": 1,
+          "other": 0,
+          "sec": 10.4,
+          "n": 5
         }
       ],
       "hours": [
@@ -1856,19 +1882,19 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
+        1,
         0,
-        2,
-        2,
-        22,
-        24,
-        17,
-        20,
-        22,
-        14,
-        11,
-        19,
+        0,
+        23,
         22,
         18,
+        18,
+        16,
+        19,
+        21,
+        17,
+        17,
+        25,
         0,
         0,
         0,
@@ -1878,74 +1904,74 @@ details.intro .body{margin-top:8px}
       ],
       "buckets": [
         0,
-        83,
-        110,
+        79,
+        118,
         0,
         0,
         0,
         0
       ],
       "p95Seconds": 2.9,
-      "lastErrorAt": "2026-11-06T08:46:13.904Z",
-      "lastSuccessAt": "2026-11-06T12:08:07.807Z",
+      "lastErrorAt": "2026-11-07T08:33:03.275Z",
+      "lastSuccessAt": "2026-11-07T12:33:45.007Z",
       "errorStreak": 0,
-      "minutesSaved": 915,
+      "minutesSaved": 900,
       "recent": [
         {
-          "id": "42424",
+          "id": "42454",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T12:08:07.807Z",
-          "seconds": 2.6
+          "startedAt": "2026-11-07T12:33:45.007Z",
+          "seconds": 2.7
         },
         {
-          "id": "42425",
+          "id": "42453",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T11:13:01.286Z",
-          "seconds": 2.6
-        },
-        {
-          "id": "42439",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T11:08:04.576Z",
+          "startedAt": "2026-11-07T11:50:26.446Z",
           "seconds": 2.3
         },
         {
-          "id": "42440",
+          "id": "42452",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T10:48:52.858Z",
-          "seconds": 1.3
+          "startedAt": "2026-11-07T11:36:53.331Z",
+          "seconds": 1.7
         },
         {
-          "id": "42435",
+          "id": "42451",
+          "status": "error",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T08:33:03.275Z",
+          "seconds": 2
+        },
+        {
+          "id": "42455",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-07T05:51:02.554Z",
+          "seconds": 1.7
+        },
+        {
+          "id": "42372",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-06T17:47:29.528Z",
+          "seconds": 1.7
+        },
+        {
+          "id": "42379",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-06T15:50:34.524Z",
+          "seconds": 1.4
+        },
+        {
+          "id": "42377",
           "status": "success",
           "mode": "manual",
-          "startedAt": "2026-11-06T10:29:46.279Z",
-          "seconds": 1.6
-        },
-        {
-          "id": "42437",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T10:11:04.211Z",
-          "seconds": 1.6
-        },
-        {
-          "id": "42422",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T10:08:57.514Z",
+          "startedAt": "2026-11-06T15:32:45.960Z",
           "seconds": 2.4
-        },
-        {
-          "id": "42427",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T09:48:46.848Z",
-          "seconds": 1.6
         }
       ],
       "id": "s4",
@@ -1956,10 +1982,10 @@ details.intro .body{margin-top:8px}
         "owner:Dmitri Volkov",
         "project:Service Desk"
       ],
-      "executions": 193,
-      "success": 183,
-      "error": 10,
-      "lastRun": "2026-11-06T12:08:07.807Z",
+      "executions": 197,
+      "success": 180,
+      "error": 17,
+      "lastRun": "2026-11-07T12:33:45.007Z",
       "lastStatus": "success",
       "avgSeconds": 2.1
     },
@@ -1979,107 +2005,107 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Carla Moreno",
       "reviewedAt": "2026-08-20",
-      "createdAt": "2026-08-03T00:00:00.000Z",
-      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "createdAt": "2026-08-04T00:00:00.000Z",
+      "updatedAt": "2026-09-28T00:00:00.000Z",
       "errorWorkflow": true,
       "daily": [
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 4.7,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 2.1,
+          "sec": 3.6,
           "n": 1
         },
         {
           "success": 4,
           "error": 0,
           "other": 0,
-          "sec": 11.7,
+          "sec": 12.3,
           "n": 4
         },
         {
           "success": 4,
           "error": 0,
           "other": 0,
-          "sec": 14.8,
+          "sec": 11.2,
+          "n": 4
+        },
+        {
+          "success": 3,
+          "error": 1,
+          "other": 0,
+          "sec": 13.9,
+          "n": 4
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0,
+          "sec": 15.8,
           "n": 4
         },
         {
           "success": 5,
           "error": 0,
           "other": 0,
-          "sec": 19.7,
+          "sec": 20.1,
           "n": 5
-        },
-        {
-          "success": 4,
-          "error": 0,
-          "other": 0,
-          "sec": 16,
-          "n": 4
-        },
-        {
-          "success": 4,
-          "error": 0,
-          "other": 0,
-          "sec": 13.6,
-          "n": 4
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 4.3,
+          "sec": 4.1,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 3.7,
+          "sec": 3,
           "n": 1
         },
         {
-          "success": 3,
-          "error": 0,
-          "other": 0,
-          "sec": 8.5,
-          "n": 3
-        },
-        {
-          "success": 3,
-          "error": 0,
-          "other": 0,
-          "sec": 10.3,
-          "n": 3
-        },
-        {
           "success": 4,
           "error": 0,
           "other": 0,
-          "sec": 14.2,
+          "sec": 10.9,
           "n": 4
         },
         {
           "success": 4,
           "error": 0,
           "other": 0,
-          "sec": 10.7,
+          "sec": 11,
           "n": 4
         },
         {
-          "success": 5,
+          "success": 4,
           "error": 0,
           "other": 0,
-          "sec": 14.3,
-          "n": 5
+          "sec": 15,
+          "n": 4
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0,
+          "sec": 9.4,
+          "n": 3
+        },
+        {
+          "success": 4,
+          "error": 0,
+          "other": 0,
+          "sec": 14,
+          "n": 4
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 2.6,
+          "n": 1
         }
       ],
       "hours": [
@@ -2089,18 +2115,18 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        1,
         0,
-        7,
-        7,
+        0,
+        4,
+        3,
+        6,
+        6,
+        3,
+        5,
+        6,
         5,
         3,
-        1,
         3,
-        7,
-        2,
-        1,
-        7,
         0,
         0,
         0,
@@ -2117,67 +2143,67 @@ details.intro .body{margin-top:8px}
         0,
         0
       ],
-      "p95Seconds": 4.4,
-      "lastErrorAt": null,
-      "lastSuccessAt": "2026-11-06T09:49:22.133Z",
+      "p95Seconds": 4.6,
+      "lastErrorAt": "2026-10-28T13:27:55.575Z",
+      "lastSuccessAt": "2026-11-07T10:08:11.674Z",
       "errorStreak": 0,
-      "minutesSaved": 880,
+      "minutesSaved": 860,
       "recent": [
         {
-          "id": "42419",
+          "id": "42450",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T09:49:22.133Z",
-          "seconds": 2.5
+          "startedAt": "2026-11-07T10:08:11.674Z",
+          "seconds": 2.6
         },
         {
-          "id": "42420",
+          "id": "42363",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T09:26:02.457Z",
-          "seconds": 3
-        },
-        {
-          "id": "42417",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T08:54:30.201Z",
-          "seconds": 3.5
-        },
-        {
-          "id": "42421",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T08:22:36.010Z",
-          "seconds": 3.2
-        },
-        {
-          "id": "42418",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-06T06:46:02.665Z",
+          "startedAt": "2026-11-06T14:23:35.456Z",
           "seconds": 2.1
         },
         {
-          "id": "42284",
+          "id": "42362",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-05T17:19:46.382Z",
-          "seconds": 2.1
+          "startedAt": "2026-11-06T14:15:22.101Z",
+          "seconds": 3.7
         },
         {
-          "id": "42282",
+          "id": "42365",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-05T16:36:30.863Z",
+          "startedAt": "2026-11-06T13:35:18.290Z",
+          "seconds": 4.1
+        },
+        {
+          "id": "42364",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-06T11:10:11.555Z",
+          "seconds": 4.1
+        },
+        {
+          "id": "42222",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-05T17:03:47.502Z",
           "seconds": 3.9
         },
         {
-          "id": "42283",
+          "id": "42223",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-05T14:00:43.273Z",
-          "seconds": 2.5
+          "startedAt": "2026-11-05T11:50:10.821Z",
+          "seconds": 2.2
+        },
+        {
+          "id": "42221",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-05T08:44:34.895Z",
+          "seconds": 3.3
         }
       ],
       "id": "s3",
@@ -2191,11 +2217,11 @@ details.intro .body{margin-top:8px}
         "reviewed:2026-08-20"
       ],
       "executions": 44,
-      "success": 44,
-      "error": 0,
-      "lastRun": "2026-11-06T09:49:22.133Z",
+      "success": 43,
+      "error": 1,
+      "lastRun": "2026-11-07T10:08:11.674Z",
       "lastStatus": "success",
-      "avgSeconds": 3.4
+      "avgSeconds": 3.3
     },
     {
       "trigger": "Schedule",
@@ -2213,8 +2239,8 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Eva Lindqvist",
       "reviewedAt": null,
-      "createdAt": "2026-05-10T00:00:00.000Z",
-      "updatedAt": "2026-10-12T00:00:00.000Z",
+      "createdAt": "2026-05-11T00:00:00.000Z",
+      "updatedAt": "2026-10-13T00:00:00.000Z",
       "errorWorkflow": false,
       "daily": [
         {
@@ -2225,45 +2251,38 @@ details.intro .body{margin-top:8px}
           "n": 1
         },
         {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 1.6,
-          "n": 1
-        },
-        {
-          "success": 2,
-          "error": 1,
-          "other": 0,
-          "sec": 5,
-          "n": 3
-        },
-        {
-          "success": 2,
-          "error": 1,
-          "other": 0,
-          "sec": 4.1,
-          "n": 3
-        },
-        {
-          "success": 3,
-          "error": 0,
-          "other": 0,
-          "sec": 5.9,
-          "n": 3
-        },
-        {
-          "success": 3,
-          "error": 0,
-          "other": 0,
-          "sec": 4.6,
-          "n": 3
-        },
-        {
           "success": 3,
           "error": 0,
           "other": 0,
           "sec": 5.2,
+          "n": 3
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0,
+          "sec": 4,
+          "n": 3
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0,
+          "sec": 5.8,
+          "n": 3
+        },
+        {
+          "success": 3,
+          "error": 0,
+          "other": 0,
+          "sec": 6.3,
+          "n": 3
+        },
+        {
+          "success": 2,
+          "error": 1,
+          "other": 0,
+          "sec": 4.9,
           "n": 3
         },
         {
@@ -2277,48 +2296,55 @@ details.intro .body{margin-top:8px}
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 2.2,
+          "sec": 1,
           "n": 1
         },
         {
           "success": 3,
           "error": 0,
           "other": 0,
-          "sec": 4.8,
+          "sec": 5.3,
           "n": 3
         },
         {
           "success": 2,
           "error": 1,
           "other": 0,
-          "sec": 5.1,
+          "sec": 4.7,
           "n": 3
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 3.5,
+          "sec": 2.8,
           "n": 2
         },
         {
-          "success": 2,
-          "error": 2,
-          "other": 0,
-          "sec": 6.3,
-          "n": 4
-        },
-        {
-          "success": 2,
+          "success": 3,
           "error": 0,
           "other": 0,
-          "sec": 3.4,
-          "n": 2
+          "sec": 5.1,
+          "n": 3
+        },
+        {
+          "success": 2,
+          "error": 1,
+          "other": 0,
+          "sec": 4.9,
+          "n": 3
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 2.1,
+          "n": 1
         }
       ],
       "hours": [
         0,
-        1,
+        0,
         0,
         0,
         1,
@@ -2330,88 +2356,88 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        2,
-        0,
-        7,
         0,
         0,
-        0,
-        2,
+        9,
         0,
         0,
         0,
-        7
+        1,
+        0,
+        0,
+        0,
+        9
       ],
       "buckets": [
         0,
-        26,
-        7,
+        24,
+        9,
         0,
         0,
         0,
         0
       ],
       "p95Seconds": 2.3,
-      "lastErrorAt": "2026-11-05T19:00:00.000Z",
-      "lastSuccessAt": "2026-11-06T13:18:00.000Z",
+      "lastErrorAt": "2026-11-06T23:00:00.000Z",
+      "lastSuccessAt": "2026-11-07T04:54:00.000Z",
       "errorStreak": 0,
-      "minutesSaved": 168,
+      "minutesSaved": 180,
       "recent": [
         {
-          "id": "42443",
-          "status": "success",
-          "mode": "manual",
-          "startedAt": "2026-11-06T13:18:00.000Z",
-          "seconds": 1.1
-        },
-        {
-          "id": "42442",
+          "id": "42456",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T04:54:00.000Z",
-          "seconds": 2.3
+          "startedAt": "2026-11-07T04:54:00.000Z",
+          "seconds": 2.1
         },
         {
-          "id": "42305",
+          "id": "42389",
           "status": "error",
           "mode": "trigger",
-          "startedAt": "2026-11-05T19:00:00.000Z",
+          "startedAt": "2026-11-06T23:00:00.000Z",
+          "seconds": 1.4
+        },
+        {
+          "id": "42388",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-06T15:00:00.000Z",
           "seconds": 1.6
         },
         {
-          "id": "42304",
+          "id": "42387",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-05T13:00:00.000Z",
+          "startedAt": "2026-11-06T07:00:00.000Z",
           "seconds": 1.9
         },
         {
-          "id": "42303",
-          "status": "error",
+          "id": "42245",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-05T23:00:00.000Z",
+          "seconds": 1.4
+        },
+        {
+          "id": "42244",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-05T15:00:00.000Z",
+          "seconds": 2
+        },
+        {
+          "id": "42243",
+          "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-05T07:00:00.000Z",
-          "seconds": 1.5
+          "seconds": 1.7
         },
         {
-          "id": "42306",
-          "status": "success",
-          "mode": "manual",
-          "startedAt": "2026-11-05T01:00:00.000Z",
-          "seconds": 1.3
-        },
-        {
-          "id": "42170",
+          "id": "42116",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-04T19:00:00.000Z",
-          "seconds": 1.8
-        },
-        {
-          "id": "42169",
-          "status": "success",
-          "mode": "trigger",
-          "startedAt": "2026-11-04T07:00:00.000Z",
-          "seconds": 1.7
+          "seconds": 1.4
         }
       ],
       "id": "s6",
@@ -2423,9 +2449,9 @@ details.intro .body{margin-top:8px}
         "project:Renewals"
       ],
       "executions": 33,
-      "success": 28,
-      "error": 5,
-      "lastRun": "2026-11-06T13:18:00.000Z",
+      "success": 30,
+      "error": 3,
+      "lastRun": "2026-11-07T04:54:00.000Z",
       "lastStatus": "success",
       "avgSeconds": 1.7
     },
@@ -2445,43 +2471,43 @@ details.intro .body{margin-top:8px}
       "hasOwner": false,
       "owner": null,
       "reviewedAt": null,
-      "createdAt": "2026-10-07T00:00:00.000Z",
-      "updatedAt": "2026-10-07T00:00:00.000Z",
+      "createdAt": "2026-10-08T00:00:00.000Z",
+      "updatedAt": "2026-10-08T00:00:00.000Z",
       "errorWorkflow": false,
       "daily": [
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 5.4,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 5.7,
+          "sec": 4.4,
           "n": 1
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 11.2,
+          "sec": 11.5,
           "n": 2
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 12.3,
+          "sec": 8.1,
           "n": 2
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 10.5,
+          "sec": 8.6,
+          "n": 2
+        },
+        {
+          "success": 2,
+          "error": 0,
+          "other": 0,
+          "sec": 11.1,
           "n": 2
         },
         {
@@ -2492,60 +2518,60 @@ details.intro .body{margin-top:8px}
           "n": 2
         },
         {
-          "success": 2,
-          "error": 0,
-          "other": 0,
-          "sec": 10.1,
-          "n": 2
-        },
-        {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 6,
+          "sec": 6.8,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 6.3,
+          "sec": 6.1,
           "n": 1
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 6.9,
+          "sec": 11,
           "n": 2
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 12.9,
+          "sec": 10.2,
           "n": 2
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 8.2,
+          "sec": 9.1,
           "n": 2
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 10.1,
+          "sec": 10.8,
           "n": 2
         },
         {
           "success": 2,
           "error": 0,
           "other": 0,
-          "sec": 9.2,
+          "sec": 11.2,
           "n": 2
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 6.7,
+          "n": 1
         }
       ],
       "hours": [
@@ -2557,16 +2583,16 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
+        3,
+        1,
+        3,
+        3,
         4,
-        2,
-        1,
-        2,
         4,
-        2,
-        5,
+        1,
         1,
         2,
-        1,
+        2,
         0,
         0,
         0,
@@ -2577,73 +2603,73 @@ details.intro .body{margin-top:8px}
       "buckets": [
         0,
         0,
-        9,
-        15,
+        11,
+        13,
         0,
         0,
         0
       ],
-      "p95Seconds": 6.9,
+      "p95Seconds": 6.7,
       "lastErrorAt": null,
-      "lastSuccessAt": "2026-11-06T11:57:01.783Z",
+      "lastSuccessAt": "2026-11-07T11:41:21.471Z",
       "errorStreak": 0,
       "minutesSaved": 192,
       "recent": [
         {
-          "id": "42493",
+          "id": "42469",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T11:57:01.783Z",
-          "seconds": 4.6
+          "startedAt": "2026-11-07T11:41:21.471Z",
+          "seconds": 6.7
         },
         {
-          "id": "42494",
+          "id": "42432",
           "status": "success",
           "mode": "manual",
-          "startedAt": "2026-11-06T08:43:56.435Z",
-          "seconds": 4.6
+          "startedAt": "2026-11-06T10:21:28.944Z",
+          "seconds": 5.5
         },
         {
-          "id": "42359",
+          "id": "42433",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-05T17:38:14.834Z",
-          "seconds": 5
+          "startedAt": "2026-11-06T09:31:57.349Z",
+          "seconds": 5.7
         },
         {
-          "id": "42358",
+          "id": "42301",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-05T09:14:06.511Z",
-          "seconds": 5.1
+          "startedAt": "2026-11-05T17:33:58.708Z",
+          "seconds": 4.2
         },
         {
-          "id": "42229",
+          "id": "42300",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-04T12:12:29.759Z",
-          "seconds": 4.1
+          "startedAt": "2026-11-05T13:23:18.600Z",
+          "seconds": 6.6
         },
         {
-          "id": "42228",
+          "id": "42164",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-04T08:29:11.645Z",
-          "seconds": 4.1
+          "startedAt": "2026-11-04T13:28:35.348Z",
+          "seconds": 4.8
         },
         {
-          "id": "42088",
+          "id": "42163",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-03T12:43:05.073Z",
-          "seconds": 6.8
+          "startedAt": "2026-11-04T10:25:11.442Z",
+          "seconds": 4.3
         },
         {
-          "id": "42087",
+          "id": "42030",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-03T08:16:06.493Z",
-          "seconds": 6.1
+          "startedAt": "2026-11-03T16:05:21.810Z",
+          "seconds": 5.8
         }
       ],
       "id": "s10",
@@ -2657,7 +2683,7 @@ details.intro .body{margin-top:8px}
       "executions": 24,
       "success": 24,
       "error": 0,
-      "lastRun": "2026-11-06T11:57:01.783Z",
+      "lastRun": "2026-11-07T11:41:21.471Z",
       "lastStatus": "success",
       "avgSeconds": 5.3
     },
@@ -2677,8 +2703,8 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Anja Keller",
       "reviewedAt": "2026-10-02",
-      "createdAt": "2026-01-10T00:00:00.000Z",
-      "updatedAt": "2026-10-17T00:00:00.000Z",
+      "createdAt": "2026-01-11T00:00:00.000Z",
+      "updatedAt": "2026-10-18T00:00:00.000Z",
       "errorWorkflow": true,
       "daily": [
         {
@@ -2689,87 +2715,31 @@ details.intro .body{margin-top:8px}
           "n": 0
         },
         {
-          "success": 0,
-          "error": 0,
-          "other": 0,
-          "sec": 0,
-          "n": 0
-        },
-        {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 16.6,
+          "sec": 20.9,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 29.5,
+          "sec": 19.2,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 26.7,
+          "sec": 28.2,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 34.3,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 28.8,
-          "n": 1
-        },
-        {
-          "success": 0,
-          "error": 0,
-          "other": 0,
-          "sec": 0,
-          "n": 0
-        },
-        {
-          "success": 0,
-          "error": 0,
-          "other": 0,
-          "sec": 0,
-          "n": 0
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 24.1,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 20.7,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 24.3,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 24.6,
+          "sec": 18.8,
           "n": 1
         },
         {
@@ -2778,6 +2748,62 @@ details.intro .body{margin-top:8px}
           "other": 0,
           "sec": 26.6,
           "n": 1
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0,
+          "sec": 0,
+          "n": 0
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0,
+          "sec": 0,
+          "n": 0
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 28,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 31.2,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 26.9,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 17.3,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 31.6,
+          "n": 1
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0,
+          "sec": 0,
+          "n": 0
         }
       ],
       "hours": [
@@ -2785,9 +2811,9 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        1,
         0,
-        9,
+        0,
+        10,
         0,
         0,
         0,
@@ -2811,71 +2837,71 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        9,
-        1,
+        8,
+        2,
         0
       ],
-      "p95Seconds": 34.3,
+      "p95Seconds": 31.6,
       "lastErrorAt": null,
-      "lastSuccessAt": "2026-11-06T04:11:59.999Z",
+      "lastSuccessAt": "2026-11-06T06:00:00.000Z",
       "errorStreak": 0,
       "minutesSaved": 300,
       "recent": [
         {
-          "id": "42441",
+          "id": "42386",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T04:11:59.999Z",
-          "seconds": 26.6
+          "startedAt": "2026-11-06T06:00:00.000Z",
+          "seconds": 31.6
         },
         {
-          "id": "42302",
+          "id": "42242",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-05T06:00:00.000Z",
-          "seconds": 24.6
+          "seconds": 17.3
         },
         {
-          "id": "42168",
+          "id": "42114",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-04T06:00:00.000Z",
-          "seconds": 24.3
+          "seconds": 26.9
         },
         {
-          "id": "42030",
+          "id": "41983",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-03T06:00:00.000Z",
-          "seconds": 20.7
+          "seconds": 31.2
         },
         {
-          "id": "41902",
+          "id": "41844",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-02T06:00:00.000Z",
-          "seconds": 24.1
+          "seconds": 28
         },
         {
-          "id": "41687",
+          "id": "41630",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-30T06:00:00.000Z",
-          "seconds": 28.8
+          "seconds": 26.6
         },
         {
-          "id": "41559",
+          "id": "41495",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-29T06:00:00.000Z",
-          "seconds": 34.3
+          "seconds": 18.8
         },
         {
-          "id": "41430",
+          "id": "41371",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-28T06:00:00.000Z",
-          "seconds": 26.7
+          "seconds": 28.2
         }
       ],
       "id": "s5",
@@ -2890,9 +2916,9 @@ details.intro .body{margin-top:8px}
       "executions": 10,
       "success": 10,
       "error": 0,
-      "lastRun": "2026-11-06T04:11:59.999Z",
+      "lastRun": "2026-11-06T06:00:00.000Z",
       "lastStatus": "success",
-      "avgSeconds": 25.6
+      "avgSeconds": 24.9
     },
     {
       "trigger": "Schedule",
@@ -2913,8 +2939,8 @@ details.intro .body{margin-top:8px}
       "hasOwner": true,
       "owner": "Eva Lindqvist",
       "reviewedAt": null,
-      "createdAt": "2026-09-22T00:00:00.000Z",
-      "updatedAt": "2026-11-04T00:00:00.000Z",
+      "createdAt": "2026-09-23T00:00:00.000Z",
+      "updatedAt": "2026-11-05T00:00:00.000Z",
       "errorWorkflow": null,
       "daily": [
         {
@@ -2925,6 +2951,48 @@ details.intro .body{margin-top:8px}
           "n": 0
         },
         {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 9.2,
+          "n": 1
+        },
+        {
+          "success": 0,
+          "error": 1,
+          "other": 0,
+          "sec": 8.3,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 8.2,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 5.4,
+          "n": 1
+        },
+        {
+          "success": 0,
+          "error": 1,
+          "other": 0,
+          "sec": 6.7,
+          "n": 1
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0,
+          "sec": 0,
+          "n": 0
+        },
+        {
           "success": 0,
           "error": 0,
           "other": 0,
@@ -2935,35 +3003,35 @@ details.intro .body{margin-top:8px}
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 7.4,
+          "sec": 10.5,
+          "n": 1
+        },
+        {
+          "success": 0,
+          "error": 1,
+          "other": 0,
+          "sec": 5.3,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 7.3,
+          "sec": 6.8,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 6,
+          "sec": 9.4,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 8,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 8.1,
+          "sec": 11.1,
           "n": 1
         },
         {
@@ -2972,48 +3040,6 @@ details.intro .body{margin-top:8px}
           "other": 0,
           "sec": 0,
           "n": 0
-        },
-        {
-          "success": 0,
-          "error": 0,
-          "other": 0,
-          "sec": 0,
-          "n": 0
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 8.9,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 6.9,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 5.5,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 5.6,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 11,
-          "n": 1
         }
       ],
       "hours": [
@@ -3022,9 +3048,9 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        1,
         0,
-        9,
+        0,
+        10,
         0,
         0,
         0,
@@ -3046,72 +3072,72 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        9,
-        1,
+        8,
+        2,
         0,
         0
       ],
-      "p95Seconds": 11,
-      "lastErrorAt": null,
-      "lastSuccessAt": "2026-11-06T05:15:00.000Z",
+      "p95Seconds": 11.1,
+      "lastErrorAt": "2026-11-03T07:30:00.000Z",
+      "lastSuccessAt": "2026-11-06T07:30:00.000Z",
       "errorStreak": 0,
-      "minutesSaved": 60,
+      "minutesSaved": 42,
       "recent": [
         {
-          "id": "42492",
+          "id": "42431",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T05:15:00.000Z",
-          "seconds": 11
+          "startedAt": "2026-11-06T07:30:00.000Z",
+          "seconds": 11.1
         },
         {
-          "id": "42357",
+          "id": "42299",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-05T07:30:00.000Z",
-          "seconds": 5.6
+          "seconds": 9.4
         },
         {
-          "id": "42227",
+          "id": "42162",
           "status": "success",
-          "mode": "manual",
+          "mode": "trigger",
           "startedAt": "2026-11-04T07:30:00.000Z",
-          "seconds": 5.5
+          "seconds": 6.8
         },
         {
-          "id": "42086",
-          "status": "success",
-          "mode": "manual",
+          "id": "42028",
+          "status": "error",
+          "mode": "trigger",
           "startedAt": "2026-11-03T07:30:00.000Z",
-          "seconds": 6.9
+          "seconds": 5.3
         },
         {
-          "id": "41949",
+          "id": "41899",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-02T07:30:00.000Z",
-          "seconds": 8.9
+          "seconds": 10.5
         },
         {
-          "id": "41744",
-          "status": "success",
+          "id": "41685",
+          "status": "error",
           "mode": "trigger",
           "startedAt": "2026-10-30T07:30:00.000Z",
-          "seconds": 8.1
+          "seconds": 6.7
         },
         {
-          "id": "41604",
+          "id": "41552",
           "status": "success",
-          "mode": "trigger",
+          "mode": "manual",
           "startedAt": "2026-10-29T07:30:00.000Z",
-          "seconds": 8
+          "seconds": 5.4
         },
         {
-          "id": "41482",
+          "id": "41419",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-28T07:30:00.000Z",
-          "seconds": 6
+          "seconds": 8.2
         }
       ],
       "id": "s9",
@@ -3123,11 +3149,11 @@ details.intro .body{margin-top:8px}
         "project:Marketing Ops"
       ],
       "executions": 10,
-      "success": 10,
-      "error": 0,
-      "lastRun": "2026-11-06T05:15:00.000Z",
+      "success": 7,
+      "error": 3,
+      "lastRun": "2026-11-06T07:30:00.000Z",
       "lastStatus": "success",
-      "avgSeconds": 7.5
+      "avgSeconds": 8.1
     },
     {
       "trigger": "Schedule",
@@ -3148,8 +3174,8 @@ details.intro .body{margin-top:8px}
       "hasOwner": false,
       "owner": null,
       "reviewedAt": null,
-      "createdAt": "2026-07-09T00:00:00.000Z",
-      "updatedAt": "2026-07-29T00:00:00.000Z",
+      "createdAt": "2026-07-10T00:00:00.000Z",
+      "updatedAt": "2026-07-30T00:00:00.000Z",
       "errorWorkflow": false,
       "daily": [
         {
@@ -3160,24 +3186,24 @@ details.intro .body{margin-top:8px}
           "n": 0
         },
         {
-          "success": 0,
-          "error": 0,
-          "other": 0,
-          "sec": 0,
-          "n": 0
-        },
-        {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 4,
+          "sec": 3.8,
           "n": 1
         },
         {
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 5.7,
+          "sec": 4.8,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 3.2,
           "n": 1
         },
         {
@@ -3185,13 +3211,6 @@ details.intro .body{margin-top:8px}
           "error": 0,
           "other": 0,
           "sec": 3,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 5.8,
           "n": 1
         },
         {
@@ -3219,21 +3238,7 @@ details.intro .body{margin-top:8px}
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 5.2,
-          "n": 1
-        },
-        {
-          "success": 1,
-          "error": 0,
-          "other": 0,
-          "sec": 3.5,
-          "n": 1
-        },
-        {
-          "success": 0,
-          "error": 1,
-          "other": 0,
-          "sec": 3.6,
+          "sec": 4.6,
           "n": 1
         },
         {
@@ -3247,8 +3252,29 @@ details.intro .body{margin-top:8px}
           "success": 1,
           "error": 0,
           "other": 0,
-          "sec": 4.4,
+          "sec": 5.5,
           "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 2.7,
+          "n": 1
+        },
+        {
+          "success": 1,
+          "error": 0,
+          "other": 0,
+          "sec": 3.3,
+          "n": 1
+        },
+        {
+          "success": 0,
+          "error": 0,
+          "other": 0,
+          "sec": 0,
+          "n": 0
         }
       ],
       "hours": [
@@ -3267,86 +3293,86 @@ details.intro .body{margin-top:8px}
         0,
         0,
         0,
-        1,
         0,
         0,
         0,
         0,
         0,
         0,
-        9,
+        0,
+        10,
         0
       ],
       "buckets": [
         0,
         0,
-        7,
-        3,
+        9,
+        1,
         0,
         0,
         0
       ],
-      "p95Seconds": 5.8,
-      "lastErrorAt": "2026-11-04T22:00:00.000Z",
-      "lastSuccessAt": "2026-11-06T15:24:00.000Z",
+      "p95Seconds": 5.5,
+      "lastErrorAt": null,
+      "lastSuccessAt": "2026-11-06T22:00:00.000Z",
       "errorStreak": 0,
-      "minutesSaved": 45,
+      "minutesSaved": 50,
       "recent": [
         {
-          "id": "42495",
+          "id": "42434",
           "status": "success",
           "mode": "trigger",
-          "startedAt": "2026-11-06T15:24:00.000Z",
-          "seconds": 4.4
+          "startedAt": "2026-11-06T22:00:00.000Z",
+          "seconds": 3.3
         },
         {
-          "id": "42360",
+          "id": "42302",
+          "status": "success",
+          "mode": "trigger",
+          "startedAt": "2026-11-05T22:00:00.000Z",
+          "seconds": 2.7
+        },
+        {
+          "id": "42165",
           "status": "success",
           "mode": "manual",
-          "startedAt": "2026-11-05T22:00:00.000Z",
-          "seconds": 2.8
-        },
-        {
-          "id": "42230",
-          "status": "error",
-          "mode": "trigger",
           "startedAt": "2026-11-04T22:00:00.000Z",
-          "seconds": 3.6
+          "seconds": 5.5
         },
         {
-          "id": "42089",
+          "id": "42031",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-03T22:00:00.000Z",
-          "seconds": 3.5
+          "seconds": 2.8
         },
         {
-          "id": "41952",
+          "id": "41902",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-11-02T22:00:00.000Z",
-          "seconds": 5.2
+          "seconds": 4.6
         },
         {
-          "id": "41747",
+          "id": "41688",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-30T22:00:00.000Z",
           "seconds": 3.9
         },
         {
-          "id": "41607",
+          "id": "41555",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-29T22:00:00.000Z",
-          "seconds": 5.8
+          "seconds": 3
         },
         {
-          "id": "41485",
+          "id": "41422",
           "status": "success",
           "mode": "trigger",
           "startedAt": "2026-10-28T22:00:00.000Z",
-          "seconds": 3
+          "seconds": 3.2
         }
       ],
       "id": "s11",
@@ -3356,11 +3382,11 @@ details.intro .body{margin-top:8px}
         "Knowledge"
       ],
       "executions": 10,
-      "success": 9,
-      "error": 1,
-      "lastRun": "2026-11-06T15:24:00.000Z",
+      "success": 10,
+      "error": 0,
+      "lastRun": "2026-11-06T22:00:00.000Z",
       "lastStatus": "success",
-      "avgSeconds": 4.2
+      "avgSeconds": 3.8
     },
     {
       "trigger": "Manual",
@@ -3378,8 +3404,8 @@ details.intro .body{margin-top:8px}
       "hasOwner": false,
       "owner": null,
       "reviewedAt": null,
-      "createdAt": "2025-06-24T00:00:00.000Z",
-      "updatedAt": "2026-04-20T00:00:00.000Z",
+      "createdAt": "2025-06-25T00:00:00.000Z",
+      "updatedAt": "2026-04-21T00:00:00.000Z",
       "errorWorkflow": false,
       "daily": [
         {
@@ -3538,544 +3564,544 @@ details.intro .body{margin-top:8px}
   ],
   "executions": [
     {
-      "id": "42491",
+      "id": "42468",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-11-06T16:26:59.999Z",
-      "seconds": 1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42490",
-      "workflowId": "s7",
-      "status": "error",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T16:06:00.000Z",
-      "seconds": 0.6,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42489",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T15:45:00.000Z",
-      "seconds": 1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42488",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T15:24:00.000Z",
-      "seconds": 0.9,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42495",
-      "workflowId": "s11",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T15:24:00.000Z",
-      "seconds": 4.4,
-      "workflowName": "Research notes archiver"
-    },
-    {
-      "id": "42487",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T15:03:00.000Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42486",
-      "workflowId": "s7",
-      "status": "error",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T14:42:00.000Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42485",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T14:21:00.000Z",
-      "seconds": 1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42484",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T14:00:00.000Z",
+      "startedAt": "2026-11-07T15:24:00.000Z",
       "seconds": 0.7,
       "workflowName": "BTP service health check"
     },
     {
-      "id": "42483",
+      "id": "42467",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-11-06T13:39:00.000Z",
-      "seconds": 0.9,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42443",
-      "workflowId": "s6",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T13:18:00.000Z",
-      "seconds": 1.1,
-      "workflowName": "Contract renewal reminder"
-    },
-    {
-      "id": "42482",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T13:18:00.000Z",
-      "seconds": 0.9,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42481",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T12:57:00.000Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42480",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T12:36:00.000Z",
-      "seconds": 0.8,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42479",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T12:15:00.000Z",
-      "seconds": 1.2,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42424",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T12:08:07.807Z",
-      "seconds": 2.6,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42493",
-      "workflowId": "s10",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:57:01.783Z",
-      "seconds": 4.6,
-      "workflowName": "Vendor onboarding checks"
-    },
-    {
-      "id": "42478",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:54:00.000Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42376",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:45:02.655Z",
-      "seconds": 7.2,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42381",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:42:10.144Z",
-      "seconds": 7.5,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42368",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:41:45.846Z",
-      "seconds": 4.5,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42396",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:34:00.063Z",
-      "seconds": 7.2,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42477",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:33:00.000Z",
+      "startedAt": "2026-11-07T14:00:00.000Z",
       "seconds": 0.6,
       "workflowName": "BTP service health check"
     },
     {
-      "id": "42371",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:23:47.746Z",
-      "seconds": 4.5,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42404",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:21:46.345Z",
-      "seconds": 9,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42382",
-      "workflowId": "s1",
-      "status": "error",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:14:49.831Z",
-      "seconds": 5.1,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42425",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:13:01.286Z",
-      "seconds": 2.6,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42476",
+      "id": "42466",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-11-06T11:12:00.000Z",
-      "seconds": 1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42439",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T11:08:04.576Z",
-      "seconds": 2.3,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42400",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:55:59.738Z",
-      "seconds": 14.2,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42475",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:51:00.000Z",
+      "startedAt": "2026-11-07T12:36:00.000Z",
       "seconds": 0.8,
       "workflowName": "BTP service health check"
     },
     {
-      "id": "42440",
+      "id": "42454",
       "workflowId": "s4",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-11-06T10:48:52.858Z",
-      "seconds": 1.3,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42474",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:30:00.000Z",
-      "seconds": 0.7,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42435",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T10:29:46.279Z",
-      "seconds": 1.6,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42437",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:11:04.211Z",
-      "seconds": 1.6,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42415",
-      "workflowId": "s2",
-      "status": "error",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:09:51.966Z",
-      "seconds": 10.7,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42473",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:09:00.000Z",
-      "seconds": 0.6,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42422",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:08:57.514Z",
-      "seconds": 2.4,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42365",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:08:38.419Z",
-      "seconds": 8.5,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42389",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:04:37.131Z",
-      "seconds": 10.9,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42378",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T10:03:13.064Z",
-      "seconds": 5.2,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42366",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T10:00:14.505Z",
-      "seconds": 5.2,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42370",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:51:33.872Z",
-      "seconds": 8.6,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42419",
-      "workflowId": "s3",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:49:22.133Z",
-      "seconds": 2.5,
-      "workflowName": "New hire onboarding checklist"
-    },
-    {
-      "id": "42427",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:48:46.848Z",
-      "seconds": 1.6,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42472",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T09:48:00.000Z",
-      "seconds": 1.1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42395",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:33:50.320Z",
-      "seconds": 13,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42401",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:31:31.537Z",
-      "seconds": 9.2,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42373",
-      "workflowId": "s1",
-      "status": "error",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:31:15.887Z",
-      "seconds": 6.3,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42384",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:28:08.081Z",
-      "seconds": 3.8,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42383",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:27:56.254Z",
-      "seconds": 6.7,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42471",
-      "workflowId": "s7",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T09:27:00.000Z",
-      "seconds": 1,
-      "workflowName": "BTP service health check"
-    },
-    {
-      "id": "42420",
-      "workflowId": "s3",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:26:02.457Z",
-      "seconds": 3,
-      "workflowName": "New hire onboarding checklist"
-    },
-    {
-      "id": "42434",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:22:50.872Z",
-      "seconds": 2.3,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42431",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:17:12.455Z",
-      "seconds": 1.7,
-      "workflowName": "Ticket triage to Sub4Me"
-    },
-    {
-      "id": "42398",
-      "workflowId": "s2",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:17:02.497Z",
-      "seconds": 13.5,
-      "workflowName": "Invoice intake and OCR routing"
-    },
-    {
-      "id": "42363",
-      "workflowId": "s1",
-      "status": "success",
-      "mode": "trigger",
-      "startedAt": "2026-11-06T09:15:49.342Z",
-      "seconds": 7.8,
-      "workflowName": "Lead-to-Cash: Quote to Order sync"
-    },
-    {
-      "id": "42430",
-      "workflowId": "s4",
-      "status": "success",
-      "mode": "manual",
-      "startedAt": "2026-11-06T09:14:35.838Z",
+      "startedAt": "2026-11-07T12:33:45.007Z",
       "seconds": 2.7,
       "workflowName": "Ticket triage to Sub4Me"
     },
     {
-      "id": "42362",
+      "id": "42442",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T11:51:40.211Z",
+      "seconds": 10.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42453",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T11:50:26.446Z",
+      "seconds": 2.3,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42447",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T11:49:29.381Z",
+      "seconds": 7.6,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42439",
       "workflowId": "s1",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-11-06T09:12:16.262Z",
-      "seconds": 4.2,
+      "startedAt": "2026-11-07T11:42:24.549Z",
+      "seconds": 7.5,
       "workflowName": "Lead-to-Cash: Quote to Order sync"
     },
     {
-      "id": "42470",
+      "id": "42469",
+      "workflowId": "s10",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T11:41:21.471Z",
+      "seconds": 6.7,
+      "workflowName": "Vendor onboarding checks"
+    },
+    {
+      "id": "42452",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T11:36:53.331Z",
+      "seconds": 1.7,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42446",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-07T11:13:44.136Z",
+      "seconds": 12.8,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42465",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-07T11:12:00.000Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42449",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T11:02:22.846Z",
+      "seconds": 7.8,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42440",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T10:55:30.083Z",
+      "seconds": 7.3,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42435",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-07T10:21:54.021Z",
+      "seconds": 4.6,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42450",
+      "workflowId": "s3",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T10:08:11.674Z",
+      "seconds": 2.6,
+      "workflowName": "New hire onboarding checklist"
+    },
+    {
+      "id": "42464",
       "workflowId": "s7",
       "status": "success",
       "mode": "trigger",
-      "startedAt": "2026-11-06T09:05:59.999Z",
+      "startedAt": "2026-11-07T09:48:00.000Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42448",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-07T09:46:05.902Z",
+      "seconds": 9.2,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42445",
+      "workflowId": "s2",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T09:45:36.217Z",
+      "seconds": 12.6,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42438",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T09:25:56.351Z",
+      "seconds": 6.2,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42443",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T09:14:31.556Z",
+      "seconds": 15.5,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42444",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T08:50:40.157Z",
+      "seconds": 14.5,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42451",
+      "workflowId": "s4",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T08:33:03.275Z",
+      "seconds": 2,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42463",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T08:23:59.999Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42437",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T07:55:21.354Z",
+      "seconds": 6.7,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42441",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T07:46:45.042Z",
+      "seconds": 7.9,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42462",
+      "workflowId": "s7",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T07:00:00.000Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42436",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-07T06:01:42.197Z",
+      "seconds": 6.9,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42455",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T05:51:02.554Z",
+      "seconds": 1.7,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42461",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-07T05:36:00.000Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42456",
+      "workflowId": "s6",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T04:54:00.000Z",
+      "seconds": 2.1,
+      "workflowName": "Contract renewal reminder"
+    },
+    {
+      "id": "42460",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T04:11:59.999Z",
+      "seconds": 1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42459",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T02:48:00.000Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42458",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T01:24:00.000Z",
+      "seconds": 1.3,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42457",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-07T00:00:00.000Z",
+      "seconds": 1.3,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42430",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T23:24:52.682Z",
+      "seconds": 0.7,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42389",
+      "workflowId": "s6",
+      "status": "error",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T23:00:00.000Z",
+      "seconds": 1.4,
+      "workflowName": "Contract renewal reminder"
+    },
+    {
+      "id": "42429",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T22:49:45.365Z",
       "seconds": 1.2,
       "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42428",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T22:14:38.048Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42434",
+      "workflowId": "s11",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T22:00:00.000Z",
+      "seconds": 3.3,
+      "workflowName": "Research notes archiver"
+    },
+    {
+      "id": "42427",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T21:39:30.731Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42426",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T21:04:23.414Z",
+      "seconds": 1.1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42425",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-06T20:29:16.097Z",
+      "seconds": 0.6,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42424",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T19:54:08.780Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42423",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T19:19:01.463Z",
+      "seconds": 0.9,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42422",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T18:43:54.146Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42421",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-06T18:08:46.829Z",
+      "seconds": 1,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42315",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:56:39.742Z",
+      "seconds": 5.2,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42317",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:52:59.203Z",
+      "seconds": 5.8,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42372",
+      "workflowId": "s4",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:47:29.528Z",
+      "seconds": 1.7,
+      "workflowName": "Ticket triage to Sub4Me"
+    },
+    {
+      "id": "42327",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:39:11.161Z",
+      "seconds": 9.1,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42349",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:35:12.063Z",
+      "seconds": 7.7,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42420",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:33:39.512Z",
+      "seconds": 1.2,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42359",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T17:08:49.058Z",
+      "seconds": 7.3,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42419",
+      "workflowId": "s7",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-06T16:58:32.195Z",
+      "seconds": 0.8,
+      "workflowName": "BTP service health check"
+    },
+    {
+      "id": "42351",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "manual",
+      "startedAt": "2026-11-06T16:54:44.507Z",
+      "seconds": 11.1,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42321",
+      "workflowId": "s1",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T16:46:45.032Z",
+      "seconds": 7.6,
+      "workflowName": "Lead-to-Cash: Quote to Order sync"
+    },
+    {
+      "id": "42330",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T16:42:05.036Z",
+      "seconds": 12.5,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42331",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T16:28:05.876Z",
+      "seconds": 10.5,
+      "workflowName": "Invoice intake and OCR routing"
+    },
+    {
+      "id": "42348",
+      "workflowId": "s2",
+      "status": "success",
+      "mode": "trigger",
+      "startedAt": "2026-11-06T16:27:45.760Z",
+      "seconds": 14.2,
+      "workflowName": "Invoice intake and OCR routing"
     }
   ],
   "settings": {
@@ -4575,7 +4601,7 @@ function makeMetrics(D) {
     if (known.length < 2) return '';
     var lo = Math.min.apply(null, known), hi = Math.max.apply(null, known), span = hi - lo || 1;
     var pts = vals.map(function(v, i){ return v === null ? null : (i / (vals.length - 1) * 100).toFixed(1) + ',' + (22 - (v - lo) / span * 20).toFixed(1); }).filter(Boolean).join(' ');
-    return '<svg class="sl" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>';
+    return '<svg class="sl" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><polyline pathLength="1" points="' + pts + '" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>';
   };
   var deltaChip = function(c, p){
     if (c === null || c === undefined) return '';
@@ -4939,11 +4965,55 @@ function makeMetrics(D) {
 
   /* ---------- Tabs, detail pages and clicks ---------- */
   var tabs = Array.prototype.slice.call(document.querySelectorAll('nav button'));
+  /* ---------- motion helpers (no data is changed here) ---------- */
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function decorate(){
+    var set = function(list, prop, fn){ Array.prototype.forEach.call(list, function(el, i){ el.style.setProperty(prop, fn(i, el)); }); };
+    Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(pg){
+      set(pg.querySelectorAll('.card, .att-i, .calm, .info, .note'), '--i', function(i){ return Math.min(i, 14); });
+      Array.prototype.forEach.call(pg.querySelectorAll('tbody'), function(tb){ set(tb.rows, '--i', function(i){ return Math.min(i, 12); }); });
+      Array.prototype.forEach.call(pg.querySelectorAll('.days'), function(d){ set(d.querySelectorAll('.day'), '--k', function(i){ return i; }); });
+      Array.prototype.forEach.call(pg.querySelectorAll('.hb'), function(r, i){ r.style.setProperty('--i', Math.min(i % 8, 8)); Array.prototype.forEach.call(r.querySelectorAll('.track i'), function(t){ t.style.setProperty('--i', Math.min(i % 8, 8)); }); });
+      Array.prototype.forEach.call(pg.querySelectorAll('.wk'), function(w){ set(w.querySelectorAll('.cell'), '--c', function(i){ return i % 24; }); set(w.querySelectorAll('.cell'), '--r', function(i){ return Math.floor(i / 24); }); });
+    });
+  }
+  function countUp(){
+    Array.prototype.forEach.call(document.querySelectorAll('button.kpi .v'), function(el){
+      var m = /^([^0-9-]*)([0-9][0-9,]*(?:\.[0-9]+)?)([\s\S]*)$/.exec(el.textContent);
+      if (!m) return;
+      var end = parseFloat(m[2].replace(/,/g, '')), dec = (m[2].split('.')[1] || '').length, final = el.textContent;
+      if (calm || !isFinite(end) || end === 0) return;
+      var t0 = null;
+      function frame(t){
+        if (t0 === null) t0 = t;
+        var p = Math.min(1, (t - t0) / 900), e = 1 - Math.pow(1 - p, 3), v = end * e;
+        el.textContent = p >= 1 ? final : m[1] + v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + m[3];
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      el.textContent = m[1] + (0).toFixed(dec) + m[3];
+      requestAnimationFrame(frame);
+    });
+  }
+  function moveInk(){
+    var nav = document.querySelector('nav'), ink = nav.querySelector('.ink'), cur = nav.querySelector('[aria-selected=true]');
+    if (!ink || !cur) return;
+    ink.style.width = cur.offsetWidth + 'px';
+    ink.style.transform = 'translateX(' + cur.offsetLeft + 'px)';
+  }
+  document.addEventListener('pointermove', function(e){
+    var k = e.target.closest ? e.target.closest('button.kpi') : null;
+    if (!k) return;
+    var r = k.getBoundingClientRect();
+    k.style.setProperty('--mx', (e.clientX - r.left) + 'px'); k.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+  window.addEventListener('resize', moveInk);
+
   function show(name){
     state.detail = null;
     tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
     Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + name); });
     window.scrollTo(0, 0);
+    moveInk(); decorate(); if (name === 'overview') countUp();
   }
   function openDetail(kind){
     state.detail = kind;
@@ -4951,6 +5021,7 @@ function makeMetrics(D) {
     Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-detail'); });
     renderDetail();
     window.scrollTo(0, 0);
+    moveInk(); decorate();
   }
   function renderAll(){
     renderOverview(); renderDetail(); renderWorkflows(); renderCategories(); renderRuns();
@@ -4970,7 +5041,19 @@ function makeMetrics(D) {
     if (t.dataset.cat) { $('wf-search').value = ''; $('wf-state').value = ''; $('wf-cat').value = t.dataset.cat; renderWorkflows(); return show('workflows'); }
     if (t.dataset.app) { $('wf-cat').value = ''; $('wf-state').value = ''; $('wf-search').value = t.dataset.app; renderWorkflows(); return show('workflows'); }
   });
+  var nav0 = document.querySelector('nav'), ink = document.createElement('span');
+  ink.className = 'ink'; ink.setAttribute('aria-hidden', 'true'); nav0.appendChild(ink);
+  var pending = false;
+  new MutationObserver(function(list){
+    var relevant = list.some(function(r){ var el = r.target.nodeType === 1 ? r.target : r.target.parentElement; return !(el && el.closest && el.closest('button.kpi .v')); });
+    if (!relevant || pending) return;
+    pending = true;
+    requestAnimationFrame(function(){ pending = false; decorate(); });
+  }).observe(document.querySelector('main'), { childList: true, subtree: true });
+  new MutationObserver(function(){ countUp(); }).observe($('kpis'), { childList: true });
   renderAll();
+  moveInk(); decorate(); countUp();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInk);
 })();
 </script>
 </body>

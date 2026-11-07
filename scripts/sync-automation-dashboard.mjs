@@ -1,5 +1,5 @@
 /**
- * Embeds n8n automation data into the Automation Dashboard Space (a sandboxed page cannot fetch data).
+ * Embeds n8n automation data into the n8n Performance Dashboard Space (a sandboxed page cannot fetch data).
  * Default: fictional sample data, so the Space works without n8n. The page marks it as "Sample".
  * With --live the workflows and executions are read from the n8n Cloud public API
  * (N8N_URL = instance address, N8N_API_KEY = key from Settings -> n8n API) and written into the INSTALLED copy
@@ -161,10 +161,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     const next = embedLogic(embedData(html, sampleData(asOf)));
     if (check) {
       if (next !== html) {
-        console.error('Automation Dashboard data or logic is out of sync — run: npm run sync:automation');
+        console.error('n8n Performance Dashboard data or logic is out of sync — run: npm run sync:automation');
         process.exit(1);
       }
-      console.log('Automation Dashboard data and logic are in sync.');
+      console.log('n8n Performance Dashboard data and logic are in sync.');
     } else {
       writeFileSync(PAGE, next);
       console.log('Embedded the sample data and the number logic.');

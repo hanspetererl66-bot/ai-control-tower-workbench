@@ -1,5 +1,5 @@
 {
-  "note": "Assumptions behind some figures of the Automation Dashboard. They are NOT measurements. Replace them with your own values, then run: npm run sync:automation (sample) or npm run sync:automation -- --live. Prices are placeholders, not a price list: use the prices of your contract.",
+  "note": "Assumptions behind some figures of the n8n Performance Dashboard. They are NOT measurements. Replace them with your own values, then run: npm run sync:automation (sample) or npm run sync:automation -- --live. Prices are placeholders, not a price list: use the prices of your contract.",
   "successTargetPct": 98,
   "hourlyRateEur": 65,
   "plan": { "label": "Assumed plan limit", "executionsPerMonth": 10000 },
