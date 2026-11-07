@@ -5,11 +5,12 @@
  * with JSON, the same pattern as the process interview. Nothing is written back to the sources here.
  */
 
-export type SourceKind = 'jira' | 'slack' | 'notion';
+export type SourceKind = 'jira' | 'slack' | 'teams' | 'notion';
 
 export const SOURCES: Array<{ id: SourceKind; label: string; query: string; placeholder: string; help: string }> = [
   { id: 'jira', label: 'Jira', query: 'Project key, JQL or search words', placeholder: 'e.g. ABC, or: project = ABC AND labels = joule ORDER BY updated DESC', help: 'Uses the Jira connector (read only).' },
   { id: 'slack', label: 'Slack', query: 'Channel, thread link or search words', placeholder: 'e.g. #requirements, or a link to a thread', help: 'Uses the Slack connector (read only).' },
+  { id: 'teams', label: 'Microsoft Teams', query: 'Team and channel, a message link or search words', placeholder: 'e.g. Sales / Requirements, or a link from "Copy link to message"', help: 'Uses the Microsoft Teams connector (read only). The app needs permission to read channel messages.' },
   { id: 'notion', label: 'Notion', query: 'Page, database or search words', placeholder: 'e.g. the name of your requirements database', help: 'Uses the Notion connector (read only). Share the pages with its integration first.' },
 ];
 
@@ -27,7 +28,7 @@ export type ExtendsRef = { id: string; name: string };
 export const MAX_ITEMS = 40;
 const cut = (v: unknown, n: number) => String(v ?? '').replace(/[ \t]+/g, ' ').trim().slice(0, n);
 const urlOf = (v: unknown) => { const s = cut(v, 400); return /^https?:\/\/\S+$/i.test(s) ? s : ''; };
-const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'slack' || v === 'notion';
+const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'slack' || v === 'teams' || v === 'notion';
 
 /** What to ask Jira: a bare project key, a JQL query (has an operator) or free text. */
 export function jqlOf(query: string): string {
@@ -50,6 +51,9 @@ export function fetchPrompt(source: SourceKind, query: string): string {
   }
   if (source === 'slack') {
     return ['Read requirements from Slack.', `Source: ${query.trim()}`, 'Use slack_read_channel or slack_read_thread for a channel or thread, slack_search_messages for search words. Keep messages that state a need, a wish, a problem or a rule; skip chatter. As key use the channel and the message time (for example "#req 1730640000").', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
+  }
+  if (source === 'teams') {
+    return ['Read requirements from Microsoft Teams.', `Source: ${query.trim()}`, 'Use the Microsoft Teams connector. If the source is a message link, give it as "link" to teams_read_channel (the channel) or teams_read_thread (the message with its replies). If it names a team and channel, find the ids with teams_list_teams and teams_list_channels, then read the channel with teams_read_channel; for search words use its "contains" parameter. Use teams_read_thread for messages that have replies and are worth reading in full (at most 10). Keep messages that state a need, a wish, a problem or a rule; skip chatter, greetings and system messages. As key use the channel name and the message id (for example "Requirements 1730640000123"), as url the link of the message. If a Teams tool is not available to you, return an empty list and say so in "error".', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
   }
   return ['Read requirements from Notion.', `Source: ${query.trim()}`, 'Use the Notion connector: notion_search to find pages or databases (a link or id can go straight to notion_read_page or notion_query_database), notion_read_page for the text of a page, notion_query_database for the rows of a database. If a Notion tool is not available to you, return an empty list and say so in "error". Each page or row that states a requirement becomes one item; the page title is the title, the page id the key, the page link the url. A page that only holds several requirements as a list becomes one item per list entry (key: page id plus a number).', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
 }
