@@ -16,6 +16,7 @@ export const MOCKUPS = [
   { page: 'examples/abap-workbench/index.html', data: 'examples/abap-workbench/data.json' },
   { page: 'examples/design-study/index.html', data: 'examples/design-study/data.json' },
   { page: 'examples/recruiting-workbench/index.html', data: 'examples/recruiting-workbench/data.json' },
+  { page: 'examples/hiring-approvals/index.html', data: 'examples/hiring-approvals/data.json' },
 ];
 /** Catalog Spaces: real, sourced facts (not fictional), embedded the same way. */
 export const CATALOGS = [
