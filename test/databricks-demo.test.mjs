@@ -78,7 +78,7 @@ test('the story is in the data: DACH misses plan in Q3 and nothing else does', (
 test('recipes are valid Goose recipes and refer only to things that exist', () => {
   const functions = read('sql/07_functions.sql');
   const tables = read('sql/01_tables.sql');
-  assert.deepEqual(recipeNames().sort(), ['finance-pre-close', 'margin-analyst', 'pipeline-oncall', 'po-expedite']);
+  assert.deepEqual(recipeNames().sort(), ['finance-pre-close', 'margin-analyst', 'monday-close', 'pipeline-oncall', 'po-expedite']);
   for (const name of recipeNames()) {
     const recipe = parse(read(`recipes/${name}.yaml`));
     for (const key of ['version', 'title', 'description', 'instructions', 'prompt']) assert.ok(recipe[key], `${name}: ${key}`);
@@ -236,7 +236,7 @@ test('install copies skills, merges both extensions with absolute paths, and nev
   try {
     const first = installDatabricksDemo({ root, host: 'https://adb-1.2.azuredatabricks.net/some/path' });
     assert.deepEqual(first.extensions.sort(), ['databricks-mcp', 'sap-mock']);
-    assert.equal(first.skills.length, 4);
+    assert.equal(first.skills.length, 5);
     const configPath = join(root, 'goose-home/.config/goose/config.yaml');
     const config = parse(readFileSync(configPath, 'utf8'));
     assert.equal(config.GOOSE_MODE, 'auto');

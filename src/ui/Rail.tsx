@@ -8,7 +8,7 @@ export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' |
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
 /** Screens that belong to Admin: its start page and the tiles it leads to. */
-const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry', 'skillhealth', 'hiring'];
+const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry', 'skillhealth'];
 
 export default function Rail({
   view,
@@ -63,11 +63,11 @@ export default function Rail({
           <ChatIcon />
         </button>
         <button
-          className={`rail-btn ${view === 'spaces' ? 'rail-btn-on' : ''}`}
+          className={`rail-btn ${view === 'spaces' || view === 'hiring' ? 'rail-btn-on' : ''}`}
           onClick={() => onView('spaces')}
           title="Spaces"
           aria-label="Spaces"
-          aria-pressed={view === 'spaces'}
+          aria-pressed={view === 'spaces' || view === 'hiring'}
         >
           <LayersIcon />
         </button>

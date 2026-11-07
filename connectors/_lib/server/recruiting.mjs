@@ -19,6 +19,8 @@ import { makeLogic } from './recruiting-logic.mjs';
 export const PROPOSAL_KINDS = ['move', 'remind', 'ask'];
 export const PROPOSAL_STATUS = ['proposed', 'released', 'declined'];
 export const DECISIONS = ['released', 'declined'];
+export const HIRE_STATUS = ['pending', 'approved', 'returned', 'declined'];
+export const HIRE_DECISIONS = ['approve', 'return', 'decline'];
 export const GROUP_LABEL = { A: 'Meets all must-haves', B: 'Needs a human look', C: 'Does not meet the criteria as written' };
 export const ORDER_RULE = 'Order inside a group: (1) must-haves met, (2) must-haves partly met, (3) nice-to-haves met, (4) earlier application first. Nothing else is used.';
 export const REMOVED_BEFORE_READING = ['name', 'photo', 'date of birth', 'gender', 'address', 'nationality', 'gaps in the CV'];
@@ -61,11 +63,39 @@ export const RECRUITING_TOOL_DEFINITIONS = [
       kind: { type: 'string', enum: PROPOSAL_KINDS, description: 'move = next stage, remind = nudge the hiring manager, ask = ask about an open criterion.' },
     }, ['actor', 'requisition', 'candidate', 'kind']),
   },
+  {
+    name: 'recruiting_list_hire_requests',
+    description:
+      'Read: hiring approvals, that is the requests to hire a candidate who went through the whole recruiting process (stage Offer): terms, the approval chain (hiring manager, HR, finance, optional department head), who is next, and the log. Shows what the person may see: their own requisitions, requests where they are an approver, and everything for the Governance board. Read only.',
+    inputSchema: obj({
+      actor: ACTOR,
+      status: { type: 'string', enum: HIRE_STATUS, description: 'Default: pending (waiting for an approver).' },
+      limit: { type: 'integer', minimum: 1, maximum: 200, description: 'Maximum number of entries, default 50.' },
+    }, ['actor']),
+  },
+  {
+    name: 'recruiting_create_hire_request',
+    description:
+      'Write a HIRING REQUEST for a candidate in the stage Offer. Only the hiring manager of the requisition can start one, so the actor must be that person. You need from them: level, band (a band name, never a salary), start date, contract (permanent or fixed-term), an optional short note, and the e-mail addresses of the HR approver and the finance approver (optionally a department head). They must be different people. The request changes nothing for the candidate: the approvers decide one after the other in the Hiring Approvals space. The evidence line comes from the system, not from you. There is no tool to approve, return or decline a request.',
+    inputSchema: obj({
+      actor: ACTOR, requisition: REQ,
+      candidate: { type: 'string', description: 'Candidate pseudonym, for example C-4204.' },
+      level: { type: 'string', description: 'Job level, up to 40 characters, for example Senior.' },
+      band: { type: 'string', description: 'Pay band name, for example Band 5. No amounts.' },
+      start_on: { type: 'string', description: 'Planned start, YYYY-MM-DD, today or later.' },
+      contract: { type: 'string', enum: ['permanent', 'fixed-term'] },
+      note: { type: 'string', description: 'Optional, up to 300 characters. No contact data and no personal traits.' },
+      hr: { type: 'string', description: 'E-mail of the HR approver.' },
+      finance: { type: 'string', description: 'E-mail of the finance approver.' },
+      department_head: { type: 'string', description: 'Optional e-mail of the department head, who approves last.' },
+    }, ['actor', 'requisition', 'candidate', 'level', 'band', 'start_on', 'contract', 'hr', 'finance']),
+  },
 ];
 
 const text = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n) : '');
 const REQ_ID = /^[A-Za-z0-9._-]{1,40}$/;
 const CAND_ID = /^C-[0-9]{3,8}$/;
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const requisitionId = (args) => {
   const v = text(args.requisition, 40);
@@ -170,6 +200,44 @@ export function createRecruitingHandlers(rpc) {
       });
       return { ...out, candidate, kind: wanted.type, text: wanted.text, message: 'Waiting for the hiring manager. Nothing has been changed for the candidate and nobody has been contacted.' };
     },
+
+    async recruiting_list_hire_requests(args) {
+      const status = args.status === undefined ? 'pending' : args.status;
+      if (!HIRE_STATUS.includes(status)) throw new ToolError('status must be pending, approved, returned or declined');
+      const limit = args.limit === undefined ? 50 : args.limit;
+      if (!Number.isInteger(limit) || limit < 1 || limit > 200) throw new ToolError('limit must be a whole number from 1 to 200');
+      const rows = await call('recruiting_hire_requests_list', { p_actor: actorOf(args), p_status: status, p_limit: limit });
+      const list = Array.isArray(rows) ? rows : [];
+      return { count: list.length, requests: list };
+    },
+
+    async recruiting_create_hire_request(args) {
+      const id = requisitionId(args);
+      const candidate = text(args.candidate, 20);
+      if (!CAND_ID.test(candidate)) throw new ToolError('candidate must be a pseudonym such as C-4204');
+      const mail = (v, what) => {
+        const m = text(v, 120).toLowerCase();
+        if (!EMAIL.test(m)) throw new ToolError(`${what} must be an e-mail address`);
+        return m;
+      };
+      const approvers = { hr: mail(args.hr, 'hr'), finance: mail(args.finance, 'finance') };
+      if (args.department_head !== undefined && args.department_head !== '') approvers.department_head = mail(args.department_head, 'department_head');
+      const terms = { level: text(args.level, 40), band: text(args.band, 40), start_on: text(args.start_on, 10), contract: args.contract, note: text(args.note, 300) };
+      // The evidence line is built here from the stored criteria and CV text, not taken from the model.
+      const { D, L } = await snapshot(args, true);
+      if (!D.jobs.some((j) => j.id === id)) throw new ToolError('unknown requisition, not open, or no access');
+      const cand = D.candidates.find((c) => c.id === candidate && c.job === id);
+      if (!cand) throw new ToolError(`${candidate} is not a candidate of ${id}`);
+      let evidence = `${candidate} is in the stage ${cand.stage} of ${id}. No criteria are stored for this requisition, so no comparison was made.`;
+      if (L.hasCriteria(id)) {
+        const e = L.shortlist(id).find((x) => x.cand.id === candidate);
+        if (e) evidence = `${candidate} is in the stage ${cand.stage} of ${id}. ${GROUP_LABEL[e.group]} (must-haves met ${e.mustMet} of ${e.mustN}, nice-to-haves ${e.niceMet} of ${e.niceN}). A person decides.`;
+      }
+      const out = await call('recruiting_hire_request_create', {
+        p_actor: actorOf(args), p_requisition: id, p_candidate: candidate, p_terms: terms, p_evidence: evidence, p_approvers: approvers,
+      });
+      return { ...out, candidate, evidence, message: 'The hiring manager approves first, then HR, finance and, if named, the department head, each in the Hiring Approvals space. Nothing has been changed for the candidate.' };
+    },
   };
 }
 
@@ -182,4 +250,15 @@ export async function decideProposal(rpc, actor, id, decision, note = '') {
   if (!DECISIONS.includes(decision)) throw new ToolError('decision must be released or declined');
   const who = actorOf({ actor });
   return rpc('recruiting_proposal_decide', { p_actor: who, p_id: id, p_decision: decision, p_note: text(note, 300) });
+}
+
+/**
+ * Main-process writer (NOT a tool): one step of a hiring approval after a click on Approve, Return or Decline. The database accepts only
+ * the approver whose turn it is, asks for a reason on Return and Decline, and a decided request cannot change.
+ */
+export async function decideHire(rpc, actor, id, decision, note = '') {
+  if (!Number.isInteger(id) || id < 1) throw new ToolError('id must be a hiring request number');
+  if (!HIRE_DECISIONS.includes(decision)) throw new ToolError('decision must be approve, return or decline');
+  const who = actorOf({ actor });
+  return rpc('recruiting_hire_decide', { p_actor: who, p_id: id, p_decision: decision, p_note: text(note, 300) });
 }

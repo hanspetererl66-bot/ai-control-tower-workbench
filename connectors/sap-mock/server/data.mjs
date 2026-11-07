@@ -172,12 +172,14 @@ export const COMPANY_CODES = [
  * Goods received and not (fully) invoiced. [po, item, vendor, companyCode, goodsReceiptOffsetDays, grValueEur, invoicedValueEur, description]
  * Open value = received - invoiced. Positive and recent: accrue at period end. Positive and older than 90 days: review, do not accrue.
  * Negative: invoiced before the goods arrived. This is the single source for SAP and for the lakehouse table fin.grir_items.
+ * sapLateInvoiceEur (optional): an invoice posted in SAP after the lakehouse snapshot. The lakehouse does not know it, so for that
+ * item SAP's open value is lower than the lakehouse's. This is the planted difference of the Monday-morning demo (the agent must stop).
  */
 export const STALE_AFTER_DAYS = 90;
 export const GRIR_ITEMS = [
   ['4500001001', '10', 'V-1001', 'DE10', -4, 50700, 0, 'Metal housings, 600 pcs received'],
   ['4500001003', '10', 'V-1005', 'DE10', -3, 29760, 0, 'Cable harness, 4,800 pcs received'],
-  ['4500001005', '10', 'V-1002', 'DE10', -5, 47250, 0, 'Control boards, 2,500 pcs received'],
+  ['4500001005', '10', 'V-1002', 'DE10', -5, 47250, 0, 'Control boards, 2,500 pcs received', 6000],
   ['4500003001', '10', 'V-1002', 'DE10', -11, 28350, 0, 'Control boards, 1,500 pcs received'],
   ['4500002001', '10', 'V-1001', 'UK10', -8, 59150, 29575, 'Metal housings, 700 pcs received, half invoiced'],
   ['4500002004', '10', 'V-1005', 'UK10', -7, 24180, 0, 'Cable harness, 3,900 pcs received'],
@@ -187,7 +189,7 @@ export const GRIR_ITEMS = [
   ['4500000871', '10', 'V-1003', 'DE10', -118, 6300, 0, 'Fasteners, received, invoice never arrived'],
   ['4500000902', '10', 'V-1006', 'UK10', -142, 3875, 1860, 'Plastic parts, part invoiced long ago'],
   ['4500000955', '10', 'V-1002', 'FR10', -97, 9450, 0, 'Control boards, received, invoice missing'],
-].map(([po, item, vendor, companyCode, grOffset, grValueEur, invoicedValueEur, description]) => ({
+].map(([po, item, vendor, companyCode, grOffset, grValueEur, invoicedValueEur, description, sapLateInvoiceEur = 0]) => ({
   po,
   item,
   vendor,
@@ -196,6 +198,7 @@ export const GRIR_ITEMS = [
   grValueEur,
   invoicedValueEur,
   description,
+  sapLateInvoiceEur,
 }));
 
 /** Classification used by SAP mock and by the Databricks view fin.v_grir_open. */

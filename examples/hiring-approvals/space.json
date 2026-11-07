@@ -1,0 +1,12 @@
+{
+  "title": "Hiring Approvals",
+  "description": "Approvals for hiring a candidate who has passed the recruiting process: hiring manager, HR, finance and optionally the department head decide one after the other. Joule prepares the request, only people decide. Fictional sample data.",
+  "domain": "HR",
+  "insights": [
+    "Every request names one candidate in the stage Offer, the terms (level, band, start date, contract) and the evidence line from the recruiting process.",
+    "The chain runs hiring manager, HR, finance, optionally department head. Only the person whose turn it is can decide; nobody can hold two steps.",
+    "Return and Decline need a reason and end the request. A changed request is a new request. The log is append-only.",
+    "No salary amounts and no personal data. Fictional sample data in the page; with the desktop app and the shared database the same screen shows the real requests of the signed-in e-mail."
+  ],
+  "prompt": "Bundled example: Hiring Approvals (live in the desktop app through a fixed bridge, otherwise sample data embedded by npm run sync:mockups)."
+}
