@@ -1,5 +1,5 @@
 /**
- * The numbers of the Automation Dashboard: period figures with the change against the period before, the rules behind "Needs attention",
+ * The numbers of the n8n Performance Dashboard: period figures with the change against the period before, the rules behind "Needs attention",
  * failures, duration, time saved, estimated model cost, capacity, schedules, app dependencies, builders and governance. Pure functions on
  * the embedded data (`D`, the shape `buildDashboardData` returns plus `D.settings`).
  * One source for two users: the Space page (embedded by `npm run sync:automation`, the page cannot import) and the tests.
