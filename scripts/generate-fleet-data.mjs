@@ -76,17 +76,39 @@ const redShare = (c) => {
   }
   return Math.round((red / c.vms.length) * 100);
 };
+/**
+ * Life-sciences customer (Lindenau Pharma AG, also in the Sub4Me sample data), added after the draws above with its own random
+ * generator, so nothing else in the file changes. Story: the validated systems are patched late because every patch needs a
+ * validation run first (amber, not red); one integration gateway certificate runs out in 12 days.
+ */
+function lifeSciences() {
+  let s = 20261106;
+  const r = () => { s |= 0; s = (s + 0x6d2b79f5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const n = (a, b) => Math.floor(a + r() * (b - a + 1));
+  const roles = ['app', 'app', 'app', 'app', 'db', 'db', 'web', 'web', 'int', 'int', 'int', 'mon', 'mon', 'bkp', 'bkp', 'fs', 'dc', 'prx', 'app', 'db', 'int', 'web', 'test', 'test', 'dev', 'dev'];
+  const vms = roles.map((role, k) => {
+    const env = role === 'test' ? 'test' : role === 'dev' ? 'dev' : 'prod';
+    return { name: `linpha-${role}${String(k + 1).padStart(2, '0')}`, env, cpu: n(8, 70), mem: n(25, 78), disk: n(22, 80), backup: env === 'prod' ? n(2, 20) : null, patch: n(0, 12), cert: n(45, 320), reach: 1 };
+  });
+  const set = (name, patch) => Object.assign(vms.find((v) => v.name === name), patch);
+  set('linpha-app01', { patch: 21 }); set('linpha-app02', { patch: 19 }); set('linpha-db05', { patch: 24 });
+  set('linpha-int09', { cert: 12 }); set('linpha-bkp14', { backup: 26 });
+  const c = { id: 'linpha', name: 'Lindenau Pharma AG', region: 'EMEA Central', tier: 'Silver', sapCustomerId: '0010090532', vms };
+  const trend = []; let x = redShare(c);
+  for (let d = 0; d < 14; d++) { trend.unshift(Math.max(0, Math.round(x))); x += (r() - 0.45) * 4; }
+  return { id: c.id, name: c.name, region: c.region, tier: c.tier, sapCustomerId: c.sapCustomerId, trend, vms: vms.map((v) => [v.name, v.env, v.cpu, v.mem, v.disk, v.backup, v.patch, v.cert, v.reach]) };
+}
 const out = {
   asOf: '2026-10-24',
   note: 'Fictional customers and virtual machines, generated from a fixed seed (scripts/generate-fleet-data.mjs). Rules and task definitions are the same as in the IT Infrastructure Space.',
   rules: infra.rules,
   tasks: infra.tasks,
-  customers: customers.map((c) => {
+  customers: [...customers.map((c) => {
     const now = redShare(c);
     const trend = []; let x = now;
     for (let d = 0; d < 14; d++) { trend.unshift(Math.max(0, Math.round(x))); x += (rnd() - 0.45) * 4; }
     return { id: c.id, name: c.name, region: c.region, tier: c.tier, sapCustomerId: c.sapCustomerId, trend, vms: c.vms.map((v) => [v.name, v.env, v.cpu, v.mem, v.disk, v.backup, v.patch, v.cert, v.reach]) };
-  }),
+  }), lifeSciences()],
 };
 writeFileSync(join(ROOT, 'examples/it-fleet/fleet.json'), JSON.stringify(out) + '\n');
 console.log(`${out.customers.length} customers, ${out.customers.reduce((n, c) => n + c.vms.length, 0)} VMs`);

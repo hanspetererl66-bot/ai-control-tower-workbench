@@ -57,3 +57,11 @@ export async function duplicateSpaceFolder(slug: string): Promise<{ slug: string
   if (!res.ok) throw new Error(body?.error ?? 'The Space could not be duplicated.');
   return body;
 }
+
+/** Save a designed Space (the Designer sends the layout; the server generates the page). */
+export async function saveDesignedSpaceFile(request: { slug?: string; asNew?: boolean; title: string; description?: string; domain?: string; layout: unknown }): Promise<{ slug: string; title: string; created: boolean; notes: string[] }> {
+  const res = await fetch('/__spaces/_designer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error ?? 'The Space could not be saved.');
+  return body;
+}

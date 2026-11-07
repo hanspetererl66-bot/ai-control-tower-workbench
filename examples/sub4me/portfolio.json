@@ -2396,6 +2396,1034 @@
           "updated": "2026-08-29"
         }
       ]
+    },
+    {
+      "id": "lindenau",
+      "asOf": "2026-10-18",
+      "customer": {
+        "id": "lindenau",
+        "name": "Lindenau Pharma AG",
+        "number": "100-905-326",
+        "sapCustomerId": "0010090532",
+        "contact": "Dr. S. Roth",
+        "country": "Germany"
+      },
+      "profile": {
+        "industry": "Life sciences (pharmaceuticals and biologics manufacturing)",
+        "employees": 3900,
+        "headquarters": "Heidelberg, Germany",
+        "customerSince": 2017,
+        "segment": "Mid-size enterprise",
+        "fiscalYearEnd": "12-31",
+        "legalEntities": [
+          "Lindenau Pharma AG, Heidelberg",
+          "Lindenau Biologics GmbH, Penzberg",
+          "Lindenau Pharma Schweiz AG, Basel"
+        ],
+        "accountTeam": [
+          {
+            "name": "Clara Neumann",
+            "role": "Account Executive, SAP",
+            "email": "clara.neumann@example.com"
+          },
+          {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          {
+            "name": "Lukas Fischer",
+            "role": "Solution Consultant, SAP",
+            "email": "lukas.fischer@example.com"
+          }
+        ],
+        "contacts": [
+          {
+            "name": "Dr. Sabine Roth",
+            "role": "Head of IT Procurement",
+            "email": "s.roth@lindenau-pharma.example"
+          },
+          {
+            "name": "Dr. Matthias Vogel",
+            "role": "CIO",
+            "email": "m.vogel@lindenau-pharma.example"
+          },
+          {
+            "name": "Dr. Petra Ostermann",
+            "role": "Head of Quality Assurance and GxP Compliance",
+            "email": "p.ostermann@lindenau-pharma.example"
+          },
+          {
+            "name": "Ralf Kessel",
+            "role": "Head of Manufacturing IT",
+            "email": "r.kessel@lindenau-pharma.example"
+          },
+          {
+            "name": "Anika Brandl",
+            "role": "Platform Lead",
+            "email": "a.brandl@lindenau-pharma.example"
+          },
+          {
+            "name": "Thomas Engel",
+            "role": "Head of Accounts Payable",
+            "email": "t.engel@lindenau-pharma.example"
+          }
+        ],
+        "landscape": [
+          "S/4HANA Cloud Private Edition, validated GxP environment (DEV, QAS, PRD) for 3 plants",
+          "Integrated Business Planning for 14 markets with cold-chain constraints",
+          "SuccessFactors Learning for GxP training and qualification",
+          "Advanced Track and Trace for EU and US serialization on 9 packaging lines",
+          "AI units for Document AI (batch records), Joule and AI Core in eu10"
+        ],
+        "notes": "Regulated manufacturer: every change to a validated system needs a validation concept and change control. AI use cases are released step by step by Quality Assurance. The expired Ariba contract and the Document AI volume are the topics this quarter."
+      },
+      "aiUnits": {
+        "periodStart": "2026-01-01",
+        "periodEnd": "2026-12-31",
+        "allotment": 60000,
+        "history": [
+          {
+            "year": 2025,
+            "allotment": 30000,
+            "monthly": [
+              600,
+              700,
+              850,
+              1000,
+              1200,
+              1350,
+              1300,
+              1500,
+              1700,
+              1900,
+              2100,
+              1950
+            ]
+          }
+        ],
+        "monthly": [
+          2200,
+          2750,
+          3550,
+          4350,
+          5050,
+          5700,
+          5400,
+          6250,
+          6850,
+          4650
+        ]
+      },
+      "products": [
+        {
+          "name": "Document AI",
+          "allotment": 22000,
+          "meters": "documents processed (batch records, regulatory forms)",
+          "monthly": [
+            800,
+            1100,
+            1500,
+            1850,
+            2150,
+            2400,
+            2300,
+            2600,
+            2850,
+            1850
+          ],
+          "consumed": 19400
+        },
+        {
+          "name": "Joule copilots",
+          "allotment": 16000,
+          "meters": "copilot dialogues and agent runs",
+          "monthly": [
+            500,
+            600,
+            800,
+            950,
+            1100,
+            1250,
+            1150,
+            1400,
+            1500,
+            1050
+          ],
+          "consumed": 10300
+        },
+        {
+          "name": "BTP AI Core",
+          "allotment": 14000,
+          "meters": "inference hours and model deployments",
+          "monthly": [
+            700,
+            800,
+            950,
+            1100,
+            1300,
+            1450,
+            1400,
+            1550,
+            1700,
+            1100
+          ],
+          "consumed": 12050
+        },
+        {
+          "name": "Business AI (quality and supply chain)",
+          "allotment": 8000,
+          "meters": "predictions and scenario runs",
+          "monthly": [
+            200,
+            250,
+            300,
+            450,
+            500,
+            600,
+            550,
+            700,
+            800,
+            650
+          ],
+          "consumed": 5000
+        }
+      ],
+      "contracts": [
+        {
+          "id": "C-2024-0905",
+          "product": "S/4HANA Cloud Private Edition (manufacturing, quality, batch management)",
+          "scope": "1,100 users, 3 plants (Heidelberg, Penzberg, Basel), DEV/QAS/PRD",
+          "start": "2024-07-01",
+          "end": "2029-06-30",
+          "annualEur": 2150000,
+          "status": "Active",
+          "noticeDays": 180,
+          "contractType": "Subscription (RISE with SAP)",
+          "signedOn": "2024-04-22",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800905120",
+          "costCenter": "CC-1000 IT and Manufacturing",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 13,
+          "sapOwner": {
+            "name": "Clara Neumann",
+            "role": "Account Executive, SAP",
+            "email": "clara.neumann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Matthias Vogel",
+            "role": "CIO",
+            "email": "m.vogel@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium Plus",
+            "availabilityPct": 99.9,
+            "supportHours": "24/7",
+            "responseVeryHighMin": 30
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Private cloud, validated environment (GxP)",
+          "licensedUnits": 1100,
+          "usedUnits": 987,
+          "unit": "users",
+          "invoicing": {
+            "nextInvoiceOn": "2027-07-01",
+            "openInvoices": 1,
+            "openAmountEur": 96000,
+            "paymentStatus": "Overdue"
+          },
+          "termination": "No termination for convenience in the first 48 months; extraordinary termination for cause with 30 days cure period.",
+          "notes": "Validated GxP environment with change control per release. Two releases a year are validated by Quality Assurance before go-live.",
+          "lines": [
+            {
+              "component": "S/4HANA Cloud Private Edition, core",
+              "quantity": 1100,
+              "unit": "users",
+              "annualEur": 1595000,
+              "unitPriceEur": 1450
+            },
+            {
+              "component": "Validated environment and change-control service",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 310000,
+              "unitPriceEur": 310000
+            },
+            {
+              "component": "Premium Plus support",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 245000,
+              "unitPriceEur": 245000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0612",
+          "product": "SAP Integrated Business Planning",
+          "scope": "240 planners, demand and supply planning for 14 markets",
+          "start": "2025-04-01",
+          "end": "2028-03-31",
+          "annualEur": 324000,
+          "status": "Active",
+          "noticeDays": 120,
+          "contractType": "Subscription",
+          "signedOn": "2025-01-30",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800612044",
+          "costCenter": "CC-1300 Supply Chain",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 10,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Ralf Kessel",
+            "role": "Head of Manufacturing IT",
+            "email": "r.kessel@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.7,
+            "supportHours": "Mon-Fri 7-19 CET, P1 24/7",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 240,
+          "usedUnits": 201,
+          "unit": "planners",
+          "invoicing": {
+            "nextInvoiceOn": "2027-04-01",
+            "openInvoices": 1,
+            "openAmountEur": 36500,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of the term with 120 days notice.",
+          "notes": "Cold-chain constraints in the supply plan are the topic of the current use case.",
+          "lines": [
+            {
+              "component": "Integrated Business Planning, planner licenses",
+              "quantity": 240,
+              "unit": "planners",
+              "annualEur": 276000,
+              "unitPriceEur": 1150
+            },
+            {
+              "component": "Control tower and alerts",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 48000,
+              "unitPriceEur": 48000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0718",
+          "product": "SuccessFactors Learning (GxP training and qualification)",
+          "scope": "3,900 employees, 6 learning curricula",
+          "start": "2025-07-01",
+          "end": "2028-06-30",
+          "annualEur": 139050,
+          "status": "Active",
+          "noticeDays": 90,
+          "contractType": "Subscription",
+          "signedOn": "2025-05-12",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800718093",
+          "costCenter": "CC-2100 HR and Quality",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 8,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Petra Ostermann",
+            "role": "Head of Quality Assurance and GxP Compliance",
+            "email": "p.ostermann@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Standard",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 8-18 CET",
+            "responseVeryHighMin": 120
+          },
+          "dataCenter": "Amsterdam (EU, NL)",
+          "deployment": "Public cloud",
+          "licensedUnits": 3900,
+          "usedUnits": 3412,
+          "unit": "employees",
+          "invoicing": {
+            "nextInvoiceOn": "2027-07-01",
+            "openInvoices": 1,
+            "openAmountEur": 139050,
+            "paymentStatus": "Overdue"
+          },
+          "termination": "Termination at the end of the term with 90 days notice.",
+          "notes": "Training records are part of the inspection file; completion data must be kept for 10 years.",
+          "lines": [
+            {
+              "component": "Learning, employee licenses",
+              "quantity": 3900,
+              "unit": "employees",
+              "annualEur": 115050,
+              "unitPriceEur": 29.5
+            },
+            {
+              "component": "Content integration and e-signature",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 24000,
+              "unitPriceEur": 24000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0833",
+          "product": "SAP Advanced Track and Trace (serialization)",
+          "scope": "9 packaging lines, 31 markets",
+          "start": "2025-10-01",
+          "end": "2027-12-31",
+          "annualEur": 414000,
+          "status": "Active",
+          "noticeDays": 120,
+          "contractType": "Subscription",
+          "signedOn": "2025-08-19",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800833217",
+          "costCenter": "CC-1300 Supply Chain",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 9,
+          "sapOwner": {
+            "name": "Clara Neumann",
+            "role": "Account Executive, SAP",
+            "email": "clara.neumann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Ralf Kessel",
+            "role": "Head of Manufacturing IT",
+            "email": "r.kessel@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.7,
+            "supportHours": "Mon-Fri 7-19 CET, P1 24/7",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 9,
+          "usedUnits": 9,
+          "unit": "packaging lines",
+          "invoicing": {
+            "nextInvoiceOn": "2027-10-01",
+            "openInvoices": 1,
+            "openAmountEur": 414000,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of the term with 120 days notice.",
+          "notes": "EU Falsified Medicines Directive and US DSCSA reporting. All lines are in use, a tenth line is planned for 2027.",
+          "lines": [
+            {
+              "component": "Serialization, packaging lines",
+              "quantity": 9,
+              "unit": "packaging lines",
+              "annualEur": 342000,
+              "unitPriceEur": 38000
+            },
+            {
+              "component": "Regulatory reporting packages (EU, US)",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 72000,
+              "unitPriceEur": 72000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2026-0051",
+          "product": "AI units (Joule, AI Core, Document AI, Business AI)",
+          "scope": "60,000 AI units, calendar year 2026",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "annualEur": 180000,
+          "status": "Active",
+          "noticeDays": 60,
+          "contractType": "Consumption (prepaid)",
+          "signedOn": "2025-12-09",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800051660",
+          "costCenter": "CC-1000 IT and Manufacturing",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": true,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 6,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Anika Brandl",
+            "role": "Platform Lead",
+            "email": "a.brandl@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 7-19 CET",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 60000,
+          "usedUnits": 46750,
+          "unit": "AI units",
+          "invoicing": {
+            "nextInvoiceOn": "2027-01-01",
+            "openInvoices": 1,
+            "openAmountEur": 41800,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of term with 60 days notice. Unused units do not carry over.",
+          "notes": "Document AI for batch records and regulatory submissions drives the usage. Every AI use case needs a validation concept from Quality Assurance.",
+          "lines": [
+            {
+              "component": "AI units, yearly allotment",
+              "quantity": 60000,
+              "unit": "units",
+              "annualEur": 180000,
+              "unitPriceEur": 3
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2023-0344",
+          "product": "Ariba Procurement",
+          "scope": "210 buyers, 1,900 suppliers",
+          "start": "2023-02-01",
+          "end": "2026-01-31",
+          "annualEur": 127200,
+          "status": "Expired",
+          "noticeDays": 90,
+          "contractType": "Subscription",
+          "signedOn": "2022-12-05",
+          "billingCycle": "Quarterly in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800344501",
+          "costCenter": "CC-3100 Procurement",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 7,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Sabine Roth",
+            "role": "Head of IT Procurement",
+            "email": "s.roth@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Standard",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 8-18 CET",
+            "responseVeryHighMin": 120
+          },
+          "dataCenter": "Amsterdam (EU, NL)",
+          "deployment": "Public cloud",
+          "licensedUnits": 210,
+          "usedUnits": 210,
+          "unit": "buyers",
+          "invoicing": {
+            "nextInvoiceOn": null,
+            "openInvoices": 0,
+            "openAmountEur": 0,
+            "paymentStatus": "Closed"
+          },
+          "termination": "Expired. Suppliers still order on a trial tenant.",
+          "notes": "Expired in January; the customer asked for a reactivation offer that includes supplier qualification for GxP suppliers.",
+          "lines": [
+            {
+              "component": "Ariba Buying and Invoicing",
+              "quantity": 210,
+              "unit": "buyers",
+              "annualEur": 109200,
+              "unitPriceEur": 520
+            },
+            {
+              "component": "Supplier qualification content",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 18000,
+              "unitPriceEur": 18000
+            }
+          ],
+          "currency": "EUR"
+        }
+      ],
+      "offers": [
+        {
+          "id": "OFF-2026-0510",
+          "type": "Renewal",
+          "product": "Ariba Procurement",
+          "contractId": "C-2023-0344",
+          "scope": "240 buyers, 2,300 suppliers including GxP supplier qualification, 3-year term",
+          "start": "2026-12-01",
+          "end": "2029-11-30",
+          "annualEur": 229200,
+          "currentAnnualEur": 127200,
+          "validUntil": "2026-11-25",
+          "status": "Open",
+          "createdOn": "2026-10-02",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Proposal sent",
+          "probabilityPct": 60,
+          "listPriceEur": 251868,
+          "discountPct": 9,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 36,
+          "autoRenew": false,
+          "upliftCapPct": 3,
+          "priceGuaranteeMonths": 36,
+          "approval": "Deal desk approved",
+          "competitor": "None",
+          "nextStep": "Review of the supplier qualification workflow with Quality Assurance by 2026-11-06",
+          "conditions": "Replaces the expired contract; supplier master data is migrated from the trial tenant.",
+          "lines": [
+            {
+              "component": "Ariba Buying and Invoicing",
+              "quantity": 240,
+              "unit": "buyers",
+              "annualEur": 129600,
+              "unitPriceEur": 540
+            },
+            {
+              "component": "Supplier qualification content",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 26000,
+              "unitPriceEur": 26000
+            },
+            {
+              "component": "Supplier Risk module",
+              "quantity": 2300,
+              "unit": "suppliers",
+              "annualEur": 73600,
+              "unitPriceEur": 32
+            }
+          ]
+        },
+        {
+          "id": "OFF-2026-0518",
+          "type": "New product",
+          "product": "Joule for Quality (batch-record review) and AI units top-up",
+          "contractId": "C-2026-0051",
+          "scope": "25,000 additional AI units until 2026-12-31 and Joule skills for deviation and batch-record review",
+          "start": "2026-11-15",
+          "end": "2026-12-31",
+          "annualEur": 129000,
+          "currentAnnualEur": 0,
+          "validUntil": "2026-11-30",
+          "status": "In negotiation",
+          "createdOn": "2026-10-09",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Negotiation",
+          "probabilityPct": 55,
+          "listPriceEur": 138710,
+          "discountPct": 7,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 2,
+          "autoRenew": false,
+          "upliftCapPct": 0,
+          "priceGuaranteeMonths": 0,
+          "approval": "Pending deal desk (non-standard top-up terms) and validation concept from Quality Assurance",
+          "competitor": "Own build on a hyperscaler (evaluation)",
+          "nextStep": "Validation concept review with Quality Assurance by 2026-10-30",
+          "conditions": "Top-up units expire with the main allotment; productive use only after the validation concept is approved.",
+          "lines": [
+            {
+              "component": "AI units, top-up",
+              "quantity": 25000,
+              "unit": "units",
+              "annualEur": 75000,
+              "unitPriceEur": 3
+            },
+            {
+              "component": "Joule skills for deviation and batch-record review",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 54000,
+              "unitPriceEur": 54000
+            }
+          ]
+        },
+        {
+          "id": "OFF-2026-0526",
+          "type": "New product",
+          "product": "SAP Integrated Business Planning",
+          "contractId": "C-2025-0612",
+          "scope": "60 additional planners and a cold-chain scenario package for 5 markets",
+          "start": "2027-01-01",
+          "end": "2028-03-31",
+          "annualEur": 98000,
+          "currentAnnualEur": 0,
+          "validUntil": "2026-12-15",
+          "status": "Open",
+          "createdOn": "2026-10-12",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Proposal sent",
+          "probabilityPct": 45,
+          "listPriceEur": 106522,
+          "discountPct": 8,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 15,
+          "autoRenew": false,
+          "upliftCapPct": 3,
+          "priceGuaranteeMonths": 15,
+          "approval": "Deal desk approved",
+          "competitor": "None",
+          "nextStep": "Workshop with Manufacturing IT on the cold-chain scenarios by 2026-11-12",
+          "conditions": "Co-terminous with the existing contract; price per planner as in the current contract.",
+          "lines": [
+            {
+              "component": "Integrated Business Planning, additional planners",
+              "quantity": 60,
+              "unit": "planners",
+              "annualEur": 69000,
+              "unitPriceEur": 1150
+            },
+            {
+              "component": "Cold-chain scenario package",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 29000,
+              "unitPriceEur": 29000
+            }
+          ]
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-40110",
+          "contractId": "C-2026-0051",
+          "type": "Invoice",
+          "period": "month of 2026-09",
+          "issued": "2026-10-06",
+          "due": "2026-11-05",
+          "netEur": 41800,
+          "vatPct": 19,
+          "grossEur": 49742.0,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-8800051660",
+          "description": "Document AI overage, Q3"
+        },
+        {
+          "id": "INV-2026-40104",
+          "contractId": "C-2025-0833",
+          "type": "Invoice",
+          "period": "2026-10-01 to 2027-09-30",
+          "issued": "2026-10-01",
+          "due": "2026-10-31",
+          "netEur": 414000,
+          "vatPct": 19,
+          "grossEur": 492660.0,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-8800833217",
+          "description": "Advanced Track and Trace, annual in advance"
+        },
+        {
+          "id": "INV-2026-40109",
+          "contractId": "C-2025-0612",
+          "type": "Invoice",
+          "period": "month of 2026-09",
+          "issued": "2026-09-21",
+          "due": "2026-10-21",
+          "netEur": 36500,
+          "vatPct": 19,
+          "grossEur": 43435.0,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-8800612044",
+          "description": "IBP additional demand-sensing capacity, Q3"
+        },
+        {
+          "id": "INV-2026-40108",
+          "contractId": "C-2024-0905",
+          "type": "Invoice",
+          "period": "2026-07-01 to 2027-06-30",
+          "issued": "2026-09-14",
+          "due": "2026-10-14",
+          "netEur": 96000,
+          "vatPct": 19,
+          "grossEur": 114240.0,
+          "status": "Overdue",
+          "paidOn": null,
+          "poNumber": "PO-8800905120",
+          "description": "S/4HANA validation package for release 2608 (change control and test evidence)"
+        },
+        {
+          "id": "INV-2026-40102",
+          "contractId": "C-2025-0718",
+          "type": "Invoice",
+          "period": "2026-07-01 to 2027-06-30",
+          "issued": "2026-07-01",
+          "due": "2026-07-31",
+          "netEur": 139050,
+          "vatPct": 19,
+          "grossEur": 165469.5,
+          "status": "Overdue",
+          "paidOn": null,
+          "poNumber": "PO-8800718093",
+          "description": "SuccessFactors Learning, annual in advance"
+        },
+        {
+          "id": "INV-2026-40100",
+          "contractId": "C-2024-0905",
+          "type": "Invoice",
+          "period": "2026-07-01 to 2027-06-30",
+          "issued": "2026-07-01",
+          "due": "2026-07-31",
+          "netEur": 2150000,
+          "vatPct": 19,
+          "grossEur": 2558500.0,
+          "status": "Paid",
+          "paidOn": "2026-07-28",
+          "poNumber": "PO-8800905120",
+          "description": "S/4HANA Cloud Private Edition, annual in advance"
+        },
+        {
+          "id": "INV-2026-40101",
+          "contractId": "C-2025-0612",
+          "type": "Invoice",
+          "period": "2026-04-01 to 2027-03-31",
+          "issued": "2026-04-01",
+          "due": "2026-05-01",
+          "netEur": 324000,
+          "vatPct": 19,
+          "grossEur": 385560.0,
+          "status": "Paid",
+          "paidOn": "2026-04-29",
+          "poNumber": "PO-8800612044",
+          "description": "Integrated Business Planning, annual in advance"
+        },
+        {
+          "id": "CN-2026-00533",
+          "contractId": "C-2024-0905",
+          "type": "Credit note",
+          "period": "2025-07-01 to 2026-06-30",
+          "issued": "2026-03-02",
+          "due": "2026-04-01",
+          "netEur": -18700,
+          "vatPct": 19,
+          "grossEur": -22253.0,
+          "status": "Settled",
+          "paidOn": "2026-03-02",
+          "poNumber": "PO-8800905120",
+          "description": "Credit for the planned maintenance window that exceeded the agreed 4 hours on 2026-02-14 (SLA 99.9 %)"
+        },
+        {
+          "id": "INV-2026-40105",
+          "contractId": "C-2026-0051",
+          "type": "Invoice",
+          "period": "2026-01-01 to 2026-12-31",
+          "issued": "2026-01-01",
+          "due": "2026-01-31",
+          "netEur": 180000,
+          "vatPct": 19,
+          "grossEur": 214200.0,
+          "status": "Paid",
+          "paidOn": "2026-02-05",
+          "poNumber": "PO-8800051660",
+          "description": "AI units 2026, annual in advance"
+        },
+        {
+          "id": "INV-2026-40106",
+          "contractId": "C-2023-0344",
+          "type": "Invoice",
+          "period": "quarter starting 2025-11-01",
+          "issued": "2025-11-01",
+          "due": "2025-12-01",
+          "netEur": 22400,
+          "vatPct": 19,
+          "grossEur": 26656.0,
+          "status": "Paid",
+          "paidOn": "2025-12-02",
+          "poNumber": "PO-8800344501",
+          "description": "Ariba Procurement, quarterly in advance"
+        },
+        {
+          "id": "INV-2026-40103",
+          "contractId": "C-2025-0833",
+          "type": "Invoice",
+          "period": "2025-10-01 to 2026-09-30",
+          "issued": "2025-10-01",
+          "due": "2025-10-31",
+          "netEur": 414000,
+          "vatPct": 19,
+          "grossEur": 492660.0,
+          "status": "Paid",
+          "paidOn": "2025-11-19",
+          "poNumber": "PO-8800833217",
+          "description": "Advanced Track and Trace, annual in advance"
+        },
+        {
+          "id": "INV-2026-40107",
+          "contractId": "C-2023-0344",
+          "type": "Invoice",
+          "period": "quarter starting 2025-08-01",
+          "issued": "2025-08-01",
+          "due": "2025-08-31",
+          "netEur": 22400,
+          "vatPct": 19,
+          "grossEur": 26656.0,
+          "status": "Paid",
+          "paidOn": "2025-09-17",
+          "poNumber": "PO-8800344501",
+          "description": "Ariba Procurement, quarterly in advance"
+        }
+      ],
+      "tickets": [
+        {
+          "id": "TKT-48212",
+          "title": "S/4HANA Cloud Private Edition: batch release transaction ends with a short dump after the 2608 upgrade",
+          "product": "S/4HANA Cloud Private Edition",
+          "priority": "High",
+          "status": "In processing",
+          "description": "After the 2608 upgrade in QAS the batch release (usage decision) dumps for batches with more than 40 characteristics. PRD is not yet upgraded; the validation run is blocked.",
+          "created": "2026-10-12",
+          "updated": "2026-10-17"
+        },
+        {
+          "id": "TKT-48188",
+          "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+          "product": "SAP Advanced Track and Trace",
+          "priority": "High",
+          "status": "Waiting for customer",
+          "description": "Since 2026-10-08 uploads for the Swiss repository are answered with a schema error. We need the failing messages from the packaging line 6 log.",
+          "created": "2026-10-09",
+          "updated": "2026-10-15"
+        },
+        {
+          "id": "TKT-48097",
+          "title": "Document AI: handwritten corrections on scanned batch records are not read",
+          "product": "Document AI",
+          "priority": "Medium",
+          "status": "In processing",
+          "description": "Handwritten corrections with initials on the second page of the batch record come back as empty fields. Typed fields are read correctly.",
+          "created": "2026-10-05",
+          "updated": "2026-10-13"
+        },
+        {
+          "id": "TKT-47921",
+          "title": "SuccessFactors Learning: qualification status not updated after e-signature",
+          "product": "SuccessFactors Learning",
+          "priority": "Medium",
+          "status": "Solution provided",
+          "description": "After the e-signature of a curriculum the status stays \"in progress\" until the nightly job. Quality Assurance needs it immediately for the line release.",
+          "created": "2026-09-29",
+          "updated": "2026-10-08"
+        },
+        {
+          "id": "TKT-47340",
+          "title": "Request: audit log export of all Joule agent actions for the next inspection",
+          "product": "Joule copilots",
+          "priority": "Low",
+          "status": "Closed",
+          "description": "The inspection team asks for an export of all actions taken by Joule agents in the validated systems, with user and timestamp.",
+          "created": "2026-08-24",
+          "updated": "2026-09-04"
+        }
+      ]
     }
   ],
   "knowledge": {
@@ -2450,6 +3478,26 @@
         "description": "After a catalog import the storefront search finds nothing and the index shows no documents.",
         "solution": "Run a full re-index for the affected index type after the import and verify that the import synchronisation job finished with status FINISHED before the index job starts.",
         "updated": "2026-06-11"
+      },
+      {
+        "id": "SAMPLE-1006",
+        "title": "Batch usage decision: short dump for batches with more than 40 characteristics",
+        "product": "S/4HANA Cloud Private Edition",
+        "component": "Quality Management, batch management",
+        "keywords": "batch release usage decision short dump characteristics upgrade 2608",
+        "description": "After an upgrade the usage decision dumps for batches with a large number of characteristics, because an internal table limit was lowered.",
+        "solution": "Apply the correction instruction of the sample note in the QAS system, regenerate the affected classes and repeat the usage decision. Record the correction in the change-control file before moving it to PRD.",
+        "updated": "2026-10-14"
+      },
+      {
+        "id": "SAMPLE-1007",
+        "title": "Document AI: handwritten text on scanned forms is not extracted",
+        "product": "Document AI",
+        "component": "Document AI, extraction models",
+        "keywords": "handwriting handwritten scanned batch record initials extraction empty field",
+        "description": "The default extraction model reads typed text. Handwritten entries need the handwriting option and a scan resolution of at least 300 dpi.",
+        "solution": "Switch the document type to the handwriting-capable model, set the scan resolution to 300 dpi or higher and re-run the extraction. Check the result against the validation set before productive use.",
+        "updated": "2026-10-01"
       }
     ],
     "scenarios": [
@@ -2492,6 +3540,22 @@
         "product": "Ariba AI",
         "priority": "Medium",
         "description": "Requisitions for cost centre 4720 skip the approval flow."
+      },
+      {
+        "customer": "lindenau",
+        "label": "Batch release dump after 2608",
+        "title": "S/4HANA Cloud Private Edition: batch release ends with a short dump after the 2608 upgrade",
+        "product": "S/4HANA Cloud Private Edition",
+        "priority": "High",
+        "description": "After the 2608 upgrade the usage decision for batches with many characteristics ends with a short dump. The validation run in QAS is blocked."
+      },
+      {
+        "customer": "lindenau",
+        "label": "Handwriting in batch records",
+        "title": "Document AI: handwritten corrections on scanned batch records are not recognised",
+        "product": "Document AI",
+        "priority": "Medium",
+        "description": "Typed fields are read correctly, but handwritten corrections with initials come back as empty fields."
       }
     ]
   }

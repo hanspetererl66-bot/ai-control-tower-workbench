@@ -1,0 +1,12 @@
+{
+  "title": "Order-to-Cash",
+  "description": "Mockup of one Order-to-Cash case: Claude builds the case file with proof lines, the Joule agent reads the S/4 document flow, and a person releases each correction within their own limits. Fictional sample data.",
+  "domain": "Finance",
+  "insights": [
+    "Case file: Claude reads emails, delivery note and contract; every finding carries the line it rests on, inferences are marked.",
+    "S/4 document flow shows the two gaps: 40 of 200 pieces are not invoiced (billing block) and the invoice uses the standard price instead of the contract price.",
+    "Proposals: nothing is written until a person releases it. Switch between the sales clerk and the team lead to see the credit memo limit at work.",
+    "Fictional sample data. No SAP system is called; tool names and document numbers are illustrative."
+  ],
+  "prompt": "Bundled example: Order-to-Cash (static mockup, data embedded by npm run sync:mockups)."
+}
