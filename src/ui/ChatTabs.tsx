@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { StarterPrompt } from '../starter-prompts';
-import { TABS, nextTab, readTab, loadUse, popular, recordUse, saveUse, suggested, whatsNew, type Entry, type SkillLike, type SpaceLike, type RankRow, type TabId, type UseMap } from '../chat-tabs';
+import { TABS, nextTab, loadUse, popular, recordUse, saveUse, suggested, whatsNew, type Entry, type SkillLike, type SpaceLike, type RankRow, type TabId, type UseMap } from '../chat-tabs';
 import BriefingCards from './BriefingCards';
 
 type Props = {
@@ -17,7 +17,6 @@ type Props = {
   onAsk: (prompt: string, connector?: string) => void;
 };
 
-const TAB_KEY = 'werkbank.chatTab';
 
 /** One small line icon per tab. */
 function TabIcon({ id }: { id: TabId }) {
@@ -36,9 +35,8 @@ const EMPTY: Record<TabId, string> = {
 
 /** Under the empty chat: Favorites (own prompts, favourite skills, the cards "Heute für dich"), Suggested, Popular, What's new. */
 export default function ChatTabs(p: Props) {
-  const [tab, setTab] = useState<TabId | null>(() => { try { return readTab(window.localStorage.getItem(TAB_KEY)); } catch { return 'favorites'; } });
+  const [tab, setTab] = useState<TabId | null>(null); // the chat starts minimal: every start has all lists closed, a click opens one, the next click closes it
   const [used, setUsed] = useState<UseMap>(() => loadUse(window.localStorage));
-  useEffect(() => { try { window.localStorage.setItem(TAB_KEY, tab ?? 'none'); } catch { /* ignore */ } }, [tab]);
   // The organisation's ranking from the shared database; without it (not set up, offline) Popular shows local use only.
   const [ranking, setRanking] = useState<RankRow[]>([]);
   useEffect(() => {
