@@ -39,9 +39,9 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   return (
     <main className="om">
       <header className="om-hero">
-        <button className="om-back" onClick={onBack} aria-label="Back to Admin">←</button>
+        <button className="om-back" onClick={onBack} aria-label="Back to the Admin console">←</button>
         <div className="om-hero-text">
-          <p className="om-crumb">Admin</p>
+          <p className="om-crumb">Admin console</p>
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
           <p className="om-lede">The shared vocabulary of your agents in one place: owned, reviewed and traceable to the document it came from.</p>
         </div>
@@ -95,7 +95,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
     return (
       <div className="om-source">
         <p className="om-note">No ontology in the catalog yet. Create one from a document in the tab Proposals.</p>
-        <button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin</button>
+        <button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin console</button>
       </div>
     );
   }

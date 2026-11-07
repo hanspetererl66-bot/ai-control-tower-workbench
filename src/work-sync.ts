@@ -11,6 +11,7 @@ import { sanitizeProjects as sanitizeAgentProjects, DOC_ORDER, type AgentProject
 import { sanitizeProject as sanitizeDevelopProject, artifactOf, interviewFiles, type Project } from './develop.ts';
 import { extensionNote, sourcesOf } from './requirements.ts';
 import { deriveAgentPolicy, deriveWorkflowPolicy, policyFile, policySummary } from './policy-manifest.ts';
+import { REGISTER_PATH, registerFrom } from './register-store.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
 /** `ext` = how many extensions the project had when it was last saved; a higher number now means the next revision is an extension. */
@@ -122,6 +123,9 @@ export async function syncOnce(api: Api, local: Local, toMarkdown: ((stored: str
       if (!r) continue;
       const k = r.agent ? agentKey(r.agent.id) : developKey(r.dev!.id);
       const mine = before.get(k);
+      // Somebody changed only the register card: the project is as it was at the last sync, so nothing is replaced and nothing is a conflict.
+      // Our own changes (if any) are sent on top of the new revision below.
+      if (entry && key === k && hashOf((item?.files ?? []).find((f: any) => f?.path === 'project.json')?.content ?? '') === entry.hash) { map[k] = { ...entry, rev: row.current_rev }; continue; }
       if (entry && key && mine && mine.hash !== entry.hash) {
         // changed here and elsewhere: keep a copy of the local version
         const copyId = r.agent ? newId('p-') : newId('p');
@@ -153,9 +157,18 @@ export async function syncOnce(api: Api, local: Local, toMarkdown: ((stored: str
     const entry = map[u.key];
     if (entry && entry.hash === u.hash) continue;
     try {
+      // The sync does not know the register card; it keeps the one of the newest revision, so a push never wipes it.
+      let files = u.files, intent = u.intent;
+      if (entry) {
+        const cur = await api.call('get_work_item', { id: entry.itemId });
+        const f = (Array.isArray(cur?.files) ? cur.files : []).find((x: any) => x?.path === REGISTER_PATH && typeof x.content === 'string');
+        const card = f ? registerFrom([f]) : null;
+        if (f && !card) throw new Error('register.json cannot be read; not overwritten');
+        if (f) { files = [...files, { path: REGISTER_PATH, content: f.content, language: 'json' }]; intent = { ...intent, register: card }; }
+      }
       const res = await api.call('save_work_item', {
         ...(entry ? { id: entry.itemId, expected_rev: entry.rev } : {}),
-        kind: u.kind, name: u.name, files: u.files, stage: u.stage, approved: u.approved, intent: u.intent,
+        kind: u.kind, name: u.name, files, stage: u.stage, approved: u.approved, intent,
         note: entry && u.ext > (entry.ext ?? 0) && u.extNote ? u.extNote : 'Saved from the Werkbank',
       });
       map[u.key] = { itemId: String(res?.id ?? entry?.itemId), rev: Number(res?.rev ?? (entry?.rev ?? 0) + 1), hash: u.hash, ...(u.ext ? { ext: u.ext } : {}) };
