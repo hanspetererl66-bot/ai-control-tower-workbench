@@ -1216,6 +1216,18 @@ export default function App() {
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
   const contextBar = (
     <ChatContextBar
+      safety={{
+        profiles: harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description })),
+        profileId: harness.id,
+        onProfile: changeHarness,
+        modes: agent?.modes ?? [{ id: 'auto', name: 'auto' }],
+        modeId: mode,
+        onMode: changeMode,
+        modeDisabled: !agent,
+        busy,
+        workdir: WORKDIR,
+        onOpenFolder: window.host?.openWorkspace ? () => { void window.host?.openWorkspace?.(); } : undefined,
+      }}
       memoryEnabled={memory.enabled}
       memoryCount={activeEntries(memory, contextSpace).length}
       onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
@@ -1244,12 +1256,6 @@ export default function App() {
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
-      workdir={WORKDIR}
-      mode={mode}
-      onModeChange={changeMode}
-      harnesses={harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description }))}
-      harnessId={harness.id}
-      onHarnessChange={changeHarness}
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
