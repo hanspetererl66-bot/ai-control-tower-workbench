@@ -134,3 +134,11 @@ test('example jobs cover agent, workflow and skill, with every kind of repeat an
   assert.equal(sanitizeJobs(jobs).length, jobs.length, 'they survive storage');
   assert.ok(sanitizeJobs(jobs).every((j) => j.example));
 });
+
+test('an example job runs the monday-close skill every Monday morning', () => {
+  const job = exampleJobs(at('2026-11-03T12:00:00')).find((j) => j.target.id === 'monday-close');
+  assert.ok(job);
+  assert.equal(job.target.type, 'skill');
+  assert.deepEqual(job.cadence, { kind: 'weekly', time: '06:30', days: [1] });
+  assert.match(jobPrompt(job), /monday-close/);
+});

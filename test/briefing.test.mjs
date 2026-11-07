@@ -106,3 +106,19 @@ test('two infrastructure cards come from the certificates and the fleet, before 
   assert.deepEqual(fleet.actions.map((a) => a.space), ['it-fleet']);
   assert.equal(buildBriefing(data, today).some((c) => c.id === 'certs' || c.id === 'fleet'), false);
 });
+
+test('close card: only with the demo figures, between Infrastruktur and Board, and it asks for the skill', () => {
+  const close = { accrueCount: 8, accrueEur: 245775, staleCount: 3, icCount: 3, sapDifferences: 1 };
+  const cards = buildBriefing(data, new Date(2026, 9, 25), { ...all, close });
+  assert.deepEqual(cards.slice(-3).map((c) => c.id), ['fleet', 'monday-close', 'board']);
+  const card = cards.find((c) => c.id === 'monday-close');
+  assert.equal(card.category, 'finance');
+  assert.equal(card.tone, 'amber');
+  assert.match(card.title, /8 Rückstellungen offen, 245\.775 EUR/);
+  assert.match(card.detail, /1 Posten weicht in SAP/);
+  const ask = card.actions.find((a) => a.kind === 'ask');
+  assert.equal(ask.connector, 'databricks');
+  assert.match(ask.prompt, /skill monday-close/);
+  assert.match(ask.prompt, /wait for my approval/);
+  assert.equal(buildBriefing(data, new Date(2026, 9, 25), all).some((c) => c.id === 'monday-close'), false, 'not without the figures');
+});
