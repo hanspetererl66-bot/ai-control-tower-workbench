@@ -557,13 +557,13 @@ export default function Composer({
 
         {starters && (
           <button
-            className={`chip chip-icon ${buttonsShown ? 'chip-on' : ''}`}
+            className={`chip chip-icon tabs-toggle ${buttonsShown ? 'tabs-toggle-shown' : 'tabs-toggle-hidden'}`}
             title={buttonsShown ? 'Hide the buttons under the input' : 'Show the buttons under the input'}
             aria-label={buttonsShown ? 'Hide buttons' : 'Show buttons'}
             aria-pressed={buttonsShown}
             onClick={toggleButtons}
           >
-            <span aria-hidden="true">{buttonsShown ? '−' : '+'}</span>
+            <TabsRowIcon open={buttonsShown} />
           </button>
         )}
 
@@ -778,6 +778,16 @@ export default function Composer({
         />
       )}
     </div>
+  );
+}
+
+/** Two long, slightly offset pills stand for the row of chat buttons under the input. Bright and fanned out while the buttons are hidden (a click brings them back); greyed and pushed together while they are shown. */
+function TabsRowIcon({ open }: { open: boolean }) {
+  return (
+    <span className={`tabs-pills ${open ? 'tabs-pills-shown' : ''}`} aria-hidden="true">
+      <span className="tabs-pill tabs-pill-back" />
+      <span className="tabs-pill tabs-pill-front" />
+    </span>
   );
 }
 

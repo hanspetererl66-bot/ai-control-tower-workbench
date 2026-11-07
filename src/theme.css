@@ -2250,6 +2250,25 @@ button {
   position: relative;
 }
 
+.tabs-toggle { position: relative; }
+.tabs-pills { position: relative; display: inline-block; width: 20px; height: 14px; }
+.tabs-pill { position: absolute; left: 1px; width: 17px; height: 6px; border-radius: 999px; background: currentColor; }
+.tabs-pill-back { top: 1px; left: 3px; opacity: 0.45; }
+.tabs-pill-front { top: 7px; }
+.tabs-toggle-hidden { color: var(--accent); }
+.tabs-toggle-shown { color: var(--muted); opacity: 0.55; }
+.tabs-toggle-shown:hover, .tabs-toggle-shown:focus-visible { opacity: 0.85; }
+@media (prefers-reduced-motion: no-preference) {
+  .tabs-toggle { transition: opacity 0.25s ease, color 0.25s ease; }
+  .tabs-pill { transition: transform 0.25s ease, opacity 0.25s ease; }
+  .tabs-pills-shown .tabs-pill-back { transform: translate(-2px, 3px); }
+  .tabs-pills-shown .tabs-pill-front { transform: translate(2px, -3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabs-pills-shown .tabs-pill-back { transform: translate(-2px, 3px); }
+  .tabs-pills-shown .tabs-pill-front { transform: translate(2px, -3px); }
+}
+
 .chip-on {
   background: #efeafd;
   border-color: #e0d6fb;
