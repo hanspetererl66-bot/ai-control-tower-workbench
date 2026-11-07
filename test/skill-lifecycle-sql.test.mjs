@@ -533,3 +533,13 @@ test('recruiting criteria: only the hiring manager sets them, ids are assigned, 
   assert.ok(mine.every((r) => r.id !== 'REQ-1901'), 'closed requisitions are not listed');
   assert.deepEqual(json(`select public.recruiting_criteria_mine('stranger@x.com')`), []);
 });
+
+test('migration 026 in real Postgres: revisions, conflict, closed to the public, append only', { skip }, () => {
+  assert.equal(json(`select public.ontology_governance_get('a@x.com')`).rev, 0);
+  assert.equal(json(`select public.ontology_governance_set('a@x.com', 0, '{"v":1}')`).conflict, false);
+  const clash = json(`select public.ontology_governance_set('b@x.com', 0, '{"v":2}')`);
+  assert.equal(clash.conflict, true);
+  assert.equal(clash.data.v, 1);
+  assert.match(rule(`update werkbank.ontology_governance_rev set data = '{}'`), /cannot be changed/);
+  assert.match(rule(`select public.ontology_governance_get('not-an-email')`), /e-mail/);
+});
