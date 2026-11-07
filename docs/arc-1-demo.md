@@ -45,6 +45,11 @@ Die Demo funktioniert vollständig mit Stufe A. Stufe B ist der Zusatz, wenn ein
 - Was die Werkbank zusätzlich tut (neu): Jeder ARC-1-Aufruf trägt in der Freigabe-Abfrage das richtige Etikett. `SAPRead` ist **Only reads**, `SAPWrite` und `SAPActivate` sind **Changes something**, `SAPQuery` und Tabelleninhalte sind **Check before allowing**. Das Arbeitsprofil "Review (read only)" blockiert alles außer Lesen, auch bei Transporten alles außer list, get, check, history.
 - **Satz:** "Die Sicherheit hängt nicht an meinem Wohlwollen, sondern an drei Stellen: Schalter am Server, SAP-Berechtigung des Benutzers, Freigabe in der Werkbank."
 
+### Zugabe (1 Minute, nur Stufe B): Dokumentation auf Knopfdruck
+- Skill **abap-code-documentation** im Chat: "Dokumentiere den Report ZORDER_REPORT." Ergebnis ist ein Entwurf mit Zeilenbelegen und "Inference"-Markierung, offene Fragen gehen an den Objektverantwortlichen.
+- **Satz:** "Das ist der Teil, für den es sonst Plattformen gibt. Hier ist es ein Skill auf einem lesenden Server."
+- Nicht live zeigen, wenn der Skill vorher nicht gegen das echte System gelaufen ist.
+
 ## Fragen, die kommen
 - **"Kann Joule auch Code schreiben?"** Technisch ja (SAPWrite, SAPActivate), aber nur mit dem Hauptschalter am Server, einem Entwicklungspaket und einer Freigabe pro Aufruf. Für die Demo bewusst aus.
 - **"Welcher Benutzer läuft?"** Ein Dienstbenutzer mit Anzeigerechten. Für eine zentrale Betriebsvariante bietet ARC-1 OAuth und Principal Propagation (jeder Entwickler mit eigenen Rechten); nicht von uns erprobt.

@@ -3,7 +3,7 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'admin';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'hiring' | 'admin';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
@@ -63,11 +63,11 @@ export default function Rail({
           <ChatIcon />
         </button>
         <button
-          className={`rail-btn ${view === 'spaces' ? 'rail-btn-on' : ''}`}
+          className={`rail-btn ${view === 'spaces' || view === 'hiring' ? 'rail-btn-on' : ''}`}
           onClick={() => onView('spaces')}
           title="Spaces"
           aria-label="Spaces"
-          aria-pressed={view === 'spaces'}
+          aria-pressed={view === 'spaces' || view === 'hiring'}
         >
           <LayersIcon />
         </button>

@@ -46,6 +46,7 @@ import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
+import { HIRING_SPACE } from './hiring-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
@@ -55,12 +56,14 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
-import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type Target } from './jobs';
+import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type JobRun, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
+import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
 import AdminView from './ui/AdminView';
+import HiringApprovals from './ui/HiringApprovals';
 import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type OntologyData } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
@@ -200,6 +203,31 @@ export default function App() {
   jobsRef.current = jobs;
   const changeJobs = useCallback((next: Job[]) => { jobsRef.current = next; setJobsState(next); saveJobs(next, window.localStorage); }, []);
   const [runningJob, setRunningJob] = useState('');
+  // Activity log of the Scheduler: every real run, kept apart from the jobs; sent to the shared database when the desktop app has access.
+  const [jobLog, setJobLogState] = useState<LogEntry[]>(() => loadLog(window.localStorage));
+  const jobLogRef = useRef(jobLog);
+  const logFlushing = useRef(false);
+  const changeJobLog = useCallback((next: LogEntry[]) => { jobLogRef.current = next; setJobLogState(next); saveLog(next, window.localStorage); }, []);
+  const flushJobLog = useCallback(async () => {
+    const host = window.host;
+    if (!host?.jobRunsRecord || logFlushing.current) return;
+    logFlushing.current = true;
+    try {
+      for (let i = 0; i < 20; i++) {
+        const batch = pending(jobLogRef.current);
+        if (!batch.length) break;
+        const res = await host.jobRunsRecord(batch.map(toRecord));
+        if (!res.ok) break; // not set up or offline: the entries stay local and go out with the next run
+        changeJobLog(markSent(jobLogRef.current, batch.map((e) => e.id)));
+      }
+    } catch { /* stays local */ } finally { logFlushing.current = false; }
+  }, [changeJobLog]);
+  const logRun = useCallback((job: Job, run: JobRun) => {
+    if (job.example) return;
+    changeJobLog(appendEntry(jobLogRef.current, entryOf(job, run)));
+    void flushJobLog();
+  }, [changeJobLog, flushJobLog]);
+  useEffect(() => { void flushJobLog(); }, [flushJobLog]);
   // Skill health: the company catalog (demo data until it is read from the shared database) plus the installed skills.
   const SKILL_ADMIN = 'hanspeter.erl66@gmail.com';
   const [skillCatalog, setSkillCatalogState] = useState<Catalog>(() => {
@@ -1146,6 +1174,7 @@ export default function App() {
     } finally {
       const run = { id: newId('run'), at: new Date(started).toISOString(), ms: Date.now() - started, status, trigger: manual ? 'manual' as const : 'schedule' as const, note };
       changeJobs(jobsRef.current.map((j) => (j.id === job.id ? addRun(j, run) : j)));
+      logRun(job, run);
       setRunningJob('');
     }
   }
@@ -1188,6 +1217,18 @@ export default function App() {
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
   const contextBar = (
     <ChatContextBar
+      safety={{
+        profiles: harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description })),
+        profileId: harness.id,
+        onProfile: changeHarness,
+        modes: agent?.modes ?? [{ id: 'auto', name: 'auto' }],
+        modeId: mode,
+        onMode: changeMode,
+        modeDisabled: !agent,
+        busy,
+        workdir: WORKDIR,
+        onOpenFolder: window.host?.openWorkspace ? () => { void window.host?.openWorkspace?.(); } : undefined,
+      }}
       memoryEnabled={memory.enabled}
       memoryCount={activeEntries(memory, contextSpace).length}
       onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
@@ -1216,16 +1257,9 @@ export default function App() {
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
-      workdir={WORKDIR}
-      mode={mode}
-      onModeChange={changeMode}
-      harnesses={harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description }))}
-      harnessId={harness.id}
-      onHarnessChange={changeHarness}
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
-      onManageConnectors={() => { setManageFocus('connectors'); setView('manage'); }}
       starters={empty && !dockShown}
       voice={voice}
       onOpenSettings={() => setSettingsOpen(true)}
@@ -1466,6 +1500,8 @@ export default function App() {
         />
       ) : view === 'registry' ? (
         <RegistryView generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent)} onBack={() => setView('admin')} />
+      ) : view === 'hiring' ? (
+        <HiringApprovals onBack={() => { setSelectedSpace(HIRING_SPACE); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'admin' ? (
         <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
       ) : view === 'ontology' ? (
@@ -1481,7 +1517,7 @@ export default function App() {
           onResetExamples={() => { if (window.confirm('Replace the catalog with the example catalog? Your changes in it are lost.')) changeSkillCatalog(syncInstalled(exampleCatalog(Date.now()), skillList, loadUse(window.localStorage), SKILL_ADMIN, Date.now())); }}
         />
       ) : view === 'scheduler' ? (
-        <SchedulerView jobs={jobs} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onAddExamples={() => changeJobs([...exampleJobs().filter((e) => !jobsRef.current.some((j) => j.id === e.id)), ...jobsRef.current])} onRunNow={(j) => void runJob(j, true)} />
+        <SchedulerView jobs={jobs} log={jobLog} targets={jobTargets} runningId={runningJob} canRun={Boolean(agent) && !busy && !runningSchedule} onJobs={changeJobs} onAddExamples={() => changeJobs([...exampleJobs().filter((e) => !jobsRef.current.some((j) => j.id === e.id)), ...jobsRef.current])} onRunNow={(j) => void runJob(j, true)} />
       ) : view === 'n8n' ? (
         <N8nView
           onBack={() => setView('develop')}
@@ -1536,7 +1572,8 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === HIRING_SPACE}
+            onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}

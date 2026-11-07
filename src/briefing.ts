@@ -8,13 +8,14 @@ export type BriefingAction =
   | { kind: 'open'; label: string; space: string; tab?: string }
   | { kind: 'ask'; label: string; prompt: string; connector?: string };
 
-export type BriefingCategoryId = 'ai' | 'sales' | 'renewals' | 'ops' | 'board';
+export type BriefingCategoryId = 'ai' | 'sales' | 'renewals' | 'ops' | 'finance' | 'board';
 /** The groups of cards under the chat, in the order they are shown. `cards` is every card a group can show (for the settings). */
 export const BRIEFING_CATEGORIES: Array<{ id: BriefingCategoryId; title: string; cards: Array<{ id: string; label: string }> }> = [
   { id: 'ai', title: 'AI', cards: [{ id: 'risks', label: 'AI risks below the mitigation threshold' }, { id: 'budget', label: 'Teams over the AI budget' }, { id: 'audit', label: 'EU AI Act audit' }, { id: 'agents', label: 'Agent status' }] },
   { id: 'sales', title: 'Sales', cards: [{ id: 'sales-desk', label: 'Offers waiting for the deal desk' }, { id: 'sales-overdue', label: 'Overdue next steps' }] },
   { id: 'renewals', title: 'Renewals', cards: [{ id: 'renew-decisions', label: 'Renewal decisions due' }, { id: 'renew-lapsed', label: 'Lapsed contracts' }] },
   { id: 'ops', title: 'Infrastruktur', cards: [{ id: 'certs', label: 'Certificates about to expire' }, { id: 'fleet', label: 'Red customers in the fleet' }] },
+  { id: 'finance', title: 'Finance', cards: [{ id: 'monday-close', label: 'Close check from the overnight run (Databricks demo)' }] },
   { id: 'board', title: 'Board', cards: [{ id: 'board', label: 'Board briefing on a button' }] },
 ];
 /** Key under which a whole group is switched off in the settings. */
@@ -56,7 +57,9 @@ export type SalesBriefingData = {
 export type RenewalsBriefingData = {
   cases: { id: string; customer: string; product: string; status: string; decisionDate: string; annualEur: number }[];
 };
-export type BriefingExtra = { ops?: OpsBriefingData; sales?: SalesBriefingData; renewals?: RenewalsBriefingData };
+/** Figures of the Databricks demo (synthetic): what the overnight run found for the close. */
+export type CloseBriefingData = { accrueCount: number; accrueEur: number; staleCount: number; icCount: number; sapDifferences: number };
+export type BriefingExtra = { ops?: OpsBriefingData; sales?: SalesBriefingData; renewals?: RenewalsBriefingData; close?: CloseBriefingData };
 
 const DAY_MS = 86_400_000;
 
@@ -190,6 +193,30 @@ function renewalCards(renewals: RenewalsBriefingData, today: Date): BriefingCard
   return cards;
 }
 
+const eurText = (n: number) => `${Math.round(n).toLocaleString('de-DE')} EUR`;
+
+/** The overnight check for the close (demo data of the Databricks scenario): the card says what is already prepared, one click walks through it. */
+export function closeCard(c: CloseBriefingData): BriefingCard {
+  const diff = c.sapDifferences > 0 ? ` ${c.sapDifferences} Posten weicht in SAP vom Lakehouse ab.` : '';
+  return {
+    id: 'monday-close',
+    category: 'finance',
+    area: 'Finance · Abschluss (Demodaten)',
+    tone: c.sapDifferences > 0 ? 'amber' : 'neutral',
+    title: `Abschluss: ${c.accrueCount} Rückstellungen offen, ${eurText(c.accrueEur)}`,
+    detail: `Der Nachtlauf ist fehlgeschlagen; ${c.staleCount} Posten sind über 90 Tage alt, ${c.icCount} Intercompany-Differenzen.${diff}`,
+    actions: [
+      { kind: 'open', label: 'Pre-Close öffnen', space: 'finance-preclose' },
+      {
+        kind: 'ask',
+        label: 'Montagmorgen durchgehen',
+        connector: 'databricks',
+        prompt: 'Run the skill monday-close for company code ALL. Brief me from the overnight run to the accruals and wait for my approval before posting anything.',
+      },
+    ],
+  };
+}
+
 export function buildBriefing(data: BriefingData, today: Date = new Date(), extra: BriefingExtra = {}): BriefingCard[] {
   const cards: BriefingCard[] = [];
 
@@ -266,6 +293,7 @@ export function buildBriefing(data: BriefingData, today: Date = new Date(), extr
   if (extra.sales) cards.push(...salesCards(extra.sales, today));
   if (extra.renewals) cards.push(...renewalCards(extra.renewals, today));
   if (extra.ops) cards.push(...opsCards(extra.ops, today));
+  if (extra.close) cards.push(closeCard(extra.close));
 
   // Always last: the one-page summary for whoever has to report upwards, on demand.
   cards.push({

@@ -1,0 +1,12 @@
+{
+  "title": "Recruiting Workbench",
+  "description": "Mockup of Joule on SmartRecruiters and SuccessFactors: a control tower for the hiring pipeline and an evidence-based shortlist where Joule proposes and the hiring manager decides. Fictional sample data.",
+  "domain": "HR",
+  "insights": [
+    "Overview, Pipeline, Time to fill and Morning brief show where hiring is stuck, on aggregated numbers.",
+    "Shortlist compares CV text with the criteria the hiring manager set, with the proof line for each result. Joule never rejects anyone.",
+    "Approvals holds every proposed change (status move, message). Nothing is written until a person releases it.",
+    "Fictional sample data, pseudonymous candidates. The recruiting_* tools and the Supabase tables exist; no SmartRecruiters or SuccessFactors system is called."
+  ],
+  "prompt": "Bundled example: Recruiting Workbench (static mockup, data embedded by npm run sync:mockups)."
+}

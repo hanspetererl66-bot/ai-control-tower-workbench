@@ -12,6 +12,7 @@ declare global {
       platform: string;
       workspacePath: string;
       openFile?: (path: string) => Promise<{ ok: boolean; detail?: string }>;
+      openWorkspace?: () => Promise<{ ok: boolean; detail?: string }>;
       revealFile?: (path: string) => void;
       renderBriefingPdf?: (request: { html: string; fileName: string }) => Promise<{ ok: boolean; detail?: string; path?: string; base64?: string }>;
       pickChatFiles?: () => Promise<AttachmentPickerResult>;
@@ -25,6 +26,16 @@ declare global {
       workStatus?: () => Promise<{ configured: boolean; email: string; source: string }>;
       workSetEmail?: (email: string) => Promise<{ ok: boolean; email?: string; detail?: string }>;
       workCall?: (tool: string, args: Record<string, unknown>) => Promise<{ ok: true; data: any } | { ok: false; error: string }>;
+      jobRunsRecord?: (runs: Array<Record<string, unknown>>) => Promise<{ ok: true; data: { received: number; stored: number } } | { ok: false; error: string }>;
+      jobRunsList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; failed: number; runs: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
+      recruitingProposals?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; proposals: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
+      recruitingHireList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; requests: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
+      recruitingHireDecide?: (id: number, decision: 'approve' | 'return' | 'decline', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingImport?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingCriteria?: () => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
+      recruitingCriterionSet?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingCriterionDelete?: (requisition: string, id: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingDecide?: (id: number, decision: 'released' | 'declined', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';
         csvPath?: string;

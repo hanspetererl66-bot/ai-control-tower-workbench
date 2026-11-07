@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -119,18 +118,4 @@ test('the window can only sync and save: no key, no path, and the wiring is in m
   assert.doesNotMatch(sql, /grant [^;]* to (anon|authenticated|public)\b/);
 });
 
-// Real Postgres (throw-away database named *_test, see skill-lifecycle-sql.test.mjs)
-const dsn = process.env.SKILL_SQL_TEST_DSN?.trim();
-const dbName = (() => { try { return new URL(dsn).pathname.slice(1); } catch { return ''; } })();
-const skip = !dsn ? 'set SKILL_SQL_TEST_DSN to a throw-away database' : /^[a-z0-9_]*_test$/.test(dbName) ? false : 'database is not named *_test';
-test('migration 026 in real Postgres: revisions, conflict, closed to the public, append only', { skip }, () => {
-  const psql = (sql) => execFileSync('psql', [dsn, '-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-c', sql], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-  execFileSync('psql', [dsn, '-X', '-q', '-v', 'ON_ERROR_STOP=1', '-c', 'drop schema if exists werkbank cascade', '-f', join(import.meta.dirname, '..', 'supabase/migrations/20261105_026_ontology_governance.sql')], { stdio: 'pipe' });
-  assert.equal(JSON.parse(psql("select public.ontology_governance_get('a@x.com')")).rev, 0);
-  assert.equal(JSON.parse(psql(`select public.ontology_governance_set('a@x.com', 0, '{"v":1}')`)).conflict, false);
-  const clash = JSON.parse(psql(`select public.ontology_governance_set('b@x.com', 0, '{"v":2}')`));
-  assert.equal(clash.conflict, true);
-  assert.equal(clash.data.v, 1);
-  assert.throws(() => psql("update werkbank.ontology_governance_rev set data = '{}'"), /cannot be changed/);
-  assert.throws(() => psql("select public.ontology_governance_get('not-an-email')"), /e-mail/);
-});
+// The same rules against a real Postgres are in skill-lifecycle-sql.test.mjs: test files run in parallel, so only that file touches the test database.

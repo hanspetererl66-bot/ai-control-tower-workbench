@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "werkbank-workspace",
   "display_name": "Werkbank Workspace",
-  "version": "1.1.0",
+  "version": "1.4.0",
   "description": "Your personal Werkbank settings and shared groups in Supabase: preferences sync, groups with roles, shared Spaces, configuration and team memory.",
   "author": {
     "name": "AI Control Tower workbench"
@@ -102,6 +102,34 @@
     {
       "name": "archive_work_item",
       "description": "Write: archive an item or bring it back. Owner, team admin or Governance board."
+    },
+    {
+      "name": "list_job_runs",
+      "description": "Read: the Scheduler run log (who ran which job, when, how it ended). Filter by days, job, result and trigger. Read only."
+    },
+    {
+      "name": "recruiting_get_pipeline",
+      "description": "Read: the hiring control tower (days open, status, who waits past the target, funnel, offer acceptance). Aggregated, pseudonymous."
+    },
+    {
+      "name": "recruiting_get_shortlist",
+      "description": "Read: the shortlist of one requisition against the hiring manager’s criteria, with the CV line as proof. Does not reject anybody."
+    },
+    {
+      "name": "recruiting_list_proposals",
+      "description": "Read: Joule’s proposals and the hiring manager’s decisions."
+    },
+    {
+      "name": "recruiting_create_proposal",
+      "description": "Write a proposal for the hiring manager (move, remind, ask). Changes nothing for the candidate; a person decides."
+    },
+    {
+      "name": "recruiting_list_hire_requests",
+      "description": "Read hiring approvals: requests to hire a candidate who reached the stage Offer, the approval chain and who is next. Read only."
+    },
+    {
+      "name": "recruiting_create_hire_request",
+      "description": "Write a hiring request for a candidate in the stage Offer (hiring manager only). The approvers decide in the Hiring Approvals space; the agent cannot approve, return or decline."
     }
   ],
   "user_config": {

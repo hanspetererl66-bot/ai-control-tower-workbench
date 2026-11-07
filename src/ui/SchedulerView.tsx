@@ -3,6 +3,8 @@ import {
   MAX_JOBS, TARGET_LABEL, WEEKDAYS, cadenceProblems, describeCadence, jobState, newJob, nextRun, toLocalInput, upcoming,
   type Cadence, type Job, type Target, type TargetType,
 } from '../jobs';
+import type { LogEntry } from '../job-log';
+import SchedulerActivity from './SchedulerActivity';
 
 const KINDS: Array<{ kind: Cadence['kind']; label: string }> = [
   { kind: 'once', label: 'Once' }, { kind: 'interval', label: 'Every … minutes / hours / days' }, { kind: 'daily', label: 'Daily' },
@@ -28,8 +30,9 @@ function defaultCadence(kind: Cadence['kind'], now: Date): Cadence {
   }
 }
 
-export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs, onRunNow, onAddExamples }: {
+export default function SchedulerView({ jobs, log, targets, runningId, canRun, onJobs, onRunNow, onAddExamples }: {
   jobs: Job[];
+  log: LogEntry[];
   targets: Target[];
   runningId: string;
   canRun: boolean;
@@ -40,6 +43,7 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
   const [now, setNow] = useState(() => new Date());
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState('');
+  const [tab, setTab] = useState<'jobs' | 'activity'>('jobs');
   useEffect(() => { const id = window.setInterval(() => setNow(new Date()), 30_000); return () => window.clearInterval(id); }, []);
   const patch = (id: string, p: Partial<Job>) => onJobs(jobs.map((j) => (j.id === id ? { ...j, ...p } : j)));
   const active = jobs.filter((j) => j.enabled && jobState(j, now) === 'scheduled').length;
@@ -53,6 +57,11 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
         </div>
         <button className="sched-primary" onClick={() => setCreating(true)} disabled={jobs.length >= MAX_JOBS || creating}>+ Create job</button>
       </header>
+      <div className="sched-tabs" role="tablist" aria-label="Scheduler">
+        <button role="tab" aria-selected={tab === 'jobs'} className={tab === 'jobs' ? 'sched-tab-on' : ''} onClick={() => setTab('jobs')}>Jobs</button>
+        <button role="tab" aria-selected={tab === 'activity'} className={tab === 'activity' ? 'sched-tab-on' : ''} onClick={() => setTab('activity')}>Activity</button>
+      </div>
+      {tab === 'activity' ? <SchedulerActivity log={log} /> : <>
       <p className="sched-note">Jobs run in the chat while Werkbank is open. A run that was missed while the app was closed is made up for up to six hours.</p>
 
       {creating && <JobForm targets={targets} now={now} onCancel={() => setCreating(false)} onSave={(job) => { onJobs([job, ...jobs]); setCreating(false); setOpen(job.id); }} />}
@@ -126,6 +135,7 @@ export default function SchedulerView({ jobs, targets, runningId, canRun, onJobs
           })}
         </div>
       )}
+      </>}
     </main>
   );
 }

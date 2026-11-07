@@ -70,3 +70,10 @@ test('values saved with the old range move to the nearest step instead of resett
   assert.equal(parseSpaceScale(1.08), 1.15);
   assert.equal(parseSpaceScale(0.92), 0.85);
 });
+
+import { readFileSync as readCss } from 'node:fs';
+test('controls in the top bar opt out of window dragging, or Electron ignores the mouse on them', () => {
+  const css = readCss(new URL('../src/theme.css', import.meta.url), 'utf8');
+  assert.match(css, /\.topbar \.space-zoom[^{}]*\{[^}]*-webkit-app-region:\s*no-drag/);
+  for (const el of ['input', 'select', 'button']) assert.match(css, new RegExp(`\\.topbar ${el}[^{}]*\\{[^}]*-webkit-app-region:\\s*no-drag`), el);
+});

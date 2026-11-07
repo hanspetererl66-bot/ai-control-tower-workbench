@@ -7,9 +7,13 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
+import { buildSeedSql } from '../scripts/recruiting-seed.mjs';
+import { createMockClient, mapToRecruiting } from '../connectors/_lib/server/smartrecruiters.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const dsn = process.env.SKILL_SQL_TEST_DSN?.trim();
@@ -45,7 +49,7 @@ const events = (slug) => state('board@x.com', slug).events.map((e) => e.event);
 const day = (offset) => json(`select to_json((current_date + ${offset})::text)`);
 
 test('set up: the migrations install cleanly, twice', { skip }, () => {
-  sql('drop schema if exists control_tower, sub4me, skills, werkbank cascade');
+  sql('drop schema if exists control_tower, sub4me, skills, werkbank, recruiting cascade');
   sql(`do $$ begin
     if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
     if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
@@ -336,4 +340,354 @@ test('skill health overview: usage per skill, only what the actor may see (migra
   assert.ok(json("select public.skills_health_overview('ben@x.com')").skills.some((s) => s.slug === 'health-private'));
   // Not callable with the publishable key.
   assert.match(rule("set role anon; select public.skills_health_overview('anna@x.com')"), /permission denied/);
+});
+
+test('scheduler run log: append only, people see their own runs, the board sees all (migration 027)', { skip }, () => {
+  const run = (id, extra = {}) => ({ id, jobId: 'job-1', jobName: 'Pre-close check', targetType: 'agent', targetLabel: 'Pre-close agent', at: new Date().toISOString(), ms: 1200, status: 'ok', trigger: 'schedule', note: '', ...extra });
+  const record = (actor, runs) => json(`select public.job_runs_record(${q(actor)}, ${q(JSON.stringify(runs))}::jsonb)`);
+  assert.deepEqual(record('anna@x.com', [run('r1'), run('r2', { status: 'error', note: 'No answer', trigger: 'manual', at: new Date(Date.now() - 3 * 86400000).toISOString() })]), { received: 2, stored: 2 });
+  assert.deepEqual(record('anna@x.com', [run('r1'), run('r3')]), { received: 2, stored: 1 }, 'sending a run again changes nothing');
+  record('ben@x.com', [run('r1', { jobName: 'Invoice reminder', targetType: 'workflow', status: 'error' })]);
+  const list = (actor, args = 'null, null, null, null, false, 200') => json(`select public.job_runs_list(${q(actor)}, ${args})`);
+  assert.equal(list('anna@x.com').length, 3, 'a person sees only their own runs');
+  assert.ok(list('anna@x.com').every((r) => r.who === 'anna@x.com'));
+  assert.equal(list('board@x.com').length, 4, 'the Governance board sees everybody’s');
+  assert.equal(list('board@x.com', 'null, null, null, null, true, 200').length, 0, 'only_mine limits the board to its own');
+  assert.deepEqual(list('board@x.com', "null, null, 'error', null, false, 200").map((r) => r.who).sort(), ['anna@x.com', 'ben@x.com']);
+  assert.equal(list('board@x.com', "null, 'invoice', null, null, false, 200").length, 1, 'job filter matches part of the name');
+  assert.equal(list('board@x.com', `${q(new Date(Date.now() - 86400000).toISOString())}, null, null, null, false, 200`).length, 3, 'period filter');
+  assert.equal(list('board@x.com', "null, null, null, 'manual', false, 200").length, 1);
+  assert.equal(list('board@x.com', 'null, null, null, null, false, 2').length, 2, 'limit');
+  // Newest first.
+  const times = list('board@x.com').map((r) => Date.parse(r.at));
+  assert.deepEqual(times, [...times].sort((a, b) => b - a));
+  // A credential in the note is replaced, the entry is kept.
+  record('anna@x.com', [run('r4', { note: 'token: abcdefgh12345678' })]);
+  assert.match(list('anna@x.com').find((r) => r.id === 'r4').note, /removed/);
+  // Bad input is refused with a reason; nothing is stored.
+  assert.match(rule(`select public.job_runs_record('not-an-email', '[]'::jsonb)`), /e-mail/);
+  assert.match(rule(`select public.job_runs_record('anna@x.com', ${q(JSON.stringify([run('x', { status: 'weird' })]))}::jsonb)`), /status/);
+  assert.match(rule(`select public.job_runs_list('anna@x.com', null, null, 'weird')`), /status/);
+  // Append only, even for the table owner; closed to the API roles.
+  assert.match(rule("update werkbank.job_run set note = 'changed'"), /append only/);
+  assert.match(rule('delete from werkbank.job_run'), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'werkbank.job_run', 'select')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.job_runs_record(text,jsonb)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.job_runs_list(text,timestamptz,text,text,text,boolean,integer)', 'execute')`), 'f', role);
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.job_runs_list(text,timestamptz,text,text,text,boolean,integer)', 'execute')"), 't');
+});
+
+
+// ---- recruiting (migration 028) ---------------------------------------------------------------------------------------------------
+const recData = JSON.parse(readFileSync(join(ROOT, 'examples/recruiting-workbench/data.json'), 'utf8'));
+const MGR = 'mgr@x.com';
+const snap = (actor, cv = true) => json(`select public.recruiting_snapshot(${q(actor)}, ${cv}, date '2026-11-06')`);
+const propose = (actor, req, cand, kind = 'move', body = 'Move C to the next stage.') => `select public.recruiting_proposal_create(${q(actor)}, ${q(req)}, ${q(cand)}, ${q(kind)}, 'recruiting_create_proposal', ${q(body)}, 'basis')`;
+
+test('recruiting: the sample data loads, and the database snapshot gives the same answers as the Space', { skip }, () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'rec-')), 'seed.sql');
+  writeFileSync(file, buildSeedSql(recData, { manager: MGR }));
+  run(['-f', file]); run(['-f', file]); // loading twice changes nothing
+  assert.equal(sql('select count(*) from recruiting.candidate'), String(recData.candidates.length));
+  const fromDb = makeLogic(snap(MGR));
+  const fromFile = makeLogic(recData);
+  assert.deepEqual(recData.jobs.map((j) => fromDb.jobStatus(j).status), recData.jobs.map((j) => fromFile.jobStatus(j).status));
+  for (const job of Object.keys(recData.criteria)) {
+    const key = (L) => L.shortlist(job).map((e) => `${e.cand.id}:${e.group}:${e.rank}`);
+    assert.deepEqual(key(fromDb), key(fromFile), job);
+  }
+  assert.equal(fromDb.proposals().length, fromFile.proposals().length);
+});
+
+test('recruiting: visibility is the hiring manager and the Governance board; CV text only on request', { skip }, () => {
+  assert.equal(snap(MGR).jobs.length, recData.jobs.length);
+  assert.equal(snap('board@x.com').jobs.length, recData.jobs.length);
+  assert.equal(snap('stranger@x.com').jobs.length, 0, 'a stranger sees no requisition');
+  assert.ok(snap(MGR, false).candidates.every((c) => !c.cv), 'no CV text without the flag');
+  assert.ok(snap(MGR, true).candidates.some((c) => c.cv));
+});
+
+test('recruiting: the API roles cannot reach the tables or the functions', { skip }, () => {
+  for (const role of ['anon', 'authenticated']) {
+    for (const t of ['requisition', 'candidate', 'criterion', 'proposal', 'proposal_event']) assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.${t}', 'select')`), 'f', `${role} ${t}`);
+    for (const f of ['recruiting_snapshot(text,boolean,date)', 'recruiting_proposal_create(text,text,text,text,text,text,text)', 'recruiting_proposals_list(text,text,text,integer)', 'recruiting_proposal_decide(text,bigint,text,text)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
+    }
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_proposal_decide(text,bigint,text,text)', 'execute')"), 't');
+});
+
+test('recruiting: a proposal is written once per candidate and kind; rejection wording and other people’s requisitions are refused', { skip }, () => {
+  const first = json(propose(MGR, 'REQ-2201', 'C-4101'));
+  assert.equal(first.created, true);
+  assert.equal(json(propose(MGR, 'REQ-2201', 'C-4101')).id, first.id, 'asking twice returns the open proposal');
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4102', 'move', 'Reject this candidate.')), /check|proposal_body|violates/i);
+  assert.match(rule(propose('stranger@x.com', 'REQ-2201', 'C-4102')), /no access/);
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4201')), /does not belong/);
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4102', 'reject')), /kind/);
+  assert.match(rule(propose(MGR, 'REQ-2201', 'C-4102', 'move', 'token: abcdefgh12345678')), /credential/);
+  assert.equal(json(`select public.recruiting_proposals_list(${q(MGR)})`).length, 1);
+  assert.equal(json(`select public.recruiting_proposals_list('stranger@x.com')`).length, 0);
+});
+
+test('recruiting: only the hiring manager decides, the decision is final, the log is append-only', { skip }, () => {
+  const id = json(propose(MGR, 'REQ-2201', 'C-4102')).id;
+  const decideSql = (actor, decision, note = '') => `select public.recruiting_proposal_decide(${q(actor)}, ${id}, ${q(decision)}, ${q(note)})`;
+  assert.match(rule(decideSql('stranger@x.com', 'released')), /only the hiring manager/);
+  assert.match(rule(decideSql('board@x.com', 'released')), /only the hiring manager/, 'not even the board decides for the manager');
+  assert.match(rule(decideSql(MGR, 'rejected')), /decision/);
+  assert.equal(json(decideSql(MGR, 'declined', 'not now')).status, 'declined');
+  assert.match(rule(decideSql(MGR, 'released')), /already decided/);
+  assert.match(rule(`update recruiting.proposal set status = 'released' where id = ${id}`), /./, 'a decided proposal cannot be flipped');
+  assert.match(rule(`delete from recruiting.proposal where id = ${id}`), /./, 'proposals are never deleted');
+  assert.deepEqual(json(`select to_json(array_agg(event order by id)) from recruiting.proposal_event where proposal_id = ${id}`), ['proposed', 'declined']);
+  assert.match(rule('update recruiting.proposal_event set note = \'x\''), /append only/);
+  assert.match(rule('delete from recruiting.proposal_event'), /append only/);
+  // After a decision a new proposal for the same candidate and kind is possible again.
+  assert.equal(json(propose(MGR, 'REQ-2201', 'C-4102')).created, true);
+});
+
+test('recruiting: no personal data in CV text, no protected trait as a criterion', { skip }, () => {
+  const cv = (lines) => `update recruiting.candidate set cv_lines = ${arr(lines)} where id = 'C-4101'`;
+  assert.ok(rule(cv(['Reach me at anna@example.com'])), 'e-mail address');
+  assert.ok(rule(cv(['Phone 0151 2345 6789 0'])), 'phone number');
+  assert.ok(rule(cv(['See https://linkedin.com/in/x'])), 'link');
+  assert.ok(rule(cv(['x'.repeat(301)])), 'long line');
+  const crit = (label, needles) => `insert into recruiting.criterion (requisition_id, crit_id, must, label, kind, needles) values ('REQ-2206', 'N9', false, ${q(label)}, 'text', ${arr(needles)})`;
+  assert.ok(rule(crit('Younger than 35', ['young'])), 'age as label');
+  assert.ok(rule(crit('Has experience', ['married'])), 'protected trait as needle');
+  assert.equal(rule(crit('Knows forklift safety', ['forklift'])), null, 'an ordinary criterion is fine');
+});
+
+
+// ---- hiring approvals (migration 031) -------------------------------------------------------------------------------------------------
+const HR = 'hr@x.com', FIN = 'fin@x.com', HEAD = 'head@x.com';
+const terms = (extra = {}) => ({ level: 'Senior', band: 'Band 5', start_on: day(40), contract: 'permanent', note: 'Starts after notice period.', ...extra });
+const hireNew = (actor, cand = 'C-4204', req = 'REQ-2203', approvers = { hr: HR, finance: FIN }, t = terms(), evidence = 'All must-haves met; interview score above the line.') =>
+  `select public.recruiting_hire_request_create(${q(actor)}, ${q(req)}, ${q(cand)}, ${q(JSON.stringify(t))}::jsonb, ${q(evidence)}, ${q(JSON.stringify(approvers))}::jsonb)`;
+const hireDo = (actor, id, decision, note = '') => `select public.recruiting_hire_decide(${q(actor)}, ${id}, ${q(decision)}, ${q(note)})`;
+const hireList = (actor, status = null) => json(`select public.recruiting_hire_requests_list(${q(actor)}, ${q(status)})`);
+
+test('hiring approvals: only the hiring manager starts a request, only for a candidate in stage Offer, with fixed terms', { skip }, () => {
+  assert.match(rule(hireNew('stranger@x.com')), /only the hiring manager/);
+  assert.match(rule(hireNew('board@x.com')), /only the hiring manager/, 'not even the board starts it');
+  assert.match(rule(hireNew(MGR, 'C-4101', 'REQ-2201')), /needs a candidate in the stage Offer/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2202')), /unknown candidate for this requisition/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR })), /hr and finance are needed/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: HR })), /nobody can hold two steps/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: MGR, finance: FIN })), /nobody can hold two steps/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN, cto: 'x@x.com' })), /may only name/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', undefined, terms({ salary: 90000 }))), /may only hold/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', undefined, terms({ band: 'EUR 95000' }))), /not an amount/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', undefined, terms({ contract: 'freelance' }))), /permanent or fixed-term/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', undefined, terms({ start_on: day(-3) }))), /today or later/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', undefined, terms(), 'Reach her at anna@example.com')), /contact data or protected traits/);
+  assert.match(rule(hireNew(MGR, 'C-4204', 'REQ-2203', undefined, terms({ note: 'She is pregnant, so early start' }))), /protected traits/);
+  assert.equal(sql('select count(*) from recruiting.hire_request'), '0', 'a refused request leaves nothing behind');
+});
+
+test('hiring approvals: the steps run in order, only the current approver decides, the last approval ends it', { skip }, () => {
+  const made = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN, department_head: HEAD }));
+  assert.equal(made.steps, 4);
+  assert.match(rule(hireNew(MGR)), /already waiting/, 'one pending request per candidate');
+  const id = made.id;
+  assert.match(rule(hireDo(HR, id, 'approve')), /not your turn/, 'HR cannot go before the hiring manager');
+  assert.match(rule(hireDo('board@x.com', id, 'approve')), /not your turn/, 'the board does not decide');
+  assert.equal(hireList(HR)[0].mine, false);
+  assert.equal(hireList(MGR)[0].mine, true);
+  assert.equal(json(hireDo(MGR, id, 'approve', 'Good fit.')).final, false);
+  assert.match(rule(hireDo(MGR, id, 'approve')), /not your turn/, 'a step cannot be taken twice');
+  assert.equal(hireList(HR, 'pending')[0].mine, true);
+  assert.equal(json(hireDo(HR, id, 'approve')).final, false);
+  assert.equal(json(hireDo(FIN, id, 'approve', 'Headcount is in the plan.')).final, false);
+  assert.equal(hireList(FIN, 'pending')[0].currentStep, 4);
+  const done = json(hireDo(HEAD, id, 'approve'));
+  assert.equal(done.final, true);
+  assert.equal(done.status, 'approved');
+  assert.match(rule(hireDo(HEAD, id, 'decline', 'changed my mind')), /already decided/, 'an approval is final');
+  const row = hireList(MGR, 'approved')[0];
+  assert.deepEqual(row.steps.map((x) => x.status), ['approved', 'approved', 'approved', 'approved']);
+  assert.deepEqual(row.events.map((e) => e.event), ['requested', 'approved', 'approved', 'approved', 'approved']);
+  assert.match(rule(`update recruiting.hire_request set terms = '{}'::jsonb where id = ${id}`), /./, 'a decided request cannot be changed');
+  assert.match(rule(`delete from recruiting.hire_request where id = ${id}`), /./, 'requests are never removed');
+  assert.match(rule("update recruiting.hire_event set note = 'x'"), /append only/);
+});
+
+test('hiring approvals: return and decline need a reason and end the request; a new one is possible; visibility is limited', { skip }, () => {
+  const id = json(hireNew(MGR)).id;
+  assert.equal(hireList('stranger@x.com').length, 0, 'a stranger sees nothing');
+  assert.equal(hireList(FIN, 'pending').length, 1, 'an approver sees the request');
+  assert.equal(hireList('board@x.com', 'pending').length, 1, 'the board can read');
+  assert.match(rule(hireDo(MGR, id, 'return')), /reason is needed/);
+  assert.match(rule(hireDo(MGR, id, 'return', 'no')), /reason is needed/);
+  assert.match(rule(hireDo(MGR, id, 'hire')), /decision must be/);
+  const r = json(hireDo(MGR, id, 'return', 'Start date is too early, please change.'));
+  assert.deepEqual([r.event, r.final, r.status], ['returned', true, 'returned']);
+  assert.match(rule(hireDo(MGR, id, 'approve')), /already decided/);
+  const second = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN }, terms({ start_on: day(60) })));
+  assert.equal(json(hireDo(MGR, second.id, 'approve')).final, false);
+  assert.equal(json(hireDo(HR, second.id, 'decline', 'Level does not match the band.')).status, 'declined');
+  assert.deepEqual(hireList(MGR).map((h) => h.status).sort(), ['approved', 'declined', 'returned']);
+});
+
+const due = (extra = '') => json(`select public.recruiting_hire_due(now() ${extra})`);
+const dueAt = (days, remind = 2, escalate = 5, max = 3) => json(`select public.recruiting_hire_due(now() + interval '${days} days', ${remind}, ${escalate}, ${max})`);
+const notice = (id, kind, to, channel = 'Teams') => `select public.recruiting_hire_notice_record(${id}, ${q(kind)}, ${q(to)}, ${q(channel)})`;
+const kinds = (rows, id) => rows.filter((r) => r.id === id).map((r) => `${r.kind}:${r.to}`).sort();
+
+test('hiring notices: notify once, remind after the set days (capped), escalate once to the requester; the log shows it', { skip }, () => {
+  const id = json(hireNew(MGR)).id;
+  json(hireDo(MGR, id, 'approve'));
+  assert.deepEqual(kinds(due(), id), [`notify:${HR}`], 'the approver whose turn it is gets the first notice');
+  assert.equal(json(notice(id, 'notify', HR)).created, true);
+  assert.equal(json(notice(id, 'notify', HR)).created, false, 'a repeated record does nothing');
+  assert.deepEqual(kinds(due(), id), [], 'nothing is due right after the notice');
+  assert.deepEqual(kinds(dueAt(1), id), []);
+  assert.deepEqual(kinds(dueAt(3), id), [`remind:${HR}`], 'after two days: a reminder');
+  assert.deepEqual(kinds(dueAt(6), id), [`escalate:${MGR}`, `remind:${HR}`], 'after five days: the requester is told as well');
+  assert.match(rule(notice(id, 'remind', FIN)), /whose turn/, 'only the current approver can be reminded');
+  assert.match(rule(notice(id, 'escalate', HR)), /goes to the requester/);
+  assert.match(rule(notice(id, 'notify', 'nobody')), /e-mail address/);
+  assert.equal(json(notice(id, 'escalate', MGR)).created, true);
+  assert.equal(json(notice(id, 'escalate', MGR)).created, false, 'one escalation per step');
+  assert.deepEqual(kinds(dueAt(6), id), [`remind:${HR}`], 'the escalation is not due again');
+  assert.equal(json(notice(id, 'remind', HR)).created, false, 'two reminders within an hour are one');
+  assert.deepEqual(dueAt(3, 2, 5, 0).filter((r) => r.id === id && r.kind === 'remind'), [], 'zero reminders allowed means none');
+  assert.match(rule("select public.recruiting_hire_due(now(), 0, 5, 3)"), /at least 1/);
+  const row = hireList(MGR, 'pending').find((r) => r.id === id);
+  assert.deepEqual(row.events.map((e) => e.event), ['requested', 'approved', 'notified', 'escalated']);
+  assert.equal(row.events.at(-1).actor, MGR);
+  assert.equal(row.currentStep, 2, 'notices never move a request');
+  // the next approver is told once their turn begins; the old step is not asked again
+  json(hireDo(HR, id, 'approve'));
+  assert.deepEqual(kinds(due(), id), [`notify:${FIN}`]);
+  assert.equal(json(notice(id, 'notify', FIN)).created, true);
+  json(hireDo(FIN, id, 'decline', 'Closing this case so the next test can start.'));
+});
+
+test('hiring notices: when the requester is the approver nobody is escalated to; ended requests are reported once', { skip }, () => {
+  const id = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN }, terms({ note: 'second round' }))).id;
+  assert.deepEqual(kinds(dueAt(10), id), [`notify:${MGR}`], 'step 1 is the requester: a notice, but no escalation to themselves');
+  json(hireDo(MGR, id, 'approve'));
+  json(hireDo(HR, id, 'decline', 'Position is frozen until the next budget round.'));
+  assert.deepEqual(kinds(due(), id), [`inform:${MGR}`], 'a declined request is reported to the requester only');
+  assert.match(rule(notice(id, 'inform', HR)), /not a recipient/);
+  assert.match(rule(notice(id, 'notify', HR)), /already decided/);
+  assert.equal(json(notice(id, 'inform', MGR)).created, true);
+  assert.equal(json(notice(id, 'inform', MGR)).created, false);
+  assert.deepEqual(kinds(due(), id), []);
+  const okId = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN })).id;
+  json(hireDo(MGR, okId, 'approve')); json(hireDo(HR, okId, 'approve')); json(hireDo(FIN, okId, 'approve'));
+  assert.deepEqual(kinds(due(), okId), [`inform:${HR}`, `inform:${MGR}`], 'an approval is reported to the requester and to HR');
+  assert.match(rule(notice(okId, 'inform', FIN)), /not a recipient/, 'finance is not told by the rules');
+  assert.deepEqual(kinds(dueAt(20), okId), [], 'old results are not reported after 14 days');
+  assert.match(rule(`delete from recruiting.hire_event where event = 'informed'`), /append only/);
+});
+
+test('hiring notices: they cannot decide, the log text is scrubbed, the API roles cannot call them', { skip }, () => {
+  const id = json(hireNew(MGR)).id;
+  json(notice(id, 'notify', MGR, 'Teams token=abcdefghijklmnop1234'));
+  const note = hireList(MGR, 'pending').find((r) => r.id === id).events.find((e) => e.event === 'notified').note;
+  assert.doesNotMatch(note, /abcdefghijklmnop/);
+  assert.equal(hireList(MGR, 'pending').find((r) => r.id === id).status, 'pending');
+  for (const role of ['anon', 'authenticated']) {
+    for (const f of ['recruiting_hire_due(timestamptz,integer,integer,integer)', 'recruiting_hire_notice_record(bigint,text,text,text)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
+    }
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_hire_due(timestamptz,integer,integer,integer)', 'execute')"), 't');
+});
+
+test('hiring approvals: the API roles cannot reach the tables or the functions', { skip }, () => {
+  for (const role of ['anon', 'authenticated']) {
+    for (const t of ['hire_request', 'hire_step', 'hire_event']) assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.${t}', 'select')`), 'f', `${role} ${t}`);
+    for (const f of ['recruiting_hire_request_create(text,text,text,jsonb,text,jsonb)', 'recruiting_hire_requests_list(text,text,integer)', 'recruiting_hire_decide(text,bigint,text,text)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
+    }
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_hire_decide(text,bigint,text,text)', 'execute')"), 't');
+});
+
+test('recruiting import: a first import of the mock updates the sample rows, a new job is created, personal data never arrives', { skip }, async () => {
+  const fixture = JSON.parse(readFileSync(join(ROOT, 'connectors/_lib/server/smartrecruiters-mock.json'), 'utf8'));
+  const client = createMockClient(fixture);
+  const jobs = (await client.listJobs()).content;
+  const byJob = Object.fromEntries(await Promise.all(jobs.map(async (j) => [j.id, (await client.listCandidates(j.id)).content])));
+  const { payload } = mapToRecruiting(jobs, byJob, { asOf: '2026-11-06' });
+  const imp = (actor, p) => `select public.recruiting_import(${q(actor)}, ${q(JSON.stringify(p))}::jsonb)`;
+  const before = sql('select count(*) from recruiting.candidate');
+  const first = json(imp(MGR, payload));
+  assert.equal(first.requisitionsNew, 0); assert.equal(first.candidatesNew, 0);
+  assert.equal(first.requisitionsUpdated, 6); assert.equal(first.candidatesUpdated, 28);
+  assert.equal(sql('select count(*) from recruiting.candidate'), before, 'no duplicates');
+  // a new job and a new candidate from the source system: a pseudonym is assigned here
+  const extra = { requisitions: [{ ref: 'new-1', title: 'Night Shift Lead', dept: 'Operations', location: 'Kiel', openedOn: '2026-11-01', targetDays: 40 }],
+    candidates: [{ ref: 'cand-new-1', requisitionRef: 'new-1', stage: 'Applied', stageSince: '2026-11-03', appliedOn: '2026-11-03', years: 3, yearsLine: 1, cv: ['Warehouse, 3 years'] }] };
+  const second = json(imp(MGR, extra));
+  assert.deepEqual([second.requisitionsNew, second.candidatesNew], [1, 1]);
+  assert.match(sql("select id from recruiting.candidate where source_ref = 'sr:cand-new-1'"), /^C-5\d{3}$/);
+  assert.equal(json(imp(MGR, extra)).candidatesNew, 0, 'running it again duplicates nothing');
+  // a stage change moves stage_since, an unchanged stage keeps it
+  const moved = { ...extra, candidates: [{ ...extra.candidates[0], stage: 'Screening', stageSince: '2026-11-05' }] };
+  json(imp(MGR, moved));
+  assert.equal(sql("select stage || ' ' || stage_since from recruiting.candidate where source_ref = 'sr:cand-new-1'"), 'Screening 2026-11-05');
+  // someone else cannot import into another manager's requisition, and the tables still refuse personal data
+  assert.match(rule(imp('stranger@x.com', extra)), /another hiring manager/);
+  const dirty = { ...extra, candidates: [{ ...extra.candidates[0], cv: ['Mail anna@example.org'] }] };
+  assert.ok(rule(imp(MGR, dirty)), 'an e-mail address in CV text is refused by the table');
+  assert.match(rule(imp(MGR, { requisitions: 'x' })), /payload/);
+  for (const role of ['anon', 'authenticated']) assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_import(text,jsonb)', 'execute')`), 'f');
+});
+
+
+test('recruiting criteria: only the hiring manager sets them, ids are assigned, changes are logged, protected traits are refused', { skip }, () => {
+  const set = (actor, args) => `select public.recruiting_criterion_set(${q(actor)}, ${q(args.req ?? 'REQ-2206')}, ${args.id ? q(args.id) : 'null'}, ${args.must ?? false}, ${q(args.label ?? 'Knows payroll')}, ${q(args.kind ?? 'text')}, ${args.min ?? 'null'}, ${arr(args.needles ?? ['payroll'])}, ${arr(args.partial ?? [])})`;
+  sql("delete from recruiting.criterion where requisition_id = 'REQ-2206'");
+  const first = json(set(MGR, { must: true, label: 'Payroll experience' }));
+  assert.equal(first.id, 'M1'); assert.equal(first.created, true);
+  assert.equal(json(set(MGR, { must: true, label: 'German C1', needles: ['German native', 'German C1'] })).id, 'M2');
+  assert.equal(json(set(MGR, { must: false, label: 'SAP HCM', needles: ['HCM'] })).id, 'N1');
+  const years = json(set(MGR, { must: true, label: 'At least 3 years', kind: 'years', min: 3, needles: [] }));
+  assert.equal(years.id, 'M3');
+  assert.equal(json(set(MGR, { id: 'M1', must: true, label: 'Payroll experience (DE)', needles: ['payroll', 'Lohn'] })).created, false);
+  assert.equal(sql("select label from recruiting.criterion where requisition_id = 'REQ-2206' and crit_id = 'M1'"), 'Payroll experience (DE)');
+  assert.match(rule(set('stranger@x.com', { must: true })), /only the hiring manager/);
+  assert.match(rule(set('board@x.com', { must: true })), /only the hiring manager/, 'not even the board sets them');
+  assert.match(rule(set(MGR, { req: 'REQ-1901', must: true })), /only the hiring manager/, 'a closed requisition has no criteria to set');
+  assert.ok(rule(set(MGR, { must: false, label: 'Younger than 35', needles: ['young'] })), 'protected trait');
+  assert.match(rule(set(MGR, { id: 'M1', must: false })), /cannot change between/);
+  assert.match(rule(set(MGR, { id: 'M9', must: true })), /unknown criterion/);
+  assert.match(rule(set(MGR, { must: true, kind: 'weeks' })), /kind must be/);
+  assert.ok(rule(set(MGR, { must: true, label: 'x', kind: 'text', needles: [] })), 'a text criterion needs a needle');
+  assert.match(rule(`select public.recruiting_criterion_delete('stranger@x.com', 'REQ-2206', 'M1')`), /only the hiring manager/);
+  assert.equal(json(`select public.recruiting_criterion_delete(${q(MGR)}, 'REQ-2206', 'N1')`).deleted, true);
+  assert.match(rule(`select public.recruiting_criterion_delete(${q(MGR)}, 'REQ-2206', 'N1')`), /unknown criterion/);
+  // new ids never reuse a deleted number of the highest id
+  assert.equal(json(set(MGR, { must: false, label: 'Payroll software', needles: ['software'] })).id, 'N1');
+  const log = json(`select to_json(array_agg(action || ':' || crit_id order by id)) from recruiting.criterion_event where requisition_id = 'REQ-2206'`);
+  assert.ok(log.includes('deleted:N1') && log.includes('set:M1'));
+  assert.match(rule(`update recruiting.criterion_event set actor = 'x@y.de'`), /append only/);
+  assert.match(rule(`delete from recruiting.criterion_event`), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_criterion_set(text,text,text,boolean,text,text,integer,text[],text[])', 'execute')`), 'f');
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.criterion_event', 'select')`), 'f');
+  }
+  // the shortlist can use them: the snapshot of the manager carries the new criteria
+  assert.ok(snap(MGR).criteria['REQ-2206'].length >= 3);
+  const mine = json(`select public.recruiting_criteria_mine(${q(MGR)})`);
+  assert.ok(mine.some((r) => r.id === 'REQ-2206' && r.criteria.length >= 3 && r.criteria[0].must === true));
+  assert.ok(mine.every((r) => r.id !== 'REQ-1901'), 'closed requisitions are not listed');
+  assert.deepEqual(json(`select public.recruiting_criteria_mine('stranger@x.com')`), []);
+});
+
+test('migration 026 in real Postgres: revisions, conflict, closed to the public, append only', { skip }, () => {
+  assert.equal(json(`select public.ontology_governance_get('a@x.com')`).rev, 0);
+  assert.equal(json(`select public.ontology_governance_set('a@x.com', 0, '{"v":1}')`).conflict, false);
+  const clash = json(`select public.ontology_governance_set('b@x.com', 0, '{"v":2}')`);
+  assert.equal(clash.conflict, true);
+  assert.equal(clash.data.v, 1);
+  assert.match(rule(`update werkbank.ontology_governance_rev set data = '{}'`), /cannot be changed/);
+  assert.match(rule(`select public.ontology_governance_get('not-an-email')`), /e-mail/);
 });
