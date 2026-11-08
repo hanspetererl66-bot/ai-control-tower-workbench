@@ -37,6 +37,9 @@ declare global {
       recruitingCriteria?: () => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
       recruitingCriterionSet?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       recruitingCriterionDelete?: (requisition: string, id: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingPostings?: (args: { status?: string }) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
+      recruitingPostingStep?: (action: 'release' | 'send_back' | 'withdraw', id: number, note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingPostingPublish?: (id: number, channels: string[]) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       recruitingInterviewSave?: (requisition: string, record: Record<string, unknown>) => Promise<{ ok: true; data: { saved?: boolean; note?: string } } | { ok: false; error: string }>;
       recruitingDecide?: (id: number, decision: 'released' | 'declined', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       runLocalWorkflow?: (request: {
