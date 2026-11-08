@@ -27,3 +27,6 @@ Wortgleich aus der früheren `CLAUDE.md` ausgelagert (Stand der Einträge: jewei
 
 ## Revenue Recognition (Software), 08.11.2026
 Neuer Space `examples/revenue-recognition` (Finance), Anleitung `docs/revenue-recognition-demo.md`, Test `test/revenue-recognition.test.mjs`. Gleicher Fall und gleicher Rechenkern wie Order-to-Cash (Software). Neun Reiter, alle Abschnitte standardmäßig zugeklappt. Nicht getestet: Electron-App, echtes Finanzsystem; Zahlen sind Demo-Annahmen.
+
+## Renewals: Prozess und Demo Flow, 08.11.2026
+`examples/renewals`: neuer Abschnitt „Renewal process" (sieben Phasen des Renewal-Teams: Watch, Prepare, Offer, Negotiate, Decide and sign, Order and invoice, Win-back; `PHASES` und `phaseOf` im Block `renewal-logic`, getestet). Klick auf eine Phase filtert Radar und Liste. Kundenkarten nennen Verträge, rote Fälle und nächstes Entscheidungsdatum. Der Demo Flow hat neun Schritte mit den Zeilen „Where" und „Data", springt zum Zielbereich (Process, Customer cards, Renewal radar, Renewals by decision date, Details, Alternatives, KPI-Boxen) und umrandet ihn; die Demo-Karte bleibt oben haften. Rechte Kundenspalte (Tickets, Unpaid invoices, Usage against licence) in gedämpften Farben (color-mix aus Tokens). Phasenregeln und 90-Tage-Grenze für „behind" sind Demo-Annahmen. Nicht getestet: Electron-App; nur Typecheck, Tests und Headless-Browser.
