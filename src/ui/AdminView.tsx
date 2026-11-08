@@ -1,5 +1,5 @@
 /**
- * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and Skill management;
+ * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and Skill Health Monitor;
  * more can follow. Hiring approvals is a Space of its own, not part of Admin. Admin is not part of Develop.
  */
 export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void }) {
@@ -30,16 +30,16 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
           </ul>
           <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenRegistry}>Open Solution register</button>
         </section>
-        <section className="develop-card develop-card-block" aria-label="Skill management">
+        <section className="develop-card develop-card-block" aria-label="Skill Health Monitor">
           <span className="develop-logo adm-logo adm-logo-skills" aria-hidden="true"><SkillMark /></span>
-          <span className="develop-card-title">Skill management</span>
-          <span className="develop-card-brand">the health</span>
+          <span className="develop-card-title">Skill Health Monitor</span>
+          <span className="develop-card-brand">skill management</span>
           <span className="develop-card-text">Which skills are used, duplicated, unowned or outdated, and what to do about it.</span>
           <ul className="develop-blocks">
             <li><span>Merge duplicates and phase out unused skills</span></li>
             <li><span>Assign owners and ask for the next level</span></li>
           </ul>
-          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkills}>Open Skill management</button>
+          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkills}>Open Skill Health Monitor</button>
         </section>
       </div>
     </main>

@@ -131,7 +131,7 @@ test('storage: bad data is cleaned and the policy stays in range', () => {
 });
 
 test('the dashboard is wired: Admin tile, Rail group, five tabs, bulk actions', () => {
-  assert.match(src('src/ui/AdminView.tsx'), /Skill management/);
+  assert.match(src('src/ui/AdminView.tsx'), /Skill Health Monitor/);
   assert.match(src('src/ui/Rail.tsx'), /ADMIN_VIEWS: View\[\] = \[[^\]]*'skillhealth'/);
   assert.match(src('src/App.tsx'), /view === 'skillhealth' \? \(\s*<SkillHealthView/);
   const ui = src('src/ui/SkillHealthView.tsx');

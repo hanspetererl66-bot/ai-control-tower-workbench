@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { NO_FILTER, filterLog, fromDatabase, mergeSources, summarize, toCsv, type LogEntry, type LogFilter } from '../job-log';
+import { NO_FILTER, exampleLog, filterLog, fromDatabase, mergeSources, summarize, toCsv, type LogEntry, type LogFilter } from '../job-log';
 import { TARGET_LABEL } from '../jobs';
 
 const fmt = (iso: string) => new Date(iso).toLocaleString([], { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -29,7 +29,9 @@ export default function SchedulerActivity({ log }: { log: LogEntry[] }) {
   }, []);
   useEffect(() => { void load(); }, [load]);
 
-  const all = useMemo(() => mergeSources(log, remote, me), [log, remote, me]);
+  const real = useMemo(() => mergeSources(log, remote, me), [log, remote, me]);
+  const all = useMemo(() => (real.length ? real : exampleLog()), [real]);
+  const showingExamples = real.length === 0;
   const people = useMemo(() => [...new Set(all.map((e) => e.who).filter((w): w is string => Boolean(w)))].sort(), [all]);
   const rows = useMemo(() => filterLog(all, filter), [all, filter]);
   const sum = useMemo(() => summarize(rows), [rows]);
@@ -73,7 +75,7 @@ export default function SchedulerActivity({ log }: { log: LogEntry[] }) {
         <button onClick={exportCsv} disabled={rows.length === 0}>Export CSV</button>
         <button onClick={() => void load()}>Reload</button>
       </div>
-      <p className={`sched-muted sact-source sact-source-${source.kind}`}>{source.detail} Sample jobs are not logged. In the chat you can ask, for example: “Which jobs failed this week?”</p>
+      <p className={`sched-muted sact-source sact-source-${source.kind}`}>{source.detail} Sample jobs are not logged.{showingExamples ? ' The rows below are invented examples until the first real run.' : ''} In the chat you can ask, for example: “Which jobs failed this week?”</p>
       {rows.length === 0 ? (
         <div className="sched-empty"><strong>{all.length ? 'No run matches the filter' : 'No runs logged yet'}</strong><span>{all.length ? 'Change or clear the filters.' : 'Every run of a job (not of a sample job) is written here, also after the job is deleted.'}</span></div>
       ) : (
@@ -82,7 +84,7 @@ export default function SchedulerActivity({ log }: { log: LogEntry[] }) {
           {rows.slice(0, shown).map((e) => (
             <div className="sact-row" role="row" key={`${e.who ?? ''}|${e.id}`}>
               <span>{fmt(e.at)}</span>
-              <span title={e.jobName}>{e.jobName}</span>
+              <span title={e.jobName}>{e.jobName}{e.example && <span className="sched-example">Example</span>}</span>
               <span title={e.targetLabel}><span className={`sched-type sched-type-${e.targetType}`}>{TARGET_LABEL[e.targetType]}</span> {e.targetLabel}</span>
               <span><i className={`sched-dot sched-dot-${e.status}`} />{RESULT[e.status]}</span>
               <span>{e.trigger === 'manual' ? 'Manual' : 'Schedule'}</span>

@@ -21,6 +21,8 @@ export type LogEntry = {
   who?: string;
   /** Already written to the shared database. */
   sent?: boolean;
+  /** Invented entry shown while nothing real has been logged yet. */
+  example?: boolean;
 };
 
 export const LOG_KEY = 'werkbank.jobLog.v1';
@@ -132,4 +134,20 @@ export function toCsv(log: LogEntry[]): string {
   const head = ['Started', 'Job', 'Type', 'Target', 'Result', 'Trigger', 'Duration (s)', 'Who', 'Note'];
   const lines = log.map((e) => [e.at, e.jobName, e.targetType, e.targetLabel, e.status, e.trigger, Math.round(e.ms / 100) / 10, e.who ?? '', e.note].map(cell).join(','));
   return [head.join(','), ...lines].join('\r\n') + '\r\n';
+}
+
+/** Seven invented runs, relative to now, shown on an empty Activity tab so the page is not blank. They are never stored. */
+export function exampleLog(now = Date.now()): LogEntry[] {
+  const e = (n: number, hoursAgo: number, jobName: string, targetType: TargetType, targetLabel: string, ms: number, status: JobRun['status'], note: string, trigger: JobRun['trigger'] = 'schedule', who = 'hanspeter.erl66@gmail.com'): LogEntry => ({
+    id: `example-${n}`, jobId: `example-job-${n}`, jobName, targetType, targetLabel, at: new Date(now - hoursAgo * 3_600_000).toISOString(), ms, status, trigger, note, who, example: true,
+  });
+  return [
+    e(1, 1.5, 'Morning briefing', 'skill', 'daily-briefing', 18_000, 'ok', '12 customers checked, briefing sent'),
+    e(2, 3, 'Ticket sync', 'workflow', 'Jira to Sub4Me sync', 41_000, 'ok', '9 tickets updated'),
+    e(3, 7, 'Dunning proposals', 'agent', 'Dunning agent', 94_000, 'error', 'SAP sandbox did not answer, retry at the next run'),
+    e(4, 20, 'Credit limit review', 'agent', 'Credit risk agent', 127_000, 'ok', '31 accounts reviewed, 2 limits proposed'),
+    e(5, 26, 'Monday close briefing', 'skill', 'monday-close', 22_000, 'ok', 'Started by hand before the board call', 'manual'),
+    e(6, 49, 'Payment reminders', 'workflow', 'Invoice reminder (n8n)', 8_000, 'skipped', 'No overdue invoice, nothing to send'),
+    e(7, 73, 'Weekly sales forecast', 'agent', 'Forecast agent', 203_000, 'ok', 'Forecast written to the Sales Space'),
+  ];
 }

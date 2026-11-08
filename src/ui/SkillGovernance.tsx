@@ -6,6 +6,8 @@ import { reconcile, dbTarget, type DbRequest } from '../skill-db';
 import { CHECKS, decide, demote, levelOf, loadGov, pendingFor, renameLevel, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 
 type Tab = 'map' | 'approvals';
+type MapView = 'board' | 'steps' | 'rings';
+const MAP_VIEW_LABEL: Record<MapView, string> = { board: 'Board', steps: 'Steps', rings: 'Rings' };
 const ROLE = ['Individual', 'Department', 'Organization'] as const;
 const MARK = { done: '✓', active: '…', todo: '', rejected: '✕' } as const;
 
@@ -55,6 +57,7 @@ export function Checks({ results, version }: { results: { id: string; status: 'p
 export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]; renderRow: (skill: Skill, extra: ReactNode) => ReactNode }) {
   const [gov, setGov] = useState<SkillGov>(() => loadGov());
   const [tab, setTab] = useState<Tab>('map');
+  const [mapView, setMapView] = useState<MapView>('board');
   const [picked, setPicked] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<string[]>([]);
@@ -105,6 +108,34 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
   const change = (fn: (g: SkillGov) => SkillGov) => setGov((g) => fn(g));
   const pending = gov.requests.filter((r) => r.status === 'pending');
   const levels: LevelIndex[] = [0, 1, 2];
+  const levelHead = (i: LevelIndex): ReactNode => {
+    const n = skills.filter((s) => levelOf(gov, s.name) === i).length;
+    return (
+      <header>
+        <span className="sgov-role">{ROLE[i]}</span>
+        <b>{gov.levels[i]}</b>
+        <span className="sgov-n">{n} {n === 1 ? 'skill' : 'skills'}</span>
+        <span className="sgov-reach">{i === 2 ? 'visible to everyone' : i === 1 ? 'visible to the team' : 'visible to you only'}</span>
+      </header>
+    );
+  };
+  const chips = (i: LevelIndex): ReactNode => {
+    const inLane = skills.filter((s) => levelOf(gov, s.name) === i);
+    const waiting = i > 0 ? pending.filter((r) => r.to === i).length : 0;
+    return (
+      <div className="sgov-chips">
+        {inLane.length === 0 && <span className="sgov-none">Nothing here yet{waiting ? `, ${waiting} in review` : ''}</span>}
+        {inLane.map((s) => {
+          const req = pendingFor(gov, s.name);
+          return (
+            <button key={s.dir} className={`sgov-chip ${picked === s.name ? 'on' : ''}`} aria-pressed={picked === s.name} onClick={() => setPicked(picked === s.name ? null : s.name)}>
+              {s.name}{req && <span className="sgov-badge sgov-badge-wait">in review</span>}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
   const startEdit = () => { setDraft([...gov.levels]); setEditing(true); };
   const saveEdit = () => {
@@ -139,43 +170,44 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
 
       {tab === 'map' && (
         <>
-          <div className="sgov-map" aria-label="Skills by organisation level">
-            {([2, 1, 0] as LevelIndex[]).map((i) => {
-              const inLane = skills.filter((s) => levelOf(gov, s.name) === i);
-              const waiting = i > 0 ? pending.filter((r) => r.to === i).length : 0;
-              return (
-                <div key={i}>
+          <div className="sgov-views" role="group" aria-label="Way to show the levels">
+            {(['board', 'steps', 'rings'] as MapView[]).map((v) => (
+              <button key={v} className={`sgov-view ${mapView === v ? 'on' : ''}`} aria-pressed={mapView === v} onClick={() => setMapView(v)}>{MAP_VIEW_LABEL[v]}</button>
+            ))}
+          </div>
+          {mapView === 'rings' ? (
+            <div className="sgov-rings" aria-label="Skills by organisation level">
+              {(() => {
+                const ring = (i: LevelIndex): ReactNode => (
+                  <section className={`sgov-ring sgov-ring-${i}`} key={i}>
+                    {levelHead(i)}
+                    {i > 0 && <div className="sgov-ring-gate">↑ approval by {APPROVER[i as 1 | 2].role.split(' (')[0]}{pending.filter((r) => r.to === i).length > 0 && <em> · {pending.filter((r) => r.to === i).length} waiting</em>}</div>}
+                    {chips(i)}
+                    {i > 0 && ring((i - 1) as LevelIndex)}
+                  </section>
+                );
+                return ring(2);
+              })()}
+            </div>
+          ) : (
+            <div className={`sgov-board sgov-board-${mapView}`} aria-label="Skills by organisation level">
+              {levels.map((i) => (
+                <div className={`sgov-col-wrap sgov-col-wrap-${i}`} key={i}>
+                  <section className={`sgov-col sgov-col-${i}`}>
+                    {levelHead(i)}
+                    {chips(i)}
+                  </section>
                   {i < 2 && (
-                    <div className="sgov-gate" aria-hidden="true">
-                      <span>↑ approval by {APPROVER[(i + 1) as 1 | 2].role.split(' (')[0]}</span>
+                    <div className="sgov-arrow" aria-hidden="true">
+                      <span>→</span>
+                      <small>approval by {APPROVER[(i + 1) as 1 | 2].role.split(' (')[0]}</small>
                       {pending.filter((r) => r.to === i + 1).length > 0 && <em>{pending.filter((r) => r.to === i + 1).length} waiting</em>}
                     </div>
                   )}
-                  <section className={`sgov-lane sgov-lane-${i}`}>
-                    <header>
-                      <span className="sgov-role">{ROLE[i]}</span>
-                      <b>{gov.levels[i]}</b>
-                      <span className="sgov-n">{inLane.length} {inLane.length === 1 ? 'skill' : 'skills'}</span>
-                      {i === 2 && <span className="sgov-reach">visible to everyone</span>}
-                      {i === 1 && <span className="sgov-reach">visible to the team</span>}
-                      {i === 0 && <span className="sgov-reach">visible to you only</span>}
-                    </header>
-                    <div className="sgov-chips">
-                      {inLane.length === 0 && <span className="sgov-none">Nothing here yet{waiting ? `, ${waiting} in review` : ''}</span>}
-                      {inLane.map((s) => {
-                        const req = pendingFor(gov, s.name);
-                        return (
-                          <button key={s.dir} className={`sgov-chip ${picked === s.name ? 'on' : ''}`} aria-pressed={picked === s.name} onClick={() => setPicked(picked === s.name ? null : s.name)}>
-                            {s.name}{req && <span className="sgov-badge sgov-badge-wait">in review</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </section>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
 
           {(() => {
             const s = skills.find((x) => x.name === picked);
@@ -259,7 +291,34 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
             {db === 'on' && <> <button className="dialog-btn" onClick={() => void syncDb()}>Refresh</button></>}
           </p>
           {dbMsg && db === 'on' && <p className="sgov-help" role="alert">{dbMsg}</p>}
-          {gov.requests.length === 0 && <p className="manage-empty">No requests yet. Pick a skill on the map and choose “Publish”.</p>}
+          {gov.requests.length === 0 && (
+            <div className="sgov-empty">
+              <h3>No requests yet</h3>
+              <p className="sgov-help">A request starts on the map: pick a skill and choose “Publish”. This is what then happens, step by step, and who is asked.</p>
+              <Steps steps={approvalSteps(1)} />
+              <ul className="sgov-roles">
+                <li><b>{gov.levels[0]} → {gov.levels[1]}</b><span>{APPROVER[1].role}, {APPROVER[1].sla}</span></li>
+                <li><b>{gov.levels[1]} → {gov.levels[2]}</b><span>{APPROVER[2].role}, {APPROVER[2].sla}</span></li>
+              </ul>
+              {(() => {
+                const ready = skills.filter((s) => levelOf(gov, s.name) < 2 && !pendingFor(gov, s.name)).slice(0, 6);
+                return ready.length > 0 && (
+                  <>
+                    <p className="sgov-help"><b>Ready to publish</b></p>
+                    <div className="sgov-chips">
+                      {ready.map((s) => <button key={s.dir} className="sgov-chip" onClick={() => { setPicked(s.name); setTab('map'); }}>{s.name} <small>→ {gov.levels[(levelOf(gov, s.name) + 1) as LevelIndex]}</small></button>)}
+                    </div>
+                  </>
+                );
+              })()}
+              <p className="sgov-help"><b>Example of a request in review</b> (illustration only, nothing is stored)</p>
+              <div className="sgov-req sgov-req-example">
+                <div className="sgov-req-head"><strong>lead-qualifier</strong><span>{gov.levels[1]} → {gov.levels[2]}</span><span className="sgov-badge sgov-badge-wait">Pending</span><span className="sched-example">Example</span></div>
+                <Steps steps={approvalSteps(2, { status: 'pending' })} />
+                <p className="row-detail">“Used by 14 sales people in three countries; no customer data inside.”</p>
+              </div>
+            </div>
+          )}
           {gov.requests.map((r) => (
             <div key={r.id} className="sgov-req">
               <div className="sgov-req-head">

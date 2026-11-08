@@ -705,6 +705,7 @@ button {
 }
 
 .app {
+  position: relative;
   display: grid;
   grid-template-columns: var(--rail-w) var(--list-w) 1fr;
   height: 100%;
@@ -4479,8 +4480,8 @@ textarea.studio-field { min-height: 120px; }
 .proj-foot { margin-top: 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
 
 /* ---------- Joule docked to the right of Studio and Skills ---------- */
-.app-dock { grid-template-columns: var(--rail-w) minmax(0, 1fr) 380px; }
-.app-dock-manage { grid-template-columns: var(--rail-w) var(--list-w) minmax(0, 1fr) 380px; }
+.app-dock { grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--dock-w, 380px); }
+.app-dock-manage { grid-template-columns: var(--rail-w) var(--list-w) minmax(0, 1fr) var(--dock-w, 380px); }
 .app-dock-manage > .jdock { grid-column: 4; }
 .app-dock > .studio { grid-column: 2; }
 .jdock .composer-bar { flex-wrap: wrap; row-gap: 4px; }
@@ -5345,3 +5346,62 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .om-map-list { margin: 0; padding: 0; list-style: none; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
 .om-map-list button { border: 0; background: transparent; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-align: left; }
 .om-map-list button:hover { text-decoration: underline; }
+
+/* ---------- draggable dividers between the list, the work area and the Joule dock ---------- */
+.splitter { position: absolute; top: 0; bottom: 0; width: 10px; z-index: 20; cursor: col-resize; touch-action: none; outline: none; }
+.splitter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px; background: transparent; transition: background .15s; }
+.splitter:hover::after, .splitter:focus-visible::after { background: var(--accent); opacity: .55; }
+.splitter-list { left: calc(var(--rail-w) + var(--list-w) - 5px); }
+.splitter-dock { right: calc(var(--dock-w, 380px) - 5px); }
+@media (max-width: 1040px) { .splitter { display: none; } }
+
+/* ---------- skill levels: three ways to look at them ---------- */
+.sgov-views { display: inline-flex; gap: 2px; padding: 3px; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); }
+.sgov-view { font: inherit; font-size: 12px; padding: 4px 12px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.sgov-view.on { background: var(--accent); color: #fff; font-weight: 600; }
+.sgov-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; align-items: stretch; margin: 0 0 14px; }
+.sgov-col-wrap { display: flex; align-items: stretch; min-width: 0; }
+.sgov-col { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 14px; background: var(--panel); }
+.sgov-col-0 { background: color-mix(in srgb, var(--accent) 3%, var(--panel)); }
+.sgov-col-1 { background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+.sgov-col-2 { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.sgov-col header, .sgov-ring header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin-bottom: 8px; }
+.sgov-col header .sgov-reach, .sgov-ring header .sgov-reach { margin-left: 0; flex-basis: 100%; }
+.sgov-arrow { flex: none; width: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; color: var(--muted); }
+.sgov-arrow span { font-size: 22px; color: var(--accent); line-height: 1; }
+.sgov-arrow small { font-size: 10.5px; line-height: 1.25; }
+.sgov-arrow em { font-style: normal; font-size: 11px; font-weight: 600; color: var(--accent); }
+.sgov-board-steps { align-items: end; }
+.sgov-board-steps .sgov-col-wrap-0 .sgov-col { min-height: 110px; }
+.sgov-board-steps .sgov-col-wrap-1 .sgov-col { min-height: 170px; }
+.sgov-board-steps .sgov-col-wrap-2 .sgov-col { min-height: 230px; }
+.sgov-board-steps .sgov-col-wrap { align-items: flex-end; }
+.sgov-board-steps .sgov-arrow { align-self: center; }
+.sgov-rings { margin: 0 0 14px; }
+.sgov-ring { border: 1px solid var(--line); border-radius: 28px; padding: 14px 18px 16px; background: var(--panel); }
+.sgov-ring-2 { background: color-mix(in srgb, var(--accent) 6%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.sgov-ring-1 { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); margin-top: 12px; }
+.sgov-ring-0 { background: color-mix(in srgb, var(--accent) 16%, var(--panel)); margin-top: 12px; }
+.sgov-ring-gate { font-size: 11.5px; color: var(--muted); margin: -2px 0 8px; }
+.sgov-ring-gate em { font-style: normal; font-weight: 600; color: var(--accent); }
+.sgov-empty { border: 1px dashed var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; }
+.sgov-empty h3 { margin: 0; font-size: 15px; }
+.sgov-req-example { opacity: .85; border-style: dashed; }
+@media (max-width: 900px) { .sgov-board { grid-template-columns: 1fr; gap: 8px; } .sgov-col-wrap { flex-direction: column; } .sgov-arrow { width: auto; padding: 4px 0; flex-direction: row; gap: 8px; } .sgov-arrow span { transform: rotate(90deg); } }
+
+/* ---------- Skill Health Monitor: detail panel on double-click ---------- */
+.sh-dbl { cursor: default; }
+.sh-dbl:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.sh-scrim { position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 60; }
+.sh-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 92vw); z-index: 61; background: var(--panel); border-left: 1px solid var(--line); box-shadow: -12px 0 30px rgba(0,0,0,.14); padding: 18px 20px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.sh-drawer header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.sh-drawer h2 { margin: 0; font-size: 18px; } .sh-drawer header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.sh-drawer h3 { margin: 6px 0 0; font-size: 13px; color: var(--muted); font-weight: 600; }
+.sh-drawer header button { width: 30px; height: 30px; padding: 0; font-size: 18px; line-height: 1; }
+.sh-drawer-note { margin: 0; font-size: 13px; color: var(--muted); }
+.sh-facts { display: grid; grid-template-columns: 110px 1fr; gap: 7px 12px; margin: 0; font-size: 13px; }
+.sh-facts dt { color: var(--muted); } .sh-facts dd { margin: 0; } .sh-facts code { margin-right: 6px; font-size: 12px; }
+.sh-drawer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sh-drawer-list button { width: 100%; display: flex; justify-content: space-between; gap: 10px; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg, var(--panel)); font: inherit; font-size: 13px; cursor: pointer; }
+.sh-drawer-list button:hover { border-color: var(--accent); }
+.sh-drawer-list small { display: block; color: var(--muted); font-size: 11.5px; }
