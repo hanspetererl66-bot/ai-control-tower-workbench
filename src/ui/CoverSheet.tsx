@@ -20,7 +20,8 @@ export default function CoverSheet({ onClose }: { onClose: () => void }) {
         <WerkbankMark size={60} className="cover-mark" />
         <h1 className="cover-title">
           {PRODUCT_NAME}
-          <span className="cover-title-line2">Design Study November 2026</span>
+          <span className="cover-title-line2">Futuristic Design Study</span>
+          <span className="cover-title-line2 cover-title-line3">Engineered as MVP</span>
         </h1>
         <p className="cover-by">from Accenture Germany</p>
         <p className="cover-author">Author: Hans-Peter Erl</p>

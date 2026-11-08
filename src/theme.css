@@ -3029,6 +3029,9 @@ button {
   animation: cover-blink 1.4s ease-in-out infinite;
 }
 
+/* Third line: the same style, but calm (the pulse stays on the design study line). */
+.cover-title-line3 { margin-top: 4px; animation: none; opacity: 1; }
+
 @keyframes cover-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.15; }
