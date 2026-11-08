@@ -29,7 +29,7 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(rail, /<button className="rail-logo" onClick=\{onOpenCover\}/);
   assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
   assert.match(app, /\{coverOpen && <CoverSheet/);
-  assert.match(cover, /<h1 className="cover-title">\s*\{PRODUCT_NAME\}\s*<span className="cover-title-line2">Design Study November 2026<\/span>/, 'name on the first line, design study and month below');
+  assert.match(cover, /<h1 className="cover-title">\s*\{COVER_NAME\}\s*<span className="cover-title-line2">\{COVER_SUBTITLE\}<\/span>/, 'name on the first line, subtitle below');
   const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
   assert.match(css, /\.cover-title-line2 \{[^}]*color: var\(--accent\);[^}]*animation: cover-blink/, 'second line is purple and blinks');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.cover-title-line2 \{ animation: none; \}/, 'blinking stops for reduced motion');
