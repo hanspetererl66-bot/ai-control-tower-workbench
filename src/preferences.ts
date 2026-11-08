@@ -24,7 +24,7 @@ export const TONES = ['neutral', 'friendly', 'formal'] as const;
 export const PURPOSES = ['reports', 'presentations', 'data', 'other'] as const;
 
 export const ACCENT_PRESETS = [
-  { id: 'purple', name: 'Violet', hex: '#A100FF' },
+  { id: 'purple', name: 'Violet', hex: '#8056B8' },
   { id: 'blue', name: 'Blue', hex: '#0070F2' },
   { id: 'teal', name: 'Teal', hex: '#0F8B8D' },
   { id: 'green', name: 'Green', hex: '#1E8E3E' },
@@ -154,7 +154,7 @@ export const BUILTIN_PROFILES: Profile[] = [
   },
   {
     id: 'demo', name: 'Demo on a big screen',
-    settings: { appScale: 1.25, spaceScale: 1.25, density: 'roomy', accent: '#A100FF', reduceMotion: false },
+    settings: { appScale: 1.25, spaceScale: 1.25, density: 'roomy', accent: '#8056B8', reduceMotion: false },
   },
   {
     id: 'accessible', name: 'High contrast and large text',

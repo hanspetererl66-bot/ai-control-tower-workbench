@@ -159,7 +159,7 @@ export function LookPanel({ prefs, update }: Common) {
           ))}
           <label className="prefs-row" style={{ margin: 0 }}>
             <span>Own colour</span>
-            <input type="color" value={prefs.accent || '#A100FF'} aria-label="Own accent colour" onChange={(e) => update((p) => ({ ...p, accent: e.target.value.toUpperCase() }))} />
+            <input type="color" value={prefs.accent || '#8056B8'} aria-label="Own accent colour" onChange={(e) => update((p) => ({ ...p, accent: e.target.value.toUpperCase() }))} />
             {custom && <small>{prefs.accent}</small>}
           </label>
         </div>

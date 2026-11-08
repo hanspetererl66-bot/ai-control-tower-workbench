@@ -3048,6 +3048,20 @@ button {
   color: var(--accent);
 }
 
+.cover-tagline {
+  margin: 10px 0 0;
+  font-size: clamp(18px, 2.6vw, 28px);
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.cover-logo {
+  height: 1.1em;
+  width: auto;
+  margin-left: 12px;
+  vertical-align: -0.15em;
+}
+
 .cover-by {
   margin: 22px 0 0;
   font-size: clamp(18px, 2.6vw, 28px);

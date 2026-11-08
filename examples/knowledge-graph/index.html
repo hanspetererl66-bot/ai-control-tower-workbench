@@ -14,11 +14,11 @@
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
   --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
-  --purple:#A100FF;--purple-mid:#7500C0;--purple-deep:#460073;--purple-dim:rgba(161,0,255,.07);--purple-border:rgba(161,0,255,.22);--purple-light:#efe8fb;
+  --purple:#8056B8;--purple-mid:#633F96;--purple-deep:#3B2660;--purple-dim:rgba(128,86,184,.07);--purple-border:rgba(128,86,184,.22);--purple-light:#efeaf7;
   --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
   --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
   --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
-  --blue:#0041F0;--blue-dim:rgba(0,65,240,.08);--blue-border:rgba(0,65,240,.22);
+  --blue:#4A6FA5;--blue-dim:rgba(74,111,165,.09);--blue-border:rgba(74,111,165,.24);
   --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
   --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(20,18,30,.04),0 6px 20px rgba(20,18,30,.05);--shadow-lg:0 24px 60px rgba(20,18,30,.22);
   --space:8px;
@@ -33,22 +33,22 @@
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2a2040;
+  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
   --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
   --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
   --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2a2040;
+  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
   --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
   --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
   --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }
@@ -304,6 +304,10 @@ label.depth[hidden]{display:none}
 .joule{border-color:var(--purple-border,var(--line))}
 .joule .note,.note{font-size:12px;color:var(--mut);margin:6px 0 0}
 details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume summary{cursor:pointer;font-weight:700}details.assume ul{margin:6px 0 0;padding-left:18px}
+/* Buttons: type 25 % smaller than before (13px -> 10px, 12px -> 9px, 11px -> 8px). */
+.seg button,.btn,.ask button,.results button,.conn button,.zoom .btn,.legend button,.timebar .btn,button.primary,button.ghost,button.small,.row button{font-size:10px}
+.legend button,.ask button,.conn small{font-size:9px}
+.zoom .btn{font-size:11px}
 </style>
 </head>
 <body>
@@ -7931,19 +7935,19 @@ function tick() {
     const a = nodes[i];
     for (let j = i + 1; j < nodes.length; j++) {
       const b = nodes[j]; let dx = a.x - b.x, dy = a.y - b.y; const d2 = dx * dx + dy * dy + 0.5;
-      if (d2 > 160000) continue;
-      const f = (2600 / d2) * alpha, d = Math.sqrt(d2); dx /= d; dy /= d;
+      if (d2 > 490000) continue;
+      const f = (7200 / d2) * alpha, d = Math.sqrt(d2); dx /= d; dy /= d;
       a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
     }
   }
   for (const e of edges) {
     const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y, d = Math.sqrt(dx * dx + dy * dy) + 0.01;
-    const L = e.weak ? 150 : 62, f = (d - L) * (e.weak ? 0.006 : 0.045) * alpha, fx = (dx / d) * f, fy = (dy / d) * f;
+    const L = e.weak ? 250 : 108, f = (d - L) * (e.weak ? 0.006 : 0.04) * alpha, fx = (dx / d) * f, fy = (dy / d) * f;
     e.a.vx += fx; e.a.vy += fy; e.b.vx -= fx; e.b.vy -= fy;
   }
   for (const n of nodes) {
     n.vx += (n.ax - n.x) * n.as * alpha; n.vy += (n.ay - n.y) * n.as * alpha;
-    n.vx -= n.x * 0.0008 * alpha; n.vy -= n.y * 0.0008 * alpha;
+    n.vx -= n.x * 0.0003 * alpha; n.vy -= n.y * 0.0003 * alpha;
     if (n.pin || n === drag.node) { n.vx = n.vy = 0; continue; }
     n.vx *= 0.8; n.vy *= 0.8; n.x += n.vx; n.y += n.vy;
   }
@@ -8706,7 +8710,7 @@ function renderPanel() {
   else if (!n && S.mode !== 'path' && S.tour < 0 && S.ans) h += ansCard();
   else if (!n && S.mode !== 'path' && S.tour < 0 && S.stake) h += stakeCard();
   else if (!n && S.mode !== 'path' && S.tour < 0) {
-    h += `<h2>What is in here</h2><p style="color:var(--ink-2)">The Sales view: customers, deals, offers, contracts, calls and e-mails. Node size is the ACV, line width the TCV, colour the win probability; try the questions at the top or the week slider. Switch on <b>Enablers</b> for skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
+    h += `<h2 style="font-size:15.3px">What is in here</h2><p style="color:var(--ink-2);font-size:11.7px;line-height:1.5">The Sales view: customers, deals, offers, contracts, calls and e-mails. Node size is the ACV, line width the TCV, colour the win probability; try the questions at the top or the week slider. Switch on <b>Enablers</b> for skills, tools, risks, agents and automation. Click a node to see its neighbours, switch to <b>Impact</b> to follow dependencies, or to <b>Path</b> to see how two things connect.</p>${tourButtons()}`;
     const top = [...nodes].sort((a, b) => b.deg - a.deg).filter((x) => !HUB.has(x.type)).slice(0, 8);
     h += `<h3>Best connected</h3><div class="conn">${top.map((x) => `<button data-go="${esc(x.id)}">${esc(x.label)}<small>${esc(D.nodeTypes[x.type])} · ${x.deg} relations</small></button>`).join('')}</div>`;
   }
