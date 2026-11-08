@@ -41,6 +41,9 @@ Was in der Cloud-Sandbox nicht geht (Cognee, echter Agent, Electron, SAP-Sandbox
 ## Geprüft am 08.11.2026 (Browser, ohne Cognee)
 Headless Chrome 149, Hell und Dunkel, 1400, 1100 (reduzierte Bewegung) und 640 px: Cover, Schritte 1, 4, 6, 8, 10 und Explore ohne Seitenfehler und ohne seitlichen Überlauf; lokale Frage; Brücke mit einer simulierten App (Live-Antwort wird angezeigt, unbekannte Kennungen verworfen, Fehlerfall fällt auf die lokale Suche zurück). Dabei gefunden und behoben: (1) Belegzeilen wie "R-3: why is Eight of eight paid invoices …" lasen sich falsch (Vorlage "<Name>: <Feld> is <Wert>" für ganze Sätze), jetzt "R-3 (why): Eight of eight …"; das gilt auch für den Cognee-Korpus. (2) Trefferzeilen wurden bei 150 Zeichen mitten im Wort abgeschnitten, jetzt am Wortende mit "…".
 
+## Zuordnung der Live-Antwort (08.11.2026)
+Cognee mit `gpt-4o-mini` übernimmt die Kennungen aus den Klammern nicht (Probe: die Antwort nennt Katrin Brandt, aber nicht `contact:brandt`). Deshalb ordnet der Space eine Live-Antwort zusätzlich über Namen zu (`mentions` in `customer-360.mjs`: Bezeichnung oder Nachname eines Kontakts, ganze Wörter, in der Reihenfolge des Auftretens). Kennungen des Agenten gelten weiter und stehen vorn. Nur per Test und Funktionsaufruf geprüft, nicht mit einer echten Live-Antwort im Space.
+
 ## Regeln, keine Modelle
 - **Heat** je Gesellschaft (0 bis 100): Zahlungsbild, Verlängerungstermin, Tickets, Auftragslücken (Gewichte in `data.rules.heat`).
 - **Reihenfolge der Vorschläge:** Betrag × Dringlichkeit (nah ≤ 30 Tage 1,5, bald ≤ 60 Tage 1,2, später 1). Sie ordnet nur die Liste, sie sagt nichts voraus.
