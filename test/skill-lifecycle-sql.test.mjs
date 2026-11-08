@@ -7,10 +7,12 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import vm from 'node:vm';
 import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
 import { buildSeedSql } from '../scripts/recruiting-seed.mjs';
 import { createMockClient, mapToRecruiting } from '../connectors/_lib/server/smartrecruiters.mjs';
@@ -680,6 +682,153 @@ test('recruiting criteria: only the hiring manager sets them, ids are assigned, 
   assert.ok(mine.some((r) => r.id === 'REQ-2206' && r.criteria.length >= 3 && r.criteria[0].must === true));
   assert.ok(mine.every((r) => r.id !== 'REQ-1901'), 'closed requisitions are not listed');
   assert.deepEqual(json(`select public.recruiting_criteria_mine('stranger@x.com')`), []);
+});
+
+// ---- hiring contracts (migration 038) ----
+const approvedRequest = (note = 'contract case') => {
+  sql("update recruiting.hire_request set status = 'declined', decided_at = now() where candidate_id = 'C-4204' and status = 'pending'"); // leftovers of earlier tests
+  const id = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN }, terms({ note }))).id;
+  json(hireDo(MGR, id, 'approve')); json(hireDo(HR, id, 'approve')); json(hireDo(FIN, id, 'approve'));
+  return id;
+};
+const DOC = Buffer.from('%PDF-1.4 signed employment contract (test document)').toString('base64');
+const DOC_SHA = createHash('sha256').update(Buffer.from(DOC, 'base64')).digest('hex');
+const cDue = (extra = '') => json(`select public.recruiting_hire_contract_due(now() ${extra})`);
+const cKinds = (rows, id) => rows.filter((r) => r.id === id).map((r) => `${r.kind}${r.to ? ':' + r.to : ''}`).sort();
+const cPrepare = (id) => `select public.recruiting_hire_contract_prepare(${id})`;
+const cRelease = (id, by = HR) => `select public.recruiting_hire_contract_release(${q(by)}, ${id})`;
+const cSent = (id, ref = 'ENV-1', days = 14) => `select public.recruiting_hire_contract_sent(${id}, 'MockSign', ${q(ref)}, ${days})`;
+const cResult = (id, ref, result, extra = {}) => {
+  const a = { signedAt: 'now()', doc: null, sha: null, receipt: '{}', ...extra };
+  return `select public.recruiting_hire_contract_result(${id}, ${q(ref)}, ${q(result)}, (${a.signedAt === null ? 'null' : a.signedAt})::timestamptz, ${q(a.doc)}, ${q(a.sha)}, ${q(a.receipt)}::jsonb)`;
+};
+const cState = (id) => json(`select to_json(c) from (select status, provider, envelope_ref, signed_sha256, receipt, octet_length(signed_document) as bytes from recruiting.hire_contract where request_id = ${id}) c`);
+
+test('hiring contracts: prepared from the approved terms, sent, signed by the candidate; the signed document is kept with its hash', { skip }, () => {
+  const id = approvedRequest();
+  assert.deepEqual(cKinds(cDue(), id), ['prepare'], 'an approved request without contract is due for the text');
+  const p = json(cPrepare(id));
+  assert.equal(p.created, true); assert.equal(p.status, 'prepared');
+  assert.equal(json(cPrepare(id)).created, false, 'preparing twice makes no second contract');
+  assert.ok(!cDue().some((r) => r.id === id && r.kind === 'send'), 'nothing is sent before HR released it');
+  assert.deepEqual(cKinds(cDue(), id), [`ask:${HR}`], 'HR is asked to release the contract');
+  assert.match(rule(cSent(id)), /HR has not released/);
+  const ask = (to) => `select public.recruiting_hire_contract_notice_record(${id}, ${q(to)}, 'Teams')`;
+  assert.match(rule(ask(MGR)), /only the HR approver/);
+  assert.equal(json(ask(HR)).created, true); assert.equal(json(ask(HR)).created, false, 'asked once');
+  assert.deepEqual(cKinds(cDue(), id), [], 'nothing is due while HR thinks about it');
+  assert.equal(hireList(HR, 'approved').find((x) => x.id === id).contract.mine, true, 'the contract waits for me');
+  assert.equal(hireList(MGR, 'approved').find((x) => x.id === id).contract.mine, false);
+  assert.match(rule(cRelease(id, MGR)), /only the HR approver/);
+  assert.match(rule(cRelease(id, FIN)), /only the HR approver/);
+  assert.equal(json(cRelease(id)).created, true); assert.equal(json(cRelease(id)).created, false, 'releasing twice is harmless');
+  assert.equal(hireList(HR, 'approved').find((x) => x.id === id).contract.releasedBy, HR);
+  const send = cDue().find((r) => r.id === id && r.kind === 'send');
+  assert.ok(send, 'a released contract is due for sending');
+  assert.match(send.body, /Senior, Band 5/); assert.match(send.body, /Type of contract: permanent/); assert.match(send.body, /\{\{candidate_name\}\}/);
+  assert.doesNotMatch(send.body, /@/, 'no e-mail address in the contract text');
+  assert.equal(send.bodySha256, createHash('sha256').update(send.body).digest('hex'), 'the stored hash is the hash of the text');
+  assert.equal(json(cSent(id)).created, true);
+  assert.equal(json(cSent(id)).created, false, 'the same envelope twice is one sending');
+  assert.match(rule(cSent(id, 'ENV-2')), /already sent|cannot be sent again/);
+  assert.deepEqual(cKinds(cDue(), id), [], 'nothing is due while the candidate has the contract');
+  const r = json(cResult(id, 'ENV-1', 'signed', { doc: DOC, sha: DOC_SHA, receipt: JSON.stringify({ method: 'advanced e-signature', reference: 'CERT-77' }) }));
+  assert.equal(r.status, 'signed'); assert.equal(r.sha256, DOC_SHA);
+  assert.equal(json(cResult(id, 'ENV-1', 'signed', { doc: DOC })).created, false, 'the same answer twice is harmless');
+  const st = cState(id);
+  assert.equal(st.status, 'signed'); assert.equal(st.signed_sha256, DOC_SHA); assert.equal(st.bytes, Buffer.from(DOC, 'base64').length);
+  assert.deepEqual(st.receipt, { method: 'advanced e-signature', reference: 'CERT-77' });
+  const row = hireList(MGR, 'approved').find((x) => x.id === id);
+  assert.deepEqual(row.events.slice(-4).map((e) => e.event).filter((e) => e !== 'contract_asked'), ['contract_released', 'contract_sent', 'contract_signed']);
+  assert.equal(row.contract.status, 'signed'); assert.equal(row.contract.hasDocument, true); assert.equal(row.contract.method, 'advanced e-signature');
+  assert.ok(!('body' in row.contract) && !('signedDocument' in row.contract), 'the list shows the state, not the text or the document');
+  const got = json(`select public.recruiting_hire_contract_get(${q(MGR)}, ${id})`);
+  assert.equal(got.signedDocument, DOC); assert.equal(got.signedSha256, DOC_SHA);
+  assert.match(rule(`select public.recruiting_hire_contract_get('stranger@x.com', ${id})`), /may not see/);
+  // the outcome is reported once to the requester and to HR
+  assert.deepEqual(cKinds(cDue(), id), [`tell:${HR}`, `tell:${MGR}`]);
+  const tell = (to) => `select public.recruiting_hire_contract_notice_record(${id}, ${q(to)}, 'Teams')`;
+  assert.match(rule(tell(FIN)), /not a recipient/);
+  assert.equal(json(tell(MGR)).created, true); assert.equal(json(tell(MGR)).created, false); assert.equal(json(tell(HR)).created, true);
+  assert.deepEqual(cKinds(cDue(), id), []);
+  assert.deepEqual(cKinds(cDue("+ interval '20 days'"), id), [], 'nothing is due again');
+});
+
+test('hiring contracts: the rules the workflow cannot get around', { skip }, () => {
+  sql("update recruiting.hire_request set status = 'declined', decided_at = now() where candidate_id = 'C-4204' and status = 'pending'");
+  const pending = json(hireNew(MGR, 'C-4204', 'REQ-2203', { hr: HR, finance: FIN })).id;
+  assert.match(rule(cPrepare(pending)), /approved hiring request/, 'no contract before the last approval');
+  assert.deepEqual(cKinds(cDue(), pending), []);
+  json(hireDo(MGR, pending, 'decline', 'Closing this case so the next test can start.'));
+  const id = approvedRequest('rules');
+  assert.match(rule(cSent(id)), /no contract has been prepared/);
+  json(cPrepare(id));
+  assert.match(rule(cResult(id, 'ENV-9', 'declined')), /has not been sent/);
+  json(cRelease(id));
+  json(cSent(id, 'ENV-9'));
+  assert.match(rule(cResult(id, 'OTHER', 'declined')), /another envelope/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed')), /needs the signed document/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: 'not base64 !!' })), /base64/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: DOC, sha: 'a'.repeat(64) })), /does not match/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: DOC, signedAt: "now() + interval '2 hours'" })), /between sending and now/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: DOC, signedAt: "now() - interval '2 days'" })), /between sending and now/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: DOC, receipt: JSON.stringify({ name: 'Jane Doe' }) })), /may only hold/);
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: DOC, receipt: JSON.stringify({ reference: 'token=abcdefghijklmnop1234' }) })), /credential/);
+  assert.match(rule(cResult(id, 'ENV-9', 'expired')), /valid until/, 'the service cannot end the validity early');
+  assert.equal(cState(id).status, 'sent', 'every refused answer left the contract as it was');
+  assert.match(rule(cResult(id, 'ENV-9', 'maybe')), /signed, declined or expired/);
+  assert.match(rule(`update recruiting.hire_contract set body = 'changed' where request_id = ${id}`), /text of a contract/);
+  // after the validity: expired
+  sql(`update recruiting.hire_contract set expires_at = now() - interval '1 minute' where request_id = ${id}`);
+  assert.deepEqual(cKinds(cDue(), id), ['expire']);
+  assert.equal(json(cResult(id, 'ENV-9', 'expired')).status, 'expired');
+  assert.deepEqual(cKinds(cDue(), id), [`tell:${MGR}`], 'an expired contract is reported to the requester only');
+  assert.match(rule(cResult(id, 'ENV-9', 'signed', { doc: DOC })), /already has an outcome/);
+  assert.match(rule(`update recruiting.hire_contract set status = 'sent' where request_id = ${id}`), /outcome cannot be changed/);
+  assert.match(rule(`delete from recruiting.hire_contract where request_id = ${id}`), /cannot be removed/);
+  // declined by the candidate
+  const id2 = approvedRequest('declined');
+  json(cPrepare(id2)); json(cRelease(id2)); json(cSent(id2, 'ENV-10', 7));
+  assert.equal(json(cResult(id2, 'ENV-10', 'declined')).status, 'declined');
+  assert.equal(cState(id2).bytes, null, 'a declined contract holds no document');
+  assert.deepEqual(hireList(MGR, 'approved').find((x) => x.id === id2).events.slice(-1).map((e) => e.event), ['contract_declined']);
+});
+
+test('hiring contracts: the API roles cannot call them, and a request keeps its decision', { skip }, () => {
+  for (const role of ['anon', 'authenticated']) {
+    for (const f of ['recruiting_hire_contract_due(timestamptz)', 'recruiting_hire_contract_prepare(bigint)', 'recruiting_hire_contract_sent(bigint,text,text,integer)',
+      'recruiting_hire_contract_result(bigint,text,text,timestamptz,text,text,jsonb)', 'recruiting_hire_contract_notice_record(bigint,text,text)', 'recruiting_hire_contract_release(text,bigint)', 'recruiting_hire_contract_get(text,bigint)']) {
+      assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
+    }
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.hire_contract', 'select')`), 'f', role);
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_hire_contract_prepare(bigint)', 'execute')"), 't');
+  assert.equal(sql("select count(*) from recruiting.hire_request where status = 'approved' and id in (select request_id from recruiting.hire_contract)") > '0', true);
+  assert.equal(sql("select count(*) from recruiting.hire_request r join recruiting.hire_contract c on c.request_id = r.id where r.status <> 'approved'"), '0', 'only approved requests have a contract');
+});
+
+test('hiring contracts: the answer the workflow builds in simulation is accepted by the database, a forged one is not', { skip }, async () => {
+  const wf = JSON.parse(readFileSync(join(ROOT, 'examples/n8n-workflows/12-hiring-contract-signature.json'), 'utf8'));
+  const node = (n) => wf.nodes.find((x) => x.name === n).parameters.jsCode;
+  const exec = async (n, items, ctx) => JSON.parse(JSON.stringify(await vm.runInNewContext(`(async()=>{${node(n)}})`, { $input: { all: () => items }, Date, Number, String, Object, Array, Buffer, ...ctx })()));
+  const id = approvedRequest('simulation');
+  json(cPrepare(id)); json(cRelease(id));
+  const send = cDue().find((r) => r.id === id && r.kind === 'send');
+  const [shipment] = await exec('Prepare the shipment', [{ json: send }], { $env: {} });
+  const [sim] = await exec('Simulate sending', [{ json: { id } }]);
+  const sent = json(`select public.recruiting_hire_contract_sent(${id}, ${q(sim.json.provider)}, ${q(sim.json.envelope)}, 14)`);
+  const $ = () => ({ all: () => [shipment] });
+  const [answer] = await exec('Simulate the candidate signing', [{ json: { ...sent, id } }], { $ });
+  const [mapped] = await exec('Read the signature answer', [answer], { $env: {} });
+  const p = mapped.json;
+  // a forged answer for another envelope is refused by the database
+  assert.match(rule(cResult(id, 'SIM-OTHER', 'signed', { doc: p.p_document })), /another envelope/);
+  const res = json(`select public.recruiting_hire_contract_result(${p.p_id}, ${q(p.p_ref)}, ${q(p.p_result)}, ${q(p.p_signed_at)}::timestamptz, ${q(p.p_document)}, null, ${q(JSON.stringify(p.p_receipt))}::jsonb)`);
+  assert.equal(res.status, 'signed');
+  const got = json(`select public.recruiting_hire_contract_get(${q(MGR)}, ${id})`);
+  const stored = Buffer.from(got.signedDocument, 'base64').toString('utf8');
+  assert.match(stored, /^SIMULATED SIGNATURE/); assert.ok(stored.endsWith(send.body), 'the signed document carries the exact text that was prepared');
+  assert.equal(cState(id).receipt.method, 'simulation');
 });
 
 test('recruiting stages: the three interview rounds are stages, an old "Interview" candidate moves to the first round, re-running changes nothing', { skip }, () => {

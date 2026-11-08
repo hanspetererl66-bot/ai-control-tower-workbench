@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('host', {
   recruitingProposals: (args) => ipcRenderer.invoke('recruiting-proposals', args),
   observabilityCall: (view, params) => ipcRenderer.invoke('observability-call', view, params),
   recruitingHireList: (args) => ipcRenderer.invoke('recruiting-hire-list', args),
+  recruitingHireRelease: (id) => ipcRenderer.invoke('recruiting-hire-release', id),
   recruitingHireDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-hire-decide', id, decision, note),
   recruitingImport: () => ipcRenderer.invoke('recruiting-import'),
   recruitingCriteria: () => ipcRenderer.invoke('recruiting-criteria'),

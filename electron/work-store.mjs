@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connectors/_lib/server/work-items.mjs';
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
-import { createRecruitingHandlers, decideHire, decideProposal } from '../connectors/_lib/server/recruiting.mjs';
+import { createRecruitingHandlers, decideHire, decideProposal, releaseContract } from '../connectors/_lib/server/recruiting.mjs';
 import { observeCall } from '../connectors/_lib/server/observability.mjs';
 import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
@@ -133,6 +133,11 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async decideHire(id, decision, note) {
       const { rpc, email } = connect();
       return decideHire(rpc, email, id, decision, note);
+    },
+    /** HR releases the contract after a click. Not a tool: the agent cannot call this. The database accepts only the HR approver of the request. */
+    async releaseContract(id) {
+      const { rpc, email } = connect();
+      return releaseContract(rpc, email, id);
     },
     /** The hiring manager's decision after a click. Not a tool: the agent cannot call this. The database only accepts the manager of the requisition. */
     async decideProposal(id, decision, note) {

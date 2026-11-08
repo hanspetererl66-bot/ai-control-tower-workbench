@@ -152,7 +152,7 @@ export default function SpaceViewer({
       if (space.slug === HIRING_SPACE) {
         // Reads and decisions go through the main process as the stored e-mail, never through the agent.
         const h = window.host;
-        const host: HiringHost | undefined = h?.recruitingHireList && h.recruitingHireDecide ? { list: h.recruitingHireList, decide: h.recruitingHireDecide } : undefined;
+        const host: HiringHost | undefined = h?.recruitingHireList && h.recruitingHireDecide ? { list: h.recruitingHireList, decide: h.recruitingHireDecide, release: h.recruitingHireRelease } : undefined;
         void handleHiringMessage(event.data, host, onOpenHiringTools).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
         return;
       }

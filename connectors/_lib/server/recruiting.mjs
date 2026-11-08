@@ -66,7 +66,7 @@ export const RECRUITING_TOOL_DEFINITIONS = [
   {
     name: 'recruiting_list_hire_requests',
     description:
-      'Read: hiring approvals, that is the requests to hire a candidate who went through the whole recruiting process (stage Offer): terms, the approval chain (hiring manager, HR, finance, optional department head), who is next, and the log. Shows what the person may see: their own requisitions, requests where they are an approver, and everything for the Governance board. Read only.',
+      'Read: hiring approvals, that is the requests to hire a candidate who went through the whole recruiting process (stage Offer): terms, the approval chain (hiring manager, HR, finance, optional department head), who is next, the log and, after the last approval, the state of the contract (written, sent, signed, declined, expired; never its text or the signed document). Shows what the person may see: their own requisitions, requests where they are an approver, and everything for the Governance board. Read only.',
     inputSchema: obj({
       actor: ACTOR,
       status: { type: 'string', enum: HIRE_STATUS, description: 'Default: pending (waiting for an approver).' },
@@ -256,6 +256,12 @@ export async function decideProposal(rpc, actor, id, decision, note = '') {
  * Main-process writer (NOT a tool): one step of a hiring approval after a click on Approve, Return or Decline. The database accepts only
  * the approver whose turn it is, asks for a reason on Return and Decline, and a decided request cannot change.
  */
+/** HR releases the prepared contract. Not a tool either: only the main process calls it after the click; the database accepts only the HR approver of that request. */
+export async function releaseContract(rpc, actor, id) {
+  if (!Number.isInteger(id) || id < 1) throw new ToolError('id must be a hiring request number');
+  return rpc('recruiting_hire_contract_release', { p_actor: actorOf({ actor }), p_id: id });
+}
+
 export async function decideHire(rpc, actor, id, decision, note = '') {
   if (!Number.isInteger(id) || id < 1) throw new ToolError('id must be a hiring request number');
   if (!HIRE_DECISIONS.includes(decision)) throw new ToolError('decision must be approve, return or decline');

@@ -1478,6 +1478,9 @@ ipcMain.handle('observability-call', async (_event, view, params) => {
 ipcMain.handle('recruiting-hire-list', async (_event, args) => {
   try { return { ok: true, data: await workStore.listHireRequests(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
+ipcMain.handle('recruiting-hire-release', async (_event, id) => {
+  try { return { ok: true, data: await workStore.releaseContract(id) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
 ipcMain.handle('recruiting-hire-decide', async (_event, id, decision, note) => {
   try { return { ok: true, data: await workStore.decideHire(id, decision, note) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });

@@ -9,7 +9,7 @@ const page = readFileSync(join(ROOT, 'examples/hiring-approvals/index.html'), 'u
 const data = JSON.parse(readFileSync(join(ROOT, 'examples/hiring-approvals/data.json'), 'utf8'));
 const space = JSON.parse(readFileSync(join(ROOT, 'examples/hiring-approvals/space.json'), 'utf8'));
 const code = page.match(/\/\/ @logic-start\n([\s\S]*?)\n\s*\/\/ @logic-end/)[1];
-const L = new Function(`${code}\nreturn { stepNow, isMine, bucket, counts, progress, decideLocal };`)();
+const L = new Function(`${code}\nreturn { stepNow, isMine, bucket, counts, progress, decideLocal, releaseLocal, contractMine, contractSteps, contractLine, eventLabel };`)();
 
 const HR = 'hr.lead@hanse.example';
 const byId = (id) => structuredClone(data.requests.find((r) => r.id === id));
@@ -38,7 +38,9 @@ test('buckets and counts follow whose turn it is', () => {
   assert.equal(L.bucket(byId(1), HR), 'mine');
   assert.equal(L.bucket(byId(2), HR), 'progress');
   assert.equal(L.bucket(byId(3), HR), 'decided');
-  assert.deepEqual(L.counts(data.requests, HR), { mine: 1, progress: 1, decided: 3 });
+  assert.deepEqual(L.counts(data.requests, HR), { mine: 2, progress: 1, decided: 4 });
+  assert.equal(L.bucket(byId(7), HR), 'mine', 'a prepared contract waits for HR');
+  assert.equal(L.bucket(byId(7), 'head.it.apps@hanse.example'), 'decided', 'for the requester it is only information');
   assert.match(L.progress(byId(2)), /Step 3 of 3 · waiting for Finance/);
 });
 
@@ -74,7 +76,7 @@ test('the page keeps the Space rules: no network, no storage, tokens only, only 
   assert.ok(!/localStorage|sessionStorage|fetch\(|XMLHttpRequest|https?:\/\//.test(own.replace(/<script type="application\/json"[\s\S]*?<\/script>/, '')));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(own.replace(/<script type="application\/json"[\s\S]*?<\/script>/, '')), 'colours only as tokens');
   const types = [...own.matchAll(/type: '(ha:[a-z-]+|wb:ask)'/g)].map((m) => m[1]).sort();
-  assert.deepEqual([...new Set(types)], ['ha:decide-request', 'ha:list-request', 'ha:open-tools', 'wb:ask']);
+  assert.deepEqual([...new Set(types)], ['ha:decide-request', 'ha:list-request', 'ha:open-tools', 'ha:release-request', 'wb:ask']);
 });
 
 test('notice events in the sample log are valid and every event has a label', () => {
@@ -85,4 +87,56 @@ test('notice events in the sample log are valid and every event has a label', ()
     assert.equal(r.events[0].event, 'requested');
     if (r.status === 'pending') assert.ok(!r.events.some((e) => e.event === 'informed'), 'nobody is told a result before it exists');
   }
+});
+
+test('contract: only approved requests have one, the state follows the log, and the page shows each state', () => {
+  const withContract = data.requests.filter((r) => r.contract);
+  assert.deepEqual(withContract.map((r) => r.contract.status).sort(), ['prepared', 'sent', 'signed'], 'the sample shows a contract waiting for HR, a waiting one and a signed one');
+  for (const r of withContract) {
+    const c = r.contract;
+    assert.equal(r.status, 'approved', `${r.id}: a contract exists only after the last approval`);
+    assert.ok(c.preparedAt >= r.decidedAt, `${r.id}: written after the last approval`);
+    assert.match(c.bodySha256, /^[0-9a-f]{64}$/);
+    const ev = r.events.filter((e) => e.event.startsWith('contract_') && e.event !== 'contract_informed').map((e) => e.event);
+    assert.deepEqual(ev, { prepared: ['contract_prepared', 'contract_asked'], sent: ['contract_prepared', 'contract_asked', 'contract_released', 'contract_sent'], signed: ['contract_prepared', 'contract_asked', 'contract_released', 'contract_sent', 'contract_signed'] }[c.status], `${r.id}: the log says what the state says`);
+    assert.equal(!!c.releasedAt, c.status !== 'prepared', `${r.id}: released before it was sent`);
+    if (c.releasedAt) assert.ok(c.releasedAt >= c.preparedAt && (!c.sentAt || c.sentAt >= c.releasedAt), `${r.id}: written, released, sent`);
+    assert.equal(c.hasDocument, c.status === 'signed');
+    assert.equal(!!c.signedSha256, c.status === 'signed');
+    assert.equal(!!c.decidedAt, c.status === 'signed');
+    assert.ok(!('body' in c) && !('signedDocument' in c), 'state only: no text and no document in the page');
+  }
+  const times = (r) => r.events.map((e) => e.at);
+  for (const r of withContract) assert.deepEqual(times(r), [...times(r)].sort(), `${r.id}: the log is in time order`);
+  const signed = byId(3), waiting = byId(6);
+  assert.match(L.progress(signed), /Approved by all 4 steps · contract signed/);
+  assert.match(L.progress(waiting), /Approved by all 3 steps · contract sent, waiting for the candidate/);
+  assert.match(L.progress({ ...byId(3), contract: undefined }), /contract follows/);
+  assert.deepEqual(L.contractSteps(signed.contract).map((x) => [x.label, x.state]), [['Written', 'approved'], ['Released by HR', 'approved'], ['Sent', 'approved'], ['Signed', 'approved']]);
+  assert.deepEqual(L.contractSteps(waiting.contract).map((x) => [x.label, x.state]), [['Written', 'approved'], ['Released by HR', 'approved'], ['Sent', 'approved'], ['Waiting for the candidate', 'now']]);
+  assert.deepEqual(L.contractSteps({ status: 'prepared', preparedAt: 'x' }).map((x) => [x.label, x.state]), [['Written', 'approved'], ['Waiting for HR to release it', 'now']]);
+  assert.deepEqual(L.contractSteps({ status: 'released', preparedAt: 'x', releasedAt: 'y' }).map((x) => x.state), ['approved', 'approved', 'now']);
+  assert.equal(L.contractSteps({ status: 'declined', sentAt: 'a', decidedAt: 'b' }).at(-1).state, 'declined');
+  assert.equal(L.contractSteps({ status: 'expired', sentAt: 'a', decidedAt: 'b' }).at(-1).label, 'Expired unsigned');
+  assert.equal(L.contractSteps(null).length, 0);
+  for (const e of ['contract_prepared', 'contract_asked', 'contract_released', 'contract_sent', 'contract_signed', 'contract_declined', 'contract_expired', 'contract_informed']) assert.doesNotMatch(L.eventLabel(e), /contract_/, `${e} has a readable label`);
+  assert.match(page, /Simulation: no e-signature service was connected\. This is not a legal signature\./);
+});
+
+test('release: only the HR approver of the request, once, and the sample shows the next state', () => {
+  const r = byId(7);
+  assert.equal(L.contractMine(r, HR), true);
+  assert.equal(L.contractMine(r, 'HR.Lead@hanse.example'), true, 'e-mail case does not matter');
+  for (const who of ['finance.bp@hanse.example', 'head.it.apps@hanse.example', '', null]) assert.equal(L.contractMine(r, who), false, String(who));
+  assert.equal(L.contractMine(byId(6), HR), false, 'already released');
+  assert.equal(L.contractMine(byId(1), HR), false, 'not approved yet');
+  assert.match(L.releaseLocal(r, 'finance.bp@hanse.example', 'x').error, /only the HR approver/);
+  const out = L.releaseLocal(r, HR, '2026-11-08T10:00');
+  assert.equal(out.ok, true); assert.equal(out.request.contract.status, 'released'); assert.equal(out.request.contract.releasedBy, HR);
+  assert.equal(out.request.events.at(-1).event, 'contract_released');
+  assert.equal(r.contract.status, 'prepared', 'the input is not changed');
+  assert.equal(L.releaseLocal(out.request, HR, 'y').ok, false, 'a second release is refused in the sample');
+  assert.equal(L.bucket(out.request, HR), 'decided');
+  assert.match(L.progress(out.request), /contract released by HR, sending/);
+  assert.match(page, /data-release/); assert.match(page, /Nothing goes to the candidate before you release it/);
 });

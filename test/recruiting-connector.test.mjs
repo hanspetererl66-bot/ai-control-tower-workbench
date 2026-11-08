@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { createRecruitingHandlers, decideHire, decideProposal, RECRUITING_TOOL_DEFINITIONS } from '../connectors/_lib/server/recruiting.mjs';
+import { createRecruitingHandlers, decideHire, decideProposal, releaseContract, RECRUITING_TOOL_DEFINITIONS } from '../connectors/_lib/server/recruiting.mjs';
 import { describeAction } from '../src/approval.ts';
 
 const data = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'examples/recruiting-workbench/data.json'), 'utf8'));
@@ -133,4 +133,14 @@ test('decideHire is a main-process function with fixed decisions', async () => {
   assert.deepEqual(calls[0], { fn: 'recruiting_hire_decide', body: { p_actor: ACTOR, p_id: 4, p_decision: 'return', p_note: 'terms unclear' } });
   await assert.rejects(() => decideHire(rpc, ACTOR, 4, 'released'), /decision/);
   await assert.rejects(() => decideHire(rpc, 'nobody', 4, 'approve'), /e-mail/);
+});
+
+test('releaseContract is a main-process function: one request number, the stored e-mail', async () => {
+  const calls = [];
+  const rpc = async (fn, body) => { calls.push({ fn, body }); return { status: 'released' }; };
+  await releaseContract(rpc, ACTOR, 4);
+  assert.deepEqual(calls[0], { fn: 'recruiting_hire_contract_release', body: { p_actor: ACTOR, p_id: 4 } });
+  await assert.rejects(() => releaseContract(rpc, ACTOR, 0), /request number/);
+  await assert.rejects(() => releaseContract(rpc, 'nobody', 4), /e-mail/);
+  assert.ok(!RECRUITING_TOOL_DEFINITIONS.some((t) => /release/.test(t.name)), 'releasing is not an agent tool');
 });
