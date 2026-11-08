@@ -24,3 +24,6 @@ Wortgleich aus der früheren `CLAUDE.md` ausgelagert (Stand der Einträge: jewei
 - Rechenkern (`@core-start`/`@core-end`: Verteilung nach Einzelverkaufspreis, Rechnungstermine, Umsatz je Muster, Position je Stichtag, Buchungssätze) steht gleichlautend im Space Revenue Recognition; ein Test vergleicht beide Texte. Zahlen: Dez 2026 fakturiert 78.800,00, realisiert 96.052,64, eingegangen 73.400,00, Vertragsvermögenswert 17.252,64.
 - n8n: `examples/n8n-workflows/13-order-to-cash-software.json`. **Nicht getestet:** Electron-App, echter n8n-Lauf, echte Systeme.
 
+
+## Revenue Recognition (Software), 08.11.2026
+Neuer Space `examples/revenue-recognition` (Finance), Anleitung `docs/revenue-recognition-demo.md`, Test `test/revenue-recognition.test.mjs`. Gleicher Fall und gleicher Rechenkern wie Order-to-Cash (Software). Neun Reiter, alle Abschnitte standardmäßig zugeklappt. Nicht getestet: Electron-App, echtes Finanzsystem; Zahlen sind Demo-Annahmen.
