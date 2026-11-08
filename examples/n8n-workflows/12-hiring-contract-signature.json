@@ -1,0 +1,765 @@
+{
+  "name": "Demo 12 (hiring): contract and signature",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Hiring approvals: contract and signature\nAfter the **last approval** the contract follows without a human step in between. Every 15 minutes this asks the database **what is due** (`recruiting_hire_contract_due`) and carries it out:\n**prepare** the contract text (the database writes it from the approved terms), **send** it to the e-signature service and record the envelope, **expire** a contract that stayed unsigned, and **tell** the requester (and HR after a signature) what came out.\nThe candidate's answer arrives at the webhook `hiring-contract-signature`; it is written back (`recruiting_hire_contract_result`) and the **signed document is stored in the database** with its hash. The database checks the envelope, the hash and the times; this workflow can neither approve a request nor change an approval.\n**No e-signature service connected?** Leave `ESIGN_SEND_URL` empty: the workflow then runs a clearly labelled SIMULATION (envelope `SIM-<id>`, a signed text file that says it is a simulation, method `simulation`). It is not a legal signature.\n**Setup:** environment variables `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (service role key), `HIRING_NOTIFY_WEBHOOK_URL`; for a real service `ESIGN_SEND_URL`, `ESIGN_API_KEY`, `ESIGN_PROVIDER`, `ESIGN_CALLBACK_URL` (the URL of the webhook below), `ESIGN_WEBHOOK_TOKEN` (the service sends it in the header `x-esign-token`), optional `ESIGN_VALID_DAYS` (14). n8n must allow `$env` in expressions (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`). Apply migration 033 first. The send URL is an adapter you own: it receives `reference`, `candidate` (pseudonym), `document`, `sha256`, `start_on`, `callback_url`, looks up the signer in the recruiting system (the Werkbank holds no names or addresses) and answers `{ envelope, reference }`. Its callback sends `{ request, envelope, event: signed|declined|expired, signed_at, document_base64, sha256, method, reference }`.",
+        "height": 470,
+        "width": 980,
+        "color": 4
+      },
+      "id": "e2729a0c-ecb4-5209-adc8-8fdaa9dceae5",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "54ec730a-d633-508c-9e04-99c9906936e1",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d091836f-8d73-534d-b226-5d740c8a34a8",
+      "name": "Run now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_contract_due",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({}) }}",
+        "options": {}
+      },
+      "id": "9fa5d28d-bcb3-5417-ae56-c8e02cec7e44",
+      "name": "What is due?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 4,
+        "output": "={{ ['prepare', 'send', 'expire', 'tell'].indexOf($json.kind) }}"
+      },
+      "id": "ae61cd4e-e85a-56cc-b512-ca093654197a",
+      "name": "Which step?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        520,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_contract_prepare",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_id: $json.id }) }}",
+        "options": {}
+      },
+      "id": "f6167ee6-d965-5c91-9232-60a55cf2fd74",
+      "name": "Prepare the contract text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// What goes to the e-signature service: the contract text and its hash, the pseudonym of the candidate and the start date. No name, no address, no amount.\nreturn $input.all().map(({ json: d }) => ({ json: { id: d.id, payload: { reference: `HIRE-${d.id}`, candidate: d.candidate, title: d.title, document: d.body, sha256: d.bodySha256, start_on: d.startOn, callback_url: $env.ESIGN_CALLBACK_URL || '' } } }));"
+      },
+      "id": "3703c833-b0e0-59e4-a70b-c36a7f39242c",
+      "name": "Prepare the shipment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $env.ESIGN_SEND_URL ? 0 : 1 }}"
+      },
+      "id": "87c047b0-d26a-5193-825b-fc4bdb212831",
+      "name": "Service connected?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1060,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ESIGN_SEND_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.ESIGN_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "6f678a90-d715-52e0-94d5-d4725dfdc229",
+      "name": "Send to the e-signature service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The service answers with the envelope and echoes our reference (HIRE-<id>).\nreturn $input.all().map(({ json }) => ({ json: { id: Number(String(json.reference || '').replace(/^HIRE-/, '')), envelope: String(json.envelope || ''), provider: $env.ESIGN_PROVIDER || 'e-signature service' } })).filter(({ json }) => Number.isInteger(json.id) && json.id > 0 && json.envelope);"
+      },
+      "id": "c97381d1-3ead-52ad-9192-13404e15ff63",
+      "name": "Read the service answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// A contract the service did not accept stays 'prepared', so the next run tries again. This only lists them.\nreturn [{ json: { failed: $input.all().length, items: $input.all().map(({ json }) => json.error?.message || 'send failed') } }];"
+      },
+      "id": "3b9bddc5-08ad-503c-a451-3808ef73b956",
+      "name": "Not sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// SIMULATION: no e-signature service is connected (ESIGN_SEND_URL is empty).\nreturn $input.all().map(({ json: d }) => ({ json: { id: d.id, envelope: `SIM-${d.id}`, provider: 'simulation' } }));"
+      },
+      "id": "e09a0630-2da2-55ea-98b1-5566b6f59d43",
+      "name": "Simulate sending",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_contract_sent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_id: $json.id, p_provider: $json.provider, p_ref: $json.envelope, p_valid_days: Number($env.ESIGN_VALID_DAYS || 14) }) }}",
+        "options": {}
+      },
+      "id": "df2fc72b-901a-55b3-85c8-a13b0b3022fb",
+      "name": "Record: contract sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $env.ESIGN_SEND_URL ? 1 : 0 }}"
+      },
+      "id": "0ecbb97d-46d9-5912-b5b1-7d64670960b3",
+      "name": "Simulation?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        2100,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// SIMULATION: builds the answer a service would send after the candidate signed. It is labelled in the document and in the receipt.\nconst shipped = Object.fromEntries($('Prepare the shipment').all().map(({ json }) => [json.id, json.payload]));\nreturn $input.all().filter(({ json }) => json.created === true && shipped[json.id]).map(({ json }) => {\n  const text = 'SIMULATED SIGNATURE - no e-signature service is connected. Not a legal signature.\\n\\n' + shipped[json.id].document;\n  return { json: { simulated: true, request: `HIRE-${json.id}`, envelope: `SIM-${json.id}`, event: 'signed', signed_at: new Date().toISOString(), document_base64: Buffer.from(text, 'utf8').toString('base64'), method: 'simulation', reference: `SIM-${json.id}` } };\n});"
+      },
+      "id": "1032adb7-6b90-5a76-8eb2-fb3b8ace06b1",
+      "name": "Simulate the candidate signing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The validity ended without an answer: the database accepts 'expired' only after that moment.\nreturn $input.all().map(({ json: d }) => ({ json: { authorised: true, p_id: d.id, p_ref: String(d.envelope || ''), p_result: 'expired', p_signed_at: null, p_document: null, p_sha256: null, p_receipt: {} } }));"
+      },
+      "id": "cab5da5d-7de4-56e2-b7ee-df405f8084e7",
+      "name": "Read the expiry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hiring-contract-signature",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "91d00c6c-6147-5351-ad97-a5683fafe0ee",
+      "name": "Signature webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        460
+      ],
+      "webhookId": "6701a16c-0c83-5e7d-8ffb-855fa7fa0aa5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The answer of the e-signature service (webhook) or of the simulation. The sender must show the token; everything else the database checks.\nreturn $input.all().map(({ json: raw }) => {\n  const simulated = raw.simulated === true;\n  const body = simulated ? raw : (raw.body || {});\n  const token = simulated ? '' : String((raw.headers || {})['x-esign-token'] || '');\n  const trusted = simulated || (!!$env.ESIGN_WEBHOOK_TOKEN && token === $env.ESIGN_WEBHOOK_TOKEN);\n  const id = Number(String(body.request || '').replace(/^HIRE-/, ''));\n  const result = ['signed', 'declined', 'expired'].includes(body.event) ? body.event : '';\n  if (!trusted || !Number.isInteger(id) || id < 1 || !result) return { json: { authorised: false, reason: !trusted ? 'sender not recognised' : 'answer not readable' } };\n  const receipt = {};\n  if (body.method) receipt.method = String(body.method).slice(0, 120);\n  if (body.reference) receipt.reference = String(body.reference).slice(0, 120);\n  return { json: { authorised: true, p_id: id, p_ref: String(body.envelope || ''), p_result: result, p_signed_at: body.signed_at || null, p_document: body.document_base64 || null, p_sha256: body.sha256 || null, p_receipt: receipt } };\n});"
+      },
+      "id": "58f51fd4-c2cc-5958-acb5-7c7745fc8a0e",
+      "name": "Read the signature answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $json.authorised ? 0 : 1 }}"
+      },
+      "id": "bb8609f4-a8db-5c2b-b061-d58217da8d43",
+      "name": "Accepted sender?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        2620,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_contract_result",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_id: $json.p_id, p_ref: $json.p_ref, p_result: $json.p_result, p_signed_at: $json.p_signed_at, p_document: $json.p_document, p_sha256: $json.p_sha256, p_receipt: $json.p_receipt }) }}",
+        "options": {}
+      },
+      "id": "72215731-c979-5c06-91aa-73a68a6cf1f6",
+      "name": "Record the answer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        240
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { accepted: true, status: $input.first().json.status, stored: $input.first().json.created === true } }];"
+      },
+      "id": "2be6bda9-08d0-5e30-81d0-1e3336c23ee9",
+      "name": "Answer report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3140,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The database refused the answer (wrong envelope, hash that does not match, too early ...): nothing was changed.\nreturn [{ json: { accepted: false, reason: $input.first().json.error?.message || 'refused' } }];"
+      },
+      "id": "4139f919-b249-5f72-9a85-a42c00f45674",
+      "name": "Answer refused",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3140,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { accepted: false, reason: $input.first().json.reason } }];"
+      },
+      "id": "d8d61865-3c67-5f5c-b548-428cfc6da29c",
+      "name": "Sender refused",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One message per outcome. The database decided WHO; this only words it. Pseudonym only, no name.\nreturn $input.all().map(({ json: d }) => {\n  const what = `${d.candidate} for ${d.title} (${d.requisition}, ${d.dept})`;\n  const text = d.outcome === 'signed' ? `The contract for ${what} is signed. It is stored with the hiring request in the Werkbank.`\n    : d.outcome === 'declined' ? `The candidate declined the contract for ${what}. The request stays approved; the next step is a conversation, not a new approval.`\n    : `The contract for ${what} expired without a signature. A new contract needs a new decision by HR.`;\n  return { json: { id: d.id, to: d.to, text } };\n});"
+      },
+      "id": "f07b9711-a023-5009-9a06-b640f2d78cab",
+      "name": "Write the message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.HIRING_NOTIFY_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, to: $json.to }) }}",
+        "options": {}
+      },
+      "id": "0fba7720-1af2-55ce-8b6b-9b802947c489",
+      "name": "Send the message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        480
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/recruiting_hire_contract_notice_record",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_id: $('Write the message').item.json.id, p_to: $('Write the message').item.json.to, p_channel: 'n8n, incoming webhook' }) }}",
+        "options": {}
+      },
+      "id": "2b83c837-4b28-51aa-9582-cb0f52da43e2",
+      "name": "Record the notice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// A message that could not be sent is NOT recorded, so the next run tries again.\nreturn [{ json: { failed: $input.all().length } }];"
+      },
+      "id": "f2e8d56f-a496-5ca4-be34-75082335ef9c",
+      "name": "Notices not sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        580
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "What is due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run now": {
+      "main": [
+        [
+          {
+            "node": "What is due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "What is due?": {
+      "main": [
+        [
+          {
+            "node": "Which step?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Which step?": {
+      "main": [
+        [
+          {
+            "node": "Prepare the contract text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare the shipment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read the expiry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Write the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare the shipment": {
+      "main": [
+        [
+          {
+            "node": "Service connected?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service connected?": {
+      "main": [
+        [
+          {
+            "node": "Send to the e-signature service",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Simulate sending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to the e-signature service": {
+      "main": [
+        [
+          {
+            "node": "Read the service answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read the service answer": {
+      "main": [
+        [
+          {
+            "node": "Record: contract sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulate sending": {
+      "main": [
+        [
+          {
+            "node": "Record: contract sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record: contract sent": {
+      "main": [
+        [
+          {
+            "node": "Simulation?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulation?": {
+      "main": [
+        [
+          {
+            "node": "Simulate the candidate signing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Simulate the candidate signing": {
+      "main": [
+        [
+          {
+            "node": "Read the signature answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signature webhook": {
+      "main": [
+        [
+          {
+            "node": "Read the signature answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read the expiry": {
+      "main": [
+        [
+          {
+            "node": "Accepted sender?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read the signature answer": {
+      "main": [
+        [
+          {
+            "node": "Accepted sender?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accepted sender?": {
+      "main": [
+        [
+          {
+            "node": "Record the answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sender refused",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record the answer": {
+      "main": [
+        [
+          {
+            "node": "Answer report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer refused",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write the message": {
+      "main": [
+        [
+          {
+            "node": "Send the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send the message": {
+      "main": [
+        [
+          {
+            "node": "Record the notice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notices not sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

@@ -21,6 +21,18 @@ const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const rows = (v: unknown, max: number): Record<string, unknown>[] => (Array.isArray(v) ? v.filter(isObject).slice(0, max) : []);
 
+/** The state of the contract only: never its text and never the signed document (those stay in the database). */
+export function pickContract(raw: unknown): Record<string, unknown> | null {
+  if (!isObject(raw)) return null;
+  const status = str(raw.status, 20);
+  if (!['prepared', 'sent', 'signed', 'declined', 'expired'].includes(status)) return null;
+  return {
+    status, template: str(raw.template, 40), bodySha256: str(raw.bodySha256, 64), provider: str(raw.provider, 60),
+    preparedAt: str(raw.preparedAt, 40), sentAt: str(raw.sentAt, 40), expiresAt: str(raw.expiresAt, 40), decidedAt: str(raw.decidedAt, 40), signedAt: str(raw.signedAt, 40),
+    signedSha256: str(raw.signedSha256, 64), hasDocument: raw.hasDocument === true, method: str(raw.method, 120),
+  };
+}
+
 export function pickHireRequests(raw: unknown): Record<string, unknown>[] {
   return rows(raw, 200).map((r) => {
     const t = isObject(r.terms) ? r.terms : {};
@@ -31,6 +43,7 @@ export function pickHireRequests(raw: unknown): Record<string, unknown>[] {
       at: str(r.at, 40), decidedAt: str(r.decidedAt, 40), mine: r.mine === true,
       steps: rows(r.steps, 6).map((s) => ({ ord: num(s.ord), role: str(s.role, 20), approver: str(s.approver, 120), status: str(s.status, 20), decidedAt: str(s.decidedAt, 40), note: str(s.note, 300) })),
       events: rows(r.events, 80).map((e) => ({ event: str(e.event, 30), role: str(e.role, 20), actor: str(e.actor, 120), at: str(e.at, 40), note: str(e.note, 300) })),
+      contract: pickContract(r.contract),
     };
   });
 }

@@ -66,7 +66,7 @@ export const RECRUITING_TOOL_DEFINITIONS = [
   {
     name: 'recruiting_list_hire_requests',
     description:
-      'Read: hiring approvals, that is the requests to hire a candidate who went through the whole recruiting process (stage Offer): terms, the approval chain (hiring manager, HR, finance, optional department head), who is next, and the log. Shows what the person may see: their own requisitions, requests where they are an approver, and everything for the Governance board. Read only.',
+      'Read: hiring approvals, that is the requests to hire a candidate who went through the whole recruiting process (stage Offer): terms, the approval chain (hiring manager, HR, finance, optional department head), who is next, the log and, after the last approval, the state of the contract (written, sent, signed, declined, expired; never its text or the signed document). Shows what the person may see: their own requisitions, requests where they are an approver, and everything for the Governance board. Read only.',
     inputSchema: obj({
       actor: ACTOR,
       status: { type: 'string', enum: HIRE_STATUS, description: 'Default: pending (waiting for an approver).' },

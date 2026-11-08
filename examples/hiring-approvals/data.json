@@ -332,8 +332,57 @@
           "actor": "hr.lead@hanse.example",
           "at": "2026-10-28T12:05",
           "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "contract_prepared",
+          "role": "",
+          "actor": "system@werkbank.invalid",
+          "at": "2026-10-28T12:20",
+          "note": "template employment-v1"
+        },
+        {
+          "event": "contract_sent",
+          "role": "",
+          "actor": "system@werkbank.invalid",
+          "at": "2026-10-28T12:35",
+          "note": "MockSign"
+        },
+        {
+          "event": "contract_signed",
+          "role": "",
+          "actor": "system@werkbank.invalid",
+          "at": "2026-10-30T09:12",
+          "note": "MockSign"
+        },
+        {
+          "event": "contract_informed",
+          "role": "",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-10-30T09:20",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "contract_informed",
+          "role": "",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-30T09:20",
+          "note": "n8n, incoming webhook"
         }
-      ]
+      ],
+      "contract": {
+        "status": "signed",
+        "template": "employment-v1",
+        "bodySha256": "3f7a9c1e5b2d8046a1c9e7f30b5d2a8c6e4f1b9d7a3c5e8021f6b4d9a7c3e5f1",
+        "provider": "MockSign",
+        "preparedAt": "2026-10-28T12:20",
+        "sentAt": "2026-10-28T12:35",
+        "expiresAt": "2026-11-11T12:35",
+        "decidedAt": "2026-10-30T09:12",
+        "signedAt": "2026-10-30T09:12",
+        "signedSha256": "9c2e4a6f8b1d3057e9a1c3b5d7f90246a8c0e2b4d6f8a1c3e5b7d9f1a3c5e7b9",
+        "hasDocument": true,
+        "method": "simulation"
+      }
     },
     {
       "id": 4,
@@ -528,6 +577,145 @@
           "note": "n8n, incoming webhook"
         }
       ]
+    },
+    {
+      "id": 6,
+      "requisition": "REQ-2107",
+      "title": "Warehouse Team Lead",
+      "dept": "Operations",
+      "candidate": "C-3702",
+      "terms": {
+        "level": "Lead",
+        "band": "Band 3",
+        "start_on": "2027-01-11",
+        "contract": "permanent",
+        "note": ""
+      },
+      "evidence": "C-3702 is in the stage Offer of REQ-2107. Meets all must-haves (must-haves met 3 of 3, nice-to-haves 1 of 2). A person decides.",
+      "status": "approved",
+      "currentStep": 3,
+      "createdBy": "site.manager.bremen@hanse.example",
+      "at": "2026-11-04T09:00",
+      "decidedAt": "2026-11-05T15:00",
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "site.manager.bremen@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-04T14:00",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-05T08:00",
+          "note": ""
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-05T15:00",
+          "note": ""
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T08:50",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T09:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-04T14:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-04T14:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-05T08:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-11-05T08:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-11-05T15:00",
+          "note": ""
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "site.manager.bremen@hanse.example",
+          "at": "2026-11-05T15:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "informed",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-05T15:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "contract_prepared",
+          "role": "",
+          "actor": "system@werkbank.invalid",
+          "at": "2026-11-05T15:10",
+          "note": "template employment-v1"
+        },
+        {
+          "event": "contract_sent",
+          "role": "",
+          "actor": "system@werkbank.invalid",
+          "at": "2026-11-05T15:25",
+          "note": "MockSign"
+        }
+      ],
+      "contract": {
+        "status": "sent",
+        "template": "employment-v1",
+        "bodySha256": "b4d6f8a1c3e5072931a5c7e9b1d3f50826a4c6e8b0d2f4a6c8e1b3d5f7a9c1e3",
+        "provider": "MockSign",
+        "preparedAt": "2026-11-05T15:10",
+        "sentAt": "2026-11-05T15:25",
+        "expiresAt": "2026-11-19T15:25",
+        "decidedAt": null,
+        "signedAt": null,
+        "signedSha256": "",
+        "hasDocument": false,
+        "method": ""
+      }
     }
   ]
 }

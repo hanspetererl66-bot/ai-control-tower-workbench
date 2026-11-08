@@ -52,3 +52,13 @@ test('database errors are passed on as text', async () => {
   assert.equal((await handleHiringMessage({ type: 'ha:list-request', requestId: 'r6' }, h)).message, 'it is not your turn');
   assert.equal((await handleHiringMessage({ type: 'ha:decide-request', requestId: 'r7', id: 1, decision: 'approve' }, h)).message, 'boom');
 });
+
+test('the contract reaches the page as a state only: no text, no document, unknown states are dropped', () => {
+  const contract = { status: 'signed', template: 'employment-v1', bodySha256: 'a'.repeat(64), provider: 'MockSign', preparedAt: 'p', sentAt: 's', expiresAt: 'e', decidedAt: 'd', signedAt: 'g', signedSha256: 'b'.repeat(64), hasDocument: true, method: 'simulation',
+    body: 'EMPLOYMENT CONTRACT ...', signedDocument: 'JVBERi0=', name: 'Jane Doe' };
+  const [r] = pickHireRequests([{ ...row, contract }]);
+  assert.deepEqual(Object.keys(r.contract).sort(), ['bodySha256', 'decidedAt', 'expiresAt', 'hasDocument', 'method', 'preparedAt', 'provider', 'sentAt', 'signedAt', 'signedSha256', 'status', 'template']);
+  assert.ok(!JSON.stringify(r).includes('EMPLOYMENT') && !JSON.stringify(r).includes('JVBERi') && !JSON.stringify(r).includes('Jane'));
+  assert.equal(pickHireRequests([{ ...row, contract: { status: 'weird' } }])[0].contract, null);
+  assert.equal(pickHireRequests([row])[0].contract, null, 'no contract yet');
+});
