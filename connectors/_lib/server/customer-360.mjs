@@ -71,6 +71,12 @@ export function makeLogic(D) {
     D.orders.forEach(function (o) {
       var inv = o.billed ? by(D.invoices, o.billed) : null;
       var c = contract(o.contract);
+      if (o.source === 'sap-sandbox') {
+        // A real sandbox order: the stage comes from the order-to-cash trace, not from the invoice list of the sample.
+        var st = o.sap && o.sap.stage;
+        if ((st === 'delivered_not_invoiced' || st === 'partly_invoiced') && o.sap.gapEur > 0) out.push({ order: o.id, entity: o.entity, kind: 'delivered-not-invoiced', netEur: o.sap.gapEur, text: o.title + ' is delivered and ' + (st === 'partly_invoiced' ? 'only partly' : 'not') + ' invoiced (SAP sandbox).' });
+        return;
+      }
       if (o.provisioned && !o.billed) out.push({ order: o.id, entity: o.entity, kind: 'delivered-not-invoiced', netEur: o.netEur, text: o.title + ' is delivered and not invoiced.' });
       else if (inv && inv.status === 'Overdue' && c && inv.billTo !== c.billTo) out.push({ order: o.id, entity: o.entity, kind: 'bill-to-mismatch', netEur: o.netEur, invoice: inv.id, text: inv.id + ' is addressed to ' + ent(inv.billTo).short + ', the contract names ' + ent(c.billTo).short + '.' });
       else if (!o.provisioned) out.push({ order: o.id, entity: o.entity, kind: 'not-provisioned', netEur: o.netEur, text: o.title + ' is signed and not yet provisioned.' });
@@ -223,6 +229,8 @@ export function makeLogic(D) {
     D.orders.forEach(function (o) {
       var n = node('order', o.id, o.id, o.title, { entity: o.entity, value: o.netEur });
       n.facts = [['Order', o.title], ['Company', ent(o.entity).name], ['Net value', eur(o.netEur) + ' EUR'], ['Ordered on', o.orderedOn], ['Provisioned', o.provisioned ? 'yes' : 'no'], ['Invoice', o.billed || 'none yet'], ['Note', o.note]];
+      if (o.source === 'sap-sandbox') n.facts.push(['Source', 'SAP sandbox, order ' + o.sap.order + ', stage ' + String(o.sap.stage).replace(/_/g, ' ')]);
+      else n.facts.push(['Source', 'sample data']);
     });
     D.invoices.forEach(function (i) {
       if (i.status === 'Paid') return;
