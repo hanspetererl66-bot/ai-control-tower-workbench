@@ -30,3 +30,13 @@ Zustände (`done`, `blocked`, `overdue`, `soon`, `planned`, `waiting`, `locked`,
 ## Grenzen / nicht gebaut
 
 Keine Datenbank, keine Brücke, keine Übergabe aus Hiring Approvals (der Vertragszustand steht im Beispiel in den Daten), kein Eintragen von "erledigt" oder "blockiert" in der Oberfläche, keine echten Systeme (Employee Central/HCM, Service-Desk, Payroll, E-Learning), kein Betriebsrat-Prozess über den Hinweis hinaus. Datenschutz: Namen, Adressen und Bankdaten gehören in die Fachsysteme, nicht in die Werkbank. Nicht getestet: Electron-App; im Headless-Browser hell und dunkel gesehen, ohne Seitenfehler.
+
+## Anbindung an die Datenbank (Migration 039)
+
+Der Onboarding-Space ist jetzt zweigleisig: **im Browser** zeigt er weiter die Beispieldaten (fünf erfundene Neueinstellungen); **in der App** liest und schreibt er die gemeinsame Datenbank (Tag „live data“).
+
+- **Übergabe:** Nach der Unterschrift (Vertrag `signed`, Migration 038) übergibt HR die Einstellung an Onboarding, entweder im Space *Hiring Approvals* (Button „Hand over to onboarding“ am unterschriebenen Vertrag) oder im Onboarding-Space (Liste „Signed, waiting for the handover“). Eingegeben wird der erste Arbeitstag. `recruiting_onboarding_handover` prüft: Vertrag unterschrieben, nur der HR-Genehmiger (oder ein Board-Admin), ein Fall je Antrag. Danach stehen alle 23 Schritte auf „offen“.
+- **Status je Schritt:** „Mark done“, „Blocked…“ (Begründung Pflicht), „Not needed“, „Reopen“ über `recruiting_onboarding_set`. Jede Änderung steht im nur anhängbaren Protokoll `recruiting.onboarding_event`. Wer beteiligt ist (Antragsteller, Genehmiger, Vorgesetzter der Stelle, Board-Admin), darf lesen und ändern; die Identität ist nur die E-Mail, ein Etikett.
+- **Weg:** Space → feste Nachrichten `ob:*` (`src/onboarding-bridge.ts`) / `ha:handover-request` → Hauptprozess (IPC `onboarding-*`) → Datenbankfunktionen mit service_role. Keine Agent-Werkzeuge; der Agent kann nichts übergeben oder abhaken.
+- **Der Name der neuen Person** steht nicht in der Werkbank (nur die Kandidaten-ID im Recruiting-System). Die Fälle heißen deshalb „H-<Antragsnummer>“ mit Stellentitel.
+- **Nicht angewendet / nicht getestet:** Migration 039 (und 038) sind noch nicht auf Supabase angewendet. Getestet: SQL gegen lokales Postgres (44 Tests), Bridge, Space im Headless-Browser mit einem Mock als App. Nicht getestet: echte Supabase-Datenbank, die Electron-App, mehrere echte Personen mit E-Mail.

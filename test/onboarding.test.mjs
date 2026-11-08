@@ -101,7 +101,7 @@ test('the page keeps the Space rules: no network, no storage, no bridge, colours
   const own = page.replace(/<style id="design-system">[\s\S]*?<\/style>/, '').replace(/<script type="application\/json"[\s\S]*?<\/script>/, '');
   assert.ok(!/localStorage|sessionStorage|fetch\(|XMLHttpRequest|https?:\/\//.test(own));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(own), 'colours only as tokens');
-  assert.deepEqual([...new Set([...own.matchAll(/type: '([a-z]+:[a-z-]+)'/g)].map((m) => m[1]))], ['wb:ask']);
-  assert.ok(!/addEventListener\('message'/.test(own), 'the page listens to nothing');
+  assert.deepEqual([...new Set([...own.matchAll(/type: '([a-z]+:[a-z-]+)'/g)].map((m) => m[1]))], ['wb:ask', 'ct:error', 'ob:list-request', 'ob:set-request', 'ob:handover-request']);
+  assert.match(own, /e\.source !== window\.parent/, 'answers are accepted only from the app window');
   assert.match(page, /class="card"|class="[^"]*\bcard\b/);
 });

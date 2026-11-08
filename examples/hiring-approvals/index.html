@@ -461,6 +461,11 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
         ? '<div class="act"><b>Release the contract</b><div class="note">Nothing goes to the candidate before you release it. After the release the contract is sent for signature by itself; you cannot change the text here, it was written from the approved terms.</div><div class="row"><button type="button" class="btn primary" data-release="1"' + (S.busy ? ' disabled' : '') + '>Release the contract</button></div>' + (S.err ? '<div class="err" role="alert">' + esc(S.err) + '</div>' : '') + '</div>'
         : '<div class="note">Waiting for HR to release the contract. Nothing is sent to the candidate before that.</div>';
     }
+    if (c.status === 'signed') {
+      rel = isHr(r, me())
+        ? '<div class="act"><b>Hand over to onboarding</b><div class="note">The contract is signed. Enter the first working day; the hire then appears in the Onboarding Space with all steps open.</div><div class="row"><input type="date" id="ob-start" aria-label="First working day" value="' + esc(S.obStart || '') + '"><button type="button" class="btn primary" data-handover="1"' + (S.busy ? ' disabled' : '') + '>Hand over to onboarding</button></div>' + (S.err ? '<div class="err" role="alert">' + esc(S.err) + '</div>' : '') + '</div>'
+        : '<div class="note">HR hands the hire over to onboarding after the signature.</div>';
+    }
     var sim = c.method === 'simulation' ? '<div class="note">Simulation: no e-signature service was connected. This is not a legal signature.</div>' : '';
     return '<h3>Contract · ' + esc(contractLine(c)) + '</h3><div class="chain">' + steps + '</div>' + (facts.length ? '<div class="sub">' + facts.join(' · ') + '</div>' : '') + rel + sim;
   }
@@ -538,6 +543,21 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
     });
   }
 
+  function isHr(r, email) { return !!(r.steps || []).filter(function (s) { return s.role === 'hr' && String(s.approver).toLowerCase() === String(email).toLowerCase(); }).length; }
+  function handover() {
+    var r = selected(); if (!r) return;
+    var el = document.getElementById('ob-start'), start = el ? el.value : '';
+    S.err = ''; S.obStart = start;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) { S.err = 'Enter the first working day.'; render(); return; }
+    if (!S.live) { S.ask = { id: r.id, text: 'Done (simulated): the hire is handed over to onboarding. In the desktop app this writes the onboarding case to the database.' }; render(); return; }
+    S.busy = true; render();
+    request({ type: 'ha:handover-request', id: r.id, start: start }).then(function (m) {
+      S.busy = false;
+      if (m.type !== 'ha:handed') { S.err = m.message || 'The handover was not saved.'; render(); return; }
+      S.ask = { id: r.id, text: m.result && m.result.created ? 'Saved: the hire is handed over. Open the Onboarding Space to follow the steps.' : 'This hire was already handed over to onboarding.' };
+      render();
+    });
+  }
   function release() {
     var r = selected(); if (!r) return;
     S.err = '';
@@ -559,13 +579,14 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
   }
 
   document.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-tab],[data-sel],[data-do],[data-release],[data-prompt],[data-tools]');
+    var el = e.target.closest('[data-tab],[data-sel],[data-do],[data-release],[data-handover],[data-prompt],[data-tools]');
     if (!el) return;
     var d = el.dataset;
     if (d.tab) { S.tab = d.tab; S.err = ''; S.ask = null; finish(); }
     else if (d.sel) { S.sel = Number(d.sel); S.err = ''; S.ask = null; S.note = ''; render(); }
     else if (d.do) decide(d.do);
     else if (d.release) release();
+    else if (d.handover) handover();
     else if (d.prompt) ask(d.prompt);
     else if (d.tools) window.parent.postMessage({ type: 'ha:open-tools' }, '*');
   });

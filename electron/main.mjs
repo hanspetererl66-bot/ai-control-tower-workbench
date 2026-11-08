@@ -1478,6 +1478,10 @@ ipcMain.handle('observability-call', async (_event, view, params) => {
 ipcMain.handle('recruiting-hire-list', async (_event, args) => {
   try { return { ok: true, data: await workStore.listHireRequests(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
+const obWrap = async (fn) => { try { return { ok: true, data: await fn() }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; } };
+ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
+ipcMain.handle('onboarding-handover', (_event, id, start) => obWrap(() => workStore.onboardingHandover(id, start)));
+ipcMain.handle('onboarding-set', (_event, id, step, status, note) => obWrap(() => workStore.onboardingSet(id, step, status, note)));
 ipcMain.handle('recruiting-hire-release', async (_event, id) => {
   try { return { ok: true, data: await workStore.releaseContract(id) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });

@@ -76,7 +76,7 @@ test('the page keeps the Space rules: no network, no storage, tokens only, only 
   assert.ok(!/localStorage|sessionStorage|fetch\(|XMLHttpRequest|https?:\/\//.test(own.replace(/<script type="application\/json"[\s\S]*?<\/script>/, '')));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(own.replace(/<script type="application\/json"[\s\S]*?<\/script>/, '')), 'colours only as tokens');
   const types = [...own.matchAll(/type: '(ha:[a-z-]+|wb:ask)'/g)].map((m) => m[1]).sort();
-  assert.deepEqual([...new Set(types)], ['ha:decide-request', 'ha:list-request', 'ha:open-tools', 'ha:release-request', 'wb:ask']);
+  assert.deepEqual([...new Set(types)], ['ha:decide-request', 'ha:handover-request', 'ha:list-request', 'ha:open-tools', 'ha:release-request', 'wb:ask']);
 });
 
 test('notice events in the sample log are valid and every event has a label', () => {

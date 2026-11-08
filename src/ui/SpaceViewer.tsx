@@ -3,6 +3,7 @@ import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
+import { ONBOARDING_SPACE, handleOnboardingMessage, type OnboardingHost } from '../onboarding-bridge';
 import { HIRING_SPACE, handleHiringMessage, type HiringHost } from '../hiring-bridge';
 import { OBSERVABILITY_SPACE, handleObservabilityMessage, type ObservabilityHost } from '../observability-bridge';
 import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
@@ -149,10 +150,17 @@ export default function SpaceViewer({
         void handleObservabilityMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
         return;
       }
+      if (space.slug === ONBOARDING_SPACE) {
+        // Reads, the handover and step status go through the main process as the stored e-mail, never through the agent.
+        const h = window.host;
+        const host: OnboardingHost | undefined = h?.onboardingList ? { list: h.onboardingList, handover: h.onboardingHandover, set: h.onboardingSet } : undefined;
+        void handleOnboardingMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
+        return;
+      }
       if (space.slug === HIRING_SPACE) {
         // Reads and decisions go through the main process as the stored e-mail, never through the agent.
         const h = window.host;
-        const host: HiringHost | undefined = h?.recruitingHireList && h.recruitingHireDecide ? { list: h.recruitingHireList, decide: h.recruitingHireDecide, release: h.recruitingHireRelease } : undefined;
+        const host: HiringHost | undefined = h?.recruitingHireList && h.recruitingHireDecide ? { list: h.recruitingHireList, decide: h.recruitingHireDecide, release: h.recruitingHireRelease, handover: h.onboardingHandover } : undefined;
         void handleHiringMessage(event.data, host, onOpenHiringTools).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
         return;
       }
