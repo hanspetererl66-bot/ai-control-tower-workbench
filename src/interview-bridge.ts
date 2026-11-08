@@ -1,0 +1,79 @@
+/**
+ * Bridge between the sandboxed Recruiting Workbench Space and the app, for the online interview.
+ * The Space has no network, so it asks by postMessage. Three fixed requests can pass, nothing else:
+ *  - iv:ask-request    a prompt for the AI check, the summary or the letter, run by the agent (Joule; the model provider is OpenRouter).
+ *                      The first words of the prompt must match its kind, so this is not a general chat channel.
+ *  - iv:save-request   the record for the hiring manager (main process, database; the agent has no tool for it).
+ *  - iv:draft-request  the letter as a Gmail DRAFT. The Gmail connector cannot send; the hiring manager sends it from Gmail.
+ * The interviewee's address is used for the draft only and is stored nowhere.
+ */
+import type { BridgeCall } from './sub4me-bridge.ts';
+
+export const INTERVIEW_SPACE = 'recruiting-workbench';
+const REQUEST_ID = /^[A-Za-z0-9_-]{1,40}$/;
+const SESSION = /^[A-Z0-9-]{4,24}$/;
+const REQUISITION = /^[A-Z]{2,5}-[0-9]{3,6}$/;
+const MAIL = /^[^\s@<>",;]+@[^\s@<>",;]+\.[A-Za-z]{2,}$/;
+export const MAX_PROMPT = 16000;
+const START: Record<string, RegExp> = {
+  check: /^You check one task result against fixed criteria\./,
+  summary: /^Write a short, neutral summary of an online interview/,
+  letter: /^Write two short paragraphs of a warm, personal thank-you letter/,
+};
+
+export type InterviewDeps = {
+  /** Runs one working prompt through the agent and returns its answer ('' = stopped). */
+  ask?: (prompt: string, title: string, session: string) => Promise<string>;
+  save?: (requisition: string, record: Record<string, unknown>) => Promise<{ saved: boolean; note: string }>;
+  /** The Gmail connector's create_draft. */
+  draft?: BridgeCall;
+};
+
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const TITLES: Record<string, string> = { check: 'Interview: task check', summary: 'Interview: summary', letter: 'Interview: letter' };
+
+/** What the agent is told on top of the prompt: no tools, JSON only. */
+export function wrapPrompt(prompt: string): string {
+  return 'Use no tools and read no files. Reply with the JSON object only, nothing before or after it.\n\n' + prompt;
+}
+
+export async function handleInterviewMessage(data: unknown, deps: InterviewDeps): Promise<Record<string, unknown> | null> {
+  if (!isObject(data) || typeof data.type !== 'string' || !data.type.startsWith('iv:')) return null;
+  const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
+  if (!requestId) return null;
+  const fail = (message: string) => ({ type: 'iv:error', requestId, message });
+  try {
+    if (data.type === 'iv:ask-request') {
+      const kind = typeof data.kind === 'string' ? data.kind : '';
+      const prompt = typeof data.prompt === 'string' ? data.prompt : '';
+      const session = typeof data.session === 'string' && SESSION.test(data.session) ? data.session : '';
+      if (!START[kind] || !START[kind].test(prompt)) return fail('This request is not one the interview may send.');
+      if (prompt.length > MAX_PROMPT) return fail('The text is too long to check.');
+      if (!session) return fail('The session code is not valid.');
+      if (!deps.ask) return fail('The agent is not connected yet.');
+      const text = await deps.ask(wrapPrompt(prompt), TITLES[kind], 'iv-' + session);
+      if (!text) return fail('The check was stopped.');
+      return { type: 'iv:ask-answer', requestId, kind, text: text.slice(0, 20000) };
+    }
+    if (data.type === 'iv:save-request') {
+      const requisition = typeof data.requisition === 'string' && REQUISITION.test(data.requisition) ? data.requisition : '';
+      if (!requisition || !isObject(data.record)) return fail('The record is not valid.');
+      if (!deps.save) return fail('Saving needs the desktop app with the shared database set up.');
+      const res = await deps.save(requisition, data.record);
+      return { type: 'iv:saved', requestId, saved: res.saved === true, note: String(res.note ?? '').slice(0, 200) };
+    }
+    if (data.type === 'iv:draft-request') {
+      const to = typeof data.to === 'string' ? data.to.trim() : '';
+      const subject = typeof data.subject === 'string' ? data.subject.trim().slice(0, 120) : '';
+      const body = typeof data.body === 'string' ? data.body.slice(0, 6000) : '';
+      if (!MAIL.test(to) || to.length > 120) return fail('Enter a valid e-mail address.');
+      if (!subject || body.length < 40) return fail('The letter is empty.');
+      if (!deps.draft) return fail('The Gmail connector is not connected. Import it under Connectors & Skills.');
+      await deps.draft('create_draft', { to, subject, body });
+      return { type: 'iv:drafted', requestId };
+    }
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : String(error));
+  }
+  return null;
+}

@@ -114,6 +114,96 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 /* KPI rows: all boxes side by side in one row */
 #kpis,#inv-kpis,#usage-kpis{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 #kpis .card,#inv-kpis .card,#usage-kpis .card{min-width:0;overflow-wrap:anywhere}
+
+/* Cockpit (Overview) and Landscape (contract map) */
+.cockpit{padding:0;overflow:hidden;background:linear-gradient(135deg,var(--purple-dim),transparent 55%),var(--panel);border-color:var(--purple-border)}
+.ck-top{padding:18px 22px 6px}
+.ck-eye{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--brand)}
+.ck-eye i{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 0 var(--brand);animation:ckpulse 2.4s infinite}
+.ck-head{font-size:22px;line-height:1.25;font-weight:700;margin:6px 0 10px;letter-spacing:-.01em;min-height:30px;max-width:820px}
+.ck-head .caret{display:inline-block;width:2px;height:1em;background:var(--brand);vertical-align:-2px;margin-left:2px;animation:ckblink 1s steps(2) infinite}
+.ck-acts{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px;padding:0;list-style:none}
+.ck-acts li{opacity:0;transform:translateY(6px);animation:ckin .5s forwards}
+.ck-acts button{font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--purple-border);background:var(--panel);color:var(--ink);border-radius:99px;padding:6px 12px;display:flex;gap:6px;align-items:center}
+.ck-acts button:hover{border-color:var(--brand);color:var(--brand)}
+.ck-acts b{color:var(--brand);font-weight:700}
+.ck-body{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:22px;padding:8px 22px 8px;align-items:center}
+.ck-rings{position:relative;width:100%;max-width:330px;margin:0 auto}
+.ck-rings svg{display:block;width:100%;height:auto}
+.ck-rings .trk{fill:none;stroke:var(--line-2);stroke-width:12}
+.ck-rings .arc{fill:none;stroke-width:12;stroke-linecap:round;transform:rotate(-90deg);transform-origin:150px 150px;transition:stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1),stroke .4s}
+.ck-rings .arc.ok{stroke:var(--brand)}.ck-rings .arc.warn{stroke:var(--warn)}.ck-rings .arc.bad{stroke:var(--bad)}
+.ck-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center}
+.ck-center b{font-size:30px;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ck-center span{font-size:10px;color:var(--muted);margin-top:3px;max-width:76px;line-height:1.25}
+.ck-side{min-width:0}
+.ck-ctl{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ck-ctl .chip[aria-pressed=true]{background:var(--brand-dim);border-color:var(--brand);color:var(--brand);font-weight:600}
+.ck-time{margin:6px 0 4px;display:flex;align-items:center;gap:12px}
+.ck-time input[type=range]{flex:1;accent-color:var(--brand);min-width:0}
+.ck-time output{min-width:150px;font-size:13px;font-weight:700;text-align:right}
+.ck-ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin:0 2px 10px 0;padding-right:162px}
+.ck-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:8px 0 10px}
+.ck-stats div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel)}
+.ck-stats b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.ck-stats span{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.ck-leg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px;font-size:12px;margin:4px 0 6px}
+.ck-leg div{display:flex;align-items:center;gap:8px;min-width:0}
+.ck-leg i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--brand)}
+.ck-leg i.warn{background:var(--warn)}.ck-leg i.bad{background:var(--bad)}
+.ck-leg span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.ck-leg em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+.ck-cta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;padding:10px 12px;border:1px dashed var(--purple-border);border-radius:10px;background:var(--purple-dim);font-size:13px}
+.ck-cta[hidden]{display:none}
+.ck-spark{padding:2px 22px 16px}
+.ck-spark svg{display:block;width:100%;height:auto}
+.ck-spark .al{stroke:var(--muted);stroke-dasharray:4 4;stroke-width:1}
+.ck-spark .ar{fill:var(--brand-dim)}
+.ck-spark .ln{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-linejoin:round}
+.ck-spark .fl{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-dasharray:5 5}
+.ck-spark .fl.bad{stroke:var(--bad)}
+.ck-spark text{font-size:10px;fill:var(--muted)}
+.ck-spark .mk{fill:var(--panel);stroke:var(--brand);stroke-width:3}
+.ck-note{font-size:11px;color:var(--muted);padding:0 22px 14px}
+@keyframes ckpulse{70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes ckblink{50%{opacity:0}}
+@keyframes ckin{to{opacity:1;transform:none}}
+@media(max-width:760px){.ck-body{grid-template-columns:1fr}.ck-ticks{padding-right:0}.ck-time{flex-wrap:wrap}.ck-time output{text-align:left}}
+/* Landscape */
+.land{padding:16px 18px}
+.land-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.land-svg{display:block;width:100%;height:auto;max-height:780px}
+.land .gd{fill:none;stroke:var(--line);stroke-dasharray:3 6}
+.land .gl{font-size:10px;fill:var(--muted);text-anchor:middle}
+.land .sp{stroke:var(--line);stroke-width:1.5}
+.land .sp.sel{stroke:var(--brand)}
+.land .hub circle.c{fill:var(--brand-dim);stroke:var(--brand);stroke-width:2}
+.land .hub text{font-size:11px;font-weight:700;fill:var(--ink);text-anchor:middle}
+.land .hub text.sm{font-size:9px;font-weight:500;fill:var(--muted)}
+.land .node{cursor:pointer;outline:none;opacity:0;animation:landpop .6s cubic-bezier(.2,.9,.3,1.2) forwards;animation-delay:calc(var(--i)*110ms);transform-box:fill-box;transform-origin:center}
+.land .node circle.b{fill:var(--brand-dim);stroke:var(--brand);stroke-width:2;transition:stroke-width .15s}
+.land .node.warn circle.b{fill:var(--warn-dim);stroke:var(--warn)}.land .node.bad circle.b{fill:var(--bad-dim);stroke:var(--bad)}
+.land .node .halo{fill:none;stroke:var(--warn);stroke-width:2;opacity:0}
+.land .node.warn .halo,.land .node.bad .halo{animation:landhalo 2.4s infinite}
+.land .node.bad .halo{stroke:var(--bad)}
+.land .node:hover circle.b,.land .node:focus-visible circle.b,.land .node.sel circle.b{stroke-width:4}
+.land .node text{font-size:11px;fill:var(--ink);text-anchor:middle;pointer-events:none}
+.land .node text.v{font-size:10px;fill:var(--muted)}
+.land .nt{fill:var(--bad);stroke:var(--panel);stroke-width:1.5}
+.land .sat circle.t{fill:none;stroke:var(--line-2);stroke-width:4}
+.land .sat circle.a{fill:none;stroke:var(--brand);stroke-width:4;stroke-linecap:round;transform-box:fill-box;transform-origin:center;transform:rotate(-90deg)}
+.land .sat circle.a.warn{stroke:var(--warn)}.land .sat circle.a.bad{stroke:var(--bad)}
+.land .sat text{font-size:9px;fill:var(--muted);text-anchor:middle}
+.land-leg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:2px 0 10px}
+.land-leg span{display:flex;align-items:center;gap:6px}
+.land-leg i{width:11px;height:11px;border-radius:50%;border:2px solid var(--brand);background:var(--brand-dim);display:inline-block}
+.land-leg i.warn{border-color:var(--warn);background:var(--warn-dim)}.land-leg i.bad{border-color:var(--bad);background:var(--bad-dim)}
+.land-leg i.d{border-radius:0;transform:rotate(45deg);width:9px;height:9px;border:0;background:var(--bad)}
+.land-det{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:12px;padding:12px 16px}
+.land-det h3{margin:0 0 2px;font-size:15px}
+@keyframes landpop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+@keyframes landhalo{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
+@media(prefers-reduced-motion:reduce){.ck-acts li,.land .node{animation:none;opacity:1;transform:none}.ck-eye i,.land .node .halo,.ck-head .caret{animation:none}.ck-rings .arc{transition:none}}
 </style>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
@@ -346,16 +436,18 @@ details.intro .body{margin-top:8px}
 <nav role="tablist" id="tabs">
   <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
   <button role="tab" data-tab="contracts" aria-selected="false">Contracts</button>
+  <button role="tab" data-tab="landscape" aria-selected="false">Landscape</button>
   <button role="tab" data-tab="invoices" aria-selected="false">Invoices</button>
   <button role="tab" data-tab="usage" aria-selected="false">AI units &amp; products</button>
   <button role="tab" data-tab="tickets" aria-selected="false">Tickets</button>
 </nav>
 <main>
-  <section class="pg on" id="pg-overview"><div class="grid" id="kpis"></div>
+  <section class="pg on" id="pg-overview"><div class="card cockpit" id="cockpit" aria-live="polite"></div><div class="grid" id="kpis" style="margin-top:14px"></div>
     <div class="ov-grid"><div class="card" id="ov-nba"></div><div class="card" id="ov-tickets"></div></div>
     <div class="ov-grid"><div class="card" id="ov-offers"></div><div class="card" id="ov-ai"></div></div>
     <div class="card" id="ov-timeline" style="margin-top:14px"></div><h2>Needs your attention</h2><div class="card tbl" id="attention"></div><h2>Customer</h2><div class="card" id="profile"></div></section>
   <section class="pg" id="pg-invoices"><div class="grid" id="inv-kpis"></div><div class="filters"><label class="s" for="inv-status" style="display:inline">Status</label><select id="inv-status"><option value="">All</option><option>Open</option><option>Overdue</option><option>Paid</option><option>Settled</option></select><span class="inv-tools"><button class="enrich-btn" type="button" id="inv-expand">Expand all</button><button class="enrich-btn" type="button" id="inv-collapse">Collapse all</button></span></div><div class="card tbl" id="invoices"></div></section>
+  <section class="pg" id="pg-landscape"><div class="card land" id="land"></div></section>
   <section class="pg" id="pg-contracts"><h2 style="margin-top:0">Contracts</h2><div class="card tbl" id="contracts"></div><div class="card detail" id="contract-detail" aria-live="polite"></div><h2>Offers from SAP</h2><div class="card tbl" id="offers"></div><div class="card detail" id="offer-detail" aria-live="polite"></div></section>
   <section class="pg" id="pg-usage">
     <div class="grid" id="usage-kpis"></div>
@@ -2971,6 +3063,1034 @@ details.intro .body{margin-top:8px}
           "updated": "2026-08-29"
         }
       ]
+    },
+    {
+      "id": "lindenau",
+      "asOf": "2026-10-18",
+      "customer": {
+        "id": "lindenau",
+        "name": "Lindenau Pharma AG",
+        "number": "100-905-326",
+        "sapCustomerId": "0010090532",
+        "contact": "Dr. S. Roth",
+        "country": "Germany"
+      },
+      "profile": {
+        "industry": "Life sciences (pharmaceuticals and biologics manufacturing)",
+        "employees": 3900,
+        "headquarters": "Heidelberg, Germany",
+        "customerSince": 2017,
+        "segment": "Mid-size enterprise",
+        "fiscalYearEnd": "12-31",
+        "legalEntities": [
+          "Lindenau Pharma AG, Heidelberg",
+          "Lindenau Biologics GmbH, Penzberg",
+          "Lindenau Pharma Schweiz AG, Basel"
+        ],
+        "accountTeam": [
+          {
+            "name": "Clara Neumann",
+            "role": "Account Executive, SAP",
+            "email": "clara.neumann@example.com"
+          },
+          {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          {
+            "name": "Lukas Fischer",
+            "role": "Solution Consultant, SAP",
+            "email": "lukas.fischer@example.com"
+          }
+        ],
+        "contacts": [
+          {
+            "name": "Dr. Sabine Roth",
+            "role": "Head of IT Procurement",
+            "email": "s.roth@lindenau-pharma.example"
+          },
+          {
+            "name": "Dr. Matthias Vogel",
+            "role": "CIO",
+            "email": "m.vogel@lindenau-pharma.example"
+          },
+          {
+            "name": "Dr. Petra Ostermann",
+            "role": "Head of Quality Assurance and GxP Compliance",
+            "email": "p.ostermann@lindenau-pharma.example"
+          },
+          {
+            "name": "Ralf Kessel",
+            "role": "Head of Manufacturing IT",
+            "email": "r.kessel@lindenau-pharma.example"
+          },
+          {
+            "name": "Anika Brandl",
+            "role": "Platform Lead",
+            "email": "a.brandl@lindenau-pharma.example"
+          },
+          {
+            "name": "Thomas Engel",
+            "role": "Head of Accounts Payable",
+            "email": "t.engel@lindenau-pharma.example"
+          }
+        ],
+        "landscape": [
+          "S/4HANA Cloud Private Edition, validated GxP environment (DEV, QAS, PRD) for 3 plants",
+          "Integrated Business Planning for 14 markets with cold-chain constraints",
+          "SuccessFactors Learning for GxP training and qualification",
+          "Advanced Track and Trace for EU and US serialization on 9 packaging lines",
+          "AI units for Document AI (batch records), Joule and AI Core in eu10"
+        ],
+        "notes": "Regulated manufacturer: every change to a validated system needs a validation concept and change control. AI use cases are released step by step by Quality Assurance. The expired Ariba contract and the Document AI volume are the topics this quarter."
+      },
+      "aiUnits": {
+        "periodStart": "2026-01-01",
+        "periodEnd": "2026-12-31",
+        "allotment": 60000,
+        "history": [
+          {
+            "year": 2025,
+            "allotment": 30000,
+            "monthly": [
+              600,
+              700,
+              850,
+              1000,
+              1200,
+              1350,
+              1300,
+              1500,
+              1700,
+              1900,
+              2100,
+              1950
+            ]
+          }
+        ],
+        "monthly": [
+          2200,
+          2750,
+          3550,
+          4350,
+          5050,
+          5700,
+          5400,
+          6250,
+          6850,
+          4650
+        ]
+      },
+      "products": [
+        {
+          "name": "Document AI",
+          "allotment": 22000,
+          "meters": "documents processed (batch records, regulatory forms)",
+          "monthly": [
+            800,
+            1100,
+            1500,
+            1850,
+            2150,
+            2400,
+            2300,
+            2600,
+            2850,
+            1850
+          ],
+          "consumed": 19400
+        },
+        {
+          "name": "Joule copilots",
+          "allotment": 16000,
+          "meters": "copilot dialogues and agent runs",
+          "monthly": [
+            500,
+            600,
+            800,
+            950,
+            1100,
+            1250,
+            1150,
+            1400,
+            1500,
+            1050
+          ],
+          "consumed": 10300
+        },
+        {
+          "name": "BTP AI Core",
+          "allotment": 14000,
+          "meters": "inference hours and model deployments",
+          "monthly": [
+            700,
+            800,
+            950,
+            1100,
+            1300,
+            1450,
+            1400,
+            1550,
+            1700,
+            1100
+          ],
+          "consumed": 12050
+        },
+        {
+          "name": "Business AI (quality and supply chain)",
+          "allotment": 8000,
+          "meters": "predictions and scenario runs",
+          "monthly": [
+            200,
+            250,
+            300,
+            450,
+            500,
+            600,
+            550,
+            700,
+            800,
+            650
+          ],
+          "consumed": 5000
+        }
+      ],
+      "contracts": [
+        {
+          "id": "C-2024-0905",
+          "product": "S/4HANA Cloud Private Edition (manufacturing, quality, batch management)",
+          "scope": "1,100 users, 3 plants (Heidelberg, Penzberg, Basel), DEV/QAS/PRD",
+          "start": "2024-07-01",
+          "end": "2029-06-30",
+          "annualEur": 2150000,
+          "status": "Active",
+          "noticeDays": 180,
+          "contractType": "Subscription (RISE with SAP)",
+          "signedOn": "2024-04-22",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800905120",
+          "costCenter": "CC-1000 IT and Manufacturing",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 13,
+          "sapOwner": {
+            "name": "Clara Neumann",
+            "role": "Account Executive, SAP",
+            "email": "clara.neumann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Matthias Vogel",
+            "role": "CIO",
+            "email": "m.vogel@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium Plus",
+            "availabilityPct": 99.9,
+            "supportHours": "24/7",
+            "responseVeryHighMin": 30
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Private cloud, validated environment (GxP)",
+          "licensedUnits": 1100,
+          "usedUnits": 987,
+          "unit": "users",
+          "invoicing": {
+            "nextInvoiceOn": "2027-07-01",
+            "openInvoices": 1,
+            "openAmountEur": 96000,
+            "paymentStatus": "Overdue"
+          },
+          "termination": "No termination for convenience in the first 48 months; extraordinary termination for cause with 30 days cure period.",
+          "notes": "Validated GxP environment with change control per release. Two releases a year are validated by Quality Assurance before go-live.",
+          "lines": [
+            {
+              "component": "S/4HANA Cloud Private Edition, core",
+              "quantity": 1100,
+              "unit": "users",
+              "annualEur": 1595000,
+              "unitPriceEur": 1450
+            },
+            {
+              "component": "Validated environment and change-control service",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 310000,
+              "unitPriceEur": 310000
+            },
+            {
+              "component": "Premium Plus support",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 245000,
+              "unitPriceEur": 245000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0612",
+          "product": "SAP Integrated Business Planning",
+          "scope": "240 planners, demand and supply planning for 14 markets",
+          "start": "2025-04-01",
+          "end": "2028-03-31",
+          "annualEur": 324000,
+          "status": "Active",
+          "noticeDays": 120,
+          "contractType": "Subscription",
+          "signedOn": "2025-01-30",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800612044",
+          "costCenter": "CC-1300 Supply Chain",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 10,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Ralf Kessel",
+            "role": "Head of Manufacturing IT",
+            "email": "r.kessel@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.7,
+            "supportHours": "Mon-Fri 7-19 CET, P1 24/7",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 240,
+          "usedUnits": 201,
+          "unit": "planners",
+          "invoicing": {
+            "nextInvoiceOn": "2027-04-01",
+            "openInvoices": 1,
+            "openAmountEur": 36500,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of the term with 120 days notice.",
+          "notes": "Cold-chain constraints in the supply plan are the topic of the current use case.",
+          "lines": [
+            {
+              "component": "Integrated Business Planning, planner licenses",
+              "quantity": 240,
+              "unit": "planners",
+              "annualEur": 276000,
+              "unitPriceEur": 1150
+            },
+            {
+              "component": "Control tower and alerts",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 48000,
+              "unitPriceEur": 48000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0718",
+          "product": "SuccessFactors Learning (GxP training and qualification)",
+          "scope": "3,900 employees, 6 learning curricula",
+          "start": "2025-07-01",
+          "end": "2028-06-30",
+          "annualEur": 139050,
+          "status": "Active",
+          "noticeDays": 90,
+          "contractType": "Subscription",
+          "signedOn": "2025-05-12",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800718093",
+          "costCenter": "CC-2100 HR and Quality",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 8,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Petra Ostermann",
+            "role": "Head of Quality Assurance and GxP Compliance",
+            "email": "p.ostermann@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Standard",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 8-18 CET",
+            "responseVeryHighMin": 120
+          },
+          "dataCenter": "Amsterdam (EU, NL)",
+          "deployment": "Public cloud",
+          "licensedUnits": 3900,
+          "usedUnits": 3412,
+          "unit": "employees",
+          "invoicing": {
+            "nextInvoiceOn": "2027-07-01",
+            "openInvoices": 1,
+            "openAmountEur": 139050,
+            "paymentStatus": "Overdue"
+          },
+          "termination": "Termination at the end of the term with 90 days notice.",
+          "notes": "Training records are part of the inspection file; completion data must be kept for 10 years.",
+          "lines": [
+            {
+              "component": "Learning, employee licenses",
+              "quantity": 3900,
+              "unit": "employees",
+              "annualEur": 115050,
+              "unitPriceEur": 29.5
+            },
+            {
+              "component": "Content integration and e-signature",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 24000,
+              "unitPriceEur": 24000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2025-0833",
+          "product": "SAP Advanced Track and Trace (serialization)",
+          "scope": "9 packaging lines, 31 markets",
+          "start": "2025-10-01",
+          "end": "2027-12-31",
+          "annualEur": 414000,
+          "status": "Active",
+          "noticeDays": 120,
+          "contractType": "Subscription",
+          "signedOn": "2025-08-19",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800833217",
+          "costCenter": "CC-1300 Supply Chain",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 9,
+          "sapOwner": {
+            "name": "Clara Neumann",
+            "role": "Account Executive, SAP",
+            "email": "clara.neumann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Ralf Kessel",
+            "role": "Head of Manufacturing IT",
+            "email": "r.kessel@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.7,
+            "supportHours": "Mon-Fri 7-19 CET, P1 24/7",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 9,
+          "usedUnits": 9,
+          "unit": "packaging lines",
+          "invoicing": {
+            "nextInvoiceOn": "2027-10-01",
+            "openInvoices": 1,
+            "openAmountEur": 414000,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of the term with 120 days notice.",
+          "notes": "EU Falsified Medicines Directive and US DSCSA reporting. All lines are in use, a tenth line is planned for 2027.",
+          "lines": [
+            {
+              "component": "Serialization, packaging lines",
+              "quantity": 9,
+              "unit": "packaging lines",
+              "annualEur": 342000,
+              "unitPriceEur": 38000
+            },
+            {
+              "component": "Regulatory reporting packages (EU, US)",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 72000,
+              "unitPriceEur": 72000
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2026-0051",
+          "product": "AI units (Joule, AI Core, Document AI, Business AI)",
+          "scope": "60,000 AI units, calendar year 2026",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "annualEur": 180000,
+          "status": "Active",
+          "noticeDays": 60,
+          "contractType": "Consumption (prepaid)",
+          "signedOn": "2025-12-09",
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800051660",
+          "costCenter": "CC-1000 IT and Manufacturing",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": true,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 6,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Anika Brandl",
+            "role": "Platform Lead",
+            "email": "a.brandl@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Premium",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 7-19 CET",
+            "responseVeryHighMin": 60
+          },
+          "dataCenter": "Frankfurt (EU, DE)",
+          "deployment": "Public cloud",
+          "licensedUnits": 60000,
+          "usedUnits": 46750,
+          "unit": "AI units",
+          "invoicing": {
+            "nextInvoiceOn": "2027-01-01",
+            "openInvoices": 1,
+            "openAmountEur": 41800,
+            "paymentStatus": "Invoice open"
+          },
+          "termination": "Termination at the end of term with 60 days notice. Unused units do not carry over.",
+          "notes": "Document AI for batch records and regulatory submissions drives the usage. Every AI use case needs a validation concept from Quality Assurance.",
+          "lines": [
+            {
+              "component": "AI units, yearly allotment",
+              "quantity": 60000,
+              "unit": "units",
+              "annualEur": 180000,
+              "unitPriceEur": 3
+            }
+          ],
+          "currency": "EUR"
+        },
+        {
+          "id": "C-2023-0344",
+          "product": "Ariba Procurement",
+          "scope": "210 buyers, 1,900 suppliers",
+          "start": "2023-02-01",
+          "end": "2026-01-31",
+          "annualEur": 127200,
+          "status": "Expired",
+          "noticeDays": 90,
+          "contractType": "Subscription",
+          "signedOn": "2022-12-05",
+          "billingCycle": "Quarterly in advance",
+          "paymentTerms": "30 days net",
+          "poNumber": "PO-8800344501",
+          "costCenter": "CC-3100 Procurement",
+          "legalEntity": "Lindenau Pharma AG, Heidelberg",
+          "governingLaw": "German law",
+          "autoRenew": false,
+          "renewalTermMonths": 12,
+          "priceUpliftCapPct": 3,
+          "discountPct": 7,
+          "sapOwner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "csm": {
+            "name": "Jonas Weber",
+            "role": "Customer Success Manager, SAP",
+            "email": "jonas.weber@example.com"
+          },
+          "customerOwner": {
+            "name": "Dr. Sabine Roth",
+            "role": "Head of IT Procurement",
+            "email": "s.roth@lindenau-pharma.example"
+          },
+          "sla": {
+            "tier": "Standard",
+            "availabilityPct": 99.5,
+            "supportHours": "Mon-Fri 8-18 CET",
+            "responseVeryHighMin": 120
+          },
+          "dataCenter": "Amsterdam (EU, NL)",
+          "deployment": "Public cloud",
+          "licensedUnits": 210,
+          "usedUnits": 210,
+          "unit": "buyers",
+          "invoicing": {
+            "nextInvoiceOn": null,
+            "openInvoices": 0,
+            "openAmountEur": 0,
+            "paymentStatus": "Closed"
+          },
+          "termination": "Expired. Suppliers still order on a trial tenant.",
+          "notes": "Expired in January; the customer asked for a reactivation offer that includes supplier qualification for GxP suppliers.",
+          "lines": [
+            {
+              "component": "Ariba Buying and Invoicing",
+              "quantity": 210,
+              "unit": "buyers",
+              "annualEur": 109200,
+              "unitPriceEur": 520
+            },
+            {
+              "component": "Supplier qualification content",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 18000,
+              "unitPriceEur": 18000
+            }
+          ],
+          "currency": "EUR"
+        }
+      ],
+      "offers": [
+        {
+          "id": "OFF-2026-0510",
+          "type": "Renewal",
+          "product": "Ariba Procurement",
+          "contractId": "C-2023-0344",
+          "scope": "240 buyers, 2,300 suppliers including GxP supplier qualification, 3-year term",
+          "start": "2026-12-01",
+          "end": "2029-11-30",
+          "annualEur": 229200,
+          "currentAnnualEur": 127200,
+          "validUntil": "2026-11-25",
+          "status": "Open",
+          "createdOn": "2026-10-02",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Proposal sent",
+          "probabilityPct": 60,
+          "listPriceEur": 251868,
+          "discountPct": 9,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 36,
+          "autoRenew": false,
+          "upliftCapPct": 3,
+          "priceGuaranteeMonths": 36,
+          "approval": "Deal desk approved",
+          "competitor": "None",
+          "nextStep": "Review of the supplier qualification workflow with Quality Assurance by 2026-11-06",
+          "conditions": "Replaces the expired contract; supplier master data is migrated from the trial tenant.",
+          "lines": [
+            {
+              "component": "Ariba Buying and Invoicing",
+              "quantity": 240,
+              "unit": "buyers",
+              "annualEur": 129600,
+              "unitPriceEur": 540
+            },
+            {
+              "component": "Supplier qualification content",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 26000,
+              "unitPriceEur": 26000
+            },
+            {
+              "component": "Supplier Risk module",
+              "quantity": 2300,
+              "unit": "suppliers",
+              "annualEur": 73600,
+              "unitPriceEur": 32
+            }
+          ]
+        },
+        {
+          "id": "OFF-2026-0518",
+          "type": "New product",
+          "product": "Joule for Quality (batch-record review) and AI units top-up",
+          "contractId": "C-2026-0051",
+          "scope": "25,000 additional AI units until 2026-12-31 and Joule skills for deviation and batch-record review",
+          "start": "2026-11-15",
+          "end": "2026-12-31",
+          "annualEur": 129000,
+          "currentAnnualEur": 0,
+          "validUntil": "2026-11-30",
+          "status": "In negotiation",
+          "createdOn": "2026-10-09",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Negotiation",
+          "probabilityPct": 55,
+          "listPriceEur": 138710,
+          "discountPct": 7,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 2,
+          "autoRenew": false,
+          "upliftCapPct": 0,
+          "priceGuaranteeMonths": 0,
+          "approval": "Pending deal desk (non-standard top-up terms) and validation concept from Quality Assurance",
+          "competitor": "Own build on a hyperscaler (evaluation)",
+          "nextStep": "Validation concept review with Quality Assurance by 2026-10-30",
+          "conditions": "Top-up units expire with the main allotment; productive use only after the validation concept is approved.",
+          "lines": [
+            {
+              "component": "AI units, top-up",
+              "quantity": 25000,
+              "unit": "units",
+              "annualEur": 75000,
+              "unitPriceEur": 3
+            },
+            {
+              "component": "Joule skills for deviation and batch-record review",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 54000,
+              "unitPriceEur": 54000
+            }
+          ]
+        },
+        {
+          "id": "OFF-2026-0526",
+          "type": "New product",
+          "product": "SAP Integrated Business Planning",
+          "contractId": "C-2025-0612",
+          "scope": "60 additional planners and a cold-chain scenario package for 5 markets",
+          "start": "2027-01-01",
+          "end": "2028-03-31",
+          "annualEur": 98000,
+          "currentAnnualEur": 0,
+          "validUntil": "2026-12-15",
+          "status": "Open",
+          "createdOn": "2026-10-12",
+          "owner": {
+            "name": "Mira Hoffmann",
+            "role": "Account Executive Platform, SAP",
+            "email": "mira.hoffmann@example.com"
+          },
+          "stage": "Proposal sent",
+          "probabilityPct": 45,
+          "listPriceEur": 106522,
+          "discountPct": 8,
+          "billingCycle": "Annual in advance",
+          "paymentTerms": "30 days net",
+          "termMonths": 15,
+          "autoRenew": false,
+          "upliftCapPct": 3,
+          "priceGuaranteeMonths": 15,
+          "approval": "Deal desk approved",
+          "competitor": "None",
+          "nextStep": "Workshop with Manufacturing IT on the cold-chain scenarios by 2026-11-12",
+          "conditions": "Co-terminous with the existing contract; price per planner as in the current contract.",
+          "lines": [
+            {
+              "component": "Integrated Business Planning, additional planners",
+              "quantity": 60,
+              "unit": "planners",
+              "annualEur": 69000,
+              "unitPriceEur": 1150
+            },
+            {
+              "component": "Cold-chain scenario package",
+              "quantity": 1,
+              "unit": "service",
+              "annualEur": 29000,
+              "unitPriceEur": 29000
+            }
+          ]
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-40110",
+          "contractId": "C-2026-0051",
+          "type": "Invoice",
+          "period": "month of 2026-09",
+          "issued": "2026-10-06",
+          "due": "2026-11-05",
+          "netEur": 41800,
+          "vatPct": 19,
+          "grossEur": 49742,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-8800051660",
+          "description": "Document AI overage, Q3"
+        },
+        {
+          "id": "INV-2026-40104",
+          "contractId": "C-2025-0833",
+          "type": "Invoice",
+          "period": "2026-10-01 to 2027-09-30",
+          "issued": "2026-10-01",
+          "due": "2026-10-31",
+          "netEur": 414000,
+          "vatPct": 19,
+          "grossEur": 492660,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-8800833217",
+          "description": "Advanced Track and Trace, annual in advance"
+        },
+        {
+          "id": "INV-2026-40109",
+          "contractId": "C-2025-0612",
+          "type": "Invoice",
+          "period": "month of 2026-09",
+          "issued": "2026-09-21",
+          "due": "2026-10-21",
+          "netEur": 36500,
+          "vatPct": 19,
+          "grossEur": 43435,
+          "status": "Open",
+          "paidOn": null,
+          "poNumber": "PO-8800612044",
+          "description": "IBP additional demand-sensing capacity, Q3"
+        },
+        {
+          "id": "INV-2026-40108",
+          "contractId": "C-2024-0905",
+          "type": "Invoice",
+          "period": "2026-07-01 to 2027-06-30",
+          "issued": "2026-09-14",
+          "due": "2026-10-14",
+          "netEur": 96000,
+          "vatPct": 19,
+          "grossEur": 114240,
+          "status": "Overdue",
+          "paidOn": null,
+          "poNumber": "PO-8800905120",
+          "description": "S/4HANA validation package for release 2608 (change control and test evidence)"
+        },
+        {
+          "id": "INV-2026-40102",
+          "contractId": "C-2025-0718",
+          "type": "Invoice",
+          "period": "2026-07-01 to 2027-06-30",
+          "issued": "2026-07-01",
+          "due": "2026-07-31",
+          "netEur": 139050,
+          "vatPct": 19,
+          "grossEur": 165469.5,
+          "status": "Overdue",
+          "paidOn": null,
+          "poNumber": "PO-8800718093",
+          "description": "SuccessFactors Learning, annual in advance"
+        },
+        {
+          "id": "INV-2026-40100",
+          "contractId": "C-2024-0905",
+          "type": "Invoice",
+          "period": "2026-07-01 to 2027-06-30",
+          "issued": "2026-07-01",
+          "due": "2026-07-31",
+          "netEur": 2150000,
+          "vatPct": 19,
+          "grossEur": 2558500,
+          "status": "Paid",
+          "paidOn": "2026-07-28",
+          "poNumber": "PO-8800905120",
+          "description": "S/4HANA Cloud Private Edition, annual in advance"
+        },
+        {
+          "id": "INV-2026-40101",
+          "contractId": "C-2025-0612",
+          "type": "Invoice",
+          "period": "2026-04-01 to 2027-03-31",
+          "issued": "2026-04-01",
+          "due": "2026-05-01",
+          "netEur": 324000,
+          "vatPct": 19,
+          "grossEur": 385560,
+          "status": "Paid",
+          "paidOn": "2026-04-29",
+          "poNumber": "PO-8800612044",
+          "description": "Integrated Business Planning, annual in advance"
+        },
+        {
+          "id": "CN-2026-00533",
+          "contractId": "C-2024-0905",
+          "type": "Credit note",
+          "period": "2025-07-01 to 2026-06-30",
+          "issued": "2026-03-02",
+          "due": "2026-04-01",
+          "netEur": -18700,
+          "vatPct": 19,
+          "grossEur": -22253,
+          "status": "Settled",
+          "paidOn": "2026-03-02",
+          "poNumber": "PO-8800905120",
+          "description": "Credit for the planned maintenance window that exceeded the agreed 4 hours on 2026-02-14 (SLA 99.9 %)"
+        },
+        {
+          "id": "INV-2026-40105",
+          "contractId": "C-2026-0051",
+          "type": "Invoice",
+          "period": "2026-01-01 to 2026-12-31",
+          "issued": "2026-01-01",
+          "due": "2026-01-31",
+          "netEur": 180000,
+          "vatPct": 19,
+          "grossEur": 214200,
+          "status": "Paid",
+          "paidOn": "2026-02-05",
+          "poNumber": "PO-8800051660",
+          "description": "AI units 2026, annual in advance"
+        },
+        {
+          "id": "INV-2026-40106",
+          "contractId": "C-2023-0344",
+          "type": "Invoice",
+          "period": "quarter starting 2025-11-01",
+          "issued": "2025-11-01",
+          "due": "2025-12-01",
+          "netEur": 22400,
+          "vatPct": 19,
+          "grossEur": 26656,
+          "status": "Paid",
+          "paidOn": "2025-12-02",
+          "poNumber": "PO-8800344501",
+          "description": "Ariba Procurement, quarterly in advance"
+        },
+        {
+          "id": "INV-2026-40103",
+          "contractId": "C-2025-0833",
+          "type": "Invoice",
+          "period": "2025-10-01 to 2026-09-30",
+          "issued": "2025-10-01",
+          "due": "2025-10-31",
+          "netEur": 414000,
+          "vatPct": 19,
+          "grossEur": 492660,
+          "status": "Paid",
+          "paidOn": "2025-11-19",
+          "poNumber": "PO-8800833217",
+          "description": "Advanced Track and Trace, annual in advance"
+        },
+        {
+          "id": "INV-2026-40107",
+          "contractId": "C-2023-0344",
+          "type": "Invoice",
+          "period": "quarter starting 2025-08-01",
+          "issued": "2025-08-01",
+          "due": "2025-08-31",
+          "netEur": 22400,
+          "vatPct": 19,
+          "grossEur": 26656,
+          "status": "Paid",
+          "paidOn": "2025-09-17",
+          "poNumber": "PO-8800344501",
+          "description": "Ariba Procurement, quarterly in advance"
+        }
+      ],
+      "tickets": [
+        {
+          "id": "TKT-48212",
+          "title": "S/4HANA Cloud Private Edition: batch release transaction ends with a short dump after the 2608 upgrade",
+          "product": "S/4HANA Cloud Private Edition",
+          "priority": "High",
+          "status": "In processing",
+          "description": "After the 2608 upgrade in QAS the batch release (usage decision) dumps for batches with more than 40 characteristics. PRD is not yet upgraded; the validation run is blocked.",
+          "created": "2026-10-12",
+          "updated": "2026-10-17"
+        },
+        {
+          "id": "TKT-48188",
+          "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+          "product": "SAP Advanced Track and Trace",
+          "priority": "High",
+          "status": "Waiting for customer",
+          "description": "Since 2026-10-08 uploads for the Swiss repository are answered with a schema error. We need the failing messages from the packaging line 6 log.",
+          "created": "2026-10-09",
+          "updated": "2026-10-15"
+        },
+        {
+          "id": "TKT-48097",
+          "title": "Document AI: handwritten corrections on scanned batch records are not read",
+          "product": "Document AI",
+          "priority": "Medium",
+          "status": "In processing",
+          "description": "Handwritten corrections with initials on the second page of the batch record come back as empty fields. Typed fields are read correctly.",
+          "created": "2026-10-05",
+          "updated": "2026-10-13"
+        },
+        {
+          "id": "TKT-47921",
+          "title": "SuccessFactors Learning: qualification status not updated after e-signature",
+          "product": "SuccessFactors Learning",
+          "priority": "Medium",
+          "status": "Solution provided",
+          "description": "After the e-signature of a curriculum the status stays \"in progress\" until the nightly job. Quality Assurance needs it immediately for the line release.",
+          "created": "2026-09-29",
+          "updated": "2026-10-08"
+        },
+        {
+          "id": "TKT-47340",
+          "title": "Request: audit log export of all Joule agent actions for the next inspection",
+          "product": "Joule copilots",
+          "priority": "Low",
+          "status": "Closed",
+          "description": "The inspection team asks for an export of all actions taken by Joule agents in the validated systems, with user and timestamp.",
+          "created": "2026-08-24",
+          "updated": "2026-09-04"
+        }
+      ]
     }
   ],
   "knowledge": {
@@ -3025,6 +4145,26 @@ details.intro .body{margin-top:8px}
         "description": "After a catalog import the storefront search finds nothing and the index shows no documents.",
         "solution": "Run a full re-index for the affected index type after the import and verify that the import synchronisation job finished with status FINISHED before the index job starts.",
         "updated": "2026-06-11"
+      },
+      {
+        "id": "SAMPLE-1006",
+        "title": "Batch usage decision: short dump for batches with more than 40 characteristics",
+        "product": "S/4HANA Cloud Private Edition",
+        "component": "Quality Management, batch management",
+        "keywords": "batch release usage decision short dump characteristics upgrade 2608",
+        "description": "After an upgrade the usage decision dumps for batches with a large number of characteristics, because an internal table limit was lowered.",
+        "solution": "Apply the correction instruction of the sample note in the QAS system, regenerate the affected classes and repeat the usage decision. Record the correction in the change-control file before moving it to PRD.",
+        "updated": "2026-10-14"
+      },
+      {
+        "id": "SAMPLE-1007",
+        "title": "Document AI: handwritten text on scanned forms is not extracted",
+        "product": "Document AI",
+        "component": "Document AI, extraction models",
+        "keywords": "handwriting handwritten scanned batch record initials extraction empty field",
+        "description": "The default extraction model reads typed text. Handwritten entries need the handwriting option and a scan resolution of at least 300 dpi.",
+        "solution": "Switch the document type to the handwriting-capable model, set the scan resolution to 300 dpi or higher and re-run the extraction. Check the result against the validation set before productive use.",
+        "updated": "2026-10-01"
       }
     ],
     "scenarios": [
@@ -3067,6 +4207,22 @@ details.intro .body{margin-top:8px}
         "product": "Ariba AI",
         "priority": "Medium",
         "description": "Requisitions for cost centre 4720 skip the approval flow."
+      },
+      {
+        "customer": "lindenau",
+        "label": "Batch release dump after 2608",
+        "title": "S/4HANA Cloud Private Edition: batch release ends with a short dump after the 2608 upgrade",
+        "product": "S/4HANA Cloud Private Edition",
+        "priority": "High",
+        "description": "After the 2608 upgrade the usage decision for batches with many characteristics ends with a short dump. The validation run in QAS is blocked."
+      },
+      {
+        "customer": "lindenau",
+        "label": "Handwriting in batch records",
+        "title": "Document AI: handwritten corrections on scanned batch records are not recognised",
+        "product": "Document AI",
+        "priority": "Medium",
+        "description": "Typed fields are read correctly, but handwritten corrections with initials come back as empty fields."
       }
     ]
   }
@@ -3125,6 +4281,7 @@ details.intro .body{margin-top:8px}
     due.forEach(function(i){ rows.push('<tr><td>' + tag('bad', 'overdue') + '</td><td><b>Invoice ' + esc(i.id) + '</b><div class="s">' + eur(i.grossEur) + ' gross, due ' + esc(i.due) + ' (' + (-days(i.due)) + ' days ago), contract ' + esc(i.contractId) + '</div></td></tr>'); });
     $('attention').innerHTML = '<table><tbody>' + (rows.length ? rows.join('') : '<tr><td class="s">Nothing needs attention.</td></tr>') + '</tbody></table>';
     renderNba(); renderOvTickets(); renderOvOffers(); renderOvAi(); renderTimeline();
+    renderCockpit();
     renderProfile();
   }
 
@@ -3143,12 +4300,12 @@ details.intro .body{margin-top:8px}
   }
   function nextBestActions(){
     var c = [];
-    D.invoices.filter(function(i){ return i.status === 'Overdue'; }).forEach(function(i){ c.push({score: 100 + -days(i.due), tab: 'invoices', title: 'Clear the overdue invoice ' + i.id, why: eur(i.grossEur) + ' gross, ' + (-days(i.due)) + ' days overdue (contract ' + i.contractId + '). Ask accounts payable for a payment date.'}); });
-    D.tickets.filter(function(t){ return ticketOpen(t) && t.priority === 'Very high'; }).forEach(function(t){ c.push({score: 95, tab: 'tickets', title: 'Follow up the very high ticket ' + t.id, why: t.title + ', open for ' + ticketAge(t) + ' days.'}); });
-    openOffers().forEach(function(o){ var d = days(o.validUntil); if (d <= 30) c.push({score: 90 - Math.max(0, d), tab: 'contracts', title: 'Close offer ' + o.id + ' before it lapses', why: o.product + ': valid until ' + o.validUntil + ' (' + (d >= 0 ? d + ' days left' : 'lapsed') + ', win probability ' + (o.probabilityPct == null ? 'unknown' : o.probabilityPct + ' %') + '). Next step: ' + (o.nextStep || 'agree one with the customer') + '.'}); });
+    D.invoices.filter(function(i){ return i.status === 'Overdue'; }).forEach(function(i){ c.push({score: 100 + -days(i.due), tab: 'invoices', title: 'Clear the overdue invoice ' + i.id, why: eur(i.grossEur) + ' gross, ' + (-days(i.due)) + ' days overdue (contract ' + i.contractId + '). Please tell us a payment date, or open a ticket if the invoice is disputed.'}); });
+    D.tickets.filter(function(t){ return ticketOpen(t) && t.priority === 'Very high'; }).forEach(function(t){ c.push({score: 95, tab: 'tickets', title: 'Follow up your very high ticket ' + t.id, why: t.title + ', open for ' + ticketAge(t) + ' days.'}); });
+    openOffers().forEach(function(o){ var d = days(o.validUntil); if (d <= 30) c.push({score: 90 - Math.max(0, d), tab: 'contracts', title: 'Decide on offer ' + o.id + ' before it lapses', why: o.product + ': valid until ' + o.validUntil + ' (' + (d >= 0 ? d + ' days left' : 'lapsed') + '). Next step: ' + (o.nextStep || 'talk to your account team') + '.'}); });
     live.forEach(function(k){ var nd = days(addDaysIso(k.end, -(k.noticeDays || 0))); if (nd >= 0 && nd <= 90 && !k.autoRenew) c.push({score: 80 - nd / 2, tab: 'contracts', title: 'Decide on ' + k.product + ' before the notice date', why: 'Last day to give notice is ' + addDaysIso(k.end, -(k.noticeDays || 0)) + ' (' + nd + ' days). The contract ends ' + k.end + ' and does not renew by itself.'}); });
-    if (forecastPct >= 90) c.push({score: 70, tab: 'usage', title: 'Talk about more AI units', why: 'At the current run rate the year ends at ' + forecastPct + '% of the allotment.'});
-    D.tickets.filter(function(t){ return ticketOpen(t) && t.status === 'Waiting for customer'; }).forEach(function(t){ c.push({score: 40 + ticketAge(t), tab: 'tickets', title: 'Remind the customer about ' + t.id, why: 'Waiting for the customer for ' + ticketAge(t) + ' days: ' + t.title}); });
+    if (forecastPct >= 90) c.push({score: 70, tab: 'usage', title: 'Plan more AI units', why: 'At the current run rate the year ends at ' + forecastPct + '% of the allotment.'});
+    D.tickets.filter(function(t){ return ticketOpen(t) && t.status === 'Waiting for customer'; }).forEach(function(t){ c.push({score: 40 + ticketAge(t), tab: 'tickets', title: 'Answer our question on ' + t.id, why: 'We have been waiting for your reply for ' + ticketAge(t) + ' days: ' + t.title}); });
     return c.sort(function(a, b){ return b.score - a.score; });
   }
   function renderNba(){
@@ -3170,13 +4327,13 @@ details.intro .body{margin-top:8px}
   }
   function renderOvOffers(){
     var list = openOffers().sort(function(a, b){ return a.validUntil < b.validUntil ? -1 : 1; });
-    var weighted = sum(list.map(function(o){ return o.annualEur * (o.probabilityPct || 0) / 100; })), total = sum(list.map(function(o){ return o.annualEur; }));
-    $('ov-offers').innerHTML = '<div class="ov-h"><div class="k">Open offers</div><span class="s">' + eur(total) + ' offered · ' + eur(Math.round(weighted)) + ' weighted</span></div>' +
+    var total = sum(list.map(function(o){ return o.annualEur; }));
+    $('ov-offers').innerHTML = '<div class="ov-h"><div class="k">Offers for you</div><span class="s">' + eur(total) + ' offered</span></div>' +
       (list.length ? list.map(function(o){
         var d = days(o.validUntil), delta = o.currentAnnualEur ? ((o.annualEur / o.currentAnnualEur - 1) * 100).toFixed(1).replace(/^(\d)/, '+$1') + '%' : 'new';
         return '<div class="ov-row"><div class="top"><span><b>' + esc(o.product) + '</b> ' + tag('n', o.type) + '</span><span><b>' + eur(o.annualEur) + '</b> <span class="s">' + delta + '</span></span></div>' +
-          '<div class="s">' + esc(o.stage || o.status) + ' · valid until ' + esc(o.validUntil) + ' ' + tag(d < 0 ? 'bad' : d <= 14 ? 'warn' : 'n', d < 0 ? 'lapsed' : d + ' days') + (o.competitor && o.competitor !== 'None' ? ' · competitor ' + esc(o.competitor) : '') + '</div>' +
-          '<div class="bar" aria-label="Win probability"><i style="width:' + (o.probabilityPct || 0) + '%"></i></div><div class="s">' + (o.probabilityPct == null ? 'no estimate' : o.probabilityPct + ' % win probability') + (o.nextStep ? ' · next: ' + esc(o.nextStep) : '') + '</div></div>';
+          '<div class="s">' + esc(o.stage || o.status) + ' · valid until ' + esc(o.validUntil) + ' ' + tag(d < 0 ? 'bad' : d <= 14 ? 'warn' : 'n', d < 0 ? 'lapsed' : d + ' days') + '</div>' +
+          (o.nextStep ? '<div class="s">Next: ' + esc(o.nextStep) + '</div>' : '') + '</div>';
       }).join('') : '<div class="s">No open offers.</div>');
   }
   function renderOvAi(){
@@ -3187,6 +4344,146 @@ details.intro .body{margin-top:8px}
       '<div class="ov-stats"><div><b>Used</b>' + n(used) + '</div><div><b>Left</b>' + n(Math.max(0, r.left)) + '</div><div><b>Per month</b>' + n(Math.round(avg)) + '</div></div>' +
       '<div style="margin-top:10px">' + (r.ok ? tag('ok', 'enough until the end of the period') : tag(forecastPct >= 100 ? 'bad' : 'warn', 'runs out about ' + r.label)) + '</div>' +
       '<div class="s" style="margin-top:6px">' + (r.ok ? 'At ' + n(Math.round(avg)) + ' units per month the allotment covers the period.' : 'At ' + n(Math.round(avg)) + ' units per month the ' + n(Math.max(0, r.left)) + ' remaining units last about ' + r.months.toFixed(1) + ' months. Talk to the customer about a top-up or a larger allotment.') + '</div>';
+  }
+
+  /* ---------- Cockpit: Joule briefing, activity rings per product, time machine ---------- */
+  var ck = {scn: 'pace', month: 9, typeTimer: null, first: true};
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var pAvg = function(p){ var m = p.monthly.slice(-4, -1); return m.length ? sum(m) / m.length : 0; };
+  function fullestProduct(){ return D.products.slice().sort(function(a, b){ return b.consumed / b.allotment - a.consumed / a.allotment; })[0]; }
+  function ckFactor(p, fullest){ return ck.scn === 'growth' ? 1.2 : (ck.scn === 'throttle' && p === fullest) ? .75 : 1; }
+  function ckLeft(){ var dim = new Date(Date.UTC(AS_OF.getUTCFullYear(), AS_OF.getUTCMonth() + 1, 0)).getUTCDate(); return (dim - AS_OF.getUTCDate()) / dim; }
+  function ckUnits(p, m, fullest){
+    var cur = AS_OF.getUTCMonth(), a = pAvg(p) * ckFactor(p, fullest);
+    if (m < cur) return sum(p.monthly.slice(0, m + 1));
+    if (m === cur) return p.consumed;
+    return p.consumed + a * (ckLeft() + (m - cur - 1));
+  }
+  function ckTotal(m, fullest){ return sum(D.products.map(function(p){ return ckUnits(p, m, fullest); })); }
+  function ckTone(r){ return r >= 1 ? 'bad' : r >= .9 ? 'warn' : 'ok'; }
+  function ckMonthLabel(m){ var cur = AS_OF.getUTCMonth(); return m === cur ? 'Today (' + MONTHS[m] + ')' : MONTHS[m] + (m < cur ? ' · actual' : ' · forecast'); }
+  var RADII = [134, 116, 98, 80, 62];
+  function renderCockpit(){
+    var cur = AS_OF.getUTCMonth(), fullest = fullestProduct(), list = nextBestActions(), r = runway();
+    ck.month = cur; ck.scn = 'pace';
+    var contact = (D.customer.contact || '').trim();
+    var head = 'Hello' + (contact ? ' ' + contact : '') + '. ' + (list.length ? (list.length === 1 ? 'One thing needs' : list.length + ' things need') + ' your attention' : 'Nothing needs your attention') + ', and your AI units ' + (r.ok ? 'cover the rest of the year.' : 'run out about ' + r.label + '.');
+    var circ = D.products.slice(0, 5).map(function(p, i){ var R = RADII[i]; return '<circle class="trk" cx="150" cy="150" r="' + R + '"></circle><circle class="arc ok" data-i="' + i + '" cx="150" cy="150" r="' + R + '" stroke-dasharray="' + (2 * Math.PI * R).toFixed(1) + '" stroke-dashoffset="' + (2 * Math.PI * R).toFixed(1) + '"></circle>'; }).join('');
+    $('cockpit').innerHTML =
+      '<div class="ck-top"><div class="ck-eye"><i></i>Joule · your account today</div><h2 class="ck-head" id="ck-head" aria-label="' + esc(head) + '"></h2>' +
+      '<ul class="ck-acts">' + list.slice(0, 3).map(function(a, i){ return '<li style="animation-delay:' + (reduceMotion ? 0 : 1.4 + i * .25) + 's"><button type="button" data-go="' + a.tab + '"><b>' + (i + 1) + '</b>' + esc(a.title) + '</button></li>'; }).join('') + '</ul></div>' +
+      '<div class="ck-body"><div class="ck-rings"><svg viewBox="0 0 300 300" role="img" aria-label="AI units used per product, as rings">' + circ + '</svg><div class="ck-center"><b id="ck-pct"></b><span id="ck-sub"></span></div></div>' +
+      '<div class="ck-side"><div class="ck-ctl" role="group" aria-label="Scenario"><button type="button" class="chip" data-scn="pace">Current pace</button><button type="button" class="chip" data-scn="growth">Usage grows 20 %</button><button type="button" class="chip" data-scn="throttle">Throttle ' + esc(fullest.name) + ' by 25 %</button></div>' +
+      '<div class="ck-time"><input type="range" id="ck-range" min="0" max="11" value="' + cur + '" aria-label="Month to look at"><output id="ck-out" for="ck-range"></output></div>' +
+      '<div class="ck-ticks" aria-hidden="true">' + MONTHS.map(function(m){ return '<span>' + m + '</span>'; }).join('') + '</div>' +
+      '<div class="ck-stats" id="ck-stats"></div><div class="ck-leg" id="ck-leg"></div><div class="ck-cta" id="ck-cta" hidden></div></div></div>' +
+      '<div class="ck-spark" id="ck-spark"></div><div class="ck-note">Drag the slider to travel through the year. Past months show what was used; later months extend the average of the last three full months. Forecast, not a commitment.</div>';
+    // briefing: typewriter, unless the person prefers reduced motion
+    clearInterval(ck.typeTimer); var h = $('ck-head');
+    if (reduceMotion) h.textContent = head;
+    else { var i = 0; h.innerHTML = '<span class="caret"></span>'; ck.typeTimer = setInterval(function(){ i += 2; if (i >= head.length) { clearInterval(ck.typeTimer); h.textContent = head; return; } h.innerHTML = esc(head.slice(0, i)) + '<span class="caret"></span>'; }, 22); }
+    ckUpdate(true);
+  }
+  function ckUpdate(animate){
+    if (!$('ck-range')) return;
+    var cur = AS_OF.getUTCMonth(), fullest = fullestProduct(), m = ck.month, allot = D.aiUnits.allotment;
+    var apply = function(){
+      D.products.slice(0, 5).forEach(function(p, i){
+        var el = $('cockpit').querySelector('.arc[data-i="' + i + '"]'); if (!el) return;
+        var ratio = ckUnits(p, m, fullest) / p.allotment, C = 2 * Math.PI * RADII[i];
+        el.style.strokeDashoffset = (C * (1 - Math.min(1, ratio))).toFixed(1); el.setAttribute('class', 'arc ' + ckTone(ratio));
+      });
+    };
+    if (animate && !reduceMotion) requestAnimationFrame(function(){ requestAnimationFrame(apply); }); else apply();
+    var tot = ckTotal(m, fullest), end = ckTotal(11, fullest), r1 = tot / allot;
+    $('ck-pct').textContent = Math.round(r1 * 100) + '%'; $('ck-sub').textContent = 'of the AI-unit allotment used';
+    $('ck-out').textContent = ckMonthLabel(m);
+    $('cockpit').querySelectorAll('[data-scn]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.scn === ck.scn)); });
+    // runway under the scenario
+    var rate = sum(D.products.map(function(p){ return pAvg(p) * ckFactor(p, fullest); })), left = allot - used, months = rate > 0 ? left / rate : Infinity;
+    var endDate = new Date(AS_OF.getTime() + months * 30.4 * 864e5), ok = months === Infinity || endDate.toISOString().slice(0, 10) > D.aiUnits.periodEnd, over = D.products.filter(function(p){ return ckUnits(p, 11, fullest) > p.allotment; }), short = Math.ceil(sum(over.map(function(p){ return ckUnits(p, 11, fullest) - p.allotment; })) / 100) * 100;
+    $('ck-stats').innerHTML = '<div><b>Used at ' + MONTHS[m] + '</b><span>' + n(Math.round(tot)) + '</span></div><div><b>Year-end</b><span>' + Math.round(end / allot * 100) + '%</span></div><div><b>Allotment lasts</b><span>' + (ok ? 'all year' : 'until ' + MONTHS[endDate.getUTCMonth()] + ' ' + endDate.getUTCFullYear()) + '</span></div>';
+    $('ck-leg').innerHTML = D.products.slice(0, 5).map(function(p){ var ratio = ckUnits(p, m, fullest) / p.allotment; return '<div><i class="' + ckTone(ratio) + '"></i><span>' + esc(p.name) + '</span><em>' + Math.round(ratio * 100) + '%</em></div>'; }).join('');
+    var cta = $('ck-cta');
+    cta.hidden = false;
+    if (over.length) { cta.innerHTML = '<span>' + tag(end > allot ? 'bad' : 'warn', over.length + (over.length === 1 ? ' product' : ' products')) + ' <b>' + over.map(function(p){ return esc(p.name); }).join(', ') + '</b> would pass ' + (over.length === 1 ? 'its' : 'their') + ' own AI-unit budget by about <b>' + n(short) + '</b> units by December' + (end <= allot ? ', although the total allotment still has room' : '') + '.</span><button type="button" class="primary" data-draft="topup">Draft a rebalance or top-up request</button>'; cta.dataset.short = String(short); cta.dataset.names = over.map(function(p){ return p.name; }).join(', '); }
+    else { cta.innerHTML = '<span>' + tag('ok', 'covered') + ' Every product stays within its own AI-unit budget under this scenario.</span>'; delete cta.dataset.short; delete cta.dataset.names; }
+    // sparkline: cumulative total per month
+    var W = 1000, H = 130, x0 = 24, x1 = 976, pts = [], mx = Math.max(allot * 1.12, end * 1.05);
+    for (var i = 0; i < 12; i++) pts.push(ckTotal(i, fullest));
+    var X = function(i){ return x0 + i * (x1 - x0) / 11; }, Y = function(v){ return 14 + (H - 34) * (1 - v / mx); };
+    var act = pts.slice(0, cur + 1).map(function(v, i){ return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
+    var fc = pts.slice(cur).map(function(v, i){ return (i ? 'L' : 'M') + X(cur + i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
+    $('ck-spark').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative AI units per month against the allotment"><line class="al" x1="' + x0 + '" x2="' + x1 + '" y1="' + Y(allot).toFixed(1) + '" y2="' + Y(allot).toFixed(1) + '"></line><text x="' + x1 + '" y="' + (Y(allot) - 4).toFixed(1) + '" text-anchor="end">Allotment ' + n(allot) + '</text>' +
+      '<path class="ar" d="' + act + ' L' + X(cur).toFixed(1) + ' ' + Y(0).toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + Y(0).toFixed(1) + ' Z"></path><path class="ln" d="' + act + '"></path><path class="fl ' + (end > allot ? 'bad' : '') + '" d="' + fc + '"></path>' +
+      '<circle class="mk" cx="' + X(m).toFixed(1) + '" cy="' + Y(pts[m]).toFixed(1) + '" r="6"></circle>' + MONTHS.map(function(mm, i){ return i % 2 === 0 ? '<text x="' + X(i).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle">' + mm + '</text>' : ''; }).join('') + '</svg>';
+  }
+  function draftTicket(title, desc, kind, prio){
+    show('tickets'); var f = $('ticket-form'); f.title.value = title; f.desc.value = desc; f.priority.value = prio || 'Medium'; f.kind.value = kind || 'Question';
+    finish(); toast('Draft loaded. Check it and press "Check, then send ticket". Nothing has been sent yet.');
+  }
+  $('cockpit').addEventListener('click', function(e){
+    var sc = e.target.closest('[data-scn]'); if (sc) { ck.scn = sc.dataset.scn; ckUpdate(false); return; }
+    var dr = e.target.closest('[data-draft]');
+    if (dr) { var sh = Number($('ck-cta').dataset.short || 0); draftTicket('AI units: rebalance or top up about ' + n(sh) + ' units before ' + D.aiUnits.periodEnd, 'Scenario "' + ({pace: 'current pace', growth: 'usage grows 20 %', throttle: 'throttle the fullest product by 25 %'})[ck.scn] + '" shows that ' + $('ck-cta').dataset.names + ' would pass their own AI-unit budget by about ' + n(sh) + ' units before ' + D.aiUnits.periodEnd + '. Please tell us whether units can move between products or send a quote for a top-up.', 'Change request', 'Medium'); }
+  });
+  $('cockpit').addEventListener('input', function(e){ if (e.target.id === 'ck-range') { ck.month = Number(e.target.value); ckUpdate(false); } });
+
+  /* ---------- Landscape: contracts as an orbit map ---------- */
+  var land = {sel: null};
+  function renderLandscape(){
+    var el = $('land'), W = 940, H = 700, cx = 470, cy = 350;
+    if (!live.length) { el.innerHTML = '<div class="s">No active contracts.</div>'; return; }
+    var rOf = function(d){ return 128 + 190 * Math.min(1, Math.sqrt(Math.max(0, d) / 1800)); };
+    var maxA = Math.max.apply(null, live.map(function(c){ return c.annualEur; }));
+    var ordered = live.slice().sort(function(a, b){ return b.annualEur - a.annualEur; });
+    var info = ordered.map(function(c, i){
+      var ang = (-90 + 20 + i * 360 / ordered.length) * Math.PI / 180, de = days(c.end), nd = days(addDaysIso(c.end, -(c.noticeDays || 0)));
+      var tone = (!c.autoRenew && nd < 0 && de >= 0) ? 'bad' : (!c.autoRenew && nd <= 90 && de >= 0) ? 'warn' : 'ok';
+      var r = rOf(de), nr = 17 + 24 * Math.sqrt(c.annualEur / maxA);
+      return {c: c, i: i, ang: ang, de: de, nd: nd, tone: tone, r: r, nr: nr, x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang), nx: cx + (nd < 0 ? 96 : Math.min(r - nr - 4, rOf(nd))) * Math.cos(ang), ny: cy + (nd < 0 ? 96 : Math.min(r - nr - 4, rOf(nd))) * Math.sin(ang)};
+    });
+    if (land.sel === null || !info.some(function(x){ return x.c.id === land.sel; })) { var urgent = info.slice().sort(function(a, b){ return a.nd - b.nd; }).filter(function(x){ return x.tone !== 'ok'; })[0] || info[0]; land.sel = urgent.c.id; }
+    var la = (-70 + 180 / ordered.length) * Math.PI / 180;
+    var guides = [[180, '6 months'], [365, '1 year'], [730, '2 years'], [1460, '4 years']].map(function(g){ var r = rOf(g[0]); return '<circle class="gd" cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(1) + '"></circle><text class="gl" x="' + (cx + r * Math.cos(la)).toFixed(1) + '" y="' + (cy + r * Math.sin(la) + 3).toFixed(1) + '">' + g[1] + '</text>'; }).join('');
+    var spokes = info.map(function(x){ return '<line class="sp' + (x.c.id === land.sel ? ' sel' : '') + '" x1="' + (cx + 60 * Math.cos(x.ang)).toFixed(1) + '" y1="' + (cy + 60 * Math.sin(x.ang)).toFixed(1) + '" x2="' + x.x.toFixed(1) + '" y2="' + x.y.toFixed(1) + '"></line>'; }).join('');
+    var nodes = info.map(function(x){
+      var name = x.c.product.length > 30 ? x.c.product.slice(0, 29) + '…' : x.c.product;
+      return '<g class="node ' + x.tone + (x.c.id === land.sel ? ' sel' : '') + '" tabindex="0" role="button" data-c="' + esc(x.c.id) + '" aria-label="' + esc(x.c.product + ', ' + eur(x.c.annualEur) + ' per year, ends ' + x.c.end) + '" style="--i:' + x.i + '"><circle class="halo" cx="' + x.x.toFixed(1) + '" cy="' + x.y.toFixed(1) + '" r="' + x.nr.toFixed(1) + '"></circle><circle class="b" cx="' + x.x.toFixed(1) + '" cy="' + x.y.toFixed(1) + '" r="' + x.nr.toFixed(1) + '"></circle>' +
+        (x.c.autoRenew ? '<text x="' + x.x.toFixed(1) + '" y="' + (x.y + 4).toFixed(1) + '">↻</text>' : '') +
+        '<text x="' + x.x.toFixed(1) + '" y="' + (x.y + x.nr + 14).toFixed(1) + '">' + esc(name) + '</text><text class="v" x="' + x.x.toFixed(1) + '" y="' + (x.y + x.nr + 27).toFixed(1) + '">' + eur(x.c.annualEur) + ' · ends ' + esc(x.c.end.slice(0, 7)) + '</text></g>';
+    }).join('');
+    var dia = info.filter(function(x){ return !x.c.autoRenew; }).map(function(x){ return '<rect class="nt" x="' + (x.nx - 5).toFixed(1) + '" y="' + (x.ny - 5).toFixed(1) + '" width="10" height="10" transform="rotate(45 ' + x.nx.toFixed(1) + ' ' + x.ny.toFixed(1) + ')"><title>Last day to give notice: ' + esc(addDaysIso(x.c.end, -(x.c.noticeDays || 0))) + (x.nd < 0 ? ' (passed)' : '') + '</title></rect>'; }).join('');
+    var sats = D.products.slice(0, 5).map(function(p, i, arr){
+      var a = (-90 + i * 360 / arr.length) * Math.PI / 180, sx = cx + 86 * Math.cos(a), sy = cy + 86 * Math.sin(a), ratio = p.consumed / p.allotment, C = 2 * Math.PI * 11;
+      return '<g class="sat"><title>' + esc(p.name) + ': ' + Math.round(ratio * 100) + '% of ' + n(p.allotment) + ' AI units used</title><circle class="t" cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="11"></circle><circle class="a ' + ckTone(ratio) + '" cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="11" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + (C * (1 - Math.min(1, ratio))).toFixed(1) + '"></circle></g>';
+    }).join('');
+    var nm = D.customer.name.split(' '), l1 = nm.slice(0, Math.ceil(nm.length / 2)).join(' '), l2 = nm.slice(Math.ceil(nm.length / 2)).join(' ');
+    el.innerHTML = '<div class="land-h"><h2 style="margin:0">Your contract landscape</h2><span class="s">Distance from the centre = time until the contract ends · size = annual value</span></div>' +
+      '<div class="land-leg"><span><i></i>on track</span><span><i class="warn"></i>decide within 90 days</span><span><i class="bad"></i>notice date passed</span><span><i class="d"></i>last day to give notice</span><span>↻ renews by itself</span><span>Small rings: AI units used per product</span></div>' +
+      '<svg class="land-svg" viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Contract landscape">' + guides + spokes + dia + '<g class="hub"><circle class="c" cx="' + cx + '" cy="' + cy + '" r="56"></circle><text x="' + cx + '" y="' + (cy - 2) + '">' + esc(l1) + '</text><text x="' + cx + '" y="' + (cy + 12) + '">' + esc(l2) + '</text><text class="sm" x="' + cx + '" y="' + (cy + 28) + '">today ' + esc(D.asOf) + '</text></g>' + sats + nodes + '</svg><div class="land-det" id="land-det" aria-live="polite"></div>';
+    landDetail(info);
+    el._info = info;
+  }
+  function landDetail(info){
+    var x = info.filter(function(i){ return i.c.id === land.sel; })[0]; if (!x) return; var c = x.c, nd = addDaysIso(c.end, -(c.noticeDays || 0));
+    var verdict = c.autoRenew ? tag('ok', 'renews by itself') + ' notice by ' + esc(nd) : x.tone === 'bad' ? tag('bad', 'notice date passed') + ' on ' + esc(nd) : x.tone === 'warn' ? tag('warn', x.nd + ' days to decide') + ' last day to give notice ' + esc(nd) : tag('ok', 'on track') + ' notice by ' + esc(nd);
+    $('land-det').innerHTML = '<h3>' + esc(c.product) + ' <span class="s">' + esc(c.id) + '</span></h3><div class="s">' + esc(c.scope || '') + '</div>' +
+      '<div class="kvs"><div><b>Annual value</b>' + eur(c.annualEur) + '</div><div><b>Term</b>' + esc(c.start) + ' → ' + esc(c.end) + '</div><div><b>Notice period</b>' + (c.noticeDays || 0) + ' days</div>' + (c.licensedUnits ? '<div><b>In use</b>' + n(c.usedUnits || 0) + ' of ' + n(c.licensedUnits) + ' ' + esc(c.unit || '') + '</div>' : '') + (c.csm ? '<div><b>Your success manager</b>' + esc(c.csm.name) + '</div>' : '') + '</div>' +
+      '<div style="margin-top:8px">' + verdict + '</div><div class="btns"><button type="button" class="primary" data-open="' + esc(c.id) + '">Open the contract</button><button type="button" class="sec" data-ask="' + esc(c.id) + '">Ask about renewal</button></div>';
+  }
+  $('land').addEventListener('click', function(e){
+    var nd = e.target.closest('.node'), op = e.target.closest('[data-open]'), ak = e.target.closest('[data-ask]');
+    if (nd) { land.sel = nd.dataset.c; renderLandscapeSel(); return; }
+    if (op) { selContract = Math.max(0, D.contracts.findIndex(function(c){ return c.id === op.dataset.open; })); renderContracts(); show('contracts'); return; }
+    if (ak) { var c = D.contracts.filter(function(k){ return k.id === ak.dataset.ask; })[0]; draftTicket('Renewal options for ' + c.product + ' (' + c.id + ')', 'The contract ends ' + c.end + ' and the notice period is ' + (c.noticeDays || 0) + ' days. Please send renewal options and the price uplift that applies.', 'Question', 'Medium'); }
+  });
+  $('land').addEventListener('keydown', function(e){ var nd = e.target.closest && e.target.closest('.node'); if (nd && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); land.sel = nd.dataset.c; renderLandscapeSel(); var again = $('land').querySelector('.node[data-c="' + nd.dataset.c + '"]'); if (again) again.focus(); } });
+  function renderLandscapeSel(){
+    var info = $('land')._info; if (!info) return;
+    $('land').querySelectorAll('.node').forEach(function(g){ g.classList.toggle('sel', g.dataset.c === land.sel); });
+    $('land').querySelectorAll('.sp').forEach(function(l, i){ l.classList.toggle('sel', info[i] && info[i].c.id === land.sel); });
+    landDetail(info);
   }
   function renderTimeline(){
     var list = live.slice().sort(function(a, b){ return a.end < b.end ? -1 : 1; });
@@ -3631,7 +4928,7 @@ function similarity(a, b) {
     derive();
     $('f-product').innerHTML = D.contracts.filter(function(c){ return c.status !== 'Expired'; }).map(function(c){ return '<option>' + esc(c.product) + '</option>'; }).join('') + D.products.map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
     $('ticket-form').reset(); finish(); $('toast').className = 'toast';
-    renderOverview(); renderContracts(); renderOffers(); renderUsage(); renderTickets(); renderInvoices(); renderScenarios();
+    renderOverview(); renderContracts(); renderLandscape(); renderOffers(); renderUsage(); renderTickets(); renderInvoices(); renderScenarios();
     if (window.parent !== window) loadRemote(); else setStorage(false);
   }
   $('cust-select').innerHTML = RECORDS.map(function(r){ return '<option value="' + esc(r.id) + '">' + esc(r.customer.name) + '</option>'; }).join('');

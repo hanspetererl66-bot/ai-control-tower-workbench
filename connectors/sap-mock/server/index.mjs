@@ -138,7 +138,8 @@ const round2 = (value) => Math.round(value * 100) / 100;
 
 function grirView(row, base) {
   const posted = accruals.get(grirKey(row));
-  const open = round2(row.grValueEur - row.invoicedValueEur);
+  const invoiced = round2(row.invoicedValueEur + (row.sapLateInvoiceEur ?? 0));
+  const open = round2(row.grValueEur - invoiced);
   const classification = classifyGrir(row);
   return {
     po_number: row.po,
@@ -150,7 +151,8 @@ function grirView(row, base) {
     goods_receipt_date: isoDay(addDays(base, row.grOffset)),
     age_days: -row.grOffset,
     goods_receipt_value_eur: row.grValueEur,
-    invoiced_value_eur: row.invoicedValueEur,
+    invoiced_value_eur: invoiced,
+    ...(row.sapLateInvoiceEur ? { note: `An invoice of ${row.sapLateInvoiceEur} EUR was posted in SAP after the lakehouse snapshot.` } : {}),
     open_value_eur: open,
     classification,
     accrued_eur: posted?.amountEur ?? 0,

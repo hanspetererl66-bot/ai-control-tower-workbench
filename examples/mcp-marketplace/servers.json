@@ -924,7 +924,7 @@
       "source": "connectors/werkbank-workspace",
       "docs": "README of this repository",
       "package": "local .mcpb",
-      "version": "1.4.0",
+      "version": "1.6.0",
       "summary": "Your personal Werkbank settings and shared groups in Supabase: preferences sync (never secrets), groups with roles, shared Spaces, configuration and team memory. Agents, workflows and code of any kind are saved as revisions in the shared database; saving asks first.",
       "install": [
         {
@@ -1100,6 +1100,54 @@
           "class": "write",
           "what": "Writes a hiring request for a candidate in the stage Offer (hiring manager only); the approvers decide in the Hiring Approvals space.",
           "default": "ask"
+        },
+        {
+          "name": "recruiting_list_posting_templates",
+          "class": "read",
+          "what": "Reads the job posting templates (company standard and saved ones) with their locked sections.",
+          "default": "on"
+        },
+        {
+          "name": "recruiting_save_posting_template",
+          "class": "write",
+          "what": "Saves a template of the person; the locked company sections are kept as they are.",
+          "default": "ask"
+        },
+        {
+          "name": "recruiting_draft_job_posting",
+          "class": "write",
+          "what": "Writes a draft posting from a template and the requisition. Never invents tasks or pay; nothing becomes public.",
+          "default": "ask"
+        },
+        {
+          "name": "recruiting_update_job_posting",
+          "class": "write",
+          "what": "Changes unlocked sections of a draft posting.",
+          "default": "ask"
+        },
+        {
+          "name": "recruiting_list_job_postings",
+          "class": "read",
+          "what": "Reads job postings with status and simulated publications.",
+          "default": "on"
+        },
+        {
+          "name": "recruiting_preview_posting_channels",
+          "class": "read",
+          "what": "Reads the text per channel with length, limit and link. Sends nothing.",
+          "default": "on"
+        },
+        {
+          "name": "recruiting_submit_job_posting",
+          "class": "write",
+          "what": "Sends a draft to the hiring manager. Only the hiring manager can release and publish; that is not a tool.",
+          "default": "ask"
+        },
+        {
+          "name": "recruiting_interview_records",
+          "class": "read",
+          "what": "Reads saved online interview records of your requisitions: answers, task result per criterion with a quote, counts, summary. No score. Saving is not a tool.",
+          "default": "on"
         }
       ],
       "switches": [],

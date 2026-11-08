@@ -1472,6 +1472,9 @@ ipcMain.handle('job-runs-record', async (_event, runs) => {
 ipcMain.handle('recruiting-proposals', async (_event, args) => {
   try { return { ok: true, data: await workStore.listProposals(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
+ipcMain.handle('observability-call', async (_event, view, params) => {
+  try { return { ok: true, data: await workStore.observe(view, params) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
 ipcMain.handle('recruiting-hire-list', async (_event, args) => {
   try { return { ok: true, data: await workStore.listHireRequests(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
@@ -1486,6 +1489,9 @@ ipcMain.handle('recruiting-import', async () => {
 });
 ipcMain.handle('recruiting-decide', async (_event, id, decision, note) => {
   try { return { ok: true, data: await workStore.decideProposal(id, decision, note) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-interview-save', async (_event, requisition, record) => {
+  try { return { ok: true, data: await workStore.saveInterview(requisition, record) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
 ipcMain.handle('recruiting-criteria', async () => {
   try { return { ok: true, data: await workStore.listCriteria() }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }

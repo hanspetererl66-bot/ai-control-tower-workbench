@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const ROOT = join(import.meta.dirname, '..');
 const wf = JSON.parse(readFileSync(join(ROOT, 'examples/n8n-workflows/12-hiring-contract-signature.json'), 'utf8'));
-const migration = readFileSync(join(ROOT, 'supabase/migrations/20261108_033_hire_contracts.sql'), 'utf8');
+const migration = readFileSync(join(ROOT, 'supabase/migrations/20261108_038_hire_contracts.sql'), 'utf8');
 const byName = (n) => wf.nodes.find((x) => x.name === n);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 const run = async (name, items, ctx = {}) => {

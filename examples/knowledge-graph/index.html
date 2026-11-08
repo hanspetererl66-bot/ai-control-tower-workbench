@@ -326,6 +326,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
   <label class="depth" id="depth-l" hidden>Depth <select id="depth"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
   <label class="depth" id="spread-l" hidden>Spread <select id="spread"><option value="0.5">narrow</option><option value="0.3" selected>normal</option><option value="0.15">wide</option></select></label>
   <button class="btn" id="tour">▶ Guided tour</button>
+  <button class="btn" id="d3" aria-pressed="false" title="Show the graph in space: drag to turn it, scroll to zoom">3D</button>
   <button class="btn" id="labels" aria-pressed="false">Labels</button>
   <button class="btn" id="pause" aria-pressed="false">Pause</button>
   <button class="btn" id="reset">Reset</button>
@@ -3041,8 +3042,8 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "meta": {
     "Category": "Platform & Monitoring",
     "Trigger": "Schedule",
-    "Runs (14 days)": "549",
-    "Errors": "15",
+    "Runs (14 days)": "527",
+    "Errors": "7",
     "Nodes": "4"
    },
    "view": {
@@ -3069,8 +3070,8 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "meta": {
     "Category": "Finance & Procurement",
     "Trigger": "App event",
-    "Runs (14 days)": "367",
-    "Errors": "36",
+    "Runs (14 days)": "362",
+    "Errors": "37",
     "Nodes": "7"
    },
    "view": {
@@ -3103,8 +3104,8 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "meta": {
     "Category": "Lead-to-Cash",
     "Trigger": "Webhook",
-    "Runs (14 days)": "255",
-    "Errors": "9",
+    "Runs (14 days)": "252",
+    "Errors": "13",
     "Nodes": "6"
    },
    "view": {
@@ -3131,8 +3132,8 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "meta": {
     "Category": "Service & Support",
     "Trigger": "Webhook",
-    "Runs (14 days)": "193",
-    "Errors": "10",
+    "Runs (14 days)": "197",
+    "Errors": "17",
     "Nodes": "5"
    },
    "view": {
@@ -3154,7 +3155,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Category": "HR & People",
     "Trigger": "Webhook",
     "Runs (14 days)": "44",
-    "Errors": "0",
+    "Errors": "1",
     "Nodes": "4"
    },
    "view": {
@@ -3182,7 +3183,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Category": "Sales & Marketing",
     "Trigger": "Schedule",
     "Runs (14 days)": "33",
-    "Errors": "5",
+    "Errors": "3",
     "Nodes": "4"
    },
    "view": {
@@ -3230,7 +3231,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Category": "Sales & Marketing",
     "Trigger": "Schedule",
     "Runs (14 days)": "10",
-    "Errors": "0",
+    "Errors": "3",
     "Nodes": "5"
    },
    "view": {
@@ -3258,7 +3259,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Category": "Uncategorized",
     "Trigger": "Schedule",
     "Runs (14 days)": "10",
-    "Errors": "1",
+    "Errors": "0",
     "Nodes": "4"
    },
    "view": {
@@ -4023,6 +4024,300 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "deal:LEAD-305",
+   "type": "deal",
+   "label": "LEAD-305",
+   "meta": {
+    "Title": "Document AI for batch records",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€640,000",
+    "TCV": "€1,920,000 (36 months)",
+    "Win probability": "70%",
+    "Sales stage": "Lead",
+    "Risk": "The open ticket TKT-48097 shapes the first impression of Document AI in a regulated process.",
+    "Region": "MEE"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 640000,
+    "tcv": 1920000,
+    "term": 36,
+    "stage": "lead",
+    "account": "Lindenau Pharma AG",
+    "prob": 70,
+    "risks": [
+     "The open ticket TKT-48097 shapes the first impression of Document AI in a regulated process."
+    ],
+    "region": "MEE"
+   },
+   "date": "2026-10-05"
+  },
+  {
+   "id": "customer:lindenau-pharma-ag",
+   "type": "customer",
+   "label": "Lindenau Pharma AG",
+   "meta": {
+    "Note": "Not part of the Sub4Me sample data",
+    "Region": "MEE"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "region": "MEE"
+  },
+  {
+   "id": "deal:OPP-405",
+   "type": "deal",
+   "label": "OPP-405",
+   "meta": {
+    "Title": "Business Data Cloud for clinical and manufacturing analytics",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Clara Neumann",
+    "ACV": "€1,200,000",
+    "TCV": "€3,600,000 (36 months)",
+    "Win probability": "40%",
+    "Close date": "2027-03-31",
+    "Sales stage": "Opportunity",
+    "Risk": "Data from the validated environment may only leave it with an approved data-integrity concept.",
+    "Region": "MEE"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1200000,
+    "tcv": 3600000,
+    "term": 36,
+    "stage": "opportunity",
+    "account": "Lindenau Pharma AG",
+    "prob": 40,
+    "close": "2027-03-31",
+    "risks": [
+     "Data from the validated environment may only leave it with an approved data-integrity concept."
+    ],
+    "changeWhy": {
+     "text": "Opened this week after the CIO request.",
+     "ref": "CRM"
+    },
+    "region": "MEE"
+   },
+   "date": "2026-10-08"
+  },
+  {
+   "id": "person:clara-neumann",
+   "type": "person",
+   "label": "Clara Neumann",
+   "meta": {
+    "Role": "Deal owner"
+   }
+  },
+  {
+   "id": "offer:OFF-2026-0510",
+   "type": "offer",
+   "label": "OFF-2026-0510",
+   "meta": {
+    "Title": "Ariba renewal with GxP supplier qualification",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€2,292,000",
+    "TCV": "€6,876,000 (36 months)",
+    "Win probability": "60%",
+    "Close date": "2026-11-25",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "The contract expired on 31 January; suppliers still order on a trial tenant.",
+    "Region": "MEE"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 2292000,
+    "tcv": 6876000,
+    "term": 36,
+    "stage": "sell",
+    "account": "Lindenau Pharma AG",
+    "prob": 60,
+    "close": "2026-11-25",
+    "risks": [
+     "The contract expired on 31 January; suppliers still order on a trial tenant.",
+     "Quality Assurance wants the supplier qualification content as part of the price."
+    ],
+    "prev": {
+     "score": 50,
+     "category": "best",
+     "value": 2292000,
+     "closeDate": "2026-12-15"
+    },
+    "changeWhy": {
+     "text": "The customer confirmed the scope and the budget; only the workflow review is open.",
+     "ref": "OFF-2026-0510"
+    },
+    "region": "MEE"
+   },
+   "date": "2026-10-02"
+  },
+  {
+   "id": "offer:OFF-2026-0518",
+   "type": "offer",
+   "label": "OFF-2026-0518",
+   "meta": {
+    "Title": "Joule for Quality and AI units top-up",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€1,290,000",
+    "TCV": "€215,000 (2 months)",
+    "Win probability": "55%",
+    "Close date": "2026-11-30",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "Productive use needs the approved validation concept; without it the top-up cannot be used.",
+    "Region": "MEE"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1290000,
+    "tcv": 215000,
+    "term": 2,
+    "stage": "sell",
+    "account": "Lindenau Pharma AG",
+    "prob": 55,
+    "close": "2026-11-30",
+    "risks": [
+     "Productive use needs the approved validation concept; without it the top-up cannot be used.",
+     "The customer evaluates an own build on a hyperscaler."
+    ],
+    "prev": {
+     "score": 45,
+     "category": "pipeline",
+     "value": 1290000,
+     "closeDate": "2026-11-30"
+    },
+    "changeWhy": {
+     "text": "Quality Assurance accepted the structure of the validation concept.",
+     "ref": "OFF-2026-0518"
+    },
+    "region": "MEE"
+   },
+   "date": "2026-10-09"
+  },
+  {
+   "id": "offer:OFF-2026-0526",
+   "type": "offer",
+   "label": "OFF-2026-0526",
+   "meta": {
+    "Title": "Integrated Business Planning: 60 planners and cold-chain scenarios",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€980,000",
+    "TCV": "€1,225,000 (15 months)",
+    "Win probability": "45%",
+    "Close date": "2026-12-15",
+    "Sales stage": "Offer in negotiation",
+    "Risk": "The scenario package depends on the temperature data of the new loggers.",
+    "Region": "MEE"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 980000,
+    "tcv": 1225000,
+    "term": 15,
+    "stage": "sell",
+    "account": "Lindenau Pharma AG",
+    "prob": 45,
+    "close": "2026-12-15",
+    "risks": [
+     "The scenario package depends on the temperature data of the new loggers."
+    ],
+    "changeWhy": {
+     "text": "New offer this week.",
+     "ref": "OFF-2026-0526"
+    },
+    "region": "MEE"
+   },
+   "date": "2026-10-12"
+  },
+  {
+   "id": "contract:C-2026-0051",
+   "type": "contract",
+   "label": "C-2026-0051",
+   "meta": {
+    "Title": "AI units (Joule, AI Core, Document AI, Business AI)",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Mira Hoffmann",
+    "ACV": "€1,800,000",
+    "TCV": "€3,600,000 (24 months)",
+    "Sales stage": "Contract",
+    "Risk": "The top-up offer OFF-2026-0518 is still in negotiation.",
+    "Region": "MEE",
+    "Term ends": "2026-12-31 (auto-renews), notice 60 days"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 1800000,
+    "tcv": 3600000,
+    "term": 24,
+    "stage": "contract",
+    "account": "Lindenau Pharma AG",
+    "risks": [
+     "The top-up offer OFF-2026-0518 is still in negotiation.",
+     "Auto-renewal: the notice period is 60 days before 2026-12-31."
+    ],
+    "region": "MEE",
+    "end": "2026-12-31",
+    "noticeDays": 60,
+    "autoRenew": true
+   }
+  },
+  {
+   "id": "contract:C-2025-0833",
+   "type": "contract",
+   "label": "C-2025-0833",
+   "meta": {
+    "Title": "Advanced Track and Trace (serialization)",
+    "Account": "Lindenau Pharma AG",
+    "Owner": "Clara Neumann",
+    "ACV": "€4,140,000",
+    "TCV": "€9,315,000 (27 months)",
+    "Sales stage": "Contract",
+    "Risk": "Open High ticket TKT-48188: serial number requests for the Swiss market are rejected.",
+    "Region": "MEE",
+    "Term ends": "2027-12-31, notice 120 days"
+   },
+   "view": {
+    "space": "sales",
+    "tab": "pipeline"
+   },
+   "sales": {
+    "acv": 4140000,
+    "tcv": 9315000,
+    "term": 27,
+    "stage": "contract",
+    "account": "Lindenau Pharma AG",
+    "risks": [
+     "Open High ticket TKT-48188: serial number requests for the Swiss market are rejected."
+    ],
+    "region": "MEE",
+    "end": "2027-12-31",
+    "noticeDays": 120,
+    "autoRenew": false
+   }
+  },
+  {
    "id": "person:felix-brandt",
    "type": "person",
    "label": "Felix Brandt",
@@ -4230,6 +4525,46 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "customer": "Hanse Handelsgruppe AG"
    },
    "date": "2026-10-09"
+  },
+  {
+   "id": "person:anika-brandl",
+   "type": "person",
+   "label": "Anika Brandl",
+   "meta": {
+    "Role": "Platform Lead",
+    "Customer": "Lindenau Pharma AG",
+    "Stakeholder": "Sponsor",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Sponsor",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Lindenau Pharma AG"
+   },
+   "date": "2026-10-09"
+  },
+  {
+   "id": "person:ralf-kessel",
+   "type": "person",
+   "label": "Ralf Kessel",
+   "meta": {
+    "Role": "Head of Manufacturing IT",
+    "Customer": "Lindenau Pharma AG",
+    "Stakeholder": "Influencer",
+    "Contact strength": "none (0 calls, 0 e-mails)"
+   },
+   "stake": {
+    "role": "Influencer",
+    "strength": "none",
+    "touches": 0,
+    "calls": 0,
+    "mails": 0,
+    "customer": "Lindenau Pharma AG"
+   },
+   "date": "2026-10-12"
   }
  ],
  "edges": [
@@ -6928,6 +7263,83 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "label": "Deal owner"
   },
   {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "deal:LEAD-305",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "deal:LEAD-305",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "deal:OPP-405",
+   "type": "HAS_DEAL"
+  },
+  {
+   "source": "person:clara-neumann",
+   "target": "deal:OPP-405",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "offer:OFF-2026-0510",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "offer:OFF-2026-0510",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "offer:OFF-2026-0518",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "offer:OFF-2026-0518",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "offer:OFF-2026-0526",
+   "type": "HAS_OFFER"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "offer:OFF-2026-0526",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "contract:C-2026-0051",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "person:mira-hoffmann",
+   "target": "contract:C-2026-0051",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "contract:C-2025-0833",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "person:clara-neumann",
+   "target": "contract:C-2025-0833",
+   "type": "MANAGES",
+   "label": "Deal owner"
+  },
+  {
    "source": "person:felix-brandt",
    "target": "customer:muster-industrie-ag",
    "type": "CONTACT_AT",
@@ -7126,6 +7538,38 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
   {
    "source": "person:tom-ahlers",
    "target": "contract:C-2026-0044",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:anika-brandl",
+   "target": "customer:lindenau-pharma-ag",
+   "type": "CONTACT_AT",
+   "label": "Sponsor"
+  },
+  {
+   "source": "person:anika-brandl",
+   "target": "offer:OFF-2026-0518",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:anika-brandl",
+   "target": "contract:C-2026-0051",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:ralf-kessel",
+   "target": "customer:lindenau-pharma-ag",
+   "type": "CONTACT_AT",
+   "label": "Influencer"
+  },
+  {
+   "source": "person:ralf-kessel",
+   "target": "offer:OFF-2026-0526",
+   "type": "CONTACT_FOR"
+  },
+  {
+   "source": "person:ralf-kessel",
+   "target": "contract:C-2025-0833",
    "type": "CONTACT_FOR"
   },
   {
@@ -7755,8 +8199,105 @@ function frame(now) {
   if (!S.paused && alpha > 0.0101 && !reduced) tick();
   else if (!S.paused && !reduced) { alpha = 0.012; tick(); }
   for (const k of ['k', 'x', 'y']) cam[k] += (tgt[k] - cam[k]) * (reduced ? 1 : 0.14);
-  draw(now);
+  if (V3.on) draw3d(now); else draw(now);
   requestAnimationFrame(frame);
+}
+
+/* ---------- 3D view: the same graph in space, drawn on the same canvas (no library, no network) ---------- */
+const V3 = { on: false, ready: false, yaw: 0.5, pitch: 0.3, zk: 1, auto: true, pts: [] };
+const Z_LAYER = { customer: 0 };
+function init3d() { // depth per node: sales types in front, enablers behind, hubs between; then a short relaxation in z only
+  if (V3.ready) return; V3.ready = true;
+  nodes.forEach((n, i) => {
+    const si = SALES.indexOf(n.type), ei = EN_ORDER.indexOf(n.type);
+    const base = si >= 0 ? 160 : ei >= 0 ? -200 : HUB.has(n.type) ? -30 : 0;
+    n.z = base + (((i * 2246822519) % 1000) / 1000 - 0.5) * 120; n.vz = 0;
+  });
+  for (let it = 0; it < 220; it++) {
+    for (const e of edges) { const d = e.b.z - e.a.z, f = d * (e.weak ? 0.004 : 0.03); e.a.vz += f; e.b.vz -= f; }
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j], dx = a.x - b.x, dy = a.y - b.y; if (dx * dx + dy * dy > 6400) continue;
+        const dz = a.z - b.z || 0.1, f = 300 / (Math.abs(dz) + 20) * Math.sign(dz) * 0.05; a.vz += f; b.vz -= f;
+      }
+    }
+    for (const n of nodes) { n.vz *= 0.8; n.z += n.vz; n.z *= 0.995; }
+  }
+}
+function fit3() {
+  const list = nodes.filter(vis); if (!list.length) return;
+  let m = 40; for (const n of list) m = Math.max(m, Math.hypot(n.x, n.y, n.z || 0));
+  V3.zk = Math.min(W, H) / 2 / (m * 1.15);
+}
+function proj3(n) {
+  const cy = Math.cos(V3.yaw), sy_ = Math.sin(V3.yaw), cp = Math.cos(V3.pitch), sp = Math.sin(V3.pitch);
+  const x1 = n.x * cy + n.z * sy_, z1 = -n.x * sy_ + n.z * cy, y2 = n.y * cp - z1 * sp, z2 = n.y * sp + z1 * cp;
+  const f = 900 / (900 + z2 * V3.zk * 2.2);
+  return { x: W / 2 + x1 * V3.zk * f, y: H / 2 + y2 * V3.zk * f, f, z: z2 };
+}
+function set3d(on) {
+  V3.on = on; if (on) { init3d(); fit3(); S.sel || (V3.auto = !reduced); }
+  $('#d3').setAttribute('aria-pressed', String(on));
+  $('#mini').style.visibility = on ? 'hidden' : '';
+  $('#hint').textContent = on ? 'Drag to turn · scroll to zoom · click a node' : HINTS[S.mode];
+}
+function draw3d(now) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, Math.max(W, H) * 0.7);
+  g.addColorStop(0, C.purple); g.addColorStop(1, C.bg);
+  ctx.globalAlpha = 0.09; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+  if (V3.auto && !reduced && !S.paused && !S.sel && !S.hover && !down) V3.yaw += 0.0016;
+  const P = new Map(), list = nodes.filter(vis);
+  for (const n of list) P.set(n.id, proj3(n));
+  let zmin = 1e9, zmax = -1e9; for (const q of P.values()) { zmin = Math.min(zmin, q.z); zmax = Math.max(zmax, q.z); }
+  const depth = (q) => 0.45 + 0.55 * (1 - (q.z - zmin) / Math.max(1, zmax - zmin)); // near = 1, far = 0.45
+  for (const e of edges) {
+    const a = P.get(e.a.id), b = P.get(e.b.id); if (!a || !b) continue;
+    const inF = foc && foc.edges.has(e);
+    let al = foc ? (inF ? 0.95 : 0.04) : e.weak ? 0.07 : 0.24;
+    if (inF && foc.impact) al *= Math.min(reveal(e.a.id, now), reveal(e.b.id, now));
+    al *= depth(a) * depth(b); if (al < 0.01) continue;
+    ctx.globalAlpha = al; ctx.lineWidth = inF ? 1.8 : 1;
+    ctx.strokeStyle = inF ? (foc.path ? C.amber : foc.tint ? C[foc.tint] : C.purple) : C.mut;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  V3.pts = [];
+  const order = list.sort((a, b) => P.get(b.id).z - P.get(a.id).z);
+  const lab = [];
+  for (const n of order) {
+    const q = P.get(n.id), lv = foc ? foc.level.get(n.id) : undefined;
+    let al = foc ? (lv === undefined ? 0.1 : 1) : 1;
+    if (foc && foc.impact && lv !== undefined) al = Math.max(0.1, reveal(n.id, now));
+    const r = radOf(n) * q.f * Math.min(1.6, Math.max(0.6, V3.zk * 1.6));
+    V3.pts.push({ n, x: q.x, y: q.y, r });
+    if (q.x < -40 || q.y < -40 || q.x > W + 40 || q.y > H + 40) continue;
+    const lift = (foc && lv !== undefined) || n === S.hover;
+    const fx = foc && foc.failure && lv !== undefined ? S.failBy.get(n.id) : null;
+    const colr = fx ? (fx.exposure >= 0.6 ? C.red : fx.exposure >= 0.4 ? C.amber : C.purple) : foc && foc.impact && !foc.failure && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : foc && foc.tint && lv !== undefined ? C[foc.tint] : nodeCol(n);
+    ctx.globalAlpha = al * (foc ? 1 : depth(q)); ctx.fillStyle = colr; ctx.strokeStyle = C.bg; ctx.lineWidth = 1.4;
+    if (lift) { ctx.shadowColor = colr; ctx.shadowBlur = n === S.sel ? 24 : 12; }
+    shapePath(ctx, ST[n.type].s, q.x, q.y, r); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+    if (n === S.sel) { ctx.strokeStyle = C.ink; ctx.lineWidth = 2; shapePath(ctx, ST[n.type].s, q.x, q.y, r + 5); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    if (al > 0.5 && (lift || S.labels || n.deg >= 9 || HUB.has(n.type) || n.type === 'customer')) lab.push({ n, x: q.x, y: q.y + r + 11, strong: lift || n === S.sel });
+  }
+  ctx.font = '11px ' + getComputedStyle(document.body).fontFamily; ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+  const placed = [];
+  lab.sort((a, b) => (b.strong ? 1 : 0) - (a.strong ? 1 : 0) || b.n.deg - a.n.deg);
+  for (const l of lab) {
+    const w = ctx.measureText(l.n.label).width, box = [l.x - w / 2, l.y - 9, l.x + w / 2, l.y + 3];
+    if (!l.strong && placed.some((p) => box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1])) continue;
+    placed.push(box); ctx.lineWidth = 3.5; ctx.strokeStyle = C.bg; ctx.strokeText(l.n.label, l.x, l.y);
+    ctx.fillStyle = l.strong ? C.ink : C.ink2; ctx.fillText(l.n.label, l.x, l.y);
+  }
+}
+function hit3d(p) {
+  let best = null, bd = 1e9;
+  for (let i = V3.pts.length - 1; i >= 0; i--) { const q = V3.pts[i], d = Math.hypot(q.x - p.x, q.y - p.y); if (d < q.r + 6 && d < bd) { best = q.n; bd = d; } }
+  return best;
 }
 
 /* ---------- interaction ---------- */
@@ -7771,22 +8312,23 @@ function hit(p) {
 }
 let down = null;
 cv.addEventListener('pointerdown', (ev) => {
-  cv.setPointerCapture(ev.pointerId); const p = pointer(ev), n = hit(p);
-  down = { p, n, moved: false, cx: cam.x, cy: cam.y, tx: tgt.x, ty: tgt.y };
-  if (n) { drag.node = n; } cv.classList.add('drag');
+  cv.setPointerCapture(ev.pointerId); const p = pointer(ev), n = V3.on ? hit3d(p) : hit(p);
+  down = { p, n, moved: false, cx: cam.x, cy: cam.y, tx: tgt.x, ty: tgt.y, yaw: V3.yaw, pitch: V3.pitch };
+  if (n && !V3.on) { drag.node = n; } cv.classList.add('drag');
 });
 cv.addEventListener('pointermove', (ev) => {
   const p = pointer(ev);
   if (down) {
     const dx = p.x - down.p.x, dy = p.y - down.p.y;
     if (Math.hypot(dx, dy) > 4) down.moved = true;
+    if (down.moved && V3.on) { V3.yaw = down.yaw + dx * 0.008; V3.pitch = Math.max(-1.45, Math.min(1.45, down.pitch + dy * 0.008)); V3.auto = false; return; }
     if (down.moved) {
       if (down.n) { down.n.x = (p.x - cam.x) / cam.k; down.n.y = (p.y - cam.y) / cam.k; down.n.pin = true; alpha = Math.max(alpha, 0.25); }
       else { tgt.x = cam.x = down.cx + dx; tgt.y = cam.y = down.cy + dy; }
     }
     return;
   }
-  const n = hit(p); cv.classList.toggle('hit', !!n);
+  const n = V3.on ? hit3d(p) : hit(p); cv.classList.toggle('hit', !!n);
   if (n !== S.hover) { S.hover = n; if (!S.sel && S.mode === 'explore') computeFocus(); showHover(n); }
 });
 cv.addEventListener('pointerup', (ev) => {
@@ -7794,11 +8336,16 @@ cv.addEventListener('pointerup', (ev) => {
   if (!d) return;
   if (!d.moved) { const n = d.n; if (n) setSel(n); else if (S.mode !== 'path') { S.sel = null; computeFocus(); renderPanel(); } }
 });
-cv.addEventListener('dblclick', (ev) => { const n = hit(pointer(ev)); if (n) { n.pin = !n.pin; alpha = Math.max(alpha, 0.1); } });
+cv.addEventListener('dblclick', (ev) => { if (V3.on) return; const n = hit(pointer(ev)); if (n) { n.pin = !n.pin; alpha = Math.max(alpha, 0.1); } });
 cv.addEventListener('pointerleave', () => { if (!down && S.hover) { S.hover = null; if (!S.sel) computeFocus(); showHover(null); } });
-cv.addEventListener('wheel', (ev) => { ev.preventDefault(); zoomAt(pointer(ev), Math.exp(-ev.deltaY * 0.0015)); }, { passive: false });
+cv.addEventListener('wheel', (ev) => { ev.preventDefault(); if (V3.on) { V3.zk = Math.max(0.05, Math.min(6, V3.zk * Math.exp(-ev.deltaY * 0.0015))); return; } zoomAt(pointer(ev), Math.exp(-ev.deltaY * 0.0015)); }, { passive: false });
 cv.addEventListener('keydown', (ev) => {
   const step = 60;
+  if (V3.on && ['+', '=', '-', '0', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(ev.key)) {
+    if (ev.key === '+' || ev.key === '=') V3.zk *= 1.2; else if (ev.key === '-') V3.zk /= 1.2; else if (ev.key === '0') { fit3(); V3.yaw = 0.5; V3.pitch = 0.3; }
+    else if (ev.key === 'ArrowLeft') V3.yaw -= 0.12; else if (ev.key === 'ArrowRight') V3.yaw += 0.12; else if (ev.key === 'ArrowUp') V3.pitch = Math.max(-1.45, V3.pitch - 0.1); else V3.pitch = Math.min(1.45, V3.pitch + 0.1);
+    V3.auto = false; ev.preventDefault(); return;
+  }
   if (ev.key === '+' || ev.key === '=') zoomAt({ x: W / 2, y: H / 2 }, 1.25);
   else if (ev.key === '-') zoomAt({ x: W / 2, y: H / 2 }, 0.8);
   else if (ev.key === '0') fit();
@@ -7814,9 +8361,10 @@ mini.addEventListener('click', (ev) => {
   const wx = (mx - m.ox) / m.s, wy = (my - m.oy) / m.s;
   tgt.x = W / 2 - wx * tgt.k; tgt.y = H / 2 - wy * tgt.k;
 });
-$('#zin').onclick = () => zoomAt({ x: W / 2, y: H / 2 }, 1.3);
-$('#zout').onclick = () => zoomAt({ x: W / 2, y: H / 2 }, 0.77);
-$('#zfit').onclick = () => fit();
+$('#zin').onclick = () => (V3.on ? (V3.zk *= 1.3) : zoomAt({ x: W / 2, y: H / 2 }, 1.3));
+$('#zout').onclick = () => (V3.on ? (V3.zk *= 0.77) : zoomAt({ x: W / 2, y: H / 2 }, 0.77));
+$('#zfit').onclick = () => (V3.on ? (fit3(), V3.yaw = 0.5, V3.pitch = 0.3) : fit());
+$('#d3').onclick = () => set3d(!V3.on);
 $('#m-explore').onclick = () => setMode('explore');
 $('#m-impact').onclick = () => setMode('impact');
 $('#m-failure').onclick = () => setMode('failure');
@@ -8179,7 +8727,7 @@ function renderPanel() {
 function tourButtons() {
   return `<div class="conn">${D.tours.map((t, i) => `<button data-tour="${i}">▶ ${esc(t.title)}<small>${esc(t.summary)}</small></button>`).join('')}</div>`;
 }
-function showHover(n) { if (n && !S.sel) $('#hint').textContent = `${D.nodeTypes[n.type]}: ${n.label} · ${n.deg} relations`; else if (!n) $('#hint').textContent = HINTS[S.mode]; }
+function showHover(n) { if (n && !S.sel) $('#hint').textContent = `${D.nodeTypes[n.type]}: ${n.label} · ${n.deg} relations`; else if (!n) $('#hint').textContent = V3.on && S.mode === 'explore' ? 'Drag to turn · scroll to zoom · click a node' : HINTS[S.mode]; }
 
 /* ---------- search ---------- */
 const q = $('#q'), res = $('#res'); let hits = [], hi = -1;

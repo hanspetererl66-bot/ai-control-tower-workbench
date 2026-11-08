@@ -9,8 +9,8 @@ const page = JSON.parse(/id="s4m-data">\n([\s\S]*?)\n<\/script>/.exec(read(PAGE)
 const customers = allCustomers(portfolio, page.customer);
 const AS_OF = page.asOf;
 
-test('the portfolio has two customers with complete, consistent data', () => {
-  assert.deepEqual(customers.map((c) => c.id), ['muster', 'hanse']);
+test('the portfolio has three customers with complete, consistent data', () => {
+  assert.deepEqual(customers.map((c) => c.id), ['muster', 'hanse', 'lindenau']);
   assert.equal(new Set(customers.map((c) => c.customer.number)).size, customers.length);
   assert.equal(new Set(customers.map((c) => c.customer.sapCustomerId)).size, customers.length, 'unique SAP customer ids');
   for (const c of customers) assert.match(c.customer.sapCustomerId, /^00\d{8}$/, `${c.id}: SAP customer id has 10 digits`);

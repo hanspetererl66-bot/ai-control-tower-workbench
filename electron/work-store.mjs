@@ -9,6 +9,8 @@ import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connector
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
 import { createRecruitingHandlers, decideHire, decideProposal, releaseContract } from '../connectors/_lib/server/recruiting.mjs';
+import { observeCall } from '../connectors/_lib/server/observability.mjs';
+import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -106,6 +108,19 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async deleteCriterion(requisition, id) {
       const { rpc, email } = connect();
       return rpc('recruiting_criterion_delete', { p_actor: email, p_requisition: String(requisition ?? ''), p_crit_id: String(id ?? '') });
+    },
+    /** Keeps the record of an online interview for the hiring manager. Not a tool: the agent cannot write one. The database accepts only the manager of the requisition and refuses an e-mail address. */
+    async saveInterview(requisition, record) {
+      const { rpc, email } = connect();
+      return saveInterviewRecord(rpc, email, requisition, record);
+    },
+    /**
+     * Agent observability for the Observability space: seven fixed reading functions, whitelisted arguments, always as the stored e-mail.
+     * Read only. Nothing here writes, and the run history in the database is append only anyway.
+     */
+    async observe(view, params) {
+      const { rpc, email } = connect();
+      return observeCall(rpc, email, view, params);
     },
     /** Hiring approvals for the Hiring Approvals space: fixed filters, always as the stored e-mail. */
     async listHireRequests(args) {

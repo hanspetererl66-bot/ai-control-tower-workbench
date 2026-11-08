@@ -351,8 +351,8 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
 </head>
 <body>
 <main>
-  <details class="card intro" open>
-    <summary><h2>What is this page?</h2><span class="hint">click to fold</span></summary>
+  <details class="card intro">
+    <summary><h2>What is this page?</h2><span class="hint">click to show or hide</span></summary>
     <div class="body">
     <p style="color:var(--ink-2)">The <b>pre-close</b> is the look ahead before the month end: while the month is still running, finance already estimates how revenue, gross profit and EBIT will end, what is still open, and what could go wrong, so that the real close on the last days goes without surprises. This page shows that for a fictional group with four company codes.</p>
     <div class="cols">
@@ -434,6 +434,7 @@ function lineAt(data, ent, key, d, approved) {
   }
   const line = data.lines.find((l) => l.key === key);
   if (approved && line.kind !== 'revenue') for (const a of data.accruals) if (a.line === key && approved[a.id] && a.fromWd <= d && ents.includes(a.entity)) actual += a.amountK;
+  if (approved && key === 'other' && typeof dbxPostedK === 'function') { const k = dbxPostedK(ents); actual += k; forecast += k; } // new knowledge: the booked amount and the month-end forecast rise together, so EBIT falls
   const h = rss(half);
   return { key, name: line.name, kind: line.kind, actual, forecast, budget, py, low: forecast - h, high: forecast + h, half: h };
 }
@@ -711,7 +712,14 @@ function renderEstNote() {
   el.textContent = `Interval: ${m.band}. Correction risk = chance that the final amount differs by more than ${m.tolerancePct} %. Engine: ${m.engine === 'tabpfn' ? 'TabPFN' : m.engine === 'baseline' ? 'gradient-boosting baseline (TabPFN not loaded)' : m.engine}, trained on ${m.trainedOn}. Demo only, not an audit statement.${m.engine === 'baseline' && m.engineNote ? ' ' + m.engineNote : ''}`;
 }
 // ---- Open items from Databricks (read only; posting stays in the conversation)
-const dbx = { pending: null, data: null, error: '' };
+const dbx = { pending: null, data: null, error: '', watch: null };
+/** Accruals that SAP posted for goods received not invoiced (read back from Databricks and SAP), in thousand EUR, booked on "Other costs". */
+function dbxPostedK(ents) {
+  if (!dbx.data) return 0;
+  return dbx.data.grir.reduce((a, r) => a + (r.accrualDocument && ents.includes(r.company) ? (r.accruedEur || 0) / 1000 : 0), 0);
+}
+/* The profit and loss logic lives in its own script (it is tested without the page), so this hook is global. */
+window.dbxPostedK = dbxPostedK;
 const eur = (n) => (n === null || n === undefined ? '–' : n.toLocaleString('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }));
 const DBX_CLASS = { ACCRUE: ['yellow', 'Accrue'], STALE_REVIEW: ['red', 'Review (over 90 days)'], INVOICE_BEFORE_GOODS: ['red', 'Invoice before goods'], UNKNOWN: ['open', 'Unknown'] };
 const DBX_CAT = { MISSING_ON_BUYER_SIDE: 'Missing on buyer side', AMOUNT_MISMATCH: 'Amount differs', ROUNDING: 'Rounding', UNKNOWN: 'Unknown' };
@@ -722,7 +730,7 @@ function renderDbx() {
   if (dbx.error) { note.textContent = dbx.error; return; }
   if (!d) { note.textContent = ''; return; }
   const s = d.summary;
-  sum.innerHTML = `<span class="pill yellow">To accrue: ${s.accrueCount} · ${esc(eur(s.accrueEur))}</span><span class="pill red">Over 90 days: ${s.staleCount} · ${esc(eur(s.staleEur))}</span><span class="pill red">Invoice first: ${s.invoiceFirstCount}</span>` + (d.sapConnected && s.accruedEur ? `<span class="pill green">Accrued in SAP: ${esc(eur(s.accruedEur))}</span>` : '');
+  sum.innerHTML = `<span class="pill yellow">To accrue: ${s.accrueCount} · ${esc(eur(s.accrueEur))}</span><span class="pill red">Over 90 days: ${s.staleCount} · ${esc(eur(s.staleEur))}</span><span class="pill red">Invoice first: ${s.invoiceFirstCount}</span>` + (d.sapConnected && s.accruedEur ? `<span class="pill green">Accrued in SAP: ${esc(eur(s.accruedEur))}</span><span class="pill green" title="Added to the booked amount of Other costs in the profit and loss above">In the P&amp;L: +${esc(fmtK(dbxPostedK(Object.keys(DATA.pl))))} other costs</span>` : '');
   g.innerHTML = d.grir.length ? d.grir.map((r) => {
     const c = DBX_CLASS[r.classification] || DBX_CLASS.UNKNOWN;
     const sap = r.sapMatch === null ? '<span class="sub">not connected</span>' : r.accrualDocument ? `<span class="pill green" title="${esc(eur(r.accruedEur))}">Accrued ${esc(r.accrualDocument)}</span>` : r.sapMatch ? '<span class="pill green">Matches SAP</span>' : `<span class="pill red">SAP says ${esc(eur(r.sapOpenEur))}</span>`;
@@ -731,7 +739,19 @@ function renderDbx() {
   ic.innerHTML = d.intercompany.length ? d.intercompany.map((r) => `<tr><td>${esc(r.id)}<br><span class="sub">${esc(r.description)}</span></td><td>${esc(r.seller)} → ${esc(r.buyer)}</td><td class="n hs">${esc(eur(r.sellerEur))}</td><td class="n hs">${r.buyerEur === null ? 'not posted' : esc(eur(r.buyerEur))}</td><td class="n">${esc(eur(r.differenceEur))}</td><td>${esc(DBX_CAT[r.category] || r.category)}</td></tr>`).join('') : '<tr><td colspan="6" class="sub">All intercompany items agree.</td></tr>';
   note.textContent = (d.sapConnected ? 'Compared with SAP (mock). ' : 'SAP is not connected, so the figures are not checked against it. ') + 'Items over 90 days need a clearing review, not an accrual. Accruals are proposals for the controller, not accounting advice. Synthetic data.';
 }
-$('#dbx-load').onclick = () => {
+function stopDbxWatch() { if (dbx.watch) { clearInterval(dbx.watch); dbx.watch = null; } }
+/** After "Prepare accruals with Joule": read again every 20 seconds (at most 15 minutes) until the accruals show up as posted, so the P&L moves while the person approves in the chat. */
+function startDbxWatch() {
+  stopDbxWatch();
+  let n = 0;
+  dbx.watch = setInterval(() => {
+    n += 1;
+    const open = dbx.data ? dbx.data.grir.some((r) => r.classification === 'ACCRUE' && !r.accrualDocument) : true;
+    if (n > 45 || (dbx.data && !open)) { stopDbxWatch(); return; }
+    if (!document.hidden && !dbx.pending) loadDbx();
+  }, 20000);
+}
+function loadDbx() {
   if (dbx.pending) return;
   dbx.error = '';
   if (window.parent === window) { dbx.error = 'Reading from Databricks needs the agent connection. Open this Space in the app.'; renderDbx(); return; }
@@ -739,12 +759,13 @@ $('#dbx-load').onclick = () => {
   dbx.pending = id; renderDbx();
   window.parent.postMessage({ type: 'ct:databricks-preclose-request', requestId: id }, '*');
   setTimeout(() => { if (dbx.pending === id) { dbx.pending = null; dbx.error = 'No answer from Databricks. Is the Databricks connector set up with a warehouse id, and did you run the demo SQL?'; renderDbx(); } }, 100000);
-};
-$('#dbx-ask').onclick = () => send('Run the finance pre-close check for company code ALL with the skill finance-pre-close. Prepare the accruals for the items that should be accrued, show me the drafts and wait for my approval before posting anything.');
+}
+$('#dbx-load').onclick = () => loadDbx();
+$('#dbx-ask').onclick = () => { if (window.parent !== window) startDbxWatch(); send('Run the finance pre-close check for company code ALL with the skill finance-pre-close. Prepare the accruals for the items that should be accrued, show me the drafts and wait for my approval before posting anything.'); };
 window.addEventListener('message', (e) => {
   const d = e.data;
   if (e.source !== window.parent || !d || typeof d.type !== 'string' || !d.requestId || d.requestId !== dbx.pending) return;
-  if (d.type === 'ct:databricks-preclose' && d.data && Array.isArray(d.data.grir)) { dbx.data = d.data; dbx.pending = null; dbx.error = ''; renderDbx(); }
+  if (d.type === 'ct:databricks-preclose' && d.data && Array.isArray(d.data.grir)) { dbx.data = d.data; dbx.pending = null; dbx.error = ''; renderDbx(); renderAll(); }
   else if (d.type === 'ct:error') { dbx.pending = null; dbx.error = 'Could not read from Databricks: ' + String(d.message).slice(0, 240); renderDbx(); }
 });
 renderDbx();

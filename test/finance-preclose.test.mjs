@@ -122,3 +122,13 @@ test('page: red alerts open a dialog, P&L and company codes need no horizontal s
   for (const c of ['wf budget', 'wf forecast', 'conn', 'g-track', 'agebar']) assert.ok(html.includes(c.split(' ').pop()), c);
   assert.match(html, /Group" is the simple sum/);
 });
+
+test('Databricks accruals posted in SAP raise the booked Other costs, and the card keeps reading until they appear', () => {
+  assert.match(page, /function dbxPostedK\(ents\)/);
+  assert.match(page, /if \(approved && key === 'other' && typeof dbxPostedK === 'function'\) \{ const k = dbxPostedK\(ents\); actual \+= k; forecast \+= k;/);
+  assert.match(page, /function startDbxWatch\(\)/);
+  assert.match(page, /n > 45/, 'the watch stops after about 15 minutes');
+  assert.match(page, /In the P&amp;L: \+/);
+  // the pure logic works without the hook (it lives in the page script), so the tests above are unchanged
+  assert.doesNotThrow(() => L.lineAt(data, 'all', 'other', 17, {}));
+});

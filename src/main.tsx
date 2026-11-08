@@ -29,6 +29,7 @@ declare global {
       jobRunsRecord?: (runs: Array<Record<string, unknown>>) => Promise<{ ok: true; data: { received: number; stored: number } } | { ok: false; error: string }>;
       jobRunsList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; failed: number; runs: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
       recruitingProposals?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; proposals: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
+      observabilityCall?: (view: string, params: Record<string, unknown>) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
       recruitingHireList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; requests: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
       recruitingHireRelease?: (id: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       recruitingHireDecide?: (id: number, decision: 'approve' | 'return' | 'decline', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
@@ -36,6 +37,7 @@ declare global {
       recruitingCriteria?: () => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
       recruitingCriterionSet?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       recruitingCriterionDelete?: (requisition: string, id: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      recruitingInterviewSave?: (requisition: string, record: Record<string, unknown>) => Promise<{ ok: true; data: { saved?: boolean; note?: string } } | { ok: false; error: string }>;
       recruitingDecide?: (id: number, decision: 'released' | 'declined', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       runLocalWorkflow?: (request: {
         type: 'data-space' | 'shipment-deck' | 'meeting-brief-doc';

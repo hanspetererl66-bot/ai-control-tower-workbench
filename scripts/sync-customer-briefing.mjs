@@ -16,7 +16,7 @@ export const DATA = 'examples/customer-ai-briefing/agents.json';
 const BLOCK = /(<script type="application\/json" id="cab-data">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
-const ID_MAP = { muster: 'muster', hanse: 'hanse' };
+const ID_MAP = { muster: 'muster', hanse: 'hanse', lindenau: 'lindenau' };
 const openOffer = (o) => o.status === 'Open' || o.status === 'In negotiation';
 
 const DAY = 864e5;

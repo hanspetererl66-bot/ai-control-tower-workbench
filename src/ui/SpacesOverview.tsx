@@ -21,12 +21,15 @@ export default function SpacesOverview({
   onActive,
   onOpen,
   parentOf,
+  onDesign,
 }: {
   domains: OverviewDomain[];
   active: string | null;
   onActive: (name: string | null) => void;
   onOpen: (slug: string) => void;
   parentOf: (slug: string) => string;
+  /** Opens the Space Designer with a new page. */
+  onDesign?: () => void;
 }) {
   const total = domains.reduce((n, d) => n + d.spaces.length, 0);
   const current = active ? domains.find((d) => d.name === active) : undefined;
@@ -73,7 +76,10 @@ export default function SpacesOverview({
   return (
     <main className="main sov">
       <div className="sov-inner">
-        <h1 className="sov-title">Spaces</h1>
+        <div className="sov-titlebar">
+          <h1 className="sov-title">Spaces</h1>
+          {onDesign && <button className="ghost-btn sov-design" onClick={onDesign} title="Build a Space from blocks: tables, charts, boxes side by side and more">+ Design a Space</button>}
+        </div>
         <p className="sov-sub">{total} Spaces in {domains.length} {domains.length === 1 ? 'Domain' : 'Domains'}. Wähle eine Domain, um ihre Spaces zu sehen.</p>
         <div className="sov-grid">
           {domains.map((d) => {

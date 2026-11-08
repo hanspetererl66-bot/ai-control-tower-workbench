@@ -250,7 +250,7 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
 .todo{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}
 .todo:last-child{border-bottom:0}.todo small{display:block;color:var(--muted)}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--faint)}.dot.red{background:var(--red)}.dot.amber{background:var(--amber)}.dot.ok{background:var(--green)}
-.tl{display:grid;grid-template-columns:150px 1fr 70px;gap:10px;align-items:center;padding:5px 0}
+.tl{display:grid;grid-template-columns:minmax(120px,190px) 1fr 70px;gap:10px;align-items:center;padding:5px 0}
 .tl .bar{height:10px;border-radius:99px;background:var(--line-2);position:relative}.tl .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--green)}
 .tl .bar i.soon{background:var(--amber)}.tl .bar i.critical,.tl .bar i.expired{background:var(--red)}.tl .bar i.watch{background:var(--blue)}
 .tl .d{text-align:right;font-variant-numeric:tabular-nums}.tl .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -314,6 +314,28 @@ pre.code{background:var(--wash);border:1px solid var(--line);border-radius:var(-
 .tq{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}.tq:last-child{border-bottom:0}.tq small{display:block;color:var(--muted)}
 .speedctl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.speedctl select{padding:4px 6px;width:auto}
 @media (max-width:900px){.two,.pbs{grid-template-columns:1fr}.tl{grid-template-columns:110px 1fr 56px}}
+.flowstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:10px 0 4px;padding:0;list-style:none}
+.flowstrip li{position:relative;background:var(--wash);border:1px solid var(--line);border-radius:12px;padding:9px 10px 10px;font-size:12px;min-width:0}
+.flowstrip li:not(:last-child)::after{content:"›";position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;z-index:1}
+.flowstrip .no{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--purple-dim);color:var(--purple);font-weight:800;font-size:11px;margin-bottom:4px}
+.flowstrip b{display:block;font-size:12px;line-height:1.3}.flowstrip small{display:block;color:var(--muted);font-size:11px;line-height:1.35;margin:2px 0 5px}
+.flowstrip.mini small,.flowstrip.mini .tag{display:none}.flowstrip.mini li{padding:7px 8px}
+.intro{margin:0 0 14px;font-size:14px;line-height:1.55;max-width:900px}
+.ask{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)}.ask:last-child{border-bottom:0}.ask small{display:block;color:var(--muted)}
+.attn{border-color:var(--purple-border)}
+.coln{font-weight:400;font-size:11px;color:var(--muted);margin:-4px 0 8px;line-height:1.35}
+.tcard .why{color:var(--red);font-size:11px;display:block;margin-top:3px}
+.banner{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:var(--radius);padding:12px 14px;margin:12px 0}
+.banner.wait{border-color:var(--amber-border);background:var(--amber-dim)}.banner.good{border-color:var(--green-border);background:var(--green-dim)}.banner.stop{border-color:var(--red-border);background:var(--red-dim)}
+.banner .lead{font-weight:700;font-size:14px;margin:0 0 2px}.banner .next{color:var(--ink-2);font-size:12px;margin:0}
+.banner .row{margin:10px 0 0}.banner .row:empty{display:none}
+details.sec{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--surface)}
+details.sec>summary{cursor:pointer;padding:9px 12px;font-weight:700;font-size:12px;color:var(--ink-2);list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.sec>summary::-webkit-details-marker{display:none}details.sec>summary::after{content:"+";color:var(--muted)}details.sec[open]>summary::after{content:"–"}
+details.sec>div{padding:0 12px 10px}
+.kpi b.date{font-size:18px;line-height:1.5}
+.flow{flex-wrap:wrap;row-gap:14px}
+@media (max-width:900px){.flowstrip{grid-template-columns:1fr}.flowstrip li::after{display:none!important}.flowstrip li{display:grid;grid-template-columns:24px 1fr;gap:0 8px}.flowstrip .no{grid-row:1 / span 3}.flowstrip.mini{grid-template-columns:repeat(2,minmax(0,1fr))}.board{grid-template-columns:repeat(5,minmax(230px,1fr))}header{padding:10px 14px}.who{margin-left:0}nav{padding:6px 14px 0}main{padding:14px 14px 50px}.speedctl{flex-wrap:wrap}.ask{grid-template-columns:10px 1fr}.ask .btn{grid-column:2}}
 </style>
 </head>
 <body>
@@ -1660,29 +1682,64 @@ function simulateRun(plan) {
     if (ph === 'approval' || ph === 'window') box.innerHTML = trackerHtml(t, planOf(t));
   }, 400);
 
+
+  /* The seven steps of every change, with who acts. Shown to managers on Overview and Tasks. */
+  var FLOW_OWNERS = [
+    ['Request', 'Operator or Fleet Manager asks for a change', 'Person'],
+    ['Pre-check', 'Safe test run, nothing is changed', 'Automatic'],
+    ['Approval', 'Four eyes; two people for PRD or high risk', 'Change Manager'],
+    ['Downtime window', 'Waits for the agreed time', 'Automatic'],
+    ['Upgrade', 'Playbook runs on the system', 'AWX'],
+    ['Post-check', 'Service and certificate verified', 'Automatic'],
+    ['Close', 'Ticket closed, evidence filed, Fleet Manager told', 'n8n']
+  ];
+  function flowStrip(mini) {
+    return '<ol class="flowstrip' + (mini ? ' mini' : '') + '" aria-label="How a change runs">' + FLOW_OWNERS.map(function (x, i) {
+      return '<li><span class="no">' + (i + 1) + '</span><b>' + esc(x[0]) + '</b><small>' + esc(x[1]) + '</small><span class="tag ' + (i === 2 ? 'tool' : '') + '">' + esc(x[2]) + '</span></li>';
+    }).join('') + '</ol>';
+  }
+  /** What is happening, who is needed, what comes next: one sentence each, for a manager. */
+  function statusOf(t, p) {
+    var ph = phaseOf(t), need = p.approvalsNeeded, have = (t.approvals || []).length, w = t.window[0].replace('T', ' ');
+    if (!p.ok) return { tone: 'stop', lead: 'Blocked: this change cannot go ahead as planned.', next: (p.errors[0] || 'See the checks below.') + ' Create a new task with a corrected request.' };
+    if (ph === 'blocked') return { tone: 'stop', lead: 'The pre-check blocked this change.', next: 'Fix the request (window, backup) and create a new task.' };
+    if (ph === 'post_failed') return { tone: 'stop', lead: 'The post-check failed.', next: 'The rollback would start now (simulated).' };
+    if (ph === 'precheck') return { tone: 'good', lead: 'The pre-check is running.', next: 'Next: submit for approval.' };
+    if (t.state === 'planned') return { tone: 'good', lead: 'Ready to be submitted.', next: 'Next: ' + (t.flow ? 'pre-check, then ' : '') + 'submit for review. Needs ' + need + ' approval' + (need > 1 ? 's' : '') + '.' };
+    if (t.state === 'in_review') { var ok = canApprove(t, S.who, D); return { tone: 'wait', lead: 'Waiting for approval (' + have + ' of ' + need + ').', next: (ok.ok ? 'You can approve this as ' + ((person(S.who) || {}).name || 'yourself') + '. ' : 'Not you: ' + ok.reason + ' ') + 'Next: the downtime window on ' + w + '.' }; }
+    if (t.state === 'approved') return { tone: 'wait', lead: 'Approved. Waiting for the downtime window.', next: 'The upgrade starts on ' + w + ', and only then.' };
+    if (t.state === 'in_window') return { tone: 'good', lead: ph === 'post' ? 'The upgrade is done. The post-check is running.' : 'The upgrade is running now.', next: 'Next: post-check, then close the ticket.' };
+    return { tone: 'good', lead: 'Done and verified.', next: 'Evidence is filed' + (t.ticket ? ' and ticket ' + t.ticket + ' is closed.' : '.') };
+  }
+  var COL_HINT = { planned: ['Steps 1–2', 'Request written, pre-check done. Not yet submitted.'], in_review: ['Step 3', 'Waiting for approvals. Someone needs to decide.'], approved: ['Step 4', 'Approved. Waits for the downtime window.'], in_window: ['Steps 5–6', 'Upgrade and post-check are running.'], done: ['Step 7', 'Verified, ticket closed, evidence filed.'] };
+
   /* ---------- overview ---------- */
   function overview() {
     var certs = D.certs.map(function (c) { return Object.assign({}, c, certStatus(c, D.asOf)); }).sort(function (a, b) { return a.daysLeft - b.daysLeft; });
     var soon = certs.filter(function (c) { return c.daysLeft >= 0 && c.daysLeft <= 30; }).length, expired = certs.filter(function (c) { return c.daysLeft < 0; }).length;
     var crit = D.vms.filter(function (v) { return v.criticalPatches > 0; }).length;
-    var review = S.tasks.filter(function (t) { return t.state === 'in_review' || t.state === 'approved'; }).length;
+    var needs = S.tasks.filter(function (t) { return t.state === 'in_review'; }), waitN = needs.length;
     var next = S.tasks.filter(function (t) { return t.state === 'approved'; }).sort(function (a, b) { return a.window[0] < b.window[0] ? -1 : 1; })[0];
-    var h = '<div class="kpis">' +
+    var h = '<p class="intro"><b>Every infrastructure change follows the same seven steps.</b> Nothing is touched without a pre-check, an approval and an agreed downtime window. Every run ends with a verification and filed evidence.</p>' + flowStrip(false) + '<div style="height:14px"></div><div class="kpis">' +
       kpi(soon, 'Certificates expire within 30 days', soon ? 'amber' : '') + kpi(expired, 'Certificates expired', expired ? 'red' : '') +
-      kpi(crit, 'VMs with critical patches', crit ? 'red' : '') + kpi(review, 'Tasks in review or approved', '') +
-      kpi(next ? next.window[0].replace('T', ' ') : '–', 'Next approved window', '') + '</div>';
+      kpi(crit, 'VMs with critical patches', crit ? 'red' : '') + kpi(waitN, 'Waiting for a decision', waitN ? 'amber' : '') +
+      kpi(next ? next.window[0].replace('T', ' ').slice(5) : '–', next ? 'Next window, ' + next.window[0].slice(0, 4) + ' · ' + next.id : 'No approved window yet', '', true) + '</div>';
     var f = findings(D).slice(0, 7);
+    h += '<div class="card attn" style="margin-bottom:16px"><h2>Needs a decision</h2><p class="note">Changes that wait for an approval.</p>' + (needs.length ? needs.map(function (t) {
+      var p = planOf(t), ok = canApprove(t, S.who, D);
+      return '<div class="ask"><span class="dot amber"></span><div><b>' + esc(t.id) + ' · ' + esc(PLAYBOOKS[t.template].title) + '</b> <span class="tag ' + p.risk + '">Risk ' + p.risk + '</span><small>' + esc(t.target) + ' · ' + esc(customer(t.customer).name) + ' · window ' + esc(t.window[0].replace('T', ' ')) + ' · ' + (t.approvals || []).length + ' of ' + p.approvalsNeeded + ' approvals' + (ok.ok ? '' : ' · ' + esc(ok.reason)) + '</small></div><button class="btn' + (ok.ok ? ' primary' : '') + '" data-chg="' + esc(t.id) + '" type="button">' + (ok.ok ? 'Review and approve' : 'Open') + '</button></div>';
+    }).join('') : '<p class="note" style="margin:0">Nothing is waiting. New changes appear here as soon as they are submitted for review.</p>') + '</div>';
     h += '<div class="card" style="margin-bottom:16px"><div class="tools" style="margin:0"><h2 style="margin:0">Tickets for the operator</h2><button class="btn" id="demo-ticket" type="button" style="margin-left:auto" title="Normally the ticket comes from the Infra-Operations-Fleet Space">Simulate ticket from Infra-Operations-Fleet</button></div><p class="note">Tickets the Fleet Manager opened in IT Fleet. Start a change from a ticket: pre-check, approval, window, upgrade, post-check, close.</p>' +
       (S.tickets.length ? S.tickets.map(function (tk) {
         var tg = ticketTarget(tk);
         return '<div class="tq"><div><b>' + esc(tk.id) + ' · ' + esc(tk.customerName) + '</b> <span class="tag ' + (tk.priority === 'High' ? 'red' : 'amber') + '">' + esc(tk.priority) + '</span> <span class="tag ' + (tk.status === 'closed' ? 'ok' : tk.status === 'open' ? '' : 'tool') + '">' + (tk.status === 'closed' ? 'closed' : tk.status === 'open' ? 'open' : 'in change ' + esc(tk.chg)) + '</span><small>' + esc(tk.vm) + ' · ' + esc(tk.reasons.join(', ') || 'see the fleet view') + (tg ? ' · certificate ' + esc(tg.target) : '') + '</small>' + (tk.report ? '<small>' + esc(tk.report) + ' Reported to the Fleet Manager.</small>' : '') + '</div>' +
           (tk.status === 'open' ? '<button class="btn primary" data-ticket="' + esc(tk.id) + '" type="button"' + (tg ? '' : ' disabled title="No playbook for this kind of ticket yet"') + '>Start change</button>' : tk.chg ? '<button class="btn" data-chg="' + esc(tk.chg) + '" type="button">Open ' + esc(tk.chg) + '</button>' : '') + '</div>';
       }).join('') : '<p class="note" style="margin:0">No ticket yet. Open one for a red VM in Infra-Operations-Fleet.</p>') + '</div>';
-    h += '<div class="two"><div class="card"><h2>To do today</h2><p class="note">Suggestions from the inventory. “Suggest task” pre-fills the request; nothing is changed.</p>' +
-      f.map(function (x, i) { return '<div class="todo"><span class="dot ' + x.severity + '"></span><div>' + esc(x.title) + '<small>' + esc(x.detail) + '</small></div>' + (x.template ? '<button class="btn" data-new="' + i + '" type="button">Suggest task</button>' : '') + '</div>'; }).join('') + '</div>';
-    h += '<div class="card"><h2>Certificate timeline</h2><p class="note">Days remaining (scale up to 365).</p>' + certs.map(function (c) {
+    h += '<div class="two"><div class="card"><h2>Suggested work</h2><p class="note">Found in the inventory, most urgent first. “Suggest task” only pre-fills a request; nothing is changed.</p>' +
+      f.map(function (x, i) { return '<div class="todo"><span class="dot ' + x.severity + '"></span><div>' + esc(x.title) + ' <span class="tag ' + (x.severity === 'red' ? 'red' : 'amber') + '">' + ({ cert: 'Certificate', vm: x.template ? 'Patches' : 'Backup' }[x.kind] || x.kind) + '</span><small>' + esc(todoCustomer(x)) + ' · ' + esc(x.detail) + '</small></div>' + (x.template ? '<button class="btn" data-new="' + i + '" type="button">Suggest task</button>' : '') + '</div>'; }).join('') + '</div>';
+    h += '<div class="card"><h2>Certificate timeline</h2><p class="note">Days until each certificate expires (scale up to 365 days). Short bars need action first.</p>' + certs.map(function (c) {
       var w = Math.max(2, Math.min(100, c.daysLeft / 365 * 100));
-      return '<div class="tl"><span class="n" title="' + esc(c.name) + '">' + esc(c.id) + '</span><div class="bar" role="img" aria-label="' + esc(c.id) + ': ' + c.daysLeft + ' days"><i class="' + c.status + '" style="width:' + (c.daysLeft < 0 ? 2 : w) + '%"></i></div><span class="d">' + (c.daysLeft < 0 ? 'expired' : c.daysLeft + ' d') + '</span></div>';
+      return '<div class="tl"><span class="n" title="' + esc(c.id) + '">' + esc(c.name) + '</span><div class="bar" role="img" aria-label="' + esc(c.id) + ': ' + c.daysLeft + ' days"><i class="' + c.status + '" style="width:' + (c.daysLeft < 0 ? 2 : w) + '%"></i></div><span class="d">' + (c.daysLeft < 0 ? 'expired' : c.daysLeft + ' d') + '</span></div>';
     }).join('') + '</div></div>';
     $('#main').innerHTML = h;
     var dt = $('#demo-ticket'); if (dt) dt.onclick = demoTicket;
@@ -1690,16 +1747,17 @@ function simulateRun(plan) {
     document.querySelectorAll('[data-chg]').forEach(function (b) { b.onclick = function () { S.tab = 'tasks'; render(); openTask(b.dataset.chg); }; });
     document.querySelectorAll('[data-new]').forEach(function (b) { b.onclick = function () { var x = f[Number(b.dataset.new)]; openNew({ template: x.template, target: x.target }); }; });
   }
-  function kpi(v, label, tone) { return '<div class="kpi ' + (tone || '') + '"><b>' + esc(v) + '</b><span>' + esc(label) + '</span></div>'; }
+  function todoCustomer(x) { var o = (x.kind === 'cert' ? D.certs : D.vms).filter(function (y) { return y.id === x.target; })[0]; return o ? customer(o.customer).name : ''; }
+  function kpi(v, label, tone, date) { return '<div class="kpi ' + (tone || '') + '"><b' + (date ? ' class="date"' : '') + '>' + esc(v) + '</b><span>' + esc(label) + '</span></div>'; }
 
   /* ---------- tasks ---------- */
   function tasksTab() {
-    var h = '<div class="tools"><h2 style="margin:0">Service Request Tasks</h2><button class="btn primary" id="new" type="button" style="margin-left:auto">New task</button></div><p class="note">Every task goes through pre-check, approval, window, execution and evidence. Click for details.</p><div class="board">';
+    var h = '<div class="tools"><h2 style="margin:0">Service Request Tasks</h2><button class="btn primary" id="new" type="button" style="margin-left:auto">New task</button></div><p class="note">Read from left to right. A task moves one column to the right each time a step is complete. Click a card for details.</p>' + flowStrip(true) + '<div style="height:12px"></div><div class="board">';
     ['planned', 'in_review', 'approved', 'in_window', 'done'].forEach(function (st) {
       var list = S.tasks.filter(function (t) { return t.state === st; });
-      h += '<section class="col" aria-label="' + STATE_LABEL[st] + '"><h3><span>' + STATE_LABEL[st] + '</span><span>' + list.length + '</span></h3>' + list.map(function (t) {
+      h += '<section class="col" aria-label="' + STATE_LABEL[st] + '"><h3><span>' + STATE_LABEL[st] + '</span><span>' + list.length + '</span></h3><p class="coln"><b>' + COL_HINT[st][0] + '.</b> ' + COL_HINT[st][1] + '</p>' + (list.length ? '' : '<p class="coln">Empty.</p>') + list.map(function (t) {
         var p = planOf(t);
-        return '<button class="tcard" data-task="' + esc(t.id) + '" type="button"><b>' + esc(t.id) + ' · ' + esc(PLAYBOOKS[t.template].title) + '</b><small>' + esc(t.target) + ' · ' + esc(customer(t.customer).name) + '</small><small>' + esc(t.window[0].replace('T', ' ')) + '</small><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span> <span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span>' + (p.ok ? '' : ' <span class="tag fail">blocked</span>') + '</button>';
+        return '<button class="tcard" data-task="' + esc(t.id) + '" type="button"><b>' + esc(t.id) + ' · ' + esc(PLAYBOOKS[t.template].title) + '</b><small>' + esc(t.target) + ' · ' + esc(customer(t.customer).name) + '</small><small>Window ' + esc(t.window[0].replace('T', ' ')) + '</small><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span> <span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span>' + (p.ok ? '' : ' <span class="tag fail">blocked</span><span class="why">' + esc(p.errors[0] || '') + '</span>') + '</button>';
       }).join('') + '</section>';
     });
     $('#main').innerHTML = h + '</div>';
@@ -1780,17 +1838,17 @@ function simulateRun(plan) {
     var p = planOf(t), done = STEPS_DONE[t.state];
     var h = '<h2>' + esc(t.id) + ' · ' + esc(p.playbook.title) + '</h2><p class="note">' + esc(t.target) + ' · ' + esc(p.customer) + ' · ' + esc(t.window[0].replace('T', ' ')) + ' to ' + esc(t.window[1].replace('T', ' ')) + '</p>' +
       '<div class="row"><span class="tag ' + p.risk + '">Risk ' + p.risk + '</span><span class="tag">' + STATE_LABEL[t.state] + '</span><span class="tag">' + (t.approvals || []).length + '/' + p.approvalsNeeded + ' approvals</span><span class="tag ' + (p.downtime.minutes ? 'amber' : 'ok') + '">' + (p.downtime.minutes ? 'Outage about ' + p.downtime.minutes + ' min' : 'no outage') + '</span></div>' + errsHtml(p);
+    h += '<div id="banner"></div><div id="runbox"></div>';
     h += '<h3>Process</h3><div id="tracker">' + trackerHtml(t, p) + '</div>';
-    h += '<div id="actions"></div><div id="runbox"></div>';
-    h += '<h3>Pre-check (check mode, nothing is changed)</h3>' + (t.precheck ? '<p class="note">Result from the Pre-Checks and Post-Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '<h3>Planned change (diff)</h3>' + diffHtml(p);
-    h += '<h3>Impact</h3><p>' + esc(p.downtime.note) + '</p><p class="sub">Affected systems: ' + esc(p.blast.vms.join(', ') || 'none') + '<br>DNS names: ' + esc(p.blast.dns.join(', ') || 'none') + '</p>';
-    if (!t.flow) h += '<h3>Flow (n8n and AWX)</h3>' + p.steps.map(function (s) {
+    h += '<details class="sec"><summary>Pre-check: ' + p.checks.filter(function (c) { return c.status === 'ok'; }).length + ' of ' + p.checks.length + ' ok</summary><div><h3>Check mode, nothing is changed</h3>' + (t.precheck ? '<p class="note">Result from the Pre-Checks and Post-Checks Space: ' + esc(t.precheck.verdict === 'ok' ? 'passed' : t.precheck.verdict === 'warn' ? 'passed with notes' : 'blocked') + '.</p>' : '') + checksHtml(p) + '</div></details><details class="sec"><summary>Planned change (diff)</summary><div>' + diffHtml(p) + '</div></details>';
+    h += '<details class="sec" open><summary>Impact</summary><div><p>' + esc(p.downtime.note) + '</p><p class="sub">Affected systems: ' + esc(p.blast.vms.join(', ') || 'none') + '<br>DNS names: ' + esc(p.blast.dns.join(', ') || 'none') + '</p></div></details>';
+    if (!t.flow) h += '<details class="sec"><summary>Technical flow (n8n and AWX)</summary><div>' + p.steps.map(function (s) {
       var oi = ORCHESTRATION.map(function (o) { return o.id; }).indexOf(s.id);
       var cls = oi < 0 ? '' : oi < done ? 'done' : oi === done ? 'cur' : '';
       return '<div class="step ' + cls + '"><i></i><div>' + esc(s.title) + '<small>' + esc(s.detail || s.when || '') + '</small></div>' + (s.tool ? '<span class="tag tool">' + esc(s.tool) + '</span>' : '<span class="tag">upfront</span>') + '</div>';
-    }).join('');
-    h += '<div class="card" style="margin:14px 0"><span class="tag tool">Joule</span><div class="row"><button class="btn" data-ask="explain" type="button">Explain this change</button><button class="btn" data-ask="customer" type="button">Draft customer notice</button><button class="btn" data-ask="rollback" type="button">What happens on rollback?</button><button class="btn" data-ask="n8n" type="button">Submit to n8n</button></div><p class="note" style="margin:0">Joule answers in the chat of the desktop app. “Submit to n8n” plans the change and hands it to the n8n workflow (check mode) after you confirm.</p></div>';
-    h += '<h3>Log</h3><div class="log" id="log"></div><div id="evidence"></div>';
+    }).join('') + '</div></details>';
+    h += '<details class="sec"><summary>Ask Joule</summary><div><span class="tag tool">Joule</span><div class="row"><button class="btn" data-ask="explain" type="button">Explain this change</button><button class="btn" data-ask="customer" type="button">Draft customer notice</button><button class="btn" data-ask="rollback" type="button">What happens on rollback?</button><button class="btn" data-ask="n8n" type="button">Submit to n8n</button></div><p class="note" style="margin:0">Joule answers in the chat of the desktop app. “Submit to n8n” plans the change and hands it to the n8n workflow (check mode) after you confirm.</p></div></details>';
+    h += '<details class="sec"><summary>Log</summary><div><div class="log" id="log"></div></div></details><div id="evidence"></div>';
     openDrawer(h);
     renderActions(t, p);
     $('#log').innerHTML = S.logs[t.id].map(function (l) { return '<div>' + esc(l) + '</div>'; }).join('');
@@ -1798,21 +1856,19 @@ function simulateRun(plan) {
     if (S.runs[t.id]) showRun(t, p, S.runs[t.id].lines.length);
   }
   function renderActions(t, p) {
-    var box = $('#actions'); if (!box) return;
-    var h = '<div class="row">';
+    var box = $('#banner'); if (!box) return;
+    var st = statusOf(t, p), h = '<div class="banner ' + st.tone + '" role="status"><p class="lead">' + esc(st.lead) + '</p><p class="next">' + esc(st.next) + '</p><div class="row">';
     var ph = phaseOf(t);
     if (t.flow && (ph === 'created' || ph === 'precheck')) h += '<button class="btn primary" data-do="precheck" type="button">' + (ph === 'precheck' ? 'Run the pre-check again' : 'Run pre-check now') + '</button>';
     if (t.flow && ph === 'post') h += '<button class="btn" data-do="postcheck" type="button">Run the post-check again</button>';
-    if (t.flow && ph === 'blocked') h += '<span class="sub" role="status">The pre-check blocked this change. Fix the request (window, backup) and create a new task.</span>';
     if (t.flow && ph === 'window') h += '<button class="btn" data-do="skip" type="button">Skip the waiting (open the downtime window now)</button>';
-    if (t.flow && ph === 'post_failed') h += '<span class="sub" role="status">The post-check failed: the rollback would start now (simulated).</span>';
     if (t.state === 'planned' && !(t.flow && t.flow.auto && ph !== 'precheck_done')) h += '<button class="btn primary" data-do="submit" type="button"' + (p.ok ? '' : ' disabled') + '>Submit for review</button>';
     if (t.state === 'in_review') {
       var ok = canApprove(t, S.who, D);
-      h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Approve as ' + esc((person(S.who) || {}).name) + '</button>' + '<span class="sub" role="status">' + esc(ok.ok ? approvalHint(t, D) : ok.reason) + '</span>';
+      h += '<button class="btn primary" data-do="approve" type="button"' + (ok.ok ? '' : ' disabled') + '>Approve as ' + esc((person(S.who) || {}).name) + '</button>';
     }
     if ((t.state === 'approved' || t.state === 'in_window') && !t.flow) h += '<button class="btn primary" data-do="run" type="button"' + (p.ok ? '' : ' disabled') + '>' + (t.state === 'in_window' ? 'Continue execution' : 'Start in window') + ' (simulation)</button>';
-    h += '</div>';
+    h += '</div></div>';
     box.innerHTML = h;
     var b;
     if ((b = box.querySelector('[data-do=precheck]'))) b.onclick = function () { sendCheck(t, 'pre'); };

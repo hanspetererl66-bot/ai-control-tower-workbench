@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIRST = ['Anna', 'Jonas', 'Mira', 'Tobias', 'Selin', 'Lukas', 'Nadia', 'Felix', 'Clara', 'Omar', 'Hanna', 'Paul', 'Iris', 'Mats'];
 const LAST = ['Beispiel', 'Muster', 'Testmann', 'Probst', 'Nordmann', 'Kuhn', 'Demir', 'Sommer', 'Winter', 'Falk', 'Lorenz', 'Brandt'];
-const STATUS_OF = { Applied: 'NEW', Screening: 'IN_REVIEW', Interview: 'INTERVIEW', Offer: 'OFFER' };
+const STATUS_OF = { Applied: 'NEW', Screening: 'IN_REVIEW', 'Online interview': 'INTERVIEW', 'In-person interview': 'INTERVIEW_2', 'Final conversation': 'FINAL', Offer: 'OFFER' };
 
 export const jobRef = (reqId) => `mock-job-${reqId.replace(/^REQ-/, '')}`;
 export const candRef = (candId) => `mock-cand-${candId.replace(/^C-/, '')}`;
