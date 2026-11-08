@@ -106,6 +106,25 @@ accrue (245,775 EUR), 3 stale (17,765 EUR), 1 invoice before goods, and 3 interc
 84,200 EUR missing on the buyer side, an engineering recharge off by 18,650 EUR, a 12.40 EUR rounding difference).
 Accruals are proposals for the controller, not accounting advice. The Databricks figures are a snapshot; SAP is the system of record.
 
+## Scenario 5: Monday morning before the close (about 8 minutes, the finale)
+
+One story instead of four separate questions. Skill `monday-close` (recipe `recipes/monday-close.yaml`), start it from the card
+"Abschluss" under the empty chat (Finance tab of "Heute für dich"), from the scheduler job "Monday close briefing", or by typing
+"Run the skill monday-close for company code ALL."
+
+1. **Overnight (1 min).** The failed load, the new column `ZZ_EXPEDITE_FLAG` as the cause, and what is stale because of it, most critical first.
+2. **Orders at risk (1 min).** The same flag links to the purchase orders at risk (buyer B-100). No request is drafted here; `po-expedite` does that.
+3. **Close (2 min).** Open goods receipts by treatment, intercompany differences, any region below plan.
+4. **The stop (1 min).** The agent compares every item with SAP and **stops**: for PO 4500001005 the lakehouse says 47,250 EUR, SAP says
+   41,250 EUR, because SAP posted an invoice of 6,000 EUR after the snapshot (`sapLateInvoiceEur` in `connectors/sap-mock/server/data.mjs`;
+   the lakehouse does not know it). It offers two choices and does not draft anything on the old number. Choose "accrue the SAP value".
+5. **Yes and the finale (3 min).** Read the drafts, say yes. In the Finance Pre-Close Space press "Prepare accruals with Joule" first: the card then reads
+   Databricks and SAP every 20 seconds, so "Accrued ACC-..." appears while you approve, "Other operating expenses" rises by the posted amount and the
+   month-end forecast rises with it (EBIT falls). Without the Space, "Load from Databricks" does the same once.
+
+The story numbers of the lakehouse stay as they are (8 accruals, 245,775 EUR); only SAP differs by 6,000 EUR for the one item, so SAP's total is 239,775 EUR.
+The agent writes only the accruals in the mock SAP, after a yes. Nothing was run against a real Databricks workspace or in the Electron app.
+
 ## Result back in a Space
 
 The **Finance Pre-Close** Space has a card "Open goods receipts and intercompany from Databricks". "Load from Databricks" reads the

@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('host', {
   jobRunsRecord: (runs) => ipcRenderer.invoke('job-runs-record', runs),
   jobRunsList: (args) => ipcRenderer.invoke('job-runs-list', args),
   recruitingProposals: (args) => ipcRenderer.invoke('recruiting-proposals', args),
+  observabilityCall: (view, params) => ipcRenderer.invoke('observability-call', view, params),
   recruitingHireList: (args) => ipcRenderer.invoke('recruiting-hire-list', args),
   recruitingHireRelease: (id) => ipcRenderer.invoke('recruiting-hire-release', id),
   recruitingHireDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-hire-decide', id, decision, note),
@@ -44,6 +45,7 @@ contextBridge.exposeInMainWorld('host', {
   recruitingCriteria: () => ipcRenderer.invoke('recruiting-criteria'),
   recruitingCriterionSet: (args) => ipcRenderer.invoke('recruiting-criterion-set', args),
   recruitingCriterionDelete: (requisition, id) => ipcRenderer.invoke('recruiting-criterion-delete', requisition, id),
+  recruitingInterviewSave: (requisition, record) => ipcRenderer.invoke('recruiting-interview-save', requisition, record),
   recruitingDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-decide', id, decision, note),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 

@@ -1,5 +1,5 @@
 {
-  "title": "Automation Dashboard",
+  "title": "n8n Performance Dashboard",
   "description": "n8n automation at a glance: workflow health, executions per day, failing workflows and recent runs.",
   "domain": "Automation",
   "insights": [
@@ -7,5 +7,5 @@
     "Sample data is fictional and marked as such; live data comes from your n8n Cloud instance via npm run sync:automation -- --live.",
     "Only ids, names, tags, status and timings are read from n8n; execution payloads are never loaded."
   ],
-  "prompt": "Bundled example: Automation Dashboard for n8n (static, data embedded by npm run sync:automation)."
+  "prompt": "Bundled example: n8n Performance Dashboard (static, data embedded by npm run sync:automation)."
 }

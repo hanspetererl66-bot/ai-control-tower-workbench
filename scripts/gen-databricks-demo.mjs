@@ -233,6 +233,11 @@ const SKILL_META = {
     process: 'Period-end pre-close',
     tools: 'get_grir_accrual_candidates, get_intercompany_differences, Databricks SQL (read), SAP mock (draft, then submit_draft after approval)',
   },
+  'monday-close': {
+    domain: 'Finance',
+    process: 'Monday-morning briefing before the close',
+    tools: 'get_failed_runs, get_run_diagnosis, get_downstream_impact, get_delay_risk_pos, get_grir_accrual_candidates, get_intercompany_differences, Databricks SQL (read), SAP mock (draft, then submit_draft after approval)',
+  },
   'po-expedite': {
     domain: 'Procurement',
     process: 'Purchase order expediting',

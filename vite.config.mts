@@ -8,6 +8,7 @@ import { installSkill } from './shared/skill-install.mjs';
 import { parseSpaceMetadata } from './shared/space-metadata.mjs';
 import { copySlug, copyTitle, retitleSpaceJson } from './shared/duplicate.mjs';
 import { MAX_PACKAGE_BYTES, buildSpacePackage, parseSpacePackage, uniqueSlug } from './shared/space-package.mjs';
+import { saveDesignedSpace, type SpaceFiles } from './src/space-designer-save.ts';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const SPACES = join(ROOT, 'workspace/spaces');
@@ -84,6 +85,33 @@ function spacesApi(): Plugin {
             return json(500, { error: error instanceof Error ? error.message : 'delete failed' });
           }
         }
+        // Space Designer: POST /_designer saves a designed Space. The body is JSON (title, layout ...); the page is generated here.
+        if ((req.url ?? '').split('?')[0] === '/_designer' && req.method === 'POST') {
+          const chunks: Buffer[] = [];
+          let size = 0;
+          req.on('data', (chunk: Buffer) => {
+            size += chunk.length;
+            if (size <= 2 * 1024 * 1024) chunks.push(chunk);
+          });
+          req.on('end', () => {
+            try {
+              if (size > 2 * 1024 * 1024) throw new Error('This page is too large for a Space (limit 2 MB).');
+              let body: Record<string, unknown>;
+              try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { throw new Error('The request was not valid.'); }
+              mkdirSync(SPACES, { recursive: true });
+              const files: SpaceFiles = {
+                slugs: () => readdirSync(SPACES, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name),
+                read: (slug, file) => { try { return readFileSync(join(SPACES, slug, file), 'utf8'); } catch { return null; } },
+                write: (slug, file, content) => { mkdirSync(join(SPACES, slug), { recursive: true }); writeFileSync(join(SPACES, slug, file), content); },
+              };
+              const css = readFileSync(join(ROOT, 'examples/shared/design-system.css'), 'utf8');
+              return json(200, saveDesignedSpace(files, css, body));
+            } catch (error) {
+              return json(400, { error: error instanceof Error ? error.message : 'The Space could not be saved.' });
+            }
+          });
+          return;
+        }
         if ((req.url ?? '').split('?')[0] === '/import' && req.method === 'POST') {
           const mode = new URL(req.url ?? '/', 'http://x').searchParams.get('mode');
           const chunks: Buffer[] = [];
@@ -146,10 +174,12 @@ function spacesApi(): Plugin {
               }
               let updatedAt = 0;
               let cardCount = 0;
+              let designer = false;
               try {
                 const htmlPath = join(dir, 'index.html');
                 const html = readFileSync(htmlPath, 'utf8');
                 updatedAt = statSync(htmlPath).mtimeMs;
+                designer = html.includes('id="wb-layout"');
                 for (const match of html.matchAll(/\bclass\s*=\s*["']([^"']*)["']/gi)) {
                   if (match[1].split(/\s+/).includes('card')) cardCount += 1;
                 }
@@ -171,6 +201,7 @@ function spacesApi(): Plugin {
                 parent: typeof meta.parent === 'string' && /^[A-Za-z0-9._-]+$/.test(meta.parent.trim()) ? meta.parent.trim() : undefined,
                 cardCount,
                 updatedAt,
+                designer: designer || undefined,
               };
             })
             .filter(Boolean)

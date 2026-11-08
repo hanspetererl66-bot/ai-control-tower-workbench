@@ -4,13 +4,17 @@
   "stages": [
     "Applied",
     "Screening",
-    "Interview",
+    "Online interview",
+    "In-person interview",
+    "Final conversation",
     "Offer"
   ],
   "sla": {
     "Applied": 3,
     "Screening": 5,
-    "Interview": 7,
+    "Online interview": 7,
+    "In-person interview": 7,
+    "Final conversation": 5,
     "Offer": 4
   },
   "privacy": {
@@ -340,7 +344,7 @@
     {
       "id": "C-4101",
       "job": "REQ-2201",
-      "stage": "Interview",
+      "stage": "Final conversation",
       "since": "2026-10-27",
       "applied": "2026-09-22",
       "years": 7,
@@ -432,7 +436,7 @@
     {
       "id": "C-4201",
       "job": "REQ-2203",
-      "stage": "Interview",
+      "stage": "Online interview",
       "since": "2026-11-02",
       "applied": "2026-10-01",
       "years": 4,
@@ -543,7 +547,7 @@
     {
       "id": "C-4303",
       "job": "REQ-2204",
-      "stage": "Interview",
+      "stage": "In-person interview",
       "since": "2026-11-03",
       "applied": "2026-10-15",
       "years": 11,
@@ -558,7 +562,7 @@
     {
       "id": "C-4304",
       "job": "REQ-2204",
-      "stage": "Interview",
+      "stage": "In-person interview",
       "since": "2026-10-20",
       "applied": "2026-09-30",
       "years": 5,
@@ -597,7 +601,7 @@
     {
       "id": "C-4402",
       "job": "REQ-2202",
-      "stage": "Interview",
+      "stage": "Online interview",
       "since": "2026-11-05",
       "applied": "2026-10-16"
     },
@@ -618,7 +622,7 @@
     {
       "id": "C-4501",
       "job": "REQ-2205",
-      "stage": "Interview",
+      "stage": "Online interview",
       "since": "2026-10-30",
       "applied": "2026-10-19"
     },
@@ -777,5 +781,808 @@
       "name": "sr_send_message",
       "what": "Would message the hiring manager or a candidate after release. Not built"
     }
-  ]
+  ],
+  "stageLabels": {
+    "Applied": "New",
+    "Screening": "In review",
+    "Online interview": "Online interview",
+    "In-person interview": "In-person interview",
+    "Final conversation": "Final conversation",
+    "Offer": "Offered"
+  },
+  "outcomes": {
+    "REQ-2201": {
+      "hired": 0,
+      "withdrawn": 3,
+      "rejected": 9
+    },
+    "REQ-2202": {
+      "hired": 1,
+      "withdrawn": 2,
+      "rejected": 6
+    },
+    "REQ-2203": {
+      "hired": 0,
+      "withdrawn": 1,
+      "rejected": 7
+    },
+    "REQ-2204": {
+      "hired": 0,
+      "withdrawn": 2,
+      "rejected": 11
+    },
+    "REQ-2205": {
+      "hired": 1,
+      "withdrawn": 4,
+      "rejected": 14
+    },
+    "REQ-2206": {
+      "hired": 0,
+      "withdrawn": 0,
+      "rejected": 2
+    }
+  },
+  "consent": {
+    "default": "given",
+    "requested": [
+      "C-4105",
+      "C-4404",
+      "C-4602"
+    ]
+  },
+  "contactNote": "Name, e-mail and phone are not stored. They stay in the recruiting system.",
+  "channels": {
+    "REQ-2201": {
+      "LinkedIn": 5,
+      "Career site": 4,
+      "Job board": 6,
+      "Social": 1,
+      "Referral": 2
+    },
+    "REQ-2202": {
+      "LinkedIn": 1,
+      "Career site": 3,
+      "Job board": 4,
+      "Social": 3,
+      "Referral": 2
+    },
+    "REQ-2203": {
+      "LinkedIn": 6,
+      "Career site": 3,
+      "Job board": 2,
+      "Social": 0,
+      "Referral": 2
+    },
+    "REQ-2204": {
+      "LinkedIn": 8,
+      "Career site": 4,
+      "Job board": 2,
+      "Social": 0,
+      "Referral": 4
+    },
+    "REQ-2205": {
+      "LinkedIn": 3,
+      "Career site": 5,
+      "Job board": 8,
+      "Social": 6,
+      "Referral": 2
+    },
+    "REQ-2206": {
+      "LinkedIn": 1,
+      "Career site": 2,
+      "Job board": 1,
+      "Social": 0,
+      "Referral": 1
+    }
+  },
+  "posting": {
+    "note": "Sample template and sample channels. The SAP standard template here is a fictional stand-in with the same kind of structure; replace its text with your real template. No channel is connected: publishing is simulated.",
+    "apply": "https://careers.hanse-logistik.example/jobs/",
+    "templates": [
+      {
+        "id": "tpl-sap",
+        "name": "SAP standard (sample)",
+        "kind": "standard",
+        "owner": null,
+        "shared": true,
+        "uses": 13,
+        "lastUsed": "2026-10-19",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, a training budget and a team that shares what it knows."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      },
+      {
+        "id": "tpl-ops",
+        "name": "Operations – shift roles",
+        "kind": "saved",
+        "owner": "Head of Operations Hamburg",
+        "shared": true,
+        "uses": 6,
+        "lastUsed": "2026-10-05",
+        "basedOn": "tpl-sap",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "safety",
+            "label": "Safety first",
+            "locked": false,
+            "text": "Every new colleague gets a site induction in the first week and works with a mentor until the induction is signed off."
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, shift allowances as set by the works agreement, paid training for equipment licences."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      },
+      {
+        "id": "tpl-it",
+        "name": "IT – SAP consulting",
+        "kind": "saved",
+        "owner": "Head of IT Business Applications",
+        "shared": true,
+        "uses": 3,
+        "lastUsed": "2026-08-24",
+        "basedOn": "tpl-sap",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "tools",
+            "label": "Tools you will work with",
+            "locked": false,
+            "text": "SAP S/4HANA, SAP Business Technology Platform, Git, Jira."
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, a certification budget and two days a month for your own learning."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      },
+      {
+        "id": "tpl-svc",
+        "name": "Service – DE/EN agents",
+        "kind": "saved",
+        "owner": "Team lead Customer Service",
+        "shared": false,
+        "uses": 4,
+        "lastUsed": "2026-10-12",
+        "basedOn": "tpl-sap",
+        "sections": [
+          {
+            "key": "title",
+            "label": "Job title",
+            "locked": false,
+            "text": "{{title}} (m/f/d)"
+          },
+          {
+            "key": "intro",
+            "label": "About us",
+            "locked": true,
+            "text": "{{company}} keeps goods moving across Europe: warehouses, transport planning and customer service, run by people who like solving practical problems. We build the tools that keep them in sync."
+          },
+          {
+            "key": "role",
+            "label": "Your role",
+            "locked": false,
+            "text": "You report to {{team}} ({{dept}}, {{location}}).\n{{role}}"
+          },
+          {
+            "key": "must",
+            "label": "What you bring",
+            "locked": false,
+            "text": "{{must}}"
+          },
+          {
+            "key": "nice",
+            "label": "Nice to have",
+            "locked": false,
+            "text": "{{nice}}"
+          },
+          {
+            "key": "langs",
+            "label": "Languages",
+            "locked": false,
+            "text": "You work in German and English. Both are used every day."
+          },
+          {
+            "key": "offer",
+            "label": "What we offer",
+            "locked": false,
+            "text": "A permanent contract, a structured two-week onboarding and a team that rotates the difficult calls."
+          },
+          {
+            "key": "pay",
+            "label": "Pay range",
+            "locked": false,
+            "text": "{{pay}}"
+          },
+          {
+            "key": "inclusion",
+            "label": "Equal opportunities",
+            "locked": true,
+            "text": "{{company}} welcomes applications from everyone. We decide on skills and experience. If you need adjustments in the application process, tell us and we will arrange them."
+          },
+          {
+            "key": "apply",
+            "label": "How to apply",
+            "locked": false,
+            "text": "Apply with your CV through our career portal: {{apply}}"
+          }
+        ]
+      }
+    ],
+    "channels": [
+      {
+        "id": "sap-portal",
+        "name": "SAP career portal",
+        "kind": "own",
+        "format": "full",
+        "limit": 12000,
+        "source": "Career site",
+        "adapter": "Own portal"
+      },
+      {
+        "id": "linkedin",
+        "name": "LinkedIn",
+        "kind": "portal",
+        "format": "full",
+        "limit": 6000,
+        "source": "LinkedIn",
+        "adapter": "Job board API"
+      },
+      {
+        "id": "xing",
+        "name": "Xing",
+        "kind": "portal",
+        "format": "full",
+        "limit": 6000,
+        "source": "Job board",
+        "adapter": "Job board API"
+      },
+      {
+        "id": "monster",
+        "name": "Monster.de",
+        "kind": "portal",
+        "format": "full",
+        "limit": 6000,
+        "source": "Job board",
+        "adapter": "Job board API"
+      },
+      {
+        "id": "social",
+        "name": "Company social posts",
+        "kind": "social",
+        "format": "short",
+        "limit": 700,
+        "source": "Social",
+        "adapter": "Social scheduler"
+      }
+    ],
+    "briefs": {
+      "REQ-2201": {
+        "role": "You lead a shift of about twenty people in the Hamburg warehouse: planning the shift, keeping inbound and outbound on time, and coaching the team."
+      },
+      "REQ-2202": {
+        "role": "You load, unload and move goods safely in the Bremen warehouse and keep your equipment checked and clean."
+      },
+      "REQ-2203": {
+        "role": "You turn planning data into forecasts and clear recommendations for the supply chain planners in Hamburg."
+      },
+      "REQ-2204": {
+        "role": "You advise internal teams on SAP logistics processes and deliver changes from design to go-live."
+      },
+      "REQ-2205": {
+        "role": "You answer customer questions by phone and e-mail in German and English and solve them on the first contact where you can."
+      },
+      "REQ-2206": {
+        "role": "You run the monthly payroll for our sites in Hamburg and answer payroll questions from employees."
+      }
+    }
+  },
+  "interview": {
+    "note": "Sample guides. The avatar is a mock: no Synthesia connection exists yet. In the Werkbank app the task check, the summary and the letter text come from Joule (an AI). Without the app, or if the AI is not reachable, a text search stands in for the check and says so. It never decides about a person.",
+    "avatar": {
+      "name": "Mira",
+      "provider": "Mock avatar (no Synthesia connection)"
+    },
+    "notice": {
+      "title": "Before we start: you will talk to an AI avatar",
+      "points": [
+        "You are speaking with an AI avatar, not with a person. The questions come from a guide the hiring manager approved.",
+        "Your answers are written down as text so the hiring manager can read them. Do not share health, family or other personal data.",
+        "Your task result is checked by an AI against the criteria listed with the task. The check says correct, partly correct, wrong or not present for each criterion. It gives no score and rejects nobody. You see the result too.",
+        "To do this, your answers and your task text are sent to an AI model provider (OpenRouter, through Joule). The hiring manager keeps a record of answers, task text, result and a short summary. It holds no name and no e-mail address; a session code stands for you.",
+        "If you want a letter with the summary and your result, you type an e-mail address for that. It is used to create a mail draft and is not stored. A person sends the mail.",
+        "A person, the hiring manager, makes every decision about your application. You can ask for a conversation with a person instead at any time."
+      ]
+    },
+    "verdicts": {
+      "correct": "Correct",
+      "partial": "Partly correct",
+      "wrong": "Wrong",
+      "missing": "Not present"
+    },
+    "guides": {
+      "REQ-2203": {
+        "minutes": 45,
+        "intro": "Welcome. I will ask a few questions about your work with data and then give you a short SQL task.",
+        "questions": [
+          {
+            "id": "q1",
+            "topic": "Experience",
+            "text": "Tell me about an analysis you did that changed a decision in supply chain or planning.",
+            "lookFor": [
+              "A concrete case, not a general description",
+              "What data was used and how",
+              "What changed because of it"
+            ]
+          },
+          {
+            "id": "q2",
+            "topic": "Method",
+            "text": "How do you check that a number in a report is right before you share it?",
+            "lookFor": [
+              "Reconciliation with a second source",
+              "Looks at outliers and missing values",
+              "Documents assumptions"
+            ]
+          },
+          {
+            "id": "q3",
+            "topic": "Communication",
+            "text": "Explain a forecast error to a warehouse manager who does not work with statistics.",
+            "lookFor": [
+              "Plain words",
+              "Uses an example",
+              "Says what to do next"
+            ]
+          }
+        ],
+        "task": {
+          "kind": "code",
+          "language": "SQL",
+          "title": "Late deliveries per supplier",
+          "minutes": 15,
+          "brief": "Table deliveries(supplier_id, order_id, promised_date, delivered_date). Write a query that returns, for each supplier, the number of deliveries that arrived after the promised date in 2026, only for suppliers with at least 3 late deliveries, sorted by that number, highest first.",
+          "starter": "-- write your query here\nSELECT ",
+          "criteria": [
+            {
+              "id": "c1",
+              "text": "Counts late deliveries per supplier (GROUP BY supplier)",
+              "needles": [
+                "GROUP BY supplier_id",
+                "GROUP BY d.supplier_id"
+              ],
+              "partial": [
+                "GROUP BY"
+              ],
+              "wrong": [
+                "GROUP BY order_id"
+              ]
+            },
+            {
+              "id": "c2",
+              "text": "Late means delivered after promised",
+              "needles": [
+                "delivered_date > promised_date",
+                "delivered_date>promised_date"
+              ],
+              "partial": [
+                "delivered_date",
+                "promised_date"
+              ],
+              "wrong": [
+                "delivered_date < promised_date",
+                "delivered_date<promised_date"
+              ]
+            },
+            {
+              "id": "c3",
+              "text": "Limits to 2026",
+              "needles": [
+                "2026"
+              ],
+              "partial": [
+                "YEAR(",
+                "EXTRACT("
+              ]
+            },
+            {
+              "id": "c4",
+              "text": "Keeps suppliers with at least 3 late deliveries (HAVING)",
+              "needles": [
+                "HAVING COUNT(*) >= 3",
+                "HAVING COUNT(*)>=3",
+                "HAVING COUNT(*) > 2",
+                "HAVING COUNT(order_id) >= 3"
+              ],
+              "partial": [
+                "HAVING"
+              ],
+              "wrong": [
+                "WHERE COUNT"
+              ]
+            },
+            {
+              "id": "c5",
+              "text": "Sorts highest first",
+              "needles": [
+                "ORDER BY late_count DESC",
+                "ORDER BY COUNT(*) DESC",
+                "ORDER BY n DESC",
+                "DESC"
+              ],
+              "partial": [
+                "ORDER BY"
+              ]
+            }
+          ],
+          "sample": "SELECT supplier_id, COUNT(*) AS late_count\nFROM deliveries\nWHERE delivered_date > promised_date\n  AND delivered_date >= '2026-01-01' AND delivered_date < '2027-01-01'\nGROUP BY supplier_id\nHAVING COUNT(*) >= 3\nORDER BY late_count DESC;"
+        }
+      },
+      "REQ-2201": {
+        "minutes": 40,
+        "intro": "Welcome. I will ask about leading a shift and then give you a short planning case.",
+        "questions": [
+          {
+            "id": "q1",
+            "topic": "Leadership",
+            "text": "Describe a shift where something went wrong early. What did you do in the first hour?",
+            "lookFor": [
+              "Names the problem and the people involved",
+              "Acts in a clear order",
+              "Tells the team what is going on"
+            ]
+          },
+          {
+            "id": "q2",
+            "topic": "Safety",
+            "text": "A colleague skips a safety step because the truck is late. What do you do?",
+            "lookFor": [
+              "Stops the work",
+              "Explains the rule",
+              "Reports it the way the site requires"
+            ]
+          },
+          {
+            "id": "q3",
+            "topic": "Planning",
+            "text": "How do you decide who works at which gate when two people call in sick?",
+            "lookFor": [
+              "Priorities by workload",
+              "Considers skills and licences",
+              "Communicates the change"
+            ]
+          }
+        ],
+        "task": {
+          "kind": "case",
+          "language": "text",
+          "title": "Shift plan with two absences",
+          "minutes": 15,
+          "brief": "Your shift has 12 people. Two forklift drivers are sick. Four trucks arrive between 06:00 and 08:00, two of them with fresh goods. Write down how you re-plan the first two hours: who does what, what you move back, and whom you inform.",
+          "starter": "",
+          "criteria": [
+            {
+              "id": "c1",
+              "text": "Puts the fresh goods trucks first",
+              "needles": [
+                "fresh goods first",
+                "fresh first",
+                "chilled first",
+                "perishable",
+                "fresh goods trucks first"
+              ],
+              "partial": [
+                "fresh"
+              ]
+            },
+            {
+              "id": "c2",
+              "text": "Covers the missing forklift drivers (licensed staff only)",
+              "needles": [
+                "licensed",
+                "licence",
+                "license",
+                "certified"
+              ],
+              "partial": [
+                "forklift",
+                "driver"
+              ],
+              "wrong": [
+                "anyone can drive",
+                "unlicensed"
+              ]
+            },
+            {
+              "id": "c3",
+              "text": "Moves something back and names it",
+              "needles": [
+                "postpone",
+                "move back",
+                "later",
+                "delay the",
+                "push back",
+                "pushed back"
+              ],
+              "partial": [
+                "move"
+              ]
+            },
+            {
+              "id": "c4",
+              "text": "Informs the right people (team, transport planning)",
+              "needles": [
+                "inform",
+                "tell the team",
+                "call transport",
+                "notify",
+                "brief the team"
+              ],
+              "partial": [
+                "team"
+              ]
+            }
+          ],
+          "sample": "I put the fresh goods trucks first at 06:00. Only licensed drivers take the forklifts, so I move the two best-placed licensed people there. The dry goods truck is pushed back to after 07:00. I inform transport planning about the delay."
+        }
+      },
+      "REQ-2206": {
+        "minutes": 40,
+        "intro": "Welcome. I will ask about payroll work and then give you a short case.",
+        "questions": [
+          {
+            "id": "q1",
+            "topic": "Experience",
+            "text": "Describe how you ran a monthly payroll from input to payment.",
+            "lookFor": [
+              "Names the steps in order",
+              "Mentions checks before release",
+              "Knows the deadlines"
+            ]
+          },
+          {
+            "id": "q2",
+            "topic": "Accuracy",
+            "text": "An employee says their net pay is too low. How do you find the reason?",
+            "lookFor": [
+              "Compares with the previous month",
+              "Checks tax class and deductions",
+              "Answers the person clearly"
+            ]
+          },
+          {
+            "id": "q3",
+            "topic": "Confidentiality",
+            "text": "A manager asks you for the pay of a team member. What do you say?",
+            "lookFor": [
+              "Refuses to share without a legal basis",
+              "Refers to the proper channel",
+              "Stays polite"
+            ]
+          }
+        ],
+        "task": {
+          "kind": "case",
+          "language": "text",
+          "title": "Unusual increase in payroll cost",
+          "minutes": 15,
+          "brief": "Payroll cost for the Hamburg site is 18% higher than last month. Before release you must find out why. Write the checks you would run, in order, and when you would stop the release.",
+          "starter": "",
+          "criteria": [
+            {
+              "id": "c1",
+              "text": "Compares with the previous month by item",
+              "needles": [
+                "compare with last month",
+                "previous month",
+                "by wage type",
+                "by pay component",
+                "variance"
+              ],
+              "partial": [
+                "compare"
+              ]
+            },
+            {
+              "id": "c2",
+              "text": "Checks one-off items (bonus, back pay, severance)",
+              "needles": [
+                "bonus",
+                "back pay",
+                "retro",
+                "severance",
+                "one-off"
+              ],
+              "partial": [
+                "extra"
+              ]
+            },
+            {
+              "id": "c3",
+              "text": "Checks headcount and master data changes",
+              "needles": [
+                "headcount",
+                "new hire",
+                "master data",
+                "leavers"
+              ],
+              "partial": [
+                "employees"
+              ]
+            },
+            {
+              "id": "c4",
+              "text": "Says when to stop the release",
+              "needles": [
+                "stop the release",
+                "hold the release",
+                "do not release",
+                "block the release"
+              ],
+              "partial": [
+                "release"
+              ],
+              "wrong": [
+                "release anyway",
+                "release first"
+              ]
+            }
+          ],
+          "sample": "I compare with last month by wage type. Then I look at bonus and back pay. I check headcount. I would release once the numbers look plausible."
+        }
+      }
+    }
+  }
 }

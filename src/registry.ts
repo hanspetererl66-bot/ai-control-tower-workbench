@@ -10,6 +10,8 @@
 import { FLOW, FLOW_LABEL, type FlowStep } from './flow.ts';
 import { agentUnit, developUnit, restore } from './work-sync.ts';
 import { sanitizeExtends, sanitizeRefs, sourcesOf, type ExtendsRef, type SourceRef } from './requirements.ts';
+import { cardWords, flagsOf, phaseOf, policyBriefOf, sanitizeCard, type FlagId, type Phase, type PolicyBrief, type RegisterCard } from './registry-card.ts';
+import { cardNote, registerFrom, withRegister } from './register-store.ts';
 
 export type Api = { call: (tool: string, args: Record<string, unknown>) => Promise<any> };
 export type RType = 'agent' | 'workflow' | 'feature' | 'code';
@@ -23,6 +25,10 @@ export type RItem = {
   refs: SourceRef[];
   /** The agent or workflow this one extends. */
   extendsItem?: ExtendsRef;
+  /** The register card (intent.register); null when nobody has declared one. See registry-card.ts. */
+  card: RegisterCard | null;
+  /** What the policy manifest summary says (mode, systems, unattended); null for items saved before manifests existed. */
+  policy: PolicyBrief | null;
 };
 
 const str = (v: unknown, n = 200) => String(v ?? '').slice(0, n);
@@ -39,6 +45,7 @@ export function itemFrom(row: any, detail: any = null): RItem {
     visibility: str(row.visibility, 20), archived: row.archived === true, rev: Number(row.current_rev) || 0, updatedAt: time(row.updated_at), files: Number(row.files) || 0,
     approved: Array.isArray(detail?.approved) ? detail.approved.filter((s: unknown) => typeof s === 'string').slice(0, 20) : [],
     refs: sanitizeRefs(intent.sources), ...(ext ? { extendsItem: ext } : {}),
+    card: sanitizeCard(intent.register), policy: policyBriefOf(intent.policy),
   };
 }
 
@@ -49,14 +56,22 @@ export function stageText(i: Pick<RItem, 'type' | 'stage' | 'approved'>): string
   return (FLOW as readonly string[]).includes(i.stage) ? FLOW_LABEL[i.stage as FlowStep] : i.stage || 'Draft';
 }
 
-export type Filter = { type: RType | 'all'; status: 'active' | 'archived' | 'all'; query: string };
+/** `phase` and `flag` are optional so older callers keep working: left out means "all". `flag: 'any'` = at least one flag. */
+export type Filter = { type: RType | 'all'; status: 'active' | 'archived' | 'all'; query: string; phase?: Phase | 'all'; flag?: FlagId | 'any' | 'all' };
 export const noFilter = (): Filter => ({ type: 'all', status: 'active', query: '' });
 
-export function filterItems(items: RItem[], f: Filter): RItem[] {
+export function filterItems(items: RItem[], f: Filter, now = Date.now()): RItem[] {
   const q = f.query.trim().toLowerCase();
+  const phase = f.phase ?? 'all', flag = f.flag ?? 'all';
   return items
     .filter((i) => (f.type === 'all' || i.type === f.type) && (f.status === 'all' || (f.status === 'archived') === i.archived))
-    .filter((i) => !q || [i.name, i.owner, TYPE_LABEL[i.type], i.extendsItem?.name ?? '', ...i.refs.flatMap((r) => [r.key, r.title])].some((t) => t.toLowerCase().includes(q)))
+    .filter((i) => phase === 'all' || phaseOf(i).phase === phase)
+    .filter((i) => {
+      if (flag === 'all') return true;
+      const flags = flagsOf(i, items, now);
+      return flag === 'any' ? flags.length > 0 : flags.some((x) => x.id === flag);
+    })
+    .filter((i) => !q || [i.name, i.owner, TYPE_LABEL[i.type], i.extendsItem?.name ?? '', ...i.refs.flatMap((r) => [r.key, r.title]), ...cardWords(i.card)].some((t) => t.toLowerCase().includes(q)))
     .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
@@ -164,6 +179,8 @@ export function rollbackArgs(cur: { id: string; kind: string; name: string; curr
     const f = parseFeature(files);
     if (f) { const a = featureArgs(f, { note: '' }); stage = String(a.stage); approved = a.approved as string[]; intent = a.intent as Record<string, unknown>; }
   }
+  const card = registerFrom(files);
+  if (card) intent = { ...intent, register: card };
   return {
     id: cur.id, expected_rev: cur.currentRev, kind: cur.kind, name: cur.name, stage, approved, intent,
     files: files.map((f) => ({ path: f.path, language: f.language ?? '', content: f.content })), note: `Restored revision ${toRev}`,
@@ -267,4 +284,29 @@ export async function restoreRevision(api: Api, item: Pick<RItem, 'id' | 'type' 
   const kind = item.type === 'agent' ? 'agent' : item.type === 'workflow' ? 'workflow' : 'code';
   const res = await api.call('save_work_item', rollbackArgs({ id: item.id, kind, name: item.name, currentRev: Number(cur?.current_rev) || item.rev, intent: cur?.intent }, files, rev));
   return Number(res?.rev) || 0;
+}
+
+// ---------- the register card ----------
+
+/** save_work_item arguments that put `card` into the item as a new revision; every other file is copied exactly from the revision it is based on. */
+export function saveCardArgs(cur: { id: string; kind: string; name: string; currentRev: number; intent?: Record<string, unknown> }, files: RevFile[], card: RegisterCard, note: string): Record<string, unknown> {
+  const next = withRegister(files, card) as RevFile[];
+  return { ...rollbackArgs(cur, next, 0), note: note.slice(0, 300) };
+}
+
+/** Save the card as a new revision of the item. Returns the new revision number. Needs the newest revision (a newer one somewhere else is a conflict the database reports). */
+export async function saveCard(api: Api, item: Pick<RItem, 'id' | 'type' | 'name' | 'rev' | 'card'>, card: RegisterCard): Promise<number> {
+  const cur = await api.call('get_work_item', { id: item.id });
+  const files: RevFile[] = (Array.isArray(cur?.files) ? cur.files : []).filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string').map((f: any) => ({ path: f.path, language: str(f.language, 30), content: f.content }));
+  if (!files.length) throw new Error('This item has no files to keep the card with.');
+  const kind = item.type === 'agent' ? 'agent' : item.type === 'workflow' ? 'workflow' : 'code';
+  const res = await api.call('save_work_item', saveCardArgs({ id: item.id, kind, name: item.name, currentRev: Number(cur?.current_rev) || item.rev, intent: cur?.intent }, files, card, cardNote(registerFrom(files) ?? item.card, card)));
+  return Number(res?.rev) || 0;
+}
+
+/** save_work_item arguments of another writer (a feature change, say) with the register card of the revision it is based on kept, so no writer wipes it. */
+export function keepCard(args: Record<string, unknown>, basedOn: Array<{ path: string; content?: string }>): Record<string, unknown> {
+  const card = registerFrom(basedOn);
+  if (!card) return args;
+  return { ...args, files: withRegister((args.files as RevFile[]) ?? [], card), intent: { ...((args.intent as Record<string, unknown>) ?? {}), register: card } };
 }

@@ -30,15 +30,6 @@ type Props = {
   onCreateTableSpace?: (file: File) => void | Promise<void>;
   agent: Agent | null;
   busy: boolean;
-  workdir: string;
-  /** Owned by App: this component remounts when the layout switches out of the
-   *  empty state, so local mode state would silently reset to the default. */
-  mode: string;
-  onModeChange: (id: string) => void;
-  /** Working profiles (harness): the choice in the chat bar. */
-  harnesses?: Array<{ id: string; name: string; description: string }>;
-  harnessId?: string;
-  onHarnessChange?: (id: string) => void;
   /** Web Search switch of the current conversation. */
   webSearch?: boolean;
   onWebSearchChange?: (enabled: boolean) => void;
@@ -88,12 +79,6 @@ export default function Composer({
   onCreateTableSpace,
   agent,
   busy,
-  workdir,
-  mode,
-  onModeChange,
-  harnesses,
-  harnessId,
-  onHarnessChange,
   webSearch = true,
   onWebSearchChange,
   onCancel,
@@ -557,13 +542,13 @@ export default function Composer({
 
         {starters && (
           <button
-            className={`chip chip-icon ${buttonsShown ? 'chip-on' : ''}`}
+            className={`chip chip-icon tabs-toggle ${buttonsShown ? 'tabs-toggle-shown' : 'tabs-toggle-hidden'}`}
             title={buttonsShown ? 'Hide the buttons under the input' : 'Show the buttons under the input'}
             aria-label={buttonsShown ? 'Hide buttons' : 'Show buttons'}
             aria-pressed={buttonsShown}
             onClick={toggleButtons}
           >
-            <span aria-hidden="true">{buttonsShown ? '−' : '+'}</span>
+            <TabsRowIcon open={buttonsShown} />
           </button>
         )}
 
@@ -692,36 +677,6 @@ export default function Composer({
           )}
         </div>
 
-        {window.host?.openWorkspace && (
-          <button className="chip" title={`Open the working folder: ${workdir}`} onClick={() => void window.host?.openWorkspace?.()}>
-            <FolderIcon /> Default
-          </button>
-        )}
-
-        {harnesses && harnesses.length > 1 && onHarnessChange && (
-          <label className="chip chip-select" title={harnesses.find((h) => h.id === harnessId)?.description || 'Working profile'}>
-            <SlidersIcon />
-            <select aria-label="Working profile" value={harnessId} onChange={(e) => onHarnessChange(e.target.value)} disabled={busy}>
-              {harnesses.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        <label className="chip chip-select" title="Approval mode">
-          <SlidersIcon />
-          <select value={mode} onChange={(e) => onModeChange(e.target.value)} disabled={!agent}>
-            {(agent?.modes ?? [{ id: 'auto', name: 'auto' }]).map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <span className="composer-spacer" />
 
         {window.host?.voice && (
@@ -781,6 +736,16 @@ export default function Composer({
   );
 }
 
+/** Two long, slightly offset pills stand for the row of chat buttons under the input. Bright and fanned out while the buttons are hidden (a click brings them back); greyed and pushed together while they are shown. */
+function TabsRowIcon({ open }: { open: boolean }) {
+  return (
+    <span className={`tabs-pills ${open ? 'tabs-pills-shown' : ''}`} aria-hidden="true">
+      <span className="tabs-pill tabs-pill-back" />
+      <span className="tabs-pill tabs-pill-front" />
+    </span>
+  );
+}
+
 function SkillBoltIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -801,16 +766,6 @@ function NewChatIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M13.5 9v3.2c0 .7-.6 1.3-1.3 1.3H3.8c-.7 0-1.3-.6-1.3-1.3V3.8c0-.7.6-1.3 1.3-1.3H7M11.5 2.2l2.3 2.3-4.8 4.8-2.7.4.4-2.7z" />
-    </svg>
-  );
-}
-
-function SlidersIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 5h9M13 5h1M2 11h3M7 11h7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <circle cx="12" cy="5" r="1.6" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="6" cy="11" r="1.6" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   );
 }
@@ -863,18 +818,6 @@ function IntegrationItemIcon({ id }: { id: IntegrationItemId }) {
     );
   }
   return null;
-}
-
-function FolderIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M1.5 4.2c0-.6.4-1 1-1h3l1.2 1.4h6.8c.6 0 1 .4 1 1v6.2c0 .6-.4 1-1 1h-11c-.6 0-1-.4-1-1z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-    </svg>
-  );
 }
 
 function MicIcon() {

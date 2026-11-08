@@ -47,7 +47,10 @@ import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { HIRING_SPACE } from './hiring-bridge';
+import { OBSERVABILITY_SPACE } from './observability-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
+import { INTERVIEW_SPACE } from './interview-bridge';
+import { CUSTOMER360_SPACE } from './customer360-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
@@ -56,7 +59,7 @@ import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
 import { isDue, loadSchedules, saveSchedules, type Schedule } from './schedules';
-import { JOBS_SEEDED_KEY, addRun, exampleJobs, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type JobRun, type Target } from './jobs';
+import { JOBS_EXAMPLES_KEY, JOBS_SEEDED_KEY, addRun, exampleJobs, mergeExamples, isDue as isJobDue, jobPrompt, loadJobs, newId, saveJobs, type Job, type JobRun, type Target } from './jobs';
 import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
@@ -66,6 +69,7 @@ import AdminView from './ui/AdminView';
 import HiringApprovals from './ui/HiringApprovals';
 import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type OntologyData } from './ontology-manager';
 import RegistryView from './ui/RegistryView';
+import SpaceDesigner from './ui/SpaceDesigner';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
@@ -192,11 +196,21 @@ export default function App() {
     const stored = loadJobs(window.localStorage);
     let seeded = false;
     try { seeded = window.localStorage.getItem(JOBS_SEEDED_KEY) === '1'; } catch { /* no storage */ }
-    if (stored.length > 0 || seeded) return stored;
-    // First start: a few example jobs show what the Scheduler does; they only write mock runs.
+    let renewed = false;
+    try { renewed = window.localStorage.getItem(JOBS_EXAMPLES_KEY) === '1'; } catch { /* no storage */ }
+    if (stored.length > 0 || seeded) {
+      if (renewed) return stored;
+      try { window.localStorage.setItem(JOBS_EXAMPLES_KEY, '1'); } catch { /* no storage */ }
+      // Once: the first seven sample jobs give way to the larger set (own jobs stay; nobody who deleted all samples gets them back).
+      if (!stored.some((j) => j.example)) return stored;
+      const merged = mergeExamples(stored, exampleJobs());
+      saveJobs(merged, window.localStorage);
+      return merged;
+    }
+    // First start: example jobs show what the Scheduler does; they only write mock runs.
     const examples = exampleJobs();
     saveJobs(examples, window.localStorage);
-    try { window.localStorage.setItem(JOBS_SEEDED_KEY, '1'); } catch { /* no storage */ }
+    try { window.localStorage.setItem(JOBS_SEEDED_KEY, '1'); window.localStorage.setItem(JOBS_EXAMPLES_KEY, '1'); } catch { /* no storage */ }
     return examples;
   });
   const jobsRef = useRef(jobs);
@@ -324,6 +338,9 @@ export default function App() {
   /** The Spaces landing page (domain tiles) shows until a Space is opened. */
   const [spacesHome, setSpacesHome] = useState(true);
   const [overviewDomain, setOverviewDomain] = useState<string | null>(null);
+  /** Space Designer: folder name of the Space being edited; null = a new one. */
+  const [designSlug, setDesignSlug] = useState<string | null>(null);
+  const [designKey, setDesignKey] = useState(0);
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [rawSpaces, setSpaces] = useState<Space[]>([]);
@@ -944,6 +961,21 @@ export default function App() {
     return developStopped.current ? '' : draft.current;
   }
 
+  /** What the online interview in the Recruiting Workbench may use: the agent for the checks, the database for the record, the Gmail connector for a draft. */
+  function interviewDeps() {
+    const host = (window as any).host as { recruitingInterviewSave?: (r: string, rec: Record<string, unknown>) => Promise<{ ok: boolean; data?: { saved?: boolean; note?: string }; error?: string }> } | undefined;
+    const gmail = extensionNames.find((n) => /gmail/i.test(n));
+    return {
+      ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined,
+      save: host?.recruitingInterviewSave ? async (requisition: string, record: Record<string, unknown>) => {
+        const res = await host.recruitingInterviewSave!(requisition, record);
+        if (!res.ok) throw new Error(res.error || 'The record could not be saved.');
+        return { saved: res.data?.saved === true, note: res.data?.note ?? '' };
+      } : undefined,
+      draft: agent && gmail ? (tool: string, args: Record<string, unknown>) => agent.callTool(`${gmail}__${tool}`, args) : undefined,
+    };
+  }
+
   async function cancelCurrent() {
     if (!agent || !busy) return;
     cancelledByUser.current = true;
@@ -1154,7 +1186,8 @@ export default function App() {
   /** One run of a scheduler job (agent, workflow or skill): ask in the chat and write the result into the run history. */
   async function runJob(job: Job, manual = false) {
     if (job.example) {
-      const run = { id: newId('run'), at: new Date().toISOString(), ms: 0, status: 'ok' as const, trigger: manual ? 'manual' as const : 'schedule' as const, note: 'Example run: nothing was started.' };
+      const failed = job.fails === true;
+      const run = { id: newId('run'), at: new Date().toISOString(), ms: 0, status: failed ? 'error' as const : 'ok' as const, trigger: manual ? 'manual' as const : 'schedule' as const, note: failed ? 'Example run: shown as failed on purpose, nothing was started.' : 'Example run: nothing was started.' };
       changeJobs(jobsRef.current.map((j) => (j.id === job.id ? addRun(j, run) : j)));
       return;
     }
@@ -1217,6 +1250,18 @@ export default function App() {
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
   const contextBar = (
     <ChatContextBar
+      safety={{
+        profiles: harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description })),
+        profileId: harness.id,
+        onProfile: changeHarness,
+        modes: agent?.modes ?? [{ id: 'auto', name: 'auto' }],
+        modeId: mode,
+        onMode: changeMode,
+        modeDisabled: !agent,
+        busy,
+        workdir: WORKDIR,
+        onOpenFolder: window.host?.openWorkspace ? () => { void window.host?.openWorkspace?.(); } : undefined,
+      }}
       memoryEnabled={memory.enabled}
       memoryCount={activeEntries(memory, contextSpace).length}
       onMemoryEnabled={(on) => changeMemory({ ...memory, enabled: on })}
@@ -1245,12 +1290,6 @@ export default function App() {
       onCreateTableSpace={async (file) => { await importSpace(file); setView('spaces'); }}
       agent={agent}
       busy={busy}
-      workdir={WORKDIR}
-      mode={mode}
-      onModeChange={changeMode}
-      harnesses={harnessChoices(prefs.harness, groupHarnesses, groupName).map(({ id, name, description }) => ({ id, name: id.startsWith('group:') ? `Group · ${name}` : name, description }))}
-      harnessId={harness.id}
-      onHarnessChange={changeHarness}
       webSearch={webSearch}
       onWebSearchChange={changeWebSearch}
       onCancel={cancelCurrent}
@@ -1555,18 +1594,37 @@ export default function App() {
           onActive={setOverviewDomain}
           onOpen={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
+          onDesign={() => { setDesignSlug(null); setDesignKey((k) => k + 1); setView('designer'); }}
+        />
+      ) : view === 'designer' ? (
+        <SpaceDesigner
+          key={designKey}
+          slug={designSlug}
+          spaces={spaces}
+          domains={domainNames(spaces, prefs)}
+          theme={resolvedTheme}
+          prefs={prefs}
+          textScale={spaceScale}
+          generate={developGenerate}
+          onStop={() => void cancelCurrent()}
+          ready={Boolean(agent)}
+          onBack={() => setView('spaces')}
+          onSaved={async (slug) => { await refreshSpaces(); setSelectedSpace(slug); setDesignSlug(slug); }}
         />
       ) : view === 'spaces' ? (
         space ? (
           <SpaceViewer
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
+            onEditDesign={space.designer ? () => { setDesignSlug(space.slug); setDesignKey((k) => k + 1); setView('designer'); } : undefined}
             tabRequest={spaceTab && (spaceTab.space ?? 'ai-control-tower') === space.slug ? spaceTab : null}
             textScale={spaceScale}
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === HIRING_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === CUSTOMER360_SPACE}
+            customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
+            interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}

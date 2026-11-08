@@ -1,11 +1,11 @@
 /**
- * Start page of "Admin": the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and Skill management;
+ * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and Skill management;
  * more can follow. Hiring approvals is a Space of its own, not part of Admin. Admin is not part of Develop.
  */
 export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void }) {
   return (
     <main className="develop develop-main adm">
-      <h1 className="develop-title">Admin</h1>
+      <h1 className="develop-title">Joule Administration Console</h1>
       <p className="develop-sub">Look after what everyone shares. More tiles will follow.</p>
       <div className="adm-grid">
         <section className="develop-card develop-card-block" aria-label="Ontologies">

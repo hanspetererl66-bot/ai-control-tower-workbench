@@ -359,6 +359,8 @@ Six more skills close the gaps for an account executive: `discovery-meddpicc`, `
 
 The Sales Space has two more tabs. **Forecast** shows commit, best case and pipeline by close month with weighted totals and target coverage (category rule: probability 70 % or more and a cleared discount is commit, 50 to 69 % best case, below 50 % pipeline). **Meetings** lists upcoming meetings with a brief, questions and flags, and finished calls with proposed CRM changes, actions from the call and a follow-up mail that is only a draft. Data is in `examples/sales/pipeline.json` (`closeDate`, `category`, `forecast`, `meetings`); a test keeps it consistent with the call transcripts, e-mail threads and Sub4Me data. After a pull run `npm run sync:mockups`, `npm run sync:skill-marketplace` and `npm run install:sales`.
 
+**Demo flow:** the card above the tabs has **Start demo** with six steps: pipeline (five gates), one deal (OFF-2026-0324, discount above the threshold, opens the drawer), forecast, the next customer meeting (M-502), the inbox (the agent proposes, you decide) and governance. Each step switches to the right tab and opens the deal or meeting; **End demo** returns to the pipeline.
+
 ### MCP Marketplace
 
 A Space **MCP Marketplace** (`npm run install:mcp-marketplace`) is a governed catalog of MCP servers. Each entry shows what the server can do (tools classed as reads only, can change the system, can read business data), which switches are off by default, authentication, install options, our assessment, a pilot plan and the checks still open. Candidates: **ARC-1** (`arc-mcp/arc-1`, ABAP development over ADT, MIT, read-only by default) and **SAP Notes** (`marianfoo/sap-mcp-servers`, search and read SAP Notes behind the S-user login; the README tells users to check SAP's terms first). The two built-in connectors appear as reference entries and a test keeps their tool lists equal to the manifests. Facts about the candidates come from their public READMEs on 2026-10-20 and were not run by us; the page says so. The Space lists and assesses only: installation stays with Connectors & Skills and its in-app review dialog. Data lives in `examples/mcp-marketplace/servers.json` (embedded by `npm run sync:mockups`).
@@ -385,13 +387,13 @@ product and month; optional `product` or `month`, for example "Wann ist das BTP-
 the agent cannot read what a Space shows; it reads the same sample data through these tools (taken from the Space's
 inline JSON in a checkout, and from `data/sub4me.json` inside the `.mcpb`). Rebuild and re-import the connector after updating.
 
-## n8n Cloud: sidebar, chat and Automation Dashboard
+## n8n Cloud: sidebar, chat and n8n Performance Dashboard
 
 **Sidebar.** The workflow icon in the rail opens your n8n Cloud instance inside the app. Enter the address once (for example `firma.app.n8n.cloud`); the page runs in its own session, separate from the app and the Spaces, and can only navigate within your instance and `n8n.cloud` (anything else opens in the browser). Login happens at n8n; the app stores no password or token, only the instance address in `goose-home/n8n.json`.
 
 **Chat.** "Mit Chat verbinden" in that view adds n8n's instance-level MCP server (`https://<instance>/mcp-server/http`) as a connector named `n8n` and restarts the agent. goose runs the OAuth login itself on first use, so no token is written to `config.yaml`. In n8n, enable *Settings → Instance-level MCP* and switch on *Available in MCP* for each workflow the chat may find and run. Without that switch a workflow stays invisible to the chat. Every connected client sees all MCP-enabled workflows of that user, so enable only what the chat should be allowed to start.
 
-**Automation Dashboard (Space).** `npm run install:automation` installs the Space with fictional sample data (marked "Sample"). For real data create an API key in n8n (*Settings → n8n API*) and run:
+**n8n Performance Dashboard (Space).** `npm run install:automation` installs the Space with fictional sample data (marked "Sample"). For real data create an API key in n8n (*Settings → n8n API*) and run:
 
 ```bash
 N8N_URL=https://firma.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- --live
@@ -399,7 +401,7 @@ N8N_URL=https://firma.app.n8n.cloud N8N_API_KEY=… npm run sync:automation -- -
 
 It reads workflows (name, tags, active) and the last 14 days of executions (status, mode, duration; never payloads) and writes them only into the installed copy under `workspace/spaces/automation-dashboard`, so `git pull` never conflicts. The key lives only in that command.
 
-**Categories.** The Automation Dashboard sorts workflows into categories by their n8n tags (rules and assumed minutes per run in `examples/automation-dashboard/categories.json`, first match wins). A workflow can be pinned with the n8n tag `cat:<Category name>`. Trigger and connected apps are derived from the workflow's node types. The Categories tab shows the rules, per-category figures and the workflows that are not categorized yet. Time saved is an estimate (successful runs x assumed minutes), not a measurement.
+**Categories.** The n8n Performance Dashboard sorts workflows into categories by their n8n tags (rules and assumed minutes per run in `examples/automation-dashboard/categories.json`, first match wins). A workflow can be pinned with the n8n tag `cat:<Category name>`. Trigger and connected apps are derived from the workflow's node types. The Categories tab shows the rules, per-category figures and the workflows that are not categorized yet. Time saved is an estimate (successful runs x assumed minutes), not a measurement.
 
 **Text size in Spaces.** All Spaces render 15% larger by default. Settings → "Text size in Spaces" offers 100%, 115% and 130%. The app injects one `zoom` rule into the page it hands to the Space frame, so it also applies to Spaces the agent builds and needs no change inside a Space.
 
@@ -408,7 +410,7 @@ It reads workflows (name, tags, active) and the last 14 days of executions (stat
 Connector 0.10.0 adds, next to the Control Tower tools:
 
 - **Sub4Me 360°:** `get_customer_overview` (master data, contracts, offers, AI units, tickets, highlights), `get_product_overview`, `get_contract`, `get_offer`, `search_sub4me`. Contracts, offers and consumption are the sample data of the Sub4Me Space; tickets come from Supabase when connected, otherwise the sample tickets.
-- **n8n Cloud:** `get_n8n_overview`, `list_n8n_workflows`, `get_n8n_workflow`, `list_n8n_executions`, `list_n8n_categories`. They read the n8n public API (last 14 days, status, mode, duration, tags, node types; never execution contents) and use the same categories as the Automation Dashboard. For this, import the connector again ("Import .mcpb…" or the Control Tower connector entry) and fill in the two new fields: the n8n address and an n8n API key. The key is stored as a secret.
+- **n8n Cloud:** `get_n8n_overview`, `list_n8n_workflows`, `get_n8n_workflow`, `list_n8n_executions`, `list_n8n_categories`. They read the n8n public API (last 14 days, status, mode, duration, tags, node types; never execution contents) and use the same categories as the n8n Performance Dashboard. For this, import the connector again ("Import .mcpb…" or the Control Tower connector entry) and fill in the two new fields: the n8n address and an n8n API key. The key is stored as a secret.
 - Starting or changing workflows is not part of these tools. That is what "Mit Chat verbinden" in the n8n view provides (n8n's own MCP server, only for workflows marked "Available in MCP").
 
 Examples: "Wie läuft unsere n8n-Automatisierung?", "Welche Workflows sind in den letzten Tagen fehlgeschlagen?", "Gib mir das Gesamtbild zu unserem Testkunden", "Wann muss der Ariba-Vertrag gekündigt werden?".

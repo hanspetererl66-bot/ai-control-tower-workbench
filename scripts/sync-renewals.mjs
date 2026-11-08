@@ -28,6 +28,7 @@ const addDays = (s, n) => new Date(day(s) + n * 86400000).toISOString().slice(0,
 export const CUSTOMERS = [
   { id: 'muster', owner: 'Nina Kessler', escalation: { level: 'Management', since: '2026-10-14', topic: 'The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week.', owner: 'Nina Kessler' }, topics: [{ kind: 'people', text: 'New head of procurement from 1 November: introduce the renewal plan early' }, { kind: 'commercial', text: 'Asked for a comparison of Joule units and Document AI units' }] },
   { id: 'hanse', owner: 'Tom Ahlers', escalation: null, topics: [{ kind: 'people', text: 'New CFO since September, reviews all software spend' }, { kind: 'commercial', text: 'Wants to bundle Commerce Cloud and Integration Suite into one contract' }] },
+  { id: 'lindenau', owner: 'Jonas Weber', escalation: { level: 'Account team', since: '2026-10-12', topic: 'The 2608 upgrade blocks the validation run in QAS (batch release dump). Quality Assurance cannot release the upgrade to PRD before it is fixed.', owner: 'Jonas Weber' }, topics: [{ kind: 'compliance', text: 'Every AI use case needs a validation concept from Quality Assurance before productive use' }, { kind: 'commercial', text: 'Asks to bring supplier qualification for GxP suppliers into the Ariba renewal' }] },
 ];
 
 /** E-mail threads per customer for the Renewals Space: the threads of the E-Mail-Communication Space, plus fictional ones for Hanse. */
@@ -36,10 +37,16 @@ const HANSE_MAILS = [
   { id: 'H-202', subject: 'AW: Ariba renewal, price rise above the cap', status: 'waiting-customer', intent: 'Renewal', mood: 'negative', contractId: 'C-2025-0458', offerId: 'OFF-2026-0402', side: 'us', at: '2026-10-08T14:05:00+02:00', count: 4, snippet: 'We checked the contract: the uplift cap of 3 % applies. The revised quote with the capped price is attached, please confirm by 22 October.' },
   { id: 'H-203', subject: 'Integration Suite: extra connectors approved', status: 'answered', intent: 'Offer', mood: 'positive', contractId: 'C-2023-0215', offerId: null, side: 'customer', at: '2026-10-12T16:40:00+02:00', count: 2, snippet: 'Thank you, the two extra connectors are approved by our integration lead. Please go ahead with the order form.' },
 ];
+const LINDENAU_MAILS = [
+  { id: 'L-201', subject: 'Ariba renewal: GxP supplier qualification in scope?', status: 'waiting-us', intent: 'Renewal', mood: 'mixed', contractId: 'C-2023-0344', offerId: 'OFF-2026-0510', side: 'customer', at: '2026-10-16T10:05:00+02:00', count: 3, snippet: 'Quality Assurance needs the supplier qualification workflow in the renewal. Please confirm that it is part of the offer and send the validation documents.' },
+  { id: 'L-202', subject: 'Joule for Quality: validation concept before the top-up', status: 'waiting-customer', intent: 'Offer', mood: 'neutral', contractId: 'C-2026-0051', offerId: 'OFF-2026-0518', side: 'us', at: '2026-10-14T15:30:00+02:00', count: 4, snippet: 'We sent the template for the validation concept. The top-up can be ordered now, but productive use starts only after Quality Assurance approves the concept.' },
+  { id: 'L-203', subject: 'Overdue invoice: SuccessFactors Learning annual fee', status: 'waiting-us', intent: 'Payment', mood: 'negative', contractId: 'C-2025-0718', offerId: null, side: 'customer', at: '2026-10-13T08:50:00+02:00', count: 2, snippet: 'The purchase order was blocked by the audit freeze. Accounts Payable will release the payment next week, please hold the reminder.' },
+];
 const snippetOf = (body) => { const ls = body.split('\n').map((l) => l.trim()).filter((l) => l && !/^(hello|hi|dear|thanks|thank you|best|kind regards|regards)\b/i.test(l) && !l.startsWith('>')); return (ls.find((l) => l.length > 30) ?? ls.sort((a, b) => b.length - a.length)[0] ?? '').slice(0, 190); };
 const cleanSnippet = (s) => (s.length < 12 ? '' : s);
 export function mailsFor(customerId, customerName) {
   if (customerId === 'hanse') return HANSE_MAILS;
+  if (customerId === 'lindenau') return LINDENAU_MAILS;
   const { threads } = JSON.parse(read('examples/customer-emails/threads.json'));
   return threads.filter((th) => th.customer === customerName).map((th) => {
     const last = th.messages[th.messages.length - 1];
@@ -70,6 +77,9 @@ const ADDONS = [
   { customerId: 'hanse', id: 'C-2026-0911', product: 'SAP Analytics Cloud planning add-on', annualEur: 27900, end: '2027-03-31', noticeDays: 60, used: 96, licensed: 120, unit: 'users' },
   { customerId: 'hanse', id: 'C-2026-0912', product: 'Commerce Cloud sandbox', annualEur: 21000, end: '2026-12-31', noticeDays: 30, used: 2, licensed: 2, unit: 'sandboxes', overdue: { id: 'INV-2026-30590', grossEur: 24990, due: '2026-09-30' } },
   { customerId: 'hanse', id: 'C-2026-0913', product: 'Integration Suite extra connectors', annualEur: 9800, end: '2027-06-30', noticeDays: 30, used: 7, licensed: 8, unit: 'connectors' },
+  { customerId: 'lindenau', id: 'C-2026-0921', product: 'SuccessFactors e-signature add-on (21 CFR Part 11)', annualEur: 18600, end: '2027-02-28', noticeDays: 60, used: 38, licensed: 40, unit: 'signers' },
+  { customerId: 'lindenau', id: 'C-2026-0922', product: 'Integration Suite connectors for laboratory systems', annualEur: 14400, end: '2026-12-31', noticeDays: 30, used: 5, licensed: 6, unit: 'connectors', overdue: { id: 'INV-2026-40890', grossEur: 17136, due: '2026-09-30' } },
+  { customerId: 'lindenau', id: 'C-2026-0923', product: 'BTP extra storage package (batch-record archive)', annualEur: 26400, end: '2027-04-30', noticeDays: 60, used: 6.1, licensed: 8, unit: 'TB' },
 ];
 
 export function buildRenewals() {
@@ -108,7 +118,7 @@ export function buildRenewals() {
   return {
     asOf: AS_OF,
     rules: RULES,
-    note: 'Fictional data derived from the Sub4Me sample data of Muster Industrie AG and Hanse Handelsgruppe AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.',
+    note: 'Fictional data derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.',
     cases,
     customers: CUSTOMERS.map((c) => ({ ...c, annualEur: cases.find((x) => x.customerId === c.id)?.customerAnnualEur ?? 0, since: cases.find((x) => x.customerId === c.id)?.customerSince ?? null, name: cases.find((x) => x.customerId === c.id)?.customer ?? c.id, mails: [] })).map((c) => ({ ...c, mails: mailsFor(c.id, c.name).sort((x, y) => y.at.localeCompare(x.at)) })),
   };

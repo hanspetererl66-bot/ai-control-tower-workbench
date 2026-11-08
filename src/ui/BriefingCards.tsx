@@ -4,6 +4,8 @@ import infraOpsData from '../../examples/infra-ops/data.json';
 import fleetData from '../../examples/it-fleet/fleet.json';
 import renewalsData from '../../examples/renewals/renewals.json';
 import salesData from '../../examples/sales/pipeline.json';
+import { GRIR_ITEMS, classifyGrir } from '../../connectors/sap-mock/server/data.mjs';
+import { IC_ITEMS } from '../../examples/databricks-demo/seed/data.mjs';
 import { BRIEFING_CATEGORIES, categoryKey, buildBriefing, type BriefingCategoryId, type OpsBriefingData, type RenewalsBriefingData, type SalesBriefingData, type BriefingAction, type BriefingData } from '../briefing';
 
 type Props = {
@@ -16,12 +18,28 @@ type Props = {
   onAsk: (prompt: string, connector?: string) => void;
 };
 
+type GrirRow = { grValueEur: number; invoicedValueEur: number; sapLateInvoiceEur?: number; grOffset: number };
+/** Figures for the close card, computed from the demo data (the same rows the lakehouse and the mock SAP use). */
+function closeFigures() {
+  const rows = GRIR_ITEMS as unknown as GrirRow[];
+  const kind = (r: GrirRow) => classifyGrir(r) as string;
+  const accrue = rows.filter((r) => kind(r) === 'ACCRUE');
+  return {
+    accrueCount: accrue.length,
+    accrueEur: accrue.reduce((sum, r) => sum + r.grValueEur - r.invoicedValueEur, 0),
+    staleCount: rows.filter((r) => kind(r) === 'STALE_REVIEW').length,
+    icCount: IC_ITEMS.filter((i) => i.buyerAmountEur === null || Math.abs(i.sellerAmountEur - i.buyerAmountEur) > 0.001).length,
+    sapDifferences: rows.filter((r) => (r.sapLateInvoiceEur ?? 0) > 0).length,
+  };
+}
+
 /** Cards under the chat, in groups (AI, Sales, Renewals, Infrastruktur, Board): what needs attention, one click from the answer. */
 export default function BriefingCards({ disabled, canAsk, hidden = [], onOpen, onAsk }: Props) {
   const all = useMemo(() => buildBriefing(controlTowerData as unknown as BriefingData, new Date(), {
     ops: { certs: (infraOpsData as { certs: OpsBriefingData['certs'] }).certs, fleet: fleetData as unknown as OpsBriefingData['fleet'] },
     sales: salesData as unknown as SalesBriefingData,
     renewals: renewalsData as unknown as RenewalsBriefingData,
+    close: closeFigures(),
   }), []);
   const groups = BRIEFING_CATEGORIES
     .filter((c) => !hidden.includes(categoryKey(c.id)))

@@ -27,7 +27,7 @@ const TARGETS: Entry[] = [
   { space: 'ai-control-tower', label: 'AI Control Tower', words: /\b(control ?tower|kontrollturm)\b/ },
   { space: 'sub4me', label: 'Sub4Me', words: /\b(sub ?4 ?me|sub for me|kundenportal|customer portal)\b/ },
   { space: 'skill-marketplace', label: 'Skill Marketplace', words: /\b(skill[ -]?(marketplace|marktplatz)|skills?)\b/ },
-  { space: 'automation-dashboard', label: 'Automation Dashboard', words: /\b(automation|automatisierung|n8n|workflows?)\b/ },
+  { space: 'automation-dashboard', label: 'n8n Performance Dashboard', words: /\b(automation|automatisierung|n8n|workflows?)\b/ },
   { space: 'knowledge-graph', label: 'Sales Knowledge Graph', words: /\b(sales ?knowledge ?graph|knowledge ?graph|wissensgraph|graph)\b/ },
   { space: 'call-transcripts', label: 'Call Transcripts', words: /\b(calls?|anrufe?|telefonate?|transkripte?|transcripts?)\b/ },
   { space: 'customer-emails', label: 'Customer E-Mails', words: /\b(e ?mails?|mails?|kundenmails?)\b/ },

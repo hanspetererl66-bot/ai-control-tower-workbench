@@ -3,7 +3,7 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'hiring' | 'admin';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'hiring' | 'admin' | 'designer';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
@@ -63,11 +63,11 @@ export default function Rail({
           <ChatIcon />
         </button>
         <button
-          className={`rail-btn ${view === 'spaces' || view === 'hiring' ? 'rail-btn-on' : ''}`}
+          className={`rail-btn ${view === 'spaces' || view === 'hiring' || view === 'designer' ? 'rail-btn-on' : ''}`}
           onClick={() => onView('spaces')}
           title="Spaces"
           aria-label="Spaces"
-          aria-pressed={view === 'spaces' || view === 'hiring'}
+          aria-pressed={view === 'spaces' || view === 'hiring' || view === 'designer'}
         >
           <LayersIcon />
         </button>
@@ -95,8 +95,8 @@ export default function Rail({
         <button
           className={`rail-btn ${ADMIN_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
           onClick={() => onView('admin')}
-          title="Admin: ontologies and the registry of agents, workflows and features"
-          aria-label="Admin"
+          title="Admin console: ontologies, the register of agents, workflows and features, and skill management"
+          aria-label="Admin console"
           aria-pressed={ADMIN_VIEWS.includes(view)}
         >
           <AdminIcon />

@@ -1,0 +1,77 @@
+{
+  "manifest_version": "0.2",
+  "name": "teams",
+  "display_name": "Microsoft Teams",
+  "version": "0.1.0",
+  "description": "Microsoft Teams (read only): list teams and channels, read channel messages and threads through Microsoft Graph. Sign in with an app registration (tenant, client id, secret; admin consent for ChannelMessage.Read.All) or a short-lived access token.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "TEAMS_TENANT_ID": "${user_config.tenant_id}",
+        "TEAMS_CLIENT_ID": "${user_config.client_id}",
+        "TEAMS_CLIENT_SECRET": "${user_config.client_secret}",
+        "TEAMS_ACCESS_TOKEN": "${user_config.access_token}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "teams_check_connection",
+      "description": "Check the Microsoft Teams sign-in (access token or app registration)."
+    },
+    {
+      "name": "teams_list_teams",
+      "description": "List the teams the app (or the signed-in user) can see: id, name, description. Read only."
+    },
+    {
+      "name": "teams_list_channels",
+      "description": "List the channels of a team: id (starts with \"19:\"), name, description. Read only."
+    },
+    {
+      "name": "teams_read_channel",
+      "description": "Read the newest messages of a channel (author, time, subject, text, link). Give team_id and channel_id, or a \"Copy link to message\" link. contains keeps only messages with those words. Read only."
+    },
+    {
+      "name": "teams_read_thread",
+      "description": "Read one channel message with its replies. Give team_id, channel_id and message_id, or a \"Copy link to message\" link. Read only."
+    }
+  ],
+  "user_config": {
+    "tenant_id": {
+      "type": "string",
+      "title": "Tenant id",
+      "description": "Azure portal, Microsoft Entra ID, Overview: Directory (tenant) ID. Leave empty if you use an access token.",
+      "required": false
+    },
+    "client_id": {
+      "type": "string",
+      "title": "Client id",
+      "description": "App registration, Overview: Application (client) ID. Application permissions: ChannelMessage.Read.All, Team.ReadBasic.All, Channel.ReadBasic.All, Group.Read.All, all with admin consent. Leave empty if you use an access token.",
+      "required": false
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client secret",
+      "description": "App registration, Certificates and secrets, New client secret (the value). Stored as a secret.",
+      "sensitive": true,
+      "required": false
+    },
+    "access_token": {
+      "type": "string",
+      "title": "Access token (optional)",
+      "description": "For a first try without an app registration: a Microsoft Graph token with delegated rights (ChannelMessage.Read.All, Team.ReadBasic.All, Channel.ReadBasic.All). It lasts about an hour and wins over the app registration. Stored as a secret.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

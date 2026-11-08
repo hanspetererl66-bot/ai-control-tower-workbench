@@ -5,12 +5,13 @@ import {
 } from '../ontology-manager';
 import OntologyDetails from './OntologyDetails';
 import OntologyHistory from './OntologyHistory';
+import OntologyMap from './OntologyMap';
 import OntologyProposals from './OntologyProposals';
 import OntologyQuality from './OntologyQuality';
 import OntologyUse from './OntologyUse';
 
 type Generate = (prompt: string, title: string, session?: string) => Promise<string>;
-type Tab = 'catalog' | 'proposals' | 'quality' | 'use' | 'history';
+type Tab = 'catalog' | 'map' | 'proposals' | 'quality' | 'use' | 'history';
 
 const FILTERS: Array<{ id: TermFilter; label: string }> = [
   { id: 'all', label: 'All' }, { id: 'metrics', label: 'Metrics' }, { id: 'classes', label: 'Classes' }, { id: 'attention', label: 'Needs attention' },
@@ -32,16 +33,16 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   const toReview = proposals.filter((p) => p.status === 'proposed').length;
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
   const TABS: Array<{ id: Tab; label: string; n?: number }> = [
-    { id: 'catalog', label: 'Catalog' }, { id: 'proposals', label: 'Proposals', n: toReview }, { id: 'quality', label: 'Quality', n: findings },
+    { id: 'catalog', label: 'Catalog' }, { id: 'map', label: 'Map' }, { id: 'proposals', label: 'Proposals', n: toReview }, { id: 'quality', label: 'Quality', n: findings },
     { id: 'use', label: 'Use' }, { id: 'history', label: 'History' },
   ];
 
   return (
     <main className="om">
       <header className="om-hero">
-        <button className="om-back" onClick={onBack} aria-label="Back to Admin">←</button>
+        <button className="om-back" onClick={onBack} aria-label="Back to the Admin console">←</button>
         <div className="om-hero-text">
-          <p className="om-crumb">Admin</p>
+          <p className="om-crumb">Admin console</p>
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
           <p className="om-lede">The shared vocabulary of your agents in one place: owned, reviewed and traceable to the document it came from.</p>
         </div>
@@ -71,6 +72,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
       </nav>
 
       {tab === 'catalog' && <Catalog ontologies={ontologies} gov={governance} onGovernance={onGovernance} focus={focus} onReload={onReload} onBack={onBack} loading={source.kind === 'loading'} />}
+      {tab === 'map' && <OntologyMap ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'proposals' && <OntologyProposals proposals={proposals} ontologies={ontologies} generate={generate} onStop={onStop} ready={ready} onReload={onReload} />}
       {tab === 'quality' && <OntologyQuality ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'use' && <OntologyUse ontologies={ontologies} gov={governance} onGovernance={onGovernance} knownSkills={knownSkills} generate={generate} ready={ready} />}
@@ -95,7 +97,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
     return (
       <div className="om-source">
         <p className="om-note">No ontology in the catalog yet. Create one from a document in the tab Proposals.</p>
-        <button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin</button>
+        <button className="om-filter" onClick={onReload}>Reload</button><button className="om-filter" onClick={onBack}>Back to Admin console</button>
       </div>
     );
   }
