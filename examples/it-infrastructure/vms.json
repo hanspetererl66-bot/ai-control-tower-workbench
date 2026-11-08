@@ -1,6 +1,11 @@
 {
   "asOf": "2026-10-19",
   "note": "Fictional virtual machines and measurements. Nothing is measured live.",
+  "customer": {
+    "id": "muster",
+    "name": "Muster Industrie AG",
+    "sapCustomerId": "0010048211"
+  },
   "rules": {
     "cpuPct": {
       "yellow": 75,

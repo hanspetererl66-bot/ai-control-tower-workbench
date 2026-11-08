@@ -250,10 +250,10 @@ button.primary{border:0;background:var(--purple);color:#fff;border-radius:99px;p
 button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 14px;font-weight:600}
 button.small{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650}
 button:disabled{opacity:.5;cursor:default}
-.tm{position:relative;width:100%;height:470px}
-.tile{position:absolute;box-sizing:border-box;padding:6px 8px;border:2px solid var(--surface);border-radius:8px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;overflow:hidden}
-.tile .n{font-weight:650;font-size:12px;line-height:1.25;overflow:hidden}.tile .c{font-size:11px;margin-top:2px;color:var(--ink-2)}
-.tile.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}
+.tm{position:relative;width:100%;height:330px}
+.tile{position:absolute;box-sizing:border-box;padding:8px 10px 8px 14px;border:3px solid var(--surface);border-radius:12px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;overflow:hidden}
+.tile .n{font-weight:650;font-size:12px;line-height:1.25;overflow:hidden}.tile .c{font-size:11px;margin-top:2px;color:var(--ink-2)}.tile .big{font-size:20px;font-weight:700;line-height:1.15;margin-top:2px}.tile .big span{font-size:11px;font-weight:600;color:var(--ink-2)}
+.tile.green{background:var(--green-dim);box-shadow:inset 5px 0 0 var(--green),inset 0 0 0 1px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 5px 0 0 var(--amber),inset 0 0 0 1px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 5px 0 0 var(--red),inset 0 0 0 1px var(--red-border)}
 .tile:hover,.tile:focus-visible,.tile[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:-1px;z-index:2}
 .pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;border:1px solid}
 .pill.green,.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}.pill.yellow,.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.red,.pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
@@ -283,7 +283,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 .guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
 .head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
-@media (max-width:760px){.tm{height:620px}}
+@media (max-width:760px){.tm{height:520px}}
 </style>
 </head>
 <body>
@@ -14719,7 +14719,8 @@ function renderMap() {
     b.type = 'button'; b.className = 'tile ' + c.status; b.dataset.c = c.id; b.setAttribute('aria-pressed', String(state.sel === c.id));
     b.setAttribute('aria-label', `${c.name}: ${LABEL[c.status]}, ${c.red} red, ${c.yellow} yellow of ${c.vms.length} VMs`);
     b.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
-    b.innerHTML = `<div class="n">${esc(c.name)}</div>` + (w > 90 && h > 48 ? `<div class="c">${c.red ? c.red + ' red · ' : ''}${c.yellow ? c.yellow + ' yellow · ' : ''}${c.vms.length} VMs</div>` : '');
+    const big = w > 120 && h > 74;
+    b.innerHTML = `<div class="n">${esc(c.name)}</div>` + (big ? `<div class="big">${c.vms.length}<span> VMs</span></div>` : '') + (w > 90 && h > 48 ? `<div class="c">${c.red ? c.red + ' red · ' : ''}${c.yellow ? c.yellow + ' yellow' + (big ? '' : ' · ') : ''}${big ? (c.red || c.yellow ? '' : 'all within limits') : c.vms.length + ' VMs'}</div>` : '');
     b.onclick = () => { state.sel = state.sel === c.id ? null : c.id; renderAll(); if (state.sel) $('#drill').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
     hover(b, () => tipHtml(c));
     tm.appendChild(b);
