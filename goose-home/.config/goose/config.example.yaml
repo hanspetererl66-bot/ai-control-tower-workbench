@@ -1,0 +1,9 @@
+# Project-local Goose config. Werkbank keeps this separate from ~/.config/goose.
+# GOOSE_MODEL and OPENROUTER_API_KEY come from the untracked .env file.
+#
+# This is the template. On first start the app copies it to config.yaml next to it
+# (see shared/goose-config.mjs). config.yaml is local state: installing a connector
+# adds an entry with absolute paths for this machine, so it is not checked in.
+GOOSE_PROVIDER: openrouter
+
+extensions: {}

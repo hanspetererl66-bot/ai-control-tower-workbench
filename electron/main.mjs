@@ -17,6 +17,7 @@ import { createGovernanceSync, createSharedGovernance } from './ontology-shared.
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
 import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
+import { ensureGooseConfig } from '../shared/goose-config.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -62,6 +63,7 @@ function gooseBinaryPath() {
 }
 
 function startGoosed() {
+  ensureGooseConfig(ROOT); // config.yaml is local state; create it from config.example.yaml on first start
   goosed = spawn(gooseBinaryPath(), ['serve', '--port', String(GOOSE_PORT)], {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: {
