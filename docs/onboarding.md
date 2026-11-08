@@ -1,0 +1,32 @@
+# Onboarding (Space, Stand 08.11.2026)
+
+Dritter Block im Bereich HR nach Recruiting und Hiring Approvals: alles, was nach dem **unterschriebenen Vertrag** passiert. Space `examples/onboarding/` (`npm run install:onboarding`), Domäne HR. Reiner Entwurf mit erfundenen Daten: kein HR-System, kein IT-Service-Desk, keine Lohnabrechnung wird aufgerufen.
+
+## Prozessschritte (23, in fünf Phasen)
+
+| Phase | Schritte (Verantwortlich) |
+| --- | --- |
+| Preboarding (ab Unterschrift bis zum Vorabend) | Betriebsrat informieren (HR, darf schon vor der Unterschrift), Mitarbeiterstamm im HR-System anlegen (HR), persönliche Daten im Self-Service eintragen (neue Person), Arbeits-/Aufenthaltserlaubnis prüfen (HR, nur wenn nötig), Lohnabrechnung einrichten (Payroll), Konten, Postfach, Rollen (IT), Laptop und Telefon (IT), Ausweis, Platz, Parkplatz (Facilities), Buddy benennen, erste Woche und 30-60-90-Ziele planen, Willkommensnachricht (Vorgesetzte) |
+| Tag eins | Geräte und Ausweis übergeben (IT), persönlich empfangen (Vorgesetzte), Datenschutz- und Sicherheitserklärungen unterschreiben (neue Person) |
+| Erste Woche | Buddy-Rundgang, Pflichtschulungen, Check-in nach der ersten Woche |
+| 90 Tage | Check-in 30 und 60 Tage, Benefits wählen, Puls-Umfrage, 90-Tage-Review |
+| Probezeit | Entscheidung über das Ende der Probezeit (HR und Vorgesetzte) |
+
+Abhängigkeiten stehen in den Daten (`after`): z. B. Lohnabrechnung erst nach Stammdaten **und** Selbstauskunft. Fälligkeit = Starttag plus Versatz (`offset`).
+
+## Darstellung: fünf Kandidaten, fünf Formen
+
+Fünf Pseudonyme in fünf Lagen (Stichtag im Beispiel 09.11.2026): wartet auf die Unterschrift (C-3702), Preboarding mit frühem Hindernis (C-3908, Aufenthaltstitel), Start in sieben Tagen mit Laptop-Lieferproblem und überfälliger Selbstauskunft (C-3320), erste Woche im Plan (C-3202), 90-Tage-Review überfällig (C-2901).
+
+- **Board**: Spalten nach Phase, Karte je Person mit Fortschritt und nächstem Schritt.
+- **Timeline**: alle ausgerichtet auf ihren Starttag, Punkte je Schritt, heute als Linie (Achse gestreckt, wo die Schritte dicht liegen).
+- **Matrix**: Schritte × Personen.
+- **Person**: Checkliste mit Verantwortlichem, Fälligkeit, Hindernis, was Joule vorbereitet; ein Satz zur Lage; "Draft a reminder".
+- **By owner**: wer wartet auf wen (HR, Payroll, IT, Facilities, Vorgesetzte, Buddy, neue Person).
+- **How it works**: die 23 Schritte.
+
+Zustände (`done`, `blocked`, `overdue`, `soon`, `planned`, `waiting`, `locked`, `na`) und alle Zahlen werden in der Seite aus Schritten und Daten berechnet (Logik zwischen `@logic-start`/`@logic-end`, Test `test/onboarding.test.mjs`, 8 Tests). Joule entwirft und erinnert; jede Person erledigt oder bestätigt ihren Schritt. Joule sendet, bestellt, bucht und unterschreibt nichts.
+
+## Grenzen / nicht gebaut
+
+Keine Datenbank, keine Brücke, keine Übergabe aus Hiring Approvals (der Vertragszustand steht im Beispiel in den Daten), kein Eintragen von "erledigt" oder "blockiert" in der Oberfläche, keine echten Systeme (Employee Central/HCM, Service-Desk, Payroll, E-Learning), kein Betriebsrat-Prozess über den Hinweis hinaus. Datenschutz: Namen, Adressen und Bankdaten gehören in die Fachsysteme, nicht in die Werkbank. Nicht getestet: Electron-App; im Headless-Browser hell und dunkel gesehen, ohne Seitenfehler.
