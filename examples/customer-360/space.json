@@ -1,0 +1,12 @@
+{
+  "title": "Customer 360",
+  "description": "One customer group as a 3D knowledge graph: companies, people, contracts, deals, orders, invoices, tickets and what people wrote. A four-act story asks the documents one question per step and lights up the answer. Fictional sample data (Nordlicht group).",
+  "domain": "Sales",
+  "insights": [
+    "Each node is a text document; the story asks them one question per step (local ranking, or live Cognee through the app) and lights up what matched.",
+    "Act 1 structure, act 2 contracts and deals, act 3 payments, what people said and orders delivered but not billed, act 4 ranked proposals.",
+    "Heat per company is a stated rule of thumb, conclusions from free text are marked Inference, nothing is written to any system.",
+    "Fictional sample data. Cognee live needs the Cognee connector and the corpus (npm run cognee:corpus)."
+  ],
+  "prompt": "Bundled example: Customer 360 (static mockup, data embedded by npm run sync:mockups; documents for Cognee by npm run cognee:corpus)."
+}

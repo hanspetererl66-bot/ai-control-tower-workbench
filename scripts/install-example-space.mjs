@@ -34,6 +34,7 @@ export const EXAMPLE_SPACES = {
   'agent-observability': 'agent-observability',
   'order-to-cash': 'order-to-cash',
   'order-to-cash-software': 'order-to-cash-software',
+  'customer-360': 'customer-360',
 };
 
 /**
