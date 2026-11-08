@@ -336,6 +336,7 @@ details.sec>div{padding:0 12px 10px}
 .kpi b.date{font-size:18px;line-height:1.5}
 .flow{flex-wrap:wrap;row-gap:14px}
 @media (max-width:900px){.flowstrip{grid-template-columns:1fr}.flowstrip li::after{display:none!important}.flowstrip li{display:grid;grid-template-columns:24px 1fr;gap:0 8px}.flowstrip .no{grid-row:1 / span 3}.flowstrip.mini{grid-template-columns:repeat(2,minmax(0,1fr))}.board{grid-template-columns:repeat(5,minmax(230px,1fr))}header{padding:10px 14px}.who{margin-left:0}nav{padding:6px 14px 0}main{padding:14px 14px 50px}.speedctl{flex-wrap:wrap}.ask{grid-template-columns:10px 1fr}.ask .btn{grid-column:2}}
+details.vmwall{margin-top:6px}details.vmwall summary{cursor:pointer;font-size:12px;color:var(--muted)}details.vmwall table{margin-top:6px;font-size:12px}
 </style>
 </head>
 <body>
@@ -1637,13 +1638,25 @@ function simulateRun(plan) {
     var str = function (v, n) { return typeof v === 'string' ? v.slice(0, n) : ''; };
     var id = str(p.id, 20); if (!/^[A-Z]{2,4}-\d{3,6}$/.test(id) || S.tickets.some(function (x) { return x.id === id; })) return;
     S.tickets.unshift({ id: id, customerId: str(p.customerId, 30), customerName: str(p.customerName, 60), vm: str(p.vm, 40), kind: p.kind === 'cert' ? 'cert' : 'other', priority: p.priority === 'High' ? 'High' : 'Medium',
-      reasons: Array.isArray(p.reasons) ? p.reasons.slice(0, 4).map(function (r) { return str(r, 120); }) : [], createdBy: str(p.createdBy, 40) || 'Fleet Manager', status: 'open', chg: '' });
+      reasons: Array.isArray(p.reasons) ? p.reasons.slice(0, 4).map(function (r) { return str(r, 120); }) : [], createdBy: str(p.createdBy, 40) || 'Fleet Manager', status: 'open', chg: '', geo: str(p.geo, 8), vms: Array.isArray(p.vms) ? p.vms.slice(0, 40).map(function (v) { return { n: str(v && v.n, 40), e: str(v && v.e, 8), s: v && (v.s === 'red' || v.s === 'yellow') ? v.s : 'green' }; }) : [] });
   }
   /** The inventory target for a ticket: the certificate of that customer that expires first. */
   function ticketTarget(tk) {
     var c = D.customers.filter(function (x) { return x.name === tk.customerName; })[0]; if (!c || tk.kind !== 'cert') return null;
     var certs = D.certs.filter(function (x) { return x.customer === c.id; }).map(function (x) { return Object.assign({ daysLeft: certStatus(x, D.asOf).daysLeft }, x); }).sort(function (a, b) { return a.daysLeft - b.daysLeft; });
     return certs.length ? { template: 'renew-certificate', target: certs[0].id, cert: certs[0] } : null;
+  }
+  function nextTicketId() { var n = 2042; S.tickets.forEach(function (x) { var m = /-(\d+)$/.exec(x.id); if (m && +m[1] >= n) n = +m[1] + 1; }); return 'OP-' + n; }
+  /** An operator opens a ticket for one VM; the customer is always named. */
+  function vmTicket(customerName, vm, status, reasons) {
+    onTicket({ id: nextTicketId(), customerName: customerName, vm: vm, kind: 'other', priority: status === 'red' ? 'High' : 'Medium', reasons: reasons || [], createdBy: pname(S.who) });
+    S.tab = 'overview'; render(); persist();
+  }
+  function vmWall(tk) {
+    if (!tk.vms || !tk.vms.length) return '';
+    return '<details class="vmwall"><summary>' + tk.vms.length + ' VMs of ' + esc(tk.customerName) + (tk.geo ? ' (' + esc(tk.geo) + ')' : '') + '</summary><table><thead><tr><th>VM</th><th>Customer</th><th>Env</th><th>Status</th><th></th></tr></thead><tbody>' + tk.vms.map(function (v) {
+      return '<tr><td><b>' + esc(v.n) + '</b></td><td>' + esc(tk.customerName) + '</td><td>' + esc(v.e) + '</td><td><span class="tag ' + (v.s === 'red' ? 'red' : v.s === 'yellow' ? 'amber' : 'ok') + '">' + esc(v.s) + '</span></td><td>' + (v.s === 'green' ? '' : '<button class="btn" data-vmt="' + esc(tk.customerName) + '|' + esc(v.n) + '|' + v.s + '" type="button">Create ticket for operator</button>') + '</td></tr>';
+    }).join('') + '</tbody></table></details>';
   }
   function demoTicket() {
     var n = 2042 + S.tickets.length;
@@ -1732,7 +1745,7 @@ function simulateRun(plan) {
     h += '<div class="card" style="margin-bottom:16px"><div class="tools" style="margin:0"><h2 style="margin:0">Tickets for the operator</h2><button class="btn" id="demo-ticket" type="button" style="margin-left:auto" title="Normally the ticket comes from the Infra-Operations-Fleet Space">Simulate ticket from Infra-Operations-Fleet</button></div><p class="note">Tickets the Fleet Manager opened in IT Fleet. Start a change from a ticket: pre-check, approval, window, upgrade, post-check, close.</p>' +
       (S.tickets.length ? S.tickets.map(function (tk) {
         var tg = ticketTarget(tk);
-        return '<div class="tq"><div><b>' + esc(tk.id) + ' · ' + esc(tk.customerName) + '</b> <span class="tag ' + (tk.priority === 'High' ? 'red' : 'amber') + '">' + esc(tk.priority) + '</span> <span class="tag ' + (tk.status === 'closed' ? 'ok' : tk.status === 'open' ? '' : 'tool') + '">' + (tk.status === 'closed' ? 'closed' : tk.status === 'open' ? 'open' : 'in change ' + esc(tk.chg)) + '</span><small>' + esc(tk.vm) + ' · ' + esc(tk.reasons.join(', ') || 'see the fleet view') + (tg ? ' · certificate ' + esc(tg.target) : '') + '</small>' + (tk.report ? '<small>' + esc(tk.report) + ' Reported to the Fleet Manager.</small>' : '') + '</div>' +
+        return '<div class="tq"><div><b>' + esc(tk.id) + ' · ' + esc(tk.customerName) + '</b> <span class="tag ' + (tk.priority === 'High' ? 'red' : 'amber') + '">' + esc(tk.priority) + '</span> <span class="tag ' + (tk.status === 'closed' ? 'ok' : tk.status === 'open' ? '' : 'tool') + '">' + (tk.status === 'closed' ? 'closed' : tk.status === 'open' ? 'open' : 'in change ' + esc(tk.chg)) + '</span><small>' + esc(tk.vm) + ' · ' + esc(tk.reasons.join(', ') || 'see the fleet view') + (tg ? ' · certificate ' + esc(tg.target) : '') + '</small>' + (tk.report ? '<small>' + esc(tk.report) + ' Reported to the Fleet Manager.</small>' : '') + vmWall(tk) + '</div>' +
           (tk.status === 'open' ? '<button class="btn primary" data-ticket="' + esc(tk.id) + '" type="button"' + (tg ? '' : ' disabled title="No playbook for this kind of ticket yet"') + '>Start change</button>' : tk.chg ? '<button class="btn" data-chg="' + esc(tk.chg) + '" type="button">Open ' + esc(tk.chg) + '</button>' : '') + '</div>';
       }).join('') : '<p class="note" style="margin:0">No ticket yet. Open one for a red VM in Infra-Operations-Fleet.</p>') + '</div>';
     h += '<div class="two"><div class="card"><h2>Suggested work</h2><p class="note">Found in the inventory, most urgent first. “Suggest task” only pre-fills a request; nothing is changed.</p>' +
@@ -1743,6 +1756,7 @@ function simulateRun(plan) {
     }).join('') + '</div></div>';
     $('#main').innerHTML = h;
     var dt = $('#demo-ticket'); if (dt) dt.onclick = demoTicket;
+    document.querySelectorAll('[data-vmt]').forEach(function (b) { b.onclick = function () { var a = b.dataset.vmt.split('|'); vmTicket(a[0], a[1], a[2], []); }; });
     document.querySelectorAll('[data-ticket]').forEach(function (b) { b.onclick = function () { var tk = S.tickets.filter(function (x) { return x.id === b.dataset.ticket; })[0], tg = tk && ticketTarget(tk); if (tg) openNew({ template: tg.template, target: tg.target, ticket: tk.id }); }; });
     document.querySelectorAll('[data-chg]').forEach(function (b) { b.onclick = function () { S.tab = 'tasks'; render(); openTask(b.dataset.chg); }; });
     document.querySelectorAll('[data-new]').forEach(function (b) { b.onclick = function () { var x = f[Number(b.dataset.new)]; openNew({ template: x.template, target: x.target }); }; });
@@ -1775,7 +1789,7 @@ function simulateRun(plan) {
       rows = D.certs.map(function (c) { var s = certStatus(c, D.asOf); return { t: [c.id, c.name, c.customer, c.issuer, customer(c.customer).name].join(' '), h: '<tr><td><b>' + esc(c.id) + '</b><br><small>' + esc(c.name) + '</small></td><td>' + esc(customer(c.customer).name) + '</td><td>' + esc(c.vmIds.join(', ')) + '</td><td>' + esc(c.issuer) + '</td><td>' + esc(c.notAfter) + '</td><td><span class="tag ' + s.status + '">' + (s.daysLeft < 0 ? 'expired' : plural(s.daysLeft, 'day', 'days')) + '</span></td><td><button class="btn" data-act="renew-certificate|' + esc(c.id) + '" type="button">Renew</button></td></tr>' }; });
     } else if (S.inv === 'vms') {
       head = '<tr><th>VM</th><th>Customer</th><th>Role</th><th>Region</th><th>Patches</th><th>Backup</th><th></th></tr>';
-      rows = D.vms.map(function (v) { var old = daysBetweenPage(v.lastBackup) >= 2; return { t: [v.id, v.role, v.region, v.env, customer(v.customer).name].join(' '), h: '<tr><td><b>' + esc(v.id) + '</b><br><small>' + esc(v.env) + ' · ' + esc(v.os) + '</small></td><td>' + esc(customer(v.customer).name) + '</td><td>' + esc(v.role) + '</td><td>' + esc(v.region) + '</td><td><span class="tag ' + (v.criticalPatches ? 'red' : v.pendingPatches ? 'amber' : 'ok') + '">' + v.pendingPatches + ' open' + (v.criticalPatches ? ', ' + v.criticalPatches + ' critical' : '') + '</span></td><td><span class="tag ' + (old ? 'amber' : 'ok') + '">' + esc(v.lastBackup) + '</span></td><td><button class="btn" data-act="patch-vm|' + esc(v.id) + '" type="button">Patch</button> <button class="btn" data-act="move-vm|' + esc(v.id) + '" type="button">Move</button></td></tr>' }; });
+      rows = D.vms.map(function (v) { var old = daysBetweenPage(v.lastBackup) >= 2; return { t: [v.id, v.role, v.region, v.env, customer(v.customer).name].join(' '), h: '<tr><td><b>' + esc(v.id) + '</b><br><small>' + esc(v.env) + ' · ' + esc(v.os) + '</small></td><td>' + esc(customer(v.customer).name) + '</td><td>' + esc(v.role) + '</td><td>' + esc(v.region) + '</td><td><span class="tag ' + (v.criticalPatches ? 'red' : v.pendingPatches ? 'amber' : 'ok') + '">' + v.pendingPatches + ' open' + (v.criticalPatches ? ', ' + v.criticalPatches + ' critical' : '') + '</span></td><td><span class="tag ' + (old ? 'amber' : 'ok') + '">' + esc(v.lastBackup) + '</span></td><td><button class="btn" data-act="patch-vm|' + esc(v.id) + '" type="button">Patch</button> <button class="btn" data-act="move-vm|' + esc(v.id) + '" type="button">Move</button> <button class="btn" data-vmt="' + esc(customer(v.customer).name) + '|' + esc(v.id) + '|' + (v.criticalPatches ? 'red' : 'yellow') + '" type="button">Create ticket for operator</button></td></tr>' }; });
     } else {
       head = '<tr><th>Name</th><th>Type</th><th>Value</th><th>TTL</th><th>VM</th><th></th></tr>';
       rows = D.dns.map(function (d) { return { t: [d.name, d.value, d.vmId, customer(d.customer).name].join(' '), h: '<tr><td><b>' + esc(d.name) + '</b><br><small>' + esc(customer(d.customer).name) + '</small></td><td>' + esc(d.type) + '</td><td>' + esc(d.value) + '</td><td>' + d.ttl + ' s</td><td>' + esc(d.vmId) + '</td><td><button class="btn" data-act="update-dns-record|' + esc(d.id) + '" type="button">Change</button></td></tr>' }; });
@@ -1786,6 +1800,7 @@ function simulateRun(plan) {
     document.querySelectorAll('[data-inv]').forEach(function (b) { b.onclick = function () { S.inv = b.dataset.inv; S.filter = ''; render(); }; });
     $('#flt').oninput = function (e) { S.filter = e.target.value; var pos = e.target.selectionStart; render(); var f = $('#flt'); f.focus(); f.setSelectionRange(pos, pos); };
     document.querySelectorAll('[data-act]').forEach(function (b) { b.onclick = function () { var a = b.dataset.act.split('|'); openNew({ template: a[0], target: a[1] }); }; });
+    document.querySelectorAll('[data-vmt]').forEach(function (b) { b.onclick = function () { var a = b.dataset.vmt.split('|'); vmTicket(a[0], a[1], a[2], []); }; });
   }
   function daysBetweenPage(iso) { return Math.round((Date.parse(D.asOf) - Date.parse(iso)) / 86400000); }
 

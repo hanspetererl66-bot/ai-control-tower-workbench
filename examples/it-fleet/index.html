@@ -250,7 +250,16 @@ button.primary{border:0;background:var(--purple);color:#fff;border-radius:99px;p
 button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 14px;font-weight:600}
 button.small{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple);font-weight:650}
 button:disabled{opacity:.5;cursor:default}
-.tm{position:relative;width:100%;height:470px}
+.tm{position:relative;width:100%;height:520px}
+.geo{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.geocard{text-align:left;font:inherit;color:var(--ink);padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);cursor:pointer}
+.geocard[aria-pressed=true]{outline:2px solid var(--purple)}.geocard.red{border-color:var(--red-border)}.geocard.yellow{border-color:var(--amber-border)}
+.geocard h3{margin:0 0 2px;font-size:14px}.geocard .m{color:var(--muted);font-size:12px}.geocard .bar3{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0 6px;background:var(--line)}
+.geocard .bar3 i{display:block;height:100%}.geocard .bar3 .r{background:var(--red)}.geocard .bar3 .y{background:var(--amber)}.geocard .bar3 .g{background:var(--green)}
+.rows-h{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.gh{position:absolute;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.gh>span{position:absolute;left:8px;top:3px;font-size:11px;font-weight:650;color:var(--ink-2);white-space:nowrap}
+.tile .reg{font-size:10px;color:var(--ink-2);opacity:.8}
 .tile{position:absolute;box-sizing:border-box;padding:6px 8px;border:2px solid var(--surface);border-radius:8px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;overflow:hidden}
 .tile .n{font-weight:650;font-size:12px;line-height:1.25;overflow:hidden}.tile .c{font-size:11px;margin-top:2px;color:var(--ink-2)}
 .tile.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}
@@ -283,20 +292,23 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 .guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
 .head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
-@media (max-width:760px){.tm{height:620px}}
+@media (max-width:760px){.tm{height:720px}}
 </style>
 </head>
 <body>
 <main>
   <p class="demo">Fictional customers and virtual machines, generated from a fixed seed, no live monitoring. A VM is green, yellow or red by the same fixed rules as in the IT Infrastructure Space; a customer is as red as its worst VM. Nothing is restarted or changed.</p>
+  <h2 class="rows-h">Global overview</h2>
   <div class="kpis" id="kpis"></div>
+  <h2 class="rows-h">Situation per geography</h2>
+  <div class="geo" id="geo"></div>
   <div class="card guide" id="guide" aria-live="polite"></div>
   <div class="card">
     <div class="bar">
       <div class="seg" role="group" aria-label="View"><button type="button" data-view="map" aria-pressed="true">Treemap</button><button type="button" data-view="heat" aria-pressed="false">Heatmap</button><button type="button" data-view="inbox" aria-pressed="false">Task inbox</button></div>
       <div class="chips" id="status-chips" role="group" aria-label="Filter by status"></div>
       <label class="chk"><input type="checkbox" id="prod" checked> Production only</label>
-      <select id="region" aria-label="Region"></select>
+      <select id="region" aria-label="Geography"></select>
       <input type="search" id="q" placeholder="Find customer" aria-label="Find customer">
       <button class="ghost spacer" id="reset" type="button">Reset demo</button>
     </div>
@@ -14659,7 +14671,9 @@ const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
 const FLOW = ['Detected', 'Approved', 'Run (simulated)', 'Verified'];
 const inHost = window.parent !== window;
 const state = { fixed: [], news: [], view: 'map', status: 'all', prod: true, region: 'all', q: '', sel: null, approved: {}, done: {}, tickets: {}, step: -1 };
-const raw = DATA.customers.map((c) => ({ id: c.id, name: c.name, region: c.region, tier: c.tier, sap: c.sapCustomerId, trend: c.trend,
+const GEOS = ['EMEA', 'NALA', 'APEC'];
+const geoOf = (region) => (/^EMEA|^MEE/.test(region) ? 'EMEA' : region === 'NALA' ? 'NALA' : 'APEC');
+const raw = DATA.customers.map((c) => ({ id: c.id, name: c.name, region: c.region, geo: geoOf(c.region), tier: c.tier, sap: c.sapCustomerId, trend: c.trend,
   vms: c.vms.map(([name, env, cpu, mem, disk, backup, patch, cert, reach]) => ({ id: c.id + '/' + name, name, env, cpuPct: cpu, memPct: mem, diskPct: disk, backupAgeHours: backup, patchLagDays: patch, certExpiresInDays: cert, reachable: !!reach })) }));
 let model = [];
 function compute() {
@@ -14679,11 +14693,11 @@ function compute() {
     for (const v of c.vms) for (const r of v.reasons) { const e = (c.byCheck[r.key] ||= { n: 0, red: false }); e.n++; if (r.level === 'red') e.red = true; }
   }
 }
-const visible = () => model.filter((c) => c.vms.length && (state.status === 'all' || c.status === state.status) && (state.region === 'all' || c.region === state.region) && (!state.q || c.name.toLowerCase().includes(state.q.toLowerCase())));
+const visible = () => model.filter((c) => c.vms.length && (state.status === 'all' || c.status === state.status) && (state.region === 'all' || c.geo === state.region) && (!state.q || c.name.toLowerCase().includes(state.q.toLowerCase())));
 const worstFirst = (a, b) => b.red - a.red || b.yellow - a.yellow || a.name.localeCompare(b.name);
 const reasonsOf = (c) => CHECKS.filter(([k]) => c.byCheck[k]).map(([k, l]) => `${l}: ${c.byCheck[k].n}`);
 function tipHtml(c) {
-  return `<h3>${esc(c.name)}</h3><div class="lim">SAP customer ID ${esc(c.sap)} · ${esc(c.region)} · ${esc(c.tier)} · ${c.vms.length} VMs</div><div style="margin-top:4px"><span class="pill ${c.status}">${LABEL[c.status]}</span> ${c.red} red, ${c.yellow} yellow, ${c.green} green</div>` +
+  return `<h3>${esc(c.name)}</h3><div class="lim">SAP customer ID ${esc(c.sap)} · ${esc(c.geo)} / ${esc(c.region)} · ${esc(c.tier)} · ${c.vms.length} VMs</div><div style="margin-top:4px"><span class="pill ${c.status}">${LABEL[c.status]}</span> ${c.red} red, ${c.yellow} yellow, ${c.green} green</div>` +
     (c.status === 'green' ? '<div class="lim" style="margin-top:4px">Every VM is within the limits.</div>' : `<div class="lim" style="margin-top:4px">Worst check wins: ${c.status === 'red' ? 'at least one VM is red' : 'at least one VM is yellow'}. VMs affected per check:</div><ul>${reasonsOf(c).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`);
 }
 const tip = $('#tip');
@@ -14706,23 +14720,34 @@ function squarify(values, x, y, w, h) {
   return out;
 }
 function renderMap() {
-  const list = visible().sort((a, b) => b.vms.length - a.vms.length);
-  const box = $('#view');
-  box.innerHTML = '<p class="sub">One tile per customer. Area = number of VMs, colour = the worst VM of the customer. Hover for the reasons, click to open the customer.</p><div class="tm" id="tm"></div><div class="legend"><span><i class="g"></i>Green: all VMs within limits</span><span><i class="y"></i>Yellow: at least one warning, plan an action</span><span><i class="r"></i>Red: at least one VM needs action now</span></div>';
+  const list = visible(), box = $('#view');
+  box.innerHTML = '<p class="sub">Grouped by geography (EMEA, NALA, APEC), then one tile per customer. Area = number of VMs, colour = the worst VM of the customer. Hover for the reasons, click a customer to open it, red ones first.</p><div class="tm" id="tm"></div><div class="legend"><span><i class="g"></i>Green: all VMs within limits</span><span><i class="y"></i>Yellow: at least one warning, plan an action</span><span><i class="r"></i>Red: at least one VM needs action now</span></div>';
   const tm = $('#tm');
   if (!list.length) { tm.innerHTML = '<p class="note">No customer matches the filters.</p>'; return; }
-  const W = tm.clientWidth || 1100, H = tm.clientHeight || 470;
-  const rects = squarify(list.map((c) => c.vms.length), 0, 0, W, H);
-  list.forEach((c, i) => {
-    const [x, y, w, h] = rects[i];
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'tile ' + c.status; b.dataset.c = c.id; b.setAttribute('aria-pressed', String(state.sel === c.id));
-    b.setAttribute('aria-label', `${c.name}: ${LABEL[c.status]}, ${c.red} red, ${c.yellow} yellow of ${c.vms.length} VMs`);
-    b.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
-    b.innerHTML = `<div class="n">${esc(c.name)}</div>` + (w > 90 && h > 48 ? `<div class="c">${c.red ? c.red + ' red · ' : ''}${c.yellow ? c.yellow + ' yellow · ' : ''}${c.vms.length} VMs</div>` : '');
-    b.onclick = () => { state.sel = state.sel === c.id ? null : c.id; renderAll(); if (state.sel) $('#drill').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
-    hover(b, () => tipHtml(c));
-    tm.appendChild(b);
+  const W = tm.clientWidth || 1100, H = tm.clientHeight || 520, HEAD = 20, PAD = 4;
+  const groups = GEOS.map((g) => ({ g, cs: list.filter((c) => c.geo === g).sort(worstFirst) })).filter((x) => x.cs.length);
+  groups.forEach((x) => { x.n = x.cs.reduce((a, c) => a + c.vms.length, 0); x.red = x.cs.filter((c) => c.status === 'red').length; });
+  groups.sort((a, b) => b.n - a.n);
+  const outer = squarify(groups.map((x) => x.n), 0, 0, W, H);
+  groups.forEach((gr, gi) => {
+    const [gx, gy, gw, gh] = outer[gi];
+    const frame = document.createElement('div'); frame.className = 'gh'; frame.style.cssText = `left:${gx}px;top:${gy}px;width:${gw}px;height:${gh}px`;
+    frame.innerHTML = `<span>${gr.g} · ${gr.cs.length} customers${gr.red ? ' · ' + gr.red + ' red' : ''} · ${gr.n} VMs</span>`;
+    tm.appendChild(frame);
+    const ix = gx + PAD, iy = gy + HEAD, iw = Math.max(10, gw - 2 * PAD), ih = Math.max(10, gh - HEAD - PAD);
+    const cs = [...gr.cs].sort((a, b) => b.vms.length - a.vms.length);
+    const rects = squarify(cs.map((c) => c.vms.length), ix, iy, iw, ih);
+    cs.forEach((c, i) => {
+      const [x, y, w, h] = rects[i];
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tile ' + c.status; b.dataset.c = c.id; b.setAttribute('aria-pressed', String(state.sel === c.id));
+      b.setAttribute('aria-label', `${c.name}, ${c.geo}: ${LABEL[c.status]}, ${c.red} red, ${c.yellow} yellow of ${c.vms.length} VMs`);
+      b.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+      b.innerHTML = `<div class="n">${esc(c.name)}</div>` + (w > 90 && h > 48 ? `<div class="c">${c.red ? c.red + ' red · ' : ''}${c.yellow ? c.yellow + ' yellow · ' : ''}${c.vms.length} VMs</div>` : '') + (w > 110 && h > 64 ? `<div class="reg">${esc(c.region)}</div>` : '');
+      b.onclick = () => { state.sel = state.sel === c.id ? null : c.id; renderAll(); if (state.sel) $('#drill').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+      hover(b, () => tipHtml(c));
+      tm.appendChild(b);
+    });
   });
 }
 function renderHeat() {
@@ -14762,7 +14787,7 @@ function renderDrill() {
   if (!c) { el.hidden = true; return; }
   el.hidden = false;
   const tk = state.tickets[c.id];
-  el.innerHTML = `<div class="head"><div style="flex:1 1 300px"><h2>${esc(c.name)} <span class="pill ${c.status}">${LABEL[c.status]}</span></h2><div class="facts"><span>SAP customer ID <b>${esc(c.sap)}</b></span><span>Region <b>${esc(c.region)}</b></span><span>Tier <b>${esc(c.tier)}</b></span><span>VMs <b>${c.vms.length}</b> (${c.red} red, ${c.yellow} yellow, ${c.green} green)</span></div></div>` +
+  el.innerHTML = `<div class="head"><div style="flex:1 1 300px"><h2>${esc(c.name)} <span class="pill ${c.status}">${LABEL[c.status]}</span></h2><div class="facts"><span>SAP customer ID <b>${esc(c.sap)}</b></span><span>Geography <b>${esc(c.geo)}</b> (${esc(c.region)})</span><span>Tier <b>${esc(c.tier)}</b></span><span>VMs <b>${c.vms.length}</b> (${c.red} red, ${c.yellow} yellow, ${c.green} green)</span></div></div>` +
     `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" id="ask" type="button">Ask Joule about ${esc(c.name)}</button>${c.status === 'green' ? '' : tk ? `<span class="pill planned">Ticket ${esc(tk)} with the operator</span>` : '<button class="ghost" id="ticket" type="button">Create ticket for operator</button>'}<button class="ghost" id="close" type="button">Close</button></div></div>` +
     `<p class="sub" style="margin-top:8px">Worst VMs first. Hover over a VM to see why it has its colour.</p><div class="grid">${[...c.vms].sort((a, b) => ({ red: 0, yellow: 1, green: 2 }[a.status] - { red: 0, yellow: 1, green: 2 }[b.status]) || a.name.localeCompare(b.name)).map((v, i) => `<button type="button" class="vm ${v.status}" data-i="${i}"><div class="n">${esc(v.name)}</div><div class="r">${esc(v.env)} · ${v.status === 'green' ? 'ok' : v.reasons.length + ' reason' + (v.reasons.length > 1 ? 's' : '')}</div></button>`).join('')}</div>`;
   const sorted = [...c.vms].sort((a, b) => ({ red: 0, yellow: 1, green: 2 }[a.status] - { red: 0, yellow: 1, green: 2 }[b.status]) || a.name.localeCompare(b.name));
@@ -14773,7 +14798,7 @@ function renderDrill() {
     const id = 'OP-' + (2042 + Object.keys(state.tickets).length); state.tickets[c.id] = id;
     const bad = [...c.vms].filter((v) => v.status !== 'green'), vm = bad.find((v) => v.reasons.some((r) => r.key === 'cert' && r.level === 'red')) || bad.find((v) => v.status === 'red') || bad[0];
     const kind = vm && vm.reasons.some((r) => r.key === 'cert') ? 'cert' : 'other';
-    const payload = { type: 'ticket', id, customerId: c.id, customerName: c.name, vm: vm ? vm.name : '', kind, priority: c.status === 'red' ? 'High' : 'Medium', reasons: (vm ? vm.reasons : []).map((r) => r.text).slice(0, 6), createdBy: 'Fleet Manager' };
+    const payload = { type: 'ticket', id, customerId: c.id, customerName: c.name, vm: vm ? vm.name : '', kind, priority: c.status === 'red' ? 'High' : 'Medium', reasons: (vm ? vm.reasons : []).map((r) => r.text).slice(0, 6), createdBy: 'Fleet Manager', geo: c.geo, region: c.region, sap: c.sap, vms: c.vms.slice(0, 40).map((v) => ({ n: v.name, e: v.env, s: v.status })) };
     if (inHost) { saveState(); window.parent.postMessage({ type: 'wb:handoff', to: 'infra-ops', payload, open: true, notice: 'Ticket ' + id + ' sent to the infrastructure operator.' }, '*'); }
     else send(`Open a service ticket for the IT operator with the tool create_ticket: customer muster, product "IT infrastructure", priority ${payload.priority}, title "${id} ${c.name} (SAP ${c.sap}): ${c.red} red, ${c.yellow} yellow VMs", description "${reasonsOf(c).join(', ')}". Please answer in English.`);
     renderAll();
@@ -14782,8 +14807,13 @@ function renderDrill() {
 function renderKpis() {
   const all = model.filter((c) => c.vms.length), n = (s) => all.filter((c) => c.status === s).length, vmsAll = all.reduce((a, c) => a + c.vms.length, 0), b = bundles();
   const k = (cls, v, key, s) => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="k">${key}</div><div class="s">${s}</div></div>`;
-  $('#kpis').innerHTML = k('', all.length, 'Customers', vmsAll + ' VMs' + (state.prod ? ' (production)' : '')) + k('red', n('red'), 'Red customers', 'act now') + k('amber', n('yellow'), 'Yellow customers', 'plan an action') + k('green', n('green'), 'Green customers', 'all VMs within limits') +
+  $('#kpis').innerHTML = k('', all.length, 'Customers (global)', vmsAll + ' VMs' + (state.prod ? ' (production)' : '')) + k('red', n('red'), 'Red customers', 'act now') + k('amber', n('yellow'), 'Yellow customers', 'plan an action') + k('green', n('green'), 'Green customers', 'all VMs within limits') +
     k('', b.length, 'Task bundles', b.reduce((a, x) => a + x.vms, 0) + ' tasks on VMs') + k('', Object.keys(state.tickets).length, 'Operator tickets', 'created in this demo');
+}
+function renderGeo() {
+  const rows = GEOS.map((g) => { const cs = model.filter((c) => c.vms.length && c.geo === g), r = cs.filter((c) => c.status === 'red').length, y = cs.filter((c) => c.status === 'yellow').length, n = cs.reduce((a, c) => a + c.vms.length, 0), vr = cs.reduce((a, c) => a + c.red, 0); return { g, cs, r, y, gr: cs.length - r - y, n, vr, st: r ? 'red' : y ? 'yellow' : 'green' }; });
+  $('#geo').innerHTML = rows.map((x) => { const t = Math.max(1, x.cs.length); return `<button type="button" class="geocard ${x.st}" data-g="${x.g}" aria-pressed="${state.region === x.g}"><h3>${x.g}</h3><div class="m">${x.cs.length} customers · ${x.n} VMs</div><div class="bar3" aria-hidden="true"><i class="r" style="width:${x.r / t * 100}%"></i><i class="y" style="width:${x.y / t * 100}%"></i><i class="g" style="width:${x.gr / t * 100}%"></i></div><div class="m"><b>${x.r}</b> red · <b>${x.y}</b> yellow · <b>${x.gr}</b> green customers${x.vr ? ' · ' + x.vr + ' red VMs' : ''}</div></button>`; }).join('');
+  $('#geo').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.region = state.region === b.dataset.g ? 'all' : b.dataset.g; $('#region').value = state.region; renderAll(); }));
 }
 function renderBar() {
   $('#status-chips').innerHTML = ['all', 'red', 'yellow', 'green'].map((s) => `<button type="button" data-s="${s}" aria-pressed="${state.status === s}">${s === 'all' ? 'All' : LABEL[s]} ${s === 'all' ? model.filter((c) => c.vms.length).length : model.filter((c) => c.vms.length && c.status === s).length}</button>`).join('');
@@ -14805,10 +14835,10 @@ function renderGuide() {
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
 }
 function go(i) { state.step = i; Object.assign(state, { approved: {}, done: {}, sel: null, status: 'all' }); compute(); for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
-function renderAll() { renderKpis(); renderBar(); renderGuide(); ({ map: renderMap, heat: renderHeat, inbox: renderInbox })[state.view](); renderDrill(); }
+function renderAll() { renderKpis(); renderGeo(); renderBar(); renderGuide(); ({ map: renderMap, heat: renderHeat, inbox: renderInbox })[state.view](); renderDrill(); }
 document.querySelectorAll('[data-view]').forEach((b) => (b.onclick = () => { state.view = b.dataset.view; renderAll(); }));
 $('#prod').onchange = (e) => { state.prod = e.target.checked; compute(); renderAll(); };
-$('#region').innerHTML = '<option value="all">All regions</option>' + [...new Set(raw.map((c) => c.region))].map((r) => `<option>${esc(r)}</option>`).join('');
+$('#region').innerHTML = '<option value="all">All geographies</option>' + GEOS.map((r) => `<option>${esc(r)}</option>`).join('');
 $('#region').onchange = (e) => { state.region = e.target.value; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
 $('#reset').onclick = () => { Object.assign(state, { status: 'all', prod: true, region: 'all', q: '', sel: null, approved: {}, done: {}, tickets: {}, step: -1, view: 'map' }); $('#prod').checked = true; $('#region').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
