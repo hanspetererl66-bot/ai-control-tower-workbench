@@ -316,22 +316,45 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
 .lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}.lane>h3{margin:0 0 8px;font-size:13px;color:var(--ink)}.wave{color:var(--muted);font-size:11px;font-weight:600}.join{margin-top:16px}
 @media (max-width:900px){.two,.chat,.lanes{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
+
+.stp{width:100%;border-collapse:separate;border-spacing:0}
+.stp th{position:sticky;top:0;background:var(--surface);font-size:11px;text-align:center;border-bottom:1px solid var(--line);padding:6px 4px}
+.stp td{padding:3px 4px;border-bottom:1px solid var(--line-2);text-align:center;height:38px}
+.stp td.n{width:34px;color:var(--muted);font-weight:700}
+.stp tr.sel td{background:var(--wash)}
+.stp .chip{display:inline-block;max-width:100%;border:1px solid var(--line);border-radius:10px;padding:3px 9px;background:var(--surface);font:inherit;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap}
+.stp .chip.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.stp .chip.wait{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
+.stp .chip.next{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.stp .chip:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.ctl{position:sticky;top:0;z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin:0 0 16px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.ctl .prog{font-weight:700}.ctl .why{flex-basis:100%;color:var(--ink-2)}
+.ctl .acts{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px}
+.t-sw{color:var(--purple);background:var(--purple-dim);border-color:var(--purple-border)}
+.t-sv{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-border)}
+td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wf{display:flex;flex-direction:column;gap:0;margin:8px 0}
+.wn{display:grid;grid-template-columns:32px 150px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:-1px}
+.wn.wait{border-style:dashed;background:var(--amber-dim);border-color:var(--amber-border)}
+.wn.done{background:var(--green-dim);border-color:var(--green-border)}
+.wn .no{font-weight:800;color:var(--muted)}
+.logl{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--wash);padding:6px 10px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace}
 </style>
 </head>
 <body>
 <header>
-  <div><div class="logo">Order-to-<b>Cash</b> · Software</div><div class="sub">Claude prepares the order, the Joule agent works in the systems, a person decides</div></div>
-  <div class="hr"><span class="sub">Acting as</span><span class="seg" id="actor" role="group" aria-label="Acting as"></span><span class="tag amber">draft mode</span><span class="sub" id="sys"></span></div>
+  <div><div class="logo">Order-to-<b>Cash</b> · Software</div><div class="sub">From the signed contract to cash and revenue: seven systems, one process, three places where a person decides</div></div>
+  <div class="hr"><span class="tag amber">draft mode</span><span class="sub" id="sys"></span></div>
 </header>
-<div class="demo">Mockup with fictional data. This page does not call an SAP system and changes nothing. Tool names, document numbers, prices and the tenant template are illustrative; the product name is only an example.</div>
+<div class="demo">Mockup with fictional data. No system is called and nothing is changed. System names, tool names, document numbers, prices and the tenant are illustrative.</div>
 <nav role="tablist" aria-label="Sections" id="tabs"></nav>
-<div class="intro-wrap"><details class="intro" open><summary>What is this page?<span class="hint">click to collapse</span></summary><div class="body">
-<div><h4>A software order is not a goods order</h4><p>There is no delivery and no goods issue. The signed order form is the order. <b>Activating the licenses</b> takes the place of the delivery, billing follows the contract, and revenue is earned over the term.</p></div>
-<div><h4>Two tracks at order confirmation</h4><p>The commercial track (credit, billing plan, revenue schedule) and the technical track (tenant, single sign-on, licenses) start together. They meet at the license activation, which waits for the credit decision, and at the customer reply.</p></div>
-<div><h4>Nothing is written without a person</h4><p>Claude and the Joule agent prepare. A person releases each step within their own limit. All numbers are computed from the sample data of one fictional order.</p></div>
+<div class="intro-wrap"><details class="intro"><summary>What is this page?<span class="hint">click to open</span></summary><div class="body">
+<div><h4>One contract, six positions</h4><p>Kestrel Versicherung AG buys three kinds of software (licences once, a monthly subscription with overage, software on consumption) and three services (implementation, training, managed operations).</p></div>
+<div><h4>The whole chain in 14 steps</h4><p>Contract, order, bill of material, entitlement check, delivery, receipt by the customer, entitlement, technical provisioning, completion message, billing, consumption against billing, revenue, cash and revenue recognition. Use the bar at the top to run it step by step.</p></div>
+<div><h4>An n8n process calls the systems</h4><p>CRM, order, material, entitlement, provisioning, billing and revenue are read in turn. The process decides nothing; a person decides at the entitlement deviations, the customer receipt and the consumption true-up.</p></div>
 </div></details></div>
 <main id="main"></main>
-<script type="application/json" id="data">{"asOf":"2026-11-06","company":"Rheinsoft Solutions (fictional)","system":"S/4HANA Cloud + subscription and provisioning tools (sample data)","currency":"EUR","closing":"2026-12-31","case":{"id":"ORDER-2026-0731","customer":"Kestrel Versicherung AG","customerNo":"100871","product":"LeanIX Enterprise Architecture, user licenses","received":"2026-11-05","summary":"A signed order for 500 LeanIX user licenses. At confirmation two tracks start in parallel: the commercial one (credit, billing, revenue) and the technical one (tenant, access, licenses)."},"persons":{"mira":{"name":"Mira Hahn","role":"Order desk clerk","limits":{"credit":50000,"bill":250000,"revenue":false,"tenant":true,"config":true,"entitle":100,"reply":true}},"tobias":{"name":"Tobias Krämer","role":"Credit manager","limits":{"credit":300000,"bill":1000000,"revenue":true,"tenant":true,"config":true,"entitle":1000,"reply":true}},"claude":{"name":"Claude","role":"AI assistant","agent":true,"limits":{"credit":false,"bill":false,"revenue":false,"tenant":false,"config":false,"entitle":false,"reply":false}},"joule":{"name":"Joule agent","role":"AI agent in the systems","agent":true,"limits":{"credit":false,"bill":false,"revenue":false,"tenant":false,"config":false,"entitle":false,"reply":false}}},"docs":[{"id":"Q1","kind":"Quote Q-2026-5521","date":"2026-10-20","lines":["Quote Q-2026-5521 for Kestrel Versicherung AG","LeanIX Enterprise Architecture, 500 user licenses, term 36 months from 01.12.2026","List price 42.00 EUR per user per month, discount 10% approved by Sales Director, net 37.80 EUR","Onboarding workshop (2 days): 8,000.00 EUR fixed, one-time. Billing: annually in advance"]},{"id":"O1","kind":"Order form OF-7731 (signed)","date":"2026-11-04","lines":["Order form OF-7731, Kestrel Versicherung AG, signed 04.11.2026","500 user licenses LeanIX Enterprise Architecture, 37.80 EUR per user per month, 36 months","Subscription start 01.12.2026. Invoice annually in advance.","Customer data is hosted in the EU region only.","Single sign-on with the customer's identity provider is required."]},{"id":"E1","kind":"Customer email","date":"2026-11-05","lines":["Subject: OF-7731 - invoicing and access","Please send all invoices to Kestrel Group Services GmbH, Mainzer Str. 12, 60311 Frankfurt.","Our admins are Anna Brandt and Jonas Weiss. Please set up access before 01.12."]},{"id":"E2","kind":"Credit memo (finance)","date":"2026-11-05","lines":["Credit check Kestrel Versicherung AG (100871)","Credit limit 200,000.00 EUR, open items 0.00 EUR","Exposure above the limit needs the credit manager.","Licenses are activated only after the credit decision. The tenant may be prepared before."]},{"id":"W1","kind":"Operations wiki: tenant template","date":"2026-09-12","lines":["Template standard-tenant","Region: us-east (default)","Allowed regions: eu-central, eu-west, us-east","Set the region from the order form before the tenant is created."]}],"systems":{"salesOrder":{"id":"10003120","date":"2026-11-04","contractRef":"OF-7731","soldTo":"Kestrel Versicherung AG","billTo":"Kestrel Versicherung AG","items":[{"item":10,"text":"LeanIX Enterprise Architecture, user license","qty":500,"unit":"user","price":37.8,"months":36,"start":"2026-12-01"},{"item":20,"text":"Onboarding workshop (2 days)","qty":1,"unit":"service","price":8000}]},"account":{"creditLimit":200000,"openItems":0},"tenant":{"templateRegion":"us-east","planRegion":"eu-central","allowedRegions":["eu-central","eu-west","us-east"],"euRegions":["eu-central","eu-west"]},"requestedBillTo":"Kestrel Group Services GmbH","admins":["Anna Brandt","Jonas Weiss"]},"findings":[{"id":"F1","text":"The order matches the quote: 500 licenses, 37.80 EUR per user and month, 36 months.","inference":false,"checks":[{"kind":"line","doc":"Q1","line":2,"needle":"500 user licenses"},{"kind":"line","doc":"Q1","line":3,"needle":"net 37.80"},{"kind":"line","doc":"O1","line":2,"needle":"37.80 EUR per user per month"},{"kind":"orderQty","equals":500},{"kind":"orderPrice","equals":37.8},{"kind":"orderMonths","equals":36}]},{"id":"F2","text":"The 10% discount is already approved by the Sales Director, so the order needs no new discount approval.","inference":false,"checks":[{"kind":"line","doc":"Q1","line":3,"needle":"approved by Sales Director"}]},{"id":"F3","text":"The customer wants all invoices sent to Kestrel Group Services GmbH. The order in S/4 still has the sold-to party as bill-to.","inference":false,"checks":[{"kind":"line","doc":"E1","line":2,"needle":"Kestrel Group Services GmbH"},{"kind":"line","doc":"O1","line":3,"needle":"annually in advance"},{"kind":"billToUnchanged"}]},{"id":"F4","text":"Data must stay in the EU, but the standard tenant template defaults to us-east. The region has to be set before the tenant is created.","inference":false,"checks":[{"kind":"line","doc":"O1","line":4,"needle":"EU region only"},{"kind":"line","doc":"W1","line":2,"needle":"us-east (default)"},{"kind":"templateOutsideEu"}]},{"id":"F5","text":"First year plus onboarding is above the credit limit. Licenses are activated only after the credit manager has decided; the tenant can be prepared in the meantime.","inference":false,"checks":[{"kind":"line","doc":"E2","line":2,"needle":"Credit limit 200,000.00"},{"kind":"line","doc":"E2","line":4,"needle":"activated only after the credit decision"},{"kind":"creditOver"}]},{"id":"F6","text":"The subscription is earned over the 36 months. The onboarding workshop is a separate obligation and is recognised when it is done. Revenue accounting should confirm this.","inference":true,"checks":[{"kind":"line","doc":"O1","line":3,"needle":"Subscription start 01.12.2026"},{"kind":"line","doc":"Q1","line":4,"needle":"Onboarding workshop"},{"kind":"orderMonths","equals":36}]}],"tasks":[{"id":"T1","track":"commercial","type":"credit","tool":"s4_release_credit_block","label":"Changes something","requires":[],"done":"Credit block released on order 10003120 for the credit manager's decision (sample)."},{"id":"T2","track":"commercial","type":"bill","tool":"sub_create_billing_plan","label":"Changes something","requires":["T1"],"done":"Billing plan created: three annual invoices in advance, bill-to Kestrel Group Services GmbH (sample)."},{"id":"T3","track":"commercial","type":"revenue","tool":"rev_create_revenue_schedule","label":"Changes something","requires":["T2"],"done":"Revenue schedule created: 36 monthly postings from Dec 2026; onboarding on completion (sample)."},{"id":"T4","track":"technical","type":"tenant","tool":"prov_create_tenant","label":"Changes something","requires":[],"done":"Tenant created in the planned region (sample)."},{"id":"T5","track":"technical","type":"config","tool":"prov_configure_sso","label":"Changes something","requires":["T4"],"done":"Single sign-on set up, two administrators invited (sample)."},{"id":"T6","track":"technical","type":"entitle","tool":"ent_activate_licenses","label":"Changes something","requires":["T4","T1"],"done":"500 user licenses activated for Kestrel Versicherung AG (sample)."},{"id":"T7","track":"customer","type":"reply","tool":"send_customer_reply","label":"Sends a message","requires":["T2","T5","T6"],"done":"Welcome message with access and invoice dates sent to Kestrel Versicherung AG (sample)."}],"history":[{"t":"09:02","who":"mira","what":"Order OF-7731 is confirmed. Asks Claude to check the order.","tool":"","mode":"task"},{"t":"09:03","who":"claude","what":"Reads quote, order form, two emails and the tenant template.","tool":"mail, files","mode":"read"},{"t":"09:05","who":"claude","what":"Asks the Joule agent for order 10003120 and the customer's credit data.","tool":"s4_get_sales_order","mode":"read"},{"t":"09:05","who":"joule","what":"Returns order, account and tenant template under Mira's rights.","tool":"s4_get_sales_order","mode":"read"},{"t":"09:08","who":"claude","what":"Builds the case file; every finding carries its proof line.","tool":"","mode":"draft"},{"t":"09:09","who":"joule","what":"Prepares seven steps in two parallel tracks. Nothing is written yet.","tool":"","mode":"draft"}],"questions":[{"id":"q1","q":"What did Kestrel order and what is it worth?","calls":[{"tool":"s4_get_sales_order","args":"{\"order\":\"10003120\"}","result":"item 10: 500 user x 37.80 EUR, 36 months; item 20: onboarding 8,000.00 EUR"}],"answer":["500 LeanIX user licenses for 36 months at 37.80 EUR per user and month (proof: O1 line 2). That is 18,900.00 EUR per month, 226,800.00 EUR per year and 680,400.00 EUR for the term.","With the onboarding workshop (8,000.00 EUR, Q1 line 4) the contract is worth 688,400.00 EUR."]},{"id":"q2","q":"Why can the licenses not be activated yet?","calls":[{"tool":"s4_get_credit_account","args":"{\"customer\":\"100871\"}","result":"limit 200,000.00 EUR, open items 0.00 EUR"}],"answer":["First year (226,800.00 EUR) plus onboarding (8,000.00 EUR) is 234,800.00 EUR and the credit limit is 200,000.00 EUR (proof: E2 lines 2 and 4).","Licenses wait for the credit manager. The clerk's limit is 50,000.00 EUR, so Tobias Krämer has to decide. The tenant and the single sign-on can be prepared in parallel."]},{"id":"q3","q":"How much revenue is recognised by 31 December 2026?","calls":[{"tool":"rev_get_schedule_preview","args":"{\"order\":\"10003120\",\"to\":\"2026-12-31\"}","result":"1 month of 36, 18,900.00 EUR"}],"answer":["Billed: 226,800.00 EUR (first annual invoice). Recognised: 18,900.00 EUR, one month of 36. Deferred: 207,900.00 EUR.","Billing and revenue are different numbers. The invoice is a claim on the customer, revenue follows the service over the term. The split of the onboarding workshop is an inference to be confirmed."]},{"id":"q4","q":"In which region should the tenant be created?","calls":[{"tool":"prov_get_template","args":"{\"template\":\"standard-tenant\"}","result":"region us-east (default); allowed eu-central, eu-west, us-east"}],"answer":["In eu-central. The order form says the data is hosted in the EU region only (proof: O1 line 4), and the template default is us-east (proof: W1 line 2).","The step to create the tenant sets the region from the order form. A region outside the EU is blocked by the same rule."]}]}</script>
+<script type="application/json" id="data">{"asOf":"2026-11-08","company":"Rheinsoft Solutions (fictional)","currency":"EUR","terms":30,"customer":{"name":"Kestrel Versicherung AG","billTo":"Kestrel Group Services GmbH","country":"DE"},"contract":{"id":"C-4410","signed":"2026-10-28","serviceStart":"2026-12-01","months":36,"order":"OF-7731","salesOrder":"SO-90412","bom":"BOM-90412"},"lines":[{"id":"L10","kind":"License","name":"Architect Server licences","material":"SW-LIC-ARCH","model":"Licence purchase (perpetual)","qty":40,"unit":"licence","unitPrice":1450,"price":58000,"ssp":64000,"pattern":"point","fulfil":"key","recognizeOn":"2026-11-04","billOn":"2026-11-10","recognitionNote":"Right to use: revenue at one point in time, when the keys are delivered and the customer can use the software."},{"id":"L20","kind":"Subscription","name":"Insight Cloud subscription","material":"SW-SUB-INSIGHT","model":"Monthly subscription, 250 users","qty":250,"unit":"user per month","unitPrice":28,"monthly":7000,"months":36,"start":"2026-12","price":252000,"ssp":270000,"pattern":"ratable","fulfil":"tenant","recognitionNote":"Right to access (SaaS): revenue evenly over the 36 months."},{"id":"L21","kind":"Overage","name":"Insight Cloud overage","material":"SW-SUB-INSIGHT","model":"Subscription overage above 250 users","parent":"L20","included":250,"rate":34,"unit":"user per month","pattern":"overage","fulfil":"meter","periods":[{"month":"2026-12","peak":268,"billedOn":"2027-01-05"},{"month":"2027-01","peak":255,"billedOn":"2027-02-05"}],"recognitionNote":"Variable consideration: recognised in the month the extra users are there, at the contract rate."},{"id":"L30","kind":"Consumption","name":"Flow Engine consumption","material":"SW-USE-FLOW","model":"Software on consumption, billed in arrears","rate":0.4,"per":1000,"unit":"API calls","pattern":"usage","fulfil":"meter","periods":[{"month":"2026-12","metered":28400000,"billed":26100000,"billedOn":"2027-01-05","trueUpOn":"2027-01-15"},{"month":"2027-01","metered":31000000,"billed":31000000,"billedOn":"2027-02-05"}],"recognitionNote":"Usage-based fee: revenue as the calls are made. Not part of the committed price."},{"id":"L40","kind":"Service","name":"Implementation","material":"SRV-IMPL","model":"Fixed fee, three milestones","qty":1,"unit":"project","price":24000,"ssp":26000,"pattern":"milestone","fulfil":"service","milestones":[{"id":"M1","name":"Design accepted (30 %)","share":0.3,"acceptedOn":"2026-11-20"},{"id":"M2","name":"Build accepted (40 %)","share":0.4,"acceptedOn":"2027-01-15"},{"id":"M3","name":"Go-live accepted (30 %)","share":0.3,"plannedOn":"2027-02-26"}],"progress":[{"on":"2026-11-30","pct":0.2},{"on":"2026-12-31","pct":0.45},{"on":"2027-01-31","pct":0.75},{"on":"2027-02-28","pct":1}],"recognitionNote":"Over time by progress (hours worked against plan). Billing follows the milestones, so the two differ."},{"id":"L50","kind":"Service","name":"Training","material":"SRV-TRN","model":"Time and material, 6 days","qty":6,"unit":"day","unitPrice":1800,"price":10800,"ssp":11700,"pattern":"units","fulfil":"service","periods":[{"on":"2026-12-08","units":3,"billedOn":"2026-12-31"},{"on":"2027-01-19","units":3,"billedOn":"2027-01-31"}],"recognitionNote":"Recognised when a training day has been held; billed at the end of that month."},{"id":"L60","kind":"Service","name":"Managed operations (Premium)","material":"SRV-MGD","model":"Monthly service fee, 36 months","qty":1,"unit":"month","monthly":1200,"months":36,"start":"2026-12","price":43200,"ssp":45000,"pattern":"ratable","fulfil":"service","recognitionNote":"Stand-ready service: revenue evenly over the 36 months."}],"title":"Order-to-Cash (Software)","systems":[{"id":"crm","name":"CRM","product":"Customer CRM (fictional)","holds":"Contract, signature, customer, bill-to party"},{"id":"order","name":"Order system","product":"S/4HANA Cloud sales order and delivery (fictional)","holds":"Sales order, delivery, customer receipt, fulfilment status"},{"id":"material","name":"Material system","product":"Product catalogue and bill of material (fictional)","holds":"Software and service materials, bill of material, billing and revenue pattern per material"},{"id":"entitlement","name":"Entitlement","product":"Entitlement management (fictional)","holds":"What the customer may use: licence keys, users, API quota, service days"},{"id":"provisioning","name":"Provisioning","product":"Technical provisioning service (fictional)","holds":"Tenant, single sign-on, meter, roles; the done message"},{"id":"billing","name":"Billing","product":"Subscription billing and receivables (fictional)","holds":"Invoice plan, usage records, invoices, open items, incoming payments"},{"id":"revenue","name":"Revenue","product":"Revenue accounting (fictional)","holds":"Performance obligations, allocation, revenue schedule, contract asset and liability"}],"stages":[{"id":"S1","name":"Contract signed","system":"crm","tool":"crm_get_contract","does":"Reads the signed contract C-4410 with customer, bill-to party, term and price list.","result":"Contract C-4410, signed 2026-10-28, 36 months, bill-to Kestrel Group Services GmbH"},{"id":"S2","name":"Order","system":"order","tool":"s4_create_sales_order","does":"Creates sales order SO-90412 with one item per priced position of the contract.","result":"SO-90412 with 6 items; overage and consumption are rate items without a quantity"},{"id":"S3","name":"Bill of material","system":"material","tool":"mat_derive_bom","does":"Derives the bill of material from the order: what is delivered, what is provisioned, what is metered, which service is scheduled.","result":"BOM-90412 with 7 items (3 software, 1 overage rate, 3 services)"},{"id":"S4","name":"Entitlement check","system":"entitlement","tool":"ent_check","does":"Before anything is delivered: compares the bill of material with what the contract entitles the customer to.","result":"5 of 7 items match; 2 deviations to correct first","gate":"deviations"},{"id":"S5","name":"Delivery","system":"order","tool":"s4_create_delivery","does":"Delivers what the bill of material says: licence keys and download, the tenant prepared, meter credentials, the service plan.","result":"Delivery 80004417 with four kinds of delivery"},{"id":"S6","name":"Goods receipt","system":"order","tool":"s4_post_goods_receipt","does":"The customer confirms what arrived. Without this confirmation nothing is billed for the licences.","result":"Receipt confirmed by the customer for licences, tenant and meter","gate":"receipt"},{"id":"S7","name":"Entitlement granted","system":"entitlement","tool":"ent_grant","does":"Switches the entitlements on: 40 licence keys, 250 users (up to 300 as overage), the API quota.","result":"Entitlements active"},{"id":"S8","name":"Technical provisioning","system":"provisioning","tool":"prov_create_tenant","does":"Creates the tenant in the EU region, connects single sign-on, configures the meter and the roles.","result":"Tenant kestrel-eu-central ready, term starts 2026-12-01"},{"id":"S9","name":"Completion message","system":"provisioning","tool":"s4_confirm_fulfilment","does":"Provisioning reports done; the order items change to fulfilled. Billing only starts after this message.","result":"All provisioned items reported done"},{"id":"S10","name":"Billing","system":"billing","tool":"sub_create_invoice_plan","does":"Creates the invoices: licences once, subscription and managed operations monthly in advance, services by milestone or day, consumption and overage monthly in arrears.","result":"Invoice plan with the dates from the contract"},{"id":"S11","name":"Consumption against billing","system":"billing","tool":"sub_compare_usage","does":"Compares the metered usage with what was invoiced, for overage and consumption.","result":"One difference: December calls were metered 28,400,000 and billed 26,100,000","gate":"trueup"},{"id":"S12","name":"Revenue","system":"revenue","tool":"rev_post_schedule","does":"Posts the revenue schedule: price shared out by stand-alone selling price, then licence at a point in time, subscription and operations evenly, services by progress or day, usage as it arises.","result":"Revenue schedule per performance obligation"},{"id":"S13","name":"Cash receipt","system":"billing","tool":"s4_post_incoming_payment","does":"Matches the incoming payments of the bank statement to the open invoices.","result":"Payments cleared against invoices"},{"id":"S14","name":"Revenue recognition","system":"revenue","tool":"rev_close_period","does":"Closes the period: billed, recognised and collected side by side, contract asset or liability, remaining performance obligations.","result":"Period closed with the position of the contract"}],"deviations":[{"id":"D1","line":"L60","what":"The bill of material has service level Standard (8x5); the contract says Premium (24x7).","fix":"Set the bill of material item to Premium before delivery.","owner":"Order management"},{"id":"D2","line":"L30","what":"Billing master data holds rate card RC-2025-A at 0.45 per 1,000 calls; the contract rate is 0.40 (RC-2026-B).","fix":"Assign rate card RC-2026-B in billing master data before the first usage invoice.","owner":"Pricing"}],"delivery":{"key":{"label":"Licence keys","what":"40 licence keys and a download link for Architect Server","confirm":"Customer confirms the keys arrived and the software installs"},"tenant":{"label":"Tenant","what":"Insight Cloud tenant kestrel-eu-central, prepared, access from 2026-12-01","confirm":"Customer confirms the administrator can log in"},"meter":{"label":"Meter","what":"API credentials and meter configuration for Flow Engine","confirm":"Customer confirms a test call is counted"},"service":{"label":"Services","what":"Consultants scheduled for implementation, training and managed operations","confirm":"Confirmed later, by acceptance of each milestone or day"}},"provisioningSteps":["Create tenant kestrel-eu-central (region eu-central, as the contract demands)","Connect single sign-on with the customer's identity provider","Create roles and the first administrator","Configure the meter for API calls and active users","Write the licence keys and quota into the entitlement record","Send the completion message to the order system"],"n8n":{"name":"Demo 13 (order to cash): software order","file":"examples/n8n-workflows/13-order-to-cash-software.json","trigger":"Webhook: contract signed (POST /webhook/o2c-software with the contract id)","notes":["One HTTP Request node per system call, in the order of the process. Every node reads from the system and returns a record; the workflow itself decides nothing.","Three places where a person decides: deviations of the entitlement check (Wait node), the customer's receipt confirmation (Wait node, resumed by the customer portal), the true-up of consumption (Wait node).","The URLs come from environment variables. The seven systems here are fictional; the workflow only shows the order of the calls."]},"questions":[]}</script>
 <script>
 (function () {
   'use strict';
@@ -339,301 +362,255 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
 
   // @logic-start
   function makeLogic(D) {
-    function r2(n) { return Math.round(n * 100) / 100; }
-    function money(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-    function doc(id) { return D.docs.filter(function (d) { return d.id === id; })[0]; }
-    function lineText(id, line) { var d = doc(id); return d && d.lines[line - 1] ? d.lines[line - 1] : ''; }
-    function sub() { return D.systems.salesOrder.items[0]; }
-    function svc() { return D.systems.salesOrder.items[1]; }
-    function monthsBetween(start, end) {
-      var a = start.split('-'), b = end.split('-');
-      return Math.max(0, (+b[0] - +a[0]) * 12 + (+b[1] - +a[1]) + 1);
+  // @core-start
+  // Shared by the Order-to-Cash (Software) and Revenue Recognition pages. Both pages must carry the same text here (a test compares them).
+  function cents(x) { return Math.round(x * 100) / 100; }
+  function addDays(iso, n) { var d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+  function monthEnd(ym) { return new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 0)).toISOString().slice(0, 10); }
+  function addMonths(ym, n) { return new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7) - 1 + n, 1)).toISOString().slice(0, 7); }
+  function committed(C) { return C.lines.filter(function (l) { return l.ssp; }); }
+  // Step 4 of the five-step model: the transaction price is shared out by relative stand-alone selling price (SSP). The rounding remainder goes to the largest line.
+  function allocate(C) {
+    var ls = committed(C), price = cents(ls.reduce(function (s, l) { return s + l.price; }, 0)), ssp = ls.reduce(function (s, l) { return s + l.ssp; }, 0), out = {}, sum = 0, big = ls[0];
+    ls.forEach(function (l) { out[l.id] = cents(price * l.ssp / ssp); sum += out[l.id]; if (l.ssp > big.ssp) big = l; });
+    out[big.id] = cents(out[big.id] + price - sum);
+    return { price: price, ssp: ssp, discount: cents(ssp - price), byLine: out };
+  }
+  function usageAmount(l, p) { return l.pattern === 'overage' ? cents(Math.max(0, p.peak - l.included) * l.rate) : cents(p.metered / l.per * l.rate); }
+  function trueUp(l, p) { return l.pattern === 'usage' && p.trueUpOn ? cents((p.metered - p.billed) / l.per * l.rate) : 0; }
+  // What is invoiced, and when.
+  function billEvents(l, opts) {
+    var ev = [], i;
+    if (l.pattern === 'point') ev.push({ on: l.billOn, amount: l.price, what: 'one-time invoice' });
+    if (l.pattern === 'ratable') for (i = 0; i < l.months; i++) ev.push({ on: addMonths(l.start, i) + '-01', amount: l.monthly, what: 'monthly in advance' });
+    if (l.pattern === 'milestone') l.milestones.forEach(function (m) { ev.push({ on: m.acceptedOn || m.plannedOn, amount: cents(l.price * m.share), what: m.name }); });
+    if (l.pattern === 'units') l.periods.forEach(function (p) { ev.push({ on: p.billedOn, amount: cents(p.units * l.unitPrice), what: p.units + ' days delivered' }); });
+    if (l.pattern === 'overage') l.periods.forEach(function (p) { ev.push({ on: p.billedOn, amount: usageAmount(l, p), what: 'peak ' + p.peak + ' users in ' + p.month }); });
+    if (l.pattern === 'usage') l.periods.forEach(function (p) {
+      ev.push({ on: p.billedOn, amount: cents(p.billed / l.per * l.rate), what: p.billed + ' calls billed for ' + p.month });
+      if (opts && opts.trueUp && trueUp(l, p)) ev.push({ on: p.trueUpOn, amount: trueUp(l, p), what: 'true-up for ' + p.month });
+    });
+    return ev;
+  }
+  // What is recognised as revenue up to a date. Committed lines use their allocated share; usage and overage are recognised as they arise.
+  function recognized(l, alloc, asOf) {
+    var i, n, r = 0, p, pct = 0, u = 0;
+    if (l.pattern === 'point') return asOf >= l.recognizeOn ? alloc : 0;
+    if (l.pattern === 'ratable') { for (i = 0, n = 0; i < l.months; i++) if (monthEnd(addMonths(l.start, i)) <= asOf) n++; return n === l.months ? alloc : cents(alloc * n / l.months); }
+    if (l.pattern === 'milestone') { l.progress.forEach(function (g) { if (g.on <= asOf) pct = g.pct; }); return cents(alloc * pct); }
+    if (l.pattern === 'units') { l.periods.forEach(function (g) { if (g.on <= asOf) u += g.units; }); return cents(alloc * u / l.qty); }
+    l.periods.forEach(function (g) { if (monthEnd(g.month) <= asOf) r += usageAmount(l, g); });
+    return cents(r);
+  }
+  // Billed, recognised and collected per line at a date, then contract asset or liability (netted for the whole contract, as IFRS 15 and ASC 606 ask).
+  function position(C, asOf, opts) {
+    var A = allocate(C), rows = C.lines.map(function (l) {
+      var billed = 0, paid = 0;
+      billEvents(l, opts).forEach(function (e) { if (e.on <= asOf) billed += e.amount; if (addDays(e.on, C.terms) <= asOf) paid += e.amount; });
+      var rec = recognized(l, A.byLine[l.id] || 0, asOf);
+      return { id: l.id, name: l.name, allocated: A.byLine[l.id] || 0, billed: cents(billed), recognized: cents(rec), collected: cents(paid), receivable: cents(billed - paid), diff: cents(billed - rec) };
+    });
+    var t = { billed: 0, recognized: 0, collected: 0, receivable: 0 };
+    rows.forEach(function (r) { ['billed', 'recognized', 'collected', 'receivable'].forEach(function (k) { t[k] = cents(t[k] + r[k]); }); });
+    var net = cents(t.billed - t.recognized), rpo = 0;
+    committed(C).forEach(function (l) { var r = rows.filter(function (x) { return x.id === l.id; })[0]; rpo += r.allocated - r.recognized; });
+    return { rows: rows, total: t, contractLiability: net > 0 ? net : 0, contractAsset: net < 0 ? -net : 0, remaining: cents(rpo) };
+  }
+  // Journal entries of one month: invoices, cash and the revenue step. Deferred revenue below zero is a contract asset.
+  function journal(C, ym, opts) {
+    var A = allocate(C), start = ym + '-01', end = monthEnd(ym), prev = monthEnd(addMonths(ym, -1)), out = [];
+    C.lines.forEach(function (l) {
+      billEvents(l, opts).forEach(function (e) {
+        if (e.on >= start && e.on <= end) out.push({ date: e.on, line: l.id, text: 'Invoice: ' + e.what, dr: 'Receivable', cr: 'Deferred revenue', amount: e.amount });
+        var due = addDays(e.on, C.terms);
+        if (due >= start && due <= end) out.push({ date: due, line: l.id, text: 'Payment received', dr: 'Bank', cr: 'Receivable', amount: e.amount });
+      });
+      var d = cents(recognized(l, A.byLine[l.id] || 0, end) - recognized(l, A.byLine[l.id] || 0, prev));
+      if (d) out.push({ date: l.pattern === 'point' ? l.recognizeOn : end, line: l.id, text: 'Revenue recognised', dr: 'Deferred revenue', cr: 'Revenue', amount: d });
+    });
+    return out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.line < b.line ? -1 : 1; });
+  }
+  // @core-end
+
+    var GATES = {
+      deviations: { need: function (S) { return D.deviations.filter(function (d) { return !S.approved[d.id]; }); }, text: function (n) { return n.length + ' deviation' + (n.length > 1 ? 's' : '') + ' of the entitlement check must be corrected first: ' + n.map(function (d) { return d.id; }).join(', ') + '.'; } },
+      receipt: { need: function (S) { return D.lines.filter(function (l) { return l.kind !== 'Overage' && l.fulfil !== 'service' && !S.receipt[l.id]; }); }, text: function (n) { return 'The customer has not yet confirmed: ' + n.map(function (l) { return l.name; }).join(', ') + '.'; } },
+      trueup: { need: function (S) { return S.trueUp ? [] : [1]; }, text: function () { return 'Metered and billed consumption differ. A person decides on the true-up invoice.'; } }
+    };
+    function newState() { return { step: 0, approved: {}, receipt: {}, trueUp: false, asOf: '2026-12', log: [], tab: 'proc', sel: 0 }; }
+    function gateOf(S) { var st = D.stages[S.step]; if (!st || !st.gate) return null; var n = GATES[st.gate].need(S); return n.length ? { gate: st.gate, open: n, reason: GATES[st.gate].text(n) } : null; }
+    function canAdvance(S) {
+      if (S.step >= D.stages.length) return { ok: false, reason: 'The process is complete.' };
+      var g = gateOf(S); return g ? { ok: false, gate: g.gate, open: g.open, reason: g.reason } : { ok: true };
     }
-    function amounts() {
-      var s = sub(), o = svc(), acc = D.systems.account;
-      var monthly = r2(s.qty * s.price);
-      var yearly = r2(monthly * 12);
-      var subscription = r2(monthly * s.months);
-      var onboarding = r2(o.qty * o.price);
-      var exposure = r2(yearly + onboarding);
-      var active = Math.min(s.months, monthsBetween(s.start, D.closing));
-      var recognised = r2(monthly * active);
-      return { seats: s.qty, price: s.price, months: s.months, monthly: monthly, yearly: yearly, subscription: subscription,
-        onboarding: onboarding, total: r2(subscription + onboarding), exposure: exposure, creditLimit: acc.creditLimit,
-        overLimit: r2(exposure - acc.creditLimit), invoices: s.months / 12, activeMonths: active,
-        billed: yearly, recognised: recognised, deferred: r2(yearly - recognised) };
+    function advance(S) {
+      var c = canAdvance(S); if (!c.ok) return { ok: false, reason: c.reason, state: S };
+      var st = D.stages[S.step], n = S.log.slice(); n.push({ stage: st.id, name: st.name, system: st.system, tool: st.tool, result: st.result });
+      return { ok: true, state: Object.assign({}, S, { step: S.step + 1, log: n }) };
     }
-    function checkOne(c) {
-      var A = amounts(), s = D.systems, t = s.tenant;
-      if (c.kind === 'line') { var x = lineText(c.doc, c.line); return { ok: x.indexOf(c.needle) >= 0, label: c.doc + ' line ' + c.line, text: x }; }
-      if (c.kind === 'orderQty') return { ok: A.seats === c.equals, label: 'S/4 order ' + s.salesOrder.id, text: 'quantity ' + A.seats + ' users' };
-      if (c.kind === 'orderPrice') return { ok: A.price === c.equals, label: 'S/4 order ' + s.salesOrder.id, text: 'price ' + money(A.price) + ' ' + D.currency + ' per user and month' };
-      if (c.kind === 'orderMonths') return { ok: A.months === c.equals, label: 'S/4 order ' + s.salesOrder.id, text: 'term ' + A.months + ' months' };
-      if (c.kind === 'billToUnchanged') return { ok: s.salesOrder.billTo === s.salesOrder.soldTo && s.requestedBillTo !== s.salesOrder.billTo, label: 'S/4 order ' + s.salesOrder.id, text: 'bill-to is ' + s.salesOrder.billTo };
-      if (c.kind === 'templateOutsideEu') return { ok: t.euRegions.indexOf(t.templateRegion) < 0, label: 'Tenant template', text: 'default region ' + t.templateRegion };
-      if (c.kind === 'creditOver') return { ok: A.exposure > A.creditLimit, label: 'S/4 credit account', text: 'exposure ' + money(A.exposure) + ' ' + D.currency + ' against a limit of ' + money(A.creditLimit) + ' ' + D.currency };
-      return { ok: false, label: 'unknown check', text: '' };
-    }
-    function findings() {
-      return D.findings.map(function (f) {
-        var rs = f.checks.map(checkOne);
-        return { finding: f, results: rs, verified: rs.every(function (r) { return r.ok; }) };
+    function status(i, S) { return i < S.step ? 'done' : i === S.step ? (gateOf(S) ? 'wait' : 'next') : 'todo'; }
+    function bom(S) {
+      var n = 0;
+      return D.lines.map(function (l) {
+        n += 10;
+        var tier = l.id === 'L60' ? (S.approved.D1 ? 'Premium (24x7)' : 'Standard (8x5)') : '';
+        return { item: n, id: l.id, material: l.material, name: l.name, kind: l.kind, sw: l.kind !== 'Service', fulfil: l.fulfil, model: l.model, pattern: l.pattern, tier: tier, rate: l.id === 'L30' ? (S.approved.D2 ? 'RC-2026-B, 0.40 per 1,000' : 'RC-2025-A, 0.45 per 1,000') : '' };
       });
     }
-    function cited() {
-      var out = {};
-      D.findings.forEach(function (f) { f.checks.forEach(function (c) { if (c.kind === 'line') out[c.doc + ':' + c.line] = true; }); });
-      return out;
-    }
-    function regionCheck() {
-      var t = D.systems.tenant;
-      if (t.allowedRegions.indexOf(t.planRegion) < 0) return { ok: false, reason: 'Region ' + t.planRegion + ' is not allowed by the template.' };
-      if (t.euRegions.indexOf(t.planRegion) < 0) return { ok: false, reason: 'Region ' + t.planRegion + ' is outside the EU, but the order form says EU only.' };
-      return { ok: true, reason: 'Region ' + t.planRegion + ' is inside the EU.' };
-    }
-    function tasks() {
-      var A = amounts(), cur = D.currency, s = D.systems;
-      var meta = {
-        credit: { amount: A.exposure, text: 'Release the credit block on order ' + s.salesOrder.id + ' for the decision of the credit manager: exposure ' + money(A.exposure) + ' ' + cur + ' against a limit of ' + money(A.creditLimit) + ' ' + cur + ' (' + money(A.overLimit) + ' ' + cur + ' over).', basis: 'Credit memo (E2 lines 2 to 4).' },
-        bill: { amount: A.yearly, text: 'Create the billing plan: ' + A.invoices + ' annual invoices in advance of ' + money(A.yearly) + ' ' + cur + ', first on ' + sub().start + ', bill-to ' + s.requestedBillTo + '. Onboarding (' + money(A.onboarding) + ' ' + cur + ') is billed when it is done.', basis: 'Order form (O1 line 3), customer email (E1 line 2).' },
-        revenue: { amount: 0, text: 'Create the revenue schedule: ' + A.months + ' monthly postings of ' + money(A.monthly) + ' ' + cur + ' from ' + sub().start.slice(0, 7) + '. The onboarding workshop is recognised when it is done.', basis: 'Inference (F6): revenue accounting confirms the split.' },
-        tenant: { amount: 0, text: 'Create the tenant in region ' + s.tenant.planRegion + ' (template default is ' + s.tenant.templateRegion + ').', basis: 'Order form (O1 line 4), tenant template (W1 lines 2 and 4).' },
-        config: { amount: 0, text: 'Set up single sign-on and invite the administrators ' + s.admins.join(' and ') + '.', basis: 'Order form (O1 line 5), customer email (E1 line 3).' },
-        entitle: { amount: A.seats, text: 'Activate ' + A.seats + ' user licenses in the new tenant, term ' + A.months + ' months from ' + sub().start + '.', basis: 'Credit decision first (E2 line 4); order (O1 line 2).' },
-        reply: { amount: 0, text: 'Reply to ' + D.case.customer + ': access is ready, the first invoice of ' + money(A.yearly) + ' ' + cur + ' goes to ' + s.requestedBillTo + '.', basis: 'Sent only when billing plan, access and licenses exist.' }
-      };
-      return D.tasks.map(function (p) {
-        var m = meta[p.type];
-        return { id: p.id, track: p.track, type: p.type, tool: p.tool, label: p.label, requires: p.requires, done: p.done, amount: m.amount, text: m.text, basis: m.basis };
+    function entitlementRows(S) {
+      return D.lines.map(function (l) {
+        var dev = D.deviations.filter(function (d) { return d.line === l.id; })[0];
+        return { id: l.id, name: l.name, ordered: l.qty ? l.qty + ' ' + l.unit : (l.rate ? l.rate + ' per ' + l.per + ' ' + l.unit : 'rate'), dev: dev || null, fixed: dev ? !!S.approved[dev.id] : true };
       });
     }
-    function waves() {
-      var ts = tasks(), lv = {};
-      function level(id) {
-        if (lv[id]) return lv[id];
-        var t = ts.filter(function (x) { return x.id === id; })[0];
-        lv[id] = 1 + t.requires.reduce(function (a, r) { return Math.max(a, level(r)); }, 0);
-        return lv[id];
-      }
-      ts.forEach(function (t) { level(t.id); });
-      return lv;
-    }
-    function ready(rel) {
-      return tasks().filter(function (t) { return !rel[t.id] && t.requires.every(function (r) { return rel[r]; }); }).map(function (t) { return t.id; });
-    }
-    function person(id) { return D.persons[id]; }
-    function whoCan(type, amount) {
-      return Object.keys(D.persons).filter(function (k) {
-        var p = D.persons[k], l = p.limits[type];
-        return !p.agent && (l === true || (typeof l === 'number' && l >= amount));
-      }).map(function (k) { return D.persons[k].name + ' (' + D.persons[k].role + ')'; });
-    }
-    function release(rel, id, who) {
-      var p = tasks().filter(function (x) { return x.id === id; })[0], pe = person(who);
-      if (!p || !pe) return { ok: false, code: 'unknown', reason: 'Unknown step or person.' };
-      if (rel[id]) return { ok: false, code: 'done', reason: 'Already released by ' + person(rel[id].by).name + '.' };
-      if (pe.agent) return { ok: false, code: 'agent', reason: pe.name + ' cannot release anything. A person decides.' };
-      var missing = p.requires.filter(function (r) { return !rel[r]; });
-      if (missing.length) return { ok: false, code: 'dependency', reason: 'Release ' + missing.join(' and ') + ' first.' };
-      var lim = pe.limits[p.type];
-      if (lim === false || lim === undefined) return { ok: false, code: 'rights', reason: pe.role + ' may not do this. Needs: ' + (whoCan(p.type, p.amount).join(', ') || 'nobody in this sample') + '.' };
-      if (typeof lim === 'number' && p.amount > lim) {
-        var unit = p.type === 'entitle' ? ' licenses' : ' ' + D.currency;
-        return { ok: false, code: 'limit', reason: 'Amount ' + (p.type === 'entitle' ? p.amount : money(p.amount)) + unit + ' is above the limit of ' + (p.type === 'entitle' ? lim : money(lim)) + unit + ' for ' + pe.role.toLowerCase() + '. Needs: ' + whoCan(p.type, p.amount).join(', ') + '.' };
-      }
-      if (p.type === 'tenant') { var rc = regionCheck(); if (!rc.ok) return { ok: false, code: 'region', reason: rc.reason }; }
-      return { ok: true, code: 'released', reason: p.done };
-    }
-    function applyRelease(rel, id, who) {
-      var r = release(rel, id, who);
-      if (r.ok) rel[id] = { by: who };
-      return r;
-    }
-    // What each system holds after the steps that were released.
-    function records(rel) {
-      var A = amounts(), s = D.systems;
-      return [
-        { name: 'Sales order ' + s.salesOrder.id, state: 'confirmed', ok: true, note: A.seats + ' users, ' + A.months + ' months, contract ' + s.salesOrder.contractRef },
-        { name: 'Credit block', state: rel.T1 ? 'released' : 'open', ok: !!rel.T1, note: 'exposure ' + money(A.exposure) + ' ' + D.currency + ', limit ' + money(A.creditLimit) + ' ' + D.currency },
-        { name: 'Billing plan', state: rel.T2 ? 'created' : 'not created', ok: !!rel.T2, note: rel.T2 ? A.invoices + ' annual invoices, bill-to ' + s.requestedBillTo : 'bill-to is still ' + s.salesOrder.billTo },
-        { name: 'Revenue schedule', state: rel.T3 ? 'created' : 'not created', ok: !!rel.T3, note: rel.T3 ? A.months + ' postings of ' + money(A.monthly) + ' ' + D.currency : 'no schedule yet' },
-        { name: 'Tenant', state: rel.T4 ? 'created' : 'not created', ok: !!rel.T4, note: rel.T4 ? 'region ' + s.tenant.planRegion : 'template default ' + s.tenant.templateRegion },
-        { name: 'Single sign-on', state: rel.T5 ? 'set up' : 'not set up', ok: !!rel.T5, note: rel.T5 ? s.admins.join(', ') : 'administrators not invited' },
-        { name: 'License entitlements', state: rel.T6 ? 'active' : 'not active', ok: !!rel.T6, note: rel.T6 ? A.seats + ' users' : 'waits for the credit decision' }
-      ];
-    }
-    var SCRIPT = [
-      ['claude', 'T1', 'Claude tries to release the credit block itself'],
-      ['mira', 'T6', 'Mira tries to activate the licenses before tenant and credit decision'],
-      ['mira', 'T4', 'Mira creates the tenant in the planned region'],
-      ['mira', 'T1', 'Mira tries to release the credit block'],
-      ['tobias', 'T1', 'The credit manager releases the credit block'],
-      ['mira', 'T6', 'Mira tries to activate 500 licenses'],
-      ['tobias', 'T6', 'The credit manager activates the licenses']
-    ];
-    function attempts() {
-      var rel = {};
-      return SCRIPT.map(function (s) {
-        var r = applyRelease(rel, s[1], s[0]);
-        return { who: s[0], id: s[1], title: s[2], ok: r.ok, code: r.code, reason: r.reason };
+    function recon() {
+      var rows = [];
+      D.lines.forEach(function (l) {
+        if (l.pattern === 'usage') l.periods.forEach(function (p) { rows.push({ line: l.id, name: l.name, month: p.month, metered: p.metered, billed: p.billed, unit: l.unit, diff: p.metered - p.billed, amount: trueUp(l, p), per: l.per, rate: l.rate }); });
+        if (l.pattern === 'overage') l.periods.forEach(function (p) { rows.push({ line: l.id, name: l.name, month: p.month, metered: p.peak, billed: p.peak, unit: 'peak users (' + l.included + ' included)', diff: 0, amount: 0, over: Math.max(0, p.peak - l.included), billedAmount: usageAmount(l, p) }); });
       });
+      return rows;
     }
-    return { money: money, doc: doc, amounts: amounts, findings: findings, cited: cited, tasks: tasks, waves: waves, ready: ready, release: release,
-      applyRelease: applyRelease, attempts: attempts, whoCan: whoCan, person: person, records: records, regionCheck: regionCheck, monthsBetween: monthsBetween };
+    function invoices(S, upTo) {
+      var out = [];
+      D.lines.forEach(function (l) { billEvents(l, { trueUp: S.trueUp }).forEach(function (e) { if (e.on <= upTo) out.push({ on: e.on, line: l.id, name: l.name, what: e.what, amount: e.amount, due: addDays(e.on, D.terms), done: e.on <= monthEnd(S.asOf) }); }); });
+      return out.sort(function (a, b) { return a.on < b.on ? -1 : a.on > b.on ? 1 : a.line < b.line ? -1 : 1; });
+    }
+    function money(n) { return (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function positionAt(S) { return position(D, monthEnd(S.asOf), { trueUp: S.trueUp }); }
+    return { newState: newState, canAdvance: canAdvance, advance: advance, status: status, bom: bom, entitlementRows: entitlementRows, recon: recon, invoices: invoices, money: money, positionAt: positionAt, allocate: function () { return allocate(D); }, position: function (d, o) { return position(D, d, o); }, journal: function (m, o) { return journal(D, m, o); }, billEvents: billEvents, monthEnd: monthEnd, addMonths: addMonths };
   }
   // @logic-end
   var L = makeLogic(D);
-
-  var TABS = [['case', 'Case file'], ['sys', 'Systems and money'], ['par', 'Parallel tracks'], ['guard', 'Guardrails'], ['audit', 'Audit trail'], '|', ['ask', 'Ask Joule']];
-  var S = { tab: 'case', actor: 'mira', rel: {}, msg: {}, log: D.history.slice(), qid: D.questions[0].id };
-  var MODE = { task: ['', 'task'], read: ['ok', 'read'], draft: ['amber', 'draft'], write: ['blue', 'written'], blocked: ['bad', 'blocked'] };
-  var TRACK = { commercial: 'Commercial track', technical: 'Technical track', customer: 'Customer' };
+  var S = L.newState();
+  var TABS = [['proc', 'Process'], ['bom', 'Order and bill of material'], ['del', 'Entitlement and delivery'], ['bill', 'Billing and consumption'], ['rev', 'Revenue and cash'], ['n8n', 'n8n process']];
+  var SYS = {}; D.systems.forEach(function (s) { SYS[s.id] = s; });
 
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function ask(text) { if (window.parent !== window) window.parent.postMessage({ type: 'wb:ask', prompt: String(text).slice(0, 600) }, '*'); }
   function m(n) { return L.money(n); }
-  function who(id) { return L.person(id).name; }
-  function call(tool, args, result) {
-    return '<div class="call"><div class="h"><span class="tag tool">' + esc(tool) + '</span><code>' + esc(args) + '</code></div>' + (result ? '<div class="res">' + esc(result) + '</div>' : '') + '</div>';
-  }
-  function sym(ok) { return ok ? '<span class="sym met" role="img" aria-label="found" title="found">✓</span>' : '<span class="sym missing" role="img" aria-label="not found" title="not found">✗</span>'; }
-  function clock() { var n = 20 + (S.log.length - D.history.length); return '09:' + (n < 10 ? '0' : '') + n; }
+  function tag(t, c) { return '<span class="tag ' + (c || '') + '">' + esc(t) + '</span>'; }
+  function swTag(b) { return b.sw ? tag('Software', 't-sw') : tag('Service', 't-sv'); }
+  function ym(s) { return new Date(s + '-01T00:00:00Z').toLocaleString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }); }
 
-  // ---------- Case file (Claude) ----------
-  function vCase() {
-    var A = L.amounts(), fs = L.findings(), hit = L.cited();
-    var h = '<h2>' + esc(D.case.id) + ' · ' + esc(D.case.customer) + '</h2><p class="note">' + esc(D.case.summary) + ' Prepared by Claude from five documents and the order in S/4. Every statement carries the line it rests on.</p>';
-    h += '<div class="kpis">' +
-      '<div class="kpi"><b>' + A.seats + ' licenses</b><span>' + esc(D.case.product) + ', ' + A.months + ' months</span></div>' +
-      '<div class="kpi"><b>' + m(A.total) + '</b><span>contract value incl. onboarding, ' + D.currency + '</span></div>' +
-      '<div class="kpi warn"><b>' + m(A.exposure) + '</b><span>credit exposure vs limit ' + m(A.creditLimit) + ', ' + D.currency + '</span></div>' +
-      '<div class="kpi"><b>' + m(A.monthly) + '</b><span>revenue per month once active, ' + D.currency + '</span></div></div>';
-    h += '<div class="card"><h2>Findings</h2><p class="note">✓ = every proof line was found in the source. Inference = a conclusion drawn from the proof lines, to be confirmed by a person.</p>';
-    fs.forEach(function (r) {
-      h += '<div class="box"><div class="h"><b>' + r.finding.id + '</b>' + (r.verified ? '<span class="tag ok">verified</span>' : '<span class="tag bad">not verified</span>') + (r.finding.inference ? '<span class="tag blue">Inference</span>' : '') + '</div><div>' + esc(r.finding.text) + '</div>' +
-        '<table><tbody>' + r.results.map(function (c) { return '<tr><td style="width:24px">' + sym(c.ok) + '</td><td style="width:210px"><code>' + esc(c.label) + '</code></td><td>' + esc(c.text) + '</td></tr>'; }).join('') + '</tbody></table></div>';
-    });
-    h += '</div><div class="card"><h2>Sources Claude read</h2><p class="note">Highlighted lines are cited by a finding.</p>';
-    D.docs.forEach(function (d) {
-      h += '<h3>' + esc(d.id) + ' · ' + esc(d.kind) + ' · ' + esc(d.date) + '</h3><pre class="cv">' + d.lines.map(function (t, i) {
-        return '<div class="ln' + (hit[d.id + ':' + (i + 1)] ? ' hl-met' : '') + '"><span class="no">' + (i + 1) + '</span><span>' + esc(t) + '</span></div>';
-      }).join('') + '</pre>';
-    });
+  // ---------- control bar ----------
+  function ctl() {
+    var c = L.canAdvance(S), done = S.step, total = D.stages.length, next = D.stages[S.step], h = '<div class="ctl"><span class="prog">Step ' + done + ' of ' + total + '</span>';
+    h += '<button class="btn primary" data-act="next"' + (c.ok ? '' : ' disabled') + '>' + (next ? 'Run step ' + (S.step + 1) + ': ' + esc(next.name) : 'Process complete') + '</button>';
+    h += '<button class="btn" data-act="run"' + (S.step >= total ? ' disabled' : '') + '>Run to the next decision</button><button class="btn" data-act="reset">Start again</button>';
+    if (!c.ok && c.reason && S.step < total) {
+      h += '<div class="why"><b>Waiting for a person.</b> ' + esc(c.reason) + '</div><div class="acts">';
+      if (c.gate === 'deviations') c.open.forEach(function (d) { h += '<button class="btn" data-act="appr" data-id="' + d.id + '">Approve fix ' + d.id + ' (' + esc(d.owner) + ')</button>'; });
+      if (c.gate === 'receipt') c.open.forEach(function (l) { h += '<button class="btn" data-act="rcpt" data-id="' + l.id + '">Customer confirms: ' + esc(D.delivery[l.fulfil].label) + ' (' + esc(l.name) + ')</button>'; });
+      if (c.gate === 'trueup') h += '<button class="btn" data-act="trueup">Approve true-up invoice ' + m(L.recon().reduce(function (s, r) { return s + r.amount; }, 0)) + ' ' + D.currency + '</button>';
+      h += '</div>';
+    }
     return h + '</div>';
   }
 
-  // ---------- Systems and money (Joule agent reads) ----------
-  function vSys() {
-    var A = L.amounts(), so = D.systems.salesOrder, recs = L.records(S.rel);
-    var h = '<h2>Systems and money</h2><p class="note">Read by the Joule agent under ' + esc(who(S.actor)) + '\'s rights. The records change when steps are released in <b>Parallel tracks</b>.</p>' +
-      '<div class="callstrip"><span>Runs</span><span class="tag tool">s4_get_sales_order</span><code>' + esc(JSON.stringify({ order: so.id })) + '</code></div>';
-    h += '<div class="card"><h2>What the systems hold now</h2><table><thead><tr><th>Record</th><th>State</th><th>Detail</th></tr></thead><tbody>' + recs.map(function (r) {
-      return '<tr><td><b>' + esc(r.name) + '</b></td><td><span class="tag ' + (r.ok ? 'ok' : 'amber') + '">' + esc(r.state) + '</span></td><td>' + esc(r.note) + '</td></tr>';
-    }).join('') + '</tbody></table></div>';
-    h += '<div class="card"><h2>Order, invoice and revenue are three numbers</h2><p class="note">At the closing date ' + esc(D.closing) + '. The invoice is a claim on the customer; revenue follows the service over the term.</p><table><tbody>' +
-      '<tr><th>Contract value (' + A.months + ' months + onboarding)</th><td>' + m(A.total) + ' ' + D.currency + '</td></tr>' +
-      '<tr><th>Billed (first annual invoice in advance)</th><td>' + m(A.billed) + ' ' + D.currency + '</td></tr>' +
-      '<tr><th>Recognised (' + A.activeMonths + ' of ' + A.months + ' months at ' + m(A.monthly) + ')</th><td>' + m(A.recognised) + ' ' + D.currency + '</td></tr>' +
-      '<tr><th>Deferred (billed, not yet earned)</th><td><b>' + m(A.deferred) + ' ' + D.currency + '</b></td></tr></tbody></table></div>';
-    h += '<div class="card"><h2>Goods order and software order</h2><table><thead><tr><th>Step</th><th>Goods (machine builder)</th><th>Software (this case)</th></tr></thead><tbody>' +
-      '<tr><td>Order</td><td>Sales order, maybe from a rate contract</td><td>Signed order form is the order</td></tr>' +
-      '<tr><td>Fulfilment</td><td>Delivery and goods issue</td><td>Tenant, access and license activation</td></tr>' +
-      '<tr><td>Billing</td><td>After goods issue, billing block possible</td><td>By the billing plan in the contract</td></tr>' +
-      '<tr><td>Revenue</td><td>At delivery</td><td>Over the term, deferred until earned</td></tr></tbody></table></div>';
-    return h;
-  }
-
-  // ---------- Parallel tracks (a person decides) ----------
-  function taskBox(t) {
-    var r = S.rel[t.id], msg = S.msg[t.id], lv = L.waves()[t.id], isReady = L.ready(S.rel).indexOf(t.id) >= 0;
-    var state = r ? '<span class="tag ok">released by ' + esc(who(r.by)) + '</span>' : isReady ? '<span class="tag blue">ready</span>' : '<span class="tag">waits for ' + t.requires.filter(function (x) { return !S.rel[x]; }).join(' and ') + '</span>';
-    return '<div class="box"><div class="h"><b>' + t.id + '</b><span class="wave">step ' + lv + '</span><span class="tag ' + (t.type === 'reply' ? 'blue' : 'amber') + '">' + esc(t.label) + '</span><span class="tag tool">' + esc(t.tool) + '</span>' + state + '</div>' +
-      '<div>' + esc(t.text) + '</div><p class="note" style="margin:4px 0 0">Basis: ' + esc(t.basis) + '</p>' +
-      (msg ? '<div class="verdict ' + (msg.ok ? 'ok' : 'warn') + '" style="margin:8px 0 0"><b>' + (msg.ok ? 'Done' : 'Blocked') + '</b>' + esc(msg.reason) + '</div>' : '') +
-      '<div class="row">' + (r ? '' : '<button class="btn primary" data-act="release" data-id="' + t.id + '">Release as ' + esc(who(S.actor)) + '</button>') + '</div></div>';
-  }
-  function vPar() {
-    var ts = L.tasks(), n = Object.keys(S.rel).length;
-    var h = '<h2>Parallel tracks</h2><p class="note">The confirmed order starts both tracks at once. Steps with the same number can run side by side. Nothing is written until the person acting as <b>' + esc(who(S.actor)) + '</b> releases it.</p>';
-    h += '<div class="lanes">' + ['commercial', 'technical'].map(function (k) {
-      return '<div class="lane"><h3>' + TRACK[k] + '</h3>' + ts.filter(function (t) { return t.track === k; }).map(taskBox).join('') + '</div>';
-    }).join('') + '</div>';
-    h += '<div class="join"><h3 style="color:var(--ink);font-size:13px">Where the tracks meet</h3>' + ts.filter(function (t) { return t.track === 'customer'; }).map(taskBox).join('') + '</div>';
-    h += '<div class="row"><span class="note" style="margin:0">' + n + ' of ' + ts.length + ' released.</span><button class="btn" data-act="reset">Reset demo</button></div>';
-    return h;
-  }
-
-  // ---------- Guardrails ----------
-  function vGuard() {
-    var types = [['credit', 'Credit decision'], ['bill', 'Billing plan'], ['revenue', 'Revenue schedule'], ['tenant', 'Create tenant'], ['config', 'Single sign-on'], ['entitle', 'Activate licenses'], ['reply', 'Customer reply']];
-    function cell(p, t) {
-      var l = p.limits[t];
-      return l === true ? '<span class="tag ok">allowed</span>' : l === false ? '<span class="tag bad">never</span>' : '<span class="tag amber">up to ' + (t === 'entitle' ? l + ' users' : m(l)) + '</span>';
-    }
-    var h = '<h2>Guardrails</h2><p class="note">Rights per actor. Claude and the Joule agent hold no release right at all; they prepare, a person decides within a limit.</p>' +
-      '<div class="card scroll"><table><thead><tr><th>Actor</th>' + types.map(function (t) { return '<th>' + t[1] + '</th>'; }).join('') + '</tr></thead><tbody>' +
-      Object.keys(D.persons).map(function (k) { var p = D.persons[k]; return '<tr><td><b>' + esc(p.name) + '</b><br><span class="note" style="margin:0">' + esc(p.role) + '</span></td>' + types.map(function (t) { return '<td>' + cell(p, t[0]) + '</td>'; }).join('') + '</tr>'; }).join('') +
-      '</tbody></table></div>';
-    h += '<div class="card"><h2>Seven attempts, run through the same rule</h2><p class="note">The result of each row comes from the same check the Parallel tracks tab uses. The region rule is checked when the tenant is created: ' + esc(L.regionCheck().reason) + '</p><table><thead><tr><th>Who</th><th>Attempt</th><th>Result</th></tr></thead><tbody>' +
-      L.attempts().map(function (a) {
-        return '<tr><td>' + esc(who(a.who)) + '</td><td>' + esc(a.title) + ' <span class="tag tool">' + a.id + '</span></td><td>' + (a.ok ? '<span class="tag ok">released</span> ' : '<span class="tag bad">blocked: ' + esc(a.code) + '</span> ') + esc(a.reason) + '</td></tr>';
-      }).join('') + '</tbody></table></div>';
-    return h;
-  }
-
-  // ---------- Audit trail ----------
-  function vAudit() {
-    var h = '<h2>Audit trail</h2><p class="note">Every step with actor, tool and kind. Releases and blocked attempts from the Parallel tracks tab are added here while you try them.</p><div class="card scroll"><table><thead><tr><th>Time</th><th>Actor</th><th>What</th><th>Tool</th><th>Kind</th></tr></thead><tbody>';
-    S.log.forEach(function (e) {
-      var md = MODE[e.mode] || ['', e.mode];
-      h += '<tr><td>' + esc(e.t) + '</td><td>' + esc(who(e.who)) + '</td><td>' + esc(e.what) + '</td><td>' + (e.tool ? '<span class="tag tool">' + esc(e.tool) + '</span>' : '') + '</td><td><span class="tag ' + md[0] + '">' + md[1] + '</span></td></tr>';
+  // ---------- Process ----------
+  function vProc() {
+    var h = '<h2>The process, system by system</h2><p class="note">Each row is one step; the column shows which system does it. Click a step for what it does and what it returns. Green is done, purple is next, amber waits for a person.</p>';
+    h += '<div class="scroll"><table class="stp"><thead><tr><th></th>' + D.systems.map(function (s) { return '<th>' + esc(s.name) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    D.stages.forEach(function (st, i) {
+      var k = L.status(i, S), cls = k === 'done' ? 'done' : k === 'wait' ? 'wait' : k === 'next' ? 'next' : '';
+      h += '<tr class="' + (S.sel === i ? 'sel' : '') + '"><td class="n">' + (i + 1) + '</td>' + D.systems.map(function (s) {
+        return '<td>' + (s.id === st.system ? '<button class="chip ' + cls + '" data-act="sel" data-id="' + i + '">' + (k === 'done' ? '✓ ' : '') + esc(st.name) + '</button>' : '') + '</td>';
+      }).join('') + '</tr>';
     });
-    return h + '</tbody></table></div>';
-  }
-
-  // ---------- Ask Joule ----------
-  function vAsk() {
-    var q = D.questions.filter(function (x) { return x.id === S.qid; })[0];
-    var h = '<h2>Ask Joule</h2><p class="note">Recorded answers with the tool calls behind them. With a connector, the same questions would run on your system.</p><div class="chat"><div class="qlist">' +
-      D.questions.map(function (x) { return '<button data-act="q" data-id="' + x.id + '" aria-pressed="' + (x.id === S.qid) + '">' + esc(x.q) + '</button>'; }).join('') + '</div><div class="conv">' +
-      '<div class="msg me"><p>' + esc(q.q) + '</p></div>' + q.calls.map(function (c) { return call(c.tool, c.args, c.result); }).join('') +
-      '<div class="msg">' + q.answer.map(function (a) { return '<p>' + esc(a) + '</p>'; }).join('') + '</div>' +
-      '<div class="row"><button class="btn" data-act="askreal" data-id="' + q.id + '">Ask the real Joule this</button></div></div></div>';
+    h += '</tbody></table></div>';
+    var s = D.stages[S.sel], sy = SYS[s.system];
+    h += '<div class="card box" style="margin-top:14px"><div class="h"><b>' + (S.sel + 1) + '. ' + esc(s.name) + '</b>' + tag(sy.name, 'blue') + tag(s.tool, 'tool') + (s.gate ? tag('a person decides', 'amber') : '') + '</div><p style="margin:4px 0">' + esc(s.does) + '</p><p class="note" style="margin:0">Returns: ' + esc(s.result) + '. System: ' + esc(sy.product) + '. Holds: ' + esc(sy.holds) + '.</p></div>';
     return h;
   }
 
-  var VIEWS = { case: vCase, sys: vSys, par: vPar, guard: vGuard, audit: vAudit, ask: vAsk };
-  function render() {
-    $('#tabs').innerHTML = TABS.map(function (t) {
-      return t === '|' ? '<span class="navsep"></span>' : '<button role="tab" aria-selected="' + (S.tab === t[0]) + '" data-act="tab" data-id="' + t[0] + '">' + t[1] + '</button>';
-    }).join('');
-    $('#actor').innerHTML = ['mira', 'tobias'].map(function (k) {
-      return '<button data-act="actor" data-id="' + k + '" aria-pressed="' + (S.actor === k) + '">' + esc(L.person(k).name) + ' · ' + esc(L.person(k).role) + '</button>';
-    }).join('');
-    $('#sys').textContent = D.system + ' · ' + D.asOf;
-    $('#main').innerHTML = VIEWS[S.tab]();
+  // ---------- Order and BOM ----------
+  function vBom() {
+    var A = L.allocate(), h = '<h2>Order and bill of material</h2><p class="note">Contract ' + esc(D.contract.id) + ' signed ' + esc(D.contract.signed) + ' by ' + esc(D.customer.name) + '; bill-to party ' + esc(D.customer.billTo) + '. Three kinds of software and three services. The bill of material is derived from the order.</p>';
+    h += '<div class="card"><h2>What was sold</h2><div class="scroll"><table><thead><tr><th>Pos</th><th>Product</th><th>Sold as</th><th class="num">Quantity</th><th class="num">Price</th><th class="num">Stand-alone price</th></tr></thead><tbody>';
+    D.lines.forEach(function (l) {
+      h += '<tr><td>' + l.id + '</td><td><b>' + esc(l.name) + '</b><br><span class="sub">' + esc(l.material) + '</span></td><td>' + swTag({ sw: l.kind !== 'Service' }) + ' ' + esc(l.model) + '</td><td class="num">' + (l.qty ? l.qty + ' ' + esc(l.unit) : '–') + '</td><td class="num">' + (l.price ? m(l.price) : esc(l.rate + ' per ' + (l.per || 1) + ' ' + l.unit)) + '</td><td class="num">' + (l.ssp ? m(l.ssp) : '–') + '</td></tr>';
+    });
+    h += '<tr class="grp"><td colspan="4">Committed price (usage and overage come on top)</td><td class="num">' + m(A.price) + '</td><td class="num">' + m(A.ssp) + '</td></tr></tbody></table></div></div>';
+    h += '<div class="card"><h2>Bill of material BOM-90412</h2><p class="note">What the material system derives from the order. The delivery type decides what is delivered, provisioned, metered or scheduled.</p><div class="scroll"><table><thead><tr><th>Item</th><th>Material</th><th>Type</th><th>Delivery type</th><th>Billing and revenue</th></tr></thead><tbody>';
+    L.bom(S).forEach(function (b) {
+      h += '<tr><td>' + b.item + '</td><td><b>' + esc(b.name) + '</b><br><span class="sub">' + esc(b.material) + (b.tier ? ' · level ' + esc(b.tier) : '') + (b.rate ? ' · ' + esc(b.rate) : '') + '</span></td><td>' + swTag(b) + '</td><td>' + esc(D.delivery[b.fulfil].label) + '</td><td>' + esc(b.model) + '</td></tr>';
+    });
+    return h + '</tbody></table></div></div>';
   }
 
+  // ---------- Entitlement and delivery ----------
+  function vDel() {
+    var h = '<h2>Entitlement and delivery</h2><p class="note">Before anything is delivered, the entitlement check compares the bill of material with the contract. Then the delivery, the confirmation by the customer, the provisioning and the completion message.</p>';
+    h += '<div class="card"><h2>1. Entitlement check ' + (S.step > 3 ? tag('done', 'ok') : '') + '</h2><div class="scroll"><table><thead><tr><th>Item</th><th>Ordered</th><th>Result</th></tr></thead><tbody>';
+    L.entitlementRows(S).forEach(function (r) {
+      h += '<tr><td><b>' + esc(r.name) + '</b></td><td>' + esc(r.ordered) + '</td><td>' + (r.dev ? (r.fixed ? tag('corrected', 'ok') : tag('deviation', 'bad')) + ' ' + esc(r.dev.what) + ' <span class="sub">' + esc(r.dev.fix) + ' (' + esc(r.dev.owner) + ')</span>' + (r.fixed ? '' : ' <button class="btn" data-act="appr" data-id="' + r.dev.id + '">Approve fix</button>') : tag('matches the contract', 'ok')) + '</td></tr>';
+    });
+    h += '</tbody></table></div></div>';
+    h += '<div class="card"><h2>2. Delivery and receipt ' + (S.step > 5 ? tag('confirmed', 'ok') : '') + '</h2><p class="note">Four kinds of delivery. The customer confirms the three that need an action on their side.</p><div class="scroll"><table><thead><tr><th>Delivery type</th><th>What is delivered</th><th>Customer confirms</th><th></th></tr></thead><tbody>';
+    ['key', 'tenant', 'meter', 'service'].forEach(function (k) {
+      var ls = D.lines.filter(function (l) { return l.fulfil === k && l.kind !== 'Overage'; }), l0 = ls[0], d = D.delivery[k];
+      h += '<tr><td><b>' + esc(d.label) + '</b></td><td>' + esc(d.what) + '</td><td>' + esc(d.confirm) + '</td><td>' + (k === 'service' ? tag('later', '') : S.receipt[l0.id] ? tag('confirmed', 'ok') : (S.step >= 5 ? '<button class="btn" data-act="rcpt" data-id="' + l0.id + '">Customer confirms</button>' : tag('not delivered yet', ''))) + '</td></tr>';
+    });
+    h += '</tbody></table></div></div>';
+    h += '<div class="card"><h2>3. Technical provisioning and completion message ' + (S.step > 8 ? tag('done', 'ok') : '') + '</h2><ol class="steps2">' + D.provisioningSteps.map(function (p, i) { return '<li>' + (S.step > 8 ? '✓ ' : '') + esc(p) + '</li>'; }).join('') + '</ol></div>';
+    return h;
+  }
+
+  // ---------- Billing and consumption ----------
+  function vBill() {
+    var h = '<h2>Billing and consumption</h2><p class="note">Licences are invoiced once after the customer has confirmed, subscription and operations monthly in advance, services by milestone or day, overage and consumption monthly in arrears. Payment term ' + D.terms + ' days.</p>';
+    h += '<div class="card"><h2>Invoice plan, first three months</h2><div class="scroll"><table><thead><tr><th>Date</th><th>Position</th><th>For</th><th class="num">Amount</th><th>Due</th><th>State</th></tr></thead><tbody>';
+    L.invoices(S, '2027-02-28').forEach(function (i) { h += '<tr><td>' + i.on + '</td><td>' + esc(i.name) + '</td><td>' + esc(i.what) + '</td><td class="num">' + m(i.amount) + '</td><td>' + i.due + '</td><td>' + (i.done ? tag('invoiced', 'ok') : tag('planned', '')) + '</td></tr>'; });
+    h += '</tbody></table></div></div>';
+    var tu = L.recon().reduce(function (s, r) { return s + r.amount; }, 0);
+    h += '<div class="card"><h2>Consumption against billing</h2><p class="note">The metered usage is compared with what was invoiced. Overage and consumption are invoiced in arrears, so each month is checked after the invoice.</p><div class="scroll"><table><thead><tr><th>Month</th><th>Position</th><th class="num">Metered</th><th class="num">Billed</th><th class="num">Difference</th><th class="num">Value</th></tr></thead><tbody>';
+    L.recon().forEach(function (r) { h += '<tr><td>' + ym(r.month) + '</td><td>' + esc(r.name) + '<br><span class="sub">' + esc(r.unit) + '</span></td><td class="num">' + r.metered.toLocaleString('en-US') + '</td><td class="num">' + r.billed.toLocaleString('en-US') + '</td><td class="num">' + (r.diff ? '<b>' + r.diff.toLocaleString('en-US') + '</b>' : (r.over ? r.over + ' over' : '0')) + '</td><td class="num">' + (r.amount ? m(r.amount) : (r.billedAmount ? m(r.billedAmount) + ' billed' : '–')) + '</td></tr>'; });
+    h += '</tbody></table></div><p class="note" style="margin-top:8px">The December file of the meter arrived late, so 2,300,000 calls were not invoiced. True-up: ' + m(tu) + ' ' + D.currency + ' ' + (S.trueUp ? tag('approved, invoice on 2027-01-15', 'ok') : tag('waits for a person', 'amber')) + '</p></div>';
+    return h;
+  }
+
+  // ---------- Revenue and cash ----------
+  function vRev() {
+    var P = L.positionAt(S), A = L.allocate();
+    var h = '<h2>Revenue and cash</h2><p class="note">Billed, recognised and collected are three different numbers. Pick the month end.</p><div class="tools"><span class="seg" role="group" aria-label="Month end">' + ['2026-11', '2026-12', '2027-01'].map(function (k) { return '<button data-act="asof" data-id="' + k + '" aria-pressed="' + (S.asOf === k) + '">' + ym(k) + '</button>'; }).join('') + '</span></div>';
+    h += '<div class="kpis"><div class="kpi"><b>' + m(P.total.billed) + '</b><span>Billed</span></div><div class="kpi"><b>' + m(P.total.recognized) + '</b><span>Recognised as revenue</span></div><div class="kpi"><b>' + m(P.total.collected) + '</b><span>Cash received</span></div><div class="kpi ' + (P.total.receivable ? 'warn' : '') + '"><b>' + m(P.total.receivable) + '</b><span>Open receivables</span></div><div class="kpi"><b>' + m(P.contractAsset || P.contractLiability) + '</b><span>' + (P.contractAsset ? 'Contract asset (revenue ahead of invoice)' : 'Contract liability (invoice ahead of revenue)') + '</span></div><div class="kpi"><b>' + m(P.remaining) + '</b><span>Still to recognise (committed)</span></div></div>';
+    h += '<div class="card"><h2>By position</h2><p class="note">The committed price of ' + m(A.price) + ' is shared out by stand-alone price (total ' + m(A.ssp) + ', discount ' + m(A.discount) + '). Usage and overage are recognised as they arise.</p><div class="scroll"><table><thead><tr><th>Position</th><th class="num">Share of price</th><th class="num">Billed</th><th class="num">Recognised</th><th class="num">Collected</th></tr></thead><tbody>';
+    P.rows.forEach(function (r) { h += '<tr><td>' + esc(r.name) + '</td><td class="num">' + (r.allocated ? m(r.allocated) : 'as used') + '</td><td class="num">' + m(r.billed) + '</td><td class="num">' + m(r.recognized) + '</td><td class="num">' + m(r.collected) + '</td></tr>'; });
+    return h + '</tbody></table></div><p class="note" style="margin-top:8px">The method (five steps, point in time against over time, allocation, contract changes) is worked out in the Revenue Recognition space.</p></div>';
+  }
+
+  // ---------- n8n ----------
+  function vN8n() {
+    var N = D.n8n, h = '<h2>The n8n process</h2><p class="note">' + esc(N.trigger) + '. Workflow file: <code>' + esc(N.file) + '</code>.</p><div class="wf">';
+    D.stages.forEach(function (st, i) {
+      var k = L.status(i, S);
+      h += '<div class="wn ' + (k === 'done' ? 'done' : k === 'wait' ? 'wait' : '') + '"><span class="no">' + (i + 1) + '</span><span>' + tag(SYS[st.system].name, 'blue') + '</span><span><b>' + esc(st.name) + '</b> <code>' + esc(st.tool) + '</code>' + (st.gate ? ' <span class="sub">then waits for a person</span>' : '') + '</span><span>' + (k === 'done' ? tag('done', 'ok') : k === 'wait' ? tag('waiting', 'amber') : '') + '</span></div>';
+    });
+    h += '</div><ul class="steps2">' + N.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul><h3>Run log</h3><div class="logl">' + (S.log.length ? S.log.map(function (e, i) { return (i + 1) + '. ' + esc(e.stage) + ' ' + esc(SYS[e.system].name) + ' → ' + esc(e.tool) + ': ' + esc(e.result); }).join('<br>') : 'Nothing has run yet.') + '</div>';
+    return h;
+  }
+
+  var VIEWS = { proc: vProc, bom: vBom, del: vDel, bill: vBill, rev: vRev, n8n: vN8n };
+  function render() {
+    $('#tabs').innerHTML = TABS.map(function (t) { return '<button role="tab" aria-selected="' + (S.tab === t[0]) + '" data-act="tab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('');
+    $('#sys').textContent = D.company + ' · ' + D.asOf;
+    $('#main').innerHTML = ctl() + VIEWS[S.tab]();
+  }
+  function log(t) { S.lastNote = t; }
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-act]') : null;
-    if (!b) return;
+    if (!b || b.disabled) return;
     var act = b.getAttribute('data-act'), id = b.getAttribute('data-id');
     if (act === 'tab') S.tab = id;
-    else if (act === 'actor') S.actor = id;
-    else if (act === 'q') S.qid = id;
-    else if (act === 'reset') { S.rel = {}; S.msg = {}; S.log = D.history.slice(); }
-    else if (act === 'release') {
-      var r = L.applyRelease(S.rel, id, S.actor);
-      S.msg[id] = { ok: r.ok, reason: r.reason };
-      var p = L.tasks().filter(function (x) { return x.id === id; })[0];
-      S.log.push({ t: clock(), who: S.actor, what: r.ok ? 'Releases ' + id + '. ' + r.reason : 'Tries to release ' + id + '. Blocked: ' + r.reason, tool: r.ok ? p.tool : '', mode: r.ok ? 'write' : 'blocked' });
-    }
-    else if (act === 'askreal') {
-      var q = D.questions.filter(function (x) { return x.id === id; })[0];
-      ask('Software order ' + D.case.id + ' (' + D.case.customer + ', ' + D.case.product + '): ' + q.q + ' Use the connected tools read-only and give the proof line for each statement.');
-      return;
-    }
+    else if (act === 'sel') S.sel = +id;
+    else if (act === 'next') { var r = L.advance(S); if (r.ok) { S = r.state; S.sel = Math.min(S.step, D.stages.length - 1); } }
+    else if (act === 'run') { var g = L.advance(S); while (g.ok) { S = g.state; g = L.advance(S); } S.sel = Math.min(S.step, D.stages.length - 1); }
+    else if (act === 'reset') S = L.newState();
+    else if (act === 'appr') S.approved[id] = true;
+    else if (act === 'rcpt') S.receipt[id] = true;
+    else if (act === 'trueup') S.trueUp = true;
+    else if (act === 'asof') S.asOf = id;
     render();
   });
   render();
