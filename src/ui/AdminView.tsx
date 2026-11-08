@@ -1,8 +1,15 @@
 /**
- * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and Skill management;
- * more can follow. Hiring approvals is a Space of its own, not part of Admin. Admin is not part of Develop.
+ * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Four tiles today: Ontologies, Solution register,
+ * Skill management and Agent observability; more can follow. Agent observability opens the Space of that name (it is a Space, so it keeps its own page and bridge); when the
+ * Space is not installed the button says how to install it. Hiring approvals is a Space of its own, not part of Admin. Admin is not part of Develop.
  */
-export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void }) {
+export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills, onOpenObservability, observabilityInstalled }: {
+  onOpenOntology: () => void;
+  onOpenRegistry: () => void;
+  onOpenSkills: () => void;
+  onOpenObservability: () => void;
+  observabilityInstalled: boolean;
+}) {
   return (
     <main className="develop develop-main adm">
       <h1 className="develop-title">Joule Administration Console</h1>
@@ -41,8 +48,35 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
           </ul>
           <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkills}>Open Skill management</button>
         </section>
+        <section className="develop-card develop-card-block" aria-label="Agent observability">
+          <span className="develop-logo adm-logo adm-logo-observe" aria-hidden="true"><ObserveMark /></span>
+          <span className="develop-card-title">Agent observability</span>
+          <span className="develop-card-brand">what really ran</span>
+          <span className="develop-card-text">What the agents, workflows and skills actually did: every run as a trace, whether the outcome was right, cost, speed and blocked actions.</span>
+          <ul className="develop-blocks">
+            <li><span>Follow one run step by step</span></li>
+            <li><span>Spot cost spikes, quality drops and alerts</span></li>
+          </ul>
+          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenObservability} disabled={!observabilityInstalled}
+            title={observabilityInstalled ? undefined : 'Install the Space first: npm run install:agent-observability'}>
+            Open Agent observability
+          </button>
+          {!observabilityInstalled && <span className="develop-card-text adm-hint">Not installed yet: run <code>npm run install:agent-observability</code>.</span>}
+        </section>
       </div>
     </main>
+  );
+}
+
+/** Three bars of a trace waterfall under a pulse line: each step of a run, laid out in time. */
+function ObserveMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <path d="M8 16h10l4-7 6 14 4-7h24" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" opacity=".6" />
+      <rect x="8" y="30" width="40" height="7" rx="3.5" fill="currentColor" />
+      <rect x="18" y="41" width="22" height="7" rx="3.5" fill="currentColor" opacity=".75" />
+      <rect x="28" y="52" width="28" height="7" rx="3.5" fill="currentColor" opacity=".5" />
+    </svg>
   );
 }
 
