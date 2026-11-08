@@ -10,6 +10,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 - Alles liegt auf `main`. Vor jeder Arbeit `git fetch --all` und Abstand zu `main` prüfen. Mergen nur auf Hans-Peters Wunsch.
 - Nach frischem Checkout zuerst `npm install` (sonst fehlen `n3` und `jsdom`, vier Testdateien schlagen fehl). SQL-Tests laufen nur mit `SKILL_SQL_TEST_DSN` (Wegwerf-Datenbank `*_test`), sonst werden sie übersprungen.
 - Parallele Claude-Fenster: Stand der Datei und Statusnotizen nach größeren Etappen nachführen, nur das Betroffene in `docs/status/`.
+- Parallele Fenster teilen sich das Verzeichnis und schalten Branches um (`git branch --show-current` vor jeder Arbeit). Für eigene Änderungen ein separates `git worktree` nehmen, nicht im geteilten Checkout umschalten.
 
 ## Befehle
 - `npm test` (node --test), `npx tsc --noEmit -p .`, `npm run check` (alles zusammen) – vor jedem Push grün.
@@ -29,6 +30,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 - Entwicklung nach Absicht: gemeinsamer Ablauf mit fünf Schritten (`src/flow.ts`): Intent, Requirements, Specification & Architecture, Build, Test & go live. Agent Studio (`src/agent-project.ts`), Workflow-Assistent (`src/develop.ts`).
 - Zentrale Datenbank: Supabase-Projekt "Joule-AI-control-tower" (Ref `iguatwcsgjewpyejlgdk`, eu-west-1). Tabellen sind für anon/authenticated gesperrt, Funktionen nur für service_role (Connector-Muster). Migrationen 001 bis 038 sind angewendet (036/037 Agent Observability am 08.11.2026 mit Beispieldaten; 038 Hire contracts); auf Supabase steht außerdem `recruiting_analytics` (08.11.2026), zu der im Repo noch keine Datei liegt. Spätere Nummern prüfen mit `list_migrations`.
 - Connectoren (`connectors/`): gemeinsame MCP-Laufzeit `connectors/_lib/server/runtime.mjs`; Bibliotheks-Connectoren (ai-control-tower, sub4me, n8n-automation, skill-marketplace, knowledge-graph, web-sources, werkbank-workspace), der Manifest-Connector `cognee-memory`, `ontology-manager` und Einzel-Connectoren (gmail, databricks, jira, slack, notion, teams, sap-sandbox). Nach Änderung der Werkzeugliste den Connector einmal neu installieren (die Liste wird bei der Installation gespeichert). Bundles baut `stageConnector` in `connectors/_lib/bundle.mjs`.
+- Goose-Konfiguration: `goose-home/.config/goose/config.yaml` ist lokaler Zustand (Connector-Installationen tragen absolute Pfade und Hosts ein) und steht nicht im Repo (seit PR #245). Eingecheckt ist nur `config.example.yaml`; `ensureGooseConfig` (`shared/goose-config.mjs`) kopiert sie beim ersten Start (Electron, `install:databricks-demo`). Nicht getestet: Start der Electron-App mit der erzeugten Datei.
 - Spaces werden aus `data.json` gespeist; nach Datenänderung `npm run sync:mockups`. Logik zwischen `@logic-start`/`@logic-end` wird vom Test mit dem echten Code ausgeführt.
 - Skills: drei Ebenen Individual → Department → Organization, automatische Prüfung `src/skill-review.ts`; die fünf Textprüfregeln existieren in TS und SQL und müssen gemeinsam geändert werden.
 
