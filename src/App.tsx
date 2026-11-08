@@ -50,6 +50,7 @@ import { HIRING_SPACE } from './hiring-bridge';
 import { OBSERVABILITY_SPACE } from './observability-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
 import { INTERVIEW_SPACE } from './interview-bridge';
+import { CUSTOMER360_SPACE } from './customer360-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
 import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
@@ -1621,7 +1622,8 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === CUSTOMER360_SPACE}
+            customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}

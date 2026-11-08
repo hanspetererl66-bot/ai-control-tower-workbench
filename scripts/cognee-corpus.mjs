@@ -5,11 +5,16 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractGraph } from '../connectors/_lib/server/graph.mjs';
 import { graphToDocuments } from '../connectors/_lib/server/cognee-corpus.mjs';
+import { customer360Documents } from '../connectors/_lib/server/customer-360.mjs';
 import { snapshotToDocuments } from '../connectors/_lib/server/cognee-sap-corpus.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export function buildCorpus() {
   return graphToDocuments(extractGraph(readFileSync(join(ROOT, 'examples/knowledge-graph/index.html'), 'utf8')));
+}
+/** Documents of the Customer 360 Space (Nordlicht group): one per node, ids in brackets, for the dataset customer-360. */
+export function buildCustomer360Corpus(file = join(ROOT, 'examples/customer-360/data.json')) {
+  return customer360Documents(JSON.parse(readFileSync(file, 'utf8')));
 }
 /** Documents from the SAP sandbox snapshot (npm run sap-sandbox:snapshot); null if there is no snapshot yet. */
 export function buildSapCorpus(file = join(ROOT, 'examples/sap-sandbox/snapshot.json')) {
@@ -21,6 +26,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, JSON.stringify(docs, null, 2));
   console.log(`Wrote ${docs.length} documents to ${out}`);
+  const c360 = buildCustomer360Corpus();
+  const c360Out = join(ROOT, 'dist/cognee-corpus-customer-360.json');
+  writeFileSync(c360Out, JSON.stringify(c360, null, 2));
+  console.log(`Wrote ${c360.length} Customer 360 documents to ${c360Out} (load them with: .venv-cognee/bin/python scripts/cognee-seed.py --corpus dist/cognee-corpus-customer-360.json --dataset customer-360)`);
   const sap = buildSapCorpus();
   if (sap) {
     const sapOut = join(ROOT, 'dist/cognee-corpus-sap.json');

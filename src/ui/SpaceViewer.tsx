@@ -6,6 +6,7 @@ import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastM
 import { HIRING_SPACE, handleHiringMessage, type HiringHost } from '../hiring-bridge';
 import { OBSERVABILITY_SPACE, handleObservabilityMessage, type ObservabilityHost } from '../observability-bridge';
 import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
+import { handleCustomer360Message, CUSTOMER360_SPACE, type Customer360Deps } from '../customer360-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
@@ -24,6 +25,7 @@ export default function SpaceViewer({
   bridge,
   bridgeEnabled = false,
   interviewDeps,
+  customer360Deps,
   onOpenHiringTools,
   onAsk,
   textScale = DEFAULT_SPACE_SCALE,
@@ -46,6 +48,7 @@ export default function SpaceViewer({
   bridge?: BridgeCall;
   bridgeEnabled?: boolean;
   interviewDeps?: InterviewDeps;
+  customer360Deps?: Customer360Deps;
   /** Hiring Approvals Space: open the proposals and criteria screen. */
   onOpenHiringTools?: () => void;
   /** A Space asks Joule a question ("Joule fragen"): the host opens the chat and sends it. */
@@ -125,12 +128,15 @@ export default function SpaceViewer({
   bridgeRef.current = bridge;
   const interviewRef = useRef(interviewDeps);
   interviewRef.current = interviewDeps;
+  const c360Ref = useRef(customer360Deps);
+  c360Ref.current = customer360Deps;
   useEffect(() => {
     if (!bridgeEnabled) return;
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
-      const handle = space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
+      const handle = space.slug === CUSTOMER360_SPACE ? (data: unknown) => handleCustomer360Message(data, c360Ref.current ?? {})
+        : space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
         : space.slug === PRD_SPACE ? handlePrdMessage
         : space.slug === SALES_SPACE ? handleSalesMessage
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage

@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
+import { makeLogic as makeLogic360 } from '../connectors/_lib/server/customer-360.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const MOCKUPS = [
@@ -19,6 +20,7 @@ export const MOCKUPS = [
   { page: 'examples/hiring-approvals/index.html', data: 'examples/hiring-approvals/data.json' },
   { page: 'examples/order-to-cash/index.html', data: 'examples/order-to-cash/data.json' },
   { page: 'examples/order-to-cash-software/index.html', data: 'examples/order-to-cash-software/data.json' },
+  { page: 'examples/customer-360/index.html', data: 'examples/customer-360/data.json' },
 ];
 /** Catalog Spaces: real, sourced facts (not fictional), embedded the same way. */
 export const CATALOGS = [
@@ -26,7 +28,7 @@ export const CATALOGS = [
 ];
 const BLOCK = /<script type="application\/json" id="data">[\s\S]*?<\/script>/;
 /** Pages whose logic has one source in a module (the page cannot import): the code between the two markers is copied from it. */
-export const LOGIC_PAGES = { 'examples/recruiting-workbench/index.html': () => makeLogic.toString() };
+export const LOGIC_PAGES = { 'examples/recruiting-workbench/index.html': () => makeLogic.toString(), 'examples/customer-360/index.html': () => makeLogic360.toString() };
 const LOGIC = /\/\/ @logic-start\n[\s\S]*?\n\s*\/\/ @logic-end/;
 
 export function embedLogic(html, source) {
