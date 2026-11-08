@@ -66,3 +66,7 @@ __pycache__/
 
 # SAP sandbox snapshot (SAP sample data fetched with a personal API key).
 examples/sap-sandbox/snapshot.json
+
+# Local Cognee virtualenv and Vercel link
+.venv-cognee/
+.vercel/
