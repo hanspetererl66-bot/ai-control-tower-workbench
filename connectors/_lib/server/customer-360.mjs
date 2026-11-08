@@ -193,6 +193,9 @@ export function makeLogic(D) {
     return recs;
   }
 
+  // facts whose value is a whole sentence read as "R-3 (why): ...", not "R-3: why is Eight of ..."
+  var LONG_FACT = /^(Why|Approval|Recommendation|Step \d+)$/;
+
   function nodeList() {
     var nodes = [], edges = [], seen = {}, G = D.group;
     function node(type, id, label, sub, extra) {
@@ -297,7 +300,7 @@ export function makeLogic(D) {
       var noun = TYPES[n.type].noun, art = /^[aeiou]/.test(noun) ? 'an ' : 'a ';
       var lines = [sentence(n.label + ' is ' + art + noun + ' (' + n.id + ')')];
       if (n.type !== 'signal') lines.push(sentence(n.label + ': ' + n.sub));
-      n.facts.forEach(function (f) { lines.push(f[0] === 'Text' ? f[1] : sentence(n.label + ': ' + f[0].toLowerCase() + ' is ' + f[1])); });
+      n.facts.forEach(function (f) { lines.push(f[0] === 'Text' ? f[1] : LONG_FACT.test(f[0]) ? sentence(n.label + ' (' + f[0].toLowerCase() + '): ' + f[1]) : sentence(n.label + ': ' + f[0].toLowerCase() + ' is ' + f[1])); });
       (ADJ[n.id] || []).forEach(function (a) {
         var o = NODE[a.id], verb = EDGES[a.edge.type][a.out ? 0 : 1];
         lines.push(sentence(n.label + ' ' + verb + ' ' + o.label + ' (' + o.id + ')'));
