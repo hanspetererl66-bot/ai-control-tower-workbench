@@ -30,7 +30,8 @@ test('the workflow is importable, every node is reachable from a trigger and it 
   assert.equal(wf.active, false);
   assert.equal(byName('Signature webhook').parameters.httpMethod, 'POST');
   for (const n of ['Send to the e-signature service', 'Send the message', 'Record the answer']) assert.equal(byName(n).onError, 'continueErrorOutput', n);
-  assert.equal(wf.connections['Which step?'].main.length, 4, 'prepare, send, expire, tell');
+  assert.equal(wf.connections['Which step?'].main.length, 4, 'prepare, send, expire, tell (ask goes to tell)');
+  assert.match(byName('Which step?').parameters.output, /ask: 3/);
 });
 
 test('the workflow only calls the contract functions: no decision, no request, no key, addresses from the environment', () => {
@@ -100,6 +101,9 @@ test('expiry and messages: the database named the contract and the recipient, th
   assert.match(msgs[1].json.text, /declined the contract.*not a new approval/);
   assert.match(msgs[2].json.text, /expired without a signature/);
   assert.ok(msgs.every((m) => Object.keys(m.json).sort().join() === 'id,text,to' && m.json.to === 'hr@x.com'));
+  const [asked] = await run('Write the message', wrap([{ ...base, kind: 'ask' }]));
+  assert.match(asked.json.text, /ready for your release.*nothing is sent to the candidate before that/);
+  assert.equal(asked.json.to, 'hr@x.com');
   assert.deepEqual(await run('Write the message', []), []);
   const failed = await run('Not sent', wrap([{ error: { message: 'timeout' } }]));
   assert.deepEqual(failed[0].json, { failed: 1, items: ['timeout'] });

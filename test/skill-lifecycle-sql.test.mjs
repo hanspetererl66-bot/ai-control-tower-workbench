@@ -696,6 +696,7 @@ const DOC_SHA = createHash('sha256').update(Buffer.from(DOC, 'base64')).digest('
 const cDue = (extra = '') => json(`select public.recruiting_hire_contract_due(now() ${extra})`);
 const cKinds = (rows, id) => rows.filter((r) => r.id === id).map((r) => `${r.kind}${r.to ? ':' + r.to : ''}`).sort();
 const cPrepare = (id) => `select public.recruiting_hire_contract_prepare(${id})`;
+const cRelease = (id, by = HR) => `select public.recruiting_hire_contract_release(${q(by)}, ${id})`;
 const cSent = (id, ref = 'ENV-1', days = 14) => `select public.recruiting_hire_contract_sent(${id}, 'MockSign', ${q(ref)}, ${days})`;
 const cResult = (id, ref, result, extra = {}) => {
   const a = { signedAt: 'now()', doc: null, sha: null, receipt: '{}', ...extra };
@@ -709,8 +710,21 @@ test('hiring contracts: prepared from the approved terms, sent, signed by the ca
   const p = json(cPrepare(id));
   assert.equal(p.created, true); assert.equal(p.status, 'prepared');
   assert.equal(json(cPrepare(id)).created, false, 'preparing twice makes no second contract');
+  assert.ok(!cDue().some((r) => r.id === id && r.kind === 'send'), 'nothing is sent before HR released it');
+  assert.deepEqual(cKinds(cDue(), id), [`ask:${HR}`], 'HR is asked to release the contract');
+  assert.match(rule(cSent(id)), /HR has not released/);
+  const ask = (to) => `select public.recruiting_hire_contract_notice_record(${id}, ${q(to)}, 'Teams')`;
+  assert.match(rule(ask(MGR)), /only the HR approver/);
+  assert.equal(json(ask(HR)).created, true); assert.equal(json(ask(HR)).created, false, 'asked once');
+  assert.deepEqual(cKinds(cDue(), id), [], 'nothing is due while HR thinks about it');
+  assert.equal(hireList(HR, 'approved').find((x) => x.id === id).contract.mine, true, 'the contract waits for me');
+  assert.equal(hireList(MGR, 'approved').find((x) => x.id === id).contract.mine, false);
+  assert.match(rule(cRelease(id, MGR)), /only the HR approver/);
+  assert.match(rule(cRelease(id, FIN)), /only the HR approver/);
+  assert.equal(json(cRelease(id)).created, true); assert.equal(json(cRelease(id)).created, false, 'releasing twice is harmless');
+  assert.equal(hireList(HR, 'approved').find((x) => x.id === id).contract.releasedBy, HR);
   const send = cDue().find((r) => r.id === id && r.kind === 'send');
-  assert.ok(send, 'a prepared contract is due for sending');
+  assert.ok(send, 'a released contract is due for sending');
   assert.match(send.body, /Senior, Band 5/); assert.match(send.body, /Type of contract: permanent/); assert.match(send.body, /\{\{candidate_name\}\}/);
   assert.doesNotMatch(send.body, /@/, 'no e-mail address in the contract text');
   assert.equal(send.bodySha256, createHash('sha256').update(send.body).digest('hex'), 'the stored hash is the hash of the text');
@@ -725,7 +739,7 @@ test('hiring contracts: prepared from the approved terms, sent, signed by the ca
   assert.equal(st.status, 'signed'); assert.equal(st.signed_sha256, DOC_SHA); assert.equal(st.bytes, Buffer.from(DOC, 'base64').length);
   assert.deepEqual(st.receipt, { method: 'advanced e-signature', reference: 'CERT-77' });
   const row = hireList(MGR, 'approved').find((x) => x.id === id);
-  assert.deepEqual(row.events.slice(-3).map((e) => e.event), ['contract_prepared', 'contract_sent', 'contract_signed']);
+  assert.deepEqual(row.events.slice(-4).map((e) => e.event).filter((e) => e !== 'contract_asked'), ['contract_released', 'contract_sent', 'contract_signed']);
   assert.equal(row.contract.status, 'signed'); assert.equal(row.contract.hasDocument, true); assert.equal(row.contract.method, 'advanced e-signature');
   assert.ok(!('body' in row.contract) && !('signedDocument' in row.contract), 'the list shows the state, not the text or the document');
   const got = json(`select public.recruiting_hire_contract_get(${q(MGR)}, ${id})`);
@@ -750,6 +764,7 @@ test('hiring contracts: the rules the workflow cannot get around', { skip }, () 
   assert.match(rule(cSent(id)), /no contract has been prepared/);
   json(cPrepare(id));
   assert.match(rule(cResult(id, 'ENV-9', 'declined')), /has not been sent/);
+  json(cRelease(id));
   json(cSent(id, 'ENV-9'));
   assert.match(rule(cResult(id, 'OTHER', 'declined')), /another envelope/);
   assert.match(rule(cResult(id, 'ENV-9', 'signed')), /needs the signed document/);
@@ -773,7 +788,7 @@ test('hiring contracts: the rules the workflow cannot get around', { skip }, () 
   assert.match(rule(`delete from recruiting.hire_contract where request_id = ${id}`), /cannot be removed/);
   // declined by the candidate
   const id2 = approvedRequest('declined');
-  json(cPrepare(id2)); json(cSent(id2, 'ENV-10', 7));
+  json(cPrepare(id2)); json(cRelease(id2)); json(cSent(id2, 'ENV-10', 7));
   assert.equal(json(cResult(id2, 'ENV-10', 'declined')).status, 'declined');
   assert.equal(cState(id2).bytes, null, 'a declined contract holds no document');
   assert.deepEqual(hireList(MGR, 'approved').find((x) => x.id === id2).events.slice(-1).map((e) => e.event), ['contract_declined']);
@@ -782,7 +797,7 @@ test('hiring contracts: the rules the workflow cannot get around', { skip }, () 
 test('hiring contracts: the API roles cannot call them, and a request keeps its decision', { skip }, () => {
   for (const role of ['anon', 'authenticated']) {
     for (const f of ['recruiting_hire_contract_due(timestamptz)', 'recruiting_hire_contract_prepare(bigint)', 'recruiting_hire_contract_sent(bigint,text,text,integer)',
-      'recruiting_hire_contract_result(bigint,text,text,timestamptz,text,text,jsonb)', 'recruiting_hire_contract_notice_record(bigint,text,text)', 'recruiting_hire_contract_get(text,bigint)']) {
+      'recruiting_hire_contract_result(bigint,text,text,timestamptz,text,text,jsonb)', 'recruiting_hire_contract_notice_record(bigint,text,text)', 'recruiting_hire_contract_release(text,bigint)', 'recruiting_hire_contract_get(text,bigint)']) {
       assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.${f}', 'execute')`), 'f', `${role} ${f}`);
     }
     assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.hire_contract', 'select')`), 'f', role);
@@ -797,7 +812,7 @@ test('hiring contracts: the answer the workflow builds in simulation is accepted
   const node = (n) => wf.nodes.find((x) => x.name === n).parameters.jsCode;
   const exec = async (n, items, ctx) => JSON.parse(JSON.stringify(await vm.runInNewContext(`(async()=>{${node(n)}})`, { $input: { all: () => items }, Date, Number, String, Object, Array, Buffer, ...ctx })()));
   const id = approvedRequest('simulation');
-  json(cPrepare(id));
+  json(cPrepare(id)); json(cRelease(id));
   const send = cDue().find((r) => r.id === id && r.kind === 'send');
   const [shipment] = await exec('Prepare the shipment', [{ json: send }], { $env: {} });
   const [sim] = await exec('Simulate sending', [{ json: { id } }]);

@@ -1,13 +1,15 @@
 -- Hiring approvals, part 3: the contract and the candidate's signature.
--- After the last approval (migration 031) the contract follows without a human step in between: the database writes the text from the
--- approved terms, n8n (examples/n8n-workflows/12-hiring-contract-signature.json) sends it to the e-signature service, and the service's
--- answer (signed, declined, expired) is written back here. The signed document itself is kept in this table, with its hash.
+-- After the last approval (migration 031) the database writes the contract text from the approved terms. HR then RELEASES the contract
+-- (one human step, recruiting_hire_contract_release, called only by the Werkbank's main process after the click). From there on it runs
+-- by itself: n8n (examples/n8n-workflows/12-hiring-contract-signature.json) sends the released contract to the e-signature service,
+-- and the service's answer (signed, declined, expired) is written back here. The signed document is kept in this table, with its hash.
 -- Nothing in this migration can approve or decline a hiring request, and nothing changes an approval.
 --
 -- Rules the database enforces (not n8n):
 --  * A contract exists only for an APPROVED request, one per request. Its text comes from the approved terms and a fixed template;
 --    the hash of the text is stored, so the version that was sent can be proven.
---  * The state runs one way: prepared -> sent -> signed | declined | expired. A final state cannot be changed or removed.
+--  * Only the HR approver of the request can release the contract, and nothing is sent before that.
+--  * The state runs one way: prepared -> released -> sent -> signed | declined | expired. A final state cannot be changed or removed.
 --  * An answer must name the envelope the contract was sent in. "Signed" needs the signed document; if the service names its hash,
 --    the database recomputes it and the two must match. "Expired" is only accepted after the validity ended.
 --  * The receipt holds the method and a reference of the service, no names and no contact data. The contract text holds a
@@ -18,18 +20,20 @@
 alter table recruiting.hire_event drop constraint if exists hire_event_event_check;
 alter table recruiting.hire_event add constraint hire_event_event_check
   check (event in ('requested', 'approved', 'returned', 'declined', 'notified', 'reminded', 'escalated', 'informed',
-                   'contract_prepared', 'contract_sent', 'contract_signed', 'contract_declined', 'contract_expired', 'contract_informed'));
+                   'contract_prepared', 'contract_asked', 'contract_released', 'contract_sent', 'contract_signed', 'contract_declined', 'contract_expired', 'contract_informed'));
 
 create table if not exists recruiting.hire_contract (
   id bigint generated always as identity primary key,
   request_id bigint not null unique references recruiting.hire_request (id),
-  status text not null default 'prepared' check (status in ('prepared', 'sent', 'signed', 'declined', 'expired')),
+  status text not null default 'prepared' check (status in ('prepared', 'released', 'sent', 'signed', 'declined', 'expired')),
   template text not null default 'employment-v1',
   body text not null check (char_length(body) between 1 and 8000),
   body_sha256 text not null check (body_sha256 ~ '^[0-9a-f]{64}$'),
   provider text not null default '' check (char_length(provider) <= 60),
   envelope_ref text not null default '' check (char_length(envelope_ref) <= 120),
   prepared_at timestamptz not null default now(),
+  released_at timestamptz,
+  released_by text check (released_by is null or released_by ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   sent_at timestamptz,
   expires_at timestamptz,
   decided_at timestamptz,
@@ -81,7 +85,8 @@ end $$;
 
 -- What the workflow has to do next. The database decides; the workflow only carries it out.
 --  prepare  the request is approved and has no contract yet (approved within the last 30 days)
---  send     the contract is prepared: the text, its hash and the facts the e-signature service needs
+--  ask      the contract is prepared and HR has not been asked yet to release it (once)
+--  send     HR released the contract: the text, its hash and the facts the e-signature service needs
 --  expire   the contract was sent and its validity ended without an answer
 --  tell     the outcome is known: the requester and, after a signature, HR are told (once each)
 create or replace function public.recruiting_hire_contract_due(p_now timestamptz default now())
@@ -96,7 +101,13 @@ begin
     select jsonb_build_object('kind', 'send', 'id', h.id, 'requisition', h.requisition_id, 'title', r.title, 'dept', r.dept, 'candidate', h.candidate_id,
                               'startOn', h.terms->>'start_on', 'body', c.body, 'bodySha256', c.body_sha256, 'template', c.template)
       from recruiting.hire_contract c join recruiting.hire_request h on h.id = c.request_id join recruiting.requisition r on r.id = h.requisition_id
+     where c.status = 'released'
+    union all
+    select jsonb_build_object('kind', 'ask', 'id', h.id, 'to', s.approver, 'role', 'hr', 'requisition', h.requisition_id, 'title', r.title, 'dept', r.dept, 'candidate', h.candidate_id)
+      from recruiting.hire_contract c join recruiting.hire_request h on h.id = c.request_id join recruiting.requisition r on r.id = h.requisition_id
+      join recruiting.hire_step s on s.request_id = h.id and s.role = 'hr'
      where c.status = 'prepared'
+       and not exists (select 1 from recruiting.hire_event e where e.request_id = h.id and e.event = 'contract_asked' and e.actor = s.approver)
     union all
     select jsonb_build_object('kind', 'expire', 'id', h.id, 'requisition', h.requisition_id, 'title', r.title, 'dept', r.dept, 'candidate', h.candidate_id,
                               'envelope', c.envelope_ref, 'provider', c.provider, 'expiresAt', c.expires_at)
@@ -132,7 +143,25 @@ begin
   return jsonb_build_object('id', p_id, 'contract', v_cid, 'status', 'prepared', 'created', true);
 end $$;
 
--- Step 2: the contract went out. p_ref is the envelope id of the e-signature service; a later answer has to name it.
+-- Step 2: HR releases the contract. NOT a tool of the agent and not a step of the workflow: only the Werkbank's main process calls it after the click.
+create or replace function public.recruiting_hire_contract_release(p_actor text, p_id bigint)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare c recruiting.hire_contract;
+begin
+  if p_actor is null or p_actor !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then raise exception 'actor must be an e-mail address'; end if;
+  select * into c from recruiting.hire_contract where request_id = p_id for update;
+  if not found then raise exception 'no contract has been prepared for this request'; end if;
+  if not exists (select 1 from recruiting.hire_step s where s.request_id = p_id and s.role = 'hr' and s.approver = lower(p_actor)) then
+    raise exception 'only the HR approver of this request can release the contract';
+  end if;
+  if c.status = 'released' and c.released_by = lower(p_actor) then return jsonb_build_object('id', p_id, 'status', 'released', 'created', false); end if;
+  if c.status <> 'prepared' then raise exception 'the contract is already % and cannot be released', c.status; end if;
+  update recruiting.hire_contract set status = 'released', released_at = now(), released_by = lower(p_actor) where id = c.id;
+  insert into recruiting.hire_event (request_id, event, role, actor) values (p_id, 'contract_released', 'hr', lower(p_actor));
+  return jsonb_build_object('id', p_id, 'status', 'released', 'created', true);
+end $$;
+
+-- Step 3: the contract went out. p_ref is the envelope id of the e-signature service; a later answer has to name it.
 create or replace function public.recruiting_hire_contract_sent(p_id bigint, p_provider text, p_ref text, p_valid_days integer default 14)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare c recruiting.hire_contract; v_provider text := left(btrim(coalesce(p_provider, '')), 60); v_ref text := left(btrim(coalesce(p_ref, '')), 120);
@@ -143,13 +172,14 @@ begin
   select * into c from recruiting.hire_contract where request_id = p_id for update;
   if not found then raise exception 'no contract has been prepared for this request'; end if;
   if c.status = 'sent' and c.envelope_ref = v_ref then return jsonb_build_object('id', p_id, 'status', 'sent', 'created', false); end if;
-  if c.status <> 'prepared' then raise exception 'the contract is already % and cannot be sent again', c.status; end if;
+  if c.status = 'prepared' then raise exception 'HR has not released the contract yet'; end if;
+  if c.status <> 'released' then raise exception 'the contract is already % and cannot be sent again', c.status; end if;
   update recruiting.hire_contract set status = 'sent', provider = v_provider, envelope_ref = v_ref, sent_at = now(), expires_at = now() + make_interval(days => p_valid_days) where id = c.id;
   insert into recruiting.hire_event (request_id, event, role, actor, note) values (p_id, 'contract_sent', '', 'system@werkbank.invalid', v_provider);
   return jsonb_build_object('id', p_id, 'status', 'sent', 'created', true, 'expiresAt', (select expires_at from recruiting.hire_contract where id = c.id));
 end $$;
 
--- Step 3: the answer of the e-signature service. p_document is the signed document as base64; p_sha256 (optional) is the service's hash of it.
+-- Step 4: the answer of the e-signature service. p_document is the signed document as base64; p_sha256 (optional) is the service's hash of it.
 create or replace function public.recruiting_hire_contract_result(
   p_id bigint, p_ref text, p_result text, p_signed_at timestamptz default null, p_document text default null, p_sha256 text default null, p_receipt jsonb default '{}'::jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
@@ -203,8 +233,15 @@ begin
   if v_to !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then raise exception 'the recipient must be an e-mail address'; end if;
   select * into c from recruiting.hire_contract where request_id = p_id for update;
   if not found then raise exception 'no contract has been prepared for this request'; end if;
-  if c.status not in ('signed', 'declined', 'expired') then raise exception 'the contract has no outcome yet'; end if;
   select * into h from recruiting.hire_request where id = p_id;
+  if c.status = 'prepared' then -- the request to release: only HR, once
+    if not exists (select 1 from recruiting.hire_step s where s.request_id = p_id and s.role = 'hr' and s.approver = v_to) then raise exception 'only the HR approver is asked to release the contract'; end if;
+    if exists (select 1 from recruiting.hire_event e where e.request_id = p_id and e.event = 'contract_asked' and e.actor = v_to) then return jsonb_build_object('id', p_id, 'event', 'contract_asked', 'created', false); end if;
+    if werkbank.find_secret(v_note) is not null then v_note := '[note removed: it looked like it contained a credential]'; end if;
+    insert into recruiting.hire_event (request_id, event, role, actor, note) values (p_id, 'contract_asked', 'hr', v_to, v_note);
+    return jsonb_build_object('id', p_id, 'event', 'contract_asked', 'created', true);
+  end if;
+  if c.status not in ('signed', 'declined', 'expired') then raise exception 'the contract is not waiting for a notice'; end if;
   if not (lower(h.created_by) = v_to or (c.status = 'signed' and exists (select 1 from recruiting.hire_step s where s.request_id = p_id and s.role = 'hr' and s.approver = v_to))) then
     raise exception 'this person is not a recipient of the outcome';
   end if;
@@ -236,7 +273,9 @@ begin
              'events', (select jsonb_agg(jsonb_build_object('event', e.event, 'role', e.role, 'actor', e.actor, 'at', e.at, 'note', e.note) order by e.id)
                           from recruiting.hire_event e where e.request_id = h.id),
              'contract', (select jsonb_build_object('status', c.status, 'template', c.template, 'bodySha256', c.body_sha256, 'provider', c.provider,
-                                                    'preparedAt', c.prepared_at, 'sentAt', c.sent_at, 'expiresAt', c.expires_at, 'decidedAt', c.decided_at,
+                                                    'preparedAt', c.prepared_at, 'releasedAt', c.released_at, 'releasedBy', c.released_by,
+                                                    'mine', c.status = 'prepared' and exists (select 1 from recruiting.hire_step z where z.request_id = h.id and z.role = 'hr' and z.approver = lower(p_actor)),
+                                                    'sentAt', c.sent_at, 'expiresAt', c.expires_at, 'decidedAt', c.decided_at,
                                                     'signedAt', c.signed_at, 'signedSha256', c.signed_sha256, 'hasDocument', c.signed_document is not null,
                                                     'method', c.receipt->>'method')
                             from recruiting.hire_contract c where c.request_id = h.id)) as x
@@ -269,9 +308,11 @@ end $$;
 revoke all on function recruiting.hire_contract_guard(), recruiting.hire_contract_text(bigint) from public, anon, authenticated;
 revoke all on function public.recruiting_hire_contract_due(timestamptz), public.recruiting_hire_contract_prepare(bigint),
   public.recruiting_hire_contract_sent(bigint, text, text, integer), public.recruiting_hire_contract_notice_record(bigint, text, text),
+  public.recruiting_hire_contract_release(text, bigint),
   public.recruiting_hire_contract_result(bigint, text, text, timestamptz, text, text, jsonb), public.recruiting_hire_contract_get(text, bigint),
   public.recruiting_hire_requests_list(text, text, integer) from public, anon, authenticated;
 grant execute on function public.recruiting_hire_contract_due(timestamptz), public.recruiting_hire_contract_prepare(bigint),
   public.recruiting_hire_contract_sent(bigint, text, text, integer), public.recruiting_hire_contract_notice_record(bigint, text, text),
+  public.recruiting_hire_contract_release(text, bigint),
   public.recruiting_hire_contract_result(bigint, text, text, timestamptz, text, text, jsonb), public.recruiting_hire_contract_get(text, bigint),
   public.recruiting_hire_requests_list(text, text, integer) to service_role;

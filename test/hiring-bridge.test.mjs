@@ -57,8 +57,20 @@ test('the contract reaches the page as a state only: no text, no document, unkno
   const contract = { status: 'signed', template: 'employment-v1', bodySha256: 'a'.repeat(64), provider: 'MockSign', preparedAt: 'p', sentAt: 's', expiresAt: 'e', decidedAt: 'd', signedAt: 'g', signedSha256: 'b'.repeat(64), hasDocument: true, method: 'simulation',
     body: 'EMPLOYMENT CONTRACT ...', signedDocument: 'JVBERi0=', name: 'Jane Doe' };
   const [r] = pickHireRequests([{ ...row, contract }]);
-  assert.deepEqual(Object.keys(r.contract).sort(), ['bodySha256', 'decidedAt', 'expiresAt', 'hasDocument', 'method', 'preparedAt', 'provider', 'sentAt', 'signedAt', 'signedSha256', 'status', 'template']);
+  assert.deepEqual(Object.keys(r.contract).sort(), ['bodySha256', 'decidedAt', 'expiresAt', 'hasDocument', 'method', 'mine', 'preparedAt', 'provider', 'releasedAt', 'releasedBy', 'sentAt', 'signedAt', 'signedSha256', 'status', 'template']);
   assert.ok(!JSON.stringify(r).includes('EMPLOYMENT') && !JSON.stringify(r).includes('JVBERi') && !JSON.stringify(r).includes('Jane'));
   assert.equal(pickHireRequests([{ ...row, contract: { status: 'weird' } }])[0].contract, null);
   assert.equal(pickHireRequests([row])[0].contract, null, 'no contract yet');
+});
+
+test('release: a fixed request with a request number, answered with the new state only', async () => {
+  const calls = [];
+  const h = { ...host(), release: async (id) => { calls.push(id); return { ok: true, data: { id, status: 'released', created: true, extra: 1 } }; } };
+  const reply = await handleHiringMessage({ type: 'ha:release-request', requestId: 'r1', id: 3 }, h);
+  assert.deepEqual(reply, { type: 'ha:released', requestId: 'r1', result: { id: 3, status: 'released' } });
+  assert.deepEqual(calls, [3]);
+  assert.equal((await handleHiringMessage({ type: 'ha:release-request', requestId: 'r1', id: '3' }, h)).type, 'ct:error');
+  assert.equal((await handleHiringMessage({ type: 'ha:release-request', requestId: 'r1', id: 3 }, host())).type, 'ct:error', 'no release function: clear error');
+  const refused = { ...host(), release: async () => ({ ok: false, error: 'only the HR approver of this request can release the contract' }) };
+  assert.match((await handleHiringMessage({ type: 'ha:release-request', requestId: 'r1', id: 3 }, refused)).message, /only the HR approver/);
 });

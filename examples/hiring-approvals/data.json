@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-11-07",
+  "asOf": "2026-11-08",
   "company": "Hanse Logistik (fictional)",
   "viewers": [
     {
@@ -341,6 +341,20 @@
           "note": "template employment-v1"
         },
         {
+          "event": "contract_asked",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-28T12:30",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "contract_released",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-10-28T12:34",
+          "note": ""
+        },
+        {
           "event": "contract_sent",
           "role": "",
           "actor": "system@werkbank.invalid",
@@ -381,7 +395,10 @@
         "signedAt": "2026-10-30T09:12",
         "signedSha256": "9c2e4a6f8b1d3057e9a1c3b5d7f90246a8c0e2b4d6f8a1c3e5b7d9f1a3c5e7b9",
         "hasDocument": true,
-        "method": "simulation"
+        "method": "simulation",
+        "releasedAt": "2026-10-28T12:34",
+        "releasedBy": "hr.lead@hanse.example",
+        "mine": false
       }
     },
     {
@@ -695,6 +712,20 @@
           "note": "template employment-v1"
         },
         {
+          "event": "contract_asked",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-05T15:20",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "contract_released",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-05T15:24",
+          "note": ""
+        },
+        {
           "event": "contract_sent",
           "role": "",
           "actor": "system@werkbank.invalid",
@@ -710,6 +741,151 @@
         "preparedAt": "2026-11-05T15:10",
         "sentAt": "2026-11-05T15:25",
         "expiresAt": "2026-11-19T15:25",
+        "decidedAt": null,
+        "signedAt": null,
+        "signedSha256": "",
+        "hasDocument": false,
+        "method": "",
+        "releasedAt": "2026-11-05T15:24",
+        "releasedBy": "hr.lead@hanse.example",
+        "mine": false
+      }
+    },
+    {
+      "id": 7,
+      "requisition": "REQ-2109",
+      "title": "Data Engineer",
+      "dept": "IT",
+      "candidate": "C-3811",
+      "terms": {
+        "level": "Professional",
+        "band": "Band 4",
+        "start_on": "2027-02-01",
+        "contract": "permanent",
+        "note": ""
+      },
+      "evidence": "C-3811 is in the stage Offer of REQ-2109. Meets all must-haves (must-haves met 3 of 3, nice-to-haves 2 of 2). A person decides.",
+      "status": "approved",
+      "currentStep": 3,
+      "createdBy": "head.it.apps@hanse.example",
+      "at": "2026-11-06T09:00",
+      "decidedAt": "2026-11-07T14:00",
+      "steps": [
+        {
+          "ord": 1,
+          "role": "hiring_manager",
+          "approver": "head.it.apps@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-06T13:00",
+          "note": ""
+        },
+        {
+          "ord": 2,
+          "role": "hr",
+          "approver": "hr.lead@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-07T08:00",
+          "note": ""
+        },
+        {
+          "ord": 3,
+          "role": "finance",
+          "approver": "finance.bp@hanse.example",
+          "status": "approved",
+          "decidedAt": "2026-11-07T14:00",
+          "note": ""
+        }
+      ],
+      "events": [
+        {
+          "event": "requested",
+          "role": "",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-11-06T08:50",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-11-06T09:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-11-06T13:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-06T13:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-07T08:00",
+          "note": ""
+        },
+        {
+          "event": "notified",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-11-07T08:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "approved",
+          "role": "finance",
+          "actor": "finance.bp@hanse.example",
+          "at": "2026-11-07T14:00",
+          "note": ""
+        },
+        {
+          "event": "informed",
+          "role": "hiring_manager",
+          "actor": "head.it.apps@hanse.example",
+          "at": "2026-11-07T14:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "informed",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-07T14:05",
+          "note": "n8n, incoming webhook"
+        },
+        {
+          "event": "contract_prepared",
+          "role": "",
+          "actor": "system@werkbank.invalid",
+          "at": "2026-11-07T14:10",
+          "note": "template employment-v1"
+        },
+        {
+          "event": "contract_asked",
+          "role": "hr",
+          "actor": "hr.lead@hanse.example",
+          "at": "2026-11-07T14:20",
+          "note": "n8n, incoming webhook"
+        }
+      ],
+      "contract": {
+        "status": "prepared",
+        "template": "employment-v1",
+        "bodySha256": "d1f3a5c7e9b2046813a5c7e9b1d3f50827a4c6e8b0d2f4a6c8e1b3d5f7a9c1e5",
+        "provider": "",
+        "preparedAt": "2026-11-07T14:10",
+        "releasedAt": "",
+        "releasedBy": "",
+        "mine": true,
+        "sentAt": "",
+        "expiresAt": "",
         "decidedAt": null,
         "signedAt": null,
         "signedSha256": "",

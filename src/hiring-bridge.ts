@@ -2,6 +2,7 @@
  * Bridge for the Hiring Approvals Space. The Space may send three fixed requests and nothing else:
  *   ha:list-request    → ha:list      (the hiring requests this person may see)
  *   ha:decide-request  → ha:decided   (Approve, Return or Decline of the step that is this person's turn)
+ *   ha:release-request → ha:released  (HR releases the prepared contract; the database accepts only the HR approver)
  *   ha:open-tools      → (no reply)   the App opens the proposals and criteria screen
  * Both reads and decisions go through the main process as the stored e-mail, not through the agent: the agent has no tool to decide.
  * The answer is cut down to the fields the Space renders (no free text beyond the notes, no contact data).
@@ -9,6 +10,7 @@
 export const HIRING_SPACE = 'hiring-approvals';
 
 export interface HiringHost {
+  release?: (id: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
   list: (args: Record<string, unknown>) => Promise<{ ok: true; data: { requests?: unknown[] } } | { ok: false; error: string }>;
   decide: (id: number, decision: 'approve' | 'return' | 'decline', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
 }
@@ -25,10 +27,10 @@ const rows = (v: unknown, max: number): Record<string, unknown>[] => (Array.isAr
 export function pickContract(raw: unknown): Record<string, unknown> | null {
   if (!isObject(raw)) return null;
   const status = str(raw.status, 20);
-  if (!['prepared', 'sent', 'signed', 'declined', 'expired'].includes(status)) return null;
+  if (!['prepared', 'released', 'sent', 'signed', 'declined', 'expired'].includes(status)) return null;
   return {
     status, template: str(raw.template, 40), bodySha256: str(raw.bodySha256, 64), provider: str(raw.provider, 60),
-    preparedAt: str(raw.preparedAt, 40), sentAt: str(raw.sentAt, 40), expiresAt: str(raw.expiresAt, 40), decidedAt: str(raw.decidedAt, 40), signedAt: str(raw.signedAt, 40),
+    preparedAt: str(raw.preparedAt, 40), releasedAt: str(raw.releasedAt, 40), releasedBy: str(raw.releasedBy, 120), mine: raw.mine === true, sentAt: str(raw.sentAt, 40), expiresAt: str(raw.expiresAt, 40), decidedAt: str(raw.decidedAt, 40), signedAt: str(raw.signedAt, 40),
     signedSha256: str(raw.signedSha256, 64), hasDocument: raw.hasDocument === true, method: str(raw.method, 120),
   };
 }
@@ -56,7 +58,7 @@ export function pickDecision(raw: unknown): Record<string, unknown> | null {
 export async function handleHiringMessage(data: unknown, host: HiringHost | undefined, onOpenTools?: () => void): Promise<Record<string, unknown> | null> {
   if (!isObject(data) || typeof data.type !== 'string') return null;
   if (data.type === 'ha:open-tools') { onOpenTools?.(); return null; }
-  if (data.type !== 'ha:list-request' && data.type !== 'ha:decide-request') return null;
+  if (data.type !== 'ha:list-request' && data.type !== 'ha:decide-request' && data.type !== 'ha:release-request') return null;
   const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
   if (!requestId) return null;
   const fail = (message: string) => ({ type: 'ct:error', requestId, message });
@@ -66,6 +68,13 @@ export async function handleHiringMessage(data: unknown, host: HiringHost | unde
       const status = typeof data.status === 'string' && STATUS.includes(data.status) ? data.status : 'pending';
       const res = await host.list({ status, limit: 200 });
       return res.ok ? { type: 'ha:list', requestId, status, requests: pickHireRequests(res.data?.requests) } : fail(res.error);
+    }
+    if (data.type === 'ha:release-request') {
+      const rid = data.id;
+      if (typeof rid !== 'number' || !Number.isInteger(rid) || rid < 1) return fail('Unknown request.');
+      if (!host.release) return fail('Releasing a contract needs the desktop app.');
+      const res = await host.release(rid);
+      return res.ok ? { type: 'ha:released', requestId, result: { id: num(res.data?.id), status: str(res.data?.status, 20) } } : fail(res.error);
     }
     const id = data.id;
     const decision = DECISIONS.find((d) => d === data.decision);
