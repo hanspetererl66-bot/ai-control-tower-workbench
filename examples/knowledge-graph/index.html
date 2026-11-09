@@ -2316,6 +2316,34 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "skill:recruiting-analytics-brief",
+   "type": "skill",
+   "label": "recruiting-analytics-brief",
+   "meta": {
+    "Maturity": "pilot",
+    "Board area": "not classified",
+    "Reach": "team",
+    "Team": "HR Analytics",
+    "Rating": "not rated yet",
+    "EU AI Act": "Limited",
+    "Next review": "2027-05-09",
+    "Value last full month": "€0",
+    "Runs last full month": "0"
+   },
+   "view": {
+    "space": "skill-marketplace",
+    "tab": "catalog"
+   }
+  },
+  {
+   "id": "tool:recruiting_get_pipeline",
+   "type": "tool",
+   "label": "recruiting_get_pipeline",
+   "meta": {
+    "System": "AI Control Tower"
+   }
+  },
+  {
    "id": "skill:rfp-responder",
    "type": "skill",
    "label": "rfp-responder",
@@ -6055,6 +6083,26 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "USES_TOOL"
   },
   {
+   "source": "skill:recruiting-analytics-brief",
+   "target": "system:marketplace",
+   "type": "LISTED_IN"
+  },
+  {
+   "source": "tool:recruiting_get_pipeline",
+   "target": "connector:ai-control-tower",
+   "type": "PROVIDED_BY"
+  },
+  {
+   "source": "tool:recruiting_get_pipeline",
+   "target": "system:control-tower",
+   "type": "READS"
+  },
+  {
+   "source": "skill:recruiting-analytics-brief",
+   "target": "tool:recruiting_get_pipeline",
+   "type": "USES_TOOL"
+  },
+  {
    "source": "skill:rfp-responder",
    "target": "system:marketplace",
    "type": "LISTED_IN"
@@ -6703,6 +6751,11 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "source": "skill:pricing-guard",
    "target": "agent:price-list-updater",
    "type": "OBSERVES_AGENT"
+  },
+  {
+   "source": "skill:recruiting-analytics-brief",
+   "target": "risk:R6",
+   "type": "RELATES_TO_RISK"
   },
   {
    "source": "skill:rfp-responder",

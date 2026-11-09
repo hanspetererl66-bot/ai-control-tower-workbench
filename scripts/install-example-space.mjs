@@ -30,6 +30,7 @@ export const EXAMPLE_SPACES = {
   'calm-alm': 'calm-alm',
   'abap-workbench': 'abap-workbench',
   'recruiting-workbench': 'recruiting-workbench',
+  'recruiting-analytics': 'recruiting-analytics',
   'hiring-approvals': 'hiring-approvals',
   onboarding: 'onboarding',
   'agent-observability': 'agent-observability',
