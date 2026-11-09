@@ -156,6 +156,10 @@ function planTask(data, req) {
     }
   }
 
+  // The SOP of this playbook: its extra steps join the technical flow, all of its steps are listed with their source.
+  const sop = (data.sops ?? []).find((x) => x.template === req.template) ?? null;
+  if (sop) for (const st of sop.steps) if (st.extra) extraSteps.push({ id: `sop-${st.id}`, title: st.title, when: st.when, detail: st.does, playbook: req.template });
+
   // conflicts with other open tasks of the same customer
   const conflicts = win && win[0] && win[1] ? (data.tasks ?? []).filter((t) => t.id !== req.id && t.customer === target.customer && t.state !== 'done' && overlaps(win, t.window)) : [];
   checks.push({ label: 'Conflicts in the change calendar', status: conflicts.length ? 'warn' : 'ok', detail: conflicts.length ? `Overlaps with ${conflicts.map((c) => c.id).join(', ')}.` : 'No overlap with other tasks of this customer.' });
@@ -181,6 +185,7 @@ function planTask(data, req) {
     downtime,
     blast: { vms: affectedVmsAll, dns: affectedDns, customers: [customer ? customer.name : target.customer] },
     conflicts: conflicts.map((c) => c.id),
+    sop: sop ? { id: sop.id, title: sop.title, summary: sop.summary, page: sop.page, steps: sop.steps } : null,
     steps: [...extraSteps, ...ORCHESTRATION.map((s) => ({ id: s.id, title: s.title, tool: s.tool, detail: s.detail }))],
   };
 }
@@ -236,6 +241,14 @@ export function loadInfraData(env = process.env) {
   return JSON.parse(readFileSync(file, 'utf8'));
 }
 
+/** The dummy internal wiki (Infra Wiki Space): bundled copy first, then the repository's pages. */
+export function loadWikiData(env = process.env) {
+  const candidates = [env.INFRA_WIKI_DATA, here('../data/infra-wiki.json'), here('../../../examples/infra-wiki/pages.json')].filter(Boolean);
+  const file = candidates.find((path) => existsSync(path));
+  if (!file) throw new Error('Infra Wiki pages not found.');
+  return JSON.parse(readFileSync(file, 'utf8'));
+}
+
 const WINDOW = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 const REQUEST_PROPERTIES = {
   template: { type: 'string', enum: Object.keys(PLAYBOOKS), description: 'Which kind of change: renew-certificate, update-dns-record, patch-vm or move-vm (rotate-secret is a draft and is rejected).' },
@@ -260,10 +273,16 @@ export const INFRA_TOOL_DEFINITIONS = [
       'Hand a planned infrastructure change to the n8n workflow that orchestrates it (ticket, check-mode run in AWX, approval in Teams). The only write of this tool group, and it never executes a change: the request is always sent in check mode and approval happens in n8n. Call plan_infra_change first, show the plan to the person and set confirm to true only after they agree. Needs the n8n webhook address in the connector settings; without it the tool returns the payload it would send.',
     inputSchema: { type: 'object', properties: { ...REQUEST_PROPERTIES, confirm: { type: 'boolean', description: 'Must be true, and only after the person has seen the plan and agreed to submit it.' } }, required: ['template', 'target', 'window_start', 'window_end', 'confirm'], additionalProperties: false },
   },
+  {
+    name: 'read_wiki_page',
+    description:
+      'Read one page of the internal Infra Wiki (dummy pages for the demo): the standard operating procedure for a typical infrastructure task, step by step with who does it, which tool, when it is done and what to do if it fails. Pages: renew-tls-certificate, patch-vm. Read only. Use it to explain or check an SOP before planning the change with plan_infra_change.',
+    inputSchema: { type: 'object', properties: { page: { type: 'string', description: 'Page id: renew-tls-certificate or patch-vm. Leave out to list the pages.' } }, additionalProperties: false },
+  },
 ];
 
 /** `env` supplies N8N_INFRA_WEBHOOK_URL and the optional N8N_INFRA_WEBHOOK_TOKEN; `load` returns the inventory. */
-export function createInfraOpsHandlers({ ToolError, env = process.env, fetchImpl = fetch, load = () => loadInfraData(env) } = {}) {
+export function createInfraOpsHandlers({ ToolError, env = process.env, fetchImpl = fetch, load = () => loadInfraData(env), loadWiki = () => loadWikiData(env) } = {}) {
   const inventory = () => {
     try {
       return load();
@@ -293,7 +312,19 @@ export function createInfraOpsHandlers({ ToolError, env = process.env, fetchImpl
   return {
     plan_infra_change(args) {
       const plan = planTask(inventory(), request(args));
-      return { ...plan, steps: (plan.steps ?? []).map((s) => (s.tool ? `${s.title} (${s.tool})` : s.title)), view, dataSource: 'sample inventory (Infrastructure Operations example Space), simulated plan' };
+      return { ...plan, sop: plan.sop ? { title: plan.sop.title, wikiPage: `${plan.sop.page.path} (v${plan.sop.page.version})`, steps: plan.sop.steps.map((x) => `${x.wikiStep}. ${x.title}`) } : null, steps: (plan.steps ?? []).map((s) => (s.tool ? `${s.title} (${s.tool})` : s.title)), view, dataSource: 'sample inventory (Infrastructure Operations example Space), simulated plan' };
+    },
+    read_wiki_page(args = {}) {
+      let wiki;
+      try {
+        wiki = loadWiki();
+      } catch (error) {
+        throw new ToolError(`Infra Wiki unavailable: ${error.message}`);
+      }
+      if (args.page === undefined || args.page === '') return { wiki: wiki.wiki, note: wiki.note, pages: wiki.pages.map((p) => ({ id: p.id, title: p.title, path: p.path, version: p.version, status: p.status })), view: { space: 'infra-wiki' } };
+      const page = wiki.pages.find((p) => p.id === args.page);
+      if (!page) throw new ToolError(`Unknown page. Use one of: ${wiki.pages.map((p) => p.id).join(', ')}`);
+      return { ...page, view: { space: 'infra-wiki' }, dataSource: 'fictional internal wiki (Infra Wiki example Space)' };
     },
     async submit_infra_change(args) {
       if (args.confirm !== true) throw new ToolError('Set confirm to true only after the person has seen the plan and agreed to submit it.');
