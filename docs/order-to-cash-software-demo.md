@@ -17,7 +17,7 @@ Vertrag C-4410 vom 28.10.2026, 36 Monate ab 01.12.2026, fester Preis 388.000,00 
 ## Die 14 Schritte
 1 Vertrag unterschrieben (CRM), 2 Auftrag, 3 Stückliste (Material), 4 **Entitlement-Prüfung vor der Lieferung** (zwei Abweichungen, Person entscheidet), 5 Lieferung (Lizenzschlüssel, Mandant, Zähler, Serviceplan), 6 **Wareneingang: der Kunde bestätigt** (Person entscheidet), 7 Entitlement erteilt, 8 technische Bereitstellung, 9 Rückmeldung "erledigt", 10 Billing, 11 **Verbrauch gegen Billing** (Differenz 2.300.000 Aufrufe = 920,00; Person entscheidet), 12 Revenue, 13 Cash-Eingang, 14 Umsatzrealisierung (Periodenabschluss).
 
-Reiter: Process (Zeile je Schritt, Spalte je System, Klick für Details), Order and bill of material, Entitlement and delivery, Billing and consumption, Revenue and cash (Monatsende wählbar), n8n process. Oben die Leiste "Run step / Run to the next decision / Start again".
+Reiter: End-to-End O2C Process (Zeile je Schritt, Spalte je System, Klick für Details; darunter der n8n-Prozess), Order and bill of material (mit enthaltenen Services und drei Tenants), Entitlement, Provisioning, Billing and consumption, Revenue and cash (Monatsende wählbar). Oben die Leiste "Run step / Run to the next decision / Start again".
 
 ## n8n
 `examples/n8n-workflows/13-order-to-cash-software.json`: Webhook `/webhook/o2c-software`, 14 HTTP-Knoten (je einer pro Schritt, URL aus `CRM_URL`, `ORDER_URL`, `MATERIAL_URL`, `ENTITLEMENT_URL`, `PROVISIONING_URL`, `BILLING_URL`, `REVENUE_URL`, Schlüssel `O2C_API_KEY`), drei Wait-Knoten für die Entscheidungen. Der Ablauf entscheidet nichts. Gegen echte Systeme nicht getestet.

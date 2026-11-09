@@ -107,3 +107,49 @@ test('the n8n workflow calls every stage in order, with a Wait node at each deci
   while (wf.connections[cur]) { cur = wf.connections[cur].main[0][0].node; seen++; }
   assert.equal(seen, wf.nodes.length - 1, 'all nodes but the note are on the path');
 });
+
+test('the page runs: six tabs, Entitlement and Provisioning are separate, the n8n process sits under the flowchart, three tenants', async () => {
+  const { JSDOM, VirtualConsole } = await import('jsdom');
+  const errs = [];
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', (e) => errs.push(e.message));
+  const w = new JSDOM(page, { runScripts: 'dangerously', virtualConsole: vc }).window;
+  const labels = [...w.document.querySelectorAll('#tabs button')].map((b) => b.textContent);
+  assert.deepEqual(labels, ['End-to-End O2C Process', 'Order and bill of material', 'Entitlement', 'Provisioning', 'Billing and consumption', 'Revenue and cash']);
+  for (const t of ['proc', 'bom', 'ent', 'prov', 'bill', 'rev']) w.document.querySelector(`[data-act=tab][data-id=${t}]`).click();
+  w.document.querySelector('[data-act=tab][data-id=proc]').click();
+  assert.match(w.document.querySelector('#main').textContent, /n8n process behind it/);
+  assert.equal(data.tenants.length, 3);
+  assert.ok(data.includedServices.length >= 4);
+  assert.deepEqual(errs, []);
+});
+
+test('the flowchart has one node per step, the cases stop where the story says, and the key figures follow the steps', async () => {
+  const { JSDOM, VirtualConsole } = await import('jsdom');
+  const errs = [];
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', (e) => errs.push(e.message));
+  const w = new JSDOM(page, { runScripts: 'dangerously', virtualConsole: vc }).window;
+  const $ = (q) => w.document.querySelector(q), $$ = (q) => [...w.document.querySelectorAll(q)];
+  assert.equal($$('svg.fl .nd').length, 14);
+  assert.equal($$('.docs .doc').length, 14);
+  assert.equal($$('.kpis .kpi b')[1].textContent, '0.00', 'nothing is billed before step 1');
+  $('[data-act=scn][data-id=entitlement]').click();
+  assert.match($('.ctl .prog').textContent, /Step 3 of 14/);
+  assert.match($('.ctl .why').textContent, /deviation/);
+  assert.match($('.verdict').textContent, /1,420\.00/);
+  $('[data-act=scn][data-id=meter]').click();
+  assert.match($('.ctl .prog').textContent, /Step 10 of 14/);
+  assert.notEqual($$('.kpis .kpi b')[1].textContent, '0.00', 'invoices exist after step 10');
+  $('[data-act=scn][data-id=smooth]').click();
+  assert.match($('.ctl .prog').textContent, /Step 14 of 14/);
+  $('[data-act=view][data-id=table]').click();
+  assert.equal($$('svg.fl').length, 0);
+  assert.equal($$('table.stp tbody tr').length, 14);
+  $('[data-act=reset]').click();
+  assert.match($('.ctl .prog').textContent, /Step 0 of 14/);
+  assert.equal($$('table.stp').length, 1, 'the chosen view survives a restart');
+  assert.deepEqual(errs, []);
+  assert.ok(data.stages.every((s) => s.on && s.doc));
+  assert.ok(data.stages.every((s, i, a) => i === 0 || s.on >= a[i - 1].on), 'dates never go backwards');
+});
