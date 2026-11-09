@@ -55,6 +55,9 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 
 Weitere Anleitungen: `docs/recruiting.md`, `docs/arc-1.md`, `docs/arc-1-demo.md`, `docs/teams.md`, `docs/customer-360.md`, `docs/agent-observability.md`, `docs/registry-leanix.md`, `docs/order-to-cash*.md`.
 
+## Testbed für Quellen
+`scripts/sources-testbed.mjs` + `examples/sources-testbed/dataset.json` spielen erfundene Anforderungen mit bekannter Lösung in ein Test-Jira und einen Test-Slack-Kanal (Dry-Run standardmäßig, `--expect` zeigt die Lösung); Anleitung `docs/sources-test.md`. Nicht getestet: echter Lauf gegen Jira Cloud/Slack (aus dem Sandkasten nicht erreichbar), nur Tests mit Fake-fetch.
+
 ## Offen
 - Databricks-Zugang eintragen und Daten laden.
 - Skill-Governance in der App (noch localStorage) an die Datenbankfunktionen anbinden (braucht Entscheidung zur Anmeldung).

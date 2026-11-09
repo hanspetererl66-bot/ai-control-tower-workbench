@@ -1,0 +1,32 @@
+{
+  "note": "every message or ticket that voices the need counts once; a '+1 same for us' counts; a question about who builds it, greetings and chatter do not.",
+  "themes": [
+    { "id": "renewal", "title": "Renewal reminders", "expectClass": ["agent", "workflow"], "expect": { "slack": 5, "jira": 1 } },
+    { "id": "approval", "title": "Four-eyes approval for invoices over 10,000 EUR", "expectClass": ["workflow", "agent"], "expect": { "slack": 2, "jira": 2 } },
+    { "id": "darkmode", "title": "Dark mode in the customer portal", "expectClass": ["feature"], "expect": { "slack": 1, "jira": 1 } }
+  ],
+  "slack": [
+    { "theme": "renewal", "text": "Ann (Sales): We keep missing the notice dates on contracts. Somebody should remind the owner 90 days before a renewal." },
+    { "theme": "renewal", "text": "Wir verpassen immer wieder Kündigungsfristen. Eine Erinnerung an den Vertragsverantwortlichen wäre Gold wert. (Bernd, Einkauf)",
+      "replies": [
+        { "theme": "renewal", "text": "+1, same for us in Legal. Today it is a spreadsheet nobody opens." },
+        { "theme": null, "text": "Who could build that? Is there budget?" }
+      ] },
+    { "theme": "renewal", "text": "Carla (Finance): Auto-renewals surprised us again in October. We need an early warning with the contract value." },
+    { "theme": "renewal", "text": "Dev (IT): Owners of expiring licences are never told. Could the system send a reminder weeks ahead?" },
+    { "theme": "approval", "text": "Eva (Controlling): Invoices above 10k EUR must be approved by two people, but today it is only a convention. Can the system enforce it?" },
+    { "theme": "approval", "text": "Für Rechnungen über 10.000 Euro brauchen wir ein Vier-Augen-Prinzip im Freigabeprozess. (Frank, Buchhaltung)" },
+    { "theme": "darkmode", "text": "Gina (Support): Customers ask for a dark mode in the portal, three tickets this week." },
+    { "theme": null, "text": "Lunch at 12:30 in the canteen?" },
+    { "theme": null, "text": "Thanks everyone, the build is green again." },
+    { "theme": null, "text": "Reminder: all-hands tomorrow 10:00, link in the invite." },
+    { "theme": null, "text": "Does anyone know why the printer on floor 3 is offline?" },
+    { "theme": null, "text": "Happy birthday, Hans! 🎉" }
+  ],
+  "jira": [
+    { "theme": "renewal", "summary": "Warn contract owners before a contract renews", "description": "Contract owners are not told when a notice period ends. We want a reminder 90 days and 30 days before." },
+    { "theme": "approval", "summary": "Second approver for invoices over 10,000 EUR", "description": "Invoices above 10,000 EUR need a second approver before they are released for payment." },
+    { "theme": "approval", "summary": "Enforce four-eyes principle on high-value payments", "description": "Large payments are released by one person today. Audit asks that a second person confirms them." },
+    { "theme": "darkmode", "summary": "Dark theme for the customer portal", "description": "Customers ask for a dark colour scheme in the portal, mainly for evening use." }
+  ]
+}
