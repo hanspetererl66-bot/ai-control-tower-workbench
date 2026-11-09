@@ -138,3 +138,11 @@ test('bridge: the prompt allows recall only and parseAnswer rejects an empty rep
   assert.equal(parseAnswer('{"answer":"","ids":[]}'), null);
   assert.equal(parseAnswer('{"answer":"x","ids":"no"}'), null);
 });
+
+test('customer 360: an answer without ids is matched to nodes by name', () => {
+  const L = moduleLogic(JSON.parse(readFileSync(join(import.meta.dirname, '..', 'examples/customer-360/data.json'), 'utf8')));
+  const ids = L.mentions('Katrin Brandt is the Head of Accounts Payable. Invoice INV-2026-N0009 is open; Brandts team knows.');
+  assert.deepEqual(ids.slice(0, 2), ['contact:brandt', 'invoice:INV-2026-N0009'], 'full name, last name and identifiers, in order of appearance');
+  assert.deepEqual(L.mentions('Nothing named here.'), []);
+  assert.equal(L.mentions('Brandtmann and Xinv-2026-N0009x').length, 0, 'whole words only');
+});

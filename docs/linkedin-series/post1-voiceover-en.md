@@ -10,7 +10,7 @@ Right next to it, the list of your conversations.
 And on the right, the chat window, where you work with Joule.
 Back on the rail, from top to bottom: Conversations, your chats.
 Spaces, your work organized by domain.
-Develop, for workflows and agents.
+Develop, for workflows, agents and skills.
 Further down, the Scheduler, to run agents and workflows on a schedule.
 Admin, with the ontologies and the registry.
 And at the very bottom: help and shortcuts, your settings, and your profile.
@@ -31,6 +31,10 @@ And every Space can be changed with Joule, right from the top!
 ## New: Develop
 Develop guides you in five steps: intent, requirements, specification, build, and test and go live.
 
+## New: Skills with governance
+New: Skills, with governance! Skills are reusable abilities for Joule. They live on three levels: personal, department and company.
+A skill moves up only with an approval: request, automatic checks, review, and then it is published for everyone.
+
 ## New: the Scheduler
 New: the Scheduler. Look for the calendar icon in the menu.
 Agents, workflows or skills, daily, weekly, monthly, or by cron.
@@ -40,4 +44,4 @@ New: personal settings. Skins, accent colors, fonts and density, all in one plac
 Pick a skin, and the whole app, and every Space, follows!
 
 ## Closing
-New features at a glance: chat tabs, Spaces and subspaces, Change with Joule, Develop, the Scheduler, and personal settings. A design study.
+New features at a glance: chat tabs, Spaces and subspaces, Change with Joule, Develop, Skills with governance, the Scheduler, and personal settings. A design study.
