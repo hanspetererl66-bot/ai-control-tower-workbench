@@ -4,6 +4,8 @@
   "alerts": [
     {
       "id": "A-501",
+      "customer": "Muster Industrie AG",
+      "host": "joule-gw-01",
       "service": "Joule gateway",
       "severity": "critical",
       "impact": "high",
@@ -13,6 +15,8 @@
     },
     {
       "id": "A-502",
+      "customer": "Muster Industrie AG",
+      "host": "joule-gw-02",
       "service": "BTP AI Core quota",
       "severity": "high",
       "impact": "high",
@@ -22,6 +26,8 @@
     },
     {
       "id": "A-503",
+      "customer": "Muster Industrie AG",
+      "host": "ariba-int-01",
       "service": "Ariba sync job",
       "severity": "high",
       "impact": "medium",
@@ -31,6 +37,8 @@
     },
     {
       "id": "A-504",
+      "customer": "Muster Industrie AG",
+      "host": "n8n-prd-01",
       "service": "n8n worker",
       "severity": "medium",
       "impact": "medium",
@@ -40,6 +48,8 @@
     },
     {
       "id": "A-505",
+      "customer": "Muster Industrie AG",
+      "host": "bkp-veeam-01",
       "service": "Backup agent",
       "severity": "low",
       "impact": "low",
@@ -49,15 +59,19 @@
     },
     {
       "id": "A-506",
+      "customer": "Muster Industrie AG",
+      "host": "proxy-edge-01",
       "service": "TLS certificate",
       "severity": "low",
       "impact": "low",
       "customerFacing": false,
       "repeat24h": 0,
-      "text": "Certificate for status.example expires in 21 days."
+      "text": "Certificate for edge.muster-industrie.example expires in 5 days (2026-10-24)."
     },
     {
       "id": "A-507",
+      "customer": "Muster Industrie AG",
+      "host": "mon-prom-01",
       "service": "Monitoring webhook",
       "severity": "medium",
       "impact": "low",
