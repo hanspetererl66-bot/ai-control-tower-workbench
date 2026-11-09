@@ -51,7 +51,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11
 | `customer-360.md` | Lindenau, Customer 360 |
 | `cognee-tabpfn.md` | Cognee-Wissensgraph, TabPFN-Prognosen |
 | `databricks-sap.md` | Databricks-Demo, SAP-Sandbox, ARC-1 |
-| `design-study-and-demos.md` | Joule Design Study, Order-to-Cash (zwei Fälle) |
+| `design-study-and-demos.md` | Order-to-Cash (zwei Fälle); der Space Joule Design Study ist entfernt |
 | `recruiting-status.md` | Recruiting Workbench, Hiring Approvals, Job Posting, Online-Interview |
 | `policy-manifest.md` | Policy-Manifest (Rechte als Daten, erzwingt nichts) |
 | `dashboards-observability.md` | n8n Performance Dashboard, Agent Observability, AI Governance (Einstieg und Subspaces) |

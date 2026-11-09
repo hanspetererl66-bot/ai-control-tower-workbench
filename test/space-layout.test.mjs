@@ -296,7 +296,7 @@ test('an empty layout still gives a page with a card', () => {
 });
 
 test('layoutFromHtml returns null for pages the Designer did not make', () => {
-  assert.equal(layoutFromHtml(readFileSync(join(ROOT, 'examples/design-study/index.html'), 'utf8')), null);
+  assert.equal(layoutFromHtml(readFileSync(join(ROOT, 'examples/sales/index.html'), 'utf8')), null);
   assert.equal(layoutFromHtml('<html></html>'), null);
   assert.equal(layoutFromHtml('<script type="application/json" id="wb-layout">{broken</script>'), null);
 });
