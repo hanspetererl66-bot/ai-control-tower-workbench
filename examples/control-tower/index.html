@@ -59,7 +59,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .sh:first-child{margin-top:0}
 .card{background:var(--surface);border:1px solid var(--g200);border-radius:6px;padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
 .chd{font-size:16px;font-weight:700;color:var(--purple-ink);margin-bottom:10px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 
@@ -179,7 +179,9 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 
 ::-webkit-scrollbar{width:4px;height:8px}
 ::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}
-@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}.bl-w,.bl-n{width:100px}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}.bl-w,.bl-n{width:100px}}
+/* Phone width: the header grows with its content instead of cutting the title and the date off. */
+@media(max-width:640px){.ct header.hdr{height:auto;min-height:60px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap;gap:8px 16px}.ct header.hdr .hdr-brand{flex:1 1 220px;min-width:0}.ct header.hdr .hdr-right{flex:1 1 auto;gap:12px;flex-wrap:wrap;justify-content:flex-end}.ct .hdr-stat-val,.ct .hdr-stat-lbl{white-space:nowrap}}
 /* ---- AI Governance entry page ---- */
 .hub-h{font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px;color:var(--ink)}
 .hub-p{font-size:13px;line-height:1.6;color:var(--muted);max-width:720px;margin:0 0 28px}
@@ -192,6 +194,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .hub-d{font-size:13px;line-height:1.55;color:var(--muted);flex:1}
 .hub-go{font-size:13px;font-weight:600;color:var(--purple-ink)}
 .hub-note{font-size:12px;color:var(--muted);margin:18px 0 0;min-height:1em}
+.hub-miss{display:none;font-size:12px;color:var(--hint)}.hub-missing{border-style:dashed}.hub-missing .hub-miss{display:block}.hub-missing .hub-go{color:var(--hint)}
 @media(prefers-reduced-motion:reduce){.hub-tile{transition:none}.hub-tile:hover{transform:none}}
 </style>
 <style id="design-system">
@@ -459,16 +462,19 @@ details.intro .body{margin-top:8px}
     <button class="hub-tile" data-hub-space="agent-registry" type="button">
       <span class="hub-step">2 &middot; Register</span><span class="hub-t">Agent registry</span>
       <span class="hub-d">Every agent with owner, rights and risk level, plus the <span data-ct="agents.unregistered">47</span> assets found outside the registry.</span>
+      <span class="hub-miss">Not installed yet &mdash; click for the install command</span>
       <span class="hub-go">Open Agent registry &rarr;</span>
     </button>
     <button class="hub-tile" data-hub-space="agent-observability" type="button">
       <span class="hub-step">3 &middot; Run</span><span class="hub-t">Agent observability</span>
       <span class="hub-d">What the agents really did: traces, outcome quality, cost, blocked actions and alerts.</span>
+      <span class="hub-miss">Not installed yet &mdash; click for the install command</span>
       <span class="hub-go">Open Agent observability &rarr;</span>
     </button>
     <button class="hub-tile" data-hub-space="agent-compliance" type="button">
       <span class="hub-step">4 &middot; Prove</span><span class="hub-t">Agent compliance</span>
       <span class="hub-d">EU AI Act conformity, risks and policies; next audit <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>.</span>
+      <span class="hub-miss">Not installed yet &mdash; click for the install command</span>
       <span class="hub-go">Open Agent compliance &rarr;</span>
     </button>
   </div>
@@ -6401,6 +6407,17 @@ function ctStudio(list){
   }).join('')+'</tbody></table>';
   if(window.__ctRegSet) window.__ctRegSet(list);
 }
+// The host tells this page which Spaces are installed; tiles of missing Spaces say so (the host explains the install command on click).
+window.addEventListener('message',function(e){
+  if(e.source!==window.parent)return;
+  var d=e.data;
+  if(!d||d.type!=='ct:spaces'||!Array.isArray(d.slugs))return;
+  var have={};d.slugs.slice(0,200).forEach(function(x){if(typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/.test(x))have[x]=true});
+  document.querySelectorAll('.hub-tile[data-hub-space]').forEach(function(t){
+    if(t.getAttribute('data-hub-view'))return;
+    t.classList.toggle('hub-missing',!have[t.getAttribute('data-hub-space')]);
+  });
+});
 window.addEventListener('message',function(e){
   if(e.source!==window.parent)return;
   var d=e.data;

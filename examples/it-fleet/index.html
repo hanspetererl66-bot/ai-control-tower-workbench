@@ -339,7 +339,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 </script>
 <!--story:end-->
 <main>
-  <p class="demo">Fictional customers and virtual machines, generated from a fixed seed, no live monitoring. A VM is green, yellow or red by the same fixed rules as in the IT Infrastructure Space; a customer is as red as its worst VM. Nothing is restarted or changed.</p>
+  <p class="demo">Fictional customers and virtual machines, generated from a fixed seed, no live monitoring. A VM is green, yellow or red by the same fixed rules as in the Infra VM landscape Space; a customer is as red as its worst VM. Nothing is restarted or changed.</p>
   <h2 class="rows-h">Global overview</h2>
   <div class="kpis" id="kpis"></div>
   <h2 class="rows-h">Situation per geography</h2>
@@ -362,7 +362,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 <script type="application/json" id="fleet-data">
 {
  "asOf": "2026-10-24",
- "note": "Fictional customers and virtual machines, generated from a fixed seed (scripts/generate-fleet-data.mjs). Rules and task definitions are the same as in the IT Infrastructure Space.",
+ "note": "Fictional customers and virtual machines, generated from a fixed seed (scripts/generate-fleet-data.mjs). Rules and task definitions are the same as in the Infra VM landscape Space.",
  "rules": {
   "cpuPct": {
    "yellow": 75,
@@ -8698,7 +8698,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "sakpre",
    "name": "Sakura Precision K.K.",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Gold",
    "sapCustomerId": "0010090811",
    "trend": [
@@ -9196,7 +9196,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "kanele",
    "name": "Kanto Electronics K.K.",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Silver",
    "sapCustomerId": "0010024253",
    "trend": [
@@ -9573,7 +9573,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "pactra",
    "name": "Pacific Trade Pte",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Silver",
    "sapCustomerId": "0010088889",
    "trend": [
@@ -9840,7 +9840,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "harret",
    "name": "Harbour Retail Pty",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Bronze",
    "sapCustomerId": "0010014160",
    "trend": [
@@ -10030,7 +10030,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "mektex",
    "name": "Mekong Textiles Co",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Bronze",
    "sapCustomerId": "0010063215",
    "trend": [
@@ -10154,7 +10154,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "himpha",
    "name": "Himalaya Pharma Ltd",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Silver",
    "sapCustomerId": "0010096113",
    "trend": [
@@ -10399,7 +10399,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   {
    "id": "outres",
    "name": "Outback Resources Pty",
-   "region": "APEC",
+   "region": "APAC",
    "tier": "Gold",
    "sapCustomerId": "0010065499",
    "trend": [
@@ -14713,8 +14713,8 @@ const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
 const FLOW = ['Detected', 'Approved', 'Run (simulated)', 'Verified'];
 const inHost = window.parent !== window;
 const state = { fixed: [], news: [], view: 'map', status: 'all', prod: true, region: 'all', q: '', sel: null, approved: {}, done: {}, tickets: {}, step: -1 };
-const GEOS = ['EMEA', 'NALA', 'APEC'];
-const geoOf = (region) => (/^EMEA|^MEE/.test(region) ? 'EMEA' : region === 'NALA' ? 'NALA' : 'APEC');
+const GEOS = ['EMEA', 'NALA', 'APAC'];
+const geoOf = (region) => (/^EMEA|^MEE/.test(region) ? 'EMEA' : region === 'NALA' ? 'NALA' : 'APAC');
 const raw = DATA.customers.map((c) => ({ id: c.id, name: c.name, region: c.region, geo: geoOf(c.region), tier: c.tier, sap: c.sapCustomerId, trend: c.trend,
   vms: c.vms.map(([name, env, cpu, mem, disk, backup, patch, cert, reach]) => ({ id: c.id + '/' + name, name, env, cpuPct: cpu, memPct: mem, diskPct: disk, backupAgeHours: backup, patchLagDays: patch, certExpiresInDays: cert, reachable: !!reach })) }));
 let model = [];
@@ -14763,7 +14763,7 @@ function squarify(values, x, y, w, h) {
 }
 function renderMap() {
   const list = visible(), box = $('#view');
-  box.innerHTML = '<p class="sub">Grouped by geography (EMEA, NALA, APEC), then one tile per customer. Area = number of VMs, colour = the worst VM of the customer. Hover for the reasons, click a customer to open it, red ones first.</p><div class="tm" id="tm"></div><div class="legend"><span><i class="g"></i>Green: all VMs within limits</span><span><i class="y"></i>Yellow: at least one warning, plan an action</span><span><i class="r"></i>Red: at least one VM needs action now</span></div>';
+  box.innerHTML = '<p class="sub">Grouped by geography (EMEA, NALA, APAC), then one tile per customer. Area = number of VMs, colour = the worst VM of the customer. Hover for the reasons, click a customer to open it, red ones first.</p><div class="tm" id="tm"></div><div class="legend"><span><i class="g"></i>Green: all VMs within limits</span><span><i class="y"></i>Yellow: at least one warning, plan an action</span><span><i class="r"></i>Red: at least one VM needs action now</span></div>';
   const tm = $('#tm');
   if (!list.length) { tm.innerHTML = '<p class="note">No customer matches the filters.</p>'; return; }
   const W = tm.clientWidth || 1100, H = tm.clientHeight || 520, HEAD = 20, PAD = 4;

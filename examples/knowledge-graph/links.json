@@ -213,8 +213,8 @@
     "Muster Industrie AG": "MEE",
     "Hanse Handelsgruppe AG": "MEE",
     "Lindenau Pharma AG": "MEE",
-    "Kranich Logistik GmbH": "APEC",
+    "Kranich Logistik GmbH": "APAC",
     "Nordwind Handel GmbH": "NALA"
   },
-  "regionNote": "Illustrative: the sample data has no sales regions, so the accounts are assigned to MEE, APEC and NALA for the demo."
+  "regionNote": "Illustrative: the sample data has no sales regions, so the accounts are assigned to MEE, APAC and NALA for the demo."
 }

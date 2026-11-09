@@ -85,7 +85,9 @@ import { listSkills, type Skill } from './skills';
 import type { ScheduleRuntime } from './ui/SchedulePopover';
 import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
-import type { Handoff, IncomingHandoff } from './space-handoff';
+import { missingSpaceNotice, type Handoff, type IncomingHandoff } from './space-handoff';
+import { backLabel, keepReturn } from './space-return';
+import { createToastGate } from './toast-timer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_TITLE } from './product';
 import CoverSheet from './ui/CoverSheet';
@@ -346,7 +348,10 @@ export default function App() {
   const [designSlug, setDesignSlug] = useState<string | null>(null);
   const [designKey, setDesignKey] = useState(0);
   const [skillRequest, setSkillRequest] = useState<InstallRequest | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToastState] = useState<string | null>(null);
+  // Every message stays visible for a minimum time, even when the timer of an earlier message fires (see toast-timer.ts).
+  const toastGate = useRef(createToastGate());
+  const setToast = useCallback((value: string | null) => toastGate.current.request(value, setToastState), []);
   const [rawSpaces, setSpaces] = useState<Space[]>([]);
   const [spaceOrder, setSpaceOrder] = useState<string[]>(() => loadSpaceOrder(window.localStorage));
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
@@ -401,6 +406,9 @@ export default function App() {
   const changeCommands = useCallback((next: Command[]) => { setOwnCommandsState(next); saveCommands(window.localStorage, next); }, []);
   /** The Space whose memory entries apply to this conversation (set when a question is asked from a Space). */
   const [contextSpace, setContextSpace] = useState('');
+  /** The Space a question came from; the chat header offers a way back to it. */
+  const [returnSpace, setReturnSpace] = useState<string | null>(null);
+  useEffect(() => { if (!keepReturn(view)) setReturnSpace(null); }, [view]);
   const [dismissedIdeas, setDismissedIdeas] = useState<string[]>([]);
   const [memorySuggestion, setMemorySuggestion] = useState<ReturnType<typeof suggestMemory>>(null);
   const changeMemory = useCallback((next: MemoryState) => { setMemoryState(next); saveMemory(window.localStorage, next); }, []);
@@ -1027,7 +1035,7 @@ export default function App() {
       return;
     }
     setView('chat');
-    if (spaceSlug) setContextSpace(spaceSlug);
+    if (spaceSlug) { setContextSpace(spaceSlug); setReturnSpace(spaceSlug); }
     void send(prompt);
   }
 
@@ -1080,7 +1088,7 @@ export default function App() {
   /** A Space hands work to another Space: queue it, open that Space unless told not to, and show the notice. */
   function handOff(fromSlug: string, handoff: Handoff) {
     const target = spaces.find((x) => x.slug === handoff.to);
-    if (!target) { setToast('The Space for this hand-over is not installed.'); setTimeout(() => setToast(null), 6000); return; }
+    if (!target) { setToast(missingSpaceNotice(handoff.to)); setTimeout(() => setToast(null), 12000); return; }
     handoffNonce.current += 1;
     setIncoming((current) => ({ ...current, [handoff.to]: [...(current[handoff.to] ?? []), { from: fromSlug, payload: handoff.payload, nonce: handoffNonce.current }].slice(-20) }));
     if (handoff.open) { setSelectedSpace(handoff.to); setSpacesHome(false); setView('spaces'); }
@@ -1638,6 +1646,7 @@ export default function App() {
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}
             incoming={incoming[space.slug]}
+            installedSpaces={space.slug === 'ai-control-tower' ? spaces.map((x) => x.slug) : undefined}
             studioAgents={space.slug === 'ai-control-tower' || space.slug === 'agent-registry' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
             bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? (extensionNames.find((n) => /jira/i.test(n)) ?? JIRA_EXTENSION) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
@@ -1655,6 +1664,15 @@ export default function App() {
       ) : (
         <main className="main">
           <header className="topbar">
+            {backLabel(spaces, returnSpace) && (
+              <button
+                className="topbar-back"
+                onClick={() => { if (returnSpace) { setSelectedSpace(returnSpace); setSpacesHome(false); setView('spaces'); } setReturnSpace(null); }}
+                title="Return to the Space you asked from"
+              >
+                ← {backLabel(spaces, returnSpace)?.replace('Back to ', '')}
+              </button>
+            )}
             {renamingTitle !== null ? (
               <form
                 className="topbar-rename"
