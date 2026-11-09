@@ -1214,6 +1214,206 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
    "requester": "lh",
    "approvals": []
   }
+ ],
+ "sops": [
+  {
+   "id": "sop-renew-certificate",
+   "template": "renew-certificate",
+   "title": "SOP: Renew a TLS certificate",
+   "summary": "Replace a server certificate before it expires, without an outage and with evidence. Valid for TLS certificates of customer systems that Infrastructure Operations runs.",
+   "page": {
+    "id": "renew-tls-certificate",
+    "title": "Renew a TLS certificate",
+    "path": "Infra/SOP/Renew-TLS-Certificate",
+    "version": "3.2",
+    "updated": "2026-10-02",
+    "status": "Approved"
+   },
+   "steps": [
+    {
+     "id": "detect",
+     "title": "Detect the expiry",
+     "orch": "trigger",
+     "wikiStep": 1,
+     "text": "n8n lists every certificate that expires within 30 days and starts one change per certificate.",
+     "does": "n8n watches Not After and starts the change 30 days before."
+    },
+    {
+     "id": "ticket",
+     "title": "Open the change ticket",
+     "orch": "ticket",
+     "wikiStep": 2,
+     "text": "Every change has a ticket with owner, customer and target.",
+     "does": "n8n creates the ITSM ticket and the task in the Space."
+    },
+    {
+     "id": "csr",
+     "title": "Generate key pair and CSR",
+     "orch": "check",
+     "wikiStep": 3,
+     "text": "Create a new key pair on the target and a signing request; the private key never leaves the server.",
+     "does": "The playbook creates key and CSR on the target. The private key never leaves it.",
+     "extra": true,
+     "when": "before the window"
+    },
+    {
+     "id": "chain",
+     "title": "Check chain and names",
+     "orch": "check",
+     "wikiStep": 4,
+     "text": "Check mode: issuer and chain complete, all names covered, no conflict in the change calendar.",
+     "does": "Check mode: issuer, complete chain, names covered, conflicts in the change calendar."
+    },
+    {
+     "id": "approve",
+     "title": "Approve (four eyes)",
+     "orch": "approve",
+     "wikiStep": 5,
+     "text": "Production needs two approvals from different roles; the requester cannot approve.",
+     "does": "n8n asks the approvers in Teams; the four-eyes rule is enforced by the Space and the connector."
+    },
+    {
+     "id": "window",
+     "title": "Wait for the downtime window",
+     "orch": "window",
+     "wikiStep": 6,
+     "text": "Start only inside the approved window.",
+     "does": "n8n waits; the run starts in the window and not before."
+    },
+    {
+     "id": "enrol",
+     "title": "Enrol with the CA over a secure protocol",
+     "orch": "run",
+     "wikiStep": 7,
+     "text": "Send the CSR to the certificate authority by ACME or EST, never by e-mail.",
+     "does": "The playbook sends the CSR to the CA by ACME or EST, never by e-mail.",
+     "extra": true,
+     "when": "inside the window"
+    },
+    {
+     "id": "install",
+     "title": "Install certificate and chain",
+     "orch": "run",
+     "wikiStep": 8,
+     "text": "Install the new certificate with its intermediate certificates and reload the services.",
+     "does": "AWX installs certificate and chain; the services reload the certificate, no restart."
+    },
+    {
+     "id": "verify",
+     "title": "Verify the new certificate",
+     "orch": "verify",
+     "wikiStep": 9,
+     "text": "Check Not After, chain and a TLS handshake on every name.",
+     "does": "AWX checks the new Not After, the chain and a TLS handshake; rollback to the old certificate on failure."
+    },
+    {
+     "id": "evidence",
+     "title": "Evidence and old certificate",
+     "orch": "evidence",
+     "wikiStep": 10,
+     "text": "File the log, close the ticket, inform the customer; revoke the old certificate if its key may be compromised.",
+     "does": "File the log and inform the customer. Revoke the old certificate if its key may be compromised."
+    }
+   ]
+  },
+  {
+   "id": "sop-patch-vm",
+   "template": "patch-vm",
+   "title": "SOP: Patch and restart a VM",
+   "summary": "Install open security patches on one VM in a maintenance window, with a backup, a test on the twin system and a way back.",
+   "page": {
+    "id": "patch-vm",
+    "title": "Patch and restart a VM",
+    "path": "Infra/SOP/Patch-And-Restart-A-VM",
+    "version": "2.7",
+    "updated": "2026-09-18",
+    "status": "Approved"
+   },
+   "steps": [
+    {
+     "id": "plan",
+     "title": "Decide what to patch and when",
+     "orch": "trigger",
+     "wikiStep": 1,
+     "text": "Decide which patches go to which systems at what time; critical patches start a change.",
+     "does": "n8n starts the change from the finding (critical patches open) or a schedule."
+    },
+    {
+     "id": "ticket",
+     "title": "Open the change ticket",
+     "orch": "ticket",
+     "wikiStep": 2,
+     "text": "Every change has a ticket with owner, customer and target.",
+     "does": "n8n creates the ITSM ticket and the task in the Space."
+    },
+    {
+     "id": "version",
+     "title": "Confirm the patches fit this VM",
+     "orch": "check",
+     "wikiStep": 3,
+     "text": "Check mode: operating system, open patches and critical patches of this VM.",
+     "does": "Check mode: operating system, open and critical patches of this VM."
+    },
+    {
+     "id": "backup",
+     "title": "Backup first, rollback ready",
+     "orch": "check",
+     "wikiStep": 4,
+     "text": "No backup from the last 24 hours, no run; a snapshot is taken right before patching.",
+     "does": "The pre-check blocks the change when the backup is older than a day; the playbook takes a snapshot first."
+    },
+    {
+     "id": "twin",
+     "title": "Patch the non-production twin first",
+     "orch": "check",
+     "wikiStep": 5,
+     "text": "Patch the QAS system of the same customer first and run its health check.",
+     "does": "The playbook patches the QAS twin and runs the health check.",
+     "extra": true,
+     "when": "before the production window"
+    },
+    {
+     "id": "approve",
+     "title": "Approve (four eyes)",
+     "orch": "approve",
+     "wikiStep": 6,
+     "text": "Production needs two approvals from different roles; the requester cannot approve.",
+     "does": "n8n asks the approvers in Teams; the four-eyes rule is enforced by the Space and the connector."
+    },
+    {
+     "id": "window",
+     "title": "Wait for the downtime window",
+     "orch": "window",
+     "wikiStep": 7,
+     "text": "Start only inside the approved window; dependent systems stop while the VM restarts.",
+     "does": "n8n waits; the run starts in the window and not before."
+    },
+    {
+     "id": "apply",
+     "title": "Apply the patches and restart",
+     "orch": "run",
+     "wikiStep": 8,
+     "text": "Install the patches persistently, restart the VM and wait for its dependent systems.",
+     "does": "AWX applies the patches persistently, restarts the VM and waits for the dependent systems."
+    },
+    {
+     "id": "verify",
+     "title": "Verify, roll back on failure",
+     "orch": "verify",
+     "wikiStep": 9,
+     "text": "Run the health checks; if one fails, restore the snapshot.",
+     "does": "AWX runs the health checks; on failure the snapshot is restored."
+    },
+    {
+     "id": "evidence",
+     "title": "Evidence and patch level",
+     "orch": "evidence",
+     "wikiStep": 10,
+     "text": "File the log, update the patch level of the VM, close the ticket, inform customer and team.",
+     "does": "File the log, update the patch level of the VM, inform customer and team."
+    }
+   ]
+  }
  ]
 }
 </script>
@@ -1364,6 +1564,10 @@ function planTask(data, req) {
     }
   }
 
+  // The SOP of this playbook: its extra steps join the technical flow, all of its steps are listed with their source.
+  const sop = (data.sops ?? []).find((x) => x.template === req.template) ?? null;
+  if (sop) for (const st of sop.steps) if (st.extra) extraSteps.push({ id: `sop-${st.id}`, title: st.title, when: st.when, detail: st.does, playbook: req.template });
+
   // conflicts with other open tasks of the same customer
   const conflicts = win && win[0] && win[1] ? (data.tasks ?? []).filter((t) => t.id !== req.id && t.customer === target.customer && t.state !== 'done' && overlaps(win, t.window)) : [];
   checks.push({ label: 'Conflicts in the change calendar', status: conflicts.length ? 'warn' : 'ok', detail: conflicts.length ? `Overlaps with ${conflicts.map((c) => c.id).join(', ')}.` : 'No overlap with other tasks of this customer.' });
@@ -1389,6 +1593,7 @@ function planTask(data, req) {
     downtime,
     blast: { vms: affectedVmsAll, dns: affectedDns, customers: [customer ? customer.name : target.customer] },
     conflicts: conflicts.map((c) => c.id),
+    sop: sop ? { id: sop.id, title: sop.title, summary: sop.summary, page: sop.page, steps: sop.steps } : null,
     steps: [...extraSteps, ...ORCHESTRATION.map((s) => ({ id: s.id, title: s.title, tool: s.tool, detail: s.detail }))],
   };
 }

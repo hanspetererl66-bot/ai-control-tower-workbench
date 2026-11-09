@@ -1,0 +1,388 @@
+{
+ "wiki": "Infra Wiki",
+ "note": "Fictional internal wiki pages (dummy). The Space shows them, and the connector tool read_wiki_page returns the same text to the agent. The SOPs of the Infrastructure Operations Space point to these pages and steps.",
+ "asOf": "2026-10-21",
+ "pages": [
+  {
+   "id": "renew-tls-certificate",
+   "path": "Infra/SOP/Renew-TLS-Certificate",
+   "title": "Renew a TLS certificate",
+   "template": "renew-certificate",
+   "owner": "Infrastructure Operations",
+   "reviewer": "Security",
+   "version": "3.2",
+   "updated": "2026-10-02",
+   "status": "Approved",
+   "purpose": "Replace a server certificate before it expires, without an outage and with evidence. Valid for TLS certificates of customer systems that Infrastructure Operations runs.",
+   "scope": "In scope: server and gateway certificates in the inventory. Out of scope: client certificates, root certificates, certificates of SaaS tenants.",
+   "roles": [
+    {
+     "role": "Requester",
+     "who": "Operations: opens or accepts the change"
+    },
+    {
+     "role": "Approver 1",
+     "who": "Security"
+    },
+    {
+     "role": "Approver 2",
+     "who": "Change manager"
+    },
+    {
+     "role": "Operator",
+     "who": "AWX job template, started by n8n"
+    }
+   ],
+   "before": [
+    "The certificate and its VMs are in the inventory.",
+    "No freeze period covers the window.",
+    "The window is at most 8 hours long."
+   ],
+   "steps": [
+    {
+     "id": "detect",
+     "title": "Detect the expiry",
+     "orch": "trigger",
+     "who": "Monitoring",
+     "tool": "n8n",
+     "summary": "n8n lists every certificate that expires within 30 days and starts one change per certificate.",
+     "do": [
+      "Daily at 06:00 n8n reads Not After of all certificates in the inventory.",
+      "A certificate with 30 days or less left starts a change; one with 7 days or less is marked urgent."
+     ],
+     "doneWhen": "A change exists for the certificate.",
+     "onFailure": "Alert the on-call engineer if the list cannot be read."
+    },
+    {
+     "id": "ticket",
+     "title": "Open the change ticket",
+     "orch": "ticket",
+     "who": "n8n",
+     "tool": "ITSM",
+     "summary": "Every change has a ticket with owner, customer and target.",
+     "do": [
+      "n8n creates the ticket in the ITSM and the task in the Space.",
+      "The ticket names customer, certificate, affected VMs and the planned window."
+     ],
+     "doneWhen": "Ticket number is on the task.",
+     "onFailure": "Create the ticket by hand and enter the number on the task."
+    },
+    {
+     "id": "csr",
+     "title": "Generate key pair and CSR",
+     "orch": "check",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Create a new key pair on the target and a signing request; the private key never leaves the server.",
+     "do": [
+      "Run the playbook in check mode, then for real before the window.",
+      "The CSR carries the common name and all names of the certificate from the DNS inventory."
+     ],
+     "doneWhen": "A CSR file exists on the target; the key file does not leave it.",
+     "onFailure": "Stop. Do not copy a private key to another system under any circumstance.",
+     "extra": true,
+     "when": "before the window"
+    },
+    {
+     "id": "chain",
+     "title": "Check chain and names",
+     "orch": "check",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Check mode: issuer and chain complete, all names covered, no conflict in the change calendar.",
+     "do": [
+      "Check that the intermediate certificates of the issuer are available.",
+      "Compare the names in the CSR with the DNS records of the VMs.",
+      "Look for overlapping changes of the same customer."
+     ],
+     "doneWhen": "All pre-checks are green or have a written note.",
+     "onFailure": "Fix the finding or move the window; do not submit with a failed check."
+    },
+    {
+     "id": "approve",
+     "title": "Approve (four eyes)",
+     "orch": "approve",
+     "who": "Security, Change manager",
+     "tool": "n8n, Teams",
+     "summary": "Production needs two approvals from different roles; the requester cannot approve.",
+     "do": [
+      "n8n asks the approvers in Teams and shows the pre-check result.",
+      "Approver 1 is Security, approver 2 the Change manager."
+     ],
+     "doneWhen": "Two approvals are recorded.",
+     "onFailure": "A rejection closes the change with the reason on the ticket."
+    },
+    {
+     "id": "window",
+     "title": "Wait for the downtime window",
+     "orch": "window",
+     "who": "n8n",
+     "tool": "n8n",
+     "summary": "Start only inside the approved window.",
+     "do": [
+      "n8n waits until the window opens.",
+      "The run never starts earlier, even if everything is approved."
+     ],
+     "doneWhen": "The window is open.",
+     "onFailure": "If the window passes, the change returns to planned."
+    },
+    {
+     "id": "enrol",
+     "title": "Enrol with the CA over a secure protocol",
+     "orch": "run",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Send the CSR to the certificate authority by ACME or EST, never by e-mail.",
+     "do": [
+      "The playbook submits the CSR through the enrolment endpoint of the CA.",
+      "It waits until the signed certificate is returned."
+     ],
+     "doneWhen": "A signed certificate and the chain are on the target.",
+     "onFailure": "Retry once; then stop and ask Security.",
+     "extra": true,
+     "when": "inside the window"
+    },
+    {
+     "id": "install",
+     "title": "Install certificate and chain",
+     "orch": "run",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Install the new certificate with its intermediate certificates and reload the services.",
+     "do": [
+      "Keep the old certificate files until verification is done.",
+      "Reload the services; no restart is needed."
+     ],
+     "doneWhen": "The services present the new certificate.",
+     "onFailure": "Put the old certificate back and reload."
+    },
+    {
+     "id": "verify",
+     "title": "Verify the new certificate",
+     "orch": "verify",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Check Not After, chain and a TLS handshake on every name.",
+     "do": [
+      "The new Not After is at least 300 days away.",
+      "The chain validates and the handshake works on every name."
+     ],
+     "doneWhen": "All checks pass.",
+     "onFailure": "Roll back to the old certificate and mark the change failed."
+    },
+    {
+     "id": "evidence",
+     "title": "Evidence and old certificate",
+     "orch": "evidence",
+     "who": "n8n",
+     "tool": "n8n, ITSM",
+     "summary": "File the log, close the ticket, inform the customer; revoke the old certificate if its key may be compromised.",
+     "do": [
+      "Attach the log, the old and the new Not After to the ticket.",
+      "Revoke the old certificate only if its key may have been exposed."
+     ],
+     "doneWhen": "Ticket is closed with evidence.",
+     "onFailure": "Keep the ticket open until the evidence is complete."
+    }
+   ],
+   "rollback": "Reinstall the old certificate files and reload the services. Revoke nothing in a rollback.",
+   "evidence": [
+    "Ticket with log",
+    "Old and new Not After",
+    "Approvals with names and roles"
+   ],
+   "related": [
+    "patch-vm"
+   ]
+  },
+  {
+   "id": "patch-vm",
+   "path": "Infra/SOP/Patch-And-Restart-A-VM",
+   "title": "Patch and restart a VM",
+   "template": "patch-vm",
+   "owner": "Infrastructure Operations",
+   "reviewer": "Change board",
+   "version": "2.7",
+   "updated": "2026-09-18",
+   "status": "Approved",
+   "purpose": "Install open security patches on one VM in a maintenance window, with a backup, a test on the twin system and a way back.",
+   "scope": "In scope: Linux VMs in the inventory (SAP application, database and web dispatcher hosts). Out of scope: kernel live patching, firmware, appliances.",
+   "roles": [
+    {
+     "role": "Requester",
+     "who": "Operations: opens or accepts the change"
+    },
+    {
+     "role": "Approver 1",
+     "who": "Change manager"
+    },
+    {
+     "role": "Approver 2",
+     "who": "Another person, not the requester"
+    },
+    {
+     "role": "Operator",
+     "who": "AWX job template, started by n8n"
+    }
+   ],
+   "before": [
+    "The VM and its dependent systems are in the inventory.",
+    "There is a backup from the last 24 hours (the pre-check blocks the change otherwise).",
+    "No freeze period covers the window."
+   ],
+   "steps": [
+    {
+     "id": "plan",
+     "title": "Decide what to patch and when",
+     "orch": "trigger",
+     "who": "Operations",
+     "tool": "n8n",
+     "summary": "Decide which patches go to which systems at what time; critical patches start a change.",
+     "do": [
+      "The finding \"critical patches open\" or the monthly schedule starts the change.",
+      "Group VMs of one customer into one window where they depend on each other."
+     ],
+     "doneWhen": "A change exists for the VM.",
+     "onFailure": "Ask the change manager if the patch level is unclear."
+    },
+    {
+     "id": "ticket",
+     "title": "Open the change ticket",
+     "orch": "ticket",
+     "who": "n8n",
+     "tool": "ITSM",
+     "summary": "Every change has a ticket with owner, customer and target.",
+     "do": [
+      "n8n creates the ticket in the ITSM and the task in the Space.",
+      "The ticket lists the dependent systems that stop during the restart."
+     ],
+     "doneWhen": "Ticket number is on the task.",
+     "onFailure": "Create the ticket by hand and enter the number on the task."
+    },
+    {
+     "id": "version",
+     "title": "Confirm the patches fit this VM",
+     "orch": "check",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Check mode: operating system, open patches and critical patches of this VM.",
+     "do": [
+      "Compare the OS release with the patch list.",
+      "Note how many patches are critical."
+     ],
+     "doneWhen": "Patch list matches the OS release.",
+     "onFailure": "Remove the patch that does not fit and note it on the ticket."
+    },
+    {
+     "id": "backup",
+     "title": "Backup first, rollback ready",
+     "orch": "check",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "No backup from the last 24 hours, no run; a snapshot is taken right before patching.",
+     "do": [
+      "The pre-check reads the age of the last backup.",
+      "The playbook takes a snapshot immediately before the window work."
+     ],
+     "doneWhen": "Backup is younger than 24 hours.",
+     "onFailure": "Take a new backup, then run the pre-check again."
+    },
+    {
+     "id": "twin",
+     "title": "Patch the non-production twin first",
+     "orch": "check",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Patch the QAS system of the same customer first and run its health check.",
+     "do": [
+      "Run the same patch list on the QAS twin.",
+      "Run the health check and compare it with the state before."
+     ],
+     "doneWhen": "The twin is healthy with the new patches.",
+     "onFailure": "Stop. Do not schedule production until the twin is healthy.",
+     "extra": true,
+     "when": "before the production window"
+    },
+    {
+     "id": "approve",
+     "title": "Approve (four eyes)",
+     "orch": "approve",
+     "who": "Change manager, one more person",
+     "tool": "n8n, Teams",
+     "summary": "Production needs two approvals from different roles; the requester cannot approve.",
+     "do": [
+      "n8n asks the approvers in Teams and shows pre-check and twin result.",
+      "Approver 1 is the Change manager."
+     ],
+     "doneWhen": "Two approvals are recorded.",
+     "onFailure": "A rejection closes the change with the reason on the ticket."
+    },
+    {
+     "id": "window",
+     "title": "Wait for the downtime window",
+     "orch": "window",
+     "who": "n8n",
+     "tool": "n8n",
+     "summary": "Start only inside the approved window; dependent systems stop while the VM restarts.",
+     "do": [
+      "Inform the customer about the stop of the dependent systems.",
+      "n8n waits until the window opens."
+     ],
+     "doneWhen": "The window is open and the customer is informed.",
+     "onFailure": "If the window passes, the change returns to planned."
+    },
+    {
+     "id": "apply",
+     "title": "Apply the patches and restart",
+     "orch": "run",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Install the patches persistently, restart the VM and wait for its dependent systems.",
+     "do": [
+      "The playbook installs the patch list and restarts the VM.",
+      "It waits until the dependent systems are up again."
+     ],
+     "doneWhen": "The VM is up with no pending patches.",
+     "onFailure": "Restore the snapshot."
+    },
+    {
+     "id": "verify",
+     "title": "Verify, roll back on failure",
+     "orch": "verify",
+     "who": "Operator",
+     "tool": "AWX",
+     "summary": "Run the health checks; if one fails, restore the snapshot.",
+     "do": [
+      "Check services, ports and the patch level.",
+      "Compare with the state before the change."
+     ],
+     "doneWhen": "All checks pass.",
+     "onFailure": "Restore the snapshot and mark the change failed."
+    },
+    {
+     "id": "evidence",
+     "title": "Evidence and patch level",
+     "orch": "evidence",
+     "who": "n8n",
+     "tool": "n8n, ITSM",
+     "summary": "File the log, update the patch level of the VM, close the ticket, inform customer and team.",
+     "do": [
+      "Attach the log and the patch list to the ticket.",
+      "Update the patch level in the inventory."
+     ],
+     "doneWhen": "Ticket is closed with evidence.",
+     "onFailure": "Keep the ticket open until the evidence is complete."
+    }
+   ],
+   "rollback": "Restore the snapshot taken before the patch, start the VM and check its dependent systems.",
+   "evidence": [
+    "Ticket with log and patch list",
+    "Health check before and after",
+    "Approvals with names and roles"
+   ],
+   "related": [
+    "renew-tls-certificate"
+   ]
+  }
+ ]
+}
