@@ -5,10 +5,11 @@
  * with JSON, the same pattern as the process interview. Nothing is written back to the sources here.
  */
 
-export type SourceKind = 'jira' | 'slack' | 'teams' | 'notion';
+export type SourceKind = 'jira' | 'linear' | 'slack' | 'teams' | 'notion';
 
 export const SOURCES: Array<{ id: SourceKind; label: string; query: string; placeholder: string; help: string }> = [
   { id: 'jira', label: 'Jira', query: 'Project key, JQL or search words', placeholder: 'e.g. ABC, or: project = ABC AND labels = joule ORDER BY updated DESC', help: 'Uses the Jira connector (read only).' },
+  { id: 'linear', label: 'Linear', query: 'Team key (e.g. ENG), an issue link or search words', placeholder: 'e.g. ENG, or: renewal reminder', help: 'Uses the Linear connector (read only).' },
   { id: 'slack', label: 'Slack', query: 'Channel, thread link or search words', placeholder: 'e.g. #requirements, or a link to a thread', help: 'Uses the Slack connector (read only).' },
   { id: 'teams', label: 'Microsoft Teams', query: 'Team and channel, a message link or search words', placeholder: 'e.g. Sales / Requirements, or a link from "Copy link to message"', help: 'Uses the Microsoft Teams connector (read only). The app needs permission to read channel messages.' },
   { id: 'notion', label: 'Notion', query: 'Page, database or search words', placeholder: 'e.g. the name of your requirements database', help: 'Uses the Notion connector (read only). Share the pages with its integration first.' },
@@ -28,7 +29,7 @@ export type ExtendsRef = { id: string; name: string };
 export const MAX_ITEMS = 40;
 const cut = (v: unknown, n: number) => String(v ?? '').replace(/[ \t]+/g, ' ').trim().slice(0, n);
 const urlOf = (v: unknown) => { const s = cut(v, 400); return /^https?:\/\/\S+$/i.test(s) ? s : ''; };
-const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'slack' || v === 'teams' || v === 'notion';
+const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'linear' || v === 'slack' || v === 'teams' || v === 'notion';
 
 /** What to ask Jira: a bare project key, a JQL query (has an operator) or free text. */
 export function jqlOf(query: string): string {
@@ -41,13 +42,24 @@ export function jqlOf(query: string): string {
 
 const JSON_ONLY = 'Answer with one JSON object only, inside a ```json block. No other text. Use read-only tools only: never create, change, comment on or post anything.';
 
+/** What to ask Linear: a bare team key, an issue link or identifier, or free text. */
+export function linearHint(query: string): string {
+  const q = query.trim();
+  if (/^[A-Za-z][A-Za-z0-9]{0,9}$/.test(q)) return `team ${q.toUpperCase()}`;
+  if (/^https:\/\/linear\.app\/\S+$/i.test(q) || /^[A-Za-z][A-Za-z0-9]{0,9}-\d{1,7}$/.test(q)) return `issue ${q}`;
+  return `search words: ${q}`;
+}
+
 export function fetchPrompt(source: SourceKind, query: string): string {
-  const signal = source === 'jira' ? '' : ',"mentions":<whole number: how many different messages or pages say the same thing, 1 if only one>,"quotes":["<up to 3 short verbatim quotes, each with who and when if known, at most 160 characters>"]';
+  const signal = source === 'jira' || source === 'linear' ? '' : ',"mentions":<whole number: how many different messages or pages say the same thing, 1 if only one>,"quotes":["<up to 3 short verbatim quotes, each with who and when if known, at most 160 characters>"]';
   const shape = `{"items":[{"key":"<id in the source, e.g. ABC-12>","title":"<one line>","text":"<the requirement in at most 500 characters, in the original language>","url":"<link or empty>","author":"<name or empty>","date":"<YYYY-MM-DD or empty>"${signal}}],"error":"<empty, or why nothing could be read>"}`;
-  const merge = source === 'jira' ? '' : ' When several messages or pages state the same need, return ONE item for them, set "mentions" to the real number of different messages or pages and put up to three of them as verbatim quotes. Count only what you read; never estimate.';
+  const merge = source === 'jira' || source === 'linear' ? '' : ' When several messages or pages state the same need, return ONE item for them, set "mentions" to the real number of different messages or pages and put up to three of them as verbatim quotes. Count only what you read; never estimate.';
   const limit = `Return at most ${MAX_ITEMS} items. Shorten long texts; do not invent anything. If you cannot read the source (no tool, no access, nothing found), return an empty list and say why in "error".${merge}`;
   if (source === 'jira') {
     return ['Read requirements from Jira.', `Run jira_search_issues with this JQL: ${jqlOf(query)}`, 'Use jira_get_issue only where the description is needed to understand the requirement (at most 10 issues).', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
+  }
+  if (source === 'linear') {
+    return ['Read requirements from Linear.', `Source: ${linearHint(query)}`, 'Use the Linear connector. For a team key use linear_read_backlog; for an issue link or identifier use linear_get_issue; for search words use linear_search_issues. Use linear_get_issue only where the description is needed to understand the requirement (at most 10 issues). Each issue that states a need, a wish, a problem or a rule becomes one item; the identifier (for example ENG-12) is the key, the issue link the url. If a Linear tool is not available to you, return an empty list and say so in "error".', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
   }
   if (source === 'slack') {
     return ['Read requirements from Slack.', `Source: ${query.trim()}`, 'Use slack_read_channel or slack_read_thread for a channel or thread, slack_search_messages for search words. Keep messages that state a need, a wish, a problem or a rule; skip chatter. As key use the channel and the message time (for example "#req 1730640000").', limit, `Format: ${shape}`, JSON_ONLY].join('\n');

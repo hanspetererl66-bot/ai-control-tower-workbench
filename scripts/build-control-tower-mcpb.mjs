@@ -7,7 +7,7 @@ import { BUNDLED_CONNECTORS, LIBRARY_CONNECTORS, stageConnector } from '../conne
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MAIN = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
-const FLAGS = ['--gmail', '--databricks', '--jira', '--slack', '--notion', '--teams', '--sap-sandbox'];
+const FLAGS = ['--gmail', '--databricks', '--jira', '--slack', '--notion', '--teams', '--linear', '--sap-sandbox'];
 
 /**
  * Build one connector as a .mcpb bundle (a plain zip; Werkbank reads manifest.json and extracts the rest).
@@ -168,6 +168,27 @@ export function buildTeamsBundle(output = join(ROOT, 'dist/teams.mcpb')) {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--teams')) {
   console.log(`Built ${buildTeamsBundle()}`);
+}
+
+/** Linear connector bundle: manifest + server only (no data). */
+export function buildLinearBundle(output = join(ROOT, 'dist/linear.mcpb')) {
+  const out = resolve(output);
+  const stage = mkdtempSync(join(tmpdir(), 'linear-mcpb-'));
+  try {
+    const source = join(ROOT, 'connectors/linear');
+    cpSync(join(source, 'manifest.json'), join(stage, 'manifest.json'));
+    cpSync(join(source, 'server'), join(stage, 'server'), { recursive: true });
+    mkdirSync(dirname(out), { recursive: true });
+    if (existsSync(out)) rmSync(out);
+    execFileSync('zip', ['-q', '-r', '-X', out, '.'], { cwd: stage });
+    return out;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1] && process.argv.includes('--linear')) {
+  console.log(`Built ${buildLinearBundle()}`);
 }
 
 /** SAP S/4HANA sandbox connector bundle: manifest + server only (no data). */
