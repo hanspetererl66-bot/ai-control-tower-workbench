@@ -25,3 +25,19 @@ test('the links of the Knowledge tab appear on both sides with identifiers in br
   assert.match(by['competitor:microsoft-copilot'], /deal:OFF-2026-0324/);
   assert.match(by['skill:pricing-guard'], /deal:OFF-2026-0324/);
 });
+
+import { handleSalesKnowledgeMessage, knowledgePrompt, parseKnowledgeAnswer } from '../src/sales-knowledge-bridge.ts';
+
+test('bridge: one fixed request, read-only prompt, ids checked for shape', async () => {
+  assert.equal(await handleSalesKnowledgeMessage({ type: 'other' }, {}), null);
+  assert.equal(await handleSalesKnowledgeMessage({ type: 'sales:knowledge-request', requestId: 'bad id!', dealId: 'X' }, {}), null);
+  assert.match((await handleSalesKnowledgeMessage({ type: 'sales:knowledge-request', requestId: 'r1', dealId: '../x' }, {})).message, /deal id/);
+  assert.match((await handleSalesKnowledgeMessage({ type: 'sales:knowledge-request', requestId: 'r1', dealId: 'OFF-1' }, {})).message, /not connected/);
+  assert.match(knowledgePrompt('OFF-1'), /Do not write, remember or forget/);
+  let seen = '';
+  const ok = await handleSalesKnowledgeMessage({ type: 'sales:knowledge-request', requestId: 'r2', dealId: 'OFF-2026-0324' }, { ask: async (p) => { seen = p; return 'Here: ```{"answer":"Pilot at risk.","ids":["deal:OFF-2026-0324","call:CALL-0415","evil:x","call:CALL-0415"]}```'; } });
+  assert.match(seen, /OFF-2026-0324/);
+  assert.deepEqual(ok, { type: 'sales:knowledge-answer', requestId: 'r2', dealId: 'OFF-2026-0324', answer: 'Pilot at risk.', ids: ['deal:OFF-2026-0324', 'call:CALL-0415'] });
+  assert.equal(parseKnowledgeAnswer('no json'), null);
+  assert.equal(parseKnowledgeAnswer('{"answer":"","ids":[]}'), null);
+});
