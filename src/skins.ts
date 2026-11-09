@@ -17,6 +17,8 @@ export const DEFAULT_SKIN: SkinId = 'violet';
 /** Values for the Spaces (design-system tokens). */
 type SpaceTokens = {
   canvas: string; surface: string; ink: string; ink2: string; muted: string; faint: string; line: string; line2: string; wash: string;
+  /** Hint lines (--hint) and the accent as text colour (--purple-ink): both must reach 4.5:1 on every ground of the skin. */
+  hint: string; accentInk: string;
   accent: string; accentMid: string; accentDeep: string; accentDim: string; accentBorder: string; accentLight: string;
   shadow: string; shadowLg: string;
 };
@@ -40,8 +42,8 @@ export const SKIN_DEFS: Record<SkinId, Skin> = {
     description: 'Black, white and soft greys with one purple accent. The calm original.',
     swatch: ['#f6f5f8', '#ffffff', '#1b1a22', '#8056B8'],
     space: {
-      light: { canvas: '#f6f5f8', surface: '#ffffff', ink: '#1b1a22', ink2: '#46444f', muted: '#6c6a78', faint: '#c3c1cd', line: '#e6e4ec', line2: '#f1f0f5', wash: '#faf9fc', accent: '#8056B8', accentMid: '#633F96', accentDeep: '#3B2660', accentDim: 'rgba(128,86,184,.07)', accentBorder: 'rgba(128,86,184,.22)', accentLight: '#efeaf7', shadow: NEUTRAL_SHADOW, shadowLg: '0 24px 60px rgba(20,18,30,.22)' },
-      dark: { canvas: '#0f0e13', surface: '#18171d', ink: '#f4f3f8', ink2: '#d3d1dc', muted: '#9e9cab', faint: '#5b5967', line: '#2b2a33', line2: '#222129', wash: '#1d1c24', accent: '#B79CE0', accentMid: '#D0BDF0', accentDeep: '#E6DCF8', accentDim: 'rgba(183,156,224,.13)', accentBorder: 'rgba(183,156,224,.32)', accentLight: '#272037', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
+      light: { canvas: '#f6f5f8', surface: '#ffffff', ink: '#1b1a22', ink2: '#46444f', muted: '#6c6a78', faint: '#c3c1cd', line: '#e6e4ec', line2: '#f1f0f5', wash: '#faf9fc', hint: '#6c6a78', accentInk: '#665b92', accent: '#8056B8', accentMid: '#633F96', accentDeep: '#3B2660', accentDim: 'rgba(128,86,184,.07)', accentBorder: 'rgba(128,86,184,.22)', accentLight: '#efeaf7', shadow: NEUTRAL_SHADOW, shadowLg: '0 24px 60px rgba(20,18,30,.22)' },
+      dark: { canvas: '#0f0e13', surface: '#18171d', ink: '#f4f3f8', ink2: '#d3d1dc', muted: '#9e9cab', faint: '#5b5967', line: '#2b2a33', line2: '#222129', wash: '#1d1c24', hint: '#8a8897', accentInk: '#A599C8', accent: '#B79CE0', accentMid: '#D0BDF0', accentDeep: '#E6DCF8', accentDim: 'rgba(183,156,224,.13)', accentBorder: 'rgba(183,156,224,.32)', accentLight: '#272037', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
     },
     app: null,
   },
@@ -50,11 +52,11 @@ export const SKIN_DEFS: Record<SkinId, Skin> = {
     description: 'Black, white and greys only. Nothing competes with the content.',
     swatch: ['#f5f5f5', '#ffffff', '#1a1a1a', '#2e2e2e'],
     space: {
-      light: { canvas: '#f5f5f5', surface: '#ffffff', ink: '#1a1a1a', ink2: '#404040', muted: '#6b6b6b', faint: '#bdbdbd', line: '#e3e3e3', line2: '#efefef', wash: '#fafafa', accent: '#2e2e2e', accentMid: '#555555', accentDeep: '#111111', accentDim: 'rgba(0,0,0,.05)', accentBorder: 'rgba(0,0,0,.2)', accentLight: '#e8e8e8', shadow: '0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)', shadowLg: '0 24px 60px rgba(0,0,0,.22)' },
-      dark: { canvas: '#101010', surface: '#1a1a1a', ink: '#f2f2f2', ink2: '#d0d0d0', muted: '#a0a0a0', faint: '#5c5c5c', line: '#2e2e2e', line2: '#242424', wash: '#202020', accent: '#d6d6d6', accentMid: '#ececec', accentDeep: '#f5f5f5', accentDim: 'rgba(255,255,255,.1)', accentBorder: 'rgba(255,255,255,.28)', accentLight: '#2c2c2c', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
+      light: { canvas: '#f5f5f5', surface: '#ffffff', ink: '#1a1a1a', ink2: '#404040', muted: '#696969', faint: '#bdbdbd', line: '#e3e3e3', line2: '#efefef', wash: '#fafafa', hint: '#696969', accentInk: '#2e2e2e', accent: '#2e2e2e', accentMid: '#555555', accentDeep: '#111111', accentDim: 'rgba(0,0,0,.05)', accentBorder: 'rgba(0,0,0,.2)', accentLight: '#e8e8e8', shadow: '0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)', shadowLg: '0 24px 60px rgba(0,0,0,.22)' },
+      dark: { canvas: '#101010', surface: '#1a1a1a', ink: '#f2f2f2', ink2: '#d0d0d0', muted: '#a0a0a0', faint: '#5c5c5c', line: '#2e2e2e', line2: '#242424', wash: '#202020', hint: '#8c8c8c', accentInk: '#d6d6d6', accent: '#d6d6d6', accentMid: '#ececec', accentDeep: '#f5f5f5', accentDim: 'rgba(255,255,255,.1)', accentBorder: 'rgba(255,255,255,.28)', accentLight: '#2c2c2c', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
     },
     app: {
-      light: { bg: '#f4f4f4', panel: '#ffffff', ink: '#1a1a1a', muted: '#6b6b6b', line: '#e3e3e3', wash: '#fafafa', accent: '#2e2e2e', send: '#2e2e2e', bubble: '#ebebeb' },
+      light: { bg: '#f4f4f4', panel: '#ffffff', ink: '#1a1a1a', muted: '#696969', line: '#e3e3e3', wash: '#fafafa', accent: '#2e2e2e', send: '#2e2e2e', bubble: '#ebebeb' },
       dark: { bg: '#161616', panel: '#0d0d0d', ink: '#f2f2f2', muted: '#a0a0a0', line: '#2e2e2e', wash: '#1b1b1b', accent: '#d6d6d6', send: '#5c5c5c', bubble: '#262626' },
     },
   },
@@ -63,11 +65,11 @@ export const SKIN_DEFS: Record<SkinId, Skin> = {
     description: 'White and clear blues, cool and technical.',
     swatch: ['#f3f8fc', '#ffffff', '#0f2a3d', '#0b6fa4'],
     space: {
-      light: { canvas: '#f3f8fc', surface: '#ffffff', ink: '#0f2a3d', ink2: '#35546b', muted: '#5f7a8e', faint: '#b4c7d6', line: '#dbe7f0', line2: '#e9f1f7', wash: '#f7fbfe', accent: '#0b6fa4', accentMid: '#29b5e8', accentDeep: '#11567f', accentDim: 'rgba(11,111,164,.07)', accentBorder: 'rgba(11,111,164,.26)', accentLight: '#d8eefa', shadow: '0 1px 2px rgba(15,42,61,.04),0 6px 20px rgba(15,42,61,.06)', shadowLg: '0 24px 60px rgba(15,42,61,.22)' },
-      dark: { canvas: '#0b1722', surface: '#112231', ink: '#eaf4fb', ink2: '#c3d8e8', muted: '#8fa9bd', faint: '#4a6378', line: '#1f3547', line2: '#182b3b', wash: '#152738', accent: '#56c6ef', accentMid: '#8bd9f5', accentDeep: '#bfe9fa', accentDim: 'rgba(86,198,239,.14)', accentBorder: 'rgba(86,198,239,.34)', accentLight: '#14384d', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
+      light: { canvas: '#f3f8fc', surface: '#ffffff', ink: '#0f2a3d', ink2: '#35546b', muted: '#516c80', faint: '#b4c7d6', line: '#dbe7f0', line2: '#e9f1f7', wash: '#f7fbfe', hint: '#516c80', accentInk: '#0b6da1', accent: '#0b6fa4', accentMid: '#29b5e8', accentDeep: '#11567f', accentDim: 'rgba(11,111,164,.07)', accentBorder: 'rgba(11,111,164,.26)', accentLight: '#d8eefa', shadow: '0 1px 2px rgba(15,42,61,.04),0 6px 20px rgba(15,42,61,.06)', shadowLg: '0 24px 60px rgba(15,42,61,.22)' },
+      dark: { canvas: '#0b1722', surface: '#112231', ink: '#eaf4fb', ink2: '#c3d8e8', muted: '#8fa9bd', faint: '#4a6378', line: '#1f3547', line2: '#182b3b', wash: '#152738', hint: '#7d95a8', accentInk: '#56c6ef', accent: '#56c6ef', accentMid: '#8bd9f5', accentDeep: '#bfe9fa', accentDim: 'rgba(86,198,239,.14)', accentBorder: 'rgba(86,198,239,.34)', accentLight: '#14384d', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
     },
     app: {
-      light: { bg: '#f1f6fa', panel: '#ffffff', ink: '#0f2a3d', muted: '#5f7a8e', line: '#dbe7f0', wash: '#f7fbfe', accent: '#0b6fa4', send: '#0b6fa4', bubble: '#d8eefa' },
+      light: { bg: '#f1f6fa', panel: '#ffffff', ink: '#0f2a3d', muted: '#516c80', line: '#dbe7f0', wash: '#f7fbfe', accent: '#0b6fa4', send: '#0b6fa4', bubble: '#d8eefa' },
       dark: { bg: '#0f1b27', panel: '#0a141d', ink: '#eaf4fb', muted: '#8fa9bd', line: '#1f3547', wash: '#112231', accent: '#56c6ef', send: '#13709f', bubble: '#17303f' },
     },
   },
@@ -76,11 +78,11 @@ export const SKIN_DEFS: Record<SkinId, Skin> = {
     description: 'Deep navy, white and a fresh green for what needs action.',
     swatch: ['#f2f5f6', '#ffffff', '#032d42', '#1c7f36'],
     space: {
-      light: { canvas: '#f2f5f6', surface: '#ffffff', ink: '#032d42', ink2: '#2f5568', muted: '#5d7886', faint: '#b6c7cf', line: '#dce5e9', line2: '#eaf0f2', wash: '#f7fafb', accent: '#1c7f36', accentMid: '#62d84e', accentDeep: '#032d42', accentDim: 'rgba(31,138,59,.08)', accentBorder: 'rgba(31,138,59,.3)', accentLight: '#dff6d9', shadow: '0 1px 2px rgba(3,45,66,.04),0 6px 20px rgba(3,45,66,.06)', shadowLg: '0 24px 60px rgba(3,45,66,.24)' },
-      dark: { canvas: '#04202e', surface: '#08303f', ink: '#eaf5f0', ink2: '#c0d8d2', muted: '#8fb0ac', faint: '#46666b', line: '#14455a', line2: '#0e3a4c', wash: '#0b3445', accent: '#62d84e', accentMid: '#8be67a', accentDeep: '#c3f5ba', accentDim: 'rgba(98,216,78,.14)', accentBorder: 'rgba(98,216,78,.34)', accentLight: '#0f4a40', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
+      light: { canvas: '#f2f5f6', surface: '#ffffff', ink: '#032d42', ink2: '#2f5568', muted: '#4d6b7a', faint: '#b6c7cf', line: '#dce5e9', line2: '#eaf0f2', wash: '#f7fafb', hint: '#4d6b7a', accentInk: '#1a7737', accent: '#1c7f36', accentMid: '#62d84e', accentDeep: '#032d42', accentDim: 'rgba(31,138,59,.08)', accentBorder: 'rgba(31,138,59,.3)', accentLight: '#dff6d9', shadow: '0 1px 2px rgba(3,45,66,.04),0 6px 20px rgba(3,45,66,.06)', shadowLg: '0 24px 60px rgba(3,45,66,.24)' },
+      dark: { canvas: '#04202e', surface: '#08303f', ink: '#eaf5f0', ink2: '#c0d8d2', muted: '#8fb0ac', faint: '#46666b', line: '#14455a', line2: '#0e3a4c', wash: '#0b3445', hint: '#86a7a4', accentInk: '#62d84e', accent: '#62d84e', accentMid: '#8be67a', accentDeep: '#c3f5ba', accentDim: 'rgba(98,216,78,.14)', accentBorder: 'rgba(98,216,78,.34)', accentLight: '#0f4a40', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
     },
     app: {
-      light: { bg: '#eef3f5', panel: '#ffffff', ink: '#032d42', muted: '#5d7886', line: '#dce5e9', wash: '#f7fafb', accent: '#1c7f36', send: '#1c7f36', bubble: '#dcebe6' },
+      light: { bg: '#eef3f5', panel: '#ffffff', ink: '#032d42', muted: '#4d6b7a', line: '#dce5e9', wash: '#f7fafb', accent: '#197438', send: '#1c7f36', bubble: '#dcebe6' },
       dark: { bg: '#06222f', panel: '#031821', ink: '#eaf5f0', muted: '#8fb0ac', line: '#14455a', wash: '#08303f', accent: '#62d84e', send: '#237a30', bubble: '#0d3a48' },
     },
   },
@@ -93,6 +95,7 @@ export const isSkin = (value: unknown): value is SkinId => typeof value === 'str
 const spaceVars = (t: SpaceTokens) =>
   `--canvas:${t.canvas};--surface:${t.surface};--ink:${t.ink};--ink-2:${t.ink2};--muted:${t.muted};--faint:${t.faint};--line:${t.line};--line-2:${t.line2};--wash:${t.wash};` +
   `--purple:${t.accent};--purple-mid:${t.accentMid};--purple-deep:${t.accentDeep};--purple-dim:${t.accentDim};--purple-border:${t.accentBorder};--purple-light:${t.accentLight};` +
+  `--hint:${t.hint};--purple-ink:${t.accentInk};` +
   `--shadow:${t.shadow};--shadow-lg:${t.shadowLg}`;
 
 /** Rules for a Space page. Empty for the original skin, whose values are the design system itself. */

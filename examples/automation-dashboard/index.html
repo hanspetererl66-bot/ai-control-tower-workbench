@@ -257,8 +257,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;
 /* Calm Bento buttons: one family. Primary = Accenture purple on white text, secondary = soft tint, quiet = neutral. */
 button.primary,button.ghost,button.small{font:inherit;font-size:13px;font-weight:550;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:var(--radius-s);border:1px solid var(--line);background:var(--surface);color:var(--ink-2);transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
 button.primary{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 1px 2px rgba(70,0,115,.18)}
-button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-mid)}
-button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-mid)}
+button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-ink)}
+button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-ink)}
 button.primary:hover:not(:disabled){background:var(--purple-mid);border-color:var(--purple-mid)}
 button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;cursor:default}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple-ink)}}

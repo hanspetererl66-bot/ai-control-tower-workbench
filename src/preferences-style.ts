@@ -22,13 +22,21 @@ export function luminance(hex: string): number {
 }
 
 /** Accent values for the light and dark theme. White text must stay readable on it; a light colour is darkened. */
-export function accentVariants(hex: string): { light: string; dark: string; lightMid: string; darkMid: string; lightWash: string; darkWash: string } {
+export function accentVariants(hex: string): { light: string; dark: string; lightMid: string; darkMid: string; lightWash: string; darkWash: string; lightInk: string; darkInk: string } {
   let base = hex.toUpperCase();
   while (luminance(base) > 0.3 && base !== '#000000') base = mix(base, '#000000', 0.15);
   const dark = mix(base, '#FFFFFF', 0.3);
+  // The accent as a text colour (--purple-ink): 4.5:1 on the light grounds needs a luminance of about 0.13 or less,
+  // on the dark grounds about 0.25 or more.
+  let lightInk = base;
+  while (luminance(lightInk) > 0.13 && lightInk !== '#000000') lightInk = mix(lightInk, '#000000', 0.1);
+  let darkInk = dark;
+  while (luminance(darkInk) < 0.25 && darkInk !== '#FFFFFF') darkInk = mix(darkInk, '#FFFFFF', 0.1);
   return {
     light: base,
     dark,
+    lightInk,
+    darkInk,
     lightMid: mix(base, '#FFFFFF', 0.35),
     darkMid: mix(base, '#FFFFFF', 0.55),
     lightWash: mix(base, '#FFFFFF', 0.9),
@@ -62,14 +70,14 @@ export function buildPreferenceCss(prefs: Preferences): string {
 
 const MARK = 'werkbank-space-prefs';
 
-/** Spaces use the design-system tokens: the skin sets the whole palette, the accent then overrides --purple, --purple-mid and --purple-light. Also reduces motion. */
+/** Spaces use the design-system tokens: the skin sets the whole palette, the accent then overrides --purple, --purple-mid, --purple-light and --purple-ink (the accent as text). Also reduces motion. */
 export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' | 'reduceMotion' | 'contrast' | 'font'> & { skin?: SkinId; layout?: LayoutId }): string {
   const rules: string[] = [...skinSpaceRules(prefs.skin ?? DEFAULT_SKIN), ...layoutSpaceRules(prefs.layout ?? DEFAULT_LAYOUT)];
   if (prefs.accent) {
     const a = accentVariants(prefs.accent);
     rules.push(
-      `html:root,html:root[data-theme="light"]{--purple:${a.light};--purple-mid:${a.lightMid};--purple-light:${a.lightWash}}`,
-      `html:root[data-theme="dark"]{--purple:${a.dark};--purple-mid:${a.darkMid};--purple-light:${a.darkWash}}`
+      `html:root,html:root[data-theme="light"]{--purple:${a.light};--purple-mid:${a.lightMid};--purple-light:${a.lightWash};--purple-ink:${a.lightInk}}`,
+      `html:root[data-theme="dark"]{--purple:${a.dark};--purple-mid:${a.darkMid};--purple-light:${a.darkWash};--purple-ink:${a.darkInk}}`
     );
   }
   const stack = FONT_STACKS[prefs.font];
