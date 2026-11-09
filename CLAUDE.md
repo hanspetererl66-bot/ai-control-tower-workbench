@@ -2,7 +2,7 @@
 
 Privater Prototyp von Hans-Peter (Accenture S&P EMEA). Electron + Vite + React/TS-App "Werkbank" mit Goose als Agent-Runtime (bleibt so). Sprache mit dem Nutzer: Deutsch, UI-Texte: Englisch. Hans-Peter entwickelt auf einem Linux-Rechner; die README nennt noch macOS als Ziel.
 
-Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11.2026.
+Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11.2026.
 
 **Diese Datei ist bewusst kurz.** Verlauf (PRs, Branches, Merges) steht in `git log`. Die ausführlichen Statusnotizen je Thema (was gebaut ist, Grenzen, "Nicht getestet") liegen in `docs/status/` und werden nur gelesen, wenn das Thema dran ist.
 
@@ -15,7 +15,9 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 ## Befehle
 - `npm test` (node --test), `npx tsc --noEmit -p .`, `npm run check` (alles zusammen) – vor jedem Push grün.
 - `npm run smoke:electron`: startet die echte Electron-App (öffnet ein Fenster, braucht Display; Vite startet es selbst, falls es nicht läuft), prüft Titel, Goose-Port, Chat und Cover, speichert Screenshots (`--out <Ordner>`) und beendet die App. Kein Ersatz für einen Agenten-Lauf mit Live-Diensten.
+- `npm run smoke:governance`: wie `smoke:electron`, prüft die Einstiegsseite AI Governance: Subspaces in der Seitenleiste, vier Kacheln, Öffnen von Registry, Compliance, Observability und Agent Studio, Zurück-Button, keine Skriptfehler. Setzt die vier Spaces voraus (`node scripts/install-example-space.mjs control-tower agent-registry agent-compliance agent-observability`); klappt die Domain Governance in der Seitenleiste auf.
 - Beispiel-Spaces: `examples/<name>/index.html`, installieren mit `npm run install:examples` (siehe Skill `space-change`).
+- Alle Connectoren mit der lokalen Goose-Konfiguration verbinden: `npm run connect:connectors` (schaut bei jedem Lauf in `connectors/` nach, was vorliegt; `-- --dry-run` zeigt nur, `--only a,b`, `--skip a,b`, `--enable-unconfigured`). Wiederholbar: Dateien werden frisch gelegt, eigene Einstellungen und der Ein/Aus-Schalter bleiben; Connectoren mit fehlender Pflichteinstellung werden ausgeschaltet eingetragen. Danach die App neu starten. Nicht getestet: Start der Electron-App mit den erzeugten Einträgen.
 - Connector-Bundles: `npm run build:connectors` (alle) oder `node scripts/build-control-tower-mcpb.mjs <id>`. Die älteren Connectoren `gmail`, `databricks`, `jira`, `slack`, `notion` haben eigene Bundle-Flags (`--gmail` usw.).
 - Cognee: `npm run cognee:corpus`, danach `.venv-cognee/bin/python scripts/cognee-seed.py [--reset]` (nicht `npm run cognee:seed`, das nimmt das System-Python).
 
@@ -51,7 +53,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 | `design-study-and-demos.md` | Joule Design Study, Order-to-Cash (zwei Fälle) |
 | `recruiting-status.md` | Recruiting Workbench, Hiring Approvals, Job Posting, Online-Interview |
 | `policy-manifest.md` | Policy-Manifest (Rechte als Daten, erzwingt nichts) |
-| `dashboards-observability.md` | n8n Performance Dashboard, Agent Observability |
+| `dashboards-observability.md` | n8n Performance Dashboard, Agent Observability, AI Governance (Einstieg und Subspaces) |
 | `space-designer.md` | Space Designer |
 
 Weitere Anleitungen: `docs/recruiting.md`, `docs/arc-1.md`, `docs/arc-1-demo.md`, `docs/teams.md`, `docs/customer-360.md`, `docs/agent-observability.md`, `docs/registry-leanix.md`, `docs/order-to-cash*.md`.

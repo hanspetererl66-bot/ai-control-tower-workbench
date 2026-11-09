@@ -25,7 +25,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 /* HEADER */
 .hdr{background:var(--black);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100}
 .hdr-brand{display:flex;align-items:center;gap:14px}
-.acc-mark{color:var(--purple);font-size:24px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.acc-mark{color:var(--purple-ink);font-size:24px;font-weight:800;letter-spacing:-1.5px;line-height:1}
 .hdr-div{width:1px;height:24px;background:rgba(255,255,255,0.12)}
 .hdr-title{color:#fff;font-size:14px;font-weight:600;letter-spacing:-.01em}
 .hdr-sub{color:rgba(255,255,255,0.38);font-size:10px;font-family:var(--mono);letter-spacing:.06em;margin-top:1px}
@@ -44,8 +44,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .tbar::-webkit-scrollbar-thumb:hover{background:var(--g500)}
 .tb{display:flex;align-items:center;gap:6px;padding:14px 14px 13px;font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s;font-family:var(--font)}
 .tnum{font-family:var(--mono);font-size:10px;background:var(--g100);color:var(--g300);padding:1px 5px;border-radius:3px}
-.tb:hover:not(.on){color:var(--g700)}.tb.on{color:var(--purple);border-bottom-color:var(--purple);font-weight:600}
-.tb.on .tnum{background:var(--purple-dim);color:var(--purple)}
+.tb:hover:not(.on){color:var(--g700)}.tb.on{color:var(--purple-ink);border-bottom-color:var(--purple);font-weight:600}
+.tb.on .tnum{background:var(--purple-dim);color:var(--purple-ink)}
 
 /* LAYOUT */
 .pg{display:none;padding:24px}.pg.on{display:block}
@@ -54,11 +54,11 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ml{font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
 .mv{font-size:22px;font-weight:700;color:var(--g900);font-family:var(--mono);letter-spacing:-.02em}
 .md{font-size:11px;font-weight:500;margin-top:3px}
-.up{color:var(--green)}.dn{color:var(--red)}.warn{color:var(--amber)}.inf{color:var(--purple)}
+.up{color:var(--green-ink)}.dn{color:var(--red)}.warn{color:var(--amber-ink)}.inf{color:var(--purple-ink)}
 .sh{font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px}
 .sh:first-child{margin-top:0}
 .card{background:var(--surface);border:1px solid var(--g200);border-radius:6px;padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
-.chd{font-size:16px;font-weight:700;color:var(--purple);margin-bottom:10px}
+.chd{font-size:16px;font-weight:700;color:var(--purple-ink);margin-bottom:10px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -89,18 +89,18 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ag-id{font-family:var(--mono);color:var(--g500);white-space:nowrap}
 .ag-tbl .tag{white-space:nowrap}
 .tag{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;font-family:var(--mono)}
-.t-p{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border)}
-.t-g{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
-.t-a{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.t-p{background:var(--purple-dim);color:var(--purple-ink);border:1px solid var(--purple-border)}
+.t-g{background:var(--green-dim);color:var(--green-ink);border:1px solid var(--green-border)}
+.t-a{background:var(--amber-dim);color:var(--amber-ink);border:1px solid var(--amber-border)}
 .t-r{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
-.t-b{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.t-b{background:var(--blue-dim);color:var(--blue-ink);border:1px solid var(--blue-border)}
 .t-gr{background:var(--g100);color:var(--g500);border:1px solid var(--g200)}
 .t-t{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,107,117,.2)}
 .src{font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px;vertical-align:middle}
 .s-dora{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
 .s-dx{background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9}
 .s-gh{background:#F3E5F5;color:#6A1B9A;border:1px solid #CE93D8}
-.s-acn{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border)}
+.s-acn{background:var(--purple-dim);color:var(--purple-ink);border:1px solid var(--purple-border)}
 
 /* ROWS */
 .krow{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--g100)}
@@ -108,7 +108,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .kname{font-size:12px;font-weight:600;color:var(--g900)}
 .kdesc{font-size:11px;color:var(--g500);margin-top:2px;line-height:1.5}
 .kval{font-family:var(--mono);font-size:14px;font-weight:700;min-width:58px;text-align:right}
-.ktgt{font-size:10px;color:var(--g300);font-family:var(--mono);text-align:right;margin-top:2px}
+.ktgt{font-size:10px;color:var(--hint);font-family:var(--mono);text-align:right;margin-top:2px}
 .srow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--g100);font-size:12px}
 .srow:last-child{border-bottom:none}
 .sname{font-weight:600;color:var(--g900)}.sdesc{font-size:11px;color:var(--g500);margin-top:2px;line-height:1.5}
@@ -117,10 +117,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ci{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--g100);font-size:12px}
 .ci:last-child{border-bottom:none}
 .cico{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;font-weight:700}
-.c-ok{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
-.c-pt{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.c-ok{background:var(--green-dim);color:var(--green-ink);border:1px solid var(--green-border)}
+.c-pt{background:var(--amber-dim);color:var(--amber-ink);border:1px solid var(--amber-border)}
 .c-no{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
-.ct{color:var(--g700);flex:1}.cs{font-size:11px;color:#999;margin-top:1px}
+.ct{color:var(--g700);flex:1}.cs{font-size:11px;color:var(--g500);margin-top:1px}
 
 /* ALERT */
 .ab{border-radius:6px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;border-left:4px solid}
@@ -138,7 +138,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ns{background:var(--surface);border:1px solid var(--purple-border);border-top:3px solid var(--purple);border-radius:6px;padding:18px;margin-bottom:12px;box-shadow:var(--sh)}
 .ns-title{font-size:14px;font-weight:700;color:var(--g900);margin-bottom:6px}
 .ns-why{font-size:12px;color:var(--g700);line-height:1.7;margin-bottom:10px}
-.ns-fml{font-family:var(--mono);font-size:11px;color:var(--purple);background:var(--purple-dim);padding:8px 12px;border-radius:4px}
+.ns-fml{font-family:var(--mono);font-size:11px;color:var(--purple-ink);background:var(--purple-dim);padding:8px 12px;border-radius:4px}
 
 /* DORA */
 .dtier{background:var(--surface);border:1px solid var(--g200);border-radius:6px;padding:14px;text-align:center;box-shadow:var(--sh)}
@@ -187,10 +187,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .hub-tile{display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-tile:hover{border-color:var(--purple);transform:translateY(-2px)}
 .hub-tile:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
-.hub-step{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--purple)}
+.hub-step{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--purple-ink)}
 .hub-t{font-size:16px;font-weight:650}
 .hub-d{font-size:13px;line-height:1.55;color:var(--muted);flex:1}
-.hub-go{font-size:13px;font-weight:600;color:var(--purple)}
+.hub-go{font-size:13px;font-weight:600;color:var(--purple-ink)}
 .hub-note{font-size:12px;color:var(--muted);margin:18px 0 0;min-height:1em}
 @media(prefers-reduced-motion:reduce){.hub-tile{transition:none}.hub-tile:hover{transform:none}}
 .hub-back{font:inherit;font-size:12px;font-weight:600;color:var(--purple);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}.hub-back:hover{border-color:var(--purple)}.hub-back:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
@@ -204,12 +204,12 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   color-scheme:light dark;
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
-  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
-  --purple:#8056B8;--purple-mid:#633F96;--purple-deep:#3B2660;--purple-dim:rgba(128,86,184,.07);--purple-border:rgba(128,86,184,.22);--purple-light:#efeaf7;
-  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
-  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
-  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
-  --blue:#4A6FA5;--blue-dim:rgba(74,111,165,.09);--blue-border:rgba(74,111,165,.24);
+  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--hint:var(--muted);--red-ink:var(--red);--green-ink:#27755a;--purple-ink:#665b92;--amber-ink:#7a5f2f;--blue-ink:#476690;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
+  --purple:#7B6FA6;--purple-mid:#62578A;--purple-deep:#3F3860;--purple-dim:rgba(123,111,166,.07);--purple-border:rgba(123,111,166,.20);--purple-light:#eeecf5;
+  --green:#2F8A6B;--green-dim:rgba(47,138,107,.08);--green-border:rgba(47,138,107,.20);
+  --amber:#8A6D3B;--amber-dim:rgba(138,109,59,.07);--amber-border:rgba(138,109,59,.20);
+  --red:#B5483F;--red-dim:rgba(181,72,63,.07);--red-border:rgba(181,72,63,.20);
+  --blue:#5B79A3;--blue-dim:rgba(91,121,163,.08);--blue-border:rgba(91,121,163,.22);
   --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
   --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(20,18,30,.04),0 6px 20px rgba(20,18,30,.05);--shadow-lg:0 24px 60px rgba(20,18,30,.22);
   --space:8px;
@@ -223,23 +223,23 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 }
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
-  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
-  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
-  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--red-ink:var(--red);--green-ink:var(--green);--purple-ink:var(--purple);--amber-ink:var(--amber);--blue-ink:var(--blue);--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
+  --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
+  --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
+  --red:#D98A82;--red-dim:rgba(217,138,130,.10);--red-border:rgba(217,138,130,.24);
+  --blue:#93A9CB;--blue-dim:rgba(147,169,203,.10);--blue-border:rgba(147,169,203,.26);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
-  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
-  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
-  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--red-ink:var(--red);--green-ink:var(--green);--purple-ink:var(--purple);--amber-ink:var(--amber);--blue-ink:var(--blue);--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
+  --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
+  --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
+  --red:#D98A82;--red-dim:rgba(217,138,130,.10);--red-border:rgba(217,138,130,.24);
+  --blue:#93A9CB;--blue-dim:rgba(147,169,203,.10);--blue-border:rgba(147,169,203,.26);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }
@@ -292,9 +292,9 @@ button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border
 button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-mid)}
 button.primary:hover:not(:disabled){background:var(--purple-mid);border-color:var(--purple-mid)}
 button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;cursor:default}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple-ink)}}
 :root[data-theme="dark"] button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}
-:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple)}
+:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple-ink)}
 
 /* Bento: the first tile of a KPI row carries the accent wash. */
 
@@ -303,7 +303,7 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
 .ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
 .ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
-.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple-ink);border-color:var(--purple-border)}
 .ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
 .ag-tbl td{padding:10px 8px}
 
@@ -312,14 +312,14 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
 .ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
 .ct .hdr-div{background:var(--line)}
-.ct .acc-mark{color:var(--purple)}
+.ct .acc-mark{color:var(--purple-ink)}
 .ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
 .ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
 .ct .live{color:var(--muted);font-family:var(--font)}
 .ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
 .ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
 .ct .tb:hover:not(.on){color:var(--ink)}
-.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tb.on{color:var(--purple-ink);border-bottom:2px solid var(--purple);font-weight:600}
 .ct .tnum{display:none}
 .ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
 .ct .mr{gap:16px;margin-bottom:32px}
@@ -480,7 +480,7 @@ details.intro .body{margin-top:8px}
   <div class="ab ab-w">
     <div class="aico">&#9888;</div>
     <div>
-      <div class="atit" style="color:var(--amber)">Auto-discovery: <span data-ct="agents.unregistered">47</span> unregistered AI assets detected &mdash; ServiceNow ACT &lsquo;Discover&rsquo; dimension</div>
+      <div class="atit" style="color:var(--amber-ink)">Auto-discovery: <span data-ct="agents.unregistered">47</span> unregistered AI assets detected &mdash; ServiceNow ACT &lsquo;Discover&rsquo; dimension</div>
       <div class="abod">At 30k engineers, shadow AI sprawl accelerates. Scanners found <span data-ct="agents.unregistered">47</span> agents and model integrations across SAP BTP, Azure OpenAI, n8n, and internal Python scripts running outside the governance registry. None have token caps, risk scores, or documented owners. This is expected at scale &mdash; the governance process must be faster than engineer creativity.</div>
     </div>
   </div>
@@ -507,12 +507,12 @@ details.intro .body{margin-top:8px}
   <div class="card">
     <div class="flow">
       <div class="fn" style="background:var(--g100);color:var(--g700)">Proposal</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--blue-dim);color:var(--blue)">Design review</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--amber-dim);color:var(--amber)">Risk classify</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--purple-dim);color:var(--purple)">Identity &amp; access scope</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--purple-dim);color:var(--purple)">Security scan</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--blue-dim);color:var(--blue-ink)">Design review</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--amber-dim);color:var(--amber-ink)">Risk classify</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--purple-dim);color:var(--purple-ink)">Identity &amp; access scope</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--purple-dim);color:var(--purple-ink)">Security scan</div><span class="fa">&#8594;</span>
       <div class="fn" style="background:var(--teal-dim);color:var(--teal)">Staging test</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--green-dim);color:var(--green)">Production</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--green-dim);color:var(--green-ink)">Production</div><span class="fa">&#8594;</span>
       <div class="fn" style="background:var(--g100);color:var(--g500)">Monitor / retire</div>
     </div>
     <div style="font-size:11px;color:var(--g500);margin-top:8px">Avg proposal&rarr;production: 18 days. Identity &amp; access scope is a mandatory gate. At 30k engineers, auto-registration with human triage is required to keep up with agent creation velocity.</div>
@@ -625,9 +625,9 @@ details.intro .body{margin-top:8px}
   </div>
 
   <div class="ab ab-i">
-    <div class="aico" style="color:var(--purple)">&#128202;</div>
+    <div class="aico" style="color:var(--purple-ink)">&#128202;</div>
     <div>
-      <div class="atit" style="color:var(--purple)">Cost per agent per week &mdash; methodology &amp; estimate</div>
+      <div class="atit" style="color:var(--purple-ink)">Cost per agent per week &mdash; methodology &amp; estimate</div>
       <div class="abod">Not a metered figure &mdash; derived from existing dashboard data: runs/agent/day (Tab 05) &times; tokens/run by complexity tier &times; blended €/token (Tab 02 model mix, 38% cache hit, 35/65 input/output split typical of agentic tool-calling). Token/run by tier (Autonomous 9k, Copilot 14k, Orchestrator 22k) is an <strong>estimate</strong> reflecting step-count differences, not directly measured &mdash; LangFuse/LangSmith instrumentation (see KPI measurement framework) would replace this with real per-agent telemetry. Total reconciles to ~€220k/month, consistent with the Agents + n8n API line (&euro;113k) and the Governance/MCP infra line in Tab 02.</div>
     </div>
   </div>
@@ -645,7 +645,7 @@ details.intro .body{margin-top:8px}
     <div>
       <div class="sh">Blended summary</div>
       <div class="card">
-        <div class="krow"><div style="flex:1"><div class="kname">Average across all production agents</div><div class="kdesc">Total weekly agent execution cost &divide; <span data-ct="agents.production">125</span> agents</div></div><div style="text-align:right"><div class="kval" style="color:var(--purple)">&euro;405</div><div class="ktgt">per agent / week</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Average across all production agents</div><div class="kdesc">Total weekly agent execution cost &divide; <span data-ct="agents.production">125</span> agents</div></div><div style="text-align:right"><div class="kval" style="color:var(--purple-ink)">&euro;405</div><div class="ktgt">per agent / week</div></div></div>
         <div class="krow"><div style="flex:1"><div class="kname">Total weekly agent execution cost</div><div class="kdesc">Across all <span data-ct="agents.production">125</span> production agents, all types</div></div><div style="text-align:right"><div class="kval">&euro;50.6k</div><div class="ktgt">per week</div></div></div>
         <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Annualised</div><div class="kdesc">52 weeks &times; weekly total</div></div><div style="text-align:right"><div class="kval">&euro;2.63M</div><div class="ktgt">per year</div></div></div>
       </div>
@@ -657,13 +657,13 @@ details.intro .body{margin-top:8px}
     <table class="tbl" style="min-width:680px">
       <thead><tr><th>Agent group</th><th>Type</th><th class="r">Agents</th><th class="r">Runs/day/agent</th><th class="r">Tokens/run (est.)</th><th class="r">&euro;/agent/week</th><th class="r">Group total/week</th></tr></thead>
       <tbody>
-        <tr><td class="b">n8n workflow gen</td><td><span class="tag t-a">Orchestrator</span></td><td class="r">8</td><td class="r">925</td><td class="r" style="font-family:var(--mono);font-size:11px">22.0k</td><td class="r b" style="color:var(--amber)">&euro;1,650</td><td class="r b">&euro;13.2k</td></tr>
-        <tr><td class="b">SPC ticket routers</td><td><span class="tag t-b">Autonomous</span></td><td class="r">8</td><td class="r">1,600</td><td class="r" style="font-family:var(--mono);font-size:11px">9.0k</td><td class="r b" style="color:var(--blue)">&euro;1,167</td><td class="r b">&euro;9.3k</td></tr>
+        <tr><td class="b">n8n workflow gen</td><td><span class="tag t-a">Orchestrator</span></td><td class="r">8</td><td class="r">925</td><td class="r" style="font-family:var(--mono);font-size:11px">22.0k</td><td class="r b" style="color:var(--amber-ink)">&euro;1,650</td><td class="r b">&euro;13.2k</td></tr>
+        <tr><td class="b">SPC ticket routers</td><td><span class="tag t-b">Autonomous</span></td><td class="r">8</td><td class="r">1,600</td><td class="r" style="font-family:var(--mono);font-size:11px">9.0k</td><td class="r b" style="color:var(--blue-ink)">&euro;1,167</td><td class="r b">&euro;9.3k</td></tr>
         <tr><td class="b">All other agents</td><td><span class="tag t-gr">Mixed</span></td><td class="r">70</td><td class="r">146</td><td class="r" style="font-family:var(--mono);font-size:11px">14.2k</td><td class="r b">&euro;168</td><td class="r b">&euro;11.7k</td></tr>
         <tr><td class="b">L2C deal advisors</td><td><span class="tag t-p">Copilot</span></td><td class="r">12</td><td class="r">567</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;643</td><td class="r b">&euro;7.7k</td></tr>
         <tr><td class="b">Contract drafters</td><td><span class="tag t-p">Copilot</span></td><td class="r">9</td><td class="r">356</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;404</td><td class="r b">&euro;3.6k</td></tr>
         <tr><td class="b">ABAP code assists</td><td><span class="tag t-p">Copilot</span></td><td class="r">18</td><td class="r">244</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;277</td><td class="r b">&euro;5.0k</td></tr>
-        <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="6">Total / week (all <span data-ct="agents.production">125</span> production agents)</td><td class="r b" style="color:var(--purple)">&euro;50.6k</td></tr>
+        <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="6">Total / week (all <span data-ct="agents.production">125</span> production agents)</td><td class="r b" style="color:var(--purple-ink)">&euro;50.6k</td></tr>
       </tbody>
     </table>
   </div>
@@ -5172,8 +5172,8 @@ function renderRisks(){
 
   function tile(label,color,border,count,lines){
     return '<div style="background:var(--surface);border:1px solid var(--'+border+');border-left:4px solid var(--'+color+');border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">'
-      +'<div style="font-size:10px;font-weight:700;color:var(--'+color+');font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">'+esc(label)+'</div>'
-      +'<div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--'+color+')">'+count+'</div>'
+      +'<div style="font-size:10px;font-weight:700;color:var(--'+color+'-ink);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">'+esc(label)+'</div>'
+      +'<div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--'+color+'-ink)">'+count+'</div>'
       +'<div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">'+lines.map(esc).join(' &middot; ')+'</div></div>';
   }
   document.getElementById('risk-summary').innerHTML=
@@ -5191,7 +5191,7 @@ function renderRisks(){
      +'<td><span class="tag '+(TAG[r.etaTone]||'t-b')+'">'+esc(r.eta)+'</span></td>'
      +'<td><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
        +'<div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:'+Number(r.progressPct)+'%;height:100%;background:var(--'+c+');border-radius:3px"></div></div>'
-       +'<div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--'+c+');min-width:28px">'+Number(r.progressPct)+'%</div></div>'
+       +'<div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--'+c+'-ink);min-width:28px">'+Number(r.progressPct)+'%</div></div>'
        +'<div style="font-size:10px;color:var(--g500)">'+esc(r.progressNote)+'</div></td>'
      +'<td style="font-size:11px;color:var(--g700)">'+esc(r.action)+'</td></tr>';
   }).join('');
@@ -5368,7 +5368,7 @@ function wireExpandGrid(gridId, keepCount, accentColor) {
     card.appendChild(panel);
 
     const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:10px;color:var(--g300);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
+    hint.style.cssText = 'font-size:10px;color:var(--hint);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
     hint.textContent = 'double-click to expand';
     card.appendChild(hint);
 
@@ -5415,7 +5415,7 @@ wireExpandGrid('policies-mr', 3, 'rgba(161,0,255,0.18)');
   document.body.appendChild(ov);
   var LIFE={production:['g','Production'],pending_review:['a','Pending review'],retired:['gr','Retired']};
   var mode='production', showAll=false, SAMPLE=12;
-  function tag(t,l){return '<span class="tag t-'+t+'" style="'+(t==='g'?'background:var(--green-dim);color:var(--green)':t==='a'?'background:var(--amber-dim);color:var(--amber)':t==='r'?'background:var(--red-dim);color:var(--red)':'background:var(--g100);color:var(--g500)')+'">'+esc(l)+'</span>';}
+  function tag(t,l){return '<span class="tag t-'+t+'" style="'+(t==='g'?'background:var(--green-dim);color:var(--green-ink)':t==='a'?'background:var(--amber-dim);color:var(--amber-ink)':t==='r'?'background:var(--red-dim);color:var(--red)':'background:var(--g100);color:var(--g500)')+'">'+esc(l)+'</span>';}
   function rows(){
     var list=mode==='production'?reg.filter(function(a){return a.lifecycle==='production';}):reg.slice();
     // Production: busiest first. Registered: most recently registered first.
@@ -5446,7 +5446,7 @@ wireExpandGrid('policies-mr', 3, 'rgba(161,0,255,0.18)');
   document.getElementById('ag-all').onclick=function(){showAll=!showAll;draw();};
   Array.from(document.querySelectorAll('[data-agent-list]')).forEach(function(card){
     var hint=document.createElement('div');
-    hint.style.cssText='font-size:10px;color:var(--g300);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
+    hint.style.cssText='font-size:10px;color:var(--hint);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
     hint.textContent='double-click for agent list';
     card.appendChild(hint);
     card.style.cursor='pointer'; card.style.userSelect='none';
@@ -5469,7 +5469,7 @@ function wireSectionCollapse(sectionId) {
     }
     if (!siblings.length) return;
     var hint = document.createElement('span');
-    hint.style.cssText = 'font-size:9px;color:var(--g300);font-family:var(--mono);float:right;margin-top:1px;cursor:pointer;user-select:none;font-weight:400';
+    hint.style.cssText = 'font-size:9px;color:var(--hint);font-family:var(--mono);float:right;margin-top:1px;cursor:pointer;user-select:none;font-weight:400';
     hint.textContent = 'double-click \u21d5';
     sh.appendChild(hint);
     sh.style.cursor = 'pointer';

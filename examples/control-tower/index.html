@@ -25,7 +25,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 /* HEADER */
 .hdr{background:var(--black);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100}
 .hdr-brand{display:flex;align-items:center;gap:14px}
-.acc-mark{color:var(--purple);font-size:24px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.acc-mark{color:var(--purple-ink);font-size:24px;font-weight:800;letter-spacing:-1.5px;line-height:1}
 .hdr-div{width:1px;height:24px;background:rgba(255,255,255,0.12)}
 .hdr-title{color:#fff;font-size:14px;font-weight:600;letter-spacing:-.01em}
 .hdr-sub{color:rgba(255,255,255,0.38);font-size:10px;font-family:var(--mono);letter-spacing:.06em;margin-top:1px}
@@ -44,8 +44,8 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .tbar::-webkit-scrollbar-thumb:hover{background:var(--g500)}
 .tb{display:flex;align-items:center;gap:6px;padding:14px 14px 13px;font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s;font-family:var(--font)}
 .tnum{font-family:var(--mono);font-size:10px;background:var(--g100);color:var(--g300);padding:1px 5px;border-radius:3px}
-.tb:hover:not(.on){color:var(--g700)}.tb.on{color:var(--purple);border-bottom-color:var(--purple);font-weight:600}
-.tb.on .tnum{background:var(--purple-dim);color:var(--purple)}
+.tb:hover:not(.on){color:var(--g700)}.tb.on{color:var(--purple-ink);border-bottom-color:var(--purple);font-weight:600}
+.tb.on .tnum{background:var(--purple-dim);color:var(--purple-ink)}
 
 /* LAYOUT */
 .pg{display:none;padding:24px}.pg.on{display:block}
@@ -54,11 +54,11 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ml{font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
 .mv{font-size:22px;font-weight:700;color:var(--g900);font-family:var(--mono);letter-spacing:-.02em}
 .md{font-size:11px;font-weight:500;margin-top:3px}
-.up{color:var(--green)}.dn{color:var(--red)}.warn{color:var(--amber)}.inf{color:var(--purple)}
+.up{color:var(--green-ink)}.dn{color:var(--red)}.warn{color:var(--amber-ink)}.inf{color:var(--purple-ink)}
 .sh{font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px}
 .sh:first-child{margin-top:0}
 .card{background:var(--surface);border:1px solid var(--g200);border-radius:6px;padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
-.chd{font-size:16px;font-weight:700;color:var(--purple);margin-bottom:10px}
+.chd{font-size:16px;font-weight:700;color:var(--purple-ink);margin-bottom:10px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -89,18 +89,18 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ag-id{font-family:var(--mono);color:var(--g500);white-space:nowrap}
 .ag-tbl .tag{white-space:nowrap}
 .tag{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;font-family:var(--mono)}
-.t-p{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border)}
-.t-g{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
-.t-a{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.t-p{background:var(--purple-dim);color:var(--purple-ink);border:1px solid var(--purple-border)}
+.t-g{background:var(--green-dim);color:var(--green-ink);border:1px solid var(--green-border)}
+.t-a{background:var(--amber-dim);color:var(--amber-ink);border:1px solid var(--amber-border)}
 .t-r{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
-.t-b{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.t-b{background:var(--blue-dim);color:var(--blue-ink);border:1px solid var(--blue-border)}
 .t-gr{background:var(--g100);color:var(--g500);border:1px solid var(--g200)}
 .t-t{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,107,117,.2)}
 .src{font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px;vertical-align:middle}
 .s-dora{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
 .s-dx{background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9}
 .s-gh{background:#F3E5F5;color:#6A1B9A;border:1px solid #CE93D8}
-.s-acn{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border)}
+.s-acn{background:var(--purple-dim);color:var(--purple-ink);border:1px solid var(--purple-border)}
 
 /* ROWS */
 .krow{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--g100)}
@@ -108,7 +108,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .kname{font-size:12px;font-weight:600;color:var(--g900)}
 .kdesc{font-size:11px;color:var(--g500);margin-top:2px;line-height:1.5}
 .kval{font-family:var(--mono);font-size:14px;font-weight:700;min-width:58px;text-align:right}
-.ktgt{font-size:10px;color:var(--g300);font-family:var(--mono);text-align:right;margin-top:2px}
+.ktgt{font-size:10px;color:var(--hint);font-family:var(--mono);text-align:right;margin-top:2px}
 .srow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--g100);font-size:12px}
 .srow:last-child{border-bottom:none}
 .sname{font-weight:600;color:var(--g900)}.sdesc{font-size:11px;color:var(--g500);margin-top:2px;line-height:1.5}
@@ -117,10 +117,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ci{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--g100);font-size:12px}
 .ci:last-child{border-bottom:none}
 .cico{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;font-weight:700}
-.c-ok{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
-.c-pt{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.c-ok{background:var(--green-dim);color:var(--green-ink);border:1px solid var(--green-border)}
+.c-pt{background:var(--amber-dim);color:var(--amber-ink);border:1px solid var(--amber-border)}
 .c-no{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
-.ct{color:var(--g700);flex:1}.cs{font-size:11px;color:#999;margin-top:1px}
+.ct{color:var(--g700);flex:1}.cs{font-size:11px;color:var(--g500);margin-top:1px}
 
 /* ALERT */
 .ab{border-radius:6px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;border-left:4px solid}
@@ -138,7 +138,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ns{background:var(--surface);border:1px solid var(--purple-border);border-top:3px solid var(--purple);border-radius:6px;padding:18px;margin-bottom:12px;box-shadow:var(--sh)}
 .ns-title{font-size:14px;font-weight:700;color:var(--g900);margin-bottom:6px}
 .ns-why{font-size:12px;color:var(--g700);line-height:1.7;margin-bottom:10px}
-.ns-fml{font-family:var(--mono);font-size:11px;color:var(--purple);background:var(--purple-dim);padding:8px 12px;border-radius:4px}
+.ns-fml{font-family:var(--mono);font-size:11px;color:var(--purple-ink);background:var(--purple-dim);padding:8px 12px;border-radius:4px}
 
 /* DORA */
 .dtier{background:var(--surface);border:1px solid var(--g200);border-radius:6px;padding:14px;text-align:center;box-shadow:var(--sh)}
@@ -187,10 +187,10 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .hub-tile{display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-tile:hover{border-color:var(--purple);transform:translateY(-2px)}
 .hub-tile:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
-.hub-step{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--purple)}
+.hub-step{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--purple-ink)}
 .hub-t{font-size:16px;font-weight:650}
 .hub-d{font-size:13px;line-height:1.55;color:var(--muted);flex:1}
-.hub-go{font-size:13px;font-weight:600;color:var(--purple)}
+.hub-go{font-size:13px;font-weight:600;color:var(--purple-ink)}
 .hub-note{font-size:12px;color:var(--muted);margin:18px 0 0;min-height:1em}
 @media(prefers-reduced-motion:reduce){.hub-tile{transition:none}.hub-tile:hover{transform:none}}
 </style>
@@ -203,12 +203,12 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
   color-scheme:light dark;
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
-  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
-  --purple:#8056B8;--purple-mid:#633F96;--purple-deep:#3B2660;--purple-dim:rgba(128,86,184,.07);--purple-border:rgba(128,86,184,.22);--purple-light:#efeaf7;
-  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
-  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
-  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
-  --blue:#4A6FA5;--blue-dim:rgba(74,111,165,.09);--blue-border:rgba(74,111,165,.24);
+  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--hint:var(--muted);--red-ink:var(--red);--green-ink:#27755a;--purple-ink:#665b92;--amber-ink:#7a5f2f;--blue-ink:#476690;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
+  --purple:#7B6FA6;--purple-mid:#62578A;--purple-deep:#3F3860;--purple-dim:rgba(123,111,166,.07);--purple-border:rgba(123,111,166,.20);--purple-light:#eeecf5;
+  --green:#2F8A6B;--green-dim:rgba(47,138,107,.08);--green-border:rgba(47,138,107,.20);
+  --amber:#8A6D3B;--amber-dim:rgba(138,109,59,.07);--amber-border:rgba(138,109,59,.20);
+  --red:#B5483F;--red-dim:rgba(181,72,63,.07);--red-border:rgba(181,72,63,.20);
+  --blue:#5B79A3;--blue-dim:rgba(91,121,163,.08);--blue-border:rgba(91,121,163,.22);
   --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
   --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(20,18,30,.04),0 6px 20px rgba(20,18,30,.05);--shadow-lg:0 24px 60px rgba(20,18,30,.22);
   --space:8px;
@@ -222,23 +222,23 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 }
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
-  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
-  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
-  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--red-ink:var(--red);--green-ink:var(--green);--purple-ink:var(--purple);--amber-ink:var(--amber);--blue-ink:var(--blue);--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
+  --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
+  --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
+  --red:#D98A82;--red-dim:rgba(217,138,130,.10);--red-border:rgba(217,138,130,.24);
+  --blue:#93A9CB;--blue-dim:rgba(147,169,203,.10);--blue-border:rgba(147,169,203,.26);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
-  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
-  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
-  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--red-ink:var(--red);--green-ink:var(--green);--purple-ink:var(--purple);--amber-ink:var(--amber);--blue-ink:var(--blue);--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
+  --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
+  --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
+  --red:#D98A82;--red-dim:rgba(217,138,130,.10);--red-border:rgba(217,138,130,.24);
+  --blue:#93A9CB;--blue-dim:rgba(147,169,203,.10);--blue-border:rgba(147,169,203,.26);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }
@@ -291,9 +291,9 @@ button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border
 button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-mid)}
 button.primary:hover:not(:disabled){background:var(--purple-mid);border-color:var(--purple-mid)}
 button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;cursor:default}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple-ink)}}
 :root[data-theme="dark"] button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}
-:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple)}
+:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple-ink)}
 
 /* Bento: the first tile of a KPI row carries the accent wash. */
 
@@ -302,7 +302,7 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
 .ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
 .ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
-.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple-ink);border-color:var(--purple-border)}
 .ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
 .ag-tbl td{padding:10px 8px}
 
@@ -311,14 +311,14 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
 .ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
 .ct .hdr-div{background:var(--line)}
-.ct .acc-mark{color:var(--purple)}
+.ct .acc-mark{color:var(--purple-ink)}
 .ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
 .ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
 .ct .live{color:var(--muted);font-family:var(--font)}
 .ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
 .ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
 .ct .tb:hover:not(.on){color:var(--ink)}
-.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tb.on{color:var(--purple-ink);border-bottom:2px solid var(--purple);font-weight:600}
 .ct .tnum{display:none}
 .ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
 .ct .mr{gap:16px;margin-bottom:32px}
@@ -481,7 +481,7 @@ details.intro .body{margin-top:8px}
   <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap">
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <div style="text-align:center;background:var(--surface);border:1px solid var(--g200);box-shadow:none;padding:20px 28px;border-radius:var(--radius)">
-        <div style="font-size:30px;font-weight:700;color:var(--green);font-family:var(--mono)">5.1&times;</div>
+        <div style="font-size:30px;font-weight:700;color:var(--green-ink);font-family:var(--mono)">5.1&times;</div>
         <div style="font-size:12px;color:var(--g500);margin-top:4px">ROI (AVRR)</div>
       </div>
       <div style="text-align:center;background:var(--surface);border:1px solid var(--g200);box-shadow:none;padding:20px 28px;border-radius:var(--radius)">
@@ -489,7 +489,7 @@ details.intro .body{margin-top:8px}
         <div style="font-size:12px;color:var(--g500);margin-top:4px">High risks open</div>
       </div>
       <div style="text-align:center;background:var(--surface);border:1px solid var(--g200);box-shadow:none;padding:20px 28px;border-radius:var(--radius)">
-        <div style="font-size:30px;font-weight:700;color:var(--purple);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditShort">Dec&nbsp;'26</span></div>
+        <div style="font-size:30px;font-weight:700;color:var(--purple-ink);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditShort">Dec&nbsp;'26</span></div>
         <div style="font-size:12px;color:var(--g500);margin-top:4px">EU AI Act audit</div>
       </div>
     </div>
@@ -497,16 +497,16 @@ details.intro .body{margin-top:8px}
 
   <!-- 4 STRATEGIC QUESTIONS -->
   <div style="font-size:10px;color:var(--g500);font-family:var(--mono);margin-bottom:16px;letter-spacing:.01em;line-height:1.6">
-    <span style="color:var(--purple);font-weight:700">AVRR</span> = AI Value Return Ratio (KI-Wertrückgabe-Verhältnis) &mdash; eingesparte Ingenieurzeit (Netto) &divide; monatliche KI-Toolkosten &nbsp;&middot;&nbsp; Formel: (18.000 &times; 3,6h &times; 4,33 &times; &euro;90 &times; 0,85 &times; 0,65) &divide; &euro;16,37M/Monat (inkl. Agenten-Output) = <strong style="color:var(--purple)">5,1&times;</strong>
+    <span style="color:var(--purple-ink);font-weight:700">AVRR</span> = AI Value Return Ratio (KI-Wertrückgabe-Verhältnis) &mdash; eingesparte Ingenieurzeit (Netto) &divide; monatliche KI-Toolkosten &nbsp;&middot;&nbsp; Formel: (18.000 &times; 3,6h &times; 4,33 &times; &euro;90 &times; 0,85 &times; 0,65) &divide; &euro;16,37M/Monat (inkl. Agenten-Output) = <strong style="color:var(--purple-ink)">5,1&times;</strong>
   </div>
-  <div style="font-size:10px;color:var(--g500);font-family:var(--mono);margin-bottom:10px;line-height:1.7;padding:8px 10px;background:var(--g100);border-radius:4px"><span style="color:var(--green);font-weight:700">Top 5.5% globally</span> by AI ROI (McKinsey 2025) &middot; AVRR 5.1&times; vs IDC/Microsoft industry benchmark 3.7&times; &middot; Maturity 3.2/5 vs global avg 2.3/5 (McKinsey 2026 AI Trust Survey, n&asymp;500) &middot; <span style="color:var(--red);font-weight:700">Gartner:</span> 40% of ungoverned agentic AI projects cancelled by 2027</div>
+  <div style="font-size:10px;color:var(--g500);font-family:var(--mono);margin-bottom:10px;line-height:1.7;padding:8px 10px;background:var(--g100);border-radius:4px"><span style="color:var(--green-ink);font-weight:700">Top 5.5% globally</span> by AI ROI (McKinsey 2025) &middot; AVRR 5.1&times; vs IDC/Microsoft industry benchmark 3.7&times; &middot; Maturity 3.2/5 vs global avg 2.3/5 (McKinsey 2026 AI Trust Survey, n&asymp;500) &middot; <span style="color:var(--red);font-weight:700">Gartner:</span> 40% of ungoverned agentic AI projects cancelled by 2027</div>
   <div style="font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px">Board-level pane <span style="font-weight:400;color:var(--g300);font-family:var(--mono)">&mdash; double-click any card to expand</span></div>
   <div id="board-cards-grid" class="g4" style="margin-bottom:20px">
 
     <div style="background:var(--surface);border:1px solid var(--g200);border-top:4px solid var(--green);border-radius:6px;padding:16px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="width:12px;height:12px;border-radius:50%;background:#00C853;flex-shrink:0"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#10003; Investment paying off</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green-ink);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#10003; Investment paying off</div>
       </div>
       <div style="font-size:22px;font-weight:700;color:var(--g900);font-family:var(--mono);margin-bottom:6px">5.1&times; AVRR</div>
       <div style="font-size:12px;color:var(--g700);line-height:1.6;margin-bottom:10px">For every &euro;1 invested in AI tooling, &euro;5.10 of engineering time value is returned. Annual net benefit: <strong>&euro;1,001M</strong> against &euro;196M spend.</div>
@@ -524,7 +524,7 @@ details.intro .body{margin-top:8px}
     <div style="background:var(--surface);border:1px solid var(--g200);border-top:4px solid var(--green);border-radius:6px;padding:16px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="width:12px;height:12px;border-radius:50%;background:#00C853;flex-shrink:0"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#10003; Teams delivering faster</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green-ink);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#10003; Teams delivering faster</div>
       </div>
       <div style="font-size:22px;font-weight:700;color:var(--g900);font-family:var(--mono);margin-bottom:6px">&minus;54% lead time</div>
       <div style="font-size:12px;color:var(--g700);line-height:1.6;margin-bottom:10px">Change lead time fell from 4.1 days to 1.9 days for AI-assisted teams. Deployment frequency moved from weekly to daily. DORA: High tier.</div>
@@ -542,7 +542,7 @@ details.intro .body{margin-top:8px}
     <div style="background:var(--surface);border:1px solid var(--g200);border-top:4px solid #FFD600;border-radius:6px;padding:16px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="width:12px;height:12px;border-radius:50%;background:#FFD600;flex-shrink:0"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#9888; Quality risk is real</div>
+        <div style="font-size:10px;font-weight:700;color:var(--amber-ink);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#9888; Quality risk is real</div>
       </div>
       <div style="font-size:22px;font-weight:700;color:var(--red);font-family:var(--mono);margin-bottom:6px">CFR 9.1% &#8593;</div>
       <div style="font-size:12px;color:var(--g700);line-height:1.6;margin-bottom:10px">Change Failure Rate rose from 5.8% to 9.1% as AI accelerates code delivery. At 30k scale: ~1,500 extra failed deployments and 12,800h unplanned rework every week. <strong>Acceleration Whiplash (Faros.ai 2026, n=22,000 devs):</strong> PR review time ↑441% &middot; 31% more PRs merging without review &middot; bugs per dev ↑54% &middot; incidents per PR ↑242.7%. Opsera 2026: AI PRs take 4.6&times; longer to review + 15&ndash;18% more security vulnerabilities than human-written code. <strong>Security implication:</strong> the CFR instability story now has a vulnerability layer &mdash; faster throughput without mandatory AI-PR security gates creates compounding exposure. GitClear 2024&ndash;2026 (211M lines of code): code churn nearly doubled, refactoring dropped from 25% to &lt;10%. Board framing: the test automation investment (&euro;2&ndash;4M) is also the security investment.</div>
@@ -560,9 +560,9 @@ details.intro .body{margin-top:8px}
     <div style="background:var(--surface);border:1px solid var(--g200);border-top:4px solid #FFD600;border-radius:6px;padding:16px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="width:12px;height:12px;border-radius:50%;background:#FFD600;flex-shrink:0"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#9888; Compliance gap</div>
+        <div style="font-size:10px;font-weight:700;color:var(--amber-ink);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)">&#9888; Compliance gap</div>
       </div>
-      <div style="font-size:22px;font-weight:700;color:var(--amber);font-family:var(--mono);margin-bottom:6px">10/18 pending</div>
+      <div style="font-size:22px;font-weight:700;color:var(--amber-ink);font-family:var(--mono);margin-bottom:6px">10/18 pending</div>
       <div style="font-size:12px;color:var(--g700);line-height:1.6;margin-bottom:10px">EU AI Act external audit: <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>. <span data-ct="compliance.euAiAct.outstanding">10</span> of <span data-ct="compliance.euAiAct.total">18</span> high-risk agent conformity assessments still outstanding. General Counsel is lead. Risk: audit delay if not resolved by 30 November.</div>
       <div style="font-size:11px;color:var(--g500);padding-top:8px;border-top:1px solid var(--g100);line-height:1.7">
         Board action: confirm Legal &amp; Compliance resourcing<br>
@@ -595,13 +595,13 @@ details.intro .body{margin-top:8px}
       <div style="padding:14px;font-size:28px;color:var(--g300);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--g100)">&rarr;</div>
       <div style="padding:14px;border-right:1px solid var(--g100)">
         <div style="font-size:10px;font-weight:700;color:var(--g500);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Net value (discounted)</div>
-        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--green)">&euro;1,001M</div>
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--green-ink)">&euro;1,001M</div>
         <div style="font-size:11px;color:var(--g500);margin-top:3px">after rework &amp; absorption factors</div>
       </div>
       <div style="padding:14px;font-size:28px;color:var(--g300);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--g100)">=</div>
       <div style="padding:14px;background:var(--p-dim);border-radius:0 6px 6px 0">
-        <div style="font-size:10px;font-weight:700;color:var(--purple);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Net annual return</div>
-        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--purple)">&euro;805M</div>
+        <div style="font-size:10px;font-weight:700;color:var(--purple-ink);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Net annual return</div>
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--purple-ink)">&euro;805M</div>
         <div style="font-size:11px;color:var(--g500);margin-top:3px">AVRR 5.1&times;</div>
       </div>
     </div>
@@ -658,17 +658,17 @@ details.intro .body{margin-top:8px}
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
         <div style="width:16px;height:16px;border-radius:50%;background:var(--purple);border:2px solid #fff;margin:15px auto 8px;box-shadow:0 0 0 2px var(--purple)"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--purple);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span></div>
+        <div style="font-size:10px;font-weight:700;color:var(--purple-ink);font-family:var(--mono)"><span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span></div>
         <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5"><strong>EU AI Act<br>external audit</strong><br>18 high-risk agents</div>
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
         <div style="width:14px;height:14px;border-radius:50%;background:var(--amber);border:2px solid #fff;margin:16px auto 8px;box-shadow:0 0 0 2px var(--amber)"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--amber);font-family:var(--mono)">Jan 2027</div>
+        <div style="font-size:10px;font-weight:700;color:var(--amber-ink);font-family:var(--mono)">Jan 2027</div>
         <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5">Step-level audit logs<br>All 186 agents</div>
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
         <div style="width:14px;height:14px;border-radius:50%;background:var(--blue);border:2px solid #fff;margin:16px auto 8px;box-shadow:0 0 0 2px var(--blue)"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--blue);font-family:var(--mono)">Q1 2027</div>
+        <div style="font-size:10px;font-weight:700;color:var(--blue-ink);font-family:var(--mono)">Q1 2027</div>
         <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5">Level 4 maturity<br>Anomaly detection<br>Access graphs live</div>
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
@@ -678,7 +678,7 @@ details.intro .body{margin-top:8px}
       </div>
       <div style="flex:1;text-align:center;position:relative;z-index:1">
         <div style="width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid #fff;margin:16px auto 8px;box-shadow:0 0 0 2px var(--green)"></div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);font-family:var(--mono)">H2 2027</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green-ink);font-family:var(--mono)">H2 2027</div>
         <div style="font-size:11px;color:var(--g700);margin-top:4px;line-height:1.5">Target AVRR &gt;6&times;<br>CFR &lt;6%<br>Level 5 maturity</div>
       </div>
     </div>
@@ -740,9 +740,9 @@ details.intro .body{margin-top:8px}
   </div>
 
   <div class="ab ab-i">
-    <div class="aico" style="color:var(--purple)">&#9888;</div>
+    <div class="aico" style="color:var(--purple-ink)">&#9888;</div>
     <div>
-      <div class="atit" style="color:var(--purple)">Interpretation: 44% acceptance &amp; 30% scepticism are healthy signals, not failures</div>
+      <div class="atit" style="color:var(--purple-ink)">Interpretation: 44% acceptance &amp; 30% scepticism are healthy signals, not failures</div>
       <div class="abod">DORA 2025 (n&asymp;5,000) and DX Q4 2025 (n=135,000 developers) confirm the industry benchmark: acceptance rates of 35&ndash;55% indicate developers are critically reviewing AI output, not blindly accepting. The 30% who distrust AI-generated code are applying the right engineering judgement. Training priority should shift from <em>adopting tools</em> to <em>validating output and prompt engineering</em>.</div>
     </div>
   </div>
@@ -760,7 +760,7 @@ details.intro .body{margin-top:8px}
       <div class="br"><div class="bl bl-n">AI LoC / day</div><div class="bt"><div class="bf" style="width:100%;background:var(--blue)"></div></div><div class="bv">~740k</div></div>
       <div style="font-size:11px;color:var(--g500);margin-top:8px;line-height:1.7;font-family:var(--mono)">
         PRs with AI code: 63%<br>AI code % of total: 19%<br>Seat cost/mo: $19 &times; 18k = <strong style="color:var(--g900)">€315k/mo</strong><br>
-        <span style="color:var(--amber)">&#9888; 29% Python code: security review needed <span class="src s-gh">GH&rsquo;24</span></span>
+        <span style="color:var(--amber-ink)">&#9888; 29% Python code: security review needed <span class="src s-gh">GH&rsquo;24</span></span>
       </div>
     </div>
     <div class="card">
@@ -774,7 +774,7 @@ details.intro .body{margin-top:8px}
       <div class="br"><div class="bl bl-n">Agentic sessions/d</div><div class="bt"><div class="bf" style="width:74%;background:var(--purple)"></div></div><div class="bv">~3,970</div></div>
       <div style="font-size:11px;color:var(--g500);margin-top:8px;line-height:1.7;font-family:var(--mono)">
         Change fail rate: 4.1%<br>Avg session steps: 7.8<br>Avg cost: ~&euro;1,450/dev/mo <strong style="color:var(--g900)">&euro;13.1M/mo</strong><br>
-        <span style="color:var(--green)">&#8593; Fastest-growing CPIT tool</span>
+        <span style="color:var(--green-ink)">&#8593; Fastest-growing CPIT tool</span>
       </div>
     </div>
     <div class="card">
@@ -788,7 +788,7 @@ details.intro .body{margin-top:8px}
       <div class="br"><div class="bl bl-n">MCP calls / session</div><div class="bt"><div class="bf" style="width:43%;background:var(--teal)"></div></div><div class="bv">4.3</div></div>
       <div style="font-size:11px;color:var(--g500);margin-top:8px;line-height:1.7;font-family:var(--mono)">
         Avg session steps: 8.6<br>API cost: ~$850/active/mo = <strong style="color:var(--g900)">&euro;1.92M/mo</strong><br>AI code %: 27%<br>
-        <span style="color:var(--purple)">&#8593; Highest AI code % of CPIT tools</span>
+        <span style="color:var(--purple-ink)">&#8593; Highest AI code % of CPIT tools</span>
       </div>
     </div>
   </div>
@@ -824,9 +824,9 @@ details.intro .body{margin-top:8px}
         <div style="font-size:11px;color:var(--g500);margin-top:10px;padding-top:10px;border-top:1px solid var(--g100);line-height:1.6"><span class="tag t-p" style="margin-right:6px">DORA insight</span>The 6,600 power users who validate AI output are the multiplier. Booking.com (DORA 2025): targeted AI training drove 30% more merged PRs &mdash; the skills gap, not the tool gap, is the limiter at scale.</div>
       </div>
       <div class="ab ab-s" style="margin:0">
-        <div class="aico" style="color:var(--blue)">&#127970;</div>
+        <div class="aico" style="color:var(--blue-ink)">&#127970;</div>
         <div>
-          <div class="atit" style="color:var(--blue)">SAP / ERP coupling warning (Adidas case, DORA 2025)</div>
+          <div class="atit" style="color:var(--blue-ink)">SAP / ERP coupling warning (Adidas case, DORA 2025)</div>
           <div class="abod">Teams with tight ERP coupling saw <strong>little to no AI benefit</strong>; loosely coupled teams gained 20&ndash;30%. Prioritise BTP extension patterns and CAP over core S/4 modification to unlock the full 3.6h/week saving across all 30k engineers.</div>
         </div>
       </div>
@@ -876,9 +876,9 @@ details.intro .body{margin-top:8px}
   </div>
 
   <div class="ab ab-i">
-    <div class="aico" style="color:var(--purple)">&#128200;</div>
+    <div class="aico" style="color:var(--purple-ink)">&#128200;</div>
     <div>
-      <div class="atit" style="color:var(--purple)">Cost context: &euro;909/active dev/month vs &euro;15,600/dev/month fully loaded</div>
+      <div class="atit" style="color:var(--purple-ink)">Cost context: &euro;909/active dev/month vs &euro;15,600/dev/month fully loaded</div>
       <div class="abod">AI tooling at &euro;909/active dev/month represents about 6% of a fully loaded engineer cost (&euro;90/h &times; 173h = &euro;15,570/month). At the conservative 3.6h/week saving, the tool pays back in &lt;5 working days once agent-delivered output is counted. The total &euro;196M/year spend for 30k engineers is 4.7% of the estimated &euro;4.2B annual engineering payroll (30k &times; &euro;140k fully loaded). Source: DX Q4 2025, Anthropic enterprise pricing, Palma.ai enterprise benchmark.</div>
     </div>
   </div>
@@ -899,7 +899,7 @@ details.intro .body{margin-top:8px}
             <tr><td class="b">SAP Joule / AI Core</td><td style="font-family:var(--mono);font-size:11px">Enterprise est.</td><td class="r b">&euro;166k</td><td class="r">1%</td></tr>
             <tr><td class="b">Governance / MCP infra</td><td style="font-family:var(--mono);font-size:11px">Platform + ops</td><td class="r b">&euro;184k</td><td class="r">1%</td></tr>
             <tr style="background:var(--purple-dim)"><td class="b">Training &amp; change mgmt</td><td style="font-family:var(--mono);font-size:11px">Amortised</td><td class="r b">&euro;138k</td><td class="r">1%</td></tr>
-            <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="2">Total monthly</td><td class="r b" style="color:var(--purple)">&euro;16.37M</td><td class="r b">100%</td></tr>
+            <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="2">Total monthly</td><td class="r b" style="color:var(--purple-ink)">&euro;16.37M</td><td class="r b">100%</td></tr>
           </tbody>
         </table>
       </div>
@@ -932,11 +932,11 @@ details.intro .body{margin-top:8px}
     <table class="tbl" style="min-width:560px">
       <thead><tr><th>Model</th><th class="r">In $/MTok</th><th class="r">Out $/MTok</th><th class="r">Cached $/MTok</th><th>Traffic share</th><th class="r">Est. wk cost (post-cache)</th></tr></thead>
       <tbody>
-        <tr><td class="b">Claude Sonnet 4.6</td><td class="r">$3.00</td><td class="r">$15.00</td><td class="r" style="color:var(--green)">$0.30</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:52%;height:100%;background:var(--purple);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">52%</span></div></td><td class="r b">&euro;1.45M</td></tr>
-        <tr><td class="b">Claude Opus 4.6</td><td class="r">$15.00</td><td class="r">$75.00</td><td class="r" style="color:var(--green)">$1.50</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:11%;height:100%;background:var(--purple-mid);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">11%</span></div></td><td class="r b">&euro;1.59M</td></tr>
-        <tr><td class="b">Claude Haiku 4.5</td><td class="r">$0.80</td><td class="r">$4.00</td><td class="r" style="color:var(--green)">$0.08</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:22%;height:100%;background:var(--blue);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">22%</span></div></td><td class="r b">&euro;177k</td></tr>
-        <tr><td class="b">GPT-4o</td><td class="r">$2.50</td><td class="r">$10.00</td><td class="r" style="color:var(--green)">$1.25</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:11%;height:100%;background:var(--teal);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">11%</span></div></td><td class="r b">&euro;265k</td></tr>
-        <tr><td class="b">GPT-4.1 Nano</td><td class="r">$0.10</td><td class="r">$0.40</td><td class="r" style="color:var(--green)">$0.05</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:4%;height:100%;background:var(--g300);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">4%</span></div></td><td class="r b">&euro;22k</td></tr>
+        <tr><td class="b">Claude Sonnet 4.6</td><td class="r">$3.00</td><td class="r">$15.00</td><td class="r" style="color:var(--green-ink)">$0.30</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:52%;height:100%;background:var(--purple);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">52%</span></div></td><td class="r b">&euro;1.45M</td></tr>
+        <tr><td class="b">Claude Opus 4.6</td><td class="r">$15.00</td><td class="r">$75.00</td><td class="r" style="color:var(--green-ink)">$1.50</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:11%;height:100%;background:var(--purple-mid);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">11%</span></div></td><td class="r b">&euro;1.59M</td></tr>
+        <tr><td class="b">Claude Haiku 4.5</td><td class="r">$0.80</td><td class="r">$4.00</td><td class="r" style="color:var(--green-ink)">$0.08</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:22%;height:100%;background:var(--blue);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">22%</span></div></td><td class="r b">&euro;177k</td></tr>
+        <tr><td class="b">GPT-4o</td><td class="r">$2.50</td><td class="r">$10.00</td><td class="r" style="color:var(--green-ink)">$1.25</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:11%;height:100%;background:var(--teal);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">11%</span></div></td><td class="r b">&euro;265k</td></tr>
+        <tr><td class="b">GPT-4.1 Nano</td><td class="r">$0.10</td><td class="r">$0.40</td><td class="r" style="color:var(--green-ink)">$0.05</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden"><div style="width:4%;height:100%;background:var(--g300);border-radius:2px"></div></div><span style="font-size:11px;font-family:var(--mono);color:var(--g500)">4%</span></div></td><td class="r b">&euro;22k</td></tr>
       </tbody>
     </table>
     <div style="font-size:11px;color:var(--g500);margin-top:8px">API token cost total: ~&euro;3.49M/week = ~&euro;15.12M/month. Remainder of &euro;16.4M total is seat licenses, governance infra &amp; training (amortised). Copilot token consumption is seat-cost bundled, not API-tracked.</div>
@@ -948,10 +948,10 @@ details.intro .body{margin-top:8px}
 
   <div class="sh">DORA metrics &mdash; AI-assisted cohort (18,000 engineers) vs non-AI baseline</div>
   <div class="g4" style="margin-bottom:20px">
-    <div class="dtier on"><div class="dm">Deployment Freq</div><div class="dv" style="color:var(--purple)">Daily</div><div class="ds"><span class="tag t-p">High tier</span></div><div style="font-size:10px;color:var(--g500);margin-top:6px">Baseline: weekly &middot; <span style="color:var(--green);font-weight:600">+1 tier</span> with AI</div></div>
-    <div class="dtier on"><div class="dm">Lead Time for Changes</div><div class="dv" style="color:var(--purple)">1.9d</div><div class="ds"><span class="tag t-p">High tier</span></div><div style="font-size:10px;color:var(--g500);margin-top:6px">Baseline: 4.1d &middot; <span style="color:var(--green);font-weight:600">-54%</span></div></div>
-    <div class="dtier"><div class="dm">Change Failure Rate</div><div class="dv" style="color:var(--amber)">9.1%</div><div class="ds"><span class="tag t-a">Medium tier &#9650;</span></div><div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">&#8593;3.3pp from 5.8% baseline</div></div>
-    <div class="dtier"><div class="dm">Rework Rate</div><div class="dv" style="color:var(--amber)">12.8%</div><div class="ds"><span class="tag t-a">Medium &#9650;</span></div><div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">&#8593;6.3pp from 6.5% baseline</div></div>
+    <div class="dtier on"><div class="dm">Deployment Freq</div><div class="dv" style="color:var(--purple-ink)">Daily</div><div class="ds"><span class="tag t-p">High tier</span></div><div style="font-size:10px;color:var(--g500);margin-top:6px">Baseline: weekly &middot; <span style="color:var(--green-ink);font-weight:600">+1 tier</span> with AI</div></div>
+    <div class="dtier on"><div class="dm">Lead Time for Changes</div><div class="dv" style="color:var(--purple-ink)">1.9d</div><div class="ds"><span class="tag t-p">High tier</span></div><div style="font-size:10px;color:var(--g500);margin-top:6px">Baseline: 4.1d &middot; <span style="color:var(--green-ink);font-weight:600">-54%</span></div></div>
+    <div class="dtier"><div class="dm">Change Failure Rate</div><div class="dv" style="color:var(--amber-ink)">9.1%</div><div class="ds"><span class="tag t-a">Medium tier &#9650;</span></div><div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">&#8593;3.3pp from 5.8% baseline</div></div>
+    <div class="dtier"><div class="dm">Rework Rate</div><div class="dv" style="color:var(--amber-ink)">12.8%</div><div class="ds"><span class="tag t-a">Medium &#9650;</span></div><div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">&#8593;6.3pp from 6.5% baseline</div></div>
   </div>
 
   <div class="g2" style="margin-bottom:20px">
@@ -969,11 +969,11 @@ details.intro .body{margin-top:8px}
         <table class="tbl">
           <thead><tr><th>Metric</th><th class="r">Non-AI</th><th class="r">AI cohort</th><th class="r">&Delta;</th></tr></thead>
           <tbody>
-            <tr><td>Deployment freq</td><td class="r">Weekly</td><td class="r b">Daily</td><td class="r" style="color:var(--green);font-weight:700">&#8593;&#8593; High</td></tr>
-            <tr><td>Lead time</td><td class="r">4.1d</td><td class="r b">1.9d</td><td class="r" style="color:var(--green);font-weight:700">&#8595;54%</td></tr>
+            <tr><td>Deployment freq</td><td class="r">Weekly</td><td class="r b">Daily</td><td class="r" style="color:var(--green-ink);font-weight:700">&#8593;&#8593; High</td></tr>
+            <tr><td>Lead time</td><td class="r">4.1d</td><td class="r b">1.9d</td><td class="r" style="color:var(--green-ink);font-weight:700">&#8595;54%</td></tr>
             <tr><td>Change fail rate</td><td class="r">5.8%</td><td class="r b">9.1%</td><td class="r" style="color:var(--red);font-weight:700">&#8593;3.3pp &#9888;</td></tr>
             <tr><td>Rework rate</td><td class="r">6.5%</td><td class="r b">12.8%</td><td class="r" style="color:var(--red);font-weight:700">&#8593;6.3pp &#9888;</td></tr>
-            <tr><td>FDRT</td><td class="r">3.2h</td><td class="r b">1.8h</td><td class="r" style="color:var(--green);font-weight:700">&#8595;44%</td></tr>
+            <tr><td>FDRT</td><td class="r">3.2h</td><td class="r b">1.8h</td><td class="r" style="color:var(--green-ink);font-weight:700">&#8595;44%</td></tr>
           </tbody>
         </table>
       </div>
@@ -985,40 +985,40 @@ details.intro .body{margin-top:8px}
     <div>
       <div class="card">
         <div class="chd">Productivity KPIs</div>
-        <div class="krow"><div style="flex:1"><div class="kname">Code acceptance rate <span class="src s-dx">DX&rsquo;25</span></div><div class="kdesc">Industry benchmark: 35&ndash;55% for enterprise. 44% is healthy critical use.</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">44%</div><div class="ktgt">target 50%</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">Time saved / dev / week <span class="src s-dx">DX 135k devs</span></div><div class="kdesc">3.6h &times; 18,000 active = <strong>64,800h/week</strong> = 3.1M hours/year.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">3.6h</div><div class="ktgt">range 2&ndash;4h</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">AI-generated code % of merged LoC</div><div class="kdesc">DX Feb 2026: 26.9% across 4.2M devs. Our 24% is below industry avg &mdash; room to grow.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">24%</div><div class="ktgt">target 30%</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">PR review turnaround</div><div class="kdesc">AI-assisted with mandatory human review. Caution: AI PRs require more thorough review.</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">2.3h</div><div class="ktgt">target &lt;2h</div></div></div>
-        <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Dev experience index (DXI)</div><div class="kdesc">Composite: helpfulness, trust, friction. 64 = above baseline. Target 75 = top quartile.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">64<span style="font-size:11px">/100</span></div><div class="ktgt">target 75</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Code acceptance rate <span class="src s-dx">DX&rsquo;25</span></div><div class="kdesc">Industry benchmark: 35&ndash;55% for enterprise. 44% is healthy critical use.</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">44%</div><div class="ktgt">target 50%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Time saved / dev / week <span class="src s-dx">DX 135k devs</span></div><div class="kdesc">3.6h &times; 18,000 active = <strong>64,800h/week</strong> = 3.1M hours/year.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">3.6h</div><div class="ktgt">range 2&ndash;4h</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">AI-generated code % of merged LoC</div><div class="kdesc">DX Feb 2026: 26.9% across 4.2M devs. Our 24% is below industry avg &mdash; room to grow.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">24%</div><div class="ktgt">target 30%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">PR review turnaround</div><div class="kdesc">AI-assisted with mandatory human review. Caution: AI PRs require more thorough review.</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">2.3h</div><div class="ktgt">target &lt;2h</div></div></div>
+        <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Dev experience index (DXI)</div><div class="kdesc">Composite: helpfulness, trust, friction. 64 = above baseline. Target 75 = top quartile.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">64<span style="font-size:11px">/100</span></div><div class="ktgt">target 75</div></div></div>
       </div>
     </div>
     <div>
       <div class="card">
         <div class="chd">Quality KPIs</div>
-        <div class="krow"><div style="flex:1"><div class="kname">Trust in AI code output <span class="src s-dora">DORA</span></div><div class="kdesc">30% remaining sceptical is healthy at maturity. Do not try to eliminate scepticism.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">69%</div><div class="ktgt">target 75%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Trust in AI code output <span class="src s-dora">DORA</span></div><div class="kdesc">30% remaining sceptical is healthy at maturity. Do not try to eliminate scepticism.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">69%</div><div class="ktgt">target 75%</div></div></div>
         <div class="krow"><div style="flex:1"><div class="kname">Change failure rate (AI cohort) <span class="src s-dora">DORA</span></div><div class="kdesc">Up from 5.8% baseline. ~1,500 extra failed deployments/month at 30k scale. Priority fix.</div></div><div style="text-align:right"><div class="kval" style="color:var(--red)">9.1%</div><div class="ktgt">target &lt;6%</div></div></div>
         <div class="krow"><div style="flex:1"><div class="kname">Rework rate (AI cohort) <span class="src s-dora">DORA</span></div><div class="kdesc">12.8% rework &asymp; 12,800 unplanned hours/week. DORA instability signal. Mandatory test gates needed.</div></div><div style="text-align:right"><div class="kval" style="color:var(--red)">12.8%</div><div class="ktgt">target &lt;7%</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">Human override rate on AI PRs</div><div class="kdesc">% of AI-generated PRs requiring significant human edit before merge.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">36%</div><div class="ktgt">target &lt;25%</div></div></div>
-        <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Hallucination incident rate</div><div class="kdesc">Factual errors caught in review (not reaching prod). At 30k scale = ~14/month.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">1.6%</div><div class="ktgt">target &lt;1%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Human override rate on AI PRs</div><div class="kdesc">% of AI-generated PRs requiring significant human edit before merge.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">36%</div><div class="ktgt">target &lt;25%</div></div></div>
+        <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Hallucination incident rate</div><div class="kdesc">Factual errors caught in review (not reaching prod). At 30k scale = ~14/month.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">1.6%</div><div class="ktgt">target &lt;1%</div></div></div>
       </div>
     </div>
   </div>
 
   <div class="card">
     <div class="chd">Business impact KPIs &mdash; 30k engineer scale</div>
-    <div class="krow"><div style="flex:1"><div class="kname">Total hours saved / year</div><div class="kdesc">18,000 active &times; 3.6h &times; 48 weeks. Equivalent to ~1,600 additional FTEs of engineering capacity. <span class="src s-dx">DX</span></div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">3.1M h</div><div class="ktgt">&asymp;1,600 FTE equiv.</div></div></div>
-    <div class="krow"><div style="flex:1"><div class="kname">AI Value Return Ratio (AVRR) <span class="src s-acn">ACN calc</span></div><div class="kdesc">(Time saved &times; &euro;90/h &times; 0.85 rework discount &times; 0.65 absorption) &divide; &euro;16.37M/month tool cost, incl. agent-delivered output (&euro;69.5M/month net).</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">5.1&times;</div><div class="ktgt">benchmark top-quartile 4&ndash;6&times;</div></div></div>
-    <div class="krow"><div style="flex:1"><div class="kname">L2C cycle time reduction</div><div class="kdesc">AI-assisted, loosely coupled flows only. Tight ERP coupling teams excluded (Adidas DORA finding).</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">22%</div><div class="ktgt">target 25%</div></div></div>
-    <div class="krow" style="border:none"><div style="flex:1"><div class="kname">SAP project margin impact (AI-augmented engagements)</div><div class="kdesc">Delivery margin delta on engagements where AI tooling is systematically applied.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">+1.6pp</div><div class="ktgt">target +3pp</div></div></div>
+    <div class="krow"><div style="flex:1"><div class="kname">Total hours saved / year</div><div class="kdesc">18,000 active &times; 3.6h &times; 48 weeks. Equivalent to ~1,600 additional FTEs of engineering capacity. <span class="src s-dx">DX</span></div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">3.1M h</div><div class="ktgt">&asymp;1,600 FTE equiv.</div></div></div>
+    <div class="krow"><div style="flex:1"><div class="kname">AI Value Return Ratio (AVRR) <span class="src s-acn">ACN calc</span></div><div class="kdesc">(Time saved &times; &euro;90/h &times; 0.85 rework discount &times; 0.65 absorption) &divide; &euro;16.37M/month tool cost, incl. agent-delivered output (&euro;69.5M/month net).</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">5.1&times;</div><div class="ktgt">benchmark top-quartile 4&ndash;6&times;</div></div></div>
+    <div class="krow"><div style="flex:1"><div class="kname">L2C cycle time reduction</div><div class="kdesc">AI-assisted, loosely coupled flows only. Tight ERP coupling teams excluded (Adidas DORA finding).</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">22%</div><div class="ktgt">target 25%</div></div></div>
+    <div class="krow" style="border:none"><div style="flex:1"><div class="kname">SAP project margin impact (AI-augmented engagements)</div><div class="kdesc">Delivery margin delta on engagements where AI tooling is systematically applied.</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">+1.6pp</div><div class="ktgt">target +3pp</div></div></div>
   </div>
 
   <div class="sh">DORA 2025 &mdash; 7 team profiles: where do our teams sit? <span class="src s-dora">DORA 2025</span></div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px">
-    <div class="pc" style="border-color:var(--purple);background:var(--purple-dim)"><div class="pn" style="color:var(--purple)">&#127942; Harmonious high-achiever <span class="tag t-p" style="margin-left:4px">Target</span></div><div class="pd">High throughput, low instability, low burnout. The AI amplifier payoff. ~15% of orgs. Roadmap: 3&ndash;5 years for most of our teams.</div></div>
-    <div class="pc" style="border-color:var(--green)"><div class="pn" style="color:var(--green)">&#9889; Pragmatic performers <span class="tag t-g" style="margin-left:4px">Current &mdash; majority</span></div><div class="pd">Good effectiveness, moderate throughput, some friction. AI is helping &mdash; not fully realised. Typical AI early-adoption profile at our scale.</div></div>
+    <div class="pc" style="border-color:var(--purple);background:var(--purple-dim)"><div class="pn" style="color:var(--purple-ink)">&#127942; Harmonious high-achiever <span class="tag t-p" style="margin-left:4px">Target</span></div><div class="pd">High throughput, low instability, low burnout. The AI amplifier payoff. ~15% of orgs. Roadmap: 3&ndash;5 years for most of our teams.</div></div>
+    <div class="pc" style="border-color:var(--green)"><div class="pn" style="color:var(--green-ink)">&#9889; Pragmatic performers <span class="tag t-g" style="margin-left:4px">Current &mdash; majority</span></div><div class="pd">Good effectiveness, moderate throughput, some friction. AI is helping &mdash; not fully realised. Typical AI early-adoption profile at our scale.</div></div>
     <div class="pc"><div class="pn">&#128200; High impact, low cadence</div><div class="pd">Strong product outcomes, low deploy frequency, high instability. Typical of SAP-adjacent teams with monolithic codebase. AI risk zone.</div></div>
     <div class="pc"><div class="pn">&#9881;&#65039; Stable &amp; methodical</div><div class="pd">Good stability, low throughput. Conservative release cadence. Need AI paired with deployment automation to move forward.</div></div>
-    <div class="pc" style="border-color:var(--amber)"><div class="pn" style="color:var(--amber)">&#128260; Constrained by process</div><div class="pd">Stable systems but high burnout. AI adds speed but the bottleneck is process governance, not code. Relevant for core SAP delivery teams.</div></div>
+    <div class="pc" style="border-color:var(--amber)"><div class="pn" style="color:var(--amber-ink)">&#128260; Constrained by process</div><div class="pd">Stable systems but high burnout. AI adds speed but the bottleneck is process governance, not code. Relevant for core SAP delivery teams.</div></div>
     <div class="pc" style="border-color:var(--red)"><div class="pn" style="color:var(--red)">&#129275; Legacy bottleneck</div><div class="pd">Constant reaction mode. Unstable systems dictate work. AI makes this worse &mdash; fix architecture first. Do not force AI adoption here.</div></div>
     <div class="pc" style="border-color:var(--red)"><div class="pn" style="color:var(--red)">&#128682; Foundational challenges</div><div class="pd">10% of survey orgs. High burnout, low output, high instability. AI adoption is actively harmful without foundational engineering fixes first.</div></div>
   </div>
@@ -1077,7 +1077,7 @@ details.intro .body{margin-top:8px}
   <div class="ab ab-w">
     <div class="aico">&#9888;</div>
     <div>
-      <div class="atit" style="color:var(--amber)">Auto-discovery: <span data-ct="agents.unregistered">47</span> unregistered AI assets detected &mdash; ServiceNow ACT &lsquo;Discover&rsquo; dimension</div>
+      <div class="atit" style="color:var(--amber-ink)">Auto-discovery: <span data-ct="agents.unregistered">47</span> unregistered AI assets detected &mdash; ServiceNow ACT &lsquo;Discover&rsquo; dimension</div>
       <div class="abod">At 30k engineers, shadow AI sprawl accelerates. Scanners found <span data-ct="agents.unregistered">47</span> agents and model integrations across SAP BTP, Azure OpenAI, n8n, and internal Python scripts running outside the governance registry. None have token caps, risk scores, or documented owners. This is expected at scale &mdash; the governance process must be faster than engineer creativity.</div>
     </div>
   </div>
@@ -1104,12 +1104,12 @@ details.intro .body{margin-top:8px}
   <div class="card">
     <div class="flow">
       <div class="fn" style="background:var(--g100);color:var(--g700)">Proposal</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--blue-dim);color:var(--blue)">Design review</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--amber-dim);color:var(--amber)">Risk classify</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--purple-dim);color:var(--purple)">Identity &amp; access scope</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--purple-dim);color:var(--purple)">Security scan</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--blue-dim);color:var(--blue-ink)">Design review</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--amber-dim);color:var(--amber-ink)">Risk classify</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--purple-dim);color:var(--purple-ink)">Identity &amp; access scope</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--purple-dim);color:var(--purple-ink)">Security scan</div><span class="fa">&#8594;</span>
       <div class="fn" style="background:var(--teal-dim);color:var(--teal)">Staging test</div><span class="fa">&#8594;</span>
-      <div class="fn" style="background:var(--green-dim);color:var(--green)">Production</div><span class="fa">&#8594;</span>
+      <div class="fn" style="background:var(--green-dim);color:var(--green-ink)">Production</div><span class="fa">&#8594;</span>
       <div class="fn" style="background:var(--g100);color:var(--g500)">Monitor / retire</div>
     </div>
     <div style="font-size:11px;color:var(--g500);margin-top:8px">Avg proposal&rarr;production: 18 days. Identity &amp; access scope is a mandatory gate. At 30k engineers, auto-registration with human triage is required to keep up with agent creation velocity.</div>
@@ -1223,9 +1223,9 @@ details.intro .body{margin-top:8px}
   </div>
 
   <div class="ab ab-i">
-    <div class="aico" style="color:var(--purple)">&#128202;</div>
+    <div class="aico" style="color:var(--purple-ink)">&#128202;</div>
     <div>
-      <div class="atit" style="color:var(--purple)">Cost per agent per week &mdash; methodology &amp; estimate</div>
+      <div class="atit" style="color:var(--purple-ink)">Cost per agent per week &mdash; methodology &amp; estimate</div>
       <div class="abod">Not a metered figure &mdash; derived from existing dashboard data: runs/agent/day (Tab 05) &times; tokens/run by complexity tier &times; blended €/token (Tab 02 model mix, 38% cache hit, 35/65 input/output split typical of agentic tool-calling). Token/run by tier (Autonomous 9k, Copilot 14k, Orchestrator 22k) is an <strong>estimate</strong> reflecting step-count differences, not directly measured &mdash; LangFuse/LangSmith instrumentation (see KPI measurement framework) would replace this with real per-agent telemetry. Total reconciles to ~€220k/month, consistent with the Agents + n8n API line (&euro;113k) and the Governance/MCP infra line in Tab 02.</div>
     </div>
   </div>
@@ -1243,7 +1243,7 @@ details.intro .body{margin-top:8px}
     <div>
       <div class="sh">Blended summary</div>
       <div class="card">
-        <div class="krow"><div style="flex:1"><div class="kname">Average across all production agents</div><div class="kdesc">Total weekly agent execution cost &divide; <span data-ct="agents.production">125</span> agents</div></div><div style="text-align:right"><div class="kval" style="color:var(--purple)">&euro;405</div><div class="ktgt">per agent / week</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Average across all production agents</div><div class="kdesc">Total weekly agent execution cost &divide; <span data-ct="agents.production">125</span> agents</div></div><div style="text-align:right"><div class="kval" style="color:var(--purple-ink)">&euro;405</div><div class="ktgt">per agent / week</div></div></div>
         <div class="krow"><div style="flex:1"><div class="kname">Total weekly agent execution cost</div><div class="kdesc">Across all <span data-ct="agents.production">125</span> production agents, all types</div></div><div style="text-align:right"><div class="kval">&euro;50.6k</div><div class="ktgt">per week</div></div></div>
         <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Annualised</div><div class="kdesc">52 weeks &times; weekly total</div></div><div style="text-align:right"><div class="kval">&euro;2.63M</div><div class="ktgt">per year</div></div></div>
       </div>
@@ -1255,13 +1255,13 @@ details.intro .body{margin-top:8px}
     <table class="tbl" style="min-width:680px">
       <thead><tr><th>Agent group</th><th>Type</th><th class="r">Agents</th><th class="r">Runs/day/agent</th><th class="r">Tokens/run (est.)</th><th class="r">&euro;/agent/week</th><th class="r">Group total/week</th></tr></thead>
       <tbody>
-        <tr><td class="b">n8n workflow gen</td><td><span class="tag t-a">Orchestrator</span></td><td class="r">8</td><td class="r">925</td><td class="r" style="font-family:var(--mono);font-size:11px">22.0k</td><td class="r b" style="color:var(--amber)">&euro;1,650</td><td class="r b">&euro;13.2k</td></tr>
-        <tr><td class="b">SPC ticket routers</td><td><span class="tag t-b">Autonomous</span></td><td class="r">8</td><td class="r">1,600</td><td class="r" style="font-family:var(--mono);font-size:11px">9.0k</td><td class="r b" style="color:var(--blue)">&euro;1,167</td><td class="r b">&euro;9.3k</td></tr>
+        <tr><td class="b">n8n workflow gen</td><td><span class="tag t-a">Orchestrator</span></td><td class="r">8</td><td class="r">925</td><td class="r" style="font-family:var(--mono);font-size:11px">22.0k</td><td class="r b" style="color:var(--amber-ink)">&euro;1,650</td><td class="r b">&euro;13.2k</td></tr>
+        <tr><td class="b">SPC ticket routers</td><td><span class="tag t-b">Autonomous</span></td><td class="r">8</td><td class="r">1,600</td><td class="r" style="font-family:var(--mono);font-size:11px">9.0k</td><td class="r b" style="color:var(--blue-ink)">&euro;1,167</td><td class="r b">&euro;9.3k</td></tr>
         <tr><td class="b">All other agents</td><td><span class="tag t-gr">Mixed</span></td><td class="r">70</td><td class="r">146</td><td class="r" style="font-family:var(--mono);font-size:11px">14.2k</td><td class="r b">&euro;168</td><td class="r b">&euro;11.7k</td></tr>
         <tr><td class="b">L2C deal advisors</td><td><span class="tag t-p">Copilot</span></td><td class="r">12</td><td class="r">567</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;643</td><td class="r b">&euro;7.7k</td></tr>
         <tr><td class="b">Contract drafters</td><td><span class="tag t-p">Copilot</span></td><td class="r">9</td><td class="r">356</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;404</td><td class="r b">&euro;3.6k</td></tr>
         <tr><td class="b">ABAP code assists</td><td><span class="tag t-p">Copilot</span></td><td class="r">18</td><td class="r">244</td><td class="r" style="font-family:var(--mono);font-size:11px">14.0k</td><td class="r b">&euro;277</td><td class="r b">&euro;5.0k</td></tr>
-        <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="6">Total / week (all <span data-ct="agents.production">125</span> production agents)</td><td class="r b" style="color:var(--purple)">&euro;50.6k</td></tr>
+        <tr style="border-top:2px solid var(--g200)"><td class="b" colspan="6">Total / week (all <span data-ct="agents.production">125</span> production agents)</td><td class="r b" style="color:var(--purple-ink)">&euro;50.6k</td></tr>
       </tbody>
     </table>
   </div>
@@ -1329,12 +1329,12 @@ details.intro .body{margin-top:8px}
               <tr><td>Fully loaded hourly rate (EMEA)</td><td class="r b" style="font-family:var(--mono)">&euro;90/h</td><td style="font-size:11px;color:var(--g500)">Agreed assumption (senior blended rate)</td></tr>
               <tr><td style="padding-left:16px;color:var(--g500)">= Gross monthly time value</td><td class="r" style="font-family:var(--mono);color:var(--g700)">&euro;25.25M</td><td style="font-size:11px;color:var(--g500)">18,000 &times; 3.6 &times; 4.33 &times; 90</td></tr>
               <tr><td>Rework overhead discount</td><td class="r b" style="font-family:var(--mono);color:var(--red)">&minus;15%</td><td style="font-size:11px;color:var(--g500)">CFR 9.1% &amp; rework 12.8% eat back value <span class="src s-dora">DORA</span></td></tr>
-              <tr><td>Absorption factor</td><td class="r b" style="font-family:var(--mono);color:var(--amber)">&times;0.65</td><td style="font-size:11px;color:var(--g500)">Not all saved time converts to measurable output (meetings, context-switching)</td></tr>
+              <tr><td>Absorption factor</td><td class="r b" style="font-family:var(--mono);color:var(--amber-ink)">&times;0.65</td><td style="font-size:11px;color:var(--g500)">Not all saved time converts to measurable output (meetings, context-switching)</td></tr>
               <tr><td style="padding-left:16px;color:var(--g500)">= Net value from human time saved</td><td class="r" style="font-family:var(--mono);color:var(--g700)">&euro;14.0M</td><td style="font-size:11px;color:var(--g500)">25.25M &times; 0.85 &times; 0.65</td></tr>
-              <tr><td>+ Agent-delivered output (net)</td><td class="r b" style="font-family:var(--mono);color:var(--green)">+&euro;69.5M</td><td style="font-size:11px;color:var(--g500)">Autonomous, CLI and n8n agent runs: work that no developer would have done by hand. Valued at the same &euro;90/h, rework discount and absorption factor (gross &euro;125.8M)</td></tr>
+              <tr><td>+ Agent-delivered output (net)</td><td class="r b" style="font-family:var(--mono);color:var(--green-ink)">+&euro;69.5M</td><td style="font-size:11px;color:var(--g500)">Autonomous, CLI and n8n agent runs: work that no developer would have done by hand. Valued at the same &euro;90/h, rework discount and absorption factor (gross &euro;125.8M)</td></tr>
               <tr><td style="padding-left:16px;color:var(--g500)">= Net monthly value generated</td><td class="r" style="font-family:var(--mono);color:var(--g700)">&euro;83.5M</td><td style="font-size:11px;color:var(--g500)">14.0M + 69.5M</td></tr>
               <tr><td>Total monthly AI spend</td><td class="r b" style="font-family:var(--mono);color:var(--red)">&minus;&euro;16.37M</td><td style="font-size:11px;color:var(--g500)">All licences + tokens + governance (Tab 02)</td></tr>
-              <tr style="background:var(--p-dim)"><td><strong>AVRR</strong></td><td class="r b" style="font-family:var(--mono);color:var(--purple);font-size:15px">5.1&times;</td><td style="font-size:11px;color:var(--g500)">&euro;83.5M &divide; &euro;16.37M</td></tr>
+              <tr style="background:var(--p-dim)"><td><strong>AVRR</strong></td><td class="r b" style="font-family:var(--mono);color:var(--purple-ink);font-size:15px">5.1&times;</td><td style="font-size:11px;color:var(--g500)">&euro;83.5M &divide; &euro;16.37M</td></tr>
             </tbody>
           </table>
         </div>
@@ -1342,9 +1342,9 @@ details.intro .body{margin-top:8px}
           <div style="background:var(--g100);border-radius:4px;padding:8px 10px">
             <div style="font-size:10px;font-weight:700;color:var(--g500);font-family:var(--mono);margin-bottom:4px">SENSITIVITY: what moves AVRR most</div>
             <div style="font-size:11px;color:var(--g700);line-height:1.7">
-              CFR from 9.1% &rarr; 6%: <strong style="color:var(--green)">+&euro;9.0M/month &rarr; AVRR 5.7&times;</strong><br>
-              WAU from 60% &rarr; 75%: <strong style="color:var(--green)">+&euro;18.5M/month &rarr; AVRR 6.2&times;</strong><br>
-              Spend control (budget to 70%): <strong style="color:var(--green)">AVRR 5.4&times;</strong><br>
+              CFR from 9.1% &rarr; 6%: <strong style="color:var(--green-ink)">+&euro;9.0M/month &rarr; AVRR 5.7&times;</strong><br>
+              WAU from 60% &rarr; 75%: <strong style="color:var(--green-ink)">+&euro;18.5M/month &rarr; AVRR 6.2&times;</strong><br>
+              Spend control (budget to 70%): <strong style="color:var(--green-ink)">AVRR 5.4&times;</strong><br>
               If absorption drops to 0.50: <strong style="color:var(--red)">AVRR 3.9&times;</strong>
             </div>
           </div>
@@ -1369,7 +1369,7 @@ details.intro .body{margin-top:8px}
                 <tr><td>Gross value generated (time + agents)</td><td class="r" style="font-family:var(--mono)">&euro;151.1M</td><td class="r b" style="font-family:var(--mono)">&euro;1,813M</td></tr>
                 <tr><td>Net value (post discount &amp; absorption)</td><td class="r" style="font-family:var(--mono)">&euro;83.5M</td><td class="r b" style="font-family:var(--mono)">&euro;1,001M</td></tr>
                 <tr><td>Total AI spend</td><td class="r" style="font-family:var(--mono);color:var(--red)">&minus;&euro;16.37M</td><td class="r b" style="font-family:var(--mono);color:var(--red)">&minus;&euro;196M</td></tr>
-                <tr style="background:var(--p-dim)"><td><strong>Net annual return</strong></td><td class="r" style="font-family:var(--mono);color:var(--purple)">&euro;67.1M</td><td class="r b" style="font-family:var(--mono);color:var(--purple);font-size:14px"><strong>&euro;805M</strong></td></tr>
+                <tr style="background:var(--p-dim)"><td><strong>Net annual return</strong></td><td class="r" style="font-family:var(--mono);color:var(--purple-ink)">&euro;67.1M</td><td class="r b" style="font-family:var(--mono);color:var(--purple-ink);font-size:14px"><strong>&euro;805M</strong></td></tr>
                 <tr><td style="color:var(--g500)">FTE equivalent (@ &euro;140k/yr fully loaded)</td><td class="r" style="font-family:var(--mono);color:var(--g500)">479</td><td class="r" style="font-family:var(--mono);color:var(--g700);font-weight:600">&asymp;5,750 FTEs</td></tr>
               </tbody>
             </table>
@@ -1385,26 +1385,26 @@ details.intro .body{margin-top:8px}
                 <tr>
                   <td class="b">&#8593; WAU from 60% &rarr; 75%</td>
                   <td style="font-size:11px;color:var(--g500)">Activate 4,500 more licensed seats; targeted onboarding programme</td>
-                  <td class="r b" style="color:var(--green)">+1.1&times; &rarr; 6.2&times;</td>
-                  <td class="r b" style="color:var(--green)">&euro;221M/yr</td>
+                  <td class="r b" style="color:var(--green-ink)">+1.1&times; &rarr; 6.2&times;</td>
+                  <td class="r b" style="color:var(--green-ink)">&euro;221M/yr</td>
                 </tr>
                 <tr>
                   <td class="b">&#8595; CFR 9.1% &rarr; 6%</td>
                   <td style="font-size:11px;color:var(--g500)">AI-PR automated test gates; estimated &euro;12&ndash;24M one-time investment</td>
-                  <td class="r b" style="color:var(--green)">+0.6&times; &rarr; 5.7&times;</td>
-                  <td class="r b" style="color:var(--green)">&euro;108M/yr</td>
+                  <td class="r b" style="color:var(--green-ink)">+0.6&times; &rarr; 5.7&times;</td>
+                  <td class="r b" style="color:var(--green-ink)">&euro;108M/yr</td>
                 </tr>
                 <tr>
                   <td class="b">&#8593; Acceptance 44% &rarr; 52%</td>
                   <td style="font-size:11px;color:var(--g500)">Prompt engineering training; Booking.com: training drove +30% MRs <span class="src s-dora">DORA</span></td>
-                  <td class="r b" style="color:var(--green)">+0.4&times; &rarr; 5.5&times;</td>
-                  <td class="r b" style="color:var(--green)">&euro;66M/yr</td>
+                  <td class="r b" style="color:var(--green-ink)">+0.4&times; &rarr; 5.5&times;</td>
+                  <td class="r b" style="color:var(--green-ink)">&euro;66M/yr</td>
                 </tr>
                 <tr>
                   <td class="b">&#8595; Spend 76% &rarr; 70% utilisation</td>
                   <td style="font-size:11px;color:var(--g500)">Model routing tightening; hard caps on 8 over-budget teams</td>
-                  <td class="r b" style="color:var(--blue)">+0.3&times; &rarr; 5.4&times;</td>
-                  <td class="r b" style="color:var(--blue)">&euro;24M/yr savings</td>
+                  <td class="r b" style="color:var(--blue-ink)">+0.3&times; &rarr; 5.4&times;</td>
+                  <td class="r b" style="color:var(--blue-ink)">&euro;24M/yr savings</td>
                 </tr>
                 <tr style="background:var(--r-dim)">
                   <td class="b">&#8595; Absorption factor 0.65 &rarr; 0.50</td>
@@ -1421,11 +1421,11 @@ details.intro .body{margin-top:8px}
           <div style="background:var(--g100);border-radius:4px;padding:10px 12px">
             <div style="font-size:10px;font-weight:700;color:var(--g500);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Sensitivity analysis</div>
             <div style="font-size:11px;color:var(--g700);line-height:1.8">
-              CFR 9.1%&rarr;6%: <strong style="color:var(--green)">5.7&times;</strong><br>
-              WAU 60%&rarr;75%: <strong style="color:var(--green)">6.2&times;</strong><br>
-              Spend at budget: <strong style="color:var(--green)">5.4&times;</strong><br>
+              CFR 9.1%&rarr;6%: <strong style="color:var(--green-ink)">5.7&times;</strong><br>
+              WAU 60%&rarr;75%: <strong style="color:var(--green-ink)">6.2&times;</strong><br>
+              Spend at budget: <strong style="color:var(--green-ink)">5.4&times;</strong><br>
               Absorption 0.65&rarr;0.50: <strong style="color:var(--red)">3.9&times;</strong><br>
-              All improvements: <strong style="color:var(--purple)">7.1&times;</strong>
+              All improvements: <strong style="color:var(--purple-ink)">7.1&times;</strong>
             </div>
           </div>
           <div style="background:var(--g100);border-radius:4px;padding:10px 12px">
@@ -1484,7 +1484,7 @@ details.intro .body{margin-top:8px}
           <td><span class="tag t-g">Haiku 4.5</span></td>
           <td><span class="tag t-gr">GPT-4.1 Nano</span></td>
           <td class="r" style="font-family:var(--mono)">2,000</td>
-          <td class="r b" style="color:var(--green)">&lt;&euro;0.001</td>
+          <td class="r b" style="color:var(--green-ink)">&lt;&euro;0.001</td>
         </tr>
         <tr>
           <td class="b">Extract / summarise (short)</td>
@@ -1492,7 +1492,7 @@ details.intro .body{margin-top:8px}
           <td><span class="tag t-g">Haiku 4.5</span></td>
           <td><span class="tag t-gr">GPT-4.1 Nano</span></td>
           <td class="r" style="font-family:var(--mono)">4,000</td>
-          <td class="r b" style="color:var(--green)">&lt;&euro;0.003</td>
+          <td class="r b" style="color:var(--green-ink)">&lt;&euro;0.003</td>
         </tr>
         <tr>
           <td class="b">Code generation / review (standard)</td>
@@ -1516,7 +1516,7 @@ details.intro .body{margin-top:8px}
           <td><span class="tag t-a">Opus 4.6 (gated)</span></td>
           <td><span class="tag t-p">Sonnet 4.6 (auto-downgrade)</span></td>
           <td class="r" style="font-family:var(--mono)">128,000</td>
-          <td class="r b" style="color:var(--amber)">&euro;2.10&ndash;8.40</td>
+          <td class="r b" style="color:var(--amber-ink)">&euro;2.10&ndash;8.40</td>
         </tr>
         <tr>
           <td class="b">Agentic loop &gt;15 steps</td>
@@ -1547,57 +1547,57 @@ details.intro .body{margin-top:8px}
         <th>Capability</th>
         <th style="text-align:center">Haiku 4.5</th>
         <th style="text-align:center">GPT-4.1 Nano</th>
-        <th style="text-align:center">Sonnet 4.6 <span style="color:var(--purple);font-size:9px">DEFAULT</span></th>
+        <th style="text-align:center">Sonnet 4.6 <span style="color:var(--purple-ink);font-size:9px">DEFAULT</span></th>
         <th style="text-align:center">GPT-4o</th>
-        <th style="text-align:center">Opus 4.6 <span style="color:var(--amber);font-size:9px">GATED</span></th>
+        <th style="text-align:center">Opus 4.6 <span style="color:var(--amber-ink);font-size:9px">GATED</span></th>
       </tr></thead>
       <tbody>
         <tr>
           <td class="b">Multi-step reasoning</td>
           <td style="text-align:center"><span style="color:var(--red)">&#9679;&#9675;&#9675;&#9675;&#9675;</span></td>
           <td style="text-align:center"><span style="color:var(--red)">&#9679;&#9675;&#9675;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--blue)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--blue-ink)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
         </tr>
         <tr>
           <td class="b">Code generation quality</td>
-          <td style="text-align:center"><span style="color:var(--amber)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--amber)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
-          <td style="text-align:center"><span style="color:var(--blue)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--amber-ink)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--amber-ink)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--blue-ink)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
         </tr>
         <tr>
           <td class="b">Agentic / multi-tool reliability</td>
           <td style="text-align:center"><span style="color:var(--red)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
           <td style="text-align:center"><span style="color:var(--red)">&#9679;&#9675;&#9675;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--blue)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--blue-ink)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
         </tr>
         <tr>
           <td class="b">SAP / ABAP domain knowledge</td>
-          <td style="text-align:center"><span style="color:var(--amber)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--amber-ink)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
           <td style="text-align:center"><span style="color:var(--red)">&#9679;&#9675;&#9675;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--blue)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--blue-ink)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
         </tr>
         <tr>
           <td class="b">Speed (response latency)</td>
-          <td style="text-align:center"><span style="color:var(--green)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
-          <td style="text-align:center"><span style="color:var(--green)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--blue)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--amber)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--green-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--green-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9679;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--blue-ink)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--amber-ink)">&#9679;&#9679;&#9675;&#9675;&#9675;</span></td>
         </tr>
         <tr>
           <td class="b">Cost efficiency</td>
-          <td style="text-align:center"><span style="color:var(--green)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
-          <td style="text-align:center"><span style="color:var(--green)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
-          <td style="text-align:center"><span style="color:var(--purple)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
-          <td style="text-align:center"><span style="color:var(--blue)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--green-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--green-ink)">&#9679;&#9679;&#9679;&#9679;&#9679;</span></td>
+          <td style="text-align:center"><span style="color:var(--purple-ink)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
+          <td style="text-align:center"><span style="color:var(--blue-ink)">&#9679;&#9679;&#9679;&#9675;&#9675;</span></td>
           <td style="text-align:center"><span style="color:var(--red)">&#9679;&#9675;&#9675;&#9675;&#9675;</span></td>
         </tr>
         <tr>
@@ -1644,12 +1644,12 @@ details.intro .body{margin-top:8px}
     <div>
       <div class="card">
         <div class="chd">Routing efficiency metrics</div>
-        <div class="krow"><div style="flex:1"><div class="kname">Calls correctly auto-routed</div><div class="kdesc">No manual override, routing decision accepted</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">94.2%</div><div class="ktgt">target &gt;95%</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">User override rate</div><div class="kdesc">Engineer manually switched model from auto-selection</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">5.8%</div><div class="ktgt">target &lt;5%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Calls correctly auto-routed</div><div class="kdesc">No manual override, routing decision accepted</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">94.2%</div><div class="ktgt">target &gt;95%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">User override rate</div><div class="kdesc">Engineer manually switched model from auto-selection</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">5.8%</div><div class="ktgt">target &lt;5%</div></div></div>
         <div class="krow"><div style="flex:1"><div class="kname">Auto-downgrade events</div><div class="kdesc">Opus &rarr; Sonnet triggered by budget cap this month</div></div><div style="text-align:right"><div class="kval">84</div><div class="ktgt">Engineering + Finance</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">Fallback activations</div><div class="kdesc">Primary route failed; fallback model served request</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">0.4%</div><div class="ktgt">target &lt;1%</div></div></div>
-        <div class="krow"><div style="flex:1"><div class="kname">Routing cost saving vs. unrouted</div><div class="kdesc">vs. all-Sonnet baseline for same call volume</div></div><div style="text-align:right"><div class="kval" style="color:var(--green)">&euro;839k</div><div class="ktgt">this week</div></div></div>
-        <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Hard stops triggered (agentic)</div><div class="kdesc">Loops hitting &gt;20 steps and terminated</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber)">127</div><div class="ktgt">target &lt;50</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Fallback activations</div><div class="kdesc">Primary route failed; fallback model served request</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">0.4%</div><div class="ktgt">target &lt;1%</div></div></div>
+        <div class="krow"><div style="flex:1"><div class="kname">Routing cost saving vs. unrouted</div><div class="kdesc">vs. all-Sonnet baseline for same call volume</div></div><div style="text-align:right"><div class="kval" style="color:var(--green-ink)">&euro;839k</div><div class="ktgt">this week</div></div></div>
+        <div class="krow" style="border:none"><div style="flex:1"><div class="kname">Hard stops triggered (agentic)</div><div class="kdesc">Loops hitting &gt;20 steps and terminated</div></div><div style="text-align:right"><div class="kval" style="color:var(--amber-ink)">127</div><div class="ktgt">target &lt;50</div></div></div>
       </div>
     </div>
   </div>
@@ -6240,8 +6240,8 @@ function renderRisks(){
 
   function tile(label,color,border,count,lines){
     return '<div style="background:var(--surface);border:1px solid var(--'+border+');border-left:4px solid var(--'+color+');border-radius:6px;padding:14px 16px;box-shadow:var(--sh)">'
-      +'<div style="font-size:10px;font-weight:700;color:var(--'+color+');font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">'+esc(label)+'</div>'
-      +'<div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--'+color+')">'+count+'</div>'
+      +'<div style="font-size:10px;font-weight:700;color:var(--'+color+'-ink);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">'+esc(label)+'</div>'
+      +'<div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--'+color+'-ink)">'+count+'</div>'
       +'<div style="font-size:11px;color:var(--g500);margin-top:4px;line-height:1.5">'+lines.map(esc).join(' &middot; ')+'</div></div>';
   }
   document.getElementById('risk-summary').innerHTML=
@@ -6259,7 +6259,7 @@ function renderRisks(){
      +'<td><span class="tag '+(TAG[r.etaTone]||'t-b')+'">'+esc(r.eta)+'</span></td>'
      +'<td><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
        +'<div style="flex:1;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:'+Number(r.progressPct)+'%;height:100%;background:var(--'+c+');border-radius:3px"></div></div>'
-       +'<div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--'+c+');min-width:28px">'+Number(r.progressPct)+'%</div></div>'
+       +'<div style="font-size:11px;font-weight:600;font-family:var(--mono);color:var(--'+c+'-ink);min-width:28px">'+Number(r.progressPct)+'%</div></div>'
        +'<div style="font-size:10px;color:var(--g500)">'+esc(r.progressNote)+'</div></td>'
      +'<td style="font-size:11px;color:var(--g700)">'+esc(r.action)+'</td></tr>';
   }).join('');
@@ -6435,7 +6435,7 @@ function wireExpandGrid(gridId, keepCount, accentColor) {
     card.appendChild(panel);
 
     const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:10px;color:var(--g300);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
+    hint.style.cssText = 'font-size:10px;color:var(--hint);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
     hint.textContent = 'double-click to expand';
     card.appendChild(hint);
 
@@ -6482,7 +6482,7 @@ wireExpandGrid('policies-mr', 3, 'rgba(161,0,255,0.18)');
   document.body.appendChild(ov);
   var LIFE={production:['g','Production'],pending_review:['a','Pending review'],retired:['gr','Retired']};
   var mode='production', showAll=false, SAMPLE=12;
-  function tag(t,l){return '<span class="tag t-'+t+'" style="'+(t==='g'?'background:var(--green-dim);color:var(--green)':t==='a'?'background:var(--amber-dim);color:var(--amber)':t==='r'?'background:var(--red-dim);color:var(--red)':'background:var(--g100);color:var(--g500)')+'">'+esc(l)+'</span>';}
+  function tag(t,l){return '<span class="tag t-'+t+'" style="'+(t==='g'?'background:var(--green-dim);color:var(--green-ink)':t==='a'?'background:var(--amber-dim);color:var(--amber-ink)':t==='r'?'background:var(--red-dim);color:var(--red)':'background:var(--g100);color:var(--g500)')+'">'+esc(l)+'</span>';}
   function rows(){
     var list=mode==='production'?reg.filter(function(a){return a.lifecycle==='production';}):reg.slice();
     // Production: busiest first. Registered: most recently registered first.
@@ -6513,7 +6513,7 @@ wireExpandGrid('policies-mr', 3, 'rgba(161,0,255,0.18)');
   document.getElementById('ag-all').onclick=function(){showAll=!showAll;draw();};
   Array.from(document.querySelectorAll('[data-agent-list]')).forEach(function(card){
     var hint=document.createElement('div');
-    hint.style.cssText='font-size:10px;color:var(--g300);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
+    hint.style.cssText='font-size:10px;color:var(--hint);font-family:var(--mono);margin-top:10px;text-align:right;letter-spacing:.03em;user-select:none';
     hint.textContent='double-click for agent list';
     card.appendChild(hint);
     card.style.cursor='pointer'; card.style.userSelect='none';
@@ -6536,7 +6536,7 @@ function wireSectionCollapse(sectionId) {
     }
     if (!siblings.length) return;
     var hint = document.createElement('span');
-    hint.style.cssText = 'font-size:9px;color:var(--g300);font-family:var(--mono);float:right;margin-top:1px;cursor:pointer;user-select:none;font-weight:400';
+    hint.style.cssText = 'font-size:9px;color:var(--hint);font-family:var(--mono);float:right;margin-top:1px;cursor:pointer;user-select:none;font-weight:400';
     hint.textContent = 'double-click \u21d5';
     sh.appendChild(hint);
     sh.style.cursor = 'pointer';
@@ -6689,7 +6689,7 @@ wireSectionCollapse('page-policies');
   <div class="sh">AI governance structure</div>
   <div class="g3">
     <div class="card">
-      <div class="card-hd" style="color:var(--purple)">AI Programme Board</div>
+      <div class="card-hd" style="color:var(--purple-ink)">AI Programme Board</div>
       <div style="font-size:11px;color:var(--g500);margin-bottom:10px">Monthly cadence &middot; Strategic decisions &middot; Budget approval</div>
       <div style="font-size:12px;color:var(--g700);line-height:1.9">
         CTO <span class="tag t-p" style="font-size:9px">Chair</span><br>
@@ -6698,7 +6698,7 @@ wireSectionCollapse('page-policies');
       </div>
     </div>
     <div class="card">
-      <div class="card-hd" style="color:var(--blue)">AI Working Group</div>
+      <div class="card-hd" style="color:var(--blue-ink)">AI Working Group</div>
       <div style="font-size:11px;color:var(--g500);margin-bottom:10px">Weekly cadence &middot; Operational decisions &middot; Risk triage</div>
       <div style="font-size:12px;color:var(--g700);line-height:1.9">
         AI Platform Lead <span class="tag t-b" style="font-size:9px">Chair</span><br>

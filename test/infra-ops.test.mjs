@@ -127,7 +127,7 @@ const okArgs = { template: 'renew-certificate', target: 'bp-s4-prd', window_star
 const handlers = (env = {}, fetchImpl = async () => { throw new Error('no network expected'); }) => createInfraOpsHandlers({ ToolError, env, fetchImpl, load: () => data });
 
 test('both tools are declared, only submit needs confirm, and submit is described as check-mode only', () => {
-  assert.deepEqual(INFRA_TOOL_DEFINITIONS.map((t) => t.name), ['plan_infra_change', 'submit_infra_change']);
+  assert.deepEqual(INFRA_TOOL_DEFINITIONS.map((t) => t.name), ['plan_infra_change', 'submit_infra_change', 'read_wiki_page']);
   assert.ok(!INFRA_TOOL_DEFINITIONS[0].inputSchema.required.includes('confirm'));
   assert.ok(INFRA_TOOL_DEFINITIONS[1].inputSchema.required.includes('confirm'));
   assert.match(INFRA_TOOL_DEFINITIONS[1].description, /check mode/);
