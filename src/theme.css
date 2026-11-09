@@ -1828,6 +1828,15 @@ button {
   background: #fbfbfd;
 }
 
+/* The light fills above stay white in the dark theme: the menu button of the Space toolbar and every icon button on hover. */
+:root[data-theme="dark"] .topbar > .icon-btn:first-child {
+  background: var(--bg);
+}
+
+:root[data-theme="dark"] .icon-btn:hover {
+  background: #222630;
+}
+
 .rail-foot {
   position: relative;
 }
