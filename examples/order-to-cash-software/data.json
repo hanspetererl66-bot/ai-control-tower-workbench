@@ -256,7 +256,9 @@
       "system": "crm",
       "tool": "crm_get_contract",
       "does": "Reads the signed contract C-4410 with customer, bill-to party, term and price list.",
-      "result": "Contract C-4410, signed 2026-10-28, 36 months, bill-to Kestrel Group Services GmbH"
+      "result": "Contract C-4410, signed 2026-10-28, 36 months, bill-to Kestrel Group Services GmbH",
+      "on": "2026-10-28",
+      "doc": "Contract C-4410"
     },
     {
       "id": "S2",
@@ -264,7 +266,9 @@
       "system": "order",
       "tool": "s4_create_sales_order",
       "does": "Creates sales order SO-90412 with one item per priced position of the contract.",
-      "result": "SO-90412 with 6 items; overage and consumption are rate items without a quantity"
+      "result": "SO-90412 with 6 items; overage and consumption are rate items without a quantity",
+      "on": "2026-10-29",
+      "doc": "Sales order SO-90412"
     },
     {
       "id": "S3",
@@ -272,7 +276,9 @@
       "system": "material",
       "tool": "mat_derive_bom",
       "does": "Derives the bill of material from the order: what is delivered, what is provisioned, what is metered, which service is scheduled.",
-      "result": "BOM-90412 with 7 items (3 software, 1 overage rate, 3 services)"
+      "result": "BOM-90412 with 7 items (3 software, 1 overage rate, 3 services)",
+      "on": "2026-10-30",
+      "doc": "Bill of material BOM-90412"
     },
     {
       "id": "S4",
@@ -281,7 +287,9 @@
       "tool": "ent_check",
       "does": "Before anything is delivered: compares the bill of material with what the contract entitles the customer to.",
       "result": "5 of 7 items match; 2 deviations to correct first",
-      "gate": "deviations"
+      "gate": "deviations",
+      "on": "2026-11-02",
+      "doc": "Entitlement check"
     },
     {
       "id": "S5",
@@ -289,7 +297,9 @@
       "system": "order",
       "tool": "s4_create_delivery",
       "does": "Delivers what the bill of material says: licence keys and download, the tenant prepared, meter credentials, the service plan.",
-      "result": "Delivery 80004417 with four kinds of delivery"
+      "result": "Delivery 80004417 with four kinds of delivery",
+      "on": "2026-11-03",
+      "doc": "Delivery 80004417"
     },
     {
       "id": "S6",
@@ -298,7 +308,9 @@
       "tool": "s4_post_goods_receipt",
       "does": "The customer confirms what arrived. Without this confirmation nothing is billed for the licences.",
       "result": "Receipt confirmed by the customer for licences, tenant and meter",
-      "gate": "receipt"
+      "gate": "receipt",
+      "on": "2026-11-04",
+      "doc": "Goods receipt"
     },
     {
       "id": "S7",
@@ -306,7 +318,9 @@
       "system": "entitlement",
       "tool": "ent_grant",
       "does": "Switches the entitlements on: 40 licence keys, 250 users (up to 300 as overage), the API quota.",
-      "result": "Entitlements active"
+      "result": "Entitlements active",
+      "on": "2026-11-05",
+      "doc": "Entitlement record"
     },
     {
       "id": "S8",
@@ -314,7 +328,9 @@
       "system": "provisioning",
       "tool": "prov_create_tenant",
       "does": "Creates the tenant in the EU region, connects single sign-on, configures the meter and the roles.",
-      "result": "Tenant kestrel-eu-central ready, term starts 2026-12-01"
+      "result": "Tenant kestrel-eu-central ready, term starts 2026-12-01",
+      "on": "2026-11-06",
+      "doc": "Tenant kestrel-eu-central"
     },
     {
       "id": "S9",
@@ -322,7 +338,9 @@
       "system": "provisioning",
       "tool": "s4_confirm_fulfilment",
       "does": "Provisioning reports done; the order items change to fulfilled. Billing only starts after this message.",
-      "result": "All provisioned items reported done"
+      "result": "All provisioned items reported done",
+      "on": "2026-11-06",
+      "doc": "Completion message"
     },
     {
       "id": "S10",
@@ -330,7 +348,9 @@
       "system": "billing",
       "tool": "sub_create_invoice_plan",
       "does": "Creates the invoices: licences once, subscription and managed operations monthly in advance, services by milestone or day, consumption and overage monthly in arrears.",
-      "result": "Invoice plan with the dates from the contract"
+      "result": "Invoice plan with the dates from the contract",
+      "on": "2026-11-10",
+      "doc": "Invoice plan"
     },
     {
       "id": "S11",
@@ -339,7 +359,9 @@
       "tool": "sub_compare_usage",
       "does": "Compares the metered usage with what was invoiced, for overage and consumption.",
       "result": "One difference: December calls were metered 28,400,000 and billed 26,100,000",
-      "gate": "trueup"
+      "gate": "trueup",
+      "on": "2027-01-15",
+      "doc": "Usage reconciliation"
     },
     {
       "id": "S12",
@@ -347,7 +369,9 @@
       "system": "revenue",
       "tool": "rev_post_schedule",
       "does": "Posts the revenue schedule: price shared out by stand-alone selling price, then licence at a point in time, subscription and operations evenly, services by progress or day, usage as it arises.",
-      "result": "Revenue schedule per performance obligation"
+      "result": "Revenue schedule per performance obligation",
+      "on": "2027-01-31",
+      "doc": "Revenue schedule"
     },
     {
       "id": "S13",
@@ -355,7 +379,9 @@
       "system": "billing",
       "tool": "s4_post_incoming_payment",
       "does": "Matches the incoming payments of the bank statement to the open invoices.",
-      "result": "Payments cleared against invoices"
+      "result": "Payments cleared against invoices",
+      "on": "2027-02-09",
+      "doc": "Incoming payments"
     },
     {
       "id": "S14",
@@ -363,7 +389,9 @@
       "system": "revenue",
       "tool": "rev_close_period",
       "does": "Closes the period: billed, recognised and collected side by side, contract asset or liability, remaining performance obligations.",
-      "result": "Period closed with the position of the contract"
+      "result": "Period closed with the position of the contract",
+      "on": "2027-02-28",
+      "doc": "Period close"
     }
   ],
   "deviations": [
@@ -495,6 +523,41 @@
       ],
       "what": "Shows API calls and peak users per day to the customer administrator.",
       "billing": "Included, not billed"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "smooth",
+      "name": "All smooth",
+      "stopsAt": null,
+      "approve": [
+        "D1",
+        "D2"
+      ],
+      "receipts": true,
+      "trueUp": true,
+      "story": "Order management corrects the service level and the rate card before delivery. The customer confirms the same day. The late meter file is invoiced as a true-up. Every document is right the first time and the position closes with billed, recognised and collected in line."
+    },
+    {
+      "id": "entitlement",
+      "name": "Error in the entitlement",
+      "stopsAt": 3,
+      "approve": [],
+      "receipts": false,
+      "trueUp": false,
+      "story": "The check stops the order. If the bill of material were delivered as it stands, the customer would get service level Standard (8x5) instead of the contracted Premium (24x7), and the first usage invoice would use rate card RC-2025-A at 0.45 instead of 0.40 per 1,000 calls. For December that is 28,400,000 calls x 0.05 per 1,000 = 1,420.00 EUR too much, a credit note and an unhappy customer."
+    },
+    {
+      "id": "meter",
+      "name": "The meter file arrives late",
+      "stopsAt": 10,
+      "approve": [
+        "D1",
+        "D2"
+      ],
+      "receipts": true,
+      "trueUp": false,
+      "story": "Everything is delivered and billed, but the December meter file arrived after the invoice. 2,300,000 calls (920.00 EUR) were not invoiced. The process waits for a person to approve the true-up invoice on 2027-01-15; until then the usage revenue is recognised but not yet invoiced."
     }
   ]
 }
