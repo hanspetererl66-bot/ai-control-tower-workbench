@@ -543,6 +543,60 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
 .pbadge{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-2)}
 @media(prefers-reduced-motion:reduce){.sx-bar,.sx-step{transition:none}.sx-step:hover{transform:none}}
 #pg-workflow .panel .sv-card{border:0;box-shadow:none;background:none}
+
+/* Knowledge tab: graph around one deal. Own categorical colours (the page's status colours are deliberately muted). */
+:root #kn{--k-purple:#8056B8;--k-blue:#3B6FD4;--k-teal:#0E8A94;--k-green:#1E9E5A;--k-amber:#C47A00;--k-red:#D13B30;--k-pink:#C2418A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #kn{--k-purple:#B79CE0;--k-blue:#7FA6F0;--k-teal:#4fd1c5;--k-green:#3ddc97;--k-amber:#ffb454;--k-red:#ff7a70;--k-pink:#f08cc0}}
+:root[data-theme="dark"] #kn{--k-purple:#B79CE0;--k-blue:#7FA6F0;--k-teal:#4fd1c5;--k-green:#3ddc97;--k-amber:#ffb454;--k-red:#ff7a70;--k-pink:#f08cc0}
+.kn-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px}
+.kn-top select{max-width:420px}
+.kn-stats{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.kn-stat{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-s);padding:6px 12px;font-size:12px;color:var(--muted)}.kn-stat b{display:block;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kn-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media(max-width:900px){.kn-grid{grid-template-columns:1fr}}
+.kn-stage{padding:8px 8px 12px;background:radial-gradient(circle at 50% 50%,var(--purple-dim),transparent 62%),var(--surface)}
+.kn-legend{display:flex;flex-wrap:wrap;gap:6px;padding:4px 10px 8px}
+.kn-legend button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:99px;padding:3px 10px;font-size:12px;cursor:pointer}
+.kn-legend button[aria-pressed="false"]{opacity:.45}
+.kn-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--kc)}
+#kn-svg{width:100%;height:auto;display:block}
+.kn-edge{fill:none;stroke:var(--kc);stroke-opacity:.38;stroke-width:1.6}
+.kn-node{cursor:pointer;outline:none}
+.kn-node circle.b{fill:var(--surface);stroke:var(--kc);stroke-width:2.2;transition:r .15s,stroke-width .15s}
+.kn-node circle.h{fill:var(--kc);opacity:.13}
+.kn-node text.g{fill:var(--kc);font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.kn-node text.l{fill:var(--ink-2);font-size:12px;pointer-events:none}
+.kn-node:hover circle.b,.kn-node:focus-visible circle.b,.kn-node.sel circle.b{stroke-width:3.6}
+.kn-node.sel circle.h,.kn-node:hover circle.h{opacity:.28}
+.kn-node.sel text.l{fill:var(--ink);font-weight:700}
+.kn-node.dim{opacity:.28}
+.kn-core circle.b{fill:url(#kn-core-g);stroke:var(--purple-deep)}
+.kn-core text.g{fill:var(--surface);font-size:15px}
+.kn-core text.l{fill:var(--ink);font-weight:700;font-size:13px;text-anchor:middle}
+.kn-side{padding:16px}
+.kn-side h3{margin:6px 0 4px;font-size:16px}
+.kn-side .note{margin:6px 0}
+.kn-kind{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--kc)}.kn-kind .dot{width:9px;height:9px;border-radius:50%;background:var(--kc)}
+.kn-use{margin-top:12px}.kn-use h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.kn-copy{margin-top:8px;border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.kn-stage{background:radial-gradient(ellipse at 50% 50%,var(--purple-dim),transparent 66%),var(--surface)}
+.kn-track{fill:none;stroke:var(--kc);stroke-opacity:.14;stroke-width:62;stroke-linecap:round;stroke-linejoin:round}
+.kn-grp{fill:var(--kc);font-size:10px;font-weight:700;letter-spacing:.09em;text-anchor:middle;opacity:.85;paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.kn-edge.risk{stroke-dasharray:5 5}
+.kn-core circle.ring{fill:none;stroke:var(--line);stroke-width:7}
+.kn-core circle.prog{fill:none;stroke:var(--k-green);stroke-width:7;stroke-linecap:round}
+.kn-core .sub{fill:var(--muted);font-size:12px;text-anchor:middle}
+.kn-node .pop{transform-box:fill-box}
+.kn-in .kn-edge:not(.risk){stroke-dasharray:1;stroke-dashoffset:1;animation:kn-draw .7s ease-out forwards;animation-delay:calc(var(--i)*45ms)}
+.kn-in .kn-edge.risk{opacity:0;animation:kn-fade .5s ease-out forwards;animation-delay:calc(var(--i)*45ms + 300ms)}
+.kn-in .kn-node:not(.kn-core) .pop{opacity:0;animation:kn-pop .45s ease-out forwards;animation-delay:calc(var(--i)*45ms + 250ms)}
+.kn-node.risk circle.h{animation:kn-pulse 2.6s ease-in-out infinite}
+@keyframes kn-draw{to{stroke-dashoffset:0}}
+@keyframes kn-fade{to{opacity:1}}
+@keyframes kn-pop{from{opacity:0}to{opacity:1}}
+@keyframes kn-pulse{0%,100%{opacity:.13}50%{opacity:.34}}
+@media(prefers-reduced-motion:reduce){.kn-in .kn-edge,.kn-in .kn-node .pop{animation:none!important;opacity:1;stroke-dashoffset:0}.kn-node.risk circle.h{animation:none}}
+@media(prefers-reduced-motion:reduce){.kn-node circle.b{transition:none}}
 </style>
 </head>
 <body>
@@ -559,6 +613,7 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
   <button role="tab" aria-selected="false" data-tab="forecast">Forecast</button>
   <button role="tab" aria-selected="false" data-tab="payments">Late payments</button>
   <button role="tab" aria-selected="false" data-tab="meetings">Meetings</button>
+  <button role="tab" aria-selected="false" data-tab="knowledge">Knowledge</button>
   <button role="tab" aria-selected="false" data-tab="inbox">Inbox <span class="tag purple" id="inbox-n"></span></button>
   <button role="tab" aria-selected="false" data-tab="governance">Governance</button>
   <button role="tab" aria-selected="false" data-tab="workflow">Workflow and skills</button>
@@ -585,6 +640,7 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
   <section class="pg" id="pg-forecast"><div id="fc"></div></section>
   <section class="pg" id="pg-payments"><div class="card" id="pay"></div></section>
   <section class="pg" id="pg-meetings"><div class="mt" id="mt"></div></section>
+  <section class="pg" id="pg-knowledge"><div id="kn"></div></section>
   <section class="pg" id="pg-inbox"><div id="ib"></div></section>
   <section class="pg" id="pg-governance"><div id="gv"></div></section>
   <section class="pg" id="pg-workflow"><div class="panel card"><h2>One process, five gates</h2><div class="note" style="margin:0 0 12px">Every stage has exit criteria. A deal moves on when the criteria are met and the person in charge agrees. The skills prepare and check; they never decide.</div><div class="stagevw" id="chain"></div></div><div class="panel card" id="wf-extra"></div></section>
@@ -1002,7 +1058,103 @@ window.addEventListener('message', (e) => {
   else if (d.type === 's4m:payment-risk' && d.requestId && d.requestId === pay.pending && d.forecast) { const cu = pay.pendingCustomer; pay.pending = null; pay.results[cu] = d.forecast; renderPay(); }
   else if (d.type === 's4m:error' && d.requestId && d.requestId === pay.pending) { const cu = pay.pendingCustomer; pay.pending = null; pay.error[cu] = 'Could not run the forecast: ' + String(d.message).slice(0, 200); renderPay(); }
 });
-setup(); setupLook(); renderPay(); renderFunnel(); renderBoard(); renderForecast(); renderMeetings(); renderInbox(); renderGovernance(); renderWorkflow(); renderRules();
+
+// ---- Knowledge: the graph around one deal. Built from the deal, its calls and mails, the Sub4Me tickets and invoices, and the meetings; nothing is stored.
+const KN_KINDS = {
+  customer: ['Customer', 'var(--k-purple)', 'C'], contact: ['Contact', 'var(--k-pink)', 'P'], offer: ['Offer / contract', 'var(--k-green)', 'O'],
+  call: ['Call', 'var(--k-teal)', 'T'], mail: ['Mail thread', 'var(--k-blue)', 'M'], rival: ['Competitor', 'var(--k-red)', 'X'],
+  risk: ['Risk', 'var(--k-red)', '!'], skill: ['Skill', 'var(--k-purple)', 'S'], ticket: ['Ticket', 'var(--k-amber)', '#'], invoice: ['Invoice', 'var(--k-amber)', '€'], meeting: ['Meeting', 'var(--k-teal)', 'D']
+};
+const kn = { deal: null, sel: null, hide: new Set(), anim: true };
+function knNodes(d) {
+  const cu = (PAY_CUSTOMERS.find((c) => c.name === d.account) || {}).id;
+  const same = D.deals.filter((x) => x.account === d.account && x.id !== d.id).length;
+  const n = [];
+  const add = (kind, label, text, prompt) => n.push({ id: kind + n.length, kind, label, text, prompt });
+  add('customer', d.account, same + ' other deal' + (same === 1 ? '' : 's') + ' with this customer. Stage of this deal: ' + STAGE[d.stage].label + '.', 'Give me a one-page briefing on ' + d.account + ' before I work on ' + d.id + '.');
+  if (d.contact) add('contact', d.contact, 'Main contact on the customer side.', 'Prepare my next conversation with ' + d.contact + ' about ' + d.title + '.');
+  if (d.offerId) add('offer', d.offerId, (d.approval ? d.approval + '. ' : '') + (d.discountPct != null ? 'Discount ' + d.discountPct + ' %.' : 'Offer for ' + d.title + '.'), 'Check the discount in offer ' + d.offerId + '.');
+  if (d.contractId) add('offer', d.contractId, 'Contract behind this deal.', 'Check contract ' + d.contractId + ' against our standard terms.');
+  ((d.links || {}).calls || []).forEach((c) => add('call', c, 'Call transcript linked to this deal.', 'Summarise call ' + c + ' and list the open decisions for ' + d.id + '.'));
+  ((d.links || {}).threads || []).forEach((t) => add('mail', t, 'E-mail conversation linked to this deal.', 'Summarise mail thread ' + t + ' and tell me what the customer still expects from us.'));
+  if (d.competitor) add('rival', d.competitor, 'Competitor in this deal.', 'Build a battlecard against ' + d.competitor + ' for ' + d.account + '.');
+  d.risks.forEach((r, i) => add('risk', 'Risk ' + (i + 1), r, 'What would reduce this risk in ' + d.id + ': ' + r));
+  add('skill', d.next.skill, d.next.text + ' (due ' + day(d.next.due) + ').', d.next.prompt);
+  D.meetings.filter((m) => m.dealId === d.id).slice(0, 2).forEach((m) => add('meeting', m.title, day(m.date) + ', ' + m.time + '. ' + ((m.prep && m.prep.flags || [])[0] || ''), 'Prepare me for the meeting "' + m.title + '" on ' + day(m.date) + '.'));
+  if (cu) {
+    D.sub4me.tickets.filter((t) => t.customer === cu && t.status !== 'Closed').slice(0, 3).forEach((t) => add('ticket', t.id, t.title + ' (' + t.priority + ', ' + t.status + ').', 'What is the status of ticket ' + t.id + ' and does it affect ' + d.id + '?'));
+    D.sub4me.invoices.filter((v) => v.customer === cu && v.status === 'Overdue').slice(0, 2).forEach((v) => add('invoice', v.id, 'Overdue since ' + day(v.due) + ', €' + Math.round(v.grossEur / 1000) + 'k.', 'How likely is ' + d.account + ' to pay invoice ' + v.id + ' late, and what should I say?'));
+  }
+  return n;
+}
+function renderKnowledge() {
+  if (!kn.deal) kn.deal = (D.deals.find((x) => x.id === 'OFF-2026-0324') || D.deals[0]).id;
+  const d = D.deals.find((x) => x.id === kn.deal);
+  const nodes = knNodes(d);
+  if (!kn.sel || !nodes.some((x) => x.id === kn.sel)) kn.sel = nodes[0].id;
+  const kinds = [...new Set(nodes.map((x) => x.kind))];
+  const cust = nodes.find((x) => x.kind === 'customer');
+  const shown = nodes.filter((x) => x !== cust && !kn.hide.has(x.kind));
+  const W = 980, H = 560, cx = W / 2, cy = H / 2, rx = 330, ry = 210, GAP = 0.16;
+  const GROUPS = [['People', 'var(--k-pink)', ['contact']], ['Commercial', 'var(--k-green)', ['offer', 'rival']], ['Sources', 'var(--k-teal)', ['call', 'mail', 'meeting']], ['Risks and issues', 'var(--k-red)', ['risk', 'ticket', 'invoice']], ['Next step', 'var(--k-purple)', ['skill']]];
+  const live = GROUPS.map(([name, col, ks]) => ({ name, col, items: shown.filter((x) => ks.includes(x.kind)) })).filter((g) => g.items.length);
+  const totalN = live.reduce((a, g) => a + g.items.length, 0) || 1;
+  const span = 2 * Math.PI - GAP * live.length;
+  const pt = (a, k) => [cx + rx * k * Math.cos(a), cy + ry * k * Math.sin(a)];
+  let a0 = -Math.PI / 2 + GAP / 2, svg = '<svg id="kn-svg" viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Knowledge graph around ' + esc(d.id) + '"><defs><radialGradient id="kn-core-g"><stop offset="0" stop-color="var(--k-purple)" stop-opacity=".75"/><stop offset="1" stop-color="var(--k-purple)"/></radialGradient></defs>';
+  const layout = [];
+  let tracks = '', labels = '', idx = 0;
+  live.forEach((g) => {
+    const w = span * g.items.length / totalN, a1 = a0 + w;
+    const pts = []; for (let s = 0; s <= 24; s++) pts.push(pt(a0 + (a1 - a0) * s / 24, 1).map((v) => v.toFixed(1)).join(' '));
+    tracks += '<path class="kn-track" style="--kc:' + g.col + '" d="M' + pts.join(' L') + '"/>';
+    const m = (a0 + a1) / 2, lp = pt(m, 0.7);
+    labels += '<text class="kn-grp" style="--kc:' + g.col + '" x="' + lp[0].toFixed(1) + '" y="' + lp[1].toFixed(1) + '">' + esc(g.name.toUpperCase()) + '</text>';
+    g.items.forEach((x, i) => { const a = a0 + w * (i + 0.5) / g.items.length, p = pt(a, 1); layout.push([x, p[0], p[1], Math.cos(a), idx++, g.col]); });
+    a0 = a1 + GAP;
+  });
+  svg += tracks;
+  svg += layout.map(([x, px, py, , i]) => '<path class="kn-edge' + (x.kind === 'risk' ? ' risk' : '') + '" style="--kc:' + KN_KINDS[x.kind][1] + ';--i:' + i + '" pathLength="1" d="M' + cx + ' ' + cy + ' Q' + ((cx + px) / 2 + (py - cy) * 0.14).toFixed(1) + ' ' + ((cy + py) / 2 - (px - cx) * 0.14).toFixed(1) + ' ' + px.toFixed(1) + ' ' + py.toFixed(1) + '"/>').join('');
+  svg += labels;
+  const node = (x, px, py, side, i) => {
+    const r = x.kind === 'risk' ? 17 : 20, lab = x.label.length > 28 ? x.label.slice(0, 27) + '…' : x.label;
+    const lx = side >= 0 ? r + 9 : -r - 9;
+    return '<g class="kn-node' + (x.kind === 'risk' ? ' risk' : '') + (kn.sel === x.id ? ' sel' : '') + '" style="--kc:' + KN_KINDS[x.kind][1] + ';--i:' + i + '" transform="translate(' + px.toFixed(1) + ',' + py.toFixed(1) + ')" tabindex="0" role="button" data-n="' + x.id + '" aria-label="' + esc(KN_KINDS[x.kind][0] + ': ' + x.label) + '"><g class="pop">' +
+      '<circle class="h" r="' + (r + 9) + '"/><circle class="b" r="' + r + '"/><text class="g">' + esc(KN_KINDS[x.kind][2]) + '</text>' +
+      '<text class="l" x="' + lx + '" y="0" text-anchor="' + (side >= 0 ? 'start' : 'end') + '" dominant-baseline="central">' + esc(lab) + '</text></g></g>';
+  };
+  svg += layout.map(([x, px, py, c, i]) => node(x, px, py, c, i)).join('');
+  const sc = d.score == null ? null : Math.max(0, Math.min(100, d.score)), R = 46, C = 2 * Math.PI * R;
+  svg += '<g class="kn-node kn-core' + (kn.sel === cust.id ? ' sel' : '') + '" style="--kc:var(--k-purple)" transform="translate(' + cx + ',' + cy + ')" tabindex="0" role="button" data-n="' + cust.id + '" aria-label="' + esc('Customer: ' + d.account) + '"><g class="pop">' +
+    '<circle class="h" r="62"/><circle class="ring" r="' + R + '"/>' + (sc == null ? '' : '<circle class="prog" r="' + R + '" stroke-dasharray="' + (C * sc / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90)"/>') +
+    '<circle class="b" r="38"/><text class="g">' + esc(initials(d.account)) + '</text>' +
+    '<text class="l" y="72">' + esc(d.account) + '</text><text class="sub" y="90">' + esc(STAGE[d.stage].label + (d.value ? ' · ' + eur(d.value) : '') + (sc == null ? '' : ' · ' + sc + ' %')) + '</text></g></g>';
+  svg += '</svg>';
+  const sel = nodes.find((x) => x.id === kn.sel), k = KN_KINDS[sel.kind];
+  const animNow = kn.anim; kn.anim = false;
+  const cnt = (kind) => nodes.filter((x) => x.kind === kind).length;
+  const stats = [['Connected items', nodes.length - 1], ['Sources (calls, mails)', cnt('call') + cnt('mail')], ['Risks', cnt('risk')], ['Open tickets', cnt('ticket')]];
+  const opts = D.deals.map((x) => '<option value="' + esc(x.id) + '"' + (x.id === kn.deal ? ' selected' : '') + '>' + esc(x.account + ' – ' + x.title + ' (' + x.id + ')') + '</option>').join('');
+  $('#kn').innerHTML =
+    '<div class="kn-top"><label class="note" for="kn-deal" style="margin:0">Deal</label><select id="kn-deal" aria-label="Deal">' + opts + '</select><div class="kn-stats">' + stats.map(([l, v]) => '<div class="kn-stat"><b>' + v + '</b>' + l + '</div>').join('') + '</div></div>' +
+    '<div class="kn-grid"><div class="card kn-stage' + (animNow ? ' kn-in' : '') + '"><div class="kn-legend" role="group" aria-label="Show kinds">' + kinds.filter((x) => x !== 'customer').map((x) => '<button type="button" data-kind="' + x + '" style="--kc:' + KN_KINDS[x][1] + '" aria-pressed="' + !kn.hide.has(x) + '"><span class="dot"></span>' + KN_KINDS[x][0] + ' ' + cnt(x) + '</button>').join('') + '</div>' + svg + '</div>' +
+    '<aside class="card kn-side" style="--kc:' + k[1] + '" aria-live="polite"><span class="kn-kind"><span class="dot"></span>' + k[0] + '</span><h3>' + esc(sel.label) + '</h3><p class="note">' + esc(sel.text) + '</p>' +
+    '<div class="kn-use"><h4>Use it: type in the chat</h4><div class="prompt" id="kn-prompt">' + esc(sel.prompt) + '</div><button type="button" class="kn-copy" id="kn-copy">Copy sentence</button></div>' +
+    '<p class="note">Click a node to see what it says and how to use it. The full graph with impact and path search is in the Space “Sales Knowledge Graph”.</p></aside></div>';
+}
+$('#kn').addEventListener('change', (e) => { if (e.target.id === 'kn-deal') { kn.deal = e.target.value; kn.sel = null; kn.hide.clear(); kn.anim = true; renderKnowledge(); } });
+$('#kn').addEventListener('click', (e) => {
+  const nd = e.target.closest('[data-n]'), kd = e.target.closest('[data-kind]');
+  if (nd) { kn.sel = nd.dataset.n; renderKnowledge(); const f = document.querySelector('[data-n="' + kn.sel + '"]'); if (f) f.focus(); }
+  else if (kd) { const x = kd.dataset.kind; kn.hide.has(x) ? kn.hide.delete(x) : kn.hide.add(x); renderKnowledge(); }
+  else if (e.target.closest('#kn-copy')) {
+    const t = $('#kn-prompt').textContent, b = $('#kn-copy');
+    try { navigator.clipboard.writeText(t).then(() => { b.textContent = 'Copied'; }, () => { b.textContent = 'Select the sentence and copy it'; }); } catch (_) { b.textContent = 'Select the sentence and copy it'; }
+  }
+});
+$('#kn').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('[data-n]')) { e.preventDefault(); e.target.closest('[data-n]').dispatchEvent(new MouseEvent('click', { bubbles: true })); } });
+
+setup(); setupLook(); renderPay(); renderFunnel(); renderBoard(); renderForecast(); renderMeetings(); renderKnowledge(); renderInbox(); renderGovernance(); renderWorkflow(); renderRules();
 </script>
 </body>
 </html>
