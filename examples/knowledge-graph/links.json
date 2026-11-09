@@ -96,6 +96,12 @@
       "to": "risk:R7",
       "type": "RELATES_TO_RISK",
       "label": "mail footer with instructions for AI assistants"
+    },
+    {
+      "from": "thread:T-204",
+      "to": "risk:R7",
+      "type": "RELATES_TO_RISK",
+      "label": "pasted scan text with instructions for AI assistants"
     }
   ],
   "tours": [
