@@ -249,6 +249,45 @@ body.s4m button.kcard:hover,body.s4m .ov-grid>.card:hover{transform:translateY(-
 @keyframes herodrift{to{transform:translate(-34px,22px) scale(1.12)}}
 @media(max-width:640px){.hero{padding:22px 18px}.hero-title{font-size:26px}.ck-prod{grid-template-columns:minmax(0,1fr) 80px 40px}}
 @media(prefers-reduced-motion:reduce){.rise{animation:none;opacity:1;transform:none}.hero::before,.hero::after{animation:none}.hero-acts button,body.s4m .card{transition:none}.ck-prod .bar i,.ov-ai-bar i{transition:none}}
+/* Motion on the other tabs: everything below restarts each time a tab is opened (CSS animations restart when display changes), and is switched off for prefers-reduced-motion */
+body.s4m #pg-contracts>*,body.s4m #pg-invoices>*,body.s4m #pg-usage>*,body.s4m #pg-tickets>*,
+body.s4m #pg-contracts .grid>*,body.s4m #pg-invoices .grid>*,body.s4m #pg-usage .grid>*,body.s4m #pg-tickets .grid>*,
+body.s4m #pg-contracts .row>*,body.s4m #pg-invoices .row>*,body.s4m #pg-usage .row>*,body.s4m #pg-tickets .row>*{animation:rise2 .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--n,0)*70ms)}
+body.s4m #pg-contracts>:nth-child(2),body.s4m #pg-invoices>:nth-child(2),body.s4m #pg-usage>:nth-child(2),body.s4m #pg-tickets>:nth-child(2),
+body.s4m #pg-contracts .grid>:nth-child(2),body.s4m #pg-invoices .grid>:nth-child(2),body.s4m #pg-usage .grid>:nth-child(2),body.s4m #pg-tickets .grid>:nth-child(2){--n:1}
+body.s4m #pg-contracts>:nth-child(3),body.s4m #pg-invoices>:nth-child(3),body.s4m #pg-usage>:nth-child(3),body.s4m #pg-tickets>:nth-child(3),
+body.s4m #pg-contracts .grid>:nth-child(3),body.s4m #pg-invoices .grid>:nth-child(3),body.s4m #pg-usage .grid>:nth-child(3),body.s4m #pg-tickets .grid>:nth-child(3){--n:2}
+body.s4m #pg-contracts>:nth-child(4),body.s4m #pg-invoices>:nth-child(4),body.s4m #pg-usage>:nth-child(4),body.s4m #pg-tickets>:nth-child(4),
+body.s4m #pg-contracts .grid>:nth-child(4),body.s4m #pg-invoices .grid>:nth-child(4),body.s4m #pg-usage .grid>:nth-child(4),body.s4m #pg-tickets .grid>:nth-child(4){--n:3}
+body.s4m #pg-contracts>:nth-child(5),body.s4m #pg-invoices>:nth-child(5),body.s4m #pg-usage>:nth-child(5),body.s4m #pg-tickets>:nth-child(5),
+body.s4m #pg-contracts .grid>:nth-child(5),body.s4m #pg-invoices .grid>:nth-child(5),body.s4m #pg-usage .grid>:nth-child(5),body.s4m #pg-tickets .grid>:nth-child(5){--n:4}
+body.s4m #pg-contracts>:nth-child(6),body.s4m #pg-invoices>:nth-child(6),body.s4m #pg-usage>:nth-child(6),body.s4m #pg-tickets>:nth-child(6),
+body.s4m #pg-contracts .grid>:nth-child(6),body.s4m #pg-invoices .grid>:nth-child(6),body.s4m #pg-usage .grid>:nth-child(6),body.s4m #pg-tickets .grid>:nth-child(6){--n:5}
+body.s4m #pg-contracts>:nth-child(7),body.s4m #pg-invoices>:nth-child(7),body.s4m #pg-usage>:nth-child(7),body.s4m #pg-tickets>:nth-child(7),
+body.s4m #pg-contracts .grid>:nth-child(7),body.s4m #pg-invoices .grid>:nth-child(7),body.s4m #pg-usage .grid>:nth-child(7),body.s4m #pg-tickets .grid>:nth-child(7){--n:6}
+body.s4m #pg-contracts>:nth-child(8),body.s4m #pg-invoices>:nth-child(8),body.s4m #pg-usage>:nth-child(8),body.s4m #pg-tickets>:nth-child(8),
+body.s4m #pg-contracts .grid>:nth-child(8),body.s4m #pg-invoices .grid>:nth-child(8),body.s4m #pg-usage .grid>:nth-child(8),body.s4m #pg-tickets .grid>:nth-child(8){--n:7}
+body.s4m #pg-contracts tbody tr:nth-child(-n+12),body.s4m #pg-invoices tbody tr:nth-child(-n+12),body.s4m #pg-usage tbody tr:nth-child(-n+12),body.s4m #pg-tickets tbody tr:nth-child(-n+12){animation:rise2 .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--n,0)*38ms + 220ms)}
+body.s4m #pg-contracts tbody tr:nth-child(2),body.s4m #pg-invoices tbody tr:nth-child(2),body.s4m #pg-usage tbody tr:nth-child(2),body.s4m #pg-tickets tbody tr:nth-child(2){--n:1}
+body.s4m #pg-contracts tbody tr:nth-child(3),body.s4m #pg-invoices tbody tr:nth-child(3),body.s4m #pg-usage tbody tr:nth-child(3),body.s4m #pg-tickets tbody tr:nth-child(3){--n:2}
+body.s4m #pg-contracts tbody tr:nth-child(4),body.s4m #pg-invoices tbody tr:nth-child(4),body.s4m #pg-usage tbody tr:nth-child(4),body.s4m #pg-tickets tbody tr:nth-child(4){--n:3}
+body.s4m #pg-contracts tbody tr:nth-child(5),body.s4m #pg-invoices tbody tr:nth-child(5),body.s4m #pg-usage tbody tr:nth-child(5),body.s4m #pg-tickets tbody tr:nth-child(5){--n:4}
+body.s4m #pg-contracts tbody tr:nth-child(6),body.s4m #pg-invoices tbody tr:nth-child(6),body.s4m #pg-usage tbody tr:nth-child(6),body.s4m #pg-tickets tbody tr:nth-child(6){--n:5}
+body.s4m #pg-contracts tbody tr:nth-child(7),body.s4m #pg-invoices tbody tr:nth-child(7),body.s4m #pg-usage tbody tr:nth-child(7),body.s4m #pg-tickets tbody tr:nth-child(7){--n:6}
+body.s4m #pg-contracts tbody tr:nth-child(8),body.s4m #pg-invoices tbody tr:nth-child(8),body.s4m #pg-usage tbody tr:nth-child(8),body.s4m #pg-tickets tbody tr:nth-child(8){--n:7}
+body.s4m #pg-contracts tbody tr:nth-child(9),body.s4m #pg-invoices tbody tr:nth-child(9),body.s4m #pg-usage tbody tr:nth-child(9),body.s4m #pg-tickets tbody tr:nth-child(9){--n:8}
+body.s4m #pg-contracts tbody tr:nth-child(10),body.s4m #pg-invoices tbody tr:nth-child(10),body.s4m #pg-usage tbody tr:nth-child(10),body.s4m #pg-tickets tbody tr:nth-child(10){--n:9}
+body.s4m #pg-contracts tbody tr:nth-child(11),body.s4m #pg-invoices tbody tr:nth-child(11),body.s4m #pg-usage tbody tr:nth-child(11),body.s4m #pg-tickets tbody tr:nth-child(11){--n:10}
+body.s4m #pg-contracts tbody tr:nth-child(12),body.s4m #pg-invoices tbody tr:nth-child(12),body.s4m #pg-usage tbody tr:nth-child(12),body.s4m #pg-tickets tbody tr:nth-child(12){--n:11}
+body.s4m .pg:not(#pg-overview) .bar>i,body.s4m .pg:not(#pg-overview) .smx-bar i b{transform-origin:left;animation:barin .9s cubic-bezier(.2,.8,.2,1) .25s both}
+body.s4m .months .col i,body.s4m .months>div>span,body.s4m .smx-spark i{transform-origin:bottom;animation:colin .8s cubic-bezier(.2,.8,.2,1) .2s both}
+body.s4m .months>div:nth-child(2n)>span,body.s4m .months>div:nth-child(2n) .col i{animation-delay:.3s}body.s4m .months>div:nth-child(3n)>span,body.s4m .months>div:nth-child(3n) .col i{animation-delay:.4s}
+body.s4m .detail>*,body.s4m #product-detail>*,body.s4m #contract-detail>*{animation:fadein .4s ease both}
+body.s4m tbody tr{transition:background .15s}body.s4m nav button{transition:color .2s,border-color .2s}body.s4m .chip,body.s4m button.sec,body.s4m button.primary{transition:transform .15s,border-color .15s,box-shadow .15s}body.s4m .chip:hover,body.s4m button.sec:hover,body.s4m button.primary:hover{transform:translateY(-1px)}
+body.s4m .toast.on{animation:rise2 .35s ease both}
+body.s4m #pg-landscape .land{animation:fadein .5s ease both}
+@keyframes rise2{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes fadein{from{opacity:0}to{opacity:1}}@keyframes barin{from{transform:scaleX(0)}to{transform:none}}@keyframes colin{from{transform:scaleY(0)}to{transform:none}}
+@media(prefers-reduced-motion:reduce){body.s4m .pg *,body.s4m .toast.on{animation:none!important;transition:none!important}}
 </style>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
@@ -4323,8 +4362,8 @@ details.intro .body{margin-top:8px}
   function countUp(el){
     var m = /^(\D*)(\d[\d,]*)(\D*)$/.exec(el.textContent.trim());
     if (!m) return;
-    var raw = m[2], to = Number(raw.replace(/,/g, '')), t0 = null, dur = 900;
-    var step = function(t){ if (t0 === null) t0 = t; var k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = m[1] + (k < 1 ? Math.round(to * e).toLocaleString('en-US') : raw) + m[3]; if (k < 1) requestAnimationFrame(step); };
+    var raw = m[2], to = Number(raw.replace(/,/g, '')), t0 = null, dur = 900, tok = el._cu = {};
+    var step = function(t){ if (el._cu !== tok) return; if (t0 === null) t0 = t; var k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = m[1] + (k < 1 ? Math.round(to * e).toLocaleString('en-US') : raw) + m[3]; if (k < 1) requestAnimationFrame(step); };
     el.textContent = m[1] + '0' + m[3]; requestAnimationFrame(step);
   }
   function introMotion(){
@@ -5012,6 +5051,7 @@ function similarity(a, b) {
   function show(id){
     tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === id)); });
     Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + id); });
+    if (id !== 'overview' && !reduceMotion) [].slice.call($('pg-' + id).querySelectorAll('.grid .v, .smx-kpis .v')).forEach(countUp);
   }
   tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
   function mapT(t){ return {id: String(t.id), title: String(t.title), product: String(t.product), priority: String(t.priority), status: String(t.status), created: String(t.created), updated: String(t.updated), followsId: t.followsId ? String(t.followsId) : undefined, relatedTo: t.relatedTo ? String(t.relatedTo) : undefined}; }

@@ -71,3 +71,22 @@ test('headlines use their own bolder display font, the body keeps the portal fon
   assert.doesNotMatch(css.replace(/#fff/g, ''), /#[0-9a-fA-F]{3,8}\b|rgb\(|hsl\(/, 'no colour outside the tokens');
   assert.doesNotMatch(html.slice(html.indexOf('<body')), /fetch\(|localStorage/);
 });
+
+test('the other tabs move too: staggered rows, growing bars and columns, counting key figures, all off for reduced motion', async () => {
+  const css = html.slice(html.indexOf('/* Motion on the other tabs'), html.indexOf('<style id="design-system">'));
+  for (const name of ['rise2', 'fadein', 'barin', 'colin']) assert.match(css, new RegExp(`@keyframes ${name}`), name);
+  for (const sec of ['pg-contracts', 'pg-invoices', 'pg-usage', 'pg-tickets']) assert.match(css, new RegExp(`#${sec} tbody tr:nth-child\\(-n\\+12\\)`), `${sec}: rows rise one after another`);
+  assert.match(css, /@media\(prefers-reduced-motion:reduce\)\{body\.s4m \.pg \*[^}]*animation:none!important/);
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b|rgb\(|hsl\(/, 'no colour outside the tokens');
+  const { w, errs } = open();
+  const kpi = () => [...w.document.querySelectorAll('#usage-kpis .v')].map((v) => v.textContent);
+  const real = kpi();
+  w.document.querySelector('[data-tab=usage]').click();
+  await new Promise((r) => setTimeout(r, 1300));
+  assert.deepEqual(kpi(), real, 'the counting ends on the real numbers');
+  w.document.querySelector('[data-tab=invoices]').click();
+  w.document.querySelector('[data-tab=usage]').click();
+  await new Promise((r) => setTimeout(r, 1300));
+  assert.deepEqual(kpi(), real, 'opening a tab again does not leave a half-counted number');
+  assert.deepEqual(errs, []);
+});
