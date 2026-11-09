@@ -122,7 +122,16 @@ test('the explanation tabs are gone and every tab button has exactly one page', 
   for (const removed of ['primer', 'model', 'intro']) assert.ok(!pages.includes(removed), removed);
   assert.ok(!/Tab Explanation|Model on a page/.test(html));
   assert.equal(html.match(/<section id="page-\w+" class="pg on"/g)?.length, 1); // one default page
-  assert.match(html, /class="tb on"\s+onclick="go\('board'/);
+  assert.match(html, /class="tb on"\s+onclick="go\('hub'/); // the AI Governance entry page is the default
+  assert.match(html, /<section id="page-hub" class="pg on"/);
+});
+
+test('the AI Governance entry page has one tile per lifecycle step and each tile has a target', () => {
+  const tiles = [...html.matchAll(/<button class="hub-tile" data-hub-space="([\w-]+)"(?: data-hub-view="(\w+)")?/g)].map((m) => [m[1], m[2] ?? '']);
+  assert.deepEqual(tiles.map((t) => t[0]), ['agent-development', 'agent-registry', 'agent-observability', 'agent-compliance']);
+  assert.deepEqual(tiles.filter((t) => t[1]).map((t) => t[1]), ['studio']); // only development opens an app view
+  assert.match(html, /type:'wb:open-view'/);
+  assert.match(html, /type:'wb:handoff',to:t\.getAttribute\('data-hub-space'\)/);
 });
 
 test('agent registry matches every headline number on the dashboard', () => {

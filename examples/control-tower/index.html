@@ -180,6 +180,19 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 ::-webkit-scrollbar{width:4px;height:8px}
 ::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}
 @media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}.bl-w,.bl-n{width:100px}}
+/* ---- AI Governance entry page ---- */
+.hub-h{font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px;color:var(--ink)}
+.hub-p{font-size:13px;line-height:1.6;color:var(--muted);max-width:720px;margin:0 0 28px}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.hub-tile{display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;cursor:pointer;transition:border-color .15s,transform .15s}
+.hub-tile:hover{border-color:var(--purple);transform:translateY(-2px)}
+.hub-tile:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.hub-step{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--purple)}
+.hub-t{font-size:16px;font-weight:650}
+.hub-d{font-size:13px;line-height:1.55;color:var(--muted);flex:1}
+.hub-go{font-size:13px;font-weight:600;color:var(--purple)}
+.hub-note{font-size:12px;color:var(--muted);margin:18px 0 0;min-height:1em}
+@media(prefers-reduced-motion:reduce){.hub-tile{transition:none}.hub-tile:hover{transform:none}}
 </style>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
@@ -420,7 +433,8 @@ details.intro .body{margin-top:8px}
 </header>
 
 <nav class="tbar">
-  <button class="tb on"  onclick="go('board',this)"><span class="tnum">&#9670;</span>Executive Dashboard</button>
+  <button class="tb on"  onclick="go('hub',this)"><span class="tnum">&#9670;</span>AI Governance</button>
+  <button class="tb"     onclick="go('board',this)"><span class="tnum">&#9670;</span>Executive Dashboard</button>
   <button class="tb"     onclick="go('devops',this)"><span class="tnum">01</span>Dev/Ops &middot; Engineering</button>
   <button class="tb"     onclick="go('tokens',this)"><span class="tnum">02</span>Token Economics</button>
   <button class="tb"     onclick="go('kpis',this)"><span class="tnum">03</span>DORA Metrics</button>
@@ -432,7 +446,36 @@ details.intro .body{margin-top:8px}
 </nav>
 
 <!-- ═══════════ CIO / BOARD ═══════════ -->
-<section id="page-board" class="pg on">
+<!-- ═══════════ AI GOVERNANCE (entry page: the agent lifecycle) ═══════════ -->
+<section id="page-hub" class="pg on">
+  <h2 class="hub-h">AI Governance</h2>
+  <p class="hub-p">One place for the whole life of an agent: build it, register it, run it safely, prove it complies. Each tile opens a subspace; the dashboards of this Space are in the other tabs.</p>
+  <div class="hub-grid">
+    <button class="hub-tile" data-hub-space="agent-development" data-hub-view="studio" type="button">
+      <span class="hub-step">1 &middot; Build</span><span class="hub-t">Agent development</span>
+      <span class="hub-d">Describe what the agent should do, test it, and hand it over in the Agent Studio.</span>
+      <span class="hub-go">Open Agent Studio &rarr;</span>
+    </button>
+    <button class="hub-tile" data-hub-space="agent-registry" type="button">
+      <span class="hub-step">2 &middot; Register</span><span class="hub-t">Agent registry</span>
+      <span class="hub-d">Every agent with owner, rights and risk level, plus the <span data-ct="agents.unregistered">47</span> assets found outside the registry.</span>
+      <span class="hub-go">Open Agent registry &rarr;</span>
+    </button>
+    <button class="hub-tile" data-hub-space="agent-observability" type="button">
+      <span class="hub-step">3 &middot; Run</span><span class="hub-t">Agent observability</span>
+      <span class="hub-d">What the agents really did: traces, outcome quality, cost, blocked actions and alerts.</span>
+      <span class="hub-go">Open Agent observability &rarr;</span>
+    </button>
+    <button class="hub-tile" data-hub-space="agent-compliance" type="button">
+      <span class="hub-step">4 &middot; Prove</span><span class="hub-t">Agent compliance</span>
+      <span class="hub-d">EU AI Act conformity, risks and policies; next audit <span data-ct="compliance.euAiAct.auditLabel">12 Dec 2026</span>.</span>
+      <span class="hub-go">Open Agent compliance &rarr;</span>
+    </button>
+  </div>
+  <p class="hub-note" id="hub-note" role="status"></p>
+</section>
+
+<section id="page-board" class="pg">
 
   <!-- STATUS BANNER -->
   <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap">
@@ -6326,6 +6369,15 @@ function go(id,btn){
   document.getElementById('page-'+id).classList.add('on');
   btn.classList.add('on');
 }
+// AI Governance entry page: a tile opens its subspace (hand-over through the host) or an app view. Only the host acts on these messages.
+document.querySelectorAll('.hub-tile').forEach(function(t){
+  t.addEventListener('click',function(){
+    if(window.parent===window){document.getElementById('hub-note').textContent='Open this Space in the Werkbank app to use the tiles.';return;}
+    var view=t.getAttribute('data-hub-view');
+    if(view){window.parent.postMessage({type:'wb:open-view',view:view},'*');return;}
+    window.parent.postMessage({type:'wb:handoff',to:t.getAttribute('data-hub-space'),payload:{},open:true},'*');
+  });
+});
 // The host (Werkbank chat) can ask this page to show a tab. Only the parent window
 // is listened to, and only ids that exist as tabs on this page are accepted.
 window.addEventListener('message',function(e){

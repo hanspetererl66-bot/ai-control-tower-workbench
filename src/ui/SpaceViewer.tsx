@@ -15,6 +15,7 @@ import type { Preferences } from '../preferences';
 import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
+import { parseOpenViewMessage, type OpenableView } from '../space-open';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
@@ -34,6 +35,7 @@ export default function SpaceViewer({
   theme = 'light',
   prefs,
   onHandoff,
+  onOpenView,
   onSpaceState,
   savedState,
   incoming,
@@ -64,6 +66,8 @@ export default function SpaceViewer({
   prefs?: Preferences;
   /** The Space hands work to another Space (the host opens it). */
   onHandoff?: (handoff: Handoff) => void;
+  /** The Space asks the app to open one of its own views (e.g. the Agent Studio). */
+  onOpenView?: (view: OpenableView) => void;
   /** The Space reports its working state so it survives a trip to another Space. */
   onSpaceState?: (state: Record<string, unknown>) => void;
   savedState?: Record<string, unknown>;
@@ -83,7 +87,7 @@ export default function SpaceViewer({
   };
   useEffect(postTab, [tabRequest?.tab, tabRequest?.nonce]);
   const postAgents = () => {
-    if (space.slug !== 'ai-control-tower' || !loaded.current || !studioAgents) return;
+    if ((space.slug !== 'ai-control-tower' && space.slug !== 'agent-registry') || !loaded.current || !studioAgents) return;
     frame.current?.contentWindow?.postMessage({ type: 'ct:studio-agents', agents: studioAgents }, '*');
   };
   const agentsKey = JSON.stringify(studioAgents ?? null);
@@ -103,6 +107,8 @@ export default function SpaceViewer({
 
   const handoffRef = useRef(onHandoff);
   handoffRef.current = onHandoff;
+  const openViewRef = useRef(onOpenView);
+  openViewRef.current = onOpenView;
   const stateRef = useRef(onSpaceState);
   stateRef.current = onSpaceState;
   useEffect(() => {
@@ -110,6 +116,8 @@ export default function SpaceViewer({
       if (!frame.current || event.source !== frame.current.contentWindow) return;
       const handoff = parseHandoffMessage(event.data);
       if (handoff) { handoffRef.current?.(handoff); return; }
+      const openView = parseOpenViewMessage(event.data);
+      if (openView) { openViewRef.current?.(openView); return; }
       const state = parseStateMessage(event.data);
       if (state) stateRef.current?.(state);
     };
