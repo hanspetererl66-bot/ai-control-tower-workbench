@@ -116,3 +116,22 @@ test('renewals motion: entrance runs once per picture, with reduced motion nothi
   assert.doesNotMatch(css, /#[0-9a-fA-F]{3,6}\b|rgba?\(/, 'only tokens in the new styles');
   assert.doesNotMatch(html.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage|sessionStorage/);
 });
+
+test('renewals journey: the rail names the customer, a hand-over from Sales opens the renewal of the contract, stops in other Spaces hand over with the deal', async () => {
+  const p = await open();
+  const sent = [];
+  Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } });
+  assert.equal(p.q('.jr-who b').textContent, 'Lindenau Pharma AG');
+  assert.equal(p.q('.jr button[aria-current=true]').textContent, 'Renewals due');
+  p.w.dispatchEvent(new p.w.MessageEvent('message', { data: { type: 'wb:restore', state: null, handoffs: [{ from: 'sales', payload: { journey: { customer: 'lindenau', step: 'decide', deal: 'C-2026-0051' } } }, { payload: { journey: { customer: 'evil', deal: 'C-2026-0051' } } }, { payload: { journey: { customer: 'nordlicht', step: 'decide' } } }] }, source: p.w.parent }));
+  assert.deepEqual(p.visible(), ['pg-list']);
+  assert.equal(p.w.__state.customer, 'lindenau');
+  assert.equal(p.w.__state.sel, 'R-C-2026-0051', 'the renewal of the contract (deal id) opens');
+  click(p.w, p.q('.jr button[data-jr-stop=renewal-actions]'));
+  assert.deepEqual(p.visible(), ['pg-nba']);
+  click(p.w, p.q('.jr button[data-jr-stop=pipeline]'));
+  click(p.w, p.q('.jr button[data-jr-stop=mails]'));
+  assert.deepEqual(sent.map((m) => [m.to, m.payload.journey.customer, m.payload.journey.deal]), [['sales', 'lindenau', 'C-2026-0051'], ['customer-emails', 'lindenau', 'C-2026-0051']]);
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
