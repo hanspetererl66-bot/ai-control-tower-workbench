@@ -29,11 +29,8 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(rail, /<button className="rail-logo" onClick=\{onOpenCover\}/);
   assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
   assert.match(app, /\{coverOpen && <CoverSheet/);
-<<<<<<< HEAD
-  assert.match(cover, /<h1 className="cover-title">\s*\{PRODUCT_NAME\}\s*<span className="cover-title-line2">Futuristic Design Study<\/span>\s*<span className="cover-title-line2 cover-title-line3">Engineered as MVP<\/span>/, 'name, then Futuristic Design Study, then Engineered as MVP');
-=======
-  assert.match(cover, /<h1 className="cover-title">\s*\{COVER_NAME\}\s*<span className="cover-title-line2">\{COVER_SUBTITLE\}<\/span>/, 'name on the first line, subtitle below');
->>>>>>> origin/main
+  assert.match(cover, /<h1 className="cover-title">\s*\{COVER_NAME\}\s*<span className="cover-title-line2">\{COVER_SUBTITLE\}<\/span>\s*<span className="cover-title-line2 cover-title-line3">\{COVER_TAGLINE\}<\/span>/, 'name, then the subtitle, then the tagline');
+  assert.match(readFileSync(path.join(root, 'src/product.ts'), 'utf8'), /COVER_SUBTITLE = 'Futuristic Design Study'[\s\S]*COVER_TAGLINE = 'Engineered as MVP'/);
   const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
   assert.match(css, /\.cover-title-line2 \{[^}]*color: var\(--accent\);[^}]*animation: cover-blink/, 'second line is purple and blinks');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.cover-title-line2 \{ animation: none; \}/, 'blinking stops for reduced motion');
