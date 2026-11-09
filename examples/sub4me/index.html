@@ -18,6 +18,7 @@ main{padding:20px;max-width:1180px;margin:0 auto}
 .pg{display:none}.pg.on{display:block}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:18px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+button.kcard{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}button.kcard:hover,button.kcard:focus-visible{border-color:var(--brand)}button.kcard .k::after{content:' ›';color:var(--brand)}
 .k{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 .v{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
 .s{font-size:12px;color:var(--mut)}
@@ -100,15 +101,15 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .ov-ai-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--brand)}
 .ov-ai-bar i.fc{background:var(--brand-dim);border:1px dashed var(--brand);box-sizing:border-box}
 .tl2{position:relative;margin-top:6px}
-.tl2 .ax{position:relative;height:18px;margin-left:270px;border-bottom:1px solid var(--line);font-size:11px;color:var(--mut)}
+.tl2 .ax{position:relative;height:18px;margin-left:270px;border-bottom:1px solid var(--line-2);font-size:11px;color:var(--mut)}
 .tl2 .ax span{position:absolute;top:0;transform:translateX(-50%)}
 .tl2 .r{display:grid;grid-template-columns:270px 1fr;align-items:center;min-height:30px}
 .tl2 .lab{font-size:12px;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tl2 .trk2{position:relative;height:30px}
-.tl2 .b{position:absolute;top:9px;height:12px;border-radius:99px;background:var(--brand);opacity:.75}
-.tl2 .b.soon{background:var(--warn);opacity:.85}
-.tl2 .nt{position:absolute;top:7px;width:10px;height:10px;margin-left:-5px;background:var(--bad);transform:rotate(45deg);top:10px}
-.tl2 .today{position:absolute;top:18px;bottom:0;left:0;width:0;border-left:2px dashed var(--brand);pointer-events:none}
+.tl2 .b{position:absolute;top:12px;height:6px;border-radius:99px;background:var(--brand);opacity:.4}
+.tl2 .b.soon{background:var(--blue);opacity:.6}
+.tl2 .nt{position:absolute;width:16px;height:16px;margin-left:-8px;background:var(--bad);transform:rotate(45deg);top:7px;border:2px solid var(--panel);box-sizing:border-box}
+.tl2 .today{position:absolute;top:18px;bottom:0;left:0;width:0;border-left:1px dashed var(--brand);opacity:.6;pointer-events:none}
 .tl2 .legend{margin-top:8px;font-size:12px;color:var(--mut)}
 @media(max-width:700px){.tl2 .ax{margin-left:120px}.tl2 .r{grid-template-columns:120px 1fr}}
 /* KPI rows: all boxes side by side in one row */
@@ -130,9 +131,9 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .ck-body{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:22px;padding:8px 22px 8px;align-items:center}
 .ck-rings{position:relative;width:100%;max-width:330px;margin:0 auto}
 .ck-rings svg{display:block;width:100%;height:auto}
-.ck-rings .trk{fill:none;stroke:var(--line-2);stroke-width:12}
-.ck-rings .arc{fill:none;stroke-width:12;stroke-linecap:round;transform:rotate(-90deg);transform-origin:150px 150px;transition:stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1),stroke .4s}
-.ck-rings .arc.ok{stroke:var(--brand)}.ck-rings .arc.warn{stroke:var(--warn)}.ck-rings .arc.bad{stroke:var(--bad)}
+.ck-rings .trk{fill:none;stroke:var(--line-2);stroke-width:8;opacity:.7}
+.ck-rings .arc{fill:none;stroke-width:8;stroke-linecap:round;transform:rotate(-90deg);transform-origin:150px 150px;transition:stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1),stroke .4s}
+.ck-rings .arc.ok{stroke:var(--blue)}.ck-rings .arc.warn{stroke:var(--brand)}.ck-rings .arc.bad{stroke:var(--bad)}
 .ck-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center}
 .ck-center b{font-size:30px;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .ck-center span{font-size:10px;color:var(--muted);margin-top:3px;max-width:76px;line-height:1.25}
@@ -149,8 +150,9 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .ck-stats span{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
 .ck-leg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px;font-size:12px;margin:4px 0 6px}
 .ck-leg div{display:flex;align-items:center;gap:8px;min-width:0}
-.ck-leg i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--brand)}
-.ck-leg i.warn{background:var(--warn)}.ck-leg i.bad{background:var(--bad)}
+.ck-leg i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--blue)}
+.ck-leg i.warn{background:var(--brand)}.ck-leg i.bad{background:var(--bad)}
+.ck-key{font-size:11px;color:var(--muted);margin:2px 0 6px}
 .ck-leg span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .ck-leg em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
 .ck-cta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;padding:10px 12px;border:1px dashed var(--purple-border);border-radius:10px;background:var(--purple-dim);font-size:13px}
@@ -158,7 +160,7 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .ck-spark{padding:2px 22px 16px}
 .ck-spark svg{display:block;width:100%;height:auto}
 .ck-spark .al{stroke:var(--muted);stroke-dasharray:4 4;stroke-width:1}
-.ck-spark .ar{fill:var(--brand-dim)}
+.ck-spark .mbar{fill:var(--blue);opacity:.55}.ck-spark .mbar.fc{fill:var(--blue-dim);stroke:var(--blue);stroke-dasharray:3 3;opacity:1}.ck-spark .mbar.cur{opacity:1}
 .ck-spark .ln{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-linejoin:round}
 .ck-spark .fl{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-dasharray:5 5}
 .ck-spark .fl.bad{stroke:var(--bad)}
@@ -215,11 +217,11 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
   --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
-  --purple:#A100FF;--purple-mid:#7500C0;--purple-deep:#460073;--purple-dim:rgba(161,0,255,.07);--purple-border:rgba(161,0,255,.22);--purple-light:#efe8fb;
+  --purple:#8056B8;--purple-mid:#633F96;--purple-deep:#3B2660;--purple-dim:rgba(128,86,184,.07);--purple-border:rgba(128,86,184,.22);--purple-light:#efeaf7;
   --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
   --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
   --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
-  --blue:#0041F0;--blue-dim:rgba(0,65,240,.08);--blue-border:rgba(0,65,240,.22);
+  --blue:#4A6FA5;--blue-dim:rgba(74,111,165,.09);--blue-border:rgba(74,111,165,.24);
   --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
   --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(20,18,30,.04),0 6px 20px rgba(20,18,30,.05);--shadow-lg:0 24px 60px rgba(20,18,30,.22);
   --space:8px;
@@ -234,22 +236,22 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2a2040;
+  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
   --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
   --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
   --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2a2040;
+  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
   --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
   --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
   --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }
@@ -4266,14 +4268,14 @@ details.intro .body{margin-top:8px}
   }
   var openTickets = function(){ return D.tickets.filter(function(t){ return t.status !== 'Closed' && t.status !== 'Solution provided'; }).length; };
 
-  function kpi(k, v, s){ return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; }
+  function kpi(k, v, s, go){ return go ? '<button type="button" class="card kcard" data-go="' + go + '"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></button>' : '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; }
   function renderOverview(){
     $('kpis').innerHTML =
-      kpi('Active contracts', live.length, 'annual value ' + eur(annual)) +
-      kpi('AI units used', pctUsed + '%', n(used) + ' of ' + n(D.aiUnits.allotment)) +
-      kpi('Forecast year-end', forecastPct + '%', 'at current run rate (' + n(forecast) + ' units)') +
-      kpi('Open offers', D.offers.filter(function(o){ return o.status === 'Open' || o.status === 'In negotiation'; }).length, 'incl. ' + D.offers.filter(function(o){ return o.type === 'Renewal'; }).length + ' renewals, ' + D.offers.filter(function(o){ return o.type === 'New product'; }).length + ' new product') +
-      kpi('Open tickets', openTickets(), 'incl. ' + D.tickets.filter(function(t){ return t.priority === 'Very high' && t.status !== 'Closed'; }).length + ' very high');
+      kpi('Active contracts', live.length, 'annual value ' + eur(annual), 'contracts') +
+      kpi('AI units used', pctUsed + '%', n(used) + ' of ' + n(D.aiUnits.allotment), 'usage') +
+      kpi('Forecast year-end', forecastPct + '%', 'at current run rate (' + n(forecast) + ' units)', 'usage') +
+      kpi('Open offers', D.offers.filter(function(o){ return o.status === 'Open' || o.status === 'In negotiation'; }).length, 'incl. ' + D.offers.filter(function(o){ return o.type === 'Renewal'; }).length + ' renewals, ' + D.offers.filter(function(o){ return o.type === 'New product'; }).length + ' new product', 'contracts') +
+      kpi('Open tickets', openTickets(), 'incl. ' + D.tickets.filter(function(t){ return t.priority === 'Very high' && t.status !== 'Closed'; }).length + ' very high', 'tickets');
     var rows = [];
     D.products.forEach(function(p){ var pct = Math.round(p.consumed / p.allotment * 100); if (pct >= 80) rows.push('<tr><td>' + tag(pct >= 90 ? 'bad' : 'warn', pct + '%') + '</td><td><b>' + esc(p.name) + '</b><div class="s">AI-unit budget nearly used up (' + n(p.consumed) + ' of ' + n(p.allotment) + ')</div></td></tr>'); });
     renewals.forEach(function(c){ rows.push('<tr><td>' + tag('warn', days(c.end) + ' days') + '</td><td><b>' + esc(c.product) + '</b><div class="s">Contract ' + esc(c.id) + ' ends ' + esc(c.end) + ', notice period ' + c.noticeDays + ' days' + (function(){ var nd = new Date(new Date(c.end + 'T00:00:00Z') - c.noticeDays * 864e5).toISOString().slice(0, 10); return days(nd) < 0 ? ' (notice date ' + nd + ' has passed)' : ' (notice by ' + nd + ')'; })() + '</div></td></tr>'); });
@@ -4376,8 +4378,8 @@ details.intro .body{margin-top:8px}
       '<div class="ck-side"><div class="ck-ctl" role="group" aria-label="Scenario"><button type="button" class="chip" data-scn="pace">Current pace</button><button type="button" class="chip" data-scn="growth">Usage grows 20 %</button><button type="button" class="chip" data-scn="throttle">Throttle ' + esc(fullest.name) + ' by 25 %</button></div>' +
       '<div class="ck-time"><input type="range" id="ck-range" min="0" max="11" value="' + cur + '" aria-label="Month to look at"><output id="ck-out" for="ck-range"></output></div>' +
       '<div class="ck-ticks" aria-hidden="true">' + MONTHS.map(function(m){ return '<span>' + m + '</span>'; }).join('') + '</div>' +
-      '<div class="ck-stats" id="ck-stats"></div><div class="ck-leg" id="ck-leg"></div><div class="ck-cta" id="ck-cta" hidden></div></div></div>' +
-      '<div class="ck-spark" id="ck-spark"></div><div class="ck-note">Drag the slider to travel through the year. Past months show what was used; later months extend the average of the last three full months. Forecast, not a commitment.</div>';
+      '<div class="ck-stats" id="ck-stats"></div><div class="ck-key">Each ring is one product: the share of its own AI-unit budget used. Blue: under 90 %, purple: 90 % or more, red: budget exceeded. The number in the middle is the total across all products.</div><div class="ck-leg" id="ck-leg"></div><div class="ck-cta" id="ck-cta" hidden></div></div></div>' +
+      '<div class="ck-spark" id="ck-spark"></div><div class="ck-note">Bars show the AI units used per month (dashed = forecast). Drag the slider to travel through the year. Past months show what was used; later months extend the average of the last three full months. Forecast, not a commitment.</div>';
     // briefing: typewriter, unless the person prefers reduced motion
     clearInterval(ck.typeTimer); var h = $('ck-head');
     if (reduceMotion) h.textContent = head;
@@ -4408,15 +4410,17 @@ details.intro .body{margin-top:8px}
     cta.hidden = false;
     if (over.length) { cta.innerHTML = '<span>' + tag(end > allot ? 'bad' : 'warn', over.length + (over.length === 1 ? ' product' : ' products')) + ' <b>' + over.map(function(p){ return esc(p.name); }).join(', ') + '</b> would pass ' + (over.length === 1 ? 'its' : 'their') + ' own AI-unit budget by about <b>' + n(short) + '</b> units by December' + (end <= allot ? ', although the total allotment still has room' : '') + '.</span><button type="button" class="primary" data-draft="topup">Draft a rebalance or top-up request</button>'; cta.dataset.short = String(short); cta.dataset.names = over.map(function(p){ return p.name; }).join(', '); }
     else { cta.innerHTML = '<span>' + tag('ok', 'covered') + ' Every product stays within its own AI-unit budget under this scenario.</span>'; delete cta.dataset.short; delete cta.dataset.names; }
-    // sparkline: cumulative total per month
-    var W = 1000, H = 130, x0 = 24, x1 = 976, pts = [], mx = Math.max(allot * 1.12, end * 1.05);
-    for (var i = 0; i < 12; i++) pts.push(ckTotal(i, fullest));
-    var X = function(i){ return x0 + i * (x1 - x0) / 11; }, Y = function(v){ return 14 + (H - 34) * (1 - v / mx); };
-    var act = pts.slice(0, cur + 1).map(function(v, i){ return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
-    var fc = pts.slice(cur).map(function(v, i){ return (i ? 'L' : 'M') + X(cur + i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
-    $('ck-spark').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative AI units per month against the allotment"><line class="al" x1="' + x0 + '" x2="' + x1 + '" y1="' + Y(allot).toFixed(1) + '" y2="' + Y(allot).toFixed(1) + '"></line><text x="' + x1 + '" y="' + (Y(allot) - 4).toFixed(1) + '" text-anchor="end">Allotment ' + n(allot) + '</text>' +
-      '<path class="ar" d="' + act + ' L' + X(cur).toFixed(1) + ' ' + Y(0).toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + Y(0).toFixed(1) + ' Z"></path><path class="ln" d="' + act + '"></path><path class="fl ' + (end > allot ? 'bad' : '') + '" d="' + fc + '"></path>' +
-      '<circle class="mk" cx="' + X(m).toFixed(1) + '" cy="' + Y(pts[m]).toFixed(1) + '" r="6"></circle>' + MONTHS.map(function(mm, i){ return i % 2 === 0 ? '<text x="' + X(i).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle">' + mm + '</text>' : ''; }).join('') + '</svg>';
+    // chart: units per month (bars, with small month-to-month swings) against the monthly share of the allotment
+    var W = 1000, H = 150, x0 = 40, x1 = 976, per = [], perAl = allot / 12;
+    for (var i = 0; i < 12; i++) per.push(i === 0 ? ckTotal(0, fullest) : ckTotal(i, fullest) - ckTotal(i - 1, fullest));
+    // forecast months: gentle, deterministic swings around the pace so the line is not flat
+    var wob = [0, .06, -.05, .08, -.07, .04, -.06, .07, -.04, .05, -.03, .06];
+    per = per.map(function(v, i){ return i > cur ? v * (1 + wob[i]) : v; });
+    var mx2 = Math.max(perAl * 1.25, Math.max.apply(null, per) * 1.1), bw = (x1 - x0) / 12;
+    var Y2 = function(v){ return 14 + (H - 40) * (1 - v / mx2); }, yb = Y2(0);
+    var bars = per.map(function(v, i){ var h = Math.max(1, yb - Y2(v)); return '<rect class="mbar' + (i > cur ? ' fc' : i === cur ? ' cur' : '') + '" x="' + (x0 + i * bw + bw * .18).toFixed(1) + '" y="' + (yb - h).toFixed(1) + '" width="' + (bw * .64).toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3"><title>' + MONTHS[i] + ': ' + n(Math.round(v)) + ' units' + (i > cur ? ' (forecast)' : '') + ', monthly share of allotment ' + n(Math.round(perAl)) + '</title></rect>'; }).join('');
+    var labels = MONTHS.map(function(mm, i){ return '<text x="' + (x0 + i * bw + bw / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle"' + (i === m ? ' style="font-weight:700;fill:var(--ink)"' : '') + '>' + mm + '</text>'; }).join('');
+    $('ck-spark').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="AI units per month against the monthly share of the allotment"><line class="al" x1="' + x0 + '" x2="' + x1 + '" y1="' + Y2(perAl).toFixed(1) + '" y2="' + Y2(perAl).toFixed(1) + '"></line><text x="' + (x0 + 4) + '" y="' + (Y2(perAl) - 5).toFixed(1) + '" text-anchor="start">Monthly share of allotment: ' + n(Math.round(perAl)) + ' (' + n(allot) + ' per year)</text>' + bars + labels + '</svg>';
   }
   function draftTicket(title, desc, kind, prio){
     show('tickets'); var f = $('ticket-form'); f.title.value = title; f.desc.value = desc; f.priority.value = prio || 'Medium'; f.kind.value = kind || 'Question';
@@ -4712,7 +4716,7 @@ details.intro .body{margin-top:8px}
     var list = D.invoices.filter(function(i){ return !st || i.status === st; });
     var open = D.invoices.filter(function(i){ return i.status === 'Open' || i.status === 'Overdue'; });
     var cls = {'Paid': 'ok', 'Settled': 'ok', 'Open': 'warn', 'Overdue': 'bad'};
-    $('inv-kpis').innerHTML = kpi('Invoices', D.invoices.length, 'in 2026') +
+    $('inv-kpis').innerHTML = kpi('Number of invoices', D.invoices.length, 'in 2026, incl. ' + D.invoices.filter(function(i){ return i.grossEur < 0; }).length + ' credit notes') +
       kpi('Open amount', eur(sum(open.map(function(i){ return i.grossEur; }))), open.length + ' invoices, gross') +
       kpi('Overdue', D.invoices.filter(function(i){ return i.status === 'Overdue'; }).length, 'past the due date') +
       kpi('Credit notes', D.invoices.filter(function(i){ return i.grossEur < 0; }).length, eur(sum(D.invoices.filter(function(i){ return i.grossEur < 0; }).map(function(i){ return i.grossEur; }))));

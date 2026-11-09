@@ -14,11 +14,11 @@
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
   --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
-  --purple:#A100FF;--purple-mid:#7500C0;--purple-deep:#460073;--purple-dim:rgba(161,0,255,.07);--purple-border:rgba(161,0,255,.22);--purple-light:#efe8fb;
+  --purple:#8056B8;--purple-mid:#633F96;--purple-deep:#3B2660;--purple-dim:rgba(128,86,184,.07);--purple-border:rgba(128,86,184,.22);--purple-light:#efeaf7;
   --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
   --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
   --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
-  --blue:#0041F0;--blue-dim:rgba(0,65,240,.08);--blue-border:rgba(0,65,240,.22);
+  --blue:#4A6FA5;--blue-dim:rgba(74,111,165,.09);--blue-border:rgba(74,111,165,.24);
   --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
   --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(20,18,30,.04),0 6px 20px rgba(20,18,30,.05);--shadow-lg:0 24px 60px rgba(20,18,30,.22);
   --space:8px;
@@ -33,22 +33,22 @@
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2a2040;
+  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
   --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
   --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
   --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#BE82FF;--purple-mid:#DCAFFF;--purple-deep:#E6DCFF;--purple-dim:rgba(190,130,255,.14);--purple-border:rgba(190,130,255,.34);--purple-light:#2a2040;
+  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
   --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
   --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
   --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#7fa2ff;--blue-dim:rgba(127,162,255,.14);--blue-border:rgba(127,162,255,.32);
+  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }
@@ -656,7 +656,7 @@ const chevron = (x, sub, button) => (button
 const dotX = (d) => { const nil = d.value == null; const px = nil ? 14 : Math.round(12 + Math.sqrt(d.value / 1e6) * 8); return '<span class="dotx' + (nil ? ' nil' : '') + (d.risks.length ? ' risk' : '') + '" style="width:' + px + 'px;height:' + px + 'px" title="' + esc(d.account + ': ' + d.title) + '"></span>'; };
 const stageSub = (x) => x.n + ' deals · ' + (x.acv ? eur(x.acv) + ' ACV' : 'no value yet');
 const keyGate = '<span><i class="gate-d"></i>Gate: a person confirms the exit criteria before a deal moves on</span>';
-const keyDots = '<span><i class="k-dot"></i>One deal, size shows ACV</span><span><i class="k-nil"></i>Not estimated yet</span><span><i class="k-risk"></i>Red ring: risk flag</span>' + keyGate;
+const keyDots = keyGate + '<span>Double-click a stage for its details</span>';
 
 // A: Journey line
 function jxNode(x) {
@@ -667,7 +667,6 @@ function jxNode(x) {
 function jxPipeline() {
   const cols = stageStats().map((x) => '<button type="button" class="jx-col ' + cls(x) + '" data-stage="' + x.s.id + '" aria-pressed="' + (state.stage === x.s.id) + '">' + jxNode(x) +
     '<span class="jx-body"><span class="jx-lab">' + esc(x.s.label) + '</span><span class="jx-n"><b>' + x.n + '</b><span>deals</span></span><span class="jx-acv">' + (x.acv ? eur(x.acv) + ' ACV' : 'no value yet') + '</span><span class="jx-sub">' + (x.acv ? eur(x.tcv) + ' TCV' : 'not estimated') + '</span>' + (x.w != null ? '<span class="jx-w">weighted ' + eur(x.w) + '</span>' : '') + '</span>' +
-    '<span class="jx-dots">' + x.l.map(dotX).join('') + '</span>' +
     '<span class="jx-gate"><span>Gate criteria met<b>' + x.met + ' of ' + x.tot + '</b></span><span class="meter" style="display:block"><i style="width:' + (x.tot ? Math.round(x.met / x.tot * 100) : 0) + '%"></i></span></span></button>').join('');
   return '<div class="vw"><div class="vwin"><div class="sv-card jx"><div class="jx-row">' + cols + '</div><div class="sv-key">' + keyDots + '</div></div></div></div>';
 }
@@ -775,6 +774,21 @@ function openDeal(id) {
     (d.risks.length ? '<div class="sec"><h4>Risks</h4>' + d.risks.map((r) => '<div class="risk">' + esc(r) + '</div>').join('') + '</div>' : '') +
     '<div class="sec st-' + d.stage + '"><h4>Timeline</h4><div class="tl">' + d.timeline.slice().reverse().map((e) => '<div class="e"><div class="d">' + day(e.date) + ' &middot; ' + esc(e.kind) + (e.ref ? ' &middot; ' + esc(e.ref) : '') + '</div>' + esc(e.text) + '</div>').join('') + '</div>' + (links.length ? '<div class="note">Related: ' + links.map(esc).join(', ') + '</div>' : '') + '</div>' +
     '<div class="sec"><h4>Next step</h4><div class="next"><div><b>' + esc(d.next.text) + '</b> ' + dueTag(d.next.due) + '</div><div class="note" style="margin-top:6px">Skill: <span class="chip on">' + esc(d.next.skill) + '</span></div><div class="prompt"><span class="note" style="display:block;margin:0 0 3px">Type in the chat:</span>' + esc(d.next.prompt) + '</div></div><div class="note">Other skills in this stage: ' + s.skills.map((k) => '<span class="chip' + (k === d.next.skill ? ' on' : '') + '">' + esc(k) + '</span>').join('') + '</div><div class="note">Collection ' + esc(s.collection) + ' in the Skill Marketplace chains these skills.</div></div>';
+  $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#drawer').scrollTop = 0; $('#close').focus();
+  renderBoard();
+}
+function openStage(id) {
+  const x = stageStats().find((y) => y.s.id === id); if (!x) return;
+  const s = x.s;
+  state.sel = null;
+  const deals = x.l.slice().sort((p, q) => (q.value || 0) - (p.value || 0));
+  const kv = [['Deals', x.n], ['ACV (annual)', x.acv ? eur(x.acv) : 'no value yet'], ['TCV (total)', x.acv ? eur(x.tcv) : 'not estimated'], ['With a risk flag', x.risk]];
+  if (x.w != null) kv.push(['Weighted ACV', eur(x.w)]);
+  $('#drawer').innerHTML = '<div class="dh st-' + s.id + '"><div><span class="tag">Stage ' + (x.i + 1) + ' of 5</span><h2>' + esc(s.label) + '</h2><div class="sub">' + esc(s.blurb) + '</div></div><button class="x" id="close" aria-label="Close">&times;</button></div>' +
+    '<div class="kv">' + kv.map((r) => '<div><div class="k">' + esc(r[0]) + '</div><div class="v">' + esc(r[1]) + '</div></div>').join('') + '</div>' +
+    '<div class="sec st-' + s.id + '"><h4>Exit criteria: ' + x.met + ' of ' + x.tot + ' met</h4><div class="prog"><i style="width:' + (x.tot ? Math.round(x.met / x.tot * 100) : 0) + '%"></i></div><ul class="gate">' + s.exit.map((t, k) => '<li><span class="ck ' + (x.n && x.crit[k] === x.n ? 'y' : '') + '" aria-hidden="true">' + (x.n && x.crit[k] === x.n ? '&#10003;' : '') + '</span><span>' + esc(t) + ' <span class="note">(' + x.crit[k] + ' of ' + x.n + ' deals)</span></span></li>').join('') + '</ul><div class="note">Owner of the gate: ' + esc(s.owner) + '. Moving a deal on needs a person.</div></div>' +
+    '<div class="sec"><h4>Deals in this stage</h4>' + (deals.length ? deals.map((d) => '<div class="ov-line" style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)"><span><button type="button" class="linkbtn" data-open-deal="' + esc(d.id) + '" style="font:inherit;font-weight:600;background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;cursor:pointer;text-align:left">' + esc(d.account) + '</button><span class="note" style="display:block">' + esc(d.title) + '</span></span><span style="white-space:nowrap">' + (d.value ? eur(d.value) : 'no estimate') + (d.risks.length ? ' <span class="tag red">risk</span>' : '') + '</span></div>').join('') : '<div class="note">No deals in this stage.</div>') + '</div>' +
+    '<div class="sec"><h4>Skills that prepare this stage</h4><div class="chips">' + s.skills.map((k) => '<span class="chip">' + esc(k) + '</span>').join(' ') + '</div><div class="note">Collection ' + esc(s.collection) + ' in the Skill Marketplace chains these skills. Skills prepare and check, a person decides.</div></div>';
   $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#drawer').scrollTop = 0; $('#close').focus();
   renderBoard();
 }
@@ -922,6 +936,8 @@ function setup() {
   const owners = [...new Set(D.deals.map((d) => d.owner))].sort();
   $('#owner').innerHTML = '<option value="">All owners</option>' + owners.map((o) => '<option>' + esc(o) + '</option>').join('');
   $('#funnel').addEventListener('click', (e) => { const b = e.target.closest('[data-stage]'); if (!b) return; state.stage = state.stage === b.dataset.stage ? '' : b.dataset.stage; renderBoard(); });
+  $('#funnel').addEventListener('dblclick', (e) => { const b = e.target.closest('[data-stage]'); if (b) { state.stage = ''; renderBoard(); openStage(b.dataset.stage); } });
+  $('#drawer').addEventListener('click', (e) => { const b = e.target.closest('[data-open-deal]'); if (b) openDeal(b.dataset.openDeal); });
   $('#board').addEventListener('click', (e) => { const b = e.target.closest('[data-deal]'); if (b) openDeal(b.dataset.deal); });
   $('#q').addEventListener('input', () => { state.q = $('#q').value; renderBoard(); });
   $('#owner').addEventListener('change', () => { state.owner = $('#owner').value; renderBoard(); });

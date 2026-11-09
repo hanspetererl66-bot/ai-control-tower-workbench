@@ -38,10 +38,10 @@ export const SKIN_DEFS: Record<SkinId, Skin> = {
   violet: {
     name: 'Violet',
     description: 'Black, white and soft greys with one purple accent. The calm original.',
-    swatch: ['#f6f5f8', '#ffffff', '#1b1a22', '#A100FF'],
+    swatch: ['#f6f5f8', '#ffffff', '#1b1a22', '#8056B8'],
     space: {
-      light: { canvas: '#f6f5f8', surface: '#ffffff', ink: '#1b1a22', ink2: '#46444f', muted: '#6c6a78', faint: '#c3c1cd', line: '#e6e4ec', line2: '#f1f0f5', wash: '#faf9fc', accent: '#A100FF', accentMid: '#7500C0', accentDeep: '#460073', accentDim: 'rgba(161,0,255,.07)', accentBorder: 'rgba(161,0,255,.22)', accentLight: '#efe8fb', shadow: NEUTRAL_SHADOW, shadowLg: '0 24px 60px rgba(20,18,30,.22)' },
-      dark: { canvas: '#0f0e13', surface: '#18171d', ink: '#f4f3f8', ink2: '#d3d1dc', muted: '#9e9cab', faint: '#5b5967', line: '#2b2a33', line2: '#222129', wash: '#1d1c24', accent: '#BE82FF', accentMid: '#DCAFFF', accentDeep: '#E6DCFF', accentDim: 'rgba(190,130,255,.14)', accentBorder: 'rgba(190,130,255,.34)', accentLight: '#2a2040', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
+      light: { canvas: '#f6f5f8', surface: '#ffffff', ink: '#1b1a22', ink2: '#46444f', muted: '#6c6a78', faint: '#c3c1cd', line: '#e6e4ec', line2: '#f1f0f5', wash: '#faf9fc', accent: '#8056B8', accentMid: '#633F96', accentDeep: '#3B2660', accentDim: 'rgba(128,86,184,.07)', accentBorder: 'rgba(128,86,184,.22)', accentLight: '#efeaf7', shadow: NEUTRAL_SHADOW, shadowLg: '0 24px 60px rgba(20,18,30,.22)' },
+      dark: { canvas: '#0f0e13', surface: '#18171d', ink: '#f4f3f8', ink2: '#d3d1dc', muted: '#9e9cab', faint: '#5b5967', line: '#2b2a33', line2: '#222129', wash: '#1d1c24', accent: '#B79CE0', accentMid: '#D0BDF0', accentDeep: '#E6DCF8', accentDim: 'rgba(183,156,224,.13)', accentBorder: 'rgba(183,156,224,.32)', accentLight: '#272037', shadow: 'none', shadowLg: '0 24px 60px rgba(0,0,0,.65)' },
     },
     app: null,
   },
