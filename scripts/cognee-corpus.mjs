@@ -35,6 +35,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const c360Out = join(ROOT, 'dist/cognee-corpus-customer-360.json');
   writeFileSync(c360Out, JSON.stringify(c360, null, 2));
   console.log(`Wrote ${c360.length} Customer 360 documents to ${c360Out} (load them with: .venv-cognee/bin/python scripts/cognee-seed.py --corpus dist/cognee-corpus-customer-360.json --dataset customer-360)`);
+  const c360L = buildCustomer360Corpus(join(ROOT, 'examples/customer-360/data-lindenau.json'));
+  const c360LOut = join(ROOT, 'dist/cognee-corpus-customer-360-lindenau.json');
+  writeFileSync(c360LOut, JSON.stringify(c360L, null, 2));
+  console.log(`Wrote ${c360L.length} Customer 360 documents (Lindenau) to ${c360LOut} (load them with: .venv-cognee/bin/python scripts/cognee-seed.py --corpus dist/cognee-corpus-customer-360-lindenau.json --dataset customer-360-lindenau)`);
   const sales = buildSalesCorpus();
   const salesOut = join(ROOT, 'dist/cognee-corpus-sales.json');
   writeFileSync(salesOut, JSON.stringify(sales, null, 2));

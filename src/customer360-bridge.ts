@@ -7,6 +7,9 @@
  * If Cognee is not installed or the corpus is not loaded the agent says so and the Space falls back to its local ranking.
  */
 export const CUSTOMER360_SPACE = 'customer-360';
+/** The two customers of the Space and the Cognee dataset each one is loaded into (npm run cognee:corpus writes both corpora). */
+export type Customer360Customer = 'nordlicht' | 'lindenau';
+export const DATASETS: Record<Customer360Customer, string> = { nordlicht: 'customer-360', lindenau: 'customer-360-lindenau' };
 export const MAX_QUESTION = 300;
 export const MAX_ANSWER = 1200;
 const REQUEST_ID = /^[A-Za-z0-9_-]{1,40}$/;
@@ -20,9 +23,9 @@ export type Customer360Deps = {
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** The prompt the agent gets. Read-only: the only tool it may use is the memory search. */
-export function askPrompt(question: string): string {
+export function askPrompt(question: string, customer: Customer360Customer = 'nordlicht'): string {
   return [
-    'Use only the Cognee memory tool "recall" to search the dataset "customer-360" (a fictional customer group, documents with ids in brackets such as (opportunity:O-7103)).',
+    `Use only the Cognee memory tool "recall" to search the dataset "${DATASETS[customer]}" (a fictional customer group, documents with ids in brackets such as (opportunity:${customer === 'lindenau' ? 'OFF-2026-0518' : 'O-7103'})).`,
     'Do not write, remember or forget anything and do not use any other tool.',
     'Answer the question in at most four sentences, only from what recall returns. Mark any conclusion that is not stated in a document with the word Inference.',
     'Reply with a JSON object only: {"answer": "<text>", "ids": ["<id of each document you used>"]}. If recall is not available or finds nothing, reply {"answer": "", "ids": []}.',
@@ -53,8 +56,11 @@ export async function handleCustomer360Message(data: unknown, deps: Customer360D
   const question = typeof data.question === 'string' ? data.question.replace(/\s+/g, ' ').trim() : '';
   if (!question || question.length > MAX_QUESTION) return fail('The question is empty or too long.');
   if (!deps.ask) return fail('The agent is not connected yet.');
+  // No customer means Nordlicht (older pages); an unknown one is refused instead of guessed.
+  if (data.customer !== undefined && data.customer !== 'nordlicht' && data.customer !== 'lindenau') return fail('Unknown customer.');
+  const customer: Customer360Customer = data.customer === 'lindenau' ? 'lindenau' : 'nordlicht';
   try {
-    const text = await deps.ask(askPrompt(question), 'Customer 360: Cognee question', '');
+    const text = await deps.ask(askPrompt(question, customer), 'Customer 360: Cognee question', '');
     if (!text) return fail('The question was stopped.');
     const parsed = parseAnswer(text);
     if (!parsed) return fail('Cognee returned nothing usable (is the Cognee connector installed and the corpus loaded?).');

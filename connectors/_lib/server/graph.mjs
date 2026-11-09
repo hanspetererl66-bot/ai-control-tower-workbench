@@ -259,6 +259,8 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
     }
   }
 
+  /* Calls and mails of customers whose contracts and offers only appear later (the Sales section) are linked again after it. */
+  const pendingLinks = [];
   /* Communication: call transcripts and customer e-mail conversations (mockup data) */
   if (communication) {
     const { calls = [], threads = [] } = communication;
@@ -268,6 +270,7 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
       return id;
     };
     const link = (from, links) => {
+      pendingLinks.push([from, links]);
       if (links.contract) addEdge(from, `contract:${links.contract}`, 'DISCUSSES');
       if (links.offer) addEdge(from, `offer:${links.offer}`, 'DISCUSSES');
       if (links.ticket) addEdge(from, `ticket:${links.ticket}`, 'DISCUSSES');
@@ -382,6 +385,12 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
       const node = nodes.get(`customer:${slug(account)}`);
       if (node) { node.meta.Region = region; node.region = region; }
     }
+  }
+
+  for (const [from, links] of pendingLinks) {
+    if (links.contract) addEdge(from, `contract:${links.contract}`, 'DISCUSSES');
+    if (links.offer) addEdge(from, `offer:${links.offer}`, 'DISCUSSES');
+    if (links.ticket) addEdge(from, `ticket:${links.ticket}`, 'DISCUSSES');
   }
 
   /* curated links */

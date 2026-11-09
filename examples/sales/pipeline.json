@@ -1781,7 +1781,17 @@
           ]
         }
       ],
-      "termMonths": 36
+      "termMonths": 36,
+      "links": {
+        "threads": [
+          "T-204"
+        ]
+      },
+      "proposal": {
+        "rec": "R-5",
+        "rank": 5,
+        "title": "Win the analytics platform with a validated use case and fix the handwriting first"
+      }
     },
     {
       "id": "OPP-405",
@@ -1847,7 +1857,12 @@
           ]
         }
       ],
-      "termMonths": 36
+      "termMonths": 36,
+      "proposal": {
+        "rec": "R-5",
+        "rank": 5,
+        "title": "Win the analytics platform with a validated use case and fix the handwriting first"
+      }
     },
     {
       "id": "OFF-2026-0510",
@@ -1925,7 +1940,17 @@
           ]
         }
       ],
-      "termMonths": 36
+      "termMonths": 36,
+      "links": {
+        "threads": [
+          "T-201"
+        ]
+      },
+      "proposal": {
+        "rec": "R-3",
+        "rank": 3,
+        "title": "Confirm the supplier qualification in the price and move Ariba off the trial tenant"
+      }
     },
     {
       "id": "OFF-2026-0518",
@@ -2003,7 +2028,17 @@
           ]
         }
       ],
-      "termMonths": 2
+      "termMonths": 2,
+      "links": {
+        "threads": [
+          "T-202"
+        ]
+      },
+      "proposal": {
+        "rec": "R-1",
+        "rank": 1,
+        "title": "Settle the AI units renewal and the top-up before the notice date"
+      }
     },
     {
       "id": "OFF-2026-0526",
@@ -2110,7 +2145,17 @@
           "text": "Top-up requested."
         }
       ],
-      "termMonths": 24
+      "termMonths": 24,
+      "links": {
+        "threads": [
+          "T-202"
+        ]
+      },
+      "proposal": {
+        "rec": "R-1",
+        "rank": 1,
+        "title": "Settle the AI units renewal and the top-up before the notice date"
+      }
     },
     {
       "id": "C-2025-0833",
@@ -2149,7 +2194,12 @@
           "text": "Ticket TKT-48188 opened: schema error for the Swiss repository."
         }
       ],
-      "termMonths": 27
+      "termMonths": 27,
+      "proposal": {
+        "rec": "R-2",
+        "rank": 2,
+        "title": "Get the line 6 log and give the Swiss repository a fix date"
+      }
     }
   ],
   "automation": {
@@ -2867,7 +2917,7 @@
         "contractId": "C-2025-0458",
         "status": "Open",
         "due": "2026-10-31",
-        "grossEur": 124593.0,
+        "grossEur": 124593,
         "customer": "hanse"
       },
       {
