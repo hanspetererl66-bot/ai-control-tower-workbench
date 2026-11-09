@@ -68,3 +68,13 @@ test('page: three views, filters, drill-down with ticket button, demo with five 
   assert.doesNotMatch(page, /answer in German/);
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
 });
+
+test('geography: every region rolls up into EMEA, NALA or APEC, and the page carries the global row, the geo cards and the ticket payload', () => {
+  const geoOf = new Function(`return ${/const geoOf = (\(region\) => [^\n]*);\n/.exec(page)[1]}`)();
+  const counts = {};
+  for (const c of fleet.customers) { const g = geoOf(c.region); assert.ok(['EMEA', 'NALA', 'APEC'].includes(g), c.region); counts[g] = (counts[g] || 0) + 1; }
+  assert.deepEqual(counts, { EMEA: 23, NALA: 12, APEC: 7 });
+  for (const needle of ['id="geo"', 'Global overview', 'Situation per geography', "geo: c.geo", 'Create ticket for operator']) assert.ok(page.includes(needle), needle);
+  const ops = read('examples/infra-ops/index.html');
+  for (const needle of ['vmWall', 'data-vmt', 'Create ticket for operator', 'vmTicket']) assert.ok(ops.includes(needle), needle);
+});

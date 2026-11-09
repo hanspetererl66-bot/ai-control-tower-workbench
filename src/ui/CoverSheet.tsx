@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { COVER_NAME, COVER_SUBTITLE, PRODUCT_TITLE } from '../product';
+import { COVER_NAME, COVER_SUBTITLE, COVER_TAGLINE, PRODUCT_TITLE } from '../product';
 import CoverGrid from './CoverGrid';
 import WerkbankMark from './WerkbankMark';
 
@@ -21,6 +21,7 @@ export default function CoverSheet({ onClose }: { onClose: () => void }) {
         <h1 className="cover-title">
           {COVER_NAME}
           <span className="cover-title-line2">{COVER_SUBTITLE}</span>
+          <span className="cover-title-line2 cover-title-line3">{COVER_TAGLINE}</span>
         </h1>
         <p className="cover-by">from Accenture Germany</p>
         <p className="cover-author">Author: Hans-Peter Erl</p>
