@@ -18,7 +18,7 @@ export const SUBSPACES = [
 ];
 
 const BACK = `<button type="button" class="hub-back" id="hub-back">&larr; AI Governance</button>`;
-const BACK_CSS = `.hub-back{font:inherit;font-size:12px;font-weight:600;color:var(--purple);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}.hub-back:hover{border-color:var(--purple)}.hub-back:focus-visible{outline:2px solid var(--purple);outline-offset:2px}\n`;
+const BACK_CSS = `.hub-back{white-space:nowrap;font:inherit;font-size:12px;font-weight:600;color:var(--purple);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}.hub-back:hover{border-color:var(--purple)}.hub-back:focus-visible{outline:2px solid var(--purple);outline-offset:2px}\n`;
 // The page scripts fill elements of every tab; a subspace has only some, so a missing id gets a detached stand-in.
 const SHIM = `<script>(function(){var g=document.getElementById.bind(document);document.getElementById=function(id){return g(id)||document.createElement('div');};})();</script>\n`;
 const BACK_JS = `document.getElementById('hub-back').addEventListener('click',function(){if(window.parent!==window)window.parent.postMessage({type:'wb:handoff',to:'ai-control-tower',payload:{},open:true},'*');});\n`;
