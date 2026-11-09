@@ -14,7 +14,7 @@ import { AssistantPanel, LookPanel, ProfilesPanel, SectionEffect, StoragePanel, 
 
 const TABS = [
   { id: 'profiles', title: 'Profiles' },
-  { id: 'look', title: 'Look' },
+  { id: 'look', title: 'Skin' },
   { id: 'work', title: 'Work' },
   { id: 'assistant', title: 'Assistant' },
   { id: 'chat', title: 'Chat' },

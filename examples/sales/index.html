@@ -564,7 +564,14 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #kn{--k-purple:#B79CE0;--k-blue:#7FA6F0;--k-teal:#4fd1c5;--k-green:#3ddc97;--k-amber:#ffb454;--k-red:#ff7a70;--k-pink:#f08cc0}}
 :root[data-theme="dark"] #kn{--k-purple:#B79CE0;--k-blue:#7FA6F0;--k-teal:#4fd1c5;--k-green:#3ddc97;--k-amber:#ffb454;--k-red:#ff7a70;--k-pink:#f08cc0}
 .kn-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px}
-.kn-top select{max-width:420px}
+.kn-top select{max-width:min(420px,100%);min-width:0;flex:0 1 auto}
+.kn-list{display:none;margin-top:10px;padding:0 10px 10px}
+.kn-list h4{margin:10px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--kc)}
+.kn-li{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--radius-s);padding:9px 12px;margin:0 0 6px;font:inherit;font-size:14px;cursor:pointer;border-left:4px solid var(--kc)}
+.kn-li small{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.kn-li[aria-current=true]{border-color:var(--kc);box-shadow:0 0 0 1px var(--kc);font-weight:650}
+.kn-li:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+@media(max-width:640px){.kn-list{display:block}.kn-top select{flex:1 1 100%}.kn-top label{flex:1 1 100%}}
 .kn-stats{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 .kn-stat{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-s);padding:6px 12px;font-size:12px;color:var(--muted)}.kn-stat b{display:block;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
 .kn-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
@@ -1155,6 +1162,11 @@ function liveHtml(d, nodes, lv) {
   const known = new Set(nodes.map((x) => x.ref).concat(['deal:' + d.id])), extra = (lv.ids || []).filter((i) => !known.has(i));
   return '<div class="kn-ans">' + esc(lv.answer) + '</div><p class="note">' + (lv.ids || []).filter((i) => known.has(i)).length + ' of the nodes are confirmed by Cognee (green glow).' + (extra.length ? ' Also found: ' + extra.map((i) => '<span class="chip">' + esc(i) + '</span>').join('') : '') + '</p>' + btn;
 }
+// Phone width: the graph shrinks until its labels are unreadable, so the same nodes are also listed (shown under 640 px).
+function knList(nodes, groups, cust) {
+  const li = (x) => '<button type="button" class="kn-li" data-n="' + x.id + '" style="--kc:' + KN_KINDS[x.kind][1] + '" aria-current="' + (kn.sel === x.id) + '"><b>' + esc(x.label) + '</b><small>' + esc(KN_KINDS[x.kind][0]) + '</small></button>';
+  return '<div class="kn-list" aria-label="Connected items as a list"><h4 style="--kc:var(--k-purple)">Customer</h4>' + li(cust) + groups.map((g) => '<h4 style="--kc:' + g.col + '">' + esc(g.name) + '</h4>' + g.items.map(li).join('')).join('') + '</div>';
+}
 function renderKnowledge() {
   if (!kn.deal) kn.deal = (D.deals.find((x) => x.id === 'OFF-2026-0324') || D.deals[0]).id;
   const d = D.deals.find((x) => x.id === kn.deal);
@@ -1206,7 +1218,7 @@ function renderKnowledge() {
   const opts = D.deals.map((x) => '<option value="' + esc(x.id) + '"' + (x.id === kn.deal ? ' selected' : '') + '>' + esc(x.account + ' – ' + x.title + ' (' + x.id + ')') + '</option>').join('');
   $('#kn').innerHTML =
     '<div class="kn-top"><label class="note" for="kn-deal" style="margin:0">Deal</label><select id="kn-deal" aria-label="Deal">' + opts + '</select><div class="kn-stats">' + stats.map(([l, v]) => '<div class="kn-stat"><b>' + v + '</b>' + l + '</div>').join('') + '</div></div>' +
-    '<div class="kn-grid"><div class="card kn-stage' + (animNow ? ' kn-in' : '') + '"><div class="kn-legend" role="group" aria-label="Show kinds">' + kinds.filter((x) => x !== 'customer').map((x) => '<button type="button" data-kind="' + x + '" style="--kc:' + KN_KINDS[x][1] + '" aria-pressed="' + !kn.hide.has(x) + '"><span class="dot"></span>' + KN_KINDS[x][0] + ' ' + cnt(x) + '</button>').join('') + '</div>' + svg + '</div>' +
+    '<div class="kn-grid"><div class="card kn-stage' + (animNow ? ' kn-in' : '') + '"><div class="kn-legend" role="group" aria-label="Show kinds">' + kinds.filter((x) => x !== 'customer').map((x) => '<button type="button" data-kind="' + x + '" style="--kc:' + KN_KINDS[x][1] + '" aria-pressed="' + !kn.hide.has(x) + '"><span class="dot"></span>' + KN_KINDS[x][0] + ' ' + cnt(x) + '</button>').join('') + '</div>' + svg + knList(nodes, live, cust) + '</div>' +
     '<aside class="card kn-side" style="--kc:' + k[1] + '" aria-live="polite"><span class="kn-kind"><span class="dot"></span>' + k[0] + '</span><h3>' + esc(sel.label) + '</h3><p class="note">' + esc(sel.text) + '</p>' +
     '<div class="kn-use"><h4>Use it: type in the chat</h4><div class="prompt" id="kn-prompt">' + esc(sel.prompt) + '</div><button type="button" class="kn-copy" id="kn-copy">Copy sentence</button></div>' +
     '<div class="kn-live"><h4>Ask Cognee</h4>' + liveHtml(d, nodes, lv) + '</div>' + '<p class="note">Click a node to see what it says and how to use it. The full graph with impact and path search is in the Space “Sales Knowledge Graph”.</p></aside></div>';
@@ -1214,7 +1226,14 @@ function renderKnowledge() {
 $('#kn').addEventListener('change', (e) => { if (e.target.id === 'kn-deal') { kn.deal = e.target.value; kn.sel = null; kn.hide.clear(); kn.anim = true; renderKnowledge(); } });
 $('#kn').addEventListener('click', (e) => {
   const nd = e.target.closest('[data-n]'), kd = e.target.closest('[data-kind]');
-  if (nd) { kn.sel = nd.dataset.n; renderKnowledge(); const f = document.querySelector('[data-n="' + kn.sel + '"]'); if (f) f.focus(); }
+  if (nd) {
+    kn.sel = nd.dataset.n; renderKnowledge();
+    const phone = window.matchMedia('(max-width:640px)').matches;
+    const f = document.querySelector((phone ? '.kn-li' : '.kn-node') + '[data-n="' + kn.sel + '"]');
+    if (f) f.focus({ preventScroll: phone });
+    // on a phone the details sit below the list: bring them into view
+    if (phone && nd.classList.contains('kn-li')) { const s = document.querySelector('.kn-side'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
   else if (kd) { const x = kd.dataset.kind; kn.hide.has(x) ? kn.hide.delete(x) : kn.hide.add(x); renderKnowledge(); }
   else if (e.target.closest('#kn-ask')) {
     if (kn.pending) return;

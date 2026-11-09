@@ -93,3 +93,12 @@ test('Sales meetings: both prompts get an "Execute in Chat Window" button that p
 test('Sales knowledge graph: node labels are 15 % larger than before (12 px to 13.8 px)', () => {
   assert.match(html, /\.kn-node text\.l\{[^}]*font-size:13\.8px/);
 });
+
+test('Sales knowledge on a phone: the deal select cannot be wider than the page and the nodes are also listed', () => {
+  assert.match(html, /\.kn-top select\{max-width:min\(420px,100%\)/);
+  assert.match(html, /function knList\(/);
+  assert.match(html, /@media\(max-width:640px\)\{\.kn-list\{display:block\}/);
+  assert.match(html, /\.kn-list\{display:none/);
+  // the list is part of the stage card, after the graph
+  assert.match(html, /\+ svg \+ knList\(nodes, live, cust\) \+ '<\/div>'/);
+});

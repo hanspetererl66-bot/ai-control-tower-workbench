@@ -7,7 +7,7 @@ export type TabHelp = { what: string; where: string; effect: string };
 export const TAB_HELP: Record<string, TabHelp> = {
   profiles: {
     what: 'A profile is a saved bundle of your settings, for example one for a customer demo and one for daily work.',
-    where: 'Look, start view, pinned Spaces, favourite skills and assistant instructions are part of a profile.',
+    where: 'Skin, start view, pinned Spaces, favourite skills and assistant instructions are part of a profile.',
     effect: 'Switching a profile changes all of these at once. Memory, groups and keys are not part of a profile.',
   },
   look: {
