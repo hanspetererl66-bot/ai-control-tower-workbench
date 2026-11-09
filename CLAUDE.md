@@ -2,7 +2,7 @@
 
 Privater Prototyp von Hans-Peter (Accenture S&P EMEA). Electron + Vite + React/TS-App "Werkbank" mit Goose als Agent-Runtime (bleibt so). Sprache mit dem Nutzer: Deutsch, UI-Texte: Englisch. Hans-Peter entwickelt auf einem Linux-Rechner; die README nennt noch macOS als Ziel.
 
-Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11.2026.
+Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11.2026.
 
 **Diese Datei ist bewusst kurz.** Verlauf (PRs, Branches, Merges) steht in `git log`. Die ausführlichen Statusnotizen je Thema (was gebaut ist, Grenzen, "Nicht getestet") liegen in `docs/status/` und werden nur gelesen, wenn das Thema dran ist.
 
@@ -52,7 +52,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 | `design-study-and-demos.md` | Joule Design Study, Order-to-Cash (zwei Fälle) |
 | `recruiting-status.md` | Recruiting Workbench, Hiring Approvals, Job Posting, Online-Interview |
 | `policy-manifest.md` | Policy-Manifest (Rechte als Daten, erzwingt nichts) |
-| `dashboards-observability.md` | n8n Performance Dashboard, Agent Observability |
+| `dashboards-observability.md` | n8n Performance Dashboard, Agent Observability, AI Governance (Einstieg und Subspaces) |
 | `space-designer.md` | Space Designer |
 
 Weitere Anleitungen: `docs/recruiting.md`, `docs/arc-1.md`, `docs/arc-1-demo.md`, `docs/teams.md`, `docs/customer-360.md`, `docs/agent-observability.md`, `docs/registry-leanix.md`, `docs/order-to-cash*.md`.
