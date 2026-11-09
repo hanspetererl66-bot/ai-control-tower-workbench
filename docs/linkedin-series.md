@@ -52,13 +52,16 @@ Aus der Serie entfallen: Überblick Chat/Workflow/Agent/Skill und der Ontology M
 | Post 12 (Anforderungen) und Post 13 (Prozessinterview) gehören beide zu Develop. | Kein Inhalt doppelt: Quellen lesen gegen Interview führen. In Post 17 nur kurz auf Post 16 zurückverweisen. |
 | Post 4 (Recruiting) endet beim Angebot; Onboarding beginnt beim unterschriebenen Vertrag. | Keine Überschneidung; die Übergabe aus Hiring Approvals ist die Brücke. |
 
-## Vorschläge für Wäsche, Kater und Musik der neuen Posts (noch nicht abgenommen)
+## Wäsche, Kater und Musik der neuen Posts (abgenommen am 09.11.2026)
 | Post | Wäscheleine | Kater | Musik / Stimme |
 |---|---|---|---|
 | 6 Onboarding | ein Willkommens-Shirt und ein Paar Hausschuhe | trägt einen Karton mit dem ersten Arbeitstag, Namensschild am Fell | warmer Indie-Pop, junge weibliche Stimme |
 | 9 Vertrag zu Cash und Umsatz | sieben Handtücher in einer Reihe (sieben Systeme) | schiebt eine Kiste über ein Förderband von links nach rechts, am Ende wiegt er eine Münze auf einer Waage | Marschrhythmus mit Jazz-Schluss; sachlicher männlicher Sprecher |
 | 13 Customer Journey | fünf Wimpel (Today, Understand, Decide, Act, Follow up) | läuft die Wimpel entlang wie eine Schnitzeljagd | Funk, energischer Sprecher |
 | 14 AI Governance | vier Hemden mit Stempeln (Build, Register, Run, Prove) | stempelt ein Dokument mit Siegel | Orchester-Elektro, ruhige, formelle Sprecherin |
+| 17 Prozessinterview | ein Headset und eine Reihe von Sprechblasen | hält ein kleines Mikrofon | ruhige, zuhörende Interviewerin; Musik offen |
+
+Sprecherrollen und Namen der neuen Posts sind im Produktionschat gegen die vorhandenen Stimmen (Ben, Muriel, Alicia, Camille, Walter, Grace, Isla, Theo, Lily, Marcus, Nova, Leo) zu prüfen, damit sich keine doppelt.
 
 ## Intro/Outro und Bildwelt (für alle Videos)
 - 4:5, Englisch, Voice-over, Musik, keine Untertitel. Rahmung: mögliche Designvorschläge im Rahmen eines MVP, kein SAP-Produkt, Beispieldaten.
