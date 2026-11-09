@@ -4369,6 +4369,32 @@ p.dev-error { padding-left: 0; }
   .sov-grid:has(.sov-tile:hover) .sov-tile:not(:hover), .sov-spaces:has(.sov-card:hover, .sov-kid:hover) .sov-card:not(:hover) { opacity: 1; }
   .sov-go { transform: none; }
 }
+/* Motion of the overview: entrance, shared title transition, recently changed marker, domain constellation. Tokens only. */
+@keyframes sov-rise { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes sov-ring { 0% { opacity: .75; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+@keyframes sov-drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(var(--dx, 2px), var(--dy, -2px)); } }
+/* "backwards" only holds the start state during the delay, so the hover lift is not overridden once it has run */
+.sov-tile, .sov-space { animation: sov-rise .5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+.sov-title-shared { view-transition-name: sov-title; }
+::view-transition-group(sov-title) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; }
+.sov-const { display: block; width: 100%; height: auto; aspect-ratio: 240 / 34; margin: -4px 0 2px; pointer-events: none; opacity: .9; overflow: visible; }
+.sov-const line { stroke: color-mix(in srgb, var(--accent) 28%, var(--line)); stroke-width: .7; transition: stroke .3s ease; }
+.sov-dot { fill: color-mix(in srgb, var(--muted) 70%, var(--line)); transition: fill .3s ease; }
+.sov-dot[data-fresh] { fill: var(--accent); }
+.sov-tile:hover .sov-const line, .sov-tile:focus-visible .sov-const line { stroke: color-mix(in srgb, var(--accent) 70%, var(--line)); }
+.sov-tile:hover .sov-dot, .sov-tile:focus-visible .sov-dot { fill: var(--accent); animation: sov-drift var(--dr, 2.4s) ease-in-out var(--dl, 0s) infinite; }
+.sov-dot:nth-child(3n) { --dx: -2.4px; --dy: 1.6px; }
+.sov-dot:nth-child(3n+1) { --dx: 1.8px; --dy: 2.2px; }
+.sov-new { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; vertical-align: 2px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+.sov-tile-new { color: var(--accent); }
+.sov-card[data-fresh]::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--accent); pointer-events: none; opacity: 0; animation: sov-ring 1.6s ease-out .7s 2; }
+@media (prefers-reduced-motion: reduce) {
+  .sov-tile, .sov-space { animation: none; }
+  .sov-tile:hover .sov-dot, .sov-tile:focus-visible .sov-dot { animation: none; }
+  .sov-card[data-fresh]::after { animation: none; }
+  .sov-dot, .sov-const line { transition: none; }
+}
 .sov-tile-name { font-size: 17px; font-weight: 600; }
 .sov-tile-count { font-size: 12px; color: var(--accent); font-weight: 600; }
 .sov-tile-list { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); margin-top: 4px; }
