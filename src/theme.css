@@ -5272,12 +5272,14 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .hr-source { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px; }
 
 /* Admin tiles: one colour family each (violet, blue, teal), defined once as tokens. */
-:root { --adm-violet: #6d28d9; --adm-blue: #1d4ed8; --adm-teal: #0f766e; }
-:root[data-theme="dark"] { --adm-violet: #b69cff; --adm-blue: #8fb0ff; --adm-teal: #5eead4; }
+:root { --adm-violet: #6d28d9; --adm-blue: #1d4ed8; --adm-teal: #0f766e; --adm-amber: #b45309; }
+:root[data-theme="dark"] { --adm-violet: #b69cff; --adm-blue: #8fb0ff; --adm-teal: #5eead4; --adm-amber: #fbbf77; }
 .adm-logo { background: linear-gradient(150deg, color-mix(in srgb, var(--adm-tone) 7%, var(--panel)), color-mix(in srgb, var(--adm-tone) 26%, var(--panel))); color: var(--adm-tone); }
 .adm-logo-ontology { --adm-tone: var(--adm-violet); }
 .adm-logo-register { --adm-tone: var(--adm-blue); }
 .adm-logo-skills { --adm-tone: var(--adm-teal); }
+.adm-logo-observe { --adm-tone: var(--adm-amber); }
+.adm-hint { font-size: 12px; margin-top: 6px; }
 
 /* ---- Space Designer ---- */
 .sov-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
