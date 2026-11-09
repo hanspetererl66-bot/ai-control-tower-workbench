@@ -422,5 +422,79 @@
       "The URLs come from environment variables. The seven systems here are fictional; the workflow only shows the order of the calls."
     ]
   },
-  "questions": []
+  "questions": [],
+  "tenants": [
+    {
+      "id": "T1",
+      "name": "kestrel-eu-central",
+      "role": "Production",
+      "region": "EU (Frankfurt)",
+      "users": 250,
+      "note": "Live from 2026-12-01; the tenant the contract names."
+    },
+    {
+      "id": "T2",
+      "name": "kestrel-eu-test",
+      "role": "Test and acceptance",
+      "region": "EU (Frankfurt)",
+      "users": 25,
+      "note": "For the customer's acceptance of the implementation milestones; no extra charge."
+    },
+    {
+      "id": "T3",
+      "name": "kestrel-eu-sandbox",
+      "role": "Sandbox for developers",
+      "region": "EU (Ireland)",
+      "users": 10,
+      "note": "Resets every night; shares the API quota of production."
+    }
+  ],
+  "includedServices": [
+    {
+      "id": "X1",
+      "name": "Single sign-on connector",
+      "material": "SRV-SSO",
+      "parent": "L20",
+      "tenants": [
+        "T1",
+        "T2"
+      ],
+      "what": "Connection to the customer's identity provider (SAML).",
+      "billing": "Included in the subscription"
+    },
+    {
+      "id": "X2",
+      "name": "Daily backup and restore",
+      "material": "SRV-BCK",
+      "parent": "L20",
+      "tenants": [
+        "T1"
+      ],
+      "what": "Backup every night, 35 days kept, restore on request.",
+      "billing": "Included in the subscription"
+    },
+    {
+      "id": "X3",
+      "name": "24x7 incident desk",
+      "material": "SRV-INC",
+      "parent": "L60",
+      "tenants": [
+        "T1"
+      ],
+      "what": "Phone and portal, response within 30 minutes. Needs service level Premium (deviation D1).",
+      "billing": "Part of managed operations"
+    },
+    {
+      "id": "X4",
+      "name": "Usage dashboard",
+      "material": "SRV-DSH",
+      "parent": "L30",
+      "tenants": [
+        "T1",
+        "T3"
+      ],
+      "what": "Shows API calls and peak users per day to the customer administrator.",
+      "billing": "Included, not billed"
+    }
+  ]
 }

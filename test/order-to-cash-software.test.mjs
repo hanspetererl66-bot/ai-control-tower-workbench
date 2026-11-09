@@ -107,3 +107,19 @@ test('the n8n workflow calls every stage in order, with a Wait node at each deci
   while (wf.connections[cur]) { cur = wf.connections[cur].main[0][0].node; seen++; }
   assert.equal(seen, wf.nodes.length - 1, 'all nodes but the note are on the path');
 });
+
+test('the page runs: six tabs, Entitlement and Provisioning are separate, the n8n process sits under the flowchart, three tenants', async () => {
+  const { JSDOM, VirtualConsole } = await import('jsdom');
+  const errs = [];
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', (e) => errs.push(e.message));
+  const w = new JSDOM(page, { runScripts: 'dangerously', virtualConsole: vc }).window;
+  const labels = [...w.document.querySelectorAll('#tabs button')].map((b) => b.textContent);
+  assert.deepEqual(labels, ['End-to-End O2C Process', 'Order and bill of material', 'Entitlement', 'Provisioning', 'Billing and consumption', 'Revenue and cash']);
+  for (const t of ['proc', 'bom', 'ent', 'prov', 'bill', 'rev']) w.document.querySelector(`[data-act=tab][data-id=${t}]`).click();
+  w.document.querySelector('[data-act=tab][data-id=proc]').click();
+  assert.match(w.document.querySelector('#main').textContent, /n8n process behind it/);
+  assert.equal(data.tenants.length, 3);
+  assert.ok(data.includedServices.length >= 4);
+  assert.deepEqual(errs, []);
+});
