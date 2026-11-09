@@ -1,31 +1,26 @@
-# Demo-Case: Order-to-Cash für ein Softwareunternehmen (Claude und Joule)
+# Demo-Case: Order-to-Cash für ein Softwareunternehmen (Neufassung 08.11.2026)
 
-**Botschaft in einem Satz:** Bei einer bestätigten Softwarebestellung starten kaufmännische und technische Schritte gleichzeitig; Claude und der Joule-Agent bereiten sie vor, und eine Person gibt jeden Schritt innerhalb ihrer Grenze frei.
+**Botschaft in einem Satz:** Vom unterschriebenen Vertrag bis zu Cash und Umsatzrealisierung läuft ein Ablauf über sieben Systeme (CRM, Auftrag, Material, Entitlement, Bereitstellung, Billing, Revenue); ein n8n-Prozess ruft sie der Reihe nach auf, und eine Person entscheidet an drei Stellen.
 
-**Dauer:** 8 bis 10 Minuten. **Space:** `order-to-cash-software` (`npm run install:order-to-cash-software`, App neu laden). Der Maschinenbau-Fall bleibt als Space `order-to-cash` unverändert daneben.
+**Dauer:** 8 bis 10 Minuten. **Space:** `order-to-cash-software` (`npm run install:order-to-cash-software`, App neu laden). Der Warenfall bleibt als Space `order-to-cash` daneben.
 
 ## Ehrlich benannt
-Mockup mit erfundenen Daten (Rheinsoft Solutions, Kunde Kestrel Versicherung AG). Es wird kein System aufgerufen. Werkzeugnamen (`s4_*`, `sub_*`, `rev_*`, `prov_*`, `ent_*`), Preise, Belegnummern und die Mandanten-Vorlage sind erfunden. "LeanIX" ist nur das Beispielprodukt; wie LeanIX-Mandanten tatsächlich bereitgestellt werden, ist nicht abgebildet.
-
-## Warum anders als der Warenfall
-Recherche (06.11.2026, überwiegend Anbieter- und SAP-Lernseiten): Softwareunternehmen führen den Prozess als Quote-to-Cash. Der unterschriebene Vertrag ist der Auftrag, es gibt keine Lieferung und keinen Warenausgang. Die Bereitstellung (Mandant, Zugang, Berechtigung) läuft parallel zur Abrechnung, die Abrechnung folgt dem Plan im Vertrag, und Umsatz wird über die Laufzeit realisiert (ASC 606 / IFRS 15). Fakturiert und realisiert sind getrennte Zahlen.
-
-Quellen: [Ordway](https://ordwaylabs.com/blog/quote-to-cash-process-saas/), [Zuora](https://www.zuora.com/glossary/revenue-recognition-saas), [SAP Learning: Entitlement Management](https://learning.sap.com/courses/discovering-sap-solutions-for-quote-to-cash-management-public-cloud-for-business-user/understanding-the-sap-entitlement-management-process_a4e8a6f6-1b32-48a8-b9f7-1426d2129918), [SAP Learning: Lead-to-Cash](https://learning.sap.com/learning-journey/explore-integrated-business-processes-in-sap-s-4hana-/describing-the-lead-to-cash-business-process_eb851981-68d6-4b08-89c9-747f979cf18b).
+Mockup mit erfundenen Daten (Rheinsoft Solutions, Kunde Kestrel Versicherung AG, Vertrag C-4410). Es wird kein System aufgerufen. Systemnamen, Werkzeugnamen (`crm_*`, `s4_*`, `mat_*`, `ent_*`, `prov_*`, `sub_*`, `rev_*`), Preise, Mengen und Belegnummern sind erfunden. Die Verteilung nach Einzelverkaufspreis, der Zeitpunkt der Umsatzrealisierung je Position und die Annahmen zu Zahlungen (immer 30 Tage nach Rechnung) sind Annahmen für die Demo, keine Buchungsrichtlinie; die Umsatzbuchhaltung müsste sie bestätigen.
 
 ## Der Fall
-Bestellung OF-7731: 500 LeanIX-Benutzerlizenzen, 36 Monate, 37,80 EUR je Benutzer und Monat (18.900,00 pro Monat, 226.800,00 pro Jahr, 680.400,00 Laufzeit), dazu Onboarding 8.000,00. Zum Auftrag gehören: Rechnungsempfänger weicht ab (Kestrel Group Services GmbH), die Vorlage legt den Mandanten in us-east an, obwohl die Daten nur in der EU liegen dürfen, und das Kreditrisiko (234.800,00) liegt über dem Limit (200.000,00).
+Vertrag C-4410 vom 28.10.2026, 36 Monate ab 01.12.2026, fester Preis 388.000,00 EUR:
+- **Software 1, Lizenzkauf:** 40 Architect-Server-Lizenzen, 58.000,00 einmalig.
+- **Software 2, Subscription:** Insight Cloud, 250 Benutzer zu 28,00 im Monat (7.000,00), dazu **Overage** ab dem 251. Benutzer zu 34,00.
+- **Software 3, Consumption:** Flow Engine, 0,40 je 1.000 API-Aufrufe, Abrechnung im Nachhinein.
+- **Services:** Implementierung (24.000,00, drei Meilensteine), Schulung (6 Tage zu 1.800,00), Managed Operations (1.200,00 im Monat, 36 Monate).
 
-## Ablauf
-1. **Case file (2 Min.):** Claude liest Angebot, Bestellformular, zwei Mails und die Vorlage; sechs Befunde mit Belegzeile, F6 (Umsatz über die Laufzeit, Onboarding getrennt) ist als *Inference* markiert.
-2. **Systems and money (2 Min.):** der Joule-Agent liest die Systeme; Tabelle "Was die Systeme jetzt halten" und die drei Zahlen zum 31.12.2026: fakturiert 226.800,00, realisiert 18.900,00, abgegrenzt 207.900,00. Darunter der Vergleich Ware gegen Software.
-3. **Parallel tracks (4 Min.):** als Mira (Auftragsabwicklung) T4 (Mandant, Region eu-central) freigeben, T1 (Kreditsperre) wird **blockiert** (Limit 50.000,00), als Tobias (Kreditmanager) T1 freigeben. T6 (500 Lizenzen aktivieren) braucht Mandant **und** Kreditentscheidung und liegt über Miras Limit von 100 Lizenzen. Der Kundenbrief T7 wartet auf Abrechnungsplan, Zugang und Lizenzen.
-4. **Guardrails und Audit trail (1 bis 2 Min.):** Rechtetabelle, sieben Versuche durch dieselbe Regel, jede Freigabe und jede Ablehnung steht in der Spur.
+## Die 14 Schritte
+1 Vertrag unterschrieben (CRM), 2 Auftrag, 3 Stückliste (Material), 4 **Entitlement-Prüfung vor der Lieferung** (zwei Abweichungen, Person entscheidet), 5 Lieferung (Lizenzschlüssel, Mandant, Zähler, Serviceplan), 6 **Wareneingang: der Kunde bestätigt** (Person entscheidet), 7 Entitlement erteilt, 8 technische Bereitstellung, 9 Rückmeldung "erledigt", 10 Billing, 11 **Verbrauch gegen Billing** (Differenz 2.300.000 Aufrufe = 920,00; Person entscheidet), 12 Revenue, 13 Cash-Eingang, 14 Umsatzrealisierung (Periodenabschluss).
 
-## Fragen, die kommen
-- **"Ist das schon Joule?"** Nein, Entwurf; die Joule-Seite ist simuliert.
-- **"Warum wartet die Lizenzaktivierung auf den Kredit?"** Das steht im Beispiel als Regel der Finanzabteilung (Beleg E2 Zeile 4), nicht als Branchenregel.
-- **"Ist die Aufteilung des Onboardings richtig?"** Offen: als Inference markiert, die Umsatzbuchhaltung muss bestätigen.
-- **"Läuft das gegen echtes SAP?"** Nein. Ein echter Lauf bräuchte Konnektoren zu S/4, Subscription Billing, Revenue Accounting und der Bereitstellung.
+Reiter: Process (Zeile je Schritt, Spalte je System, Klick für Details), Order and bill of material, Entitlement and delivery, Billing and consumption, Revenue and cash (Monatsende wählbar), n8n process. Oben die Leiste "Run step / Run to the next decision / Start again".
+
+## n8n
+`examples/n8n-workflows/13-order-to-cash-software.json`: Webhook `/webhook/o2c-software`, 14 HTTP-Knoten (je einer pro Schritt, URL aus `CRM_URL`, `ORDER_URL`, `MATERIAL_URL`, `ENTITLEMENT_URL`, `PROVISIONING_URL`, `BILLING_URL`, `REVENUE_URL`, Schlüssel `O2C_API_KEY`), drei Wait-Knoten für die Entscheidungen. Der Ablauf entscheidet nichts. Gegen echte Systeme nicht getestet.
 
 ## Nicht getestet
-Electron-App, andere Skins als Violet; ein echter Lauf gegen SAP oder Joule Studio; `src/approval.ts` kennt die Werkzeugnamen nicht. Im Headless-Browser in Hell und Dunkel gesehen, ohne Seitenfehler.
+Electron-App, echter n8n-Lauf, echte Systeme. Im Headless-Browser durchgespielt (alle drei Entscheidungen, alle Reiter), Rechenkern und Ablauf in `test/order-to-cash-software.test.mjs`.

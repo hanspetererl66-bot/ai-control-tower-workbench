@@ -272,11 +272,11 @@ button:disabled{opacity:.5;cursor:default}
 .chips2{display:flex;gap:6px;flex-wrap:wrap}
 .cust-panel .esc{padding:8px 10px;border:1px solid var(--red-border);background:var(--red-dim);border-radius:var(--radius-s);font-size:12px;margin-bottom:10px}
 .cust-panel .mini{margin:12px 0 0}.cust-panel .mini h3{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
-.hb{display:grid;grid-template-columns:70px 1fr 22px;align-items:center;gap:8px;font-size:12px;margin:3px 0}.hb i{display:block;height:10px;min-width:2px;border-radius:5px;background:var(--line)}.hb i.pVeryhigh{background:var(--red)}.hb i.pHigh{background:var(--amber)}.hb i.pMedium{background:var(--purple)}.hb i.pLow{background:var(--green)}.hb b{text-align:right}
-.invbox{display:flex;align-items:center;gap:14px;font-size:12px}.ring{width:70px;height:70px;flex:none}.ring circle{fill:none;stroke-width:9}.ring .trk{stroke:var(--line-2)}.ring .od{stroke:var(--red)}.ring .op{stroke:var(--amber)}.ring text{fill:var(--ink);font-size:18px;font-weight:650}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.dot.od{background:var(--red)}.dot.op{background:var(--amber)}
+.hb{display:grid;grid-template-columns:70px 1fr 22px;align-items:center;gap:8px;font-size:12px;margin:3px 0}.hb i{display:block;height:10px;min-width:2px;border-radius:5px;background:var(--line)}.hb i.pVeryhigh{background:color-mix(in srgb,var(--red) 55%,transparent)}.hb i.pHigh{background:color-mix(in srgb,var(--amber) 55%,transparent)}.hb i.pMedium{background:color-mix(in srgb,var(--muted) 40%,transparent)}.hb i.pLow{background:color-mix(in srgb,var(--muted) 25%,transparent)}.hb b{text-align:right}
+.invbox{display:flex;align-items:center;gap:14px;font-size:12px}.ring{width:70px;height:70px;flex:none}.ring circle{fill:none;stroke-width:9}.ring .trk{stroke:var(--line-2)}.ring .od{stroke:color-mix(in srgb,var(--amber) 65%,transparent)}.ring .op{stroke:color-mix(in srgb,var(--muted) 35%,transparent)}.ring text{fill:var(--ink);font-size:18px;font-weight:650}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.dot.od{background:color-mix(in srgb,var(--amber) 65%,transparent)}.dot.op{background:color-mix(in srgb,var(--muted) 35%,transparent)}
 .ub{display:grid;grid-template-columns:96px 1fr 46px;align-items:center;gap:8px;font-size:12px;margin:4px 0}.ub span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ub b{text-align:right}
-.ubar{position:relative;height:10px;border-radius:5px;background:var(--line-2)}.ubar i{display:block;height:100%;border-radius:5px;background:var(--purple)}.ubar i.low{background:var(--red)}.ubar i.high{background:var(--green)}.ubar u{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--muted)}
+.ubar{position:relative;height:10px;border-radius:5px;background:var(--line-2)}.ubar i{display:block;height:100%;border-radius:5px;background:color-mix(in srgb,var(--muted) 40%,transparent)}.ubar i.low{background:color-mix(in srgb,var(--amber) 60%,transparent)}.ubar i.high{background:color-mix(in srgb,var(--green) 55%,transparent)}.ubar u{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--muted)}
 .mailchip{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .mailchip.us{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.mailchip.bad{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.mailchip.ok{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
 .mtl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line);display:grid;gap:10px}
@@ -313,11 +313,24 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 .drill{border-color:var(--purple-border)}
 .facts{display:flex;flex-wrap:wrap;gap:4px 18px;margin:6px 0;color:var(--ink-2);font-size:12px}.facts b{color:var(--ink)}
 .tip{position:fixed;z-index:10;max-width:300px;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);box-shadow:var(--shadow-lg);padding:10px 12px;font-size:12px;line-height:1.45}.tip[hidden]{display:none}.tip ul{margin:4px 0 0;padding-left:16px}.tip .lim{color:var(--muted)}
-.guide{border-color:var(--purple-border);background:var(--purple-dim)}.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}.guide p{margin:4px 0 0;color:var(--ink-2)}
+.guide{border-color:var(--purple-border);background:linear-gradient(var(--purple-dim),var(--purple-dim)),var(--surface);position:sticky;top:8px;z-index:6}.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}.guide p{margin:4px 0 0;color:var(--ink-2)}
 .guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
 .head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
 @media (max-width:760px){.tm{height:620px}}
+h2,.card>.bar,.cust-panel>.bar{background:none}
+#process,#cust,#radar,#list,#detail,#alt,#kpis{scroll-margin-top:210px}#rows tr{scroll-margin-top:210px}
+.spot{outline:2px solid var(--purple);outline-offset:4px;border-radius:var(--radius)}
+#rows tr.spot{outline-offset:-2px;border-radius:0}
+.pl{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:8px;overflow-x:auto;padding:2px}
+.ph{text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.ph:hover{border-color:var(--purple-border)}.ph[aria-pressed=true]{border-color:var(--purple);background:var(--purple-dim)}
+.ph .no{font-size:11px;color:var(--muted);font-weight:700}.ph b{font-size:13px}.ph .n{font-size:22px;font-weight:650;line-height:1.1}.ph small{color:var(--muted);font-size:11px}
+.ph .late{color:var(--amber);font-weight:700;font-size:11px}
+.pdesc{margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--wash);font-size:12px;color:var(--ink-2)}
+.pdesc dt{font-weight:700;color:var(--ink);float:left;clear:left;width:80px}.pdesc dd{margin:0 0 3px 90px}
+.where{margin-top:8px;font-size:12px;color:var(--ink-2)}.where b{color:var(--purple)}
+@media (max-width:900px){.pl{grid-template-columns:repeat(7,150px)}}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
 .tl{position:relative;margin-top:6px;padding-bottom:20px}.tl .axis{position:relative;height:22px;margin-left:230px;border-bottom:1px solid var(--line);font-size:10px;color:var(--muted)}
 .tl .axis span{position:absolute;top:0;padding-left:3px;border-left:1px solid var(--line)}
@@ -380,8 +393,9 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
   <p class="kpi-hint">Double-click a box to see the renewals behind the number.</p>
   <div class="card" id="kpi-detail" hidden></div>
   <div class="card guide" id="guide" aria-live="polite"></div>
+  <div class="card" id="process"></div>
   <div class="cview" id="cust"><div class="cust-cards" id="cust-cards"></div><aside class="card cust-panel" id="cust-panel" aria-live="polite"></aside></div>
-  <div class="card">
+  <div class="card" id="radar">
     <div class="bar">
       <h2 style="margin:0">Renewal radar</h2>
       <div class="chips" id="status-chips" role="group" aria-label="Filter by health"></div>
@@ -395,7 +409,7 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
     <div class="legend"><span><i class="g"></i>Green: on track</span><span><i class="y"></i>Yellow: needs attention</span><span><i class="r"></i>Red: act now</span></div>
   </div>
   <div class="layout">
-    <div class="card"><h2>Renewals by decision date</h2><p class="sub" id="rows-sub">Earliest first. Health is the worst signal of the renewal.</p><div style="overflow:auto"><table><thead><tr><th>Customer</th><th>Product</th><th class="n">Annual value</th><th>Decision date</th><th>Offer</th><th>Health</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+    <div class="card" id="list"><h2>Renewals by decision date</h2><p class="sub" id="rows-sub">Earliest first. Health is the worst signal of the renewal.</p><div style="overflow:auto"><table><thead><tr><th>Customer</th><th>Product</th><th class="n">Annual value</th><th>Decision date</th><th>Offer</th><th>Health</th></tr></thead><tbody id="rows"></tbody></table></div></div>
     <aside class="card drill" id="detail" aria-live="polite"></aside>
   </div>
   <div class="card" id="alt" hidden></div>
@@ -1451,6 +1465,26 @@ function signals(c, asOf) {
   const health = out.some((s) => s.level === 'red') ? 'red' : out.some((s) => s.level === 'yellow') ? 'yellow' : 'green';
   return { health, signals: out, days };
 }
+/** The renewal process of the renewal team, in order. `days` are before the decision date (contract end minus notice period). */
+const PHASES = [
+  { id: 'watch', name: 'Watch', when: 'more than 180 days before the decision date', who: 'Renewal owner, customer success manager', what: 'The contract is on the renewal list and both people are named. Usage, tickets and invoices stay in view; nothing is offered yet.' },
+  { id: 'prepare', name: 'Prepare', when: '180 to 120 days before', who: 'Renewal owner with the customer success manager', what: 'Health review: usage against the licence, open tickets, overdue invoices, escalation, competitor. A first talk with the customer about budget, scope changes and who decides.' },
+  { id: 'offer', name: 'Offer', when: '120 days before until the offer is sent', who: 'Renewal owner, deal desk', what: 'The renewal offer is built: as it is, hold the contract cap, 3-year commitment, right-sized, or growth. The price is checked against the cap; the deal desk approves discounts; a person approves the offer.' },
+  { id: 'negotiate', name: 'Negotiate', when: 'offer sent, before the decision date', who: 'Account executive, customer procurement', what: 'The offer is with the customer: procurement, price benchmark, a competitor, legal terms. Weekly status; the offer validity is watched.' },
+  { id: 'decide', name: 'Decide and sign', when: 'on or after the decision date', who: 'Customer, account executive', what: 'The customer signs, or both sides agree an extension in writing, or the contract is allowed to end. After the decision date the renewal is overdue.' },
+  { id: 'order', name: 'Order and invoice', when: 'after signing', who: 'Order management, billing', what: 'Renewal order, new term and price, entitlements and invoice. From here the Order-to-Cash process takes over.' },
+  { id: 'winback', name: 'Win-back', when: 'the contract has ended', who: 'Account team', what: 'Lapsed contracts: talk to the technical contact, offer an entry price, send a reactivation offer, or close the case.' },
+];
+/** Which phase a renewal is in. `late` = the offer should already exist but does not. */
+function phaseOf(c, asOf, stage) {
+  if (c.status === 'Lapsed') return { phase: 'winback', late: false };
+  if (stage === 4) return { phase: 'order', late: false };
+  const days = daysBetween(asOf, c.decisionDate);
+  if (c.offer || stage >= 3) return { phase: days <= 0 ? 'decide' : 'negotiate', late: false };
+  if (days > 180) return { phase: 'watch', late: false };
+  if (days > 120 && stage < 1) return { phase: 'prepare', late: false };
+  return { phase: 'offer', late: days <= 90 };
+}
 /** Retention probability of a renewal: from its health, or the lapsed value. */
 const retention = (c, health, rules) => (c.status === 'Lapsed' ? rules.retention.lapsed : rules.retention[health]);
 const lifetimeYears = (p, rules) => Math.min(rules.lifetimeCapYears, Math.round((1 / (1 - Math.min(p, 0.99))) * 10) / 10);
@@ -1538,7 +1572,7 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared', 'Offer approved', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { kpi: null, status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false };
+const state = { phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -1550,11 +1584,11 @@ function compute() {
     if (run) state.stage[c.id] = 3;
     const st = state.stage[c.id] || 0;
     const p = retention(c, st === 4 ? 'green' : s.health, DATA.rules);
-    return { ...c, auto: ac, autoRun: !!state.auto && ac.eligible, email: ac.pick ? autoEmail(c, ac.pick) : null, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules) };
+    return { ...c, auto: ac, autoRun: !!state.auto && ac.eligible, email: ac.pick ? autoEmail(c, ac.pick) : null, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules), ph: phaseOf(c, DATA.asOf, st) };
   });
 }
 const byAuto = (a, b) => (b.autoRun - a.autoRun) || (a.autoRun ? a.customer.localeCompare(b.customer) || a.decisionDate.localeCompare(b.decisionDate) : 0);
-const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase()))).sort(state.auto ? byAuto : () => 0);
+const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && (!state.phase || c.ph.phase === state.phase) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase()))).sort(state.auto ? byAuto : () => 0);
 const autoTag = (c) => (c.autoRun ? ' <span class="pill auto" title="Handled by automatic renewal (simulated)">Auto</span>' : '');
 const live = (c) => c.status !== 'Lapsed' && c.stage < 4;
 function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c.customer)} · SAP customer ID ${esc(c.sapCustomerId)}</div><div style="margin-top:4px"><span class="pill ${c.health}">${LABEL[c.health]}</span> ${eur(c.annualEur)} a year</div><ul>${c.sig.signals.slice(0, 4).map((s) => `<li>${esc(s.text)}</li>`).join('')}</ul>`; }
@@ -1651,7 +1685,7 @@ function renderCustomers() {
     const s = custSit(cust), p = s.primary, hot = s.byPrio['Very high'], avg = s.usage.length ? Math.round(s.usage.reduce((a, u) => a + u.pct * u.annualEur, 0) / s.usage.reduce((a, u) => a + u.annualEur, 0)) : null;
     const tile = (cls, big, small, key) => `<div class="mt ${cls}"><b>${big}</b><span>${key}</span><small>${small}</small></div>`;
     return `<button type="button" class="ccard ${SIT[p.level]} ${focus === cust.id ? 'on' : ''}" data-cust="${esc(cust.id)}" aria-pressed="${focus === cust.id}">
-      <span class="ctop"><span class="sit ${SIT[p.level]}">${esc(p.label)}</span><span class="cname">${esc(cust.name)}</span><span class="cmeta">since ${esc(String(cust.since || ''))} · ${eur(s.renewalEur)} up for renewal · ${s.contracts} contracts</span></span>
+      <span class="ctop"><span class="sit ${SIT[p.level]}">${esc(p.label)}</span><span class="cname">${esc(cust.name)}</span><span class="cmeta">since ${esc(String(cust.since || ''))} · ${eur(s.renewalEur)} a year in ${s.contracts} contracts · ${model.filter((c) => c.customerId === cust.id && live(c) && c.health === 'red').length} red · next decision date ${esc((model.filter((c) => c.customerId === cust.id && live(c)).map((c) => c.decisionDate).sort()[0]) || '–')}</span></span>
       <span class="metrics">
         ${tile(hot ? 'red' : s.tickets.length ? 'amber' : 'ok', s.tickets.length, hot ? hot + ' very high' : 'none very high', 'open tickets')}
         ${tile(s.overdue.length ? 'amber' : 'ok', s.overdue.length, s.overdue.length ? eur(s.overdue.reduce((a, i) => a + i.grossEur, 0)) + ' overdue' : s.open.length + ' open, none late', 'invoices')}
@@ -1676,6 +1710,14 @@ function renderCustomers() {
     <div class="talk"><b>For the renewal talk</b><div>${esc(s.talk)}</div></div>
     <div style="margin-top:10px"><button class="small" id="cust-prep" type="button">Prepare the customer talk with Joule</button></div>`;
   $('#cust-prep').onclick = () => send(`Prepare the renewal talk with ${cust.name}: situation ${s.list.map((x) => x.label).join(', ')}. ${s.tickets.length} open tickets (${s.byPrio['Very high']} very high), ${s.overdue.length} overdue invoices, ${eur(s.renewalEur)} a year up for renewal. ${e ? 'Escalation: ' + e.topic + ' ' : ''}Use the Sub4Me tools and the skill customer-call-prep. Please answer in English.`);
+}
+function renderProcess() {
+  const el = $('#process'), sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), cur = state.phase ? PHASES.find((p) => p.id === state.phase) : null;
+  el.innerHTML = `<div class="bar" style="margin-bottom:4px"><h2 style="margin:0">Renewal process</h2>${state.phase ? '<button class="ghost" id="ph-clear" type="button">Show all phases</button>' : ''}</div><p class="sub">How the renewal team handles every contract of the three customers, in order. Each box counts the contracts that are in that phase today; click a box to filter the radar and the list below, and to read what happens there.</p>` +
+    `<div class="pl" role="group" aria-label="Renewal phases">${PHASES.map((p, i) => { const l = model.filter((c) => c.ph.phase === p.id), late = l.filter((c) => c.ph.late).length; return `<button type="button" class="ph" data-ph="${p.id}" aria-pressed="${state.phase === p.id}"><span class="no">${i + 1}${p.id === 'winback' ? ' · side path' : ''}</span><b>${esc(p.name)}</b><span class="n">${l.length}</span><small>${l.length ? eur(sum(l)) + ' a year' : 'none today'}</small>${late ? `<span class="late">${late} behind</span>` : ''}</button>`; }).join('')}</div>` +
+    (cur ? `<dl class="pdesc"><dt>When</dt><dd>${esc(cur.when)}</dd><dt>Who</dt><dd>${esc(cur.who)}</dd><dt>What</dt><dd>${esc(cur.what)}</dd></dl>` : '<p class="note">The process runs left to right. A contract is "behind" when its offer should exist by now (90 days before the decision date) but does not.</p>');
+  el.querySelectorAll('[data-ph]').forEach((b) => (b.onclick = () => { state.phase = state.phase === b.dataset.ph ? null : b.dataset.ph; renderAll(); }));
+  const cl = $('#ph-clear'); if (cl) cl.onclick = () => { state.phase = null; renderAll(); };
 }
 function renderTimeline() {
   const list = visible(), months = [];
@@ -1739,28 +1781,37 @@ function renderAlt() {
   el.querySelector('[data-alt="note"]').onclick = () => send(`Draft a short cover note to the customer for the renewal of ${c.product} at ${c.customer} (SAP customer ID ${c.sapCustomerId}), option "${c.chosen.name}": ${eur(c.chosen.annualEur)} a year, ${c.chosen.termMonths} months, ${c.chosen.changePct > 0 ? '+' : ''}${c.chosen.changePct} % against today. Keep it factual and name what the customer gets. A person reviews it before sending. Please answer in English.`);
 }
 const byId = (id) => model.find((c) => c.id === id);
+const named = (id) => { const c = byId(id); return c ? `${c.customer} · ${c.product} · contract ${c.contractId} · SAP customer ID ${c.sapCustomerId}` : ''; };
+const cnt = (f) => model.filter(f).length;
 const STEPS = [
-  { t: 'The renewal radar', x: 'Every renewal on one time line: the diamond is the decision date, the bar runs to the contract end, the dashed line is today. Red and yellow ones are where to look.', on: () => { state.status = 'all'; } },
-  { t: 'What is due first?', x: 'SuccessFactors at Muster Industrie: the decision date passed 17 days ago. The offer is open, so the next action is a written extension and a signing date.', on: () => { state.sel = 'R-C-2025-0041'; } },
-  { t: 'Why is Ariba red?', x: 'Decision date in 14 days, an overdue invoice, a competitor evaluating and a price rise above the contract cap. Every signal is listed, so the colour is explainable.', on: () => { state.sel = 'R-C-2023-0390'; } },
-  { t: 'Retention value and alternatives', x: 'What is this customer worth? The lifetime value, the alternative offers (hold the cap, 3-year commitment, right-sized) and the retention levers are side by side. The best value within the contract cap is marked; here we choose it and prepare the talk.', on: () => { state.sel = 'R-C-2023-0390'; state.option['R-C-2023-0390'] = 'cap'; state.stage['R-C-2023-0390'] = 1; } },
-  { t: 'A person approves', x: 'The account executive approves the offer. Nothing goes to the customer without this step.', on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 2; } },
-  { t: 'Send and sign (simulated)', x: 'The offer is sent and signed. The case turns green and the signed value appears in the KPIs. Reset the demo to start over.', on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 4; } },
-  { t: 'Fully automatic below 30,000 €', x: 'Small add-on contracts need no person: switch on automatic renewal. Eligible ones (below the threshold, no warning signal, price within the cap) get an offer and an e-mail on their own (simulated). The sandbox with an overdue invoice and the storage package above the threshold still go to a person.', on: () => { state.auto = true; $('#auto').checked = true; state.sel = 'R-C-2026-0902'; } },
+  { t: 'The renewal process', where: ['#process'], area: 'Renewal process', x: 'This is how the renewal team works, from watching a contract to the signed order. Every contract of the three customers sits in exactly one phase today. The page below follows the same order: customers, radar, list, details.', data: () => `${model.length} contracts of 3 customers. In the offer phase: ${cnt((c) => c.ph.phase === 'offer')}, of which ${cnt((c) => c.ph.late)} are behind. With the customer (negotiate): ${cnt((c) => c.ph.phase === 'negotiate')}. Past the decision date: ${cnt((c) => c.ph.phase === 'decide')}.`, on: () => { state.status = 'all'; } },
+  { t: 'Three customers, one team', where: ['#cust'], area: 'Customer cards', x: 'The three cards are the three customers. Each shows what is up for renewal at that customer, how many contracts are red and when the next decision date is. Click a card to filter the radar and the list to this customer; the panel on the right shows its tickets, invoices and usage against the licence.', data: () => DATA.customers.map((cu) => { const l = model.filter((c) => c.customerId === cu.id && live(c)); return `${cu.name.split(' ')[0]}: ${l.length} contracts, ${eur(l.reduce((a, c) => a + c.annualEur, 0))} a year`; }).join(' · '), on: () => {} },
+  { t: 'The renewal radar', where: ['#radar'], area: 'Renewal radar', x: 'Every contract of all three customers on one time line. The diamond is the decision date, the bar runs to the contract end, the dashed line is today. Red and yellow bars are the ones to look at first.', data: () => `${cnt((c) => c.health === 'red')} red, ${cnt((c) => c.health === 'yellow')} yellow, ${cnt((c) => c.health === 'green')} green. Lapsed contracts show only the diamond and a mark for the end.`, on: () => {} },
+  { t: 'What is due first?', where: ['#rows tr[aria-selected=true]', '#list'], area: 'Renewals by decision date', x: 'The list sorts the same contracts by decision date, earliest first. At the top: SuccessFactors at Muster Industrie. The decision date passed 17 days ago and the offer is still open, so the next action is a written extension and a signing date.', data: () => named('R-C-2025-0041'), on: () => { state.sel = 'R-C-2025-0041'; } },
+  { t: 'Why is Ariba red?', where: ['#detail'], area: 'Details (right of the list)', x: 'Decision date in 14 days, an overdue invoice, a competitor evaluating and a price rise above the contract cap. Every signal is listed, so the colour can be explained to the customer and to the manager.', data: () => named('R-C-2023-0390'), on: () => { state.sel = 'R-C-2023-0390'; } },
+  { t: 'Retention value and alternatives', where: ['#alt'], area: 'Retention and alternative offers', x: 'What is this customer worth? Lifetime value, the alternative offers (hold the cap, 3-year commitment, right-sized) and the retention levers side by side. The best value within the contract cap is marked; here the cap option is chosen and the talk is prepared.', data: () => named('R-C-2023-0390'), on: () => { state.sel = 'R-C-2023-0390'; state.option['R-C-2023-0390'] = 'cap'; state.stage['R-C-2023-0390'] = 1; } },
+  { t: 'A person approves', where: ['#detail'], area: 'Details, approval button', x: 'The account executive approves the offer. Nothing goes to the customer without this step.', data: () => named('R-C-2023-0390'), on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 2; } },
+  { t: 'Send and sign (simulated)', where: ['#kpis'], area: 'The boxes at the top', x: 'The offer is sent and signed. The case turns green, moves to the phase Order and invoice, and the signed value appears in the boxes. Reset the demo to start over.', data: () => `${named('R-C-2023-0390')} · signed value ${eur((byId('R-C-2023-0390').chosen || {}).annualEur || 0)} a year`, on: () => { state.sel = 'R-C-2023-0390'; state.stage['R-C-2023-0390'] = 4; } },
+  { t: 'Fully automatic below 30,000 €', where: ['#rows tr.isauto', '#list'], area: 'Renewals by decision date (rows marked Auto)', x: 'Small add-on contracts need no person: automatic renewal is switched on. Eligible ones (below the threshold, no warning signal, price within the cap) get an offer and an e-mail on their own (simulated). The sandbox with an overdue invoice and the storage package above the threshold still go to a person.', data: () => `${cnt((c) => c.autoRun)} contracts handled automatically, e.g. ${named('R-C-2026-0902')}`, on: () => { state.auto = true; $('#auto').checked = true; state.sel = 'R-C-2026-0902'; } },
 ];
+function spot(sels) {
+  document.querySelectorAll('.spot').forEach((e) => e.classList.remove('spot'));
+  const t = (sels || []).map((q) => document.querySelector(q)).find(Boolean);
+  if (t) { t.classList.add('spot'); t.scrollIntoView({ behavior: 'auto', block: 'start' }); }
+}
 function renderGuide() {
   const g = $('#guide');
-  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Seven steps from the renewal radar to a signed renewal, and the automatic path for small contracts: see, find the urgent one, understand, prepare, approve, sign, automate.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
+  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Nine steps through the renewal process: the process, the three customers, the radar, the list, one renewal in detail, approval, signing and the automatic path. Each step jumps to the right place and outlines it.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
   const s = STEPS[state.step];
-  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
-  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
+  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="where"><b>Where:</b> ${esc(s.area)} (outlined below) · <b>Data:</b> ${esc(s.data())}</div><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
+  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll(), spot(null)) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); spot(null); };
 }
-function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '' }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); }
-function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderNba(); renderKpis(); renderKpiDetail(); renderBar(); renderGuide(); renderCustomers(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
+function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, status: 'all', customer: 'all', q: '', phase: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); compute(); renderAll(); spot(STEPS[i].where); }
+function renderAll() { $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`; renderNba(); renderKpis(); renderKpiDetail(); renderBar(); renderGuide(); renderProcess(); renderCustomers(); renderTimeline(); renderRows(); renderDetail(); renderAlt(); }
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
 $('#customer').onchange = (e) => { state.customer = e.target.value; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
-$('#reset').onclick = () => { $('#auto').checked = false; Object.assign(state, { kpi: null, status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#reset').onclick = () => { $('#auto').checked = false; Object.assign(state, { phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
 $('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 $('#assump').textContent = `Illustrative assumptions, not real figures: gross margin ${DATA.rules.marginPct} %; expected retention by health: green ${DATA.rules.retention.green * 100} %, yellow ${DATA.rules.retention.yellow * 100} %, red ${DATA.rules.retention.red * 100} %, lapsed ${DATA.rules.retention.lapsed * 100} %. Expected lifetime = 1 / (1 − retention), at most ${DATA.rules.lifetimeCapYears} years. Lifetime value = annual value × margin × expected lifetime. Each alternative offer changes the annual value, the term and the retention.`;

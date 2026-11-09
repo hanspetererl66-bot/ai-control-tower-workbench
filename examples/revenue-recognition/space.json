@@ -1,0 +1,12 @@
+{
+  "title": "Revenue Recognition (Software)",
+  "description": "Teaching mockup of revenue recognition for a software licence deal (IFRS 15 and ASC 606): the five steps, performance obligations, price allocation, monthly schedule, balances and journal entries, variable consideration, contract changes, contract costs, disclosures and key judgements. Fictional sample data.",
+  "domain": "Finance",
+  "insights": [
+    "One contract with three kinds of software and three services: licences are recognised at one point in time, subscription and operations evenly, services by progress, usage as it arises.",
+    "Billed, recognised and collected are three numbers. At the end of December 2026: 78,800.00 billed, 96,052.64 recognised, 73,400.00 collected.",
+    "The committed price of 388,000.00 is shared out by stand-alone price; the 28,700.00 discount is spread proportionally, or lands on the licence under the residual approach.",
+    "Fictional sample data. Not accounting advice; the policy choices must be confirmed by the company's accountants."
+  ],
+  "prompt": "Bundled example: Revenue Recognition for a software licence deal (static mockup, data embedded by npm run sync:mockups)."
+}

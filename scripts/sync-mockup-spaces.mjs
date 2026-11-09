@@ -21,6 +21,7 @@ export const MOCKUPS = [
   { page: 'examples/onboarding/index.html', data: 'examples/onboarding/data.json' },
   { page: 'examples/order-to-cash/index.html', data: 'examples/order-to-cash/data.json' },
   { page: 'examples/order-to-cash-software/index.html', data: 'examples/order-to-cash-software/data.json' },
+  { page: 'examples/revenue-recognition/index.html', data: 'examples/revenue-recognition/data.json' },
   { page: 'examples/customer-360/index.html', data: 'examples/customer-360/data.json' },
 ];
 /** Catalog Spaces: real, sourced facts (not fictional), embedded the same way. */

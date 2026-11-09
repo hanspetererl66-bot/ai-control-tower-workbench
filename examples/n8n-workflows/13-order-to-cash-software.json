@@ -1,0 +1,683 @@
+{
+  "name": "Demo 13 (order to cash): software order",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Order to cash for software: from the signed contract to revenue\nOne call per system, in the order of the process: CRM, order, material, entitlement, provisioning, billing, revenue. Every HTTP node **reads or posts through the system's own interface and returns a record**; the workflow decides nothing.\n**Three places where a person decides** (Wait nodes, resumed by a webhook call): the deviations of the entitlement check, the customer's confirmation of receipt, the true-up of consumption. Whoever resumes the run is recorded in the run history of n8n.\n**Setup:** set the environment variables `CRM_URL`, `ORDER_URL`, `MATERIAL_URL`, `ENTITLEMENT_URL`, `PROVISIONING_URL`, `BILLING_URL`, `REVENUE_URL` and `O2C_API_KEY` (keep the key out of the workflow). n8n must allow `$env` in expressions (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`). Start the run with a POST to `/webhook/o2c-software` and `{\"contractId\": \"C-4410\"}`.\n**Not tested against real systems.** The seven systems in the Space are fictional; the URLs and tool paths here only show the order and the shape of the calls.",
+        "height": 380,
+        "width": 820,
+        "color": 4
+      },
+      "id": "be67757b-1c82-50f3-9a8e-c924a6a381cc",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -460
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "o2c-software",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "d3c74e8f-f010-5193-92d5-6e93467f10c4",
+      "name": "Contract signed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "0fd1dd2f-0e22-5e8b-a9d6-f0519c78e26f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CRM_URL }}/tools/crm_get_contract",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S1' }) }}",
+        "options": {}
+      },
+      "id": "2ef793c3-0ae8-5766-ba28-a19d0df284c4",
+      "name": "1. Contract signed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ORDER_URL }}/tools/s4_create_sales_order",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S2' }) }}",
+        "options": {}
+      },
+      "id": "22fdbe11-5679-588c-b0e7-82ded99e8684",
+      "name": "2. Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATERIAL_URL }}/tools/mat_derive_bom",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S3' }) }}",
+        "options": {}
+      },
+      "id": "b15e4ae9-d976-56ca-b082-63883a133a4d",
+      "name": "3. Bill of material",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ENTITLEMENT_URL }}/tools/ent_check",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S4' }) }}",
+        "options": {}
+      },
+      "id": "e0462ca6-9589-557f-9e0a-a75e9451ddf3",
+      "name": "4. Entitlement check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "id": "1249d852-cb8d-5354-96eb-507077d96936",
+      "name": "Decision: deviations corrected?",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1300,
+        0
+      ],
+      "webhookId": "66115845-1ea8-50b5-b01b-0962c7221730"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ORDER_URL }}/tools/s4_create_delivery",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S5' }) }}",
+        "options": {}
+      },
+      "id": "72e3ac4f-1d87-51c7-93d5-b942c8e16a7c",
+      "name": "5. Delivery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ORDER_URL }}/tools/s4_post_goods_receipt",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S6' }) }}",
+        "options": {}
+      },
+      "id": "3eec2dd4-aad7-57cf-bc7c-a553905f14bf",
+      "name": "6. Goods receipt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "id": "07758241-6494-5f21-821e-0c00ae5108f7",
+      "name": "Customer confirms receipt",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        0
+      ],
+      "webhookId": "8bdb13fc-aad4-590d-af14-614be897ae90"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ENTITLEMENT_URL }}/tools/ent_grant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S7' }) }}",
+        "options": {}
+      },
+      "id": "905f4149-3b30-5f87-85c4-cd5ea4487568",
+      "name": "7. Entitlement granted",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.PROVISIONING_URL }}/tools/prov_create_tenant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S8' }) }}",
+        "options": {}
+      },
+      "id": "bb100994-bd72-5422-93f9-fd93c97b482b",
+      "name": "8. Technical provisioning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.PROVISIONING_URL }}/tools/s4_confirm_fulfilment",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S9' }) }}",
+        "options": {}
+      },
+      "id": "94d391c1-b7b1-5362-9c13-86a6fece1203",
+      "name": "9. Completion message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BILLING_URL }}/tools/sub_create_invoice_plan",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S10' }) }}",
+        "options": {}
+      },
+      "id": "7874ef67-4d82-576f-971e-2759a658964d",
+      "name": "10. Billing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BILLING_URL }}/tools/sub_compare_usage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S11' }) }}",
+        "options": {}
+      },
+      "id": "ef9ecbf7-f74a-5b30-8346-6268cdf17ffc",
+      "name": "11. Consumption against billing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "id": "a3fc47c2-deed-5599-9be3-fdef136ac893",
+      "name": "Decision: true-up invoice",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1300,
+        240
+      ],
+      "webhookId": "77406f8f-1c45-50c1-9ebd-8180e0189e6b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.REVENUE_URL }}/tools/rev_post_schedule",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S12' }) }}",
+        "options": {}
+      },
+      "id": "4fbd2962-a0ba-5265-8440-7720eff85972",
+      "name": "12. Revenue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BILLING_URL }}/tools/s4_post_incoming_payment",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S13' }) }}",
+        "options": {}
+      },
+      "id": "6cf3d76b-3392-5575-ab95-a209d0245598",
+      "name": "13. Cash receipt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.REVENUE_URL }}/tools/rev_close_period",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.O2C_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contractId: $('Contract signed').first().json.body.contractId, step: 'S14' }) }}",
+        "options": {}
+      },
+      "id": "f48e66e3-314a-5489-811a-ae43ee33fde5",
+      "name": "14. Revenue recognition",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { contractId: $('Contract signed').first().json.body.contractId, process: 'order-to-cash-software', finished: true, note: 'Billed, recognised and collected are read from the revenue system in the last step.' } }];"
+      },
+      "id": "6954371a-7d1e-55e3-97e3-79e1c7cd68b2",
+      "name": "Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Contract signed": {
+      "main": [
+        [
+          {
+            "node": "1. Contract signed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Contract signed": {
+      "main": [
+        [
+          {
+            "node": "2. Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Order": {
+      "main": [
+        [
+          {
+            "node": "3. Bill of material",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Bill of material": {
+      "main": [
+        [
+          {
+            "node": "4. Entitlement check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Entitlement check": {
+      "main": [
+        [
+          {
+            "node": "Decision: deviations corrected?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision: deviations corrected?": {
+      "main": [
+        [
+          {
+            "node": "5. Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Delivery": {
+      "main": [
+        [
+          {
+            "node": "6. Goods receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Goods receipt": {
+      "main": [
+        [
+          {
+            "node": "Customer confirms receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer confirms receipt": {
+      "main": [
+        [
+          {
+            "node": "7. Entitlement granted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Entitlement granted": {
+      "main": [
+        [
+          {
+            "node": "8. Technical provisioning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Technical provisioning": {
+      "main": [
+        [
+          {
+            "node": "9. Completion message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Completion message": {
+      "main": [
+        [
+          {
+            "node": "10. Billing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10. Billing": {
+      "main": [
+        [
+          {
+            "node": "11. Consumption against billing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11. Consumption against billing": {
+      "main": [
+        [
+          {
+            "node": "Decision: true-up invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision: true-up invoice": {
+      "main": [
+        [
+          {
+            "node": "12. Revenue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12. Revenue": {
+      "main": [
+        [
+          {
+            "node": "13. Cash receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "13. Cash receipt": {
+      "main": [
+        [
+          {
+            "node": "14. Revenue recognition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "14. Revenue recognition": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

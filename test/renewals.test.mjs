@@ -11,7 +11,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/renewals/index.html');
 const data = JSON.parse(read(DATA_FILE));
-const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers })`);
+const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers, PHASES, phaseOf })`);
 const byContract = (id) => data.cases.find((c) => c.contractId === id);
 const health = (id) => logic.signals(byContract(id), AS_OF);
 
@@ -58,9 +58,9 @@ test('every case has at least one action and the actions follow the priority ord
   assert.match(logic.actions(byContract('C-2023-0390'), s)[0], /overdue invoice/, 'an overdue invoice comes first');
 });
 
-test('page: radar, table, detail, seven demo steps, English chat prompts, no network', () => {
+test('page: radar, table, detail, nine demo steps, English chat prompts, no network', () => {
   for (const id of ['kpis', 'guide', 'tl', 'rows', 'detail', 'customer', 'q', 'reset', 'cust-cards', 'cust-panel']) assert.match(page, new RegExp(`id="${id}"`));
-  assert.equal((page.match(/\{ t: '/g) || []).length, 7);
+  assert.equal((page.match(/\{ t: '/g) || []).length, 9);
   assert.match(page, /customer-call-prep/);
   assert.match(page, /pricing-guard/);
   assert.equal((page.match(/Please answer in English/g) || []).length, 6);
@@ -125,4 +125,31 @@ test('customer situation: escalation, payment, usage and growth are derived from
   assert.match(muster.talk, /escalation/);
   const calm = sit({ id: 'x', escalation: null }, []);
   assert.equal(calm.primary.key, 'stable');
+});
+
+test('renewal process: seven phases in order and every contract is in exactly one phase', () => {
+  assert.deepEqual(Array.from(logic.PHASES, (p) => p.id), ['watch', 'prepare', 'offer', 'negotiate', 'decide', 'order', 'winback']);
+  logic.PHASES.forEach((p) => ['name', 'when', 'who', 'what'].forEach((k) => assert.ok(p[k], p.id + ' ' + k)));
+  const ids = new Set(logic.PHASES.map((p) => p.id));
+  data.cases.forEach((c) => assert.ok(ids.has(logic.phaseOf(c, AS_OF, 0).phase), c.id));
+});
+
+test('renewal process: phase rules', () => {
+  const base = { status: 'Running', offer: null, decisionDate: '2027-06-01' };
+  assert.equal(logic.phaseOf(base, '2026-10-19', 0).phase, 'watch');
+  assert.equal(logic.phaseOf({ ...base, decisionDate: '2027-03-01' }, '2026-10-19', 0).phase, 'prepare');
+  assert.deepEqual({ ...logic.phaseOf({ ...base, decisionDate: '2026-12-01' }, '2026-10-19', 0) }, { phase: 'offer', late: true });
+  assert.equal(logic.phaseOf({ ...base, decisionDate: '2027-01-30' }, '2026-10-19', 0).late, false);
+  assert.equal(logic.phaseOf({ ...base, offer: {}, decisionDate: '2026-11-30' }, '2026-10-19', 0).phase, 'negotiate');
+  assert.equal(logic.phaseOf({ ...base, offer: {}, decisionDate: '2026-10-02' }, '2026-10-19', 0).phase, 'decide');
+  assert.equal(logic.phaseOf(base, '2026-10-19', 4).phase, 'order');
+  assert.equal(logic.phaseOf({ ...base, status: 'Lapsed' }, '2026-10-19', 0).phase, 'winback');
+});
+
+test('demo flow: every step names where it jumps to, the targets exist, and the calm colours use tokens only', () => {
+  const steps = page.slice(page.indexOf('const STEPS = ['), page.indexOf('function spot('));
+  assert.equal((steps.match(/where: \[/g) || []).length, 9);
+  for (const id of ['process', 'cust', 'radar', 'list', 'detail', 'alt', 'kpis']) assert.match(page, new RegExp(`id="${id}"`), id);
+  assert.match(page, /\.ring \.od\{stroke:color-mix\(in srgb,var\(--amber\)/);
+  assert.doesNotMatch(page.slice(page.indexOf('.hb{display'), page.indexOf('.mailchip{')), /#[0-9a-fA-F]{3,6}\b/);
 });

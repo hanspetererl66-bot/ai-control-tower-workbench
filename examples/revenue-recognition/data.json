@@ -1,0 +1,593 @@
+{
+  "asOf": "2026-11-08",
+  "company": "Rheinsoft Solutions (fictional)",
+  "currency": "EUR",
+  "terms": 30,
+  "customer": {
+    "name": "Kestrel Versicherung AG",
+    "billTo": "Kestrel Group Services GmbH",
+    "country": "DE"
+  },
+  "contract": {
+    "id": "C-4410",
+    "signed": "2026-10-28",
+    "serviceStart": "2026-12-01",
+    "months": 36,
+    "order": "OF-7731",
+    "salesOrder": "SO-90412",
+    "bom": "BOM-90412"
+  },
+  "lines": [
+    {
+      "id": "L10",
+      "kind": "License",
+      "name": "Architect Server licences",
+      "material": "SW-LIC-ARCH",
+      "model": "Licence purchase (perpetual)",
+      "qty": 40,
+      "unit": "licence",
+      "unitPrice": 1450,
+      "price": 58000,
+      "ssp": 64000,
+      "pattern": "point",
+      "fulfil": "key",
+      "recognizeOn": "2026-11-04",
+      "billOn": "2026-11-10",
+      "recognitionNote": "Right to use: revenue at one point in time, when the keys are delivered and the customer can use the software."
+    },
+    {
+      "id": "L20",
+      "kind": "Subscription",
+      "name": "Insight Cloud subscription",
+      "material": "SW-SUB-INSIGHT",
+      "model": "Monthly subscription, 250 users",
+      "qty": 250,
+      "unit": "user per month",
+      "unitPrice": 28,
+      "monthly": 7000,
+      "months": 36,
+      "start": "2026-12",
+      "price": 252000,
+      "ssp": 270000,
+      "pattern": "ratable",
+      "fulfil": "tenant",
+      "recognitionNote": "Right to access (SaaS): revenue evenly over the 36 months."
+    },
+    {
+      "id": "L21",
+      "kind": "Overage",
+      "name": "Insight Cloud overage",
+      "material": "SW-SUB-INSIGHT",
+      "model": "Subscription overage above 250 users",
+      "parent": "L20",
+      "included": 250,
+      "rate": 34,
+      "unit": "user per month",
+      "pattern": "overage",
+      "fulfil": "meter",
+      "periods": [
+        {
+          "month": "2026-12",
+          "peak": 268,
+          "billedOn": "2027-01-05"
+        },
+        {
+          "month": "2027-01",
+          "peak": 255,
+          "billedOn": "2027-02-05"
+        }
+      ],
+      "recognitionNote": "Variable consideration: recognised in the month the extra users are there, at the contract rate."
+    },
+    {
+      "id": "L30",
+      "kind": "Consumption",
+      "name": "Flow Engine consumption",
+      "material": "SW-USE-FLOW",
+      "model": "Software on consumption, billed in arrears",
+      "rate": 0.4,
+      "per": 1000,
+      "unit": "API calls",
+      "pattern": "usage",
+      "fulfil": "meter",
+      "periods": [
+        {
+          "month": "2026-12",
+          "metered": 28400000,
+          "billed": 26100000,
+          "billedOn": "2027-01-05",
+          "trueUpOn": "2027-01-15"
+        },
+        {
+          "month": "2027-01",
+          "metered": 31000000,
+          "billed": 31000000,
+          "billedOn": "2027-02-05"
+        }
+      ],
+      "recognitionNote": "Usage-based fee: revenue as the calls are made. Not part of the committed price."
+    },
+    {
+      "id": "L40",
+      "kind": "Service",
+      "name": "Implementation",
+      "material": "SRV-IMPL",
+      "model": "Fixed fee, three milestones",
+      "qty": 1,
+      "unit": "project",
+      "price": 24000,
+      "ssp": 26000,
+      "pattern": "milestone",
+      "fulfil": "service",
+      "milestones": [
+        {
+          "id": "M1",
+          "name": "Design accepted (30 %)",
+          "share": 0.3,
+          "acceptedOn": "2026-11-20"
+        },
+        {
+          "id": "M2",
+          "name": "Build accepted (40 %)",
+          "share": 0.4,
+          "acceptedOn": "2027-01-15"
+        },
+        {
+          "id": "M3",
+          "name": "Go-live accepted (30 %)",
+          "share": 0.3,
+          "plannedOn": "2027-02-26"
+        }
+      ],
+      "progress": [
+        {
+          "on": "2026-11-30",
+          "pct": 0.2
+        },
+        {
+          "on": "2026-12-31",
+          "pct": 0.45
+        },
+        {
+          "on": "2027-01-31",
+          "pct": 0.75
+        },
+        {
+          "on": "2027-02-28",
+          "pct": 1
+        }
+      ],
+      "recognitionNote": "Over time by progress (hours worked against plan). Billing follows the milestones, so the two differ."
+    },
+    {
+      "id": "L50",
+      "kind": "Service",
+      "name": "Training",
+      "material": "SRV-TRN",
+      "model": "Time and material, 6 days",
+      "qty": 6,
+      "unit": "day",
+      "unitPrice": 1800,
+      "price": 10800,
+      "ssp": 11700,
+      "pattern": "units",
+      "fulfil": "service",
+      "periods": [
+        {
+          "on": "2026-12-08",
+          "units": 3,
+          "billedOn": "2026-12-31"
+        },
+        {
+          "on": "2027-01-19",
+          "units": 3,
+          "billedOn": "2027-01-31"
+        }
+      ],
+      "recognitionNote": "Recognised when a training day has been held; billed at the end of that month."
+    },
+    {
+      "id": "L60",
+      "kind": "Service",
+      "name": "Managed operations (Premium)",
+      "material": "SRV-MGD",
+      "model": "Monthly service fee, 36 months",
+      "qty": 1,
+      "unit": "month",
+      "monthly": 1200,
+      "months": 36,
+      "start": "2026-12",
+      "price": 43200,
+      "ssp": 45000,
+      "pattern": "ratable",
+      "fulfil": "service",
+      "recognitionNote": "Stand-ready service: revenue evenly over the 36 months."
+    }
+  ],
+  "title": "Revenue Recognition (Software)",
+  "steps": [
+    {
+      "n": 1,
+      "name": "Identify the contract",
+      "question": "Is there an enforceable contract, and are these papers one contract or several?",
+      "case": "Contract C-4410 (signed 2026-10-28) with Kestrel Versicherung AG: rights and payment terms are clear, the customer has the commitment, payment is probable. The order form, the master agreement and the service description are read as one contract because they were negotiated together.",
+      "judge": "Combining contracts signed at about the same time; contract term when either side can cancel; free pilots before the contract; side letters.",
+      "owner": "Revenue accounting with Legal"
+    },
+    {
+      "n": 2,
+      "name": "Identify the performance obligations",
+      "question": "Which promises are distinct, so that each gets its own revenue?",
+      "case": "Five committed obligations: Architect Server licences, Insight Cloud subscription, implementation, training, managed operations. Overage and consumption are not promised in advance; they are usage that adds up later.",
+      "judge": "Is the implementation distinct from the cloud service, or does it change the service so much that both are one obligation? Is support part of the licence or separate?",
+      "owner": "Revenue accounting with Product"
+    },
+    {
+      "n": 3,
+      "name": "Determine the transaction price",
+      "question": "What does the company expect to receive?",
+      "case": "Fixed 388,000.00 EUR. On top: overage at 34.00 per extra user and 0.40 per 1,000 API calls. These are variable and are not in the fixed price. Possible reductions: service credits for missed availability, volume rebate.",
+      "judge": "Variable consideration (estimate, then limit it so a large reversal is not likely), service credits, rebates, significant financing (payment terms beyond one year), money paid to the customer.",
+      "owner": "Revenue accounting with Sales"
+    },
+    {
+      "n": 4,
+      "name": "Allocate the price",
+      "question": "How is the price shared out to the obligations?",
+      "case": "By stand-alone selling price: 416,700.00 at list, 388,000.00 charged, so a discount of 28,700.00 (6.9 %) is shared proportionally. Usage and overage stay out because their rates match the stand-alone price.",
+      "judge": "Evidence for the stand-alone price (what do others pay for the same?); relative method or residual approach; whether the discount belongs to one obligation only.",
+      "owner": "Pricing with Revenue accounting"
+    },
+    {
+      "n": 5,
+      "name": "Recognise the revenue",
+      "question": "When is each obligation satisfied?",
+      "case": "Licences at one point in time when the keys are delivered (2026-11-04). Subscription and managed operations evenly over 36 months from 2026-12-01. Implementation by progress, training by day held, usage and overage as they arise.",
+      "judge": "Licence or service? Point in time or over time? Method for measuring progress. Customer acceptance clauses.",
+      "owner": "Revenue accounting"
+    }
+  ],
+  "treatments": [
+    {
+      "id": "perp",
+      "name": "Perpetual on-premise licence",
+      "pattern": "Point in time",
+      "why": "The customer can run the software on its own systems. It is a right to use the software as it exists. Revenue when the keys are delivered and the licence period has started.",
+      "watch": "A customer acceptance clause can delay the point. Updates that are promised are a separate service.",
+      "refs": "IFRS 15 B58 to B62, ASC 606-10-55-58 to 55-64",
+      "je": "Dr Receivable, Cr Revenue",
+      "inCase": "L10"
+    },
+    {
+      "id": "term",
+      "name": "Term licence on-premise (for example 3 years)",
+      "pattern": "Point in time",
+      "why": "The licence part is recognised at the start of the term, not spread over it. Support for the term is a separate service, recognised evenly.",
+      "watch": "Multi-year payment in arrears can contain a financing component. A renewal is recognised at the start of the renewal period, never earlier.",
+      "refs": "IFRS 15 B58 to B62, B63",
+      "je": "Dr Receivable, Cr Revenue (licence); Dr Receivable, Cr Deferred revenue (support)"
+    },
+    {
+      "id": "saas",
+      "name": "Software as a service (subscription)",
+      "pattern": "Over time",
+      "why": "The customer gets access, not the software. The company stands ready every day, so revenue is spread evenly over the term.",
+      "watch": "If the customer can take the software and run it elsewhere without a major penalty, it is a licence plus hosting instead.",
+      "refs": "IFRS 15 35(a), ASC 606-10-25-27(a)",
+      "je": "Dr Receivable, Cr Deferred revenue; each month Dr Deferred revenue, Cr Revenue",
+      "inCase": "L20"
+    },
+    {
+      "id": "hosted",
+      "name": "Hosted licence (customer could take possession)",
+      "pattern": "Point in time + over time",
+      "why": "Two parts: the licence at one point in time, the hosting evenly over the term.",
+      "watch": "Needs an honest answer to: could the customer run it on its own or a third party's hardware without a significant penalty?",
+      "refs": "ASC 985-20-15-5; IFRS 15 B52",
+      "je": "Split the price by stand-alone price first"
+    },
+    {
+      "id": "pcs",
+      "name": "Support and maintenance",
+      "pattern": "Over time",
+      "why": "A ready-to-help promise, recognised evenly. Updates that come when and if available are part of it.",
+      "watch": "If the support is so basic that the customer needs it to use the software, it can be one obligation with the licence.",
+      "refs": "IFRS 15 B49 to B51",
+      "je": "Dr Receivable, Cr Deferred revenue; monthly release to Revenue"
+    },
+    {
+      "id": "usage",
+      "name": "Consumption fee (per call, per transaction)",
+      "pattern": "As incurred",
+      "why": "The amount depends on use. It is recognised in the month the use happens, at the contract rate.",
+      "watch": "Two rules look similar: for a licence of intellectual property the royalty is recognised at the later of use and satisfaction; for a service the fee belongs to the period of use. Check the rate against the stand-alone price.",
+      "refs": "IFRS 15 85 and B63, ASC 606-10-32-40 and 55-65",
+      "je": "Dr Contract asset (or Receivable), Cr Revenue each month; invoice later",
+      "inCase": "L30"
+    },
+    {
+      "id": "overage",
+      "name": "Overage above a committed volume",
+      "pattern": "As incurred",
+      "why": "The extra users or calls are variable. Revenue in the month they occur, invoiced in arrears.",
+      "watch": "If the overage rate is far below the normal price, part of the committed price may have to move to it.",
+      "refs": "IFRS 15 50 to 59",
+      "je": "Dr Contract asset, Cr Revenue; on invoice Dr Receivable, Cr Contract asset",
+      "inCase": "L21"
+    },
+    {
+      "id": "impl",
+      "name": "Implementation and configuration",
+      "pattern": "Over time (by progress)",
+      "why": "If another company could do it and the cloud service works without it, it is distinct: revenue by hours worked against plan or by milestones that show real progress.",
+      "watch": "If the work changes the service itself, it is one obligation with the subscription and follows its pattern.",
+      "refs": "IFRS 15 27 to 30, 35",
+      "je": "Invoice by milestone: Dr Receivable, Cr Deferred revenue; progress: Dr Deferred revenue or Contract asset, Cr Revenue",
+      "inCase": "L40"
+    },
+    {
+      "id": "train",
+      "name": "Training",
+      "pattern": "As delivered",
+      "why": "Each day held is revenue. Prepaid vouchers are deferred and released when used or when the customer will not use them.",
+      "watch": "Unused vouchers (breakage) need an estimate based on history.",
+      "refs": "IFRS 15 B44 to B47",
+      "je": "Dr Receivable, Cr Deferred revenue; Dr Deferred revenue, Cr Revenue per day",
+      "inCase": "L50"
+    },
+    {
+      "id": "ops",
+      "name": "Managed operations",
+      "pattern": "Over time",
+      "why": "A stand-ready service, recognised evenly over the term.",
+      "watch": "Penalties for missed service levels reduce the price.",
+      "refs": "IFRS 15 35(a)",
+      "je": "Dr Receivable, Cr Deferred revenue; monthly release",
+      "inCase": "L60"
+    },
+    {
+      "id": "trial",
+      "name": "Free trial or pilot",
+      "pattern": "No revenue",
+      "why": "Without a payment or a binding commitment there is no contract yet, so nothing is recognised.",
+      "watch": "A discount on the later purchase can be a material right.",
+      "refs": "IFRS 15 9, B39 to B43",
+      "je": "None"
+    },
+    {
+      "id": "renew",
+      "name": "Renewal option at a discount",
+      "pattern": "Deferred, then over time",
+      "why": "If the discount is larger than what other customers get, the option is a material right: part of today's price is deferred until the renewal or the option expires.",
+      "watch": "Estimate the likelihood that the customer renews.",
+      "refs": "IFRS 15 B39 to B43",
+      "je": "Part of the price goes to Deferred revenue"
+    },
+    {
+      "id": "resell",
+      "name": "Sale through a reseller",
+      "pattern": "Depends",
+      "why": "If the reseller is the customer, revenue when control passes to the reseller. If the reseller only arranges the sale, the company recognises on sale to the end customer.",
+      "watch": "Right of return, price protection and sell-through reporting.",
+      "refs": "IFRS 15 B34 to B38",
+      "je": "Depends on who controls the software"
+    },
+    {
+      "id": "finance",
+      "name": "Payment terms beyond one year",
+      "pattern": "Adjusts the price",
+      "why": "A significant financing component splits the price into revenue and interest income. Within a year the practical expedient says: ignore it.",
+      "watch": "Multi-year licences paid at the end are the typical case.",
+      "refs": "IFRS 15 60 to 65",
+      "je": "Dr Receivable, Cr Revenue and Cr Interest income over time"
+    }
+  ],
+  "sla": {
+    "fee": 7000,
+    "tiers": [
+      {
+        "min": 99.9,
+        "pct": 0
+      },
+      {
+        "min": 99.5,
+        "pct": 5
+      },
+      {
+        "min": 99.0,
+        "pct": 10
+      },
+      {
+        "min": 0,
+        "pct": 25
+      }
+    ],
+    "options": [
+      100,
+      99.95,
+      99.7,
+      99.2,
+      98.4
+    ]
+  },
+  "rebate": {
+    "line": "L30",
+    "threshold": 30000000,
+    "pct": 0.05,
+    "scenarios": [
+      {
+        "calls": 25000000,
+        "p": 0.25
+      },
+      {
+        "calls": 31000000,
+        "p": 0.5
+      },
+      {
+        "calls": 36000000,
+        "p": 0.25
+      }
+    ]
+  },
+  "modification": {
+    "asOf": "2027-03-31",
+    "from": "2027-04",
+    "line": "L20",
+    "lineLic": "L10",
+    "rule": 0.9,
+    "scenarios": [
+      {
+        "id": "A",
+        "name": "Add 50 users from April 2027",
+        "text": "The customer adds 50 users to Insight Cloud for the rest of the term, at 28.00 per user and month. The stand-alone price is 30.00.",
+        "users": 50,
+        "userSsp": 30,
+        "userRate": 28,
+        "licences": 0,
+        "licSsp": 0,
+        "licRate": 0
+      },
+      {
+        "id": "B",
+        "name": "Add 10 licences and 50 users, deep discount",
+        "text": "One amendment adds 10 Architect Server licences (1,200.00 each, stand-alone price 1,600.00) and 50 users at 20.00 per month (stand-alone price 30.00).",
+        "users": 50,
+        "userSsp": 30,
+        "userRate": 20,
+        "licences": 10,
+        "licSsp": 1600,
+        "licRate": 1200
+      }
+    ]
+  },
+  "commission": {
+    "rate": 0.06,
+    "months": 60,
+    "start": "2026-12",
+    "note": "Incremental cost of obtaining the contract: capitalised and amortised over the expected customer life of five years, because renewals are expected and the commission on renewals is lower."
+  },
+  "judgements": [
+    {
+      "area": "Distinct or not",
+      "question": "Can the customer use the implementation without the cloud service, and could someone else do it?",
+      "risk": "Revenue for implementation is shown too early if it is really part of the service.",
+      "control": "Written assessment per contract type, approved once and reviewed for new offers",
+      "owner": "Revenue accounting"
+    },
+    {
+      "area": "Stand-alone price",
+      "question": "What do we actually charge for each piece when sold alone?",
+      "risk": "A list price that nobody pays moves revenue between obligations.",
+      "control": "Yearly SSP study with ranges; deals outside the range are flagged",
+      "owner": "Pricing"
+    },
+    {
+      "area": "Licence or service",
+      "question": "Can the customer take the software and run it elsewhere?",
+      "risk": "Licence revenue up front when it should be spread.",
+      "control": "Checklist in the deal review, evidence in the contract file",
+      "owner": "Product, Revenue accounting"
+    },
+    {
+      "area": "Variable consideration",
+      "question": "How much of overage, rebates and credits is likely to stay?",
+      "risk": "Revenue reversed in a later quarter.",
+      "control": "Estimate each quarter, compare with actual, keep the constraint note",
+      "owner": "Revenue accounting"
+    },
+    {
+      "area": "Contract term",
+      "question": "Can the customer leave early without a real penalty?",
+      "risk": "The 36 months are really 12.",
+      "control": "Legal flags termination for convenience; term set accordingly",
+      "owner": "Legal"
+    },
+    {
+      "area": "Principal or agent",
+      "question": "Does the company control what the end customer receives?",
+      "risk": "Gross against net revenue.",
+      "control": "Decision memo for marketplaces and resellers",
+      "owner": "Revenue accounting"
+    },
+    {
+      "area": "Acceptance clauses",
+      "question": "Does the customer have a right to reject?",
+      "risk": "Revenue before the customer has accepted.",
+      "control": "Acceptance date is a posting condition",
+      "owner": "Order management"
+    },
+    {
+      "area": "Side agreements",
+      "question": "Did sales promise anything outside the contract?",
+      "risk": "Unrecorded rights to returns, free periods or future products.",
+      "control": "Quarterly confirmation by sales leaders",
+      "owner": "Finance controller"
+    },
+    {
+      "area": "Modifications",
+      "question": "Is an upsell a separate contract or a change of this one?",
+      "risk": "Wrong pattern for the added users.",
+      "control": "Decision tree in the process; reviewed above a value limit",
+      "owner": "Revenue accounting"
+    },
+    {
+      "area": "Financing",
+      "question": "Is payment more than a year after delivery?",
+      "risk": "Interest hidden in revenue.",
+      "control": "Payment terms flagged at order entry",
+      "owner": "Credit management"
+    },
+    {
+      "area": "Cut-off",
+      "question": "Was the keys delivery really before the quarter end?",
+      "risk": "Licence revenue booked in the wrong quarter.",
+      "control": "Key issue date from the entitlement system is the evidence",
+      "owner": "Revenue accounting"
+    },
+    {
+      "area": "Contract costs",
+      "question": "Which commissions are incremental, and how long do they last?",
+      "risk": "Costs expensed too early or kept too long.",
+      "control": "Commission plan mapped to the policy; yearly impairment check",
+      "owner": "Finance controller"
+    }
+  ],
+  "sap": [
+    {
+      "step": "Contract signed in CRM",
+      "record": "Contract and price list",
+      "note": "Source of the contract terms"
+    },
+    {
+      "step": "Order",
+      "record": "Sales order with items per obligation",
+      "note": "Each item carries the revenue pattern from the material"
+    },
+    {
+      "step": "Revenue accounting contract",
+      "record": "Contract with performance obligations",
+      "note": "Created from the order; combines or splits items"
+    },
+    {
+      "step": "Allocation",
+      "record": "Stand-alone price per obligation",
+      "note": "Relative method; usage items excluded"
+    },
+    {
+      "step": "Fulfilment",
+      "record": "Delivery, completion message, progress",
+      "note": "Keys issued, tenant ready, milestones accepted"
+    },
+    {
+      "step": "Billing",
+      "record": "Invoices and usage records",
+      "note": "Creates receivables and contract liabilities"
+    },
+    {
+      "step": "Posting",
+      "record": "Revenue, contract asset or liability",
+      "note": "Monthly run; journal entries as on the Balances tab"
+    }
+  ],
+  "sapNote": "Illustrative mapping to the stages of a revenue accounting component in an ERP. Product names, fields and the sequence in a real SAP system are not shown and must be confirmed with the finance system team."
+}
