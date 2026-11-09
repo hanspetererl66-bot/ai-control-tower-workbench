@@ -34,3 +34,8 @@ export function parseStateMessage(data: unknown): Record<string, unknown> | null
 export function restoreMessage(state: Record<string, unknown> | undefined, handoffs: IncomingHandoff[]) {
   return { type: 'wb:restore', state: state ?? null, handoffs: handoffs.map((h) => ({ from: h.from, payload: h.payload })) };
 }
+
+/** What the person sees when a Space hands work to a Space that is not installed: which one, and how to install a bundled example. */
+export function missingSpaceNotice(slug: string): string {
+  return `The Space “${slug}” is not installed. If it is a bundled example, install it with: node scripts/install-example-space.mjs ${slug}`;
+}

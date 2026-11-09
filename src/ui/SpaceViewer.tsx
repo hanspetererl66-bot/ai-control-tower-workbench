@@ -42,6 +42,7 @@ export default function SpaceViewer({
   savedState,
   incoming,
   studioAgents,
+  installedSpaces,
   onIncomingDelivered,
   onEditDesign,
 }: {
@@ -78,6 +79,8 @@ export default function SpaceViewer({
   incoming?: IncomingHandoff[];
   /** Agents built in the Agent Studio; the AI Control Tower registers them as processes. */
   studioAgents?: unknown[];
+  /** Slugs of the installed Spaces; only the AI Control Tower gets them (its tiles show which subspaces are missing). */
+  installedSpaces?: string[];
   onIncomingDelivered?: () => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -95,6 +98,13 @@ export default function SpaceViewer({
   };
   const agentsKey = JSON.stringify(studioAgents ?? null);
   useEffect(postAgents, [agentsKey]);
+  const postInstalled = () => {
+    if (space.slug !== 'ai-control-tower' || !loaded.current || !installedSpaces) return;
+    // Only slugs go over; the page checks their shape again and uses them to mark tiles.
+    frame.current?.contentWindow?.postMessage({ type: 'ct:spaces', slugs: installedSpaces.slice(0, 200) }, '*');
+  };
+  const installedKey = JSON.stringify(installedSpaces ?? null);
+  useEffect(postInstalled, [installedKey]);
 
   const askRef = useRef(onAsk);
   askRef.current = onAsk;
@@ -384,6 +394,7 @@ export default function SpaceViewer({
             postRestore();
             postTab();
             postAgents();
+            postInstalled();
             if (query) sendTools({ type: 'sp:search', query });
             if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
           }}
