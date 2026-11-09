@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { SkillSource } from '../skill-health-db';
 import {
   HEALTH_LABEL, LEVEL_NAMES, PROPOSAL_LABEL, act, applyProposal, clusters, daysSince, dismiss, healthOf, metrics, proposals, reviewDue,
@@ -18,6 +18,41 @@ const HEALTH_ORDER: Health[] = ['active', 'rare', 'unused', 'orphan', 'broken', 
 type Detail = { title: string; note?: string; skills: CSkill[] };
 type OnDetail = (d: Detail) => void;
 const HINT = 'Double-click a number, a row or a bar for the details.';
+
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** A number that counts up to its value (and from the old value to a new one). Text without a leading number is shown as it is. */
+function useCountUp(text: string): string {
+  const m = /^(\d+)(.*)$/.exec(text);
+  const target = m ? Number(m[1]) : null;
+  const from = useRef<number>(0);
+  const [n, setN] = useState<number | null>(() => (target == null || reducedMotion() ? target : 0));
+  useEffect(() => {
+    if (target == null) return;
+    if (reducedMotion() || from.current === target) { from.current = target; setN(target); return; }
+    const start = from.current; const t0 = performance.now(); let raf = 0;
+    const step = (t: number) => {
+      const p = Math.min(1, (t - t0) / 700);
+      setN(Math.round(start + (target - start) * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(step); else from.current = target;
+    };
+    raf = requestAnimationFrame(step);
+    return () => { cancelAnimationFrame(raf); from.current = target; };
+  }, [target]);
+  return m ? `${n ?? target}${m[2]}` : text;
+}
+
+/** Share of the catalog in use, as a ring in the header. */
+function Ring({ share }: { share: number }) {
+  const r = 26; const c = 2 * Math.PI * r; const s = Math.max(0, Math.min(1, share));
+  return (
+    <svg className="sh-ring" viewBox="0 0 64 64" role="img" aria-label={`${Math.round(s * 100)} % of the skills are in use`}>
+      <circle className="sh-ring-bg" cx="32" cy="32" r={r} />
+      <circle className="sh-ring-prog" cx="32" cy="32" r={r} strokeDasharray={`${(c * s).toFixed(1)} ${c.toFixed(1)}`} transform="rotate(-90 32 32)" />
+      <text x="32" y="37" textAnchor="middle">{Math.round(s * 100)}%</text>
+    </svg>
+  );
+}
 
 export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onResetExamples, source, onReload }: {
   catalog: Catalog;
@@ -45,10 +80,11 @@ export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onR
     <main className="sh">
       <header className="sh-head">
         <button className="sh-back" onClick={onBack} aria-label="Back">←</button>
-        <div>
+        <div className="sh-head-text">
           <h1>Skill Health Monitor</h1>
           <p>{m.total} skills in the catalog · {m.live} in use · {m.openProposals} proposals waiting</p>
         </div>
+        <Ring share={m.total ? m.live / m.total : 0} />
       </header>
       <div className={`sh-source sh-source-${source.kind}`} role="status">
         <span>
@@ -75,13 +111,15 @@ export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onR
   );
 }
 
-function Tile({ label, value, hint, tone, onClick, onDouble }: { label: string; value: string; hint?: string; tone?: 'good' | 'warn' | 'bad'; onClick?: () => void; onDouble?: () => void }) {
-  const body = <><span className="sh-tile-v">{value}</span><span className="sh-tile-l">{label}</span>{hint && <span className="sh-tile-h">{hint}</span>}</>;
+function Tile({ label, value, hint, tone, onClick, onDouble, i = 0 }: { label: string; value: string; hint?: string; tone?: 'good' | 'warn' | 'bad'; onClick?: () => void; onDouble?: () => void; i?: number }) {
+  const shown = useCountUp(value);
+  const body = <><span className="sh-tile-v">{shown}</span><span className="sh-tile-l">{label}</span>{hint && <span className="sh-tile-h">{hint}</span>}</>;
   // A single click opens the tab after a short wait, so that a double-click can show the details instead of leaving the page.
   const timer = useRef<number | undefined>(undefined);
   const single = () => { window.clearTimeout(timer.current); timer.current = window.setTimeout(() => onClick?.(), onDouble ? 260 : 0); };
   const double = () => { window.clearTimeout(timer.current); onDouble?.(); };
-  return onClick ? <button className={`sh-tile sh-tone-${tone ?? 'none'}`} onClick={single} onDoubleClick={double}>{body}</button> : <div className={`sh-tile sh-tone-${tone ?? 'none'} ${onDouble ? 'sh-dbl' : ''}`} onDoubleClick={onDouble}>{body}</div>;
+  const style = { '--i': i } as CSSProperties;
+  return onClick ? <button className={`sh-tile sh-tone-${tone ?? 'none'}`} style={style} onClick={single} onDoubleClick={double}>{body}</button> : <div className={`sh-tile sh-tone-${tone ?? 'none'} ${onDouble ? 'sh-dbl' : ''}`} style={style} onDoubleClick={onDouble}>{body}</div>;
 }
 
 function Overview({ m, catalog, now, onTab, health, onDetail }: { m: ReturnType<typeof metrics>; catalog: Catalog; now: number; onTab: (t: Tab) => void; health: Map<string, Health>; onDetail: OnDetail }) {
@@ -101,20 +139,23 @@ function Overview({ m, catalog, now, onTab, health, onDetail }: { m: ReturnType<
     <div className="sh-body">
       <p className="sh-note">{HINT}</p>
       <div className="sh-tiles">
-        <Tile label="Skills in use" value={String(m.live)} hint={`of ${m.total} in the catalog`} onDouble={() => onDetail(groups.live)} />
-        <Tile label="Duplicates" value={pct(m.duplicateRate)} hint={`${m.duplicateSkills} skills could go`} tone={m.duplicateRate > 0.2 ? 'bad' : m.duplicateRate > 0.1 ? 'warn' : 'good'} onClick={() => onTab('duplicates')} onDouble={() => onDetail(groups.dup)} />
-        <Tile label="Unused or rare" value={pct(m.unusedShare)} hint={`limit ${catalog.policy.unusedDays} days`} tone={m.unusedShare > 0.3 ? 'bad' : m.unusedShare > 0.15 ? 'warn' : 'good'} onClick={() => onTab('catalog')} onDouble={() => onDetail(groups.unused)} />
-        <Tile label="No owner" value={String(m.byHealth.orphan)} hint="owner left the company" tone={m.byHealth.orphan ? 'warn' : 'good'} onClick={() => onTab('actions')} onDouble={() => onDetail(groups.orphan)} />
-        <Tile label="Broken" value={String(m.byHealth.broken)} hint="needs a missing connector" tone={m.byHealth.broken ? 'bad' : 'good'} onClick={() => onTab('actions')} onDouble={() => onDetail(groups.broken)} />
-        <Tile label="Confirmation due" value={String(m.reviewDue)} hint={`every ${catalog.policy.reviewDays} days`} tone={m.reviewDue ? 'warn' : 'good'} onDouble={() => onDetail(groups.due)} />
-        <Tile label="Runs, last 30 days" value={String(m.runs30)} hint={`${pct(m.avgSuccess)} succeeded`} onDouble={() => onDetail(groups.runs)} />
-        <Tile label="Open proposals" value={String(m.openProposals)} hint={`could remove ${m.potential} skills`} tone={m.openProposals ? 'warn' : 'good'} onClick={() => onTab('actions')} />
+        <Tile i={0} label="Skills in use" value={String(m.live)} hint={`of ${m.total} in the catalog`} onDouble={() => onDetail(groups.live)} />
+        <Tile i={1} label="Duplicates" value={pct(m.duplicateRate)} hint={`${m.duplicateSkills} skills could go`} tone={m.duplicateRate > 0.2 ? 'bad' : m.duplicateRate > 0.1 ? 'warn' : 'good'} onClick={() => onTab('duplicates')} onDouble={() => onDetail(groups.dup)} />
+        <Tile i={2} label="Unused or rare" value={pct(m.unusedShare)} hint={`limit ${catalog.policy.unusedDays} days`} tone={m.unusedShare > 0.3 ? 'bad' : m.unusedShare > 0.15 ? 'warn' : 'good'} onClick={() => onTab('catalog')} onDouble={() => onDetail(groups.unused)} />
+        <Tile i={3} label="No owner" value={String(m.byHealth.orphan)} hint="owner left the company" tone={m.byHealth.orphan ? 'warn' : 'good'} onClick={() => onTab('actions')} onDouble={() => onDetail(groups.orphan)} />
+        <Tile i={4} label="Broken" value={String(m.byHealth.broken)} hint="needs a missing connector" tone={m.byHealth.broken ? 'bad' : 'good'} onClick={() => onTab('actions')} onDouble={() => onDetail(groups.broken)} />
+        <Tile i={5} label="Confirmation due" value={String(m.reviewDue)} hint={`every ${catalog.policy.reviewDays} days`} tone={m.reviewDue ? 'warn' : 'good'} onDouble={() => onDetail(groups.due)} />
+        <Tile i={6} label="Runs, last 30 days" value={String(m.runs30)} hint={`${pct(m.avgSuccess)} succeeded`} onDouble={() => onDetail(groups.runs)} />
+        <Tile i={7} label="Open proposals" value={String(m.openProposals)} hint={`could remove ${m.potential} skills`} tone={m.openProposals ? 'warn' : 'good'} onClick={() => onTab('actions')} />
       </div>
       <div className="sh-cols">
         <section className="sh-card">
           <h2>Health of all skills</h2>
-          {HEALTH_ORDER.map((h) => (
-            <div className="sh-bar sh-dbl" key={h} title="Double-click for the skills" onDoubleClick={() => onDetail({ title: HEALTH_LABEL[h], skills: by(h) })}><span>{HEALTH_LABEL[h]}</span><i className={`sh-fill sh-h-${h}`} style={{ width: `${(m.byHealth[h] / max) * 100}%` }} /><b>{m.byHealth[h]}</b></div>
+          <div className="sh-band" role="img" aria-label={HEALTH_ORDER.filter((x) => m.byHealth[x] > 0).map((x) => `${HEALTH_LABEL[x]} ${m.byHealth[x]}`).join(', ')}>
+            {HEALTH_ORDER.filter((x) => m.byHealth[x] > 0).map((x) => <span key={x} className={`sh-seg sh-h-${x}`} style={{ flexGrow: m.byHealth[x] }} title={`${HEALTH_LABEL[x]}: ${m.byHealth[x]}`} />)}
+          </div>
+          {HEALTH_ORDER.map((h, idx) => (
+            <div className="sh-bar sh-dbl" key={h} title="Double-click for the skills" onDoubleClick={() => onDetail({ title: HEALTH_LABEL[h], skills: by(h) })}><span>{HEALTH_LABEL[h]}</span><i className={`sh-fill sh-h-${h}`} style={{ width: `${(m.byHealth[h] / max) * 100}%`, '--i': idx } as CSSProperties} /><b>{m.byHealth[h]}</b></div>
           ))}
         </section>
         <section className="sh-card">
