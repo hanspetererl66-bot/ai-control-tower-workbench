@@ -81,7 +81,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .ag-x{margin-left:auto;border:1px solid var(--g200);background:var(--surface);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px}
 .ag-tools{display:flex;gap:8px;align-items:center;margin:12px 0;flex-wrap:wrap}
 .ag-tools input{border:1px solid var(--g200);border-radius:4px;padding:5px 8px;font-size:12px;min-width:200px}
-.ag-tools button{border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple-mid);border-radius:4px;padding:5px 10px;font-size:12px;cursor:pointer}
+.ag-tools button{border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple-ink);border-radius:4px;padding:5px 10px;font-size:12px;cursor:pointer}
 .ag-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
 .ag-tbl th{text-align:left;font-size:10px;color:var(--g500);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--g200);white-space:nowrap}
 .ag-tbl td{padding:6px 8px;border-bottom:1px solid var(--g100);vertical-align:top}
@@ -152,7 +152,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .bf-title{font-size:13px;font-weight:700;color:var(--g900)}
 .bf-sub,.bf-meta{font-size:11px;color:var(--g500);line-height:1.6}
 .bf-meta{margin-top:10px}
-.bf-run{font:inherit;font-size:12px;cursor:pointer;border-radius:4px;padding:5px 12px;border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple-mid);font-weight:600}
+.bf-run{font:inherit;font-size:12px;cursor:pointer;border-radius:4px;padding:5px 12px;border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple-ink);font-weight:600}
 .bf-run:disabled{opacity:.5;cursor:default}
 .bf-track{position:relative;height:8px;border-radius:99px;background:var(--g100);min-width:140px}
 .bf-band{position:absolute;top:0;bottom:0;border-radius:99px;background:var(--amber);opacity:.55}
@@ -287,8 +287,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--purple);outline:none;
 /* Calm Bento buttons: one family. Primary = Accenture purple on white text, secondary = soft tint, quiet = neutral. */
 button.primary,button.ghost,button.small{font:inherit;font-size:13px;font-weight:550;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:var(--radius-s);border:1px solid var(--line);background:var(--surface);color:var(--ink-2);transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
 button.primary{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 1px 2px rgba(70,0,115,.18)}
-button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-mid)}
-button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-mid)}
+button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-ink)}
+button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-ink)}
 button.primary:hover:not(:disabled){background:var(--purple-mid);border-color:var(--purple-mid)}
 button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;cursor:default}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple-ink)}}
@@ -500,7 +500,7 @@ details.intro .body{margin-top:8px}
     <span style="color:var(--purple-ink);font-weight:700">AVRR</span> = AI Value Return Ratio (KI-Wertrückgabe-Verhältnis) &mdash; eingesparte Ingenieurzeit (Netto) &divide; monatliche KI-Toolkosten &nbsp;&middot;&nbsp; Formel: (18.000 &times; 3,6h &times; 4,33 &times; &euro;90 &times; 0,85 &times; 0,65) &divide; &euro;16,37M/Monat (inkl. Agenten-Output) = <strong style="color:var(--purple-ink)">5,1&times;</strong>
   </div>
   <div style="font-size:10px;color:var(--g500);font-family:var(--mono);margin-bottom:10px;line-height:1.7;padding:8px 10px;background:var(--g100);border-radius:4px"><span style="color:var(--green-ink);font-weight:700">Top 5.5% globally</span> by AI ROI (McKinsey 2025) &middot; AVRR 5.1&times; vs IDC/Microsoft industry benchmark 3.7&times; &middot; Maturity 3.2/5 vs global avg 2.3/5 (McKinsey 2026 AI Trust Survey, n&asymp;500) &middot; <span style="color:var(--red);font-weight:700">Gartner:</span> 40% of ungoverned agentic AI projects cancelled by 2027</div>
-  <div style="font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px">Board-level pane <span style="font-weight:400;color:var(--g300);font-family:var(--mono)">&mdash; double-click any card to expand</span></div>
+  <div style="font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px">Board-level pane <span style="font-weight:400;color:var(--hint);font-family:var(--mono)">&mdash; double-click any card to expand</span></div>
   <div id="board-cards-grid" class="g4" style="margin-bottom:20px">
 
     <div style="background:var(--surface);border:1px solid var(--g200);border-top:4px solid var(--green);border-radius:6px;padding:16px;box-shadow:var(--sh)">
