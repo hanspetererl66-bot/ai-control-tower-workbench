@@ -173,7 +173,7 @@ button.kpi:hover .go{transform:translateX(5px)}
   color-scheme:light dark;
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
-  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--hint:var(--muted);--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
+  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--hint:var(--muted);--red-ink:var(--red);--green-ink:#27755a;--purple-ink:#665b92;--amber-ink:#7a5f2f;--blue-ink:#476690;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
   --purple:#7B6FA6;--purple-mid:#62578A;--purple-deep:#3F3860;--purple-dim:rgba(123,111,166,.07);--purple-border:rgba(123,111,166,.20);--purple-light:#eeecf5;
   --green:#2F8A6B;--green-dim:rgba(47,138,107,.08);--green-border:rgba(47,138,107,.20);
   --amber:#8A6D3B;--amber-dim:rgba(138,109,59,.07);--amber-border:rgba(138,109,59,.20);
@@ -192,7 +192,7 @@ button.kpi:hover .go{transform:translateX(5px)}
 }
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--red-ink:var(--red);--green-ink:var(--green);--purple-ink:var(--purple);--amber-ink:var(--amber);--blue-ink:var(--blue);--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
   --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
   --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
   --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
@@ -203,7 +203,7 @@ button.kpi:hover .go{transform:translateX(5px)}
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--red-ink:var(--red);--green-ink:var(--green);--purple-ink:var(--purple);--amber-ink:var(--amber);--blue-ink:var(--blue);--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
   --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
   --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
   --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
@@ -261,9 +261,9 @@ button.small{padding:5px 11px;font-size:12px;background:var(--purple-dim);border
 button.ghost:hover:not(:disabled),button.small:hover:not(:disabled){border-color:var(--purple-border);background:var(--purple-dim);color:var(--purple-mid)}
 button.primary:hover:not(:disabled){background:var(--purple-mid);border-color:var(--purple-mid)}
 button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;cursor:default}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}:root:not([data-theme="light"]) button.small,:root:not([data-theme="light"]) button.ghost:hover:not(:disabled){color:var(--purple-ink)}}
 :root[data-theme="dark"] button.primary{background:var(--purple);border-color:var(--purple);color:#1a0a2b}
-:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple)}
+:root[data-theme="dark"] button.small,:root[data-theme="dark"] button.ghost:hover:not(:disabled){color:var(--purple-ink)}
 
 /* Bento: the first tile of a KPI row carries the accent wash. */
 
@@ -272,7 +272,7 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .ag-ov{background:rgba(14,12,20,.55);backdrop-filter:blur(4px);z-index:200}
 .ag-x,.ag-tools input,.ag-tools button{border-radius:var(--radius-s)}
 .ag-x{background:var(--surface);color:var(--ink);border-color:var(--line)}
-.ag-tools button{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.ag-tools button{background:var(--purple-dim);color:var(--purple-ink);border-color:var(--purple-border)}
 .ag-tbl th{font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
 .ag-tbl td{padding:10px 8px}
 
@@ -281,14 +281,14 @@ button.primary:disabled,button.ghost:disabled,button.small:disabled{opacity:.5;c
 .ct .hdr-title{color:var(--ink);font-size:15px;font-weight:650}
 .ct .hdr-sub{font-family:var(--font);font-size:11px;letter-spacing:.01em;color:var(--muted)}
 .ct .hdr-div{background:var(--line)}
-.ct .acc-mark{color:var(--purple)}
+.ct .acc-mark{color:var(--purple-ink)}
 .ct .hdr-stat-val{color:var(--ink);font-family:var(--font);font-weight:600}
 .ct .hdr-stat-lbl{color:var(--muted);letter-spacing:.02em;text-transform:none;font-size:11px}
 .ct .live{color:var(--muted);font-family:var(--font)}
 .ct .tbar{background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;gap:4px}
 .ct .tb{padding:16px 14px 14px;font-size:13px;font-weight:500;color:var(--muted)}
 .ct .tb:hover:not(.on){color:var(--ink)}
-.ct .tb.on{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:600}
+.ct .tb.on{color:var(--purple-ink);border-bottom:2px solid var(--purple);font-weight:600}
 .ct .tnum{display:none}
 .ct .pg{padding:40px 32px 64px;max-width:1320px;margin:0 auto}
 .ct .mr{gap:16px;margin-bottom:32px}
