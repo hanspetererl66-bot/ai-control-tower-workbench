@@ -18,6 +18,32 @@ npm run cognee:corpus      # schreibt auch dist/cognee-corpus-customer-360.json
 ```
 Dann im Space "Ask Cognee live" ankreuzen. Die Seite sendet nur `c360:ask-request` (Frage bis 300 Zeichen); die App (`src/customer360-bridge.ts`) lässt den Agenten **nur** das Cognee-Werkzeug `recall` benutzen, verlangt JSON (`answer`, `ids`) und prüft die Form der Kennungen; die Seite verwirft unbekannte. Schlägt das fehl, zeigt die Seite den Grund und bleibt bei der lokalen Suche.
 
+## Auf deinem Rechner in Betrieb nehmen (Checkliste)
+Was in der Cloud-Sandbox nicht geht (Cognee, echter Agent, Electron, SAP-Sandbox), läuft in dieser Reihenfolge. Jeder Schritt hat eine Probe; bricht eine ab, hier stehen bleiben.
+
+1. **Space installieren.** `git pull`, `npm run install:customer-360`, App neu starten (`src/` hat sich geändert). *Probe:* Spaces → Customer 360 öffnet, Cover sichtbar, "Story" läuft durch alle 10 Schritte, "Explore everything" zeigt 69 Knoten.
+2. **Cognee-Connector einrichten** (Skills & Connectors → `cognee-memory`): LLM-Schlüssel und einen leeren **Speicherordner** eintragen, z. B. `~/cognee-memory`. Den Connector danach einmal neu installieren/starten. *Probe:* im Chat "recall: Nordlicht" ruft das Werkzeug auf (leere Antwort ist in Ordnung, ein Fehler nicht).
+3. **Korpus bauen und einspielen** (derselbe Speicherordner wie in Schritt 2, sonst findet der Connector nichts):
+   ```
+   export MEM=~/cognee-memory
+   export SYSTEM_ROOT_DIRECTORY="$MEM/system" DATA_ROOT_DIRECTORY="$MEM/data" ENABLE_BACKEND_ACCESS_CONTROL=false
+   export LLM_API_KEY=...        # bei OpenRouter zusätzlich LLM_PROVIDER=custom, LLM_MODEL=openrouter/<modell>, LLM_ENDPOINT=https://openrouter.ai/api/v1, EMBEDDING_PROVIDER=fastembed
+   npm run cognee:corpus
+   .venv-cognee/bin/python scripts/cognee-seed.py --corpus dist/cognee-corpus-customer-360.json --dataset customer-360
+   ```
+   Das sind 69 Dokumente und kostet Modellaufrufe (Entitäten werden extrahiert); der erste Lauf dauert mehrere Minuten. Die Variablennamen folgen der Cognee-Doku und sind **nicht gegen die installierte Version geprüft**. *Probe:* "Done." am Ende; im Chat `recall` mit "Who is Katrin Brandt?" nennt `contact:brandt`.
+4. **Live-Frage im Space.** "Ask Cognee live" ankreuzen, Frage "Who pays late and why?". Die erste Frage kann eine Minute dauern. *Probe:* Kasten "Answer from Cognee (live)", die Knoten leuchten. Kommt stattdessen "Cognee could not answer: …", steht der Grund dort, und der Space bleibt bei der lokalen Suche (das ist der gewollte Rückfall, kein Fehler der Seite).
+5. **Optional: SAP-Sandbox-Aufträge.** `SAP_API_KEY=… npm run sap-sandbox:snapshot`, dann `npm run customer-360:sandbox` (Kunde wählen), `npm run sync:mockups`, `npm run install:customer-360`. *Probe:* die Unterzeile nennt "plus n SAP sandbox orders".
+6. **Abschlussprobe in der App:** hell und dunkel, ein zweiter Skin (Einstellungen → Look), ein schmales Fenster, und bei schwacher Hardware prüfen, ob die Drehung ruckelt (Einstellung "reduzierte Bewegung" schaltet Fahrt und Eigendrehung ab).
+
+**Bekannte Unsicherheiten dieser Kette:** Ob `recall` einen Datensatz (`customer-360`) filtern kann, steht nicht in der Werkzeugbeschreibung; fehlt der Filter, mischen sich Treffer anderer Datensätze ein, die Seite verwirft deren Kennungen aber (nur bekannte Knoten zählen). Ob der Agent gültiges JSON mit den Kennungen aus den Klammern liefert, ist offen (die Brücke prüft die Form und meldet sonst "returned nothing usable").
+
+## Geprüft am 08.11.2026 (Browser, ohne Cognee)
+Headless Chrome 149, Hell und Dunkel, 1400, 1100 (reduzierte Bewegung) und 640 px: Cover, Schritte 1, 4, 6, 8, 10 und Explore ohne Seitenfehler und ohne seitlichen Überlauf; lokale Frage; Brücke mit einer simulierten App (Live-Antwort wird angezeigt, unbekannte Kennungen verworfen, Fehlerfall fällt auf die lokale Suche zurück). Dabei gefunden und behoben: (1) Belegzeilen wie "R-3: why is Eight of eight paid invoices …" lasen sich falsch (Vorlage "<Name>: <Feld> is <Wert>" für ganze Sätze), jetzt "R-3 (why): Eight of eight …"; das gilt auch für den Cognee-Korpus. (2) Trefferzeilen wurden bei 150 Zeichen mitten im Wort abgeschnitten, jetzt am Wortende mit "…".
+
+## Zuordnung der Live-Antwort (08.11.2026)
+Cognee mit `gpt-4o-mini` übernimmt die Kennungen aus den Klammern nicht (Probe: die Antwort nennt Katrin Brandt, aber nicht `contact:brandt`). Deshalb ordnet der Space eine Live-Antwort zusätzlich über Namen zu (`mentions` in `customer-360.mjs`: Bezeichnung oder Nachname eines Kontakts, ganze Wörter, in der Reihenfolge des Auftretens). Kennungen des Agenten gelten weiter und stehen vorn. Nur per Test und Funktionsaufruf geprüft, nicht mit einer echten Live-Antwort im Space.
+
 ## Regeln, keine Modelle
 - **Heat** je Gesellschaft (0 bis 100): Zahlungsbild, Verlängerungstermin, Tickets, Auftragslücken (Gewichte in `data.rules.heat`).
 - **Reihenfolge der Vorschläge:** Betrag × Dringlichkeit (nah ≤ 30 Tage 1,5, bald ≤ 60 Tage 1,2, später 1). Sie ordnet nur die Liste, sie sagt nichts voraus.

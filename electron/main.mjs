@@ -17,6 +17,7 @@ import { createGovernanceSync, createSharedGovernance } from './ontology-shared.
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
 import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
+import { ensureGooseConfig } from '../shared/goose-config.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -62,6 +63,7 @@ function gooseBinaryPath() {
 }
 
 function startGoosed() {
+  ensureGooseConfig(ROOT); // config.yaml is local state; create it from config.example.yaml on first start
   goosed = spawn(gooseBinaryPath(), ['serve', '--port', String(GOOSE_PORT)], {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: {
@@ -1493,6 +1495,15 @@ ipcMain.handle('recruiting-import', async () => {
 });
 ipcMain.handle('recruiting-decide', async (_event, id, decision, note) => {
   try { return { ok: true, data: await workStore.decideProposal(id, decision, note) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-postings', async (_event, args) => {
+  try { return { ok: true, data: await workStore.listPostings(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-posting-step', async (_event, action, id, note) => {
+  try { return { ok: true, data: await workStore.postingStep(action, id, note) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-posting-publish', async (_event, id, channels) => {
+  try { return { ok: true, data: await workStore.publishPosting(id, channels) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
 ipcMain.handle('recruiting-interview-save', async (_event, requisition, record) => {
   try { return { ok: true, data: await workStore.saveInterview(requisition, record) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }

@@ -54,7 +54,7 @@ workspace/demo-files/*.inspect.ndjson
 goose-home/**
 !goose-home/.config/
 !goose-home/.config/goose/
-!goose-home/.config/goose/config.yaml
+!goose-home/.config/goose/config.example.yaml
 
 # Also ignore node_modules when it is a symlink (a trailing slash only matches directories).
 /node_modules
@@ -66,3 +66,7 @@ __pycache__/
 
 # SAP sandbox snapshot (SAP sample data fetched with a personal API key).
 examples/sap-sandbox/snapshot.json
+
+# Local Cognee virtualenv and Vercel link
+.venv-cognee/
+.vercel/
