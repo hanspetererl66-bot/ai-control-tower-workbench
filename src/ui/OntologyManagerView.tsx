@@ -1,20 +1,22 @@
 import { useMemo, useState } from 'react';
 import {
-  HEALTH_LABEL, filterTerms, healthOf, kpis, ownerLabel, qualityFindings, setMeta, usedLabel,
+  HEALTH_LABEL, STATUS_LABEL, checkQuestion, filterTerms, healthOf, kpis, metaOf, ownerLabel, qualityFindings, setMeta, statusOf, usedLabel,
   type Governance, type Ontology, type OntologyData, type TermFilter,
 } from '../ontology-manager';
 import OntologyDetails from './OntologyDetails';
 import OntologyHistory from './OntologyHistory';
 import OntologyMap from './OntologyMap';
+import OntologyExport from './OntologyExport';
 import OntologyProposals from './OntologyProposals';
+import OntologyQuestions from './OntologyQuestions';
 import OntologyQuality from './OntologyQuality';
 import OntologyUse from './OntologyUse';
 
 type Generate = (prompt: string, title: string, session?: string) => Promise<string>;
-type Tab = 'catalog' | 'map' | 'proposals' | 'quality' | 'use' | 'history';
+type Tab = 'catalog' | 'map' | 'questions' | 'proposals' | 'quality' | 'use' | 'history' | 'export';
 
 const FILTERS: Array<{ id: TermFilter; label: string }> = [
-  { id: 'all', label: 'All' }, { id: 'metrics', label: 'Metrics' }, { id: 'classes', label: 'Classes' }, { id: 'attention', label: 'Needs attention' },
+  { id: 'all', label: 'All' }, { id: 'metrics', label: 'Metrics' }, { id: 'classes', label: 'Classes' }, { id: 'attention', label: 'Needs attention' }, { id: 'deprecated', label: 'Deprecated' },
 ];
 
 /**
@@ -32,9 +34,10 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   const [focus, setFocus] = useState<{ slug: string; term: string } | null>(null);
   const toReview = proposals.filter((p) => p.status === 'proposed').length;
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
+  const blocked = useMemo(() => ontologies.reduce((n, o) => n + governance.questions.filter((q) => q.slug === o.slug && checkQuestion(o, governance, q).state === 'blocked').length, 0), [ontologies, governance]);
   const TABS: Array<{ id: Tab; label: string; n?: number }> = [
-    { id: 'catalog', label: 'Catalog' }, { id: 'map', label: 'Map' }, { id: 'proposals', label: 'Proposals', n: toReview }, { id: 'quality', label: 'Quality', n: findings },
-    { id: 'use', label: 'Use' }, { id: 'history', label: 'History' },
+    { id: 'catalog', label: 'Catalog' }, { id: 'map', label: 'Map' }, { id: 'questions', label: 'Questions', n: blocked }, { id: 'proposals', label: 'Proposals', n: toReview },
+    { id: 'quality', label: 'Quality', n: findings }, { id: 'use', label: 'Use' }, { id: 'history', label: 'History' }, { id: 'export', label: 'Export' },
   ];
 
   return (
@@ -73,10 +76,12 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
 
       {tab === 'catalog' && <Catalog ontologies={ontologies} gov={governance} onGovernance={onGovernance} focus={focus} onReload={onReload} onBack={onBack} loading={source.kind === 'loading'} />}
       {tab === 'map' && <OntologyMap ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
+      {tab === 'questions' && <OntologyQuestions ontologies={ontologies} gov={governance} onGovernance={onGovernance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'proposals' && <OntologyProposals proposals={proposals} ontologies={ontologies} generate={generate} onStop={onStop} ready={ready} onReload={onReload} />}
       {tab === 'quality' && <OntologyQuality ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'use' && <OntologyUse ontologies={ontologies} gov={governance} onGovernance={onGovernance} knownSkills={knownSkills} generate={generate} ready={ready} />}
       {tab === 'history' && <OntologyHistory ontologies={ontologies} history={history} />}
+      {tab === 'export' && <OntologyExport ontologies={ontologies} gov={governance} />}
     </main>
   );
 }
@@ -91,7 +96,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
   const [picked, setPicked] = useState(focus?.term ?? 'DSO');
   const onto = ontologies.find((o) => o.slug === slug) ?? ontologies[0];
   const k = useMemo(() => (onto ? kpis(onto) : null), [onto]);
-  const rows = useMemo(() => (onto ? filterTerms(onto, filter, query) : []), [onto, filter, query]);
+  const rows = useMemo(() => (onto ? filterTerms(onto, filter, query, gov) : []), [onto, filter, query, gov]);
   if (loading && !onto) return <p className="om-note" role="status">Reading the ontology catalog…</p>;
   if (!onto || !k) {
     return (
@@ -102,7 +107,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
     );
   }
   const selected = onto.terms.find((t) => t.id === picked) ?? rows[0] ?? onto.terms[0];
-  const counts: Record<TermFilter, number> = { all: onto.terms.length, metrics: k.metrics, classes: k.classes, attention: k.needAttention };
+  const counts: Record<TermFilter, number> = { all: onto.terms.length, metrics: k.metrics, classes: k.classes, attention: k.needAttention, deprecated: onto.terms.filter((t) => statusOf(onto, gov, t) === 'deprecated').length };
 
   return (
     <>
@@ -141,7 +146,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
             <h2>Terms in {onto.slug}</h2>
             <label className="om-search om-search-inline">
               <span className="om-sr">Search terms</span>
-              <input type="search" value={query} placeholder="Search terms, definitions, owners" onChange={(e) => setQuery(e.target.value)} />
+              <input type="search" value={query} placeholder="Search terms, synonyms, definitions, owners" onChange={(e) => setQuery(e.target.value)} />
             </label>
             <div className="om-filters" role="group" aria-label="Filter terms">
               {FILTERS.map((f) => (
@@ -155,7 +160,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
           {rows.map((t, i) => (
             <button key={t.id} className={`om-row ${t.id === selected?.id ? 'om-row-on' : ''}`} style={{ ['--i' as string]: i }}
               aria-pressed={t.id === selected?.id} onClick={() => setPicked(t.id)}>
-              <span className="om-term">{t.label}</span>
+              <span className="om-term">{t.label}{statusOf(onto, gov, t) !== 'approved' && <span className={`om-chip om-chip-sm ${statusOf(onto, gov, t) === 'deprecated' ? 'om-bad' : 'om-warn'}`}>{STATUS_LABEL[statusOf(onto, gov, t)]}</span>}{metaOf(gov, onto.slug, t.id).synonyms.length > 0 && <span className="om-aka">also: {metaOf(gov, onto.slug, t.id).synonyms.slice(0, 3).join(', ')}</span>}</span>
               <span className="om-dim">{t.kind === 'metric' ? 'Metric' : 'Class'}</span>
               <span className="om-dim">{ownerLabel(t)}</span>
               <span>{usedLabel(onto, t)}</span>

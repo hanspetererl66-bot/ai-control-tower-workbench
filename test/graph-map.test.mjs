@@ -48,3 +48,30 @@ test('visibleMap and searchMap filter', () => {
   assert.deepEqual(searchMap(map, '   '), []);
   assert.ok(searchMap(map, metric.t.label.slice(0, 4)).length > 0);
 });
+
+test('the live simulation gives the same layout as layoutMap when it is run the same way, and a pinned node stays where it is', async () => {
+  const { createSimulation } = await import('../src/graph-map.ts');
+  const map = buildMap(onts, emptyGovernance());
+  const done = layoutMap(map, 40, 7);
+  const sim = createSimulation(map, 7);
+  for (let step = 0; step < 40; step++) sim.tick(Math.max(0.02, 1 - step / 40));
+  assert.deepEqual(Array.from(sim.x), Array.from(done.x));
+  assert.deepEqual(Array.from(sim.y), Array.from(done.y));
+  const again = createSimulation(map, 7);
+  again.pinned[0] = 1; again.x[0] = 500; again.y[0] = -300;
+  for (let i = 0; i < 30; i++) again.tick(0.8);
+  assert.equal(again.x[0], 500); assert.equal(again.y[0], -300);
+  assert.ok(Array.from(again.x).every(Number.isFinite));
+});
+
+test('many ontologies get a wider ring than two, so their areas do not sit on top of each other', async () => {
+  const { exampleOntologies } = await import('../src/ontology-manager.ts');
+  const { extraExampleOntologies } = await import('../src/ontology-examples.ts');
+  const wide = buildMap([...exampleOntologies(), ...extraExampleOntologies()], emptyGovernance());
+  const p = layoutMap(wide);
+  const hubs = wide.nodes.map((n, i) => ({ n, i })).filter((h) => h.n.kind === 'ontology');
+  assert.equal(hubs.length, 7);
+  let nearest = 1e9;
+  for (let a = 0; a < hubs.length; a++) for (let b = a + 1; b < hubs.length; b++) nearest = Math.min(nearest, Math.hypot(p.x[hubs[a].i] - p.x[hubs[b].i], p.y[hubs[a].i] - p.y[hubs[b].i]));
+  assert.ok(nearest > 200, `the closest two ontology hubs are ${Math.round(nearest)} apart`);
+});

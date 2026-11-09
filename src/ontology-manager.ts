@@ -10,9 +10,11 @@
  * each resource once, plus the owners to ask. It only knows what is modelled.
  */
 
+import { extraExampleGovernance, extraExampleHistory, extraExampleOntologies } from './ontology-examples.ts';
+
 export type TermKind = 'metric' | 'class';
 export type Health = 'complete' | 'missing';
-export type TermFilter = 'all' | 'metrics' | 'classes' | 'attention';
+export type TermFilter = 'all' | 'metrics' | 'classes' | 'attention' | 'deprecated';
 
 export interface Term {
   id: string;
@@ -114,15 +116,17 @@ export function kpis(o: Ontology): Kpis {
   };
 }
 
-/** Filter by tab and search text. The search looks at name, id, definition and owner. */
-export function filterTerms(o: Ontology, filter: TermFilter, query: string): Term[] {
+/** Filter by tab and search text. The search looks at name, id, definition and owner, and with `gov` also at synonyms and mapped names. */
+export function filterTerms(o: Ontology, filter: TermFilter, query: string, gov?: Governance): Term[] {
   const q = query.trim().toLowerCase();
   return o.terms.filter((t) => {
     if (filter === 'metrics' && t.kind !== 'metric') return false;
     if (filter === 'classes' && t.kind !== 'class') return false;
     if (filter === 'attention' && healthOf(t) !== 'missing') return false;
+    if (filter === 'deprecated' && !(gov && statusOf(o, gov, t) === 'deprecated')) return false;
     if (!q) return true;
-    return [t.label, t.id, t.definition, t.owner].some((s) => s.toLowerCase().includes(q));
+    const meta = gov ? metaOf(gov, o.slug, t.id) : null;
+    return [t.label, t.id, t.definition, t.owner, ...(meta ? [...meta.synonyms, ...meta.mappings.map((x) => `${x.system} ${x.ref}`)] : [])].some((x) => x.toLowerCase().includes(q));
   });
 }
 
@@ -241,10 +245,10 @@ export function resolveCatalog(answer: CatalogAnswer | null | undefined): Ontolo
   const reason = answer
     ? (answer.detail || 'The catalog could not be read.')
     : 'The catalog can only be read in the desktop app.';
-  const governance = exampleGovernance();
+  const governance = mergeGovernance(exampleGovernance(), extraExampleGovernance());
   return {
-    ontologies: applyGovernance(exampleOntologies(), governance), source: { kind: 'example', reason },
-    proposals: exampleProposals(), history: exampleHistory(), governance,
+    ontologies: applyGovernance([...exampleOntologies(), ...extraExampleOntologies()], governance), source: { kind: 'example', reason },
+    proposals: exampleProposals(), history: { ...exampleHistory(), ...extraExampleHistory() }, governance,
   };
 }
 
@@ -347,9 +351,120 @@ export interface Governance {
   bindings: Binding[];
   views: AgentView[];
   plans: Plan[];
+  /** Lifecycle, synonyms and mappings per term, keyed `<slug>|<term id>`. Lives in governance.json, not in the Turtle. */
+  termMeta: Record<string, TermMeta>;
+  /** Competency questions: what an ontology must be able to answer. */
+  questions: Question[];
 }
 
-export const emptyGovernance = (): Governance => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [] });
+export const emptyGovernance = (): Governance => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [], termMeta: {}, questions: [] });
+
+// ---------------------------------------------------------------- lifecycle, synonyms, mappings
+
+export type TermStatus = 'draft' | 'approved' | 'deprecated';
+export const TERM_STATUSES: TermStatus[] = ['draft', 'approved', 'deprecated'];
+export const STATUS_LABEL: Record<TermStatus, string> = { draft: 'Draft', approved: 'Approved', deprecated: 'Deprecated' };
+/** A name for the same thing in another system or standard, for example SAP S/4HANA "Business Partner". */
+export interface Mapping { system: string; ref: string }
+export interface TermMeta {
+  /** Empty = not set: a term of a published ontology counts as approved, of a draft ontology as draft. */
+  status: TermStatus | '';
+  /** The term that took its place (deprecated terms only). */
+  replacedBy: string;
+  synonyms: string[];
+  mappings: Mapping[];
+}
+export interface Question { id: string; slug: string; text: string; terms: string[] }
+
+export const MAX_SYNONYMS = 20;
+export const MAX_MAPPINGS = 10;
+export const metaKey = (slug: string, id: string): string => `${slug}|${id}`;
+const blankMeta = (): TermMeta => ({ status: '', replacedBy: '', synonyms: [], mappings: [] });
+
+export function metaOf(gov: Governance, slug: string, id: string): TermMeta {
+  return { ...blankMeta(), ...(gov.termMeta?.[metaKey(slug, id)] ?? {}) };
+}
+export function statusOf(o: Ontology, gov: Governance, t: Term): TermStatus {
+  return metaOf(gov, o.slug, t.id).status || (o.status === 'published' ? 'approved' : 'draft');
+}
+
+const cleanList = (list: string[], max: number): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of list) {
+    const v = String(raw).trim().replace(/\s+/g, ' ').slice(0, 80);
+    if (!v || seen.has(v.toLowerCase())) continue;
+    seen.add(v.toLowerCase()); out.push(v);
+    if (out.length >= max) break;
+  }
+  return out;
+};
+
+/** Changes lifecycle, replacement, synonyms or mappings of one term. An empty result removes the entry. */
+export function setTermMeta(gov: Governance, slug: string, id: string, patch: Partial<TermMeta>): Governance {
+  const cur = metaOf(gov, slug, id);
+  const next: TermMeta = {
+    status: patch.status !== undefined ? patch.status : cur.status,
+    replacedBy: patch.replacedBy !== undefined ? patch.replacedBy.trim().slice(0, 120) : cur.replacedBy,
+    synonyms: cleanList(patch.synonyms ?? cur.synonyms, MAX_SYNONYMS),
+    mappings: (patch.mappings ?? cur.mappings)
+      .map((x) => ({ system: x.system.trim().slice(0, 60), ref: x.ref.trim().slice(0, 120) }))
+      .filter((x) => x.system && x.ref).slice(0, MAX_MAPPINGS),
+  };
+  if (next.status !== 'deprecated') next.replacedBy = '';
+  const termMeta = { ...gov.termMeta };
+  const key = metaKey(slug, id);
+  if (!next.status && !next.replacedBy && !next.synonyms.length && !next.mappings.length) delete termMeta[key]; else termMeta[key] = next;
+  return { ...gov, termMeta };
+}
+export const addSynonym = (gov: Governance, slug: string, id: string, word: string): Governance =>
+  setTermMeta(gov, slug, id, { synonyms: [...metaOf(gov, slug, id).synonyms, word] });
+export const removeSynonym = (gov: Governance, slug: string, id: string, word: string): Governance =>
+  setTermMeta(gov, slug, id, { synonyms: metaOf(gov, slug, id).synonyms.filter((x) => x !== word) });
+
+/** Everything a term can be called: its label and its synonyms. */
+export const namesOf = (o: Ontology, gov: Governance, t: Term): string[] => [t.label, ...metaOf(gov, o.slug, t.id).synonyms];
+
+// ---------------------------------------------------------------- competency questions
+
+export type QuestionState = 'answerable' | 'partial' | 'blocked';
+export const QUESTION_LABEL: Record<QuestionState, string> = { answerable: 'Can be answered', partial: 'Partly', blocked: 'Cannot be answered yet' };
+export interface QuestionProblem { term: string; kind: 'missing' | 'undefined' | 'deprecated' | 'draft'; message: string }
+export interface QuestionCheck { question: Question; state: QuestionState; problems: QuestionProblem[]; found: number }
+
+/**
+ * Can the ontology answer the question? Every term the question needs must exist (else it is blocked), and should have a definition,
+ * not be deprecated and not be a draft (else it is only partly answerable). It checks the vocabulary, not the data.
+ */
+export function checkQuestion(o: Ontology, gov: Governance, q: Question): QuestionCheck {
+  const problems: QuestionProblem[] = [];
+  let found = 0;
+  for (const id of q.terms) {
+    const t = o.terms.find((x) => x.id === id);
+    if (!t) { problems.push({ term: id, kind: 'missing', message: `"${id}" is not in the ontology.` }); continue; }
+    found++;
+    if (!t.definition.trim()) problems.push({ term: id, kind: 'undefined', message: `${t.label} has no definition.` });
+    const st = statusOf(o, gov, t);
+    if (st === 'deprecated') problems.push({ term: id, kind: 'deprecated', message: `${t.label} is deprecated${metaOf(gov, o.slug, id).replacedBy ? `, use ${metaOf(gov, o.slug, id).replacedBy}` : ''}.` });
+    else if (st === 'draft') problems.push({ term: id, kind: 'draft', message: `${t.label} is still a draft.` });
+  }
+  const state: QuestionState = problems.some((p) => p.kind === 'missing') ? 'blocked' : problems.length ? 'partial' : 'answerable';
+  return { question: q, state, problems, found };
+}
+export function questionsOf(gov: Governance, slug: string): Question[] { return gov.questions.filter((q) => q.slug === slug); }
+export function questionCoverage(o: Ontology, gov: Governance): { total: number; answerable: number; partial: number; blocked: number; share: number } {
+  const checks = questionsOf(gov, o.slug).map((q) => checkQuestion(o, gov, q));
+  const c = (s: QuestionState) => checks.filter((x) => x.state === s).length;
+  return { total: checks.length, answerable: c('answerable'), partial: c('partial'), blocked: c('blocked'), share: checks.length ? c('answerable') / checks.length : 1 };
+}
+export function addQuestion(gov: Governance, slug: string, text: string, terms: string[], now = Date.now()): Governance {
+  const t = text.trim().slice(0, 300);
+  const ids = [...new Set(terms.map((x) => x.trim()).filter(Boolean))].slice(0, 20);
+  if (!t || !ids.length || gov.questions.length >= 500) return gov;
+  if (gov.questions.some((q) => q.slug === slug && q.text.toLowerCase() === t.toLowerCase())) return gov;
+  return { ...gov, questions: [...gov.questions, { id: `q${now.toString(36)}`, slug, text: t, terms: ids }] };
+}
+export const removeQuestion = (gov: Governance, id: string): Governance => ({ ...gov, questions: gov.questions.filter((q) => q.id !== id) });
 
 /** Owner, domain and approver per ontology come from the governance file, not from the Turtle. */
 export function applyGovernance(ontologies: Ontology[], gov: Governance): Ontology[] {
@@ -435,6 +550,8 @@ export interface Finding { id: string; severity: Severity; rule: string; slug: s
 export const RULE_LABEL: Record<string, string> = {
   'no-owner': 'Metric without owner', 'no-definition': 'No definition', 'no-formula': 'Metric without formula',
   unused: 'Not used anywhere', duplicate: 'Possible duplicate', 'ontology-owner': 'Ontology without owner',
+  'deprecated-used': 'Deprecated but still used', 'no-replacement': 'Deprecated without replacement', 'synonym-clash': 'Synonym is ambiguous',
+  'question-blocked': 'Question cannot be answered',
 };
 
 const words = (s: string): Set<string> => new Set(s.toLowerCase().replace(/[^a-z0-9äöüß ]+/g, ' ').split(/\s+/).filter((w) => w.length > 1));
@@ -459,6 +576,32 @@ export function qualityFindings(ontologies: Ontology[], gov: Governance): Findin
       const bound = gov.bindings.some((b) => b.slug === o.slug && b.term === t.id);
       const used = t.kind === 'metric' ? incoming(o, t.id).length > 0 : t.members.length > 0 || incoming(o, t.id).length > 0;
       if (!used && !bound) add('low', 'unused', o, t.id, `${t.label} is not linked from anything modelled and no agent, skill or report declares it.`);
+      const meta = metaOf(gov, o.slug, t.id);
+      if (statusOf(o, gov, t) === 'deprecated') {
+        const users = incoming(o, t.id).length + gov.bindings.filter((b) => b.slug === o.slug && b.term === t.id).length;
+        const repl = o.terms.find((x) => x.id === meta.replacedBy);
+        if (!meta.replacedBy) add('medium', 'no-replacement', o, t.id, `${t.label} is deprecated but names no replacement.`);
+        else if (!repl || statusOf(o, gov, repl) === 'deprecated') add('medium', 'no-replacement', o, t.id, `${t.label} points to ${meta.replacedBy}, which does not exist or is deprecated itself.`);
+        if (users > 0) add('high', 'deprecated-used', o, t.id, `${t.label} is deprecated but ${users} ${users === 1 ? 'thing still uses' : 'things still use'} it${repl ? `. Move them to ${repl.label}` : ''}.`);
+      }
+    }
+    const claimed = new Map<string, string>();
+    for (const t of o.terms) claimed.set(t.label.toLowerCase(), t.id);
+    for (const t of o.terms) {
+      for (const w of metaOf(gov, o.slug, t.id).synonyms) {
+        const other = claimed.get(w.toLowerCase());
+        // The old name of a deprecated term is a good synonym of its replacement; that is how people find the new term.
+        if (other && other !== t.id && metaOf(gov, o.slug, other).status === 'deprecated' && metaOf(gov, o.slug, other).replacedBy === t.id) continue;
+        if (other && other !== t.id) add('medium', 'synonym-clash', o, t.id, `"${w}" is a synonym of ${t.label} but also a name or synonym of ${other}. People would not know which is meant.`);
+        else if (!other) claimed.set(w.toLowerCase(), t.id);
+      }
+    }
+    for (const q of questionsOf(gov, o.slug)) {
+      const c = checkQuestion(o, gov, q);
+      if (c.state === 'blocked') {
+        const gone = c.problems.filter((p) => p.kind === 'missing').map((p) => p.term);
+        out.push({ id: `question-blocked:${o.slug}:${q.id}`, severity: 'medium', rule: 'question-blocked', slug: o.slug, term: '', message: `"${q.text}" cannot be answered: ${gone.join(', ')} ${gone.length === 1 ? 'is' : 'are'} missing.` });
+      }
     }
   }
   const flat = ontologies.flatMap((o) => o.terms.map((t) => ({ o, t })));
@@ -513,9 +656,32 @@ export function proposePrompt(slug: string, mode: 'new' | 'extend', docsHint: st
 
 // ---------------------------------------------------------------- example data for governance, proposals, history
 
+/** Adds the parts of `extra` to `base` (used for the bigger example set). */
+export function mergeGovernance(base: Governance, extra: Partial<Governance>): Governance {
+  return {
+    ...base,
+    ontologies: { ...base.ontologies, ...(extra.ontologies ?? {}) },
+    bindings: [...base.bindings, ...(extra.bindings ?? [])],
+    views: [...base.views, ...(extra.views ?? [])],
+    plans: [...base.plans, ...(extra.plans ?? [])],
+    termMeta: { ...base.termMeta, ...(extra.termMeta ?? {}) },
+    questions: [...base.questions, ...(extra.questions ?? [])],
+  };
+}
+
 export function exampleGovernance(): Governance {
   return {
     version: 1,
+    termMeta: {
+      'werkbank_fin|DSO': { status: 'approved', replacedBy: '', synonyms: ['days sales outstanding', 'receivable days'], mappings: [{ system: 'SAP S/4HANA', ref: 'Credit Management: DSO' }] },
+      'werkbank_fin|Margin': { status: 'approved', replacedBy: '', synonyms: ['contribution margin I', 'CM1'], mappings: [] },
+    },
+    questions: [
+      { id: 'q-fin-1', slug: 'werkbank_fin', text: 'Which company codes have a DSO plausibility problem?', terms: ['DSO', 'CompanyCode', 'PreCloseCheck'] },
+      { id: 'q-fin-2', slug: 'werkbank_fin', text: 'What is the margin after accruals per company code?', terms: ['MarginAfterAccruals', 'CompanyCode'] },
+      { id: 'q-fin-3', slug: 'werkbank_fin', text: 'Which accruals exist for goods received but not invoiced?', terms: ['Accrual', 'GRIRItem'] },
+      { id: 'q-fin-4', slug: 'werkbank_fin', text: 'How are invoices and journal entries classified?', terms: ['FinancialDocument', 'Invoice'] },
+    ],
     ontologies: {
       werkbank_fin: { owner: 'Group Controlling', domain: 'Finance', approver: 'Group Controlling' },
       procurement_docs: { owner: '', domain: 'Procurement', approver: '' },

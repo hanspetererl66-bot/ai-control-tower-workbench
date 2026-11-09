@@ -91,15 +91,25 @@ function rng(seed: number): () => number {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-/** Force layout: repulsion between all nodes, springs on links (weak hub links are long and soft), ontologies on a ring. */
-export function layoutMap(map: GraphMap, iterations = 320, seed = 7): Positions {
+/** A force simulation that can run step by step (the screen animates it) or all at once (`layoutMap`). */
+export interface Simulation {
+  x: Float64Array; y: Float64Array; vx: Float64Array; vy: Float64Array;
+  /** Nodes held in place (being dragged); everything else keeps moving around them. */
+  pinned: Uint8Array;
+  tick(alpha: number): void;
+}
+
+/** Repulsion between all nodes, springs on links (weak hub links are long and soft), ontologies on a ring. */
+export function createSimulation(map: GraphMap, seed = 7): Simulation {
   const n = map.nodes.length;
   const x = new Float64Array(n), y = new Float64Array(n);
   const vx = new Float64Array(n), vy = new Float64Array(n);
+  const pinned = new Uint8Array(n);
   const index = new Map(map.nodes.map((m, i) => [m.id, i]));
   const slugs = [...new Set(map.nodes.map((m) => m.slug))];
   const rand = rng(seed);
-  const ringR = 220;
+  // two or three ontologies sit close together; many need room, or their areas run into each other
+  const ringR = slugs.length > 3 ? 120 + slugs.length * 62 : 220;
   const anchor = map.nodes.map((m) => {
     const k = Math.max(0, slugs.indexOf(m.slug));
     const a = (k / Math.max(1, slugs.length)) * Math.PI * 2 - Math.PI / 2;
@@ -110,8 +120,7 @@ export function layoutMap(map: GraphMap, iterations = 320, seed = 7): Positions 
     x[i] = anchor[i].x + Math.cos(a) * r; y[i] = anchor[i].y + Math.sin(a) * r;
   });
   const links = map.edges.map((e) => ({ a: index.get(e.from)!, b: index.get(e.to)!, weak: e.weak }));
-  for (let step = 0; step < iterations; step++) {
-    const alpha = Math.max(0.02, 1 - step / iterations);
+  const tick = (alpha: number) => {
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
         let dx = x[i] - x[j], dy = y[i] - y[j];
@@ -129,11 +138,19 @@ export function layoutMap(map: GraphMap, iterations = 320, seed = 7): Positions 
       vx[l.a] += fx; vy[l.a] += fy; vx[l.b] -= fx; vy[l.b] -= fy;
     }
     for (let i = 0; i < n; i++) {
+      if (pinned[i]) { vx[i] = 0; vy[i] = 0; continue; }
       vx[i] += (anchor[i].x - x[i]) * 0.004 * alpha; vy[i] += (anchor[i].y - y[i]) * 0.004 * alpha;
       vx[i] *= 0.78; vy[i] *= 0.78; x[i] += vx[i]; y[i] += vy[i];
     }
-  }
-  return { x, y };
+  };
+  return { x, y, vx, vy, pinned, tick };
+}
+
+/** Force layout, run to the end at once. The same catalog always lands in the same place. */
+export function layoutMap(map: GraphMap, iterations = 320, seed = 7): Positions {
+  const sim = createSimulation(map, seed);
+  for (let step = 0; step < iterations; step++) sim.tick(Math.max(0.02, 1 - step / iterations));
+  return { x: sim.x, y: sim.y };
 }
 
 // ---------------------------------------------------------------- focus
