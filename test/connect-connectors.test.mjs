@@ -94,7 +94,13 @@ test('--only and --skip select, a command that is not allowed is skipped with th
     const some = connectAll({ root, only: ['web-sources', 'sub4me'], skip: ['sub4me'] });
     assert.deepEqual(some.filter((r) => r.status === 'added').map((r) => r.name), ['web-sources']);
     const onto = connectAll({ root }).find((r) => r.name === 'ontology-manager');
-    assert.equal(onto.status, 'skipped');
-    assert.match(onto.note, /not allowed/);
+    assert.notEqual(onto.status, 'skipped', 'uv is allowed, so the Ontology Manager is connected');
+    const src = tempRoot();
+    mkdirSync(join(src, 'connectors/risky'), { recursive: true });
+    writeFileSync(join(src, 'connectors/risky/manifest.json'), JSON.stringify({ name: 'risky', display_name: 'Risky', server: { type: 'node', mcp_config: { command: 'curl', args: [] } } }));
+    const risky = connectAll({ root: tempRoot(), sourceRoot: src }).find((r) => r.name === 'risky');
+    assert.equal(risky.status, 'skipped');
+    assert.match(risky.note, /not allowed/);
+    rmSync(src, { recursive: true, force: true });
   } finally { rmSync(root, { recursive: true, force: true }); }
 });

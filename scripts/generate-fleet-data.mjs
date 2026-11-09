@@ -23,8 +23,8 @@ const NAMES = [
   ['Iberia Retail S.A.', 'EMEA South', 'Gold'], ['Lombardia Moda S.p.A.', 'EMEA South', 'Silver'], ['Provence Cosmetics SAS', 'EMEA South', 'Silver'],
   ['Adriatic Shipping d.o.o.', 'EMEA South', 'Bronze'], ['Tejo Telecom S.A.', 'EMEA South', 'Bronze'], ['Bosporus Textil A.S.', 'MEE', 'Silver'],
   ['Gulf Logistics LLC', 'MEE', 'Gold'], ['Sahara Solar Ltd', 'MEE', 'Bronze'], ['Cape Mining Pty', 'MEE', 'Silver'], ['Nile Foods S.A.E.', 'MEE', 'Bronze'],
-  ['Savanna Bank Ltd', 'MEE', 'Silver'], ['Sakura Precision K.K.', 'APEC', 'Gold'], ['Kanto Electronics K.K.', 'APEC', 'Silver'], ['Pacific Trade Pte', 'APEC', 'Silver'],
-  ['Harbour Retail Pty', 'APEC', 'Bronze'], ['Mekong Textiles Co', 'APEC', 'Bronze'], ['Himalaya Pharma Ltd', 'APEC', 'Silver'], ['Outback Resources Pty', 'APEC', 'Gold'],
+  ['Savanna Bank Ltd', 'MEE', 'Silver'], ['Sakura Precision K.K.', 'APAC', 'Gold'], ['Kanto Electronics K.K.', 'APAC', 'Silver'], ['Pacific Trade Pte', 'APAC', 'Silver'],
+  ['Harbour Retail Pty', 'APAC', 'Bronze'], ['Mekong Textiles Co', 'APAC', 'Bronze'], ['Himalaya Pharma Ltd', 'APAC', 'Silver'], ['Outback Resources Pty', 'APAC', 'Gold'],
   ['Great Lakes Auto Inc', 'NALA', 'Gold'], ['Prairie Agro Inc', 'NALA', 'Silver'], ['Bayou Energy LLC', 'NALA', 'Silver'], ['Maple Insurance Ltd', 'NALA', 'Bronze'],
   ['Andes Mining S.A.', 'NALA', 'Silver'], ['Amazonia Foods Ltda', 'NALA', 'Bronze'], ['Pampas Retail S.A.', 'NALA', 'Bronze'], ['Sierra Medical Inc', 'NALA', 'Silver'],
   ['Cascade Software Inc', 'NALA', 'Bronze'], ['Lone Star Oil Corp', 'NALA', 'Gold'], ['Empire Finance Corp', 'NALA', 'Silver'], ['Lakeside Utilities Inc', 'NALA', 'Bronze'],
@@ -100,7 +100,7 @@ function lifeSciences() {
 }
 const out = {
   asOf: '2026-10-24',
-  note: 'Fictional customers and virtual machines, generated from a fixed seed (scripts/generate-fleet-data.mjs). Rules and task definitions are the same as in the IT Infrastructure Space.',
+  note: 'Fictional customers and virtual machines, generated from a fixed seed (scripts/generate-fleet-data.mjs). Rules and task definitions are the same as in the Infra VM landscape Space.',
   rules: infra.rules,
   tasks: infra.tasks,
   customers: [...customers.map((c) => {

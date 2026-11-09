@@ -67,7 +67,7 @@ test('the story has one customer and one certificate through all four Spaces', (
   assert.ok(fleet.customers.some((c) => c.name === name));
   assert.ok(ops.customers.some((c) => c.name === name));
   const vmNames = new Set(vms.vms.map((v) => v.name));
-  for (const a of alerts) { assert.equal(a.customer, name, `${a.id}: customer`); assert.ok(vmNames.has(a.host), `${a.id}: host ${a.host} is a VM of IT Infrastructure`); }
+  for (const a of alerts) { assert.equal(a.customer, name, `${a.id}: customer`); assert.ok(vmNames.has(a.host), `${a.id}: host ${a.host} is a VM of Infra VM landscape`); }
   const a506 = alerts.find((a) => a.id === 'A-506'), vm = vms.vms.find((v) => v.name === a506.host);
   const days = Math.round((Date.parse(a506.text.match(/\((\d{4}-\d{2}-\d{2})\)/)[1]) - Date.parse(alerts.asOf ?? JSON.parse(read('examples/it-operations/alerts.json')).asOf)) / 864e5);
   assert.equal(vm.certExpiresInDays, days, 'A-506 and the VM wall give the same days left');

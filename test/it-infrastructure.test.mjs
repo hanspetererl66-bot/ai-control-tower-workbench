@@ -18,7 +18,7 @@ test('page embeds the current VMs and design system, is installable, and has no 
   assert.ok(SPACE_PAGES.includes('examples/it-infrastructure/index.html'));
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
   const meta = JSON.parse(read('examples/it-infrastructure/space.json'));
-  assert.equal(meta.title, 'IT Infrastructure');
+  assert.equal(meta.title, 'Infra VM landscape');
 });
 
 test('25 VMs with unique names, each colour is explained by its reasons', () => {

@@ -361,7 +361,7 @@ export const N8N_TOOL_DEFINITIONS = [
   {
     name: 'run_vm_maintenance_plan',
     description:
-      'Run the demo n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" through its webhook (/webhook/vm-maintenance-plan). It checks virtual machines against fixed rules (CPU, memory, disk, backup, security patch, TLS certificate), turns every yellow or red reason into a recommended task (renew certificate, install patch, free up disk space, catch up backup, check an unreachable VM), proposes a maintenance window and bundles tasks per VM. Without vms it uses the 25 fictional VMs of the IT Infrastructure Space. It only proposes: nothing is run, restarted or changed. Needs N8N_URL; the workflow examples/n8n-workflows/05-vm-maintenance-plan.json must be imported and active.',
+      'Run the demo n8n workflow "Demo 5 (IT infrastructure): VM maintenance plan" through its webhook (/webhook/vm-maintenance-plan). It checks virtual machines against fixed rules (CPU, memory, disk, backup, security patch, TLS certificate), turns every yellow or red reason into a recommended task (renew certificate, install patch, free up disk space, catch up backup, check an unreachable VM), proposes a maintenance window and bundles tasks per VM. Without vms it uses the 25 fictional VMs of the Infra VM landscape Space. It only proposes: nothing is run, restarted or changed. Needs N8N_URL; the workflow examples/n8n-workflows/05-vm-maintenance-plan.json must be imported and active.',
     inputSchema: {
       type: 'object',
       properties: {
