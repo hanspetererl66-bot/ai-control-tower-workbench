@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Demo 6 (IT infrastructure): operator runbook\nThe operator picks up a ticket from the IT Infrastructure Space and runs the same steps every time: **1 check the VM again, 2 backup if needed, 3 apply the task (for example install the renewed TLS certificate), 4 check again**. The rules and task definitions are the same as in the Space and in Demo 5 (a test keeps them equal).\n\nSafety: the runbook only runs when the body says `approved: true` and the check still shows the reason. Everything is **simulated**: no real VM is touched.\n\nOpen with the **Run demo** button (sample: ticket T-1042, certificate of proxy-edge-01) or call the webhook `/webhook/vm-operator-runbook` with `{ticket, vm, task, approved}`.",
+        "content": "## Demo 6 (IT infrastructure): operator runbook\nThe operator picks up a ticket from the Infra VM landscape Space and runs the same steps every time: **1 check the VM again, 2 backup if needed, 3 apply the task (for example install the renewed TLS certificate), 4 check again**. The rules and task definitions are the same as in the Space and in Demo 5 (a test keeps them equal).\n\nSafety: the runbook only runs when the body says `approved: true` and the check still shows the reason. Everything is **simulated**: no real VM is touched.\n\nOpen with the **Run demo** button (sample: ticket T-1042, certificate of proxy-edge-01) or call the webhook `/webhook/vm-operator-runbook` with `{ticket, vm, task, approved}`.",
         "height": 300,
         "width": 620
       },

@@ -24,7 +24,7 @@ test('the page is in sync with the data and the design system, and the Space is 
   assert.ok(space.title && space.insights.length >= 3);
 });
 
-test('rules and task definitions are the ones of the IT Infrastructure Space, and the logic gives the same colour', () => {
+test('rules and task definitions are the ones of the Infra VM landscape Space, and the logic gives the same colour', () => {
   const base = repoVms();
   assert.deepEqual(fleet.rules, base.rules);
   assert.deepEqual(fleet.tasks, base.tasks);
@@ -69,11 +69,11 @@ test('page: three views, filters, drill-down with ticket button, demo with five 
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
 });
 
-test('geography: every region rolls up into EMEA, NALA or APEC, and the page carries the global row, the geo cards and the ticket payload', () => {
+test('geography: every region rolls up into EMEA, NALA or APAC, and the page carries the global row, the geo cards and the ticket payload', () => {
   const geoOf = new Function(`return ${/const geoOf = (\(region\) => [^\n]*);\n/.exec(page)[1]}`)();
   const counts = {};
-  for (const c of fleet.customers) { const g = geoOf(c.region); assert.ok(['EMEA', 'NALA', 'APEC'].includes(g), c.region); counts[g] = (counts[g] || 0) + 1; }
-  assert.deepEqual(counts, { EMEA: 23, NALA: 12, APEC: 7 });
+  for (const c of fleet.customers) { const g = geoOf(c.region); assert.ok(['EMEA', 'NALA', 'APAC'].includes(g), c.region); counts[g] = (counts[g] || 0) + 1; }
+  assert.deepEqual(counts, { EMEA: 23, NALA: 12, APAC: 7 });
   for (const needle of ['id="geo"', 'Global overview', 'Situation per geography', "geo: c.geo", 'Create ticket for operator']) assert.ok(page.includes(needle), needle);
   const ops = read('examples/infra-ops/index.html');
   for (const needle of ['vmWall', 'data-vmt', 'Create ticket for operator', 'vmTicket']) assert.ok(ops.includes(needle), needle);

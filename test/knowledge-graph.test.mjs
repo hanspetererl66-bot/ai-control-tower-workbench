@@ -143,13 +143,13 @@ test('Stakeholders: customer contacts get a role and a contact strength derived 
 test('Page: Sales view by default with enablers, value legend, week slider, questions and stakeholder map', () => {
   for (const id of ['b-enabler', 'b-value', 'b-stake', 't-range', 'ask', 'vleg']) assert.match(page, new RegExp(`id="${id}"`));
   assert.match(page, /const hidden = new Set\(ENABLER\)/, 'enablers are hidden until switched on');
-  for (const q of ['Which opportunities can still close by quarter end?', 'Which opportunities do I have in MEE, APEC and NALA?', 'Which quarter-end deals are at risk?', 'Which contracts end or need notice before quarter end?', 'Which open deals have no decision maker yet?', 'What changed since last week?', 'Where is a skill missing?']) assert.ok(page.includes(q), q);
+  for (const q of ['Which opportunities can still close by quarter end?', 'Which opportunities do I have in MEE, APAC and NALA?', 'Which quarter-end deals are at risk?', 'Which contracts end or need notice before quarter end?', 'Which open deals have no decision maker yet?', 'What changed since last week?', 'Where is a skill missing?']) assert.ok(page.includes(q), q);
   // questions, legend and time slider sit in their own bars and no longer cover the graph
   for (const sel of ['.ask', '.legend', '.timebar', '.vleg']) assert.doesNotMatch(page, new RegExp(`\\${sel}\\{position:absolute`), `${sel} must not float over the canvas`);
 });
 
 test('Sales regions and quarter-end data: accounts carry a region, contracts carry end and notice', () => {
-  const regions = ['MEE', 'APEC', 'NALA'];
+  const regions = ['MEE', 'APAC', 'NALA'];
   const open = graph.nodes.filter((n) => n.sales && n.sales.stage !== 'contract');
   assert.ok(open.length > 8);
   for (const n of open) assert.ok(regions.includes(n.sales.region), `${n.id} has a region`);
