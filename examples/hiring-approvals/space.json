@@ -2,6 +2,7 @@
   "title": "Hiring Approvals",
   "description": "Approvals for hiring a candidate who has passed the recruiting process: hiring manager, HR, finance and optionally the department head decide one after the other. Joule prepares the request, only people decide. Fictional sample data.",
   "domain": "HR",
+  "parent": "recruiting-workbench",
   "insights": [
     "Every request names one candidate in the stage Offer, the terms (level, band, start date, contract) and the evidence line from the recruiting process.",
     "The chain runs hiring manager, HR, finance, optionally department head. Only the person whose turn it is can decide; nobody can hold two steps.",

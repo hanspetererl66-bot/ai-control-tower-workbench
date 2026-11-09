@@ -1,0 +1,12 @@
+{
+  "title": "Onboarding",
+  "description": "Mockup of the onboarding that follows a signed contract: preboarding, day one, the first week, the first 90 days and the probation decision, shown for five new hires in five forms. Joule prepares and reminds, people do the steps. Fictional sample data.",
+  "domain": "HR",
+  "insights": [
+    "Five new hires are in five different situations: waiting for the signature, preboarding with an early blocker, preboarding one week before the start, in the first week, and past the 90-day review.",
+    "Board, Timeline, Matrix, Person and By owner show the same 23 steps in five forms; every number is computed from the steps and the dates in the data.",
+    "Joule drafts the access request, the welcome message, the plan and the summaries; the owner of each step does it or confirms it. Nothing is sent or booked by Joule.",
+    "No names, no bank data, no addresses: new hires are pseudonyms. Fictional sample data; no HR system, IT service desk or payroll is called."
+  ],
+  "prompt": "Bundled example: Onboarding (static mockup, data embedded by npm run sync:mockups)."
+}

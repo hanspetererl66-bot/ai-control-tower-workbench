@@ -31,6 +31,7 @@ export const EXAMPLE_SPACES = {
   'design-study': 'design-study',
   'recruiting-workbench': 'recruiting-workbench',
   'hiring-approvals': 'hiring-approvals',
+  onboarding: 'onboarding',
   'agent-observability': 'agent-observability',
   'order-to-cash': 'order-to-cash',
   'order-to-cash-software': 'order-to-cash-software',

@@ -1,0 +1,68 @@
+{
+  "asOf": "2026-11-09",
+  "company": "Hanse Logistik (fictional)",
+  "phases": [
+    { "id": "pre", "label": "Preboarding", "hint": "From the signed contract to the evening before day one" },
+    { "id": "day1", "label": "Day one", "hint": "The first day" },
+    { "id": "week1", "label": "First week", "hint": "Days 1 to 7" },
+    { "id": "d90", "label": "First 90 days", "hint": "Check-ins at 30, 60 and 90 days" },
+    { "id": "probation", "label": "Probation", "hint": "The decision before the probation period ends" }
+  ],
+  "owners": ["HR", "Payroll", "IT", "Facilities", "Manager", "Buddy", "New hire"],
+  "steps": [
+    { "id": "works_council", "phase": "pre", "title": "Inform the works council about the hire", "owner": "HR", "offset": -21, "beforeContract": true, "joule": "Drafts the notice from the approved terms. HR sends it." },
+    { "id": "master_data", "phase": "pre", "title": "Create the employee record in the HR system", "owner": "HR", "offset": -14, "joule": "Prepares the entry from level, band, start date and contract type. Names and bank data never pass through Joule." },
+    { "id": "new_hire_forms", "phase": "pre", "title": "Fill in the personal data in the self-service portal", "owner": "New hire", "offset": -10, "after": ["master_data"], "joule": "Writes the reminder. Sent by HR." },
+    { "id": "right_to_work", "phase": "pre", "title": "Check the right to work (work or residence permit)", "owner": "HR", "offset": -10, "after": ["master_data"] },
+    { "id": "payroll_setup", "phase": "pre", "title": "Set up payroll", "owner": "Payroll", "offset": -7, "after": ["master_data", "new_hire_forms"] },
+    { "id": "it_accounts", "phase": "pre", "title": "Create accounts, mailbox and access roles", "owner": "IT", "offset": -7, "after": ["master_data"], "joule": "Drafts the access request from the role profile. IT approves the roles." },
+    { "id": "it_hardware", "phase": "pre", "title": "Order and prepare laptop and phone", "owner": "IT", "offset": -5 },
+    { "id": "facilities", "phase": "pre", "title": "Prepare badge, desk and parking", "owner": "Facilities", "offset": -5 },
+    { "id": "buddy", "phase": "pre", "title": "Name a buddy", "owner": "Manager", "offset": -7 },
+    { "id": "plan", "phase": "pre", "title": "Write the first-week plan and the 30-60-90 goals", "owner": "Manager", "offset": -5, "joule": "Drafts both from the job description and the requisition. The manager edits." },
+    { "id": "welcome", "phase": "pre", "title": "Send the welcome message", "owner": "Manager", "offset": -3, "after": ["master_data"], "joule": "Drafts it. The manager sends it." },
+    { "id": "handover", "phase": "day1", "title": "Hand over laptop, phone and badge", "owner": "IT", "offset": 0, "after": ["it_hardware", "facilities"] },
+    { "id": "reception", "phase": "day1", "title": "Welcome in person and show the workplace", "owner": "Manager", "offset": 0, "after": ["handover"] },
+    { "id": "acknowledgements", "phase": "day1", "title": "Sign the data-protection and security acknowledgements", "owner": "New hire", "offset": 0, "after": ["master_data"] },
+    { "id": "buddy_walk", "phase": "week1", "title": "Walk through the first days with the buddy", "owner": "Buddy", "offset": 1, "after": ["buddy"] },
+    { "id": "training", "phase": "week1", "title": "Complete the mandatory trainings (security, data protection, compliance)", "owner": "New hire", "offset": 5, "after": ["it_accounts"] },
+    { "id": "week1_check", "phase": "week1", "title": "First-week check-in", "owner": "Manager", "offset": 5 },
+    { "id": "check30", "phase": "d90", "title": "30-day check-in", "owner": "Manager", "offset": 30 },
+    { "id": "benefits", "phase": "d90", "title": "Choose the benefits", "owner": "New hire", "offset": 30, "after": ["new_hire_forms"] },
+    { "id": "pulse", "phase": "d90", "title": "Answer the onboarding pulse survey", "owner": "New hire", "offset": 30 },
+    { "id": "check60", "phase": "d90", "title": "60-day check-in", "owner": "Manager", "offset": 60 },
+    { "id": "check90", "phase": "d90", "title": "90-day review", "owner": "Manager", "offset": 90, "joule": "Prepares a summary of the check-ins. The manager writes the assessment." },
+    { "id": "probation", "phase": "probation", "title": "Decide about the end of the probation period", "owner": "HR", "offset": 150, "after": ["check90"], "joule": "Prepares the summary. HR and the manager decide." }
+  ],
+  "hires": [
+    {
+      "id": "C-3702", "title": "Warehouse Team Lead", "dept": "Operations", "requisition": "REQ-2107", "start": "2027-01-11",
+      "contract": { "status": "sent", "at": "2026-11-05" },
+      "done": { "works_council": "2026-11-06" }, "na": ["right_to_work"], "blocked": {}
+    },
+    {
+      "id": "C-3908", "title": "SAP Logistics Consultant (internal IT)", "dept": "IT", "requisition": "REQ-2108", "start": "2026-12-15",
+      "contract": { "status": "signed", "at": "2026-10-30" },
+      "done": { "works_council": "2026-11-02", "master_data": "2026-11-04" }, "na": [],
+      "blocked": { "right_to_work": { "reason": "The residence permit is still with the authority; expected on 1 December.", "since": "2026-11-06" } }
+    },
+    {
+      "id": "C-3320", "title": "Integration Developer", "dept": "IT", "requisition": "REQ-2098", "start": "2026-11-16",
+      "contract": { "status": "signed", "at": "2026-10-20" },
+      "done": { "works_council": "2026-10-27", "master_data": "2026-10-28", "buddy": "2026-11-05" }, "na": ["right_to_work"],
+      "blocked": { "it_hardware": { "reason": "The laptop model is out of stock; delivery expected on 20 November.", "since": "2026-11-06" } }
+    },
+    {
+      "id": "C-3202", "title": "Customer Service Agent (DE/EN)", "dept": "Service", "requisition": "REQ-2091", "start": "2026-11-04",
+      "contract": { "status": "signed", "at": "2026-10-12" },
+      "done": { "works_council": "2026-10-15", "master_data": "2026-10-19", "new_hire_forms": "2026-10-23", "payroll_setup": "2026-10-27", "it_accounts": "2026-10-27", "it_hardware": "2026-10-30", "facilities": "2026-10-30", "buddy": "2026-10-26", "plan": "2026-10-30", "welcome": "2026-11-02", "handover": "2026-11-04", "reception": "2026-11-04", "acknowledgements": "2026-11-04", "buddy_walk": "2026-11-05" },
+      "na": ["right_to_work"], "blocked": {}
+    },
+    {
+      "id": "C-2901", "title": "Finance Analyst", "dept": "Finance", "requisition": "REQ-2044", "start": "2026-08-03",
+      "contract": { "status": "signed", "at": "2026-06-22" },
+      "done": { "works_council": "2026-06-26", "master_data": "2026-07-06", "new_hire_forms": "2026-07-14", "payroll_setup": "2026-07-23", "it_accounts": "2026-07-24", "it_hardware": "2026-07-28", "facilities": "2026-07-28", "buddy": "2026-07-24", "plan": "2026-07-29", "welcome": "2026-07-31", "handover": "2026-08-03", "reception": "2026-08-03", "acknowledgements": "2026-08-03", "buddy_walk": "2026-08-04", "training": "2026-08-07", "week1_check": "2026-08-07", "check30": "2026-09-03", "benefits": "2026-09-01", "pulse": "2026-09-02", "check60": "2026-10-02" },
+      "na": ["right_to_work"], "blocked": {}
+    }
+  ]
+}
