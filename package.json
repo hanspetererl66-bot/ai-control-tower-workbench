@@ -8,6 +8,7 @@
     "test": "node --test test/*.test.mjs",
     "phase0": "node --env-file=.env spike.mjs",
     "smoke:electron": "node scripts/smoke-electron.mjs",
+    "smoke:governance": "node scripts/smoke-governance.mjs",
     "dev": "vite --port 5273 & electron .",
     "build": "vite build",
     "build:demo": "node scripts/build-demo.mjs",

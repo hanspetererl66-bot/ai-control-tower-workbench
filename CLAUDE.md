@@ -15,6 +15,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 08.11
 ## Befehle
 - `npm test` (node --test), `npx tsc --noEmit -p .`, `npm run check` (alles zusammen) – vor jedem Push grün.
 - `npm run smoke:electron`: startet die echte Electron-App (öffnet ein Fenster, braucht Display; Vite startet es selbst, falls es nicht läuft), prüft Titel, Goose-Port, Chat und Cover, speichert Screenshots (`--out <Ordner>`) und beendet die App. Kein Ersatz für einen Agenten-Lauf mit Live-Diensten.
+- `npm run smoke:governance`: wie `smoke:electron`, prüft die Einstiegsseite AI Governance: Subspaces in der Seitenleiste, vier Kacheln, Öffnen von Registry, Compliance, Observability und Agent Studio, Zurück-Button, keine Skriptfehler. Setzt die vier Spaces voraus (`node scripts/install-example-space.mjs control-tower agent-registry agent-compliance agent-observability`); klappt die Domain Governance in der Seitenleiste auf.
 - Beispiel-Spaces: `examples/<name>/index.html`, installieren mit `npm run install:examples` (siehe Skill `space-change`).
 - Connector-Bundles: `npm run build:connectors` (alle) oder `node scripts/build-control-tower-mcpb.mjs <id>`. Die älteren Connectoren `gmail`, `databricks`, `jira`, `slack`, `notion` haben eigene Bundle-Flags (`--gmail` usw.).
 - Cognee: `npm run cognee:corpus`, danach `.venv-cognee/bin/python scripts/cognee-seed.py [--reset]` (nicht `npm run cognee:seed`, das nimmt das System-Python).
