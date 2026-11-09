@@ -556,8 +556,10 @@ export default function Composer({
           className="chip chip-icon"
           title={agent ? 'Pick a skill (or type / in the input)' : 'Joule is not connected yet, so skills cannot be picked (is a model key set in .env?)'}
           aria-label="Pick a skill"
+          aria-pressed={!!slash}
           onClick={() => {
-            setText((current) => (current.startsWith('/') ? current : '/'));
+            // Second click closes the menu again: the menu is open exactly while the text is "/word".
+            setText((current) => (/^\/\S*$/.test(current) ? '' : current.startsWith('/') ? current : '/'));
             inputRef.current?.focus();
           }}
           disabled={!agent || busy || preparingConnector}
