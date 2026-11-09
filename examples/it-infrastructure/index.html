@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IT Infrastructure</title>
+<title>Infra VM landscape</title>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
    Source of truth: examples/shared/design-system.css. Embedded into each Space by
@@ -1135,7 +1135,27 @@ function go(i) {
   recompute(); renderAll();
 }
 function renderCust() { const c = DATA.customer; $('#cust').innerHTML = c ? `<span class="cn">${esc(c.name)}</span><span class="chip">SAP customer ID ${esc(c.sapCustomerId)}</span><span class="chip">${vms.length} VMs, all of this customer</span>` : ''; }
-function renderAll() { renderCust(); renderKpis(); renderFilters(); renderGrid(); renderDetail(); renderTasks(); renderGuide(); }
+function renderAll() { renderCust(); renderKpis(); renderFilters(); renderGrid(); renderDetail(); renderTasks(); renderGuide(); saveState(); }
+// The working state (selected VM, filter, search, demo progress) goes to the app, so it comes back after a trip to the chat ("Ask Joule about …").
+function saveState() {
+  if (window.parent === window) return;
+  window.parent.postMessage({ type: 'wb:state', state: { filter: state.filter, sel: state.sel, q: state.q, done: state.done, approved: state.approved, tickets: state.tickets, proposed: state.proposed } }, '*');
+}
+function restoreState(st) {
+  if (!st || typeof st !== 'object') return;
+  const flags = (o) => { const out = {}; if (o && typeof o === 'object') for (const k of Object.keys(o)) if (o[k] === true && /^[\w.-]+\|[\w.-]+$/.test(k) && vms.some((v) => v.name === k.split('|')[0])) out[k] = true; return out; };
+  if (['all', 'red', 'yellow', 'green'].includes(st.filter)) state.filter = st.filter;
+  if (typeof st.sel === 'string' && vms.some((v) => v.id === st.sel)) state.sel = st.sel;
+  if (typeof st.q === 'string') state.q = st.q.slice(0, 80);
+  if (typeof st.proposed === 'boolean') state.proposed = st.proposed;
+  state.done = flags(st.done); state.approved = flags(st.approved);
+  if (st.tickets && typeof st.tickets === 'object') for (const name of Object.keys(st.tickets)) if (vms.some((v) => v.name === name) && st.tickets[name] && typeof st.tickets[name] === 'object') state.tickets[name] = st.tickets[name];
+  if ($('#q')) $('#q').value = state.q;
+}
+window.addEventListener('message', (e) => {
+  if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+  restoreState(e.data.state); renderAll();
+});
 $('#rules').innerHTML = [['CPU', 'cpuPct', ' %', 'from'], ['Memory', 'memPct', ' %', 'from'], ['Disk', 'diskPct', ' %', 'from'], ['Last backup (production)', 'backupAgeHours', ' h', 'from'], ['Security patch missing', 'patchLagDays', ' days', 'from'], ['TLS certificate expires in', 'certExpiresInDays', ' days', 'up to']].map(([l, k, u, w]) => `<tr><td>${l}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].yellow}${u}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].red}${u}</td></tr>`).join('');
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 recompute(); renderAll();

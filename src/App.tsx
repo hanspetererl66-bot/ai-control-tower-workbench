@@ -86,6 +86,7 @@ import type { ScheduleRuntime } from './ui/SchedulePopover';
 import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
 import { missingSpaceNotice, type Handoff, type IncomingHandoff } from './space-handoff';
+import { backLabel, keepReturn } from './space-return';
 import { createToastGate } from './toast-timer';
 import WerkbankMark from './ui/WerkbankMark';
 import { PRODUCT_TITLE } from './product';
@@ -405,6 +406,9 @@ export default function App() {
   const changeCommands = useCallback((next: Command[]) => { setOwnCommandsState(next); saveCommands(window.localStorage, next); }, []);
   /** The Space whose memory entries apply to this conversation (set when a question is asked from a Space). */
   const [contextSpace, setContextSpace] = useState('');
+  /** The Space a question came from; the chat header offers a way back to it. */
+  const [returnSpace, setReturnSpace] = useState<string | null>(null);
+  useEffect(() => { if (!keepReturn(view)) setReturnSpace(null); }, [view]);
   const [dismissedIdeas, setDismissedIdeas] = useState<string[]>([]);
   const [memorySuggestion, setMemorySuggestion] = useState<ReturnType<typeof suggestMemory>>(null);
   const changeMemory = useCallback((next: MemoryState) => { setMemoryState(next); saveMemory(window.localStorage, next); }, []);
@@ -1031,7 +1035,7 @@ export default function App() {
       return;
     }
     setView('chat');
-    if (spaceSlug) setContextSpace(spaceSlug);
+    if (spaceSlug) { setContextSpace(spaceSlug); setReturnSpace(spaceSlug); }
     void send(prompt);
   }
 
@@ -1660,6 +1664,15 @@ export default function App() {
       ) : (
         <main className="main">
           <header className="topbar">
+            {backLabel(spaces, returnSpace) && (
+              <button
+                className="topbar-back"
+                onClick={() => { if (returnSpace) { setSelectedSpace(returnSpace); setSpacesHome(false); setView('spaces'); } setReturnSpace(null); }}
+                title="Return to the Space you asked from"
+              >
+                ← {backLabel(spaces, returnSpace)?.replace('Back to ', '')}
+              </button>
+            )}
             {renamingTitle !== null ? (
               <form
                 className="topbar-rename"
