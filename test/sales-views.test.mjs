@@ -65,3 +65,31 @@ test('Sales stage views: a Space keeps nothing in storage, and stage colours are
   const rest = rules.split('\n').filter((l) => !/^(:root|@media|\}|\/\*)/.test(l) && !/^\s*--sw-/.test(l)).join('\n');
   assert.doesNotMatch(rest, /#[0-9a-fA-F]{3,6}\b/, 'no literal colour outside the token definitions');
 });
+
+test('Sales tabs: Governance, Workflow and Rules sit under one tab "Settings & info"', () => {
+  const tabs = [...html.matchAll(/<button role="tab"[^>]*data-tab="([a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(tabs, ['pipeline', 'forecast', 'payments', 'meetings', 'knowledge', 'inbox', 'more']);
+  for (const s of ['governance', 'workflow', 'rules']) {
+    assert.match(html, new RegExp(`data-sub="${s}"`));
+    assert.match(html, new RegExp(`id="sub-${s}"`));
+  }
+  // the journey and the hand-over still name the old tabs; openTab maps them to the panel
+  assert.match(html, /function openTab\(t\)/);
+});
+
+test('Sales inbox: ranked by a visible rule and laid out as a wall of tiles', () => {
+  assert.match(html, /function prio\(x\)/);
+  assert.match(html, /\.wall\{display:grid;grid-template-columns:repeat\(auto-fill/);
+  for (const lv of ['Do first', 'Next', 'When there is time']) assert.ok(html.includes(lv), lv);
+  assert.match(html, /The reasons are shown on each tile/);
+});
+
+test('Sales meetings: both prompts get an "Execute in Chat Window" button that posts wb:ask', () => {
+  assert.equal((html.match(/runBtn\('Prepare/g) || []).length, 2);
+  assert.match(html, /type: 'wb:ask', prompt: String\(r\.dataset\.run\)\.slice\(0, 600\)/);
+  assert.match(html, /Execute in Chat Window/);
+});
+
+test('Sales knowledge graph: node labels are 15 % larger than before (12 px to 13.8 px)', () => {
+  assert.match(html, /\.kn-node text\.l\{[^}]*font-size:13\.8px/);
+});
