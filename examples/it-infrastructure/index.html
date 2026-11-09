@@ -241,14 +241,20 @@ h2{font-size:15px;font-weight:650;margin:0 0 4px}
 .filters button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .filters button[aria-pressed=true]{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
-.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.cust{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:2px 0 8px}
+.cust .cn{font-weight:700;font-size:13px}.cust .chip{display:inline-block;border:1px solid var(--line);background:var(--wash);color:var(--ink-2);border-radius:99px;padding:1px 9px;font-size:11px;font-weight:600}
+.vm .meta{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.vm .meta span{font-size:10px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:0 7px}
+.vm .lbl{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;font-size:9px;color:var(--muted);letter-spacing:.04em}
+.vm .mini{margin-top:2px}.vm .mini i{height:5px}
 .vm{position:relative;text-align:left;font:inherit;color:var(--ink);cursor:pointer;border-radius:var(--radius-s);padding:10px 10px 9px;border:1.5px solid var(--line);background:var(--surface);min-width:0}
 .vm .n{font-weight:650;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:18px}
 .vm .r{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vm .ic{position:absolute;right:8px;top:8px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
-.vm.green{background:var(--green-dim);border-color:var(--green-border)}.vm.green .ic{background:var(--green)}
-.vm.yellow{background:var(--amber-dim);border-color:var(--amber-border)}.vm.yellow .ic{background:var(--amber)}
-.vm.red{background:var(--red-dim);border-color:var(--red-border)}.vm.red .ic{background:var(--red)}
+.vm{box-shadow:var(--shadow);border-left-width:5px}
+.vm.green{background:var(--green-dim);border-color:var(--green-border);border-left-color:var(--green)}.vm.green .ic{background:var(--green)}
+.vm.yellow{background:var(--amber-dim);border-color:var(--amber-border);border-left-color:var(--amber)}.vm.yellow .ic{background:var(--amber)}
+.vm.red{background:var(--red-dim);border-color:var(--red-border);border-left-color:var(--red)}.vm.red .ic{background:var(--red)}
 .vm:hover,.vm:focus-visible,.vm[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:1px}
 .vm.dim{opacity:.28}
 .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
@@ -288,7 +294,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
   <div class="layout">
     <div class="card">
       <div class="head">
-        <div style="flex:1 1 260px"><h2>25 virtual machines</h2><p class="sub" style="margin:0">Worst check wins: one red reason makes the VM red, otherwise one yellow reason makes it yellow.</p></div>
+        <div style="flex:1 1 260px"><h2 id="wall-title">25 virtual machines</h2><div class="cust" id="cust"></div><p class="sub" style="margin:0">Worst check wins: one red reason makes the VM red, otherwise one yellow reason makes it yellow.</p></div>
         <input type="search" id="q" placeholder="Find a VM (name, role, site, system)" aria-label="Find a VM" style="font:inherit;font-size:12px;border:1px solid var(--line);border-radius:99px;padding:5px 12px;background:var(--surface);color:var(--ink);min-width:220px">
         <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
       </div>
@@ -316,6 +322,11 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 {
  "asOf": "2026-10-19",
  "note": "Fictional virtual machines and measurements. Nothing is measured live.",
+ "customer": {
+  "id": "muster",
+  "name": "Muster Industrie AG",
+  "sapCustomerId": "0010048211"
+ },
  "rules": {
   "cpuPct": {
    "yellow": 75,
@@ -971,8 +982,8 @@ function showTip(ev, vm, el) { tip.className = 'tip ' + vm.status; tip.innerHTML
 const matches = (v) => (state.filter === 'all' || v.status === state.filter) && (!state.q || [v.name, v.role, v.site, v.os, v.env].join(' ').toLowerCase().includes(state.q.toLowerCase()));
 function renderGrid() {
   $('#grid').innerHTML = vms.map((v) => `<button type="button" class="vm ${v.status}${matches(v) ? '' : ' dim'}" data-id="${v.id}" aria-pressed="${state.sel === v.id}" aria-label="${esc(v.name)}: ${LABEL[v.status]}. ${esc(v.reasons.map((r) => r.text).join('; ') || 'All checks within limits')}">` +
-    `<span class="ic" aria-hidden="true">${ICON[v.status]}</span><div class="n">${esc(v.name)}</div><div class="r">${esc(v.role)}</div>` +
-    (v.reachable ? `<div class="mini">${bar(v.cpuPct, 'cpuPct')}${bar(v.memPct, 'memPct')}${bar(v.diskPct, 'diskPct')}</div>` : '<div class="mini" style="color:var(--red);font-size:11px;display:block">no data</div>') + '</button>').join('');
+    `<span class="ic" aria-hidden="true">${ICON[v.status]}</span><div class="n">${esc(v.name)}</div><div class="r">${esc(v.role)}</div><div class="meta"><span>${esc(v.env)}</span><span>${esc(v.site)}</span></div>` +
+    (v.reachable ? `<div class="lbl"><span>CPU</span><span>MEM</span><span>DISK</span></div><div class="mini">${bar(v.cpuPct, 'cpuPct')}${bar(v.memPct, 'memPct')}${bar(v.diskPct, 'diskPct')}</div>` : '<div class="mini" style="color:var(--red);font-size:11px;display:block">no data</div>') + '</button>').join('');
   $('#grid').querySelectorAll('.vm').forEach((el) => {
     const vm = vms.find((x) => x.id === el.dataset.id);
     el.onmouseenter = (e) => showTip(e, vm, el); el.onmousemove = (e) => place(e, el); el.onmouseleave = () => { tip.hidden = true; };
@@ -997,7 +1008,7 @@ function renderDetail() {
   const v = vms.find((x) => x.id === state.sel);
   if (!v) { $('#detail').innerHTML = '<h2>Details</h2><p class="sub">Click a VM to see its measurements and a question for Joule. Hover over any VM to see why it has its colour.</p>'; return; }
   $('#detail').innerHTML = `<h2>${esc(v.name)} <span class="pill ${v.status}">${LABEL[v.status]}</span></h2><p class="sub">${esc(v.role)}</p>` +
-    `<dl class="facts"><dt>Environment</dt><dd>${esc(v.env)}</dd><dt>Site</dt><dd>${esc(v.site)}</dd><dt>System</dt><dd>${esc(v.os)}</dd><dt>Size</dt><dd>${v.vcpu} vCPU, ${v.ramGb} GB</dd>` +
+    `<dl class="facts"><dt>Customer</dt><dd>${esc((DATA.customer || {}).name || '')}</dd><dt>Environment</dt><dd>${esc(v.env)}</dd><dt>Site</dt><dd>${esc(v.site)}</dd><dt>System</dt><dd>${esc(v.os)}</dd><dt>Size</dt><dd>${v.vcpu} vCPU, ${v.ramGb} GB</dd>` +
     (v.reachable ? `<dt>CPU</dt><dd>${v.cpuPct} %</dd><dt>Memory</dt><dd>${v.memPct} %</dd><dt>Disk</dt><dd>${v.diskPct} %</dd><dt>Last backup</dt><dd>${v.backupAgeHours == null ? 'not required' : v.backupAgeHours + ' h ago'}</dd><dt>Patch gap</dt><dd>${v.patchLagDays} days</dd><dt>Certificate</dt><dd>${v.certExpiresInDays} days left</dd><dt>Uptime</dt><dd>${v.uptimeDays} days</dd>` : '<dt>State</dt><dd>not reachable</dd>') + '</dl>' +
     `<div>${explain(v)}</div><p style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><button class="primary" id="ask" type="button">Ask Joule about ${esc(v.name)}</button>${v.status === 'green' ? '' : state.tickets[v.name] ? ` <span class="pill planned">Ticket ${esc(state.tickets[v.name].id)} with the operator</span>` : ' <button class="ghost" id="mkticket" type="button">Create ticket for operator</button>'}</p>`;
   if ($('#mkticket')) $('#mkticket').onclick = () => { createTicket(v.name); renderAll(); };
@@ -1081,7 +1092,8 @@ function go(i) {
   for (let k = 0; k <= i; k++) STEPS[k].on();
   recompute(); renderAll();
 }
-function renderAll() { renderKpis(); renderFilters(); renderGrid(); renderDetail(); renderTasks(); renderGuide(); }
+function renderCust() { const c = DATA.customer; $('#cust').innerHTML = c ? `<span class="cn">${esc(c.name)}</span><span class="chip">SAP customer ID ${esc(c.sapCustomerId)}</span><span class="chip">${vms.length} VMs, all of this customer</span>` : ''; }
+function renderAll() { renderCust(); renderKpis(); renderFilters(); renderGrid(); renderDetail(); renderTasks(); renderGuide(); }
 $('#rules').innerHTML = [['CPU', 'cpuPct', ' %', 'from'], ['Memory', 'memPct', ' %', 'from'], ['Disk', 'diskPct', ' %', 'from'], ['Last backup (production)', 'backupAgeHours', ' h', 'from'], ['Security patch missing', 'patchLagDays', ' days', 'from'], ['TLS certificate expires in', 'certExpiresInDays', ' days', 'up to']].map(([l, k, u, w]) => `<tr><td>${l}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].yellow}${u}</td><td class="n">${w === 'up to' ? 'up to ' : ''}${DATA.rules[k].red}${u}</td></tr>`).join('');
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 recompute(); renderAll();

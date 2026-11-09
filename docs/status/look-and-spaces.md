@@ -32,3 +32,9 @@ Wortgleich aus der früheren `CLAUDE.md` ausgelagert (Stand der Einträge: jewei
 - Skill Health Monitor (früher Skill health; Kachel "Skill Health Monitor" in der Admin console): Doppelklick auf Kacheln, Balken, Abteilungszeilen, Listeneinträge, Vorschläge, Duplikat-Gruppen und Katalogzeilen öffnet ein Seitenfenster mit den Details (ein Skill mit allen Zahlen und ähnlichen Skills, oder die Skills hinter einer Zahl). Ein Einzelklick auf eine Kachel wartet 260 ms, damit der Doppelklick nicht vorher die Seite wechselt. Hat die Datenbank weniger als 30 Skills, werden Beispiel-Skills ergänzt (`supplementWithExamples`), damit Actions, Duplicates und Catalog etwas zeigen; sie sind markiert und lösen nie Datenbankaufrufe aus.
 - **Nicht getestet:** Electron-App, echte Datenbank mit wenigen Skills (die Ergänzung ist nur per Test belegt), Ziehen der Dock-Linie und Tastatur; geprüft im Headless-Browser (Liste ziehen 288 → 438 px, Doppelklick, Ebenen-Ansichten, Approvals), Typecheck und Tests.
 
+
+## Infra Operations, IT Infrastructure, Infra-Operations-Fleet (08.11.2026, Branch `feat/infra-ops-overview`)
+- Infrastructure Operations, Overview: Text auf „New Infrastructure Change follows the same 7 steps." gekürzt; die sieben Schritte als verbundene Pipeline (nummerierte Knoten, Linie mit Pfeil, Approval hervorgehoben, Close grün); darunter „Current situation:" mit den fünf Boxen.
+- IT Infrastructure: Kunde ergänzt (Muster Industrie AG, SAP-Kunden-ID 0010048211, `customer` in `vms.json`) in Überschrift, Chips und Detailbereich; VM-Kacheln mit Statusrand, Umgebung, Standort und beschrifteten Balken.
+- Infra-Operations-Fleet: Treemap niedriger (330 statt 470 px), Kacheln mit Statusrand und großer VM-Zahl.
+Nur Typecheck, Tests und Headless-Browser, nicht in der Electron-App.
