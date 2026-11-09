@@ -58,9 +58,9 @@ test('every case has at least one action and the actions follow the priority ord
   assert.match(logic.actions(byContract('C-2023-0390'), s)[0], /overdue invoice/, 'an overdue invoice comes first');
 });
 
-test('page: radar, table, detail, nine demo steps, English chat prompts, no network', () => {
+test('page: radar, table, detail, ten demo steps, English chat prompts, no network', () => {
   for (const id of ['kpis', 'guide', 'tl', 'rows', 'detail', 'customer', 'q', 'reset', 'cust-cards', 'cust-panel']) assert.match(page, new RegExp(`id="${id}"`));
-  assert.equal((page.match(/\{ t: '/g) || []).length, 9);
+  assert.equal((page.match(/\{ t: '/g) || []).length, 10);
   assert.match(page, /customer-call-prep/);
   assert.match(page, /pricing-guard/);
   assert.equal((page.match(/Please answer in English/g) || []).length, 6);
@@ -148,7 +148,8 @@ test('renewal process: phase rules', () => {
 
 test('demo flow: every step names where it jumps to, the targets exist, and the calm colours use tokens only', () => {
   const steps = page.slice(page.indexOf('const STEPS = ['), page.indexOf('function spot('));
-  assert.equal((steps.match(/where: \[/g) || []).length, 9);
+  assert.equal((steps.match(/where: \[/g) || []).length, 10);
+  assert.equal((steps.match(/tab: '/g) || []).length, 10, 'every step opens its tab');
   for (const id of ['process', 'cust', 'radar', 'list', 'detail', 'alt', 'kpis']) assert.match(page, new RegExp(`id="${id}"`), id);
   assert.match(page, /\.ring \.od\{stroke:color-mix\(in srgb,var\(--amber\)/);
   assert.doesNotMatch(page.slice(page.indexOf('.hb{display'), page.indexOf('.mailchip{')), /#[0-9a-fA-F]{3,6}\b/);
