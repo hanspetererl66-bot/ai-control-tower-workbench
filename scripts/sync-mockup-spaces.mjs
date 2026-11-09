@@ -18,6 +18,7 @@ export const MOCKUPS = [
   { page: 'examples/abap-workbench/index.html', data: 'examples/abap-workbench/data.json' },
   { page: 'examples/recruiting-workbench/index.html', data: 'examples/recruiting-workbench/data.json' },
   { page: 'examples/hiring-approvals/index.html', data: 'examples/hiring-approvals/data.json' },
+  { page: 'examples/recruiting-analytics/index.html', data: 'examples/recruiting-analytics/data.json' },
   { page: 'examples/onboarding/index.html', data: 'examples/onboarding/data.json' },
   { page: 'examples/order-to-cash/index.html', data: 'examples/order-to-cash/data.json' },
   { page: 'examples/order-to-cash-software/index.html', data: 'examples/order-to-cash-software/data.json' },

@@ -1,0 +1,13 @@
+{
+  "title": "Recruiting Analytics",
+  "description": "Aggregated hiring numbers for HR: time to fill against target, funnel and waiting times per stage, cost and quality per source, and selection rates per group with small groups hidden and a review hint under the four-fifths rule. Counts only, no person. Example data.",
+  "domain": "HR",
+  "parent": "recruiting-workbench",
+  "insights": [
+    "Time to fill: three of six open requisitions are past their target; the SAP Logistics Consultant waits 22 days for the interview stage.",
+    "Sources: agencies cost 23,000 per hire against 2,000 to 5,500 elsewhere.",
+    "Selection rates: groups with fewer than 10 applications are hidden. Where a group's rate is below 80 % of the top group's, the page shows a review hint, never a verdict.",
+    "Counts only: no names, no CVs, no single candidate. Example data from the schema recruiting_analytics; the page itself reads nothing from the network."
+  ],
+  "prompt": "Bundled example: Recruiting Analytics (static page, numbers of the schema recruiting_analytics embedded by npm run sync:mockups)."
+}

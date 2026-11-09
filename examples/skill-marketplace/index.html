@@ -561,7 +561,7 @@ details.intro .body{margin-top:8px}
 </main>
 <script type="application/json" id="sm-data">
 {
-  "asOf": "2026-11-05",
+  "asOf": "2026-11-09",
   "source": "repository",
   "taxonomy": {
     "boardAreas": [
@@ -1167,6 +1167,33 @@ details.intro .body{margin-top:8px}
         "rate_skill",
         "get_skill_ratings",
         "get_skill_info"
+      ],
+      "demand": {
+        "installs": 0,
+        "views": 0,
+        "searchHits": 0,
+        "previousScore": 0
+      },
+      "sample": false
+    },
+    {
+      "name": "recruiting-analytics-brief",
+      "description": "Summarises hiring numbers (time to fill, waits, sources, selection rates) from the Recruiting Analytics Space for HR. Nutzen bei \"Recruiting-Kennzahlen\", \"wo hängt die Besetzung\", \"Auswahlquoten prüfen\", \"Quellen vergleichen\".",
+      "owner": "",
+      "version": 1,
+      "maturity": "pilot",
+      "approvedBy": "",
+      "approvedAt": null,
+      "approvedVersion": null,
+      "domain": "HR",
+      "process": "Recruiting-Kennzahlen auswerten",
+      "boardArea": "",
+      "lob": "",
+      "team": "HR Analytics",
+      "scope": "team",
+      "dataClass": "vertraulich",
+      "tools": [
+        "recruiting_get_pipeline"
       ],
       "demand": {
         "installs": 0,
@@ -5800,6 +5827,113 @@ details.intro .body{margin-top:8px}
         ],
         "favorites": 0
       }
+    },
+    "recruiting-analytics-brief": {
+      "impact": {
+        "runsPerMonth": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "successRatePct": 0,
+        "avgRating": 0,
+        "ratings": 0,
+        "minutesSavedPerRun": 0,
+        "errorRatePct": 0,
+        "avgSeconds": 0,
+        "costPerRunEur": 0,
+        "model": "Claude Sonnet 5.5"
+      },
+      "governance": {
+        "aiActRisk": "Limited",
+        "dpia": "Required before real data",
+        "allowedDataClasses": [
+          "vertraulich"
+        ],
+        "approvedModels": [
+          "Claude Sonnet 5.5"
+        ],
+        "region": "EU",
+        "reviewIntervalMonths": 6,
+        "lastReview": "2026-11-09",
+        "nextReview": "2027-05-09",
+        "linkedRisks": [
+          "R6"
+        ],
+        "linkedAgents": [],
+        "approvalHistory": [
+          {
+            "date": "2026-11-09",
+            "version": 1,
+            "by": "AI Programme Office",
+            "decision": "Published to the registry as pilot"
+          }
+        ]
+      },
+      "lifecycle": {
+        "changelog": [
+          {
+            "version": 1,
+            "date": "2026-11-09",
+            "summary": "Summarises the Recruiting Analytics numbers; hidden small groups stay hidden, hints are no findings."
+          }
+        ],
+        "dependencies": {
+          "tools": [
+            "recruiting_get_pipeline"
+          ],
+          "connectors": [
+            "werkbank-workspace"
+          ],
+          "skills": []
+        },
+        "replacedBy": null,
+        "deputy": "HR Analytics",
+        "supportChannel": "#hr-analytics",
+        "languages": [
+          "de"
+        ],
+        "tests": {
+          "total": 4,
+          "passed": 4,
+          "lastRun": "2026-11-09"
+        },
+        "sunsetDate": null
+      },
+      "discovery": {
+        "examplePrompts": [
+          "Wo hängt die Besetzung im Moment?",
+          "Welche Quelle ist pro Einstellung am teuersten?",
+          "Zeig mir, wo die Auswahlquoten einen Prüfhinweis haben."
+        ],
+        "demoFlow": [
+          "Open the Space Recruiting Analytics",
+          "Read the stand-out lines",
+          "Ask which requisition waits longest"
+        ],
+        "prerequisites": [
+          "Connector werkbank-workspace"
+        ],
+        "tags": [
+          "Recruiting",
+          "Analytics",
+          "Time to fill"
+        ],
+        "industries": [
+          "Software",
+          "Fertigung",
+          "Handel"
+        ],
+        "related": [],
+        "recommendedFor": [
+          "HR Business Partner",
+          "Talent Acquisition"
+        ],
+        "favorites": 0
+      }
     }
   },
   "processGaps": [
@@ -6521,6 +6655,14 @@ details.intro .body{margin-top:8px}
         "handover-onboarding-plan",
         "call-followup"
       ]
+    },
+    {
+      "id": "people-hiring",
+      "label": "People & hiring",
+      "blurb": "Read hiring numbers: where positions wait, what a source costs, and where a selection rate needs a look.",
+      "skills": [
+        "recruiting-analytics-brief"
+      ]
     }
   ],
   "ratings": {
@@ -7228,6 +7370,16 @@ details.intro .body{margin-top:8px}
         ]
       },
       "abap-code-documentation": {
+        "distribution": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "comments": []
+      },
+      "recruiting-analytics-brief": {
         "distribution": [
           0,
           0,

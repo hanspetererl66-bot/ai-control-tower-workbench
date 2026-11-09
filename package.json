@@ -80,6 +80,7 @@
     "recruiting:seed": "node scripts/recruiting-seed.mjs",
     "smartrecruiters:mock": "node scripts/smartrecruiters-mock-build.mjs",
     "install:recruiting-workbench": "node scripts/install-example-space.mjs recruiting-workbench",
+    "install:recruiting-analytics": "node scripts/install-example-space.mjs recruiting-analytics",
     "install:hiring-approvals": "node scripts/install-example-space.mjs hiring-approvals",
     "install:onboarding": "node scripts/install-example-space.mjs onboarding",
     "install:agent-observability": "node scripts/install-example-space.mjs agent-observability",
