@@ -263,7 +263,7 @@ export default function SpaceViewer({
           <span className="topbar-sub">Updated {relativeTime(space.updatedAt)}</span>
         </div>
 
-        <div className="space-tools" role="search">
+        <div className={`space-tools ${tools.filters.length >= 2 ? 'space-tools-wide' : ''}`} role="search">
           <input
             className="space-search"
             type="search"
