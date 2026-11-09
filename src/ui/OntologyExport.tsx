@@ -43,7 +43,7 @@ export default function OntologyExport({ ontologies, gov }: { ontologies: Ontolo
       <p className="om-note-small om-pad">The same thing under another name in SAP or a standard. Add them in the catalog, in the box "Same thing elsewhere".</p>
       {maps.length === 0 && <p className="om-empty">No mapping yet.</p>}
       {maps.map(({ o, t, m }) => (
-        <div key={`${o.slug}:${t.id}:${m.system}:${m.ref}`} className="om-finding">
+        <div key={`${o.slug}:${t.id}:${m.system}:${m.ref}`} className="om-finding om-q">
           <span className="om-chip">{m.system}</span>
           <span><b>{t.label}</b> <span className="om-dim">{o.slug}</span><br />{m.ref}</span><span />
         </div>

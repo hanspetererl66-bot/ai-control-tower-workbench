@@ -5539,3 +5539,11 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .om-pick legend { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
 .om-export { max-height: 340px; overflow: auto; white-space: pre; margin: 0 0 8px; font-family: ui-monospace, monospace; }
 @media (prefers-reduced-motion: reduce) { .om-tag-btn { transition: none; } .om-tag-btn:hover { transform: none; } }
+.om-finding.om-q { grid-template-columns: 170px minmax(0, 1fr) auto; align-items: start; }
+.om-finding.om-q > .om-chip { justify-self: start; }
+.om-qcover, .om-qform, .om-table > .om-filters { margin-left: 16px; margin-right: 16px; }
+.om-qform { padding-bottom: 14px; }
+.om-qform h3 { margin: 0; font-size: 14px; }
+.om-qform .om-filter { align-self: flex-start; }
+.om-export { margin-left: 16px; margin-right: 16px; }
+@media (max-width: 760px) { .om-finding.om-q { grid-template-columns: minmax(0, 1fr) auto; } .om-finding.om-q > .om-chip { grid-column: 1 / -1; } }
