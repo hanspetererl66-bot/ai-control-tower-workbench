@@ -256,7 +256,12 @@ label.depth select{padding:6px 8px;border:1px solid var(--line);border-radius:8p
 .legend button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--ink);padding:2px 8px;border-radius:999px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
 .legend button:hover{background:var(--brand-dim)}.legend button[aria-pressed=false]{opacity:.4;text-decoration:line-through}
 .legend em{font-style:normal;color:var(--mut);padding-left:2px}
-#mini{position:absolute;right:12px;bottom:12px;width:150px;height:100px;border:1px solid var(--line);border-radius:10px;background:var(--panel);opacity:.92;cursor:pointer}
+#mini{position:absolute;right:12px;bottom:12px;width:150px;height:100px;border:1px solid var(--line);border-radius:10px;background:var(--panel);opacity:.92;cursor:pointer;box-shadow:0 6px 18px -10px var(--ink);transition:opacity .2s,border-color .2s}
+#mini:hover{opacity:1;border-color:var(--purple)}
+.legend button{border:1px solid transparent;transition:background .18s,opacity .18s,border-color .18s,transform .18s}
+.legend button:hover,.legend button:focus-visible{border-color:var(--line);transform:translateY(-1px)}
+.zoom .btn{transition:background .18s,transform .18s}.zoom .btn:active{transform:scale(.94)}
+@media (prefers-reduced-motion:reduce){#mini,.legend button,.zoom .btn{transition:none}.legend button:hover,.legend button:focus-visible,.zoom .btn:active{transform:none}}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px}
 .zoom .btn{padding:4px 10px;width:34px}
 .hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:12px;color:var(--mut);background:var(--panel);border:1px solid var(--line);padding:4px 12px;border-radius:999px;pointer-events:none;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
@@ -343,8 +348,8 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
   <div class="main">
   <div class="ask" id="ask" role="group" aria-label="Ask the graph"></div>
   <div class="wrap" id="wrap">
-    <canvas id="cv" tabindex="0" role="application" aria-label="Interactive knowledge graph. Use the search box or the lists in the side panel to navigate by keyboard. Plus and minus zoom, arrow keys pan, Escape clears the selection."></canvas>
-    <div class="zoom"><button class="btn" id="zin" aria-label="Zoom in">+</button><button class="btn" id="zout" aria-label="Zoom out">−</button><button class="btn" id="zfit" aria-label="Fit graph" title="Fit">⤢</button></div>
+    <canvas id="cv" tabindex="0" role="application" aria-label="Interactive knowledge graph. Use the search box or the lists in the side panel to navigate by keyboard. Plus and minus zoom, arrow keys pan, F fits the selection, Escape clears the selection."></canvas>
+    <div class="zoom"><button class="btn" id="zin" aria-label="Zoom in">+</button><button class="btn" id="zout" aria-label="Zoom out">−</button><button class="btn" id="zfit" aria-label="Fit graph" title="Fit (press F on the graph to fit the selection)">⤢</button></div>
     <canvas id="mini" aria-hidden="true" width="300" height="200"></canvas>
     <div class="hint" id="hint">Drag to move · scroll to zoom · double-click a node to pin it</div>
   </div>
@@ -8209,7 +8214,7 @@ $('#stats').textContent = `${nodes.length} nodes · ${edges.length} relations`;
 $('#asof').textContent = D.asOf ? `as of ${D.asOf}` : '';
 
 /* ---------- layout: type sectors on a ring + force simulation ---------- */
-const ring = 360;
+const ring = 360, ASPECT = 1.6; // the stage is wider than tall, so the sectors sit on an ellipse and use the room
 const customers = nodes.filter((n) => n.type === 'customer'), hubs = nodes.filter((n) => HUB.has(n.type));
 nodes.forEach((n, i) => {
   const si = SALES.indexOf(n.type), ei = EN_ORDER.indexOf(n.type);
@@ -8218,7 +8223,7 @@ nodes.forEach((n, i) => {
   else if (si >= 0) { ang = (si / SALES.length) * Math.PI * 2 - Math.PI / 2; rr = 420; as = n.type === 'person' ? 0.004 : 0.016; }
   else if (ei >= 0) { ang = (ei / EN_ORDER.length) * Math.PI * 2 - Math.PI / 2; rr = 650; }
   else if (HUB.has(n.type)) { ang = (hubs.indexOf(n) / hubs.length) * Math.PI * 2; rr = 470; as = 0.02; }
-  n.ax = Math.cos(ang) * rr; n.ay = Math.sin(ang) * rr; n.as = as;
+  n.ax = Math.cos(ang) * rr * ASPECT; n.ay = Math.sin(ang) * rr; n.as = as;
   const j = (i * 2654435761 % 1000) / 1000 * Math.PI * 2;
   n.x = n.ax + Math.cos(j) * 80; n.y = n.ay + Math.sin(j) * 80;
 });
@@ -8229,14 +8234,24 @@ function tick() {
     for (let j = i + 1; j < nodes.length; j++) {
       const b = nodes[j]; let dx = a.x - b.x, dy = a.y - b.y; const d2 = dx * dx + dy * dy + 0.5;
       if (d2 > 490000) continue;
-      const f = (7200 / d2) * alpha, d = Math.sqrt(d2); dx /= d; dy /= d;
+      const f = (12000 / d2) * alpha, d = Math.sqrt(d2); dx /= d; dy /= d;
       a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
     }
   }
   for (const e of edges) {
     const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y, d = Math.sqrt(dx * dx + dy * dy) + 0.01;
-    const L = e.weak ? 250 : 108, f = (d - L) * (e.weak ? 0.006 : 0.04) * alpha, fx = (dx / d) * f, fy = (dy / d) * f;
+    const L = e.weak ? 250 : 130, f = (d - L) * (e.weak ? 0.006 : 0.04) * alpha, fx = (dx / d) * f, fy = (dy / d) * f;
     e.a.vx += fx; e.a.vy += fy; e.b.vx -= fx; e.b.vy -= fy;
+  }
+  for (let i = 0; i < nodes.length; i++) { // soft collision so big value-sized nodes do not pile up on each other
+    const a = nodes[i], ra = (a.rv || a.r) + 5;
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j], dx = b.x - a.x, dy = b.y - a.y, m = ra + (b.rv || b.r);
+      if (Math.abs(dx) > m || Math.abs(dy) > m) continue;
+      const d2 = dx * dx + dy * dy; if (d2 >= m * m) continue;
+      const d = Math.sqrt(d2) + 0.01, f = (m - d) * 0.22 * Math.max(alpha, 0.05) / d;
+      a.vx -= dx * f; a.vy -= dy * f; b.vx += dx * f; b.vy += dy * f;
+    }
   }
   for (const n of nodes) {
     n.vx += (n.ax - n.x) * n.as * alpha; n.vy += (n.ay - n.y) * n.as * alpha;
@@ -8315,7 +8330,7 @@ function sentence(from, s) {
 }
 
 /* ---------- state ---------- */
-const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, spread: 0.3, fail: null, failBy: null, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false, ans: null, stake: false, value: true };
+const S = { tourSet: null, tourMenu: false, mode: 'explore', sel: null, hover: null, depth: 2, spread: 0.3, fail: null, failBy: null, pathA: null, steps: null, pathIds: new Set(), pathEdges: new Set(), dist: null, t0: 0, tour: -1, labels: false, paused: false, ans: null, stake: false, value: true, hot: null };
 let foc = null; // { level: Map id->level, edges: Set }
 function computeFocus() {
   foc = null;
@@ -8406,32 +8421,99 @@ function reveal(id, now) { // impact ripple: hop d appears after d*380ms
   const d = foc.level.get(id); if (d === undefined) return 0;
   return Math.max(0, Math.min(1, (now - S.t0 - d * 380) / 260));
 }
+/* look layer: eased focus, intro, soft glow and depth, type hulls, comet particles. All colours come from the tokens read into C; motion stops under prefers-reduced-motion. */
+let DT = 16, intro0 = -1, IP = 1, hlKey = '', hlCol = '';
+const ease = (cur, target) => (reduced ? target : cur + (target - cur) * (1 - Math.exp(-DT / 120)));
+const px = (n) => (IP >= 1 ? n.x : n.ax * 0.45 + (n.x - n.ax * 0.45) * IP);
+const py = (n) => (IP >= 1 ? n.y : n.ay * 0.45 + (n.y - n.ay * 0.45) * IP);
+function lumOf(c) {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c || ''); if (!m) return 0;
+  const h = m[1].length === 3 ? m[1].replace(/./g, '$&$&') : m[1];
+  return (0.2126 * parseInt(h.slice(0, 2), 16) + 0.7152 * parseInt(h.slice(2, 4), 16) + 0.0722 * parseInt(h.slice(4), 16)) / 255;
+}
+function highlight() { // soft specular spot: light colour on dark themes, surface colour on light themes
+  const k = C.ink + C.bg + C.panel; if (k !== hlKey) { hlKey = k; hlCol = lumOf(C.ink) > lumOf(C.bg) ? C.ink : C.panel; }
+  return hlCol;
+}
+function nodeColour(n, lv) {
+  const fx = foc && foc.failure && lv !== undefined ? S.failBy.get(n.id) : null;
+  return fx ? (fx.exposure >= 0.6 ? C.red : fx.exposure >= 0.4 ? C.amber : C.purple) : foc && foc.impact && !foc.failure && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : foc && foc.tint && lv !== undefined ? C[foc.tint] : nodeCol(n);
+}
+function quadP(e) {
+  const ax = px(e.a), ay = py(e.a), bx = px(e.b), by = py(e.b);
+  const mx = (ax + bx) / 2, my = (ay + by) / 2, dx = bx - ax, dy = by - ay, s = (e.i % 2 ? 1 : -1) * 0.12;
+  return { ax, ay, bx, by, cx: mx - dy * s, cy: my + dx * s };
+}
+function qptP(q, t) {
+  const u = 1 - t;
+  return { x: u * u * q.ax + 2 * u * t * q.cx + t * t * q.bx, y: u * u * q.ay + 2 * u * t * q.cy + t * t * q.by };
+}
 function draw(now) {
+  if (intro0 < 0) intro0 = now;
+  const ip0 = reduced ? 1 : Math.min(1, (now - intro0) / 1700);
+  IP = 1 - Math.pow(1 - ip0, 3);
+  const edgeFade = reduced ? 1 : Math.max(0, Math.min(1, (ip0 - 0.35) / 0.5)), nodeFade = reduced ? 1 : Math.min(1, 0.2 + ip0 * 1.6);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
   const g = ctx.createRadialGradient(sx(0), sy(0), 10, sx(0), sy(0), Math.max(W, H) * 0.7);
   g.addColorStop(0, C.purple); g.addColorStop(1, C.bg);
   ctx.globalAlpha = 0.09; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  // faint grid of sector guides
-  ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(sx(0), sy(0), ring * cam.k, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+  // quiet dot grid that follows the camera
+  const gs = 56 * Math.max(0.6, Math.min(1.6, cam.k)), gx = ((cam.x % gs) + gs) % gs, gy = ((cam.y % gs) + gs) % gs;
+  ctx.fillStyle = C.line; ctx.globalAlpha = 0.7;
+  for (let x = gx; x < W; x += gs) for (let y = gy; y < H; y += gs) ctx.fillRect(x - 0.75, y - 0.75, 1.5, 1.5);
+  ctx.globalAlpha = 0.5; ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(sx(0), sy(0), ring * ASPECT * cam.k, ring * cam.k, 0, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
 
-  const t = now * 0.00035;
+  // per-node state: eased towards its focus target so hover and selection fade instead of snapping
+  const vn = nodes.filter(vis), hot = !foc ? S.hot : null;
+  for (const n of vn) {
+    const lv = foc ? foc.level.get(n.id) : undefined;
+    let tg = foc ? (lv === undefined ? 0.1 : 1) : hot ? (n.type === hot ? 1 : 0.14) : 1;
+    if (foc && foc.impact && lv !== undefined) tg = Math.max(0.1, reveal(n.id, now));
+    n.fa = n.fa === undefined ? tg : ease(n.fa, tg); n._lv = lv;
+  }
+
+  // soft type hulls
+  const grp = new Map();
+  for (const n of vn) { let q = grp.get(n.type); if (!q) grp.set(n.type, (q = { n: 0, x: 0, y: 0, l: [] })); q.n++; q.x += px(n); q.y += py(n); q.l.push(n); }
+  const hullA = (foc ? 0.3 : hot ? 0.6 : 1) * nodeFade * Math.max(0.2, Math.min(1, 2 - cam.k)); // quieter when zoomed in
+  for (const [t, q] of grp) {
+    if (q.n < 4) continue;
+    const cx = q.x / q.n, cy = q.y / q.n; let rr = 0; for (const n of q.l) rr += Math.hypot(px(n) - cx, py(n) - cy);
+    const rad = (rr / q.n * 1.5 + 30) * cam.k, c = C[ST[t].c], x = sx(cx), y = sy(cy);
+    if (x < -rad || y < -rad || x > W + rad || y > H + rad) continue;
+    const hg = ctx.createRadialGradient(x, y, 0, x, y, rad); hg.addColorStop(0, c); hg.addColorStop(1, C.bg);
+    ctx.globalAlpha = 0.1 * hullA * (hot === t ? 2.2 : 1); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  const t = now * 0.00035, big = foc && foc.edges.size > 60;
   for (const e of edges) {
     if (!vis(e.a) || !vis(e.b)) continue;
     const inF = foc && foc.edges.has(e);
     const ew = valueEdgeW(e);
-    let al = foc ? (inF ? 0.95 : 0.04) : ew ? 0.5 : e.weak ? 0.07 : 0.24;
-    if (inF && foc.impact) al *= Math.min(reveal(e.a.id, now), reveal(e.b.id, now));
+    let tg = foc ? (inF ? 0.95 : 0.04) : ew ? 0.5 : e.weak ? 0.07 : 0.26;
+    if (!foc && hot) tg = e.a.type === hot || e.b.type === hot ? Math.min(0.8, tg * 2) : 0.03;
+    if (inF && foc.impact) tg *= Math.min(reveal(e.a.id, now), reveal(e.b.id, now));
+    e.fa = e.fa === undefined ? tg : ease(e.fa, tg);
+    const al = e.fa * edgeFade;
     if (al < 0.01) continue;
-    const q = quad(e);
-    ctx.globalAlpha = al; ctx.lineWidth = inF ? (foc.path ? 3 : 1.8) : (ew || 1);
-    ctx.strokeStyle = inF ? (foc.path ? C.amber : foc.tint ? C[foc.tint] : C.purple) : ew ? C.purple : C.mut;
-    ctx.beginPath(); ctx.moveTo(sx(e.a.x), sy(e.a.y)); ctx.quadraticCurveTo(sx(q.cx), sy(q.cy), sx(e.b.x), sy(e.b.y)); ctx.stroke();
-    if (inF && !reduced) {
-      ctx.fillStyle = foc.path ? C.amber : foc.tint ? C[foc.tint] : C.purple; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8;
-      for (let k = 0; k < 2; k++) { const p = qpt(e, q, (t * 1.4 + e.i * 0.137 + k * 0.5) % 1); ctx.beginPath(); ctx.arc(sx(p.x), sy(p.y), 2.2, 0, Math.PI * 2); ctx.fill(); }
-      ctx.shadowBlur = 0;
+    const q = quadP(e), hue = inF ? (foc.path ? C.amber : foc.tint ? C[foc.tint] : C.purple) : ew ? C.purple : foc || e.weak ? C.mut : col(e.a);
+    ctx.globalAlpha = al; ctx.lineWidth = inF ? (foc.path ? 3 : 1.8) : (ew || 1); ctx.strokeStyle = hue;
+    ctx.beginPath(); ctx.moveTo(sx(q.ax), sy(q.ay)); ctx.quadraticCurveTo(sx(q.cx), sy(q.cy), sx(q.bx), sy(q.by)); ctx.stroke();
+    if (inF && !reduced && IP >= 1) { // small comets flowing along the direction of the relation
+      ctx.fillStyle = hue;
+      for (let k = 0; k < (big ? 1 : 2); k++) {
+        const t0 = (t * 1.4 + e.i * 0.137 + k * 0.5) % 1;
+        for (let j = big ? 0 : 3; j >= 0; j--) {
+          const tt = t0 - j * 0.022; if (tt < 0) continue;
+          const p = qptP(q, tt); ctx.globalAlpha = al * (1 - j * 0.27);
+          if (j === 0) { ctx.shadowColor = hue; ctx.shadowBlur = 8; }
+          ctx.beginPath(); ctx.arc(sx(p.x), sy(p.y), 2.3 - j * 0.35, 0, Math.PI * 2); ctx.fill();
+          if (j === 0) ctx.shadowBlur = 0;
+        }
+      }
     }
   }
   ctx.globalAlpha = 1;
@@ -8442,31 +8524,48 @@ function draw(now) {
     for (const off of [0, 260]) {
       const p = el - off; if (p < 0 || p > span) continue;
       ctx.globalAlpha = 0.5 * (1 - p / span); ctx.strokeStyle = C.red; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(sx(S.sel.x), sy(S.sel.y), (p / 380) * 62 * cam.k, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(sx(px(S.sel)), sy(py(S.sel)), (p / 380) * 62 * cam.k, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.globalAlpha = 1;
   }
 
-  const labelAll = S.labels || cam.k > 1.5;
-  const lab = [];
-  const order = nodes.filter(vis).sort((a, b) => (foc ? (foc.level.has(a.id) ? 1 : 0) - (foc.level.has(b.id) ? 1 : 0) : 0));
+  const labelAll = S.labels || cam.k > 1.5, hl = highlight();
+  const lab = [], pos = new Map();
+  const order = vn.slice().sort((a, b) => (foc ? (foc.level.has(a.id) ? 1 : 0) - (foc.level.has(b.id) ? 1 : 0) : 0));
+  for (const n of order) { // glow pass first, so halos never tint a neighbour that is drawn later
+    const x = sx(px(n)), y = sy(py(n)); pos.set(n, { x, y });
+    if (x < -60 || y < -60 || x > W + 60 || y > H + 60) continue;
+    const lv = n._lv, al = n.fa * nodeFade;
+    if (al < 0.3 || (foc && lv === undefined)) continue;
+    const r = radOf(n) * bornK(n, now) * Math.min(1.6, Math.max(0.55, cam.k));
+    if (r < 5 && n !== S.hover) continue;
+    const c = nodeColour(n, lv), hr = r * (n === S.sel ? 3.4 : 2.5), hg = ctx.createRadialGradient(x, y, r * 0.5, x, y, hr);
+    hg.addColorStop(0, c); hg.addColorStop(1, C.bg);
+    ctx.globalAlpha = al * (n === S.sel || n === S.hover ? 0.4 : foc ? 0.3 : 0.2); ctx.fillStyle = hg;
+    ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
   for (const n of order) {
-    const lv = foc ? foc.level.get(n.id) : undefined;
-    let al = foc ? (lv === undefined ? 0.1 : 1) : 1;
-    if (foc && foc.impact && lv !== undefined) al = reveal(n.id, now);
-    if (foc && foc.impact && lv !== undefined && al < 1) al = Math.max(al, 0.1);
-    const x = sx(n.x), y = sy(n.y);
+    const lv = n._lv, al = n.fa * nodeFade, { x, y } = pos.get(n);
     if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
     const r = radOf(n) * bornK(n, now) * Math.min(1.6, Math.max(0.55, cam.k));
     const lift = (foc && lv !== undefined) || n === S.hover;
-    const fx = foc && foc.failure && lv !== undefined ? S.failBy.get(n.id) : null;
-    const colr = fx ? (fx.exposure >= 0.6 ? C.red : fx.exposure >= 0.4 ? C.amber : C.purple) : foc && foc.impact && !foc.failure && lv ? [C.purple, C.amber, C.red, C.blue][Math.min(3, lv - 1)] : foc && foc.tint && lv !== undefined ? C[foc.tint] : nodeCol(n);
+    const colr = nodeColour(n, lv);
     ctx.globalAlpha = al; ctx.fillStyle = colr; ctx.strokeStyle = C.bg; ctx.lineWidth = 1.6;
     if (lift) { ctx.shadowColor = colr; ctx.shadowBlur = n === S.sel ? 26 : 14; }
-    shapePath(ctx, ST[n.type].s, x, y, r); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+    shapePath(ctx, ST[n.type].s, x, y, r); ctx.fill(); ctx.shadowBlur = 0;
+    if (r > 5) { // depth: a soft light spot top-left, blended towards the node colour
+      const sg = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r * 1.15);
+      sg.addColorStop(0, hl); sg.addColorStop(1, colr); ctx.globalAlpha = al * 0.26; ctx.fillStyle = sg; ctx.fill(); ctx.globalAlpha = al;
+    }
+    ctx.stroke();
     if (isNew(n) && !foc) { ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.teal; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, r + 3.5, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
     if (n.pin) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
-    if (n === S.sel) { ctx.strokeStyle = C.ink; ctx.lineWidth = 2; shapePath(ctx, ST[n.type].s, x, y, r + 5); ctx.stroke(); }
+    if (n === S.sel) {
+      const pu = reduced ? 0 : Math.sin(now * 0.004);
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 2; shapePath(ctx, ST[n.type].s, x, y, r + 5); ctx.stroke();
+      if (!reduced) { ctx.globalAlpha = al * (0.22 + 0.16 * pu); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, r + 11 + 2.5 * pu, 0, Math.PI * 2); ctx.stroke(); }
+    }
     ctx.globalAlpha = 1;
     if (al > 0.5 && (lift || labelAll || n.deg >= 9 || HUB.has(n.type) || n.type === 'customer' || (S.value && n.rv > 15) || (S.stake && n.stake && n.stake.touches > 1))) lab.push({ n, x, y: y + r + 11, strong: lift || n === S.sel });
   }
@@ -8477,9 +8576,11 @@ function draw(now) {
     const w = ctx.measureText(l.n.label).width, box = [l.x - w / 2, l.y - 9, l.x + w / 2, l.y + 3];
     if (!l.strong && placed.some((p) => box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1])) continue;
     placed.push(box);
+    ctx.globalAlpha = Math.min(1, l.n.fa * 1.4);
     ctx.lineWidth = 3.5; ctx.strokeStyle = C.bg; ctx.strokeText(l.n.label, l.x, l.y);
     ctx.fillStyle = l.strong ? C.ink : C.ink2; ctx.fillText(l.n.label, l.x, l.y);
   }
+  ctx.globalAlpha = 1;
   drawMini();
 }
 function drawMini() {
@@ -8488,14 +8589,18 @@ function drawMini() {
   const b = bounds(list), s = Math.min((mw - 16) / (b.x1 - b.x0 || 1), (mh - 16) / (b.y1 - b.y0 || 1));
   const ox = (mw - (b.x1 - b.x0) * s) / 2 - b.x0 * s, oy = (mh - (b.y1 - b.y0) * s) / 2 - b.y0 * s;
   mini._m = { s, ox, oy };
-  for (const n of list) { mctx.globalAlpha = foc && !foc.level.has(n.id) ? 0.2 : 0.9; mctx.fillStyle = col(n); mctx.fillRect(n.x * s + ox - 1.5, n.y * s + oy - 1.5, 3, 3); }
-  mctx.globalAlpha = 1; mctx.strokeStyle = C.ink; mctx.lineWidth = 1.5;
-  mctx.strokeRect((-cam.x / cam.k) * s + ox, (-cam.y / cam.k) * s + oy, (W / cam.k) * s, (H / cam.k) * s);
+  for (const n of list) { mctx.globalAlpha = (n.fa === undefined ? 1 : n.fa) * 0.9; mctx.fillStyle = col(n); mctx.beginPath(); mctx.arc(n.x * s + ox, n.y * s + oy, n.deg >= 9 ? 2.6 : 1.7, 0, Math.PI * 2); mctx.fill(); }
+  const vx = (-cam.x / cam.k) * s + ox, vy = (-cam.y / cam.k) * s + oy, vw = (W / cam.k) * s, vh = (H / cam.k) * s;
+  mctx.globalAlpha = 0.1; mctx.fillStyle = C.purple; mctx.fillRect(vx, vy, vw, vh);
+  mctx.globalAlpha = 1; mctx.strokeStyle = C.ink; mctx.lineWidth = 1.5; mctx.strokeRect(vx, vy, vw, vh);
 }
+let lastT = 0;
 function frame(now) {
+  DT = lastT ? Math.max(1, Math.min(64, now - lastT)) : 16; lastT = now;
   if (!S.paused && alpha > 0.0101 && !reduced) tick();
   else if (!S.paused && !reduced) { alpha = 0.012; tick(); }
-  for (const k of ['k', 'x', 'y']) cam[k] += (tgt[k] - cam[k]) * (reduced ? 1 : 0.14);
+  const ce = reduced ? 1 : 1 - Math.exp(-DT / 95); // time-based easing: same feel at 60 and 144 Hz
+  for (const k of ['k', 'x', 'y']) cam[k] += (tgt[k] - cam[k]) * ce;
   if (V3.on) draw3d(now); else draw(now);
   requestAnimationFrame(frame);
 }
@@ -8646,6 +8751,9 @@ cv.addEventListener('keydown', (ev) => {
   if (ev.key === '+' || ev.key === '=') zoomAt({ x: W / 2, y: H / 2 }, 1.25);
   else if (ev.key === '-') zoomAt({ x: W / 2, y: H / 2 }, 0.8);
   else if (ev.key === '0') fit();
+  else if (ev.key === 'f' || ev.key === 'F') { // fit to the selection and its neighbours
+    const set = S.sel ? [S.sel, ...S.sel.nb.map((x) => x.n)].filter(vis) : []; fit(set.length > 1 ? set : undefined);
+  }
   else if (ev.key === 'ArrowLeft') tgt.x += step; else if (ev.key === 'ArrowRight') tgt.x -= step;
   else if (ev.key === 'ArrowUp') tgt.y += step; else if (ev.key === 'ArrowDown') tgt.y -= step;
   else if (ev.key === 'Escape') { S.sel = null; computeFocus(); renderPanel(); }
@@ -8915,6 +9023,10 @@ function renderLegend() {
     if (S.sel && hidden.has(S.sel.type)) S.sel = null;
     b.setAttribute('aria-pressed', String(!hidden.has(t))); computeFocus(); renderPanel(); syncBars();
   }));
+  el.querySelectorAll('button').forEach((b) => { // hovering a legend entry spotlights that type on the canvas
+    const on = () => { if (!hidden.has(b.dataset.t)) S.hot = b.dataset.t; }, off = () => { S.hot = null; };
+    b.addEventListener('pointerenter', on); b.addEventListener('pointerleave', off); b.addEventListener('focus', on); b.addEventListener('blur', off);
+  });
   syncBars();
 }
 
