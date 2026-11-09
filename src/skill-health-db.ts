@@ -3,7 +3,7 @@
  * Pure. What the database does not know stays honest: users are distinct anonymous devices, success is unknown (counted as good),
  * and connector needs are not stored, so no skill is reported broken from database data.
  */
-import { DEFAULT_POLICY, type Catalog, type CSkill, type Level } from './skill-health.ts';
+import { DEFAULT_POLICY, exampleCatalog, type Catalog, type CSkill, type Level } from './skill-health.ts';
 
 /** Where the dashboard numbers come from. */
 export type SkillSource = { kind: 'database' | 'example' | 'offline'; detail: string; loadedAt?: number };
@@ -71,7 +71,7 @@ export function lifecycleCalls(prev: Catalog, next: Catalog, now: number): Lifec
   const calls: LifecycleCall[] = [];
   for (const s of next.skills) {
     const old = before.get(s.id);
-    if (!old || old.state === s.state) continue;
+    if (!old || old.state === s.state || s.example) continue;
     const reason = 'Skill health: ' + (s.state === 'deprecated' ? 'phased out' : s.state === 'retired' ? 'retired' : 'restored');
     if (s.state === 'active') calls.push({ slug: s.id, action: 'restore', reason });
     else if (s.state === 'retired' || s.level === 0) calls.push({ slug: s.id, action: 'retire', reason });
@@ -90,7 +90,7 @@ export function promotionCalls(prev: Catalog, next: Catalog): PromotionCall[] {
   const before = new Map(prev.skills.map((s) => [s.id, s]));
   const calls: PromotionCall[] = [];
   for (const s of next.skills) {
-    if (s.promotionRequested === undefined || s.level >= 2) continue;
+    if (s.promotionRequested === undefined || s.level >= 2 || s.example) continue;
     if (before.get(s.id)?.promotionRequested === s.promotionRequested) continue;
     calls.push({ slug: s.id, to: s.level === 0 ? 'team' : 'company' });
   }
@@ -101,4 +101,26 @@ export function promotionCalls(prev: Catalog, next: Catalog): PromotionCall[] {
 export function withdrawFlags(catalog: Catalog, slugs: string[]): Catalog {
   if (!slugs.length) return catalog;
   return { ...catalog, skills: catalog.skills.map((s) => { if (!slugs.includes(s.id)) return s; const { promotionRequested: _drop, ...rest } = s; return rest as typeof s; }) };
+}
+
+/**
+ * A database with only a handful of skills gives the monitor nothing to show: no duplicates, no proposals. Up to `min` skills,
+ * the example skills are added (marked `example`, never sent to the database). Real skills always win on the same id.
+ */
+export function supplementWithExamples(catalog: Catalog, now: number, min = 30): { catalog: Catalog; added: number } {
+  if (catalog.skills.length >= min) return { catalog, added: 0 };
+  const ex = exampleCatalog(now);
+  const have = new Set(catalog.skills.map((s) => s.id));
+  const extra = ex.skills.filter((s) => !have.has(s.id));
+  if (!extra.length) return { catalog, added: 0 };
+  return {
+    added: extra.length,
+    catalog: {
+      ...catalog,
+      skills: [...catalog.skills, ...extra],
+      people: [...new Set([...catalog.people, ...ex.people])],
+      available: [...new Set([...(catalog.available ?? []), ...ex.available])],
+      stewards: { ...ex.stewards, ...catalog.stewards },
+    },
+  };
 }

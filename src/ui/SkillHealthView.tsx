@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SkillSource } from '../skill-health-db';
 import {
   HEALTH_LABEL, LEVEL_NAMES, PROPOSAL_LABEL, act, applyProposal, clusters, daysSince, dismiss, healthOf, metrics, proposals, reviewDue,
@@ -14,6 +14,11 @@ const date = (t: number | null | undefined) => (t ? new Date(t).toLocaleDateStri
 const ago = (t: number | null | undefined, now: number) => (t == null ? 'never' : `${daysSince(t, now)} d ago`);
 const HEALTH_ORDER: Health[] = ['active', 'rare', 'unused', 'orphan', 'broken', 'deprecated', 'retired'];
 
+/** What the detail panel shows: one skill, or the group of skills behind a number. */
+type Detail = { title: string; note?: string; skills: CSkill[] };
+type OnDetail = (d: Detail) => void;
+const HINT = 'Double-click a number, a row or a bar for the details.';
+
 export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onResetExamples, source, onReload }: {
   catalog: Catalog;
   actor: string;
@@ -27,13 +32,21 @@ export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onR
   const [now] = useState(() => Date.now());
   const m = useMemo(() => metrics(catalog, now), [catalog, now]);
   const open = useMemo(() => proposals(catalog, now), [catalog, now]);
+  const [detail, setDetail] = useState<Detail | null>(null);
+  const health = useMemo(() => new Map(catalog.skills.map((s) => [s.id, healthOf(s, catalog, now)])), [catalog, now]);
+  useEffect(() => {
+    if (!detail) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDetail(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [detail]);
 
   return (
     <main className="sh">
       <header className="sh-head">
         <button className="sh-back" onClick={onBack} aria-label="Back">←</button>
         <div>
-          <h1>Skill health</h1>
+          <h1>Skill Health Monitor</h1>
           <p>{m.total} skills in the catalog · {m.live} in use · {m.openProposals} proposals waiting</p>
         </div>
       </header>
@@ -52,60 +65,77 @@ export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onR
           </button>
         ))}
       </nav>
-      {tab === 'overview' && <Overview m={m} catalog={catalog} now={now} onTab={setTab} />}
-      {tab === 'actions' && <Actions open={open} catalog={catalog} now={now} actor={actor} onCatalog={onCatalog} />}
-      {tab === 'duplicates' && <Duplicates catalog={catalog} now={now} actor={actor} onCatalog={onCatalog} />}
-      {tab === 'catalog' && <CatalogTab catalog={catalog} now={now} actor={actor} onCatalog={onCatalog} />}
+      {tab === 'overview' && <Overview m={m} catalog={catalog} now={now} onTab={setTab} health={health} onDetail={setDetail} />}
+      {tab === 'actions' && <Actions open={open} catalog={catalog} now={now} actor={actor} onCatalog={onCatalog} onDetail={setDetail} />}
+      {tab === 'duplicates' && <Duplicates catalog={catalog} now={now} actor={actor} onCatalog={onCatalog} onDetail={setDetail} />}
+      {tab === 'catalog' && <CatalogTab catalog={catalog} now={now} actor={actor} onCatalog={onCatalog} onDetail={setDetail} />}
       {tab === 'policy' && <PolicyTab catalog={catalog} onCatalog={onCatalog} onResetExamples={onResetExamples} />}
+      {detail && <DetailPanel detail={detail} catalog={catalog} health={health} now={now} onClose={() => setDetail(null)} onDetail={setDetail} />}
     </main>
   );
 }
 
-function Tile({ label, value, hint, tone, onClick }: { label: string; value: string; hint?: string; tone?: 'good' | 'warn' | 'bad'; onClick?: () => void }) {
+function Tile({ label, value, hint, tone, onClick, onDouble }: { label: string; value: string; hint?: string; tone?: 'good' | 'warn' | 'bad'; onClick?: () => void; onDouble?: () => void }) {
   const body = <><span className="sh-tile-v">{value}</span><span className="sh-tile-l">{label}</span>{hint && <span className="sh-tile-h">{hint}</span>}</>;
-  return onClick ? <button className={`sh-tile sh-tone-${tone ?? 'none'}`} onClick={onClick}>{body}</button> : <div className={`sh-tile sh-tone-${tone ?? 'none'}`}>{body}</div>;
+  // A single click opens the tab after a short wait, so that a double-click can show the details instead of leaving the page.
+  const timer = useRef<number | undefined>(undefined);
+  const single = () => { window.clearTimeout(timer.current); timer.current = window.setTimeout(() => onClick?.(), onDouble ? 260 : 0); };
+  const double = () => { window.clearTimeout(timer.current); onDouble?.(); };
+  return onClick ? <button className={`sh-tile sh-tone-${tone ?? 'none'}`} onClick={single} onDoubleClick={double}>{body}</button> : <div className={`sh-tile sh-tone-${tone ?? 'none'} ${onDouble ? 'sh-dbl' : ''}`} onDoubleClick={onDouble}>{body}</div>;
 }
 
-function Overview({ m, catalog, now, onTab }: { m: ReturnType<typeof metrics>; catalog: Catalog; now: number; onTab: (t: Tab) => void }) {
+function Overview({ m, catalog, now, onTab, health, onDetail }: { m: ReturnType<typeof metrics>; catalog: Catalog; now: number; onTab: (t: Tab) => void; health: Map<string, Health>; onDetail: OnDetail }) {
   const max = Math.max(1, ...HEALTH_ORDER.map((h) => m.byHealth[h]));
+  const by = (...hs: Health[]) => catalog.skills.filter((s) => hs.includes(health.get(s.id)!));
+  const dupes = clusters(catalog).flatMap((c) => c.ids.filter((i) => i !== c.master)).map((i) => catalog.skills.find((s) => s.id === i)).filter((s): s is CSkill => !!s);
+  const groups = {
+    live: { title: 'Skills in use', skills: by('active', 'rare', 'unused', 'orphan', 'broken').filter((s) => s.uses30 > 0) },
+    dup: { title: 'Duplicates: skills that could go', note: 'The best skill of each group stays; these do almost the same.', skills: dupes },
+    unused: { title: 'Unused or rare', skills: by('unused', 'rare') },
+    orphan: { title: 'No owner', note: 'The owner left the company.', skills: by('orphan') },
+    broken: { title: 'Broken', note: 'These skills need a connector that does not exist (any more).', skills: by('broken') },
+    due: { title: 'Confirmation due', skills: catalog.skills.filter((s) => reviewDue(s, catalog, now)) },
+    runs: { title: 'Most runs, last 30 days', skills: [...catalog.skills].sort((a, b) => b.uses30 - a.uses30).slice(0, 12) },
+  };
   return (
     <div className="sh-body">
+      <p className="sh-note">{HINT}</p>
       <div className="sh-tiles">
-        <Tile label="Skills in use" value={String(m.live)} hint={`of ${m.total} in the catalog`} />
-        <Tile label="Duplicates" value={pct(m.duplicateRate)} hint={`${m.duplicateSkills} skills could go`} tone={m.duplicateRate > 0.2 ? 'bad' : m.duplicateRate > 0.1 ? 'warn' : 'good'} onClick={() => onTab('duplicates')} />
-        <Tile label="Unused or rare" value={pct(m.unusedShare)} hint={`limit ${catalog.policy.unusedDays} days`} tone={m.unusedShare > 0.3 ? 'bad' : m.unusedShare > 0.15 ? 'warn' : 'good'} onClick={() => onTab('catalog')} />
-        <Tile label="No owner" value={String(m.byHealth.orphan)} hint="owner left the company" tone={m.byHealth.orphan ? 'warn' : 'good'} onClick={() => onTab('actions')} />
-        <Tile label="Broken" value={String(m.byHealth.broken)} hint="needs a missing connector" tone={m.byHealth.broken ? 'bad' : 'good'} onClick={() => onTab('actions')} />
-        <Tile label="Confirmation due" value={String(m.reviewDue)} hint={`every ${catalog.policy.reviewDays} days`} tone={m.reviewDue ? 'warn' : 'good'} />
-        <Tile label="Runs, last 30 days" value={String(m.runs30)} hint={`${pct(m.avgSuccess)} succeeded`} />
+        <Tile label="Skills in use" value={String(m.live)} hint={`of ${m.total} in the catalog`} onDouble={() => onDetail(groups.live)} />
+        <Tile label="Duplicates" value={pct(m.duplicateRate)} hint={`${m.duplicateSkills} skills could go`} tone={m.duplicateRate > 0.2 ? 'bad' : m.duplicateRate > 0.1 ? 'warn' : 'good'} onClick={() => onTab('duplicates')} onDouble={() => onDetail(groups.dup)} />
+        <Tile label="Unused or rare" value={pct(m.unusedShare)} hint={`limit ${catalog.policy.unusedDays} days`} tone={m.unusedShare > 0.3 ? 'bad' : m.unusedShare > 0.15 ? 'warn' : 'good'} onClick={() => onTab('catalog')} onDouble={() => onDetail(groups.unused)} />
+        <Tile label="No owner" value={String(m.byHealth.orphan)} hint="owner left the company" tone={m.byHealth.orphan ? 'warn' : 'good'} onClick={() => onTab('actions')} onDouble={() => onDetail(groups.orphan)} />
+        <Tile label="Broken" value={String(m.byHealth.broken)} hint="needs a missing connector" tone={m.byHealth.broken ? 'bad' : 'good'} onClick={() => onTab('actions')} onDouble={() => onDetail(groups.broken)} />
+        <Tile label="Confirmation due" value={String(m.reviewDue)} hint={`every ${catalog.policy.reviewDays} days`} tone={m.reviewDue ? 'warn' : 'good'} onDouble={() => onDetail(groups.due)} />
+        <Tile label="Runs, last 30 days" value={String(m.runs30)} hint={`${pct(m.avgSuccess)} succeeded`} onDouble={() => onDetail(groups.runs)} />
         <Tile label="Open proposals" value={String(m.openProposals)} hint={`could remove ${m.potential} skills`} tone={m.openProposals ? 'warn' : 'good'} onClick={() => onTab('actions')} />
       </div>
       <div className="sh-cols">
         <section className="sh-card">
           <h2>Health of all skills</h2>
           {HEALTH_ORDER.map((h) => (
-            <div className="sh-bar" key={h}><span>{HEALTH_LABEL[h]}</span><i className={`sh-fill sh-h-${h}`} style={{ width: `${(m.byHealth[h] / max) * 100}%` }} /><b>{m.byHealth[h]}</b></div>
+            <div className="sh-bar sh-dbl" key={h} title="Double-click for the skills" onDoubleClick={() => onDetail({ title: HEALTH_LABEL[h], skills: by(h) })}><span>{HEALTH_LABEL[h]}</span><i className={`sh-fill sh-h-${h}`} style={{ width: `${(m.byHealth[h] / max) * 100}%` }} /><b>{m.byHealth[h]}</b></div>
           ))}
         </section>
         <section className="sh-card">
           <h2>By department</h2>
           <table className="sh-table"><thead><tr><th>Department</th><th>Skills</th><th>In use</th><th>Unused / rare</th><th>Duplicates</th><th>Runs 30 d</th></tr></thead>
-            <tbody>{m.byDepartment.map((d) => <tr key={d.department}><td>{d.department}</td><td>{d.total}</td><td>{d.live}</td><td>{d.unused}</td><td>{d.duplicates}</td><td>{d.uses30}</td></tr>)}</tbody></table>
+            <tbody>{m.byDepartment.map((d) => <tr key={d.department} className="sh-dbl" title="Double-click for the skills" onDoubleClick={() => onDetail({ title: d.department, skills: catalog.skills.filter((s) => s.department === d.department) })}><td>{d.department}</td><td>{d.total}</td><td>{d.live}</td><td>{d.unused}</td><td>{d.duplicates}</td><td>{d.uses30}</td></tr>)}</tbody></table>
         </section>
       </div>
       <div className="sh-cols">
-        <section className="sh-card"><h2>Most used (30 days)</h2><SkillList list={m.top} value={(s) => `${s.uses30} runs · ${s.users90} people`} /></section>
-        <section className="sh-card"><h2>Least used</h2><SkillList list={m.flop} value={(s) => `${s.uses90} runs in 90 d · last ${ago(s.lastUsed, now)}`} /></section>
+        <section className="sh-card"><h2>Most used (30 days)</h2><SkillList list={m.top} onDetail={onDetail} value={(s) => `${s.uses30} runs · ${s.users90} people`} /></section>
+        <section className="sh-card"><h2>Least used</h2><SkillList list={m.flop} onDetail={onDetail} value={(s) => `${s.uses90} runs in 90 d · last ${ago(s.lastUsed, now)}`} /></section>
       </div>
     </div>
   );
 }
 
-function SkillList({ list, value }: { list: CSkill[]; value: (s: CSkill) => string }) {
-  return <ul className="sh-list">{list.map((s) => <li key={s.id}><span>{s.name}<small>{s.department} · {LEVEL_NAMES[s.level]}</small></span><em>{value(s)}</em></li>)}</ul>;
+function SkillList({ list, value, onDetail }: { list: CSkill[]; value: (s: CSkill) => string; onDetail: OnDetail }) {
+  return <ul className="sh-list">{list.map((s) => <li key={s.id} className="sh-dbl" title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}><span>{s.name}<small>{s.department} · {LEVEL_NAMES[s.level]}</small></span><em>{value(s)}</em></li>)}</ul>;
 }
 
-function Actions({ open, catalog, now, actor, onCatalog }: { open: Proposal[]; catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void }) {
+function Actions({ open, catalog, now, actor, onCatalog, onDetail }: { open: Proposal[]; catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void; onDetail: OnDetail }) {
   const [sel, setSel] = useState<string[]>([]);
   const [kind, setKind] = useState<'all' | Proposal['kind']>('all');
   const shown = open.filter((p) => kind === 'all' || p.kind === kind);
@@ -115,7 +145,7 @@ function Actions({ open, catalog, now, actor, onCatalog }: { open: Proposal[]; c
   if (open.length === 0) return <div className="sh-body"><p className="sh-empty">Nothing to do. All skills are healthy under the current policy.</p></div>;
   return (
     <div className="sh-body">
-      <p className="sh-note">Each proposal is only a suggestion. Nothing happens until you confirm it, and every change goes into the log.</p>
+      <p className="sh-note">Each proposal is only a suggestion. Nothing happens until you confirm it, and every change goes into the log. {HINT}</p>
       <div className="sh-bulk">
         <select value={kind} onChange={(e) => { setKind(e.target.value as typeof kind); setSel([]); }} aria-label="Type of proposal">
           <option value="all">All types ({open.length})</option>
@@ -126,7 +156,7 @@ function Actions({ open, catalog, now, actor, onCatalog }: { open: Proposal[]; c
       </div>
       <ul className="sh-props">
         {shown.map((p) => (
-          <li key={p.id}>
+          <li key={p.id} className="sh-dbl" title="Double-click for the details" onDoubleClick={() => onDetail({ title: p.title, note: p.detail, skills: p.ids.map((i) => catalog.skills.find((x) => x.id === i)).filter((x): x is CSkill => !!x) })}>
             <input type="checkbox" checked={sel.includes(p.id)} onChange={() => setSel(sel.includes(p.id) ? sel.filter((x) => x !== p.id) : [...sel, p.id])} aria-label={`Select ${p.title}`} />
             <div><span className={`sh-kind sh-kind-${p.kind}`}>{PROPOSAL_LABEL[p.kind]}</span><strong>{p.title}</strong><p>{p.detail}</p></div>
             <span className="sh-row-actions"><button className="sh-primary" onClick={() => apply([p])}>Confirm</button><button onClick={() => onCatalog(dismiss(catalog, p.id))}>Not now</button></span>
@@ -137,22 +167,22 @@ function Actions({ open, catalog, now, actor, onCatalog }: { open: Proposal[]; c
   );
 }
 
-function Duplicates({ catalog, now, actor, onCatalog }: { catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void }) {
+function Duplicates({ catalog, now, actor, onCatalog, onDetail }: { catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void; onDetail: OnDetail }) {
   const list = useMemo(() => clusters(catalog), [catalog]);
   const [master, setMaster] = useState<Record<string, string>>({});
   const byId = new Map(catalog.skills.map((s) => [s.id, s]));
   if (list.length === 0) return <div className="sh-body"><p className="sh-empty">No similar skills found at a similarity of {pct(catalog.policy.similarity)}.</p></div>;
   return (
     <div className="sh-body">
-      <p className="sh-note">Skills that do almost the same. Pick the one to keep; the others are phased out and point to it. The similarity limit is in Policy.</p>
+      <p className="sh-note">Skills that do almost the same. Pick the one to keep; the others are phased out and point to it. The similarity limit is in Policy. {HINT}</p>
       {list.map((c) => {
         const keep = master[c.key] ?? c.master;
         return (
           <section className="sh-card" key={c.key}>
-            <h2>{c.ids.length} similar skills <small>similarity {pct(c.score)}</small></h2>
+            <h2 className="sh-dbl" title="Double-click to compare all of them" onDoubleClick={() => onDetail({ title: `${c.ids.length} similar skills`, note: `Similarity ${pct(c.score)}. Suggested to keep: ${byId.get(c.master)?.name ?? ''}.`, skills: c.ids.map((i) => byId.get(i)).filter((x): x is CSkill => !!x) })}>{c.ids.length} similar skills <small>similarity {pct(c.score)}</small></h2>
             <table className="sh-table"><thead><tr><th>Keep</th><th>Skill</th><th>Owner</th><th>Level</th><th>Runs 90 d</th><th>People</th><th>Success</th><th>Last used</th></tr></thead>
               <tbody>{c.ids.map((id) => { const s = byId.get(id)!; return (
-                <tr key={id} className={id === keep ? 'sh-keep' : ''}>
+                <tr key={id} className={`sh-dbl ${id === keep ? 'sh-keep' : ''}`} title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}>
                   <td><input type="radio" name={c.key} checked={id === keep} onChange={() => setMaster({ ...master, [c.key]: id })} aria-label={`Keep ${s.name}`} /></td>
                   <td>{s.name}<small>{s.description}</small></td><td>{s.owner.split('@')[0]}</td><td>{LEVEL_NAMES[s.level]}</td><td>{s.uses90}</td><td>{s.users90}</td><td>{pct(s.success)}</td><td>{ago(s.lastUsed, now)}</td>
                 </tr>); })}</tbody></table>
@@ -167,7 +197,7 @@ function Duplicates({ catalog, now, actor, onCatalog }: { catalog: Catalog; now:
   );
 }
 
-function CatalogTab({ catalog, now, actor, onCatalog }: { catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void }) {
+function CatalogTab({ catalog, now, actor, onCatalog, onDetail }: { catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void; onDetail: OnDetail }) {
   const [q, setQ] = useState('');
   const [h, setH] = useState<'all' | Health>('all');
   const [dept, setDept] = useState('all');
@@ -204,7 +234,7 @@ function CatalogTab({ catalog, now, actor, onCatalog }: { catalog: Catalog; now:
           <thead><tr><th><input type="checkbox" aria-label="Select all shown" checked={shown.length > 0 && shown.every((s) => sel.includes(s.id))} onChange={() => setSel(shown.every((s) => sel.includes(s.id)) ? [] : shown.map((s) => s.id))} /></th><th>Skill</th><th>State</th><th>Owner</th><th>Level</th><th>Runs 30 d</th><th>Runs 90 d</th><th>People</th><th>Last used</th><th>Confirmed</th></tr></thead>
           <tbody>
             {shown.map((s) => (
-              <tr key={s.id}>
+              <tr key={s.id} className="sh-dbl" title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}>
                 <td><input type="checkbox" checked={sel.includes(s.id)} onChange={() => setSel(sel.includes(s.id) ? sel.filter((x) => x !== s.id) : [...sel, s.id])} aria-label={`Select ${s.name}`} /></td>
                 <td>{s.name}{s.example && <span className="sched-example">Example</span>}<small>{s.department}{s.replacedBy ? ` · replaced by ${catalog.skills.find((x) => x.id === s.replacedBy)?.name ?? '…'}` : ''}{s.sunsetAt && s.state === 'deprecated' ? ` · ends ${date(s.sunsetAt)}` : ''}{s.promotionRequested ? ` · ${LEVEL_NAMES[s.promotionRequested]} requested` : ''}</small></td>
                 <td><span className={`sh-pill sh-h-${health.get(s.id)}`}>{HEALTH_LABEL[health.get(s.id)!]}</span></td>
@@ -215,7 +245,7 @@ function CatalogTab({ catalog, now, actor, onCatalog }: { catalog: Catalog; now:
           </tbody>
         </table>
       </div>
-      <p className="sh-note">{rows.length > shown.length ? `Showing the first ${shown.length} of ${rows.length}. Narrow the filter to see the rest.` : `${rows.length} skills`}</p>
+      <p className="sh-note">{rows.length > shown.length ? `Showing the first ${shown.length} of ${rows.length}. Narrow the filter to see the rest.` : `${rows.length} skills`} {HINT}</p>
     </div>
   );
 }
@@ -250,5 +280,65 @@ function PolicyTab({ catalog, onCatalog, onResetExamples }: { catalog: Catalog; 
         </section>
       </div>
     </div>
+  );
+}
+
+const STATE_NOTE: Record<string, string> = { active: 'Active', deprecated: 'Being phased out', retired: 'Retired' };
+
+/** The side panel: one skill with all its figures, or the skills behind a number. Escape or the scrim closes it. */
+function DetailPanel({ detail, catalog, health, now, onClose, onDetail }: { detail: Detail; catalog: Catalog; health: Map<string, Health>; now: number; onClose: () => void; onDetail: OnDetail }) {
+  const single = detail.skills.length === 1 ? detail.skills[0] : null;
+  const similar = useMemo(() => {
+    if (!single) return [] as CSkill[];
+    const c = clusters(catalog).find((x) => x.ids.includes(single.id));
+    return c ? c.ids.filter((i) => i !== single.id).map((i) => catalog.skills.find((x) => x.id === i)).filter((x): x is CSkill => !!x) : [];
+  }, [single, catalog]);
+  const replaced = single?.replacedBy ? catalog.skills.find((x) => x.id === single.replacedBy) : undefined;
+  return (
+    <>
+      <div className="sh-scrim" onClick={onClose} aria-hidden="true" />
+      <aside className="sh-drawer" role="dialog" aria-label={detail.title}>
+        <header>
+          <div><h2>{detail.title}{single?.example && <span className="sched-example">Example</span>}</h2>{!single && <p>{detail.skills.length} {detail.skills.length === 1 ? 'skill' : 'skills'}</p>}</div>
+          <button onClick={onClose} aria-label="Close">×</button>
+        </header>
+        {detail.note && <p className="sh-drawer-note">{detail.note}</p>}
+        {single ? (
+          <>
+            <p className="sh-drawer-note">{single.description || 'No description.'}</p>
+            <span className={`sh-pill sh-h-${health.get(single.id)}`}>{HEALTH_LABEL[health.get(single.id)!]}</span>
+            <dl className="sh-facts">
+              <dt>Level</dt><dd>{LEVEL_NAMES[single.level]}</dd>
+              <dt>Department</dt><dd>{single.department}</dd>
+              <dt>Owner</dt><dd>{single.owner || '–'}</dd>
+              <dt>Created</dt><dd>{date(single.createdAt)}</dd>
+              <dt>Last used</dt><dd>{ago(single.lastUsed, now)}</dd>
+              <dt>Runs</dt><dd>{single.uses30} in 30 days · {single.uses90} in 90 days</dd>
+              <dt>People</dt><dd>{single.users90} in 90 days</dd>
+              <dt>Success</dt><dd>{pct(single.success)}</dd>
+              <dt>Last confirmed</dt><dd>{date(single.reviewedAt)}</dd>
+              <dt>Needs</dt><dd>{single.deps.length ? single.deps.map((d) => <code key={d} className={catalog.available.includes(d) ? '' : 'sh-late'}>{d}</code>) : 'no connector'}</dd>
+              <dt>State</dt><dd>{STATE_NOTE[single.state] ?? single.state}{single.sunsetAt ? ` · until ${date(single.sunsetAt)}` : ''}{replaced ? ` · replaced by ${replaced.name}` : ''}</dd>
+            </dl>
+            {similar.length > 0 && (
+              <>
+                <h3>Does almost the same</h3>
+                <ul className="sh-drawer-list">{similar.map((x) => <li key={x.id}><button onClick={() => onDetail({ title: x.name, skills: [x] })}>{x.name}<small>{x.department} · {x.uses90} runs in 90 d</small></button></li>)}</ul>
+              </>
+            )}
+          </>
+        ) : (
+          <ul className="sh-drawer-list">
+            {detail.skills.map((x) => (
+              <li key={x.id}><button onClick={() => onDetail({ title: x.name, skills: [x] })}>
+                <span>{x.name}{x.example && <span className="sched-example">Example</span>}<small>{x.department} · {LEVEL_NAMES[x.level]} · {x.owner.split('@')[0] || 'no owner'}</small></span>
+                <span><span className={`sh-pill sh-h-${health.get(x.id)}`}>{HEALTH_LABEL[health.get(x.id)!]}</span><small>{x.uses30} runs / 30 d · last {ago(x.lastUsed, now)}</small></span>
+              </button></li>
+            ))}
+            {detail.skills.length === 0 && <li className="sh-empty">Nothing in this group.</li>}
+          </ul>
+        )}
+      </aside>
+    </>
   );
 }

@@ -45,6 +45,8 @@ import { localTarget, newExtension } from './requirements';
 import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
+import Splitter from './ui/Splitter';
+import { DEFAULT_WIDTHS, loadWidths, saveWidths, type PaneWidths } from './pane-width';
 import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
 import { HIRING_SPACE } from './hiring-bridge';
 import { OBSERVABILITY_SPACE } from './observability-bridge';
@@ -71,7 +73,7 @@ import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type
 import RegistryView from './ui/RegistryView';
 import SpaceDesigner from './ui/SpaceDesigner';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
-import { catalogFromDatabase, lifecycleCalls, promotionCalls, withdrawFlags, type SkillSource } from './skill-health-db';
+import { catalogFromDatabase, lifecycleCalls, promotionCalls, supplementWithExamples, withdrawFlags, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
@@ -189,6 +191,7 @@ export default function App() {
     return () => { window.removeEventListener('pointerdown', outside); window.removeEventListener('keydown', esc); };
   }, [topMenuOpen]);
   const [sideTab, setSideTab] = useState<SidePanelTab>('memory');
+  const [paneWidths, setPaneWidths] = useState<PaneWidths>(loadWidths);
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [mode, setMode] = useState('auto');
   const [schedules, setSchedules] = useState<Schedule[]>(() => loadSchedules(window.localStorage));
@@ -292,8 +295,9 @@ export default function App() {
     if (!read.ok || !Array.isArray(read.data?.skills)) { setSkillSource({ kind: skillCatalogRef.current.skills.some((s) => s.example) ? 'example' : 'offline', detail: read.detail ?? 'The database did not answer.' }); return; }
     if (read.data.skills.length === 0) { setSkillSource({ kind: 'example', detail: 'The database has no skills you can see yet. Example data is shown.' }); return; }
     const base = skillCatalogRef.current.skills.some((s) => s.example) ? { ...skillCatalogRef.current, skills: [], log: [] } : skillCatalogRef.current;
-    changeSkillCatalog(catalogFromDatabase(base, read.data.skills, Date.now()));
-    setSkillSource({ kind: 'database', detail: note, loadedAt: Date.now() });
+    const filled = supplementWithExamples(catalogFromDatabase(base, read.data.skills, Date.now()), Date.now());
+    changeSkillCatalog(filled.catalog);
+    setSkillSource({ kind: 'database', detail: [note, filled.added ? `${filled.added} example skills are added so that Actions, Duplicates and Catalog have something to show. They are marked Example and never sent to the database.` : ''].filter(Boolean).join(' '), loadedAt: Date.now() });
   }, [changeSkillCatalog]);
   /** With a database, phase-out, retire and restore are written there first; the rest stays on this computer. */
   const changeSkillCatalogShared = useCallback(async (next: Catalog) => {
@@ -1236,6 +1240,7 @@ export default function App() {
 
   const empty = messages.length === 0;
   const dockShown = view === 'studio' || view === 'manage';
+  const hasList = view === 'chat' || view === 'spaces' || view === 'manage';
   const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
   const confirmDockDoc = () => {
     if (!dockProject || !dockFocus) return;
@@ -1428,7 +1433,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`}>
+    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`} style={{ ...(paneWidths.list !== DEFAULT_WIDTHS.list ? { '--list-w': `${paneWidths.list}px` } : {}), ...(paneWidths.dock !== DEFAULT_WIDTHS.dock ? { '--dock-w': `${paneWidths.dock}px` } : {}) } as React.CSSProperties}>
       <div className="study-badge" aria-hidden="true">Design Study November 2026</div>
       <Rail
         view={view}
@@ -1746,6 +1751,8 @@ export default function App() {
         </main>
       )}
 
+      {hasList && <Splitter pane="list" width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
+      {dockShown && <Splitter pane="dock" width={paneWidths.dock} onChange={(w) => setPaneWidths((c) => ({ ...c, dock: w }))} onCommit={(w) => { const n = { ...paneWidths, dock: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && (
         <JouleDock
           where={view === 'manage' ? 'manage' : 'studio'}
