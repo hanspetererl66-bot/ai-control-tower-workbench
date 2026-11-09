@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom';
 import { STORY_SPACES, embedStory } from '../scripts/sync-infra-story.mjs';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
-const ORDER = ['it-fleet', 'it-infrastructure', 'it-operations', 'infra-ops'];
+const ORDER = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-ops'];
 
 /** Runs only the story block of a Space inside a fake host frame and collects what it posts to the host. */
 function open(slug, inHost = true) {
@@ -20,7 +20,7 @@ function open(slug, inHost = true) {
   return { doc: w.document, posted };
 }
 
-test('the story runs through the four Spaces in a fixed order and each page is in sync with the shared source', () => {
+test('the story runs through the five Spaces in a fixed order and each page is in sync with the shared source', () => {
   assert.deepEqual(STORY_SPACES, ORDER);
   const source = read('examples/shared/infra-story.html');
   for (const slug of ORDER) assert.equal(embedStory(read(`examples/${slug}/index.html`), slug, source), read(`examples/${slug}/index.html`), `${slug}: run npm run sync:infra-story`);
@@ -73,13 +73,14 @@ test('the story has one customer and one certificate through all four Spaces', (
   assert.equal(vm.certExpiresInDays, days, 'A-506 and the VM wall give the same days left');
 });
 
-test('the bar starts with the SOP: one button asks the chat to read the Wikipedia page through the approved web source', () => {
+test('the bar starts with the SOP: one button asks the chat to read the two wiki pages with the connector tool', () => {
   const { doc, posted } = open('it-fleet');
   doc.querySelector('.st-sop').click();
   assert.equal(posted.length, 1);
   assert.equal(posted[0].type, 'wb:ask');
-  assert.match(posted[0].prompt, /en\.wikipedia\.org\/wiki\/Standard_operating_procedure/);
+  assert.match(posted[0].prompt, /read_wiki_page/);
+  for (const page of ['renew-tls-certificate', 'patch-vm']) assert.ok(posted[0].prompt.includes(page), page);
   assert.ok(posted[0].prompt.length <= 600, 'within the host limit for Ask Joule');
-  assert.match(posted[0].prompt, /fetch_web_page/);
+  assert.doesNotMatch(posted[0].prompt, /wikipedia/i, 'the SOP is internal, not from the public Wikipedia');
   assert.equal(open('it-fleet', false).doc.querySelector('.st-sop'), null, 'outside the host there is no chat to ask');
 });

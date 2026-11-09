@@ -76,6 +76,10 @@
     {
       "name": "submit_infra_change",
       "description": "Hand a planned infrastructure change to the n8n workflow (check mode only) after the person confirms. Needs the n8n webhook address."
+    },
+    {
+      "name": "read_wiki_page",
+      "description": "Read a page of the internal Infra Wiki (dummy pages): the step-by-step SOP for renewing a TLS certificate or patching a VM. Read only."
     }
   ],
   "user_config": {

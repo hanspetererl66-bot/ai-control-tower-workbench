@@ -535,6 +535,12 @@
           "class": "write",
           "what": "Hands a planned change to the n8n workflow in check mode, after the person confirms. Never executes a change.",
           "default": "on"
+        },
+        {
+          "name": "read_wiki_page",
+          "class": "read",
+          "what": "Reads a page of the internal Infra Wiki (dummy pages): the step-by-step SOP for renewing a TLS certificate or patching a VM. Changes nothing.",
+          "default": "on"
         }
       ],
       "switches": [],
