@@ -1,7 +1,8 @@
 {
   "title": "Agent Observability",
   "description": "What the agents, workflows and skills of the Werkbank actually did: every run as a trace, whether the outcome was right, cost, speed, and where an agent touched the edge of its rights. Reads a generated sample history from the shared database.",
-  "domain": "Admin",
+  "domain": "Governance",
+  "parent": "ai-control-tower",
   "insights": [
     "Fleet: runs, result, outcome rate, speed, cost and rights of every agent, with a 14-day trend per row.",
     "Traces: each run as a tree of steps (agent call, guardrail, model calls, tool calls, wait for approval) in the OpenTelemetry GenAI naming. Prompt and answer text are not stored.",

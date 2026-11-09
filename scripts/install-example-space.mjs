@@ -33,6 +33,8 @@ export const EXAMPLE_SPACES = {
   'hiring-approvals': 'hiring-approvals',
   onboarding: 'onboarding',
   'agent-observability': 'agent-observability',
+  'agent-registry': 'agent-registry',
+  'agent-compliance': 'agent-compliance',
   'order-to-cash': 'order-to-cash',
   'order-to-cash-software': 'order-to-cash-software',
   'revenue-recognition': 'revenue-recognition',

@@ -1,0 +1,13 @@
+{
+  "title": "Agent Registry",
+  "description": "Every agent of the enterprise AI programme with owner, family, lifecycle, rights and risk level, plus how often each agent is used. Step 2 of the agent lifecycle.",
+  "domain": "Governance",
+  "parent": "ai-control-tower",
+  "insights": [
+    "Agent Repository lists each registered agent with lifecycle, owner, rights and EU AI Act risk class; agents built in the Agent Studio are added as they arrive.",
+    "Agent Usage shows how the registered agents are called, so unused or zombie agents stand out.",
+    "The page is cut out of the AI Control Tower by npm run sync:governance-subspaces, so its numbers match the Control Tower.",
+    "Figures are illustrative sample data, not live measurements."
+  ],
+  "prompt": "Bundled example: Agent Registry (static, generated from the AI Control Tower page)."
+}

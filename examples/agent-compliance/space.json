@@ -1,0 +1,14 @@
+{
+  "title": "Agent Compliance",
+  "description": "EU AI Act conformity, open risks, model governance and the policy framework for the agents of the enterprise AI programme. Step 4 of the agent lifecycle.",
+  "domain": "Governance",
+  "parent": "ai-control-tower",
+  "insights": [
+    "Risk & Compliance: open risks, EU AI Act conformity assessments and the audit deadline.",
+    "Model Governance: which models are approved for which use.",
+    "Policies & Framework: which AI policies are published and which are still open.",
+    "The page is cut out of the AI Control Tower by npm run sync:governance-subspaces, so its numbers match the Control Tower.",
+    "Figures are illustrative sample data, not live measurements."
+  ],
+  "prompt": "Bundled example: Agent Compliance (static, generated from the AI Control Tower page)."
+}
