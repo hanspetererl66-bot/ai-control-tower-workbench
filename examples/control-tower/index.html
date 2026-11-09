@@ -59,7 +59,7 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 .sh:first-child{margin-top:0}
 .card{background:var(--surface);border:1px solid var(--g200);border-radius:6px;padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
 .chd{font-size:16px;font-weight:700;color:var(--purple-ink);margin-bottom:10px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 
@@ -179,7 +179,9 @@ body{background:#EBEBEB;color:var(--g900);font-family:var(--font);font-size:13px
 
 ::-webkit-scrollbar{width:4px;height:8px}
 ::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}
-@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}.bl-w,.bl-n{width:100px}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}.bl-w,.bl-n{width:100px}}
+/* Phone width: the header grows with its content instead of cutting the title and the date off. */
+@media(max-width:640px){.ct header.hdr{height:auto;min-height:60px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap;gap:8px 16px}.ct header.hdr .hdr-brand{flex:1 1 220px;min-width:0}.ct header.hdr .hdr-right{flex:1 1 auto;gap:12px;flex-wrap:wrap;justify-content:flex-end}.ct .hdr-stat-val,.ct .hdr-stat-lbl{white-space:nowrap}}
 /* ---- AI Governance entry page ---- */
 .hub-h{font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px;color:var(--ink)}
 .hub-p{font-size:13px;line-height:1.6;color:var(--muted);max-width:720px;margin:0 0 28px}
