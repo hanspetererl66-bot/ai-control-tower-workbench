@@ -87,6 +87,8 @@ servers that share the code in `connectors/_lib/`. Add only the ones you need.
 
 Jira, Databricks, Slack and Gmail have their own connectors as before.
 
+To connect every connector in `connectors/` to your local agent in one go, run `npm run connect:connectors` (add `-- --dry-run` to only look). It checks which connectors are there every time, stages them like the app does and adds them to `goose-home/.config/goose/config.yaml`. Run it again after pulling: new connectors are added, changed tool lists are picked up, your own settings stay. Connectors that need a setting (for example the Jira site) are added switched off until you enter it under Configure. Restart the app afterwards.
+
 In the app: **Connectors & Skills**, **Add a connector that comes with Werkbank**, then confirm. Or build bundles:
 
 ```

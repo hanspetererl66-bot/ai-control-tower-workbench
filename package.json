@@ -48,6 +48,7 @@
     "sync:automation": "node scripts/sync-automation-dashboard.mjs",
     "cognee:corpus": "node scripts/cognee-corpus.mjs",
     "cognee:seed": "python3 scripts/cognee-seed.py",
+    "connect:connectors": "node scripts/connect-connectors.mjs",
     "build:connectors": "node scripts/build-control-tower-mcpb.mjs --all",
     "build:control-tower-mcpb": "node scripts/build-control-tower-mcpb.mjs ai-control-tower",
     "build:gmail-mcpb": "node scripts/build-control-tower-mcpb.mjs --gmail",
