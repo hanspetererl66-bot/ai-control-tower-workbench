@@ -1,0 +1,743 @@
+{
+ "asOf": "2026-10-19",
+ "me": "Mira Hoffmann",
+ "currency": "EUR",
+ "note": "Fictional sample data. Lindenau Pharma AG is the invented life-sciences customer of the Sub4Me and Sales samples. Contract, invoice and ticket data follow Sub4Me (asOf 2026-10-18). Deal values are the Sub4Me offer amounts; the Sales Space shows the ten-fold illustrative size. The group structure, orders and messages are invented; the messages match the e-mail conversations of the E-mail Space. Amounts are net in EUR unless called gross.",
+ "group": {
+  "id": "ld-ag",
+  "name": "Lindenau Pharma",
+  "headquarters": "Heidelberg, Germany",
+  "customerSince": 2017,
+  "accountTeam": [
+   "Mira Hoffmann",
+   "Clara Neumann"
+  ]
+ },
+ "rules": {
+  "payment": {
+   "highAvgDaysLate": 15,
+   "mediumAvgDaysLate": 5,
+   "highOverdueDays": 60
+  },
+  "stageProbability": {
+   "interest": 10,
+   "lead": 25,
+   "opportunity": 40,
+   "sell": 70,
+   "contract": 90
+  },
+  "discountThresholdPct": 15,
+  "urgencyDays": {
+   "near": 30,
+   "soon": 60
+  },
+  "limits": {
+   "clerk": {
+    "credit": 500,
+    "rebill": 10000
+   },
+   "lead": {
+    "credit": 5000,
+    "rebill": 50000
+   }
+  },
+  "heat": {
+   "paymentHigh": 40,
+   "paymentMedium": 10,
+   "overdueOld": 10,
+   "renewalNear": 30,
+   "renewalSoon": 15,
+   "lapsed": 20,
+   "ticketP2": 10,
+   "ticketP3": 5,
+   "ticketMax": 15,
+   "o2cGap": 15
+  },
+  "urgencyFactor": {
+   "near": 1.5,
+   "soon": 1.2,
+   "later": 1
+  }
+ },
+ "entities": [
+  {
+   "id": "ld-ag",
+   "name": "Lindenau Pharma AG",
+   "short": "Pharma AG",
+   "country": "DE",
+   "city": "Heidelberg",
+   "role": "Parent",
+   "ownershipPct": 100,
+   "employees": 2000,
+   "industry": "Pharmaceuticals (headquarters, quality, procurement)",
+   "sapCustomerId": "0010090532",
+   "note": "Headquarters. Quality Assurance, IT Procurement, Accounts Payable and the platform team sit here. Customer in the Sub4Me and Sales samples."
+  },
+  {
+   "id": "ld-bio",
+   "name": "Lindenau Biologics GmbH",
+   "short": "Biologics",
+   "country": "DE",
+   "city": "Penzberg",
+   "role": "Subsidiary",
+   "ownershipPct": 100,
+   "employees": 1100,
+   "industry": "Biologics manufacturing",
+   "sapCustomerId": "0010090540",
+   "note": "Plant Penzberg. Uses the group S/4HANA contract, no contract of its own."
+  },
+  {
+   "id": "ld-ch",
+   "name": "Lindenau Pharma Schweiz AG",
+   "short": "Schweiz",
+   "country": "CH",
+   "city": "Basel",
+   "role": "Subsidiary",
+   "ownershipPct": 100,
+   "employees": 800,
+   "industry": "Pharmaceuticals (packaging and serialization)",
+   "sapCustomerId": "0010090588",
+   "note": "Plant Basel. Holds the serialization contract; the Swiss repository needs its own message schema."
+  }
+ ],
+ "contacts": [
+  {
+   "id": "vogel",
+   "name": "Dr. Matthias Vogel",
+   "role": "CIO",
+   "entity": "ld-ag",
+   "stance": "champion",
+   "note": "Asked for a landscape for batch and quality analytics."
+  },
+  {
+   "id": "ostermann",
+   "name": "Dr. Petra Ostermann",
+   "role": "Head of Quality Assurance and GxP Compliance",
+   "entity": "ld-ag",
+   "stance": "neutral",
+   "note": "Her approval of the validation concept gates every productive use of AI in a GxP process."
+  },
+  {
+   "id": "roth",
+   "name": "Dr. Sabine Roth",
+   "role": "Head of IT Procurement",
+   "entity": "ld-ag",
+   "stance": "neutral",
+   "note": "Owns the Ariba renewal; Quality Assurance reviews her package."
+  },
+  {
+   "id": "kessel",
+   "name": "Ralf Kessel",
+   "role": "Head of Manufacturing IT",
+   "entity": "ld-ch",
+   "stance": "champion",
+   "note": "Named the yield analysis as the first use case; owns planning and serialization."
+  },
+  {
+   "id": "brandl",
+   "name": "Anika Brandl",
+   "role": "Platform Lead",
+   "entity": "ld-ag",
+   "stance": "neutral",
+   "note": "Owns the AI units contract and checks an own build on a hyperscaler."
+  },
+  {
+   "id": "engel",
+   "name": "Thomas Engel",
+   "role": "Head of Accounts Payable",
+   "entity": "ld-ag",
+   "stance": "neutral",
+   "note": "Owns the payment run; the audit freeze blocked one purchase order."
+  }
+ ],
+ "products": [
+  {
+   "id": "p-s4",
+   "name": "S/4HANA Cloud Private Edition"
+  },
+  {
+   "id": "p-ibp",
+   "name": "SAP Integrated Business Planning"
+  },
+  {
+   "id": "p-sf",
+   "name": "SuccessFactors Learning"
+  },
+  {
+   "id": "p-tt",
+   "name": "Advanced Track and Trace"
+  },
+  {
+   "id": "p-ai",
+   "name": "AI units (Joule, AI Core, Document AI, Business AI)"
+  },
+  {
+   "id": "p-ariba",
+   "name": "Ariba Procurement"
+  },
+  {
+   "id": "p-bdc",
+   "name": "Business Data Cloud"
+  },
+  {
+   "id": "p-docai",
+   "name": "Document AI"
+  }
+ ],
+ "contracts": [
+  {
+   "id": "C-2024-0905",
+   "entity": "ld-ag",
+   "product": "p-s4",
+   "scope": "1,100 users, 3 plants (Heidelberg, Penzberg, Basel), DEV/QAS/PRD",
+   "annualEur": 2150000,
+   "start": "2024-07-01",
+   "end": "2029-06-30",
+   "noticeDays": 180,
+   "status": "Active",
+   "autoRenew": false,
+   "billing": "Annual in advance",
+   "paymentTerms": "30 days net",
+   "billTo": "ld-ag",
+   "renewalTermMonths": 12
+  },
+  {
+   "id": "C-2025-0612",
+   "entity": "ld-ag",
+   "product": "p-ibp",
+   "scope": "240 planners, demand and supply planning for 14 markets",
+   "annualEur": 324000,
+   "start": "2025-04-01",
+   "end": "2028-03-31",
+   "noticeDays": 120,
+   "status": "Active",
+   "autoRenew": false,
+   "billing": "Annual in advance",
+   "paymentTerms": "30 days net",
+   "billTo": "ld-ag",
+   "renewalTermMonths": 12
+  },
+  {
+   "id": "C-2025-0718",
+   "entity": "ld-ag",
+   "product": "p-sf",
+   "scope": "3,900 employees, 6 learning curricula",
+   "annualEur": 139050,
+   "start": "2025-07-01",
+   "end": "2028-06-30",
+   "noticeDays": 90,
+   "status": "Active",
+   "autoRenew": false,
+   "billing": "Annual in advance",
+   "paymentTerms": "30 days net",
+   "billTo": "ld-ag",
+   "renewalTermMonths": 12
+  },
+  {
+   "id": "C-2025-0833",
+   "entity": "ld-ch",
+   "product": "p-tt",
+   "scope": "9 packaging lines, 31 markets",
+   "annualEur": 414000,
+   "start": "2025-10-01",
+   "end": "2027-12-31",
+   "noticeDays": 120,
+   "status": "Active",
+   "autoRenew": false,
+   "billing": "Annual in advance",
+   "paymentTerms": "30 days net",
+   "billTo": "ld-ag",
+   "renewalTermMonths": 12
+  },
+  {
+   "id": "C-2026-0051",
+   "entity": "ld-ag",
+   "product": "p-ai",
+   "scope": "60,000 AI units, calendar year 2026",
+   "annualEur": 180000,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "noticeDays": 60,
+   "status": "Active",
+   "autoRenew": true,
+   "billing": "Annual in advance",
+   "paymentTerms": "30 days net",
+   "billTo": "ld-ag",
+   "renewalTermMonths": 12
+  },
+  {
+   "id": "C-2023-0344",
+   "entity": "ld-ag",
+   "product": "p-ariba",
+   "scope": "210 buyers, 1,900 suppliers",
+   "annualEur": 127200,
+   "start": "2023-02-01",
+   "end": "2026-01-31",
+   "noticeDays": 90,
+   "status": "Lapsed",
+   "autoRenew": false,
+   "billing": "Quarterly in advance",
+   "paymentTerms": "30 days net",
+   "billTo": "ld-ag",
+   "renewalTermMonths": 12,
+   "note": "Ended on 31 January 2026. Suppliers still order on a trial tenant."
+  }
+ ],
+ "opportunities": [
+  {
+   "id": "LEAD-305",
+   "entity": "ld-ag",
+   "title": "Document AI for batch records",
+   "product": "p-docai",
+   "stage": "lead",
+   "acvEur": 64000,
+   "closeDate": "2027-02-26",
+   "owner": "Mira Hoffmann",
+   "nextStep": "Ask two questions: budget owner and date of the next inspection"
+  },
+  {
+   "id": "OPP-405",
+   "entity": "ld-ch",
+   "title": "Business Data Cloud for clinical and manufacturing analytics",
+   "product": "p-bdc",
+   "stage": "opportunity",
+   "acvEur": 120000,
+   "probability": 40,
+   "closeDate": "2027-03-31",
+   "owner": "Clara Neumann",
+   "nextStep": "Account plan with the manufacturing analytics use case as the anchor"
+  },
+  {
+   "id": "OFF-2026-0510",
+   "entity": "ld-ag",
+   "title": "Ariba renewal with GxP supplier qualification (3 years)",
+   "product": "p-ariba",
+   "stage": "sell",
+   "acvEur": 229200,
+   "probability": 60,
+   "closeDate": "2026-11-25",
+   "owner": "Mira Hoffmann",
+   "nextStep": "Walk through the supplier qualification workflow with Quality Assurance",
+   "renews": "C-2023-0344",
+   "discountPct": 9
+  },
+  {
+   "id": "OFF-2026-0518",
+   "entity": "ld-ag",
+   "title": "Joule for Quality and AI units top-up (25,000 units)",
+   "product": "p-ai",
+   "stage": "sell",
+   "acvEur": 129000,
+   "probability": 55,
+   "closeDate": "2026-11-30",
+   "owner": "Mira Hoffmann",
+   "nextStep": "Review the validation concept with Quality Assurance",
+   "extends": "C-2026-0051",
+   "discountPct": 7
+  },
+  {
+   "id": "OFF-2026-0526",
+   "entity": "ld-ch",
+   "title": "IBP: 60 more planners and a cold-chain scenario package",
+   "product": "p-ibp",
+   "stage": "sell",
+   "acvEur": 98000,
+   "probability": 45,
+   "closeDate": "2026-12-15",
+   "owner": "Mira Hoffmann",
+   "nextStep": "Workshop with Manufacturing IT on the cold-chain scenarios",
+   "extends": "C-2025-0612",
+   "discountPct": 8
+  }
+ ],
+ "orders": [
+  {
+   "id": "SO-91001",
+   "entity": "ld-ag",
+   "contract": "C-2024-0905",
+   "title": "S/4HANA Cloud Private Edition, year 3",
+   "netEur": 2150000,
+   "orderedOn": "2026-06-15",
+   "provisioned": true,
+   "billed": "INV-2026-40100",
+   "note": "Annual order, invoiced in advance."
+  },
+  {
+   "id": "SO-91004",
+   "entity": "ld-ag",
+   "contract": "C-2024-0905",
+   "title": "S/4HANA validation package for release 2608",
+   "netEur": 96000,
+   "orderedOn": "2026-08-20",
+   "provisioned": true,
+   "billed": "INV-2026-40108",
+   "note": "Change control and test evidence. Invoice is overdue."
+  },
+  {
+   "id": "SO-91002",
+   "entity": "ld-ag",
+   "contract": "C-2025-0718",
+   "title": "SuccessFactors Learning, annual fee",
+   "netEur": 139050,
+   "orderedOn": "2026-06-20",
+   "provisioned": true,
+   "billed": "INV-2026-40102",
+   "note": "The purchase order was blocked by the audit freeze."
+  },
+  {
+   "id": "SO-91003",
+   "entity": "ld-ch",
+   "contract": "C-2025-0833",
+   "title": "Advanced Track and Trace, year 2",
+   "netEur": 414000,
+   "orderedOn": "2026-09-15",
+   "provisioned": true,
+   "billed": "INV-2026-40104",
+   "note": "Annual order. The Swiss repository rejects uploads since 8 October."
+  },
+  {
+   "id": "SO-91005",
+   "entity": "ld-ag",
+   "contract": "C-2026-0051",
+   "title": "AI units 2026 (60,000 units)",
+   "netEur": 180000,
+   "orderedOn": "2025-12-09",
+   "provisioned": true,
+   "billed": "INV-2026-40105",
+   "note": "Annual order, paid. 46,750 units used by the end of September."
+  },
+  {
+   "id": "SO-91006",
+   "entity": "ld-ag",
+   "contract": "C-2023-0344",
+   "title": "Ariba supplier ordering on a trial tenant",
+   "netEur": 95400,
+   "orderedOn": "2026-02-01",
+   "provisioned": true,
+   "billed": null,
+   "note": "Feb to Oct 2026. The contract ended on 31 January; suppliers kept ordering. Value estimated at the old annual price for nine months; nothing is invoiced."
+  }
+ ],
+ "invoices": [
+  {
+   "id": "INV-2026-40107",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2023-0344",
+   "issuedOn": "2025-08-01",
+   "dueOn": "2025-08-31",
+   "netEur": 22400,
+   "grossEur": 26656.0,
+   "status": "Paid",
+   "paidOn": "2025-09-17",
+   "daysLate": 17
+  },
+  {
+   "id": "INV-2026-40103",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2025-0833",
+   "issuedOn": "2025-10-01",
+   "dueOn": "2025-10-31",
+   "netEur": 414000,
+   "grossEur": 492660.0,
+   "status": "Paid",
+   "paidOn": "2025-11-19",
+   "daysLate": 19
+  },
+  {
+   "id": "INV-2026-40106",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2023-0344",
+   "issuedOn": "2025-11-01",
+   "dueOn": "2025-12-01",
+   "netEur": 22400,
+   "grossEur": 26656.0,
+   "status": "Paid",
+   "paidOn": "2025-12-02",
+   "daysLate": 1
+  },
+  {
+   "id": "INV-2026-40105",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2026-0051",
+   "issuedOn": "2026-01-01",
+   "dueOn": "2026-01-31",
+   "netEur": 180000,
+   "grossEur": 214200.0,
+   "status": "Paid",
+   "paidOn": "2026-02-05",
+   "daysLate": 5
+  },
+  {
+   "id": "INV-2026-40101",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2025-0612",
+   "issuedOn": "2026-04-01",
+   "dueOn": "2026-05-01",
+   "netEur": 324000,
+   "grossEur": 385560.0,
+   "status": "Paid",
+   "paidOn": "2026-04-29",
+   "daysLate": -2
+  },
+  {
+   "id": "INV-2026-40102",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2025-0718",
+   "issuedOn": "2026-07-01",
+   "dueOn": "2026-07-31",
+   "netEur": 139050,
+   "grossEur": 165469.5,
+   "status": "Overdue",
+   "paidOn": null,
+   "daysLate": null
+  },
+  {
+   "id": "INV-2026-40100",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2024-0905",
+   "issuedOn": "2026-07-01",
+   "dueOn": "2026-07-31",
+   "netEur": 2150000,
+   "grossEur": 2558500.0,
+   "status": "Paid",
+   "paidOn": "2026-07-28",
+   "daysLate": -3
+  },
+  {
+   "id": "INV-2026-40108",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2024-0905",
+   "issuedOn": "2026-09-14",
+   "dueOn": "2026-10-14",
+   "netEur": 96000,
+   "grossEur": 114240.0,
+   "status": "Overdue",
+   "paidOn": null,
+   "daysLate": null
+  },
+  {
+   "id": "INV-2026-40109",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2025-0612",
+   "issuedOn": "2026-09-21",
+   "dueOn": "2026-10-21",
+   "netEur": 36500,
+   "grossEur": 43435.0,
+   "status": "Open",
+   "paidOn": null,
+   "daysLate": null
+  },
+  {
+   "id": "INV-2026-40104",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2025-0833",
+   "issuedOn": "2026-10-01",
+   "dueOn": "2026-10-31",
+   "netEur": 414000,
+   "grossEur": 492660.0,
+   "status": "Open",
+   "paidOn": null,
+   "daysLate": null
+  },
+  {
+   "id": "INV-2026-40110",
+   "entity": "ld-ag",
+   "billTo": "ld-ag",
+   "contract": "C-2026-0051",
+   "issuedOn": "2026-10-06",
+   "dueOn": "2026-11-05",
+   "netEur": 41800,
+   "grossEur": 49742.0,
+   "status": "Open",
+   "paidOn": null,
+   "daysLate": null
+  }
+ ],
+ "tickets": [
+  {
+   "id": "TKT-48212",
+   "entity": "ld-bio",
+   "product": "p-s4",
+   "severity": "P2",
+   "openedOn": "2026-10-12",
+   "status": "Open",
+   "title": "Batch release ends with a short dump after the 2608 upgrade (validation run blocked)"
+  },
+  {
+   "id": "TKT-48188",
+   "entity": "ld-ch",
+   "product": "p-tt",
+   "severity": "P2",
+   "openedOn": "2026-10-09",
+   "status": "Open",
+   "title": "Serial number requests rejected for the Swiss market (waiting for the line 6 log)"
+  },
+  {
+   "id": "TKT-48097",
+   "entity": "ld-ag",
+   "product": "p-docai",
+   "severity": "P3",
+   "openedOn": "2026-10-05",
+   "status": "Open",
+   "title": "Document AI does not read handwritten corrections on scanned batch records"
+  },
+  {
+   "id": "TKT-47921",
+   "entity": "ld-ag",
+   "product": "p-sf",
+   "severity": "P3",
+   "openedOn": "2026-09-29",
+   "status": "Resolved",
+   "title": "Learning: qualification status not updated after e-signature"
+  },
+  {
+   "id": "TKT-47340",
+   "entity": "ld-ag",
+   "product": "p-ai",
+   "severity": "P4",
+   "openedOn": "2026-08-24",
+   "status": "Resolved",
+   "title": "Audit log export of all Joule agent actions for the next inspection"
+  }
+ ],
+ "signals": [
+  {
+   "id": "S-01",
+   "kind": "E-mail",
+   "date": "2026-10-16",
+   "contact": "ostermann",
+   "entity": "ld-ag",
+   "about": [
+    "ld-ag",
+    "C-2023-0344",
+    "OFF-2026-0510",
+    "roth"
+   ],
+   "text": "Subject: AW: Ariba renewal: GxP supplier qualification in scope? Quality Assurance needs the supplier qualification workflow as part of the renewal. Please confirm that it is included in the price of OFF-2026-0510 and send us the validation documents for it. Suppliers have ordered on a trial tenant since the contract ended on 31 January."
+  },
+  {
+   "id": "S-02",
+   "kind": "E-mail",
+   "date": "2026-10-13",
+   "contact": "ostermann",
+   "entity": "ld-ag",
+   "about": [
+    "ld-ag",
+    "C-2026-0051",
+    "OFF-2026-0518",
+    "brandl"
+   ],
+   "text": "Subject: Joule for Quality, validation concept. Data from our validated environment may only leave it with an approved data-integrity concept. What exactly must the validation concept cover for the Joule skills? On 14 October the template went out; productive use starts only after Quality Assurance approves the concept. The reply also names the date: the AI units contract C-2026-0051 renews automatically on 1 January unless notice is given by 1 November."
+  },
+  {
+   "id": "S-03",
+   "kind": "E-mail",
+   "date": "2026-10-09",
+   "contact": "brandl",
+   "entity": "ld-ag",
+   "about": [
+    "ld-ag",
+    "C-2026-0051",
+    "OFF-2026-0518",
+    "OPP-405"
+   ],
+   "text": "Subject: Top-up and Joule skills. We would like to top up our AI units and use Joule skills for deviation handling and batch record review. Our platform team is also checking whether we can build parts of this ourselves on a hyperscaler."
+  },
+  {
+   "id": "S-04",
+   "kind": "E-mail",
+   "date": "2026-10-13",
+   "contact": "engel",
+   "entity": "ld-ag",
+   "about": [
+    "ld-ag",
+    "INV-2026-40102",
+    "C-2025-0718"
+   ],
+   "text": "Subject: Overdue invoice, SuccessFactors Learning. The purchase order was blocked by the audit freeze. Accounts Payable will release the payment next week. Please hold the reminder until then."
+  },
+  {
+   "id": "S-05",
+   "kind": "E-mail",
+   "date": "2026-10-15",
+   "contact": "ostermann",
+   "entity": "ld-ag",
+   "about": [
+    "ld-ag",
+    "TKT-48097",
+    "LEAD-305"
+   ],
+   "text": "Subject: Document AI, handwritten corrections (TKT-48097). Three sample pages as text from the scan were attached. The pasted text contained an instruction aimed at AI assistants; it was treated as untrusted content and not followed. In a regulated process handwritten corrections must be read."
+  },
+  {
+   "id": "S-06",
+   "kind": "Call",
+   "date": "2026-10-16",
+   "contact": "kessel",
+   "entity": "ld-ch",
+   "about": [
+    "ld-ch",
+    "OPP-405",
+    "OFF-2026-0526",
+    "C-2025-0612"
+   ],
+   "text": "Call with Ralf Kessel. Manufacturing IT names the yield analysis as the first use case for the analytics platform. The planning team asks for 60 more planners and a cold-chain scenario package that depends on the temperature data of the new loggers."
+  },
+  {
+   "id": "S-07",
+   "kind": "Call",
+   "date": "2026-10-08",
+   "contact": "vogel",
+   "entity": "ld-ag",
+   "about": [
+    "ld-ag",
+    "OPP-405",
+    "vogel"
+   ],
+   "text": "Call with Dr. Matthias Vogel. The CIO asks for a landscape for batch and quality analytics. Data from the validated environment may only leave it with an approved data-integrity concept. An own data platform on a hyperscaler is under evaluation."
+  },
+  {
+   "id": "S-08",
+   "kind": "Chat",
+   "date": "2026-10-14",
+   "contact": "kessel",
+   "entity": "ld-ch",
+   "about": [
+    "ld-ch",
+    "TKT-48188",
+    "C-2025-0833"
+   ],
+   "text": "Chat with Ralf Kessel. Since 8 October uploads for the Swiss repository are answered with a schema error. Support is waiting for the failing messages from the log of packaging line 6; packaging IT is looking for them."
+  }
+ ],
+ "story": "lindenau",
+ "aiUnits": {
+  "allotment": 60000,
+  "used": 46750,
+  "through": "2026-09-30",
+  "pricePerYearEur": 180000
+ },
+ "forecast": {
+  "node": "pay:ld-ag",
+  "customer": "lindenau",
+  "company": "Lindenau Pharma AG"
+ },
+ "presets": [
+  "Which invoices are overdue?",
+  "What did Dr. Ostermann write?",
+  "Which contracts need a decision before the year ends?",
+  "Who has to approve the validation concept?",
+  "Which deals depend on the validation concept?",
+  "What should we do first for Lindenau?"
+ ]
+}

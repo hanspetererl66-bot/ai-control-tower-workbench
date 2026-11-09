@@ -22,7 +22,7 @@ export const MOCKUPS = [
   { page: 'examples/order-to-cash/index.html', data: 'examples/order-to-cash/data.json' },
   { page: 'examples/order-to-cash-software/index.html', data: 'examples/order-to-cash-software/data.json' },
   { page: 'examples/revenue-recognition/index.html', data: 'examples/revenue-recognition/data.json' },
-  { page: 'examples/customer-360/index.html', data: 'examples/customer-360/data.json' },
+  { page: 'examples/customer-360/index.html', data: 'examples/customer-360/data.json', extra: { 'data-lindenau': 'examples/customer-360/data-lindenau.json' } },
 ];
 /** Catalog Spaces: real, sourced facts (not fictional), embedded the same way. */
 export const CATALOGS = [
@@ -38,6 +38,15 @@ export function embedLogic(html, source) {
   return html.replace(LOGIC, () => `// @logic-start\n${source}\n  // @logic-end`);
 }
 
+/** Further data blocks of one page (a second customer): replaced when present, else inserted right after the main block. */
+export function embedExtraData(html, id, data) {
+  const json = JSON.stringify(data).replace(/</g, '\\u003c');
+  const block = `<script type="application/json" id="${id}">${json}</script>`;
+  const own = new RegExp(`<script type="application/json" id="${id}">[\\s\\S]*?</script>`);
+  if (own.test(html)) return html.replace(own, () => block);
+  return html.replace(BLOCK, (m) => `${m}\n${block}`);
+}
+
 export function embedMockupData(html, data) {
   if (!BLOCK.test(html)) throw new Error('page has no <script id="data"> block');
   // "<" is escaped so the sample text can never close the script element.
@@ -48,9 +57,10 @@ export function embedMockupData(html, data) {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const check = process.argv.includes('--check');
   let stale = false;
-  for (const { page, data } of [...MOCKUPS, ...CATALOGS]) {
+  for (const { page, data, extra } of [...MOCKUPS, ...CATALOGS]) {
     const html = readFileSync(join(ROOT, page), 'utf8');
     let next = embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8')));
+    for (const [id, file] of Object.entries(extra ?? {})) next = embedExtraData(next, id, JSON.parse(readFileSync(join(ROOT, file), 'utf8')));
     if (LOGIC_PAGES[page]) next = embedLogic(next, LOGIC_PAGES[page]());
     if (next !== html) { stale = true; if (!check) writeFileSync(join(ROOT, page), next); }
   }

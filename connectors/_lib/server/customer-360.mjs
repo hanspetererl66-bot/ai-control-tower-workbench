@@ -154,7 +154,7 @@ export function makeLogic(D) {
     if (by(D.signals, id)) return idOf('signal', id);
     return null;
   }
-  function recommendations() {
+  function recommendationsNordlicht() {
     var gm = summary('nl-ma');
     var U = R.urgencyDays, F = R.urgencyFactor;
     function urgency(days) { return days <= U.near ? 'near' : days <= U.soon ? 'soon' : 'later'; }
@@ -192,6 +192,48 @@ export function makeLogic(D) {
     recs.forEach(function (r, i) { r.rank = i + 1; });
     return recs;
   }
+
+  /** The five proposals for Lindenau (story "lindenau"): every figure comes from the sample data; amounts at stake follow the Sub4Me sizes. */
+  function recommendationsLindenau() {
+    var U = R.urgencyDays, F = R.urgencyFactor, HQ = D.group.id;
+    function urgency(days) { return days <= U.near ? 'near' : days <= U.soon ? 'soon' : 'later'; }
+    var ai = contract('C-2026-0051'), air = renewalOf(ai), topup = by(D.opportunities, 'OFF-2026-0518'), ariba = by(D.opportunities, 'OFF-2026-0510');
+    var tt = contract('C-2025-0833'), ttr = renewalOf(tt), sf = by(D.invoices, 'INV-2026-40102'), late2 = by(D.invoices, 'INV-2026-40108');
+    var old = contract('C-2023-0344'), trial = o2c().filter(function (g) { return g.order === 'SO-91006'; })[0];
+    var bdc = by(D.opportunities, 'OPP-405'), docai = by(D.opportunities, 'LEAD-305'), U2 = D.aiUnits;
+    var payDay = addDays(ASOF, 4);
+    var recs = [
+      { id: 'R-1', title: 'Settle the AI units renewal and the top-up before the notice date', kind: 'revenue', atStakeEur: ai.annualEur + topup.acvEur, dueDate: air.decisionDate, days: air.daysToDecision,
+        owner: 'Mira Hoffmann', evidence: ['C-2026-0051', 'OFF-2026-0518', 'S-02', 'S-03', 'brandl', 'ostermann'],
+        why: 'The notice date is ' + air.decisionDate + ' (' + air.daysToDecision + ' days); after it the contract renews for ' + ai.renewalTermMonths + ' months by itself. ' + eur(U2.used) + ' of ' + eur(U2.allotment) + ' units were used by ' + U2.through + ', so the top-up is needed. Productive use needs the approved validation concept, and the platform team evaluates an own build on a hyperscaler.',
+        steps: ['Call Anika Brandl about the notice date and whether the contract renews unchanged', 'Ask Quality Assurance to name the missing data-integrity points in the validation concept', 'Order the top-up once the concept is approved'], approval: 'Account executive; the top-up discount of ' + topup.discountPct + ' % is below the deal desk threshold of ' + R.discountThresholdPct + ' %' },
+      { id: 'R-2', title: 'Get the line 6 log and give the Swiss repository a fix date', kind: 'service', atStakeEur: tt.annualEur, dueDate: ttr.decisionDate, days: ttr.daysToDecision,
+        owner: 'Jonas Weber', evidence: ['TKT-48188', 'C-2025-0833', 'S-08', 'kessel'],
+        why: 'Ticket TKT-48188 has been waiting for the customer since 9 October: support needs the failing messages from the log of packaging line 6, and uploads for the Swiss repository are rejected. The contract is worth ' + eur(tt.annualEur) + ' EUR a year; the amount shows what is exposed, not an expected loss.',
+        steps: ['Ask Ralf Kessel for the log of packaging line 6', 'Name a date for the fix as soon as the log is in', 'Check the message schema of the Swiss repository for the other markets'], approval: 'Support lead; no commercial change' },
+      { id: 'R-3', title: 'Confirm the supplier qualification in the price and move Ariba off the trial tenant', kind: 'revenue', atStakeEur: ariba.acvEur, dueDate: ariba.closeDate, days: daysBetween(ASOF, ariba.closeDate),
+        owner: 'Mira Hoffmann', evidence: ['OFF-2026-0510', 'C-2023-0344', 'SO-91006', 'S-01', 'roth', 'ostermann'],
+        why: 'Quality Assurance wants the supplier qualification workflow inside the price. The old contract ended on ' + old.end + '; suppliers order on a trial tenant, about ' + eur(trial.netEur) + ' EUR net of use at the old price that is not invoiced (an estimate).',
+        steps: ['Confirm in writing that the workflow is part of the price of OFF-2026-0510', 'Send the validation documents to Quality Assurance', 'Agree the date when suppliers move to the productive tenant'], approval: 'Account executive; the discount of ' + ariba.discountPct + ' % is below the deal desk threshold of ' + R.discountThresholdPct + ' %' },
+      { id: 'R-4', title: 'Hold the reminder, confirm the payment date and chase the second overdue invoice', kind: 'cash', atStakeEur: sf.grossEur, dueDate: payDay, days: daysBetween(ASOF, payDay),
+        owner: 'Mira Hoffmann', evidence: ['INV-2026-40102', 'INV-2026-40108', 'S-04', 'engel', 'C-2025-0718'],
+        why: sf.id + ' is ' + daysBetween(sf.dueOn, ASOF) + ' days overdue (' + eur(sf.grossEur) + ' EUR gross). Accounts Payable says the purchase order was blocked by the audit freeze and will release it next week. ' + late2.id + ' (' + eur(late2.grossEur) + ' EUR gross) has been overdue for ' + daysBetween(late2.dueOn, ASOF) + ' days with no message yet.',
+        steps: ['Confirm to Thomas Engel that the reminder is on hold until ' + payDay, 'Check on ' + payDay + ' that the payment arrived', 'Ask Accounts Payable about ' + late2.id], approval: 'Credit manager approves any payment arrangement' },
+      { id: 'R-5', title: 'Win the analytics platform with a validated use case and fix the handwriting first', kind: 'revenue', atStakeEur: bdc.acvEur + docai.acvEur, dueDate: bdc.closeDate, days: daysBetween(ASOF, bdc.closeDate),
+        owner: 'Clara Neumann', evidence: ['OPP-405', 'LEAD-305', 'TKT-48097', 'S-05', 'S-06', 'S-07', 'vogel', 'kessel'],
+        why: 'The CIO asks for a landscape for batch and quality analytics, Manufacturing IT names the yield analysis as the first use case, and an own data platform on a hyperscaler is under evaluation. Ticket TKT-48097 (handwritten corrections in batch records) shapes the first impression of Document AI in a regulated process.',
+        steps: ['Build the account plan around the yield analysis', 'Give Dr. Ostermann a date for the handwriting fix', 'Ask the two lead questions: budget owner and date of the next inspection'], approval: 'Account executive' },
+    ];
+    recs.forEach(function (r) {
+      r.urgency = urgency(r.days);
+      r.score = Math.round(r.atStakeEur * F[r.urgency]);
+      r.evidence = r.evidence.map(function (e) { return e.indexOf(':') > 0 ? e : (resolve(e) || e); });
+    });
+    recs.sort(function (a, b) { return b.score - a.score; });
+    recs.forEach(function (r, i) { r.rank = i + 1; });
+    return recs;
+  }
+  function recommendations() { return D.story === 'lindenau' ? recommendationsLindenau() : recommendationsNordlicht(); }
 
   // facts whose value is a whole sentence read as "R-3 (why): ...", not "R-3: why is Eight of ..."
   var LONG_FACT = /^(Why|Approval|Recommendation|Step \d+)$/;
@@ -263,7 +305,7 @@ export function makeLogic(D) {
     // edges
     var G0 = idOf('group', G.id);
     D.entities.forEach(function (e) { if (e.id !== G.id) edge('OWNS', G0, idOf('entity', e.id)); });
-    D.contracts.forEach(function (c) { if (c.billTo !== c.entity && c.billTo === 'nl-ssc') edge('PAYS_FOR', idOf('entity', 'nl-ssc'), idOf('entity', c.entity)); });
+    D.contracts.forEach(function (c) { if (c.billTo !== c.entity) edge('PAYS_FOR', resolve(c.billTo), resolve(c.entity)); });
     D.contacts.forEach(function (c) { edge('WORKS_AT', idOf('contact', c.id), resolve(c.entity)); });
     D.contracts.forEach(function (c) { edge('HOLDS', resolve(c.entity), idOf('contract', c.id)); edge('COVERS', idOf('contract', c.id), idOf('product', c.product)); });
     D.opportunities.forEach(function (o) {
@@ -403,13 +445,14 @@ export function makeLogic(D) {
   }
 
   // ---- story: four acts, ten beats, each beat is one retrieval ---------------------------------------------------------------------
+  var NAME = D.story === 'lindenau' ? 'Lindenau' : 'Nordlicht';
   var ACTS = [
-    { n: 1, title: 'Who is Nordlicht?', hook: 'One customer on paper, ' + D.entities.length + ' companies in reality.' },
+    { n: 1, title: 'Who is ' + NAME + '?', hook: 'One customer on paper, ' + D.entities.length + ' companies in reality.' },
     { n: 2, title: 'What runs there?', hook: 'Contracts, products and the deals on the table.' },
     { n: 3, title: 'What is open?', hook: 'Who pays, what was delivered and not billed, and what people said.' },
     { n: 4, title: 'What do we do?', hook: 'Five proposals, ranked. A person decides.' },
   ];
-  function beats() {
+  function beatsNordlicht() {
     var g = group(), S = {}; g.summaries.forEach(function (s) { S[s.entity] = s; });
     var subs = D.entities.filter(function (e) { return e.id !== D.group.id; });
     var ssc = ent('nl-ssc'), se = ent('nl-se');
@@ -456,6 +499,54 @@ export function makeLogic(D) {
         metrics: [{ k: 'Written to systems', v: '0' }, { k: 'Need approval', v: String(recs.length) }, { k: 'Drafted by Joule', v: 'on request' }], expect: ['rec:R-4'] },
     ];
   }
+
+  /** The ten beats for Lindenau (story "lindenau"). */
+  function beatsLindenau() {
+    var g = group(), HQ = D.group.id;
+    var subs = D.entities.filter(function (e) { return e.id !== HQ; }), hq = ent(HQ);
+    var champs = D.contacts.filter(function (c) { return c.stance === 'champion'; });
+    var cs = D.contracts.map(function (c) { return { c: c, r: renewalOf(c) }; });
+    var near = cs.filter(function (x) { return x.r.status === 'near' || x.r.status === 'soon'; }).sort(function (a, b) { return a.r.daysToDecision - b.r.daysToDecision; });
+    var opp = D.opportunities.slice().sort(function (a, b) { return b.acvEur - a.acvEur; });
+    var desk = D.opportunities.filter(needsDealDesk);
+    var gaps = o2c(), notBilled = gaps.filter(function (x) { return x.kind === 'delivered-not-invoiced'; });
+    var recs = recommendations(), top = recs[0], pay = paymentOf(HQ), od = pay.overdue.slice().sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : 1; });
+    var active = D.contracts.filter(function (c) { return c.status === 'Active'; }), biggest = active.slice().sort(function (a, b) { return b.annualEur - a.annualEur; })[0];
+    var s4 = by(D.signals, 'S-04'), engel = by(D.contacts, 'engel'), ost = by(D.contacts, 'ostermann'), bra = by(D.contacts, 'brandl'), lapsedC = D.contracts.filter(function (c) { return c.status === 'Lapsed'; })[0];
+    return [
+      { id: '1.1', act: 1, title: 'One customer, ' + D.entities.length + ' companies', question: 'Which companies belong to Lindenau and where do they work?',
+        text: D.group.name + ' is one customer with a headquarters in ' + hq.city + ' and ' + subs.length + ' subsidiaries: ' + subs.map(function (e) { return e.name + ' in ' + e.city; }).join(' and ') + '. ' + eur(g.employees) + ' people work there. The contracts of the subsidiaries are billed to ' + hq.short + ', so one conversation in ' + hq.city + ' reaches every plant.',
+        metrics: [{ k: 'Companies', v: String(D.entities.length) }, { k: 'People', v: eur(g.employees) }, { k: 'Customer since', v: String(D.group.customerSince) }], expect: ['group:' + HQ, 'entity:ld-bio', 'entity:ld-ch'] },
+      { id: '1.2', act: 1, title: 'Who decides', question: 'Who decides on validation, platform and budget at Lindenau?',
+        text: champs.map(function (c) { return c.name + ' (' + c.role + ')'; }).join(' and ') + ' are the champions. ' + ost.name + ' (' + ost.role + ') has to approve the validation concept before any productive use of AI; ' + bra.name + ' (' + bra.role + ') owns the AI units contract and checks an own build on a hyperscaler.',
+        metrics: [{ k: 'People mapped', v: String(D.contacts.length) }, { k: 'Champions', v: String(champs.length) }, { k: 'Approval gate', v: 'Quality Assurance' }], expect: ['contact:ostermann', 'contact:brandl', 'contact:vogel'] },
+      { id: '2.1', act: 2, title: 'Contracts and products', question: 'Which contracts does Lindenau hold and what are they worth per year?',
+        text: 'Active contracts are worth ' + eur(g.arr) + ' EUR a year across ' + active.length + ' contracts. The largest is ' + product(biggest.product).name + ' with ' + eur(biggest.annualEur) + ' EUR for three plants; the AI units contract is the smallest and renews by itself. ' + eur(g.lapsedArr) + ' EUR has lapsed (' + product(lapsedC.product).name + ').',
+        metrics: [{ k: 'Active per year', v: eurShort(g.arr) + ' EUR' }, { k: 'Lapsed per year', v: eurShort(g.lapsedArr) + ' EUR' }, { k: 'Products', v: String(D.products.length) }], expect: ['contract:C-2024-0905', 'contract:C-2026-0051', 'contract:C-2023-0344'] },
+      { id: '2.2', act: 2, title: 'Renewals that decide the quarter', question: 'Which contracts end or need a renewal decision soon?',
+        text: near.map(function (x) { return x.c.id + ' ' + product(x.c.product).name + ': notice by ' + x.r.decisionDate + ' (' + x.r.daysToDecision + ' days), ' + eur(x.c.annualEur) + ' EUR a year' + (x.c.autoRenew ? ', renews by itself for ' + x.c.renewalTermMonths + ' months' : ''); }).join('. ') + '. ' + product(lapsedC.product).name + ' has lapsed; the renewal offer is open.',
+        metrics: [{ k: 'Next decision', v: g.nextDecision ? g.nextDecision.daysToDecision + ' days' : 'none' }, { k: 'Decisions within 60 days', v: String(near.length) }, { k: 'Lapsed', v: String(cs.filter(function (x) { return x.r.status === 'lapsed'; }).length) }], expect: ['contract:C-2026-0051', 'contract:C-2023-0344'] },
+      { id: '2.3', act: 2, title: 'The deals on the table', question: 'Which open deals does Lindenau have and how likely are they?',
+        text: g.pipeline.count + ' open deals worth ' + eur(g.pipeline.acv) + ' EUR, weighted ' + eur(g.pipeline.weighted) + ' EUR. The biggest is ' + opp[0].id + ' (' + eur(opp[0].acvEur) + ' EUR at ' + prob(opp[0]) + ' %). ' + (desk.length ? desk.map(function (o) { return o.id + ' asks ' + o.discountPct + ' % and needs the deal desk'; }).join('; ') + '.' : 'No deal asks for more than the deal desk threshold of ' + R.discountThresholdPct + ' %.'),
+        metrics: [{ k: 'Open deals', v: String(g.pipeline.count) }, { k: 'Weighted', v: eurShort(g.pipeline.weighted) + ' EUR' }, { k: 'Deal desk', v: String(desk.length) }], expect: ['opportunity:OFF-2026-0510', 'opportunity:OFF-2026-0518'] },
+      { id: '3.1', act: 3, title: 'Who pays late?', question: 'Which Lindenau invoices are overdue?',
+        text: hq.short + ' paid ' + pay.paid + ' invoices, ' + pay.lateCount + ' of them after the due date (on average ' + (pay.avgDaysLate > 0 ? '+' : '') + pay.avgDaysLate + ' days, the longest ' + pay.maxDaysLate + ' days). ' + od.length + ' invoices are overdue: ' + od.map(function (i) { return i.id + ' for ' + eur(i.grossEur) + ' EUR gross (' + daysBetween(i.dueOn, ASOF) + ' days)'; }).join(' and ') + '. With the open invoices ' + eur(pay.exposureGross) + ' EUR gross is outstanding.',
+        metrics: [{ k: 'Paid late', v: pay.lateCount + ' of ' + pay.paid }, { k: 'Overdue', v: String(od.length) }, { k: 'Outstanding', v: eur(pay.exposureGross) + ' EUR' }], expect: ['group:' + HQ, 'invoice:INV-2026-40102', 'pay:' + HQ] },
+      { id: '3.2', act: 3, title: 'What people said', question: 'Why is the SuccessFactors Learning invoice overdue?',
+        text: engel.name + ' wrote on ' + s4.date + ': the purchase order was blocked by the audit freeze, Accounts Payable will release the payment next week and asks to hold the reminder. That points to a blocked purchase order, not to unwillingness to pay. It is an inference from one mail.',
+        metrics: [{ k: 'Source', v: 'E-mail ' + s4.date.slice(5) }, { k: 'Overdue', v: daysBetween(by(D.invoices, 'INV-2026-40102').dueOn, ASOF) + ' days' }, { k: 'Marked as', v: 'Inference' }], expect: ['signal:S-04'], inference: true },
+      { id: '3.3', act: 3, title: 'Delivered, not billed', question: 'Which deliveries are not invoiced?',
+        text: notBilled.map(function (x) { return x.text; }).join(' ') + ' The value is an estimate at the old annual price. Nothing is invoiced because the contract ended on ' + lapsedC.end + ' and the renewal is still an offer.',
+        metrics: [{ k: 'Not invoiced', v: eur(sum(notBilled, function (x) { return x.netEur; })) + ' EUR' }, { k: 'Rejected invoices', v: '0' }, { k: 'Gaps', v: String(gaps.length) }], expect: ['order:SO-91006', 'contract:C-2023-0344', 'signal:S-01'] },
+      { id: '4.1', act: 4, title: 'The priorities', question: 'What should we do first for Lindenau?',
+        text: 'Five proposals, ranked by the amount at stake times urgency: the first is "' + top.title + '" (' + eur(top.atStakeEur) + ' EUR, ' + (top.days >= 0 ? top.days + ' days' : 'due') + '). Ranking only orders the list; it does not predict an outcome.',
+        metrics: [{ k: 'Proposals', v: String(recs.length) }, { k: 'First', v: top.id }, { k: 'At stake', v: eurShort(sum(recs, function (r) { return r.atStakeEur; })) + ' EUR' }], expect: ['rec:' + top.id] },
+      { id: '4.2', act: 4, title: 'A person decides', question: 'Which proposals need an approval before anything is changed?',
+        text: 'Joule drafts, a person decides. Nothing here is written to a system: discounts stay below the deal desk threshold of ' + R.discountThresholdPct + ' %, payment arrangements go to the credit manager, and every productive use of AI in a GxP process needs the approval of Quality Assurance.',
+        metrics: [{ k: 'Written to systems', v: '0' }, { k: 'Need approval', v: String(recs.length) }, { k: 'Drafted by Joule', v: 'on request' }], expect: ['rec:R-4'] },
+    ];
+  }
+  function beats() { return D.story === 'lindenau' ? beatsLindenau() : beatsNordlicht(); }
 
   // ---- 3D layout: seeded force simulation ---------------------------------------------------------------------------------------------
   function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }

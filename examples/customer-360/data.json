@@ -1444,5 +1444,19 @@
       ],
       "text": "Call with Anja Lindqvist. Nordic is close to its BTP consumption quota (ticket T-30470) and is interested in Integrated Business Planning, provided data stays in the EU region. No budget decision before mid 2027."
     }
+  ],
+  "story": "nordlicht",
+  "forecast": {
+    "node": "pay:nl-ma",
+    "customer": "nordlicht",
+    "company": "Nordlicht Maschinenbau GmbH"
+  },
+  "presets": [
+    "Which invoices are overdue?",
+    "What did Katrin Brandt write?",
+    "Which contracts need a decision before the year ends?",
+    "Who is the blocker at Polska?",
+    "Which deals need the deal desk?",
+    "What should we do first for Nordlicht?"
   ]
 }
