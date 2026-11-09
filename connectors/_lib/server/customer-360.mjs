@@ -204,23 +204,23 @@ export function makeLogic(D) {
     var payDay = addDays(ASOF, 4);
     var recs = [
       { id: 'R-1', title: 'Settle the AI units renewal and the top-up before the notice date', kind: 'revenue', atStakeEur: ai.annualEur + topup.acvEur, dueDate: air.decisionDate, days: air.daysToDecision,
-        owner: 'Mira Hoffmann', evidence: ['C-2026-0051', 'OFF-2026-0518', 'S-02', 'S-03', 'brandl', 'ostermann'],
+        owner: 'Mira Hoffmann', deals: ['C-2026-0051', 'OFF-2026-0518'], thread: 'T-202', evidence: ['C-2026-0051', 'OFF-2026-0518', 'S-02', 'S-03', 'brandl', 'ostermann'],
         why: 'The notice date is ' + air.decisionDate + ' (' + air.daysToDecision + ' days); after it the contract renews for ' + ai.renewalTermMonths + ' months by itself. ' + eur(U2.used) + ' of ' + eur(U2.allotment) + ' units were used by ' + U2.through + ', so the top-up is needed. Productive use needs the approved validation concept, and the platform team evaluates an own build on a hyperscaler.',
         steps: ['Call Anika Brandl about the notice date and whether the contract renews unchanged', 'Ask Quality Assurance to name the missing data-integrity points in the validation concept', 'Order the top-up once the concept is approved'], approval: 'Account executive; the top-up discount of ' + topup.discountPct + ' % is below the deal desk threshold of ' + R.discountThresholdPct + ' %' },
       { id: 'R-2', title: 'Get the line 6 log and give the Swiss repository a fix date', kind: 'service', atStakeEur: tt.annualEur, dueDate: ttr.decisionDate, days: ttr.daysToDecision,
-        owner: 'Jonas Weber', evidence: ['TKT-48188', 'C-2025-0833', 'S-08', 'kessel'],
+        owner: 'Jonas Weber', deals: ['C-2025-0833'], evidence: ['TKT-48188', 'C-2025-0833', 'S-08', 'kessel'],
         why: 'Ticket TKT-48188 has been waiting for the customer since 9 October: support needs the failing messages from the log of packaging line 6, and uploads for the Swiss repository are rejected. The contract is worth ' + eur(tt.annualEur) + ' EUR a year; the amount shows what is exposed, not an expected loss.',
         steps: ['Ask Ralf Kessel for the log of packaging line 6', 'Name a date for the fix as soon as the log is in', 'Check the message schema of the Swiss repository for the other markets'], approval: 'Support lead; no commercial change' },
       { id: 'R-3', title: 'Confirm the supplier qualification in the price and move Ariba off the trial tenant', kind: 'revenue', atStakeEur: ariba.acvEur, dueDate: ariba.closeDate, days: daysBetween(ASOF, ariba.closeDate),
-        owner: 'Mira Hoffmann', evidence: ['OFF-2026-0510', 'C-2023-0344', 'SO-91006', 'S-01', 'roth', 'ostermann'],
+        owner: 'Mira Hoffmann', deals: ['OFF-2026-0510'], thread: 'T-201', evidence: ['OFF-2026-0510', 'C-2023-0344', 'SO-91006', 'S-01', 'roth', 'ostermann'],
         why: 'Quality Assurance wants the supplier qualification workflow inside the price. The old contract ended on ' + old.end + '; suppliers order on a trial tenant, about ' + eur(trial.netEur) + ' EUR net of use at the old price that is not invoiced (an estimate).',
         steps: ['Confirm in writing that the workflow is part of the price of OFF-2026-0510', 'Send the validation documents to Quality Assurance', 'Agree the date when suppliers move to the productive tenant'], approval: 'Account executive; the discount of ' + ariba.discountPct + ' % is below the deal desk threshold of ' + R.discountThresholdPct + ' %' },
       { id: 'R-4', title: 'Hold the reminder, confirm the payment date and chase the second overdue invoice', kind: 'cash', atStakeEur: sf.grossEur, dueDate: payDay, days: daysBetween(ASOF, payDay),
-        owner: 'Mira Hoffmann', evidence: ['INV-2026-40102', 'INV-2026-40108', 'S-04', 'engel', 'C-2025-0718'],
+        owner: 'Mira Hoffmann', thread: 'T-203', evidence: ['INV-2026-40102', 'INV-2026-40108', 'S-04', 'engel', 'C-2025-0718'],
         why: sf.id + ' is ' + daysBetween(sf.dueOn, ASOF) + ' days overdue (' + eur(sf.grossEur) + ' EUR gross). Accounts Payable says the purchase order was blocked by the audit freeze and will release it next week. ' + late2.id + ' (' + eur(late2.grossEur) + ' EUR gross) has been overdue for ' + daysBetween(late2.dueOn, ASOF) + ' days with no message yet.',
         steps: ['Confirm to Thomas Engel that the reminder is on hold until ' + payDay, 'Check on ' + payDay + ' that the payment arrived', 'Ask Accounts Payable about ' + late2.id], approval: 'Credit manager approves any payment arrangement' },
       { id: 'R-5', title: 'Win the analytics platform with a validated use case and fix the handwriting first', kind: 'revenue', atStakeEur: bdc.acvEur + docai.acvEur, dueDate: bdc.closeDate, days: daysBetween(ASOF, bdc.closeDate),
-        owner: 'Clara Neumann', evidence: ['OPP-405', 'LEAD-305', 'TKT-48097', 'S-05', 'S-06', 'S-07', 'vogel', 'kessel'],
+        owner: 'Clara Neumann', deals: ['OPP-405', 'LEAD-305'], thread: 'T-204', evidence: ['OPP-405', 'LEAD-305', 'TKT-48097', 'S-05', 'S-06', 'S-07', 'vogel', 'kessel'],
         why: 'The CIO asks for a landscape for batch and quality analytics, Manufacturing IT names the yield analysis as the first use case, and an own data platform on a hyperscaler is under evaluation. Ticket TKT-48097 (handwritten corrections in batch records) shapes the first impression of Document AI in a regulated process.',
         steps: ['Build the account plan around the yield analysis', 'Give Dr. Ostermann a date for the handwriting fix', 'Ask the two lead questions: budget owner and date of the next inspection'], approval: 'Account executive' },
     ];
@@ -292,7 +292,7 @@ export function makeLogic(D) {
     });
     D.tickets.forEach(function (t) { var n = node('ticket', t.id, t.id, t.title, { entity: t.entity }); n.facts = [['Ticket', t.title], ['Company', ent(t.entity).name], ['Product', product(t.product).name], ['Severity', t.severity], ['Opened', t.openedOn], ['Status', t.status]]; });
     D.signals.forEach(function (s) {
-      var n = node('signal', s.id, s.kind + ' ' + s.date.slice(5), ent(s.entity).short + ' · ' + (by(D.contacts, s.contact) || { name: '' }).name, { entity: s.entity });
+      var n = node('signal', s.id, s.kind + ' ' + s.date.slice(5), ent(s.entity).short + ' · ' + (by(D.contacts, s.contact) || { name: '' }).name, { entity: s.entity, thread: s.thread || null });
       n.facts = [['Kind', s.kind], ['Date', s.date], ['From', (by(D.contacts, s.contact) || { name: 'n/a' }).name], ['Text', s.text]];
     });
     recommendations().forEach(function (r) {
@@ -300,6 +300,8 @@ export function makeLogic(D) {
       n.facts = [['Recommendation', r.title], ['Priority', '#' + r.rank], ['At stake', eur(r.atStakeEur) + ' EUR (' + r.kind + ')'], ['Due', r.dueDate + (r.days >= 0 ? ' (' + r.days + ' days)' : '')], ['Owner', r.owner], ['Why', r.why], ['Approval', r.approval]];
       r.steps.forEach(function (s, i) { n.facts.push(['Step ' + (i + 1), s]); });
       n.evidence = r.evidence;
+      if (r.deals) n.deals = r.deals;
+      if (r.thread) n.thread = r.thread;
     });
 
     // edges

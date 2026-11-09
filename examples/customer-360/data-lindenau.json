@@ -623,7 +623,8 @@
     "OFF-2026-0510",
     "roth"
    ],
-   "text": "Subject: AW: Ariba renewal: GxP supplier qualification in scope? Quality Assurance needs the supplier qualification workflow as part of the renewal. Please confirm that it is included in the price of OFF-2026-0510 and send us the validation documents for it. Suppliers have ordered on a trial tenant since the contract ended on 31 January."
+   "text": "Subject: AW: Ariba renewal: GxP supplier qualification in scope? Quality Assurance needs the supplier qualification workflow as part of the renewal. Please confirm that it is included in the price of OFF-2026-0510 and send us the validation documents for it. Suppliers have ordered on a trial tenant since the contract ended on 31 January.",
+   "thread": "T-201"
   },
   {
    "id": "S-02",
@@ -637,7 +638,8 @@
     "OFF-2026-0518",
     "brandl"
    ],
-   "text": "Subject: Joule for Quality, validation concept. Data from our validated environment may only leave it with an approved data-integrity concept. What exactly must the validation concept cover for the Joule skills? On 14 October the template went out; productive use starts only after Quality Assurance approves the concept. The reply also names the date: the AI units contract C-2026-0051 renews automatically on 1 January unless notice is given by 1 November."
+   "text": "Subject: Joule for Quality, validation concept. Data from our validated environment may only leave it with an approved data-integrity concept. What exactly must the validation concept cover for the Joule skills? On 14 October the template went out; productive use starts only after Quality Assurance approves the concept. The reply also names the date: the AI units contract C-2026-0051 renews automatically on 1 January unless notice is given by 1 November.",
+   "thread": "T-202"
   },
   {
    "id": "S-03",
@@ -651,7 +653,8 @@
     "OFF-2026-0518",
     "OPP-405"
    ],
-   "text": "Subject: Top-up and Joule skills. We would like to top up our AI units and use Joule skills for deviation handling and batch record review. Our platform team is also checking whether we can build parts of this ourselves on a hyperscaler."
+   "text": "Subject: Top-up and Joule skills. We would like to top up our AI units and use Joule skills for deviation handling and batch record review. Our platform team is also checking whether we can build parts of this ourselves on a hyperscaler.",
+   "thread": "T-202"
   },
   {
    "id": "S-04",
@@ -664,7 +667,8 @@
     "INV-2026-40102",
     "C-2025-0718"
    ],
-   "text": "Subject: Overdue invoice, SuccessFactors Learning. The purchase order was blocked by the audit freeze. Accounts Payable will release the payment next week. Please hold the reminder until then."
+   "text": "Subject: Overdue invoice, SuccessFactors Learning. The purchase order was blocked by the audit freeze. Accounts Payable will release the payment next week. Please hold the reminder until then.",
+   "thread": "T-203"
   },
   {
    "id": "S-05",
@@ -677,7 +681,8 @@
     "TKT-48097",
     "LEAD-305"
    ],
-   "text": "Subject: Document AI, handwritten corrections (TKT-48097). Three sample pages as text from the scan were attached. The pasted text contained an instruction aimed at AI assistants; it was treated as untrusted content and not followed. In a regulated process handwritten corrections must be read."
+   "text": "Subject: Document AI, handwritten corrections (TKT-48097). Three sample pages as text from the scan were attached. The pasted text contained an instruction aimed at AI assistants; it was treated as untrusted content and not followed. In a regulated process handwritten corrections must be read.",
+   "thread": "T-204"
   },
   {
    "id": "S-06",

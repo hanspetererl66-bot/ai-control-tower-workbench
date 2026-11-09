@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
 import { makeLogic as makeLogic360 } from '../connectors/_lib/server/customer-360.mjs';
+import { makeJourney } from '../shared/journey.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const MOCKUPS = [
@@ -31,6 +32,13 @@ export const CATALOGS = [
 const BLOCK = /<script type="application\/json" id="data">[\s\S]*?<\/script>/;
 /** Pages whose logic has one source in a module (the page cannot import): the code between the two markers is copied from it. */
 export const LOGIC_PAGES = { 'examples/recruiting-workbench/index.html': () => makeLogic.toString(), 'examples/customer-360/index.html': () => makeLogic360.toString() };
+/** Pages that carry the Sales journey rail (shared/journey.mjs): the code between the two markers is copied from the module. */
+export const JOURNEY_PAGES = ['examples/sales/index.html', 'examples/customer-360/index.html', 'examples/customer-emails/index.html'];
+const JOURNEY = /\/\/ @journey-start\n(?:[\s\S]*?\n)?\s*\/\/ @journey-end/;
+export function embedJourney(html, source) {
+  if (!JOURNEY.test(html)) throw new Error('page has no @journey-start / @journey-end markers');
+  return html.replace(JOURNEY, () => `// @journey-start\n${source}\n// @journey-end`);
+}
 const LOGIC = /\/\/ @logic-start\n[\s\S]*?\n\s*\/\/ @logic-end/;
 
 export function embedLogic(html, source) {
@@ -62,6 +70,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     let next = embedMockupData(html, JSON.parse(readFileSync(join(ROOT, data), 'utf8')));
     for (const [id, file] of Object.entries(extra ?? {})) next = embedExtraData(next, id, JSON.parse(readFileSync(join(ROOT, file), 'utf8')));
     if (LOGIC_PAGES[page]) next = embedLogic(next, LOGIC_PAGES[page]());
+    if (JOURNEY_PAGES.includes(page)) next = embedJourney(next, makeJourney.toString());
     if (next !== html) { stale = true; if (!check) writeFileSync(join(ROOT, page), next); }
   }
   if (check && stale) { console.error('Mockup Spaces are out of sync — run: npm run sync:mockups'); process.exit(1); }
