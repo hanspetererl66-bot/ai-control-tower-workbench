@@ -859,7 +859,7 @@ function openDeal(id) {
     evidenceHtml(d) +
     (d.risks.length ? '<div class="sec"><h4>Risks</h4>' + d.risks.map((r) => '<div class="risk">' + esc(r) + '</div>').join('') + '</div>' : '') +
     '<div class="sec st-' + d.stage + '"><h4>Timeline</h4><div class="tl">' + d.timeline.slice().reverse().map((e) => '<div class="e"><div class="d">' + day(e.date) + ' &middot; ' + esc(e.kind) + (e.ref ? ' &middot; ' + esc(e.ref) : '') + '</div>' + esc(e.text) + '</div>').join('') + '</div>' + (links.length ? '<div class="note">Related: ' + links.map(esc).join(', ') + '</div>' : '') + '</div>' +
-    ((d.proposal || (d.links && d.links.threads)) ? '<div class="sec"><h4>Across Spaces</h4>' + (d.proposal ? '<div class="note" style="margin:0 0 6px">Proposal #' + d.proposal.rank + ' in Customer 360 (' + esc(d.proposal.rec) + '): ' + esc(d.proposal.title) + '</div><button type="button" class="bt" data-jr-open="c360" data-focus="rec:' + esc(d.proposal.rec) + '">Open in Customer 360</button> ' : '') + (d.links && d.links.threads ? '<button type="button" class="bt" data-jr-open="mails">Open the mail thread</button>' : '') + '</div>' : '') +
+    ((d.proposal || (d.links && d.links.threads) || d.stage === 'contract') ? '<div class="sec"><h4>Across Spaces</h4>' + (d.proposal ? '<div class="note" style="margin:0 0 6px">Proposal #' + d.proposal.rank + ' in Customer 360 (' + esc(d.proposal.rec) + '): ' + esc(d.proposal.title) + '</div><button type="button" class="bt" data-jr-open="c360" data-focus="rec:' + esc(d.proposal.rec) + '">Open in Customer 360</button> ' : '') + (d.links && d.links.threads ? '<button type="button" class="bt" data-jr-open="mails">Open the mail thread</button> ' : '') + (d.stage === 'contract' ? '<button type="button" class="bt" data-jr-open="renewals">Open the renewal</button>' : '') + '</div>' : '') +
     '<div class="sec"><h4>Next step</h4><div class="next"><div><b>' + esc(d.next.text) + '</b> ' + dueTag(d.next.due) + '</div><div class="note" style="margin-top:6px">Skill: <span class="chip on">' + esc(d.next.skill) + '</span></div><div class="prompt"><span class="note" style="display:block;margin:0 0 3px">Type in the chat:</span>' + esc(d.next.prompt) + '</div></div><div class="note">Other skills in this stage: ' + s.skills.map((k) => '<span class="chip' + (k === d.next.skill ? ' on' : '') + '">' + esc(k) + '</span>').join('') + '</div><div class="note">Collection ' + esc(s.collection) + ' in the Skill Marketplace chains these skills.</div></div>';
   $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#drawer').scrollTop = 0; $('#close').focus();
   jr.deal = id; { const k = J.customerOfAccount(d.account); if (k) jr.customer = k; }
@@ -1254,10 +1254,10 @@ $('#kn').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key ==
 // @journey-start
 function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau' },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster' },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -1269,11 +1269,14 @@ function makeJourney() {
   var STOPS = [
     { id: 'inbox', step: 'today', label: 'Inbox', space: 'sales', tab: 'inbox' },
     { id: 'meetings', step: 'today', label: 'Meetings', space: 'sales', tab: 'meetings' },
+    { id: 'renewals', step: 'today', label: 'Renewals due', space: 'renewals', tab: 'overview', needs: 'renewals' },
     { id: 'c360', step: 'understand', label: 'Customer 360', space: 'customer-360', needs: 'c360' },
     { id: 'mails', step: 'understand', label: 'E-mails', space: 'customer-emails', needs: 'mail' },
     { id: 'graph', step: 'understand', label: 'Deal graph', space: 'sales', tab: 'knowledge' },
+    { id: 'renewal-map', step: 'understand', label: 'Renewal map', space: 'renewals', tab: 'process', needs: 'renewals' },
     { id: 'pipeline', step: 'decide', label: 'Pipeline', space: 'sales', tab: 'pipeline' },
     { id: 'forecast', step: 'decide', label: 'Forecast', space: 'sales', tab: 'forecast' },
+    { id: 'renewal-actions', step: 'decide', label: 'Renewal actions', space: 'renewals', tab: 'nba', needs: 'renewals' },
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
