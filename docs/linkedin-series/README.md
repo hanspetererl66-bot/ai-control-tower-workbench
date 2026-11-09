@@ -5,7 +5,7 @@ Final cuts (4:5, 1080x1350, English). Design study / MVP with sample data; not a
 | File | Content |
 |---|---|
 | `pre-trailer-under-the-hood.mp4` | Pre-trailer: the technology stack (voiceover: `pre-trailer-voiceover-en.md`) |
-| `trailer-design-study.mp4` | Trailer, ten episodes (voiceover: `trailer-voiceover-en.md`) |
+| `trailer-design-study.mp4` | Trailer, previous version with ten episodes, to be replaced by the 14-episode trailer (voiceover: `trailer-voiceover-en.md`) |
 | `post1-design-study-2026.mp4` | Post 1, a tour of the app, narrated by Ben (voiceover: `post1-voiceover-en.md`) |
 | `post2-design-study-chat-window.mp4` | Post 2, chat window (voiceover: `post2-design-study-chat-window-voiceover-en.md`) |
 | `post3-design-study-spaces.mp4` | Post 3, Spaces (voiceover: `post3-spaces-voiceover-en.md`) |
