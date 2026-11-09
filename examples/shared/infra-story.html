@@ -1,0 +1,40 @@
+<style>
+#story{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 22px;background:var(--wash);border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}
+#story .st-label{font-weight:650;color:var(--ink);letter-spacing:.02em}
+#story .st-steps{display:flex;flex-wrap:wrap;gap:6px}
+#story button{font:inherit;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 11px;cursor:pointer}
+#story button[disabled]{cursor:default;opacity:1}
+#story button[aria-current=step]{background:var(--purple-dim);border-color:var(--purple);color:var(--purple-deep);font-weight:650}
+#story .st-text{flex:1 1 360px;min-width:0}
+#story .st-sop{border-style:dashed}
+#story .st-next{border-color:var(--purple);color:var(--purple-deep)}
+</style>
+<nav id="story" aria-label="Infrastructure Operations story"></nav>
+<script>
+(function () {
+  var CUR = '__SLUG__';
+  var STEPS = [
+    { slug: 'infra-wiki', t: 'SOP', x: 'Start with the procedure: the Infra Wiki says step by step how a certificate is renewed and a VM is patched. Joule reads the pages; the same steps run later as the automated flow.' },
+    { slug: 'it-fleet', t: 'Fleet', x: 'Where does it burn? 42 customers and about 1,200 VMs at a glance. Muster Industrie AG is red: a certificate on one of its hosts expires in days.' },
+    { slug: 'it-infrastructure', t: 'Customer VMs', x: 'One customer up close: the status wall of Muster Industrie AG. Hover over proxy-edge-01 to see why it is red; every reason becomes a recommended task.' },
+    { slug: 'it-operations', t: 'Alerts', x: 'What does monitoring say? Seven alerts, each with a transparent priority. A-506 is the certificate of proxy-edge-01; A-507 carries an injected instruction and is withheld.' },
+    { slug: 'infra-ops', t: 'Change', x: 'From finding to fix: the ticket for Muster Industrie AG becomes a certificate renewal. Pre-check, two approvals from different roles, simulated execution, audit evidence.' }
+  ];
+  var TICKET = { type: 'ticket', id: 'OP-2090', customerId: 'musind', customerName: 'Muster Industrie AG', vm: 'musind-int04', kind: 'cert', priority: 'High', reasons: ['TLS certificate expires in days'], createdBy: 'Story: alert triage' };
+  /* No address in the page (Spaces have no network): the chat gets the host and path and reads the page itself. The prompt stays under the 600 characters the host allows. */
+  var SOP_PROMPT = 'Start of the Infra Ops story. With the tool read_wiki_page read the two SOP pages renew-tls-certificate and patch-vm of the Infra Wiki. For each: who does what in which step, where the approval is and what happens if a step fails. Then say which steps n8n and AWX automate. Answer in English.';
+  var inHost = window.parent !== window;
+  var cur = STEPS.findIndex(function (s) { return s.slug === CUR; });
+  var nav = document.getElementById('story');
+  function go(i) {
+    var s = STEPS[i]; if (!s || !inHost) return;
+    window.parent.postMessage({ type: 'wb:handoff', to: s.slug, payload: s.slug === 'infra-ops' ? TICKET : { type: 'story', step: i + 1 }, open: true, notice: 'Story step ' + (i + 1) + ' of ' + STEPS.length + ': ' + s.t }, '*');
+  }
+  var h = '<span class="st-label">Infra Ops story</span><span class="st-steps">';
+  STEPS.forEach(function (s, i) { h += '<button type="button" data-i="' + i + '"' + (i === cur ? ' aria-current="step"' : '') + (inHost ? '' : ' disabled') + '>' + (i + 1) + ' ' + s.t + '</button>'; });
+  h += '</span>' + (inHost ? '<button type="button" class="st-sop" title="Joule reads the two SOP pages of the Infra Wiki">Read the SOP (wiki)</button>' : '') + '<span class="st-text">' + STEPS[cur].x + '</span>';
+  if (inHost && cur < STEPS.length - 1) h += '<button type="button" class="st-next" data-i="' + (cur + 1) + '">Next: ' + STEPS[cur + 1].t + ' →</button>';
+  nav.innerHTML = h;
+  nav.addEventListener('click', function (e) { if (e.target.closest('.st-sop')) { window.parent.postMessage({ type: 'wb:ask', prompt: SOP_PROMPT }, '*'); return; } var b = e.target.closest('button[data-i]'); if (b) go(+b.dataset.i); });
+})();
+</script>

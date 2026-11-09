@@ -13,12 +13,12 @@
   color-scheme:light dark;
   --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:var(--font); /* one typeface everywhere; numbers use tabular figures */
-  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
-  --purple:#8056B8;--purple-mid:#633F96;--purple-deep:#3B2660;--purple-dim:rgba(128,86,184,.07);--purple-border:rgba(128,86,184,.22);--purple-light:#efeaf7;
-  --green:#00875A;--green-dim:rgba(0,135,90,.09);--green-border:rgba(0,135,90,.22);
-  --amber:#a85c00;--amber-dim:rgba(176,94,0,.09);--amber-border:rgba(176,94,0,.24);
-  --red:#c9190b;--red-dim:rgba(201,25,11,.08);--red-border:rgba(201,25,11,.22);
-  --blue:#4A6FA5;--blue-dim:rgba(74,111,165,.09);--blue-border:rgba(74,111,165,.24);
+  --canvas:#f6f5f8;--surface:#ffffff;--ink:#1b1a22;--ink-2:#46444f;--muted:#6c6a78;--faint:#c3c1cd;--hint:var(--muted);--line:#e6e4ec;--line-2:#f1f0f5;--wash:#faf9fc;
+  --purple:#7B6FA6;--purple-mid:#62578A;--purple-deep:#3F3860;--purple-dim:rgba(123,111,166,.07);--purple-border:rgba(123,111,166,.20);--purple-light:#eeecf5;
+  --green:#2F8A6B;--green-dim:rgba(47,138,107,.08);--green-border:rgba(47,138,107,.20);
+  --amber:#8A6D3B;--amber-dim:rgba(138,109,59,.07);--amber-border:rgba(138,109,59,.20);
+  --red:#B5483F;--red-dim:rgba(181,72,63,.07);--red-border:rgba(181,72,63,.20);
+  --blue:#5B79A3;--blue-dim:rgba(91,121,163,.08);--blue-border:rgba(91,121,163,.22);
   --teal:#006b75;--teal-dim:rgba(0,107,117,.09);
   --radius:20px;--radius-s:12px;--shadow:0 1px 2px rgba(20,18,30,.04),0 6px 20px rgba(20,18,30,.05);--shadow-lg:0 24px 60px rgba(20,18,30,.22);
   --space:8px;
@@ -32,23 +32,23 @@
 }
 /* Dark follows the system unless the host pins a theme with data-theme on <html> (the app does, so Spaces follow its Appearance setting). */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
-  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
-  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
-  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
+  --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
+  --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
+  --red:#D98A82;--red-dim:rgba(217,138,130,.10);--red-border:rgba(217,138,130,.24);
+  --blue:#93A9CB;--blue-dim:rgba(147,169,203,.10);--blue-border:rgba(147,169,203,.26);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
-  --purple:#B79CE0;--purple-mid:#D0BDF0;--purple-deep:#E6DCF8;--purple-dim:rgba(183,156,224,.13);--purple-border:rgba(183,156,224,.32);--purple-light:#272037;
-  --green:#3ddc97;--green-dim:rgba(61,220,151,.13);--green-border:rgba(61,220,151,.3);
-  --amber:#ffb454;--amber-dim:rgba(255,180,84,.13);--amber-border:rgba(255,180,84,.3);
-  --red:#ff7a70;--red-dim:rgba(255,122,112,.13);--red-border:rgba(255,122,112,.3);
-  --blue:#8AAAD8;--blue-dim:rgba(138,170,216,.14);--blue-border:rgba(138,170,216,.32);
+  --canvas:#0f0e13;--surface:#18171d;--ink:#f4f3f8;--ink-2:#d3d1dc;--muted:#9e9cab;--faint:#5b5967;--hint:#8a8897;--line:#2b2a33;--line-2:#222129;--wash:#1d1c24;
+  --purple:#A599C8;--purple-mid:#BDB3DA;--purple-deep:#DAD4EC;--purple-dim:rgba(165,153,200,.10);--purple-border:rgba(165,153,200,.26);--purple-light:#26232f;
+  --green:#6FBF9F;--green-dim:rgba(111,191,159,.10);--green-border:rgba(111,191,159,.24);
+  --amber:#C9AE7C;--amber-dim:rgba(201,174,124,.09);--amber-border:rgba(201,174,124,.24);
+  --red:#D98A82;--red-dim:rgba(217,138,130,.10);--red-border:rgba(217,138,130,.24);
+  --blue:#93A9CB;--blue-dim:rgba(147,169,203,.10);--blue-border:rgba(147,169,203,.26);
   --teal:#4fd1c5;--teal-dim:rgba(79,209,197,.13);
   --shadow:none;--shadow-lg:0 24px 60px rgba(0,0,0,.65);
 }
@@ -1214,6 +1214,206 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
    "requester": "lh",
    "approvals": []
   }
+ ],
+ "sops": [
+  {
+   "id": "sop-renew-certificate",
+   "template": "renew-certificate",
+   "title": "SOP: Renew a TLS certificate",
+   "summary": "Replace a server certificate before it expires, without an outage and with evidence. Valid for TLS certificates of customer systems that Infrastructure Operations runs.",
+   "page": {
+    "id": "renew-tls-certificate",
+    "title": "Renew a TLS certificate",
+    "path": "Infra/SOP/Renew-TLS-Certificate",
+    "version": "3.2",
+    "updated": "2026-10-02",
+    "status": "Approved"
+   },
+   "steps": [
+    {
+     "id": "detect",
+     "title": "Detect the expiry",
+     "orch": "trigger",
+     "wikiStep": 1,
+     "text": "n8n lists every certificate that expires within 30 days and starts one change per certificate.",
+     "does": "n8n watches Not After and starts the change 30 days before."
+    },
+    {
+     "id": "ticket",
+     "title": "Open the change ticket",
+     "orch": "ticket",
+     "wikiStep": 2,
+     "text": "Every change has a ticket with owner, customer and target.",
+     "does": "n8n creates the ITSM ticket and the task in the Space."
+    },
+    {
+     "id": "csr",
+     "title": "Generate key pair and CSR",
+     "orch": "check",
+     "wikiStep": 3,
+     "text": "Create a new key pair on the target and a signing request; the private key never leaves the server.",
+     "does": "The playbook creates key and CSR on the target. The private key never leaves it.",
+     "extra": true,
+     "when": "before the window"
+    },
+    {
+     "id": "chain",
+     "title": "Check chain and names",
+     "orch": "check",
+     "wikiStep": 4,
+     "text": "Check mode: issuer and chain complete, all names covered, no conflict in the change calendar.",
+     "does": "Check mode: issuer, complete chain, names covered, conflicts in the change calendar."
+    },
+    {
+     "id": "approve",
+     "title": "Approve (four eyes)",
+     "orch": "approve",
+     "wikiStep": 5,
+     "text": "Production needs two approvals from different roles; the requester cannot approve.",
+     "does": "n8n asks the approvers in Teams; the four-eyes rule is enforced by the Space and the connector."
+    },
+    {
+     "id": "window",
+     "title": "Wait for the downtime window",
+     "orch": "window",
+     "wikiStep": 6,
+     "text": "Start only inside the approved window.",
+     "does": "n8n waits; the run starts in the window and not before."
+    },
+    {
+     "id": "enrol",
+     "title": "Enrol with the CA over a secure protocol",
+     "orch": "run",
+     "wikiStep": 7,
+     "text": "Send the CSR to the certificate authority by ACME or EST, never by e-mail.",
+     "does": "The playbook sends the CSR to the CA by ACME or EST, never by e-mail.",
+     "extra": true,
+     "when": "inside the window"
+    },
+    {
+     "id": "install",
+     "title": "Install certificate and chain",
+     "orch": "run",
+     "wikiStep": 8,
+     "text": "Install the new certificate with its intermediate certificates and reload the services.",
+     "does": "AWX installs certificate and chain; the services reload the certificate, no restart."
+    },
+    {
+     "id": "verify",
+     "title": "Verify the new certificate",
+     "orch": "verify",
+     "wikiStep": 9,
+     "text": "Check Not After, chain and a TLS handshake on every name.",
+     "does": "AWX checks the new Not After, the chain and a TLS handshake; rollback to the old certificate on failure."
+    },
+    {
+     "id": "evidence",
+     "title": "Evidence and old certificate",
+     "orch": "evidence",
+     "wikiStep": 10,
+     "text": "File the log, close the ticket, inform the customer; revoke the old certificate if its key may be compromised.",
+     "does": "File the log and inform the customer. Revoke the old certificate if its key may be compromised."
+    }
+   ]
+  },
+  {
+   "id": "sop-patch-vm",
+   "template": "patch-vm",
+   "title": "SOP: Patch and restart a VM",
+   "summary": "Install open security patches on one VM in a maintenance window, with a backup, a test on the twin system and a way back.",
+   "page": {
+    "id": "patch-vm",
+    "title": "Patch and restart a VM",
+    "path": "Infra/SOP/Patch-And-Restart-A-VM",
+    "version": "2.7",
+    "updated": "2026-09-18",
+    "status": "Approved"
+   },
+   "steps": [
+    {
+     "id": "plan",
+     "title": "Decide what to patch and when",
+     "orch": "trigger",
+     "wikiStep": 1,
+     "text": "Decide which patches go to which systems at what time; critical patches start a change.",
+     "does": "n8n starts the change from the finding (critical patches open) or a schedule."
+    },
+    {
+     "id": "ticket",
+     "title": "Open the change ticket",
+     "orch": "ticket",
+     "wikiStep": 2,
+     "text": "Every change has a ticket with owner, customer and target.",
+     "does": "n8n creates the ITSM ticket and the task in the Space."
+    },
+    {
+     "id": "version",
+     "title": "Confirm the patches fit this VM",
+     "orch": "check",
+     "wikiStep": 3,
+     "text": "Check mode: operating system, open patches and critical patches of this VM.",
+     "does": "Check mode: operating system, open and critical patches of this VM."
+    },
+    {
+     "id": "backup",
+     "title": "Backup first, rollback ready",
+     "orch": "check",
+     "wikiStep": 4,
+     "text": "No backup from the last 24 hours, no run; a snapshot is taken right before patching.",
+     "does": "The pre-check blocks the change when the backup is older than a day; the playbook takes a snapshot first."
+    },
+    {
+     "id": "twin",
+     "title": "Patch the non-production twin first",
+     "orch": "check",
+     "wikiStep": 5,
+     "text": "Patch the QAS system of the same customer first and run its health check.",
+     "does": "The playbook patches the QAS twin and runs the health check.",
+     "extra": true,
+     "when": "before the production window"
+    },
+    {
+     "id": "approve",
+     "title": "Approve (four eyes)",
+     "orch": "approve",
+     "wikiStep": 6,
+     "text": "Production needs two approvals from different roles; the requester cannot approve.",
+     "does": "n8n asks the approvers in Teams; the four-eyes rule is enforced by the Space and the connector."
+    },
+    {
+     "id": "window",
+     "title": "Wait for the downtime window",
+     "orch": "window",
+     "wikiStep": 7,
+     "text": "Start only inside the approved window; dependent systems stop while the VM restarts.",
+     "does": "n8n waits; the run starts in the window and not before."
+    },
+    {
+     "id": "apply",
+     "title": "Apply the patches and restart",
+     "orch": "run",
+     "wikiStep": 8,
+     "text": "Install the patches persistently, restart the VM and wait for its dependent systems.",
+     "does": "AWX applies the patches persistently, restarts the VM and waits for the dependent systems."
+    },
+    {
+     "id": "verify",
+     "title": "Verify, roll back on failure",
+     "orch": "verify",
+     "wikiStep": 9,
+     "text": "Run the health checks; if one fails, restore the snapshot.",
+     "does": "AWX runs the health checks; on failure the snapshot is restored."
+    },
+    {
+     "id": "evidence",
+     "title": "Evidence and patch level",
+     "orch": "evidence",
+     "wikiStep": 10,
+     "text": "File the log, update the patch level of the VM, close the ticket, inform customer and team.",
+     "does": "File the log, update the patch level of the VM, inform customer and team."
+    }
+   ]
+  }
  ]
 }
 </script>
@@ -1364,6 +1564,10 @@ function planTask(data, req) {
     }
   }
 
+  // The SOP of this playbook: its extra steps join the technical flow, all of its steps are listed with their source.
+  const sop = (data.sops ?? []).find((x) => x.template === req.template) ?? null;
+  if (sop) for (const st of sop.steps) if (st.extra) extraSteps.push({ id: `sop-${st.id}`, title: st.title, when: st.when, detail: st.does, playbook: req.template });
+
   // conflicts with other open tasks of the same customer
   const conflicts = win && win[0] && win[1] ? (data.tasks ?? []).filter((t) => t.id !== req.id && t.customer === target.customer && t.state !== 'done' && overlaps(win, t.window)) : [];
   checks.push({ label: 'Conflicts in the change calendar', status: conflicts.length ? 'warn' : 'ok', detail: conflicts.length ? `Overlaps with ${conflicts.map((c) => c.id).join(', ')}.` : 'No overlap with other tasks of this customer.' });
@@ -1389,6 +1593,7 @@ function planTask(data, req) {
     downtime,
     blast: { vms: affectedVmsAll, dns: affectedDns, customers: [customer ? customer.name : target.customer] },
     conflicts: conflicts.map((c) => c.id),
+    sop: sop ? { id: sop.id, title: sop.title, summary: sop.summary, page: sop.page, steps: sop.steps } : null,
     steps: [...extraSteps, ...ORCHESTRATION.map((s) => ({ id: s.id, title: s.title, tool: s.tool, detail: s.detail }))],
   };
 }

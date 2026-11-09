@@ -39,6 +39,7 @@ const DATA = {
   'n8n-automation': (put) => {
     put.copy('examples/automation-dashboard/categories.json', 'n8n-categories.json');
     put.copy('examples/infra-ops/data.json', 'infra-ops.json');
+    put.copy('examples/infra-wiki/pages.json', 'infra-wiki.json');
   },
   'skill-marketplace': (put) => put.json('skill-marketplace.json', extractMarketplaceData(read('examples/skill-marketplace/index.html'))),
   'knowledge-graph': (put) => put.json('knowledge-graph.json', extractGraph(read('examples/knowledge-graph/index.html'))),

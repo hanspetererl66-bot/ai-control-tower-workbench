@@ -1690,6 +1690,10 @@ button {
   flex-wrap: wrap;
 }
 
+/* With two or more filters the tools take their own row under the title; otherwise they squeeze the title to nothing and cover "Updated …". */
+.topbar:has(.space-tools-wide) { flex-wrap: wrap; row-gap: 10px; }
+.space-tools-wide { order: 1; flex: 1 1 100%; margin-left: 0; }
+
 .space-search,
 .space-filter {
   border: 1px solid var(--line);
