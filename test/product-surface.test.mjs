@@ -36,7 +36,7 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.cover-title-line2 \{ animation: none; \}/, 'blinking stops for reduced motion');
   assert.doesNotMatch(cover, /[Pp]rototype/);
   const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
-  assert.match(product, /COVER_SUBTITLE = 'A Futuristic Design Study'/);
+  assert.match(product, /COVER_SUBTITLE = 'Futuristic Design Study'/);
   assert.match(product, /COVER_TAGLINE = 'Engineered as MVP'/, 'own line below the title');
   assert.match(product, /COVER_BY = 'Accenture Germany'/);
   assert.doesNotMatch(cover, /from Accenture/, 'no \"from\" before the company name');
