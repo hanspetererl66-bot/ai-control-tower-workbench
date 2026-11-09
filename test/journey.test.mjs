@@ -22,7 +22,10 @@ test('journey: the three pages carry the current rail code', () => {
 
 test('journey: every stop is a Space that can be installed, every Sales stop is a tab of the Sales page, every step has a stop', () => {
   const slugs = new Set(Object.values(EXAMPLE_SPACES));
-  const tabs = new Set([...read('examples/sales/index.html').matchAll(/<button role="tab"[^>]*data-tab="([a-z]+)"/g)].map((m) => m[1]));
+  const page = read('examples/sales/index.html');
+  // Governance, Workflow and Rules are panels of the tab "Settings & info" (data-sub), the rest are tabs of their own.
+  const tabs = new Set([...page.matchAll(/<button role="tab"[^>]*data-tab="([a-z]+)"/g)].map((m) => m[1]).filter((t) => t !== 'more'));
+  for (const m of page.matchAll(/<button[^>]*data-sub="([a-z]+)"/g)) tabs.add(m[1]);
   for (const s of J.STOPS) {
     assert.ok(slugs.has(s.space), `${s.id}: ${s.space} is an example Space`);
     if (s.space === 'sales') assert.ok(tabs.has(s.tab), `${s.id}: Sales has the tab ${s.tab}`);

@@ -362,6 +362,21 @@ ul.pts{margin:0;padding-left:18px}ul.pts li{margin:6px 0}
 .sg .top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px}.sg .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .chg{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:13px;cursor:pointer}
 .chg .w{color:var(--muted);font-size:12px;grid-column:2}
+/* Settings & info: one tab with three panels */
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.subnav button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.subnav button:hover{border-color:var(--purple);color:var(--purple-ink)}
+.subnav button[aria-pressed=true]{background:var(--purple);border-color:var(--purple);color:#fff}
+.sub{display:none}.sub.on{display:block}
+/* Inbox as a wall: priority groups, tiles side by side */
+.wallh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:18px 0 8px}.wallh h3{margin:0;font-size:14px}.wallh .note{margin:0}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px;align-items:start}
+.wall .sg .top b{flex:1 1 0;min-width:0}.wall .sg .rk{flex:none}.wall .diff{grid-template-columns:1fr}.wall .diff .f{margin-bottom:2px}
+.wall .sg{margin:0;position:relative;border-top:3px solid var(--sgc,var(--line))}
+.sg.p-high{--sgc:var(--red)}.sg.p-mid{--sgc:var(--amber)}.sg.p-low{--sgc:var(--blue)}
+.sg .rk{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:99px;background:var(--surface-2,var(--wash));border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--ink-2)}
+.sg .why{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.sg .why .chip{font-size:11px}
+.runrow{margin-top:8px}
 .lvl{border-left:4px solid var(--line);padding:6px 12px;margin-bottom:8px}.lvl.auto{border-color:var(--green)}.lvl.suggest{border-color:var(--blue)}.lvl.approve{border-color:var(--amber)}.lvl.never{border-color:var(--red)}
 @media(max-width:700px){.chg{grid-template-columns:1fr}.chg .w{grid-column:1}}
 /* Calm palette, same as Renewals: status colours are quiet greys with a faint tint. */
@@ -542,7 +557,7 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
 .bx-r .stack{display:flex;flex-direction:column;gap:14px;height:100%}
 .pbadge{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-2)}
 @media(prefers-reduced-motion:reduce){.sx-bar,.sx-step{transition:none}.sx-step:hover{transform:none}}
-#pg-workflow .panel .sv-card{border:0;box-shadow:none;background:none}
+#sub-workflow .panel .sv-card{border:0;box-shadow:none;background:none}
 
 /* Knowledge tab: graph around one deal. Own categorical colours (the page's status colours are deliberately muted). */
 :root #kn{--k-purple:#8056B8;--k-blue:#3B6FD4;--k-teal:#0E8A94;--k-green:#1E9E5A;--k-amber:#C47A00;--k-red:#D13B30;--k-pink:#C2418A}
@@ -552,27 +567,27 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
 .kn-top select{max-width:420px}
 .kn-stats{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 .kn-stat{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-s);padding:6px 12px;font-size:12px;color:var(--muted)}.kn-stat b{display:block;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
-.kn-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.kn-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
 @media(max-width:900px){.kn-grid{grid-template-columns:1fr}}
 .kn-stage{padding:8px 8px 12px;background:radial-gradient(circle at 50% 50%,var(--purple-dim),transparent 62%),var(--surface)}
 .kn-legend{display:flex;flex-wrap:wrap;gap:6px;padding:4px 10px 8px}
 .kn-legend button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:99px;padding:3px 10px;font-size:12px;cursor:pointer}
 .kn-legend button[aria-pressed="false"]{opacity:.45}
 .kn-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--kc)}
-#kn-svg{width:100%;height:auto;display:block}
-.kn-edge{fill:none;stroke:var(--kc);stroke-opacity:.38;stroke-width:1.6}
+#kn-svg{width:100%;height:auto;display:block;overflow:visible}
+.kn-edge{fill:none;stroke:var(--kc);stroke-opacity:.6;stroke-width:2.6}
 .kn-node{cursor:pointer;outline:none}
-.kn-node circle.b{fill:var(--surface);stroke:var(--kc);stroke-width:2.2;transition:r .15s,stroke-width .15s}
-.kn-node circle.h{fill:var(--kc);opacity:.13}
-.kn-node text.g{fill:var(--kc);font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.kn-node text.l{fill:var(--ink-2);font-size:12px;pointer-events:none}
-.kn-node:hover circle.b,.kn-node:focus-visible circle.b,.kn-node.sel circle.b{stroke-width:3.6}
+.kn-node circle.b{fill:var(--surface);stroke:var(--kc);stroke-width:3;transition:r .15s,stroke-width .15s}
+.kn-node circle.h{fill:var(--kc);opacity:.2}
+.kn-node text.g{fill:var(--kc);font-size:12.65px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.kn-node text.l{fill:var(--ink);font-size:13.8px;font-weight:600;pointer-events:none;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.kn-node:hover circle.b,.kn-node:focus-visible circle.b,.kn-node.sel circle.b{stroke-width:4.4}
 .kn-node.sel circle.h,.kn-node:hover circle.h{opacity:.28}
 .kn-node.sel text.l{fill:var(--ink);font-weight:700}
 .kn-node.dim{opacity:.28}
 .kn-core circle.b{fill:url(#kn-core-g);stroke:var(--purple-deep)}
-.kn-core text.g{fill:var(--surface);font-size:15px}
-.kn-core text.l{fill:var(--ink);font-weight:700;font-size:13px;text-anchor:middle}
+.kn-core text.g{fill:var(--surface);font-size:17px}
+.kn-core text.l{fill:var(--ink);font-weight:700;font-size:15px;text-anchor:middle}
 .kn-side{padding:16px}
 .kn-side h3{margin:6px 0 4px;font-size:16px}
 .kn-side .note{margin:6px 0}
@@ -582,12 +597,12 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
 .kn-node.live circle.b{stroke:var(--k-green);stroke-width:3.4}.kn-node.live circle.h{fill:var(--k-green);opacity:.3}
 .kn-copy{margin-top:8px;border:1px solid var(--purple-border);background:var(--purple-dim);color:var(--purple);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
 .kn-stage{background:radial-gradient(ellipse at 50% 50%,var(--purple-dim),transparent 66%),var(--surface)}
-.kn-track{fill:none;stroke:var(--kc);stroke-opacity:.14;stroke-width:62;stroke-linecap:round;stroke-linejoin:round}
-.kn-grp{fill:var(--kc);font-size:10px;font-weight:700;letter-spacing:.09em;text-anchor:middle;opacity:.85;paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.kn-track{fill:none;stroke:var(--kc);stroke-opacity:.2;stroke-width:70;stroke-linecap:round;stroke-linejoin:round}
+.kn-grp{fill:var(--kc);font-size:11.5px;font-weight:700;letter-spacing:.09em;text-anchor:middle;opacity:.85;paint-order:stroke;stroke:var(--surface);stroke-width:4px}
 .kn-edge.risk{stroke-dasharray:5 5}
 .kn-core circle.ring{fill:none;stroke:var(--line);stroke-width:7}
 .kn-core circle.prog{fill:none;stroke:var(--k-green);stroke-width:7;stroke-linecap:round}
-.kn-core .sub{fill:var(--muted);font-size:12px;text-anchor:middle}
+.kn-core .sub{fill:var(--muted);font-size:13.8px;text-anchor:middle}
 .kn-node .pop{transform-box:fill-box}
 .kn-in .kn-edge:not(.risk){stroke-dasharray:1;stroke-dashoffset:1;animation:kn-draw .7s ease-out forwards;animation-delay:calc(var(--i)*45ms)}
 .kn-in .kn-edge.risk{opacity:0;animation:kn-fade .5s ease-out forwards;animation-delay:calc(var(--i)*45ms + 300ms)}
@@ -618,15 +633,13 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
   <button role="tab" aria-selected="false" data-tab="meetings">Meetings</button>
   <button role="tab" aria-selected="false" data-tab="knowledge">Knowledge</button>
   <button role="tab" aria-selected="false" data-tab="inbox">Inbox <span class="tag purple" id="inbox-n"></span></button>
-  <button role="tab" aria-selected="false" data-tab="governance">Governance</button>
-  <button role="tab" aria-selected="false" data-tab="workflow">Workflow and skills</button>
-  <button role="tab" aria-selected="false" data-tab="rules">Rules and safeguards</button>
+  <button role="tab" aria-selected="false" data-tab="more">Settings &amp; info</button>
 </nav>
 <main>
   <details class="card intro">
     <summary><h2>What is this page?</h2><span class="hint">click to show or hide</span></summary>
     <div class="body"><p>A <b>sales pipeline</b> shows every open deal by stage, from the first interest to the signed contract. This Space follows the deals of two fictional customers through five stages; each stage ends in a gate with exit criteria, and a person moves a deal on.</p>
-    <div class="cols"><div><h3>Pipeline</h3><p>The funnel counts deals and value per stage; the board shows each deal as a tile. Click a tile for the detail and the gate to the next stage.</p></div><div><h3>Forecast</h3><p>What is likely to close: commit, best case and the rest of the pipeline, by month and against the target.</p></div><div><h3>Late payments</h3><p>Which open invoices of a customer will probably be paid late, so the account owner can call before the reminder goes out. Needs the agent connection.</p></div><div><h3>Meetings and Inbox</h3><p>Meetings to prepare and follow up, and suggestions from agents. A person approves every suggestion.</p></div><div><h3>Governance, Workflow, Rules</h3><p>What the agents did and why, the five gates with their skills, and the safeguards that apply.</p></div></div>
+    <div class="cols"><div><h3>Pipeline</h3><p>The funnel counts deals and value per stage; the board shows each deal as a tile. Click a tile for the detail and the gate to the next stage.</p></div><div><h3>Forecast</h3><p>What is likely to close: commit, best case and the rest of the pipeline, by month and against the target.</p></div><div><h3>Late payments</h3><p>Which open invoices of a customer will probably be paid late, so the account owner can call before the reminder goes out. Needs the agent connection.</p></div><div><h3>Meetings and Inbox</h3><p>Meetings to prepare and follow up, and suggestions from agents, ranked by priority. A person approves every suggestion.</p></div><div><h3>Settings &amp; info</h3><p>What the agents did and why (governance), the five gates with their skills, and the safeguards that apply.</p></div></div>
     <details><summary class="t">Terms used on this page</summary><dl><dt>ACV</dt><dd>Annual contract value: what the deal brings in a year.</dd><dt>TCV</dt><dd>Total contract value over the whole term.</dd><dt>Weighted forecast</dt><dd>ACV times the probability of the deal.</dd><dt>Commit</dt><dd>Cleared and likely to close this period.</dd><dt>Best case</dt><dd>Could close with effort or a decision.</dd><dt>Gate</dt><dd>The check between two stages; a deal moves on when the exit criteria are met.</dd><dt>At risk</dt><dd>A deal with at least one risk flag, for example an overdue next step.</dd></dl></details></div>
   </details>
   <section class="pg on" id="pg-pipeline">
@@ -645,9 +658,16 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
   <section class="pg" id="pg-meetings"><div class="mt" id="mt"></div></section>
   <section class="pg" id="pg-knowledge"><div id="kn"></div></section>
   <section class="pg" id="pg-inbox"><div id="ib"></div></section>
-  <section class="pg" id="pg-governance"><div id="gv"></div></section>
-  <section class="pg" id="pg-workflow"><div class="panel card"><h2>One process, five gates</h2><div class="note" style="margin:0 0 12px">Every stage has exit criteria. A deal moves on when the criteria are met and the person in charge agrees. The skills prepare and check; they never decide.</div><div class="stagevw" id="chain"></div></div><div class="panel card" id="wf-extra"></div></section>
-  <section class="pg" id="pg-rules"><div class="three" id="rules"></div><div class="panel card" id="rules-more"></div></section>
+  <section class="pg" id="pg-more">
+    <div class="subnav" id="subnav" role="group" aria-label="Settings and info">
+      <button type="button" data-sub="governance" aria-pressed="true">Governance</button>
+      <button type="button" data-sub="workflow" aria-pressed="false">Workflow and skills</button>
+      <button type="button" data-sub="rules" aria-pressed="false">Rules and safeguards</button>
+    </div>
+    <div class="sub on" id="sub-governance"><div id="gv"></div></div>
+    <div class="sub" id="sub-workflow"><div class="panel card"><h2>One process, five gates</h2><div class="note" style="margin:0 0 12px">Every stage has exit criteria. A deal moves on when the criteria are met and the person in charge agrees. The skills prepare and check; they never decide.</div><div class="stagevw" id="chain"></div></div><div class="panel card" id="wf-extra"></div></div>
+    <div class="sub" id="sub-rules"><div class="three" id="rules"></div><div class="panel card" id="rules-more"></div></div>
+  </section>
 </main>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="Deal details" aria-hidden="true" tabindex="-1"></aside>
@@ -920,6 +940,9 @@ const ctxHtml = (p, d) => {
     '<div class="note">Sources: Sub4Me tickets and invoices of ' + esc(d.account) + ', Sales forecast snapshots.</div></div>';
 };
 const mtLabel = (m) => day(m.date) + ', ' + m.time;
+// "Execute in Chat Window": the Space has no agent of its own, it asks the app to open the chat and send the prompt (wb:ask).
+const inApp = () => window.parent !== window;
+const runBtn = (text) => '<div class="runrow"><button type="button" class="bt ok" data-run="' + esc(text) + '"' + (inApp() ? '' : ' disabled title="Open this Space in the app to run the prompt in the chat"') + '>Execute in Chat Window</button></div>';
 function renderMeetings() {
   const up = D.meetings.filter((m) => m.date >= D.asOf).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
   const past = D.meetings.filter((m) => m.date < D.asOf).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
@@ -935,14 +958,14 @@ function renderMeetings() {
     body = '<div class="two"><div class="box"><h4>Brief</h4><ul class="pts">' + p.brief.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></div><div class="box"><h4>Questions to ask</h4><ul class="pts">' + p.questions.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>' +
       ctxHtml(p, d) +
       p.flags.map((f) => '<div class="flag">' + esc(f) + '</div>').join('') +
-      '<div class="sec"><h4>Prepare with</h4><div class="next"><span class="chip on">' + esc(m.skill) + '</span><div class="prompt">Prompt for the chat: <b>' + esc('Prepare the conversation "' + m.title + '" with ' + d.account + ' (' + d.id + ').') + '</b></div></div></div>';
+      '<div class="sec"><h4>Prepare with</h4><div class="next"><span class="chip on">' + esc(m.skill) + '</span><div class="prompt">Prompt for the chat: <b>' + esc('Prepare the conversation "' + m.title + '" with ' + d.account + ' (' + d.id + ').') + '</b></div>' + runBtn('Prepare the conversation "' + m.title + '" with ' + d.account + ' (' + d.id + ').') + '</div></div>';
   } else {
     const f = m.followup;
     body = '<div class="stamp">Draft only: nothing is written to a CRM and nothing is sent</div>' +
       '<div class="sec" style="margin-top:4px"><h4>Proposed CRM changes for ' + esc(d.id) + '</h4>' + f.crm.map((c) => '<div class="diff"><div class="f">' + esc(c.field) + '</div><div><s>' + esc(c.from) + '</s> &rarr; <b>' + esc(c.to) + '</b></div><small>Source: ' + esc(c.source) + '</small></div>').join('') + '</div>' +
       '<div class="sec"><h4>Actions</h4><ul class="pts">' + f.actions.map((a) => '<li>' + esc(a.text) + ' <span class="note">' + esc(a.owner) + ', due ' + day(a.due) + '</span></li>').join('') + '</ul></div>' +
       '<div class="sec"><h4>Follow-up mail (draft)</h4><div class="mail"><div class="h"><span>From</span><b>' + esc(f.mail.from) + '</b><span>To</span><b>' + esc(f.mail.to) + '</b><span>Cc</span><b>' + esc(f.mail.cc) + '</b><span>Subject</span><b>' + esc(f.mail.subject) + '</b></div><pre>' + esc(f.mail.body) + '</pre></div><div class="note">Status: draft, not sent. Mara Weber reads, edits and sends it herself.</div></div>' +
-      '<div class="sec"><h4>Created with</h4><div class="next"><span class="chip on">' + esc(m.skill) + '</span><div class="prompt">Prompt for the chat: <b>' + esc('Prepare the follow-up to the conversation ' + m.callId + '.') + '</b></div></div></div>';
+      '<div class="sec"><h4>Created with</h4><div class="next"><span class="chip on">' + esc(m.skill) + '</span><div class="prompt">Prompt for the chat: <b>' + esc('Prepare the follow-up to the conversation ' + m.callId + '.') + '</b></div>' + runBtn('Prepare the follow-up to the conversation ' + m.callId + '.') + '</div></div>';
   }
   $('#mt').innerHTML = '<div class="mlist"><h3>Upcoming</h3>' + up.map(item).join('') + '<h3>Done, follow-up ready</h3>' + past.map(item).join('') + '</div>' +
     '<div class="panel card mdet"><span class="tag ' + (isPast ? 'green' : 'purple') + '">' + (isPast ? 'Follow-up' : 'Preparation') + '</span><h2 style="margin-top:8px">' + esc(m.title) + '</h2><div class="sub">' + mtLabel(m) + ' &middot; ' + m.minutes + ' min &middot; ' + esc(d.account) + ' &middot; ' + esc(d.title) + (refs.length ? ' &middot; ' + esc(refs.join(', ')) : '') + '</div>' + ppl + body + '</div>';
@@ -953,11 +976,27 @@ const audit = D.governance.audit.slice();
 const clock = () => { const m = 9 * 60 + 5 * ++ib.clock; return D.asOf + 'T' + String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 const log = (actor, action, x, undoable) => audit.unshift({ at: clock(), actor, action, dealId: x.dealId, source: x.source.ref, undoable: Boolean(undoable), id: undoable ? x.id : undefined });
 const POL = { auto: ['green', 'Does it itself'], suggest: ['blue', 'You confirm'], approve: ['amber', 'Needs approver'], never: ['red', 'Never'] };
+// Priority of a suggestion: a plain, visible rule (not a model). More points = look at it first.
+//   needs an approver +3, deal value (ACV) +1 to +3, next step of the deal due soon +1 to +3, risk flag on the deal +1, confidence high +1 / low -1.
+function prio(x) {
+  const d = D.deals.find((k) => k.id === x.dealId), why = [];
+  let s = 0;
+  if (x.policy === 'approve') { s += 3; why.push('Needs ' + x.approver); }
+  const v = d.value || 0;
+  s += v >= 3e6 ? 3 : v >= 1.5e6 ? 2 : 1;
+  if (v >= 1.5e6) why.push(eur(v) + ' deal');
+  const n = days(d.next.due);
+  if (n <= 21) { s += n <= 7 ? 3 : n <= 14 ? 2 : 1; why.push(n < 0 ? 'next step overdue' : 'next step in ' + n + ' d'); }
+  if (d.risks.length) { s += 1; why.push('risk flag'); }
+  if (x.confidence === 'high') s += 1; else if (x.confidence === 'low') s -= 1;
+  return { score: s, why, level: s >= 7 ? 'high' : s >= 5 ? 'mid' : 'low' };
+}
+const PLEVEL = { high: ['p-high', 'Do first', 'Needs an approver or a large deal with a close deadline.'], mid: ['p-mid', 'Next', 'Worth a look today.'], low: ['p-low', 'When there is time', 'Small effect or far from any deadline.'] };
 function renderInbox() {
   const pend = ib.items.filter((x) => x.status === 'pending').length;
   $('#inbox-n').textContent = pend;
-  const row = (x) => {
-    const d = D.deals.find((k) => k.id === x.dealId), pol = POL[x.policy];
+  const card = (x, rank) => {
+    const d = D.deals.find((k) => k.id === x.dealId), pol = POL[x.policy], p = prio(x);
     const acts = x.status === 'pending' ? (x.policy === 'approve'
       ? '<button class="bt ok" data-act="route" data-id="' + x.id + '">Send to ' + esc(x.approver) + '</button><button class="bt" data-act="reject" data-id="' + x.id + '">Dismiss</button><span class="note" style="margin:0">Cannot be accepted here: ' + esc(x.approver) + ' decides.</span>'
       : '<button class="bt ok" data-act="accept" data-id="' + x.id + '">Accept</button><button class="bt" data-act="reject" data-id="' + x.id + '">Reject</button>')
@@ -965,10 +1004,21 @@ function renderInbox() {
       : x.status === 'routed' ? '<span class="tag amber">With ' + esc(x.approver) + '</span>'
       : x.status === 'blocked' ? '<span class="tag red">Blocked</span><span class="note" style="margin:0">' + esc(x.blockedBecause) + '</span>'
       : '<span class="tag">Rejected</span><button class="bt" data-act="undo" data-id="' + x.id + '">Undo</button>';
-    return '<div class="sg ' + (x.status === 'pending' ? '' : x.status === 'blocked' ? 'blocked' : 'done') + '"><div class="top"><b>' + esc(x.summary) + '</b><span class="tag">' + esc(d.account) + ' · ' + esc(x.dealId) + '</span><span class="tag ' + pol[0] + '">' + pol[1] + '</span>' + conf(x.confidence) + '</div>' +
-      '<div class="diff"><div class="f">' + esc(x.field) + '</div><div>' + (x.from ? '<s>' + esc(x.from) + '</s> &rarr; ' : '') + '<b>' + esc(x.to) + '</b></div></div>' + srcLine(x.source) + '<div class="acts">' + acts + '</div></div>';
+    const pending = x.status === 'pending';
+    return '<div class="sg ' + (pending ? PLEVEL[p.level][0] : x.status === 'blocked' ? 'blocked' : 'done') + '"><div class="top">' + (rank ? '<span class="rk" title="Rank ' + rank + ', ' + p.score + ' points">' + rank + '</span>' : '') + '<b>' + esc(x.summary) + '</b></div><div class="top"><span class="tag">' + esc(d.account) + ' · ' + esc(x.dealId) + '</span><span class="tag ' + pol[0] + '">' + pol[1] + '</span>' + conf(x.confidence) + '</div>' +
+      '<div class="diff"><div class="f">' + esc(x.field) + '</div><div>' + (x.from ? '<s>' + esc(x.from) + '</s> &rarr; ' : '') + '<b>' + esc(x.to) + '</b></div></div>' + srcLine(x.source) +
+      (pending && p.why.length ? '<div class="why">' + p.why.map((w) => '<span class="chip">' + esc(w) + '</span>').join('') + '</div>' : '') + '<div class="acts">' + acts + '</div></div>';
   };
-  $('#ib').innerHTML = '<div class="panel card"><h2>Captured from mails and calls</h2><div class="note" style="margin:0 0 12px">Nothing is written to the deals until you accept. ' + pend + ' of ' + ib.items.length + ' suggestions are waiting. Every decision lands in the audit log under Governance.</div>' + ib.items.map(row).join('') + '</div>';
+  const ranked = ib.items.filter((x) => x.status === 'pending').map((x) => ({ x, p: prio(x) })).sort((a, b) => b.p.score - a.p.score || a.x.id.localeCompare(b.x.id));
+  let n = 0;
+  const groups = ['high', 'mid', 'low'].map((lv) => {
+    const g = ranked.filter((r) => r.p.level === lv);
+    return g.length ? '<div class="wallh"><h3>' + PLEVEL[lv][1] + ' (' + g.length + ')</h3><span class="note">' + PLEVEL[lv][2] + '</span></div><div class="wall">' + g.map((r) => card(r.x, ++n)).join('') + '</div>' : '';
+  }).join('');
+  const rest = ib.items.filter((x) => x.status !== 'pending');
+  $('#ib').innerHTML = '<div class="panel card"><h2>Captured from mails and calls</h2><div class="note" style="margin:0">Nothing is written to the deals until you accept. ' + pend + ' of ' + ib.items.length + ' suggestions are waiting, ranked by priority. Every decision lands in the audit log under Settings &amp; info.</div>' +
+    '<div class="note">How the rank is set: a suggestion that needs an approver, a larger deal, a next step that is due soon, a risk flag and high confidence all move it up. The reasons are shown on each tile.</div></div>' +
+    groups + (rest.length ? '<div class="wallh"><h3>Handled and blocked (' + rest.length + ')</h3></div><div class="wall">' + rest.map((x) => card(x, 0)).join('') + '</div>' : '');
 }
 function renderGovernance() {
   const lv = D.governance.levels.map((l) => '<div class="lvl ' + l.id + '"><b>' + esc(l.label) + '</b><div class="note" style="margin:0">' + esc(l.rule) + '</div></div>').join('');
@@ -1006,7 +1056,7 @@ function setup() {
   $('#clear').addEventListener('click', () => { Object.assign(state, { stage: '', q: '', owner: '', risk: false }); $('#q').value = ''; $('#owner').value = ''; $('#risk').checked = false; renderBoard(); });
   $('#fc').addEventListener('click', (e) => { const r = e.target.closest('[data-deal]'); if (r) openDeal(r.dataset.deal); });
   $('#fc').addEventListener('keydown', (e) => { if (e.key !== 'Enter') return; const r = e.target.closest('[data-deal]'); if (r) openDeal(r.dataset.deal); });
-  $('#mt').addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (!b) return; mstate.sel = b.dataset.m; renderMeetings(); });
+  $('#mt').addEventListener('click', (e) => { const r = e.target.closest('[data-run]'); if (r) { if (inApp()) window.parent.postMessage({ type: 'wb:ask', prompt: String(r.dataset.run).slice(0, 600) }, '*'); return; } const b = e.target.closest('[data-m]'); if (!b) return; mstate.sel = b.dataset.m; renderMeetings(); });
   $('#ib').addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (b) inboxAct(b.dataset.act, b.dataset.id); });
   $('#scrim').addEventListener('click', closeDeal);
   $('#drawer').addEventListener('click', (e) => { if (e.target.closest('#close')) closeDeal(); });
@@ -1060,7 +1110,7 @@ $('#pay').addEventListener('click', (e) => {
 window.addEventListener('message', (e) => {
   const d = e.data;
   if (e.source !== window.parent || !d || typeof d.type !== 'string') return;
-  if (d.type === 'ct:open-tab' && typeof d.tab === 'string' && /^[a-z]+$/.test(d.tab)) { const b = document.querySelector('#tabs button[data-tab="' + d.tab + '"]'); if (b) b.click(); }
+  if (d.type === 'ct:open-tab' && typeof d.tab === 'string' && /^[a-z]+$/.test(d.tab)) { openTab(d.tab); }
   else if (d.type === 'wb:restore') { (Array.isArray(d.handoffs) ? d.handoffs : []).forEach((h) => { const j = J.parse(h && h.payload); if (j) jrApply(j); }); }
   else if (d.type === 'sales:knowledge-answer' && kn.pending && d.requestId === kn.pending.id) { kn.live[kn.pending.deal] = { answer: String(d.answer || ''), ids: Array.isArray(d.ids) ? d.ids.filter((i) => typeof i === 'string') : [] }; kn.pending = null; renderKnowledge(); }
   else if (d.type === 'sales:knowledge-error' && kn.pending && d.requestId === kn.pending.id) { kn.live[kn.pending.deal] = { error: String(d.message || 'Cognee could not answer.').slice(0, 220) }; kn.pending = null; renderKnowledge(); }
@@ -1114,7 +1164,7 @@ function renderKnowledge() {
   const kinds = [...new Set(nodes.map((x) => x.kind))];
   const cust = nodes.find((x) => x.kind === 'customer');
   const shown = nodes.filter((x) => x !== cust && !kn.hide.has(x.kind));
-  const W = 980, H = 560, cx = W / 2, cy = H / 2, rx = 330, ry = 210, GAP = 0.16;
+  const W = 1100, H = 640, cx = W / 2, cy = H / 2, rx = 330, ry = 235, GAP = 0.16;
   const GROUPS = [['People', 'var(--k-pink)', ['contact']], ['Commercial', 'var(--k-green)', ['offer', 'rival']], ['Sources', 'var(--k-teal)', ['call', 'mail', 'meeting']], ['Risks and issues', 'var(--k-red)', ['risk', 'ticket', 'invoice']], ['Next step', 'var(--k-purple)', ['skill']]];
   const live = GROUPS.map(([name, col, ks]) => ({ name, col, items: shown.filter((x) => ks.includes(x.kind)) })).filter((g) => g.items.length);
   const totalN = live.reduce((a, g) => a + g.items.length, 0) || 1;
@@ -1136,18 +1186,18 @@ function renderKnowledge() {
   svg += layout.map(([x, px, py, , i]) => '<path class="kn-edge' + (x.kind === 'risk' ? ' risk' : '') + '" style="--kc:' + KN_KINDS[x.kind][1] + ';--i:' + i + '" pathLength="1" d="M' + cx + ' ' + cy + ' Q' + ((cx + px) / 2 + (py - cy) * 0.14).toFixed(1) + ' ' + ((cy + py) / 2 - (px - cx) * 0.14).toFixed(1) + ' ' + px.toFixed(1) + ' ' + py.toFixed(1) + '"/>').join('');
   svg += labels;
   const node = (x, px, py, side, i) => {
-    const r = x.kind === 'risk' ? 17 : 20, lab = x.label.length > 28 ? x.label.slice(0, 27) + '…' : x.label;
+    const r = x.kind === 'risk' ? 20 : 23, lab = x.label.length > 24 ? x.label.slice(0, 23) + '…' : x.label;
     const lx = side >= 0 ? r + 9 : -r - 9;
     return '<g class="kn-node' + (x.kind === 'risk' ? ' risk' : '') + (x.ref && liveIds.has(x.ref) ? ' live' : '') + (kn.sel === x.id ? ' sel' : '') + '" style="--kc:' + KN_KINDS[x.kind][1] + ';--i:' + i + '" transform="translate(' + px.toFixed(1) + ',' + py.toFixed(1) + ')" tabindex="0" role="button" data-n="' + x.id + '" aria-label="' + esc(KN_KINDS[x.kind][0] + ': ' + x.label) + '"><g class="pop">' +
       '<circle class="h" r="' + (r + 9) + '"/><circle class="b" r="' + r + '"/><text class="g">' + esc(KN_KINDS[x.kind][2]) + '</text>' +
       '<text class="l" x="' + lx + '" y="0" text-anchor="' + (side >= 0 ? 'start' : 'end') + '" dominant-baseline="central">' + esc(lab) + '</text></g></g>';
   };
   svg += layout.map(([x, px, py, c, i]) => node(x, px, py, c, i)).join('');
-  const sc = d.score == null ? null : Math.max(0, Math.min(100, d.score)), R = 46, C = 2 * Math.PI * R;
+  const sc = d.score == null ? null : Math.max(0, Math.min(100, d.score)), R = 52, C = 2 * Math.PI * R;
   svg += '<g class="kn-node kn-core' + (kn.sel === cust.id ? ' sel' : '') + (liveIds.has(cust.ref) ? ' live' : '') + '" style="--kc:var(--k-purple)" transform="translate(' + cx + ',' + cy + ')" tabindex="0" role="button" data-n="' + cust.id + '" aria-label="' + esc('Customer: ' + d.account) + '"><g class="pop">' +
-    '<circle class="h" r="62"/><circle class="ring" r="' + R + '"/>' + (sc == null ? '' : '<circle class="prog" r="' + R + '" stroke-dasharray="' + (C * sc / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90)"/>') +
-    '<circle class="b" r="38"/><text class="g">' + esc(initials(d.account)) + '</text>' +
-    '<text class="l" y="72">' + esc(d.account) + '</text><text class="sub" y="90">' + esc(STAGE[d.stage].label + (d.value ? ' · ' + eur(d.value) : '') + (sc == null ? '' : ' · ' + sc + ' %')) + '</text></g></g>';
+    '<circle class="h" r="70"/><circle class="ring" r="' + R + '"/>' + (sc == null ? '' : '<circle class="prog" r="' + R + '" stroke-dasharray="' + (C * sc / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90)"/>') +
+    '<circle class="b" r="44"/><text class="g">' + esc(initials(d.account)) + '</text>' +
+    '<text class="l" y="82">' + esc(d.account) + '</text><text class="sub" y="102">' + esc(STAGE[d.stage].label + (d.value ? ' · ' + eur(d.value) : '') + (sc == null ? '' : ' · ' + sc + ' %')) + '</text></g></g>';
   svg += '</svg>';
   const sel = nodes.find((x) => x.id === kn.sel), k = KN_KINDS[sel.kind];
   const animNow = kn.anim; kn.anim = false;
@@ -1284,7 +1334,20 @@ function makeJourney() {
 // @journey-end
 const J = makeJourney(); J.injectStyle(document);
 const jr = { customer: 'lindenau', deal: null, note: '' };
-const jrTab = () => ((document.querySelector('#tabs button[aria-selected="true"]') || {}).dataset || {}).tab || 'pipeline';
+// Governance, Workflow and Rules live under one tab ("Settings & info"); the journey still names them as stops.
+const MORE = ['governance', 'workflow', 'rules'], more = { sub: 'governance' };
+function setSub(t) {
+  more.sub = t;
+  document.querySelectorAll('#subnav button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sub === t)));
+  document.querySelectorAll('.sub').forEach((p) => p.classList.toggle('on', p.id === 'sub-' + t));
+}
+function openTab(t) {
+  const b = document.querySelector('#tabs button[data-tab="' + (MORE.includes(t) ? 'more' : t) + '"]'); if (!b) return false;
+  if (MORE.includes(t)) setSub(t);
+  b.click(); return true;
+}
+document.getElementById('subnav').addEventListener('click', (e) => { const b = e.target.closest('[data-sub]'); if (b) { setSub(b.dataset.sub); renderJourney(); } });
+const jrTab = () => { const t = ((document.querySelector('#tabs button[aria-selected="true"]') || {}).dataset || {}).tab || 'pipeline'; return t === 'more' ? more.sub : t; };
 const jrCustomer = () => { const d = D.deals.find((x) => x.id === state.sel); return (d && J.customerOfAccount(d.account)) || jr.customer; };
 function renderJourney() {
   const cust = jrCustomer(), tab = jrTab(), name = J.CUSTOMERS[cust].name, deals = D.deals.filter((d) => d.account === name);
@@ -1296,7 +1359,7 @@ function renderJourney() {
 }
 function jrGo(stopId, focus) {
   const s = J.stop(stopId), cust = jrCustomer(); if (!s || !J.available(s, cust)) return;
-  if (s.space === 'sales') { const b = document.querySelector('#tabs button[data-tab="' + s.tab + '"]'); if (b) b.click(); return; }
+  if (s.space === 'sales') { openTab(s.tab); return; }
   if (window.parent === window) { jr.note = 'Open this Space in the app to move to ' + s.label + '.'; renderJourney(); return; }
   const d = D.deals.find((x) => x.id === (state.sel || jr.deal)), thread = d && d.links && d.links.threads && d.links.threads[0];
   window.parent.postMessage(J.handoff(s, { customer: cust, deal: d && d.id, thread, focus }), '*');
@@ -1304,7 +1367,7 @@ function jrGo(stopId, focus) {
 function jrApply(j) {
   jr.customer = j.customer; jr.note = '';
   const tab = j.tab || (J.STOPS.find((s) => s.space === 'sales' && s.step === j.step) || {}).tab;
-  if (tab) { const b = document.querySelector('#tabs button[data-tab="' + tab + '"]'); if (b) b.click(); }
+  if (tab) openTab(tab);
   if (j.deal && D.deals.some((d) => d.id === j.deal)) openDeal(j.deal);
   renderJourney();
 }
