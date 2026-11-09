@@ -1,12 +1,11 @@
 # Pre-trailer "Under the hood" – spoken text (female voice)
 
 ## Intro (screens 1 and 2)
-Accenture developed a design and feature study covering high-value customer use cases for SAP Joule Work and SAP Joule Studio. One possible direction for their evolution, with exciting new features!
-These are possible design and deployment proposals within an MVP. Not a finished product.
+Accenture developed a design and feature study, provided as open source, demonstrating high-value customer use cases for SAP Joule Work and SAP Joule Studio. One possible direction for their evolution, with exciting new features and customer use cases!
 Here is the underlying technology stack.
 
-## Joule Work X – Next Gen
-This is Joule Work X, Next Gen. A design study from Accenture Germany.
+## Joule Work X
+This is Joule Work X. An evolution of the new innovative experience layer Joule Work and Joule Studio from SAP.
 
 ## Under the hood
 Before the series starts, let us look under the hood. How is this design study built?
@@ -19,6 +18,9 @@ The stack is light and modern: Vite, React and TypeScript, packaged as an Electr
 
 ## Agents and connectors
 An agent runtime, Goose, talks through the Agent Client Protocol. And MCP connectors plug it into the landscape: an SAP mock, ARC-1, the MCP server for SAP, n8n, Jira, Slack, SmartRecruiters, and Databricks! And one more group of interfaces: import. Bring in a Notion page, a Slack thread or a Jira ticket, by link or ID.
+
+## AI gateway layer
+And a new AI gateway layer: OpenRouter and Hugging Face. One door to hundreds of models, open and closed, so the agents are not tied to a single provider.
 
 ## A new SAP layer
 And a new SAP layer: the SAP Business Accelerator Hub, and an SAP sandbox system. Real SAP interfaces, safe to try!
@@ -33,7 +35,7 @@ Supabase is the data layer: projects, work items, and the skill lifecycle.
 And how was it built? With Claude Code! Every change is a pull request, with automated checks and more than a hundred tests. Merged only when the author says so.
 
 ## Closing
-Accenture developed a design and feature study. The next post describes the first functional block. Stay tuned!
+Accenture developed a design and feature study. The next post describes the first edition. Stay tuned!
 
 ## Outro
 So, what is this all about? Follow along, and find out!

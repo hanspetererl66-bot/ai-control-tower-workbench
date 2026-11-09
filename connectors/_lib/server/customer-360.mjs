@@ -193,6 +193,9 @@ export function makeLogic(D) {
     return recs;
   }
 
+  // facts whose value is a whole sentence read as "R-3 (why): ...", not "R-3: why is Eight of ..."
+  var LONG_FACT = /^(Why|Approval|Recommendation|Step \d+)$/;
+
   function nodeList() {
     var nodes = [], edges = [], seen = {}, G = D.group;
     function node(type, id, label, sub, extra) {
@@ -289,6 +292,20 @@ export function makeLogic(D) {
   function node(id) { return NODE[id] || null; }
   function neighbours(id) { return (ADJ[id] || []).map(function (a) { return a.id; }); }
 
+  /** Nodes an answer text names: by label (a contact also by last name), whole words only, in order of appearance. For answers without ids. */
+  function mentions(text, limit) {
+    var t = String(text || '').toLowerCase(), found = [];
+    function word(w, at) { var i = t.indexOf(w, at); while (i >= 0) { var b = i === 0 ? ' ' : t.charAt(i - 1), a = t.charAt(i + w.length) || ' '; if (!/[a-z0-9]/.test(b) && !/[a-z0-9]/.test(a)) return i; i = t.indexOf(w, i + 1); } return -1; }
+    GRAPH.nodes.forEach(function (n) {
+      var names = [n.label.toLowerCase()];
+      if (n.type === 'contact') { var parts = n.label.split(' '); names.push(parts[parts.length - 1].toLowerCase()); }
+      var at = -1;
+      names.forEach(function (w) { if (w.length < 4) return; var i = word(w, 0); if (i >= 0 && (at < 0 || i < at)) at = i; });
+      if (at >= 0) found.push({ id: n.id, at: at });
+    });
+    return found.sort(function (x, y) { return x.at - y.at; }).slice(0, limit || 12).map(function (f) { return f.id; });
+  }
+
   // ---- documents for Cognee -------------------------------------------------------------------------------------------------------
   function sentence(t) { return String(t).replace(/\s+/g, ' ').trim().replace(/[.;:]+$/, '') + '.'; }
   /** One short text per node: its facts and its connections as sentences. The id stays in brackets so an answer can be traced back to a node. */
@@ -297,7 +314,7 @@ export function makeLogic(D) {
       var noun = TYPES[n.type].noun, art = /^[aeiou]/.test(noun) ? 'an ' : 'a ';
       var lines = [sentence(n.label + ' is ' + art + noun + ' (' + n.id + ')')];
       if (n.type !== 'signal') lines.push(sentence(n.label + ': ' + n.sub));
-      n.facts.forEach(function (f) { lines.push(f[0] === 'Text' ? f[1] : sentence(n.label + ': ' + f[0].toLowerCase() + ' is ' + f[1])); });
+      n.facts.forEach(function (f) { lines.push(f[0] === 'Text' ? f[1] : LONG_FACT.test(f[0]) ? sentence(n.label + ' (' + f[0].toLowerCase() + '): ' + f[1]) : sentence(n.label + ': ' + f[0].toLowerCase() + ' is ' + f[1])); });
       (ADJ[n.id] || []).forEach(function (a) {
         var o = NODE[a.id], verb = EDGES[a.edge.type][a.out ? 0 : 1];
         lines.push(sentence(n.label + ' ' + verb + ' ' + o.label + ' (' + o.id + ')'));
@@ -482,7 +499,7 @@ export function makeLogic(D) {
   }
 
   return {
-    ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, docs: DOCS, doc: function (id) { return DOC[id] || null; },
+    ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,
   };

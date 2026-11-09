@@ -11,6 +11,7 @@ import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/
 import { createRecruitingHandlers, decideHire, decideProposal, releaseContract } from '../connectors/_lib/server/recruiting.mjs';
 import { observeCall } from '../connectors/_lib/server/observability.mjs';
 import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
+import { publishPostingMock, releasePosting, sendBackPosting, withdrawPosting } from '../connectors/_lib/server/job-postings.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -138,6 +139,27 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async releaseContract(id) {
       const { rpc, email } = connect();
       return releaseContract(rpc, email, id);
+    },
+    /** Job postings of the requisitions the stored e-mail manages, plus the channels, for the posting screen. Fixed filters, always as the stored e-mail. */
+    async listPostings(args) {
+      const { rpc, email } = connect();
+      const status = typeof args?.status === 'string' && ['draft', 'in_review', 'released', 'withdrawn'].includes(args.status) ? args.status : null;
+      const postings = await rpc('recruiting_postings_list', { p_actor: email, p_status: status, p_requisition: null, p_limit: 200 });
+      const context = await rpc('recruiting_posting_context', { p_actor: email });
+      return { postings: Array.isArray(postings) ? postings : [], channels: Array.isArray(context?.channels) ? context.channels : [] };
+    },
+    /** The hiring manager's steps on a posting after a click: release, send back, withdraw. Not tools: the agent cannot call these. The database accepts only the manager of the requisition. */
+    async postingStep(action, id, note) {
+      const { rpc, email } = connect();
+      if (action === 'release') return releasePosting(rpc, email, id, note);
+      if (action === 'send_back') return sendBackPosting(rpc, email, id, note);
+      if (action === 'withdraw') return withdrawPosting(rpc, email, id, note);
+      throw new Error('This step is not allowed.');
+    },
+    /** Publishing, SIMULATED: the main process builds the channel texts, the database records "simulated", nothing leaves the computer. */
+    async publishPosting(id, channelIds) {
+      const { rpc, email } = connect();
+      return publishPostingMock(rpc, email, id, channelIds);
     },
     /** The hiring manager's decision after a click. Not a tool: the agent cannot call this. The database only accepts the manager of the requisition. */
     async decideProposal(id, decision, note) {

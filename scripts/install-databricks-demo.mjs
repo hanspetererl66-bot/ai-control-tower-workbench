@@ -15,6 +15,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDocument } from 'yaml';
+import { ensureGooseConfig } from '../shared/goose-config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -47,6 +48,7 @@ export function installDatabricksDemo({ root = ROOT, host, force = false, skills
   // Extensions: take the entries from the checked-in snippet, fill in this checkout's paths.
   const snippet = parseDocument(readFileSync(join(demo, 'goose/extensions.yaml'), 'utf8')).toJSON().extensions;
   const configPath = join(root, 'goose-home/.config/goose/config.yaml');
+  if (existsSync(join(root, 'goose-home/.config/goose/config.example.yaml'))) ensureGooseConfig(root);
   const config = parseDocument(readFileSync(configPath, 'utf8'));
   for (const [name, entry] of Object.entries(snippet)) {
     if (skip.includes(name)) continue;
