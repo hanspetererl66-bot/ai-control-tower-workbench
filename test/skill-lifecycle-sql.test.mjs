@@ -971,3 +971,41 @@ test('migration 026 in real Postgres: revisions, conflict, closed to the public,
   assert.match(rule(`update werkbank.ontology_governance_rev set data = '{}'`), /cannot be changed/);
   assert.match(rule(`select public.ontology_governance_get('not-an-email')`), /e-mail/);
 });
+
+// ---- onboarding (migration 039) ----
+const obHand = (id, by = HR, start = "current_date + 30") => `select public.recruiting_onboarding_handover(${q(by)}, ${id}, (${start})::date)`;
+const obSet = (id, step, status, note = '', by = HR) => `select public.recruiting_onboarding_set(${q(by)}, ${id}, ${q(step)}, ${q(status)}, ${q(note)})`;
+const obList = (by) => json(`select public.recruiting_onboarding_list(${q(by)})`);
+
+test('onboarding: handover only after the signature and only by HR; steps get done or blocked, with a log', { skip }, () => {
+  const id = approvedRequest('onboarding');
+  assert.match(rule(obHand(id)), /no contract exists/);
+  json(cPrepare(id));
+  assert.match(rule(obHand(id)), /only after the signature/);
+  json(cRelease(id)); json(cSent(id, 'ENV-OB'));
+  json(cResult(id, 'ENV-OB', 'signed', { doc: DOC, sha: DOC_SHA, receipt: JSON.stringify({ method: 'advanced e-signature' }) }));
+  assert.ok(obList(MGR).ready.some((r) => r.id === id), 'a signed hire without handover is listed as ready');
+  assert.match(rule(obHand(id, MGR)), /only the HR approver/);
+  assert.match(rule(obHand(id, HR, 'current_date + 900')), /within the next year/);
+  const h = json(obHand(id)); assert.equal(h.created, true);
+  assert.equal(json(obHand(id)).created, false, 'handing over twice makes no second case');
+  assert.ok(!obList(MGR).ready.some((r) => r.id === id));
+  const c = obList(MGR).cases.find((x) => x.id === id);
+  assert.equal(c.steps.length, 23); assert.ok(c.steps.every((s) => s.status === 'open'));
+  assert.equal(c.contract.status, 'signed');
+  assert.match(rule(obSet(id, 'it_accounts', 'done', '', 'stranger@x.com')), /not involved/);
+  assert.match(rule(obSet(id, 'no_such_step', 'done')), /unknown onboarding step/);
+  assert.match(rule(obSet(id, 'it_accounts', 'finished')), /status must be/);
+  assert.match(rule(obSet(id, 'it_accounts', 'blocked')), /reason is needed/);
+  json(obSet(id, 'it_accounts', 'blocked', 'Waiting for the licence order.', MGR));
+  json(obSet(id, 'master_data', 'done'));
+  let s = obList(MGR).cases.find((x) => x.id === id).steps;
+  assert.deepEqual([s.find((x) => x.id === 'it_accounts').status, s.find((x) => x.id === 'it_accounts').note, s.find((x) => x.id === 'it_accounts').by], ['blocked', 'Waiting for the licence order.', MGR]);
+  json(obSet(id, 'it_accounts', 'done', 'Licence arrived.'));
+  s = obList(MGR).cases.find((x) => x.id === id).steps;
+  assert.equal(s.find((x) => x.id === 'it_accounts').status, 'done');
+  assert.equal(sql(`select count(*) from recruiting.onboarding_event where case_id = (select id from recruiting.onboarding_case where request_id = ${id})`).trim(), '4', 'handover and three changes are logged');
+  assert.match(rule(`update recruiting.onboarding_event set note = 'x'`), /append only/);
+  assert.deepEqual(obList('stranger@x.com').cases.filter((x) => x.id === id), [], 'strangers see nothing');
+  assert.match(sql(`select has_function_privilege('anon', 'public.recruiting_onboarding_list(text)', 'execute')`), /f/);
+});

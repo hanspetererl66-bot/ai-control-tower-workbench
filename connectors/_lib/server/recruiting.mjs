@@ -262,6 +262,25 @@ export async function releaseContract(rpc, actor, id) {
   return rpc('recruiting_hire_contract_release', { p_actor: actorOf({ actor }), p_id: id });
 }
 
+/** Onboarding, after a click: not tools. The database accepts the handover only for a signed contract and only from the HR approver. */
+export const ONBOARDING_STATUSES = ['open', 'done', 'blocked', 'na'];
+export async function onboardingList(rpc, actor) {
+  return rpc('recruiting_onboarding_list', { p_actor: actorOf({ actor }) });
+}
+export async function onboardingHandover(rpc, actor, id, start) {
+  if (!Number.isInteger(id) || id < 1) throw new ToolError('id must be a hiring request number');
+  if (typeof start !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(start)) throw new ToolError('start must be a date like 2027-01-11');
+  return rpc('recruiting_onboarding_handover', { p_actor: actorOf({ actor }), p_id: id, p_start: start });
+}
+export async function onboardingSet(rpc, actor, id, step, status, note = '') {
+  if (!Number.isInteger(id) || id < 1) throw new ToolError('id must be a hiring request number');
+  if (typeof step !== 'string' || !/^[a-z0-9_]{2,40}$/.test(step)) throw new ToolError('unknown onboarding step');
+  if (!ONBOARDING_STATUSES.includes(status)) throw new ToolError('status must be open, done, blocked or na');
+  const why = text(note, 300);
+  if (status === 'blocked' && !String(why).trim()) throw new ToolError('a reason is needed to mark a step as blocked');
+  return rpc('recruiting_onboarding_set', { p_actor: actorOf({ actor }), p_id: id, p_step: step, p_status: status, p_note: why });
+}
+
 export async function decideHire(rpc, actor, id, decision, note = '') {
   if (!Number.isInteger(id) || id < 1) throw new ToolError('id must be a hiring request number');
   if (!HIRE_DECISIONS.includes(decision)) throw new ToolError('decision must be approve, return or decline');

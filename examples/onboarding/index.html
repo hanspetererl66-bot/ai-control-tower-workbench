@@ -237,6 +237,7 @@ nav button{border:0;background:none;color:var(--muted);padding:9px 14px;font:inh
 nav button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
 nav button:focus-visible,.btn:focus-visible,.pick:focus-visible,.cardbtn:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
 main{max-width:1320px;margin:0 auto;padding:20px 22px 60px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.row input{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink)}
 .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 11px;border-radius:var(--radius-s);font:inherit;font-weight:600;cursor:pointer}
 .btn:hover{border-color:var(--purple)}
 h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:16px 0 6px;color:var(--muted)}
@@ -326,9 +327,9 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
 <body>
 <header>
   <div><div class="logo">On<b>boarding</b></div><div class="sub">From the signed contract to the end of the probation period, for five new hires</div></div>
-  <div class="hr"><span id="asof"></span><span class="tag amber">sample data</span></div>
+  <div class="hr"><span id="asof"></span><span class="tag amber" id="livetag">sample data</span></div>
 </header>
-<div class="mode">Mockup with fictional data. The steps and dates are in the data of this page; no HR system, IT service desk or payroll is called. New hires are pseudonyms; names, addresses and bank data are never stored here.</div>
+<div class="mode" id="mode">Mockup with fictional data. The steps and dates are in the data of this page; no HR system, IT service desk or payroll is called. New hires are pseudonyms; names, addresses and bank data are never stored here.</div>
 <nav role="tablist" aria-label="Views" id="tabs"></nav>
 <main id="main"></main>
 <script type="application/json" id="data">{"asOf":"2026-11-09","company":"Hanse Logistik (fictional)","phases":[{"id":"pre","label":"Preboarding","hint":"From the signed contract to the evening before day one"},{"id":"day1","label":"Day one","hint":"The first day"},{"id":"week1","label":"First week","hint":"Days 1 to 7"},{"id":"d90","label":"First 90 days","hint":"Check-ins at 30, 60 and 90 days"},{"id":"probation","label":"Probation","hint":"The decision before the probation period ends"}],"owners":["HR","Payroll","IT","Facilities","Manager","Buddy","New hire"],"steps":[{"id":"works_council","phase":"pre","title":"Inform the works council about the hire","owner":"HR","offset":-21,"beforeContract":true,"joule":"Drafts the notice from the approved terms. HR sends it."},{"id":"master_data","phase":"pre","title":"Create the employee record in the HR system","owner":"HR","offset":-14,"joule":"Prepares the entry from level, band, start date and contract type. Names and bank data never pass through Joule."},{"id":"new_hire_forms","phase":"pre","title":"Fill in the personal data in the self-service portal","owner":"New hire","offset":-10,"after":["master_data"],"joule":"Writes the reminder. Sent by HR."},{"id":"right_to_work","phase":"pre","title":"Check the right to work (work or residence permit)","owner":"HR","offset":-10,"after":["master_data"]},{"id":"payroll_setup","phase":"pre","title":"Set up payroll","owner":"Payroll","offset":-7,"after":["master_data","new_hire_forms"]},{"id":"it_accounts","phase":"pre","title":"Create accounts, mailbox and access roles","owner":"IT","offset":-7,"after":["master_data"],"joule":"Drafts the access request from the role profile. IT approves the roles."},{"id":"it_hardware","phase":"pre","title":"Order and prepare laptop and phone","owner":"IT","offset":-5},{"id":"facilities","phase":"pre","title":"Prepare badge, desk and parking","owner":"Facilities","offset":-5},{"id":"buddy","phase":"pre","title":"Name a buddy","owner":"Manager","offset":-7},{"id":"plan","phase":"pre","title":"Write the first-week plan and the 30-60-90 goals","owner":"Manager","offset":-5,"joule":"Drafts both from the job description and the requisition. The manager edits."},{"id":"welcome","phase":"pre","title":"Send the welcome message","owner":"Manager","offset":-3,"after":["master_data"],"joule":"Drafts it. The manager sends it."},{"id":"handover","phase":"day1","title":"Hand over laptop, phone and badge","owner":"IT","offset":0,"after":["it_hardware","facilities"]},{"id":"reception","phase":"day1","title":"Welcome in person and show the workplace","owner":"Manager","offset":0,"after":["handover"]},{"id":"acknowledgements","phase":"day1","title":"Sign the data-protection and security acknowledgements","owner":"New hire","offset":0,"after":["master_data"]},{"id":"buddy_walk","phase":"week1","title":"Walk through the first days with the buddy","owner":"Buddy","offset":1,"after":["buddy"]},{"id":"training","phase":"week1","title":"Complete the mandatory trainings (security, data protection, compliance)","owner":"New hire","offset":5,"after":["it_accounts"]},{"id":"week1_check","phase":"week1","title":"First-week check-in","owner":"Manager","offset":5},{"id":"check30","phase":"d90","title":"30-day check-in","owner":"Manager","offset":30},{"id":"benefits","phase":"d90","title":"Choose the benefits","owner":"New hire","offset":30,"after":["new_hire_forms"]},{"id":"pulse","phase":"d90","title":"Answer the onboarding pulse survey","owner":"New hire","offset":30},{"id":"check60","phase":"d90","title":"60-day check-in","owner":"Manager","offset":60},{"id":"check90","phase":"d90","title":"90-day review","owner":"Manager","offset":90,"joule":"Prepares a summary of the check-ins. The manager writes the assessment."},{"id":"probation","phase":"probation","title":"Decide about the end of the probation period","owner":"HR","offset":150,"after":["check90"],"joule":"Prepares the summary. HR and the manager decide."}],"hires":[{"id":"C-3702","title":"Warehouse Team Lead","dept":"Operations","requisition":"REQ-2107","start":"2027-01-11","contract":{"status":"sent","at":"2026-11-05"},"done":{"works_council":"2026-11-06"},"na":["right_to_work"],"blocked":{}},{"id":"C-3908","title":"SAP Logistics Consultant (internal IT)","dept":"IT","requisition":"REQ-2108","start":"2026-12-15","contract":{"status":"signed","at":"2026-10-30"},"done":{"works_council":"2026-11-02","master_data":"2026-11-04"},"na":[],"blocked":{"right_to_work":{"reason":"The residence permit is still with the authority; expected on 1 December.","since":"2026-11-06"}}},{"id":"C-3320","title":"Integration Developer","dept":"IT","requisition":"REQ-2098","start":"2026-11-16","contract":{"status":"signed","at":"2026-10-20"},"done":{"works_council":"2026-10-27","master_data":"2026-10-28","buddy":"2026-11-05"},"na":["right_to_work"],"blocked":{"it_hardware":{"reason":"The laptop model is out of stock; delivery expected on 20 November.","since":"2026-11-06"}}},{"id":"C-3202","title":"Customer Service Agent (DE/EN)","dept":"Service","requisition":"REQ-2091","start":"2026-11-04","contract":{"status":"signed","at":"2026-10-12"},"done":{"works_council":"2026-10-15","master_data":"2026-10-19","new_hire_forms":"2026-10-23","payroll_setup":"2026-10-27","it_accounts":"2026-10-27","it_hardware":"2026-10-30","facilities":"2026-10-30","buddy":"2026-10-26","plan":"2026-10-30","welcome":"2026-11-02","handover":"2026-11-04","reception":"2026-11-04","acknowledgements":"2026-11-04","buddy_walk":"2026-11-05"},"na":["right_to_work"],"blocked":{}},{"id":"C-2901","title":"Finance Analyst","dept":"Finance","requisition":"REQ-2044","start":"2026-08-03","contract":{"status":"signed","at":"2026-06-22"},"done":{"works_council":"2026-06-26","master_data":"2026-07-06","new_hire_forms":"2026-07-14","payroll_setup":"2026-07-23","it_accounts":"2026-07-24","it_hardware":"2026-07-28","facilities":"2026-07-28","buddy":"2026-07-24","plan":"2026-07-29","welcome":"2026-07-31","handover":"2026-08-03","reception":"2026-08-03","acknowledgements":"2026-08-03","buddy_walk":"2026-08-04","training":"2026-08-07","week1_check":"2026-08-07","check30":"2026-09-03","benefits":"2026-09-01","pulse":"2026-09-02","check60":"2026-10-02"},"na":["right_to_work"],"blocked":{}}]}</script>
@@ -458,7 +459,8 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function ask(text) { if (window.parent !== window) window.parent.postMessage({ type: 'wb:ask', prompt: String(text).slice(0, 600) }, '*'); }
   var asOf = D.asOf, steps = D.steps, hires = D.hires;
-  var S = { tab: 'board', who: hires[0].id };
+  var S = { tab: 'board', who: hires[0].id, live: false, ready: [], err: '', msg: '', blockFor: '', busy: false, startFor: {} };
+  var pending = {}, seq = 0, SAMPLE = { asOf: asOf, hires: hires };
   var TABS = [['board', 'Board'], ['timeline', 'Timeline'], ['matrix', 'Matrix'], ['person', 'Person'], ['owner', 'By owner'], ['how', 'How it works']];
   function hire(id) { return hires.filter(function (h) { return h.id === id; })[0]; }
   function healthTag(h) { var k = health(h, asOf, steps); return '<span class="tag ' + { waiting: 'blue', blocked: 'bad', behind: 'amber', 'on track': 'ok' }[k] + '">' + esc(HEALTH[k]) + '</span>'; }
@@ -515,7 +517,8 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
         var b = h.blocked && h.blocked[x.step.id];
         var meta = x.state === 'done' ? 'done ' + esc(h.done[x.step.id]) : (x.state === 'na' ? 'not needed' : (x.state === 'locked' ? 'starts with the signature' : esc(whenLabel(x.due, asOf)) + ' (' + esc(x.due) + ')'));
         var acts = '';
-        if (x.state === 'blocked' || x.state === 'overdue') acts = '<button type="button" class="btn" data-ask="Draft a short reminder to ' + esc(x.step.owner) + ' about &quot;' + esc(x.step.title) + '&quot; for the new hire ' + esc(h.id) + ' (' + esc(h.title) + '). Do not send it; show me the draft.">Draft a reminder</button>';
+        if (S.live) acts = liveActs(h, x);
+        else if (x.state === 'blocked' || x.state === 'overdue') acts = '<button type="button" class="btn" data-ask="Draft a short reminder to ' + esc(x.step.owner) + ' about &quot;' + esc(x.step.title) + '&quot; for the new hire ' + esc(h.id) + ' (' + esc(h.title) + '). Do not send it; show me the draft.">Draft a reminder</button>';
         return '<li><span class="sym">' + SYM[x.state] + '</span><div><b>' + esc(x.step.title) + '</b><div class="why">' + esc(x.step.owner) + ' · ' + meta + (b ? ' · ' + esc(b.reason) : '') + '</div>' + (x.step.joule && x.state !== 'done' && x.state !== 'na' ? '<div class="jl">Joule: ' + esc(x.step.joule) + '</div>' : '') + '</div><div class="acts"><span class="tag ' + { done: 'ok', blocked: 'bad', overdue: 'bad', soon: 'amber', waiting: 'blue' }[x.state] + '">' + esc(STATE[x.state]) + '</span>' + acts + '</div></li>';
       }).join('');
       var pr = progress(h, asOf, steps, p.id);
@@ -546,21 +549,88 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
       '<div class="card"><h2>What Joule does and does not do</h2><p>Joule drafts (the access request, the welcome message, the plan, the summaries) and reminds. The owner of each step does it or confirms it. Joule does not send, order, book or sign anything by itself.</p><p class="note">Not built: the link to a real HR system, IT service desk, payroll or e-learning. The dates in this page are sample data.</p></div></div>' +
       '<h3>The 23 steps</h3><table class="mx proc"><thead><tr><th>Phase</th><th>Step</th><th>Owner</th><th>Due</th><th>Joule prepares</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
+  /* ---------- live mode: the cases and their steps come from the shared database, through the app ---------- */
+  function request(msg) {
+    return new Promise(function (resolve) {
+      var id = 'o' + (++seq);
+      pending[id] = resolve; msg.requestId = id;
+      window.parent.postMessage(msg, '*');
+      setTimeout(function () { if (pending[id]) { delete pending[id]; resolve({ type: 'ct:error', message: 'No answer from the app.' }); } }, 10000);
+    });
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (e.source !== window.parent || !m || typeof m !== 'object' || !pending[m.requestId]) return;
+    var done = pending[m.requestId]; delete pending[m.requestId]; done(m);
+  });
+  function fromCase(c) {
+    var h = { id: 'H-' + c.id, rid: c.id, title: c.title, dept: c.dept, requisition: c.requisition, start: c.start, contract: { status: c.contract ? c.contract.status : 'signed', at: c.contract && c.contract.signedAt ? String(c.contract.signedAt).slice(0, 10) : '' }, done: {}, na: [], blocked: {}, by: {} };
+    (c.steps || []).forEach(function (t) {
+      if (t.status === 'done') h.done[t.id] = String(t.at || '').slice(0, 10) || c.start;
+      else if (t.status === 'na') h.na.push(t.id);
+      else if (t.status === 'blocked') h.blocked[t.id] = { reason: t.note, since: String(t.at || '').slice(0, 10) };
+      if (t.by) h.by[t.id] = t.by;
+    });
+    return h;
+  }
+  function useLive(m) {
+    S.live = true; S.ready = m.ready || [];
+    asOf = iso(Date.now()); hires = (m.cases || []).map(fromCase);
+    if (!hires.some(function (h) { return h.id === S.who; })) S.who = hires.length ? hires[0].id : '';
+    $('#livetag').textContent = 'live data'; $('#livetag').className = 'tag';
+    $('#mode').textContent = 'Live: the cases and the status of every step are read from and written to the shared database. A step is done or blocked only when a person marks it here. New hires are pseudonyms; names are not stored here.';
+  }
+  function load() {
+    return request({ type: 'ob:list-request' }).then(function (m) {
+      if (m.type !== 'ob:list') { S.err = m.message || ''; if (!S.live) render(); return; }
+      S.err = ''; useLive(m); render();
+    });
+  }
+  function liveActs(h, x) {
+    var id = x.step.id, key = h.rid + '|' + id;
+    if (S.blockFor === key) return '<div class="row"><input type="text" id="why" maxlength="300" placeholder="Why is it blocked?" aria-label="Reason"><button type="button" class="btn" data-setblock="' + esc(key) + '"' + (S.busy ? ' disabled' : '') + '>Save as blocked</button><button type="button" class="btn" data-cancel="1">Cancel</button></div>';
+    var b = function (st, label) { return '<button type="button" class="btn" data-set="' + esc(key + '|' + st) + '"' + (S.busy ? ' disabled' : '') + '>' + label + '</button> '; };
+    if (x.state === 'done' || x.state === 'blocked' || x.state === 'na') return b('open', 'Reopen');
+    return b('done', 'Mark done') + '<button type="button" class="btn" data-block="' + esc(key) + '">Blocked…</button> ' + b('na', 'Not needed');
+  }
+  function readyPanel() {
+    if (!S.live) return S.err ? '<div class="note" role="status">Showing sample data. ' + esc(S.err) + '</div>' : '';
+    var items = S.ready.map(function (r) {
+      return '<div class="row"><span><b class="mono">REQ ' + esc(r.requisition) + '</b> ' + esc(r.title) + ' · ' + esc(r.dept) + ' · signed ' + esc(String(r.signedAt).slice(0, 10)) + '</span><input type="date" data-start="' + esc(r.id) + '" aria-label="First working day" value="' + esc(S.startFor[r.id] || '') + '"><button type="button" class="btn" data-handover="' + esc(r.id) + '"' + (S.busy ? ' disabled' : '') + '>Hand over to onboarding</button></div>';
+    }).join('');
+    return (S.msg ? '<div class="note" role="status">' + esc(S.msg) + '</div>' : '') + (S.err ? '<div class="note" role="alert" style="color:var(--red)">' + esc(S.err) + '</div>' : '') +
+      (items ? '<div class="card"><h3>Signed, waiting for the handover</h3><div class="sub">HR hands a hire over after the signature (also possible in Hiring Approvals). Enter the first working day.</div>' + items + '</div>' : '');
+  }
+  function vNone() { return '<div class="card"><h2>No hire in onboarding yet</h2><p class="note">A hire appears here when HR hands it over after the candidate signed the contract.</p></div>'; }
+  function act(msg, okText) {
+    S.busy = true; S.err = ''; S.msg = ''; render();
+    return request(msg).then(function (m) {
+      S.busy = false;
+      if (m.type === 'ct:error') { S.err = m.message || 'Not saved.'; render(); return; }
+      S.msg = okText(m); S.blockFor = ''; return load();
+    });
+  }
   function render() {
-    $('#asof').textContent = 'Today in the sample: ' + asOf;
+    $('#asof').textContent = (S.live ? 'Today: ' : 'Today in the sample: ') + asOf;
     $('#tabs').innerHTML = TABS.map(function (t) { return '<button type="button" role="tab" id="t-' + t[0] + '" aria-selected="' + (S.tab === t[0]) + '" data-tab="' + t[0] + '">' + esc(t[1]) + '</button>'; }).join('');
     var v = { board: vBoard, timeline: vTimeline, matrix: vMatrix, person: vPerson, owner: vOwner, how: vHow }[S.tab];
-    $('#main').innerHTML = v();
+    $('#main').innerHTML = readyPanel() + (S.live && !hires.length ? vNone() : v());
   }
   document.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-tab],[data-who],[data-ask]');
+    var el = e.target.closest('[data-tab],[data-who],[data-ask],[data-set],[data-block],[data-setblock],[data-cancel],[data-handover]');
     if (!el) return;
     var d = el.dataset;
+    if (d.set) { var a = d.set.split('|'); act({ type: 'ob:set-request', id: Number(a[0]), step: a[1], status: a[2], note: '' }, function () { return 'Saved.'; }); return; }
+    if (d.block) { S.blockFor = d.block; render(); var w = document.getElementById('why'); if (w) w.focus(); return; }
+    if (d.cancel) { S.blockFor = ''; render(); return; }
+    if (d.setblock) { var b = d.setblock.split('|'), w2 = document.getElementById('why'), why = w2 ? w2.value.trim() : ''; if (!why) { S.err = 'A reason is needed to mark a step as blocked.'; render(); return; } act({ type: 'ob:set-request', id: Number(b[0]), step: b[1], status: 'blocked', note: why }, function () { return 'Saved as blocked.'; }); return; }
+    if (d.handover) { var inp = document.querySelector('[data-start="' + d.handover + '"]'), st = inp ? inp.value : ''; S.startFor[d.handover] = st; if (!st) { S.err = 'Enter the first working day.'; render(); return; } act({ type: 'ob:handover-request', id: Number(d.handover), start: st }, function (m) { return m.result && m.result.created ? 'Handed over to onboarding.' : 'Already handed over.'; }); return; }
     if (d.ask) { ask(d.ask); return; }
     if (d.who) { S.who = d.who; if (S.tab !== 'person') S.tab = 'person'; render(); return; }
     if (d.tab) { S.tab = d.tab; render(); }
   });
   render();
+  if (window.parent !== window) load();
 })();
 </script>
 </body>

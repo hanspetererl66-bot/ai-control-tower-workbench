@@ -3,6 +3,7 @@
  *   ha:list-request    → ha:list      (the hiring requests this person may see)
  *   ha:decide-request  → ha:decided   (Approve, Return or Decline of the step that is this person's turn)
  *   ha:release-request → ha:released  (HR releases the prepared contract; the database accepts only the HR approver)
+ *   ha:handover-request → ha:handed    (HR hands a hire with a signed contract over to Onboarding; the database accepts only the HR approver)
  *   ha:open-tools      → (no reply)   the App opens the proposals and criteria screen
  * Both reads and decisions go through the main process as the stored e-mail, not through the agent: the agent has no tool to decide.
  * The answer is cut down to the fields the Space renders (no free text beyond the notes, no contact data).
@@ -10,6 +11,7 @@
 export const HIRING_SPACE = 'hiring-approvals';
 
 export interface HiringHost {
+  handover?: (id: number, start: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
   release?: (id: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
   list: (args: Record<string, unknown>) => Promise<{ ok: true; data: { requests?: unknown[] } } | { ok: false; error: string }>;
   decide: (id: number, decision: 'approve' | 'return' | 'decline', note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
@@ -58,7 +60,7 @@ export function pickDecision(raw: unknown): Record<string, unknown> | null {
 export async function handleHiringMessage(data: unknown, host: HiringHost | undefined, onOpenTools?: () => void): Promise<Record<string, unknown> | null> {
   if (!isObject(data) || typeof data.type !== 'string') return null;
   if (data.type === 'ha:open-tools') { onOpenTools?.(); return null; }
-  if (data.type !== 'ha:list-request' && data.type !== 'ha:decide-request' && data.type !== 'ha:release-request') return null;
+  if (data.type !== 'ha:list-request' && data.type !== 'ha:decide-request' && data.type !== 'ha:release-request' && data.type !== 'ha:handover-request') return null;
   const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
   if (!requestId) return null;
   const fail = (message: string) => ({ type: 'ct:error', requestId, message });
@@ -68,6 +70,14 @@ export async function handleHiringMessage(data: unknown, host: HiringHost | unde
       const status = typeof data.status === 'string' && STATUS.includes(data.status) ? data.status : 'pending';
       const res = await host.list({ status, limit: 200 });
       return res.ok ? { type: 'ha:list', requestId, status, requests: pickHireRequests(res.data?.requests) } : fail(res.error);
+    }
+    if (data.type === 'ha:handover-request') {
+      const hid = data.id, start = typeof data.start === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(data.start) ? data.start : '';
+      if (typeof hid !== 'number' || !Number.isInteger(hid) || hid < 1) return fail('Unknown request.');
+      if (!start) return fail('A start date is needed (like 2027-01-11).');
+      if (!host.handover) return fail('The handover needs the desktop app.');
+      const res = await host.handover(hid, start);
+      return res.ok ? { type: 'ha:handed', requestId, result: { id: hid, created: res.data?.created === true } } : fail(res.error);
     }
     if (data.type === 'ha:release-request') {
       const rid = data.id;
