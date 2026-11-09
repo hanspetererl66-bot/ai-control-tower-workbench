@@ -16,7 +16,6 @@ export const MOCKUPS = [
   { page: 'examples/customer-emails/index.html', data: 'examples/customer-emails/threads.json' },
   { page: 'examples/sales/index.html', data: 'examples/sales/pipeline.json' },
   { page: 'examples/abap-workbench/index.html', data: 'examples/abap-workbench/data.json' },
-  { page: 'examples/design-study/index.html', data: 'examples/design-study/data.json' },
   { page: 'examples/recruiting-workbench/index.html', data: 'examples/recruiting-workbench/data.json' },
   { page: 'examples/hiring-approvals/index.html', data: 'examples/hiring-approvals/data.json' },
   { page: 'examples/onboarding/index.html', data: 'examples/onboarding/data.json' },
