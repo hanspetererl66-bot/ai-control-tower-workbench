@@ -10,6 +10,7 @@
     "smoke:electron": "node scripts/smoke-electron.mjs",
     "smoke:governance": "node scripts/smoke-governance.mjs",
     "dev": "vite --port 5273 & electron .",
+    "start:werkbank": "bash scripts/start-werkbank.sh",
     "build": "vite build",
     "build:demo": "node scripts/build-demo.mjs",
     "typecheck": "tsc --noEmit",

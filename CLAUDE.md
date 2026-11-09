@@ -14,6 +14,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11
 
 ## Befehle
 - `npm test` (node --test), `npx tsc --noEmit -p .`, `npm run check` (alles zusammen) – vor jedem Push grün.
+- Tägliche Starthilfe: `scripts/start-werkbank.sh` (oder `npm run start:werkbank`): zeigt Abstand zu `main`, `npm install` nur bei Bedarf, `install:examples`, startet den Prognosedienst (Port 8808) falls nötig, dann `npm run dev`; Strg+C stoppt, was das Skript gestartet hat. Optionen `--connect`, `--no-examples`, `--no-forecast`, `--no-fetch`. Nicht getestet: kompletter Durchlauf bis zum App-Start (nur Optionen, Syntax und die Sperre bei belegtem Port 5273).
 - `npm run smoke:electron`: startet die echte Electron-App (öffnet ein Fenster, braucht Display; Vite startet es selbst, falls es nicht läuft), prüft Titel, Goose-Port, Chat und Cover, speichert Screenshots (`--out <Ordner>`) und beendet die App. Kein Ersatz für einen Agenten-Lauf mit Live-Diensten.
 - `npm run smoke:governance`: wie `smoke:electron`, prüft die Einstiegsseite AI Governance: Subspaces in der Seitenleiste, vier Kacheln, Öffnen von Registry, Compliance, Observability und Agent Studio, Zurück-Button, keine Skriptfehler. Setzt die vier Spaces voraus (`node scripts/install-example-space.mjs control-tower agent-registry agent-compliance agent-observability`); klappt die Domain Governance in der Seitenleiste auf.
 - Beispiel-Spaces: `examples/<name>/index.html`, installieren mit `npm run install:examples` (siehe Skill `space-change`).
