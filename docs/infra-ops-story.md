@@ -6,9 +6,9 @@ Alle Daten sind erfunden (kein Live-Monitoring, keine echte Ausführung). Roter 
 Oben in jedem der fünf Spaces steht die Leiste **Infra Ops story** (1 SOP, 2 Fleet, 3 Customer VMs, 4 Alerts, 5 Change). Sie zeigt den aktuellen Schritt mit einem Satz und hat den Knopf **Next**. Next öffnet den nächsten Space (normale Space-Übergabe, siehe `src/space-handoff.ts`). Außerhalb der Werkbank (Datei im Browser) ist die Leiste nur Text.
 
 ## Vorbereitung
-- `npm run install:examples`, dann in der Werkbank die fünf Spaces öffnen können: Infra Wiki, Infra-Operations-Fleet, IT Infrastructure, Cloud Infrastructure Operations, Infrastructure Operations (Slugs `infra-wiki`, `it-fleet`, `it-infrastructure`, `it-operations`, `infra-ops`).
+- `npm run install:examples`, dann in der Werkbank die fünf Spaces öffnen können: Infra Wiki, Infra-Operations-Fleet, Infra VM landscape, Cloud Infrastructure Operations, Infrastructure Operations (Slugs `infra-wiki`, `it-fleet`, `it-infrastructure`, `it-operations`, `infra-ops`).
 - Im Space Infrastructure Operations oben "Demo speed" auf **Fast** stellen (die Freigaben antworten sonst erst nach etwa 20 Sekunden).
-- Mit Schritt 1 beginnen. Zurücksetzen: in IT Infrastructure "Reset demo", in der Fleet "End demo".
+- Mit Schritt 1 beginnen. Zurücksetzen: in Infra VM landscape "Reset demo", in der Fleet "End demo".
 
 ## Akt 0: Das SOP im Infra Wiki (ca. 1 min) – "Wonach arbeiten wir?"
 Space **Infra Wiki** (Dummy, interne Seiten). Zwei SOP-Seiten, je zehn Schritte mit Wer, Werkzeug, Was zu tun ist, "Done when" und "If it fails", dazu Rollback und Nachweis:
@@ -46,7 +46,7 @@ Klickpfad: Overview, Ticket **OP-2090** öffnen, Change für das Zertifikat anle
 In Infrastructure Operations (Reiter Playbooks und in jeder Task) steht das SOP als Liste: jeder Schritt zeigt seinen Wiki-Schritt (Seite, Version), den Wiki-Satz und was die Automatisierung dabei tut. Beim Durchlauf einer Task wird der Schritt grün, der gerade läuft, lila markiert. Zwei SOP-Schritte pro Vorlage sind zusätzliche Schritte im technischen Ablauf (Zertifikat: Schlüssel und CSR, Anmeldung bei der CA über ACME; Patch: Zwilling zuerst). Ein Test hält Wiki und SOP deckungsgleich (Reihenfolge, Titel, Text, Orchestrierungsschritt) und prüft, dass alle acht Orchestrierungsschritte (Trigger, Ticket, Pre-check, Freigabe, Fenster, Lauf, Prüfung, Nachweis) abgedeckt sind. **Open the wiki page** springt ins Wiki, **Ask Joule to compare with the wiki** lässt Joule SOP und Seite vergleichen.
 
 ## Was der Durchlauf nicht zeigt (ehrlich)
-- Die VM-Namen unterscheiden sich je Space (Fleet `musind-int04`, IT Infrastructure `proxy-edge-01`, Infra Ops `mi-…`), weil jeder Space seinen eigenen Beispieldatensatz hat. Verbunden sind Kunde, Zertifikat und Tage (5 Tage, 24.10.). Im Sprechtext Kunde und Zertifikat nennen, nicht den Host-Namen, wenn man zwischen den Spaces wechselt.
+- Die VM-Namen unterscheiden sich je Space (Fleet `musind-int04`, Infra VM landscape `proxy-edge-01`, Infra Ops `mi-…`), weil jeder Space seinen eigenen Beispieldatensatz hat. Verbunden sind Kunde, Zertifikat und Tage (5 Tage, 24.10.). Im Sprechtext Kunde und Zertifikat nennen, nicht den Host-Namen, wenn man zwischen den Spaces wechselt.
 - Die Leiste merkt sich den Schritt nicht über ein Neuladen des Space hinaus (sie braucht es nicht: sie kennt ihren eigenen Schritt).
 - Das Wiki ist ein Dummy: die Seiten sind erfunden und liegen als `examples/infra-wiki/pages.json` im Repo (nach Änderung `npm run sync:infra-wiki` und `npm run sync:infra-ops` bzw. `npm run sync:infra-story`). Ein echtes Wiki ist nicht angebunden.
 - Nicht getestet: die Übergaben in der Electron-App (getestet mit jsdom und dem Host-Protokoll), n8n- und Agent-Läufe mit Live-Diensten, das Werkzeug `read_wiki_page` im echten Agenten.
