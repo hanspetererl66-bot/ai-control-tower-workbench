@@ -32,3 +32,8 @@ test('the bar stays clean: working profile, approval mode and folder moved into 
   assert.match(contextBar, /aria-label="Approval mode"/);
   assert.match(contextBar, /ctx-shield/);
 });
+
+test('the skill bolt toggles: a second click empties the "/word" text and closes the menu', () => {
+  assert.match(composer, /aria-label="Pick a skill"\s*aria-pressed=\{!!slash\}/);
+  assert.match(composer, /\/\^\\\/\\S\*\$\/\.test\(current\) \? ''/);
+});
