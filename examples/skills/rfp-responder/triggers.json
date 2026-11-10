@@ -1,0 +1,10 @@
+{
+  "should": [
+    "RFP beantworten: nutze frühere Antworten für den Fragenkatalog der Ausschreibung",
+    "Beantworte die Fragen der Ausschreibung und markiere Lücken"
+  ],
+  "shouldNot": [
+    "Beantworte den Security-Fragebogen des CISO",
+    "Prüfe den Vertrag auf Klauseln"
+  ]
+}

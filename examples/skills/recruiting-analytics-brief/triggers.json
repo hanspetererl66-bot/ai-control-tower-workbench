@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Recruiting-Kennzahlen: wo hängt die Besetzung, wie ist die Time to Fill?",
+    "Quellen vergleichen und Auswahlquoten im Recruiting prüfen"
+  ],
+  "shouldNot": [
+    "Erstelle ein Board-Briefing zum AI Control Tower",
+    "Bewerte den Lead nach BANT"
+  ]
+}

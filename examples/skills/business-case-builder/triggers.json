@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Baue mir einen Business Case mit ROI und Payback für das Angebot",
+    "Wirtschaftlichkeit des Vertrags für das Gespräch mit dem CFO berechnen"
+  ],
+  "shouldNot": [
+    "Prüfe den Vertrag auf Abweichungen vom Standard",
+    "Dokumentiere den ABAP-Report ZFI_OPEN_ITEMS"
+  ]
+}

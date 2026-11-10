@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Gib mir ein n8n Lagebild: welche Workflows schlagen fehl?",
+    "Automation Health Check für diese Woche mit Erfolgsquote und Kategorien"
+  ],
+  "shouldNot": [
+    "Prüfe die Berechtigungen unserer Agenten",
+    "Fasse die Vertriebspipeline für die Wochenrunde zusammen"
+  ]
+}

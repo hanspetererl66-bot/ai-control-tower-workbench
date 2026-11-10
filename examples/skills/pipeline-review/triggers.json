@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Pipeline-Review für die Wochenrunde: Phasen, Werte, überfällige Schritte",
+    "Fasse den Forecast aus Angeboten und Verträgen zusammen"
+  ],
+  "shouldNot": [
+    "Bereite das Gespräch mit einem einzelnen Kunden vor",
+    "Erstelle ein Board-Briefing"
+  ]
+}

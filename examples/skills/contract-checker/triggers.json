@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Vertrag prüfen: Laufzeit, Kündigung, Preiserhöhung und Service Level",
+    "Prüfe die Klauseln des Angebotsentwurfs auf Abweichung vom Standard"
+  ],
+  "shouldNot": [
+    "Ist der Rabatt von 25 Prozent freigabepflichtig?",
+    "Erstelle einen Business Case für den Vertrag"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Opportunity planen: Account-Plan mit Zielen, Stakeholdern, Wettbewerb und Risiken",
+    "Deal-Strategie für den Kunden mit nächsten Schritten und Terminen"
+  ],
+  "shouldNot": [
+    "Prüfe das Risiko des Deals",
+    "Bereite den Discovery Call vor"
+  ]
+}

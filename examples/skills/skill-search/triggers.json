@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Welcher Skill passt für mich als Account Manager und in welcher Reihenfolge?",
+    "Skills für meine Rolle vergleichen nach Reifegrad, Risiko und Nutzen"
+  ],
+  "shouldNot": [
+    "Ich will einen neuen Skill bauen, gibt es das schon?",
+    "Skill bewerten mit 3 Sternen"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Rabatt prüfen: muss der Deal Desk dieses Angebot freigeben?",
+    "Ist der Rabatt von 30 Prozent im Angebot ohne Freigabe erlaubt?"
+  ],
+  "shouldNot": [
+    "Prüfe die Klauseln des Vertrags",
+    "Erstelle einen Business Case mit ROI"
+  ]
+}

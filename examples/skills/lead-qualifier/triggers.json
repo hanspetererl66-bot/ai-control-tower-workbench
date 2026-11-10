@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Lead bewerten: ist das ein guter Lead? Bitte Score mit Begründung",
+    "Berechne den Lead-Score nach ICP-Fit und BANT"
+  ],
+  "shouldNot": [
+    "Wer bekommt den Lead, wir brauchen das Routing?",
+    "Erfasse den neuen Kontakt vom Messestand"
+  ]
+}

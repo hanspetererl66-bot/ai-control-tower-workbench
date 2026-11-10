@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Ist der Deal gefährdet? Bewerte das Risiko aus Angebot, Mails und Calls",
+    "Deal-Risiko prüfen: Wettbewerb, Fristen, Freigabe und Auffälligkeiten"
+  ],
+  "shouldNot": [
+    "Plane die Opportunity mit Stakeholdern und nächsten Schritten",
+    "Welche Rabattstufe braucht eine Freigabe?"
+  ]
+}

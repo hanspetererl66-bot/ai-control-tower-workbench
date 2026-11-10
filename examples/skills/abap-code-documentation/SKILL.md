@@ -1,6 +1,6 @@
 ---
 name: abap-code-documentation
-description: Documents a custom ABAP object from the system: purpose, interface, dependencies, ATC findings and open questions, with the line each statement rests on. Nutzen bei "ABAP dokumentieren", "was macht dieser Report".
+description: Documents a custom ABAP object from the system: purpose, interface, dependencies, ATC findings and open questions, with the line each statement rests on. Writes no new code. Nutzen bei "ABAP dokumentieren", "was macht dieser Report".
 metadata:
   domain: Entwicklung
   process: Legacy-Code dokumentieren

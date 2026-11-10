@@ -13,6 +13,7 @@ export function installExampleSkills({ root = ROOT, skillsDir = join(root, 'goos
   for (const name of names) {
     mkdirSync(join(skillsDir, name), { recursive: true });
     cpSync(join(from, name, 'SKILL.md'), join(skillsDir, name, 'SKILL.md'));
+    if (existsSync(join(from, name, 'triggers.json'))) cpSync(join(from, name, 'triggers.json'), join(skillsDir, name, 'triggers.json')); // trigger examples travel with the skill
   }
   return names;
 }

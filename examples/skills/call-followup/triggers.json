@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Mach aus meinen Call-Notizen Vorschläge fürs CRM und eine Follow-up-Mail",
+    "Nachbereitung des Gesprächs von heute: Stage, Betrag und nächste Schritte"
+  ],
+  "shouldNot": [
+    "Bereite das Gespräch mit dem Kunden morgen vor",
+    "Bewerte diesen Lead nach BANT"
+  ]
+}

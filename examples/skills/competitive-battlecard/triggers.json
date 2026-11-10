@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Erstelle eine Battlecard gegen Coupa mit Stärken, Schwächen und Einwänden",
+    "Wettbewerb Copilot: Welche Fragen und Einwände muss ich erwarten?"
+  ],
+  "shouldNot": [
+    "Wie hoch ist das Risiko, dass der Deal kippt?",
+    "Beantworte die Fragen dieser Ausschreibung"
+  ]
+}

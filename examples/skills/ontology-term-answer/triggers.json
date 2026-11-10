@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Was bedeutet DSO bei uns und wer verantwortet die Kennzahl?",
+    "Wie ist die Marge definiert, welche Formel und welcher Eigentümer?"
+  ],
+  "shouldNot": [
+    "Dokumentiere diesen ABAP-Report",
+    "Wie hoch war die Marge im letzten Quartal?"
+  ]
+}

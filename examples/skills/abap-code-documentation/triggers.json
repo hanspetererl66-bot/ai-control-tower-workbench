@@ -1,0 +1,13 @@
+{
+  "should": [
+    "Dokumentiere mir den Z-Report ZFI_OPEN_ITEMS, was macht dieser Report?",
+    "ABAP dokumentieren: Zweck, Schnittstelle und ATC-Findings der Klasse ZCL_PRICING"
+  ],
+  "shouldNot": [
+    "Welche Workflows in n8n schlagen fehl?",
+    "Wer bekommt den Lead aus Hamburg?"
+  ],
+  "shouldNotLive": [
+    "Schreibe einen neuen ABAP-Report für offene Posten"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Security-Fragebogen vom CISO beantworten, mit Rechenzentrum und Datenschutz",
+    "Hilf mir beim Datenschutz-Fragebogen und markiere offene Fragen für Legal"
+  ],
+  "shouldNot": [
+    "Beantworte die Fragen dieser Ausschreibung mit Textbausteinen",
+    "Berechtigungsreview für unsere Agenten vorbereiten"
+  ]
+}

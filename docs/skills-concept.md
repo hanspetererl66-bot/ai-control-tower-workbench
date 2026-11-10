@@ -66,7 +66,7 @@ Hilfs-Skills im Bestand: `skill-finder` ("erst suchen, dann bauen", nutzt `searc
 **Laufzeit und Messung**
 6. **Skills werden zur Laufzeit nicht erzwungen.** `tools:` ist nur Dokumentation: Der Agent kann jedes verbundene Werkzeug aufrufen; `data-class` und `scope` begrenzen nichts bei der Ausführung. Die Prüfung "Rechte" liest Namen (`send|create|…`), keine echte Berechtigung.
 7. **Aufruf nicht messbar.** Die Datenbank bekommt nur `install` und `view`. Es gibt kein Ereignis "Skill wurde im Lauf geladen/benutzt", keine Erfolgsquote, keine Kosten je Skill. Skill Health zeigt deshalb Läufe/Nutzer aus anonymen Geräte-Hashes; Popular zählt lokale Klicks. Die Dublettenquote und "ungenutzt" sind damit schwache Signale.
-8. **Auslösung nur über die Beschreibung.** Kein Test, ob ein Skill bei den richtigen Anfragen anspringt und bei falschen nicht (keine Trigger-Evals, kein Regressionstest bei neuer Version). Das Harness-Profil "bevorzugen" ist nur ein Satz.
+8. **Auslösung nur über die Beschreibung (Trigger-Tests umgesetzt 10.11.2026).** Jeder Beispiel-Skill hat `triggers.json` (`should`, `shouldNot`, optional `shouldNotLive`). `npm run test:triggers` prüft offline per Wortvergleich auf Name und Beschreibung (`shared/skill-triggers.mjs`, läuft auch in `npm test`), `npm run test:triggers:live` fragt ein Claude-Modell (`ANTHROPIC_API_KEY`, Standard `claude-haiku-5-5`). Der Offline-Lauf fängt überlappende Beschreibungen und fehlende Wörter, versteht aber keine Bedeutung und keine Verneinung (dafür `shouldNotLive`). Erster Lauf fand eine echte Schwäche: `abap-code-documentation` sprang auch bei "neuen Report schreiben" an, die Beschreibung sagt jetzt "Writes no new code." Offen: Lauf bei jeder neuen Version beim Veröffentlichen, Prüfung gegen die Skills der anderen Ebenen.
 9. **Keine Abhängigkeiten.** Welche Connectoren (und Versionen) ein Skill braucht, ist nicht gespeichert; "kaputt" aus Datenbankdaten ist deshalb nie erkennbar. Fehlt ein Connector, merkt es der Agent erst im Lauf.
 10. **Keine Versionswahl.** Sync zieht immer die neueste sichtbare Fassung; kein Pinnen, kein Rollback auf Anwenderseite, keine Staffelung (Pilotgruppe), kein Vergleich "was hat sich geändert" im Antrag.
 11. **Geteilter Ordner, kein Schutz vor Überschreiben:** ein lokaler Skill mit gleichem Namen blockiert den Sync (wird nur gemeldet); Neustart des Agenten nötig, damit Änderungen wirken, und die Oberfläche erinnert nur im Text daran.
@@ -117,7 +117,7 @@ Die Werkbank ist ein **Prozess- und Oberflächenprototyp für Skill-Governance**
 2. **Nutzungsereignis "run"** (`skills_track`) aus Agent-Lauf und Scheduler, mit Erfolg/Fehler; damit werden Skill Health und Popular belastbar (7).
 3. **Abhängigkeiten im Front Matter** (`requires: connector@version`) prüfen beim Install und Sync (9).
 4. **Eine Validierung** statt drei; Regeln einmal in einer Datei, SQL daraus erzeugt oder per Test gegen dieselben Fälle geprüft (5).
-5. **Trigger-Tests** je Skill (Beispielanfragen: soll auslösen / soll nicht) und Test bei jeder neuen Version (8, 13).
+5. ~~Trigger-Tests je Skill~~ (umgesetzt, siehe 8). Noch offen: bei jeder neuen Version automatisch laufen lassen (13).
 6. **Identität**: SSO (Entra) und Gruppenrollen aus dem Verzeichnis (1); erst dann Governance als Schutz bezeichnen.
 7. **Export als Plattform-Brücke**: Skill-Paket nach Databricks UC Skills (SKILL.md ist schon kompatibel) und Register-Abgleich zu ServiceNow/Agent 365 als Demo.
 8. **Pinnen und Staffeln** von Versionen, Diff im Antrag (10).

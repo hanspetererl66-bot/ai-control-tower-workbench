@@ -100,7 +100,9 @@
     "skills:sync": "node scripts/skills-registry.mjs sync",
     "skills:publish": "node scripts/skills-registry.mjs publish",
     "install:examples": "node scripts/install-example-space.mjs",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "test:triggers": "node scripts/skill-trigger-eval.mjs",
+    "test:triggers:live": "node scripts/skill-trigger-eval.mjs --live"
   },
   "keywords": [
     "ai",

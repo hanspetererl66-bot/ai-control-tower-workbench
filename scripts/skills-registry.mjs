@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { checkTriggers } from '../shared/skill-triggers.mjs';
 import { MAX_DESCRIPTION, MAX_SKILL_CHARS, SECRET_LIKE, parseRequires } from '../shared/skill-rules.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -213,6 +214,14 @@ export async function publishSkills({ url, key, dirs, owner = '', reason = '', v
     const slug = dir.replace(/\/+$/, '').split('/').pop();
     const text = readFileSync(join(dir, 'SKILL.md'), 'utf8');
     const { description, meta } = validateSkill(slug, text, { tools, connectors });
+    // Trigger examples are optional here, but a triggers.json that exists must be well formed.
+    const triggersFile = join(dir, 'triggers.json');
+    if (existsSync(triggersFile)) {
+      let parsed;
+      try { parsed = JSON.parse(readFileSync(triggersFile, 'utf8')); } catch { throw new Error(`${slug}: triggers.json is not valid JSON`); }
+      const problems = checkTriggers(parsed);
+      if (problems.length) throw new Error(`${slug}: triggers.json: ${problems.join(' ')}`);
+    }
     const effective = { ...meta };
     if (forceScope === 'individual') { effective.scope = 'individual'; delete effective.team; } // an import never claims a higher level
     if (variantOf) effective.variant_of = variantOf;
