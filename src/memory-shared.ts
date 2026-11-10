@@ -34,10 +34,12 @@ const levelOfVisibility = (v: unknown): 1 | 2 | null => (v === 'company' ? 2 : v
 const msg = (e: unknown) => String((e as any)?.message ?? e).slice(0, 200);
 
 /** One round: the entries of other people that are shared with this person. Own entries and private ones are never listed here. */
-export async function syncShared(api: Api, me: string, current: SharedEntry[]): Promise<{ entries: SharedEntry[]; changed: boolean; errors: string[] }> {
+export async function syncShared(api: Api, me: string, current: SharedEntry[]): Promise<{ entries: SharedEntry[]; changed: boolean; errors: string[]; own: Array<{ itemId: string; visibility: unknown; archived: boolean }> }> {
   const errors: string[] = [];
   const rows: any[] = await api.call('list_work_items', { kind: 'memory' });
   const mine = me.trim().toLowerCase();
+  // Rows of the person's own memory items (for the levels of their own entries, see memory-share.ts).
+  const own = (Array.isArray(rows) ? rows : []).filter((r) => r && typeof r.id === 'string' && String(r.owner ?? '').toLowerCase() === mine).map((r) => ({ itemId: r.id as string, visibility: r.visibility, archived: r.archived === true }));
   const wanted = (Array.isArray(rows) ? rows : []).filter((r) => r && typeof r.id === 'string' && !r.archived && String(r.owner ?? '').toLowerCase() !== mine && levelOfVisibility(r.visibility));
   const have = new Map(current.map((e) => [e.itemId, e]));
   const out: SharedEntry[] = [];
@@ -52,7 +54,7 @@ export async function syncShared(api: Api, me: string, current: SharedEntry[]): 
     } catch (err) { errors.push(`${String(r.name ?? 'memory entry')}: ${msg(err)}`); if (old) out.push({ ...old, level }); }
   }
   const same = out.length === current.length && out.every((e, i) => JSON.stringify(e) === JSON.stringify(current[i]));
-  return { entries: out, changed: !same, errors };
+  return { entries: out, changed: !same, errors, own };
 }
 
 export function loadShared(store: Pick<Storage, 'getItem'>): SharedEntry[] {
