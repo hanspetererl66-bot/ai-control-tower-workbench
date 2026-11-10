@@ -1,7 +1,7 @@
 /**
  * Bridge between the sandboxed Recruiting Workbench Space and the app, for the online interview.
  * The Space has no network, so it asks by postMessage. Three fixed requests can pass, nothing else:
- *  - iv:ask-request    a prompt for the AI check, the summary or the letter, run by the agent (Joule; the model provider is OpenRouter).
+ *  - iv:ask-request    a prompt for the AI check, the summary, the letter, the rubric levels or the thank-you line, run by the agent (Joule; the model provider is OpenRouter).
  *                      The first words of the prompt must match its kind, so this is not a general chat channel.
  *  - iv:save-request   the record for the hiring manager (main process, database; the agent has no tool for it).
  *  - iv:draft-request  the letter as a Gmail DRAFT. The Gmail connector cannot send; the hiring manager sends it from Gmail.
@@ -19,6 +19,8 @@ const START: Record<string, RegExp> = {
   check: /^You check one task result against fixed criteria\./,
   summary: /^Write a short, neutral summary of an online interview/,
   letter: /^Write two short paragraphs of a warm, personal thank-you letter/,
+  assess: /^You rate one interview against a fixed rubric\./,
+  thanks: /^Write one short sentence for a thank-you e-mail after a job interview\./,
 };
 
 export type InterviewDeps = {
@@ -30,7 +32,7 @@ export type InterviewDeps = {
 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-const TITLES: Record<string, string> = { check: 'Interview: task check', summary: 'Interview: summary', letter: 'Interview: letter' };
+const TITLES: Record<string, string> = { check: 'Interview: task check', summary: 'Interview: summary', letter: 'Interview: letter', assess: 'Interview: rubric levels', thanks: 'Interview: thank-you line' };
 
 /** What the agent is told on top of the prompt: no tools, JSON only. */
 export function wrapPrompt(prompt: string): string {

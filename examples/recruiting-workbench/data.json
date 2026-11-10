@@ -1583,6 +1583,318 @@
           "sample": "I compare with last month by wage type. Then I look at bonus and back pay. I check headcount. I would release once the numbers look plausible."
         }
       }
+    },
+    "rubric": {
+      "version": "1",
+      "note": "Five levels per dimension, read from the written answers only. Equal weights. The AI proposes, the hiring manager sets the final level.",
+      "levels": [
+        {
+          "level": 1,
+          "name": "Not yet visible"
+        },
+        {
+          "level": 2,
+          "name": "Emerging"
+        },
+        {
+          "level": 3,
+          "name": "Solid"
+        },
+        {
+          "level": 4,
+          "name": "Strong"
+        },
+        {
+          "level": 5,
+          "name": "Outstanding"
+        }
+      ],
+      "dimensions": [
+        {
+          "key": "content",
+          "label": "Content",
+          "weight": 1,
+          "asks": "How concrete, correct and deep is what the person says?",
+          "anchors": {
+            "1": "No concrete case or fact; answers stay general or miss the question.",
+            "2": "Names topics, but without an own example or a reason.",
+            "3": "One or two concrete examples; the basics are correct; reasons are partly given.",
+            "4": "Several concrete examples with own role, method and result; reasons are given.",
+            "5": "Precise, deep and correct throughout; weighs trade-offs and knows the limits of the own approach."
+          }
+        },
+        {
+          "key": "collab",
+          "label": "Collaboration & reflection",
+          "weight": 1,
+          "asks": "What do the examples show about working with others and learning from mistakes?",
+          "anchors": {
+            "1": "No example of working with others or of learning from a mistake.",
+            "2": "Mentions others or a mistake, but vaguely or by blaming.",
+            "3": "Describes working with others and one lesson learned, in general terms.",
+            "4": "Concrete examples of handling disagreement and of changing the own mind; names the own part.",
+            "5": "Takes ownership, shows how others were brought along and what changed afterwards."
+          }
+        },
+        {
+          "key": "rhetoric",
+          "label": "Rhetoric",
+          "weight": 1,
+          "asks": "How well is the answer built and fitted to the listener? Structure and clarity only, not spelling, grammar or language level.",
+          "anchors": {
+            "1": "Hard to follow; no structure; the question is not answered.",
+            "2": "An answer is there but scattered; the point comes late or not at all.",
+            "3": "A clear main point and some structure; partly fitted to the listener.",
+            "4": "Point first, then reasons; fitted to the listener; plain words.",
+            "5": "Compact, vivid and fitted to the listener; keeps the thread when challenged."
+          }
+        },
+        {
+          "key": "creativity",
+          "label": "Creativity",
+          "weight": 1,
+          "asks": "How many different ideas are there, and how well are they argued?",
+          "anchors": {
+            "1": "No own idea; repeats the question or a standard answer.",
+            "2": "One standard idea without a reason.",
+            "3": "Two ideas, or one fresh idea, with a reason.",
+            "4": "Several clearly different ideas, with trade-offs.",
+            "5": "Original ideas that reframe the problem, with a way to test them."
+          }
+        }
+      ]
+    },
+    "profiles": {
+      "product-manager": {
+        "title": "Product Manager (software company)",
+        "questions": [
+          {
+            "id": "pm1",
+            "dim": "content",
+            "topic": "Experience",
+            "text": "Walk me through a product or feature you shipped end to end. What was your role, and what changed because of it?",
+            "lookFor": [
+              "A concrete case",
+              "Own role named",
+              "A result, ideally a number"
+            ]
+          },
+          {
+            "id": "pm2",
+            "dim": "content",
+            "topic": "Prioritisation",
+            "text": "How do you decide what not to build? Tell me about a feature you stopped.",
+            "lookFor": [
+              "A criterion, not a feeling",
+              "A real example",
+              "How stakeholders were told"
+            ]
+          },
+          {
+            "id": "pm3",
+            "dim": "content",
+            "topic": "Metrics",
+            "text": "Which metrics would you track for a new onboarding flow in a B2B software product, and why?",
+            "lookFor": [
+              "Activation and retention",
+              "Leading and lagging",
+              "A reason for each"
+            ]
+          },
+          {
+            "id": "pm4",
+            "dim": "collab",
+            "topic": "Conflict",
+            "text": "Engineering says a deadline is impossible, and sales has already promised it to a customer. What do you do?",
+            "lookFor": [
+              "Talks to both sides",
+              "Options with trade-offs",
+              "Own part in the outcome"
+            ]
+          },
+          {
+            "id": "pm5",
+            "dim": "collab",
+            "topic": "Learning",
+            "text": "Tell me about a time you were wrong about what users needed. What did you do afterwards?",
+            "lookFor": [
+              "Admits the mistake",
+              "What was learned",
+              "What changed"
+            ]
+          },
+          {
+            "id": "pm6",
+            "dim": "collab",
+            "topic": "First 90 days",
+            "text": "What would you want to learn in your first 90 days with us, and who would you talk to?",
+            "lookFor": [
+              "Names people and groups",
+              "Listens before acting",
+              "A first small step"
+            ]
+          },
+          {
+            "id": "pm7",
+            "dim": "rhetoric",
+            "topic": "Explaining",
+            "text": "Explain our product to a finance director without technical background. You have 60 seconds.",
+            "lookFor": [
+              "Plain words",
+              "One main point",
+              "An example"
+            ]
+          },
+          {
+            "id": "pm8",
+            "dim": "rhetoric",
+            "topic": "Persuading",
+            "text": "Present one roadmap theme for next quarter in three sentences, then I will push back.",
+            "lookFor": [
+              "Point first",
+              "Reasons",
+              "Keeps the thread under pushback"
+            ]
+          },
+          {
+            "id": "pm9",
+            "dim": "creativity",
+            "topic": "Ideas",
+            "text": "Users drop out at step 3 of the setup. Give me three very different ways to fix it, including one you would normally dismiss.",
+            "lookFor": [
+              "Clearly different ideas",
+              "Trade-offs",
+              "A way to test"
+            ]
+          },
+          {
+            "id": "pm10",
+            "dim": "creativity",
+            "topic": "AI in the product",
+            "text": "How would you bring AI agents into a product without users losing control?",
+            "lookFor": [
+              "Approval points",
+              "Visible actions",
+              "A small first version"
+            ]
+          }
+        ]
+      },
+      "developer": {
+        "title": "Developer (software company)",
+        "questions": [
+          {
+            "id": "dev1",
+            "dim": "content",
+            "topic": "Experience",
+            "text": "Describe the most complex system you built. What was the architecture, and which part was yours?",
+            "lookFor": [
+              "Components and data flow",
+              "Own part named",
+              "A trade-off made"
+            ]
+          },
+          {
+            "id": "dev2",
+            "dim": "content",
+            "topic": "Debugging",
+            "text": "Tell me about a production problem. How did you find the root cause?",
+            "lookFor": [
+              "A method",
+              "Evidence, not guessing",
+              "Prevention afterwards"
+            ]
+          },
+          {
+            "id": "dev3",
+            "dim": "content",
+            "topic": "API design",
+            "text": "How do you design an API that has to stay compatible for years?",
+            "lookFor": [
+              "Versioning",
+              "Additive changes",
+              "Deprecation path"
+            ]
+          },
+          {
+            "id": "dev4",
+            "dim": "collab",
+            "topic": "Review",
+            "text": "In a code review you find a design problem in the work of a more senior colleague. How do you proceed?",
+            "lookFor": [
+              "Raises it respectfully",
+              "Argues with facts",
+              "Open to being wrong"
+            ]
+          },
+          {
+            "id": "dev5",
+            "dim": "collab",
+            "topic": "Disagreement",
+            "text": "Tell me about a technical decision you disagreed with. How did it end?",
+            "lookFor": [
+              "Both views stated",
+              "Own part",
+              "What was learned"
+            ]
+          },
+          {
+            "id": "dev6",
+            "dim": "collab",
+            "topic": "Learning",
+            "text": "What did you change your mind about recently, and what are you learning now?",
+            "lookFor": [
+              "A concrete change of mind",
+              "A reason",
+              "A next step"
+            ]
+          },
+          {
+            "id": "dev7",
+            "dim": "rhetoric",
+            "topic": "Explaining",
+            "text": "Explain eventual consistency to a product manager.",
+            "lookFor": [
+              "Plain words",
+              "An everyday example",
+              "Says what it means for the product"
+            ]
+          },
+          {
+            "id": "dev8",
+            "dim": "rhetoric",
+            "topic": "Persuading",
+            "text": "Convince your manager in two minutes to give the team time for technical debt.",
+            "lookFor": [
+              "Business effect first",
+              "A number or example",
+              "A clear ask"
+            ]
+          },
+          {
+            "id": "dev9",
+            "dim": "creativity",
+            "topic": "Ideas",
+            "text": "A report is too slow. Make it 80% faster without more hardware. What are your ideas?",
+            "lookFor": [
+              "Clearly different ideas",
+              "Trade-offs",
+              "A way to measure"
+            ]
+          },
+          {
+            "id": "dev10",
+            "dim": "creativity",
+            "topic": "Testing AI",
+            "text": "How would you test a feature that relies on a language model?",
+            "lookFor": [
+              "Fixed test cases",
+              "Repeated runs",
+              "Checks on harmful output"
+            ]
+          }
+        ]
+      }
     }
   }
 }
