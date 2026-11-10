@@ -962,6 +962,47 @@ test('interview records: only the hiring manager keeps and reads them, one per s
   }
 });
 
+const asLevels = (over = []) => ['content', 'collab', 'rhetoric', 'creativity'].map((key, i) => ({ key, status: 'rated', ai: 3, human: null, ...(over[i] || {}) }));
+const asSave = (actor, req, session, levels, final = false, payload = { answers: [] }, overall = 3) =>
+  `select public.recruiting_assessment_save(${q(actor)}, ${q(req)}, ${q(session)}, 'product-manager', '1', 'ai', '', ${q(JSON.stringify(levels))}::jsonb, ${q(JSON.stringify(payload))}::jsonb, ${final}, ${overall})`;
+
+test('interview assessments: revisions for the hiring manager only, whole levels 1 to 5, no address, never changed (migration 041)', { skip }, () => {
+  const code = `IV-A${Date.now().toString(36).toUpperCase().slice(-6)}`;
+  const first = json(asSave(MGR, 'REQ-2203', code, asLevels()));
+  assert.deepEqual([first.saved, first.revision, first.reviewed], [true, 1, false]);
+  const second = json(asSave(MGR, 'REQ-2203', code, asLevels([{ human: 5 }]), true));
+  assert.deepEqual([second.revision, second.reviewed], [2, true], 'a review is a new revision, the proposal stays');
+  const mine = json(`select public.recruiting_assessments(${q(MGR)}, 'REQ-2203', 50)`).filter((r) => r.session === code);
+  assert.deepEqual(mine.map((r) => r.revision), [2, 1], 'newest first');
+  assert.equal(mine[0].reviewedBy, MGR);
+  assert.equal(mine[1].reviewedBy, null);
+  assert.equal(mine[0].levels[0].human, 5);
+  assert.deepEqual(json(`select public.recruiting_assessments('stranger@x.com', 'REQ-2203', 50)`), [], 'others read nothing');
+  assert.match(rule(asSave('stranger@x.com', 'REQ-2203', `${code}X`, asLevels())), /hiring manager/);
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}A`, asLevels([{ ai: 6 }]))), /levels are not valid/);
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}B`, asLevels([{ ai: 2.5 }]))), /levels are not valid/);
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}C`, asLevels([{ human: 0 }]))), /levels are not valid/);
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}D`, asLevels([{ key: 'content' }, { key: 'content' }]))), /levels are not valid/, 'a dimension twice');
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}E`, asLevels([{ status: 'rated', ai: null }]))), /levels are not valid/, 'rated needs a level');
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}F`, asLevels([{ status: 'unrated', ai: 4 }]))), /levels are not valid/, 'an unrated row holds no AI level');
+  assert.equal(json(asSave(MGR, 'REQ-2203', `${code}G`, asLevels([{ status: 'unrated', ai: null }]))).saved, true, 'a proposal may hold unrated rows');
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}H`, asLevels([{ status: 'unrated', ai: null }]), true)), /levels are not valid/, 'confirming needs a level for every answered dimension');
+  assert.equal(json(asSave(MGR, 'REQ-2203', `${code}I`, asLevels([{ status: 'unrated', ai: null, human: 4 }]), true)).saved, true, 'the hiring manager sets the missing level');
+  assert.equal(json(asSave(MGR, 'REQ-2203', `${code}J`, asLevels([{ status: 'no-answer', ai: null }]), true)).saved, true, 'no answer needs no level');
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}K`, asLevels(), false, { note: 'write to jane@example.org' })), /e-mail address/);
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}L`, asLevels([{ quote: 'mail jane@example.org' }]))), /e-mail address/);
+  assert.match(rule(asSave(MGR, 'REQ-2203', 'bad code', asLevels())), /./);
+  assert.match(rule(asSave(MGR, 'REQ-2203', `${code}M`, asLevels(), false, { answers: [] }, 6)), /./, 'overall stays between 1 and 5');
+  assert.match(rule(`update recruiting.interview_assessment set profile = 'x' where session_code = ${q(code)}`), /append only/);
+  assert.match(rule(`delete from recruiting.interview_assessment where session_code = ${q(code)}`), /append only/);
+  for (const role of ['anon', 'authenticated']) {
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_assessment_save(text,text,text,text,text,text,text,jsonb,jsonb,boolean,numeric)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.recruiting_assessments(text,text,integer)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_table_privilege(${q(role)}, 'recruiting.interview_assessment', 'select')`), 'f');
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.recruiting_assessment_save(text,text,text,text,text,text,text,jsonb,jsonb,boolean,numeric)', 'execute')"), 't');
+});
+
 test('migration 026 in real Postgres: revisions, conflict, closed to the public, append only', { skip }, () => {
   assert.equal(json(`select public.ontology_governance_get('a@x.com')`).rev, 0);
   assert.equal(json(`select public.ontology_governance_set('a@x.com', 0, '{"v":1}')`).conflict, false);

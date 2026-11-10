@@ -10,7 +10,7 @@ import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/j
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
 import { createRecruitingHandlers, decideHire, decideProposal, releaseContract, onboardingList, onboardingHandover, onboardingSet } from '../connectors/_lib/server/recruiting.mjs';
 import { observeCall } from '../connectors/_lib/server/observability.mjs';
-import { saveInterviewRecord } from '../connectors/_lib/server/interviews.mjs';
+import { saveInterviewRecord, saveAssessment, listAssessments } from '../connectors/_lib/server/interviews.mjs';
 import { publishPostingMock, releasePosting, sendBackPosting, withdrawPosting } from '../connectors/_lib/server/job-postings.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
@@ -114,6 +114,16 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async saveInterview(requisition, record) {
       const { rpc, email } = connect();
       return saveInterviewRecord(rpc, email, requisition, record);
+    },
+    /** Keeps one revision of the rubric assessment of an application interview (migration 041). Not a tool. */
+    async saveAssessment(requisition, record) {
+      const { rpc, email } = connect();
+      return saveAssessment(rpc, email, requisition, record);
+    },
+    /** The saved assessment revisions of a requisition, for the hiring manager only (the database checks). */
+    async listAssessments(requisition) {
+      const { rpc, email } = connect();
+      return listAssessments(rpc, email, requisition);
     },
     /**
      * Agent observability for the Observability space: seven fixed reading functions, whitelisted arguments, always as the stored e-mail.

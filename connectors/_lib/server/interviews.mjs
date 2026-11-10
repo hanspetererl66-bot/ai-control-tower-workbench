@@ -55,3 +55,42 @@ export async function saveInterviewRecord(rpc, actor, requisition, record) {
     p_mode_note: String(record.modeNote ?? '').slice(0, 200), p_payload: record, p_summary: String(record.summary ?? '').slice(0, 1500),
   });
 }
+
+const LEVEL_KEYS = ['content', 'collab', 'rhetoric', 'creativity'];
+/**
+ * Called by the main process: keeps one revision of the rubric assessment of an application interview (migration 041).
+ * NOT a tool. `record.levels` has four rows (key, status, ai, human, question, quote, reason, note, reviewedBy); `final` is true once the
+ * hiring manager confirmed them. The shape is checked here and again by the database.
+ */
+export async function saveAssessment(rpc, actor, requisition, record) {
+  if (!record || typeof record !== 'object') throw new ToolError('no assessment');
+  const session = String(record.session ?? '');
+  if (!/^[A-Z0-9-]{4,24}$/.test(session)) throw new ToolError('the session code is not valid');
+  if (!/^[a-z0-9-]{2,40}$/.test(String(record.profile ?? ''))) throw new ToolError('the profile is not valid');
+  if (!['ai', 'fallback'].includes(record.mode)) throw new ToolError('the mode must be ai or fallback');
+  const levels = record.levels;
+  if (!Array.isArray(levels) || levels.length !== 4 || !LEVEL_KEYS.every((k) => levels.some((l) => l?.key === k))) throw new ToolError('the four levels are incomplete');
+  const whole = (n) => n === null || n === undefined || (Number.isInteger(n) && n >= 1 && n <= 5);
+  if (!levels.every((l) => whole(l.ai) && whole(l.human))) throw new ToolError('a level must be a whole number from 1 to 5');
+  if (record.consistency !== undefined) {
+    const c = record.consistency;
+    const okRow = (r) => LEVEL_KEYS.includes(r?.key) && Array.isArray(r.levels) && r.levels.length <= 5 && r.levels.every(whole) && ['stable', 'differs', 'incomplete', 'no-answer'].includes(r.status);
+    if (!c || !Number.isInteger(c.runs) || c.runs < 2 || c.runs > 5 || !Array.isArray(c.rows) || c.rows.length !== 4 || !c.rows.every(okRow)) throw new ToolError('the consistency check is not valid');
+  }
+  const text = JSON.stringify(record);
+  if (text.length > 40000) throw new ToolError('the assessment is too long');
+  if (MAIL.test(text)) throw new ToolError('an assessment holds no e-mail address');
+  const overall = typeof record.overall === 'number' && record.overall >= 1 && record.overall <= 5 ? Math.round(record.overall * 10) / 10 : null;
+  const clean = { ...record, levels: levels.map((l) => ({ ...l, ai: l.ai ?? null, human: l.human ?? null })) };
+  return rpc('recruiting_assessment_save', {
+    p_actor: actor, p_requisition: String(requisition ?? ''), p_session: session, p_profile: record.profile, p_rubric: String(record.rubric ?? '').slice(0, 20),
+    p_mode: record.mode, p_mode_note: String(record.modeNote ?? '').slice(0, 200), p_levels: clean.levels, p_payload: clean,
+    p_final: record.final === true, p_overall: overall,
+  });
+}
+
+/** Called by the main process for the Space: the saved assessment revisions of a requisition the person manages. */
+export async function listAssessments(rpc, actor, requisition) {
+  const rows = await rpc('recruiting_assessments', { p_actor: actor, p_requisition: requisition ? String(requisition) : null, p_limit: 100 });
+  return Array.isArray(rows) ? rows : [];
+}

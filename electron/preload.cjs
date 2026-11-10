@@ -53,6 +53,8 @@ contextBridge.exposeInMainWorld('host', {
   recruitingPostingStep: (action, id, note) => ipcRenderer.invoke('recruiting-posting-step', action, id, note),
   recruitingPostingPublish: (id, channels) => ipcRenderer.invoke('recruiting-posting-publish', id, channels),
   recruitingInterviewSave: (requisition, record) => ipcRenderer.invoke('recruiting-interview-save', requisition, record),
+  recruitingAssessmentSave: (requisition, record) => ipcRenderer.invoke('recruiting-assessment-save', requisition, record),
+  recruitingAssessmentList: (requisition) => ipcRenderer.invoke('recruiting-assessment-list', requisition),
   recruitingDecide: (id, decision, note) => ipcRenderer.invoke('recruiting-decide', id, decision, note),
   runLocalWorkflow: (request) => ipcRenderer.invoke('run-local-workflow', request),
 
