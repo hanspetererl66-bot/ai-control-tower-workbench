@@ -1057,7 +1057,8 @@ export default function App() {
     // every other call starts a new one.
     const reuse = Boolean(session) && developSession.current?.key === session && developSession.current.id === conversationState.selectedId;
     if (!reuse) {
-      const id = newConversation();
+      // keepView: a working call from a Space or the Develop pages must not pull the person into the chat and unmount the page that asked.
+      const id = newConversation({ keepView: true });
       developSession.current = session && id ? { key: session, id } : null;
       await new Promise((resolve) => setTimeout(resolve, 80)); // let the new conversation take over before sending
     }
@@ -1463,9 +1464,9 @@ export default function App() {
     { id: 'schedule', label: 'Schedule', detail: activeSchedules ? `${activeSchedules} recurring ${activeSchedules === 1 ? 'briefing' : 'briefings'} active` : 'No recurring briefings', on: activeSchedules > 0, tab: 'schedule' },
   ];
 
-  function resetConversationSurface(conversationFiles: GeneratedFile[] = []) {
+  function resetConversationSurface(conversationFiles: GeneratedFile[] = [], options: { keepView?: boolean } = {}) {
     setDetailsOpen(false);
-    setView('chat');
+    if (!options.keepView) setView('chat');
     draft.current = '';
     tools.current = [];
     toolNames.current.clear();
@@ -1474,7 +1475,7 @@ export default function App() {
     lastGroundedCsvName.current = null;
   }
 
-  function newConversation(): string | null {
+  function newConversation(options: { keepView?: boolean } = {}): string | null {
     if (busy) return null;
     setContextSpace('');
     setDismissedIdeas([]);
@@ -1484,7 +1485,7 @@ export default function App() {
       items: [conversation, ...state.items],
     }));
     needsHistoryGrounding.current = true;
-    resetConversationSurface();
+    resetConversationSurface([], options);
     return conversation.id;
   }
 
@@ -1584,7 +1585,7 @@ export default function App() {
           selectedId={conversationState.selectedId}
           disabled={busy}
           onSelect={selectConversation}
-          onNew={newConversation}
+          onNew={() => { newConversation(); }}
           onArchive={archiveConversation}
           onRestore={restoreConversation}
           onDelete={deleteConversation}
@@ -1624,7 +1625,7 @@ export default function App() {
           selectedId={conversationState.selectedId}
           disabled={busy}
           onSelect={selectConversation}
-          onNew={newConversation}
+          onNew={() => { newConversation(); }}
           onArchive={archiveConversation}
           onRestore={restoreConversation}
           onDelete={deleteConversation}
