@@ -1,0 +1,42 @@
+{
+  "manifest_version": "0.2",
+  "name": "linear",
+  "display_name": "Linear",
+  "version": "0.1.0",
+  "description": "Linear: read issues, teams, projects and a team backlog, and add a comment to an issue (the only change it can make). Needs a personal API key.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "LINEAR_API_KEY": "${user_config.linear_api_key}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "linear_check_connection", "description": "Check the Linear connection (API key) and show who the key belongs to and the workspace." },
+    { "name": "linear_list_teams", "description": "List the Linear teams (key, name) the key can see. Read only." },
+    { "name": "linear_list_projects", "description": "List projects with state, progress and target date, optionally of one team. Read only." },
+    { "name": "linear_search_issues", "description": "Search issues by words in the title or description, newest change first. Read only." },
+    { "name": "linear_read_backlog", "description": "Read the open issues of a team for a requirements document. Read only." },
+    { "name": "linear_get_issue", "description": "Read one issue: description, state, labels, cycle and the last comments. Read only." },
+    { "name": "linear_add_comment", "description": "Add a comment to an issue (this changes Linear). Ask the person before using it." }
+  ],
+  "user_config": {
+    "linear_api_key": {
+      "type": "string",
+      "title": "Personal API key",
+      "description": "Linear, Settings, Account, Security and access, Personal API keys, New key. Choose Read and, for comments, Create comments (no more). Stored as a secret.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}
