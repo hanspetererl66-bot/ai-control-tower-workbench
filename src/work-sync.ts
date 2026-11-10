@@ -93,7 +93,8 @@ export async function syncOnce(api: Api, local: Local, toMarkdown: ((stored: str
   const before = units();
 
   const remote: any[] = await api.call('list_work_items', { include_archived: true });
-  const rows = (Array.isArray(remote) ? remote : []).filter((r) => r && (r.kind === 'agent' || r.kind === 'workflow'));
+  // Studio agents (stage 'studio-agent') are synced by studio-agent-sync.ts, not here.
+  const rows = (Array.isArray(remote) ? remote : []).filter((r) => r && (r.kind === 'agent' || r.kind === 'workflow') && r.stage !== 'studio-agent');
   const byItem = new Map<string, string>(Object.entries(map).map(([k, e]) => [e.itemId, k]));
 
   const replace = (key: string, r: NonNullable<ReturnType<typeof restore>>) => {
