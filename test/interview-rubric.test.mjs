@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { makeLogic } from '../connectors/_lib/server/recruiting-logic.mjs';
 import { handleInterviewMessage, MAX_PROMPT } from '../src/interview-bridge.ts';
+import { saveAssessment, listAssessments } from '../connectors/_lib/server/interviews.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const data = JSON.parse(readFileSync(join(ROOT, 'examples/recruiting-workbench/data.json'), 'utf8'));
@@ -200,4 +201,59 @@ test('the bridge lets the two new prompts through and nothing else', async () =>
   assert.equal((await handleInterviewMessage({ ...base, kind: 'assess', prompt: L.thanksPrompt(pm, answers) }, deps)).type, 'iv:error');
   assert.equal((await handleInterviewMessage({ ...base, kind: 'assess', prompt: 'Tell me a joke.' }, deps)).type, 'iv:error');
   assert.equal((await handleInterviewMessage({ ...base, kind: 'assess', prompt: L.assessmentPrompt(pm, answers) + 'y'.repeat(MAX_PROMPT) }, deps)).type, 'iv:error');
+});
+
+const rec = (over = {}) => {
+  const answers = answersFor(pm);
+  const rows = L.parseAssessment(pm, goodModel(pm, answers), answers).rows;
+  return { ...L.assessmentRecord(pm, 'REQ-2203', 'IV-ABC234', 'ai', '', answers, rows), final: false, overall: 3, ...over };
+};
+
+test('saving an assessment checks the shape, then passes it to the database function', async () => {
+  const calls = [];
+  const rpc = async (fn, body) => { calls.push([fn, body]); return { saved: true, revision: 1 }; };
+  const r = await saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec());
+  assert.equal(r.saved, true);
+  assert.equal(calls[0][0], 'recruiting_assessment_save');
+  assert.equal(calls[0][1].p_final, false);
+  assert.equal(calls[0][1].p_overall, 3);
+  assert.equal(calls[0][1].p_levels.length, 4);
+  assert.equal(calls[0][1].p_profile, 'product-manager');
+  await saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec({ final: true, overall: 3.25 }));
+  assert.equal(calls[1][1].p_final, true);
+  assert.equal(calls[1][1].p_overall, 3.3, 'one decimal');
+  await assert.rejects(() => saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec({ session: 'bad code' })), /session code/);
+  await assert.rejects(() => saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec({ mode: 'mock' })), /mode/);
+  await assert.rejects(() => saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec({ levels: rec().levels.slice(0, 3) })), /incomplete/);
+  await assert.rejects(() => saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec({ levels: rec().levels.map((l) => ({ ...l, ai: 9 })) })), /whole number/);
+  await assert.rejects(() => saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec({ modeNote: 'mail jane@example.org' })), /e-mail address/);
+  assert.equal(calls.length, 2, 'nothing refused reaches the database');
+  assert.deepEqual(await listAssessments(async () => 'oops', 'hm@example.com', 'REQ-2203'), []);
+});
+
+test('the bridge saves and lists assessments, but only for a valid requisition', async () => {
+  const seen = [];
+  const deps = {
+    saveAssessment: async (req, record) => { seen.push([req, record.session]); return { saved: true, revision: 2, reviewed: true }; },
+    listAssessments: async (req) => [{ session: 'IV-ABC234', req }],
+  };
+  const ok = await handleInterviewMessage({ type: 'iv:assess-save-request', requestId: 'r1', requisition: 'REQ-2203', record: rec() }, deps);
+  assert.deepEqual([ok.type, ok.saved, ok.revision, ok.reviewed], ['iv:assess-saved', true, 2, true]);
+  assert.deepEqual(seen, [['REQ-2203', 'IV-ABC234']]);
+  const list = await handleInterviewMessage({ type: 'iv:assess-list-request', requestId: 'r2', requisition: 'REQ-2203' }, deps);
+  assert.equal(list.type, 'iv:assess-list');
+  assert.equal(list.items.length, 1);
+  assert.equal((await handleInterviewMessage({ type: 'iv:assess-save-request', requestId: 'r3', requisition: 'drop table', record: {} }, deps)).type, 'iv:error');
+  assert.equal((await handleInterviewMessage({ type: 'iv:assess-list-request', requestId: 'r4', requisition: '' }, deps)).type, 'iv:error');
+  assert.equal((await handleInterviewMessage({ type: 'iv:assess-save-request', requestId: 'r5', requisition: 'REQ-2203', record: rec() }, {})).type, 'iv:error', 'no database, no save');
+});
+
+test('the migration is shaped like the others: append only, manager only, closed to the public', () => {
+  const sqlText = readFileSync(join(ROOT, 'supabase/migrations/20261110_041_interview_assessment.sql'), 'utf8');
+  assert.match(sqlText, /create trigger interview_assessment_no_change before update or delete/);
+  assert.match(sqlText, /recruiting\.posting_is_manager\(p_requisition, v_mail\)/);
+  assert.match(sqlText, /revoke all on recruiting\.interview_assessment from anon, authenticated/);
+  assert.match(sqlText, /grant execute on function public\.recruiting_assessment_save\([^)]*\) to service_role/);
+  assert.match(sqlText, /grant execute on function public\.recruiting_assessments\([^)]*\) to service_role/);
+  assert.equal(/grant execute[^;]*\bto (anon|authenticated|public)\b/i.test(sqlText), false);
 });

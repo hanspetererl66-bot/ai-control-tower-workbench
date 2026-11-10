@@ -4,6 +4,8 @@
  *  - iv:ask-request    a prompt for the AI check, the summary, the letter, the rubric levels or the thank-you line, run by the agent (Joule; the model provider is OpenRouter).
  *                      The first words of the prompt must match its kind, so this is not a general chat channel.
  *  - iv:save-request   the record for the hiring manager (main process, database; the agent has no tool for it).
+ *  - iv:assess-save-request / iv:assess-list-request  one revision of the rubric assessment (application interview), and the saved revisions.
+ *                      Main process, database, only for the hiring manager; the agent has no tool for either.
  *  - iv:draft-request  the letter as a Gmail DRAFT. The Gmail connector cannot send; the hiring manager sends it from Gmail.
  * The interviewee's address is used for the draft only and is stored nowhere.
  */
@@ -27,6 +29,8 @@ export type InterviewDeps = {
   /** Runs one working prompt through the agent and returns its answer ('' = stopped). */
   ask?: (prompt: string, title: string, session: string) => Promise<string>;
   save?: (requisition: string, record: Record<string, unknown>) => Promise<{ saved: boolean; note: string }>;
+  saveAssessment?: (requisition: string, record: Record<string, unknown>) => Promise<{ saved: boolean; revision?: number; reviewed?: boolean }>;
+  listAssessments?: (requisition: string) => Promise<Record<string, unknown>[]>;
   /** The Gmail connector's create_draft. */
   draft?: BridgeCall;
 };
@@ -63,6 +67,20 @@ export async function handleInterviewMessage(data: unknown, deps: InterviewDeps)
       if (!deps.save) return fail('Saving needs the desktop app with the shared database set up.');
       const res = await deps.save(requisition, data.record);
       return { type: 'iv:saved', requestId, saved: res.saved === true, note: String(res.note ?? '').slice(0, 200) };
+    }
+    if (data.type === 'iv:assess-save-request') {
+      const requisition = typeof data.requisition === 'string' && REQUISITION.test(data.requisition) ? data.requisition : '';
+      if (!requisition || !isObject(data.record)) return fail('The assessment is not valid.');
+      if (!deps.saveAssessment) return fail('Saving needs the desktop app with the shared database set up.');
+      const res = await deps.saveAssessment(requisition, data.record);
+      return { type: 'iv:assess-saved', requestId, saved: res.saved === true, revision: Number(res.revision) || 0, reviewed: res.reviewed === true };
+    }
+    if (data.type === 'iv:assess-list-request') {
+      const requisition = typeof data.requisition === 'string' && REQUISITION.test(data.requisition) ? data.requisition : '';
+      if (!requisition) return fail('The requisition is not valid.');
+      if (!deps.listAssessments) return fail('Reading needs the desktop app with the shared database set up.');
+      const items = await deps.listAssessments(requisition);
+      return { type: 'iv:assess-list', requestId, items: Array.isArray(items) ? items.slice(0, 100) : [] };
     }
     if (data.type === 'iv:draft-request') {
       const to = typeof data.to === 'string' ? data.to.trim() : '';

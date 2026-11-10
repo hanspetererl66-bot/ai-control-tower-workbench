@@ -1041,7 +1041,11 @@ export default function App() {
 
   /** What the online interview in the Recruiting Workbench may use: the agent for the checks, the database for the record, the Gmail connector for a draft. */
   function interviewDeps() {
-    const host = (window as any).host as { recruitingInterviewSave?: (r: string, rec: Record<string, unknown>) => Promise<{ ok: boolean; data?: { saved?: boolean; note?: string }; error?: string }> } | undefined;
+    const host = (window as any).host as {
+      recruitingInterviewSave?: (r: string, rec: Record<string, unknown>) => Promise<{ ok: boolean; data?: { saved?: boolean; note?: string }; error?: string }>;
+      recruitingAssessmentSave?: (r: string, rec: Record<string, unknown>) => Promise<{ ok: boolean; data?: { saved?: boolean; revision?: number; reviewed?: boolean }; error?: string }>;
+      recruitingAssessmentList?: (r: string) => Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }>;
+    } | undefined;
     const gmail = extensionNames.find((n) => /gmail/i.test(n));
     return {
       ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined,
@@ -1049,6 +1053,16 @@ export default function App() {
         const res = await host.recruitingInterviewSave!(requisition, record);
         if (!res.ok) throw new Error(res.error || 'The record could not be saved.');
         return { saved: res.data?.saved === true, note: res.data?.note ?? '' };
+      } : undefined,
+      saveAssessment: host?.recruitingAssessmentSave ? async (requisition: string, record: Record<string, unknown>) => {
+        const res = await host.recruitingAssessmentSave!(requisition, record);
+        if (!res.ok) throw new Error(res.error || 'The assessment could not be saved.');
+        return { saved: res.data?.saved === true, revision: res.data?.revision, reviewed: res.data?.reviewed === true };
+      } : undefined,
+      listAssessments: host?.recruitingAssessmentList ? async (requisition: string) => {
+        const res = await host.recruitingAssessmentList!(requisition);
+        if (!res.ok) throw new Error(res.error || 'The assessments could not be read.');
+        return res.data ?? [];
       } : undefined,
       draft: agent && gmail ? (tool: string, args: Record<string, unknown>) => agent.callTool(`${gmail}__${tool}`, args) : undefined,
     };

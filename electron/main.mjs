@@ -1508,6 +1508,12 @@ ipcMain.handle('recruiting-posting-publish', async (_event, id, channels) => {
 ipcMain.handle('recruiting-interview-save', async (_event, requisition, record) => {
   try { return { ok: true, data: await workStore.saveInterview(requisition, record) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
+ipcMain.handle('recruiting-assessment-save', async (_event, requisition, record) => {
+  try { return { ok: true, data: await workStore.saveAssessment(requisition, record) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
+ipcMain.handle('recruiting-assessment-list', async (_event, requisition) => {
+  try { return { ok: true, data: await workStore.listAssessments(requisition) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
+});
 ipcMain.handle('recruiting-criteria', async () => {
   try { return { ok: true, data: await workStore.listCriteria() }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });

@@ -256,6 +256,8 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
 .card{margin-bottom:16px}
 .two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
 .tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid var(--line);color:var(--ink-2);background:var(--line-2);white-space:nowrap}
+#rb-review textarea,#rb-session textarea{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:8px}#rb-review select,#rb-review input[type=text]{max-width:100%}
+.rb-dots{display:inline-flex;gap:3px;vertical-align:middle}.rb-dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}.rb-dots i.on{background:var(--purple-mid)}
 .tag.amber{color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border)}
 .tag.ok{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
 .tag.bad{color:var(--red);background:var(--red-dim);border-color:var(--red-border)}
@@ -918,7 +920,7 @@ function makeLogic(D) {
   // @logic-end
   var L = makeLogic(D);
 
-  var TABS = [['posting', 'Job posting'], ['dashboard', 'Dashboard'], ['pipeline', 'Pipeline'], ['match', 'Match agent'], ['interview', 'Online interview'], ['time', 'Time to fill'], ['brief', 'Morning brief'], '|', ['approvals', 'Approvals'], '|', ['ask', 'Ask Joule'], ['guard', 'Guardrails']];
+  var TABS = [['posting', 'Job posting'], ['dashboard', 'Dashboard'], ['pipeline', 'Pipeline'], ['match', 'Match agent'], ['interview', 'Online interview'], ['rubric', 'Application interview'], ['time', 'Time to fill'], ['brief', 'Morning brief'], '|', ['approvals', 'Approvals'], '|', ['ask', 'Ask Joule'], ['guard', 'Guardrails']];
   var JOBS_CV = D.jobs.filter(function (j) { return L.hasCriteria(j.id); });
   var LABEL = D.stageLabels || {};
   var FLOW = L.STAGES.concat(['Hired']);
@@ -1497,7 +1499,219 @@ function makeLogic(D) {
       '<div class="card"><h2>3 · Result (hiring manager)</h2><div id="iv-result">' + ivResult(g) + '</div></div>';
   }
 
-  var VIEWS = { interview: vInterview, posting: vPost, dashboard: vDashboard, pipeline: vPipeline, match: vMatch, time: vTime, brief: vBrief, approvals: vApprovals, ask: vAsk, guard: vGuard };
+  // ---------- Application interview: role profile, rubric levels, review, mails ----------
+  // Same bridge as the online interview. The AI proposes a level (1 to 5, a rubric stage) per area with a quote from the answers.
+  // The person sees the proposal marked as preliminary. The hiring manager sets the final levels, then prepares two Gmail DRAFTS and sends them from Gmail.
+  function newRb(job) { return { job: job, profile: L.profiles()[0].id, approved: false, ack: false, step: 'notice', qi: 0, ans: {}, session: '', busy: '', rows: null, mode: '', modeNote: '',
+    savedNote: '', edits: {}, confirmed: false, reviewNote: '', firstName: '', manager: '', replyBy: '', to: '', consent: false, mail: null, mailKind: '', mailBusy: '', mailNote: '', drafted: {}, list: null, listNote: '' }; }
+  S.rb = newRb(JOBS_CV[0].id);
+  function rbProfile() { return L.profileById(S.rb.profile); }
+  function rbRole() { return rbProfile().title.replace(/\s*\(.*\)\s*$/, ''); }
+  function rbAsk(kind, prompt) { return ivCall('iv:ask-request', { kind: kind, session: S.rb.session, prompt: prompt }, 180000).then(function (m) { return m.text; }); }
+  function rbSave(final) {
+    var v = S.rb, p = rbProfile(), rec = L.assessmentRecord(p, v.job, v.session, v.mode, v.modeNote, v.ans, v.rows);
+    rec.final = !!final; rec.overall = L.overall(v.rows, !!final);
+    return ivCall('iv:assess-save-request', { requisition: v.job, record: rec }, 30000).then(function (m) {
+      v.savedNote = (final ? 'Confirmed levels kept' : 'AI proposal kept') + ' for the hiring manager (revision ' + m.revision + ').';
+      return true;
+    }, function (err) { v.savedNote = 'Not kept: ' + err; return false; });
+  }
+  /** Submit: the AI proposes the levels. A level without a real quote is dropped and shown as not rated; with no AI, no level is set at all. */
+  function rbRun() {
+    var v = S.rb, p = rbProfile();
+    v.step = 'checking'; v.rows = null; v.savedNote = ''; v.edits = {}; v.confirmed = false; v.mail = null; v.drafted = {}; v.busy = 'The AI is reading your answers…'; render();
+    return rbAsk('assess', L.assessmentPrompt(p, v.ans)).then(function (text) {
+      var r = L.parseAssessment(p, text, v.ans);
+      v.rows = r.rows;
+      var any = r.rows.some(function (x) { return x.status === 'rated'; });
+      v.mode = any ? 'ai' : 'fallback';
+      v.modeNote = r.ok ? '' : (any ? 'Some levels were not kept: ' + r.problems[0] : 'The AI answer broke a rule (' + r.problems[0] + '), so no level was set.');
+    }, function (err) {
+      v.rows = L.assessmentFallback(p, v.ans); v.mode = 'fallback'; v.modeNote = 'No AI could be reached (' + err + '), so no level was set.';
+    }).then(function () { v.busy = 'Keeping the proposal for the hiring manager…'; render(); return rbSave(false); })
+      .then(function () { v.step = 'done'; v.busy = ''; render(); });
+  }
+  function rbConfirm() {
+    var v = S.rb, ed = {}, missing = [];
+    v.rows.forEach(function (r) {
+      var e = v.edits[r.key] || {}, lv = e.level ? +e.level : (r.status === 'rated' ? r.level : null);
+      if (lv) ed[r.key] = { level: lv, note: e.note || '' };
+      else if (r.status !== 'no-answer') missing.push(r.label);
+    });
+    if (missing.length) { v.reviewNote = 'Set a level for: ' + missing.join(', ') + '.'; render(); return; }
+    var rev = L.applyReview(v.rows, ed, 'hiring manager');
+    if (!rev.ok) { v.reviewNote = rev.problems[0]; render(); return; }
+    var before = v.rows; v.rows = rev.rows;
+    rbSave(true).then(function (ok) {
+      if (ok) { v.confirmed = true; v.reviewNote = ''; } else { v.rows = before; v.reviewNote = v.savedNote; }
+      render();
+    });
+  }
+  function rbOpts() { var v = S.rb; return { firstName: v.firstName, manager: v.manager, company: L.companyName(), replyBy: v.replyBy }; }
+  function rbPrepare(kind) {
+    var v = S.rb, p = rbProfile();
+    v.mailKind = kind; v.mail = null; v.mailNote = '';
+    if (kind === 'feedback') {
+      var f = L.feedbackMail(p, v.rows, rbOpts());
+      if (!f.ok) { v.mailNote = f.problems[0]; render(); return; }
+      v.mail = { subject: 'Your interview feedback – ' + rbRole(), body: f.text }; render(); return;
+    }
+    v.mailBusy = 'Writing one sentence…'; render();
+    return rbAsk('thanks', L.thanksPrompt(p, v.ans)).then(function (text) {
+      var r = L.parseThanks(text);
+      return r.ok ? { s: r.text, note: '' } : { s: L.thanksFallback(), note: 'The AI sentence broke a rule (' + r.problems[0] + '), so a fixed sentence is used.' };
+    }, function (err) { return { s: L.thanksFallback(), note: 'No AI could be reached (' + err + '), so a fixed sentence is used.' }; }).then(function (x) {
+      v.mail = { subject: 'Thank you for speaking with us – ' + rbRole(), body: L.assembleThanks(x.s, p, rbOpts()) }; v.mailNote = x.note; v.mailBusy = ''; render();
+    });
+  }
+  function rbDraft() {
+    var v = S.rb;
+    v.mailBusy = 'Creating the draft…'; render();
+    return ivCall('iv:draft-request', { to: v.to, subject: v.mail.subject, body: v.mail.body }, 30000).then(function () {
+      v.drafted[v.mailKind] = true; v.mail = null; v.to = ''; v.consent = false; v.mailBusy = ''; v.mailNote = ''; render();
+    }, function (err) { v.mailNote = 'The draft was not created: ' + err; v.mailBusy = ''; render(); });
+  }
+  function rbLoad() {
+    var v = S.rb;
+    v.listNote = 'Reading…'; render();
+    return ivCall('iv:assess-list-request', { requisition: v.job }, 30000).then(function (m) { v.list = m.items || []; v.listNote = v.list.length ? '' : 'Nothing is saved for this job yet.'; render(); },
+      function (err) { v.list = null; v.listNote = 'Not read: ' + err; render(); });
+  }
+  function rbDots(n) { var h = ''; for (var i = 1; i <= 5; i++) h += '<i' + (n && i <= n ? ' class="on"' : '') + '></i>'; return '<span class="rb-dots" aria-hidden="true">' + h + '</span>'; }
+  function rbLevelCell(r, lv) { return lv ? rbDots(lv) + ' <b>' + esc(L.levelName(lv)) + '</b> <span class="sub">' + lv + ' of 5</span>' : '<span class="tag">not rated</span>'; }
+  function rbGuideCard() {
+    var p = rbProfile(), dims = {}; L.rubric().dimensions.forEach(function (d) { dims[d.key] = d.label; });
+    return '<p class="sub">Ten questions, about 20 minutes. Joule suggests them; the hiring manager approves them. The interviewer asks only these questions.</p>' +
+      '<table><thead><tr><th>Area</th><th>Question</th><th>What a good answer shows</th></tr></thead><tbody>' + p.questions.map(function (q) {
+        return '<tr><td><span class="tag blue">' + esc(dims[q.dim]) + '</span><div class="sub">' + esc(q.topic) + '</div></td><td>' + esc(q.text) + '</td><td><ul class="iv-list">' + q.lookFor.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<details><summary>The rubric: five levels for each area</summary><table><thead><tr><th>Area</th>' + L.rubric().levels.map(function (l) { return '<th>' + l.level + ' ' + esc(l.name) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      L.rubric().dimensions.map(function (d) { return '<tr><td><b>' + esc(d.label) + '</b><div class="sub">' + esc(d.asks) + '</div></td>' + [1, 2, 3, 4, 5].map(function (n) { return '<td class="sub">' + esc(d.anchors[n]) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></details>' +
+      '<label class="sub"><input type="checkbox" data-rbsel="approve" ' + (S.rb.approved ? 'checked' : '') + '> I approve these questions and the rubric (hiring manager)</label>';
+  }
+  function rbCandidateRows(rows) {
+    return '<table><thead><tr><th>Area</th><th>Level</th><th>What the AI saw in your answer</th></tr></thead><tbody>' + rows.map(function (r) {
+      var lv = r.status === 'rated' ? r.level : null;
+      var why = lv ? esc(r.reason) + '<div class="sub">“' + esc(r.quote) + '”</div>' : '<span class="sub">' + (r.status === 'no-answer' ? 'There was no answer to read.' : 'The AI could not support a level with your words, so none is shown. The hiring manager will look at this area.') + '</span>';
+      return '<tr><td><b>' + esc(r.label) + '</b></td><td>' + rbLevelCell(r, lv) + '</td><td>' + why + '</td></tr>';
+    }).join('') + '</tbody></table>';
+  }
+  function rbSession() {
+    var v = S.rb, p = rbProfile(), qs = p.questions;
+    if (v.step === 'person') return '<div class="iv-win"><p><b>Request noted.</b> The hiring manager is asked to arrange a conversation with a person. Nothing from this session is read or kept.</p><button class="btn" type="button" data-rbact="reset">Back</button></div>';
+    if (v.step === 'notice') {
+      return '<div class="iv-win"><h3>Before we start: you will talk to an AI interviewer</h3><ul class="iv-list">' +
+        '<li>You are speaking with an AI, not with a person. The ten questions come from a guide the hiring manager approved.</li>' +
+        '<li>Your answers are written down as text. Do not share health, family or other personal data.</li>' +
+        '<li>An AI reads your written answers and suggests a level from 1 to 5 in four areas: content, collaboration &amp; reflection, rhetoric and creativity, each with a quote from you. It looks at what you say, not at spelling, grammar, accent or language level, and it does not judge you as a person.</li>' +
+        '<li>You see that suggestion right away, marked as preliminary. The hiring manager, a person, checks it, may change it, and sends you the confirmed version by e-mail. No decision about your application is made by the AI.</li>' +
+        '<li>To do this, your answers are sent to an AI model provider (OpenRouter, through Joule). The hiring manager keeps a record of answers and levels. It holds no name and no e-mail address; a session code stands for you.</li>' +
+        '<li>You can ask for a conversation with a person instead at any time.</li></ul>' +
+        '<label><input type="checkbox" data-rbsel="ack" ' + (v.ack ? 'checked' : '') + '> I understand that I am talking to an AI and that an AI suggests levels from my answers.</label>' +
+        '<div class="row"><button class="btn primary" type="button" data-rbact="start"' + (v.ack && v.approved ? '' : ' disabled') + '>Start the interview</button><button class="btn" type="button" data-rbact="person">I would rather talk to a person</button></div>' +
+        (v.approved ? '' : '<p class="note">The interview can start once the hiring manager has approved the questions (step 1).</p>') + '</div>';
+    }
+    if (v.step === 'talk') {
+      var q = qs[v.qi];
+      return '<div class="iv-win"><p class="sub">Question ' + (v.qi + 1) + ' of ' + qs.length + '</p><p class="iv-cap" aria-live="polite">' + esc(q.text) + '</p>' +
+        '<textarea data-rbin="ans:' + q.id + '" rows="5" aria-label="Your answer" placeholder="Type your answer.">' + esc(v.ans[q.id] || '') + '</textarea>' +
+        '<div class="row"><button class="btn primary" type="button" data-rbact="next">' + (v.qi + 1 < qs.length ? 'Next question' : 'Finish the interview') + '</button><button class="btn" type="button" data-rbact="person">Ask for a person</button></div></div>';
+    }
+    if (v.step === 'checking') return '<div class="iv-win"><p class="note" aria-live="polite">' + esc(v.busy || 'Working…') + '</p></div>';
+    if (v.step === 'done' && v.rows) {
+      return '<div class="iv-win"><h3>Thank you</h3><p>Here is what the AI suggests, area by area. <span class="tag amber">Preliminary</span> A person, the hiring manager, checks it and sends you the confirmed version by e-mail. It is not the decision on your application.</p>' +
+        rbCandidateRows(v.rows) + '<p class="note">Five levels: ' + L.rubric().levels.map(function (l) { return l.level + ' ' + l.name; }).join(', ') + '. Based only on your written answers.</p>' +
+        '<p><button class="btn" type="button" data-rbact="reset">Start over (demo)</button></p></div>';
+    }
+    return '<div class="iv-win"><button class="btn" type="button" data-rbact="reset">Start over (demo)</button></div>';
+  }
+  function rbReview() {
+    var v = S.rb, p = rbProfile();
+    if (v.step !== 'done' || !v.rows) return '<p class="sub">' + (v.step === 'checking' ? esc(v.busy || 'Working…') : 'The proposal appears here when the interview is finished.') + '</p>';
+    var opts = '<option value="">keep the AI level</option>' + L.rubric().levels.map(function (l) { return '<option value="' + l.level + '">' + l.level + ' ' + esc(l.name) + '</option>'; }).join('');
+    var table = '<table><thead><tr><th>Area</th><th>AI proposal</th><th>Evidence</th><th>Your level</th><th>Note for the person</th></tr></thead><tbody>' + v.rows.map(function (r) {
+      var e = v.edits[r.key] || {}, fin = L.finalLevel(r), lv = r.status === 'rated' ? r.level : null;
+      var ev = lv ? esc(r.reason) + '<div class="sub">“' + esc(r.quote) + '” <span class="sub">(' + esc(r.question) + ')</span></div>' : '<span class="sub">' + (r.status === 'no-answer' ? 'no answer' : 'no level could be supported by a quote') + '</span>';
+      var mine = v.confirmed ? rbLevelCell(r, fin) : '<select data-rbsel="lv:' + r.key + '" aria-label="Level for ' + esc(r.label) + '">' + opts.replace('value="' + (e.level || '') + '"', 'value="' + (e.level || '') + '" selected') + '</select>' + (lv ? '' : (r.status === 'no-answer' ? '' : ' <span class="tag amber">needs your level</span>'));
+      var note = v.confirmed ? esc(r.note || '') : '<input type="text" data-rbin="note:' + r.key + '" maxlength="300" aria-label="Note for ' + esc(r.label) + '" value="' + esc(e.note || '') + '" placeholder="optional">';
+      return '<tr><td><b>' + esc(r.label) + '</b></td><td>' + rbLevelCell(r, lv) + '</td><td>' + ev + '</td><td>' + mine + '</td><td>' + note + '</td></tr>';
+    }).join('') + '</tbody></table>';
+    var ai = L.overall(v.rows, false), fin = L.overall(v.rows, true);
+    var mean = '<p class="sub">Mean of the four levels, equal weights: AI proposal <b>' + (ai === null ? 'not available' : ai.toFixed(1)) + '</b>' + (v.confirmed ? ', confirmed <b>' + (fin === null ? 'not available' : fin.toFixed(1)) + '</b>' : '') + '. A reading aid for you, not a score; it is never sent to the person and nobody is ranked.</p>';
+    var mail = '';
+    if (v.confirmed) {
+      var form = '<div class="row"><label class="sub">First name <input type="text" data-rbin="firstName" maxlength="40" value="' + esc(v.firstName) + '"></label><label class="sub">Your name <input type="text" data-rbin="manager" maxlength="80" value="' + esc(v.manager) + '"></label>' +
+        '<label class="sub">Reply by (optional) <input type="text" data-rbin="replyBy" maxlength="40" placeholder="e.g. 20 November" value="' + esc(v.replyBy) + '"></label></div>';
+      var btns = '<div class="row"><button class="btn" type="button" data-rbact="thanks"' + (v.mailBusy ? ' disabled' : '') + '>' + (v.drafted.thanks ? 'Thank-you mail drafted ✓ · prepare again' : 'Prepare the thank-you mail') + '</button>' +
+        '<button class="btn" type="button" data-rbact="feedback">' + (v.drafted.feedback ? 'Feedback mail drafted ✓ · prepare again' : 'Prepare the feedback mail with the confirmed levels') + '</button></div>';
+      var body = '';
+      if (v.mail) body = '<p class="sub">Subject: <b>' + esc(v.mail.subject) + '</b></p><textarea data-rbin="mailbody" rows="16" aria-label="Mail text">' + esc(v.mail.body) + '</textarea>' +
+        '<div class="row"><input type="email" data-rbin="to" placeholder="e-mail address of the person" aria-label="E-mail address of the person" value="' + esc(v.to) + '">' +
+        '<label class="sub"><input type="checkbox" data-rbsel="consent" ' + (v.consent ? 'checked' : '') + '> The person agreed to receive this e-mail.</label>' +
+        '<button class="btn primary" type="button" data-rbact="draft"' + (L.isMail(v.to) && v.consent && !v.mailBusy ? '' : ' disabled') + '>Create the draft in Gmail</button></div>' +
+        '<p class="note">Read it through and change what you like. The Gmail connector can only create drafts: you send the mail from Gmail. The address is used for the draft only and is stored nowhere.</p>';
+      mail = '<h3>Mails for the person</h3><p class="sub">The thank-you mail has no levels in it. The feedback mail carries the levels you confirmed, with your notes and the person’s own words.</p>' + form + btns + body;
+    } else {
+      mail = '<div class="row"><button class="btn primary" type="button" data-rbact="confirm">Confirm the levels</button><span class="sub">Every area with an answer needs a level before you can confirm. A level you set wins over the AI’s.</span></div>';
+    }
+    return '<p>' + (v.mode === 'ai' ? '<span class="tag ok">Proposed by an AI (Joule, model provider OpenRouter)</span>' : '<span class="tag amber">No AI levels</span> ' + esc(v.modeNote)) +
+      (v.mode === 'ai' && v.modeNote ? ' <span class="sub">' + esc(v.modeNote) + '</span>' : '') + ' <span class="sub">Session ' + esc(v.session) + (v.confirmed ? ' · confirmed' : ' · waiting for you') + '</span></p>' +
+      table + mean + (v.savedNote ? '<p class="note">' + esc(v.savedNote) + '</p>' : '') + (v.reviewNote ? '<p class="note" role="alert">' + esc(v.reviewNote) + '</p>' : '') + mail +
+      (v.mailBusy ? '<p class="note" aria-live="polite">' + esc(v.mailBusy) + '</p>' : '') + (v.mailNote ? '<p class="note">' + esc(v.mailNote) + '</p>' : '') +
+      '<h3>Answers</h3>' + p.questions.map(function (q) { return '<p><b>' + esc(q.topic) + '.</b> ' + (v.ans[q.id] ? esc(v.ans[q.id]) : '<span class="sub">no answer</span>') + '</p>'; }).join('') +
+      '<details><summary>Prompt for the AI</summary><pre class="iv-pre">' + esc(L.assessmentPrompt(p, v.ans)) + '</pre></details>';
+  }
+  function rbSaved() {
+    var v = S.rb;
+    var head = '<div class="row"><button class="btn" type="button" data-rbact="load">Load saved assessments for ' + esc(v.job) + '</button><span class="sub">' + esc(v.listNote) + '</span></div>';
+    if (!v.list || !v.list.length) return head;
+    var seen = {}, latest = v.list.filter(function (x) { if (seen[x.session]) return false; seen[x.session] = true; return true; });
+    return head + '<table><thead><tr><th>Session</th><th>Profile</th><th>Revision</th><th>State</th><th>Levels</th></tr></thead><tbody>' + latest.map(function (x) {
+      var cells = (x.levels || []).map(function (l) { var lv = typeof l.human === 'number' ? l.human : (l.status === 'rated' ? l.ai : null); return esc(l.key) + ' ' + (lv ? lv + ' ' + esc(L.levelName(lv)) : '–'); }).join(' · ');
+      return '<tr><td>' + esc(x.session) + '</td><td>' + esc(x.profile) + '</td><td>' + x.revision + '</td><td><span class="tag ' + (x.reviewed ? 'ok' : 'amber') + '">' + (x.reviewed ? 'confirmed' : 'proposal') + '</span></td><td class="sub">' + cells + '</td></tr>';
+    }).join('') + '</tbody></table>';
+  }
+  function vRubric() {
+    var v = S.rb;
+    var jobSel = '<label class="sub">Job <select data-rbsel="job" aria-label="Job">' + JOBS_CV.map(function (j) { return '<option value="' + j.id + '"' + (j.id === v.job ? ' selected' : '') + '>' + esc(j.id + ' · ' + j.title) + '</option>'; }).join('') + '</select></label>';
+    var profSel = '<label class="sub">Role profile <select data-rbsel="profile" aria-label="Role profile">' + L.profiles().map(function (p) { return '<option value="' + p.id + '"' + (p.id === v.profile ? ' selected' : '') + '>' + esc(p.title) + '</option>'; }).join('') + '</select></label>';
+    return '<div class="card"><h2>Application interview</h2><p class="note">An AI interviewer asks ten questions for a role profile. An AI suggests one of five rubric levels for each of four areas, always with a quote from the person. The person sees the suggestion as preliminary. The hiring manager sets the final levels and sends the person a thank-you mail and the confirmed feedback. No decision is made by the AI.</p></div>' +
+      '<div class="card"><h2>1 · Profile and questions (hiring manager)</h2><div class="row">' + jobSel + profSel + '</div><div id="rb-guide">' + rbGuideCard() + '</div></div>' +
+      '<div class="card"><h2>2 · The session (what the person sees)</h2><div id="rb-session">' + rbSession() + '</div></div>' +
+      '<div class="card"><h2>3 · Review and mails (hiring manager)</h2><div id="rb-review">' + rbReview() + '</div></div>' +
+      '<div class="card"><h2>4 · Saved for this job (hiring manager)</h2><div id="rb-saved">' + rbSaved() + '</div></div>';
+  }
+  function rbClick(act) {
+    var v = S.rb, p = rbProfile();
+    if (act === 'start') { v.step = 'talk'; v.qi = 0; v.session = newSession(); render(); }
+    else if (act === 'person') { v.step = 'person'; render(); }
+    else if (act === 'next') { if (v.qi + 1 < p.questions.length) { v.qi++; render(); } else rbRun(); }
+    else if (act === 'reset') { S.rb = newRb(v.job); S.rb.profile = v.profile; render(); }
+    else if (act === 'confirm') rbConfirm();
+    else if (act === 'thanks') rbPrepare('thanks');
+    else if (act === 'feedback') rbPrepare('feedback');
+    else if (act === 'draft') rbDraft();
+    else if (act === 'load') rbLoad();
+  }
+  function rbInput(t) {
+    var v = S.rb, k = t.dataset.rbin, i = k.indexOf(':'), name = i < 0 ? k : k.slice(0, i), key = i < 0 ? '' : k.slice(i + 1);
+    if (name === 'ans') v.ans[key] = t.value;
+    else if (name === 'note') { v.edits[key] = v.edits[key] || {}; v.edits[key].note = t.value; }
+    else if (name === 'mailbody') v.mail.body = t.value;
+    else if (name === 'to') { v.to = t.value.trim(); var b = $('[data-rbact="draft"]'); if (b) b.disabled = !(L.isMail(v.to) && v.consent && !v.mailBusy); }
+    else if (name === 'firstName' || name === 'manager' || name === 'replyBy') v[name] = t.value;
+  }
+  function rbChange(t) {
+    var v = S.rb, k = t.dataset.rbsel, i = k.indexOf(':'), name = i < 0 ? k : k.slice(0, i), key = i < 0 ? '' : k.slice(i + 1);
+    if (name === 'job') { S.rb = newRb(t.value); S.rb.profile = v.profile; render(); }
+    else if (name === 'profile') { S.rb = newRb(v.job); S.rb.profile = t.value; render(); }
+    else if (name === 'approve') { v.approved = t.checked; $('#rb-session').innerHTML = rbSession(); }
+    else if (name === 'ack') { v.ack = t.checked; $('#rb-session').innerHTML = rbSession(); }
+    else if (name === 'lv') { v.edits[key] = v.edits[key] || {}; v.edits[key].level = t.value ? +t.value : null; }
+    else if (name === 'consent') { v.consent = t.checked; var b = $('[data-rbact="draft"]'); if (b) b.disabled = !(L.isMail(v.to) && v.consent && !v.mailBusy); }
+  }
+
+  var VIEWS = { interview: vInterview, rubric: vRubric, posting: vPost, dashboard: vDashboard, pipeline: vPipeline, match: vMatch, time: vTime, brief: vBrief, approvals: vApprovals, ask: vAsk, guard: vGuard };
 
   function render() {
     $('#sys').textContent = D.company + ' · as of ' + D.asOf;
@@ -1514,10 +1728,11 @@ function makeLogic(D) {
   }
 
   document.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-tab],[data-life],[data-pjob],[data-open],[data-go],[data-cand],[data-close],[data-ctab],[data-prop],[data-send],[data-rel],[data-dec],[data-q],[data-live],[data-prompt],[data-ivstart],[data-ivperson],[data-ivnext],[data-ivsubmit],[data-ivletter],[data-ivdraft],[data-ivsample],[data-ivreset],[data-tpl],[data-draft],[data-release],[data-unrelease],[data-prev],[data-publish],[data-savetpl]');
+    var el = e.target.closest('[data-tab],[data-life],[data-pjob],[data-open],[data-go],[data-cand],[data-close],[data-ctab],[data-prop],[data-send],[data-rel],[data-dec],[data-q],[data-live],[data-prompt],[data-rbact],[data-ivstart],[data-ivperson],[data-ivnext],[data-ivsubmit],[data-ivletter],[data-ivdraft],[data-ivsample],[data-ivreset],[data-tpl],[data-draft],[data-release],[data-unrelease],[data-prev],[data-publish],[data-savetpl]');
     if (!el) return;
     var d = el.dataset;
-    if (d.tab) go(d.tab);
+    if (d.rbact) rbClick(d.rbact);
+    else if (d.tab) go(d.tab);
     else if (d.life) { S.life = d.life; render(); }
     else if (d.pjob) { S.job = d.pjob; S.cand = null; go('pipeline'); }
     else if (d.open) openCand(d.open);
@@ -1566,6 +1781,7 @@ function makeLogic(D) {
     var t = e.target;
     if (t.matches('[data-find]')) { S.q = t.value; $('#jobs-out').innerHTML = jobsTable(); }
     else if (t.matches('[data-bf]')) { var k = t.dataset.bf; S.post.brief[k] = (k === 'must' || k === 'nice') ? textList(t.value) : t.value; }
+    else if (t.matches('[data-rbin]')) rbInput(t);
     else if (t.matches('[data-ivans]')) { S.iv.ans[t.dataset.ivans] = t.value; }
     else if (t.matches('[data-ivwork]')) { S.iv.work = t.value; }
     else if (t.matches('[data-ivto]')) { S.iv.to = t.value.trim(); var lb = $('[data-ivletter]'); if (lb) lb.disabled = !(L.isMail(S.iv.to) && S.iv.consent); }
@@ -1580,7 +1796,8 @@ function makeLogic(D) {
   });
   document.addEventListener('change', function (e) {
     var t = e.target;
-    if (t.matches('[data-ivjob]')) { S.iv = newIv(t.value); render(); }
+    if (t.matches('[data-rbsel]')) rbChange(t);
+    else if (t.matches('[data-ivjob]')) { S.iv = newIv(t.value); render(); }
     else if (t.matches('[data-ivapprove]')) { S.iv.approved = t.checked; $('#iv-session').innerHTML = ivSession(ivGuide()); }
     else if (t.matches('[data-ivack]')) { S.iv.ack = t.checked; $('#iv-session').innerHTML = ivSession(ivGuide()); }
     else if (t.matches('[data-ivspeak]')) { S.iv.speak = t.checked; }
