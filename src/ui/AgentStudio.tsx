@@ -348,6 +348,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
               )}
               {pendingFor(gov, agent.id) && <span>Waiting for approval (see the list on the left).</span>}
               {levelOf(gov, agent.id) === 2 && <span>Top level reached.</span>}
+              {dbState === 'on' && levelOf(gov, agent.id) > 0 && <small>Changing this agent takes it back to private until it is approved again.</small>}
               {agent.trigger.type !== 'manual' && (
                 <small>{levelOf(gov, agent.id) > 0
                   ? `Scheduled: ${agent.trigger.type === 'daily' ? 'every day' : 'every Monday'} at ${agent.trigger.time}${schedules.find((x) => x.id === `agent-${agent.id}`)?.lastRun ? `, last run ${new Date(schedules.find((x) => x.id === `agent-${agent.id}`)!.lastRun!).toLocaleString()}` : ', has not run yet'} (while the app is open).`

@@ -21,8 +21,11 @@ function fakeDb() {
         let i = args.id ? items.get(args.id) : null;
         if (i && args.expected_rev !== i.current_rev) throw new Error('The item was changed meanwhile');
         if (!i) { i = { id: `00000000-0000-4000-8000-${String(++n).padStart(12, '0')}`, current_rev: 0, archived: false, owner: 'a@b.de' }; items.set(i.id, i); }
-        Object.assign(i, { kind: args.kind, name: args.name, stage: args.stage ?? '', intent: args.intent ?? {}, files: args.files, visibility: args.visibility ?? 'private', team_id: args.team_id ?? null, current_rev: i.current_rev + 1 });
-        return { id: i.id, rev: i.current_rev };
+        let visibility = args.visibility ?? 'private';
+        // migration 047: a shared studio agent saved with other content falls back to private
+        if (i.files && i.visibility !== 'private' && visibility !== 'private' && JSON.stringify(i.files) !== JSON.stringify(args.files)) visibility = 'private';
+        Object.assign(i, { kind: args.kind, name: args.name, stage: args.stage ?? '', intent: args.intent ?? {}, files: args.files, visibility, team_id: visibility === 'team' ? args.team_id ?? null : null, current_rev: i.current_rev + 1 });
+        return { id: i.id, rev: i.current_rev, visibility };
       }
       throw new Error(`unexpected ${tool}`);
     },
@@ -45,17 +48,29 @@ test('a new studio agent is pushed as a private work item with the whole agent i
   assert.equal(again.pushed, 0, 'unchanged agents are not saved again');
 });
 
-test('a push keeps the visibility the database has (work_save would reset it to private)', async () => {
+test('a push sends the visibility the database has, and other content takes a shared agent back to private', async () => {
   const db = fakeDb();
   const a = agent();
   const r1 = await syncStudioAgents(db, { agents: [a], map: {} });
   const item = [...db.items.values()][0];
-  item.visibility = 'company'; // somebody with the right (the later promotion) published it
+  item.visibility = 'company'; // somebody with the right published it (the promotion)
   const edited = { ...a, instruction: 'Watch the renewals and also the contracts that end soon.' };
   const r2 = await syncStudioAgents(db, { agents: [edited], map: r1.map });
   assert.equal(r2.pushed, 1);
-  assert.equal(item.visibility, 'company', 'still company after the push');
-  assert.equal(r2.levels[a.id], 2);
+  assert.equal(db.calls.filter((c) => c.tool === 'save_work_item').at(-1).args.visibility, 'company', 'the push names the visibility it knows');
+  assert.equal(item.visibility, 'private', 'but other content makes it private again in the database');
+  assert.equal(r2.levels[a.id], 0, 'and the level follows the answer at once, not one round later');
+});
+
+test('an agent saved over with its own content again stays shared', async () => {
+  const db = fakeDb();
+  const a = agent();
+  const r1 = await syncStudioAgents(db, { agents: [a], map: {} });
+  const item = [...db.items.values()][0];
+  item.visibility = 'team';
+  const same = await db.call('save_work_item', { id: item.id, expected_rev: 1, visibility: 'team', kind: 'agent', name: item.name, stage: 'studio-agent', files: item.files });
+  assert.equal(same.visibility, 'team');
+  assert.equal(r1.pushed, 1);
 });
 
 test('levels: first sight keeps a local level, a later database change wins, a pulled agent takes the database level', async () => {

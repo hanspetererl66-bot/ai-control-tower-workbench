@@ -6,7 +6,8 @@
  * The database decides the level, but a level this computer already had (the old local simulation) is never taken away silently:
  *  - first time an agent is seen in the database, its local level stays (the item starts private there, a request moves it up later);
  *  - afterwards the level follows the database whenever the database changed since the last round (map entry `lvl`).
- * Pushing an agent keeps the visibility the item has in the database (work_save would otherwise reset it to private).
+ * Pushing an agent keeps the visibility the item has in the database (work_save would otherwise reset it to private);
+ * with other content a shared agent falls back to private in the database (migration 047), the answer says so and the level follows.
  * Conflicts as with projects: changed here and elsewhere => the other version is loaded, the local one stays as "(local copy)".
  */
 import { sanitizeAgents, type StudioAgent } from './agent-studio.ts';
@@ -116,7 +117,8 @@ export async function syncStudioAgents(api: Api, local: StudioLocal, now = Date.
       });
       const itemId = String(res?.id ?? entry?.itemId);
       map[u.key] = { itemId, rev: Number(res?.rev ?? (entry?.rev ?? 0) + 1), hash: u.hash, ...(entry?.lvl !== undefined ? { lvl: entry.lvl } : {}) };
-      if (!entry) visibility.set(itemId, 'private');
+      // The save answers with the visibility the item has now: a shared agent that got other content is private again (migration 047).
+      if (!entry) visibility.set(itemId, 'private'); else if (typeof res?.visibility === 'string') visibility.set(itemId, res.visibility);
       out.pushed++;
     } catch (e) { out.errors.push(`${u.name}: ${msg(e)}`); }
   }
