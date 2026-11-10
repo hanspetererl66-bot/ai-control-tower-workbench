@@ -8,7 +8,7 @@ import { ToolError } from './tools.mjs';
 import { actorOf } from './skill-lifecycle.mjs';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const KINDS = ['agent', 'workflow', 'code'];
+const KINDS = ['agent', 'workflow', 'code', 'memory'];
 const VISIBILITY = ['private', 'team', 'company'];
 const MAX_FILES = 200;
 const MAX_CHARS = 1_000_000;
@@ -28,7 +28,7 @@ export const WORK_ITEM_TOOL_DEFINITIONS = [
     inputSchema: obj({
       actor: ACTOR,
       id: { type: 'string', description: 'Omit to create a new item; otherwise the id of the item to change.' },
-      kind: { type: 'string', enum: KINDS, description: 'agent, workflow (for example n8n JSON) or code (Python, scripts, documents).' },
+      kind: { type: 'string', enum: KINDS, description: 'agent, workflow (for example n8n JSON), code (Python, scripts, documents) or memory (one shared memory entry).' },
       name: { type: 'string', description: 'Name of the item, 1 to 120 characters.' },
       files: {
         type: 'array', minItems: 1, maxItems: MAX_FILES,
@@ -141,7 +141,7 @@ export function createWorkItemHandlers(rpc) {
   return {
     async save_work_item(args) {
       const kind = str(args, 'kind');
-      if (!KINDS.includes(kind)) throw new ToolError('kind must be agent, workflow or code');
+      if (!KINDS.includes(kind)) throw new ToolError('kind must be agent, workflow, code or memory');
       const name = str(args, 'name').trim();
       if (name.length < 1 || name.length > 120) throw new ToolError('name must have 1 to 120 characters');
       const visibility = args.visibility === undefined ? 'private' : args.visibility;
@@ -168,7 +168,7 @@ export function createWorkItemHandlers(rpc) {
     },
     async list_work_items(args) {
       const kind = args.kind === undefined ? null : args.kind;
-      if (kind !== null && !KINDS.includes(kind)) throw new ToolError('kind must be agent, workflow or code');
+      if (kind !== null && !KINDS.includes(kind)) throw new ToolError('kind must be agent, workflow, code or memory');
       return call('work_list', { p_actor: actorOf(args), p_kind: kind, p_include_archived: args.include_archived === true });
     },
     async work_item_history(args) {

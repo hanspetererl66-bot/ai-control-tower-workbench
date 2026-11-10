@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SHARED_MEMORY_PULLED, loadShared, loadSharedOn, saveSharedOn, toggleShared } from '../memory-shared';
 import { MEMORY_GOV_KEY, decide, levelOf, loadGov, pendingFor, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 import { MAX_TEXT, MEMORY_KINDS, addMemory, deleteMemory, memoryNote, updateMemory, type MemoryKind, type MemoryState } from '../memory';
 import { Section, type SpaceRef } from './PreferencesPanels';
@@ -10,6 +11,10 @@ export default function MemoryPanel({ memory, onChange, spaces = [] }: MemoryPan
   const [gov, setGov] = useState<SkillGov>(() => ({ ...loadGov(undefined, MEMORY_GOV_KEY), levels: loadGov().levels }));
   useEffect(() => saveGov(gov, undefined, MEMORY_GOV_KEY), [gov]);
   const [space, setSpace] = useState('');
+  // Entries other people shared with you (read only, off until you switch one on).
+  const [shared, setShared] = useState(() => loadShared(window.localStorage));
+  const [sharedOn, setSharedOn] = useState(() => loadSharedOn(window.localStorage));
+  useEffect(() => { const r = () => setShared(loadShared(window.localStorage)); window.addEventListener(SHARED_MEMORY_PULLED, r); return () => window.removeEventListener(SHARED_MEMORY_PULLED, r); }, []);
   const lvl = (id: string) => levelOf(gov, id);
   const spaceTitle = (slug: string) => spaces.find((x) => x.slug === slug)?.title ?? slug;
   const pendingReqs = gov.requests.filter((r) => r.status === 'pending');
@@ -91,6 +96,20 @@ export default function MemoryPanel({ memory, onChange, spaces = [] }: MemoryPan
           </Section>
         );
       })}
+      {shared.length > 0 && (
+        <Section title="Shared with you" hint="Notes other people shared with their team or the company. You cannot change them. They are off until you switch one on, because they would otherwise steer your assistant.">
+          <ul className="prefs-list">
+            {shared.map((e) => (
+              <li key={e.itemId}>
+                <div>{e.text} <small className="mem-badge mem-badge-on">{gov.levels[e.level]}</small> <small className="mem-badge">from {e.owner}</small>{e.space && <small className="mem-badge">only in {spaceTitle(e.space)}</small>}</div>
+                <div>
+                  <label><input type="checkbox" checked={sharedOn.includes(e.itemId)} onChange={(ev) => { const next = toggleShared(sharedOn, e.itemId, ev.target.checked); setSharedOn(next); saveSharedOn(window.localStorage, next); }} /> Use in my conversations</label>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
       <Section title="Levels and approvals" hint={`An entry starts on “${gov.levels[0]}”. “Move up” asks to make it valid for more people: ${gov.levels[1]}, then ${gov.levels[2]}. It moves only after approval. Agreed entries are marked for the assistant. The names of the levels are set under Skills.`}>
         {pendingReqs.length === 0 && <p className="prefs-note">Nothing waits for approval.</p>}
         <ul className="prefs-list">
