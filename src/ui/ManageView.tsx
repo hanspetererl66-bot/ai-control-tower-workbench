@@ -10,6 +10,7 @@ import { listSkills, type Skill } from '../skills';
 import { skillNotice } from '../skill-notice';
 import SkillIcon from './SkillIcon';
 import SkillGovernance from './SkillGovernance';
+import { ConnectTools } from './ConnectTools';
 import SkillImportDialog, { type ImportPreview } from './SkillImportDialog';
 import { exportBlocker, reviewPackage } from '../skill-package';
 import SkillInstallDialog, { type InstallRequest } from './SkillInstallDialog';
@@ -110,6 +111,32 @@ export default function ManageView({
     } finally {
       setBusy(null);
     }
+  }
+
+  function openConfigure(e: Extension) {
+    return run(`cfg-${e.configKey}`, async () => {
+      const spec: any = await window.host?.getConnectorSpec?.(e.configKey);
+      const config: any = spec?.config ?? e.config ?? {};
+      const source = spec?.source ?? 'config';
+      setConfiguring({
+        request: {
+          id: -1,
+          kind: 'mcp',
+          name: e.configKey,
+          remote: config.type === 'streamable_http',
+          url: config.uri,
+          command: config.cmd,
+          args: config.args,
+          fields: spec?.fields ?? [],
+          description: spec?.description,
+          source,
+          config: sanitizedConfig(config),
+          configEditable:
+            source === 'mcpb' || source === 'link' || source === 'config',
+        },
+        values: spec?.values ?? {},
+      });
+    }, '');
   }
 
   const connectors = extensions
@@ -231,6 +258,7 @@ export default function ManageView({
 
         {showConnectors && (
           <>
+        <ConnectTools agent={agent} extensions={extensions} busy={busy !== null} onConfigure={(key) => { const ext = extensions.find((x) => x.configKey === key); if (ext) openConfigure(ext); }} />
         <h2 className="manage-h" id="manage-connectors">Connectors</h2>
         {connectors.length === 0 && <p className="manage-empty">No connectors configured.</p>}
         {connectors.map((e) => (
@@ -246,31 +274,7 @@ export default function ManageView({
               <button
                 className="dialog-btn"
                 disabled={busy !== null}
-                onClick={() =>
-                  run(`cfg-${e.configKey}`, async () => {
-                    const spec: any = await window.host?.getConnectorSpec?.(e.configKey);
-                    const config: any = spec?.config ?? e.config ?? {};
-                    const source = spec?.source ?? 'config';
-                    setConfiguring({
-                      request: {
-                        id: -1,
-                        kind: 'mcp',
-                        name: e.configKey,
-                        remote: config.type === 'streamable_http',
-                        url: config.uri,
-                        command: config.cmd,
-                        args: config.args,
-                        fields: spec?.fields ?? [],
-                        description: spec?.description,
-                        source,
-                        config: sanitizedConfig(config),
-                        configEditable:
-                          source === 'mcpb' || source === 'link' || source === 'config',
-                      },
-                      values: spec?.values ?? {},
-                    });
-                  }, '')
-                }
+                onClick={() => openConfigure(e)}
               >
                 Configure
               </button>

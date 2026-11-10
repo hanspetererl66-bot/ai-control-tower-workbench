@@ -18,3 +18,9 @@ Wortgleich aus der früheren `CLAUDE.md` ausgelagert (Stand der Einträge: jewei
 ## Offen (aus der früheren CLAUDE.md)
 - Quellen: anklickbarer Link auf Registry-Einträge (`werkbank://`-Handler), Notion-Datenbankfilter und verschachtelte Blöcke, Erweiterung auch für Einträge, die nur auf einem anderen Rechner liegen.
 - Skill-Sync nach `goose-home/.agents/skills` soll `sunsetAt`/`replacedBy` aus `skills_visible` anzeigen (siehe `skills-and-database.md`).
+
+## Connect your tools (Karten für Jira, Slack, Linear)
+- Auf der Connectors-Seite (Kachel "Connectors" im Develop-Hub) stehen über der Liste drei Karten mit Logo, Statuspunkt, je einem Satz zu "Reads" und "Writes" (geschrieben wird nur nach Bestätigung), dem Hinweis, woher der Schlüssel kommt, und den Knöpfen "Enter key" (öffnet den vorhandenen Konfigurationsdialog) und "Test connection" (ruft `<connector>__<tool>_check_connection`, nur lesend).
+- Zustände: "Not added yet" (mit Befehl `npm run connect:connectors -- --only <id>`), "Added, switched off", "Added, not tested", danach "Connection works" oder "Connection failed" mit gekürztem Text; Schlüsselmuster (xox…, lin_api_…, ATATT…) werden im Text ersetzt. Logik in `src/connect-tools.ts`, Karte in `src/ui/ConnectTools.tsx`, Test `test/connect-tools.test.mjs`.
+- Die Logos sind vereinfachte Marken in Markenfarben (die einzige Stelle ohne Farb-Tokens); die Statusfarben sind eigene Tokens `--ct-*`.
+- Nicht getestet: Klick auf "Test connection" in der Electron-App und gegen echte Dienste (nur die Auswertung der Antworten mit Fake-Daten), Hinzufügen der Connectoren per Knopf (die drei sind keine gebündelten Connectoren, das geht weiter per `connect:connectors` oder .mcpb), Telefonbreite. Die Karten wurden als Server-gerenderte Seite in Headless-Chrome (hell und dunkel) angesehen, nicht in der App.

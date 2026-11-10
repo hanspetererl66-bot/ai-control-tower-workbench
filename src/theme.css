@@ -5510,6 +5510,29 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .topbar-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .topbar-back { transition: none; } }
 
+/* Connect your tools: Jira, Slack and Linear as cards (Connectors page) */
+.ct-cards { --ct-good: #5f9c7b; --ct-warn: #ac8445; --ct-bad: #c27c83; --ct-good-ink: #2d6746; --ct-bad-ink: #8a3d45; }
+:root[data-theme="dark"] .ct-cards { --ct-good: #5b9877; --ct-warn: #b09256; --ct-bad: #b87780; --ct-good-ink: #a3d6b7; --ct-bad-ink: #eaa6ac; }
+.ct-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.ct-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.ct-head { display: flex; align-items: center; gap: 12px; }
+.ct-logo { flex: none; width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; background: var(--bg); border: 1px solid var(--line); }
+.ct-title h3 { margin: 0; font-size: 15px; font-weight: 650; }
+.ct-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.ct-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.ct-dot-ok { background: var(--ct-good); }
+.ct-dot-bad { background: var(--ct-bad); }
+.ct-dot-idle { background: var(--ct-warn); }
+.ct-line { margin: 0; font-size: 12.5px; line-height: 1.45; }
+.ct-line b { font-weight: 650; margin-right: 4px; }
+.ct-key, .ct-cmd { color: var(--muted); }
+.ct-cmd code { font-size: 11.5px; overflow-wrap: anywhere; }
+.ct-result { margin: 0; font-size: 12.5px; font-weight: 600; }
+.ct-result-ok { color: var(--ct-good-ink); }
+.ct-result-bad { color: var(--ct-bad-ink); }
+.ct-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 4px; }
+.ct-actions .dialog-btn { padding: 6px 11px; font-size: 12px; }
+
 /* Ontology Manager: lifecycle, synonyms, mappings, competency questions, export */
 .om-life { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 6px; padding-top: 6px; border-top: 1px solid var(--line); }
 .om-life h3 { margin: 8px 0 2px; }
