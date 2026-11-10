@@ -1227,7 +1227,7 @@ const MAIL_APPLESCRIPT = [
   '  set theFile to POSIX file (item 3 of argv)',
   '  tell application "Mail"',
   '    set m to make new outgoing message with properties {subject:(item 1 of argv), content:(item 2 of argv) & return & return, visible:true}',
-  '    tell m to make new attachment with properties {file name:theFile} at after the last paragraph',
+  '    tell content of m to make new attachment with properties {file name:theFile} at after the last paragraph',
   '    activate',
   '  end tell',
   'end run',
@@ -1246,7 +1246,7 @@ ipcMain.handle('compose-chat-mail', async (_event, raw) => {
     if (process.platform === 'darwin') {
       const args = MAIL_APPLESCRIPT.flatMap((line) => ['-e', line]);
       await new Promise((resolveRun, rejectRun) => {
-        execFile('osascript', [...args, subject, body, path], { timeout: 20_000 }, (error, _out, stderr) => (error ? rejectRun(new Error(String(stderr || error.message).trim())) : resolveRun()));
+        execFile('osascript', [...args, subject, body, path], { timeout: 20_000 }, (error, _out, stderr) => (error ? rejectRun(new Error(/-1743|not allowed/i.test(String(stderr)) ? 'macOS blocked access to Mail. Allow it under System Settings > Privacy & Security > Automation, then try again.' : String(stderr || error.message).trim())) : resolveRun()));
       });
       return { ok: true, path };
     }
