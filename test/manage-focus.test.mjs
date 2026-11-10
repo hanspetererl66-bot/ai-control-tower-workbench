@@ -9,7 +9,7 @@ const app = readFileSync(join(import.meta.dirname, '..', 'src/App.tsx'), 'utf8')
 test('the Skills and Connectors tiles open a page with only their own part', () => {
   assert.match(view, /const showConnectors = focus !== 'skills'/);
   assert.match(view, /const showSkills = focus !== 'connectors'/);
-  assert.match(view, /\{showConnectors && \(\s*<>\s*<h2 className="manage-h" id="manage-connectors">/);
+  assert.match(view, /\{showConnectors && \(\s*<>\s*(?:<ConnectTools [^\n]*\n\s*)?<h2 className="manage-h" id="manage-connectors">/);
   assert.match(view, /\{showSkills && \(\s*<>\s*<h2 className="manage-h" id="manage-skills">/);
   assert.match(view, /focus === 'skills' \? 'Skills' : focus === 'connectors' \? 'Connectors'/);
 });
