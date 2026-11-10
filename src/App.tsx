@@ -36,6 +36,7 @@ import { groupChoices, groupProfileMissing, harnessChoices, resolveHarness, sani
 import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
+import { applyDbLevels } from './skill-db';
 import { MEMORY_GOV_KEY, loadGov, saveGov, requestPromotion as govRequestPromotion, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
@@ -302,6 +303,8 @@ export default function App() {
     if (!read) { setSkillSource({ kind: 'example', detail: 'The shared database is only available in the desktop app.' }); return; }
     if (!read.ok || !Array.isArray(read.data?.skills)) { setSkillSource({ kind: skillCatalogRef.current.skills.some((s) => s.example) ? 'example' : 'offline', detail: read.detail ?? 'The database did not answer.' }); return; }
     if (read.data.skills.length === 0) { setSkillSource({ kind: 'example', detail: 'The database has no skills you can see yet. Example data is shown.' }); return; }
+    // The database is the truth for the level of each skill: refresh the local copy the Skills view and the chat read.
+    saveGov(applyDbLevels(loadGov(), read.data.skills));
     const base = skillCatalogRef.current.skills.some((s) => s.example) ? { ...skillCatalogRef.current, skills: [], log: [] } : skillCatalogRef.current;
     const filled = supplementWithExamples(catalogFromDatabase(base, read.data.skills, Date.now()), Date.now());
     changeSkillCatalog(filled.catalog);

@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { readSkill, type Skill } from '../skills';
 import { reviewOutcome, reviewSkill, type CheckResult } from '../skill-review';
 import { APPROVER, approvalSteps, type ApprovalStep } from '../skill-approval';
-import { reconcile, dbTarget, type DbRequest } from '../skill-db';
+import { reconcile, applyDbLevels, dbTarget, type DbRequest } from '../skill-db';
 import { CHECKS, decide, demote, levelOf, loadGov, pendingFor, renameLevel, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 
 type Tab = 'map' | 'approvals';
@@ -84,6 +84,9 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
     setDb('on'); setDbMsg('');
     setCanDecide(Object.fromEntries(rows.map((x) => [x.id, !!x.can_decide])));
     setGov((g) => reconcile(g, rows));
+    // The database decides the level of every skill; the local map is only a copy of it (and the simulation when there is no database).
+    const health = await host.skillDbHealth?.().catch(() => undefined);
+    if (health?.ok) setGov((g) => applyDbLevels(g, health.data?.skills));
     const gr = await host.skillDbGroups?.();
     if (gr?.ok && gr.rows) { setGroups(gr.rows); setGroupId((cur) => cur || gr.rows?.[0]?.id || ''); }
   };
@@ -236,7 +239,8 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                   </button>
                 )}
                 {!req && lvl === 2 && <span className="sgov-badge sgov-badge-ok">Top level</span>}
-                {lvl > 0 && !req && <button className="dialog-btn" onClick={() => change((g) => demote(g, s.name))}>Move down</button>}
+                {lvl > 0 && !req && db !== 'on' && <button className="dialog-btn" onClick={() => change((g) => demote(g, s.name))}>Move down</button>}
+                {lvl > 0 && !req && db === 'on' && <span className="sgov-help" title="The shared database holds the level. A skill leaves a level by being phased out or retired in Skill management.">Level set by the database</span>}
               </div>
             );
             return (

@@ -6,7 +6,7 @@ import test from 'node:test';
 import { sha256, syncSkills } from '../scripts/skills-registry.mjs';
 import { createSkillStore, PROMOTION_TOOLS } from '../electron/skill-store.mjs';
 import { createWorkStore } from '../electron/work-store.mjs';
-import { dbTarget, reconcile } from '../src/skill-db.ts';
+import { applyDbLevels, dbTarget, levelFromScope, reconcile } from '../src/skill-db.ts';
 import { decide, defaultGov, loadGov, requestPromotion } from '../src/skill-governance.ts';
 import { popular } from '../src/chat-tabs.ts';
 import { skillNotice } from '../src/skill-notice.ts';
@@ -157,4 +157,18 @@ test('skill notice: upcoming, ended, replacement only', () => {
   assert.match(up.text, /Ends 2026-12-01 \(in 29 days\) · use “new-one” instead/);
   assert.equal(skillNotice({ sunsetAt: '2026-10-01' }, now).state, 'ended');
   assert.equal(skillNotice({ replacedBy: 'x' }, now).text, 'use “x” instead');
+});
+
+test('the database is the truth for the level: listed skills follow it, unlisted ones go back to level 0, an empty answer changes nothing', () => {
+  const local = { ...defaultGov(), skills: { 'stale-local': 2, 'moved-up': 0, 'same': 1 } };
+  assert.equal(levelFromScope('company'), 2);
+  assert.equal(levelFromScope('team'), 1);
+  assert.equal(levelFromScope('individual'), 0);
+  assert.equal(levelFromScope('lob'), 0, 'old scope names are not a level');
+  const next = applyDbLevels(local, [{ slug: 'moved-up', scope: 'company' }, { slug: 'same', scope: 'team' }, { slug: 'draft', scope: 'individual' }]);
+  assert.deepEqual(next.skills, { 'moved-up': 2, same: 1 });
+  assert.equal(applyDbLevels(local, []), local);
+  assert.equal(applyDbLevels(local, undefined), local);
+  assert.equal(applyDbLevels(next, [{ slug: 'moved-up', scope: 'company' }, { slug: 'same', scope: 'team' }]), next, 'no change returns the same object');
+  assert.deepEqual(next.levels, local.levels);
 });
