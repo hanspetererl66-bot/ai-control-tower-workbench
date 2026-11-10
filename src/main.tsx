@@ -15,6 +15,7 @@ declare global {
       openWorkspace?: () => Promise<{ ok: boolean; detail?: string }>;
       revealFile?: (path: string) => void;
       renderBriefingPdf?: (request: { html: string; fileName: string }) => Promise<{ ok: boolean; detail?: string; path?: string; base64?: string }>;
+      composeChatMail?: (request: { subject: string; body: string; fileName: string; markdown: string }) => Promise<{ ok: boolean; detail?: string; path?: string }>;
       pickChatFiles?: () => Promise<AttachmentPickerResult>;
       pathsOfDroppedFiles?: (files: FileList | File[]) => string[];
       addChatFiles?: (paths: string[]) => Promise<AttachmentPickerResult>;

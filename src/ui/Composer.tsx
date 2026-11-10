@@ -61,6 +61,9 @@ type Props = {
   onSaveStarter?: (prompt: string) => void;
   /** Start a fresh conversation (the new-chat button). */
   onNewChat?: () => void;
+  /** Mail this conversation (the @ button). Disabled while there is nothing to send. */
+  onEmail?: () => void;
+  canEmail?: boolean;
 };
 
 /** Whether the buttons under the input (Favorites, Suggested, …) are shown. */
@@ -74,6 +77,8 @@ const CONTEXT_SOURCES = [
 
 export default function Composer({
   contextSlot,
+  onEmail,
+  canEmail,
   commands = [],
   onSend,
   onCreateTableSpace,
@@ -593,6 +598,18 @@ export default function Composer({
           </button>
         )}
 
+        {onEmail && (
+          <button
+            className="chip chip-icon"
+            title="E-mail this conversation (opens a new message with the conversation attached)"
+            aria-label="E-mail this conversation"
+            onClick={onEmail}
+            disabled={!canEmail || busy}
+          >
+            <AtIcon />
+          </button>
+        )}
+
         <div className="chip-wrap">
           <button
             className={`chip chip-icon integrations-trigger ${integrationsOpen ? 'chip-on' : ''}`}
@@ -760,6 +777,15 @@ function StarIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.5l-3.8 2.1.7-4.3-3.1-3 4.3-.6z" />
+    </svg>
+  );
+}
+
+function AtIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="2.4" />
+      <path d="M10.4 8v1.3c0 1 .8 1.7 1.7 1.7 1 0 1.7-.9 1.7-2.1V8a5.8 5.8 0 1 0-2.3 4.6" />
     </svg>
   );
 }

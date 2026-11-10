@@ -1219,6 +1219,68 @@ ipcMain.handle('render-briefing-pdf', async (_event, raw) => {
   }
 });
 
+/** "@" in the chat bar: the conversation as a Markdown file in workspace/mail/, then a new e-mail with the file attached and a suggested text.
+ * macOS: Mail.app via AppleScript (values go in as arguments, never into the script text). Elsewhere: an unsent .eml draft that the default mail
+ * program opens as a new message. Nothing is sent; the person reviews and sends it. */
+const MAIL_APPLESCRIPT = [
+  'on run argv',
+  '  set theFile to POSIX file (item 3 of argv)',
+  '  tell application "Mail"',
+  '    set m to make new outgoing message with properties {subject:(item 1 of argv), content:(item 2 of argv) & return & return, visible:true}',
+  '    tell m to make new attachment with properties {file name:theFile} at after the last paragraph',
+  '    activate',
+  '  end tell',
+  'end run',
+];
+ipcMain.handle('compose-chat-mail', async (_event, raw) => {
+  const subject = typeof raw?.subject === 'string' ? raw.subject.slice(0, 300) : '';
+  const body = typeof raw?.body === 'string' ? raw.body.slice(0, 20_000) : '';
+  const markdown = typeof raw?.markdown === 'string' ? raw.markdown : '';
+  const name = typeof raw?.fileName === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.md$/.test(raw.fileName) ? raw.fileName : '';
+  if (!subject || !markdown || !name || markdown.length > 5_000_000) return { ok: false, detail: 'Nothing to send.' };
+  try {
+    const dir = join(WORKSPACE, 'mail');
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, name);
+    writeFileSync(path, markdown);
+    if (process.platform === 'darwin') {
+      const args = MAIL_APPLESCRIPT.flatMap((line) => ['-e', line]);
+      await new Promise((resolveRun, rejectRun) => {
+        execFile('osascript', [...args, subject, body, path], { timeout: 20_000 }, (error, _out, stderr) => (error ? rejectRun(new Error(String(stderr || error.message).trim())) : resolveRun()));
+      });
+      return { ok: true, path };
+    }
+    const clean = (text) => text.replace(/[\r\n]+/g, ' ');
+    const b64 = Buffer.from(markdown, 'utf8').toString('base64').replace(/(.{76})/g, '$1\r\n');
+    const eml = [
+      'X-Unsent: 1',
+      `Subject: =?UTF-8?B?${Buffer.from(clean(subject), 'utf8').toString('base64')}?=`,
+      'MIME-Version: 1.0',
+      'Content-Type: multipart/mixed; boundary="werkbank-mail"',
+      '',
+      '--werkbank-mail',
+      'Content-Type: text/plain; charset=UTF-8',
+      'Content-Transfer-Encoding: base64',
+      '',
+      Buffer.from(body, 'utf8').toString('base64').replace(/(.{76})/g, '$1\r\n'),
+      '--werkbank-mail',
+      `Content-Type: text/markdown; name="${name}"`,
+      'Content-Transfer-Encoding: base64',
+      `Content-Disposition: attachment; filename="${name}"`,
+      '',
+      b64,
+      '--werkbank-mail--',
+      '',
+    ].join('\r\n');
+    const emlPath = join(dir, name.replace(/\.md$/, '.eml'));
+    writeFileSync(emlPath, eml);
+    const detail = await shell.openPath(emlPath);
+    return detail ? { ok: false, detail, path } : { ok: true, path };
+  } catch (error) {
+    return { ok: false, detail: error?.message ?? String(error) };
+  }
+});
+
 // Open/reveal only inside the agent's workspace — paths come from tool output,
 // which is model-influenced, so never hand arbitrary locations to the OS shell.
 ipcMain.handle('open-file', async (_event, path) => {
