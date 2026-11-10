@@ -10,6 +10,7 @@ metadata:
   scope: team
   team: AI Programme Office
   tools: get_n8n_overview, list_n8n_workflows, get_n8n_workflow, list_n8n_executions, list_n8n_categories
+  requires: ai-control-tower
 ---
 
 # n8n Health Check

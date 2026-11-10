@@ -9,6 +9,7 @@ metadata:
   scope: company
   team: AI Programme Office
   tools: search_skills, get_skill_info
+  requires: ai-control-tower
 ---
 
 # Skill-Finder: erst suchen, dann bauen

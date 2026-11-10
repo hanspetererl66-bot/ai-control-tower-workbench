@@ -11,6 +11,7 @@ metadata:
   scope: lob
   team: AI Programme Office
   tools: list_tickets, create_ticket
+  requires: ai-control-tower
 ---
 
 # Sub4Me-Ticket schreiben

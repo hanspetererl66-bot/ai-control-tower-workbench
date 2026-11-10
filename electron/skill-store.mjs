@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createSkillLifecycleHandlers } from '../connectors/_lib/server/skill-lifecycle.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
-import { publishSkills, syncSkills, rpc as registryRpc } from '../scripts/skills-registry.mjs';
+import { publishSkills, syncSkills, trackSkills, rpc as registryRpc } from '../scripts/skills-registry.mjs';
 
 /** Lifecycle tools the window may call. Deciding is allowed too: the database refuses the requester and non-admins. */
 export const PROMOTION_TOOLS = new Set(['request_skill_promotion', 'list_skill_requests', 'withdraw_skill_request', 'decide_skill_request', 'get_skill_status']);
@@ -62,6 +62,13 @@ export function createSkillStore({ credentials, skillsDir, fetchImpl = fetch }) 
       const c = need();
       try { return { ok: true, result: await syncSkills({ url: c.url, key: c.key, skillsDir, actor: c.email, fetchImpl }) }; }
       catch (e) { return { ok: false, detail: say(e) }; }
+    },
+    /** Counts that these skills were used in a conversation (event 'run'). Best effort: never throws, counts nothing without a database. */
+    async trackRun(slugs) {
+      let c;
+      try { c = need(); } catch { return { ok: false, detail: 'no database' }; }
+      const list = [...new Set((Array.isArray(slugs) ? slugs : []).filter((x) => typeof x === 'string' && /^[a-z0-9][a-z0-9-]{1,48}$/.test(x)))].slice(0, 10);
+      return { ok: await trackSkills({ url: c.url, key: c.key, slugs: list, event: 'run', fetchImpl }) };
     },
     /** Usage ranking of the last 30 days: [{ slug, installs, views, score, … }]. */
     async ranking() {

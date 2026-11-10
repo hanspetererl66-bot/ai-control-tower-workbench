@@ -9,6 +9,7 @@ metadata:
   scope: company
   team: AI Programme Office
   tools: get_risks, get_agent_overview, get_overprivileged_agents, get_budget, list_agents
+  requires: ai-control-tower
 ---
 
 # Board-Briefing aus dem AI Control Tower
