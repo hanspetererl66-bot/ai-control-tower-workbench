@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Erstelle ein Board-Briefing mit Risiken, Agenten, Budget und EU-AI-Act-Audit",
+    "Ich brauche eine Management Summary zum Lagebild AI Control Tower"
+  ],
+  "shouldNot": [
+    "Wie ist der Status der n8n Workflows heute?",
+    "Bereite mein Kundengespräch mit Lindenau vor"
+  ]
+}

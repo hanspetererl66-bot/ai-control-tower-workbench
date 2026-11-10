@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Lead zuweisen: wer bekommt den Lead nach Region, Branche und Größe?",
+    "Routing des qualifizierten Leads an den passenden Account Manager"
+  ],
+  "shouldNot": [
+    "Bewerte, ob der Lead zu unserem ICP passt",
+    "Plane die Opportunity für diesen Kunden"
+  ]
+}

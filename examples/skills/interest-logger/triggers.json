@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Interesse erfassen: neuer Kontakt vom Event, bitte als Eintrag ablegen",
+    "Neuer Kontakt vom Event: Interesse erfassen und auf Dubletten prüfen"
+  ],
+  "shouldNot": [
+    "Weise den qualifizierten Lead einem Account Manager zu",
+    "Bewerte, ob das ein guter Lead ist"
+  ]
+}

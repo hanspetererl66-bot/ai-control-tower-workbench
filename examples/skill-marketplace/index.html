@@ -561,7 +561,7 @@ details.intro .body{margin-top:8px}
 </main>
 <script type="application/json" id="sm-data">
 {
-  "asOf": "2026-11-09",
+  "asOf": "2026-11-10",
   "source": "repository",
   "taxonomy": {
     "boardAreas": [
@@ -578,15 +578,13 @@ details.intro .body{margin-top:8px}
     "scopes": [
       "individual",
       "team",
-      "lob",
-      "board-area",
       "company"
     ]
   },
   "skills": [
     {
       "name": "abap-code-documentation",
-      "description": "Documents a custom ABAP object from the system: purpose, interface, dependencies, ATC findings and open questions, with the line each statement rests on. Nutzen bei \"ABAP dokumentieren\", \"was macht dieser Report\".",
+      "description": "Documents a custom ABAP object from the system: purpose, interface, dependencies, ATC findings and open questions, with the line each statement rests on. Writes no new code. Nutzen bei \"ABAP dokumentieren\", \"was macht dieser Report\".",
       "owner": "",
       "version": 1,
       "maturity": "pilot",
@@ -1044,7 +1042,7 @@ details.intro .body{margin-top:8px}
       "boardArea": "Engineering",
       "lob": "",
       "team": "AI Programme Office",
-      "scope": "board-area",
+      "scope": "team",
       "dataClass": "intern",
       "tools": [
         "search_classes",
@@ -1339,7 +1337,7 @@ details.intro .body{margin-top:8px}
       "boardArea": "Engineering",
       "lob": "SuccessFactors",
       "team": "AI Programme Office",
-      "scope": "lob",
+      "scope": "team",
       "dataClass": "intern",
       "tools": [
         "list_customers",
@@ -1372,7 +1370,7 @@ details.intro .body{margin-top:8px}
       "boardArea": "Engineering",
       "lob": "SuccessFactors",
       "team": "AI Programme Office",
-      "scope": "lob",
+      "scope": "team",
       "dataClass": "intern",
       "tools": [
         "list_tickets",
@@ -1422,7 +1420,7 @@ details.intro .body{margin-top:8px}
       "boardArea": "Finance",
       "lob": "",
       "team": "Accounts Payable",
-      "scope": "board-area",
+      "scope": "team",
       "dataClass": "vertraulich",
       "tools": [],
       "sample": true,
@@ -1541,7 +1539,7 @@ details.intro .body{margin-top:8px}
       "boardArea": "Engineering",
       "lob": "BTP",
       "team": "Platform Operations",
-      "scope": "lob",
+      "scope": "team",
       "dataClass": "intern",
       "tools": [
         "get_ai_consumption",
@@ -1613,7 +1611,7 @@ details.intro .body{margin-top:8px}
       "boardArea": "Engineering",
       "lob": "",
       "team": "Developer Experience",
-      "scope": "board-area",
+      "scope": "team",
       "dataClass": "öffentlich",
       "tools": [
         "list_tickets"
@@ -7399,7 +7397,7 @@ details.intro .body{margin-top:8px}
   var $ = function(id){ return document.getElementById(id); };
   var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var tag = function(cls, text){ return '<span class="tag t-' + cls + '">' + esc(text) + '</span>'; };
-  var SCOPE_LABEL = {'individual': 'Individual', 'team': 'Team', 'lob': 'LOB', 'board-area': 'Board area', 'company': 'Company'};
+  var SCOPE_LABEL = {'individual': 'Individual', 'team': 'Team', 'company': 'Company'};
   var MAT = ['approved', 'empfohlen', 'pilot'];
   var MAT_LABEL = {'pilot': 'Pilot', 'empfohlen': 'Recommended', 'approved': 'Approved'};
   var MAT_TONE = {'pilot': 'warn', 'empfohlen': 'n', 'approved': 'ok'};
@@ -7962,8 +7960,8 @@ details.intro .body{margin-top:8px}
 
   /* ---------- approval workflow: promote a skill one reach level at a time ---------- */
   var LEVELS = D.taxonomy.scopes;
-  var APPROVERS = {team: ['Team lead'], lob: ['LOB owner'], 'board-area': ['Board area owner'], company: ['AI Programme Office', 'Security & Compliance']};
-  var MAX_MAT = {pilot: 'lob', empfohlen: 'board-area', approved: 'company'};
+  var APPROVERS = {team: ['Team lead'], company: ['AI Programme Office', 'Security & Compliance']};
+  var MAX_MAT = {pilot: 'team', empfohlen: 'team', approved: 'company'};
   var REJECT_REASONS = ['Please add a second owner or a deputy first.', 'Tests cover too little. Add cases for the error paths.', 'Data class does not fit this audience yet.', 'Run it with the team for another month, then ask again.'];
   var W = {requests: [], seq: 1, auto: true, scopes: {}, timers: []};
   var nextLevel = function(s){ var k = LEVELS.indexOf(s.scope); return k >= 0 && k < LEVELS.length - 1 ? LEVELS[k + 1] : null; };
@@ -7977,10 +7975,10 @@ details.intro .body{margin-top:8px}
       add(g.dpia === 'Completed' || g.dpia === 'Not required', 'Data protection assessment settled', 'DPIA: ' + esc(g.dpia));
       add(g.aiActRisk !== 'High' || target !== 'company', 'EU AI Act class fits the audience', 'Class ' + esc(g.aiActRisk) + (g.aiActRisk === 'High' && target === 'company' ? ': high-risk skills are not offered company-wide.' : ''));
     }
-    add(!(s.dataClass === 'vertraulich' && (target === 'board-area' || target === 'company')), 'Data class fits the audience', 'Data class ' + esc(dc(s.dataClass || 'intern')));
+    add(!(s.dataClass === 'vertraulich' && target === 'company'), 'Data class fits the audience', 'Data class ' + esc(dc(s.dataClass || 'intern')));
     var maxIdx = LEVELS.indexOf(MAX_MAT[s.maturity] || 'team');
     add(LEVELS.indexOf(target) <= maxIdx, 'Maturity is high enough', MAT_LABEL[s.maturity] + ' skills can reach: ' + (SCOPE_LABEL[MAX_MAT[s.maturity] || 'team']) + '.');
-    if (target === 'board-area' || target === 'company') add(r.enough && r.avg >= 3.5, 'Rated well by users (3.5 stars, at least ' + RS.minRatings + ' ratings)', r.n + ' ratings' + (r.n ? ', ' + r.avg.toFixed(1) + ' stars' : ''));
+    if (target === 'company') add(r.enough && r.avg >= 3.5, 'Rated well by users (3.5 stars, at least ' + RS.minRatings + ' ratings)', r.n + ' ratings' + (r.n ? ', ' + r.avg.toFixed(1) + ' stars' : ''));
     return items;
   }
   function reqOf(name){ return W.requests.filter(function(r){ return r.skill === name && r.status === 'In review'; })[0] || null; }

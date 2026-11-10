@@ -37,7 +37,7 @@
       "boardArea": "Finance",
       "lob": "",
       "team": "Accounts Payable",
-      "scope": "board-area",
+      "scope": "team",
       "dataClass": "vertraulich",
       "tools": [],
       "sample": true,
@@ -156,7 +156,7 @@
       "boardArea": "Engineering",
       "lob": "BTP",
       "team": "Platform Operations",
-      "scope": "lob",
+      "scope": "team",
       "dataClass": "intern",
       "tools": [
         "get_ai_consumption",
@@ -228,7 +228,7 @@
       "boardArea": "Engineering",
       "lob": "",
       "team": "Developer Experience",
-      "scope": "board-area",
+      "scope": "team",
       "dataClass": "öffentlich",
       "tools": [
         "list_tickets"

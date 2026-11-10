@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Nach Abschluss: erstelle den Übergabe- und Onboarding-Plan für die ersten 90 Tage",
+    "Kickoff und Übergabe an Customer Success vorbereiten, mit Ansprechpartnern und Meilensteinen"
+  ],
+  "shouldNot": [
+    "Wie bereite ich den Termin vor dem Abschluss vor?",
+    "Erfasse den Kontakt vom Event als Interesse"
+  ]
+}

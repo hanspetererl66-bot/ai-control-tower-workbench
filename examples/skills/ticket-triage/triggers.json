@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Bevor ich ein Ticket anlege: gibt es dazu eine SAP Note oder meldete es schon ein anderer Kunde?",
+    "Prüfe, ob das Problem bereits bekannt ist, bevor wir ein neues Sub4Me Ticket erstellen"
+  ],
+  "shouldNot": [
+    "Eröffne ein Ticket für die Störung bei Lindenau",
+    "Bereite das Kundengespräch vor"
+  ]
+}

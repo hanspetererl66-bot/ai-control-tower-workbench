@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Bereite das Kundengespräch mit Lindenau vor: Verträge, Tickets, offene Rechnungen",
+    "Account-Briefing für den Kundentermin am Donnerstag"
+  ],
+  "shouldNot": [
+    "Fasse unsere Pipeline für die Wochenrunde zusammen",
+    "Eröffne ein Ticket für die Störung beim Kunden"
+  ]
+}

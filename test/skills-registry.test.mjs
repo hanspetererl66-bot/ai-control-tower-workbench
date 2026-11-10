@@ -199,15 +199,17 @@ test('migration 008 keeps search public-read and similarity and writes service-r
 
 test('classification: board area, LOB and scope are validated and must be consistent', () => {
   const skill = (extra) => `---\nname: a-skill\ndescription: d\nmetadata:\n${extra}\n---\n`;
-  assert.doesNotThrow(() => validateSkill('a-skill', skill('  board-area: Engineering\n  lob: BTP\n  scope: lob')));
+  assert.doesNotThrow(() => validateSkill('a-skill', skill('  board-area: Engineering\n  lob: BTP\n  scope: team\n  team: Platform')));
   assert.doesNotThrow(() => validateSkill('a-skill', skill('  lob: Concur\n  scope: team\n  team: Delivery')));
   assert.throws(() => validateSkill('a-skill', skill('  board-area: Legal')), /board-area/);
   assert.throws(() => validateSkill('a-skill', skill('  lob: Retail')), /lob/);
   assert.throws(() => validateSkill('a-skill', skill('  board-area: Finance\n  lob: BTP')), /belongs to Engineering/);
   assert.throws(() => validateSkill('a-skill', skill('  scope: planet')), /scope/);
   assert.throws(() => validateSkill('a-skill', skill('  scope: team')), /needs a team/);
-  assert.throws(() => validateSkill('a-skill', skill('  scope: lob')), /needs a lob/);
-  assert.throws(() => validateSkill('a-skill', skill('  scope: board-area')), /needs a board-area/);
+  // three levels only: LOB and board area classify, they are no scope
+  assert.throws(() => validateSkill('a-skill', skill('  lob: BTP\n  scope: lob')), /individual, team, company/);
+  assert.throws(() => validateSkill('a-skill', skill('  board-area: Sales\n  scope: board-area')), /individual, team, company/);
+  assert.deepEqual(SCOPES, ['individual', 'team', 'company']);
   assert.deepEqual(parseSkill(skill('  board-area: Sales\n  scope: team\n  team: AM')).meta.board_area, 'Sales');
 });
 
@@ -216,9 +218,16 @@ test('migration 009 uses the same taxonomy as the script and changes only functi
   const list = (re) => [...re.exec(sql)[1].matchAll(/'([A-Za-z-]+)'/g)].map((m) => m[1]);
   assert.deepEqual(list(/ba not in \(([^)]*)\)/), BOARD_AREAS);
   assert.deepEqual(list(/lob not in \(([^)]*)\)/), Object.keys(LOBS));
-  assert.deepEqual(list(/sc not in \(([^)]*)\)/), SCOPES);
   assert.doesNotMatch(sql.replace(/--.*/g, ''), /\b(drop|alter table|create table|grant|revoke)\b/i, 'no schema or permission change');
   assert.match(sql, /'boardArea'/);
+});
+
+test('migration 043 allows exactly the three scopes, moves old lob/board-area skills to team and keeps requires', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/20261110_043_skill_three_levels.sql'), 'utf8');
+  assert.deepEqual([...(/sc not in \(([^)]*)\)/.exec(sql)[1]).matchAll(/'([a-z-]+)'/g)].map((m) => m[1]), SCOPES);
+  assert.match(sql, /where meta->>'scope' in \('lob', 'board-area'\)/);
+  assert.match(sql, /'requires', rq/);
+  assert.doesNotMatch(sql.replace(/--.*/g, ''), /\b(drop|create table|alter table|grant|revoke)\b/i, 'no schema or permission change');
 });
 
 test('the example skills carry a classification the registry accepts', () => {

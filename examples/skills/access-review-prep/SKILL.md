@@ -10,6 +10,7 @@ metadata:
   scope: team
   team: Platform Security
   tools: get_overprivileged_agents, list_agents, get_risk
+  requires: ai-control-tower
 ---
 
 # Berechtigungsreview vorbereiten

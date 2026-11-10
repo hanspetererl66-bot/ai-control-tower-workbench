@@ -199,7 +199,7 @@ export function buildPrompt(kind: Kind, intent: Intent, prd: string, spec: strin
     : [
         'You are an agent builder. Write the skill that makes the agent described in the specification.',
         'Answer with ONE SKILL.md in a single ```markdown fence, followed by a short list "Connectors to connect" (name, what for).',
-        'Rules for SKILL.md: it starts with front matter between --- lines containing name (kebab-case, at most 64 characters) and description (one sentence, at most 300 characters, says when to use it). The instructions are written to the agent in the second person, are traceable to the REQ IDs, state the guardrails, and say what to do when information is missing. Never put secrets in the file.',
+        'Rules for SKILL.md: it starts with front matter between --- lines containing name (kebab-case, at most 64 characters) and description (one sentence, at most 240 characters, says when to use it). The instructions are written to the agent in the second person, are traceable to the REQ IDs, state the guardrails, and say what to do when information is missing. Never put secrets in the file.',
       ];
   return [
     ...head,

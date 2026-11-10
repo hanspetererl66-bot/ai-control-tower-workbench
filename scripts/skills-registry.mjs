@@ -4,11 +4,14 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { checkTriggers } from '../shared/skill-triggers.mjs';
+import { MAX_DESCRIPTION, MAX_SKILL_CHARS, SECRET_LIKE, parseRequires } from '../shared/skill-rules.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SLUG = /^[a-z0-9][a-z0-9-]{1,48}$/;
 const MARKER = '.synced.json';
 // Skills are instructions the agent follows, so refuse anything that looks like a credential.
-const SECRET_LIKE = /(sb_secret_|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AIza[0-9A-Za-z_-]{30,}|ya29\.[0-9A-Za-z_-]{20,})/;
+
 
 export const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
@@ -19,8 +22,8 @@ export const MATURITIES = ['pilot', 'empfohlen', 'approved'];
 export const BOARD_AREAS = ['Finance', 'Sales', 'Marketing', 'Engineering'];
 /** LOB -> board area it belongs to. */
 export const LOBS = { BTP: 'Engineering', Concur: 'Engineering', SuccessFactors: 'Engineering' };
-/** Reach of a skill, narrow to wide. A skill starts as 'individual' and is promoted by review. */
-export const SCOPES = ['individual', 'team', 'lob', 'board-area', 'company'];
+/** Reach of a skill, narrow to wide: three levels. A skill starts as 'individual' and is promoted by review. LOB and board area are classification only. */
+export const SCOPES = ['individual', 'team', 'company'];
 
 /** Anonymous id of this machine for the usage counters (hash only, no name or address leaves the machine). */
 export function deviceId() {
@@ -38,6 +41,19 @@ export async function trackSkills({ url, key, slugs, event, device = deviceId(),
   } catch {
     return false;
   }
+}
+
+/** Ids of the bundled connectors (folder names under connectors/ that have a manifest) and of the catalog's external MCP servers. */
+export function knownConnectors(root = ROOT) {
+  const dir = join(root, 'connectors');
+  const ids = new Set();
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const manifest = join(dir, entry.name, 'manifest.json');
+    if (entry.isDirectory() && existsSync(manifest)) ids.add(JSON.parse(readFileSync(manifest, 'utf8')).name ?? entry.name);
+  }
+  const catalog = join(root, 'examples/mcp-marketplace/servers.json');
+  if (existsSync(catalog)) for (const server of JSON.parse(readFileSync(catalog, 'utf8')).servers ?? []) if (server.id) ids.add(server.id);
+  return ids;
 }
 
 /** Names of all tools the bundled connectors offer (from their manifests). */
@@ -75,17 +91,18 @@ export function parseSkill(text) {
     }
   }
   const meta = { ...raw };
+  if (raw.requires) meta.requires = parseRequires(raw.requires);
   meta.tools = raw.tools ? raw.tools.split(',').map((t) => t.trim()).filter(Boolean) : [];
   return { name, description, meta };
 }
 
 /** Throws unless the SKILL.md is safe and consistent enough to publish or install. */
-export function validateSkill(slug, text, { tools } = {}) {
+export function validateSkill(slug, text, { tools, connectors } = {}) {
   if (!SLUG.test(slug)) throw new Error(`invalid skill name "${slug}"`);
   const { name, description, meta } = parseSkill(text);
   if (name !== slug) throw new Error(`frontmatter name "${name}" must equal the folder name "${slug}"`);
-  if (description.length > 240) throw new Error(`${slug}: description is longer than 240 characters`);
-  if (text.length > 20000) throw new Error(`${slug}: SKILL.md is longer than 20000 characters`);
+  if (description.length > MAX_DESCRIPTION) throw new Error(`${slug}: description is longer than ${MAX_DESCRIPTION} characters`);
+  if (text.length > MAX_SKILL_CHARS) throw new Error(`${slug}: SKILL.md is longer than ${MAX_SKILL_CHARS} characters`);
   if (SECRET_LIKE.test(text)) throw new Error(`${slug}: contains something that looks like a credential`);
   if (meta.domain && !DOMAINS.includes(meta.domain)) throw new Error(`${slug}: domain must be one of ${DOMAINS.join(', ')}`);
   if (meta.data_class && !DATA_CLASSES.includes(meta.data_class)) throw new Error(`${slug}: data-class must be one of ${DATA_CLASSES.join(', ')}`);
@@ -96,8 +113,10 @@ export function validateSkill(slug, text, { tools } = {}) {
   }
   if (meta.scope && !SCOPES.includes(meta.scope)) throw new Error(`${slug}: scope must be one of ${SCOPES.join(', ')}`);
   if (meta.scope === 'team' && !meta.team) throw new Error(`${slug}: scope team needs a team`);
-  if (meta.scope === 'lob' && !meta.lob) throw new Error(`${slug}: scope lob needs a lob`);
-  if (meta.scope === 'board-area' && !meta.board_area && !meta.lob) throw new Error(`${slug}: scope board-area needs a board-area`);
+  if (connectors) {
+    const unknown = (meta.requires ?? []).filter((id) => !connectors.has(id));
+    if (unknown.length) throw new Error(`${slug}: unknown connector(s) in requires: ${unknown.join(', ')}`);
+  }
   if (tools) {
     const unknown = meta.tools.filter((t) => !tools.has(t));
     if (unknown.length) throw new Error(`${slug}: unknown connector tool(s): ${unknown.join(', ')}`);
@@ -189,12 +208,20 @@ export async function syncSkills({ url, key, skillsDir, actor = '', fetchImpl = 
  * Before uploading, similar existing skills are looked up; if one is similar the author must say why
  * a new skill is needed (`reason`) or mark it as a variant (`variantOf`), otherwise the skill is not uploaded.
  */
-export async function publishSkills({ url, key, dirs, owner = '', reason = '', variantOf = '', forceScope = '', tools = knownTools(), fetchImpl = fetch }) {
+export async function publishSkills({ url, key, dirs, owner = '', reason = '', variantOf = '', forceScope = '', tools = knownTools(), connectors = knownConnectors(), fetchImpl = fetch }) {
   const out = [];
   for (const dir of dirs) {
     const slug = dir.replace(/\/+$/, '').split('/').pop();
     const text = readFileSync(join(dir, 'SKILL.md'), 'utf8');
-    const { description, meta } = validateSkill(slug, text, { tools });
+    const { description, meta } = validateSkill(slug, text, { tools, connectors });
+    // Trigger examples are optional here, but a triggers.json that exists must be well formed.
+    const triggersFile = join(dir, 'triggers.json');
+    if (existsSync(triggersFile)) {
+      let parsed;
+      try { parsed = JSON.parse(readFileSync(triggersFile, 'utf8')); } catch { throw new Error(`${slug}: triggers.json is not valid JSON`); }
+      const problems = checkTriggers(parsed);
+      if (problems.length) throw new Error(`${slug}: triggers.json: ${problems.join(' ')}`);
+    }
     const effective = { ...meta };
     if (forceScope === 'individual') { effective.scope = 'individual'; delete effective.team; } // an import never claims a higher level
     if (variantOf) effective.variant_of = variantOf;

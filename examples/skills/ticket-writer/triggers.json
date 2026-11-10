@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Ticket eröffnen: Störung melden, der Export bricht seit heute ab",
+    "Wir haben eine Störung: bitte ein Sub4Me Ticket eröffnen mit Titel, Produkt und Priorität"
+  ],
+  "shouldNot": [
+    "Gibt es dazu schon eine SAP Note oder ein ähnliches Ticket?",
+    "Fasse die offenen Tickets des Kunden zusammen"
+  ]
+}

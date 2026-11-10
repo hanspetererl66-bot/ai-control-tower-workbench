@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Skill bewerten: gib dem Skill 4 Sterne",
+    "Wie fandest du den Skill? Bewertung abgeben mit einem Kommentar"
+  ],
+  "shouldNot": [
+    "Gibt es einen Skill für Reisekosten?",
+    "Welche Skills passen für meine Rolle?"
+  ]
+}

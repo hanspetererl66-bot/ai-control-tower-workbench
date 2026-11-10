@@ -10,6 +10,7 @@ metadata:
   scope: team
   team: Account Management
   tools: get_customer_overview, get_product_overview, get_contract, get_offer, search_sub4me, list_customers, list_tickets, list_invoices
+  requires: ai-control-tower
 ---
 
 # Kundengespräch vorbereiten

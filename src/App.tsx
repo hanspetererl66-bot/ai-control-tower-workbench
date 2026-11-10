@@ -36,6 +36,7 @@ import { groupChoices, groupProfileMissing, harnessChoices, resolveHarness, sani
 import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessStepsNote, harnessSummary, memoryFor, rejectOption, requiresApproval, stepsExceeded } from './harness';
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
+import { applyDbLevels } from './skill-db';
 import { MEMORY_GOV_KEY, loadGov, saveGov, requestPromotion as govRequestPromotion, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
@@ -87,6 +88,7 @@ import { SALES_SPACE, SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignParent, placeSpace, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
+import { skillLoadedBy, skillsNamedIn } from './skill-run';
 import type { ScheduleRuntime } from './ui/SchedulePopover';
 import { WORKSPACE_CONNECTOR } from './starter-prompts';
 import SpaceViewer, { type SpaceTabRequest } from './ui/SpaceViewer';
@@ -301,6 +303,8 @@ export default function App() {
     if (!read) { setSkillSource({ kind: 'example', detail: 'The shared database is only available in the desktop app.' }); return; }
     if (!read.ok || !Array.isArray(read.data?.skills)) { setSkillSource({ kind: skillCatalogRef.current.skills.some((s) => s.example) ? 'example' : 'offline', detail: read.detail ?? 'The database did not answer.' }); return; }
     if (read.data.skills.length === 0) { setSkillSource({ kind: 'example', detail: 'The database has no skills you can see yet. Example data is shown.' }); return; }
+    // The database is the truth for the level of each skill: refresh the local copy the Skills view and the chat read.
+    saveGov(applyDbLevels(loadGov(), read.data.skills));
     const base = skillCatalogRef.current.skills.some((s) => s.example) ? { ...skillCatalogRef.current, skills: [], log: [] } : skillCatalogRef.current;
     const filled = supplementWithExamples(catalogFromDatabase(base, read.data.skills, Date.now()), Date.now());
     changeSkillCatalog(filled.catalog);
@@ -381,6 +385,8 @@ export default function App() {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
   }
   const [skillList, setSkillList] = useState<Skill[]>([]);
+  const skillListRef = useRef<Skill[]>([]);
+  skillListRef.current = skillList;
   const [extensionNames, setExtensionNames] = useState<string[]>([]);
   const [syncState, setSyncState] = useState({ busy: false, message: '' });
   // Groups: who the person says they are, which group's rules the chat uses, and that group as last read from the server.
@@ -452,6 +458,13 @@ export default function App() {
   const tools = useRef<ToolCall[]>([]);
   // tool id -> toolName, so an out-of-order update can still tell a write from a read.
   const toolNames = useRef(new Map<string, string>());
+  // Skills counted as 'run' in this turn (the database counts a device at most once a minute per skill anyway).
+  const runCounted = useRef(new Set<string>());
+  const countSkillRun = useCallback((names: string[]) => {
+    const fresh = names.filter((n) => !runCounted.current.has(n));
+    fresh.forEach((n) => runCounted.current.add(n));
+    if (fresh.length) void window.host?.skillDbRun?.(fresh)?.catch?.(() => undefined);
+  }, []);
   const paths = useRef(new Set<string>());
   const resolvePermission = useRef<((optionId: string) => void) | null>(null);
   const cancelledByUser = useRef(false);
@@ -747,6 +760,7 @@ export default function App() {
           void agentRef.current?.cancel().catch(() => undefined);
         }
         if (tc.toolName) toolNames.current.set(tc.id, tc.toolName);
+        { const used = skillLoadedBy(tc, skillListRef.current.map((k) => k.name)); if (used) countSkillRun([used]); }
         tools.current = [...tools.current, tc];
         recordFiles(tc.id, tc);
         flush();
@@ -846,6 +860,8 @@ export default function App() {
     let runNote = '';
     const text = (runTarget && asAgent ? agentPrompt(runTarget, studioCatalog, netRun?.brief ?? '') : null) ?? (runTarget && options.agentId ? `${typed}${netRun?.brief ? `\n\n${netRun.brief}` : ''}` : null) ?? asAgent?.prompt ?? expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
     cancelledByUser.current = false;
+    runCounted.current = new Set();
+    countSkillRun(skillsNamedIn(typed, skillList.map((k) => k.name)));
     const startedAt = Date.now();
     const previousSpaces = new Map(spaces.map((space) => [space.slug, space.updatedAt]));
     if (messages.length === 0) {

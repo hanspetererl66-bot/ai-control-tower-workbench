@@ -11,7 +11,7 @@ export type SkillSource = { kind: 'database' | 'example' | 'offline'; detail: st
 export type HealthRow = {
   slug: string; description?: string; owner?: string; version?: number; state?: string; scope?: string; team?: string; domain?: string;
   sunsetAt?: string | null; replacedBy?: string | null; updatedAt?: string | null; createdAt?: string | null;
-  uses30?: number; uses90?: number; devices30?: number; devices90?: number; lastUsedAt?: string | null;
+  uses30?: number; uses90?: number; runs30?: number; runs90?: number; devices30?: number; devices90?: number; lastUsedAt?: string | null;
 };
 
 const time = (value: unknown): number | undefined => {
@@ -37,7 +37,7 @@ export function skillsFromRows(rows: unknown, previous: CSkill[] = [], now = Dat
     const skill: CSkill = {
       id: raw.slug, name: title(raw.slug), description: String(raw.description ?? ''), owner: String(raw.owner ?? ''),
       department: raw.team || raw.domain || 'Personal', level: levelOf(raw.scope), createdAt: created,
-      lastUsed: time(raw.lastUsedAt) ?? null, uses30: count(raw.uses30), uses90: count(raw.uses90), users90: count(raw.devices90),
+      lastUsed: time(raw.lastUsedAt) ?? null, uses30: count(raw.runs30) || count(raw.uses30), uses90: count(raw.runs90) || count(raw.uses90), users90: count(raw.devices90),
       success: 1, deps: [], state,
     };
     const sunset = time(raw.sunsetAt);

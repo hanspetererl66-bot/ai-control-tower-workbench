@@ -1525,6 +1525,7 @@ const skillStore = createSkillStore({ credentials: () => workStore.credentials()
 ipcMain.handle('skill-db-sync', async () => { const r = await skillStore.sync().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })); if (r.ok) mainWindow?.webContents.send('skills-synced'); return r; });
 ipcMain.handle('skill-db-register', (_event, slug) => (SKILL_SLUG.test(slug ?? '') ? skillStore.registerInstalled(slug) : { ok: false, detail: 'bad name' }));
 ipcMain.handle('skill-db-groups', () => skillStore.groups().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
+ipcMain.handle('skill-db-run', (_event, slugs) => skillStore.trackRun(slugs).catch(() => ({ ok: false })));
 ipcMain.handle('skill-db-ranking', () => skillStore.ranking().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
 ipcMain.handle('skill-db-health', () => skillStore.health().catch((e) => ({ ok: false, detail: String(e?.message ?? e) })));
 ipcMain.handle('skill-db-lifecycle', (_event, args) => (args && typeof args === 'object' && SKILL_SLUG.test(args.slug ?? '') ? skillStore.lifecycle(args).catch((e) => ({ ok: false, detail: String(e?.message ?? e) })) : { ok: false, detail: 'bad name' }));

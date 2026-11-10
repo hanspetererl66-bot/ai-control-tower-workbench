@@ -50,7 +50,7 @@ export const SKILL_TOOL_DEFINITIONS = [
         boardArea: { type: 'string', enum: ['Finance', 'Sales', 'Marketing', 'Engineering'] },
         lob: { type: 'string', enum: ['BTP', 'Concur', 'SuccessFactors'] },
         team: { type: 'string', description: 'Team name, case-insensitive.' },
-        scope: { type: 'string', enum: ['individual', 'team', 'lob', 'board-area', 'company'] },
+        scope: { type: 'string', enum: ['individual', 'team', 'company'] },
         owner: { type: 'string', description: 'Owner name or part of it, case-insensitive.' },
       },
       additionalProperties: false,
@@ -68,7 +68,7 @@ export const SKILL_TOOL_DEFINITIONS = [
         boardArea: { type: 'string', enum: ['Finance', 'Sales', 'Marketing', 'Engineering'] },
         lob: { type: 'string', enum: ['BTP', 'Concur', 'SuccessFactors'] },
         team: { type: 'string', description: 'Team name, case-insensitive.' },
-        scope: { type: 'string', enum: ['individual', 'team', 'lob', 'board-area', 'company'] },
+        scope: { type: 'string', enum: ['individual', 'team', 'company'] },
       },
       additionalProperties: false,
     },
@@ -139,7 +139,7 @@ export function createSkillHandlers(rpc) {
       const enums = {
         boardArea: ['Finance', 'Sales', 'Marketing', 'Engineering'],
         lob: ['BTP', 'Concur', 'SuccessFactors'],
-        scope: ['individual', 'team', 'lob', 'board-area', 'company'],
+        scope: ['individual', 'team', 'company'],
       };
       for (const [key, value] of Object.entries({ boardArea, lob, scope })) {
         if (value !== undefined && !enums[key].includes(value)) throw new ToolError(`${key} must be one of: ${enums[key].join(', ')}`);
@@ -170,7 +170,7 @@ export function createSkillHandlers(rpc) {
       const enums = {
         boardArea: ['Finance', 'Sales', 'Marketing', 'Engineering'],
         lob: ['BTP', 'Concur', 'SuccessFactors'],
-        scope: ['individual', 'team', 'lob', 'board-area', 'company'],
+        scope: ['individual', 'team', 'company'],
       };
       for (const [key, value] of Object.entries({ boardArea, lob, scope })) {
         if (value !== undefined && !enums[key].includes(value)) throw new ToolError(`${key} must be one of: ${enums[key].join(', ')}`);

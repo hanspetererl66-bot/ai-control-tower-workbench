@@ -8,9 +8,10 @@ metadata:
   language: de
   board-area: Engineering
   lob: SuccessFactors
-  scope: lob
+  scope: team
   team: AI Programme Office
   tools: list_tickets, create_ticket
+  requires: ai-control-tower
 ---
 
 # Sub4Me-Ticket schreiben

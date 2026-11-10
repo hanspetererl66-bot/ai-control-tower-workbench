@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Bereite den Discovery Call vor und prüfe die Opportunity nach MEDDPICC",
+    "Prüfe die Opportunity gegen MEDDPICC: wo sind die Lücken?"
+  ],
+  "shouldNot": [
+    "Bewerte den Lead nach ICP und BANT",
+    "Erstelle den Account-Plan mit Zielen und Risiken"
+  ]
+}

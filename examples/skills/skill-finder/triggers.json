@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Gibt es einen Skill für Reisekosten? Ich will einen neuen Skill bauen",
+    "Bevor ich einen neuen Skill entwickle: existiert im Register schon einer?"
+  ],
+  "shouldNot": [
+    "Welche Skills passen für meine Rolle und in welcher Reihenfolge?",
+    "Gib dem Skill 5 Sterne"
+  ]
+}

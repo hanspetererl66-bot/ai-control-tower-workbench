@@ -1,0 +1,10 @@
+{
+  "should": [
+    "Bereite das Berechtigungsreview vor: welche Agenten sind überprivilegiert?",
+    "Least Privilege prüfen für unsere Agenten und die Reihenfolge der Bereinigung"
+  ],
+  "shouldNot": [
+    "Erstelle ein Board-Briefing zu Risiken und Budget",
+    "Wer bekommt den neuen Lead aus München?"
+  ]
+}

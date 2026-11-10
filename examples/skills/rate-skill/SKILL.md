@@ -9,6 +9,7 @@ metadata:
   scope: company
   team: AI Programme Office
   tools: rate_skill, get_skill_ratings, get_skill_info
+  requires: ai-control-tower
 ---
 
 # Skill bewerten

@@ -9,6 +9,7 @@ metadata:
   scope: company
   team: AI Programme Office
   tools: recommend_skill_workflow, recommend_skills, search_skills, list_skill_catalog, get_skill_ranking, get_skill_info, get_skill_governance, get_skill_impact, get_skill_lifecycle, find_skill_gaps, search_graph, get_graph_neighbors
+  requires: ai-control-tower
 ---
 
 # Skill-Suche: den passenden Skill im Dschungel finden
