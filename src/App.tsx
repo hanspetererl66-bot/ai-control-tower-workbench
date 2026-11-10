@@ -24,6 +24,7 @@ import { wantsSpace } from './space-intent';
 import { listSpaces, SPACE_BRIEF, type Space } from './spaces';
 import Chat, { type Message } from './ui/Chat';
 import Composer from './ui/Composer';
+import { chatMail, chatMailtoUrl } from './chat-mail';
 import ConversationList from './ui/ConversationList';
 import ManageView from './ui/ManageView';
 import SidePanel, { memorySummary, type ContextItem, type GeneratedFile, type SidePanelTab } from './ui/SidePanel';
@@ -1382,6 +1383,8 @@ export default function App() {
       hiddenBriefing={prefs.chat.hiddenBriefing}
       onSaveStarter={(prompt) => updatePrefs((current) => ({ ...current, starters: [...current.starters, { label: prompt.replace(/\s+/g, ' ').slice(0, 40), prompt }] }))}
       onNewChat={() => { newConversation(); }}
+      onEmail={() => { void emailConversation(); }}
+      canEmail={messages.some((m) => (m.text ?? '').trim().length > 0)}
       favoriteStarters={prefs.favoriteSkills.map((name) => ({ label: name, prompt: `Nutze den Skill ${name}.` }))}
       catalogSkills={skillList}
       spaces={spaces}
@@ -1467,6 +1470,20 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
     setToast(`Saved ${name}`);
     setTimeout(() => setToast(null), 4000);
+  }
+
+  /** The @ button: the conversation as an attachment of a new e-mail, with a suggested text. Desktop app: the mail program opens; browser: a text-only draft. */
+  async function emailConversation() {
+    if (!selectedConversation) return;
+    const mail = chatMail(selectedConversation, PRODUCT_TITLE);
+    const say = (text: string) => { setToast(text); setTimeout(() => setToast(null), 5000); };
+    if (!window.host?.composeChatMail) {
+      exportConversation();
+      window.location.href = chatMailtoUrl(mail);
+      return;
+    }
+    const result = await window.host.composeChatMail(mail);
+    say(result.ok ? 'New e-mail opened with the conversation attached. Nothing was sent.' : `The e-mail could not be opened: ${result.detail ?? 'unknown error'}`);
   }
 
   function archiveConversation(id: string) {
