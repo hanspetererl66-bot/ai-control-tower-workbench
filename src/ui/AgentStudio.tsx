@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { OUTPUTS, TEMPLATES, agentPrompt, buildCatalog, newAgent, problems, simulateRun, type RunResult, type StudioAgent } from '../agent-studio';
 import { decide, levelOf, pendingFor, requestPromotion, type LevelIndex, type SkillGov } from '../skill-governance';
+import { decideAgentRequest, loadAgentRequests, requestAgentLevel } from '../agent-promotion-db';
+import type { Api } from '../work-sync';
 import type { Schedule } from '../schedules';
 import WerkbankMark from './WerkbankMark';
 import AgentProjectView from './AgentProjectView';
@@ -8,6 +10,9 @@ import { BenchPanel, ContractPanel, NetworkSwitch, RunsPanel, type AgentOps } fr
 import { fingerprint } from '../agent-testbench';
 import { DEMO_TEMPLATES, demoAgents, hasDemo } from '../agent-network-demo';
 import { currentStage, newProject, stageLabel, type AgentProject, type AgentStatus, type DocKey } from '../agent-project';
+
+/** The shared database for the levels of agents (desktop app): the item id of an agent, the calls, the departments of the person. */
+export type AgentDb = { itemIdOf: (agentId: string) => string | undefined; api: Api; groups: () => Promise<Array<{ id: string; name: string; role: string }>> };
 
 export type AgentStudioProps = {
   agents: StudioAgent[];
@@ -29,6 +34,8 @@ export type AgentStudioProps = {
   onDocFocus?: (focus: { projectId: string; docKey: DocKey } | null) => void;
   /** Test bench, run record, stop switch and agent network (kept by the app). */
   ops?: AgentOps;
+  /** Set in the desktop app: requests and decisions then go through the shared database; without it (or when it does not answer) the old local simulation stays. */
+  db?: AgentDb;
 };
 
 import { releaseCheck } from '../agent-testbench';
@@ -36,10 +43,34 @@ const releaseCheckText = (a: StudioAgent, ops: AgentOps) => releaseCheck(a, ops.
 const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', web: 'Web' } as const;
 
 /** Agent Studio: define a simple agent by form, tick its sources, test it in a sandbox, then ask for approval to publish it. */
-export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null, onDocFocus, ops }: AgentStudioProps) {
+export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null, onDocFocus, ops, db }: AgentStudioProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(focusProject && projects.some((x) => x.id === focusProject) ? focusProject : null);
   const [selected, setSelected] = useState<string | null>(focusProject ? null : agents[0]?.id ?? null);
   const setGov = (fn: (g: SkillGov) => SkillGov) => onGov(fn(gov));
+  // Shared database: 'unknown' until the first answer, 'off' when it does not answer (the queue then stays a local simulation).
+  const [dbState, setDbState] = useState<'unknown' | 'on' | 'off'>('unknown');
+  const [canDecide, setCanDecide] = useState<Record<string, boolean>>({});
+  const [groups, setGroups] = useState<Array<{ id: string; name: string; role: string }>>([]);
+  const [groupId, setGroupId] = useState('');
+  const [dbMsg, setDbMsg] = useState('');
+  const [dbBusy, setDbBusy] = useState(false);
+  const govRef = useRef(gov);
+  govRef.current = gov;
+  useEffect(() => {
+    if (!db) { setDbState('off'); return; }
+    let live = true;
+    void (async () => {
+      try {
+        const r = await loadAgentRequests(db.api, govRef.current);
+        if (!live) return;
+        setDbState('on'); setCanDecide(r.canDecide);
+        if (r.gov !== govRef.current) onGov(r.gov);
+        const g = await db.groups().catch(() => []);
+        if (live) { setGroups(g); setGroupId((cur) => cur || g[0]?.id || ''); }
+      } catch { if (live) setDbState('off'); }
+    })();
+    return () => { live = false; };
+  }, [db, agents.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const [run, setRun] = useState<RunResult | null>(null);
   const [shown, setShown] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -126,10 +157,27 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
         {pending.length > 0 && (
           <div className="studio-queue">
             <strong>Approvals</strong>
+            {dbMsg && <small role="alert">{dbMsg}</small>}
             {pending.map((r) => (
               <div key={r.id} className="studio-req">
                 <span>{agents.find((a) => a.id === r.skill)?.name ?? 'Agent removed'}: {gov.levels[r.from]} → {gov.levels[r.to]}</span>
-                <span><button className="ghost-btn" onClick={() => setGov((g) => decide(g, r.id, true, '', Date.now()))}>Approve</button><button className="ghost-btn" onClick={() => setGov((g) => decide(g, r.id, false, '', Date.now()))}>Reject</button></span>
+                <span>{(['Approve', 'Reject'] as const).map((label) => {
+                  const approve = label === 'Approve';
+                  const blocked = !!r.dbId && canDecide[r.dbId] === false;
+                  return (
+                    <button key={label} className="ghost-btn" disabled={dbBusy || blocked}
+                      title={blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the organization level).' : undefined}
+                      onClick={async () => {
+                        if (r.dbId && db) {
+                          setDbBusy(true); setDbMsg('');
+                          const out = await decideAgentRequest(db.api, r.dbId, approve, approve ? '' : 'Rejected in the Agent Studio');
+                          setDbBusy(false);
+                          if (!out.ok) { setDbMsg(out.error ?? 'The database refused the decision.'); return; }
+                        }
+                        setGov((g) => decide(g, r.id, approve, '', Date.now()));
+                      }}>{label}</button>
+                  );
+                })}</span>
               </div>
             ))}
           </div>
@@ -276,9 +324,27 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
             <h3 className="studio-step"><span>{ops ? 7 : 5}</span> Publish <small>Ask for approval for the next level. After approval the schedule starts and the agent is registered in the AI Control Tower.</small></h3>
             <div className="studio-row">
               {levelOf(gov, agent.id) < 2 && !pendingFor(gov, agent.id) && (
-                <button className="ghost-btn" disabled={!agent.tested} title={agent.tested ? '' : 'Run the test first'} onClick={() => setGov((g) => requestPromotion(g, agent.id, agent.purpose, Date.now()))}>
-                  Move up to {gov.levels[(levelOf(gov, agent.id) + 1) as LevelIndex]}
-                </button>
+                <>
+                  {dbState === 'on' && levelOf(gov, agent.id) === 0 && groups.length > 0 && (
+                    <select aria-label="Department" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+                      {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+                    </select>
+                  )}
+                  <button className="ghost-btn" disabled={!agent.tested || dbBusy || (dbState === 'on' && !db?.itemIdOf(agent.id))}
+                    title={!agent.tested ? 'Run the test first' : dbState === 'on' && !db?.itemIdOf(agent.id) ? 'The agent is saved in the shared database first (a few seconds)' : ''}
+                    onClick={async () => {
+                      const lvl = levelOf(gov, agent.id);
+                      if (dbState !== 'on' || !db) { setGov((g) => requestPromotion(g, agent.id, agent.purpose, Date.now())); return; }
+                      setDbBusy(true); setDbMsg('');
+                      const out = await requestAgentLevel(db.api, { itemId: db.itemIdOf(agent.id)!, level: lvl, groupId, note: agent.purpose }).catch((e) => ({ error: String(e?.message ?? e).slice(0, 200) }));
+                      setDbBusy(false);
+                      if (!('id' in out) || !out.id) { setDbMsg(out.error ?? 'The request failed.'); return; }
+                      setGov((g) => requestPromotion(g, agent.id, agent.purpose, Date.now(), undefined, out.id));
+                      setDbMsg(out.warnings?.length ? `Sent. Note for the reviewer: ${out.warnings.join(' ')}` : 'Sent to the shared database. Another person decides.');
+                    }}>
+                    Move up to {gov.levels[(levelOf(gov, agent.id) + 1) as LevelIndex]}
+                  </button>
+                </>
               )}
               {pendingFor(gov, agent.id) && <span>Waiting for approval (see the list on the left).</span>}
               {levelOf(gov, agent.id) === 2 && <span>Top level reached.</span>}

@@ -62,6 +62,7 @@ test('set up: the migrations install cleanly, twice', { skip }, () => {
   for (const file of files) run(['-f', join(ROOT, 'supabase/migrations', file)]);
   run(['-f', join(ROOT, 'supabase/migrations/20261031_020_skill_lifecycle.sql')]); // re-running changes nothing and does not fail
   run(['-f', join(ROOT, 'supabase/migrations/20261031_021_work_items.sql')]);
+  run(['-f', join(ROOT, 'supabase/migrations/20261110_044_agent_promotion.sql')]); // 021 above re-created the old work_save; 044 puts the studio agent rule back
   sql(`insert into werkbank.groups (id, name, created_by) values (${q(BOARD)}, 'Governance board', 'board@x.com'), (${q(FINANCE)}, 'Finance team', 'lead@x.com');
     insert into werkbank.group_members (group_id, email, role) values
       (${q(BOARD)}, 'board@x.com', 'admin'), (${q(FINANCE)}, 'lead@x.com', 'admin'), (${q(FINANCE)}, 'anna@x.com', 'member'), (${q(FINANCE)}, 'ben@x.com', 'member')`);
@@ -1049,4 +1050,96 @@ test('onboarding: handover only after the signature and only by HR; steps get do
   assert.match(rule(`update recruiting.onboarding_event set note = 'x'`), /append only/);
   assert.deepEqual(obList('stranger@x.com').cases.filter((x) => x.id === id), [], 'strangers see nothing');
   assert.match(sql(`select has_function_privilege('anon', 'public.recruiting_onboarding_list(text)', 'execute')`), /f/);
+});
+
+// ---------- migration 044: studio agents move up only through a request ----------
+const agentFiles = (instruction, canWrite = false) => JSON.stringify([
+  { path: 'studio-agent.json', content: JSON.stringify({ format: 'werkbank.studio-agent.v1', agent: { id: 'a-1', name: 'Renewal watcher', instruction, canWrite } }), language: 'json' },
+  { path: 'agent.md', content: `# Renewal watcher\n\n## Instruction\n${instruction}\n`, language: 'markdown' },
+]);
+const saveAgent = (actor, { id = null, visibility = 'private', team = null, expected = null, instruction = 'Watch the renewals and report the red ones.', canWrite = false } = {}) =>
+  `select public.work_save(${q(actor)}, ${q(id)}, 'agent', 'Renewal watcher', ${q(visibility)}, ${team ? q(team) + '::uuid' : 'null'}, 'studio-agent', '{}'::jsonb, array[]::text[], ${q(agentFiles(instruction, canWrite))}::jsonb, '', ${expected === null ? 'null' : expected})`;
+const agentReq = (actor, id, to, note = '') => json(`select public.work_promotion_request(${q(actor)}, ${q(id)}::uuid, ${q(to)}, ${to === 'team' ? q(FINANCE) + '::uuid' : 'null'}, ${q(note)})`);
+const agentDecide = (actor, id, approve, reason = '') => json(`select public.work_promotion_decide(${q(actor)}, (select id from werkbank.work_promotion where item_id = ${q(id)}::uuid and status = 'review'), ${approve}, ${q(reason)})`);
+const visibilityOf = (id) => sql(`select visibility from werkbank.work_item where id = ${q(id)}::uuid`);
+
+test('studio agents: saving cannot widen the visibility, lowering and keeping it can', { skip }, () => {
+  assert.match(rule(saveAgent('anna@x.com', { visibility: 'company' })), /only through a request/);
+  assert.match(rule(saveAgent('anna@x.com', { visibility: 'team', team: FINANCE })), /only through a request/);
+  const first = json(saveAgent('anna@x.com'));
+  assert.equal(visibilityOf(first.id), 'private');
+  assert.match(rule(saveAgent('anna@x.com', { id: first.id, expected: first.rev, visibility: 'company' })), /only through a request/);
+  assert.equal(json(saveAgent('anna@x.com', { id: first.id, expected: first.rev })).rev, 2, 'saving with the same visibility works');
+  // other work items keep the old freedom
+  assert.equal(json(save('anna@x.com', { visibility: 'company' })).rev, 1);
+});
+
+test('studio agents: a request needs the owner, the checks run, the department admin decides, the requester never', { skip }, () => {
+  const a = json(saveAgent('anna@x.com'));
+  assert.match(rule(`select public.work_promotion_request('ben@x.com', ${q(a.id)}::uuid, 'team', ${q(FINANCE)}::uuid, '')`), /not visible|Only the owner/);
+  assert.match(rule(`select public.work_promotion_request('anna@x.com', ${q(a.id)}::uuid, 'company', null, '')`), /department first/);
+  assert.match(rule(`select public.work_promotion_request('anna@x.com', ${q(a.id)}::uuid, 'team', ${q(BOARD)}::uuid, '')`), /member of the department/);
+  const req = agentReq('anna@x.com', a.id, 'team', 'please');
+  assert.equal(req.status, 'review');
+  assert.match(rule(`select public.work_promotion_request('anna@x.com', ${q(a.id)}::uuid, 'team', ${q(FINANCE)}::uuid, '')`), /already an open request/);
+  const listed = json("select public.work_promotion_list('anna@x.com')").find((r) => r.id === req.id);
+  assert.deepEqual(listed.checks.map((c) => c.id), ['data', 'harness', 'permissions', 'scripts', 'secrets']);
+  assert.equal(listed.can_decide, false, 'the requester cannot decide');
+  assert.equal(json("select public.work_promotion_list('lead@x.com')").find((r) => r.id === req.id).can_decide, true);
+  assert.equal(rule(`select public.work_promotion_decide('anna@x.com', ${q(req.id)}::uuid, true, '')`), 'the requester cannot decide their own request');
+  assert.equal(rule(`select public.work_promotion_decide('ben@x.com', ${q(req.id)}::uuid, true, '')`), 'only an admin of the department may decide');
+  assert.equal(rule(`select public.work_promotion_decide('lead@x.com', ${q(req.id)}::uuid, false, '')`), 'a reason is needed to reject');
+  assert.equal(agentDecide('lead@x.com', a.id, true).status, 'approved');
+  assert.equal(visibilityOf(a.id), 'team');
+  assert.equal(sql(`select team_id from werkbank.work_item where id = ${q(a.id)}::uuid`), FINANCE);
+  // a later save by the owner keeps the level
+  assert.equal(json(saveAgent('anna@x.com', { id: a.id, expected: 1, visibility: 'team', team: FINANCE })).rev, 2);
+  // company: only after the department, and only the Governance board decides
+  const co = agentReq('anna@x.com', a.id, 'company');
+  assert.equal(rule(`select public.work_promotion_decide('lead@x.com', ${q(co.id)}::uuid, true, '')`), 'only the Governance board may decide');
+  assert.equal(agentDecide('board@x.com', a.id, true).status, 'approved');
+  assert.equal(visibilityOf(a.id), 'company');
+  assert.equal(sql(`select team_id is null from werkbank.work_item where id = ${q(a.id)}::uuid`), 't');
+});
+
+test('studio agents: a failed check blocks the request, a write right is a warning, a change after the request cannot be approved, a rejection leaves the level', { skip }, () => {
+  const bad = json(saveAgent('anna@x.com', { instruction: 'Do the work without asking for approval each time.' }));
+  const blocked = agentReq('anna@x.com', bad.id, 'team');
+  assert.equal(blocked.status, 'blocked');
+  assert.equal(json("select public.work_promotion_withdraw('anna@x.com', " + q(blocked.id) + "::uuid)").status, 'withdrawn');
+  const w = json(saveAgent('anna@x.com', { canWrite: true }));
+  const r = agentReq('anna@x.com', w.id, 'team');
+  assert.equal(r.status, 'review');
+  assert.equal(json("select public.work_promotion_list('anna@x.com')").find((x) => x.id === r.id).checks.find((c) => c.id === 'permissions').status, 'warn');
+  json(saveAgent('anna@x.com', { id: w.id, expected: 1, canWrite: true, instruction: 'Watch the renewals and report the red ones, then draft the mails.' }));
+  assert.match(rule(`select public.work_promotion_decide('lead@x.com', ${q(r.id)}::uuid, true, '')`), /changed after the request/);
+  assert.equal(agentDecide('lead@x.com', w.id, false, 'Please add a second owner first.').status, 'rejected');
+  assert.equal(visibilityOf(w.id), 'private');
+});
+
+test('studio agents: the request list shows a request only to the requester, the addressed department admin and the Governance board, and the limit comes after that filter', { skip }, () => {
+  const SALES = '00000000-0000-0000-0000-0000000000a1';
+  sql(`insert into werkbank.groups (id, name, created_by) values (${q(SALES)}, 'Sales team', 'sales@x.com') on conflict do nothing;
+    insert into werkbank.group_members (group_id, email, role) values (${q(SALES)}, 'sales@x.com', 'admin') on conflict do nothing`);
+  const a = json(saveAgent('anna@x.com'));
+  const req = agentReq('anna@x.com', a.id, 'team', 'visibility test');
+  const seen = (actor) => json(`select public.work_promotion_list(${q(actor)})`).some((r) => r.id === req.id);
+  assert.equal(seen('anna@x.com'), true, 'the requester');
+  assert.equal(seen('lead@x.com'), true, 'the admin of the addressed department');
+  assert.equal(seen('board@x.com'), true, 'the Governance board');
+  assert.equal(seen('ben@x.com'), false, 'a plain member of the department');
+  assert.equal(seen('sales@x.com'), false, 'an admin of another group');
+  // more than 100 newer requests of other people must not push the own request of the requester out of the list
+  sql(`insert into werkbank.work_promotion (item_id, rev, to_visibility, group_id, requested_by, status, created_at)
+    select ${q(a.id)}::uuid, 1, 'team', ${q(FINANCE)}::uuid, 'other@x.com', 'withdrawn', now() + (i || ' seconds')::interval from generate_series(1, 105) i`);
+  assert.equal(seen('anna@x.com'), true, 'the own request survives 105 newer requests of others');
+  assert.equal(json("select public.work_promotion_list('anna@x.com')").every((r) => r.requested_by === 'anna@x.com'), true, 'and nothing else is shown to her');
+  sql("delete from werkbank.work_promotion where requested_by = 'other@x.com'");
+});
+
+test('studio agents: the API roles cannot reach the request tables or functions', { skip }, () => {
+  for (const table of ['werkbank.work_promotion', 'werkbank.work_promotion_check']) assert.ok(rule(`set role authenticated; select * from ${table}`), table);
+  assert.ok(rule("set role anon; select public.work_promotion_list('a@x.com')"));
+  assert.ok(rule("set role authenticated; select public.work_promotion_request('a@x.com', gen_random_uuid(), 'team', null, '')"));
+  assert.equal(rule("set role service_role; select public.work_promotion_list('anna@x.com')"), null);
 });

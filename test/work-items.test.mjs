@@ -24,7 +24,7 @@ test('every tool has a schema, names the actor and has a handler', () => {
       for (const required of tool.inputSchema.required) assert.ok(tool.inputSchema.properties[required], `${tool.name}.${required}`);
     }
   }
-  assert.equal(WORK_ITEM_TOOL_DEFINITIONS.length, 5);
+  assert.equal(WORK_ITEM_TOOL_DEFINITIONS.length, 9);
   assert.equal(SKILL_FILE_TOOL_DEFINITIONS.length, 4);
 });
 
@@ -82,4 +82,34 @@ test('skill files: SKILL.md is not an extra file, reading needs a path', async (
 test('without a database the tools say what is missing', async () => {
   const w = createWorkItemHandlers(null);
   await refuses(w.list_work_items({ actor: 'a@x.com' }), /not set up/);
+});
+
+test('agent requests: arguments are checked before anything is sent, the actor is lower case, a block is explained', async () => {
+  const { calls, w } = setup();
+  await refuses(w.request_agent_promotion({ actor: 'a@x.com', id: ID, to: 'planet' }), /"team" or "company"/);
+  await refuses(w.request_agent_promotion({ actor: 'a@x.com', id: ID, to: 'team' }), /group/);
+  await refuses(w.request_agent_promotion({ actor: 'a@x.com', id: 'nope', to: 'company' }), /id must be/);
+  await refuses(w.request_agent_promotion({ actor: 'a@x.com', id: ID, to: 'company', note: 'x'.repeat(401) }), /400/);
+  assert.equal(calls.length, 0, 'nothing reached the database');
+  await w.request_agent_promotion({ actor: 'Anna@X.com', id: ID, to: 'team', group: GROUP, note: ' please ' });
+  assert.deepEqual(calls[0], { fn: 'work_promotion_request', body: { p_actor: 'anna@x.com', p_id: ID, p_to: 'team', p_group: GROUP, p_note: 'please' } });
+  await w.request_agent_promotion({ actor: 'a@x.com', id: ID, to: 'company', group: GROUP });
+  assert.equal(calls[1].body.p_group, null, 'the organization step sends no group');
+  const blocked = await createWorkItemHandlers(async () => ({ id: ID, status: 'blocked' })).request_agent_promotion({ actor: 'a@x.com', id: ID, to: 'company' });
+  assert.match(blocked.hint, /check failed/);
+});
+
+test('agent requests: deciding needs a boolean and a reason to reject; list and withdraw pass the actor', async () => {
+  const { calls, w } = setup();
+  await refuses(w.decide_agent_request({ actor: 'a@x.com', id: ID, approve: 'yes' }), /true or false/);
+  await refuses(w.decide_agent_request({ actor: 'a@x.com', id: ID, approve: false }), /reason/);
+  await refuses(w.decide_agent_request({ actor: 'a@x.com', id: 'nope', approve: true }), /id must be/);
+  await w.decide_agent_request({ actor: 'Lead@X.com', id: ID, approve: true });
+  await w.decide_agent_request({ actor: 'lead@x.com', id: ID, approve: false, reason: ' too broad ' });
+  await w.withdraw_agent_request({ actor: 'anna@x.com', id: ID });
+  const listed = await createWorkItemHandlers(async () => [{ id: ID }]).list_agent_requests({ actor: 'a@x.com' });
+  assert.equal(listed.count, 1);
+  assert.deepEqual(calls.map((c) => c.fn), ['work_promotion_decide', 'work_promotion_decide', 'work_promotion_withdraw']);
+  assert.deepEqual(calls[0].body, { p_actor: 'lead@x.com', p_id: ID, p_approve: true, p_reason: '' });
+  assert.equal(calls[1].body.p_reason, 'too broad');
 });
