@@ -76,6 +76,37 @@ export const WORK_ITEM_TOOL_DEFINITIONS = [
     description: 'Write: archive an item (it disappears from the default list, all revisions stay) or bring it back. Owner, team admin or Governance board only. Ask the person first.',
     inputSchema: obj({ actor: ACTOR, id: ID, archived: { type: 'boolean', description: 'true to archive, false to bring back.' } }, ['actor', 'id', 'archived']),
   },
+  {
+    name: 'list_agent_requests',
+    description: 'Approval requests for studio agents: the actor’s own and those waiting for the actor to decide (department admin or Governance board), with the automatic checks (secrets, scripts, permissions, harness, data).',
+    inputSchema: obj({ actor: ACTOR }, ['actor']),
+  },
+  {
+    name: 'request_agent_promotion',
+    description:
+      'Ask to share a studio agent: from private to a department (to "team", the actor must be a member) or from a department to the whole organization (to "company"). The five automatic checks run on the exact revision; a failed check blocks the request. Another person decides. Write: ask the person first.',
+    inputSchema: obj({
+      actor: ACTOR, id: ID,
+      to: { type: 'string', enum: ['team', 'company'], description: 'Target level.' },
+      group: { type: 'string', description: 'Department (group id, UUID from group_list). Required for "team".' },
+      note: { type: 'string', description: 'Optional note for the reviewer, at most 400 characters.' },
+    }, ['actor', 'id', 'to']),
+  },
+  {
+    name: 'decide_agent_request',
+    description: 'Approve or reject a studio agent request (department admin for a department, Governance board for the organization; never the requester). Rejecting needs a reason. Write: only when the person who decides has told you their decision.',
+    inputSchema: obj({
+      actor: ACTOR,
+      id: { type: 'string', description: 'Request id (UUID) from list_agent_requests.' },
+      approve: { type: 'boolean', description: 'true to approve, false to reject.' },
+      reason: { type: 'string', description: 'Reason, at most 400 characters. Required to reject.' },
+    }, ['actor', 'id', 'approve']),
+  },
+  {
+    name: 'withdraw_agent_request',
+    description: 'Withdraw an open studio agent request. Only the person who made the request. Write: ask the person first.',
+    inputSchema: obj({ actor: ACTOR, id: { type: 'string', description: 'Request id (UUID) from list_agent_requests.' } }, ['actor', 'id']),
+  },
 ];
 
 const str = (args, name) => (typeof args[name] === 'string' ? args[name] : '');
@@ -142,6 +173,39 @@ export function createWorkItemHandlers(rpc) {
     },
     async work_item_history(args) {
       return call('work_history', { p_actor: actorOf(args), p_id: itemId(args) });
+    },
+    async list_agent_requests(args) {
+      const requests = await call('work_promotion_list', { p_actor: actorOf(args) });
+      return { count: requests.length, requests, dataSource: 'supabase' };
+    },
+    async request_agent_promotion(args) {
+      if (!['team', 'company'].includes(args.to)) throw new ToolError('to must be "team" or "company"');
+      const group = str(args, 'group').trim();
+      if (args.to === 'team' && !UUID.test(group)) throw new ToolError('group (the department id, a UUID) is required for "team"');
+      const note = str(args, 'note').trim();
+      if (note.length > 400) throw new ToolError('note must have at most 400 characters');
+      const result = await call('work_promotion_request', { p_actor: actorOf(args), p_id: itemId(args), p_to: args.to, p_group: args.to === 'team' ? group : null, p_note: note });
+      return {
+        request: result,
+        hint: result?.status === 'blocked'
+          ? 'An automatic check failed. Read the checks with list_agent_requests, fix the agent, withdraw this request and ask again.'
+          : 'The request waits for a person who is not the requester. They find it with list_agent_requests.',
+        dataSource: 'supabase',
+      };
+    },
+    async decide_agent_request(args) {
+      if (typeof args.approve !== 'boolean') throw new ToolError('approve must be true or false');
+      const reason = str(args, 'reason').trim();
+      if (!args.approve && !reason) throw new ToolError('a reason is needed to reject');
+      if (reason.length > 400) throw new ToolError('reason must have at most 400 characters');
+      const id = str(args, 'id').trim();
+      if (!UUID.test(id)) throw new ToolError('id must be the id of a request (UUID)');
+      return { decision: await call('work_promotion_decide', { p_actor: actorOf(args), p_id: id, p_approve: args.approve, p_reason: reason }), dataSource: 'supabase' };
+    },
+    async withdraw_agent_request(args) {
+      const id = str(args, 'id').trim();
+      if (!UUID.test(id)) throw new ToolError('id must be the id of a request (UUID)');
+      return { withdrawn: await call('work_promotion_withdraw', { p_actor: actorOf(args), p_id: id }), dataSource: 'supabase' };
     },
     async archive_work_item(args) {
       if (typeof args.archived !== 'boolean') throw new ToolError('archived must be true or false');

@@ -1066,6 +1066,30 @@
           "default": "ask"
         },
         {
+          "name": "list_agent_requests",
+          "class": "read",
+          "what": "",
+          "default": "on"
+        },
+        {
+          "name": "request_agent_promotion",
+          "class": "write",
+          "what": "",
+          "default": "ask"
+        },
+        {
+          "name": "decide_agent_request",
+          "class": "write",
+          "what": "",
+          "default": "ask"
+        },
+        {
+          "name": "withdraw_agent_request",
+          "class": "write",
+          "what": "",
+          "default": "ask"
+        },
+        {
           "name": "list_job_runs",
           "class": "read",
           "what": "",

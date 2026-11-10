@@ -37,6 +37,7 @@ import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessS
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
 import { applyDbLevels } from './skill-db';
+import { loadStudioMap, studioKey } from './studio-agent-sync';
 import { MEMORY_GOV_KEY, loadGov, saveGov, requestPromotion as govRequestPromotion, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
 import { contextPreview } from './personalization';
@@ -413,6 +414,12 @@ export default function App() {
   /** The project document open in Agent Studio, so the docked chat can work on it. */
   const [dockFocus, setDockFocus] = useState<DockFocus | null>(null);
   const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
+  // Levels of agents in the shared database (desktop app only): the item id of an agent comes from the sync map.
+  const agentDb = useMemo(() => (window.host?.workCall ? {
+    itemIdOf: (id: string) => loadStudioMap(window.localStorage)[studioKey(id)]?.itemId,
+    api: { call: async (tool: string, args: Record<string, unknown>) => { const r = await window.host!.workCall!(tool, args); if (!r.ok) throw new Error(r.error); return r.data; } },
+    groups: async () => { const g = await window.host?.skillDbGroups?.(); return g?.ok && g.rows ? g.rows : []; },
+  } : undefined), []);
   const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
   // Run record, stop switch, test bench reports and the agent network (all kept on this computer).
   const NETWORK_KEY = 'werkbank.agentNetworkOn';
@@ -1703,6 +1710,7 @@ export default function App() {
           agents={studioAgents}
           gov={agentGov}
           onGov={changeAgentGov}
+          db={agentDb}
           schedules={schedules}
           onAgents={changeStudioAgents}
           projects={agentProjects}

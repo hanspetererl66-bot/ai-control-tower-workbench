@@ -104,6 +104,22 @@
       "description": "Write: archive an item or bring it back. Owner, team admin or Governance board."
     },
     {
+      "name": "list_agent_requests",
+      "description": "Read: approval requests for studio agents (own and those waiting for the actor), with the automatic checks."
+    },
+    {
+      "name": "request_agent_promotion",
+      "description": "Write: ask to share a studio agent with a department or the organization. Checks run; another person decides."
+    },
+    {
+      "name": "decide_agent_request",
+      "description": "Write: approve or reject a studio agent request. Department admin or Governance board, never the requester."
+    },
+    {
+      "name": "withdraw_agent_request",
+      "description": "Write: withdraw an open studio agent request. Only the requester."
+    },
+    {
       "name": "list_job_runs",
       "description": "Read: the Scheduler run log (who ran which job, when, how it ended). Filter by days, job, result and trigger. Read only."
     },
