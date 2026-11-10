@@ -1473,7 +1473,8 @@ app.on('open-url', (event, url) => {
 });
 
 // …Windows/Linux relaunch the binary, so bounce argv into instance one.
-if (!app.requestSingleInstanceLock()) {
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
   app.quit();
 } else {
   app.on('second-instance', (_e, argv) => {
@@ -1800,9 +1801,12 @@ function allowOnlyAppMicrophone() {
 }
 
 app.whenReady().then(() => {
-  startGoosed();
+  // A second instance is quitting: it must not start its own goosed (it fights for the port with the first one).
+  if (!gotSingleInstanceLock) return;
   allowOnlyAppMicrophone();
-  createWindow();
+  // Window first, goosed after: startGoosed() reads the connector secrets from the OS keychain, which can block the main
+  // process on a macOS permission dialog. Started first, that left no window and no Goose until someone clicked.
+  void createWindow().then(() => { setTimeout(startGoosed, 100); });
   // The registry is pulled once a day (and shortly after start) so Auslauf and Ersatz notices reach the skills folder.
   setTimeout(() => void skillStore.sync().then((r) => { if (r.ok) mainWindow?.webContents.send('skills-synced'); }).catch(() => undefined), 30_000);
   setInterval(() => void skillStore.sync().then((r) => { if (r.ok) mainWindow?.webContents.send('skills-synced'); }).catch(() => undefined), 24 * 3_600_000);
