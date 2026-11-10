@@ -1117,6 +1117,26 @@ test('studio agents: a failed check blocks the request, a write right is a warni
   assert.equal(visibilityOf(w.id), 'private');
 });
 
+test('studio agents: the request list shows a request only to the requester, the addressed department admin and the Governance board, and the limit comes after that filter', { skip }, () => {
+  const SALES = '00000000-0000-0000-0000-0000000000a1';
+  sql(`insert into werkbank.groups (id, name, created_by) values (${q(SALES)}, 'Sales team', 'sales@x.com') on conflict do nothing;
+    insert into werkbank.group_members (group_id, email, role) values (${q(SALES)}, 'sales@x.com', 'admin') on conflict do nothing`);
+  const a = json(saveAgent('anna@x.com'));
+  const req = agentReq('anna@x.com', a.id, 'team', 'visibility test');
+  const seen = (actor) => json(`select public.work_promotion_list(${q(actor)})`).some((r) => r.id === req.id);
+  assert.equal(seen('anna@x.com'), true, 'the requester');
+  assert.equal(seen('lead@x.com'), true, 'the admin of the addressed department');
+  assert.equal(seen('board@x.com'), true, 'the Governance board');
+  assert.equal(seen('ben@x.com'), false, 'a plain member of the department');
+  assert.equal(seen('sales@x.com'), false, 'an admin of another group');
+  // more than 100 newer requests of other people must not push the own request of the requester out of the list
+  sql(`insert into werkbank.work_promotion (item_id, rev, to_visibility, group_id, requested_by, status, created_at)
+    select ${q(a.id)}::uuid, 1, 'team', ${q(FINANCE)}::uuid, 'other@x.com', 'withdrawn', now() + (i || ' seconds')::interval from generate_series(1, 105) i`);
+  assert.equal(seen('anna@x.com'), true, 'the own request survives 105 newer requests of others');
+  assert.equal(json("select public.work_promotion_list('anna@x.com')").every((r) => r.requested_by === 'anna@x.com'), true, 'and nothing else is shown to her');
+  sql("delete from werkbank.work_promotion where requested_by = 'other@x.com'");
+});
+
 test('studio agents: the API roles cannot reach the request tables or functions', { skip }, () => {
   for (const table of ['werkbank.work_promotion', 'werkbank.work_promotion_check']) assert.ok(rule(`set role authenticated; select * from ${table}`), table);
   assert.ok(rule("set role anon; select public.work_promotion_list('a@x.com')"));

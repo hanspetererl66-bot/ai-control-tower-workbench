@@ -181,10 +181,19 @@ returns jsonb language sql stable security definer set search_path = '' as $$
     'checks', (select coalesce(jsonb_agg(jsonb_build_object('id', c.check_id, 'status', c.status, 'detail', c.detail) order by c.check_id), '[]'::jsonb)
                from werkbank.work_promotion_check c where c.promotion_id = p.id)
   ) order by p.created_at desc), '[]'::jsonb)
-  from (select * from werkbank.work_promotion order by created_at desc limit 100) p
-  join werkbank.work_item w on w.id = p.item_id
-  where lower(p_actor) = p.requested_by
-     or exists (select 1 from werkbank.group_members m where lower(m.email) = lower(p_actor) and m.role = 'admin');
+  -- Who sees a request: the requester, the admin of the department it is addressed to, and the Governance board (they decide the
+  -- company requests and oversee the rest). Filtered first, then the newest 100 of what the person may see.
+  from (
+    select r.* from werkbank.work_promotion r
+    where lower(p_actor) = r.requested_by
+       or (r.to_visibility = 'team' and exists (
+             select 1 from werkbank.group_members m where m.group_id = r.group_id and lower(m.email) = lower(p_actor) and m.role = 'admin'))
+       or exists (
+             select 1 from werkbank.group_members m join werkbank.groups g on g.id = m.group_id
+             where g.name = 'Governance board' and lower(m.email) = lower(p_actor) and m.role = 'admin')
+    order by r.created_at desc limit 100
+  ) p
+  join werkbank.work_item w on w.id = p.item_id;
 $$;
 
 revoke all on function werkbank.agent_check_input(uuid, integer) from public, anon, authenticated;
