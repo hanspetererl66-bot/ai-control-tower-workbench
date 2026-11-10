@@ -863,6 +863,28 @@ function makeLogic(D) {
     });
     return ok && w ? Math.round(sum / w * 10) / 10 : null;
   }
+  /**
+   * Consistency of the AI reading: the same answers read several times (each run separately, no shared memory) and compared per area.
+   * runs: one rows-list per reading (as parseAssessment returns). It changes no level; it tells the hiring manager where the AI is not sure.
+   * stable = every reading rated and the levels lie within 1 of each other; differs = a spread of 2 or more; incomplete = some reading gave no level.
+   */
+  function consistency(runs) {
+    var rows = rubric().dimensions.map(function (d) {
+      var levels = runs.map(function (rr) { var r = (rr || []).filter(function (x) { return x.key === d.key; })[0]; return r && r.status === 'rated' ? r.level : null; });
+      var statuses = runs.map(function (rr) { var r = (rr || []).filter(function (x) { return x.key === d.key; })[0]; return r ? r.status : 'unrated'; });
+      var got = levels.filter(function (x) { return x !== null; });
+      var min = got.length ? Math.min.apply(null, got) : null, max = got.length ? Math.max.apply(null, got) : null, spread = got.length ? max - min : null;
+      var status = statuses.every(function (x) { return x === 'no-answer'; }) ? 'no-answer'
+        : got.length < runs.length ? 'incomplete' : (spread >= 2 ? 'differs' : 'stable');
+      return { key: d.key, label: d.label, levels: levels, min: min, max: max, spread: spread, status: status };
+    });
+    var scored = rows.filter(function (r) { return r.status !== 'no-answer'; });
+    return { runs: runs.length, rows: rows, stable: scored.filter(function (r) { return r.status === 'stable'; }).length, total: scored.length };
+  }
+  /** What is kept with the assessment: levels and spread only, no text. */
+  function consistencyRecord(report) {
+    return { runs: report.runs, rows: report.rows.map(function (r) { return { key: r.key, levels: r.levels, spread: r.spread, status: r.status }; }) };
+  }
   /** The record kept for the hiring manager (no name, no address). */
   function assessmentRecord(profile, jobId, session, mode, note, answers, rows) {
     return {
@@ -913,7 +935,7 @@ function makeLogic(D) {
       ' If you disagree with a level or want to talk to a person, just reply.\n\nBest regards,\n' + mgr + '\n' + company;
     return { ok: true, text: text, problems: [] };
   }
-  return { rubric: rubric, profiles: profiles, profileById: profileById, levelName: levelName, assessmentPrompt: assessmentPrompt, parseAssessment: parseAssessment, assessmentFallback: assessmentFallback, finalLevel: finalLevel, applyReview: applyReview, overall: overall, assessmentRecord: assessmentRecord, thanksPrompt: thanksPrompt, parseThanks: parseThanks, thanksFallback: thanksFallback, assembleThanks: assembleThanks, feedbackMail: feedbackMail, interviewGuide: interviewGuide, avatarScript: avatarScript, checkTask: checkTask, taskPrompt: taskPrompt, parseTaskCheck: parseTaskCheck, taskSummary: taskSummary, summaryPrompt: summaryPrompt, parseSummary: parseSummary, summaryFallback: summaryFallback, letterPrompt: letterPrompt, parseLetter: parseLetter, letterFallback: letterFallback, assembleLetter: assembleLetter, interviewRecord: interviewRecord, redactContact: redactContact, isMail: isMail, resultLines: resultLines, STAGES: STAGES, job: job, postingBrief: postingBrief, templateById: templateById, fillText: fillText, draftPosting: draftPosting, templatize: templatize, lintPosting: lintPosting, channelPackage: channelPackage, publishReady: publishReady, companyName: companyName, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
+  return { rubric: rubric, profiles: profiles, profileById: profileById, levelName: levelName, assessmentPrompt: assessmentPrompt, parseAssessment: parseAssessment, assessmentFallback: assessmentFallback, finalLevel: finalLevel, applyReview: applyReview, overall: overall, consistency: consistency, consistencyRecord: consistencyRecord, assessmentRecord: assessmentRecord, thanksPrompt: thanksPrompt, parseThanks: parseThanks, thanksFallback: thanksFallback, assembleThanks: assembleThanks, feedbackMail: feedbackMail, interviewGuide: interviewGuide, avatarScript: avatarScript, checkTask: checkTask, taskPrompt: taskPrompt, parseTaskCheck: parseTaskCheck, taskSummary: taskSummary, summaryPrompt: summaryPrompt, parseSummary: parseSummary, summaryFallback: summaryFallback, letterPrompt: letterPrompt, parseLetter: parseLetter, letterFallback: letterFallback, assembleLetter: assembleLetter, interviewRecord: interviewRecord, redactContact: redactContact, isMail: isMail, resultLines: resultLines, STAGES: STAGES, job: job, postingBrief: postingBrief, templateById: templateById, fillText: fillText, draftPosting: draftPosting, templatize: templatize, lintPosting: lintPosting, channelPackage: channelPackage, publishReady: publishReady, companyName: companyName, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
     jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, topMatches: topMatches, proposals: proposals, funnel: funnel,
     stalledList: stalledList, bestWaiting: bestWaiting, brief: brief, daysBetween: daysBetween };
 }
@@ -1503,14 +1525,15 @@ function makeLogic(D) {
   // Same bridge as the online interview. The AI proposes a level (1 to 5, a rubric stage) per area with a quote from the answers.
   // The person sees the proposal marked as preliminary. The hiring manager sets the final levels, then prepares two Gmail DRAFTS and sends them from Gmail.
   function newRb(job) { return { job: job, profile: L.profiles()[0].id, approved: false, ack: false, step: 'notice', qi: 0, ans: {}, session: '', busy: '', rows: null, mode: '', modeNote: '',
-    savedNote: '', edits: {}, confirmed: false, reviewNote: '', firstName: '', manager: '', replyBy: '', to: '', consent: false, mail: null, mailKind: '', mailBusy: '', mailNote: '', drafted: {}, list: null, listNote: '' }; }
+    savedNote: '', edits: {}, confirmed: false, reviewNote: '', firstName: '', manager: '', replyBy: '', to: '', consent: false, mail: null, cons: null, consBusy: '', mailKind: '', mailBusy: '', mailNote: '', drafted: {}, list: null, listNote: '' }; }
   S.rb = newRb(JOBS_CV[0].id);
   function rbProfile() { return L.profileById(S.rb.profile); }
   function rbRole() { return rbProfile().title.replace(/\s*\(.*\)\s*$/, ''); }
-  function rbAsk(kind, prompt) { return ivCall('iv:ask-request', { kind: kind, session: S.rb.session, prompt: prompt }, 180000).then(function (m) { return m.text; }); }
+  function rbAsk(kind, prompt, session) { return ivCall('iv:ask-request', { kind: kind, session: session || S.rb.session, prompt: prompt }, 180000).then(function (m) { return m.text; }); }
   function rbSave(final) {
     var v = S.rb, p = rbProfile(), rec = L.assessmentRecord(p, v.job, v.session, v.mode, v.modeNote, v.ans, v.rows);
     rec.final = !!final; rec.overall = L.overall(v.rows, !!final);
+    if (v.cons) rec.consistency = L.consistencyRecord(v.cons);
     return ivCall('iv:assess-save-request', { requisition: v.job, record: rec }, 30000).then(function (m) {
       v.savedNote = (final ? 'Confirmed levels kept' : 'AI proposal kept') + ' for the hiring manager (revision ' + m.revision + ').';
       return true;
@@ -1519,7 +1542,7 @@ function makeLogic(D) {
   /** Submit: the AI proposes the levels. A level without a real quote is dropped and shown as not rated; with no AI, no level is set at all. */
   function rbRun() {
     var v = S.rb, p = rbProfile();
-    v.step = 'checking'; v.rows = null; v.savedNote = ''; v.edits = {}; v.confirmed = false; v.mail = null; v.drafted = {}; v.busy = 'The AI is reading your answers…'; render();
+    v.step = 'checking'; v.rows = null; v.savedNote = ''; v.edits = {}; v.confirmed = false; v.mail = null; v.cons = null; v.consBusy = ''; v.drafted = {}; v.busy = 'The AI is reading your answers…'; render();
     return rbAsk('assess', L.assessmentPrompt(p, v.ans)).then(function (text) {
       var r = L.parseAssessment(p, text, v.ans);
       v.rows = r.rows;
@@ -1530,6 +1553,18 @@ function makeLogic(D) {
       v.rows = L.assessmentFallback(p, v.ans); v.mode = 'fallback'; v.modeNote = 'No AI could be reached (' + err + '), so no level was set.';
     }).then(function () { v.busy = 'Keeping the proposal for the hiring manager…'; render(); return rbSave(false); })
       .then(function () { v.step = 'done'; v.busy = ''; render(); });
+  }
+  /** Reads the same answers twice more, each time in its own conversation, and compares the three readings per area. It changes no level. */
+  function rbConsist() {
+    var v = S.rb, p = rbProfile(), runs = [v.rows], codes = [v.session + '-R1', v.session + '-R2'];
+    v.consBusy = 'Reading the answers again (1 of 2)…'; render();
+    function again(i) {
+      return rbAsk('assess', L.assessmentPrompt(p, v.ans), codes[i]).then(function (text) { runs.push(L.parseAssessment(p, text, v.ans).rows); },
+        function () { runs.push(L.assessmentFallback(p, v.ans)); });
+    }
+    return again(0).then(function () { v.consBusy = 'Reading the answers again (2 of 2)…'; render(); return again(1); }).then(function () {
+      v.cons = L.consistency(runs); v.consBusy = 'Keeping the result…'; render(); return rbSave(v.confirmed);
+    }).then(function () { v.consBusy = ''; render(); });
   }
   function rbConfirm() {
     var v = S.rb, ed = {}, missing = [];
@@ -1629,15 +1664,23 @@ function makeLogic(D) {
     var v = S.rb, p = rbProfile();
     if (v.step !== 'done' || !v.rows) return '<p class="sub">' + (v.step === 'checking' ? esc(v.busy || 'Working…') : 'The proposal appears here when the interview is finished.') + '</p>';
     var opts = '<option value="">keep the AI level</option>' + L.rubric().levels.map(function (l) { return '<option value="' + l.level + '">' + l.level + ' ' + esc(l.name) + '</option>'; }).join('');
-    var table = '<table><thead><tr><th>Area</th><th>AI proposal</th><th>Evidence</th><th>Your level</th><th>Note for the person</th></tr></thead><tbody>' + v.rows.map(function (r) {
+    var table = '<table><thead><tr><th>Area</th><th>AI proposal</th><th>Evidence</th><th>Your level</th><th>Note for the person</th>' + (v.cons ? '<th>Repeat readings</th>' : '') + '</tr></thead><tbody>' + v.rows.map(function (r) {
       var e = v.edits[r.key] || {}, fin = L.finalLevel(r), lv = r.status === 'rated' ? r.level : null;
       var ev = lv ? esc(r.reason) + '<div class="sub">“' + esc(r.quote) + '” <span class="sub">(' + esc(r.question) + ')</span></div>' : '<span class="sub">' + (r.status === 'no-answer' ? 'no answer' : 'no level could be supported by a quote') + '</span>';
       var mine = v.confirmed ? rbLevelCell(r, fin) : '<select data-rbsel="lv:' + r.key + '" aria-label="Level for ' + esc(r.label) + '">' + opts.replace('value="' + (e.level || '') + '"', 'value="' + (e.level || '') + '" selected') + '</select>' + (lv ? '' : (r.status === 'no-answer' ? '' : ' <span class="tag amber">needs your level</span>'));
       var note = v.confirmed ? esc(r.note || '') : '<input type="text" data-rbin="note:' + r.key + '" maxlength="300" aria-label="Note for ' + esc(r.label) + '" value="' + esc(e.note || '') + '" placeholder="optional">';
-      return '<tr><td><b>' + esc(r.label) + '</b></td><td>' + rbLevelCell(r, lv) + '</td><td>' + ev + '</td><td>' + mine + '</td><td>' + note + '</td></tr>';
+      var cr = v.cons ? v.cons.rows.filter(function (x) { return x.key === r.key; })[0] : null;
+      var cc = !cr ? '' : '<td>' + (cr.status === 'no-answer' ? '<span class="sub">no answer</span>' : esc(cr.levels.map(function (x) { return x === null ? '–' : x; }).join(' · ')) + ' <span class="tag ' + (cr.status === 'stable' ? 'ok' : 'amber') + '">' + (cr.status === 'stable' ? 'stable' : (cr.status === 'differs' ? 'readings differ' : 'incomplete')) + '</span>') + '</td>';
+      return '<tr><td><b>' + esc(r.label) + '</b></td><td>' + rbLevelCell(r, lv) + '</td><td>' + ev + '</td><td>' + mine + '</td><td>' + note + '</td>' + cc + '</tr>';
     }).join('') + '</tbody></table>';
     var ai = L.overall(v.rows, false), fin = L.overall(v.rows, true);
     var mean = '<p class="sub">Mean of the four levels, equal weights: AI proposal <b>' + (ai === null ? 'not available' : ai.toFixed(1)) + '</b>' + (v.confirmed ? ', confirmed <b>' + (fin === null ? 'not available' : fin.toFixed(1)) + '</b>' : '') + '. A reading aid for you, not a score; it is never sent to the person and nobody is ranked.</p>';
+    var consBox = '';
+    if (v.mode === 'ai') {
+      consBox = '<div class="row"><button class="btn" type="button" data-rbact="consist"' + (v.consBusy ? ' disabled' : '') + '>' + (v.cons ? 'Check consistency again' : 'Check consistency (2 more AI readings)') + '</button>' +
+        (v.cons ? '<span class="sub">' + v.cons.stable + ' of ' + v.cons.total + ' areas stable over ' + v.cons.runs + ' readings. A spread of 2 or more levels means the AI is not sure: read that answer yourself. No level was changed.</span>' : '<span class="sub">Reads the same answers twice more, each in its own conversation, and shows where the readings differ. For you only.</span>') + '</div>' +
+        (v.consBusy ? '<p class="note" aria-live="polite">' + esc(v.consBusy) + '</p>' : '');
+    }
     var mail = '';
     if (v.confirmed) {
       var form = '<div class="row"><label class="sub">First name <input type="text" data-rbin="firstName" maxlength="40" value="' + esc(v.firstName) + '"></label><label class="sub">Your name <input type="text" data-rbin="manager" maxlength="80" value="' + esc(v.manager) + '"></label>' +
@@ -1656,7 +1699,7 @@ function makeLogic(D) {
     }
     return '<p>' + (v.mode === 'ai' ? '<span class="tag ok">Proposed by an AI (Joule, model provider OpenRouter)</span>' : '<span class="tag amber">No AI levels</span> ' + esc(v.modeNote)) +
       (v.mode === 'ai' && v.modeNote ? ' <span class="sub">' + esc(v.modeNote) + '</span>' : '') + ' <span class="sub">Session ' + esc(v.session) + (v.confirmed ? ' · confirmed' : ' · waiting for you') + '</span></p>' +
-      table + mean + (v.savedNote ? '<p class="note">' + esc(v.savedNote) + '</p>' : '') + (v.reviewNote ? '<p class="note" role="alert">' + esc(v.reviewNote) + '</p>' : '') + mail +
+      table + consBox + mean + (v.savedNote ? '<p class="note">' + esc(v.savedNote) + '</p>' : '') + (v.reviewNote ? '<p class="note" role="alert">' + esc(v.reviewNote) + '</p>' : '') + mail +
       (v.mailBusy ? '<p class="note" aria-live="polite">' + esc(v.mailBusy) + '</p>' : '') + (v.mailNote ? '<p class="note">' + esc(v.mailNote) + '</p>' : '') +
       '<h3>Answers</h3>' + p.questions.map(function (q) { return '<p><b>' + esc(q.topic) + '.</b> ' + (v.ans[q.id] ? esc(v.ans[q.id]) : '<span class="sub">no answer</span>') + '</p>'; }).join('') +
       '<details><summary>Prompt for the AI</summary><pre class="iv-pre">' + esc(L.assessmentPrompt(p, v.ans)) + '</pre></details>';
@@ -1688,6 +1731,7 @@ function makeLogic(D) {
     else if (act === 'next') { if (v.qi + 1 < p.questions.length) { v.qi++; render(); } else rbRun(); }
     else if (act === 'reset') { S.rb = newRb(v.job); S.rb.profile = v.profile; render(); }
     else if (act === 'confirm') rbConfirm();
+    else if (act === 'consist') rbConsist();
     else if (act === 'thanks') rbPrepare('thanks');
     else if (act === 'feedback') rbPrepare('feedback');
     else if (act === 'draft') rbDraft();

@@ -72,6 +72,11 @@ export async function saveAssessment(rpc, actor, requisition, record) {
   if (!Array.isArray(levels) || levels.length !== 4 || !LEVEL_KEYS.every((k) => levels.some((l) => l?.key === k))) throw new ToolError('the four levels are incomplete');
   const whole = (n) => n === null || n === undefined || (Number.isInteger(n) && n >= 1 && n <= 5);
   if (!levels.every((l) => whole(l.ai) && whole(l.human))) throw new ToolError('a level must be a whole number from 1 to 5');
+  if (record.consistency !== undefined) {
+    const c = record.consistency;
+    const okRow = (r) => LEVEL_KEYS.includes(r?.key) && Array.isArray(r.levels) && r.levels.length <= 5 && r.levels.every(whole) && ['stable', 'differs', 'incomplete', 'no-answer'].includes(r.status);
+    if (!c || !Number.isInteger(c.runs) || c.runs < 2 || c.runs > 5 || !Array.isArray(c.rows) || c.rows.length !== 4 || !c.rows.every(okRow)) throw new ToolError('the consistency check is not valid');
+  }
   const text = JSON.stringify(record);
   if (text.length > 40000) throw new ToolError('the assessment is too long');
   if (MAIL.test(text)) throw new ToolError('an assessment holds no e-mail address');

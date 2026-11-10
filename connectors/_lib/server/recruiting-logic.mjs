@@ -461,6 +461,28 @@ export function makeLogic(D) {
     });
     return ok && w ? Math.round(sum / w * 10) / 10 : null;
   }
+  /**
+   * Consistency of the AI reading: the same answers read several times (each run separately, no shared memory) and compared per area.
+   * runs: one rows-list per reading (as parseAssessment returns). It changes no level; it tells the hiring manager where the AI is not sure.
+   * stable = every reading rated and the levels lie within 1 of each other; differs = a spread of 2 or more; incomplete = some reading gave no level.
+   */
+  function consistency(runs) {
+    var rows = rubric().dimensions.map(function (d) {
+      var levels = runs.map(function (rr) { var r = (rr || []).filter(function (x) { return x.key === d.key; })[0]; return r && r.status === 'rated' ? r.level : null; });
+      var statuses = runs.map(function (rr) { var r = (rr || []).filter(function (x) { return x.key === d.key; })[0]; return r ? r.status : 'unrated'; });
+      var got = levels.filter(function (x) { return x !== null; });
+      var min = got.length ? Math.min.apply(null, got) : null, max = got.length ? Math.max.apply(null, got) : null, spread = got.length ? max - min : null;
+      var status = statuses.every(function (x) { return x === 'no-answer'; }) ? 'no-answer'
+        : got.length < runs.length ? 'incomplete' : (spread >= 2 ? 'differs' : 'stable');
+      return { key: d.key, label: d.label, levels: levels, min: min, max: max, spread: spread, status: status };
+    });
+    var scored = rows.filter(function (r) { return r.status !== 'no-answer'; });
+    return { runs: runs.length, rows: rows, stable: scored.filter(function (r) { return r.status === 'stable'; }).length, total: scored.length };
+  }
+  /** What is kept with the assessment: levels and spread only, no text. */
+  function consistencyRecord(report) {
+    return { runs: report.runs, rows: report.rows.map(function (r) { return { key: r.key, levels: r.levels, spread: r.spread, status: r.status }; }) };
+  }
   /** The record kept for the hiring manager (no name, no address). */
   function assessmentRecord(profile, jobId, session, mode, note, answers, rows) {
     return {
@@ -511,7 +533,7 @@ export function makeLogic(D) {
       ' If you disagree with a level or want to talk to a person, just reply.\n\nBest regards,\n' + mgr + '\n' + company;
     return { ok: true, text: text, problems: [] };
   }
-  return { rubric: rubric, profiles: profiles, profileById: profileById, levelName: levelName, assessmentPrompt: assessmentPrompt, parseAssessment: parseAssessment, assessmentFallback: assessmentFallback, finalLevel: finalLevel, applyReview: applyReview, overall: overall, assessmentRecord: assessmentRecord, thanksPrompt: thanksPrompt, parseThanks: parseThanks, thanksFallback: thanksFallback, assembleThanks: assembleThanks, feedbackMail: feedbackMail, interviewGuide: interviewGuide, avatarScript: avatarScript, checkTask: checkTask, taskPrompt: taskPrompt, parseTaskCheck: parseTaskCheck, taskSummary: taskSummary, summaryPrompt: summaryPrompt, parseSummary: parseSummary, summaryFallback: summaryFallback, letterPrompt: letterPrompt, parseLetter: parseLetter, letterFallback: letterFallback, assembleLetter: assembleLetter, interviewRecord: interviewRecord, redactContact: redactContact, isMail: isMail, resultLines: resultLines, STAGES: STAGES, job: job, postingBrief: postingBrief, templateById: templateById, fillText: fillText, draftPosting: draftPosting, templatize: templatize, lintPosting: lintPosting, channelPackage: channelPackage, publishReady: publishReady, companyName: companyName, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
+  return { rubric: rubric, profiles: profiles, profileById: profileById, levelName: levelName, assessmentPrompt: assessmentPrompt, parseAssessment: parseAssessment, assessmentFallback: assessmentFallback, finalLevel: finalLevel, applyReview: applyReview, overall: overall, consistency: consistency, consistencyRecord: consistencyRecord, assessmentRecord: assessmentRecord, thanksPrompt: thanksPrompt, parseThanks: parseThanks, thanksFallback: thanksFallback, assembleThanks: assembleThanks, feedbackMail: feedbackMail, interviewGuide: interviewGuide, avatarScript: avatarScript, checkTask: checkTask, taskPrompt: taskPrompt, parseTaskCheck: parseTaskCheck, taskSummary: taskSummary, summaryPrompt: summaryPrompt, parseSummary: parseSummary, summaryFallback: summaryFallback, letterPrompt: letterPrompt, parseLetter: parseLetter, letterFallback: letterFallback, assembleLetter: assembleLetter, interviewRecord: interviewRecord, redactContact: redactContact, isMail: isMail, resultLines: resultLines, STAGES: STAGES, job: job, postingBrief: postingBrief, templateById: templateById, fillText: fillText, draftPosting: draftPosting, templatize: templatize, lintPosting: lintPosting, channelPackage: channelPackage, publishReady: publishReady, companyName: companyName, cands: cands, daysIn: daysIn, over: over, stalled: stalled, baseline: baseline, acceptance: acceptance,
     jobStatus: jobStatus, evalCand: evalCand, hasCriteria: hasCriteria, shortlist: shortlist, topMatches: topMatches, proposals: proposals, funnel: funnel,
     stalledList: stalledList, bestWaiting: bestWaiting, brief: brief, daysBetween: daysBetween };
 }

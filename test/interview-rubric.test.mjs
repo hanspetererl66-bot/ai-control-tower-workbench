@@ -257,3 +257,46 @@ test('the migration is shaped like the others: append only, manager only, closed
   assert.match(sqlText, /grant execute on function public\.recruiting_assessments\([^)]*\) to service_role/);
   assert.equal(/grant execute[^;]*\bto (anon|authenticated|public)\b/i.test(sqlText), false);
 });
+
+const readRows = (levels) => DIMS.map((key, i) => levels[i] === null
+  ? { key, label: key, level: null, status: 'unrated' }
+  : { key, label: key, level: levels[i], status: 'rated' });
+
+test('consistency compares the readings per area and changes no level', () => {
+  const runs = [readRows([3, 3, 3, 2]), readRows([3, 4, 3, 2]), readRows([3, 3, 5, 2])];
+  const before = JSON.stringify(runs);
+  const c = L.consistency(runs);
+  assert.equal(JSON.stringify(runs), before, 'the readings are not touched');
+  assert.deepEqual(c.rows.map((r) => r.status), ['stable', 'stable', 'differs', 'stable']);
+  assert.deepEqual(c.rows[2].levels, [3, 3, 5]);
+  assert.equal(c.rows[2].spread, 2);
+  assert.equal(c.rows[1].spread, 1, 'a spread of 1 is still stable');
+  assert.deepEqual([c.runs, c.stable, c.total], [3, 3, 4]);
+});
+
+test('a reading that gave no level makes the area incomplete, and an area without answers is left out', () => {
+  const c = L.consistency([readRows([3, 3, 3, 3]), readRows([3, null, 3, 3]), readRows([3, 3, 3, 3])]);
+  assert.equal(c.rows[1].status, 'incomplete');
+  assert.deepEqual(c.rows[1].levels, [3, null, 3]);
+  assert.equal(c.stable, 3);
+  const none = DIMS.map((key) => (key === 'creativity' ? { key, level: null, status: 'no-answer' } : { key, level: 4, status: 'rated' }));
+  const d = L.consistency([none, none]);
+  assert.equal(d.rows[3].status, 'no-answer');
+  assert.deepEqual([d.stable, d.total], [3, 3]);
+});
+
+test('only levels and spread are kept, and the database writer checks the shape', async () => {
+  const c = L.consistency([readRows([3, 3, 3, 2]), readRows([3, 4, 3, 2]), readRows([3, 3, 5, 2])]);
+  const kept = L.consistencyRecord(c);
+  assert.deepEqual(Object.keys(kept.rows[0]).sort(), ['key', 'levels', 'spread', 'status']);
+  const calls = [];
+  const rpc = async (fn, body) => { calls.push(body); return { saved: true, revision: 3 }; };
+  await saveAssessment(rpc, 'hm@example.com', 'REQ-2203', { ...rec(), consistency: kept });
+  assert.equal(calls[0].p_payload.consistency.runs, 3);
+  await saveAssessment(rpc, 'hm@example.com', 'REQ-2203', rec());
+  assert.equal(calls.length, 2, 'the check is optional');
+  for (const bad of [{ ...kept, runs: 1 }, { ...kept, rows: kept.rows.slice(1) }, { ...kept, rows: kept.rows.map((r) => ({ ...r, levels: [9] })) }, { ...kept, rows: kept.rows.map((r) => ({ ...r, status: 'great' })) }, 'x']) {
+    await assert.rejects(() => saveAssessment(rpc, 'hm@example.com', 'REQ-2203', { ...rec(), consistency: bad }), /consistency/);
+  }
+  assert.equal(calls.length, 2);
+});
