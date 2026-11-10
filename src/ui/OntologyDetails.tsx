@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react';
 import {
-  HEALTH_LABEL, PLAN_LABEL, addPlan, companyCodesIn, consumersOf, healthOf, impactOf, newPlan, ownerLabel, planRequest, propLabel, setPlanStatus,
-  type Governance, type Ontology, type PlanStatus, type Term,
+  HEALTH_LABEL, MAX_MAPPINGS, MAX_SYNONYMS, PLAN_LABEL, STATUS_LABEL, TERM_STATUSES, addPlan, addSynonym, companyCodesIn, consumersOf, healthOf, impactOf, metaOf, newPlan,
+  ownerLabel, planRequest, propLabel, removeSynonym, setPlanStatus, setTermMeta, statusOf,
+  type Governance, type Ontology, type PlanStatus, type Term, type TermStatus,
 } from '../ontology-manager';
+
+const SYSTEMS = ['SAP S/4HANA', 'SAP SuccessFactors', 'IFRS 15', 'schema.org', 'FIBO', 'AWX', 'Other'];
 
 /** Details of one term: definition, owner, what hangs on it, who declares they use it, and a plan for changing it. */
 export default function OntologyDetails({ onto, term, gov, onGovernance }: { onto: Ontology; term: Term; gov: Governance; onGovernance: (g: Governance) => void }) {
@@ -14,6 +17,7 @@ export default function OntologyDetails({ onto, term, gov, onGovernance }: { ont
     <aside className="om-detail" aria-label="Term details">
       <div className="om-detail-top">
         <span className="om-dim">{term.kind === 'metric' ? 'Metric' : 'Class'}</span>
+        <span className={`om-chip ${statusOf(onto, gov, term) === 'deprecated' ? 'om-bad' : statusOf(onto, gov, term) === 'draft' ? 'om-warn' : 'om-ok'}`}>{STATUS_LABEL[statusOf(onto, gov, term)]}</span>
         <span className={`om-chip ${health === 'complete' ? 'om-ok' : 'om-warn'}`}>{HEALTH_LABEL[health]}</span>
       </div>
       <h2>{term.label}</h2>
@@ -36,6 +40,8 @@ export default function OntologyDetails({ onto, term, gov, onGovernance }: { ont
           <p>{term.members.join(', ')}</p>
         </>
       )}
+
+      <Lifecycle onto={onto} term={term} gov={gov} onGovernance={onGovernance} />
 
       <section className="om-impact" aria-label="What depends on this term">
         <h3>What hangs on it</h3>
@@ -123,6 +129,62 @@ function ChangePlan({ onto, term, gov, onGovernance, request, ask, impactCount }
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+/** Lifecycle status, replacement, synonyms and mappings of one term. Saved in governance.json (not in the Turtle). */
+function Lifecycle({ onto, term, gov, onGovernance }: { onto: Ontology; term: Term; gov: Governance; onGovernance: (g: Governance) => void }) {
+  const meta = metaOf(gov, onto.slug, term.id);
+  const status = statusOf(onto, gov, term);
+  const [word, setWord] = useState('');
+  const [system, setSystem] = useState(SYSTEMS[0]);
+  const [ref, setRef] = useState('');
+  const others = onto.terms.filter((t) => t.id !== term.id && statusOf(onto, gov, t) !== 'deprecated');
+  const save = (patch: Parameters<typeof setTermMeta>[3]) => onGovernance(setTermMeta(gov, onto.slug, term.id, patch));
+  return (
+    <section className="om-life" aria-label="Lifecycle, synonyms and mappings">
+      <h3>Lifecycle</h3>
+      <div className="om-life-row">
+        <label className="om-field"><span>Status</span>
+          <select className="om-select" value={status} onChange={(e) => save({ status: e.target.value as TermStatus })} aria-label="Status of the term">
+            {TERM_STATUSES.map((st) => <option key={st} value={st}>{STATUS_LABEL[st]}</option>)}
+          </select>
+        </label>
+        {status === 'deprecated' && (
+          <label className="om-field"><span>Replaced by</span>
+            <select className="om-select" value={meta.replacedBy} onChange={(e) => save({ replacedBy: e.target.value })} aria-label="Term that replaces this one">
+              <option value="">Nothing yet</option>
+              {others.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </label>
+        )}
+      </div>
+      {status === 'deprecated' && <p className="om-note-small">A deprecated term should not get new users. The Quality tab lists what still uses it.</p>}
+
+      <h3>Also called</h3>
+      <div className="om-tags">
+        {meta.synonyms.length === 0 && <span className="om-dim">No synonym yet. Add the words people really use.</span>}
+        {meta.synonyms.map((w) => <span key={w} className="om-tag">{w}<button aria-label={`Remove ${w}`} onClick={() => onGovernance(removeSynonym(gov, onto.slug, term.id, w))}>×</button></span>)}
+      </div>
+      <form className="om-inline" onSubmit={(e) => { e.preventDefault(); if (word.trim()) { onGovernance(addSynonym(gov, onto.slug, term.id, word)); setWord(''); } }}>
+        <input value={word} onChange={(e) => setWord(e.target.value)} placeholder="Add a synonym" aria-label="New synonym" disabled={meta.synonyms.length >= MAX_SYNONYMS} />
+        <button className="om-filter" disabled={!word.trim()}>Add</button>
+      </form>
+
+      <h3>Same thing elsewhere</h3>
+      <ul className="om-list">
+        {meta.mappings.length === 0 && <li className="om-dim">Not mapped to another system or standard.</li>}
+        {meta.mappings.map((m) => (
+          <li key={`${m.system}:${m.ref}`}><b>{m.system}</b> <span className="om-dim">{m.ref}</span>{' '}
+            <button className="om-filter" aria-label={`Remove mapping ${m.system} ${m.ref}`} onClick={() => save({ mappings: meta.mappings.filter((x) => x !== m) })}>Remove</button></li>
+        ))}
+      </ul>
+      <form className="om-inline" onSubmit={(e) => { e.preventDefault(); if (ref.trim()) { save({ mappings: [...meta.mappings, { system, ref }] }); setRef(''); } }}>
+        <select className="om-select" value={system} onChange={(e) => setSystem(e.target.value)} aria-label="System or standard">{SYSTEMS.map((x) => <option key={x}>{x}</option>)}</select>
+        <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="Name there, for example Business Partner" aria-label="Name in that system" disabled={meta.mappings.length >= MAX_MAPPINGS} />
+        <button className="om-filter" disabled={!ref.trim()}>Add</button>
+      </form>
     </section>
   );
 }

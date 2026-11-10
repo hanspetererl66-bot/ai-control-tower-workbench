@@ -125,7 +125,8 @@ const KINDS = ['agent', 'skill', 'report'];
 const PLAN_STATUS = ['draft', 'asked', 'approved', 'rejected'];
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
-export const emptyGovernance = () => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [] });
+export const emptyGovernance = () => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [], termMeta: {}, questions: [] });
+const TERM_STATUSES = ['draft', 'approved', 'deprecated'];
 
 /**
  * Pure: whatever the page sends becomes the one shape we store, with limits. Owners and domains per ontology, which
@@ -159,6 +160,36 @@ export function normalizeGovernance(input) {
       asked: (Array.isArray(p?.asked) ? p.asked : []).map((x) => str(x, 120)).filter(Boolean).slice(0, 20),
     };
     if (plan.id && SLUG.test(plan.slug) && plan.term && plan.change) g.plans.push(plan);
+  }
+  // Lifecycle, synonyms and mappings per term, keyed "<slug>|<term id>" (additive: older files simply have none).
+  const words = (list, max) => {
+    const seen = new Set();
+    const out = [];
+    for (const raw of Array.isArray(list) ? list : []) {
+      const v = str(raw, 80).replace(/\s+/g, ' ');
+      if (v && !seen.has(v.toLowerCase())) { seen.add(v.toLowerCase()); out.push(v); }
+      if (out.length >= max) break;
+    }
+    return out;
+  };
+  let metaCount = 0;
+  for (const [key, v] of Object.entries(src.termMeta && typeof src.termMeta === 'object' ? src.termMeta : {})) {
+    const [slug, ...rest] = String(key).split('|');
+    const term = str(rest.join('|'), 120);
+    if (!SLUG.test(slug) || !term || metaCount >= 5000) continue;
+    const status = TERM_STATUSES.includes(v?.status) ? v.status : '';
+    const meta = {
+      status, replacedBy: status === 'deprecated' ? str(v?.replacedBy, 120) : '', synonyms: words(v?.synonyms, 20),
+      mappings: (Array.isArray(v?.mappings) ? v.mappings : []).map((x) => ({ system: str(x?.system, 60), ref: str(x?.ref, 120) })).filter((x) => x.system && x.ref).slice(0, 10),
+    };
+    if (!meta.status && !meta.replacedBy && !meta.synonyms.length && !meta.mappings.length) continue;
+    g.termMeta[`${slug}|${term}`] = meta; metaCount++;
+  }
+  const qseen = new Set();
+  for (const q of Array.isArray(src.questions) ? src.questions.slice(0, 500) : []) {
+    const item = { id: str(q?.id, 40), slug: str(q?.slug, 80), text: str(q?.text, 300), terms: [...new Set((Array.isArray(q?.terms) ? q.terms : []).map((x) => str(x, 120)).filter(Boolean))].slice(0, 20) };
+    if (!item.id || !SLUG.test(item.slug) || !item.text || !item.terms.length || qseen.has(item.id)) continue;
+    qseen.add(item.id); g.questions.push(item);
   }
   return g;
 }
