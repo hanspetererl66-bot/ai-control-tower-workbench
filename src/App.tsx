@@ -44,7 +44,7 @@ import AgentStudio from './ui/AgentStudio';
 import { confirmDoc, editDoc, extendProject as extendAgentProject, loadProjects, newProject, saveProjects, type AgentProject } from './agent-project';
 import { loadMap as loadSyncMap } from './work-sync';
 import { localTarget, newExtension } from './requirements';
-import { PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
+import { AGENTS_PULLED, PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
 import Splitter from './ui/Splitter';
@@ -396,7 +396,7 @@ export default function App() {
   // Personal memory: notes kept on this computer; the assistant may suggest an entry, the person decides.
   const [memory, setMemoryState] = useState<MemoryState>(() => loadMemory(window.localStorage));
   const [studioAgents, setStudioAgentsState] = useState<StudioAgent[]>(() => loadAgents(window.localStorage));
-  const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); }, []);
+  const changeStudioAgents = useCallback((next: StudioAgent[]) => { setStudioAgentsState(next); saveAgents(window.localStorage, next); scheduleWorkSync(); }, []);
   const [agentProjects, setAgentProjectsState] = useState<AgentProject[]>(() => loadProjects(window.localStorage));
   const changeAgentProjects = useCallback((next: AgentProject[]) => { setAgentProjectsState(next); saveProjects(window.localStorage, next); scheduleWorkSync(); }, []);
   // Projects are also kept in the shared database (desktop app, once the connector and the e-mail are set).
@@ -404,7 +404,10 @@ export default function App() {
     const stop = startWorkSync();
     const reload = () => setAgentProjectsState(loadProjects(window.localStorage));
     window.addEventListener(PROJECTS_PULLED, reload);
-    return () => { stop(); window.removeEventListener(PROJECTS_PULLED, reload); };
+    // Studio agents and their levels changed by the database (see studio-agent-sync.ts).
+    const reloadAgents = () => { setStudioAgentsState(loadAgents(window.localStorage)); setAgentGovState((g) => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: g.levels })); };
+    window.addEventListener(AGENTS_PULLED, reloadAgents);
+    return () => { stop(); window.removeEventListener(PROJECTS_PULLED, reload); window.removeEventListener(AGENTS_PULLED, reloadAgents); };
   }, []);
   const [focusProject, setFocusProject] = useState<string | null>(null);
   /** The project document open in Agent Studio, so the docked chat can work on it. */

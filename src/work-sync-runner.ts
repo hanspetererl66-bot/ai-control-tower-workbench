@@ -8,8 +8,13 @@ import { loadProjects as loadAgent, saveProjects as saveAgent } from './agent-pr
 import { loadProjects as loadDevelop, saveProjects as saveDevelop } from './develop';
 import { htmlToMarkdown, toHtml } from './doc-html';
 import { applyBack, loadMap, saveMap, syncOnce, type Local } from './work-sync';
+import { AGENT_GOV_KEY, loadAgents, saveAgents } from './agent-studio';
+import { loadGov, saveGov } from './skill-governance';
+import { applyAgentLevels, applyBackAgents, loadStudioMap, saveStudioMap, syncStudioAgents, type StudioLocal } from './studio-agent-sync';
 
 export const PROJECTS_PULLED = 'werkbank:projects-pulled';
+/** Studio agents or their levels were changed by the database: reload them from localStorage. */
+export const AGENTS_PULLED = 'werkbank:agents-pulled';
 export type SyncStatus = { state: 'off' | 'needs-setup' | 'needs-email' | 'idle' | 'syncing' | 'error'; message: string; at: number; email: string; pushed: number; pulled: number };
 
 let status: SyncStatus = { state: 'off', message: '', at: 0, email: '', pushed: 0, pulled: 0 };
@@ -41,12 +46,25 @@ export async function syncNow(): Promise<void> {
     saveDevelop(window.localStorage, local.dev);
     saveMap(window.localStorage, local.map);
     if (after.pulled || after.removed) window.dispatchEvent(new Event(PROJECTS_PULLED));
+    // Studio agents: their own round; their level comes from the visibility of the item.
+    const readStudio = (): StudioLocal => ({ agents: loadAgents(window.localStorage), map: loadStudioMap(window.localStorage) });
+    const studioBefore = readStudio();
+    const studio = await syncStudioAgents(api, studioBefore);
+    const back = applyBackAgents(readStudio(), studioBefore, studio);
+    const govNow = loadGov(undefined, AGENT_GOV_KEY);
+    const leveled = applyAgentLevels(govNow, studio.levels, back.local.map);
+    saveAgents(window.localStorage, back.local.agents);
+    saveStudioMap(window.localStorage, leveled.map);
+    if (leveled.changed.length) saveGov(leveled.gov, undefined, AGENT_GOV_KEY);
+    if (studio.pulled || studio.removed || leveled.changed.length) window.dispatchEvent(new Event(AGENTS_PULLED));
+    after.errors.push(...studio.errors);
+    after.pushed += studio.pushed; after.pulled += studio.pulled;
     const problem = after.errors[0];
     set({
       state: problem ? 'error' : 'idle', at: Date.now(), pushed: after.pushed, pulled: after.pulled, email: st.email,
-      message: problem ? `Not saved: ${problem}` : deferred ? 'Saved. A project you edited meanwhile is checked in the next round.' : 'All projects are saved in the shared database.',
+      message: problem ? `Not saved: ${problem}` : (deferred || back.deferred) ? 'Saved. A project you edited meanwhile is checked in the next round.' : 'All projects are saved in the shared database.',
     });
-    if (deferred) again = true;
+    if (deferred || back.deferred) again = true;
   } catch (e: any) {
     set({ state: 'error', message: `The shared database could not be reached: ${String(e?.message ?? e).slice(0, 160)}`, at: Date.now() });
   } finally {
