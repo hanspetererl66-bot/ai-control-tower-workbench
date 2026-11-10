@@ -58,7 +58,7 @@ Hilfs-Skills im Bestand: `skill-finder` ("erst suchen, dann bauen", nutzt `searc
 
 **Grundsätzlich (blockiert Produktivbetrieb)**
 1. **Keine echte Identität.** Alles hängt an einer E-Mail als Etikett (`p_actor`). Wer die E-Mail ändert, ist jemand anderes; Rechte, Eigentümer und "darf genehmigen" sind damit nicht belastbar. Das Zielbild braucht SSO/Entra.
-2. **Zwei Zählweisen für Ebenen.** Die App kennt drei Ebenen (Personal/Department/Company, umbenennbar, in `localStorage`), das Register fünf Geltungsbereiche (`individual, team, lob, board-area, company`), die Antragstabelle nur `team` und `company`. LOB und Board-Area sind validiert, aber **nicht erreichbar** und in `skills_visible` nicht berücksichtigt.
+2. **Ebenen (entschieden 10.11.2026: drei).** Individual, Department (`team`), Company. `lob` und `board-area` sind keine Geltungsbereiche mehr, nur noch Klassifikation. Umgesetzt in `SCOPES` (Registry-Skript), den Connector-Schemas, Migration `20261110_043_skill_three_levels.sql` (bestehende Skills mit diesen Scopes werden zu `team` und damit enger sichtbar) und im Marketplace-Space. Die Datenbank hatte dabei `requires:` beim Veröffentlichen verworfen; `normalize_meta` behält es jetzt. Offen bleibt, dass die App die Ebene je Skill noch lokal führt (Punkt 3).
 3. **Governance-Stand lokal.** Die Ebene je Skill liegt in `localStorage`; die Datenbank ist Wahrheit nur für Anträge. Zwei Rechner können unterschiedliche Ebenen zeigen. (Schon als offen vermerkt.)
 4. **Kein Herkunftsnachweis.** Keine Signatur; Prüfsumme sichert nur Übertragung, nicht Urheber. ZIP-Import und Deep Link vertrauen auf die automatische Prüfung, die reine Regex-Heuristik ist (leicht zu umgehen: Befehl in anderer Schreibung, Anweisung in Prosa).
 5. **Prüfregeln doppelt** (TS und SQL) und die Registerprüfungen `description`/`duplicate` nur in SQL: Abweichung ist vorprogrammiert. Zudem gelten **drei verschiedene Validierungen** mit unterschiedlichen Grenzen: `checkSkillMd` (300 Zeichen Beschreibung als Warnung, 100 KB), `validateSkill` (240 Zeichen als Fehler, 20 000 Zeichen), Paketprüfung (2 MB).
@@ -113,7 +113,7 @@ Die Werkbank ist ein **Prozess- und Oberflächenprototyp für Skill-Governance**
 
 ## 9. Empfehlungen (Reihenfolge)
 
-1. **Ebenenmodell vereinheitlichen** (Schwäche 2/3): Entscheidung, ob nur Individual/Department/Company gelten oder alle fünf; dann Datenbank als Wahrheit, `localStorage` nur Cache.
+1. **Datenbank als Wahrheit für die Ebene** (Schwäche 3): Das Modell ist auf drei Ebenen entschieden; jetzt `localStorage` nur noch als Cache führen.
 2. **Nutzungsereignis "run"** (`skills_track`) aus Agent-Lauf und Scheduler, mit Erfolg/Fehler; damit werden Skill Health und Popular belastbar (7).
 3. **Abhängigkeiten im Front Matter** (`requires: connector@version`) prüfen beim Install und Sync (9).
 4. **Eine Validierung** statt drei; Regeln einmal in einer Datei, SQL daraus erzeugt oder per Test gegen dieselben Fälle geprüft (5).
