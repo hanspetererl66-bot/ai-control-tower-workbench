@@ -8,7 +8,7 @@ metadata:
   language: de
   board-area: Engineering
   lob: SuccessFactors
-  scope: lob
+  scope: team
   team: AI Programme Office
   tools: list_customers, find_similar_tickets, search_sap_help, search_sap_community, list_tickets, create_ticket, link_ticket
   requires: ai-control-tower

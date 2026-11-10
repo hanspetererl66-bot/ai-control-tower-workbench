@@ -21,8 +21,8 @@ export const MATURITIES = ['pilot', 'empfohlen', 'approved'];
 export const BOARD_AREAS = ['Finance', 'Sales', 'Marketing', 'Engineering'];
 /** LOB -> board area it belongs to. */
 export const LOBS = { BTP: 'Engineering', Concur: 'Engineering', SuccessFactors: 'Engineering' };
-/** Reach of a skill, narrow to wide. A skill starts as 'individual' and is promoted by review. */
-export const SCOPES = ['individual', 'team', 'lob', 'board-area', 'company'];
+/** Reach of a skill, narrow to wide: three levels. A skill starts as 'individual' and is promoted by review. LOB and board area are classification only. */
+export const SCOPES = ['individual', 'team', 'company'];
 
 /** Anonymous id of this machine for the usage counters (hash only, no name or address leaves the machine). */
 export function deviceId() {
@@ -112,8 +112,6 @@ export function validateSkill(slug, text, { tools, connectors } = {}) {
   }
   if (meta.scope && !SCOPES.includes(meta.scope)) throw new Error(`${slug}: scope must be one of ${SCOPES.join(', ')}`);
   if (meta.scope === 'team' && !meta.team) throw new Error(`${slug}: scope team needs a team`);
-  if (meta.scope === 'lob' && !meta.lob) throw new Error(`${slug}: scope lob needs a lob`);
-  if (meta.scope === 'board-area' && !meta.board_area && !meta.lob) throw new Error(`${slug}: scope board-area needs a board-area`);
   if (connectors) {
     const unknown = (meta.requires ?? []).filter((id) => !connectors.has(id));
     if (unknown.length) throw new Error(`${slug}: unknown connector(s) in requires: ${unknown.join(', ')}`);

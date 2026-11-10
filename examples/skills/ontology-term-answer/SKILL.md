@@ -7,7 +7,7 @@ metadata:
   data-class: intern
   language: en
   board-area: Engineering
-  scope: board-area
+  scope: team
   team: AI Programme Office
   tools: search_classes, describe, impact_of_term
   requires: ontology-manager

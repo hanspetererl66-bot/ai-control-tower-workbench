@@ -1,5 +1,5 @@
 /**
- * Which installed skills were actually used in a turn, for the usage counter 'run' (migration 041).
+ * Which installed skills were actually used in a turn, for the usage counter 'run' (migration 042).
  * Two signals: the person named one ("Use the X skill …", "Nutze den Skill X", "/X"), or the agent loaded one with a tool call
  * whose name mentions "skill" and whose input carries the skill name. The second signal is a guess about Goose's tool shape
  * (not checked against a live run): a call that does not match is simply not counted.
