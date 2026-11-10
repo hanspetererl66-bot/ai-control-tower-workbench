@@ -4,6 +4,9 @@ import { decide, levelOf, pendingFor, requestPromotion, type LevelIndex, type Sk
 import type { Schedule } from '../schedules';
 import WerkbankMark from './WerkbankMark';
 import AgentProjectView from './AgentProjectView';
+import { BenchPanel, ContractPanel, NetworkSwitch, RunsPanel, type AgentOps } from './AgentOps';
+import { fingerprint } from '../agent-testbench';
+import { DEMO_TEMPLATES, demoAgents, hasDemo } from '../agent-network-demo';
 import { currentStage, newProject, stageLabel, type AgentProject, type AgentStatus, type DocKey } from '../agent-project';
 
 export type AgentStudioProps = {
@@ -16,7 +19,7 @@ export type AgentStudioProps = {
   connectors: string[];
   spaces: Array<{ slug: string; title: string }>;
   /** Run the brief for real in the chat (restricted to the ticked sources). */
-  onRunInChat: (prompt: string) => void;
+  onRunInChat: (prompt: string, agentId?: string) => void;
   /** Agent projects: goal, documents and confirmations on the way to an agent. */
   projects: AgentProject[];
   onProjects: (next: AgentProject[]) => void;
@@ -24,12 +27,16 @@ export type AgentStudioProps = {
   focusProject?: string | null;
   /** The document open next to the docked chat, or null. */
   onDocFocus?: (focus: { projectId: string; docKey: DocKey } | null) => void;
+  /** Test bench, run record, stop switch and agent network (kept by the app). */
+  ops?: AgentOps;
 };
 
+import { releaseCheck } from '../agent-testbench';
+const releaseCheckText = (a: StudioAgent, ops: AgentOps) => releaseCheck(a, ops.reports).text;
 const KIND_TITLE = { space: 'Spaces', connector: 'Connectors', file: 'Files', web: 'Web' } as const;
 
 /** Agent Studio: define a simple agent by form, tick its sources, test it in a sandbox, then ask for approval to publish it. */
-export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null, onDocFocus }: AgentStudioProps) {
+export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, connectors, spaces, onRunInChat, projects, onProjects, focusProject = null, onDocFocus, ops }: AgentStudioProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(focusProject && projects.some((x) => x.id === focusProject) ? focusProject : null);
   const [selected, setSelected] = useState<string | null>(focusProject ? null : agents[0]?.id ?? null);
   const setGov = (fn: (g: SkillGov) => SkillGov) => onGov(fn(gov));
@@ -45,7 +52,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
   const agent = project ? null : agents.find((a) => a.id === selected) ?? null;
   const patch = (change: Partial<StudioAgent>) => {
     if (!agent) return;
-    const touchesSetup = 'sources' in change || 'instruction' in change || 'canWrite' in change || 'askBeforeWrite' in change;
+    const touchesSetup = 'sources' in change || 'instruction' in change || 'canWrite' in change || 'askBeforeWrite' in change || 'contract' in change;
     onAgents(agents.map((a) => (a.id === agent.id ? { ...a, ...change, ...(touchesSetup ? { tested: false } : {}) } : a)));
     if (touchesSetup) setRun(null);
   };
@@ -96,6 +103,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
       <aside className="studio-list">
         <h2 className="studio-h">Agent Studio</h2>
         <p className="studio-sub">Simple agents by form: brief, sources, rights. Test first, then publish.</p>
+        {ops && <NetworkSwitch ops={ops} />}
         <button className={`studio-tpl ${(!agent || help) ? 'on' : ''}`} onClick={() => setHelp(true)}><b>How does it work?</b><small>start here</small></button>
         <button className="studio-tpl studio-tpl-main" onClick={createProject} title="Describe a goal, answer a few questions and let the documents lead to the agent"><b>New agent from a goal</b><small>PRD to build</small></button>
         {projects.map((x) => (
@@ -106,6 +114,9 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
         <div className="studio-new">
           {TEMPLATES.map((t) => <button key={t.id} className="studio-tpl" onClick={() => create(t.id)} title={agents.some((x) => x.template === t.id) ? 'Already created: opens your agent' : 'Create an agent from this template'}><b>{t.name}</b><small>{agents.some((x) => x.template === t.id) ? 'open' : t.story}</small></button>)}
           <button className="studio-tpl" onClick={() => create(null)}><b>Blank agent</b><small>start empty</small></button>
+          {ops && (
+            <button className="studio-tpl" onClick={() => { const existing = agents.find((x) => x.template === DEMO_TEMPLATES.watcher); if (existing) { open(existing.id); return; } const three = demoAgents(catalog); onAgents([...three, ...agents]); setSelectedProject(null); setSelected(three[2].id); setRun(null); setShown(0); setHelp(false); }} title="Three agents that ask each other: a renewal watcher asks Finance facts and Support facts"><b>Demo: renewal network</b><small>{hasDemo(agents) ? 'already created' : '3 agents that ask each other'}</small></button>
+          )}
         </div>
         {agents.map((a) => (
           <button key={a.id} className={`studio-item ${a.id === selected ? 'on' : ''}`} onClick={() => open(a.id)}>
@@ -227,7 +238,7 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
             {issues.map((i) => <p key={i} className="studio-issue">{i}</p>)}
             <div className="studio-row">
               <button className="ghost-btn ghost-btn-on" disabled={issues.length > 0} onClick={test}>Run test</button>
-              <button className="ghost-btn" disabled={issues.length > 0} onClick={() => onRunInChat(agentPrompt(agent, catalog))}>Run in chat (real)</button>
+              <button className="ghost-btn" disabled={issues.length > 0} onClick={() => onRunInChat(agentPrompt(agent, catalog), agent.id)}>Run in chat (real)</button>
             </div>
             {run && (
               <div className="studio-run" aria-live="polite">
@@ -253,7 +264,16 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
               </div>
             )}
 
-            <h3 className="studio-step"><span>5</span> Publish <small>Ask for approval for the next level. After approval the schedule starts and the agent is registered in the AI Control Tower.</small></h3>
+            {ops && (
+              <>
+                <h3 className="studio-step"><span>5</span> Test bench <small>Cases with an expected result, every case run three times. A case counts only when all three runs pass. Run it again after every change.</small></h3>
+                <BenchPanel agent={agent} catalog={catalog} ops={ops} disabled={issues.length > 0} />
+                <h3 className="studio-step"><span>6</span> Network <small>What this agent offers to other agents, what it releases, and whom it may ask.</small></h3>
+                <ContractPanel agent={agent} agents={agents} ops={ops} onChange={(contract) => patch({ contract })} />
+              </>
+            )}
+
+            <h3 className="studio-step"><span>{ops ? 7 : 5}</span> Publish <small>Ask for approval for the next level. After approval the schedule starts and the agent is registered in the AI Control Tower.</small></h3>
             <div className="studio-row">
               {levelOf(gov, agent.id) < 2 && !pendingFor(gov, agent.id) && (
                 <button className="ghost-btn" disabled={!agent.tested} title={agent.tested ? '' : 'Run the test first'} onClick={() => setGov((g) => requestPromotion(g, agent.id, agent.purpose, Date.now()))}>
@@ -268,10 +288,17 @@ export default function AgentStudio({ agents, gov, onGov, schedules, onAgents, c
                   : 'The schedule starts when the agent is approved.'}</small>
               )}
               {!agent.tested && <small>The test must run through first. Changing sources or instruction resets it.</small>}
+              {ops && <small title={`Version ${fingerprint(agent)}`}>{releaseCheckText(agent, ops)}</small>}
               {confirmDelete
                 ? <><button className="ghost-btn ghost-btn-on" onClick={() => { onAgents(agents.filter((a) => a.id !== agent.id)); setSelected(null); setConfirmDelete(false); }}>Yes, delete</button><button className="ghost-btn" onClick={() => setConfirmDelete(false)}>Cancel</button></>
                 : <button className="ghost-btn" onClick={() => setConfirmDelete(true)}>Delete agent</button>}
             </div>
+            {ops && (
+              <>
+                <h3 className="studio-step"><span>{8}</span> Runs and stop switch <small>What this agent has done, and the way to stop it at once.</small></h3>
+                <RunsPanel agent={agent} ops={ops} />
+              </>
+            )}
           </>
         )}
       </section>

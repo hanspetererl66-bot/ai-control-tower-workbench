@@ -1,0 +1,420 @@
+{
+  "asOf": "2026-10-19",
+  "note": "Fictional data from the Renewals sample data (examples/renewals/renewals.json); the agents are defined in src/agent-network-demo.ts.",
+  "agents": [
+    {
+      "id": "a-watcher",
+      "short": "Watcher",
+      "role": "Owns the renewal dates, asks the others",
+      "name": "Renewal watcher",
+      "contract": {
+        "callable": false,
+        "capability": "",
+        "accepts": "",
+        "returns": "",
+        "releases": {
+          "public": "answer",
+          "internal": "answer",
+          "confidential": "approve",
+          "personal": "refuse"
+        },
+        "mayCall": [
+          "a-finance",
+          "a-support"
+        ]
+      }
+    },
+    {
+      "id": "a-finance",
+      "short": "Finance",
+      "role": "Owns the invoices of a customer",
+      "name": "Finance facts",
+      "contract": {
+        "callable": true,
+        "capability": "Open and overdue invoices of one customer, with due dates.",
+        "accepts": "A customer name or id (muster, hanse, lindenau) and what you need to know about its invoices.",
+        "returns": "A short list with invoice ids and days overdue; amounts only when the release allows it.",
+        "releases": {
+          "public": "answer",
+          "internal": "answer",
+          "confidential": "redact",
+          "personal": "refuse"
+        },
+        "mayCall": []
+      }
+    },
+    {
+      "id": "a-support",
+      "short": "Support",
+      "role": "Owns the support tickets of a customer",
+      "name": "Support facts",
+      "contract": {
+        "callable": true,
+        "capability": "Open support tickets of one customer with priority and status.",
+        "accepts": "A customer name or id (muster, hanse, lindenau) and which tickets or products matter.",
+        "returns": "A short list with ticket ids, priority and who has to act.",
+        "releases": {
+          "public": "answer",
+          "internal": "answer",
+          "confidential": "redact",
+          "personal": "refuse"
+        },
+        "mayCall": []
+      }
+    }
+  ],
+  "customers": [
+    {
+      "id": "muster",
+      "name": "Muster Industrie AG",
+      "renewals": [
+        {
+          "contractId": "C-2022-0502",
+          "product": "Concur Travel",
+          "decisionDate": "2026-04-01",
+          "days": -201,
+          "annualEur": 95000,
+          "status": "Lapsed"
+        },
+        {
+          "contractId": "C-2025-0041",
+          "product": "SuccessFactors Employee Central",
+          "decisionDate": "2026-10-02",
+          "days": -17,
+          "annualEur": 410000,
+          "status": "Renewal due"
+        },
+        {
+          "contractId": "C-2026-0012",
+          "product": "AI units",
+          "decisionDate": "2026-11-01",
+          "days": 13,
+          "annualEur": 360000,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2023-0390",
+          "product": "Ariba Procurement",
+          "decisionDate": "2026-11-02",
+          "days": 14,
+          "annualEur": 290000,
+          "status": "Renewal due"
+        },
+        {
+          "contractId": "C-2026-0902",
+          "product": "SAP Work Zone add-on",
+          "decisionDate": "2026-12-01",
+          "days": 43,
+          "annualEur": 12600,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0901",
+          "product": "SAP Signavio Process Manager add-on",
+          "decisionDate": "2026-12-02",
+          "days": 44,
+          "annualEur": 24000,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0903",
+          "product": "BTP extra storage package",
+          "decisionDate": "2026-12-30",
+          "days": 72,
+          "annualEur": 31500,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2024-0233",
+          "product": "Business Technology Platform",
+          "decisionDate": "2026-12-31",
+          "days": 73,
+          "annualEur": 640000,
+          "status": "Running"
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-10708",
+          "status": "Open",
+          "grossEur": 69020,
+          "due": "2026-10-30",
+          "daysOverdue": 0,
+          "product": "SuccessFactors Employee Central"
+        },
+        {
+          "id": "INV-2026-10741",
+          "status": "Open",
+          "grossEur": 76160,
+          "due": "2026-11-24",
+          "daysOverdue": 0,
+          "product": "SuccessFactors Employee Central"
+        },
+        {
+          "id": "INV-2026-10724",
+          "status": "Open",
+          "grossEur": 66878,
+          "due": "2026-10-31",
+          "daysOverdue": 0,
+          "product": "AI units"
+        },
+        {
+          "id": "INV-2026-10738",
+          "status": "Open",
+          "grossEur": 45220,
+          "due": "2026-11-04",
+          "daysOverdue": 0,
+          "product": "AI units"
+        },
+        {
+          "id": "INV-2026-10621",
+          "status": "Overdue",
+          "grossEur": 86275,
+          "due": "2026-08-31",
+          "daysOverdue": 49,
+          "product": "Ariba Procurement"
+        },
+        {
+          "id": "INV-2026-10721",
+          "status": "Open",
+          "grossEur": 14756,
+          "due": "2026-10-31",
+          "daysOverdue": 0,
+          "product": "Ariba Procurement"
+        },
+        {
+          "id": "INV-2026-10735",
+          "status": "Open",
+          "grossEur": 22491,
+          "due": "2026-11-04",
+          "daysOverdue": 0,
+          "product": "Ariba Procurement"
+        },
+        {
+          "id": "INV-2026-10716",
+          "status": "Open",
+          "grossEur": 49087.5,
+          "due": "2026-10-25",
+          "daysOverdue": 0,
+          "product": "Business Technology Platform"
+        },
+        {
+          "id": "INV-2026-10729",
+          "status": "Open",
+          "grossEur": 114716,
+          "due": "2026-11-01",
+          "daysOverdue": 0,
+          "product": "Business Technology Platform"
+        }
+      ],
+      "tickets": [
+        {
+          "id": "TKT-48213",
+          "title": "Joule skill returns empty result for open purchase orders",
+          "priority": "High",
+          "status": "In processing",
+          "product": "AI units"
+        },
+        {
+          "id": "TKT-48107",
+          "title": "BTP AI Core deployment quota exceeded in eu10",
+          "priority": "Very high",
+          "status": "Waiting for customer",
+          "product": "AI units"
+        },
+        {
+          "id": "TKT-47888",
+          "title": "Ariba approval workflow not triggering for cost centre 4711",
+          "priority": "Medium",
+          "status": "In processing",
+          "product": "AI units"
+        }
+      ]
+    },
+    {
+      "id": "hanse",
+      "name": "Hanse Handelsgruppe AG",
+      "renewals": [
+        {
+          "contractId": "C-2023-0215",
+          "product": "Integration Suite",
+          "decisionDate": "2026-01-30",
+          "days": -262,
+          "annualEur": 135000,
+          "status": "Lapsed"
+        },
+        {
+          "contractId": "C-2024-0611",
+          "product": "SAP Commerce Cloud",
+          "decisionDate": "2026-11-01",
+          "days": 13,
+          "annualEur": 380000,
+          "status": "Renewal due"
+        },
+        {
+          "contractId": "C-2026-0044",
+          "product": "AI units",
+          "decisionDate": "2026-11-01",
+          "days": 13,
+          "annualEur": 240000,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0912",
+          "product": "Commerce Cloud sandbox",
+          "decisionDate": "2026-12-01",
+          "days": 43,
+          "annualEur": 21000,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0911",
+          "product": "SAP Analytics Cloud planning add-on",
+          "decisionDate": "2027-01-30",
+          "days": 103,
+          "annualEur": 27900,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0913",
+          "product": "Integration Suite extra connectors",
+          "decisionDate": "2027-05-31",
+          "days": 224,
+          "annualEur": 9800,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2024-0702",
+          "product": "SAP Analytics Cloud",
+          "decisionDate": "2027-08-02",
+          "days": 287,
+          "annualEur": 219750,
+          "status": "Running"
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-30590",
+          "status": "Overdue",
+          "grossEur": 24990,
+          "due": "2026-09-30",
+          "daysOverdue": 19,
+          "product": "Commerce Cloud sandbox"
+        },
+        {
+          "id": "INV-2026-30077",
+          "status": "Open",
+          "grossEur": 261502.5,
+          "due": "2026-10-31",
+          "daysOverdue": 0,
+          "product": "SAP Analytics Cloud"
+        }
+      ],
+      "tickets": [
+        {
+          "id": "TKT-48166",
+          "title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
+          "priority": "High",
+          "status": "In processing",
+          "product": "SAP Commerce Cloud"
+        },
+        {
+          "id": "TKT-47932",
+          "title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
+          "priority": "High",
+          "status": "In processing",
+          "product": "AI units"
+        }
+      ]
+    },
+    {
+      "id": "lindenau",
+      "name": "Lindenau Pharma AG",
+      "renewals": [
+        {
+          "contractId": "C-2023-0344",
+          "product": "Ariba Procurement",
+          "decisionDate": "2025-11-02",
+          "days": -351,
+          "annualEur": 127200,
+          "status": "Lapsed"
+        },
+        {
+          "contractId": "C-2026-0051",
+          "product": "AI units",
+          "decisionDate": "2026-11-01",
+          "days": 13,
+          "annualEur": 180000,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0922",
+          "product": "Integration Suite connectors for laboratory systems",
+          "decisionDate": "2026-12-01",
+          "days": 43,
+          "annualEur": 14400,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0921",
+          "product": "SuccessFactors e-signature add-on",
+          "decisionDate": "2026-12-30",
+          "days": 72,
+          "annualEur": 18600,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2026-0923",
+          "product": "BTP extra storage package",
+          "decisionDate": "2027-03-01",
+          "days": 133,
+          "annualEur": 26400,
+          "status": "Running"
+        },
+        {
+          "contractId": "C-2025-0833",
+          "product": "SAP Advanced Track and Trace",
+          "decisionDate": "2027-09-02",
+          "days": 318,
+          "annualEur": 414000,
+          "status": "Running"
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-40110",
+          "status": "Open",
+          "grossEur": 49742,
+          "due": "2026-11-05",
+          "daysOverdue": 0,
+          "product": "AI units"
+        },
+        {
+          "id": "INV-2026-40890",
+          "status": "Overdue",
+          "grossEur": 17136,
+          "due": "2026-09-30",
+          "daysOverdue": 19,
+          "product": "Integration Suite connectors for laboratory systems"
+        },
+        {
+          "id": "INV-2026-40104",
+          "status": "Open",
+          "grossEur": 492660,
+          "due": "2026-10-31",
+          "daysOverdue": 0,
+          "product": "SAP Advanced Track and Trace"
+        }
+      ],
+      "tickets": [
+        {
+          "id": "TKT-48097",
+          "title": "Document AI: handwritten corrections on scanned batch records are not read",
+          "priority": "Medium",
+          "status": "In processing",
+          "product": "AI units"
+        }
+      ]
+    }
+  ]
+}

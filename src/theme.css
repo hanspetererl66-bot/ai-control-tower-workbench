@@ -5533,6 +5533,24 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .ct-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 4px; }
 .ct-actions .dialog-btn { padding: 6px 11px; font-size: 12px; }
 
+/* Agent Studio: test bench, network contract, runs and stop switch */
+.ops-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 6px 0 14px; background: color-mix(in srgb, var(--bg) 60%, var(--panel)); display: grid; gap: 8px; }
+.ops-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ops-table th { text-align: left; font-weight: 500; color: var(--muted); padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.ops-table td { padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ops-dots { letter-spacing: 2px; white-space: nowrap; color: var(--accent); }
+.ops-ok { color: var(--green-ink, var(--accent)); }
+.ops-bad { color: var(--red-ink, var(--red)); }
+.ops-note { color: var(--muted); }
+.ops-check { margin: 0; font-size: 13px; padding: 6px 10px; border-radius: var(--radius-s); border: 1px solid var(--line); }
+.ops-check-passed { border-color: color-mix(in srgb, var(--green, var(--accent)) 50%, var(--line)); }
+.ops-check-failed { border-color: color-mix(in srgb, var(--red, var(--accent)) 50%, var(--line)); }
+.ops-check-stale { border-style: dashed; }
+.ops-h { margin: 8px 0 2px; font-size: 13px; }
+.ops-switch { display: grid; gap: 4px; padding: 8px 10px; margin: 6px 0 10px; border: 1px solid var(--line); border-radius: var(--radius-s); font-size: 13px; }
+.ops-switch small { color: var(--muted); }
+
+
 /* Ontology Manager: lifecycle, synonyms, mappings, competency questions, export */
 .om-life { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 6px; padding-top: 6px; border-top: 1px solid var(--line); }
 .om-life h3 { margin: 8px 0 2px; }

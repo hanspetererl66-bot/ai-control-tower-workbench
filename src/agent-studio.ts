@@ -5,6 +5,7 @@
  * answer, before anything runs for real. "Run in chat" hands the same brief to the assistant, restricted to the sources.
  */
 import type { Schedule } from './schedules';
+import { contractProblems, sanitizeContract, type Contract } from './agent-network.ts';
 
 export type SourceKind = 'connector' | 'space' | 'file' | 'web';
 export type Source = { id: string; kind: SourceKind; label: string; hint: string };
@@ -15,6 +16,8 @@ export type StudioAgent = {
   sources: string[]; canWrite: boolean; askBeforeWrite: boolean; maxSteps: number;
   output: Output; trigger: { type: TriggerType; time: string };
   tested: boolean; testedAt?: number; template: string; createdAt: number;
+  /** What the agent offers to other agents and whom it may ask (see agent-network.ts). Absent = not part of the network. */
+  contract?: Contract;
 };
 export const AGENTS_KEY = 'werkbank.studioAgents';
 export const AGENT_GOV_KEY = 'werkbank.agentGovernance';
@@ -93,6 +96,7 @@ export function sanitizeAgents(v: unknown): StudioAgent[] {
       output: OUTPUTS.some((o) => o.id === r.output) ? r.output : 'summary',
       trigger: { type: ['manual', 'daily', 'weekly'].includes(r.trigger?.type) ? r.trigger.type : 'manual', time: /^([01]\d|2[0-3]):[0-5]\d$/.test(r.trigger?.time ?? '') ? r.trigger.time : '08:00' },
       tested: r.tested === true, ...(Number(r.testedAt) > 0 ? { testedAt: Number(r.testedAt) } : {}), template: typeof r.template === 'string' ? r.template : '', createdAt: Number(r.createdAt) || 0,
+      ...(r.contract ? { contract: sanitizeContract(r.contract) } : {}),
     });
     if (out.length >= MAX_AGENTS) break;
   }
@@ -108,11 +112,12 @@ export function problems(a: StudioAgent): string[] {
   if (a.instruction.trim().length < 20) p.push('Describe in at least one sentence what the agent should do.');
   if (!a.sources.length) p.push('Tick at least one source; without a source the agent has nothing to read.');
   if (a.canWrite && !a.askBeforeWrite) p.push('Writing without asking is not allowed in this prototype: switch “ask before writing” on.');
+  p.push(...contractProblems(a));
   return p;
 }
 
 /** The brief for the assistant: instruction, the only sources it may use, rights and the shape of the answer. */
-export function agentPrompt(a: StudioAgent, catalog: Source[]): string {
+export function agentPrompt(a: StudioAgent, catalog: Source[], network = ''): string {
   const labels = a.sources.map((id) => catalog.find((s) => s.id === id)).filter(Boolean).map((s) => `${s!.label} (${s!.kind})`);
   const out = OUTPUTS.find((o) => o.id === a.output)?.label ?? 'Summary';
   return [
@@ -121,7 +126,8 @@ export function agentPrompt(a: StudioAgent, catalog: Source[]): string {
     `SOURCES: use only these: ${labels.join(', ') || 'none'}. Do not read or call anything else. If the answer needs another source, say so instead of guessing.`,
     a.canWrite ? `RIGHTS: you may propose changes${a.askBeforeWrite ? ' but ask before every write' : ''}. At most ${a.maxSteps} steps.` : `RIGHTS: read only. Change nothing. At most ${a.maxSteps} steps.`,
     `OUTPUT: ${out}. Name the source for every figure.`,
-  ].join('\n\n');
+    network,
+  ].filter(Boolean).join('\n\n');
 }
 
 /* ---- Sandbox test run (simulation on sample data) ---- */
