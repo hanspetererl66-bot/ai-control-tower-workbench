@@ -35,6 +35,7 @@ export const EXAMPLE_SPACES = {
   onboarding: 'onboarding',
   'agent-observability': 'agent-observability',
   'agent-registry': 'agent-registry',
+  'agent-network': 'agent-network',
   'agent-compliance': 'agent-compliance',
   'order-to-cash': 'order-to-cash',
   'order-to-cash-software': 'order-to-cash-software',

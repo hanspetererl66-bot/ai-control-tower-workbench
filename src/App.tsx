@@ -54,7 +54,11 @@ import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from '
 import { INTERVIEW_SPACE } from './interview-bridge';
 import { CUSTOMER360_SPACE } from './customer360-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
-import { AGENT_GOV_KEY, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
+import { AGENT_GOV_KEY, agentPrompt, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
+import { createBroker, replyOf, type RunEvent } from './agent-network-runtime';
+import { finishRun, isStopped, loadRuns, loadStops, resumeAgent, saveRuns, saveStops, startRun, stopAgent, type AgentRun, type Stops } from './agent-runs';
+import { addReport, loadReports, saveReports, fingerprint as agentVersion, type BenchReport } from './agent-testbench';
+import type { NetMessage } from './agent-network';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
 import SpacesOverview from './ui/SpacesOverview';
@@ -400,6 +404,14 @@ export default function App() {
   const [dockFocus, setDockFocus] = useState<DockFocus | null>(null);
   const [agentGov, setAgentGovState] = useState<SkillGov>(() => ({ ...loadGov(undefined, AGENT_GOV_KEY), levels: loadGov().levels }));
   const changeAgentGov = useCallback((next: SkillGov) => { setAgentGovState(next); saveGov(next, undefined, AGENT_GOV_KEY); }, []);
+  // Run record, stop switch, test bench reports and the agent network (all kept on this computer).
+  const NETWORK_KEY = 'werkbank.agentNetworkOn';
+  const [agentRuns, setAgentRuns] = useState<AgentRun[]>(() => loadRuns(window.localStorage));
+  const [agentStops, setAgentStopsState] = useState<Stops>(() => loadStops(window.localStorage));
+  const [benchReports, setBenchReports] = useState<BenchReport[]>(() => loadReports(window.localStorage));
+  const [networkOn, setNetworkOnState] = useState<boolean>(() => { try { return window.localStorage.getItem(NETWORK_KEY) === '1'; } catch { return false; } });
+  const [netMessages, setNetMessages] = useState<NetMessage[]>([]);
+  const changeNetworkOn = useCallback((on: boolean) => { setNetworkOnState(on); try { window.localStorage.setItem(NETWORK_KEY, on ? '1' : '0'); } catch { /* ignore */ } }, []);
   const [personas, setPersonasState] = useState<PersonaState>(() => loadPersonas(window.localStorage));
   const changePersonas = useCallback((next: PersonaState) => { setPersonasState(next); savePersonas(window.localStorage, next); }, []);
   const [ownCommands, setOwnCommandsState] = useState<Command[]>(() => loadCommands(window.localStorage));
@@ -558,6 +570,49 @@ export default function App() {
     : null), [agent, extensionNames]);
   const localGroupCall = useMemo(() => createLocalGroupCall(window.localStorage), []);
   const groupCall = groupMode === 'server' ? serverGroupCall : localGroupCall;
+
+  // ---- Agent network: the broker between the connector's mailbox and the rules (src/agent-network-runtime.ts) ----
+  const netExt = extensionNames.find((n) => /agent-network/i.test(n));
+  const liveNet = useRef({ agents: studioAgents, gov: agentGov, stops: agentStops, on: networkOn, catalog: [] as ReturnType<typeof buildCatalog> });
+  liveNet.current = { agents: studioAgents, gov: agentGov, stops: agentStops, on: networkOn, catalog: buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))) };
+  const recordRun = useCallback((e: RunEvent) => {
+    setAgentRuns((prev) => { const next = e.type === 'start' ? startRun(prev, e.run) : finishRun(prev, e.id, e.status, e.note); saveRuns(window.localStorage, next); return next; });
+  }, []);
+  /** The asked agent runs in a session of its own: only its ticked connectors, every permission request refused, so it can read but not act. */
+  const runSpecialist = useCallback(async (asked: StudioAgent, prompt: string, allowed: string[]): Promise<string> => {
+    let text = '';
+    const session = await connect(window.host?.gooseUrl ?? 'http://127.0.0.1:3299', WORKDIR, {
+      onChunk: (t) => { text += t; }, onToolCall: () => undefined, onToolUpdate: () => undefined,
+      onPermission: async (req: PermissionRequest) => rejectOption(req.options),
+    });
+    await session.setMode('smart_approve').catch(() => undefined);
+    // Fail closed: if the sources cannot be narrowed, the agent does not run.
+    for (const ext of await session.listSessionExtensions()) {
+      if (/^(developer|computercontroller|shell)$/i.test(ext.name) || (!ext.isPlatform && !allowed.includes(ext.name))) await session.removeSessionExtension(ext.name);
+    }
+    await session.send(prompt);
+    void asked;
+    return text.trim();
+  }, []);
+  const broker = useMemo(() => createBroker({
+    call: async (tool, args) => (agent && netExt ? replyOf(await agent.callTool(`${netExt}__${tool}`, args)) : { text: 'The agent network connector is not connected.', isError: true }),
+    agents: () => liveNet.current.agents,
+    catalog: () => liveNet.current.catalog,
+    published: (id) => govLevelOf(liveNet.current.gov, id) > 0,
+    stopped: (id) => isStopped(liveNet.current.stops, id),
+    version: (a) => agentVersion(a),
+    enabled: () => liveNet.current.on,
+    runSpecialist,
+    record: recordRun,
+  }), [agent, netExt, runSpecialist, recordRun]);
+  const brokerRef = useRef(broker);
+  brokerRef.current = broker;
+  useEffect(() => {
+    if (!networkOn || !agent || !netExt) return;
+    const timer = window.setInterval(() => { void broker.tick().then(() => setNetMessages((prev) => { const next = broker.messages(); return next.length === prev.length ? prev : next; })); }, 1500);
+    return () => window.clearInterval(timer);
+  }, [networkOn, agent, netExt, broker]);
+
   const chooseActiveGroup = useCallback((id: string | null) => {
     setActiveGroupId(id);
     if (!id) setActiveGroup(null);
@@ -775,12 +830,20 @@ export default function App() {
   }
 
   /** `plain`: a working prompt (Develop), never a request to build a Space, even when its text mentions one. */
-  async function send(typed: string, attachments: ChatAttachment[] = [], options: { plain?: boolean } = {}) {
+  async function send(typed: string, attachments: ChatAttachment[] = [], options: { plain?: boolean; trigger?: 'manual' | 'schedule'; agentId?: string } = {}) {
     if (!agent || busy) return;
     const studioCatalog = buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title })));
+    // A run of a Studio agent ("/agent <id>", the schedule, or "Run in chat" in the Studio): stopped agents do not run, every run is recorded, and an agent
+    // that may ask others gets a run id and the network text (only when the network is on).
+    const runId = options.agentId ?? /^\/agent\s+(a-[a-z0-9]+)\b/i.exec(typed.trim())?.[1];
+    const runTarget = runId ? studioAgents.find((x) => x.id === runId) : undefined;
+    if (runTarget && isStopped(agentStops, runTarget.id)) { setToast(`"${runTarget.name}" is stopped: ${agentStops[runTarget.id].reason}`); setTimeout(() => setToast(null), 6000); return; }
     const asAgent = expandAgentCommand(typed, studioAgents, studioCatalog, (id) => govLevelOf(agentGov, id));
     if (asAgent && 'error' in asAgent) { setToast(asAgent.error); setTimeout(() => setToast(null), 6000); return; }
-    const text = asAgent?.prompt ?? expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
+    const netRun = runTarget ? brokerRef.current.beginRun(runTarget.id, options.trigger ?? 'manual') : null;
+    let runStatus: 'ok' | 'error' | 'stopped' = 'ok';
+    let runNote = '';
+    const text = (runTarget && asAgent ? agentPrompt(runTarget, studioCatalog, netRun?.brief ?? '') : null) ?? (runTarget && options.agentId ? `${typed}${netRun?.brief ? `\n\n${netRun.brief}` : ''}` : null) ?? asAgent?.prompt ?? expandCommand(typed, allCommands(ownCommands), { memory: activeEntries(memory, contextSpace).map((e) => `- ${e.text}`).join('\n'), approvals: openApprovals() }) ?? typed;
     cancelledByUser.current = false;
     const startedAt = Date.now();
     const previousSpaces = new Map(spaces.map((space) => [space.slug, space.updatedAt]));
@@ -911,11 +974,14 @@ export default function App() {
         }
       }
     } catch (e: any) {
+      runStatus = cancelledByUser.current ? 'stopped' : 'error';
+      runNote = String(e?.message ?? e);
       if (!cancelledByUser.current) {
         draft.current = draft.current || `⚠️ ${e?.message ?? e}`;
         flush();
       }
     } finally {
+      if (netRun) netRun.end(cancelledByUser.current ? 'stopped' : runStatus, runNote);
       speaker.current?.finish();
       if (harnessBlock.current) {
         if (!cancelledByUser.current) draft.current += harnessBlock.current;
@@ -1159,9 +1225,9 @@ export default function App() {
   // Recurring briefings: while the app is open, run a due one when the chat is idle (also catches up to six hours).
   /** Published Studio agents with a trigger run through the schedules; unpublished or deleted ones are removed from them. */
   useEffect(() => {
-    const next = agentSchedules(studioAgents, (id) => govLevelOf(agentGov, id), schedules);
+    const next = agentSchedules(studioAgents, (id) => (isStopped(agentStops, id) ? 0 : govLevelOf(agentGov, id)), schedules);
     if (next !== schedules) updateSchedules(next);
-  }, [studioAgents, agentGov, schedules, updateSchedules]);
+  }, [studioAgents, agentGov, agentStops, schedules, updateSchedules]);
   useEffect(() => {
     if (skillList.length === 0) return;
     setSkillCatalogState((cat) => {
@@ -1182,7 +1248,7 @@ export default function App() {
     patchSchedule(due.id, { lastRun: new Date().toISOString() });
     setView('chat');
     try {
-      await send(`${due.prompt}\n\n(Recurring briefing${byHand ? ', run by hand' : ''}, ${due.time})`);
+      await send(`${due.prompt}\n\n(Recurring briefing${byHand ? ', run by hand' : ''}, ${due.time})`, [], { trigger: byHand ? 'manual' : 'schedule' });
       const result = await deliverBriefing(due, draft.current, {
         buildHtml: (title, text) => answerHtml(title, text, []),
         renderPdf: (request) => (window.host?.renderBriefingPdf ? window.host.renderBriefingPdf(request) : Promise.resolve({ ok: false, detail: 'PDF export needs the desktop app.' })),
@@ -1211,7 +1277,7 @@ export default function App() {
     setView('chat');
     draft.current = '';
     try {
-      await send(jobPrompt(job, manual));
+      await send(jobPrompt(job, manual), [], { trigger: manual ? 'manual' : 'schedule' });
       const answer = draft.current;
       if (isFailedAnswer(answer)) { status = 'error'; note = answer.replace(/^\s*⚠️\s*/, '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No answer. For an agent: is it published in the Studio?'; }
     } catch (error) {
@@ -1595,7 +1661,16 @@ export default function App() {
           onDocFocus={setDockFocus}
           connectors={extensionNames}
           spaces={spaces.map((x) => ({ slug: x.slug, title: x.title }))}
-          onRunInChat={(prompt) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt); }}
+          ops={{
+            runs: agentRuns, stops: agentStops,
+            onStop: (id, reason) => setAgentStopsState((prev) => { const next = stopAgent(prev, id, reason); saveStops(window.localStorage, next); return next; }),
+            onResume: (id) => setAgentStopsState((prev) => { const next = resumeAgent(prev, id); saveStops(window.localStorage, next); return next; }),
+            reports: benchReports, onReport: (r) => setBenchReports((prev) => { const next = addReport(prev, r); saveReports(window.localStorage, next); return next; }),
+            live: agent ? (prompt: string, title: string) => developGenerate(prompt, title) : undefined,
+            network: { on: networkOn, onToggle: changeNetworkOn, installed: Boolean(netExt), messages: netMessages },
+            published: (id) => govLevelOf(agentGov, id) > 0,
+          }}
+          onRunInChat={(prompt, agentId) => { if (!agent || busy) { setToast(!agent ? 'Der Agent ist noch nicht verbunden.' : 'Joule antwortet gerade noch, bitte kurz warten.'); setTimeout(() => setToast(null), 5000); return; } setView('chat'); void send(prompt, [], agentId ? { agentId } : {}); }}
         />
       ) : view === 'spaces' && spacesHome ? (
         <SpacesOverview

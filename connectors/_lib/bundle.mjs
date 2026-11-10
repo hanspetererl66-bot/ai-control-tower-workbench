@@ -16,7 +16,7 @@ import { extractGraph } from './server/graph.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 /** Connectors that run on the shared library, in the order they are shown. */
-export const LIBRARY_CONNECTORS = ['ai-control-tower', 'sub4me', 'n8n-automation', 'skill-marketplace', 'knowledge-graph', 'web-sources', 'werkbank-workspace'];
+export const LIBRARY_CONNECTORS = ['ai-control-tower', 'sub4me', 'n8n-automation', 'skill-marketplace', 'knowledge-graph', 'web-sources', 'werkbank-workspace', 'agent-network'];
 
 const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 
@@ -45,6 +45,7 @@ const DATA = {
   'knowledge-graph': (put) => put.json('knowledge-graph.json', extractGraph(read('examples/knowledge-graph/index.html'))),
   'web-sources': () => {},
   'werkbank-workspace': () => {},
+  'agent-network': () => {},
 };
 
 /** Copy manifest, shared code, the connector and its data into `target` (an empty folder). */

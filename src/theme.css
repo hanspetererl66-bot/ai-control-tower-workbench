@@ -5509,3 +5509,21 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .topbar-back:hover, .topbar-back:focus-visible { background: color-mix(in srgb, var(--accent) 18%, transparent); border-color: var(--accent); }
 .topbar-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .topbar-back { transition: none; } }
+
+/* Agent Studio: test bench, network contract, runs and stop switch */
+.ops-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 6px 0 14px; background: color-mix(in srgb, var(--bg) 60%, var(--panel)); display: grid; gap: 8px; }
+.ops-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ops-table th { text-align: left; font-weight: 500; color: var(--muted); padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.ops-table td { padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ops-dots { letter-spacing: 2px; white-space: nowrap; color: var(--accent); }
+.ops-ok { color: var(--green-ink, var(--accent)); }
+.ops-bad { color: var(--red-ink, var(--red)); }
+.ops-note { color: var(--muted); }
+.ops-check { margin: 0; font-size: 13px; padding: 6px 10px; border-radius: var(--radius-s); border: 1px solid var(--line); }
+.ops-check-passed { border-color: color-mix(in srgb, var(--green, var(--accent)) 50%, var(--line)); }
+.ops-check-failed { border-color: color-mix(in srgb, var(--red, var(--accent)) 50%, var(--line)); }
+.ops-check-stale { border-style: dashed; }
+.ops-h { margin: 8px 0 2px; font-size: 13px; }
+.ops-switch { display: grid; gap: 4px; padding: 8px 10px; margin: 6px 0 10px; border: 1px solid var(--line); border-radius: var(--radius-s); font-size: 13px; }
+.ops-switch small { color: var(--muted); }
+

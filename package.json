@@ -36,6 +36,8 @@
     "sync:infra-story": "node scripts/sync-infra-story.mjs",
     "sync:it-infrastructure": "node scripts/sync-it-infrastructure.mjs",
     "sync:renewals": "node scripts/sync-renewals.mjs",
+    "sync:agent-network": "node scripts/sync-agent-network.mjs",
+    "install:agent-network": "node scripts/install-example-space.mjs agent-network",
     "sync:finance-preclose": "node scripts/sync-finance-preclose.mjs",
     "sync:customer-briefing": "node scripts/sync-customer-briefing.mjs",
     "install:finance-preclose": "node scripts/install-example-space.mjs finance-preclose",

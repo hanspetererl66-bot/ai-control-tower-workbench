@@ -1,0 +1,12 @@
+{
+  "title": "Agent Network",
+  "description": "Three agents around one renewal that ask each other: a renewal watcher asks Finance facts and Support facts before it writes the brief. You see every question, the checks of the gate, what is released and what is withheld, and what happens when an agent is stopped, a run id is forged or personal data is requested.",
+  "domain": "Governance",
+  "insights": [
+    "Fictional sample data from the Renewals Space. The run is simulated on this page with the same gate rules the app uses (shared/agent-network-rules.mjs); nothing is sent and no agent runs.",
+    "Every question is an envelope: who asks whom, why, which data classes the answer touches and which run (trace) it belongs to. The gate checks the run id, both agents (published, not stopped), the contract, the hop limit (3) and the budget (6 questions per run) before it looks at the data class.",
+    "Each agent decides per data class: answer, answer with amounts withheld, ask a person first, or refuse. Asking a person is decided but not released yet: there is no approval inbox.",
+    "To try it for real: Agent Studio, “Demo: renewal network”, test and publish the three agents, switch the Agent network on, then run the Renewal watcher."
+  ],
+  "prompt": "Bundled example: Agent Network (static, data embedded by npm run sync:agent-network)."
+}
