@@ -263,6 +263,7 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 /* requests */
 .reqs{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
 .req{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.req.focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
 .req .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .req .id{font-weight:650;font-size:14px}
 .req .who{font-size:12px;color:var(--muted);margin-top:2px}
@@ -839,7 +840,8 @@ function statusOf(req, policy) {
 const DATA = JSON.parse(document.getElementById('hot-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const state = { tab: 'requests', caller: 'mi', call: null, voice: false, policy: clone(DATA.policy), requests: clone(DATA.requests) };
+const state = { tab: 'requests', caller: 'mi', call: null, voice: false, policy: clone(DATA.policy), requests: clone(DATA.requests), focus: '' };
+const hosted = window.parent !== window;
 const ctx = () => ({ templates: DATA.templates, customers: DATA.customers, freezes: DATA.freezes, hotline: DATA.hotline, policy: state.policy, requests: state.requests, today: DATA.asOf, lead: state.policy.leadDays });
 const cust = (id) => DATA.customers.find((c) => c.id === id);
 const P = {
@@ -889,7 +891,9 @@ function requestCard(r, i) {
   let ops = '';
   if (r.state === 'agreed') ops = `<div class="ops"><button class="primary" data-op="confirm" data-id="${r.id}">Confirm the window</button><button class="ghost" data-op="back" data-id="${r.id}">Send back</button></div>`;
   else if (['declined', 'needs-person', 'sent-back'].includes(r.state)) ops = `<div class="ops"><button class="ghost" data-op="reopen" data-id="${r.id}">Reopen for the hotline</button></div>`;
-  return `<article class="req rise" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(r.id)} · ${esc(labelOf(DATA, r.template))}</div><div class="who">${esc(c.name)} · ${esc(c.sla)} · ${esc(r.target)}</div></div><div style="text-align:right"><span class="pill ${PILL[st.key]}">${esc(st.label)}</span><div class="note" style="margin-top:4px">${esc(st.who)}</div></div></div>${meter}<div class="why">${esc(na.text)}</div>${lane(st.key)}${extra}${ops}</article>`;
+  if (r.fromOps && hosted && ['standard', 'confirmed', 'declined', 'needs-person', 'sent-back'].includes(st.key)) ops += `<div class="ops"><button class="primary" data-op="report" data-id="${r.id}">Report to service request ${esc(r.id)}</button></div>`;
+  const focus = state.focus === r.id ? ' focus' : '';
+  return `<article class="req rise${focus}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(r.id)} · ${esc(labelOf(DATA, r.template))}</div><div class="who">${esc(c.name)} · ${esc(c.sla)} · ${esc(r.target)}</div></div><div style="text-align:right"><span class="pill ${PILL[st.key]}">${esc(st.label)}</span><div class="note" style="margin-top:4px">${esc(st.who)}</div></div></div>${meter}<div class="why">${esc(na.text)}</div>${lane(st.key)}${extra}${ops}</article>`;
 }
 function requestsView() {
   const n = (k) => state.requests.filter((r) => statusOf(r, state.policy).key === k).length;
@@ -966,6 +970,7 @@ function render() {
   const tabs = [['requests', 'Service requests', 'list', open], ['hotline', 'Hotline call', 'phone', ''], ['policy', 'Policy', 'sliders', '']];
   const body = state.tab === 'requests' ? requestsView() : state.tab === 'hotline' ? hotlineView() : policyView();
   $('#view').innerHTML = `<div class="tabs" role="group" aria-label="View">${tabs.map(([k, l, i, n]) => `<button type="button" data-tab="${k}" aria-pressed="${state.tab === k}">${ic(i)}${l}${n ? `<span class="n">${n}</span>` : ''}</button>`).join('')}</div>${body}`;
+  save();
 }
 function applyResults(call) {
   call.results.forEach((res) => {
@@ -996,6 +1001,7 @@ document.addEventListener('click', (e) => {
   if (b.dataset.counter) { step({ type: 'counter', date: $('#cd').value, time: $('#ct').value }); return; }
   if (b.dataset.decline) { step({ type: 'decline' }); return; }
   if (b.dataset.person) { step({ type: 'person' }); return; }
+  if (b.dataset.op === 'report') { report(b.dataset.id); return; }
   if (b.dataset.op) {
     const r = state.requests.find((x) => x.id === b.dataset.id);
     r.state = b.dataset.op === 'confirm' ? 'confirmed' : b.dataset.op === 'back' ? 'sent-back' : 'open';
@@ -1015,6 +1021,28 @@ document.addEventListener('change', (e) => {
     if (t.value !== '') state.policy.overrides.push({ customer: c, template: tp, hours: t.value === 'never' ? null : +t.value, note: '' });
     render();
   }
+});
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, caller: state.caller, policy: state.policy, requests: state.requests, focus: state.focus } }, '*'); }
+function report(id) {
+  const r = state.requests.find((x) => x.id === id); if (!r || !hosted) return;
+  const key = statusOf(r, state.policy).key, res = r.result;
+  const payload = { type: 'window-result', taskId: r.id, status: key, window: key === 'confirmed' && res && res.start ? [res.start, res.end] : null };
+  window.parent.postMessage({ type: 'wb:handoff', to: 'infra-ops', payload, open: true, notice: 'Downtime window for ' + r.id + ' sent to the service request' }, '*');
+}
+window.addEventListener('message', (e) => {
+  if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+  const m = e.data, st = m.state;
+  if (st && Array.isArray(st.requests)) { state.requests = st.requests; if (st.policy) state.policy = st.policy; state.tab = st.tab || state.tab; state.caller = st.caller || state.caller; state.focus = st.focus || ''; }
+  (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => {
+    const p = h && h.payload, t = p && p.task; if (!p || p.type !== 'window-request' || !t || typeof t.id !== 'string') return;
+    if (!DATA.customers.some((c) => c.id === t.customer) || !DATA.templates.some((x) => x.id === t.template)) return;
+    const hours = Math.max(0.5, Math.min(24, +p.hours || 2)), id = t.id.slice(0, 20);
+    const req = { id, template: t.template, customer: t.customer, target: String(t.target || '').slice(0, 60), hours, state: 'open', note: 'From service request ' + id, fromOps: true };
+    const at = state.requests.findIndex((x) => x.id === id);
+    if (at >= 0) state.requests[at] = req; else state.requests.unshift(req);
+    state.tab = 'requests'; state.focus = id; state.caller = t.customer; state.call = null;
+  });
+  render();
 });
 render();
 })();
