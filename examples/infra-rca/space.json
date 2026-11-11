@@ -1,0 +1,13 @@
+{
+  "title": "Root Cause Analysis",
+  "description": "An RCA agent (simulated) looks into former cases and documentation, names the most likely root cause with evidence and confidence, and proposes the next best action. A person confirms.",
+  "domain": "Autonomous Operations",
+  "parent": "it-fleet",
+  "insights": [
+    "Fictional case database and documents, simulated agent: the analysis matches signals and tags; a real agent would read the texts. Nothing is saved.",
+    "Every claim carries its source (case or document) and a literal quote; without evidence the answer is \"not evidenced\".",
+    "The next best action comes from what fixed the same cause before, adjusted by risk, effort and the deadline; the policy of the Customer Hotline decides whether a customer call is needed.",
+    "Imported notes can contain instructions to AI assistants: such a document is withheld and not used as evidence."
+  ],
+  "prompt": "Bundled example: Root Cause Analysis (static, data embedded by npm run sync:infra-rca)."
+}

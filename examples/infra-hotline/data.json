@@ -1,0 +1,44 @@
+{
+  "asOf": "2026-10-21",
+  "hotline": { "name": "Central service hotline", "number": "0800 555 0100 (fictional)" },
+  "templates": [
+    { "id": "renew-certificate", "label": "Renew a TLS certificate" },
+    { "id": "patch-vm", "label": "Patch and restart a VM" },
+    { "id": "move-vm", "label": "Move a VM" },
+    { "id": "update-dns-record", "label": "Change a DNS record" }
+  ],
+  "customers": [
+    { "id": "mi", "name": "Muster Industrie AG", "sla": "Premium Plus", "contact": "IT operations lead", "days": [2, 3, 4], "from": "21:00", "until": "05:00" },
+    { "id": "bp", "name": "Beispiel Pharma GmbH", "sla": "Premium Plus (GxP)", "contact": "Head of IT quality", "days": [0, 6], "from": "20:00", "until": "06:00" },
+    { "id": "nl", "name": "Nordlicht Logistik AG", "sla": "Premium", "contact": "Infrastructure manager", "days": [0, 1, 2, 3], "from": "22:00", "until": "06:00" },
+    { "id": "aw", "name": "Alpenwerk Maschinenbau AG", "sla": "Premium", "contact": "IT service manager", "days": [1, 2, 3, 4, 5], "from": "20:00", "until": "04:00" },
+    { "id": "ke", "name": "Kurpfalz Energie eG", "sla": "Standard", "contact": "Head of IT", "days": [1, 2, 3, 4], "from": "21:00", "until": "05:00" },
+    { "id": "hr", "name": "Hanseatic Retail GmbH", "sla": "Standard", "contact": "IT lead", "days": [0, 1, 2], "from": "23:00", "until": "06:00" }
+  ],
+  "freezes": [
+    { "from": "2026-10-26", "to": "2026-10-28", "customer": "bp", "reason": "GxP audit at Beispiel Pharma" },
+    { "from": "2026-12-18", "to": "2027-01-04", "customer": null, "reason": "Year-end freeze" }
+  ],
+  "policy": {
+    "leadDays": 2,
+    "defaults": { "renew-certificate": 2, "patch-vm": 2, "move-vm": 1, "update-dns-record": 4 },
+    "overrides": [
+      { "customer": "mi", "template": "patch-vm", "hours": 1, "note": "Premium Plus: asks for every patch window longer than one hour" },
+      { "customer": "bp", "template": "renew-certificate", "hours": 0, "note": "GxP: the customer agrees to every change window" },
+      { "customer": "bp", "template": "patch-vm", "hours": 0, "note": "GxP: the customer agrees to every change window" },
+      { "customer": "bp", "template": "move-vm", "hours": 0, "note": "GxP: the customer agrees to every change window" },
+      { "customer": "bp", "template": "update-dns-record", "hours": 0, "note": "GxP: the customer agrees to every change window" },
+      { "customer": "ke", "template": "move-vm", "hours": null, "note": "Standard SLA: the contract allows the provider to choose the window" }
+    ]
+  },
+  "requests": [
+    { "id": "SR-2090", "template": "renew-certificate", "customer": "mi", "target": "proxy-edge-01", "hours": 2, "state": "open", "note": "Ticket OP-2090 of the story: certificate expires in days" },
+    { "id": "SR-2091", "template": "patch-vm", "customer": "mi", "target": "musind-int04", "hours": 4, "state": "open", "note": "Open security patches" },
+    { "id": "SR-2092", "template": "move-vm", "customer": "mi", "target": "musind-qas01", "hours": 6, "state": "open", "note": "Move to the new storage cluster" },
+    { "id": "SR-2093", "template": "patch-vm", "customer": "bp", "target": "bp-prd-app01", "hours": 4, "state": "open", "note": "Quarterly patch round" },
+    { "id": "SR-2094", "template": "move-vm", "customer": "nl", "target": "nl-qas-app01", "hours": 6, "state": "open", "note": "Move to another region" },
+    { "id": "SR-2095", "template": "update-dns-record", "customer": "ke", "target": "ke-s4", "hours": 1, "state": "open", "note": "New address after the move" },
+    { "id": "SR-2096", "template": "patch-vm", "customer": "aw", "target": "aw-prd-app01", "hours": 4, "state": "open", "note": "Kernel update" },
+    { "id": "SR-2097", "template": "move-vm", "customer": "ke", "target": "ke-prd-app01", "hours": 5, "state": "open", "note": "Contract allows the provider to choose the window" }
+  ]
+}

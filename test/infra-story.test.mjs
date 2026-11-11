@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom';
 import { STORY_SPACES, embedStory } from '../scripts/sync-infra-story.mjs';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
-const ORDER = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-ops', 'infra-ops-control'];
+const ORDER = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-rca', 'infra-ops', 'infra-hotline', 'infra-ops-control'];
 
 /** Runs only the story block of a Space inside a fake host frame and collects what it posts to the host. */
 function open(slug, inHost = true) {
@@ -20,7 +20,7 @@ function open(slug, inHost = true) {
   return { doc: w.document, posted };
 }
 
-test('the story runs through the six Spaces in a fixed order and each page is in sync with the shared source', () => {
+test('the story runs through the eight Spaces in a fixed order and each page is in sync with the shared source', () => {
   assert.deepEqual(STORY_SPACES, ORDER);
   const source = read('examples/shared/infra-story.html');
   for (const slug of ORDER) assert.equal(embedStory(read(`examples/${slug}/index.html`), slug, source), read(`examples/${slug}/index.html`), `${slug}: run npm run sync:infra-story`);
@@ -41,8 +41,8 @@ test('every Space marks its own step, and the buttons hand over to the next Spac
   });
 });
 
-test('the hand-over to the change Space carries the ticket for Muster Industrie AG', () => {
-  const { doc, posted } = open('it-operations');
+test('the hand-over to the service request Space carries the ticket for Muster Industrie AG', () => {
+  const { doc, posted } = open('infra-rca');
   doc.querySelector('.st-next').click();
   const p = posted[0].payload;
   assert.equal(p.type, 'ticket');

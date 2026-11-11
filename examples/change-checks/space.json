@@ -1,7 +1,7 @@
 {
   "title": "Pre-Checks and Post-Checks",
   "description": "Runs the pre-check and the post-check of an infrastructure change: the playbook in check mode with a live log, then back to the change request.",
-  "domain": "Operations",
+  "domain": "Autonomous Operations",
   "insights": [
     "Infrastructure Operations hands a change request to this Space. The pre-check runs the playbook in check mode (nothing is changed) and returns the verdict to the change request.",
     "After the upgrade the same Space runs the post-check: service health, new certificate, dependent systems and monitoring.",

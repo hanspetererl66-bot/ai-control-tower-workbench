@@ -1,0 +1,13 @@
+{
+  "title": "Customer Hotline",
+  "description": "A customer calls the central service hotline and an AI voice agent (simulated) agrees the downtime window for service requests whose window is longer than the policy threshold. A person confirms.",
+  "domain": "Autonomous Operations",
+  "parent": "it-fleet",
+  "insights": [
+    "Fictional customers and service requests, simulated voice agent: no call is made and no voice service is connected. Nothing is saved.",
+    "The policy sets, per task and per customer, how long a window may be before the customer has to agree. Above the threshold the hotline agent asks; at or below it the standard window applies.",
+    "The agent offers windows inside the customer's allowed nights and outside freezes. A counter-proposal inside the rules is noted, anything else is explained; after two misses, or on request, a person takes over.",
+    "The agent never sets a window: a person from operations confirms the agreed window before the service request goes to approval."
+  ],
+  "prompt": "Bundled example: Customer Hotline (static, data embedded by npm run sync:infra-hotline)."
+}

@@ -1,7 +1,7 @@
 {
   "title": "Infra Wiki",
   "description": "Dummy internal wiki with two step-by-step SOP pages for typical infrastructure operations: renew a TLS certificate and patch and restart a VM. The SOPs in Infrastructure Operations point to these steps.",
-  "domain": "Operations",
+  "domain": "Autonomous Operations",
   "insights": [
     "Fictional internal pages: each SOP lists purpose, scope, roles, what to check before, ten steps with who does it, with which tool, when it is done and what to do if it fails, then rollback and evidence.",
     "The steps map one to one to the orchestration of Infrastructure Operations (trigger, ticket, pre-check, approval, window, run, verification, evidence), so the SOP can run end to end in n8n and AWX (simulated).",
