@@ -3,7 +3,7 @@ import type { Agent } from '../acp';
 import { TOOL_CARDS, cardState, checkToolName, readCheck, type CheckOutcome, type ToolId } from '../connect-tools';
 
 /**
- * "Connect your tools": Jira, Slack and Linear as cards with logo, status and a connection test.
+ * "Connect your tools": Jira, Slack, Linear and Figma as cards with logo, status and a connection test.
  * The test calls the connector's own `<tool>_check_connection`; it reads only.
  */
 export function ConnectTools({ agent, extensions, busy, onConfigure }: {
@@ -32,7 +32,7 @@ export function ConnectTools({ agent, extensions, busy, onConfigure }: {
   return (
     <section className="ct-cards" aria-label="Connect your tools">
       <h2 className="manage-h" id="manage-connect-tools">Connect your tools</h2>
-      <p className="manage-empty">Where your requirements live. Everything is read first; a change to Jira, Slack or Linear happens only after you confirmed it.</p>
+      <p className="manage-empty">Where your requirements live. Everything is read first; a change to Jira, Slack or Linear happens only after you confirmed it, and Figma is read only.</p>
       <div className="ct-grid">
         {TOOL_CARDS.map((card) => {
           const { state, configKey } = cardState(card.id, extensions);
@@ -90,6 +90,17 @@ export function ToolLogo({ id }: { id: ToolId }) {
         <rect x="17" y="13" width="12" height="6" rx="3" fill="#2EB67D" />
         <rect x="13" y="17" width="6" height="12" rx="3" fill="#ECB22E" />
         <rect x="3" y="13" width="12" height="6" rx="3" fill="#E01E5A" />
+      </svg>
+    );
+  }
+  if (id === 'figma') {
+    return (
+      <svg viewBox="0 0 32 32" width="32" height="32">
+        <path d="M11 2h5v9h-5a4.5 4.5 0 0 1 0-9z" fill="#F24E1E" />
+        <path d="M16 2h5a4.5 4.5 0 0 1 0 9h-5z" fill="#FF7262" />
+        <path d="M11 11h5v9h-5a4.5 4.5 0 0 1 0-9z" fill="#A259FF" />
+        <circle cx="20.5" cy="15.5" r="4.5" fill="#1ABCFE" />
+        <path d="M11 20h5v4.5A4.5 4.5 0 1 1 11 20z" fill="#0ACF83" />
       </svg>
     );
   }

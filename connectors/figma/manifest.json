@@ -1,0 +1,40 @@
+{
+  "manifest_version": "0.2",
+  "name": "figma",
+  "display_name": "Figma",
+  "version": "0.1.0",
+  "description": "Figma: read files, pages, frames, the text in designs and comments. Read only: it changes nothing in Figma. Needs a personal access token.",
+  "author": {
+    "name": "AI Control Tower workbench"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "FIGMA_TOKEN": "${user_config.figma_token}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "figma_check_connection", "description": "Check the Figma connection (access token) and show who the token belongs to. Read only." },
+    { "name": "figma_list_project_files", "description": "List the files of a Figma project. Read only." },
+    { "name": "figma_get_file_outline", "description": "Show the pages of a file and the top-level frames on each. Read only." },
+    { "name": "figma_read_frame_text", "description": "Read the text in up to 10 frames, grouped by frame. Read only." },
+    { "name": "figma_list_comments", "description": "List the comment threads of a file with replies and the frame each sits on. Read only." }
+  ],
+  "user_config": {
+    "figma_token": {
+      "type": "string",
+      "title": "Personal access token",
+      "description": "Figma, Settings, Security, Personal access tokens, Generate new token. Give it read scopes only: File content (read), Comments (read), Projects (read). Stored as a secret.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

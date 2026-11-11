@@ -46,7 +46,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11
 | `skills-and-database.md` | Supabase-Stand, Skills (Export/Import, Lifecycle, Health), Work Items |
 | `scheduler.md` | Scheduler, Gruppierungen, Activity |
 | `look-and-spaces.md` | Skins, Layouts, Textgröße, Autofit, Sales-Ansichten, Duplicate, Spaces-Übersicht |
-| `sources-and-registry.md` | Quellen (Jira/Slack/Notion/Teams), Solution register, Registerkarte |
+| `sources-and-registry.md` | Quellen (Jira/Slack/Notion/Teams/Linear/Figma), Solution register, Registerkarte |
 | `ontology.md` | Ontology Manager, Governance, Karten |
 | `customer-360.md` | Lindenau, Customer 360 |
 | `cognee-tabpfn.md` | Cognee-Wissensgraph, TabPFN-Prognosen |
@@ -57,7 +57,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11
 | `dashboards-observability.md` | n8n Performance Dashboard, Agent Observability, AI Governance (Einstieg und Subspaces), Agent-Lifecycle (Prüfstand, Lauf-Protokoll, Agent-Netz) |
 | `space-designer.md` | Space Designer |
 
-Weitere Anleitungen: `docs/recruiting.md`, `docs/arc-1.md`, `docs/arc-1-demo.md`, `docs/teams.md`, `docs/linear.md`, `docs/customer-360.md`, `docs/agent-observability.md`, `docs/agent-network.md`, `docs/registry-leanix.md`, `docs/order-to-cash*.md`.
+Weitere Anleitungen: `docs/recruiting.md`, `docs/arc-1.md`, `docs/arc-1-demo.md`, `docs/teams.md`, `docs/linear.md`, `docs/figma.md`, `docs/customer-360.md`, `docs/agent-observability.md`, `docs/agent-network.md`, `docs/registry-leanix.md`, `docs/order-to-cash*.md`.
 
 ## Testbed für Quellen
 `scripts/sources-testbed.mjs` + `examples/sources-testbed/dataset.json` spielen erfundene Anforderungen mit bekannter Lösung in ein Test-Jira und einen Test-Slack-Kanal (Dry-Run standardmäßig, `--expect` zeigt die Lösung); Anleitung `docs/sources-test.md`. Nicht getestet: echter Lauf gegen Jira Cloud/Slack (aus dem Sandkasten nicht erreichbar), nur Tests mit Fake-fetch.
