@@ -6,7 +6,8 @@
   "insights": [
     "Fictional customers, VMs and measurements, no live monitoring. A VM is green, yellow or red by the same rules as in the Infra VM landscape Space; a customer is as red as its worst VM.",
     "Three levels: all customers, the VMs of one customer, the state of one VM with measurements against the limits, the reasons and the recommended tasks.",
-    "Fix automatically (red VMs only) runs a seven-step bar: ticket, diagnosis, approval (auto, policy), correction, verification, customer e-mail preview, ticket closed. Simulated: no VM is changed and no e-mail is sent."
+    "Fix automatically (red VMs only) runs a seven-step bar: ticket, diagnosis, approval (auto, policy), correction, verification, customer e-mail preview, ticket closed. Simulated: no VM is changed and no e-mail is sent.",
+    "After a repair, 'Create ticket and mail draft with Joule' asks Joule to do it for real: a ticket in Sub4Me (create_ticket), a draft in Gmail (create_draft, never sent) and closing the ticket (close_ticket). Needs the connectors and a live agent; the page does not see the result."
   ],
   "prompt": "Bundled example: Infra Ops Control (static, data embedded by npm run sync:infra-ops-control)."
 }

@@ -12,7 +12,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/infra-ops-control/index.html');
 const logic = (html, id) => new RegExp(`<script id="${id}">([\\s\\S]*?)<\\/script>`).exec(html)[1];
-const { assess, customerStatus, applyFixes, evidence, composeMail, say } = vm.runInNewContext(`${logic(page, 'ctl-logic')}; ({ assess, customerStatus, applyFixes, evidence, composeMail, say })`);
+const { assess, customerStatus, applyFixes, evidence, composeMail, say, buildAsk } = vm.runInNewContext(`${logic(page, 'ctl-logic')}; ({ assess, customerStatus, applyFixes, evidence, composeMail, say, buildAsk })`);
 const data = repoControlData();
 
 test('page embeds the current data and design system, is installable, and has no network or storage access', () => {
@@ -169,4 +169,56 @@ test('only red VMs get the button, only one repair runs at a time, and the story
   assert.match(text, /TLS certificate, days left\s*5\s*365/);
   assert.match(text, /Missing patch, days\s*16\s*0/);
   assert.match(text, /with a restart in a maintenance window/);
+});
+
+test('the request to Joule fits the host limit for every red VM, names the three tools in order, and contains no address', () => {
+  const reds = data.vms.filter((v) => assess(v, data.rules).status === 'red');
+  assert.ok(reds.length >= 4);
+  for (const v of data.vms.filter((x) => assess(x, data.rules).status !== 'green')) {
+    const reasons = assess(v, data.rules).reasons, c = data.customers.find((x) => x.id === v.customer);
+    const ask = buildAsk(c, v, reasons, data.tasks, evidence(v, applyFixes(v, reasons, data.tasks), reasons));
+    assert.ok(ask.length <= 600, `${v.name}: ${ask.length} characters`);
+    const order = ['create_ticket', 'create_draft', 'close_ticket'].map((n) => ask.indexOf(n));
+    assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], `${v.name}: tools in order`);
+    for (const part of [v.name, c.name, 'customer muster', 'priority High', 'do not send', 'my own address']) assert.ok(ask.includes(part), `${v.name}: ${part}`);
+    assert.ok(!ask.includes('…'), `${v.name}: the description is complete, not cut off`);
+    assert.ok(ask.includes('Found: ') && ask.includes('Fixed: ') && ask.includes('->'), `${v.name}: what was found and what changed`);
+    assert.doesNotMatch(ask, /@|\.example/, `${v.name}: no address in the request`);
+  }
+});
+
+test('Do it for real: the button asks Joule once with the prepared request; outside the Werkbank there is no button', async () => {
+  const doc = open();
+  const posted = [];
+  Object.defineProperty(doc.defaultView, 'parent', { value: { postMessage: (m) => posted.push(m) } });
+  doc.querySelector('#speed').value = 'fast';
+  doc.querySelector('#speed').dispatchEvent(new doc.defaultView.Event('change'));
+  doc.querySelector('[data-cust="nordlicht"]').click();
+  [...doc.querySelectorAll('[data-vm]')].find((t) => t.textContent.includes('cc-prd-01')).click();
+  assert.equal(doc.querySelector('[data-real]'), null, 'no button before the repair');
+  doc.querySelector('[data-fix]').click();
+  await until(doc, '[data-real]');
+  const btn = doc.querySelector('[data-real]');
+  assert.match(doc.querySelector('#fix-slot').textContent, /nothing is sent/);
+  btn.click();
+  assert.equal(posted.length, 1);
+  assert.equal(posted[0].type, 'wb:ask');
+  assert.ok(posted[0].prompt.length <= 600);
+  assert.match(posted[0].prompt, /title "Nordlicht Logistik: cc-prd-01 repaired"/);
+  assert.match(posted[0].prompt, /Found: TLS certificate expired 2 days ago/);
+  assert.match(posted[0].prompt, /Fixed: cert days left -2 -> 365/);
+  assert.ok(doc.querySelector('[data-real]').disabled, 'no second ticket by accident');
+  doc.querySelector('[data-real]').click();
+  assert.equal(posted.length, 1);
+  assert.match(doc.querySelector('#fix-slot').textContent, /Asked Joule/);
+
+  const alone = open();
+  alone.querySelector('#speed').value = 'fast';
+  alone.querySelector('#speed').dispatchEvent(new alone.defaultView.Event('change'));
+  alone.querySelector('[data-cust="hansa"]').click();
+  [...alone.querySelectorAll('[data-vm]')].find((t) => t.textContent.includes('port-gw-01')).click();
+  alone.querySelector('[data-fix]').click();
+  await until(alone, '.runbar li.done:last-child');
+  assert.equal(alone.querySelector('[data-real]'), null);
+  assert.match(alone.querySelector('#fix-slot').textContent, /Open this Space in the Werkbank/);
 });
