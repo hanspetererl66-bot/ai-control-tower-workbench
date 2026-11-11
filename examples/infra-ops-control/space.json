@@ -1,0 +1,12 @@
+{
+  "title": "Infra Ops Control",
+  "description": "One path from all customers to a single VM, with automatic repair of red VMs: ticket, correction by the SOP steps, check, customer e-mail (preview) and closing the ticket.",
+  "domain": "Operations",
+  "parent": "it-fleet",
+  "insights": [
+    "Fictional customers, VMs and measurements, no live monitoring. A VM is green, yellow or red by the same rules as in the Infra VM landscape Space; a customer is as red as its worst VM.",
+    "Three levels: all customers, the VMs of one customer, the state of one VM with measurements against the limits, the reasons and the recommended tasks.",
+    "Fix automatically (red VMs only) runs a seven-step bar: ticket, diagnosis, approval (auto, policy), correction, verification, customer e-mail preview, ticket closed. Simulated: no VM is changed and no e-mail is sent."
+  ],
+  "prompt": "Bundled example: Infra Ops Control (static, data embedded by npm run sync:infra-ops-control)."
+}
