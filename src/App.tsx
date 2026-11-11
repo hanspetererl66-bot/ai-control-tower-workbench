@@ -37,6 +37,7 @@ import { chooseHarness, checkToolCall, harnessBlockedNote, harnessNote, harnessS
 import { loadMemory, saveMemory, addMemory, memoryNote, suggestMemory, suggestFromConversation, activeEntries, MEMORY_KINDS, type MemoryState } from './memory';
 import { activePersona, allCommands, allPersonas, expandCommand, loadCommands, loadPersonas, personaNote, saveCommands, savePersonas, type Command, type PersonaState } from './chat-context';
 import { applyDbLevels } from './skill-db';
+import { loadShared, loadSharedOn, sharedNote as sharedMemoryNote } from './memory-shared';
 import { loadStudioMap, studioKey } from './studio-agent-sync';
 import { MEMORY_GOV_KEY, loadGov, saveGov, requestPromotion as govRequestPromotion, levelOf as govLevelOf, pendingFor as govPendingFor, type SkillGov } from './skill-governance';
 import ChatContextBar from './ui/ChatContextBar';
@@ -848,7 +849,10 @@ export default function App() {
   function currentMemoryNote(space = contextSpace, state: MemoryState = memory) {
     const g = loadGov(undefined, MEMORY_GOV_KEY);
     const names = loadGov().levels as string[];
-    return memoryNote(state, space, (id) => govLevelOf(g, id), names);
+    const own = memoryNote(state, space, (id) => govLevelOf(g, id), names);
+    // Entries other people shared count only when the person switched them on (and memory is on).
+    const others = state.enabled ? sharedMemoryNote(loadShared(window.localStorage), loadSharedOn(window.localStorage), space, names) : '';
+    return [own, others].filter(Boolean).join('\n\n');
   }
   function openApprovals() {
     return loadGov().requests.filter((r) => r.status === 'pending').length + loadGov(undefined, MEMORY_GOV_KEY).requests.filter((r) => r.status === 'pending').length;

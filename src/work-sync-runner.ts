@@ -10,6 +10,7 @@ import { htmlToMarkdown, toHtml } from './doc-html';
 import { applyBack, loadMap, saveMap, syncOnce, type Local } from './work-sync';
 import { AGENT_GOV_KEY, loadAgents, saveAgents } from './agent-studio';
 import { loadGov, saveGov } from './skill-governance';
+import { SHARED_MEMORY_PULLED, loadShared, saveShared, syncShared } from './memory-shared';
 import { applyAgentLevels, applyBackAgents, loadStudioMap, saveStudioMap, syncStudioAgents, type StudioLocal } from './studio-agent-sync';
 
 export const PROJECTS_PULLED = 'werkbank:projects-pulled';
@@ -57,6 +58,12 @@ export async function syncNow(): Promise<void> {
     saveStudioMap(window.localStorage, leveled.map);
     if (leveled.changed.length) saveGov(leveled.gov, undefined, AGENT_GOV_KEY);
     if (studio.pulled || studio.removed || leveled.changed.length) window.dispatchEvent(new Event(AGENTS_PULLED));
+    // Memory entries other people shared with this person (read only).
+    try {
+      const shared = await syncShared(api, st.email, loadShared(window.localStorage));
+      if (shared.changed) { saveShared(window.localStorage, shared.entries); window.dispatchEvent(new Event(SHARED_MEMORY_PULLED)); }
+      after.errors.push(...shared.errors);
+    } catch (e: any) { after.errors.push(`shared memory: ${String(e?.message ?? e).slice(0, 160)}`); }
     after.errors.push(...studio.errors);
     after.pushed += studio.pushed; after.pulled += studio.pulled;
     const problem = after.errors[0];

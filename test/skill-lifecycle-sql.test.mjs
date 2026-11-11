@@ -63,6 +63,7 @@ test('set up: the migrations install cleanly, twice', { skip }, () => {
   run(['-f', join(ROOT, 'supabase/migrations/20261031_020_skill_lifecycle.sql')]); // re-running changes nothing and does not fail
   run(['-f', join(ROOT, 'supabase/migrations/20261031_021_work_items.sql')]);
   run(['-f', join(ROOT, 'supabase/migrations/20261110_044_agent_promotion.sql')]); // 021 above re-created the old work_save; 044 puts the studio agent rule back
+  run(['-f', join(ROOT, 'supabase/migrations/20261110_045_memory_items.sql')]); // and 045 adds the memory kind on top
   sql(`insert into werkbank.groups (id, name, created_by) values (${q(BOARD)}, 'Governance board', 'board@x.com'), (${q(FINANCE)}, 'Finance team', 'lead@x.com');
     insert into werkbank.group_members (group_id, email, role) values
       (${q(BOARD)}, 'board@x.com', 'admin'), (${q(FINANCE)}, 'lead@x.com', 'admin'), (${q(FINANCE)}, 'anna@x.com', 'member'), (${q(FINANCE)}, 'ben@x.com', 'member')`);
@@ -1142,4 +1143,40 @@ test('studio agents: the API roles cannot reach the request tables or functions'
   assert.ok(rule("set role anon; select public.work_promotion_list('a@x.com')"));
   assert.ok(rule("set role authenticated; select public.work_promotion_request('a@x.com', gen_random_uuid(), 'team', null, '')"));
   assert.equal(rule("set role service_role; select public.work_promotion_list('anna@x.com')"), null);
+});
+
+// ---------- migration 045: memory entries as work items ----------
+const memFiles = (text) => JSON.stringify([
+  { path: 'memory.json', content: JSON.stringify({ format: 'werkbank.memory-entry.v1', entry: { id: 'mem-1', kind: 'context', text } }), language: 'json' },
+  { path: 'memory.md', content: text, language: 'markdown' },
+]);
+const saveMem = (actor, text, { id = null, visibility = 'private', expected = null } = {}) =>
+  `select public.work_save(${q(actor)}, ${q(id)}, 'memory', 'Memory', ${q(visibility)}, null, 'memory-entry', '{}'::jsonb, array[]::text[], ${q(memFiles(text))}::jsonb, '', ${expected === null ? 'null' : expected})`;
+
+test('memory entries: kind memory exists, other kinds still do, the visibility cannot be widened by saving', { skip }, () => {
+  assert.match(rule("select public.work_save('anna@x.com', null, 'planet', 'x', 'private', null, '', '{}'::jsonb, array[]::text[], '[{\"path\":\"a.md\",\"content\":\"x\"}]'::jsonb, '', null)"), /kind must be/);
+  assert.match(rule(saveMem('anna@x.com', 'Renewals are reviewed on Mondays', { visibility: 'company' })), /only through a request/);
+  const m = json(saveMem('anna@x.com', 'Renewals are reviewed on Mondays'));
+  assert.equal(visibilityOf(m.id), 'private');
+  assert.match(rule(saveMem('anna@x.com', 'Renewals are reviewed on Mondays', { id: m.id, expected: m.rev, visibility: 'team' })), /only through a request/);
+  assert.equal(json(saveMem('anna@x.com', 'Renewals are reviewed on Tuesdays now', { id: m.id, expected: m.rev })).rev, 2);
+});
+
+test('memory entries: a request runs the checks, personal data blocks it, the department admin decides, then the department reads it', { skip }, () => {
+  const bad = json(saveMem('anna@x.com', 'My IBAN is DE89 3704 0044 0532 0130 00 for refunds'));
+  const blocked = agentReq('anna@x.com', bad.id, 'team');
+  assert.equal(blocked.status, 'blocked');
+  assert.match(json("select public.work_promotion_list('anna@x.com')").find((r) => r.id === blocked.id).checks.find((c) => c.id === 'secrets').detail, /password, key, card number or IBAN/);
+  json(`select public.work_promotion_withdraw('anna@x.com', ${q(blocked.id)}::uuid)`);
+  const ok = json(saveMem('anna@x.com', 'Renewals are reviewed on Mondays at the deal desk'));
+  assert.equal(json("select public.work_list('ben@x.com', 'memory')").some((i) => i.id === ok.id), false, 'private: ben does not see it');
+  const req = agentReq('anna@x.com', ok.id, 'team', 'a team rule');
+  assert.equal(req.status, 'review');
+  assert.equal(rule(`select public.work_promotion_decide('anna@x.com', ${q(req.id)}::uuid, true, '')`), 'the requester cannot decide their own request');
+  assert.equal(agentDecide('lead@x.com', ok.id, true).status, 'approved');
+  assert.equal(visibilityOf(ok.id), 'team');
+  const seenByBen = json("select public.work_list('ben@x.com', 'memory')").find((i) => i.id === ok.id);
+  assert.ok(seenByBen && seenByBen.owner === 'anna@x.com' && seenByBen.visibility === 'team', 'a department member reads it');
+  assert.equal(json("select public.work_list('zed@x.com', 'memory')").some((i) => i.id === ok.id), false, 'someone outside the department does not');
+  assert.match(rule(`select public.work_promotion_request('anna@x.com', ${q(json(save('anna@x.com', { kind: 'code', name: 'Script' })).id)}::uuid, 'team', ${q(FINANCE)}::uuid, '')`), /Only studio agents and memory entries/);
 });

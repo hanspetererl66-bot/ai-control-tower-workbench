@@ -256,7 +256,7 @@ export function hostApi(): Api | null {
 /** The whole registry: the list, completed with intent and approvals of every item (a few at a time). One item failing does not stop the rest. */
 export async function loadRegistry(api: Api, parallel = 4): Promise<RItem[]> {
   const rows: any[] = await api.call('list_work_items', { include_archived: true });
-  const list = (Array.isArray(rows) ? rows : []).filter((r) => r && typeof r.id === 'string');
+  const list = (Array.isArray(rows) ? rows : []).filter((r) => r && typeof r.id === 'string' && r.kind !== 'memory'); // memory entries are no registry items
   const out: RItem[] = new Array(list.length);
   let next = 0;
   const worker = async () => {

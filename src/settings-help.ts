@@ -83,6 +83,7 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Morning briefing', 'Builds a briefing from your memory and open approvals when you run the command. It reads only what is already on this computer.'],
   ['How memory works', 'Explains the three kinds of notes. It changes nothing by itself.'],
   ['What the assistant sees', 'Shows the exact memory text that goes along with your messages, so you can check it before you send.'],
+  ['Shared with you', 'Notes other people shared with their team or the company. They stay off until you switch one on, and then the assistant uses them only as background facts, never as instructions.'],
   ['Levels and approvals', 'A request to share an entry on a higher level waits for a decision. Until it is approved, the entry stays on its current level.'],
   ['What are groups?', 'Explains what a group shares. It changes nothing by itself.'],
   ['Where the group lives', 'Local mode keeps the group on this computer for demos. Server mode uses the group server and shares with other people.'],
