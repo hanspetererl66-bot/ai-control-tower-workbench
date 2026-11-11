@@ -65,6 +65,7 @@ test('set up: the migrations install cleanly, twice', { skip }, () => {
   run(['-f', join(ROOT, 'supabase/migrations/20261110_044_agent_promotion.sql')]); // 021 above re-created the old work_save; 044 puts the studio agent rule back
   run(['-f', join(ROOT, 'supabase/migrations/20261110_045_memory_items.sql')]); // and 045 adds the memory kind on top
   run(['-f', join(ROOT, 'supabase/migrations/20261110_046_memory_fixed_when_shared.sql')]); // 046 fixes the text of a shared memory entry
+  run(['-f', join(ROOT, 'supabase/migrations/20261110_047_agent_private_on_change.sql')]); // 047 sends a changed shared agent back to private
   sql(`insert into werkbank.groups (id, name, created_by) values (${q(BOARD)}, 'Governance board', 'board@x.com'), (${q(FINANCE)}, 'Finance team', 'lead@x.com');
     insert into werkbank.group_members (group_id, email, role) values
       (${q(BOARD)}, 'board@x.com', 'admin'), (${q(FINANCE)}, 'lead@x.com', 'admin'), (${q(FINANCE)}, 'anna@x.com', 'member'), (${q(FINANCE)}, 'ben@x.com', 'member')`);
@@ -1194,4 +1195,18 @@ test('memory entries: once shared the text is fixed; making it private first all
   assert.equal(agentReq('anna@x.com', m.id, 'team').status, 'review', 'the changed text is requested again');
   assert.equal(priv.rev, 2);
   assert.equal(req.status, 'review');
+});
+
+test('studio agents: other content takes a shared agent back to private, the same content and a pure lowering do not (migration 047)', { skip }, () => {
+  const a = json(saveAgent('anna@x.com', { instruction: 'Watch the renewals and report the red ones.' }));
+  agentReq('anna@x.com', a.id, 'team');
+  assert.equal(agentDecide('lead@x.com', a.id, true).status, 'approved');
+  assert.equal(visibilityOf(a.id), 'team');
+  const same = json(saveAgent('anna@x.com', { id: a.id, expected: 1, visibility: 'team', team: FINANCE, instruction: 'Watch the renewals and report the red ones.' }));
+  assert.equal(same.visibility, 'team', 'the same content: still shared');
+  const changed = json(saveAgent('anna@x.com', { id: a.id, expected: same.rev, visibility: 'team', team: FINANCE, instruction: 'Watch the renewals, report the red ones and mail the owners.' }));
+  assert.equal(changed.visibility, 'private', 'other content: private again');
+  assert.equal(visibilityOf(a.id), 'private');
+  assert.equal(sql(`select team_id is null from werkbank.work_item where id = ${q(a.id)}::uuid`), 't');
+  assert.equal(agentReq('anna@x.com', a.id, 'team').status, 'review', 'it is asked for again, with the new text');
 });
