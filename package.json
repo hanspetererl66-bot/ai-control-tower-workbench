@@ -102,7 +102,8 @@
     "install:examples": "node scripts/install-example-space.mjs",
     "check": "npm run typecheck && npm test && npm run build",
     "test:triggers": "node scripts/skill-trigger-eval.mjs",
-    "test:triggers:live": "node scripts/skill-trigger-eval.mjs --live"
+    "test:triggers:live": "node scripts/skill-trigger-eval.mjs --live",
+    "sync:infra-ops-control": "node scripts/sync-infra-ops-control.mjs"
   },
   "keywords": [
     "ai",

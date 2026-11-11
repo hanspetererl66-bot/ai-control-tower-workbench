@@ -1,5 +1,5 @@
 /**
- * Infra Ops story: embeds examples/shared/infra-story.html (a bar with four steps) into the four Spaces of the story,
+ * Infra Ops story: embeds examples/shared/infra-story.html (a bar with six steps) into the six Spaces of the story,
  * right after <body>. Every step posts a normal Space hand-over (wb:handoff), so the host opens the next Space.
  *   npm run sync:infra-story            write
  *   npm run sync:infra-story -- --check fail when a page is out of date
@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const STORY_SPACES = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-ops'];
+export const STORY_SPACES = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-ops', 'infra-ops-control'];
 const BLOCK = /<!--story:start-->[\s\S]*?<!--story:end-->\n?/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 

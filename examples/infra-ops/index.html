@@ -377,7 +377,8 @@ details.vmwall{margin-top:6px}details.vmwall summary{cursor:pointer;font-size:12
     { slug: 'it-fleet', t: 'Fleet', x: 'Where does it burn? 42 customers and about 1,200 VMs at a glance. Muster Industrie AG is red: a certificate on one of its hosts expires in days.' },
     { slug: 'it-infrastructure', t: 'Customer VMs', x: 'One customer up close: the status wall of Muster Industrie AG. Hover over proxy-edge-01 to see why it is red; every reason becomes a recommended task.' },
     { slug: 'it-operations', t: 'Alerts', x: 'What does monitoring say? Seven alerts, each with a transparent priority. A-506 is the certificate of proxy-edge-01; A-507 carries an injected instruction and is withheld.' },
-    { slug: 'infra-ops', t: 'Change', x: 'From finding to fix: the ticket for Muster Industrie AG becomes a certificate renewal. Pre-check, two approvals from different roles, simulated execution, audit evidence.' }
+    { slug: 'infra-ops', t: 'Change', x: 'From finding to fix: the ticket for Muster Industrie AG becomes a certificate renewal. Pre-check, two approvals from different roles, simulated execution, audit evidence.' },
+    { slug: 'infra-ops-control', t: 'Auto-fix', x: 'The same path without the manual work: all customers, one customer, one red VM. One click opens a ticket, corrects the VM by the SOP steps, checks it, writes the customer an e-mail (preview) and closes the ticket.' }
   ];
   var TICKET = { type: 'ticket', id: 'OP-2090', customerId: 'musind', customerName: 'Muster Industrie AG', vm: 'musind-int04', kind: 'cert', priority: 'High', reasons: ['TLS certificate expires in days'], createdBy: 'Story: alert triage' };
   /* No address in the page (Spaces have no network): the chat gets the host and path and reads the page itself. The prompt stays under the 600 characters the host allows. */

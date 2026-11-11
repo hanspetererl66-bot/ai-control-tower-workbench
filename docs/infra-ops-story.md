@@ -1,12 +1,12 @@
 # Infra Ops: Durchlauf und Story (ca. 8 Minuten)
 
-Fünf Spaces, eine Geschichte: **Ein Zertifikat läuft ab. Wie kommt es von "irgendwo in 1.200 VMs" zu "erneuert, geprüft, nachgewiesen"?**
+Sechs Spaces, eine Geschichte: **Ein Zertifikat läuft ab. Wie kommt es von "irgendwo in 1.200 VMs" zu "erneuert, geprüft, nachgewiesen"?**
 Alle Daten sind erfunden (kein Live-Monitoring, keine echte Ausführung). Roter Faden: **Muster Industrie AG** (SAP-Kunde 0010048211) und ein ablaufendes TLS-Zertifikat.
 
-Oben in jedem der fünf Spaces steht die Leiste **Infra Ops story** (1 SOP, 2 Fleet, 3 Customer VMs, 4 Alerts, 5 Change). Sie zeigt den aktuellen Schritt mit einem Satz und hat den Knopf **Next**. Next öffnet den nächsten Space (normale Space-Übergabe, siehe `src/space-handoff.ts`). Außerhalb der Werkbank (Datei im Browser) ist die Leiste nur Text.
+Oben in jedem der sechs Spaces steht die Leiste **Infra Ops story** (1 SOP, 2 Fleet, 3 Customer VMs, 4 Alerts, 5 Change, 6 Auto-fix). Sie zeigt den aktuellen Schritt mit einem Satz und hat den Knopf **Next**. Next öffnet den nächsten Space (normale Space-Übergabe, siehe `src/space-handoff.ts`). Außerhalb der Werkbank (Datei im Browser) ist die Leiste nur Text.
 
 ## Vorbereitung
-- `npm run install:examples`, dann in der Werkbank die fünf Spaces öffnen können: Infra Wiki, Infra-Operations-Fleet, Infra VM landscape, Cloud Infrastructure Operations, Infrastructure Operations (Slugs `infra-wiki`, `it-fleet`, `it-infrastructure`, `it-operations`, `infra-ops`).
+- `npm run install:examples`, dann in der Werkbank die sechs Spaces öffnen können: Infra Wiki, Infra-Operations-Fleet, Infra VM landscape, Cloud Infrastructure Operations, Infrastructure Operations, Infra Ops Control (Slugs `infra-wiki`, `it-fleet`, `it-infrastructure`, `it-operations`, `infra-ops`, `infra-ops-control`).
 - Im Space Infrastructure Operations oben "Demo speed" auf **Fast** stellen (die Freigaben antworten sonst erst nach etwa 20 Sekunden).
 - Mit Schritt 1 beginnen. Zurücksetzen: in Infra VM landscape "Reset demo", in der Fleet "End demo".
 
@@ -42,11 +42,17 @@ Klickpfad: Overview, Ticket **OP-2090** öffnen, Change für das Zertifikat anle
 - Sprechtext: "Der Change wird gegen Inventar, Freeze-Zeiten, Backup-Alter und Abhängigkeiten geprüft, bevor er entsteht. Produktion braucht zwei Freigaben von verschiedenen Rollen, der Requester darf nicht selbst freigeben (technisch erzwungen). n8n orchestriert, Ansible läuft über AWX, die Ausführung ist hier simuliert. Am Ende steht ein Audit-Nachweis."
 - Schluss: "Von 1.200 VMs zu einem geprüften, freigegebenen, nachweisbaren Zertifikatwechsel, ohne dass jemand eine Tabelle durchsucht hat."
 
+## Akt 5: Auto-fix (ca. 2 min) – "Und wenn niemand klicken muss?"
+Space **Infra Ops Control** (Next in Infrastructure Operations). Oben "Demo speed" auf **Fast** oder Normal (ca. 15 s für einen Lauf). Klickpfad: Kunde **Muster Industrie AG** → VM **proxy-edge-01** (rot) → **Fix automatically**.
+- Sprechtext: "Dieselbe Reise ohne Handarbeit: alle Kunden, ein Kunde, eine rote VM. Ein Klick, und die Laufleiste arbeitet sieben Schritte ab: Ticket, Diagnose, Freigabe durch die Policy, Korrektur nach den SOP-Schritten, Prüfung, Mail an den Kunden, Ticket schließen."
+- Zeigen: die VM wird grün, der Nachweis zeigt Zertifikat 5 → 365 Tage und Patch 16 → 0 Tage, die Mail ist eine Vorschau (nichts wird gesendet). Zurück zur Kundenübersicht: Muster Industrie AG ist noch rot, weil `fs-archive-01` (Platte 97 %) rot ist; ein weiterer Klick behebt auch das. **Reset demo** stellt alles zurück.
+- Ehrlich sagen: Die Freigabe ist hier automatisch (Policy). In der Produktion braucht ein Change zwei Freigaben (siehe Akt 4); die Policy für eine automatische Freigabe wäre eine eigene Entscheidung.
+
 ## Vom SOP zum lauffähigen Ablauf
 In Infrastructure Operations (Reiter Playbooks und in jeder Task) steht das SOP als Liste: jeder Schritt zeigt seinen Wiki-Schritt (Seite, Version), den Wiki-Satz und was die Automatisierung dabei tut. Beim Durchlauf einer Task wird der Schritt grün, der gerade läuft, lila markiert. Zwei SOP-Schritte pro Vorlage sind zusätzliche Schritte im technischen Ablauf (Zertifikat: Schlüssel und CSR, Anmeldung bei der CA über ACME; Patch: Zwilling zuerst). Ein Test hält Wiki und SOP deckungsgleich (Reihenfolge, Titel, Text, Orchestrierungsschritt) und prüft, dass alle acht Orchestrierungsschritte (Trigger, Ticket, Pre-check, Freigabe, Fenster, Lauf, Prüfung, Nachweis) abgedeckt sind. **Open the wiki page** springt ins Wiki, **Ask Joule to compare with the wiki** lässt Joule SOP und Seite vergleichen.
 
 ## Was der Durchlauf nicht zeigt (ehrlich)
-- Die VM-Namen unterscheiden sich je Space (Fleet `musind-int04`, Infra VM landscape `proxy-edge-01`, Infra Ops `mi-…`), weil jeder Space seinen eigenen Beispieldatensatz hat. Verbunden sind Kunde, Zertifikat und Tage (5 Tage, 24.10.). Im Sprechtext Kunde und Zertifikat nennen, nicht den Host-Namen, wenn man zwischen den Spaces wechselt.
+- Die VM-Namen unterscheiden sich je Space (Fleet `musind-int04`, Infra VM landscape und Infra Ops Control `proxy-edge-01`, Infra Ops `mi-…`), weil jeder Space seinen eigenen Beispieldatensatz hat. Verbunden sind Kunde, Zertifikat und Tage (5 Tage, 24.10.). Im Sprechtext Kunde und Zertifikat nennen, nicht den Host-Namen, wenn man zwischen den Spaces wechselt.
 - Die Leiste merkt sich den Schritt nicht über ein Neuladen des Space hinaus (sie braucht es nicht: sie kennt ihren eigenen Schritt).
 - Das Wiki ist ein Dummy: die Seiten sind erfunden und liegen als `examples/infra-wiki/pages.json` im Repo (nach Änderung `npm run sync:infra-wiki` und `npm run sync:infra-ops` bzw. `npm run sync:infra-story`). Ein echtes Wiki ist nicht angebunden.
 - Nicht getestet: die Übergaben in der Electron-App (getestet mit jsdom und dem Host-Protokoll), n8n- und Agent-Läufe mit Live-Diensten, das Werkzeug `read_wiki_page` im echten Agenten.
