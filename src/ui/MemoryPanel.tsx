@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { SHARED_MEMORY_PULLED, loadShared, loadSharedOn, saveSharedOn, toggleShared } from '../memory-shared';
+import { dbLevelOf, forgetEntry, loadShareMap, makePrivate, requestEntry, saveShareMap, type ShareMap } from '../memory-share';
+import { decideAgentRequest, loadAgentRequests } from '../agent-promotion-db';
+import type { Api } from '../work-sync';
 import { MEMORY_GOV_KEY, decide, levelOf, loadGov, pendingFor, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 import { MAX_TEXT, MEMORY_KINDS, addMemory, deleteMemory, memoryNote, updateMemory, type MemoryKind, type MemoryState } from '../memory';
 import { Section, type SpaceRef } from './PreferencesPanels';
@@ -14,7 +17,29 @@ export default function MemoryPanel({ memory, onChange, spaces = [] }: MemoryPan
   // Entries other people shared with you (read only, off until you switch one on).
   const [shared, setShared] = useState(() => loadShared(window.localStorage));
   const [sharedOn, setSharedOn] = useState(() => loadSharedOn(window.localStorage));
+  // Shared database (desktop app): a request uploads the entry first (private) and a second person decides. Without it the old local simulation stays.
+  const api: Api | null = window.host?.workCall ? { call: async (tool, args) => { const r = await window.host!.workCall!(tool, args); if (!r.ok) throw new Error(r.error); return r.data; } } : null;
+  const [shareMap, setShareMapState] = useState<ShareMap>(() => loadShareMap(window.localStorage));
+  const setShareMap = (m: ShareMap) => { setShareMapState(m); saveShareMap(window.localStorage, m); };
+  const [dbState, setDbState] = useState<'unknown' | 'on' | 'off'>('unknown');
+  const [canDecide, setCanDecide] = useState<Record<string, boolean>>({});
+  const [groups, setGroups] = useState<Array<{ id: string; name: string; role: string }>>([]);
+  const [groupId, setGroupId] = useState('');
+  const [dbMsg, setDbMsg] = useState('');
+  const [dbBusy, setDbBusy] = useState(false);
+  const loadDb = async () => {
+    if (!api) { setDbState('off'); return; }
+    try {
+      const r = await loadAgentRequests(api, gov);
+      setDbState('on'); setCanDecide(r.canDecide);
+      if (r.gov !== gov) setGov(r.gov);
+      const g = await window.host?.skillDbGroups?.().catch(() => undefined);
+      if (g?.ok && g.rows) { setGroups(g.rows); setGroupId((cur) => cur || g.rows?.[0]?.id || ''); }
+    } catch { setDbState('off'); }
+  };
+  useEffect(() => { void loadDb(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { const r = () => setShared(loadShared(window.localStorage)); window.addEventListener(SHARED_MEMORY_PULLED, r); return () => window.removeEventListener(SHARED_MEMORY_PULLED, r); }, []);
+  useEffect(() => { const r = () => setGov((g) => ({ ...loadGov(undefined, MEMORY_GOV_KEY), levels: g.levels })); window.addEventListener(SHARED_MEMORY_PULLED, r); return () => window.removeEventListener(SHARED_MEMORY_PULLED, r); }, []);
   const lvl = (id: string) => levelOf(gov, id);
   const spaceTitle = (slug: string) => spaces.find((x) => x.slug === slug)?.title ?? slug;
   const pendingReqs = gov.requests.filter((r) => r.status === 'pending');
@@ -82,10 +107,40 @@ export default function MemoryPanel({ memory, onChange, spaces = [] }: MemoryPan
                         {pendingFor(gov, e.id) && <small className="mem-badge">in review for {gov.levels[pendingFor(gov, e.id)!.to]}</small>}
                       </div>
                       <div>
-                        {lvl(e.id) < 2 && !pendingFor(gov, e.id) && <button className="ghost-btn" title="Ask to make this a rule for more people" onClick={() => setGov((g) => requestPromotion(g, e.id, e.text, Date.now()))}>Move up to {gov.levels[(lvl(e.id) + 1) as LevelIndex]}</button>}
-                        <button className="ghost-btn" onClick={() => { setEditing(e.id); setEditText(e.text); }}>Edit</button>
+                        {lvl(e.id) < 2 && !pendingFor(gov, e.id) && (
+                          <>
+                            {dbState === 'on' && dbLevelOf(gov, shareMap, e.id) === 0 && groups.length > 0 && (
+                              <select aria-label="Department" value={groupId} onChange={(ev) => setGroupId(ev.target.value)}>{groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}</select>
+                            )}
+                            <button className="ghost-btn" disabled={dbBusy} title="Ask to make this a rule for more people"
+                              onClick={async () => {
+                                if (dbState !== 'on' || !api) { setGov((g) => requestPromotion(g, e.id, e.text, Date.now())); return; }
+                                setDbBusy(true); setDbMsg('');
+                                const out = await requestEntry(api, shareMap, e, dbLevelOf(gov, shareMap, e.id), groupId, 'Memory entry');
+                                setDbBusy(false); setShareMap(out.map);
+                                if (!out.id) { setDbMsg(out.error ?? 'The request failed.'); return; }
+                                setGov((g) => requestPromotion(g, e.id, e.text, Date.now(), undefined, out.id));
+                                setDbMsg(out.warnings?.length ? `Sent. Note for the reviewer: ${out.warnings.join(' ')}` : 'Sent to the shared database. Another person decides. The entry is stored there from now on.');
+                              }}>Move up to {gov.levels[(lvl(e.id) + 1) as LevelIndex]}</button>
+                          </>
+                        )}
+                        {dbState === 'on' && shareMap[e.id] && lvl(e.id) > 0 ? (
+                          <button className="ghost-btn" disabled={dbBusy} title="A shared entry cannot be edited. Make it private, change it, and ask again."
+                            onClick={async () => {
+                              if (!api) return;
+                              setDbBusy(true); setDbMsg('');
+                              const out = await makePrivate(api, shareMap, e);
+                              setDbBusy(false);
+                              if (out.error) { setDbMsg(out.error); return; }
+                              setShareMap(out.map); setGov((g) => ({ ...g, skills: Object.fromEntries(Object.entries(g.skills).filter(([k]) => k !== e.id)) as SkillGov['skills'] }));
+                            }}>Make private</button>
+                        ) : <button className="ghost-btn" disabled={!!pendingFor(gov, e.id)} title={pendingFor(gov, e.id) ? 'The request is for this text. Wait for the decision or withdraw it.' : undefined} onClick={() => { setEditing(e.id); setEditText(e.text); }}>Edit</button>}
                         {confirm === e.id
-                          ? <><button className="ghost-btn ghost-btn-on" onClick={() => { setConfirm(null); onChange(deleteMemory(memory, e.id)); }}>Yes, forget</button><button className="ghost-btn" onClick={() => setConfirm(null)}>Cancel</button></>
+                          ? <><button className="ghost-btn ghost-btn-on" onClick={async () => {
+                            setConfirm(null);
+                            if (api && shareMap[e.id]) { const out = await forgetEntry(api, shareMap, e.id); if (out.error) { setDbMsg(`Forgotten here, but the shared copy could not be archived: ${out.error}`); } setShareMap(out.map); }
+                            onChange(deleteMemory(memory, e.id));
+                          }}>Yes, forget</button><button className="ghost-btn" onClick={() => setConfirm(null)}>Cancel</button></>
                           : <button className="ghost-btn" onClick={() => setConfirm(e.id)}>Forget</button>}
                       </div>
                     </>
@@ -111,14 +166,30 @@ export default function MemoryPanel({ memory, onChange, spaces = [] }: MemoryPan
         </Section>
       )}
       <Section title="Levels and approvals" hint={`An entry starts on “${gov.levels[0]}”. “Move up” asks to make it valid for more people: ${gov.levels[1]}, then ${gov.levels[2]}. It moves only after approval. Agreed entries are marked for the assistant. The names of the levels are set under Skills.`}>
+        {dbMsg && <p className="prefs-note" role="alert">{dbMsg}</p>}
         {pendingReqs.length === 0 && <p className="prefs-note">Nothing waits for approval.</p>}
         <ul className="prefs-list">
           {pendingReqs.map((r) => (
             <li key={r.id}>
               <div><b>{memory.entries.find((x) => x.id === r.skill)?.text ?? 'Entry removed'}</b> <small>{gov.levels[r.from]} → {gov.levels[r.to]}</small></div>
               <div>
-                <button className="ghost-btn" onClick={() => setGov((g) => decide(g, r.id, true, '', Date.now()))}>Approve</button>
-                <button className="ghost-btn" onClick={() => setGov((g) => decide(g, r.id, false, '', Date.now()))}>Reject</button>
+                {(['Approve', 'Reject'] as const).map((label) => {
+                  const approve = label === 'Approve';
+                  const blocked = !!r.dbId && canDecide[r.dbId] === false;
+                  return (
+                    <button key={label} className="ghost-btn" disabled={dbBusy || blocked}
+                      title={blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the company level).' : undefined}
+                      onClick={async () => {
+                        if (r.dbId && api) {
+                          setDbBusy(true); setDbMsg('');
+                          const out = await decideAgentRequest(api, r.dbId, approve, approve ? '' : 'Rejected in the Memory panel');
+                          setDbBusy(false);
+                          if (!out.ok) { setDbMsg(out.error ?? 'The database refused the decision.'); return; }
+                        }
+                        setGov((g) => decide(g, r.id, approve, '', Date.now()));
+                      }}>{label}</button>
+                  );
+                })}
               </div>
             </li>
           ))}

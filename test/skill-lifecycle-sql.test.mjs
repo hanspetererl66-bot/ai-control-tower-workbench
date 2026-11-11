@@ -64,6 +64,7 @@ test('set up: the migrations install cleanly, twice', { skip }, () => {
   run(['-f', join(ROOT, 'supabase/migrations/20261031_021_work_items.sql')]);
   run(['-f', join(ROOT, 'supabase/migrations/20261110_044_agent_promotion.sql')]); // 021 above re-created the old work_save; 044 puts the studio agent rule back
   run(['-f', join(ROOT, 'supabase/migrations/20261110_045_memory_items.sql')]); // and 045 adds the memory kind on top
+  run(['-f', join(ROOT, 'supabase/migrations/20261110_046_memory_fixed_when_shared.sql')]); // 046 fixes the text of a shared memory entry
   sql(`insert into werkbank.groups (id, name, created_by) values (${q(BOARD)}, 'Governance board', 'board@x.com'), (${q(FINANCE)}, 'Finance team', 'lead@x.com');
     insert into werkbank.group_members (group_id, email, role) values
       (${q(BOARD)}, 'board@x.com', 'admin'), (${q(FINANCE)}, 'lead@x.com', 'admin'), (${q(FINANCE)}, 'anna@x.com', 'member'), (${q(FINANCE)}, 'ben@x.com', 'member')`);
@@ -1179,4 +1180,18 @@ test('memory entries: a request runs the checks, personal data blocks it, the de
   assert.ok(seenByBen && seenByBen.owner === 'anna@x.com' && seenByBen.visibility === 'team', 'a department member reads it');
   assert.equal(json("select public.work_list('zed@x.com', 'memory')").some((i) => i.id === ok.id), false, 'someone outside the department does not');
   assert.match(rule(`select public.work_promotion_request('anna@x.com', ${q(json(save('anna@x.com', { kind: 'code', name: 'Script' })).id)}::uuid, 'team', ${q(FINANCE)}::uuid, '')`), /Only studio agents and memory entries/);
+});
+
+test('memory entries: once shared the text is fixed; making it private first allows a change and a new request (migration 046)', { skip }, () => {
+  const m = json(saveMem('anna@x.com', 'Deals above 50k go to the deal desk first'));
+  const req = agentReq('anna@x.com', m.id, 'team');
+  assert.equal(agentDecide('lead@x.com', m.id, true).status, 'approved');
+  assert.equal(visibilityOf(m.id), 'team');
+  assert.match(rule(saveMem('anna@x.com', 'Deals above 80k go to the deal desk first', { id: m.id, expected: m.rev, visibility: 'team' })), /cannot be changed/);
+  const priv = json(saveMem('anna@x.com', 'Deals above 80k go to the deal desk first', { id: m.id, expected: m.rev, visibility: 'private' }));
+  assert.equal(visibilityOf(m.id), 'private');
+  assert.equal(json(`select public.work_get('anna@x.com', ${q(m.id)}::uuid)`).files.find((f) => f.path === 'memory.md').content, 'Deals above 80k go to the deal desk first');
+  assert.equal(agentReq('anna@x.com', m.id, 'team').status, 'review', 'the changed text is requested again');
+  assert.equal(priv.rev, 2);
+  assert.equal(req.status, 'review');
 });

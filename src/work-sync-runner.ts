@@ -11,6 +11,8 @@ import { applyBack, loadMap, saveMap, syncOnce, type Local } from './work-sync';
 import { AGENT_GOV_KEY, loadAgents, saveAgents } from './agent-studio';
 import { loadGov, saveGov } from './skill-governance';
 import { SHARED_MEMORY_PULLED, loadShared, saveShared, syncShared } from './memory-shared';
+import { applyOwnLevels, loadShareMap, ownLevels } from './memory-share';
+import { MEMORY_GOV_KEY } from './skill-governance';
 import { applyAgentLevels, applyBackAgents, loadStudioMap, saveStudioMap, syncStudioAgents, type StudioLocal } from './studio-agent-sync';
 
 export const PROJECTS_PULLED = 'werkbank:projects-pulled';
@@ -61,7 +63,11 @@ export async function syncNow(): Promise<void> {
     // Memory entries other people shared with this person (read only).
     try {
       const shared = await syncShared(api, st.email, loadShared(window.localStorage));
-      if (shared.changed) { saveShared(window.localStorage, shared.entries); window.dispatchEvent(new Event(SHARED_MEMORY_PULLED)); }
+      // The level of the person's own shared entries comes from the database.
+      const own = applyOwnLevels(loadGov(undefined, MEMORY_GOV_KEY), ownLevels(shared.own, loadShareMap(window.localStorage)));
+      if (own.changed.length) saveGov(own.gov, undefined, MEMORY_GOV_KEY);
+      if (shared.changed) saveShared(window.localStorage, shared.entries);
+      if (shared.changed || own.changed.length) window.dispatchEvent(new Event(SHARED_MEMORY_PULLED));
       after.errors.push(...shared.errors);
     } catch (e: any) { after.errors.push(`shared memory: ${String(e?.message ?? e).slice(0, 160)}`); }
     after.errors.push(...studio.errors);
