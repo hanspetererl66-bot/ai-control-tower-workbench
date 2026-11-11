@@ -63,7 +63,7 @@ Zwei Beispiel-Jobs (Typ Workflow, `example: true`, wie die anderen Beispiele in 
 ## Befunde beim Bau (11.11.2026, echte Abrufe)
 
 - `https://news.sap.com/robots.txt`: `User-agent: *` / `Disallow: /`; erlaubt sind nur die namentlich aufgeführten Agenten (Suchmaschinen, einige KI-Dienste). Unser User-Agent steht nicht darin, also **verweigert der Feeder den News-Feed**. Wir tarnen uns nicht als einer der genannten Agenten. Der News-Feed liefert deshalb solange nichts, bis SAP uns freigibt oder du eine andere, erlaubte Quelle nennst.
-- `https://community.sap.com/robots.txt`: `User-agent: *`, Crawl-Delay 5, einzelne Pfade gesperrt (u. a. `/khhcw49343/rss`). Unsere Mindestpause ist 1 Sekunde; **der Crawl-Delay 5 wird noch nicht gelesen**. Vor dem ersten echten Community-Feed ergänzen (offene Aufgabe).
+- `https://community.sap.com/robots.txt`: `User-agent: *`, Crawl-Delay 5, einzelne Pfade gesperrt (u. a. `/khhcw49343/rss`). Unsere Mindestpause ist 1 Sekunde; der Feeder liest `Crawl-delay` und wartet pro Host mindestens so lange (Test mit Fake-fetch; gegen die echte Seite nicht geprüft). Über 60 Sekunden wird der Host verweigert statt schneller abgerufen.
 - `api.github.com/robots.txt` antwortet 404 (erlaubt).
 - Die SAP-docs-Repos tragen eine `REUSE.toml` mit "SAP SE or an SAP affiliate company and SAP-docs/<repo> contributors"; daraus kommt die Urheberzeile.
 
