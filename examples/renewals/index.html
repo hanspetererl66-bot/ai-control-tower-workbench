@@ -489,15 +489,27 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
 @media (max-width:760px){.qrow{grid-template-columns:28px minmax(0,1fr)}.qrow .qd,.qrow .qv,.qrow .pill{grid-column:2}}
 @media (max-width:760px){.srow .pill,.qrow .pill{justify-self:start}.land,.cmapcard{overflow-x:auto}.landsvg{min-width:720px}.cmapsvg{min-width:600px}}
 @media (prefers-reduced-motion:reduce){.pg:not([hidden]){animation:none}.landsvg *,.cmapsvg *,.ribbon *,.slist *,.queue *{animation:none!important}.srow,.qrow,.stile,.rdot{transition:none}}
+/* visual rework: process first, customers side by side, calmer list */
+.cust-cards{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.cust-cards .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cust-cards .chips2{display:flex;flex-wrap:wrap;gap:4px}
+#process .pl{grid-template-columns:repeat(7,minmax(0,1fr))}
+#process .ph{min-height:96px}
+#process .ph[data-ph="winback"]{border-style:dashed}
+@media (max-width:1100px){#process .pl{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}}
+#list td:nth-child(3),#list td:nth-child(4),#list td:nth-child(5),#list td:nth-child(6){white-space:nowrap}
+#list td{padding:8px 10px;vertical-align:top}
+#list tbody tr{cursor:pointer}#list tbody tr:hover{background:var(--wash)}
+#list tbody tr[aria-selected="true"]{background:var(--purple-dim)}
+.intro .demo{margin:0 0 10px}
 </style>
 </head>
 <body>
 <div id="jr"></div>
 <main>
-  <p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p>
   <details class="card intro">
-    <summary><h2>What is this page?</h2><span class="hint">click to show or hide</span></summary>
-    <div class="body"><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of three fictional customers: which renewals need a decision first, why, and what to do next. Everything is tied to a customer: pick one at the top, or keep “All customers”.</p>
+    <summary><h2>What is this page?</h2><span class="hint">Fictional data · nothing is sent · click to show or hide</span></summary>
+    <div class="body"><p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of three fictional customers: which renewals need a decision first, why, and what to do next. Everything is tied to a customer: pick one at the top, or keep “All customers”.</p>
     <div class="cols"><div><h3>1. Overview (start)</h3><p>The renewals that decide in the next six weeks, and the landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the customer.</p></div><div><h3>2. Renewal process</h3><p>The map of one customer: its contracts, and around them open tickets, invoices, mails and usage. Below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Next best action</h3><p>The one renewal to take care of first and the queue behind it.</p></div><div><h3>4. Radar and list</h3><p>The radar shows every contract on a time line, the list sorts them by decision date. Click a row for the signals behind its health, the price against the contract cap, the next actions and the approval. Sending and signing are simulated; “Start demo” walks through ten steps.</p></div></div>
     <details><summary class="t">Terms used on this page</summary><dl><dt>Decision date</dt><dd>Contract end minus the notice period: the last day to decide.</dd><dt>Notice period</dt><dd>How long before the end the customer or SAP must act.</dd><dt>Health</dt><dd>The worst of the signals: decision date, missing or expiring offer, price above the cap, competitor, usage, open tickets, overdue invoices.</dd><dt>Contract cap</dt><dd>The largest price rise the contract allows at renewal.</dd><dt>Retention</dt><dd>Expected chance that the customer renews, weighted by annual value.</dd><dt>Customer lifetime value</dt><dd>Expected value of the customer over the years if it stays.</dd><dt>Automatic renewal</dt><dd>Small renewals without a warning signal get an offer and an e-mail without a person (simulated).</dd></dl></details></div>
   </details>
@@ -520,10 +532,10 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
   <section class="pg" id="pg-process" role="tabpanel" aria-labelledby="tab-process" hidden>
     <div class="cview" id="cust">
       <div class="cview-main">
+        <div class="card" id="process"></div>
         <div class="cust-cards" id="cust-cards"></div>
         <div class="card cmapcard" id="cmap-wrap"><div class="cmapbody" id="cmap"></div></div>
         <div class="stand" id="stand"></div>
-        <div class="card" id="process"></div>
       </div>
       <aside class="card cust-panel" id="cust-panel" aria-live="polite"></aside>
     </div>
