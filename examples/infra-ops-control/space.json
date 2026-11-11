@@ -1,7 +1,7 @@
 {
   "title": "Infra Ops Control",
   "description": "One path from all customers to a single VM, with automatic repair of red VMs: ticket, correction by the SOP steps, check, customer e-mail (preview) and closing the ticket.",
-  "domain": "Operations",
+  "domain": "Autonomous Operations",
   "parent": "it-fleet",
   "insights": [
     "Fictional customers, VMs and measurements, no live monitoring. A VM is green, yellow or red by the same rules as in the Infra VM landscape Space; a customer is as red as its worst VM.",

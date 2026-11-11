@@ -104,7 +104,9 @@
     "check": "npm run typecheck && npm test && npm run build",
     "test:triggers": "node scripts/skill-trigger-eval.mjs",
     "test:triggers:live": "node scripts/skill-trigger-eval.mjs --live",
-    "sync:infra-ops-control": "node scripts/sync-infra-ops-control.mjs"
+    "sync:infra-ops-control": "node scripts/sync-infra-ops-control.mjs",
+    "sync:infra-hotline": "node scripts/sync-infra-hotline.mjs",
+    "sync:infra-rca": "node scripts/sync-infra-rca.mjs"
   },
   "keywords": [
     "ai",
