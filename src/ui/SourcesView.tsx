@@ -116,7 +116,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
         <button className="sh-back" onClick={clusters ? () => { setClusters(null); setNote(''); } : onBack} aria-label="Back">←</button>
         <div>
           <h1>Start from requirements</h1>
-          <p>{clusters ? `${clusters.length} cluster${clusters.length === 1 ? '' : 's'} from ${selected.length} requirements` : 'Read them from Jira, Linear, Slack, Microsoft Teams or Notion, tick the ones that belong together, then let Joule cluster and classify them.'}</p>
+          <p>{clusters ? `${clusters.length} cluster${clusters.length === 1 ? '' : 's'} from ${selected.length} requirements` : 'Read them from Jira, Linear, Figma, Slack, Microsoft Teams or Notion, tick the ones that belong together, then let Joule cluster and classify them.'}</p>
         </div>
       </header>
       <ol className="sx-steps" aria-label="Steps">

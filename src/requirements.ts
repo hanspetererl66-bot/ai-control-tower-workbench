@@ -1,15 +1,16 @@
 /**
- * Requirements from the tools people already use (Jira, Slack, Notion): load them, cluster them, classify each cluster and hand it over.
+ * Requirements from the tools people already use (Jira, Linear, Figma, Slack, Teams, Notion): load them, cluster them, classify each cluster and hand it over.
  * Pure functions only: prompts for the agent, tolerant reading of its JSON answers, validation, and the hand-over text.
  * The agent reads the sources with the connectors that exist (jira_*, slack_*; a Notion tool if one is installed) and answers
  * with JSON, the same pattern as the process interview. Nothing is written back to the sources here.
  */
 
-export type SourceKind = 'jira' | 'linear' | 'slack' | 'teams' | 'notion';
+export type SourceKind = 'jira' | 'linear' | 'figma' | 'slack' | 'teams' | 'notion';
 
 export const SOURCES: Array<{ id: SourceKind; label: string; query: string; placeholder: string; help: string }> = [
   { id: 'jira', label: 'Jira', query: 'Project key, JQL or search words', placeholder: 'e.g. ABC, or: project = ABC AND labels = joule ORDER BY updated DESC', help: 'Uses the Jira connector (read only).' },
   { id: 'linear', label: 'Linear', query: 'Team key (e.g. ENG), an issue link or search words', placeholder: 'e.g. ENG, or: renewal reminder', help: 'Uses the Linear connector (read only).' },
+  { id: 'figma', label: 'Figma', query: 'A file or frame link, or a file key', placeholder: 'e.g. a link from Figma (Share, Copy link), with ?node-id= for one frame', help: 'Uses the Figma connector (read only). Reads open comments and the text in frames; it does not look at the pictures.' },
   { id: 'slack', label: 'Slack', query: 'Channel, thread link or search words', placeholder: 'e.g. #requirements, or a link to a thread', help: 'Uses the Slack connector (read only).' },
   { id: 'teams', label: 'Microsoft Teams', query: 'Team and channel, a message link or search words', placeholder: 'e.g. Sales / Requirements, or a link from "Copy link to message"', help: 'Uses the Microsoft Teams connector (read only). The app needs permission to read channel messages.' },
   { id: 'notion', label: 'Notion', query: 'Page, database or search words', placeholder: 'e.g. the name of your requirements database', help: 'Uses the Notion connector (read only). Share the pages with its integration first.' },
@@ -29,7 +30,7 @@ export type ExtendsRef = { id: string; name: string };
 export const MAX_ITEMS = 40;
 const cut = (v: unknown, n: number) => String(v ?? '').replace(/[ \t]+/g, ' ').trim().slice(0, n);
 const urlOf = (v: unknown) => { const s = cut(v, 400); return /^https?:\/\/\S+$/i.test(s) ? s : ''; };
-const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'linear' || v === 'slack' || v === 'teams' || v === 'notion';
+const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'linear' || v === 'figma' || v === 'slack' || v === 'teams' || v === 'notion';
 
 /** What to ask Jira: a bare project key, a JQL query (has an operator) or free text. */
 export function jqlOf(query: string): string {
@@ -60,6 +61,9 @@ export function fetchPrompt(source: SourceKind, query: string): string {
   }
   if (source === 'linear') {
     return ['Read requirements from Linear.', `Source: ${linearHint(query)}`, 'Use the Linear connector. For a team key use linear_read_backlog; for an issue link or identifier use linear_get_issue; for search words use linear_search_issues. Use linear_get_issue only where the description is needed to understand the requirement (at most 10 issues). Each issue that states a need, a wish, a problem or a rule becomes one item; the identifier (for example ENG-12) is the key, the issue link the url. If a Linear tool is not available to you, return an empty list and say so in "error".', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
+  }
+  if (source === 'figma') {
+    return ['Read requirements from Figma.', `Source: ${query.trim()}`, 'Use the Figma connector. Start with figma_list_comments (open comments are the main source: a comment that states a need, a change request or a question about behaviour is a requirement). Then, where the design itself states rules (labels, error messages, notes, annotations), use figma_get_file_outline to find the frames and figma_read_frame_text for the frame named in the link or the most relevant ones (at most 5 frames). You read text only: never claim what a screen looks like. Skip layout chatter, lorem ipsum and generic button labels. As key use the comment id (for example "c-123") or the frame id plus a number (for example "12:34 #2"), as url the link to the file or frame. If a Figma tool is not available to you, return an empty list and say so in "error".', limit, `Format: ${shape}`, JSON_ONLY].join('\n');
   }
   if (source === 'slack') {
     return ['Read requirements from Slack.', `Source: ${query.trim()}`, 'Use slack_read_channel or slack_read_thread for a channel or thread, slack_search_messages for search words. Keep messages that state a need, a wish, a problem or a rule; skip chatter. As key use the channel and the message time (for example "#req 1730640000").', limit, `Format: ${shape}`, JSON_ONLY].join('\n');

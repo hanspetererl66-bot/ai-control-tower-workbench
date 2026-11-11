@@ -1,10 +1,10 @@
 /**
- * "Connect your tools": one card each for Jira, Slack and Linear on the Connectors page.
+ * "Connect your tools": one card each for Jira, Slack, Linear and Figma on the Connectors page.
  * Pure logic only (what a card says, which state it is in, how a connection test is read);
  * the card itself is src/ui/ConnectTools.tsx.
  */
 
-export type ToolId = 'jira' | 'slack' | 'linear';
+export type ToolId = 'jira' | 'slack' | 'linear' | 'figma';
 
 export type ToolCard = {
   id: ToolId;
@@ -40,6 +40,13 @@ export const TOOL_CARDS: ToolCard[] = [
     writes: 'Adds a comment to an issue only after you confirmed it. Nothing else can change.',
     key: 'Needs a personal API key from Linear (Settings, Account, Security & access) with Read and Create comments.',
     addCommand: 'npm run connect:connectors -- --only linear',
+  },
+  {
+    id: 'figma', name: 'Figma',
+    reads: 'Reads open comments and the text in frames of a design file to start from requirements.',
+    writes: 'Nothing: the connector is read only. Even after you confirmed, it cannot change a Figma file.',
+    key: 'Needs a personal access token from Figma (Settings, Security, Personal access tokens) with read scopes only.',
+    addCommand: 'npm run connect:connectors -- --only figma',
   },
 ];
 
@@ -83,7 +90,7 @@ export function readCheck(result: unknown): CheckOutcome {
 /** Never show something that looks like a token, whatever the connector put in the text. */
 export function scrub(text: string): string {
   return text
-    .replace(/\b(xox[abprs]-|lin_api_|lin_oauth_|ATATT)[A-Za-z0-9_\-=]+/g, '<hidden>')
+    .replace(/\b(xox[abprs]-|lin_api_|lin_oauth_|ATATT|figd_)[A-Za-z0-9_\-=]+/g, '<hidden>')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 200);

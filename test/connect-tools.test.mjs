@@ -7,10 +7,10 @@ import { TOOL_CARDS, cardState, checkToolName, findExtension, readCheck, scrub }
 const root = join(import.meta.dirname, '..');
 const text = (r) => ({ isError: false, content: [{ text: JSON.stringify(r) }] });
 
-test('three cards, each says what it reads, what it writes only after confirmation and where the key comes from', () => {
-  assert.deepEqual(TOOL_CARDS.map((c) => c.id), ['jira', 'slack', 'linear']);
+test('four cards, each says what it reads, what it writes only after confirmation and where the key comes from', () => {
+  assert.deepEqual(TOOL_CARDS.map((c) => c.id), ['jira', 'slack', 'linear', 'figma']);
   for (const c of TOOL_CARDS) {
-    assert.match(c.writes, /only after you confirmed/i);
+    assert.match(c.writes, c.id === 'figma' ? /^Nothing: .*read only/i : /only after you confirmed/i);
     assert.ok(c.reads && c.key && c.addCommand.includes(`--only ${c.id}`));
   }
 });
@@ -47,7 +47,8 @@ test('the Connectors page shows the cards, with a logo each, and only there', ()
   const view = readFileSync(join(root, 'src/ui/ManageView.tsx'), 'utf8');
   const card = readFileSync(join(root, 'src/ui/ConnectTools.tsx'), 'utf8');
   assert.match(view, /\{showConnectors && \(\s*<>\s*<ConnectTools /);
-  for (const id of ['jira', 'slack', 'linear']) assert.match(card, new RegExp(`id === '${id}'|return \\(\\s*<svg[^]*#5E6AD2`));
+  for (const id of ['jira', 'slack', 'figma']) assert.match(card, new RegExp(`id === '${id}'`));
+  assert.match(card, /#5E6AD2/);
   assert.match(card, /<ToolLogo id=\{card\.id\}/);
   assert.match(card, /Test connection/);
   assert.match(card, /callTool\(checkToolName/);

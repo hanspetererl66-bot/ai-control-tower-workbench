@@ -61,6 +61,7 @@
     "build:notion-mcpb": "node scripts/build-control-tower-mcpb.mjs --notion",
     "build:teams-mcpb": "node scripts/build-control-tower-mcpb.mjs --teams",
     "build:linear-mcpb": "node scripts/build-control-tower-mcpb.mjs --linear",
+    "build:figma-mcpb": "node scripts/build-control-tower-mcpb.mjs --figma",
     "sap-sandbox:snapshot": "node scripts/sap-sandbox-snapshot.mjs",
     "build:sap-sandbox-mcpb": "node scripts/build-control-tower-mcpb.mjs --sap-sandbox",
     "sync:databricks-demo": "node scripts/gen-databricks-demo.mjs",
