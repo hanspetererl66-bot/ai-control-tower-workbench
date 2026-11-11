@@ -344,6 +344,12 @@
           "default": "on"
         },
         {
+          "name": "close_ticket",
+          "class": "write",
+          "what": "",
+          "default": "on"
+        },
+        {
           "name": "list_customers",
           "class": "read",
           "what": "",
@@ -425,7 +431,7 @@
         "risk": "low",
         "defaultRisk": "low",
         "why": [
-          "Read-only except create_ticket and link_ticket, which write to a demo table after a confirmation."
+          "Read-only except create_ticket, link_ticket and close_ticket, which write to a demo table after a confirmation."
         ],
         "plan": [],
         "checks": []

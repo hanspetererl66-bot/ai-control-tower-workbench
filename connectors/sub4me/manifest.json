@@ -32,7 +32,7 @@
     },
     {
       "name": "create_ticket",
-      "description": "Open a Sub4Me demo ticket (the only write; demo table)."
+      "description": "Open a Sub4Me demo ticket (demo table)."
     },
     {
       "name": "find_similar_tickets",
@@ -41,6 +41,10 @@
     {
       "name": "link_ticket",
       "description": "Let a customer follow an existing ticket or link a new ticket to it (demo link table)."
+    },
+    {
+      "name": "close_ticket",
+      "description": "Close a Sub4Me demo ticket with a closing note as evidence (demo table)."
     },
     {
       "name": "list_customers",
