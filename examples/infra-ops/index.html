@@ -1828,6 +1828,42 @@ function simulateRun(plan) {
   function handOff(to, payload, open, notice) { persistNow(); window.parent.postMessage({ type: 'wb:handoff', to: to, payload: payload, open: open, notice: notice || '' }, '*'); }
   function taskPayload(t) { return { id: t.id, template: t.template, target: t.target, customer: t.customer, window: t.window, requester: t.requester, params: t.params || {} }; }
 
+  /** Root cause analysis and the downtime window with the customer run in their own Spaces; the results come back as hand-overs. */
+  var RCA_SPACE = 'infra-rca', HOTLINE_SPACE = 'infra-hotline';
+  var hoursOf = function (t) { return Math.round((Date.parse(t.window[1]) - Date.parse(t.window[0])) / 360000) / 10; };
+  function askAuto(t, what) {
+    if (!inHost) return;
+    var task = taskPayload(t);
+    if (what === 'rca') { addLog(t, 'root cause analysis requested from the RCA agent'); handOff(RCA_SPACE, { type: 'rca-request', task: task }, true, 'Root cause analysis for ' + t.id); }
+    else { addLog(t, 'downtime window handed to the customer hotline (' + hoursOf(t) + ' h)'); handOff(HOTLINE_SPACE, { type: 'window-request', task: task, hours: hoursOf(t) }, true, 'Downtime window for ' + t.id); }
+  }
+  function autoHtml(t) {
+    var r = t.rca, a = t.agreed, off = inHost ? '' : ' disabled title="Open this Space in the Werkbank to use the other Spaces"';
+    var rcaRow = r
+      ? '<p><b>Root cause</b> (' + esc(r.confidence) + ', ' + esc(r.incident) + '): ' + esc(r.cause) + '<br><b>Next best action:</b> ' + esc(r.action) + '<br><span class="sub">' + (r.verdict === 'accepted' ? 'Accepted by the operator.' : r.verdict === 'rejected' ? 'The operator was not convinced.' : 'Not yet judged by the operator.') + '</span></p>'
+      : '<p class="sub">No root cause yet. The RCA agent searches former cases and the documentation and proposes the next best action.</p>';
+    var winRow = a
+      ? '<p><b>Downtime window with the customer:</b> ' + esc(a.label) + (a.window ? '<br><span class="sub">' + esc(a.window[0].replace('T', ' ')) + ' to ' + esc(a.window[1].replace('T', ' ')) + '</span>' : '') + '</p>'
+      : '<p class="sub">Window ' + hoursOf(t) + ' h. If it is longer than the policy allows for this customer and task, the hotline agent agrees it with the customer.</p>';
+    return rcaRow + '<div class="row"><button class="btn" data-auto="rca" type="button"' + off + '>' + (r ? 'Ask the RCA agent again' : 'Ask the RCA agent') + '</button></div>' + winRow +
+      '<div class="row"><button class="btn" data-auto="window" type="button"' + off + '>' + (a ? 'Agree the window again' : 'Agree the window with the customer') + '</button></div>';
+  }
+  function onRca(p) {
+    var t = find(String(p.taskId || '')); if (!t) return null;
+    t.rca = { incident: String(p.incident || '').slice(0, 20), cause: String(p.cause || '').slice(0, 200), confidence: String(p.confidence || '').slice(0, 20), action: String(p.action || '').slice(0, 200), verdict: p.verdict === 'accepted' || p.verdict === 'rejected' ? p.verdict : '' };
+    addLog(t, 'root cause from the RCA agent: ' + t.rca.cause + '; next best action: ' + t.rca.action + (t.rca.verdict ? ' (' + t.rca.verdict + ' by the operator)' : ''));
+    return t.id;
+  }
+  function onWindow(p) {
+    var t = find(String(p.taskId || '')); if (!t) return null;
+    var st = String(p.status || ''), w = Array.isArray(p.window) && p.window.length === 2 && /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(p.window[0]) && /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(p.window[1]) ? p.window : null;
+    var label = { confirmed: 'confirmed by the operator', standard: 'standard window, no call needed', declined: 'the customer declined', 'needs-person': 'a colleague has to call back', 'sent-back': 'sent back, the customer is called again' }[st] || 'open';
+    t.agreed = { status: st, label: label, window: st === 'confirmed' ? w : null };
+    if (st === 'confirmed' && w && (t.state === 'planned' || t.state === 'in_review')) { t.window = w; addLog(t, 'downtime window agreed with the customer and set: ' + w[0].replace('T', ' ') + ' to ' + w[1].replace('T', ' ')); }
+    else addLog(t, 'downtime window: ' + label + (st === 'confirmed' ? ' (the task is already ' + STATE_LABEL[t.state] + ', the window is not changed)' : ''));
+    return t.id;
+  }
+
   /** Pre-check and post-check run in the Pre-Checks and Post-Checks Space; the result comes back as a hand-over. */
   function sendCheck(t, mode) {
     t.flow.phase = mode === 'pre' ? 'precheck' : 'post';
@@ -2145,12 +2181,14 @@ function simulateRun(plan) {
       var cls = oi < 0 ? '' : oi < done ? 'done' : oi === done ? 'cur' : '';
       return '<div class="step ' + cls + '"><i></i><div>' + esc(s.title) + '<small>' + esc(s.detail || s.when || '') + '</small></div>' + (s.tool ? '<span class="tag tool">' + esc(s.tool) + '</span>' : '<span class="tag">upfront</span>') + '</div>';
     }).join('') + '</div></details>';
+    h += '<details class="sec" open><summary>Autonomous Operations</summary><div>' + autoHtml(t) + '</div></details>';
     h += '<details class="sec"><summary>Ask Joule</summary><div><span class="tag tool">Joule</span><div class="row"><button class="btn" data-ask="explain" type="button">Explain this change</button><button class="btn" data-ask="customer" type="button">Draft customer notice</button><button class="btn" data-ask="rollback" type="button">What happens on rollback?</button><button class="btn" data-ask="n8n" type="button">Submit to n8n</button></div><p class="note" style="margin:0">Joule answers in the chat of the desktop app. “Submit to n8n” plans the change and hands it to the n8n workflow (check mode) after you confirm.</p></div></details>';
     h += '<details class="sec"><summary>Log</summary><div><div class="log" id="log"></div></div></details><div id="evidence"></div>';
     openDrawer(h);
     renderActions(t, p);
     $('#log').innerHTML = S.logs[t.id].map(function (l) { return '<div>' + esc(l) + '</div>'; }).join('');
     document.querySelectorAll('[data-ask]').forEach(function (b) { b.onclick = function () { askJoule(promptFor(b.dataset.ask, t, p), b); }; });
+    document.querySelectorAll('[data-auto]').forEach(function (b) { b.onclick = function () { askAuto(t, b.dataset.auto); }; });
     if (S.runs[t.id]) showRun(t, p, S.runs[t.id].lines.length);
   }
   function renderActions(t, p) {
@@ -2299,6 +2337,8 @@ function simulateRun(plan) {
     (Array.isArray(m.handoffs) ? m.handoffs : []).forEach(function (h) {
       var p = h && h.payload; if (!p) return;
       if (p.type === 'ticket') { onTicket(p); S.tab = 'overview'; }
+      else if (p.type === 'rca-result') { var r1 = onRca(p); if (r1) open = r1; }
+      else if (p.type === 'window-result') { var r2 = onWindow(p); if (r2) open = r2; }
       else if (p.type === 'check-result') { var t = find(String(p.taskId || '')); if (t) { onCheckResult(p); open = t.id; } }
     });
     resumeFlows(); render();
