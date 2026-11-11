@@ -1,0 +1,4 @@
+{
+  "note": "RSS feeds of SAP Community boards or tags that you want indexed (title, URL, date, tags only). Add the feed URLs from the Community page of the board (RSS). The feed collector checks robots.txt before each fetch.",
+  "feeds": []
+}

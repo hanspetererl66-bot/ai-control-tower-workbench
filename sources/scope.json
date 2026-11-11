@@ -1,0 +1,16 @@
+{
+  "note": "Allowlist: which repositories of an allowed git source are read. Start small, measure with --estimate, then widen. A repo that fails the license gate is skipped even if it is listed. Measured on 11 Nov 2026: btp-integration-suite + sap-artificial-intelligence + cloud-alm-setup-admin-guide = about 27,700 chunks and 10 million tokens, far too much for a first run.",
+  "sap-docs-github": {
+    "repos": [
+      "btp-cloud-logging",
+      "btp-job-scheduling-service",
+      "btp-credential-store"
+    ],
+    "paths": [
+      "docs/"
+    ]
+  },
+  "sap-samples-github": {
+    "repos": []
+  }
+}

@@ -70,3 +70,6 @@ examples/sap-sandbox/snapshot.json
 # Local Cognee virtualenv and Vercel link
 .venv-cognee/
 .vercel/
+
+# Knowledge feeder: cloned open-licensed repositories, state and attribution (never committed).
+data/knowledge/
