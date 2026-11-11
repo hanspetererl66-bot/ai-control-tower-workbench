@@ -7,7 +7,7 @@ import test from 'node:test';
 import { attributionMarkdown, chunkDocument, estimate, metadataDocument } from '../scripts/knowledge/documents.mjs';
 import { collectFeed, parseFeed } from '../scripts/knowledge/feed.mjs';
 import { collectGit } from '../scripts/knowledge/git.mjs';
-import { RobotsDisallowedError, createPoliteFetch, parseRobots, robotsAllows, userAgent } from '../scripts/knowledge/http.mjs';
+import { CrawlDelayTooLongError, RobotsDisallowedError, createPoliteFetch, parseRobots, robotsAllows, robotsCrawlDelay, userAgent } from '../scripts/knowledge/http.mjs';
 import { CHUNK_MAX, chunkMarkdown, cleanMarkdown } from '../scripts/knowledge/markdown.mjs';
 import { SourceBlockedError, assertCollectable, blockedCollector, licenseDecision, loadRegistry, sourceById, validateRegistry } from '../scripts/knowledge/registry.mjs';
 import { emptyState, loadState, saveState } from '../scripts/knowledge/state.mjs';
@@ -390,4 +390,19 @@ test('state file: round trip, a damaged or foreign file starts over instead of c
 test('data/knowledge is git-ignored and nothing downloaded is tracked', () => {
   const ignore = readFileSync(new URL('../.gitignore', import.meta.url), 'utf8');
   assert.match(ignore, /^data\/knowledge\/$/m);
+});
+
+test('robots.txt Crawl-delay raises the gap per host; a delay above 60 s refuses the host', async () => {
+  const groups = parseRobots('User-agent: *\nCrawl-delay: 5\nDisallow: /x\n\nUser-agent: werkbank-knowledge-feeder\nCrawl-delay: 2');
+  assert.equal(robotsCrawlDelay(groups), 2);
+  assert.equal(robotsCrawlDelay(groups, 'Googlebot'), 5);
+  assert.equal(robotsCrawlDelay([]), 0);
+  const sleeps = [];
+  let t = 0;
+  const mk = (txt) => createPoliteFetch({ fetchImpl: async (url) => (url.endsWith('/robots.txt') ? res(txt) : res('ok')), now: () => t, sleep: async (ms) => { sleeps.push(ms); t += ms; }, minGapMs: 1000 });
+  const slow = mk('User-agent: *\nCrawl-delay: 5');
+  await slow.get('https://c.example/a');
+  await slow.get('https://c.example/b');
+  assert.deepEqual(sleeps, [5000, 5000]);
+  await assert.rejects(mk('User-agent: *\nCrawl-delay: 120').get('https://d.example/a'), CrawlDelayTooLongError);
 });
