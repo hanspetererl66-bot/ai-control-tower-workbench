@@ -1210,3 +1210,21 @@ test('studio agents: other content takes a shared agent back to private, the sam
   assert.equal(sql(`select team_id is null from werkbank.work_item where id = ${q(a.id)}::uuid`), 't');
   assert.equal(agentReq('anna@x.com', a.id, 'team').status, 'review', 'it is asked for again, with the new text');
 });
+
+test('Sub4Me close_ticket closes with a note, refuses a second time and an unknown ticket, and only the service role may call it', { skip }, () => {
+  const t = json(`select public.sub4me_create_ticket('Certificate expires', 'IT infrastructure', 'High', 'proxy-edge-01', 'muster')`);
+  assert.equal(t.status, 'New');
+  const closed = json(`select public.sub4me_close_ticket(${q(t.id)}, 'Certificate renewed, VM checked again.')`);
+  assert.equal(closed.status, 'Closed');
+  assert.equal(closed.closingNote, 'Certificate renewed, VM checked again.');
+  assert.equal(sql(`select status from sub4me.tickets where id = ${q(t.id)}`), 'Closed');
+  assert.match(rule(`select public.sub4me_close_ticket(${q(t.id)}, 'again')`), /already closed/);
+  assert.match(rule(`select public.sub4me_close_ticket('TKT-00000', '')`), /not found/);
+  assert.match(rule(`select public.sub4me_close_ticket('TKT-46955', 'x')`), /already closed/, 'the closed sample ticket stays closed');
+  const open = json(`select public.sub4me_create_ticket('Another', 'IT infrastructure', 'Low', '', 'muster')`);
+  assert.match(rule(`select public.sub4me_close_ticket(${q(open.id)}, ${q('x'.repeat(1001))})`), /at most 1000/);
+  assert.equal(sql(`select status from sub4me.tickets where id = ${q(open.id)}`), 'New', 'a refused close changes nothing');
+  for (const role of ['anon', 'authenticated']) {
+    assert.match(rule(`set role ${role}; select public.sub4me_close_ticket(${q(open.id)}, '')`), /permission denied/, role);
+  }
+});

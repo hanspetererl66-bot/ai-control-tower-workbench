@@ -1,7 +1,7 @@
 /**
- * Sub4Me demo tickets. The only write in this connector: it inserts a row into the demo
- * tickets table through public.sub4me_create_ticket (server-side key only). Nothing here
- * can change or delete existing rows.
+ * Sub4Me demo tickets. The writes in this connector go through server-side functions only (secret key):
+ * create_ticket opens a ticket, link_ticket records a link, close_ticket sets the status to Closed with a
+ * closing note (public.sub4me_close_ticket). Nothing here can reopen or delete a ticket.
  */
 import { ToolError } from './tools.mjs';
 import { customerRecords, loadSub4MeData } from './sub4me.mjs';
@@ -69,6 +69,20 @@ export const TICKET_TOOL_DEFINITIONS = [
         newTicket: { type: 'string', description: 'For "related": the id of the newly opened ticket.' },
       },
       required: ['ticket', 'kind'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'close_ticket',
+    description:
+      'Close a Sub4Me demo service ticket and keep a closing note as evidence (what was done, what changed). The status becomes Closed; a closed ticket cannot be reopened with this tool. Use only when the person asks to close the ticket, or after the work is done and verified.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticket: { type: 'string', description: 'Ticket id, for example "TKT-48214".' },
+        note: { type: 'string', description: 'Closing note: what was done and how it was checked, max 1000 characters.' },
+      },
+      required: ['ticket'],
       additionalProperties: false,
     },
   },
@@ -159,6 +173,13 @@ export function createTicketHandlers(rpc, load = loadSub4MeData) {
       const tickets = await need()('sub4me_tickets', { p_customer: customerId(args) });
       const list = status ? tickets.filter((t) => t.status === status) : tickets;
       return { count: list.length, tickets: list, dataSource: 'supabase' };
+    },
+    async close_ticket(args) {
+      const ticket = text(args, 'ticket', 40);
+      if (!/^TKT-\d+$/.test(ticket)) throw new ToolError('ticket must look like TKT-48214');
+      const note = text(args, 'note', 1000, { optional: true });
+      const closed = await need()('sub4me_close_ticket', { p_ticket: ticket, p_note: note });
+      return { ticket: closed, status: 'closed (demo data, stored in Supabase)', dataSource: 'supabase' };
     },
     async create_ticket(args) {
       const title = text(args, 'title', 120);
