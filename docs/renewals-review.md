@@ -1,13 +1,13 @@
 # Renewal-Prozess: Review und Agenten-Bewertung
 
-Stand 12.11.2026. Ergebnis des Prompts `docs/prompts/renewals-review-prompt.md`. Es wurde nichts gebaut. Alle Zahlen im Space stammen aus erfundenen Beispieldaten; alle Zahlen der Renditerechnung sind **Annahmen**, nicht erhoben.
+Stand 12.11.2026. Ergebnis des Prompts `docs/prompts/renewals-review-prompt.md`. Es wurde nichts gebaut. Alle Zahlen im Space stammen aus erfundenen Beispieldaten; die Zahlen der Renditerechnung sind **Annahmen**, mit einer Ausnahme: **N und t hat Hans-Peter am 12.11.2026 genannt** (1200 Renewals im Jahr, 1,5 Stunden Vorbereitung je Renewal). Sie sind nicht im CRM oder in einer Zeiterfassung geprüft. Die Rechnung dazu steht in Abschnitt 6 unter "Aktualisierung".
 
 ## Kurzfazit
 
 1. Die Auswertung (Gesundheit, Phasen, Preis gegen Cap, Angebotsalternativen) ist solide und getestet. Was fehlt, ist der **Weg von der Einsicht zur Handlung**: Freigeben, Senden und Signieren sind Knöpfe ohne Wirkung, die Joule-Knöpfe schicken nur einen Prompt in den Chat und erfahren nie das Ergebnis.
 2. Für den **Account Executive** ist der Space eine gute Landkarte, aber drei Listen mit denselben Verträgen. Für den **Sales Manager** gibt es seit PR #325 ein Dashboard, aber keinen Weg vom Dashboard zum Eingreifen.
-3. Ein Agent lohnt sich **nicht allein wegen der Zeitersparnis**. Mit den Annahmen unten trägt er sich erst ab etwa 27 Renewals im Jahr (Beispielgröße: 21), wenn man nur Zeit rechnet. Rechnet man einen kleinen Effekt auf die Haltequote ein, schon ab etwa 7. Diese Haltequote ist die **am schlechtesten belegte** Annahme.
-4. **Empfehlung:** zuerst die Verbesserungen ohne Agent (Abschnitt 4). Danach **ein** Assistent mit festen Aufgaben (Option B), nicht mehrere Agenten. Vorher die zwei Größen erheben, von denen alles abhängt (Abschnitt 6). Eine agentische Lösung mit eigenen Aktionen (Option C): **noch nicht**.
+3. Mit **1200 Renewals im Jahr und 1,5 Stunden Vorbereitung je Renewal** (genannt von Hans-Peter, nicht geprüft) **trägt sich ein Assistent allein durch gesparte Zeit**, auch im vorsichtigen Fall: Nutzen 48.000 EUR im Jahr gegen 5.200 EUR Fixkosten, Break-even bei etwa 130 Renewals. Die Haltequote braucht es für diese Aussage nicht (sie bleibt die am schlechtesten belegte Annahme). Die ursprüngliche Rechnung mit der Beispielgröße 21 Renewals ist damit überholt, sie steht in Abschnitt 6 weiter als Ausgangsrechnung.
+4. **Empfehlung:** zuerst die Verbesserungen ohne Agent (Abschnitt 4, größtenteils umgesetzt). **Ein** Assistent mit festen Aufgaben (Option B) ist nach der Rechnung gerechtfertigt, nicht mehrere Agenten. Vorher mit einem kleinen Test absichern, was die Rechnung am stärksten trägt: den Anteil der gesparten Zeit (s) und die echten Aufbaukosten (B). Eine agentische Lösung mit eigenen Aktionen (Option C): **noch nicht**.
 
 ## 1. Methode und Grenzen
 
@@ -109,11 +109,32 @@ Heute existieren A und B im Kern schon als Chat-Prompts hinter Knöpfen ("Prepar
 | Erwartet, **ohne** Haltequote | 200 | 0 | 195 | ca. 27 | trägt sich nicht |
 | Optimistisch | 420 | 1.838 | 2.253 | ca. 3 | trägt sich |
 
-**Lesart:**
-- Die Rechnung kippt an **zwei** Größen: N (Anzahl) und Δp (Wirkung auf die Haltequote). Beide sind nicht erhoben. Deshalb ist die Entscheidung "lohnt sich der Agent" heute **nicht entscheidbar**, nur eingrenzbar.
+**Lesart der Ausgangsrechnung (überholt durch die Aktualisierung unten):**
+- Die Rechnung kippte an **zwei** Größen: N (Anzahl) und Δp (Wirkung auf die Haltequote). Beide waren nicht erhoben, deshalb war die Entscheidung "lohnt sich der Agent" nicht entscheidbar, nur eingrenzbar.
 - Reine Zeitersparnis trägt die Kosten bei Beispielgröße nicht. In einer größeren Organisation (viele Renewals) ändert sich das schnell: Break-even 27 Renewals ist dort kein Hindernis.
 - Fehlerkosten (falsche Zusage, fehlerhafter Preis) sind **nicht eingerechnet**. Sie sprechen für Freigabe durch Menschen und gegen automatisches Senden.
 - Alle Platzhalter in Euro sind frei gewählt, um die Rechnung zu zeigen. Keiner ist ein Befund.
+
+### Aktualisierung am 12.11.2026: N = 1200 und t = 1,5 Stunden
+
+Hans-Peter nannte **1200 Renewals** und **1,5 Stunden je Renewal**. Gelesen als: 1200 Renewals im Jahr in der ganzen Organisation, 1,5 Stunden Vorbereitung je Renewal (nur diese Aufgabe wird gerechnet). Das sind **1.800 Stunden Vorbereitung im Jahr**. Alle anderen Größen bleiben wie in der Tabelle oben (s, k, a, B, J, P, Δp, W, m); t ist jetzt 1,5 in allen Szenarien.
+
+| Szenario | Anteil gespart | Gesparte Stunden im Jahr | Zeitnutzen je Renewal | Haltequote-Nutzen je Renewal | Netto je Renewal (nach a) | Nutzen im Jahr (N × Netto) | Nach Fixkosten (5.200) | Break-even N |
+|---|---|---|---|---|---|---|---|---|
+| Vorsichtig, nur Zeit | 30 % | 540 | 45 | 0 | 40 | 48.000 | 42.800 | ca. 130 |
+| Erwartet, nur Zeit | 50 % | 900 | 75 | 0 | 70 | 84.000 | 78.800 | ca. 75 |
+| Erwartet, mit Haltequote | 50 % und Δp 0,5 | 900 | 75 | 613 | 683 | 819.000 | 813.800 | ca. 8 |
+| Optimistisch | 70 % und Δp 1,5 | 1.260 | 105 | 1.838 | 1.938 | 2.325.000 | 2.319.800 | ca. 3 |
+
+(Rechnung: `t × s × k` mit k = 100 EUR je Stunde; Haltequote-Nutzen `Δp × W × m` mit W = 175.000 EUR, m = 0,7; Netto = Zeitnutzen + Haltequote-Nutzen − a mit a = 5 EUR.)
+
+**Lesart:**
+- **Die Zeitersparnis allein trägt die Kosten** in allen Fällen, auch im vorsichtigen: Break-even bei 130 Renewals, vorhanden sind 1200. Δp wird für die Entscheidung nicht gebraucht und bleibt außerhalb der Begründung.
+- **Stundensatz:** Die Fixkosten sind gedeckt, sobald die gesparte Stunde mindestens etwa **6,22 EUR** wert ist (`(Fixkosten / N + a) / t`, also Anteil × Stundensatz). Mein Platzhalter von 100 EUR liegt weit darüber.
+- **Aufbaukosten:** B = 12.000 EUR ist wahrscheinlich zu niedrig für eine echte Einführung mit Anbindung, Sicherheit und Betrieb. Bei P = 10 % von B und J = 3 trägt sich der vorsichtige Fall noch bis **etwa 110.000 EUR** Aufbaukosten, der erwartete Fall (nur Zeit) bis **etwa 194.000 EUR**. Das ist nachzurechnen, sobald es einen Kostenvoranschlag gibt.
+- **Am stärksten wirkt jetzt `s`**, der gesparte Anteil der 1,5 Stunden (30, 50 oder 70 % sind Annahmen). Er ist mit einem kleinen Test zu messen: Briefing mit und ohne Assistent, gleiche Renewals.
+- **Nicht eingerechnet:** Fehlerkosten (falsche Zusage, falscher Preis), die Zeit der Prüfung durch die Account Executives (im Anteil enthalten, nicht gemessen), ob der Assistent tatsächlich genutzt wird, und Einführungsaufwand für Schulung. Nur die Vorbereitung wird gerechnet, andere Schritte (Angebotsentwurf, Mails) kämen dazu.
+- **N und t sind Aussagen im Chat**, nicht aus CRM oder Zeiterfassung. Ob 1,5 Stunden ein Mittelwert oder eine Schätzung ist, ist offen.
 
 ## 7. Drei Optionen und Empfehlung
 
@@ -123,17 +144,18 @@ Heute existieren A und B im Kern schon als Chat-Prompts hinter Knöpfen ("Prepar
 | B. Ein Assistent | Feste Aufgaben (Briefing, Angebotsentwurf mit Preisprüfung, Wochenbericht), Ergebnis kommt in den Space zurück, Freigabe durch Menschen | mittel, viele Bausteine vorhanden | Zeit je Renewal, evtl. bessere Haltequote | gering bis mittel |
 | C. Mehrere Agenten oder agentischer Ablauf | Frühwarnung, Mailtriage, Entwürfe ohne Anstoß | hoch | unbelegt | hoch (Prompt-Injection, Fehlalarme, Zuständigkeit) |
 
-**Empfehlung:** A sofort, B als nächsten Schritt **nach** der Erhebung von N und t, C noch nicht. Begründung: Der Prozess ist heute eine Demonstration; ein Agent auf einer Stufenlogik, die nichts auslöst, würde das Problem verschleiern. Zuerst muss der Weg von der Einsicht zur Handlung stehen.
+**Empfehlung (aktualisiert 12.11.2026):** A sofort (größtenteils umgesetzt), **B ist nach der aktualisierten Rechnung gerechtfertigt**, C noch nicht. B ist vorher mit einem kleinen Test abzusichern: gesparter Anteil `s` und echte Aufbaukosten `B` (Abschnitt 6). Begründung der Reihenfolge: Der Prozess ist heute eine Demonstration; ein Agent auf einer Stufenlogik, die nichts auslöst, würde das Problem verschleiern. Zuerst muss der Weg von der Einsicht zur Handlung stehen.
 
 ## 8. Erster Schritt für Option B
 
 - **Umfang:** Aus "Prepare with Joule" wird ein Briefing, das im Space angezeigt wird, nicht nur im Chat. Ob die Brücke zwischen Space und App eine Antwort an die Seite zurückgeben kann, ist **nicht geprüft** (`wb:ask` ist heute einseitig, gelesen in `index.html:1768`; die App-Seite wurde nicht untersucht).
 - **Messgröße:** Minuten bis zum fertigen Briefing und Anteil der Briefings, die der Account Executive ohne große Änderung nutzt.
-- **Abbruchkriterium:** Nutzen unter den Kosten bei erhobenem N und t, oder weniger als die Hälfte der Briefings genutzt.
+- **Abbruchkriterium:** gemessener Anteil `s` unter etwa 6 % (Break-even bei N = 1200, t = 1,5, k = 100 EUR, a = 5 EUR und Fixkosten 5.200 EUR: `(5.200 / 1.200 + 5) / (1,5 × 100) = 0,062`; höhere Aufbaukosten oder ein niedrigerer Stundensatz heben die Schwelle), Aufbaukosten über der Grenze aus Abschnitt 6, oder weniger als die Hälfte der Briefings genutzt.
 
 ## 9. Offene Fragen
 
-1. Wie viele Renewals bearbeitet ein Account Executive im Jahr, und wie viel Zeit kostet die Vorbereitung je Renewal? (Bestimmt N und t.)
+1. **Beantwortet im Chat, zu bestätigen:** 1200 Renewals und 1,5 Stunden Vorbereitung je Renewal. Ist das 1200 im Jahr in der ganzen Organisation (so gerechnet) oder je Account Executive, und ist 1,5 Stunden gemessen oder geschätzt?
+   - **Neu:** Wie hoch ist der Anteil `s`, den der Assistent spart, und was kostet die Einführung wirklich (Aufbau, Betrieb)?
 2. Gibt es Evidenz, dass bessere Vorbereitung die Haltequote hebt? Die Recherche in `docs/renewals-konzept.md` stützt sich überwiegend auf Herstellerblogs.
 3. Kann ein Space eine Antwort der App erhalten, oder nur senden?
 4. Soll der Sales Manager aus dem Dashboard heraus zuweisen können? Das berührt die Leistungsbewertung einzelner Personen, daher bleibt die Namensanzeige standardmäßig aus.
@@ -141,7 +163,7 @@ Heute existieren A und B im Kern schon als Chat-Prompts hinter Knöpfen ("Prepar
 
 ## Nicht geprüft
 
-- Keine Messung, keine Befragung, keine echten Nutzer. Reibung und Zeiten sind Annahmen.
+- Keine Messung, keine Befragung, keine echten Nutzer. Reibung ist Annahme. **N und t stammen aus einer Aussage von Hans-Peter im Chat**, nicht aus CRM oder Zeiterfassung; alle anderen Größen der Rendite (s, k, a, B, J, P, Δp, W) sind weiter Annahmen oder Platzhalter, die Beispieldaten sind erfunden.
 - Qualität der Joule-Antworten hinter den Knöpfen nicht bewertet.
 - Mobilbreite, Electron-App, Live-Systeme nicht getestet.
 - Ob Space und App eine Rückantwort austauschen können, nicht untersucht.
