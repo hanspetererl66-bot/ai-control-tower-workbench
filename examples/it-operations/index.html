@@ -319,14 +319,16 @@ code{font-family:var(--mono);font-size:12px;background:var(--line-2);padding:1px
 </script>
 <!--story:end-->
 <main>
-  <p class="demo">Fictional alerts and fixed rules, no live monitoring. The preview below is calculated on this page. “Run in n8n” asks the chat to start the same triage as an n8n workflow; nothing is paged, restarted or changed.</p>
+  <p class="demo" id="demo">Fictional alerts and fixed rules, no live monitoring. The preview below is calculated on this page. “Run in n8n” asks the chat to start the same triage as an n8n workflow; nothing is paged, restarted or changed.</p>
   <div class="kpis" id="kpis"></div>
   <div class="card">
     <div class="head">
       <div style="flex:1 1 320px"><h2>Alert triage</h2><p class="sub" style="margin:0">Priority points: severity, business impact, customer facing, repeats in 24 h. Alert text is untrusted and checked first.</p></div>
+      <button class="ghost" id="live" type="button" hidden>Load live alerts</button>
       <button class="primary" id="run" type="button">Run in n8n</button>
       <button class="ghost" id="ask" type="button">Ask Joule about the top alert</button>
     </div>
+    <p class="note" id="livenote" role="status" aria-live="polite" style="margin:12px 0 0"></p>
     <div class="views" role="group" aria-label="View" style="margin-top:12px"><button class="ghost" id="v-alerts" type="button" aria-pressed="true">Alerts</button><button class="ghost" id="v-inc" type="button" aria-pressed="false">Incidents</button></div>
     <table style="margin-top:12px" id="alert-table"><thead><tr><th>Alert</th><th>Service</th><th>What happened</th><th class="n">Points</th><th>Route</th></tr></thead><tbody id="rows"></tbody></table>
     <table style="margin-top:12px" id="inc-table" hidden><thead><tr><th>Incident</th><th>Service</th><th>What happened</th><th class="n">Points</th><th>Route</th></tr></thead><tbody id="inc-rows"></tbody></table>
@@ -539,7 +541,9 @@ const DATA = JSON.parse(document.getElementById('ops-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const hosted = window.parent !== window;
-let alerts = DATA.alerts.map((a) => ({ ...a, at: DATA.times[a.id] || '' })), custom = [], view = 'alerts', rca = {};
+const demoText = $('#demo').textContent;
+const sampleAlerts = () => DATA.alerts.map((a) => ({ ...a, at: DATA.times[a.id] || '' }));
+let alerts = sampleAlerts(), custom = [], view = 'alerts', rca = {}, topo = DATA.topology, live = null, liveNote = '';
 const LABEL = { P1: 'P1 page on-call', P2: 'P2 open a ticket', P3: 'P3 watch', Quarantined: 'Quarantined' };
 function render() {
   const rows = triage([...alerts, ...custom]).sort((a, b) => b.priority - a.priority);
@@ -547,7 +551,7 @@ function render() {
   const kpi = (k, v, s, tone) => `<div class="kpi ${tone}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
   $('#kpis').innerHTML = kpi('Alerts', rows.length, `${custom.length} added by you`, 'purple') + kpi('P1 page on-call', n('P1'), 'priority 70 and more', 'red') + kpi('P2 open a ticket', n('P2'), '35 to 69', 'amber') + kpi('P3 watch', n('P3'), 'under 35', 'green') + kpi('Quarantined', n('Quarantined'), 'untrusted text', 'purple');
   $('#rows').innerHTML = rows.map((r) => `<tr><td><b>${esc(r.id)}</b><div class="why">${esc(r.severity)}</div></td><td>${esc(r.service)}<div class="why">${esc(r.customer || '')}${r.host ? ' · ' + esc(r.host) : ''}</div></td><td>${esc(r.flagged ? r.flagReason : r.text)}<div class="why">${esc(r.reasons)}</div></td><td class="n">${r.priority}</td><td><span class="tag ${r.route === 'Quarantined' ? 'Q' : r.route}">${LABEL[r.route]}</span></td></tr>`).join('');
-  const G = groupIncidents(rows, DATA.grouping, DATA.topology), inc = G.incidents;
+  const G = groupIncidents(rows, DATA.grouping, topo), inc = G.incidents;
   const ni = (r) => inc.filter((x) => x.route === r).length;
   $('#kpis').innerHTML += kpi('Incidents', inc.length, `from ${rows.length - G.quarantined.length} alerts`, 'purple');
   $('#v-alerts').setAttribute('aria-pressed', view === 'alerts'); $('#v-inc').setAttribute('aria-pressed', view === 'incidents');
@@ -566,14 +570,20 @@ function render() {
   $('#digest').textContent = view === 'incidents'
     ? `Draft only: ${ni('P1')} incident${ni('P1') === 1 ? '' : 's'} to page, ${ni('P2')} ticket${ni('P2') === 1 ? '' : 's'}, ${ni('P3')} to watch, ${G.quarantined.length} quarantined alert${G.quarantined.length === 1 ? '' : 's'}. A person decides.`
     : `Draft only: ${n('P1')} to page, ${n('P2')} tickets, ${n('P3')} to watch, ${n('Quarantined')} quarantined. A person decides.`;
+  $('#demo').textContent = live ? 'Live alerts from the connected monitoring, read only and cut down to a few fields. The triage rules are fixed. “Run in n8n” and “Ask Joule” are off: live alerts are not sent to the chat.' : demoText;
+  $('#live').hidden = !hosted;
+  $('#livenote').innerHTML = live ? `<span class="tag P3">live data</span> ${esc(live.adapter)} · fetched ${esc(live.fetchedAt.replace('T', ' '))} UTC · last ${live.sinceHours} h · ${alerts.length} alerts. The alert text is still checked for instructions aimed at an AI assistant. Live alerts are not sent to the chat or to n8n.`
+    : `<span class="tag Q">demo data</span> Fictional alerts.${liveNote ? ' ' + esc(liveNote) : ''}`;
+  $('#run').disabled = !!live; $('#ask').disabled = !!live;
+  $('#run').title = $('#ask').title = live ? 'Live alerts are not sent to the chat' : '';
   save();
   return rows;
 }
 /** What survives a trip to another Space (the host keeps it and gives it back). */
-function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { custom, view, rca } }, '*'); }
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { custom, view, rca, live: live ? { info: live, alerts, topo } : null } }, '*'); }
 /** Hand an incident to the RCA agent: the system of its most important alert. The answer comes back as a hand-over. */
 function toRca(id) {
-  const i = groupIncidents(triage([...alerts, ...custom]), DATA.grouping, DATA.topology).incidents.find((x) => x.id === id);
+  const i = groupIncidents(triage([...alerts, ...custom]), DATA.grouping, topo).incidents.find((x) => x.id === id);
   if (!i || !hosted) return;
   const cid = DATA.customerIds[i.lead.customer] || '';
   save();
@@ -597,13 +607,31 @@ $('#add').onclick = () => {
   custom.push({ id: `U-${601 + custom.length}`, service, host, at: DATA.asOf + 'T' + tm, severity: $('#f-sev').value, impact: $('#f-imp').value, customerFacing: $('#f-cf').value === 'yes', repeat24h: Number($('#f-rep').value) || 0, text });
   render();
 };
-$('#reset').onclick = () => { custom = []; rca = {}; render(); };
+const pending = new Map(); let seq = 0;
+function ask(msg) {
+  const requestId = 'mon' + (++seq);
+  window.parent.postMessage({ ...msg, requestId }, '*');
+  return new Promise((done) => { pending.set(requestId, done); setTimeout(() => { if (pending.delete(requestId)) done({ type: 'ct:error', message: 'No answer from the Werkbank.' }); }, 30000); });
+}
+$('#live').onclick = async () => {
+  if (!hosted) return;
+  $('#live').disabled = true; liveNote = 'Loading live alerts …'; render();
+  const a = await ask({ type: 'mon:alerts-request', sinceHours: 24 });
+  $('#live').disabled = false;
+  if (a.type === 'mon:alerts') {
+    alerts = a.alerts.map((x) => ({ ...x })); topo = a.topology || {}; live = { adapter: a.adapter, fetchedAt: a.fetchedAt, sinceHours: a.sinceHours }; liveNote = ''; rca = {};
+  } else { liveNote = (a.message || 'The live alerts could not be loaded.') + ' The demo data stay.'; }
+  render();
+};
+$('#reset').onclick = () => { custom = []; rca = {}; alerts = sampleAlerts(); topo = DATA.topology; live = null; liveNote = ''; render(); };
 $('#v-alerts').onclick = () => { view = 'alerts'; render(); };
 $('#v-inc').onclick = () => { view = 'incidents'; render(); };
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-rca]'); if (b) toRca(b.dataset.rca); });
 window.addEventListener('message', (e) => {
+  if (e.source === window.parent && e.data && typeof e.data.requestId === 'string' && pending.has(e.data.requestId)) { const done = pending.get(e.data.requestId); pending.delete(e.data.requestId); done(e.data); return; }
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, st = m.state;
+  if (st && st.live && Array.isArray(st.live.alerts) && st.live.info) { alerts = st.live.alerts; topo = st.live.topo && typeof st.live.topo === 'object' ? st.live.topo : {}; live = st.live.info; }
   if (st) { custom = Array.isArray(st.custom) ? st.custom : []; view = st.view === 'incidents' ? 'incidents' : 'alerts'; rca = st.rca && typeof st.rca === 'object' ? st.rca : {}; }
   (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => {
     const p = h && h.payload; if (!p || p.type !== 'rca-result' || typeof p.taskId !== 'string') return;

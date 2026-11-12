@@ -19,6 +19,7 @@ import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ensureGooseConfig } from '../shared/goose-config.mjs';
 import { createHotlineMail } from '../shared/hotline-mail.mjs';
+import { adapterFromEnv, createMonitoringRead } from '../shared/monitoring-read.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1559,6 +1560,12 @@ const hotlineMail = createHotlineMail({
 });
 ipcMain.handle('hotline-mail-preview', (_event, fields) => obWrap(async () => hotlineMail.preview(fields)));
 ipcMain.handle('hotline-mail-send', (_event, fields) => obWrap(() => hotlineMail.send(fields)));
+/** Read-only access to the monitoring for the Alerts Space. The login comes from the app's secret store or the environment and never leaves this process. */
+const monitoring = createMonitoringRead({
+  adapter: () => { const s = loadSecrets(); return adapterFromEnv({ MONITORING_BASE_URL: s.MONITORING_BASE_URL ?? process.env.MONITORING_BASE_URL, MONITORING_READ_TOKEN: s.MONITORING_READ_TOKEN ?? process.env.MONITORING_READ_TOKEN, MONITORING_ADAPTER: s.MONITORING_ADAPTER ?? process.env.MONITORING_ADAPTER }); },
+  mapFile: join(ROOT, 'goose-home', 'monitoring-map.json'),
+});
+ipcMain.handle('monitoring-alerts', (_event, hours) => obWrap(() => monitoring.alerts({ sinceHours: hours })));
 ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
 ipcMain.handle('onboarding-handover', (_event, id, start) => obWrap(() => workStore.onboardingHandover(id, start)));
 ipcMain.handle('onboarding-set', (_event, id, step, status, note) => obWrap(() => workStore.onboardingSet(id, step, status, note)));

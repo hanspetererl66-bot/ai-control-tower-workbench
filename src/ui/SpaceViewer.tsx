@@ -4,6 +4,7 @@ import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall }
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
 import { HOTLINE_SPACE, handleHotlineMailMessage, type HotlineMailHost } from '../hotline-mail-bridge';
+import { MONITORING_SPACE, handleMonitoringMessage, type MonitoringHost } from '../monitoring-bridge';
 import { ONBOARDING_SPACE, handleOnboardingMessage, type OnboardingHost } from '../onboarding-bridge';
 import { HIRING_SPACE, handleHiringMessage, type HiringHost } from '../hiring-bridge';
 import { OBSERVABILITY_SPACE, handleObservabilityMessage, type ObservabilityHost } from '../observability-bridge';
@@ -178,6 +179,13 @@ export default function SpaceViewer({
         const h = window.host;
         const host: ObservabilityHost | undefined = h?.observabilityCall ? { observe: h.observabilityCall } : undefined;
         void handleObservabilityMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
+        return;
+      }
+      if (space.slug === MONITORING_SPACE) {
+        // Live alerts are read by the main process with a login that stays there, never through the agent.
+        const h = window.host;
+        const host: MonitoringHost | undefined = h?.monitoringAlerts ? { alerts: h.monitoringAlerts } : undefined;
+        void handleMonitoringMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
         return;
       }
       if (space.slug === HOTLINE_SPACE) {

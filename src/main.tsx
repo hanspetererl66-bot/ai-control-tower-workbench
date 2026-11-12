@@ -32,6 +32,7 @@ declare global {
       recruitingProposals?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; proposals: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
       observabilityCall?: (view: string, params: Record<string, unknown>) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
       recruitingHireList?: (args: Record<string, unknown>) => Promise<{ ok: true; data: { count: number; requests: Array<Record<string, unknown>> } } | { ok: false; error: string }>;
+      monitoringAlerts?: (sinceHours: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailPreview?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailSend?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingList?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
