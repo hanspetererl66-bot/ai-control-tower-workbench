@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { JSDOM } from 'jsdom';
 import { EXAMPLE_SPACES } from '../scripts/install-example-space.mjs';
 import { embedMockupData } from '../scripts/sync-mockup-spaces.mjs';
 import { MAX_ASK_LENGTH } from '../src/space-ask.ts';
@@ -138,7 +139,7 @@ test('colours in the page come from tokens', () => {
 });
 
 test('the page renders every tab and customer without script errors, and the release flow works in the DOM', async () => {
-  const { JSDOM, VirtualConsole } = await import('jsdom');
+  const { VirtualConsole } = await import('jsdom');
   const errors = [];
   const vc = new VirtualConsole();
   vc.on('jsdomError', (e) => errors.push(String(e.message)));
@@ -172,4 +173,19 @@ test('the page renders every tab and customer without script errors, and the rel
   click('#main [data-act="reset"]');
   assert.match(d.querySelector('#main').textContent, /0 of 3 released/);
   assert.deepEqual(errors, []);
+});
+
+test('every table has a header row on every tab and customer, so the Space toolbar does not take a data row as column names', () => {
+  const dom = new JSDOM(page, { runScripts: 'dangerously' });
+  const d = dom.window.document;
+  const tables = [];
+  const look = (what) => { for (const t of d.querySelectorAll('#main table')) tables.push(`${what}: ${t.querySelector('thead th') ? 'ok' : 'NO HEADER'}`); };
+  for (const tab of ['list', 'track', 'rights']) { d.querySelector(`#tabs [data-id="${tab}"]`).click(); look(tab); }
+  for (const c of data.customers) for (const tab of ['why', 'ours', 'act']) {
+    d.querySelector(`#tabs [data-id="${tab}"]`).click();
+    d.querySelector(`#main [data-act="cust"][data-id="${c.id}"]`).click();
+    look(`${tab} ${c.id}`);
+  }
+  assert.ok(tables.length >= 12, 'tables were found');
+  assert.deepEqual(tables.filter((x) => x.endsWith('NO HEADER')), []);
 });
