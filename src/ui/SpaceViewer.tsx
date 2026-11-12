@@ -3,6 +3,7 @@ import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
+import { HOTLINE_SPACE, handleHotlineMailMessage, type HotlineMailHost } from '../hotline-mail-bridge';
 import { ONBOARDING_SPACE, handleOnboardingMessage, type OnboardingHost } from '../onboarding-bridge';
 import { HIRING_SPACE, handleHiringMessage, type HiringHost } from '../hiring-bridge';
 import { OBSERVABILITY_SPACE, handleObservabilityMessage, type ObservabilityHost } from '../observability-bridge';
@@ -171,6 +172,13 @@ export default function SpaceViewer({
         const h = window.host;
         const host: ObservabilityHost | undefined = h?.observabilityCall ? { observe: h.observabilityCall } : undefined;
         void handleObservabilityMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
+        return;
+      }
+      if (space.slug === HOTLINE_SPACE) {
+        // The confirmation mail is built and sent by the main process after its own dialog, never by the Space or the agent.
+        const h = window.host;
+        const host: HotlineMailHost | undefined = h?.hotlineMailPreview ? { preview: h.hotlineMailPreview, send: h.hotlineMailSend } : undefined;
+        void handleHotlineMailMessage(event.data, host).then((reply) => { if (reply) frame.current?.contentWindow?.postMessage(reply, '*'); });
         return;
       }
       if (space.slug === ONBOARDING_SPACE) {
