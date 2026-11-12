@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
 import { JSDOM, VirtualConsole } from 'jsdom';
+import { EXAMPLE_SPACES } from '../scripts/install-example-space.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const html = readFileSync(join(ROOT, 'examples/renewals-analytics/index.html'), 'utf8');
@@ -59,4 +60,8 @@ test('renewal analytics: read only, no network and no storage', () => {
   const script = html.slice(html.lastIndexOf('<script>'));
   assert.doesNotMatch(script, /localStorage|sessionStorage|fetch\(|XMLHttpRequest|postMessage/);
   assert.doesNotMatch(html, /<script[^>]+src=|<link[^>]+href=/);
+});
+
+test('renewal analytics: is installed by npm run install:examples', () => {
+  assert.equal(EXAMPLE_SPACES['renewals-analytics'], 'renewals-analytics');
 });

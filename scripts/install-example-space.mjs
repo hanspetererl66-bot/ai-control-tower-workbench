@@ -26,6 +26,7 @@ export const EXAMPLE_SPACES = {
   'it-operations': 'it-operations',
   'it-infrastructure': 'it-infrastructure',
   renewals: 'renewals',
+  'renewals-analytics': 'renewals-analytics',
   'finance-preclose': 'finance-preclose',
   'customer-ai-briefing': 'customer-ai-briefing',
   'it-fleet': 'it-fleet',
