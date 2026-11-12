@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Werkbank starten: alles, was vor dem Start der App sinnvoll ist, in einem Aufruf.
+# Werkbank starten: alles, was vor dem Start der App sinnvoll ist, in einem Aufruf (Linux und macOS).
 #
 #   scripts/start-werkbank.sh [Optionen]
 #
@@ -36,10 +36,12 @@ done
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 warn() { printf '\033[33m! %s\033[0m\n' "$*"; }
-# Lauscht etwas auf dem Port? Vite hängt oft nur an [::1], daher ss statt nur /dev/tcp auf IPv4.
+# Lauscht etwas auf dem Port? Vite hängt oft nur an [::1], daher ss (Linux) oder lsof (macOS) statt nur /dev/tcp auf IPv4.
 port_open() {
   if command -v ss >/dev/null 2>&1; then
     ss -ltn 2>/dev/null | awk -v p=":$1" '$4 ~ p"$" { f = 1 } END { exit !f }'
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -nP -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1
   else
     (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null || (exec 3<>"/dev/tcp/::1/$1") 2>/dev/null
   fi
@@ -126,6 +128,13 @@ fi
 
 # 5. App
 step "App starten (Strg+C beendet alles)"
-setsid npm run dev &
+# Die App bekommt eine eigene Prozessgruppe, damit cleanup nur sie beendet. setsid gibt es unter Linux, nicht unter macOS;
+# dort liefert die Job-Steuerung (set -m) dieselbe Gruppe. stdin kommt aus /dev/null: ein Hintergrundjob, der das Terminal liest, wird angehalten.
+if command -v setsid >/dev/null 2>&1; then
+  setsid npm run dev </dev/null &
+else
+  set -m
+  npm run dev </dev/null &
+fi
 APP_PID=$!
 wait "$APP_PID"
