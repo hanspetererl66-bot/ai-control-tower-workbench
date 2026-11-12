@@ -1621,6 +1621,8 @@ export default function App() {
           onArchiveSpace={archiveOne}
           archived={archivedSpaces}
           onRestoreSpace={restoreOne}
+          view={prefs.spacesView}
+          onViewChange={(next) => updatePrefs((c) => ({ ...c, spacesView: next }))}
         />
       )}
       {view === 'manage' && (
