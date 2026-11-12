@@ -2207,6 +2207,7 @@ function renderAll() {
   else if (state.tab === 'radar') { renderBar(); renderTimeline(); renderDetail(); }
   else { renderBar(); renderRows(); renderDetail(); renderAlt(); }
   renderJourney();
+  saveState();
 }
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
 $('#customer').onchange = (e) => { state.customer = e.target.value; state.csel = null; state.focus = null; if (state.sel && state.customer !== 'all' && (byId(state.sel) || {}).customerId !== state.customer) state.sel = null; renderAll(); };
@@ -2344,8 +2345,32 @@ function jrApply(j) {
   const c = j.deal ? model.find((x) => x.contractId === j.deal && x.customerId === j.customer) : null;
   renderAll(); if (c) openRenewal(c.id);
 }
+/* Working state across Space switches: the page reports it (wb:state), the host keeps the last copy in memory and posts it back in wb:restore.
+   Only what the person chose is kept. The host keeps it until the app closes; nothing is written to a disk or a server by this page. */
+function saveState() {
+  if (window.parent === window) return;
+  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, sel: state.sel, csel: state.csel, stage: state.stage, option: state.option, asked: state.asked, auto: state.auto, jr: jr.customer } }, '*');
+}
+/** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
+function applyState(st) {
+  if (!st || typeof st !== 'object') return;
+  const ids = new Set(DATA.cases.map((c) => c.id));
+  const pick = (m, ok) => Object.fromEntries(Object.entries(m && typeof m === 'object' ? m : {}).filter(([k, v]) => ids.has(k) && ok(v)));
+  if (TABS.some(([id]) => id === st.tab)) state.tab = st.tab;
+  if (st.customer === 'all' || DATA.cases.some((c) => c.customerId === st.customer)) state.customer = st.customer;
+  if (['all', 'red', 'yellow', 'green'].includes(st.status)) state.status = st.status;
+  state.phase = PHASES.some((ph) => ph.id === st.phase) ? st.phase : null;
+  state.sel = ids.has(st.sel) ? st.sel : null; state.csel = ids.has(st.csel) ? st.csel : null;
+  state.stage = pick(st.stage, (v) => Number.isInteger(v) && v >= 0 && v <= 4);
+  state.option = pick(st.option, (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,30}$/.test(v));
+  state.asked = pick(st.asked, (v) => v === true);
+  state.auto = st.auto === true; $('#auto').checked = state.auto;
+  if (typeof st.jr === 'string' && J.CUSTOMERS[st.jr] && J.CUSTOMERS[st.jr].renewals) jr.customer = st.jr;
+  compute();
+}
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+  if (e.data.state) { applyState(e.data.state); renderAll(); }
   (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
 });
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
