@@ -1811,7 +1811,19 @@ const autoTag = (c) => (c.autoRun ? ' <span class="pill auto" title="Handled by 
 const live = (c) => c.status !== 'Lapsed' && c.stage < 4;
 function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c.customer)} · SAP customer ID ${esc(c.sapCustomerId)}</div><div style="margin-top:4px"><span class="pill ${c.health}">${LABEL[c.health]}</span> ${eur(c.annualEur)} a year</div><ul>${c.sig.signals.slice(0, 4).map((s) => `<li>${esc(s.text)}</li>`).join('')}</ul>`; }
 const tip = $('#tip');
-function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, e.clientX + 14)) + 'px'; tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, e.clientY + 14)) + 'px'; }
+/** Puts a tooltip beside the pointer, never over it: right and below when it fits, otherwise left and/or above, so it does not hide the field that is hovered.
+ *  (x, y) is the pointer, vw and vh the space the tooltip may use. */
+function placeTip(el, x, y, vw, vh) {
+  const w = el.offsetWidth, h = el.offsetHeight, gap = 16, pad = 8, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const roomR = vw - pad - (x + gap), roomL = x - gap - pad, roomB = vh - pad - (y + gap), roomA = y - gap - pad;
+  let left, top;
+  if (w <= roomR || w <= roomL) { left = w <= roomR ? x + gap : x - gap - w; top = h <= roomB ? y + gap : h <= roomA ? y - gap - h : y - h / 2; }
+  else if (h <= roomB || h <= roomA) { top = h <= roomB ? y + gap : y - gap - h; left = x - w / 2; }
+  else { left = roomR >= roomL ? x + gap : x - gap - w; top = y + gap; }
+  el.style.left = clamp(left, pad, Math.max(pad, vw - w - pad)) + 'px';
+  el.style.top = clamp(top, pad, Math.max(pad, vh - h - pad)) + 'px';
+}
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; placeTip(tip, e.clientX, e.clientY, innerWidth, innerHeight); }
 function hover(el, html) { el.addEventListener('mousemove', (e) => showTip(e, html())); el.addEventListener('mouseleave', () => { tip.hidden = true; }); el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); showTip({ clientX: r.left, clientY: r.bottom - 14 }, html()); }); el.addEventListener('blur', () => { tip.hidden = true; }); }
 /** What needs a person now: red, or the decision date is within DUE_DAYS (or passed); automatic renewals handle themselves. */
 const DUE_DAYS = 14;

@@ -1018,11 +1018,21 @@ function explain(vm) {
   const rec = vm.reasons.map((x) => DATA.tasks[x.key].title).filter((t, i, a) => a.indexOf(t) === i);
   return head + `<div>${why}</div><ul>${vm.reasons.map((x) => `<li>${esc(x.text)}${x.level === 'yellow' && vm.status === 'red' ? ' <span class="lim">(also yellow)</span>' : ''}</li>`).join('')}</ul><div class="lim" style="margin-top:6px">Recommended: ${esc(rec.join(', '))}</div>`;
 }
+/** Puts a tooltip beside the pointer, never over it: right and below when it fits, otherwise left and/or above, so it does not hide the field that is hovered.
+ *  (x, y) is the pointer, vw and vh the space the tooltip may use. */
+function placeTip(el, x, y, vw, vh) {
+  const w = el.offsetWidth, h = el.offsetHeight, gap = 16, pad = 8, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const roomR = vw - pad - (x + gap), roomL = x - gap - pad, roomB = vh - pad - (y + gap), roomA = y - gap - pad;
+  let left, top;
+  if (w <= roomR || w <= roomL) { left = w <= roomR ? x + gap : x - gap - w; top = h <= roomB ? y + gap : h <= roomA ? y - gap - h : y - h / 2; }
+  else if (h <= roomB || h <= roomA) { top = h <= roomB ? y + gap : y - gap - h; left = x - w / 2; }
+  else { left = roomR >= roomL ? x + gap : x - gap - w; top = y + gap; }
+  el.style.left = clamp(left, pad, Math.max(pad, vw - w - pad)) + 'px';
+  el.style.top = clamp(top, pad, Math.max(pad, vh - h - pad)) + 'px';
+}
 function place(ev, el) {
-  const r = el.getBoundingClientRect(), pad = 8, w = tip.offsetWidth, h = tip.offsetHeight;
-  const x = ev && ev.clientX ? ev.clientX + 14 : r.right + pad, y = ev && ev.clientY ? ev.clientY + 14 : r.top;
-  tip.style.left = Math.max(pad, Math.min(innerWidth - w - pad, x)) + 'px';
-  tip.style.top = Math.max(pad, Math.min(innerHeight - h - pad, y)) + 'px';
+  const r = el.getBoundingClientRect();
+  placeTip(tip, ev && ev.clientX ? ev.clientX : r.right, ev && ev.clientY ? ev.clientY : r.top, innerWidth, innerHeight);
 }
 function showTip(ev, vm, el) { tip.className = 'tip ' + vm.status; tip.innerHTML = explain(vm); tip.hidden = false; place(ev, el); }
 const matches = (v) => (state.filter === 'all' || v.status === state.filter) && (!state.q || [v.name, v.role, v.site, v.os, v.env].join(' ').toLowerCase().includes(state.q.toLowerCase()));
