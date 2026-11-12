@@ -58,7 +58,10 @@ test('renewal analytics: names are hidden by default and shown only on request',
 
 test('renewal analytics: read only, no network and no storage', () => {
   const script = html.slice(html.lastIndexOf('<script>'));
-  assert.doesNotMatch(script, /localStorage|sessionStorage|fetch\(|XMLHttpRequest|postMessage/);
+  assert.doesNotMatch(script, /localStorage|sessionStorage|fetch\(|XMLHttpRequest/);
+  const posts = [...script.matchAll(/window\.parent\.postMessage/g)].length;
+  assert.equal(posts, 1, 'one single place posts to the app');
+  assert.deepEqual([...new Set([...script.matchAll(/type: '(wb:[a-z-]+)'/g)].map((m) => m[1]))].sort(), ['wb:ask', 'wb:handoff'], 'only questions to Joule and hand-overs');
   assert.doesNotMatch(html, /<script[^>]+src=|<link[^>]+href=/);
 });
 
@@ -73,4 +76,42 @@ test('renewal analytics: the sample offers cover several stages, a price above t
   assert.ok(new Set(offers.map((o) => o.competitor).filter((x) => x && x !== 'None')).size >= 2, 'two competitors');
   const ids = data.cases.filter((c) => c.offer).map((c) => c.offer.id);
   assert.equal(new Set(ids).size, ids.length, 'offer ids are unique');
+});
+
+async function openInApp() {
+  const sent = [], errors = [];
+  const vc = new VirtualConsole(); vc.on('jsdomError', (e) => errors.push(String(e.message || e)));
+  const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc, url: 'https://x.test/', beforeParse(w) { Object.defineProperty(w, 'parent', { value: { postMessage: (m) => sent.push(m) }, configurable: true }); } });
+  await wait(100);
+  return { w: dom.window, d: dom.window.document, sent, errors };
+}
+
+test('renewal analytics: a row opens the renewal in the Renewals Space with a hand-over the Renewals page accepts', async () => {
+  const p = await openInApp();
+  const row = p.d.querySelector('#risks tr[data-c]');
+  row.dispatchEvent(new p.w.MouseEvent('click', { bubbles: true }));
+  const m = p.sent.find((x) => x.type === 'wb:handoff');
+  assert.ok(m, 'a hand-over was posted');
+  assert.equal(m.to, 'renewals');
+  const c = data.cases.find((x) => x.contractId === row.dataset.c);
+  assert.deepEqual(JSON.parse(JSON.stringify(m.payload.journey)), { customer: c.customerId, step: 'decide', tab: 'list', deal: c.contractId });
+  assert.match(m.payload.journey.deal, /^[A-Za-z0-9-]{1,30}$/, 'passes the journey check of the Renewals page');
+  p.d.querySelector('#to-renewals').click();
+  assert.equal(p.sent.at(-1).to, 'renewals');
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewal analytics: the question to an owner names no person unless names are shown', async () => {
+  const p = await openInApp();
+  const ask = () => p.sent.filter((x) => x.type === 'wb:ask').at(-1).prompt;
+  p.d.querySelector('#team [data-ask]').click();
+  const owners = [...new Set(data.cases.map((c) => c.owner))];
+  for (const o of owners) assert.ok(!ask().includes(o), o + ' stays out of the prompt');
+  assert.match(ask(), /workload and blockers, not performance/);
+  assert.ok(ask().length <= 600);
+  p.d.querySelector('#names').click();
+  p.d.querySelector('#team [data-ask]').click();
+  assert.ok(owners.some((o) => ask().includes(o)), 'the name appears once the person chose to show names');
+  p.w.close();
 });
