@@ -135,3 +135,43 @@ test('renewals journey: the rail names the customer, a hand-over from Sales open
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
+
+test('renewals: Joule does not mark a renewal as prepared, the person does; the lifetime value is marked as an assumption', async () => {
+  const p = await open();
+  const id = p.w.__renewals().find((c) => c.stage === 0 && c.status !== 'Lapsed').id;
+  click(p.w, p.q('#tab-list'));
+  const row = p.q('#rows tr[data-id="' + id + '"]'); click(p.w, row);
+  assert.equal(p.q('#detail [data-act="prep"]').textContent, 'Ask Joule to prepare');
+  click(p.w, p.q('#detail [data-act="prep"]'));
+  assert.equal(p.w.__renewals().find((c) => c.id === id).stage, 0, 'asking Joule changes nothing');
+  assert.ok(p.q('#detail [data-act="prepared"]'), 'the person can mark it');
+  click(p.w, p.q('#detail [data-act="prepared"]'));
+  assert.equal(p.w.__renewals().find((c) => c.id === id).stage, 1);
+  click(p.w, p.q('#tab-overview'));
+  const clv = p.q('.kpi[data-k="clv"]');
+  assert.ok(clv.classList.contains('assumed') && /assumption/i.test(clv.textContent) && /not a forecast/.test(clv.textContent));
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewals: the journey strip follows the chosen scope, All customers shows the totals', async () => {
+  const p = await open();
+  const live = p.w.__renewals().filter((c) => c.status !== 'Lapsed' && c.stage < 4);
+  const eur = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  assert.equal(p.w.__state.customer, 'all');
+  const strip = p.q('#jr').textContent;
+  assert.match(strip, /All customers: renewals at stake/);
+  assert.ok(strip.includes(eur(live.reduce((a, c) => a + c.annualEur, 0))));
+  p.w.close();
+});
+
+test('renewals: the manager view hands over to the Renewal Analytics Space', async () => {
+  const p = await open();
+  const sent = [];
+  Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) }, configurable: true });
+  click(p.w, p.q('#to-analytics'));
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].type, 'wb:handoff');
+  assert.equal(sent[0].to, 'renewals-analytics');
+  p.w.close();
+});
