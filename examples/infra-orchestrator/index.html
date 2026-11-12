@@ -260,6 +260,15 @@ button.primary:hover{background:var(--purple-deep)}
 button.ghost{font:inherit;font-size:12px;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 13px;cursor:pointer}
 button.ghost:hover{border-color:var(--purple-border)}
 select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink);padding:7px 10px}
+.clock{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);padding:4px 6px 4px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface)}
+.clock b{font-variant-numeric:tabular-nums;font-weight:650;color:var(--ink);margin-right:2px}
+.clock svg.i{width:14px;height:14px}
+.waitbox{border:1px dashed var(--amber-border);background:var(--amber-dim);border-radius:var(--radius-s);padding:9px 12px;font-size:12px;color:var(--ink-2)}
+.waitbox .wl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.waitbox details{margin-top:8px}
+.waitbox summary{cursor:pointer;color:var(--purple-deep);font-weight:600}
+.waitbox pre{white-space:pre-wrap;font:inherit;font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;margin:8px 0 0}
+.waitbox .mh2{margin-top:8px}
 /* outcomes */
 .otab{border-collapse:collapse;width:100%;font-size:12px}
 .otab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px;padding:0 10px 8px 0;white-space:nowrap}
@@ -913,7 +922,23 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
    "sample": true,
    "label": "Renew a TLS certificate"
   }
- ]
+ ],
+ "escalation": {
+  "remindAfterH": 24,
+  "escalateAfterH": 48,
+  "nearDeadlineDays": 3,
+  "roles": {
+   "approval": [
+    "Approvers",
+    "Operations lead"
+   ],
+   "customer": [
+    "Hotline team",
+    "Account manager"
+   ]
+  },
+  "note": "Simulated time. A plan that waits for a person or the customer gets a reminder after 24 hours and an escalation after 48 hours; a deadline within 3 days gets a reminder at once, a missed deadline an escalation. An escalation only writes a message preview: it never approves, decides or sends."
+ }
 }
 </script>
 <script id="orch-logic">
@@ -959,10 +984,10 @@ function nextWindow(data, customerId, hours, fromMs) {
 }
 
 /** What does the orchestrator do with one finding? The decision and every reason that led to it. */
-function assess(data, auto, f) {
+function assess(data, auto, f, days = 0) {
   const rb = data.runbooks.find((r) => r.template === f.template);
   const hours = f.hours || rb.hours;
-  const today = dayMs(data.asOf);
+  const base = dayMs(data.asOf), today = base + days * DAY;
   const win = nextWindow(data, f.customer, hours, today + data.hotline.leadDays * DAY);
   const t = threshold(data.hotline, f.customer, f.template);
   const customerNeeded = t.hours !== null && (hours > t.hours || (win && !win.fits));
@@ -970,7 +995,7 @@ function assess(data, auto, f) {
     : hours > t.hours ? (t.hours === 0 ? `Every window needs the customer's agreement (${t.source} rule).` : `The window of ${hours} h is longer than ${t.hours} h (${t.source} rule): the customer has to agree.`)
     : win && !win.fits ? 'The work is longer than the nights the customer allows: the customer has to agree.'
     : `The window of ${hours} h is within ${t.hours} h (${t.source} rule): standard window, no call.`;
-  const late = !win || dayMs(win.start) > today + f.deadlineDays * DAY;
+  const late = !win || dayMs(win.start) > base + f.deadlineDays * DAY;
   const floors = [];
   if (rb.risk === 'high') floors.push({ id: 'risk', text: 'High risk: a person decides.' });
   if (f.env === 'PRD' && RISK_RANK[rb.risk] >= 1) floors.push({ id: 'prod', text: 'Production change above low risk: a person approves.' });
@@ -981,7 +1006,7 @@ function assess(data, auto, f) {
   else if (floors.length) { mode = 'approval'; why = floors[0].text; }
   else if (matrix.mode !== 'auto') { mode = 'approval'; why = `The autonomy matrix keeps this task with a person (${matrix.source} rule).`; }
   else { mode = 'auto'; why = `Low risk, no floor, and the autonomy matrix allows it (${matrix.source} rule).`; }
-  return { id: f.id, finding: f, runbook: rb, risk: rb.risk, hours, window: win, late, deadline: fmtMs(today + f.deadlineDays * DAY).slice(0, 10),
+  return { id: f.id, finding: f, runbook: rb, risk: rb.risk, hours, window: win, late, deadline: fmtMs(base + f.deadlineDays * DAY).slice(0, 10),
     customer: { needed: customerNeeded, text: customerWhy, ...t }, floors, matrix, mode, why };
 }
 
@@ -1052,6 +1077,32 @@ function summarize(list) {
   return { all: stats(list), bySource: by('source'), byTemplate: by('template') };
 }
 
+/* ---- deadlines and escalation (simulated time): a plan that waits too long gets a reminder, then an escalation. A message preview only: nothing is sent, nothing is approved. ---- */
+const HOUR_MS = 3600000;
+/** 0 nothing, 1 reminder, 2 escalated: by how long the plan has waited and by how close its deadline is. */
+function escalationStage(cfg, ageH, daysLeft) {
+  let stage = ageH >= cfg.escalateAfterH ? 2 : ageH >= cfg.remindAfterH ? 1 : 0;
+  if (daysLeft < 0) stage = 2; else if (daysLeft <= cfg.nearDeadlineDays) stage = Math.max(stage, 1);
+  return stage;
+}
+/** What is the plan waiting for? approval (also the decision about a new try after a rollback) or the customer. null when it does not wait. */
+function waitKind(a, st) {
+  const k = statusOf(a, st).key;
+  return k === 'waiting-approval' || k === 'rolled-back' ? 'approval' : k === 'waiting-customer' ? 'customer' : null;
+}
+const ageText = (h) => (h < 24 ? `${h} h` : `${Math.floor(h / 24)} d${h % 24 ? ' ' + (h % 24) + ' h' : ''}`);
+/** The message of a stage as a preview. */
+function escalationMessage(data, a, kind, stage, ageH, daysLeft) {
+  const roles = data.escalation.roles[kind], to = roles[Math.min(stage, roles.length) - 1];
+  const what = kind === 'customer' ? 'the customer to agree the window' : 'a person to decide';
+  const left = daysLeft < 0 ? `The deadline ${a.deadline} has passed (${-daysLeft} day${daysLeft === -1 ? '' : 's'} ago).` : `Deadline ${a.deadline}, ${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`;
+  const subject = `[${stage === 2 ? 'Escalation' : 'Reminder'}] ${a.id}: ${a.runbook.template} on ${a.finding.host} waits for ${kind === 'customer' ? 'the customer' : 'a decision'}`;
+  const body = [`The plan ${a.id} (${a.runbook.template} on ${a.finding.host}, ${a.finding.env}) has waited ${ageText(ageH)} for ${what}.`, left,
+    `Why it waits: ${kind === 'customer' ? a.customer.text : a.why}`, a.window ? `Proposed window: ${a.window.start.replace('T', ' ')} to ${a.window.end.replace('T', ' ')}.` : 'No window found before the deadline.',
+    kind === 'customer' ? 'Needed: the hotline agrees the window with the customer.' : 'Needed: approve or reject the plan in the Orchestrator.', 'The Orchestrator decides nothing on its own.'].join('\n');
+  return { stage, to, subject, body };
+}
+
 const orderOf = (list) => list.slice().sort((x, y) => x.finding.deadlineDays - y.finding.deadlineDays || x.id.localeCompare(y.id));
 /* @logic-end */
 </script>
@@ -1063,7 +1114,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const hosted = window.parent !== window;
-const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true };
+const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true, hours: 0 };
 const timers = {};
 const label = (t) => (DATA.templates.find((x) => x.id === t) || { label: t }).label;
 const cust = (id) => DATA.customers.find((c) => c.id === id);
@@ -1078,14 +1129,18 @@ const P = {
 const ic = (n) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
 const PILL = { done: 'green', running: 'purple', ready: 'purple', 'waiting-approval': 'amber', 'waiting-customer': 'amber', 'rolled-back': 'red', rejected: 'grey' };
 const st = (id) => (state.items[id] = state.items[id] || {});
-const assessments = () => DATA.findings.map((f) => assess(DATA, state.auto, f));
+const dayNow = () => Math.floor(state.hours / 24);
+const assessments = () => DATA.findings.map((f) => assess(DATA, state.auto, f, dayNow()));
+const waitedH = (s) => Math.max(0, state.hours - (s.since || 0));
+const daysLeft = (a) => a.finding.deadlineDays - dayNow();
+const clockText = () => fmtMs(dayMs(DATA.asOf) + state.hours * HOUR_MS).replace('T', ' ');
 const find = (id) => assessments().find((a) => a.id === id);
 const ownOutcomes = () => assessments().map((a) => outcomeOf(DATA, a, st(a.id))).filter(Boolean);
 const allOutcomes = () => [...(state.history ? DATA.history : []), ...state.external, ...ownOutcomes()];
 const slot = (w) => { const [d, a] = w.start.split('T'), [e, b] = w.end.split('T'); return `${d} ${a}–${b}${e !== d ? ' (next day)' : ''}`; };
 
 function log(who, text, id) { state.n += 1; state.audit.push({ n: state.n, who, text, id: id || '' }); }
-function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history } }, '*'); }
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history, hours: state.hours } }, '*'); }
 
 /* ---------- runs ---------- */
 function schedule(id) {
@@ -1101,6 +1156,7 @@ function tick(id) {
 }
 function step(a, s) {
   const ev = stepItem(a, s);
+  if (ev.failed) s.since = state.hours;
   log(a.mode === 'auto' && !s.approved ? 'agent' : 'person', `${a.id}: ${ev.text}`, a.id);
 }
 function start(id) {
@@ -1110,12 +1166,28 @@ function start(id) {
 function kick() { assessments().forEach((a) => { if (autoStarts(a, st(a.id), state.paused)) start(a.id); }); }
 
 /* ---------- actions ---------- */
+/** Reminder and escalation: only a message preview and an audit entry, never an approval. */
+function escalate() {
+  assessments().forEach((a) => {
+    const s = st(a.id), kind = waitKind(a, s); if (!kind) return;
+    const ageH = waitedH(s), left = daysLeft(a), stage = escalationStage(DATA.escalation, ageH, left);
+    if (stage <= (s.stage || 0)) return;
+    s.stage = stage; s.messages = [...(s.messages || []), escalationMessage(DATA, a, kind, stage, ageH, left)];
+    const m = s.messages[s.messages.length - 1];
+    log('agent', `${a.id}: ${stage === 2 ? 'escalated' : 'reminder'} to ${m.to} after ${ageText(ageH)} (${left < 0 ? 'deadline missed' : left + ' days to the deadline'}). Message preview only, nothing is sent and nothing is approved.`, a.id);
+  });
+}
+function advance(h) {
+  state.hours += h;
+  log('person', `Simulated time moved on by ${h === 24 ? '1 day' : h + ' hours'}: now ${clockText()}.`);
+  escalate(); kick(); render();
+}
 function sweep() {
   state.swept = true;
   const list = orderOf(assessments());
   log('agent', `Sweep: looked at ${list.length} findings (certificates, patch age, disk trend, DNS) with today = ${DATA.asOf}.`);
   list.forEach((a) => log('agent', `${a.id} ${a.finding.signal}. Plan: ${label(a.finding.template)} on ${a.finding.host}, window ${a.window ? slot(a.window) : 'none found'}. Decision: ${a.mode === 'auto' ? 'runs by itself' : 'waits for a person'}${a.customer.needed ? ', the customer has to agree the window first' : ''}. ${a.why}`, a.id));
-  kick(); render();
+  escalate(); kick(); render();
 }
 function setHitl(on) {
   state.auto.hitl = on;
@@ -1129,12 +1201,12 @@ function setPause(p) {
   if (!p) { assessments().forEach((a) => { if (st(a.id).running) schedule(a.id); }); kick(); }
   render();
 }
-function approve(id) { const a = find(id), s = st(id); if (!a || statusOf(a, s).key !== 'waiting-approval') return; s.approved = true; s.waited = (s.waited || 0) + DATA.timing.approvalMin; log('person', `${id}: approved.`, id); start(id); render(); }
-function reject(id) { const s = st(id); s.rejected = true; s.running = false; log('person', `${id}: rejected, no action.`, id); render(); }
-function retry(id) { const a = find(id), s = st(id); if (!a || !s.rolledBack) return; s.rolledBack = false; s.approved = true; s.waited = (s.waited || 0) + DATA.timing.approvalMin; log('person', `${id}: new try approved.`, id); start(id); render(); }
+function approve(id) { const a = find(id), s = st(id); if (!a || statusOf(a, s).key !== 'waiting-approval') return; s.approved = true; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.approvalMin; log('person', `${id}: approved.`, id); start(id); render(); }
+function reject(id) { const s = st(id); s.waited = (s.waited || 0) + waitedH(s) * 60; s.rejected = true; s.running = false; log('person', `${id}: rejected, no action.`, id); render(); }
+function retry(id) { const a = find(id), s = st(id); if (!a || !s.rolledBack) return; s.rolledBack = false; s.approved = true; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.approvalMin; log('person', `${id}: new try approved.`, id); start(id); render(); }
 function agree(id, w) {
   const a = find(id), s = st(id); if (!a) return;
-  s.agreed = true; s.window = w || a.window; s.waited = (s.waited || 0) + DATA.timing.customerMin;
+  s.agreed = true; s.window = w || a.window; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.customerMin; s.since = state.hours;
   log('person', `${id}: window ${slot(s.window)} agreed with the customer.`, id);
   kick(); render();
 }
@@ -1163,7 +1235,7 @@ function controls() {
   const on = state.auto.hitl;
   return `<div class="card ctrl rise"><div class="sw"><button class="switch" id="hitl" type="button" role="switch" aria-checked="${on}" aria-label="Human in the loop"><i></i></button>
     <div><b>Human in the loop: ${on ? 'on' : 'off'}</b><span>${on ? 'Every plan waits for a person. The agent plans and proposes, a person decides.' : 'The agent runs low-risk plans by itself, as the autonomy matrix says. The floors stay: they cannot be switched off.'}</span></div></div>
-    <div class="acts"><button class="primary" data-act="sweep">${ic('eye')} ${state.swept ? 'Sweep again' : 'Run a sweep'}</button><button class="ghost" data-act="pause">${ic(state.paused ? 'play' : 'pause')} ${state.paused ? 'Resume' : 'Pause the orchestrator'}</button></div></div>
+    <div class="acts"><button class="primary" data-act="sweep">${ic('eye')} ${state.swept ? 'Sweep again' : 'Run a sweep'}</button><span class="clock" title="Simulated time">${ic('clock')}<b>${esc(clockText())}</b><button class="ghost" data-act="time" data-h="6">+6 h</button><button class="ghost" data-act="time" data-h="24">+1 day</button></span><button class="ghost" data-act="pause">${ic(state.paused ? 'play' : 'pause')} ${state.paused ? 'Resume' : 'Pause the orchestrator'}</button></div></div>
     ${state.paused ? `<div class="banner pausebar">${ic('pause')}<span><b>Paused.</b> No autonomous run starts and running plans stand still until you resume.</span></div>` : ''}`;
 }
 function lane(a, s) {
@@ -1172,9 +1244,15 @@ function lane(a, s) {
   const items = RUN_STEPS.map((t, i) => `<li class="${i < finished ? 'done' : s.rolledBack && i === s.step - 1 ? 'stop' : s.running && i === finished ? 'now' : ''}">${esc(t)}</li>`);
   return `<ol class="lane" aria-label="Run">${items.join('')}</ol>`;
 }
+/** How long the plan waits, the stage of the escalation and the message preview. Nothing is sent. */
+function waitBox(a, s) {
+  const stage = s.stage || 0, m = (s.messages || [])[(s.messages || []).length - 1];
+  const chip = stage === 2 ? '<span class="pill red">Escalated</span>' : stage === 1 ? '<span class="pill amber">Reminder</span>' : '<span class="pill grey">No reminder yet</span>';
+  return `<div class="waitbox"><div class="wl">${ic('clock')}<span>Waiting for <b>${ageText(waitedH(s))}</b></span>${chip}</div>${m ? `<details><summary>Message to ${esc(m.to)} (preview, not sent)</summary><div class="mh2"><b>Subject</b> ${esc(m.subject)}</div><pre>${esc(m.body)}</pre></details>` : ''}</div>`;
+}
 function planCard(a, i) {
   const s = st(a.id), k = statusOf(a, s), f = a.finding, c = cust(f.customer), w = s.window || a.window;
-  const total = 30, hot = f.deadlineDays <= 10;
+  const total = 30, left = daysLeft(a), hot = left <= 10, open = !!waitKind(a, s), over = left < 0 && !s.done && !s.rejected;
   const floors = a.floors.map((x) => `<span class="chip floor" title="Cannot be switched off">${ic('lock')}${esc(x.text.split(':')[0])}</span>`).join('');
   const buttons = [];
   if (k.key === 'waiting-customer') buttons.push(hosted ? `<button class="primary" data-act="hotline" data-id="${a.id}">${ic('phone')} Agree the window with the customer</button>` : `<button class="ghost" data-act="agree" data-id="${a.id}">Simulate: the customer agrees</button>`);
@@ -1184,18 +1262,18 @@ function planCard(a, i) {
   return `<article class="plan rise ${s.running ? 'run' : ''}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(a.id)} · ${esc(label(f.template))}</div><div class="who">${esc(c.name)} · ${esc(f.host)} · ${esc(f.env)}</div></div>
     <div style="text-align:right"><span class="pill ${PILL[k.key]}">${esc(k.label)}</span><div class="note" style="margin-top:4px">${esc(k.who)}</div></div></div>
     <div class="sig"><b>${esc(f.signal)}</b></div><div class="ev">${esc(f.evidence)}</div>
-    <div class="dl ${hot ? 'hot' : ''}"><span>${f.deadlineDays} days left</span><span class="bar"><i style="--w:${Math.max(6, 100 - Math.min(total, f.deadlineDays) / total * 100)}%"></i></span><span>${esc(a.deadline)}</span></div>
+    <div class="dl ${hot ? 'hot' : ''}"><span>${over ? `Overdue by ${-left} day${left === -1 ? '' : 's'}` : `${left} day${left === 1 ? '' : 's'} left`}</span><span class="bar"><i style="--w:${over ? 100 : Math.max(6, 100 - Math.min(total, left) / total * 100)}%"></i></span><span>${esc(a.deadline)}</span></div>
     <div class="decision"><div class="head"><span class="pill ${a.mode === 'auto' ? 'purple' : 'amber'}">${ic(a.mode === 'auto' ? 'bot' : 'user')} ${a.mode === 'auto' ? 'Runs by itself' : 'Waits for a person'}</span><span class="note">${esc(a.risk)} risk</span></div>
       <div>${esc(a.why)}</div>${a.floors.length ? `<div class="chips">${floors}</div>` : ''}
       <div class="slot">${ic('clock')}<span>Window: <b>${w ? esc(slot(w)) : 'none found'}</b>${s.window ? ' (agreed)' : ''}</span>${a.window && a.window.moved ? `<span class="chip">moved: ${esc(a.window.moved)}</span>` : ''}</div>
       <div class="note">${esc(a.customer.text)}</div></div>
-    ${lane(a, s)}${buttons.length ? `<div class="ops">${buttons.join('')}</div>` : ''}</article>`;
+    ${open ? waitBox(a, s) : ''}${lane(a, s)}${buttons.length ? `<div class="ops">${buttons.join('')}</div>` : ''}</article>`;
 }
 function plansView() {
   if (!state.swept) return `<div class="empty rise"><h2>No sweep yet</h2><p>The orchestrator does not wait for an alarm. A sweep looks ahead at what will go wrong soon and plans the work with the building blocks of this story:</p><ul><li>certificates that expire, patches that are open for weeks, disks that fill up, DNS records that point to the old address;</li><li>the plan and pre-check of the service request, the window policy of the hotline, the root cause where a finding comes back;</li><li>with human in the loop on, a person approves each plan; with it off, the agent runs the low-risk ones itself.</li></ul></div>`;
   const list = orderOf(assessments()), key = (a) => statusOf(a, st(a.id)).key, n = (k) => list.filter((a) => key(a) === k).length;
   const byAgent = list.filter((a) => st(a.id).done && st(a.id).by === 'agent').length;
-  const tiles = [['amber', 'user', n('waiting-approval'), 'waiting for a person'], ['amber', 'phone', n('waiting-customer'), 'waiting for the customer'], ['purple', 'bot', n('running') + n('ready'), 'running or ready'], ['green', 'check', byAgent, 'done by the agent'], ['red', 'alert', n('rolled-back'), 'rolled back, a person decides']];
+  const tiles = [['amber', 'user', n('waiting-approval'), 'waiting for a person'], ['amber', 'phone', n('waiting-customer'), 'waiting for the customer'], ['purple', 'bot', n('running') + n('ready'), 'running or ready'], ['green', 'check', byAgent, 'done by the agent'], ['red', 'alert', n('rolled-back'), 'rolled back, a person decides'], ['red', 'clock', list.filter((a) => waitKind(a, st(a.id)) && (st(a.id).stage || 0) === 2).length, 'escalated, waiting too long']];
   return `<div class="kpis">${tiles.map(([k, i, v, l]) => `<div class="kpi ${k}"><span class="ico">${ic(i)}</span><div><b>${v}</b><span>${l}</span></div></div>`).join('')}</div><div class="plans">${list.map(planCard).join('')}</div>`;
 }
 function autonomyView() {
@@ -1246,6 +1324,7 @@ document.addEventListener('click', (e) => {
   const id = b.dataset.id;
   if (b.dataset.act === 'sweep') sweep();
   else if (b.dataset.act === 'pause') setPause(!state.paused);
+  else if (b.dataset.act === 'time') advance(+b.dataset.h);
   else if (b.dataset.act === 'approve') approve(id);
   else if (b.dataset.act === 'reject') reject(id);
   else if (b.dataset.act === 'retry') retry(id);
@@ -1268,7 +1347,7 @@ document.addEventListener('change', (e) => {
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, s0 = m.state;
-  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; }
+  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; state.hours = Math.max(0, Math.min(24 * 400, s0.hours | 0)); }
   (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => { const p = h && h.payload; if (p && p.type === 'window-result') onWindowResult(p); else if (p && p.type === 'outcome') onOutcome(p.outcome); });
   Object.keys(state.items).forEach((id) => { if (state.items[id].running && !state.paused) schedule(id); });
   render();
