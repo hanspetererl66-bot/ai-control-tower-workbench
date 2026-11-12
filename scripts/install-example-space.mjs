@@ -43,6 +43,7 @@ export const EXAMPLE_SPACES = {
   'agent-network': 'agent-network',
   'agent-compliance': 'agent-compliance',
   'order-to-cash': 'order-to-cash',
+  collections: 'collections',
   'order-to-cash-software': 'order-to-cash-software',
   'revenue-recognition': 'revenue-recognition',
   'customer-360': 'customer-360',

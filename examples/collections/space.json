@@ -1,0 +1,13 @@
+{
+  "title": "Collections",
+  "description": "Mockup of an early late-payment workflow for account owners: a ranked morning list, the reasons behind each forecast, a check of our own side before any contact, and drafts that a person releases. Fictional sample data.",
+  "domain": "Sales",
+  "insights": [
+    "Morning list: accounts ranked by the expected amount at risk (open amount times the chance of a late payment), not by percentage.",
+    "Why: the payment history of the customer next to the forecast range. The forecast is a range, labelled as sample numbers.",
+    "Our side first: a disputed invoice or a pending credit memo turns the advice from 'send a reminder' into 'clarify first'.",
+    "Nothing is sent. The account owner releases the call, the reminder draft and, for large exposure, the escalation goes to the sales director.",
+    "Fictional sample data; the forecast numbers are not model output and nothing here is a credit assessment."
+  ],
+  "prompt": "Bundled example: Collections (static mockup, data embedded by npm run sync:mockups)."
+}
