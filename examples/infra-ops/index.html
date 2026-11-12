@@ -1884,6 +1884,13 @@ function simulateRun(plan) {
     var outcome = { source: 'service-request', id: t.id, template: t.template, label: planOf(t).playbook.title, customer: cu, host: t.target, by: 'person', result: 'done', durationMin: RUN_MIN[t.template] + waited, waitedMin: waited, attempts: 1, floors: [] };
     window.parent.postMessage({ type: 'wb:handoff', to: 'infra-orchestrator', payload: { type: 'outcome', outcome: outcome }, open: false }, '*');
   }
+  /** The RCA Space learns from closed requests, but only where a person accepted its root cause: it decides, we only report that the request is closed (queued, the RCA Space is not opened). */
+  function reportClosed(t) {
+    if (!inHost || t.closedSent || !RUN_MIN[t.template]) return;
+    t.closedSent = true;
+    var minutes = RUN_MIN[t.template] + (t.approvals || []).length * 45;
+    window.parent.postMessage({ type: 'wb:handoff', to: 'infra-rca', payload: { type: 'case-closed', taskId: t.id, result: 'done', durationH: Math.max(1, Math.round(minutes / 60)) }, open: false }, '*');
+  }
   function onCheckResult(res) {
     var t = find(String(res.taskId || '')); if (!t || !t.flow || (res.mode !== 'pre' && res.mode !== 'post')) return;
     var verdict = res.verdict === 'warn' || res.verdict === 'fail' ? res.verdict : 'ok';
@@ -1931,7 +1938,7 @@ function simulateRun(plan) {
   function scheduleWindow(t) { later(function () { if (t.flow && t.flow.phase === 'window') openWindow(t); }, WINDOW_MS() - (Date.now() - (t.flow.windowStart || Date.now()))); }
   function openWindow(t) { addLog(t, 'downtime window is open, execution starts'); t.flow.phase = 'running'; startRun(t); }
   function finishFlow(t) {
-    t.state = 'done'; t.flow.phase = 'done'; reportOutcome(t);
+    t.state = 'done'; t.flow.phase = 'done'; reportOutcome(t); reportClosed(t);
     addLog(t, 'post-check passed, evidence created');
     var tk = ticketOf(t);
     if (tk) {
@@ -2227,7 +2234,7 @@ function simulateRun(plan) {
   function refresh(t) { render(); openTask(t.id); }
   function finish(t) {
     if (t.flow) { t.flow.upg = 6; addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
-    t.state = 'done'; reportOutcome(t); addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
+    t.state = 'done'; reportOutcome(t); reportClosed(t); addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
   }
   function startRun(t) {
     var p = planOf(t), run = simulateRun(p);

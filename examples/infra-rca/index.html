@@ -412,7 +412,7 @@ ul.plain li svg.i{color:var(--green-ink);margin-top:2px}
 </script>
 <!--story:end-->
 <main>
-  <p class="demo">Fictional case database and documents; the analysis is simulated (it matches signals and tags). Nothing is saved. A person confirms the root cause.</p>
+  <p class="demo">Fictional case database and documents; the analysis is simulated (it matches signals and tags). Nothing is stored beyond this session. A person confirms the root cause.</p>
   <h1>Root Cause Analysis</h1>
   <p class="sub">The agent looks into former cases and the documentation, names the most likely root cause with evidence and confidence, and proposes the next best action.</p>
   <div id="view" aria-live="polite"></div>
@@ -1332,6 +1332,23 @@ function analyse(data, inc) {
   const before = cases.filter((c) => c.cause === top.cause.id && c.host === inc.host && !isWithheld(c)).map((c) => ({ id: c.id, date: c.date, recurred: c.recurred }));
   return { incident: inc, searched, confidence, top, ranked, nextBest, alternatives, ifNot, prevention: prevent.slice(0, 2).map((o) => ({ id: o.action.id, label: o.action.label })), seenBefore: before };
 }
+
+/* ---- learning: a closed request becomes a case only when a person accepted the root cause ---- */
+const TASK_ID = /^[A-Za-z0-9._-]{1,30}$/;
+function nextCaseId(cases) { return 'CASE-' + (Math.max(0, ...cases.map((c) => Number(String(c.id).replace(/\D/g, '')) || 0)) + 1); }
+/** accepted: what the person decided for each request (the accepted analysis, or { rejected: true }); closed: what the Space that closed the request reports.
+ *  null = not a valid message; { learned: false, reason } = nothing is learned; { learned: true, case } = a new case with the cause the person accepted and the action that was done. */
+function learnCase(data, cases, accepted, closed) {
+  if (!closed || typeof closed !== 'object' || !TASK_ID.test(String(closed.taskId || '')) || closed.result !== 'done') return null;
+  const a = accepted[closed.taskId];
+  if (!a) return { learned: false, reason: 'No root cause analysis was done for this request.' };
+  if (a.rejected) return { learned: false, reason: 'The operator was not convinced by the root cause: no confirmed cause.' };
+  const inc = data.incidents.find((i) => i.id === a.incident), cause = data.causes.find((c) => c.id === a.causeId), act = data.actions.find((x) => x.id === a.actionId);
+  if (!inc || !cause || !act) return { learned: false, reason: 'The accepted analysis is not in this case database.' };
+  const hours = Math.max(1, Math.min(200, Math.round(Number(closed.durationH) || 1)));
+  return { learned: true, case: { id: nextCaseId(cases), date: data.asOf, customer: inc.customer, host: inc.host, title: inc.title, cause: cause.id, tags: inc.signals.slice(), durationH: hours, recurred: false,
+    findings: [{ text: inc.symptom, tags: inc.signals.slice() }], resolution: [act.id], learnedFrom: closed.taskId } };
+}
 /* @logic-end */
 </script>
 <script>
@@ -1340,7 +1357,8 @@ function analyse(data, inc) {
 const DATA = JSON.parse(document.getElementById('rca-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const state = { id: DATA.incidents[0].id, report: null, verdict: null, ctx: null, matched: true };
+const state = { id: DATA.incidents[0].id, report: null, verdict: null, ctx: null, matched: true, accepted: {}, learned: [], notLearned: [] };
+const casesAll = () => DATA.cases.concat(state.learned);
 const hosted = window.parent !== window;
 /** Who asked, for the button that sends the result back. */
 const ASKERS = { 'it-operations': 'the Alerts Space' };
@@ -1414,7 +1432,7 @@ function reportView(r) {
   const withheld = s.withheld.length ? `<div class="callout">${ic('shield')}<span><b>Withheld ${esc(s.withheld.join(', '))}.</b> The text contains an instruction to AI assistants, so it is not used as evidence.</span></div>` : '';
   if (!r.top) return `${pipeline(r)}<div class="card rise"><p class="eyebrow">Root cause</p><span class="pill ${cc}">${cl}</span><p class="big" style="margin-top:12px">${esc(r.text)}</p>${withheld}</div>`;
   const nb = r.nextBest, [rc, rl] = ROUTE[nb.route], best = r.top;
-  const seen = r.seenBefore.length ? `<div class="callout">${ic('alert')}<span>This cause was found on <b>${esc(inc.host)}</b> before: ${r.seenBefore.map((b) => `${esc(b.id)} (${esc(b.date)}${b.recurred ? ', it came back' : ''})`).join(', ')}. A repeat points to a fix that did not last.</span></div>` : '';
+  const seen = r.seenBefore.length ? `<div class="callout">${ic('alert')}<span>This cause was found on <b>${esc(inc.host)}</b> before: ${r.seenBefore.map((b) => `${esc(b.id)}${state.learned.some((c) => c.id === b.id) ? ' (learned from ' + esc(state.learned.find((c) => c.id === b.id).learnedFrom) + ')' : ''} (${esc(b.date)}${b.recurred ? ', it came back' : ''})`).join(', ')}. A repeat points to a fix that did not last.</span></div>` : '';
   const ifNot = r.ifNot ? `<div class="card rise"><p class="eyebrow">If the check shows otherwise</p><p class="why">Second hypothesis (${Math.round(r.ifNot.share * 100)} % of the evidence): ${esc(r.ifNot.cause.label)}.</p>${flow(r.ifNot.action, inc)}<span class="pill ${ROUTE[r.ifNot.action.route][0]}">${ROUTE[r.ifNot.action.route][1]}</span> <span class="note">${esc(r.ifNot.action.text)}</span></div>` : '';
   const alts = r.alternatives.length ? `<p class="alt"><b>Other options that worked before:</b> ${r.alternatives.map((a) => esc(a.label)).join('; ')}.</p>` : '';
   const prev = r.prevention.length ? `<div class="card rise"><p class="eyebrow">Prevention</p><ul class="plain">${r.prevention.map((p) => `<li>${ic('shield')}<span>${esc(p.label)}</span></li>`).join('')}</ul></div>` : '';
@@ -1443,30 +1461,55 @@ function sendBack() {
   const payload = { type: 'rca-result', taskId: c.id, incident: r.incident.id, cause: r.top ? r.top.cause.label : 'No root cause evidenced', confidence: conf, action: r.nextBest ? r.nextBest.label : 'Ask a colleague, nothing in the case database fits', verdict: state.verdict || '' };
   window.parent.postMessage({ type: 'wb:handoff', to: c.from || 'infra-ops', payload, open: true, notice: 'Root cause for ' + c.id + ' sent back' }, '*');
 }
-function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { id: state.id, verdict: state.verdict, ctx: state.ctx, matched: state.matched, ran: !!state.report } }, '*'); }
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { id: state.id, verdict: state.verdict, ctx: state.ctx, matched: state.matched, ran: !!state.report, accepted: state.accepted, learned: state.learned, notLearned: state.notLearned } }, '*'); }
 function render() {
   const out = state.report ? reportView(state.report) : `<div class="empty">${ic('search')}<p><b>Pick an incident and start the analysis.</b></p><p>The agent searches the case database and the documentation and comes back with the root cause, the evidence and the next best action.</p></div>`;
-  $('#view').innerHTML = `${ctxBar()}<div class="layout"><aside class="side"><h2>Incidents</h2><div class="incs">${incidentList()}</div><button class="primary run" data-run="1">${ic('search')} Run the root cause analysis</button></aside><section aria-live="polite">${out}</section></div>`;
+  $('#view').innerHTML = `${ctxBar()}${learningBar()}<div class="layout"><aside class="side"><h2>Incidents</h2><div class="incs">${incidentList()}</div><button class="primary run" data-run="1">${ic('search')} Run the root cause analysis</button></aside><section aria-live="polite">${out}</section></div>`;
   save();
 }
 function run() {
-  const inc = DATA.incidents.find((i) => i.id === state.id), r = analyse(DATA, inc);
+  const inc = DATA.incidents.find((i) => i.id === state.id), r = analyse({ ...DATA, cases: casesAll() }, inc);
   if (r.top && r.nextBest) { const a = DATA.actions.find((x) => x.id === r.nextBest.id); r.nextBestMeta = { risk: a.risk, effort: a.effort }; }
   state.report = r; state.verdict = null;
+}
+/** What the person decided is remembered per request: it decides whether the closed request is learned from. */
+function noteVerdict() {
+  const c = state.ctx; if (!c) return;
+  const r = state.report;
+  if (state.verdict === 'accepted' && r && r.top && r.nextBest) state.accepted[c.id] = { incident: r.incident.id, causeId: r.top.cause.id, actionId: r.nextBest.id };
+  else if (state.verdict === 'rejected') state.accepted[c.id] = { rejected: true };
+  else delete state.accepted[c.id];
+}
+/** A Space reports a closed request. Counted once per request. */
+function onClosed(p) {
+  const r = learnCase(DATA, casesAll(), state.accepted, p); if (!r) return;
+  const id = String(p.taskId);
+  if (state.learned.some((c) => c.learnedFrom === id) || state.notLearned.some((n) => n.taskId === id)) return;
+  if (r.learned) state.learned.push(r.case); else state.notLearned.push({ taskId: id, reason: r.reason });
+}
+/** What the agent learned from closed requests, and what it did not learn and why. */
+function learningBar() {
+  if (!state.learned.length && !state.notLearned.length) return '';
+  const cause = (id) => (DATA.causes.find((c) => c.id === id) || { label: id }).label;
+  const rows = state.learned.map((c) => `<li>${ic('check')}<span><b>${esc(c.id)}</b> from ${esc(c.learnedFrom)}: ${esc(c.title)} on ${esc(c.host)}, cause: ${esc(cause(c.cause).slice(0, 90))}${cause(c.cause).length > 90 ? '…' : ''}. It is part of the search now.</span></li>`)
+    .concat(state.notLearned.map((n) => `<li>${ic('alert')}<span><b>${esc(n.taskId)}</b> not learned: ${esc(n.reason)}</span></li>`));
+  return `<div class="card learn rise" style="margin:0 22px 14px"><p class="eyebrow">What the agent learned</p><ul class="plain">${rows.join('')}</ul><p class="note" style="margin:8px 0 0">A closed request becomes a case only when a person accepted the root cause. Run the analysis again: the new cases are searched too. Nothing is stored beyond this session.</p></div>`;
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.inc) { state.id = b.dataset.inc; state.report = null; state.verdict = null; if (state.ctx) state.matched = DATA.incidents.find((i) => i.id === state.id).host === state.ctx.target; render(); return; }
   if (b.dataset.run) { run(); render(); return; }
   if (b.dataset.send) { sendBack(); return; }
-  if (b.dataset.verdict !== undefined) { state.verdict = b.dataset.verdict || null; render(); }
+  if (b.dataset.verdict !== undefined) { state.verdict = b.dataset.verdict || null; noteVerdict(); render(); }
 });
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, st = m.state;
+  if (st && st.accepted && typeof st.accepted === 'object') { state.accepted = st.accepted; state.learned = Array.isArray(st.learned) ? st.learned : []; state.notLearned = Array.isArray(st.notLearned) ? st.notLearned : []; }
   if (st && DATA.incidents.some((i) => i.id === st.id)) { state.id = st.id; state.ctx = st.ctx || null; state.matched = st.matched !== false; if (st.ran) run(); state.verdict = st.verdict || null; }
   (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => {
-    const p = h && h.payload; if (!p || p.type !== 'rca-request' || !p.task || typeof p.task.id !== 'string') return;
+    const p = h && h.payload; if (p && p.type === 'case-closed') { onClosed(p); return; }
+    if (!p || p.type !== 'rca-request' || !p.task || typeof p.task.id !== 'string') return;
     const t = p.task, byHost = DATA.incidents.find((i) => i.host === t.target), byCust = DATA.incidents.find((i) => i.customer === t.customer);
     const inc = byHost || byCust || DATA.incidents[0];
     state.id = inc.id; state.matched = !!byHost; state.ctx = { id: t.id.slice(0, 20), target: String(t.target || '').slice(0, 60), customer: t.customer, from: typeof h.from === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/.test(h.from) ? h.from : 'infra-ops' };
