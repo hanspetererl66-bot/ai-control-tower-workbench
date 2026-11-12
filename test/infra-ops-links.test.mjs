@@ -188,3 +188,20 @@ test('the Hotline answers Auto-fix too: the window of a repair goes back to the 
   assert.equal(m.to, 'infra-ops-control');
   assert.equal(m.payload.status, 'confirmed');
 });
+
+test('a finished service request reports its outcome to the Orchestrator once, queued without opening it', async () => {
+  const ops = load('infra-ops');
+  ops.w.__io.S.speed = 'fast';
+  const t = ops.w.__io.find('CHG-1039');
+  assert.equal(t.state, 'approved');
+  ops.w.__io.startRun(t);
+  for (let i = 0; i < 400 && t.state !== 'done'; i++) await new Promise((r) => setTimeout(r, 25));
+  assert.equal(t.state, 'done');
+  const outs = ops.posted.filter((m) => m.type === 'wb:handoff' && m.payload && m.payload.type === 'outcome');
+  assert.equal(outs.length, 1);
+  assert.equal(outs[0].to, 'infra-orchestrator');
+  assert.equal(outs[0].open, false);
+  const o = outs[0].payload.outcome;
+  assert.deepEqual([o.source, o.id, o.template, o.by, o.result, o.waitedMin, o.durationMin], ['service-request', 'CHG-1039', 'patch-vm', 'person', 'done', t.approvals.length * 45, 55 + t.approvals.length * 45]);
+  assert.equal(typeof o.customer, 'string');
+});

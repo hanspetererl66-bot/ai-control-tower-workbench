@@ -1875,6 +1875,15 @@ function simulateRun(plan) {
     later(function () { onCheckResult({ type: 'check-result', mode: mode, taskId: t.id, ticket: t.ticket || '', verdict: mode === 'post' || p.ok ? (p.checks && p.checks.some(function (c) { return c.status === 'warn'; }) && mode === 'pre' ? 'warn' : 'ok') : 'fail', counts: { ok: (p.checks || []).length, notes: 0, errors: p.errors.length }, checks: (p.checks || []).map(function (c) { return { label: c.label, status: c.status, detail: c.detail }; }), lines: [] }); }, 1500 * K());
     render(); if (S.openTask === t.id) openTask(t.id);
   }
+  /** A finished service request goes to the Orchestrator's Outcomes tab, queued without opening it. The minutes are simulated: the run of the playbook plus 45 minutes per approval. */
+  var RUN_MIN = { 'renew-certificate': 12, 'patch-vm': 55, 'move-vm': 140, 'update-dns-record': 8 };
+  function reportOutcome(t) {
+    if (!inHost || t.outcomeSent || !RUN_MIN[t.template]) return;
+    t.outcomeSent = true;
+    var waited = (t.approvals || []).length * 45, cu = (D.customers.find(function (c) { return c.id === t.customer; }) || {}).name || t.customer;
+    var outcome = { source: 'service-request', id: t.id, template: t.template, label: planOf(t).playbook.title, customer: cu, host: t.target, by: 'person', result: 'done', durationMin: RUN_MIN[t.template] + waited, waitedMin: waited, attempts: 1, floors: [] };
+    window.parent.postMessage({ type: 'wb:handoff', to: 'infra-orchestrator', payload: { type: 'outcome', outcome: outcome }, open: false }, '*');
+  }
   function onCheckResult(res) {
     var t = find(String(res.taskId || '')); if (!t || !t.flow || (res.mode !== 'pre' && res.mode !== 'post')) return;
     var verdict = res.verdict === 'warn' || res.verdict === 'fail' ? res.verdict : 'ok';
@@ -1922,7 +1931,7 @@ function simulateRun(plan) {
   function scheduleWindow(t) { later(function () { if (t.flow && t.flow.phase === 'window') openWindow(t); }, WINDOW_MS() - (Date.now() - (t.flow.windowStart || Date.now()))); }
   function openWindow(t) { addLog(t, 'downtime window is open, execution starts'); t.flow.phase = 'running'; startRun(t); }
   function finishFlow(t) {
-    t.state = 'done'; t.flow.phase = 'done';
+    t.state = 'done'; t.flow.phase = 'done'; reportOutcome(t);
     addLog(t, 'post-check passed, evidence created');
     var tk = ticketOf(t);
     if (tk) {
@@ -2218,7 +2227,7 @@ function simulateRun(plan) {
   function refresh(t) { render(); openTask(t.id); }
   function finish(t) {
     if (t.flow) { t.flow.upg = 6; addLog(t, 'playbook finished, post-check requested'); render(); if (S.openTask === t.id) openTask(t.id); sendCheck(t, 'post'); return; }
-    t.state = 'done'; addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
+    t.state = 'done'; reportOutcome(t); addLog(t, 'verification successful, evidence created'); render(); if (S.openTask === t.id) openTask(t.id);
   }
   function startRun(t) {
     var p = planOf(t), run = simulateRun(p);

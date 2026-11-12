@@ -516,7 +516,8 @@ table.ev th{color:var(--muted);font-weight:500}
    "approver": "Security",
    "fix": {
     "certExpiresInDays": 365
-   }
+   },
+   "minutes": 12
   },
   "patch": {
    "title": "Install security patch",
@@ -531,7 +532,8 @@ table.ev th{color:var(--muted);font-weight:500}
     "patchLagDays": 0,
     "uptimeDays": 0
    },
-   "hours": 2
+   "hours": 2,
+   "minutes": 55
   },
   "disk": {
    "title": "Free up disk space",
@@ -544,7 +546,8 @@ table.ev th{color:var(--muted);font-weight:500}
    "approver": "Service owner",
    "fix": {
     "diskPct": 61
-   }
+   },
+   "minutes": 20
   },
   "backup": {
    "title": "Catch up the backup",
@@ -557,7 +560,8 @@ table.ev th{color:var(--muted);font-weight:500}
    "approver": "Backup owner",
    "fix": {
     "backupAgeHours": 1
-   }
+   },
+   "minutes": 30
   },
   "unreachable": {
    "title": "Check an unreachable VM",
@@ -575,7 +579,8 @@ table.ev th{color:var(--muted);font-weight:500}
     "diskPct": 40,
     "uptimeDays": 0
    },
-   "hours": 1
+   "hours": 1,
+   "minutes": 40
   },
   "cpu": {
    "title": "Analyse the CPU peak",
@@ -588,7 +593,8 @@ table.ev th{color:var(--muted);font-weight:500}
    "approver": "Service owner",
    "fix": {
     "cpuPct": 45
-   }
+   },
+   "minutes": 15
   },
   "mem": {
    "title": "Check memory pressure",
@@ -601,7 +607,8 @@ table.ev th{color:var(--muted);font-weight:500}
    "approver": "Service owner",
    "fix": {
     "memPct": 60
-   }
+   },
+   "minutes": 15
   }
  },
  "vms": [
@@ -1237,7 +1244,8 @@ table.ev th{color:var(--muted);font-weight:500}
     "customer": null,
     "reason": "Year-end freeze"
    }
-  ]
+  ],
+  "customerMin": 180
  }
 }
 </script>
@@ -1538,8 +1546,17 @@ function startFix(vmId, resume) {
   E.push({ step: 4, text: `Checked again: all checks of ${raw.name} are within their limits (green).`, act: () => { state.over[vmId] = after; recompute(); } });
   E.push({ step: 5, text: `E-mail to ${mail.to} prepared: "${mail.subject}" (preview, nothing is sent).` });
   E.push({ step: 6, text: `Ticket ${ticket} closed with the evidence of what changed.` });
-  state.run = { vmId, vmName: raw.name, customerName: c.name, ticket, mail, evidence: ev, events: E, shown: 0, ask: buildAsk(c, raw, reasons, DATA.tasks, ev) };
+  state.run = { waitedMin: resume ? DATA.window.customerMin : 0, reasons: reasons.map((r) => r.key), vmId, vmName: raw.name, customerName: c.name, ticket, mail, evidence: ev, events: E, shown: 0, ask: buildAsk(c, raw, reasons, DATA.tasks, ev) };
   tick();
+}
+/** What Auto-fix reports to the Orchestrator's Outcomes tab when a repair is closed. The minutes are simulated: the minutes of the tasks plus the wait for the customer. */
+const OUTCOME_TEMPLATE = { cert: 'renew-certificate', patch: 'patch-vm', unreachable: 'patch-vm' };
+function reportOutcome(r) {
+  if (!inHost()) return;
+  const first = r.reasons[0], def = DATA.tasks[first], raw = DATA.vms.find((v) => v.id === r.vmId);
+  const minutes = r.reasons.reduce((n, k) => n + DATA.tasks[k].minutes, 0);
+  const outcome = { source: 'auto-fix', id: r.ticket, template: OUTCOME_TEMPLATE[first] || first, label: def.title, customer: r.customerName, host: r.vmName, by: 'agent', result: 'done', durationMin: minutes + r.waitedMin, waitedMin: r.waitedMin, attempts: 1, floors: [] };
+  window.parent.postMessage({ type: 'wb:handoff', to: 'infra-orchestrator', payload: { type: 'outcome', outcome }, open: false }, '*');
 }
 function tick() {
   const r = state.run;
@@ -1551,6 +1568,7 @@ function tick() {
     r.timer = setTimeout(tick, DELAY[state.speed]);
   } else {
     state.records[r.vmId] = { vmId: r.vmId, vmName: r.vmName, customerName: r.customerName, ticket: r.ticket, mail: r.mail, evidence: r.evidence, events: r.events, ask: r.ask, asked: false };
+    reportOutcome(r);
     state.run = null;
     render();
   }

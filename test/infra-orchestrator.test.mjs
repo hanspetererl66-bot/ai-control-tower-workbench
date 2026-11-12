@@ -12,7 +12,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/infra-orchestrator/index.html');
 const logicSource = /<script id="orch-logic">([\s\S]*?)<\/script>/.exec(page)[1];
-const L = vm.runInNewContext(`${logicSource}; ({ threshold, autonomyOf, nextWindow, assess, statusOf, autoStarts, stepItem, orderOf, RUN_STEPS })`);
+const L = vm.runInNewContext(`${logicSource}; ({ threshold, autonomyOf, nextWindow, assess, statusOf, autoStarts, stepItem, orderOf, RUN_STEPS, outcomeOf, cleanOutcome, summarize, stats })`);
 const data = repoOrchestratorData();
 const plain = (x) => JSON.parse(JSON.stringify(x));
 const auto = (hitl, extra = {}) => ({ ...plain(data.autonomy), hitl, ...extra });
@@ -206,5 +206,102 @@ test('page: the autonomy matrix is editable and changes the decision; the state 
     assert.equal(saved.auto.overrides.some((o) => o.customer === 'ke' && o.template === 'patch-vm' && o.mode === 'auto'), true);
     const q = load();
     try { q.send(saved, []); assert.equal(q.w.__io.state.swept, true); assert.equal(q.w.__io.state.auto.hitl, false); } finally { q.close(); }
+  } finally { p.close(); }
+});
+
+/* ---- outcomes (phase 0, package A) ---- */
+const OUT = (over = {}) => ({ source: 'auto-fix', id: 'OP-1', template: 'patch-vm', label: 'Patch', customer: 'C', host: 'h', by: 'agent', result: 'done', durationMin: 60, waitedMin: 0, attempts: 1, floors: [], ...over });
+
+test('outcomeOf: a finished plan becomes one record, minutes from the runbook plus the waiting, nothing while it is open', () => {
+  const a = L.assess(data, auto(false), f('F-801'));
+  assert.equal(L.outcomeOf(data, a, {}), null);
+  const o = plain(L.outcomeOf(data, a, { done: true, by: 'agent', waited: 0 }));
+  assert.deepEqual([o.source, o.result, o.by, o.durationMin, o.waitedMin, o.attempts], ['orchestrator', 'done', 'agent', 12, 0, 1]);
+  const p = L.assess(data, auto(true), f('F-803'));
+  const waited = data.timing.approvalMin + data.timing.customerMin;
+  const q = plain(L.outcomeOf(data, p, { done: true, approved: true, waited }));
+  assert.deepEqual([q.by, q.durationMin, q.waitedMin, q.floors], ['person', 55 + waited, waited, ['prod']]);
+});
+
+test('outcomeOf: a rolled-back run counts the lost minutes, a retry that works counts both runs, a rejected plan only its waiting', () => {
+  const a = L.assess(data, auto(false), f('F-802')), tm = data.timing, lost = Math.round(12 * tm.rollbackShare) + tm.rollbackMin;
+  const r = plain(L.outcomeOf(data, a, { rolledBack: true, attempts: 1, step: 5 }));
+  assert.deepEqual([r.result, r.by, r.durationMin, r.attempts], ['rolled-back', 'agent', lost, 1]);
+  const again = plain(L.outcomeOf(data, a, { done: true, attempts: 1, approved: true, waited: 45 }));
+  assert.deepEqual([again.result, again.by, again.durationMin, again.attempts], ['done', 'person', 45 + 12 + lost, 2]);
+  const x = plain(L.outcomeOf(data, a, { rejected: true, waited: 45 }));
+  assert.deepEqual([x.result, x.durationMin, x.attempts], ['rejected', 45, 0]);
+});
+
+test('cleanOutcome keeps only known sources and results and short plain text, and caps the numbers', () => {
+  assert.equal(L.cleanOutcome(null), null);
+  assert.equal(L.cleanOutcome(OUT({ source: 'evil' })), null);
+  assert.equal(L.cleanOutcome(OUT({ result: 'maybe' })), null);
+  assert.equal(L.cleanOutcome(OUT({ by: 'robot' })), null);
+  assert.equal(L.cleanOutcome(OUT({ id: '' })), null);
+  const c = plain(L.cleanOutcome(OUT({ customer: '<b>X</b>\nBcc', durationMin: 1e9, waitedMin: 5e9, attempts: 99, floors: ['a', '<i>', 3, 'b', 'c', 'd', 'e', 'f'], extra: 'dropped' })));
+  assert.equal(c.customer, 'b X /b Bcc');
+  assert.equal(c.durationMin, 100000);
+  assert.ok(c.waitedMin <= c.durationMin);
+  assert.equal(c.attempts, 9);
+  assert.equal(c.floors.length <= 5, true);
+  assert.equal(c.extra, undefined);
+});
+
+test('summarize: mean time to repair, share by the agent, rollback rate, floor share and waiting, overall and per source and task', () => {
+  const list = [OUT({ id: 'a', durationMin: 60, by: 'agent' }), OUT({ id: 'b', durationMin: 120, by: 'person', waitedMin: 90, floors: ['prod'] }), OUT({ id: 'c', result: 'rolled-back', durationMin: 30 }), OUT({ id: 'd', result: 'rejected', durationMin: 45, waitedMin: 45, by: 'person' }), OUT({ id: 'e', source: 'service-request', template: 'renew-certificate', label: 'Renew', durationMin: 100, by: 'person', waitedMin: 90 })];
+  const S = plain(L.summarize(list));
+  assert.equal(S.all.n, 5);
+  assert.equal(S.all.mttr, Math.round((60 + 120 + 100) / 3));
+  assert.equal(S.all.agentShare, 33);
+  assert.equal(S.all.rollbackRate, 25, '1 of the 4 that ran');
+  assert.equal(S.all.floorShare, 20);
+  assert.equal(S.all.wait, Math.round((0 + 90 + 0 + 90) / 4), 'a rejected plan is not a run');
+  assert.deepEqual(S.bySource.map((x) => x.key), ['auto-fix', 'service-request']);
+  assert.deepEqual(S.byTemplate.map((x) => [x.key, x.label]), [['patch-vm', 'Patch'], ['renew-certificate', 'Renew']]);
+  assert.deepEqual(plain(L.summarize([])).all, { n: 0, done: 0, mttr: null, agentShare: null, rollbackRate: null, floorShare: null, wait: null });
+});
+
+test('the invented history is complete, marked as a sample and valid; the runbook minutes match the service request Space', () => {
+  assert.equal(data.history.length, 12);
+  for (const o of data.history) { assert.equal(o.sample, true); assert.ok(L.cleanOutcome(o), o.id); assert.equal(o.durationMin >= o.waitedMin, true); }
+  const ops = read('examples/infra-ops/index.html');
+  const table = /var RUN_MIN = (\{[^}]*\})/.exec(ops)[1];
+  const parsed = JSON.parse(table.replace(/'/g, '"'));
+  for (const rb of data.runbooks) assert.equal(parsed[rb.template], rb.minutes, rb.template);
+  const ctl = JSON.parse(read('examples/infra-ops-control/data.json'));
+  assert.equal(ctl.window.customerMin, data.timing.customerMin);
+});
+
+test('page: the Outcomes tab shows the demo warning and the numbers; the history can be switched off', () => {
+  const p = load();
+  try {
+    p.doc.querySelector('[data-tab=outcomes]').click();
+    assert.match(p.doc.body.textContent, /Demo numbers/);
+    assert.match(p.doc.body.textContent, /history below is invented too/);
+    const before = p.doc.querySelector('.kpi b').textContent;
+    assert.match(before, /\d+ (min|h)/);
+    const h = p.doc.querySelector('#hist'); h.checked = false; h.dispatchEvent(new p.w.Event('change', { bubbles: true }));
+    assert.match(p.doc.body.textContent, /Nothing finished yet/);
+    assert.equal(p.doc.querySelector('.kpi b').textContent, 'n/a');
+  } finally { p.close(); }
+});
+
+test('page: the plans of this Space become outcomes with the waiting; outcomes from other Spaces arrive through the hand-over, once, and bad ones are ignored', () => {
+  const p = load();
+  try {
+    p.doc.querySelector('[data-act=sweep]').click();
+    p.doc.querySelector('[data-act=approve][data-id=F-808]').click();
+    p.w.__io.finish();
+    const own = p.w.__io.outcomes().filter((o) => o.source === 'orchestrator');
+    assert.deepEqual(plain(own.map((o) => [o.id, o.by, o.waitedMin, o.durationMin])), [['F-808', 'person', 45, 57]]);
+    const good = OUT({ id: 'OP-2101', customer: 'Muster Industrie AG', label: 'Install security patch', durationMin: 235, waitedMin: 180 });
+    p.send(null, [{ from: 'infra-ops-control', payload: { type: 'outcome', outcome: good } }, { from: 'infra-ops-control', payload: { type: 'outcome', outcome: good } }, { from: 'x', payload: { type: 'outcome', outcome: OUT({ source: 'evil', id: 'Z' }) } }]);
+    assert.equal(p.w.__io.state.external.length, 1, 'once, and the bad one is ignored');
+    p.doc.querySelector('[data-tab=outcomes]').click();
+    assert.match(p.doc.body.textContent, /Auto-fix[\s\S]*OP-2101/);
+    assert.match(p.doc.querySelector('#view').textContent, /Install security patch/);
+    const saved = p.posted.filter((x) => x.type === 'wb:state').at(-1).state;
+    assert.equal(saved.external.length, 1, 'kept across a trip');
   } finally { p.close(); }
 });

@@ -260,6 +260,18 @@ button.primary:hover{background:var(--purple-deep)}
 button.ghost{font:inherit;font-size:12px;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 13px;cursor:pointer}
 button.ghost:hover{border-color:var(--purple-border)}
 select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink);padding:7px 10px}
+/* outcomes */
+.otab{border-collapse:collapse;width:100%;font-size:12px}
+.otab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px;padding:0 10px 8px 0;white-space:nowrap}
+.otab td{padding:8px 10px 8px 0;border-top:1px solid var(--line-2);vertical-align:middle}
+.otab td.tk{font-weight:650;white-space:nowrap}
+.mbar{display:inline-block;vertical-align:middle;width:90px;height:6px;border-radius:99px;background:var(--line-2);overflow:hidden;margin-right:8px}
+.mbar i{display:block;height:100%;width:var(--w);border-radius:99px;background:var(--purple)}
+.mval{font-size:12px;font-variant-numeric:tabular-nums}
+.banner{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:var(--radius-s);padding:10px 14px;margin-bottom:16px;font-size:13px}
+.banner svg.i{flex:none}
+.hist{margin-left:8px;cursor:pointer}
+@media (max-width:700px){.otab{display:block;overflow-x:auto}}
 /* orchestrator */
 .ctrl{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between;padding:16px 20px;margin-bottom:16px;background:linear-gradient(135deg,var(--purple-dim),var(--surface) 65%);border-color:var(--purple-border)}
 .sw{display:flex;gap:14px;align-items:center}
@@ -546,25 +558,29 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
    "template": "renew-certificate",
    "risk": "low",
    "hours": 1,
-   "does": "Issue the new certificate, install it, reload the service (no restart), check the chain and a TLS handshake."
+   "does": "Issue the new certificate, install it, reload the service (no restart), check the chain and a TLS handshake.",
+   "minutes": 12
   },
   {
    "template": "patch-vm",
    "risk": "medium",
    "hours": 4,
-   "does": "Snapshot, apply the patches, restart the VM, wait for the dependent systems, check health."
+   "does": "Snapshot, apply the patches, restart the VM, wait for the dependent systems, check health.",
+   "minutes": 55
   },
   {
    "template": "move-vm",
    "risk": "high",
    "hours": 6,
-   "does": "Snapshot, move the VM to larger storage, start it, check dependencies and data."
+   "does": "Snapshot, move the VM to larger storage, start it, check dependencies and data.",
+   "minutes": 140
   },
   {
    "template": "update-dns-record",
    "risk": "low",
    "hours": 1,
-   "does": "Change the record with a short TTL, check the resolution from two places."
+   "does": "Change the record with a short TTL, check the resolution from two places.",
+   "minutes": 8
   }
  ],
  "autonomy": {
@@ -675,6 +691,207 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
    "signal": "TLS certificate expires on 2026-10-30 (9 days)",
    "evidence": "Not After 2026-10-30; automatic renewal is not configured for this system."
   }
+ ],
+ "timing": {
+  "approvalMin": 45,
+  "customerMin": 180,
+  "rollbackMin": 10,
+  "rollbackShare": 0.7,
+  "note": "Simulated minutes, assumptions for the demo: a person needs 45 minutes to approve, the customer 180 minutes to agree a window; a run takes the minutes of its runbook; a rollback takes 70 % of the run plus 10 minutes."
+ },
+ "history": [
+  {
+   "id": "H-01",
+   "source": "service-request",
+   "template": "renew-certificate",
+   "customer": "Muster Industrie AG",
+   "host": "proxy-edge-01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 102,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "H-02",
+   "source": "service-request",
+   "template": "patch-vm",
+   "customer": "Beispiel Pharma GmbH",
+   "host": "bp-qas-app01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 325,
+   "waitedMin": 270,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-03",
+   "source": "service-request",
+   "template": "patch-vm",
+   "customer": "Kurpfalz Energie eG",
+   "host": "ke-prd-app01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 325,
+   "waitedMin": 270,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-04",
+   "source": "service-request",
+   "template": "move-vm",
+   "customer": "Nordlicht Logistik AG",
+   "host": "nl-qas-app01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 410,
+   "waitedMin": 270,
+   "attempts": 1,
+   "floors": [
+    "risk"
+   ],
+   "sample": true,
+   "label": "Move a VM"
+  },
+  {
+   "id": "H-05",
+   "source": "service-request",
+   "template": "update-dns-record",
+   "customer": "Alpenwerk Maschinenbau AG",
+   "host": "aw-s4-prd",
+   "by": "person",
+   "result": "done",
+   "durationMin": 98,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Change a DNS record"
+  },
+  {
+   "id": "H-06",
+   "source": "service-request",
+   "template": "patch-vm",
+   "customer": "Hanseatic Retail GmbH",
+   "host": "hr-qas-app01",
+   "by": "person",
+   "result": "rolled-back",
+   "durationMin": 138,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-07",
+   "source": "service-request",
+   "template": "renew-certificate",
+   "customer": "Kurpfalz Energie eG",
+   "host": "ke-s4-prd",
+   "by": "person",
+   "result": "done",
+   "durationMin": 102,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "H-08",
+   "source": "auto-fix",
+   "template": "renew-certificate",
+   "customer": "Nordlicht Logistik",
+   "host": "cc-prd-01",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 12,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "H-09",
+   "source": "auto-fix",
+   "template": "patch-vm",
+   "customer": "Nordlicht Logistik",
+   "host": "edi-gw-01",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 55,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-10",
+   "source": "auto-fix",
+   "template": "patch-vm",
+   "customer": "Hansa Maritime",
+   "host": "port-gw-01",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 40,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-11",
+   "source": "auto-fix",
+   "template": "patch-vm",
+   "customer": "Muster Industrie AG",
+   "host": "proxy-edge-02",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 235,
+   "waitedMin": 180,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-12",
+   "source": "auto-fix",
+   "template": "renew-certificate",
+   "customer": "Alpenblick Retail",
+   "host": "shop-web-01",
+   "by": "agent",
+   "result": "rolled-back",
+   "durationMin": 18,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  }
  ]
 }
 </script>
@@ -773,6 +990,47 @@ function stepItem(a, st) {
   return { text: RUN_STEPS[st.step - 1] + ' finished', step: st.step };
 }
 
+/* ---- outcomes: one record per finished measure, the same shape from every source, and the numbers made from them ---- */
+const OUTCOME_SOURCES = ['orchestrator', 'auto-fix', 'service-request'];
+const OUTCOME_RESULTS = ['done', 'rolled-back', 'rejected'];
+const clipText = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n) : '');
+const mins = (v) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100000, Math.round(v))) : 0);
+/** The outcome of one plan of this Space, or null while it is still open. Minutes are simulated (data.timing). */
+function outcomeOf(data, a, s) {
+  if (!(s.done || s.rolledBack || s.rejected)) return null;
+  const tm = data.timing, rb = a.runbook, waited = s.waited || 0;
+  const lost = Math.round(rb.minutes * tm.rollbackShare) + tm.rollbackMin;
+  const result = s.rejected ? 'rejected' : s.done ? 'done' : 'rolled-back';
+  const run = s.rejected ? 0 : s.done ? rb.minutes + (s.attempts ? lost : 0) : lost;
+  const by = s.rejected || !(a.mode === 'auto' && !s.approved) ? 'person' : 'agent';
+  const c = data.customers.find((x) => x.id === a.finding.customer);
+  const t = data.templates.find((x) => x.id === a.finding.template);
+  return { source: 'orchestrator', id: a.id, template: a.finding.template, label: t ? t.label : a.finding.template, customer: c ? c.name : a.finding.customer, host: a.finding.host, by, result,
+    durationMin: waited + run, waitedMin: waited, attempts: s.rejected ? 0 : (s.attempts || 0) + (s.done ? 1 : 0), floors: a.floors.map((f) => f.id) };
+}
+/** An outcome from another Space: only known sources and results, short plain text, sane numbers. */
+function cleanOutcome(o) {
+  if (!o || typeof o !== 'object') return null;
+  if (!OUTCOME_SOURCES.includes(o.source) || !OUTCOME_RESULTS.includes(o.result) || (o.by !== 'agent' && o.by !== 'person')) return null;
+  const id = clipText(o.id, 30), template = clipText(o.template, 40), host = clipText(o.host, 60), customer = clipText(o.customer, 60);
+  if (!id || !template) return null;
+  const durationMin = mins(o.durationMin), waitedMin = Math.min(mins(o.waitedMin), durationMin);
+  return { source: o.source, id, template, label: clipText(o.label, 40) || template, customer, host, by: o.by, result: o.result, durationMin, waitedMin, attempts: Math.min(9, mins(o.attempts)),
+    floors: (Array.isArray(o.floors) ? o.floors : []).slice(0, 5).map((f) => clipText(f, 20)).filter(Boolean) };
+}
+const pct = (n, d) => (d ? Math.round(100 * n / d) : null);
+const meanOf = (xs) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+/** The numbers: mean time to repair (detected to done), share solved by the agent, rollback rate, share that needed a person's floor, mean waiting time. */
+function stats(list) {
+  const done = list.filter((o) => o.result === 'done'), ran = list.filter((o) => o.result !== 'rejected');
+  return { n: list.length, done: done.length, mttr: meanOf(done.map((o) => o.durationMin)), agentShare: pct(done.filter((o) => o.by === 'agent').length, done.length),
+    rollbackRate: pct(list.filter((o) => o.result === 'rolled-back').length, ran.length), floorShare: pct(list.filter((o) => o.floors.length).length, list.length), wait: meanOf(ran.map((o) => o.waitedMin)) };
+}
+function summarize(list) {
+  const by = (key) => [...new Set(list.map((o) => o[key]))].sort().map((k) => { const xs = list.filter((o) => o[key] === k); return { key: k, label: xs[0].label || k, ...stats(xs) }; });
+  return { all: stats(list), bySource: by('source'), byTemplate: by('template') };
+}
+
 const orderOf = (list) => list.slice().sort((x, y) => x.finding.deadlineDays - y.finding.deadlineDays || x.id.localeCompare(y.id));
 /* @logic-end */
 </script>
@@ -784,7 +1042,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const hosted = window.parent !== window;
-const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0 };
+const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true };
 const timers = {};
 const label = (t) => (DATA.templates.find((x) => x.id === t) || { label: t }).label;
 const cust = (id) => DATA.customers.find((c) => c.id === id);
@@ -801,10 +1059,12 @@ const PILL = { done: 'green', running: 'purple', ready: 'purple', 'waiting-appro
 const st = (id) => (state.items[id] = state.items[id] || {});
 const assessments = () => DATA.findings.map((f) => assess(DATA, state.auto, f));
 const find = (id) => assessments().find((a) => a.id === id);
+const ownOutcomes = () => assessments().map((a) => outcomeOf(DATA, a, st(a.id))).filter(Boolean);
+const allOutcomes = () => [...(state.history ? DATA.history : []), ...state.external, ...ownOutcomes()];
 const slot = (w) => { const [d, a] = w.start.split('T'), [e, b] = w.end.split('T'); return `${d} ${a}–${b}${e !== d ? ' (next day)' : ''}`; };
 
 function log(who, text, id) { state.n += 1; state.audit.push({ n: state.n, who, text, id: id || '' }); }
-function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n } }, '*'); }
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history } }, '*'); }
 
 /* ---------- runs ---------- */
 function schedule(id) {
@@ -848,12 +1108,12 @@ function setPause(p) {
   if (!p) { assessments().forEach((a) => { if (st(a.id).running) schedule(a.id); }); kick(); }
   render();
 }
-function approve(id) { const a = find(id), s = st(id); if (!a || statusOf(a, s).key !== 'waiting-approval') return; s.approved = true; log('person', `${id}: approved.`, id); start(id); render(); }
+function approve(id) { const a = find(id), s = st(id); if (!a || statusOf(a, s).key !== 'waiting-approval') return; s.approved = true; s.waited = (s.waited || 0) + DATA.timing.approvalMin; log('person', `${id}: approved.`, id); start(id); render(); }
 function reject(id) { const s = st(id); s.rejected = true; s.running = false; log('person', `${id}: rejected, no action.`, id); render(); }
-function retry(id) { const a = find(id), s = st(id); if (!a || !s.rolledBack) return; s.rolledBack = false; s.approved = true; log('person', `${id}: new try approved.`, id); start(id); render(); }
+function retry(id) { const a = find(id), s = st(id); if (!a || !s.rolledBack) return; s.rolledBack = false; s.approved = true; s.waited = (s.waited || 0) + DATA.timing.approvalMin; log('person', `${id}: new try approved.`, id); start(id); render(); }
 function agree(id, w) {
   const a = find(id), s = st(id); if (!a) return;
-  s.agreed = true; s.window = w || a.window;
+  s.agreed = true; s.window = w || a.window; s.waited = (s.waited || 0) + DATA.timing.customerMin;
   log('person', `${id}: window ${slot(s.window)} agreed with the customer.`, id);
   kick(); render();
 }
@@ -862,6 +1122,12 @@ function toHotline(id) {
   log('agent', `${id}: window handed to the customer hotline (${a.hours} h).`, id);
   window.parent.postMessage({ type: 'wb:handoff', to: 'infra-hotline', payload: { type: 'window-request', hours: a.hours, task: { id, template: a.finding.template, target: a.finding.host, customer: a.finding.customer, window: [w.start, w.end], requester: 'orchestrator', params: {} } }, open: true, notice: 'Window for ' + id }, '*');
   render();
+}
+function onOutcome(raw) {
+  const o = cleanOutcome(raw); if (!o) return;
+  if (state.external.some((x) => x.source === o.source && x.id === o.id)) return;
+  state.external.push(o);
+  log('agent', `Outcome from ${SRC[o.source]}: ${o.id} ${o.result}, ${o.by === 'agent' ? 'by the agent' : 'by a person'}, ${fmtMin(o.durationMin)}.`, o.id);
 }
 const TIME = /^\d{4}-\d\d-\d\dT\d\d:\d\d$/;
 function onWindowResult(p) {
@@ -925,10 +1191,29 @@ function auditView() {
   if (!state.audit.length) return '<div class="empty rise"><h2>The audit log is empty</h2><p>Every decision of the orchestrator and every click of a person is written here, with the reason.</p></div>';
   return `<div class="card rise"><ul class="log">${state.audit.slice().reverse().map((e) => `<li><span class="n">#${e.n}</span><span class="by ${e.who}">${e.who === 'agent' ? 'Orchestrator' : 'Person'}</span><span>${esc(e.text)}</span></li>`).join('')}</ul></div>`;
 }
+const SRC = { orchestrator: 'Orchestrator', 'auto-fix': 'Auto-fix', 'service-request': 'Service request' };
+const tlabel = (t) => (DATA.templates.find((x) => x.id === t) || { label: t }).label;
+const fmtMin = (m) => (m === null ? 'n/a' : m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`);
+const fmtPct = (v) => (v === null ? 'n/a' : v + ' %');
+function bar(v, max, cls) { return `<span class="mbar ${cls || ''}"><i style="--w:${max ? Math.max(2, Math.round(100 * (v || 0) / max)) : 0}%"></i></span>`; }
+function outcomesView() {
+  const list = allOutcomes(), S = summarize(list), A = S.all, maxM = Math.max(1, ...S.bySource.concat(S.byTemplate).map((x) => x.mttr || 0));
+  const own = ownOutcomes().length + state.external.length;
+  const tiles = [['purple', 'clock', fmtMin(A.mttr), 'mean time to repair'], ['green', 'bot', fmtPct(A.agentShare), 'solved by the agent'], ['red', 'alert', fmtPct(A.rollbackRate), 'rolled back'], ['amber', 'lock', fmtPct(A.floorShare), 'needed a person (floor)'], ['grey', 'user', fmtMin(A.wait), 'waiting for people']];
+  const row = (x, name) => `<tr><td class="tk">${esc(name)}</td><td>${x.n}</td><td>${bar(x.mttr, maxM)}<span class="mval">${fmtMin(x.mttr)}</span></td><td>${fmtPct(x.agentShare)}</td><td>${fmtPct(x.rollbackRate)}</td><td>${fmtMin(x.wait)}</td></tr>`;
+  const head = (first) => `<thead><tr><th>${first}</th><th>Measures</th><th>Mean time to repair</th><th>By the agent</th><th>Rolled back</th><th>Waiting</th></tr></thead>`;
+  const recent = list.slice().reverse().slice(0, 14).map((o) => `<tr><td class="tk">${esc(o.id)}</td><td>${esc(SRC[o.source])}</td><td>${esc(o.label || tlabel(o.template))}</td><td>${esc(o.customer)}</td><td><span class="pill ${o.result === 'done' ? 'green' : o.result === 'rolled-back' ? 'red' : 'grey'}">${esc(o.result)}</span></td><td>${o.by === 'agent' ? 'Agent' : 'Person'}</td><td>${fmtMin(o.durationMin)}</td>${o.floors.length ? `<td>${o.floors.map((f) => `<span class="chip floor">${esc(f)}</span>`).join(' ')}</td>` : '<td></td>'}</tr>`).join('');
+  return `<div class="banner rise">${ic('alert')}<span><b>Demo numbers.</b> The minutes are simulated and the findings are invented${state.history ? ', and the history below is invented too' : ''}. This tab shows how autonomy is measured, not how well it works.</span></div>
+  <div class="kpis rise">${tiles.map(([k, i, v, l]) => `<div class="kpi ${k}"><span class="ico">${ic(i)}</span><div><b>${esc(v)}</b><span>${l}</span></div></div>`).join('')}</div>
+  <div class="card rise"><h2>By source</h2><table class="otab">${head('Source')}<tbody>${S.bySource.map((x) => row(x, SRC[x.key])).join('')}</tbody></table></div>
+  <div class="card rise" style="--d:60ms"><h2>By task</h2><table class="otab">${head('Task')}<tbody>${S.byTemplate.map((x) => row(x, x.label)).join('')}</tbody></table></div>
+  <div class="card rise" style="--d:120ms"><h2>The latest measures</h2><table class="otab"><thead><tr><th>Id</th><th>Source</th><th>Task</th><th>Customer</th><th>Result</th><th>Done by</th><th>Time</th><th>Floors</th></tr></thead><tbody>${recent || '<tr><td colspan="8" class="note">Nothing finished yet.</td></tr>'}</tbody></table>
+    <p class="note" style="margin:10px 0 0">${own} from this session (this Space, Auto-fix and the service requests report their finished measures here)${state.history ? ' plus 12 invented ones' : ''}. <label class="hist"><input type="checkbox" id="hist"${state.history ? ' checked' : ''}> Include the invented history</label></p></div>`;
+}
 function render() {
   const waiting = assessments().filter((a) => state.swept && statusOf(a, st(a.id)).key === 'waiting-approval').length;
-  const tabs = [['plans', 'Plans', 'list', waiting || ''], ['autonomy', 'Autonomy', 'sliders', ''], ['audit', 'Audit log', 'shield', state.audit.length || '']];
-  const body = state.tab === 'plans' ? plansView() : state.tab === 'autonomy' ? autonomyView() : auditView();
+  const tabs = [['plans', 'Plans', 'list', waiting || ''], ['autonomy', 'Autonomy', 'sliders', ''], ['outcomes', 'Outcomes', 'clock', ''], ['audit', 'Audit log', 'shield', state.audit.length || '']];
+  const body = state.tab === 'plans' ? plansView() : state.tab === 'autonomy' ? autonomyView() : state.tab === 'outcomes' ? outcomesView() : auditView();
   $('#view').innerHTML = `${controls()}<div class="tabs" role="group" aria-label="View">${tabs.map(([k, l, i, n]) => `<button type="button" data-tab="${k}" aria-pressed="${state.tab === k}">${ic(i)}${l}${n ? `<span class="n">${n}</span>` : ''}</button>`).join('')}</div>${body}`;
   save();
 }
@@ -947,7 +1232,9 @@ document.addEventListener('click', (e) => {
   else if (b.dataset.act === 'agree') agree(id);
 });
 document.addEventListener('change', (e) => {
-  const t = e.target; if (!t.dataset || !t.dataset.a) return;
+  const t = e.target;
+  if (t.id === 'hist') { state.history = t.checked; render(); return; }
+  if (!t.dataset || !t.dataset.a) return;
   if (t.dataset.a === 'default') { state.auto.defaults[t.dataset.t] = t.value; log('person', `Autonomy matrix: default for ${label(t.dataset.t)} is now ${t.value === 'auto' ? 'the agent' : 'a person'}.`); }
   else {
     state.auto.overrides = state.auto.overrides.filter((o) => !(o.customer === t.dataset.c && o.template === t.dataset.t));
@@ -960,13 +1247,13 @@ document.addEventListener('change', (e) => {
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, s0 = m.state;
-  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; }
-  (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => { const p = h && h.payload; if (p && p.type === 'window-result') onWindowResult(p); });
+  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; }
+  (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => { const p = h && h.payload; if (p && p.type === 'window-result') onWindowResult(p); else if (p && p.type === 'outcome') onOutcome(p.outcome); });
   Object.keys(state.items).forEach((id) => { if (state.items[id].running && !state.paused) schedule(id); });
   render();
 });
 render();
-window.__io = { state, assessments, find, sweep, approve, reject, retry, agree, setHitl, setPause, kick, tick, render, finish() { for (let i = 0; i < 400; i++) { let any = false; Object.keys(state.items).forEach((id) => { if (state.items[id].running && !state.paused) { tick(id); any = true; } }); if (!any) break; } } };
+window.__io = { onOutcome, outcomes: allOutcomes, state, assessments, find, sweep, approve, reject, retry, agree, setHitl, setPause, kick, tick, render, finish() { for (let i = 0; i < 400; i++) { let any = false; Object.keys(state.items).forEach((id) => { if (state.items[id].running && !state.paused) { tick(id); any = true; } }); if (!any) break; } } };
 })();
 </script>
 </body>

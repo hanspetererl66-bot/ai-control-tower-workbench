@@ -168,25 +168,29 @@
    "template": "renew-certificate",
    "risk": "low",
    "hours": 1,
-   "does": "Issue the new certificate, install it, reload the service (no restart), check the chain and a TLS handshake."
+   "does": "Issue the new certificate, install it, reload the service (no restart), check the chain and a TLS handshake.",
+   "minutes": 12
   },
   {
    "template": "patch-vm",
    "risk": "medium",
    "hours": 4,
-   "does": "Snapshot, apply the patches, restart the VM, wait for the dependent systems, check health."
+   "does": "Snapshot, apply the patches, restart the VM, wait for the dependent systems, check health.",
+   "minutes": 55
   },
   {
    "template": "move-vm",
    "risk": "high",
    "hours": 6,
-   "does": "Snapshot, move the VM to larger storage, start it, check dependencies and data."
+   "does": "Snapshot, move the VM to larger storage, start it, check dependencies and data.",
+   "minutes": 140
   },
   {
    "template": "update-dns-record",
    "risk": "low",
    "hours": 1,
-   "does": "Change the record with a short TTL, check the resolution from two places."
+   "does": "Change the record with a short TTL, check the resolution from two places.",
+   "minutes": 8
   }
  ],
  "autonomy": {
@@ -296,6 +300,207 @@
    "deadlineDays": 9,
    "signal": "TLS certificate expires on 2026-10-30 (9 days)",
    "evidence": "Not After 2026-10-30; automatic renewal is not configured for this system."
+  }
+ ],
+ "timing": {
+  "approvalMin": 45,
+  "customerMin": 180,
+  "rollbackMin": 10,
+  "rollbackShare": 0.7,
+  "note": "Simulated minutes, assumptions for the demo: a person needs 45 minutes to approve, the customer 180 minutes to agree a window; a run takes the minutes of its runbook; a rollback takes 70 % of the run plus 10 minutes."
+ },
+ "history": [
+  {
+   "id": "H-01",
+   "source": "service-request",
+   "template": "renew-certificate",
+   "customer": "Muster Industrie AG",
+   "host": "proxy-edge-01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 102,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "H-02",
+   "source": "service-request",
+   "template": "patch-vm",
+   "customer": "Beispiel Pharma GmbH",
+   "host": "bp-qas-app01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 325,
+   "waitedMin": 270,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-03",
+   "source": "service-request",
+   "template": "patch-vm",
+   "customer": "Kurpfalz Energie eG",
+   "host": "ke-prd-app01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 325,
+   "waitedMin": 270,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-04",
+   "source": "service-request",
+   "template": "move-vm",
+   "customer": "Nordlicht Logistik AG",
+   "host": "nl-qas-app01",
+   "by": "person",
+   "result": "done",
+   "durationMin": 410,
+   "waitedMin": 270,
+   "attempts": 1,
+   "floors": [
+    "risk"
+   ],
+   "sample": true,
+   "label": "Move a VM"
+  },
+  {
+   "id": "H-05",
+   "source": "service-request",
+   "template": "update-dns-record",
+   "customer": "Alpenwerk Maschinenbau AG",
+   "host": "aw-s4-prd",
+   "by": "person",
+   "result": "done",
+   "durationMin": 98,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Change a DNS record"
+  },
+  {
+   "id": "H-06",
+   "source": "service-request",
+   "template": "patch-vm",
+   "customer": "Hanseatic Retail GmbH",
+   "host": "hr-qas-app01",
+   "by": "person",
+   "result": "rolled-back",
+   "durationMin": 138,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-07",
+   "source": "service-request",
+   "template": "renew-certificate",
+   "customer": "Kurpfalz Energie eG",
+   "host": "ke-s4-prd",
+   "by": "person",
+   "result": "done",
+   "durationMin": 102,
+   "waitedMin": 90,
+   "attempts": 1,
+   "floors": [
+    "prod"
+   ],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "H-08",
+   "source": "auto-fix",
+   "template": "renew-certificate",
+   "customer": "Nordlicht Logistik",
+   "host": "cc-prd-01",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 12,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "H-09",
+   "source": "auto-fix",
+   "template": "patch-vm",
+   "customer": "Nordlicht Logistik",
+   "host": "edi-gw-01",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 55,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-10",
+   "source": "auto-fix",
+   "template": "patch-vm",
+   "customer": "Hansa Maritime",
+   "host": "port-gw-01",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 40,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-11",
+   "source": "auto-fix",
+   "template": "patch-vm",
+   "customer": "Muster Industrie AG",
+   "host": "proxy-edge-02",
+   "by": "agent",
+   "result": "done",
+   "durationMin": 235,
+   "waitedMin": 180,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "H-12",
+   "source": "auto-fix",
+   "template": "renew-certificate",
+   "customer": "Alpenblick Retail",
+   "host": "shop-web-01",
+   "by": "agent",
+   "result": "rolled-back",
+   "durationMin": 18,
+   "waitedMin": 0,
+   "attempts": 1,
+   "floors": [],
+   "sample": true,
+   "label": "Renew a TLS certificate"
   }
  ]
 }
