@@ -551,7 +551,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
     var h = pick() + '<h2>Is everything right on our side?</h2><p class="note">Checked before any contact with ' + esc(c.name) + '. A late payment that we caused needs an answer, not a reminder.</p>' + strip('customer_360, tickets, order_to_cash', JSON.stringify({ customer: c.id }));
     h += bad.length ? '<div class="verdict warn"><b>Clarify first</b>' + bad.length + ' of ' + c.checks.length + ' checks need attention. No reminder goes out while they are open.</div>'
       : '<div class="verdict ok"><b>Nothing on our side blocks contact</b>All ' + c.checks.length + ' checks are clear.</div>';
-    h += '<div class="card scroll"><table><tbody>' + c.checks.map(function (k) {
+    h += '<div class="card scroll"><table><thead><tr><th>Status</th><th>Source</th><th>Check</th></tr></thead><tbody>' + c.checks.map(function (k) {
       return '<tr><td style="width:24px">' + sym(k.ok) + '</td><td style="width:140px"><span class="tag">' + esc(k.source) + '</span></td><td>' + esc(k.text) + '</td></tr>';
     }).join('') + '</tbody></table></div><p class="note">Sources: the Customer 360, Order-to-Cash and ticket Spaces and the contract. Here they are sample data.</p>';
     return h;
@@ -597,7 +597,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
         var p = D.persons[k];
         return '<tr><td><b>' + esc(p.name) + '</b><div class="note" style="margin:0">' + esc(p.role) + '</div></td>' + types.map(function (t) { return '<td>' + sym(!!p.can[t]) + '</td>'; }).join('') + '</tr>';
       }).join('') + '</tbody></table></div>' +
-      '<div class="card scroll"><h2>Seven attempts, one rule</h2><p class="note">Run through the same rule the Action tab uses.</p><table><tbody>' + L.attempts().map(function (a) {
+      '<div class="card scroll"><h2>Seven attempts, one rule</h2><p class="note">Run through the same rule the Action tab uses.</p><table><thead><tr><th>Result</th><th>Who</th><th>Attempt</th><th>Outcome</th></tr></thead><tbody>' + L.attempts().map(function (a) {
         return '<tr><td>' + sym(a.ok) + '</td><td><b>' + esc(who(a.who)) + '</b></td><td>' + esc(a.title) + '</td><td>' + esc(a.reason) + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
       '<div class="card scroll"><h2>Audit trail</h2><p class="note">What was recommended, who released it, what happened.</p><table><thead><tr><th>Time</th><th>Who</th><th>What</th><th>Tool</th><th>Mode</th></tr></thead><tbody>' + S.log.map(function (e) {
