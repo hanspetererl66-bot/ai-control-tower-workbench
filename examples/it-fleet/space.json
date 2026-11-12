@@ -1,6 +1,6 @@
 {
   "title": "Infra-Operations-Fleet",
-  "description": "Mockup of an IT fleet with 41 fictional customers and about 1,200 VMs: treemap, heatmap and a bundled task inbox, all with the green, yellow, red logic of the Infra VM landscape Space.",
+  "description": "Mockup of an IT fleet with 42 fictional customers and about 1,200 VMs: treemap, heatmap and a bundled task inbox, all with the green, yellow, red logic of the Infra VM landscape Space.",
   "domain": "Autonomous Operations",
   "insights": [
     "Fictional customers and VMs generated from a fixed seed, no live monitoring. A VM is green, yellow or red by the same rules as in the Infra VM landscape Space; a customer is as red as its worst VM.",
