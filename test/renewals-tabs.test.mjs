@@ -21,26 +21,56 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
 
 test('renewals: five tabs, the overview is the start page, only one panel is shown', async () => {
   const p = await open();
-  assert.deepEqual(p.qa('#tabs [role=tab]').map((b) => b.textContent), ['Overview', 'Renewal process', 'Next best action', 'Renewal radar', 'By decision date']);
+  assert.deepEqual(p.qa('#tabs [role=tab]').map((b) => b.textContent), ['Today', 'Renewal process', 'Next best action', 'Renewal radar', 'By decision date']);
   assert.deepEqual(p.visible(), ['pg-overview']);
   for (const [id, pg] of [['nba', 'pg-nba'], ['radar', 'pg-radar'], ['list', 'pg-list'], ['process', 'pg-process'], ['overview', 'pg-overview']]) { click(p.w, p.q('#tab-' + id)); assert.deepEqual(p.visible(), [pg], id); assert.equal(p.q('#tab-' + id).getAttribute('aria-selected'), 'true'); }
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
 
-test('renewals overview: the next six weeks list the late and the upcoming decisions and nothing else', async () => {
+test('renewals today: the time line shows the late and the upcoming decisions of the next six weeks and nothing else; the list is gone', async () => {
   const p = await open();
   const model = p.w.__renewals(), asOf = Date.UTC(2026, 9, 19);
   const days = (c) => Math.round((Date.UTC(+c.decisionDate.slice(0, 4), +c.decisionDate.slice(5, 7) - 1, +c.decisionDate.slice(8, 10)) - asOf) / 864e5);
   const expected = Array.from(model.filter((c) => c.status !== 'Lapsed' && c.stage < 4 && days(c) <= 42), (c) => c.id).sort();
   assert.ok(expected.length >= 4, 'the sample has renewals in the window');
-  assert.deepEqual(p.qa('#six .srow').map((b) => b.dataset.id).sort(), expected);
-  assert.equal(p.qa('#six .rdot').length, expected.length);
-  const late = p.qa('#six .sdate.late').length;
-  assert.equal(late, model.filter((c) => c.status !== 'Lapsed' && days(c) < 0).length, 'late renewals come first and say so');
-  // the customer context narrows the list
+  assert.equal(p.qa('#six .srow').length, 0, 'no list of rows any more');
+  assert.deepEqual(p.qa('#six .rdot').map((b) => b.dataset.id).sort(), expected, 'one dot per renewal in the window');
+  assert.equal(p.qa('#six .rpast .rdot').length, model.filter((c) => c.status !== 'Lapsed' && days(c) < 0).length, 'late renewals sit in the passed lane');
+  // the customer context narrows the time line
   const sel = p.q('#customer'); sel.value = 'lindenau'; sel.dispatchEvent(new p.w.Event('change'));
-  assert.deepEqual(p.qa('#six .srow').map((b) => b.dataset.id).sort(), Array.from(model.filter((c) => c.customerId === 'lindenau' && expected.includes(c.id)), (c) => c.id).sort());
+  assert.deepEqual(p.qa('#six .rdot').map((b) => b.dataset.id).sort(), Array.from(model.filter((c) => c.customerId === 'lindenau' && expected.includes(c.id)), (c) => c.id).sort());
+  p.w.close();
+});
+
+test('renewals today: three numbers first, the other four compact, then time line, grouped cards and the landscape', async () => {
+  const p = await open();
+  const model = p.w.__renewals(), live = model.filter((c) => c.status !== 'Lapsed' && c.stage < 4);
+  const eur = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  const sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), val = (k) => p.q(`.kpi[data-k="${k}"] .v`).textContent;
+  assert.deepEqual(p.qa('#kpis .kpis.primary .kpi').map((b) => b.dataset.k), ['need', 'due', 'red']);
+  assert.deepEqual(p.qa('#kpis .kpis.second .kpi').map((b) => b.dataset.k), ['ret', 'clv', 'auto', 'signed']);
+  const need = live.filter((c) => !c.autoRun && (c.health === 'red' || c.sig.days <= 14));
+  assert.equal(val('need'), String(need.length));
+  assert.equal(val('due'), eur(sum(live.filter((c) => c.sig.days <= 14))));
+  assert.equal(val('red'), eur(sum(live.filter((c) => c.health === 'red'))));
+  assert.ok(need.length > 0 && need.length < live.length, 'the number says something');
+  // the cards are the grouped queue
+  const keys = [...new Set(live.filter((c) => !c.autoRun).map((c) => c.actionKeys[0]))];
+  assert.equal(p.qa('#today-groups .qgrp').length, keys.length);
+  assert.equal(p.qa('#today-groups .qrow').length, live.filter((c) => !c.autoRun).length);
+  // order on the page: numbers, time line, cards, landscape
+  const order = ['#kpis', '#six', '#today-groups', '#land'].map((s) => p.q(s));
+  for (let i = 1; i < order.length; i++) assert.ok(order[i - 1].compareDocumentPosition(order[i]) & p.w.Node.DOCUMENT_POSITION_FOLLOWING, `${i}`);
+  // double-click on a number opens the renewals behind it
+  p.q('.kpi[data-k="need"]').dispatchEvent(new p.w.MouseEvent('dblclick', { bubbles: true }));
+  assert.equal(p.qa('#kpi-detail tbody tr').length, need.length);
+  // a card opened here is the same card in the action queue tab (shared state)
+  const head = p.qa('#today-groups .qhead')[1]; click(p.w, head);
+  click(p.w, p.q('#tab-nba'));
+  assert.equal(p.qa('#queue .qhead')[1].getAttribute('aria-expanded'), 'true');
+  assert.ok(new Set(p.qa('[id]').map((e) => e.id)).size === p.qa('[id]').length, 'no element id twice');
+  assert.deepEqual(p.errors, []);
   p.w.close();
 });
 
