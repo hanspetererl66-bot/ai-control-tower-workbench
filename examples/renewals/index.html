@@ -484,7 +484,18 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
 .qrow.red{border-left-color:var(--red)}.qrow.yellow{border-left-color:var(--amber)}.qrow.green{border-left-color:var(--green)}
 .qrow:hover,.qrow:focus-visible{border-color:var(--purple-border);transform:translateY(-1px);box-shadow:var(--shadow)}
 .qn{font-size:18px;font-weight:650;color:var(--purple)}.qm{display:flex;flex-direction:column;min-width:0}.qm small{color:var(--muted);font-size:12px}.qd{color:var(--muted);font-size:12px;white-space:nowrap}.qv{font-weight:650;white-space:nowrap}
-.queue.enter .qrow{animation:rn-rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 55ms + 150ms)}
+.queue.enter .qgrp{animation:rn-rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 70ms + 120ms)}
+.qgrp{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:var(--radius-s);background:var(--surface)}
+.qgrp.red{border-left-color:var(--red)}.qgrp.yellow{border-left-color:var(--amber)}.qgrp.green{border-left-color:var(--green)}
+.qhead{display:grid;grid-template-columns:32px minmax(0,1fr) 84px auto 16px;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:none;border:0;padding:10px 14px;cursor:pointer}
+.qhead:hover,.qhead:focus-visible{background:var(--wash)}
+.qbar{display:flex;gap:2px;height:8px}.qbar i{display:block;height:8px;border-radius:2px;min-width:6px}.qbar i.red{background:var(--red)}.qbar i.yellow{background:var(--amber)}.qbar i.green{background:var(--green)}
+.chev{width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);justify-self:center;transition:transform .15s}.qhead[aria-expanded=true] .chev{transform:rotate(-135deg)}
+.qbody{display:grid;gap:6px;padding:0 14px 12px 14px}.qbody[hidden]{display:none}
+.qbody .qrow{grid-template-columns:minmax(0,1fr) auto auto auto;padding:7px 12px}.qbody .qrow .qm small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qfoot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px}
+@media (max-width:760px){.qhead{grid-template-columns:28px minmax(0,1fr) auto}.qhead .qbar,.qhead .chev{display:none}.qbody .qrow{grid-template-columns:minmax(0,1fr) auto}.qbody .qrow .qd,.qbody .qrow .pill{grid-column:2}}
+@media (prefers-reduced-motion:reduce){.chev,.queue.enter .qgrp{animation:none;transition:none}}
 .nba{position:relative;overflow:hidden}.nba::before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:var(--purple)}
 @media (max-width:760px){.qrow{grid-template-columns:28px minmax(0,1fr)}.qrow .qd,.qrow .qv,.qrow .pill{grid-column:2}}
 @media (max-width:760px){.srow .pill,.qrow .pill{justify-self:start}.land,.cmapcard{overflow-x:auto}.landsvg{min-width:720px}.cmapsvg{min-width:600px}}
@@ -1774,7 +1785,7 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared (by you)', 'Offer approved (simulated)', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
+const state = { groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -1786,7 +1797,7 @@ function compute() {
     if (run) state.stage[c.id] = 3;
     const st = state.stage[c.id] || 0;
     const p = retention(c, st === 4 ? 'green' : s.health, DATA.rules);
-    return { ...c, auto: ac, autoRun: !!state.auto && ac.eligible, email: ac.pick ? autoEmail(c, ac.pick) : null, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules), ph: phaseOf(c, DATA.asOf, st) };
+    return { ...c, auto: ac, autoRun: !!state.auto && ac.eligible, email: ac.pick ? autoEmail(c, ac.pick) : null, sig: s, health: st === 4 ? 'green' : s.health, stage: st, actions: actions(c, s), actionKeys: actionKeys(c, s), reasons: s.signals.filter((x) => x.level !== 'plus').slice(0, 2).map((x) => x.text), options: opts, chosen, pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules), ph: phaseOf(c, DATA.asOf, st) };
   });
 }
 const byAuto = (a, b) => (b.autoRun - a.autoRun) || (a.autoRun ? a.customer.localeCompare(b.customer) || a.decisionDate.localeCompare(b.decisionDate) : 0);
@@ -2163,10 +2174,33 @@ function renderCustomerView() {
 }
 
 /* ---------- next best action: the queue behind the top card ---------- */
+/** The action queue, grouped by the first action of each renewal (stable key from logic.js): one card per action, the renewals behind it on demand. */
+function actionGroups() {
+  const by = new Map();
+  for (const c of nextBest()) { const k = c.actionKeys[0]; if (!by.has(k)) by.set(k, { key: k, text: c.actions[0], items: [] }); by.get(k).items.push(c); }
+  return [...by.values()].map((g) => ({ ...g, worst: Math.min(...g.items.map((c) => RANK[c.health])), days: Math.min(...g.items.map((c) => c.sig.days)), value: g.items.reduce((a, c) => a + c.annualEur, 0), customers: [...new Set(g.items.map((c) => c.customer.split(' ')[0]))] }))
+    .sort((a, b) => (a.worst - b.worst) || (a.days - b.days) || (b.value - a.value));
+}
+/** One Joule prompt for a whole group; it stays within the 600 characters the Space bridge allows, long lists end with "and N more". */
+function groupPrompt(g) {
+  const head = `Prepare the renewal talks for ${g.items.length} renewals whose next action is "${g.text}": `, tail = '. Use the skill customer-call-prep and the Sub4Me tools. A person reviews everything before it is sent. Please answer in English.';
+  const names = g.items.map((c) => `${c.customer.split(' ')[0]} ${shortName(c)} (SAP ${c.sapCustomerId})`);
+  let list = '', used = 0;
+  for (const n of names) { const next = (list ? '; ' : '') + n, more = names.length - used - 1; if ((head + list + next + (more > 0 ? ' and 99 more' : '') + tail).length > 600) break; list += next; used++; }
+  return head + list + (used < names.length ? ` and ${names.length - used} more` : '') + tail;
+}
 function renderQueue() {
-  const el = $('#queue'), list = nextBest(), ent = enter('queue:' + state.customer);
-  el.innerHTML = '<h2>Action queue</h2><p class="sub">Every renewal that needs a person, most urgent first: red before yellow, then the earlier decision date, then the higher value. Click a row to open the renewal.</p>' +
-    (list.length ? `<div class="queue${ent}">${list.map((c, i) => `<button type="button" class="qrow ${c.health}" data-id="${esc(c.id)}" style="--i:${i}"><span class="qn">${i + 1}</span><span class="qm"><b>${esc(c.actions[0])}</b><small>${esc(shortName(c))} · ${esc(c.customer)}${mailChip(c)}</small></span><span class="qd">${c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d' : c.sig.days + ' d'}</span><span class="qv">${eur(c.annualEur)}</span><span class="pill ${c.health}">${LABEL[c.health]}</span></button>`).join('')}</div>` : '<p class="note">Nothing open for this selection.</p>');
+  const el = $('#queue'), groups = actionGroups(), ent = enter('queue:' + state.customer), total = groups.reduce((a, g) => a + g.items.length, 0);
+  const days = (c) => (c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d' : c.sig.days + ' d');
+  el.innerHTML = `<h2>Action queue</h2><p class="sub">${total} renewal${total === 1 ? '' : 's'} that need a person, grouped by what to do first: ${groups.length} action${groups.length === 1 ? '' : 's'}. Red before yellow, then the earlier decision date, then the higher value. Open a card to see the renewals, click one to open it.</p>` +
+    (groups.length ? `<div class="queue${ent}">${groups.map((g, i) => {
+      const open = state.groups[g.key] !== undefined ? state.groups[g.key] : i === 0, n = (h) => g.items.filter((c) => c.health === h).length, worst = ['red', 'yellow', 'green'][g.worst];
+      return `<section class="qgrp ${worst}" style="--i:${i}"><button type="button" class="qhead" data-gk="${esc(g.key)}" aria-expanded="${open}" aria-controls="qb-${esc(g.key)}"><span class="qn">${i + 1}</span><span class="qm"><b>${esc(g.text)}</b><small>${g.items.length} renewal${g.items.length === 1 ? '' : 's'} · ${esc(g.customers.join(', '))} · earliest decision ${g.days < 0 ? 'passed ' + -g.days + ' d ago' : 'in ' + g.days + ' d'}</small></span><span class="qbar" role="img" aria-label="${n('red')} red, ${n('yellow')} yellow, ${n('green')} green">${['red', 'yellow', 'green'].filter((h) => n(h)).map((h) => `<i class="${h}" style="flex:${n(h)}"></i>`).join('')}</span><span class="qv">${eur(g.value)}</span><span class="chev" aria-hidden="true"></span></button>
+        <div class="qbody" id="qb-${esc(g.key)}"${open ? '' : ' hidden'}>${g.items.map((c) => `<button type="button" class="qrow ${c.health}" data-id="${esc(c.id)}"><span class="qm"><b>${esc(shortName(c))} · ${esc(c.customer)}</b><small>${c.reasons.length ? esc(c.reasons.join(' · ')) : 'No warning signal'}${mailChip(c)}</small></span><span class="qd">${days(c)}</span><span class="qv">${eur(c.annualEur)}</span><span class="pill ${c.health}">${LABEL[c.health]}</span></button>`).join('')}
+        <div class="qfoot"><button class="small" type="button" data-gask="${esc(g.key)}">Ask Joule to prepare all ${g.items.length}</button><span class="sub" style="margin:0">Joule answers in the chat; nothing is sent.</span></div></div></section>`;
+    }).join('')}</div>` : '<p class="note">Nothing open for this selection.</p>');
+  el.querySelectorAll('[data-gk]').forEach((b) => (b.onclick = () => { const g = groups.findIndex((x) => x.key === b.dataset.gk); const cur = state.groups[b.dataset.gk] !== undefined ? state.groups[b.dataset.gk] : g === 0; state.groups[b.dataset.gk] = !cur; renderQueue(); saveState(); }));
+  el.querySelectorAll('[data-gask]').forEach((b) => (b.onclick = () => send(groupPrompt(groups.find((x) => x.key === b.dataset.gask)))));
   el.querySelectorAll('[data-id]').forEach((b) => { b.onclick = () => openRenewal(b.dataset.id); hover(b, () => tipHtml(byId(b.dataset.id))); });
 }
 
@@ -2197,7 +2231,7 @@ function renderGuide() {
   g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="where"><b>Where:</b> ${esc(s.area)} (outlined below) · <b>Data:</b> ${esc(s.data())}</div><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll(), spot(null)) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); spot(null); };
 }
-function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, asked: {}, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
+function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, groups: {}, asked: {}, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
@@ -2349,7 +2383,7 @@ function jrApply(j) {
    Only what the person chose is kept. The host keeps it until the app closes; nothing is written to a disk or a server by this page. */
 function saveState() {
   if (window.parent === window) return;
-  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, sel: state.sel, csel: state.csel, stage: state.stage, option: state.option, asked: state.asked, auto: state.auto, jr: jr.customer } }, '*');
+  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, sel: state.sel, csel: state.csel, stage: state.stage, option: state.option, asked: state.asked, groups: state.groups, auto: state.auto, jr: jr.customer } }, '*');
 }
 /** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
 function applyState(st) {
@@ -2364,6 +2398,7 @@ function applyState(st) {
   state.stage = pick(st.stage, (v) => Number.isInteger(v) && v >= 0 && v <= 4);
   state.option = pick(st.option, (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,30}$/.test(v));
   state.asked = pick(st.asked, (v) => v === true);
+  state.groups = Object.fromEntries(Object.entries(st.groups && typeof st.groups === 'object' ? st.groups : {}).filter(([k, v]) => /^[a-z]+(-[a-z]+)*$/.test(k) && typeof v === 'boolean'));
   state.auto = st.auto === true; $('#auto').checked = state.auto;
   if (typeof st.jr === 'string' && J.CUSTOMERS[st.jr] && J.CUSTOMERS[st.jr].renewals) jr.customer = st.jr;
   compute();
@@ -2375,7 +2410,7 @@ window.addEventListener('message', (e) => {
 });
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
 compute(); renderAll();
-window.__renewals = () => model; window.__state = state; window.__go = go;
+window.__renewals = () => model; window.__state = state; window.__go = go; window.__groupPrompt = groupPrompt;
 })();
 </script>
 </body>
