@@ -205,3 +205,17 @@ test('a finished service request reports its outcome to the Orchestrator once, q
   assert.deepEqual([o.source, o.id, o.template, o.by, o.result, o.waitedMin, o.durationMin], ['service-request', 'CHG-1039', 'patch-vm', 'person', 'done', t.approvals.length * 45, 55 + t.approvals.length * 45]);
   assert.equal(typeof o.customer, 'string');
 });
+
+test('a finished service request tells the RCA Space it is closed, once, queued without opening it; the RCA Space decides what is learned', async () => {
+  const ops = load('infra-ops');
+  ops.w.__io.S.speed = 'fast';
+  const t = ops.w.__io.find('CHG-1039');
+  ops.w.__io.startRun(t);
+  for (let i = 0; i < 400 && t.state !== 'done'; i++) await new Promise((r) => setTimeout(r, 25));
+  assert.equal(t.state, 'done');
+  const closed = ops.posted.filter((m) => m.type === 'wb:handoff' && m.payload && m.payload.type === 'case-closed');
+  assert.equal(closed.length, 1);
+  assert.equal(closed[0].to, 'infra-rca');
+  assert.equal(closed[0].open, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(closed[0].payload)), { type: 'case-closed', taskId: 'CHG-1039', result: 'done', durationH: Math.max(1, Math.round((55 + t.approvals.length * 45) / 60)) });
+});
