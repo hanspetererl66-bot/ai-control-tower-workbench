@@ -98,9 +98,12 @@ test('the embedded n8n view offers Back, Forward and Home so a page without a wa
   assert.match(main, /n8n-nav-state/);
 });
 
-test('every main view shows "Design Study November 2026" in red at the bottom left, as decoration only', () => {
+test('every main view shows a small purple progress bar with "JouleX Design Study" below it at the bottom left, as decoration only', () => {
   const app = readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
   const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
-  assert.match(app, /<div className="study-badge" aria-hidden="true">Design Study November 2026<\/div>\s*<Rail/);
-  assert.match(css, /\.study-badge \{[^}]*position: fixed;[^}]*left: calc\(var\(--rail-w\) \+ 14px\);[^}]*bottom: 14px;[^}]*color: var\(--error, #c9190b\);[^}]*pointer-events: none;/);
+  assert.match(app, /<div className="study-badge" aria-hidden="true"><span className="study-bar"><i \/><\/span><span className="study-name">JouleX Design Study<\/span><\/div>\s*<Rail/);
+  assert.match(css, /\.study-badge \{[^}]*position: fixed;[^}]*left: calc\(var\(--rail-w\) \+ 14px\);[^}]*bottom: 14px;[^}]*color: var\(--accent\);[^}]*pointer-events: none;/);
+  assert.match(css, /\.study-bar i \{[^}]*background: var\(--accent\);[^}]*animation: study-slide/);
+  assert.ok(!/study-badge[^}]*--error/.test(css), 'no red any more');
+  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.study-bar i \{ animation: none;/);
 });
