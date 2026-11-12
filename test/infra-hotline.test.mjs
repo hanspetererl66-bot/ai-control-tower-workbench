@@ -12,7 +12,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/infra-hotline/index.html');
 const logicSource = /<script id="hot-logic">([\s\S]*?)<\/script>/.exec(page)[1];
-const L = vm.runInNewContext(`${logicSource}; ({ threshold, needsAgreement, checkSlot, proposals, callOpen, reply, statusOf, slotText, addDays, weekday })`);
+const L = vm.runInNewContext(`${logicSource}; ({ threshold, needsAgreement, notifyRule, checkSlot, proposals, callOpen, reply, statusOf, slotText, addDays, weekday })`);
 const data = repoHotlineData();
 const ctx = (over = {}) => ({ templates: data.templates, customers: data.customers, freezes: data.freezes, hotline: data.hotline, policy: structuredClone(data.policy), requests: structuredClone(data.requests), today: data.asOf, lead: data.policy.leadDays, ...over });
 const plain = (x) => JSON.parse(JSON.stringify(x)); // results of the sandbox have another Object prototype
@@ -188,4 +188,56 @@ test('in the page: call, answer, hand the agreed window to an operator, who conf
   click('[data-tab="requests"]');
   assert.match(text(), /provider choose the window/);
   dom.window.close();
+});
+
+test('customer notification rule: certain tasks always inform the customer while the work runs, independent of the window length', () => {
+  const p = data.policy;
+  // default per task
+  assert.equal(L.notifyRule(p, 'mi', 'patch-vm').inform, true);
+  assert.equal(L.notifyRule(p, 'mi', 'move-vm').inform, true);
+  assert.equal(L.notifyRule(p, 'mi', 'renew-certificate').inform, false);
+  assert.equal(L.notifyRule(p, 'mi', 'update-dns-record').inform, false);
+  assert.equal(L.notifyRule(p, 'mi', 'patch-vm').source, 'default');
+  // a customer rule for all tasks (GxP) wins over the default
+  for (const t of data.templates) { const n = L.notifyRule(p, 'bp', t.id); assert.equal(n.inform, true, t.id); assert.equal(n.source, 'customer'); assert.match(n.note, /GxP/); }
+  // it does not depend on the window: a 1 h patch inside the threshold is still announced, and agreement is not needed
+  const short = { ...req('SR-2091'), hours: 1 };
+  assert.equal(L.needsAgreement(p, short).needed, false);
+  assert.equal(L.notifyRule(p, short.customer, short.template).inform, true);
+  // text names the three moments and the rule it comes from
+  assert.equal(L.notifyRule(p, 'mi', 'patch-vm').text, 'The customer is informed when the work starts, when it is finished and if something goes wrong (default rule).');
+  assert.match(L.notifyRule(p, 'mi', 'renew-certificate').text, /^No notice/);
+  // the policy is the only input; an older saved policy without the rule means no notice instead of a crash
+  const off = structuredClone(p); off.notify.defaults['patch-vm'] = false;
+  assert.equal(L.notifyRule(off, 'mi', 'patch-vm').inform, false);
+  assert.equal(L.notifyRule({ defaults: {}, overrides: [] }, 'mi', 'patch-vm').inform, false);
+});
+
+test('the agent tells the customer about the notice after a window is noted, only when the rule says so', () => {
+  const c = ctx();
+  let call = L.callOpen(c, 'mi'); // SR-2091 (patch, 4 h) needs agreement and is announced
+  assert.ok(call.queue.includes('SR-2091'));
+  const patchFirst = (cc) => { let k = cc; while (k.queue[k.i] !== 'SR-2091' && !k.done) k = L.reply(k, c, { type: 'accept', n: 1 }); return k; };
+  call = patchFirst(call);
+  const before = call.lines.length;
+  call = L.reply(call, c, { type: 'accept', n: 1 });
+  const said = call.lines.slice(before).filter((l) => l.who === 'agent')[0].text;
+  assert.match(said, /While the work runs, we inform you when the work starts, when it is finished and if something goes wrong\./);
+  // a task without the rule: no sentence
+  const cert = L.callOpen(ctx({ requests: [{ ...req('SR-2090'), hours: 3 }] }), 'mi');
+  const c2 = ctx({ requests: [{ ...req('SR-2090'), hours: 3 }] });
+  const done = L.reply(cert, c2, { type: 'accept', n: 1 });
+  assert.doesNotMatch(done.lines.map((l) => l.text).join(' '), /While the work runs/);
+});
+
+test('the Policy tab and every request card show the notification rule, and an old saved state still renders', () => {
+  const dom = new JSDOM(page, { runScripts: 'dangerously' });
+  const d = dom.window.document;
+  assert.match(d.querySelector('#view').textContent, /The customer is informed when the work starts/);
+  assert.match(d.querySelector('#view').textContent, /No notice to the customer while the work runs/);
+  d.querySelector('[data-tab="policy"]').click();
+  const text = d.querySelector('#view').textContent;
+  assert.match(text, /Who is informed while the work runs\?/);
+  assert.match(text, /GxP: the customer is informed about every running action/);
+  assert.ok(d.querySelectorAll('.nflag.yes').length >= 2 + 4, 'default column and the GxP column');
 });

@@ -29,7 +29,14 @@
       { "customer": "bp", "template": "move-vm", "hours": 0, "note": "GxP: the customer agrees to every change window" },
       { "customer": "bp", "template": "update-dns-record", "hours": 0, "note": "GxP: the customer agrees to every change window" },
       { "customer": "ke", "template": "move-vm", "hours": null, "note": "Standard SLA: the contract allows the provider to choose the window" }
-    ]
+    ],
+    "notify": {
+      "events": ["when the work starts", "when it is finished", "if something goes wrong"],
+      "defaults": { "renew-certificate": false, "patch-vm": true, "move-vm": true, "update-dns-record": false },
+      "overrides": [
+        { "customer": "bp", "template": "*", "inform": true, "note": "GxP: the customer is informed about every running action" }
+      ]
+    }
   },
   "requests": [
     { "id": "SR-2090", "template": "renew-certificate", "customer": "mi", "target": "proxy-edge-01", "hours": 2, "state": "open", "note": "Ticket OP-2090 of the story: certificate expires in days" },
