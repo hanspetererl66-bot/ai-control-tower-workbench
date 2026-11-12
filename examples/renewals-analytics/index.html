@@ -233,7 +233,7 @@ h1{font-size:20px;margin:0 0 4px}
 .kpi{padding:12px 14px;margin:0}.kpi .v{font-size:22px;font-weight:600}.kpi .k{display:block;color:var(--ink-2);font-size:12px;font-weight:600}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
 .kpi.red .v{color:var(--red)}.kpi.amber .v{color:var(--amber)}.kpi.green .v{color:var(--green)}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;align-items:start}
-.grid2>.card{margin:0}
+.grid2>.card{margin:0;min-width:0;overflow-x:auto}.grid2.wide{grid-template-columns:repeat(auto-fit,minmax(480px,1fr))}
 .card h2{font-size:15px;margin:0 0 2px}.card .sub{margin:0 0 10px;color:var(--muted);font-size:12px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2);margin:6px 0 0}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
@@ -248,7 +248,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
 .phases{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
 .phb{border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 10px;background:var(--surface)}
 .phb.side{border-style:dashed}.phb b{font-size:12px;display:block}.phb .c{font-size:20px;font-weight:650}.phb small{display:block;color:var(--muted);font-size:11px}.phb .late{color:var(--amber);font-weight:700}
-@media (max-width:900px){.phases{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}.grid2{grid-template-columns:1fr}}
+@media (max-width:900px){.phases{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}.grid2,.grid2.wide{grid-template-columns:1fr}}
 .hb{display:grid;grid-template-columns:92px minmax(0,1fr) 96px;gap:8px;align-items:center;margin:4px 0;font-size:12px}
 .hbar{height:10px;background:var(--line-2);border-radius:5px;overflow:hidden}.hbar i{display:block;height:100%;background:var(--purple);border-radius:5px}
 .bar-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}.bar-head h2{margin:0}.spacer{margin-left:auto}
@@ -273,7 +273,8 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
     <section class="card" id="noffer"></section>
   </div>
   <section class="card" id="team" style="margin-top:16px"></section>
-  <div class="grid2">
+  <div class="grid2 wide">
+    <section class="card" id="stages"></section>
     <section class="card" id="price"></section>
     <section class="card" id="compet"></section>
   </div>
@@ -537,7 +538,20 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "owner": "Mira Hoffmann",
    "csm": "Jonas Weber",
    "customerOwner": "Dr. Anja Berger",
-   "offer": null,
+   "offer": {
+    "id": "OFF-2026-0530",
+    "annualEur": 360000,
+    "currentAnnualEur": 360000,
+    "discountPct": 0,
+    "validUntil": "2026-11-20",
+    "stage": "Proposal sent",
+    "probabilityPct": 50,
+    "competitor": "None",
+    "nextStep": "Talk to the new head of procurement before the notice date on 2026-11-01",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Deal desk approved"
+   },
    "tickets": [
     {
      "id": "TKT-48213",
@@ -596,7 +610,20 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "owner": "Mira Hoffmann",
    "csm": "Nina Kessler",
    "customerOwner": "Tom Ahlers",
-   "offer": null,
+   "offer": {
+    "id": "OFF-2026-0532",
+    "annualEur": 252000,
+    "currentAnnualEur": 240000,
+    "discountPct": 0,
+    "validUntil": "2026-11-27",
+    "stage": "Negotiation",
+    "probabilityPct": 45,
+    "competitor": "Microsoft Copilot (evaluation)",
+    "nextStep": "Decide with the CFO whether to hold the contract cap",
+    "termMonths": 24,
+    "priceGuaranteeMonths": 24,
+    "approval": "Pending deal desk (price above the contract cap)"
+   },
    "tickets": [
     {
      "id": "TKT-47932",
@@ -912,7 +939,20 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "owner": "Mira Hoffmann",
    "csm": "Jonas Weber",
    "customerOwner": "Tobias Kraus",
-   "offer": null,
+   "offer": {
+    "id": "OFF-2026-0531",
+    "annualEur": 656000,
+    "currentAnnualEur": 640000,
+    "discountPct": 0,
+    "validUntil": "2026-12-15",
+    "stage": "Negotiation",
+    "probabilityPct": 75,
+    "competitor": "None",
+    "nextStep": "Commercial review with procurement by 2026-11-20",
+    "termMonths": 36,
+    "priceGuaranteeMonths": 36,
+    "approval": "Deal desk approved"
+   },
    "tickets": [],
    "invoices": [
     {
@@ -1506,6 +1546,14 @@ function renderTeam() {
   $('#names').onclick = () => { state.names = !state.names; renderTeam(); };
 }
 
+function renderStages() {
+  const l = live.filter((c) => c.offer), by = {};
+  for (const c of l) (by[c.offer.stage] = by[c.offer.stage] || []).push(c);
+  const rows = Object.entries(by).map(([stage, x]) => ({ stage, n: x.length, value: sum(x, (c) => c.offer.annualEur), weighted: Math.round(sum(x, (c) => c.offer.annualEur * (c.offer.probabilityPct / 100))), avg: Math.round(sum(x, (c) => c.offer.probabilityPct) / x.length) }));
+  const tot = sum(rows, (r) => r.value), w = sum(rows, (r) => r.weighted);
+  $('#stages').innerHTML = `<h2>Offers by stage</h2><p class="sub">${l.length} of ${live.length} open renewals have an offer. Weighted value = offer value × the probability stated on the offer.</p>${rows.length ? `<table><thead><tr><th>Stage</th><th class="n">Offers</th><th class="n">Offer value</th><th class="n">Avg. prob.</th><th class="n">Weighted</th></tr></thead><tbody>${rows.map((r) => `<tr><td><b>${esc(r.stage)}</b></td><td class="n">${r.n}</td><td class="n">${eur(r.value)}</td><td class="n">${r.avg} %</td><td class="n">${eur(r.weighted)}</td></tr>`).join('')}<tr><td><b>Total</b></td><td class="n">${l.length}</td><td class="n"><b>${eur(tot)}</b></td><td></td><td class="n"><b>${eur(w)}</b></td></tr></tbody></table>` : '<p class="note">No open offers.</p>'}`;
+}
+
 function renderPrice() {
   const l = live.filter((c) => c.offer && upliftPct(c) !== null);
   $('#price').innerHTML = `<h2>Offer price against contract cap</h2><p class="sub">Price rise of the offer on the table against the largest rise the contract allows.</p>${l.length ? `<table><thead><tr><th>Renewal</th><th class="n">Rise</th><th class="n">Cap</th></tr></thead><tbody>${l.map((c) => { const u = upliftPct(c), over = u > c.upliftCapPct; return `<tr><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td class="n ${over ? 'up' : 'ok'}">${u} %${over ? ' above cap' : ''}</td><td class="n">${c.upliftCapPct} %</td></tr>`; }).join('')}</tbody></table>` : '<p class="note">No open offers.</p>'}`;
@@ -1516,7 +1564,7 @@ function renderCompet() {
   $('#compet').innerHTML = `<h2>Competitors in play</h2><p class="sub">Only renewals with an offer carry a competitor field, so this list is short.</p>${l.length ? `<table><thead><tr><th>Renewal</th><th>Competitor</th><th class="n">Value</th></tr></thead><tbody>${l.map((c) => `<tr><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td>${esc(c.offer.competitor)}</td><td class="n">${eur(c.annualEur)}</td></tr>`).join('')}</tbody></table>` : '<p class="note">None named.</p>'}`;
 }
 
-renderKpis(); renderMonths(); renderRisks(); renderPhases(); renderCustomers(); renderNoOffer(); renderTeam(); renderPrice(); renderCompet();
+renderKpis(); renderMonths(); renderRisks(); renderPhases(); renderCustomers(); renderNoOffer(); renderTeam(); renderStages(); renderPrice(); renderCompet();
 </script>
 </body>
 </html>

@@ -255,7 +255,20 @@
       "owner": "Mira Hoffmann",
       "csm": "Jonas Weber",
       "customerOwner": "Dr. Anja Berger",
-      "offer": null,
+      "offer": {
+        "id": "OFF-2026-0530",
+        "annualEur": 360000,
+        "currentAnnualEur": 360000,
+        "discountPct": 0,
+        "validUntil": "2026-11-20",
+        "stage": "Proposal sent",
+        "probabilityPct": 50,
+        "competitor": "None",
+        "nextStep": "Talk to the new head of procurement before the notice date on 2026-11-01",
+        "termMonths": 12,
+        "priceGuaranteeMonths": 12,
+        "approval": "Deal desk approved"
+      },
       "tickets": [
         {
           "id": "TKT-48213",
@@ -314,7 +327,20 @@
       "owner": "Mira Hoffmann",
       "csm": "Nina Kessler",
       "customerOwner": "Tom Ahlers",
-      "offer": null,
+      "offer": {
+        "id": "OFF-2026-0532",
+        "annualEur": 252000,
+        "currentAnnualEur": 240000,
+        "discountPct": 0,
+        "validUntil": "2026-11-27",
+        "stage": "Negotiation",
+        "probabilityPct": 45,
+        "competitor": "Microsoft Copilot (evaluation)",
+        "nextStep": "Decide with the CFO whether to hold the contract cap",
+        "termMonths": 24,
+        "priceGuaranteeMonths": 24,
+        "approval": "Pending deal desk (price above the contract cap)"
+      },
       "tickets": [
         {
           "id": "TKT-47932",
@@ -630,7 +656,20 @@
       "owner": "Mira Hoffmann",
       "csm": "Jonas Weber",
       "customerOwner": "Tobias Kraus",
-      "offer": null,
+      "offer": {
+        "id": "OFF-2026-0531",
+        "annualEur": 656000,
+        "currentAnnualEur": 640000,
+        "discountPct": 0,
+        "validUntil": "2026-12-15",
+        "stage": "Negotiation",
+        "probabilityPct": 75,
+        "competitor": "None",
+        "nextStep": "Commercial review with procurement by 2026-11-20",
+        "termMonths": 36,
+        "priceGuaranteeMonths": 36,
+        "approval": "Deal desk approved"
+      },
       "tickets": [],
       "invoices": [
         {

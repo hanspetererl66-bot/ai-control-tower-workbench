@@ -65,3 +65,12 @@ test('renewal analytics: read only, no network and no storage', () => {
 test('renewal analytics: is installed by npm run install:examples', () => {
   assert.equal(EXAMPLE_SPACES['renewals-analytics'], 'renewals-analytics');
 });
+
+test('renewal analytics: the sample offers cover several stages, a price above the cap and two competitors', () => {
+  const offers = data.cases.filter((c) => c.offer && c.status !== 'Lapsed').map((c) => c.offer);
+  assert.ok(new Set(offers.map((o) => o.stage)).size >= 2, 'at least two offer stages');
+  assert.ok(data.cases.some((c) => c.offer && c.offer.annualEur / c.offer.currentAnnualEur - 1 > c.upliftCapPct / 100), 'a price above the cap');
+  assert.ok(new Set(offers.map((o) => o.competitor).filter((x) => x && x !== 'None')).size >= 2, 'two competitors');
+  const ids = data.cases.filter((c) => c.offer).map((c) => c.offer.id);
+  assert.equal(new Set(ids).size, ids.length, 'offer ids are unique');
+});
