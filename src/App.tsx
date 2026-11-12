@@ -98,7 +98,7 @@ import { missingSpaceNotice, type Handoff, type IncomingHandoff } from './space-
 import { backLabel, keepReturn } from './space-return';
 import { createToastGate } from './toast-timer';
 import WerkbankMark from './ui/WerkbankMark';
-import { PRODUCT_TITLE } from './product';
+import { FOOTER_TITLE, PRODUCT_TITLE } from './product';
 import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
 import DevelopHub from './ui/DevelopHub';
@@ -1444,7 +1444,7 @@ export default function App() {
   );
   const disclaimer = (
     <p className="disclaimer">
-      {PRODUCT_TITLE} uses AI. Verify results. <a href="#">AI Guidance</a>
+      {FOOTER_TITLE} uses AI. Verify results. <a href="#">AI Guidance</a>
     </p>
   );
   const space = activeSpaces.find((s) => s.slug === selectedSpace) ?? null;
