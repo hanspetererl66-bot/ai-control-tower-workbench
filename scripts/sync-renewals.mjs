@@ -86,6 +86,13 @@ const ADDONS = [
   { customerId: 'lindenau', id: 'C-2026-0923', product: 'BTP extra storage package (batch-record archive)', annualEur: 26400, end: '2027-04-30', noticeDays: 60, used: 6.1, licensed: 8, unit: 'TB' },
 ];
 
+/** Renewal offers that are not in the Sub4Me sample data (illustrative): they give the manager dashboard more than one offer stage, a price above the cap and a second competitor. */
+const EXTRA_OFFERS = {
+  'C-2026-0012': { id: 'OFF-2026-0530', annualEur: 360000, currentAnnualEur: 360000, discountPct: 0, validUntil: '2026-11-20', stage: 'Proposal sent', probabilityPct: 50, competitor: 'None', nextStep: 'Talk to the new head of procurement before the notice date on 2026-11-01', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
+  'C-2024-0233': { id: 'OFF-2026-0531', annualEur: 656000, currentAnnualEur: 640000, discountPct: 0, validUntil: '2026-12-15', stage: 'Negotiation', probabilityPct: 75, competitor: 'None', nextStep: 'Commercial review with procurement by 2026-11-20', termMonths: 36, priceGuaranteeMonths: 36, approval: 'Deal desk approved' },
+  'C-2026-0044': { id: 'OFF-2026-0532', annualEur: 252000, currentAnnualEur: 240000, discountPct: 0, validUntil: '2026-11-27', stage: 'Negotiation', probabilityPct: 45, competitor: 'Microsoft Copilot (evaluation)', nextStep: 'Decide with the CFO whether to hold the contract cap', termMonths: 24, priceGuaranteeMonths: 24, approval: 'Pending deal desk (price above the contract cap)' },
+};
+
 export function buildRenewals() {
   const cases = [];
   for (const c of sub4meCustomers()) {
@@ -118,6 +125,7 @@ export function buildRenewals() {
       invoices: a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due }] : [], addon: true,
     });
   }
+  for (const c of cases) if (!c.offer && EXTRA_OFFERS[c.contractId]) c.offer = { ...EXTRA_OFFERS[c.contractId] };
   cases.sort((a, b) => a.decisionDate.localeCompare(b.decisionDate) || a.id.localeCompare(b.id));
   return {
     asOf: AS_OF,
