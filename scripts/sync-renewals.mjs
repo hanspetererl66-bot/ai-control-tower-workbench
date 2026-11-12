@@ -5,13 +5,17 @@
  *   npm run sync:renewals            write
  *   npm run sync:renewals -- --check fail when the data or the page is out of date
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { embedDesignSystem } from './sync-design-system.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const PAGE = 'examples/renewals/index.html';
+/** Pages that carry the data and the shared logic (examples/renewals/logic.js is the only source of the logic). */
+export const PAGES = [PAGE, 'examples/renewals-analytics/index.html'];
+export const LOGIC = 'examples/renewals/logic.js';
+const LOGIC_BLOCK = /(<script id="renewal-logic">\n)([\s\S]*?)(\n<\/script>)/;
 export const DATA = 'examples/renewals/renewals.json';
 const BLOCK = /(<script type="application\/json" id="renewal-data">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
@@ -124,19 +128,25 @@ export function buildRenewals() {
   };
 }
 
-export function embedRenewals(html, data, css) {
-  if (!BLOCK.test(html)) throw new Error(`${PAGE} has no <script id="renewal-data"> block`);
+export function embedRenewals(html, data, css, logic) {
+  if (!BLOCK.test(html)) throw new Error('page has no <script id="renewal-data"> block');
   const body = JSON.stringify(data, null, 1).replaceAll('<', '\\u003c');
-  return embedDesignSystem(html.replace(BLOCK, (_m, open, _b, close) => `${open}\n${body}\n${close}`), css);
+  let out = html.replace(BLOCK, (_m, open, _b, close) => `${open}\n${body}\n${close}`);
+  if (logic !== undefined) {
+    if (!LOGIC_BLOCK.test(out)) throw new Error('page has no <script id="renewal-logic"> block');
+    out = out.replace(LOGIC_BLOCK, (_m, open, _b, close) => `${open}${logic.replace(/\n$/, '')}${close}`);
+  }
+  return embedDesignSystem(out, css);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const data = buildRenewals();
   const dataText = JSON.stringify(data, null, 2) + '\n';
-  const html = read(PAGE);
-  const next = embedRenewals(html, data, read('examples/shared/design-system.css'));
+  const css = read('examples/shared/design-system.css'), logic = read(LOGIC);
+  const pages = PAGES.filter((p) => existsSync(join(ROOT, p))).map((p) => ({ p, html: read(p), next: embedRenewals(read(p), data, css, logic) }));
   if (process.argv.includes('--check')) {
-    if (read(DATA) !== dataText || next !== html) { console.error('Renewals data or page is out of sync — run: npm run sync:renewals'); process.exit(1); }
-    console.log('Renewals page is in sync.');
-  } else { writeFileSync(join(ROOT, DATA), dataText); writeFileSync(join(ROOT, PAGE), next); console.log(`Wrote ${data.cases.length} renewal cases and embedded them.`); }
+    const stale = pages.filter(({ html, next }) => next !== html).map(({ p }) => p);
+    if (read(DATA) !== dataText || stale.length) { console.error(`Renewals data or page is out of sync (${stale.join(', ') || DATA}) — run: npm run sync:renewals`); process.exit(1); }
+    console.log('Renewals pages are in sync.');
+  } else { writeFileSync(join(ROOT, DATA), dataText); for (const { p, next } of pages) writeFileSync(join(ROOT, p), next); console.log(`Wrote ${data.cases.length} renewal cases and embedded them and the shared logic into ${pages.length} page(s).`); }
 }
