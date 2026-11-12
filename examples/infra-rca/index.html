@@ -1342,6 +1342,8 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const state = { id: DATA.incidents[0].id, report: null, verdict: null, ctx: null, matched: true };
 const hosted = window.parent !== window;
+/** Who asked, for the button that sends the result back. */
+const ASKERS = { 'it-operations': 'the Alerts Space' };
 const custName = (id) => DATA.customers.find((c) => c.id === id).name;
 const P = {
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
@@ -1432,14 +1434,14 @@ function reportView(r) {
 /** Opened from a service request: which request, and whether an alert on that system exists. */
 function ctxBar() {
   const c = state.ctx; if (!c) return '';
-  const r = state.report, back = r ? `<button class="primary" data-send="1">${ic('arrow')} Send the result to ${esc(c.id)}</button>` : '';
-  return `<div class="banner ${state.matched ? 'ok' : ''}" style="margin:0 22px 14px">${ic('ticket')}<span><b>For service request ${esc(c.id)}</b> · ${esc(c.target)}. ${state.matched ? 'The alert on this system is selected.' : 'There is no alert on this system; the closest incident of the customer is selected. Check that it fits.'}${r ? '' : ' Run the analysis to get a result.'}</span>${back}</div>`;
+  const r = state.report, back = r ? `<button class="primary" data-send="1">${ic('arrow')} Send the result to ${esc(ASKERS[c.from] || c.id)}</button>` : '';
+  return `<div class="banner ${state.matched ? 'ok' : ''}" style="margin:0 22px 14px">${ic('ticket')}<span><b>For ${c.from === 'it-operations' ? 'incident' : 'service request'} ${esc(c.id)}</b> · ${esc(c.target)}. ${state.matched ? 'The alert on this system is selected.' : 'There is no alert on this system; the closest incident of the customer is selected. Check that it fits.'}${r ? '' : ' Run the analysis to get a result.'}</span>${back}</div>`;
 }
 function sendBack() {
   const r = state.report, c = state.ctx; if (!r || !c || !hosted) return;
   const conf = r.top ? CONF[r.confidence][1] : 'Not evidenced';
   const payload = { type: 'rca-result', taskId: c.id, incident: r.incident.id, cause: r.top ? r.top.cause.label : 'No root cause evidenced', confidence: conf, action: r.nextBest ? r.nextBest.label : 'Ask a colleague, nothing in the case database fits', verdict: state.verdict || '' };
-  window.parent.postMessage({ type: 'wb:handoff', to: 'infra-ops', payload, open: true, notice: 'Root cause for ' + c.id + ' sent to the service request' }, '*');
+  window.parent.postMessage({ type: 'wb:handoff', to: c.from || 'infra-ops', payload, open: true, notice: 'Root cause for ' + c.id + ' sent back' }, '*');
 }
 function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { id: state.id, verdict: state.verdict, ctx: state.ctx, matched: state.matched, ran: !!state.report } }, '*'); }
 function render() {
@@ -1467,7 +1469,7 @@ window.addEventListener('message', (e) => {
     const p = h && h.payload; if (!p || p.type !== 'rca-request' || !p.task || typeof p.task.id !== 'string') return;
     const t = p.task, byHost = DATA.incidents.find((i) => i.host === t.target), byCust = DATA.incidents.find((i) => i.customer === t.customer);
     const inc = byHost || byCust || DATA.incidents[0];
-    state.id = inc.id; state.matched = !!byHost; state.ctx = { id: t.id.slice(0, 20), target: String(t.target || '').slice(0, 60), customer: t.customer };
+    state.id = inc.id; state.matched = !!byHost; state.ctx = { id: t.id.slice(0, 20), target: String(t.target || '').slice(0, 60), customer: t.customer, from: typeof h.from === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/.test(h.from) ? h.from : 'infra-ops' };
     run();
   });
   render();
