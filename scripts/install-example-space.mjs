@@ -19,6 +19,7 @@ export const EXAMPLE_SPACES = {
   'infra-ops': 'infra-ops',
   'infra-ops-control': 'infra-ops-control',
   'infra-hotline': 'infra-hotline',
+  'infra-orchestrator': 'infra-orchestrator',
   'infra-rca': 'infra-rca',
   'infra-wiki': 'infra-wiki',
   'change-checks': 'change-checks',
