@@ -233,7 +233,7 @@ h2{font-size:15px;font-weight:650;margin:0 0 4px}h3{font-size:13px;margin:0 0 4p
 .card{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.kpi .v{font-size:22px;font-weight:600}.kpi .k{color:var(--muted);font-size:12px}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
+.kpi.assumed .v{color:var(--muted);font-weight:500}.kpi.assumed{border-style:dashed}.kpi .v{font-size:22px;font-weight:600}.kpi .k{color:var(--muted);font-size:12px}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
 .kpi.red{border-color:var(--red-border)}.kpi.red .v{color:var(--red)}.kpi.amber{border-color:var(--amber-border)}.kpi.amber .v{color:var(--amber)}.kpi.green{border-color:var(--green-border)}.kpi.green .v{color:var(--green)}
 .bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:12px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
@@ -517,6 +517,7 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
   <div class="ctx" id="ctx">
     <label class="ctxsel">Customer <select id="customer" aria-label="Customer"></select></label>
     <span class="ctxnote" id="ctx-note"></span>
+    <button class="ghost spacer" id="to-analytics" type="button" title="Open the Renewal Analytics Space (sales manager view)">Manager view</button>
     <button class="ghost spacer" id="reset" type="button">Reset demo</button>
   </div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Renewal views"></nav>
@@ -1766,9 +1767,9 @@ const DATA = JSON.parse(document.getElementById('renewal-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
-const FLOW = ['Detected', 'Prepared', 'Offer approved', 'Sent (simulated)', 'Signed (simulated)'];
+const FLOW = ['Detected', 'Prepared (by you)', 'Offer approved (simulated)', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
+const state = { asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -1815,7 +1816,7 @@ function renderKpis() {
   const sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), signed = scoped().filter((c) => c.stage === 4);
   const k = (key, cls, v, name, s) => `<div class="kpi ${cls}" data-k="${key}" role="button" tabindex="0" aria-pressed="${state.kpi === key}" title="Double-click for the details"><div class="v">${v}</div><div class="k">${name}</div><div class="s">${s}</div></div>`;
   $('#kpis').innerHTML = k('open', '', open.length, 'Renewals to handle', eur(sum(open)) + ' a year') + k('red', 'red', red.length, 'Red renewals', eur(sum(red)) + ' at risk') + k('soon', 'amber', soon.length, 'Decision within 30 days', soon.length ? 'incl. passed dates' : 'none') +
-    k('ret', '', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('clv', '', eur(open.reduce((a, c) => a + c.clv, 0)), 'Customer lifetime value', 'expected, open renewals (assumptions below)') + k('auto', 'green', scoped().filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('signed', 'green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
+    k('ret', '', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('clv', 'assumed', eur(open.reduce((a, c) => a + c.clv, 0)), 'Lifetime value (assumption)', 'not a forecast: margin and retention are assumed (list view)') + k('auto', 'green', scoped().filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('signed', 'green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
   const toggle = (key) => { state.kpi = state.kpi === key ? null : key; renderKpis(); renderKpiDetail(); if (state.kpi) $('#kpi-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
   $('#kpis').querySelectorAll('.kpi').forEach((b) => { b.ondblclick = () => toggle(b.dataset.k); b.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(b.dataset.k); } }; });
 }
@@ -1943,7 +1944,7 @@ function paintDetail(el) {
   const c = model.find((x) => x.id === state.sel);
   if (!c) { el.innerHTML = '<h2>Details</h2><p class="sub">Click a renewal to see why it has its colour, the price check, the next actions and the approval flow.</p>'; return; }
   const use = usagePct(c), up = upliftPct(c), st = c.stage;
-  const auto = c.autoRun && st >= 3 && c.auto.eligible; const btn = auto && st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : st === 0 ? `<button class="primary" data-act="prep" type="button">Prepare with Joule</button>` : st === 1 ? `<button class="primary" data-act="approve" type="button">${c.offer ? 'Approve offer (' + esc(c.owner) + ')' : 'Approve offer draft (' + esc(c.owner) + ')'}</button>` : st === 2 ? `<button class="primary" data-act="send" type="button">Send to customer (simulated)</button>` : st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : '<span class="pill done">Signed (simulated)</span>';
+  const auto = c.autoRun && st >= 3 && c.auto.eligible; const btn = auto && st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : st === 0 ? (state.asked[c.id] ? `<button class="primary" data-act="prepared" type="button">Mark as prepared (by you)</button>` : `<button class="primary" data-act="prep" type="button">Ask Joule to prepare</button>`) : st === 1 ? `<button class="primary" data-act="approve" type="button">${c.offer ? 'Approve offer (' + esc(c.owner) + ')' : 'Approve offer draft (' + esc(c.owner) + ')'}</button>` : st === 2 ? `<button class="primary" data-act="send" type="button">Send to customer (simulated)</button>` : st === 3 ? `<button class="primary" data-act="sign" type="button">Mark as signed (simulated)</button>` : '<span class="pill done">Signed (simulated)</span>';
   el.innerHTML = `<h2>${esc(c.product)} <span class="pill ${c.health}">${st === 4 ? 'signed' : LABEL[c.health]}</span></h2><p class="sub">${esc(c.customer)} · SAP customer ID <b>${esc(c.sapCustomerId)}</b> · ${esc(c.contractId)}</p>` +
     `<dl class="dl"><dt>Annual value</dt><dd>${eur(c.annualEur)}</dd><dt>Contract ends</dt><dd>${esc(c.end)}</dd><dt>Notice period</dt><dd>${c.noticeDays} days</dd><dt>Decision date</dt><dd>${esc(c.decisionDate)}</dd><dt>Renews automatically</dt><dd>${c.autoRenew ? 'yes' : 'no'}</dd><dt>Account executive</dt><dd>${esc(c.owner)}</dd><dt>Customer owner</dt><dd>${esc(c.customerOwner)}</dd></dl>` +
     (use === null ? '' : `<div class="sub" style="margin:6px 0 0">Usage: ${c.used.toLocaleString('en-GB')} of ${c.licensed.toLocaleString('en-GB')} ${esc(c.unit)} (${use} %)</div><div class="meter"><i style="width:${Math.min(100, use)}%"></i></div>`) +
@@ -1952,12 +1953,13 @@ function paintDetail(el) {
     (mailsOfCase(c).length ? `<h3 style="margin-top:12px">E-mail about this renewal</h3>${mailTimeline(mailsOfCase(c))}` : '') +
     `<h3 style="margin-top:12px">Next best action</h3><div class="act-first">${esc(c.actions[0])}</div>` + (c.actions.length > 1 ? `<div class="sub" style="margin:6px 0 0">After that</div><ol class="act">${c.actions.slice(1).map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` : '') +
     autoBlock(c) +
-    `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step; sending and signing are simulated here.</p>`;
+    `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step. Joule answers in the chat, not here: mark a step yourself once it is done. Approving, sending and signing are simulated, and the stages are kept for this session only.</p>`;
   el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
     const a = b.dataset.act;
     if (a === 'ask') return send(`Explain the renewal of ${c.product} for ${c.customer} (SAP customer ID ${c.sapCustomerId}): health ${c.health} because ${c.sig.signals.filter((s) => s.level !== 'plus').map((s) => s.text).join('; ') || 'no warning'}. What would you do first? Please answer in English.`);
     if (a === 'price') return send(pricePrompt(c));
-    if (a === 'prep') { send(prepPrompt(c)); state.stage[c.id] = 1; }
+    if (a === 'prep') { send(prepPrompt(c)); state.asked[c.id] = true; }
+    if (a === 'prepared') state.stage[c.id] = 1;
     if (a === 'approve') state.stage[c.id] = 2;
     if (a === 'send') state.stage[c.id] = 3;
     if (a === 'sign') state.stage[c.id] = 4;
@@ -2190,7 +2192,7 @@ function renderGuide() {
   g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="where"><b>Where:</b> ${esc(s.area)} (outlined below) · <b>Data:</b> ${esc(s.data())}</div><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll(), spot(null)) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); spot(null); };
 }
-function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
+function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, asked: {}, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
@@ -2204,6 +2206,7 @@ function renderAll() {
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
 $('#customer').onchange = (e) => { state.customer = e.target.value; state.csel = null; state.focus = null; if (state.sel && state.customer !== 'all' && (byId(state.sel) || {}).customerId !== state.customer) state.sel = null; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
+$('#to-analytics').onclick = () => { if (window.parent === window) { $('#ctx-note').textContent = 'Open this Space in the app to move to Renewal Analytics.'; return; } window.parent.postMessage({ type: 'wb:handoff', to: 'renewals-analytics', payload: { from: 'renewals' }, open: true, notice: 'Renewal Analytics (sales manager view)' }, '*'); };
 $('#reset').onclick = () => { $('#auto').checked = false; for (const k of Object.keys(played)) delete played[k]; Object.assign(state, { tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
 $('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
@@ -2318,9 +2321,9 @@ const JR_AT = { overview: ['today', 'renewals'], process: ['understand', 'renewa
 const JR_TAB = { today: 'overview', understand: 'process', decide: 'nba' };
 const jrCustomer = () => (state.customer !== 'all' && J.CUSTOMERS[state.customer] ? state.customer : jr.customer);
 function renderJourney() {
-  const cust = jrCustomer(), mine = model.filter((c) => c.customerId === cust), open = mine.filter(live), [step, stop] = JR_AT[state.tab] || ['today', null];
+  const cust = jrCustomer(), all = state.customer === 'all', mine = all ? model : model.filter((c) => c.customerId === cust), open = mine.filter(live), [step, stop] = JR_AT[state.tab] || ['today', null];
   $('#jr').innerHTML = J.railHtml({ customer: cust, step, stop },
-    [[J.CUSTOMERS[cust].name.split(' ')[0] + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]], jr.note);
+    [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]], jr.note);
 }
 function jrGo(stopId) {
   const s = J.stop(stopId), cust = jrCustomer(); if (!s || !J.available(s, cust)) return;

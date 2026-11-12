@@ -110,6 +110,7 @@
     "test:triggers:live": "node scripts/skill-trigger-eval.mjs --live",
     "sync:infra-ops-control": "node scripts/sync-infra-ops-control.mjs",
     "sync:infra-hotline": "node scripts/sync-infra-hotline.mjs",
+    "sync:infra-orchestrator": "node scripts/sync-infra-orchestrator.mjs",
     "sync:infra-rca": "node scripts/sync-infra-rca.mjs"
   },
   "keywords": [

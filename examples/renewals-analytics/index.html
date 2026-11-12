@@ -252,13 +252,15 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
 .hb{display:grid;grid-template-columns:92px minmax(0,1fr) 96px;gap:8px;align-items:center;margin:4px 0;font-size:12px}
 .hbar{height:10px;background:var(--line-2);border-radius:5px;overflow:hidden}.hbar i{display:block;height:100%;background:var(--purple);border-radius:5px}
 .bar-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}.bar-head h2{margin:0}.spacer{margin-left:auto}
-.up{color:var(--red);font-weight:650}.ok{color:var(--green);font-weight:650}
+.go{cursor:pointer}.go:hover{background:var(--wash)}.go:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}.up{color:var(--red);font-weight:650}.ok{color:var(--green);font-weight:650}
 </style>
 </head>
 <body>
 <main>
   <h1>Renewal Analytics</h1>
   <p class="lead">For the sales manager. Same fictional renewals as the Renewals Space; read only, nothing is sent.</p>
+  <div class="bar-head"><span class="lead" style="margin:0">Click a row to open the renewal in the Renewals Space.</span><button class="small spacer" id="to-renewals" type="button">Renewals Space</button></div>
+  <p class="note" id="appnote" hidden>Open this Space in the app to jump to the Renewals Space.</p>
   <p class="note">All numbers are derived from invented sample data. Expected retention and lifetime value rest on assumptions (<span id="assump"></span>), they are not a forecast. Open value counts renewals that are not lapsed; lapsed contracts are shown as win-back.</p>
 
   <div class="kpis" id="kpis"></div>
@@ -1513,7 +1515,7 @@ function renderMonths() {
 function renderRisks() {
   const loss = (c) => c.annualEur * (1 - c.pRet), top = [...live].sort((a, b) => loss(b) - loss(a)).slice(0, 5), tot = sum(live, loss);
   $('#risks').innerHTML = `<h2>Biggest expected loss</h2><p class="sub">Annual value × (1 − expected retention). Together the open renewals carry ${eur(Math.round(tot))} expected loss a year.</p>
-    <table><thead><tr><th>Renewal</th><th class="n">Value</th><th class="n">Exp. loss</th></tr></thead><tbody>${top.map((c) => `<tr><td><span class="dot ${COLOR[c.health]}" style="background:var(--${COLOR[c.health]})"></span><b>${esc(c.customer)}</b> · ${esc(c.product)}<span class="sig">${esc(c.sig.signals[0] ? c.sig.signals[0].text : 'No warning signal')}</span></td><td class="n">${eur(c.annualEur)}</td><td class="n">${eur(Math.round(loss(c)))}</td></tr>`).join('')}</tbody></table>`;
+    <table><thead><tr><th>Renewal</th><th class="n">Value</th><th class="n">Exp. loss</th></tr></thead><tbody>${top.map((c) => `<tr class="go" tabindex="0" data-c="${c.contractId}"><td><span class="dot ${COLOR[c.health]}" style="background:var(--${COLOR[c.health]})"></span><b>${esc(c.customer)}</b> · ${esc(c.product)}<span class="sig">${esc(c.sig.signals[0] ? c.sig.signals[0].text : 'No warning signal')}</span></td><td class="n">${eur(c.annualEur)}</td><td class="n">${eur(Math.round(loss(c)))}</td></tr>`).join('')}</tbody></table>`;
 }
 
 function renderPhases() {
@@ -1532,18 +1534,19 @@ function renderCustomers() {
 function renderNoOffer() {
   const l = live.filter((c) => !c.offer).sort((a, b) => a.decisionDate.localeCompare(b.decisionDate));
   $('#noffer').innerHTML = `<h2>Renewals without an offer</h2><p class="sub">${l.length} of ${live.length} open renewals have no offer yet, earliest decision date first (top 8 shown).</p>
-    <table><thead><tr><th>Renewal</th><th class="n">Value</th><th>Decision</th></tr></thead><tbody>${l.slice(0, 8).map((c) => `<tr><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td class="n">${eur(c.annualEur)}</td><td class="nw ${c.sig.days < 0 ? 'up' : ''}">${esc(c.decisionDate)}<span class="sig">${dayLabel(c.sig.days)}</span></td></tr>`).join('')}</tbody></table>`;
+    <table><thead><tr><th>Renewal</th><th class="n">Value</th><th>Decision</th></tr></thead><tbody>${l.slice(0, 8).map((c) => `<tr class="go" tabindex="0" data-c="${c.contractId}"><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td class="n">${eur(c.annualEur)}</td><td class="nw ${c.sig.days < 0 ? 'up' : ''}">${esc(c.decisionDate)}<span class="sig">${dayLabel(c.sig.days)}</span></td></tr>`).join('')}</tbody></table>`;
 }
 
 function renderTeam() {
   const by = {};
   for (const c of live) (by[c.owner] = by[c.owner] || []).push(c);
-  const rows = Object.entries(by).map(([name, l]) => ({ name, n: l.length, value: sum(l), red: l.filter((c) => c.health === 'red').length, late: l.filter((c) => c.ph.late).length })).sort((a, b) => b.value - a.value);
+  const rows = Object.entries(by).map(([name, l]) => ({ name, n: l.length, items: l, value: sum(l), red: l.filter((c) => c.health === 'red').length, late: l.filter((c) => c.ph.late).length })).sort((a, b) => b.value - a.value);
   const max = Math.max(1, ...rows.map((r) => r.value)), total = sum(live);
   $('#team').innerHTML = `<div class="bar-head"><h2>Team load</h2><button class="small spacer" id="names" type="button" aria-pressed="${state.names}">${state.names ? 'Hide names' : 'Show names'}</button></div>
     <p class="sub">Open renewals by renewal owner. This is workload, not performance. Names are hidden by default and shown only on request.</p>
-    ${rows.map((r, i) => `<div class="hb"><span>${state.names ? esc(r.name) : 'Owner ' + (i + 1)}</span><div class="hbar" title="${Math.round((r.value / total) * 100)} % of the open value"><i style="width:${(r.value / max) * 100}%"></i></div><b class="n">${eur(r.value)}</b></div><div class="sig" style="margin:-2px 0 6px 100px">${r.n} renewals · ${r.red} red · ${r.late} behind</div>`).join('')}`;
+    ${rows.map((r, i) => `<div class="hb"><span>${state.names ? esc(r.name) : 'Owner ' + (i + 1)}</span><div class="hbar" title="${Math.round((r.value / total) * 100)} % of the open value"><i style="width:${(r.value / max) * 100}%"></i></div><b class="n">${eur(r.value)}</b></div><div class="sig" style="margin:-2px 0 6px 100px">${r.n} renewals · ${r.red} red · ${r.late} behind · <button class="small" data-ask="${i}" type="button">Draft a question</button></div>`).join('')}`;
   $('#names').onclick = () => { state.names = !state.names; renderTeam(); };
+  document.querySelectorAll('#team [data-ask]').forEach((b) => (b.onclick = () => { const r = rows[+b.dataset.ask], who = state.names ? r.name : 'the renewal owner', top = [...r.items].sort((a, c) => c.annualEur - a.annualEur).slice(0, 3).map((c) => c.customer + ' · ' + c.product).join('; '); ask(`Draft a short, neutral question to ${who} about ${r.n} open renewals (${eur(r.value)} a year, ${r.red} red, ${r.late} without an offer although one is due). Ask what blocks the next step and what help is needed. This is about workload and blockers, not performance. Largest: ${top}. A person reviews it before sending. Please answer in English.`); }));
 }
 
 function renderStages() {
@@ -1556,7 +1559,7 @@ function renderStages() {
 
 function renderPrice() {
   const l = live.filter((c) => c.offer && upliftPct(c) !== null);
-  $('#price').innerHTML = `<h2>Offer price against contract cap</h2><p class="sub">Price rise of the offer on the table against the largest rise the contract allows.</p>${l.length ? `<table><thead><tr><th>Renewal</th><th class="n">Rise</th><th class="n">Cap</th></tr></thead><tbody>${l.map((c) => { const u = upliftPct(c), over = u > c.upliftCapPct; return `<tr><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td class="n ${over ? 'up' : 'ok'}">${u} %${over ? ' above cap' : ''}</td><td class="n">${c.upliftCapPct} %</td></tr>`; }).join('')}</tbody></table>` : '<p class="note">No open offers.</p>'}`;
+  $('#price').innerHTML = `<h2>Offer price against contract cap</h2><p class="sub">Price rise of the offer on the table against the largest rise the contract allows.</p>${l.length ? `<table><thead><tr><th>Renewal</th><th class="n">Rise</th><th class="n">Cap</th></tr></thead><tbody>${l.map((c) => { const u = upliftPct(c), over = u > c.upliftCapPct; return `<tr class="go" tabindex="0" data-c="${c.contractId}"><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td class="n ${over ? 'up' : 'ok'}">${u} %${over ? ' above cap' : ''}</td><td class="n">${c.upliftCapPct} %</td></tr>`; }).join('')}</tbody></table>` : '<p class="note">No open offers.</p>'}`;
 }
 
 function renderCompet() {
@@ -1564,6 +1567,12 @@ function renderCompet() {
   $('#compet').innerHTML = `<h2>Competitors in play</h2><p class="sub">Only renewals with an offer carry a competitor field, so this list is short.</p>${l.length ? `<table><thead><tr><th>Renewal</th><th>Competitor</th><th class="n">Value</th></tr></thead><tbody>${l.map((c) => `<tr><td><b>${esc(c.customer)}</b> · ${esc(c.product)}</td><td>${esc(c.offer.competitor)}</td><td class="n">${eur(c.annualEur)}</td></tr>`).join('')}</tbody></table>` : '<p class="note">None named.</p>'}`;
 }
 
+const inApp = window.parent !== window;
+const post = (m) => { if (inApp) window.parent.postMessage(m, '*'); else $('#appnote').hidden = false; };
+const ask = (prompt) => post({ type: 'wb:ask', prompt: prompt.slice(0, 600) });
+document.addEventListener('click', (e) => { const r = e.target.closest('tr[data-c]'); if (!r) return; const c = model.find((x) => x.contractId === r.dataset.c); if (c) post({ type: 'wb:handoff', to: 'renewals', payload: { journey: { customer: c.customerId, step: 'decide', tab: 'list', deal: c.contractId } }, open: true, notice: 'Renewals: ' + c.product + ' for ' + c.customer }); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches && e.target.matches('tr[data-c]')) e.target.click(); });
+$('#to-renewals').onclick = () => post({ type: 'wb:handoff', to: 'renewals', payload: { from: 'renewals-analytics' }, open: true, notice: 'Renewals Space' });
 renderKpis(); renderMonths(); renderRisks(); renderPhases(); renderCustomers(); renderNoOffer(); renderTeam(); renderStages(); renderPrice(); renderCompet();
 </script>
 </body>
