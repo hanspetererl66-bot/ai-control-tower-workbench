@@ -131,7 +131,7 @@ test('renewals journey: the rail names the customer, a hand-over from Sales open
   assert.deepEqual(p.visible(), ['pg-nba']);
   click(p.w, p.q('.jr button[data-jr-stop=pipeline]'));
   click(p.w, p.q('.jr button[data-jr-stop=mails]'));
-  assert.deepEqual(sent.map((m) => [m.to, m.payload.journey.customer, m.payload.journey.deal]), [['sales', 'lindenau', 'C-2026-0051'], ['customer-emails', 'lindenau', 'C-2026-0051']]);
+  assert.deepEqual(sent.filter((m) => m.type === 'wb:handoff').map((m) => [m.to, m.payload.journey.customer, m.payload.journey.deal]), [['sales', 'lindenau', 'C-2026-0051'], ['customer-emails', 'lindenau', 'C-2026-0051']]);
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
@@ -174,4 +174,56 @@ test('renewals: the manager view hands over to the Renewal Analytics Space', asy
   assert.equal(sent[0].type, 'wb:handoff');
   assert.equal(sent[0].to, 'renewals-analytics');
   p.w.close();
+});
+
+test('renewals state: the page reports its working state to the host and takes it back after a Space switch', async () => {
+  const hosted = async () => { const p = await open(); const sent = []; Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } }); return { p, sent }; };
+  const restore = (p, state, handoffs = []) => p.w.dispatchEvent(new p.w.MessageEvent('message', { data: { type: 'wb:restore', state, handoffs }, source: p.w.parent }));
+
+  // outside the app nothing is sent
+  const alone = await open();
+  click(alone.w, alone.q('#tab-list'));
+  assert.equal(alone.w.parent, alone.w, 'a page outside the app is its own parent');
+  alone.w.close();
+
+  const a = await hosted();
+  const id = a.p.w.__renewals().find((c) => c.stage === 0 && c.status !== 'Lapsed' && c.customerId === 'hanse').id;
+  a.p.w.__state.customer = 'hanse'; click(a.p.w, a.p.q('#tab-list'));
+  click(a.p.w, a.p.q(`#rows tr[data-id="${id}"]`));
+  click(a.p.w, a.p.q('#detail [data-act="prep"]'));
+  click(a.p.w, a.p.q('#detail [data-act="prepared"]'));
+  const states = a.sent.filter((m) => m.type === 'wb:state');
+  assert.ok(states.length > 0, 'the page reports its state');
+  const saved = JSON.parse(JSON.stringify(states.at(-1).state));
+  assert.ok(JSON.stringify(saved).length < 20_000, 'small enough for the host');
+  assert.equal(saved.tab, 'list'); assert.equal(saved.sel, id); assert.equal(saved.stage[id], 1);
+  assert.equal(saved.customer, 'hanse');
+  a.p.w.close();
+
+  // a fresh page (the Space was left and opened again) takes the state back
+  const b = await hosted();
+  assert.equal(b.p.w.__state.tab, 'overview');
+  restore(b.p, saved);
+  assert.deepEqual(b.p.visible(), ['pg-list']);
+  assert.equal(b.p.w.__state.customer, 'hanse'); assert.equal(b.p.q('#customer').value, 'hanse');
+  assert.equal(b.p.w.__state.sel, id);
+  assert.equal(b.p.w.__renewals().find((c) => c.id === id).stage, 1, 'the stage "prepared by you" is back');
+  assert.deepEqual(b.p.errors, []);
+  b.p.w.close();
+
+  // a hand-over that comes with the state wins for tab, customer and deal
+  const c = await hosted();
+  restore(c.p, saved, [{ from: 'renewals-analytics', payload: { journey: { customer: 'muster', step: 'decide', tab: 'nba' } } }]);
+  assert.equal(c.p.w.__state.customer, 'muster'); assert.deepEqual(c.p.visible(), ['pg-nba']);
+  assert.equal(c.p.w.__renewals().find((x) => x.id === id).stage, 1, 'the stage still comes from the saved state');
+  c.p.w.close();
+
+  // a damaged state is not trusted
+  const d = await hosted();
+  restore(d.p, { tab: 'secret', customer: 'evil', status: 'x', phase: 'nope', sel: 'R-none', stage: { [id]: 99, 'R-none': 1 }, option: { [id]: '<script>' }, asked: { [id]: 'yes' }, auto: 'true', jr: 'nordlicht' });
+  assert.equal(d.p.w.__state.tab, 'overview'); assert.equal(d.p.w.__state.customer, 'all'); assert.equal(d.p.w.__state.sel, null);
+  assert.deepEqual({ ...d.p.w.__state.stage }, {}); assert.deepEqual({ ...d.p.w.__state.option }, {}); assert.deepEqual({ ...d.p.w.__state.asked }, {});
+  assert.equal(d.p.w.__state.auto, false);
+  assert.deepEqual(d.p.errors, []);
+  d.p.w.close();
 });
