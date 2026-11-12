@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const STORY_SPACES = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-rca', 'infra-ops', 'infra-hotline', 'infra-ops-control'];
+export const STORY_SPACES = ['infra-wiki', 'it-fleet', 'it-infrastructure', 'it-operations', 'infra-rca', 'infra-ops', 'infra-hotline', 'infra-ops-control', 'infra-orchestrator'];
 const BLOCK = /<!--story:start-->[\s\S]*?<!--story:end-->\n?/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
