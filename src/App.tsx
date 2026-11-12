@@ -1570,7 +1570,7 @@ export default function App() {
 
   return (
     <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`} style={{ ...(paneWidths.list !== DEFAULT_WIDTHS.list ? { '--list-w': `${paneWidths.list}px` } : {}), ...(paneWidths.dock !== DEFAULT_WIDTHS.dock ? { '--dock-w': `${paneWidths.dock}px` } : {}) } as React.CSSProperties}>
-      <div className="study-badge" aria-hidden="true">Design Study November 2026</div>
+      <div className="study-badge" aria-hidden="true"><span className="study-bar"><i /></span><span className="study-name">JouleX Design Study</span></div>
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
