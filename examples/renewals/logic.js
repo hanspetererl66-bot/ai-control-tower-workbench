@@ -121,18 +121,23 @@ function customerSituation(cust, cases) {
 /** Retention levers: what to do to keep the customer, taken from the signals. */
 function levers(sig, rules) { return [...new Set(sig.signals.filter((s) => s.level !== 'plus').map((s) => rules.levers[s.key]).concat(sig.signals.some((s) => s.key === 'growth') ? [rules.levers.growth] : []).filter(Boolean))].slice(0, 4); }
 /** Next actions, most important first (at most three). */
-function actions(c, sig) {
-  const has = (k) => sig.signals.some((s) => s.key === k), list = [];
-  if (has('invoice')) list.push('Clear the overdue invoice with finance before the renewal talk');
-  if (has('timing') && c.offer && c.status !== 'Lapsed') list.push(sig.days < 0 ? 'Agree a written extension and the signing date with the customer' : 'Fix the signing date with the customer this week');
-  if (c.status === 'Lapsed') list.push(c.offer ? 'Follow up the reactivation offer with the technical contact' : 'Decide with the account team whether a win-back offer is worth it');
-  if (has('no-offer')) list.push('Create the renewal offer now and send it to the deal desk');
-  if (has('competitor')) list.push('Prepare the answer to the competitor (battlecard) before the next meeting');
-  if (has('uplift')) list.push('Check the price rise against the cap (pricing guard) and explain it with scope or volume');
-  if (has('ticket')) list.push('Get the open ticket solved or give the customer a date');
-  if (has('growth')) list.push('Offer more volume in the renewal: usage is close to the limit');
-  if (has('usage')) list.push('Right-size the offer to real usage instead of losing the renewal');
-  if (has('validity')) list.push('Extend the offer validity or close before it expires');
-  if (!list.length) list.push('Keep on track: confirm the renewal date at the next customer meeting');
+/** The next actions of one renewal as { key, text }. The key is stable (the text may change); the order is the order of importance. */
+function actionList(c, sig) {
+  const has = (k) => sig.signals.some((s) => s.key === k), list = [], add = (key, text) => list.push({ key, text });
+  if (has('invoice')) add('invoice', 'Clear the overdue invoice with finance before the renewal talk');
+  if (has('timing') && c.offer && c.status !== 'Lapsed') { if (sig.days < 0) add('extension', 'Agree a written extension and the signing date with the customer'); else add('signing-date', 'Fix the signing date with the customer this week'); }
+  if (c.status === 'Lapsed') { if (c.offer) add('winback-follow-up', 'Follow up the reactivation offer with the technical contact'); else add('winback-decide', 'Decide with the account team whether a win-back offer is worth it'); }
+  if (has('no-offer')) add('create-offer', 'Create the renewal offer now and send it to the deal desk');
+  if (has('competitor')) add('competitor', 'Prepare the answer to the competitor (battlecard) before the next meeting');
+  if (has('uplift')) add('uplift', 'Check the price rise against the cap (pricing guard) and explain it with scope or volume');
+  if (has('ticket')) add('ticket', 'Get the open ticket solved or give the customer a date');
+  if (has('growth')) add('growth', 'Offer more volume in the renewal: usage is close to the limit');
+  if (has('usage')) add('right-size', 'Right-size the offer to real usage instead of losing the renewal');
+  if (has('validity')) add('validity', 'Extend the offer validity or close before it expires');
+  if (!list.length) add('keep-on-track', 'Keep on track: confirm the renewal date at the next customer meeting');
   return list.slice(0, 3);
 }
+/** The texts of the next actions (what the page shows). */
+const actions = (c, sig) => actionList(c, sig).map((a) => a.text);
+/** The stable keys of the same actions, in the same order (what the page groups by). */
+const actionKeys = (c, sig) => actionList(c, sig).map((a) => a.key);

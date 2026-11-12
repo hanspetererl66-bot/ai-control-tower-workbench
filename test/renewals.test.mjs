@@ -11,7 +11,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/renewals/index.html');
 const data = JSON.parse(read(DATA_FILE));
-const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers, PHASES, phaseOf })`);
+const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, actionKeys, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers, PHASES, phaseOf })`);
 const byContract = (id) => data.cases.find((c) => c.contractId === id);
 const health = (id) => logic.signals(byContract(id), AS_OF);
 
@@ -153,4 +153,18 @@ test('demo flow: every step names where it jumps to, the targets exist, and the 
   for (const id of ['process', 'cust', 'radar', 'list', 'detail', 'alt', 'kpis']) assert.match(page, new RegExp(`id="${id}"`), id);
   assert.match(page, /\.ring \.od\{stroke:color-mix\(in srgb,var\(--amber\)/);
   assert.doesNotMatch(page.slice(page.indexOf('.hb{display'), page.indexOf('.mailchip{')), /#[0-9a-fA-F]{3,6}\b/);
+});
+
+test('next actions have a stable key: same order and count as the texts, one key per text, known keys for known cases', () => {
+  const seen = new Map();
+  for (const c of data.cases) {
+    const s = logic.signals(c, AS_OF), texts = logic.actions(c, s), keys = logic.actionKeys(c, s);
+    assert.equal(keys.length, texts.length, c.id);
+    assert.equal(new Set(keys).size, keys.length, c.id + ': no key twice');
+    keys.forEach((k, i) => { assert.ok(/^[a-z]+(-[a-z]+)*$/.test(k), k + ' is a plain key'); if (seen.has(k)) assert.equal(seen.get(k), texts[i], k + ' always has the same text'); seen.set(k, texts[i]); });
+  }
+  assert.equal(new Set(seen.values()).size, seen.size, 'one text per key');
+  const first = (id) => { const c = byContract(id); return logic.actionKeys(c, logic.signals(c, AS_OF))[0]; };
+  assert.equal(first('C-2025-0041'), 'extension', 'a passed decision date with an offer');
+  assert.equal(first('C-2023-0390'), 'invoice', 'an overdue invoice comes first');
 });
