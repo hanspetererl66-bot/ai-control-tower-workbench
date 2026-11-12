@@ -255,6 +255,7 @@ svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .pill.purple{color:var(--purple-deep);background:var(--purple-dim);border-color:var(--purple-border)}
 .pill.grey{color:var(--muted);background:var(--wash);border-color:var(--line)}
 .note{font-size:12px;color:var(--muted)}
+.notice{display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--muted)}.notice svg.i{width:14px;height:14px;flex:none}.notice.on{color:var(--purple-deep)}
 button.primary{font:inherit;font-weight:650;color:var(--surface);background:var(--purple-mid);border:1px solid var(--purple-mid);border-radius:99px;padding:9px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center}
 button.primary:hover{background:var(--purple-deep)}
 button.ghost{font:inherit;font-size:12px;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 13px;cursor:pointer}
@@ -351,6 +352,7 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 .heat th{font-weight:600;color:var(--ink-2);text-align:center;vertical-align:bottom;padding:0 2px 4px;font-size:11px}
 .heat th:first-child,.heat td:first-child{text-align:left}
 .heat td{padding:0}
+.nflag{display:block;text-align:center;padding:9px 4px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:12px;color:var(--muted);background:var(--surface)}.nflag.yes{color:var(--purple-deep);background:var(--purple-dim);border-color:var(--purple-border)}.heat td.own .nflag{outline:2px solid var(--purple);outline-offset:-2px}
 .heat select{width:100%;border:1px solid transparent;border-radius:10px;padding:9px 4px;text-align:center;text-align-last:center;font-weight:600;background:color-mix(in srgb,var(--purple) calc(var(--k) * 1%),var(--surface));color:var(--ink);cursor:pointer;appearance:none;-webkit-appearance:none}
 .heat select[data-k="0"]{color:var(--muted);background:repeating-linear-gradient(135deg,var(--wash),var(--wash) 6px,var(--surface) 6px,var(--surface) 12px)}
 .heat td.own select{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-dim)}
@@ -587,7 +589,28 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
     "hours": null,
     "note": "Standard SLA: the contract allows the provider to choose the window"
    }
-  ]
+  ],
+  "notify": {
+   "events": [
+    "when the work starts",
+    "when it is finished",
+    "if something goes wrong"
+   ],
+   "defaults": {
+    "renew-certificate": false,
+    "patch-vm": true,
+    "move-vm": true,
+    "update-dns-record": false
+   },
+   "overrides": [
+    {
+     "customer": "bp",
+     "template": "*",
+     "inform": true,
+     "note": "GxP: the customer is informed about every running action"
+    }
+   ]
+  }
  },
  "requests": [
   {
@@ -696,6 +719,21 @@ function needsAgreement(policy, req) {
   return { needed, ...t, text };
 }
 
+/**
+ * Must the customer be informed while the actions of this task run? The customer's own rule (a task, or "*" for all tasks) wins over the default.
+ * This does not depend on the length of the window: it applies to every run, also inside the standard window.
+ */
+function notifyRule(policy, customerId, template) {
+  const n = policy.notify || {}, list = n.overrides || [];
+  const own = list.find((o) => o.customer === customerId && o.template === template) || list.find((o) => o.customer === customerId && o.template === '*');
+  const inform = own ? !!own.inform : !!(n.defaults || {})[template];
+  const ev = (n.events && n.events.length ? n.events : ['when the work starts', 'when it is finished', 'if something goes wrong']).slice();
+  const when = ev.length > 1 ? `${ev.slice(0, -1).join(', ')} and ${ev[ev.length - 1]}` : ev[0];
+  const rule = own ? 'customer rule' : 'default rule';
+  return { inform, source: own ? 'customer' : 'default', note: own && own.note ? own.note : '', events: ev, when,
+    text: inform ? `The customer is informed ${when} (${rule}).` : `No notice to the customer while the work runs (${rule}).` };
+}
+
 const nightsText = (c) => c.days.map((d) => DAY_NAMES[d]).join(', ');
 const slotText = (s) => {
   const [d, a] = s.start.split('T'), [e1, b] = s.end.split('T');
@@ -784,6 +822,12 @@ function callOpen(ctx, customerId) {
   return offer(call, ctx);
 }
 
+/** What the agent adds when the customer has to be informed while the work runs; empty when the rule says no notice. */
+function noticeSentence(ctx, req) {
+  const n = notifyRule(ctx.policy, req.customer, req.template);
+  return n.inform ? ` While the work runs, we inform you ${n.when}.` : '';
+}
+
 /** The customer answers: accept an option, propose another time, say none works, or ask for a person. Returns a new call. */
 function reply(call0, ctx, ev) {
   const call = clone(call0);
@@ -806,7 +850,7 @@ function reply(call0, ctx, ev) {
     if (!slot) return call;
     say(call, 'customer', `Option ${ev.n} works for us.`);
     call.results.push({ id: req.id, status: 'agreed', how: 'offered', start: slot.start, end: slot.end });
-    say(call, 'agent', `Thank you. I note ${slotText(slot)} for ${req.id}. Operations confirms it.`);
+    say(call, 'agent', `Thank you. I note ${slotText(slot)} for ${req.id}. Operations confirms it.${noticeSentence(ctx, req)}`);
     return advance(call, ctx);
   }
   if (ev.type === 'counter') {
@@ -814,7 +858,7 @@ function reply(call0, ctx, ev) {
     const r = checkSlot(ev.date, ev.time, req, customer, ctx.freezes, ctx.today, ctx.lead);
     if (r.ok) {
       call.results.push({ id: req.id, status: 'agreed', how: 'counter', start: r.start, end: r.end });
-      say(call, 'agent', `That fits the rules for your systems. I note ${slotText(r)} for ${req.id}. Operations confirms it.`);
+      say(call, 'agent', `That fits the rules for your systems. I note ${slotText(r)} for ${req.id}. Operations confirms it.${noticeSentence(ctx, req)}`);
       return advance(call, ctx);
     }
     call.tries += 1;
@@ -857,7 +901,7 @@ const P = {
   bot: '<rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16h6"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>', moon: '<path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/>',
   shield: '<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6z"/><path d="m9 12 2 2 4-4"/>', sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
-  alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/>', mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', ticket: '<path d="M4 8a2 2 0 0 0 0 8v2h16v-2a2 2 0 0 1 0-8V6H4z"/>', snow: '<path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/>'
+  bell: '<path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21h4"/>', alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/>', mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', ticket: '<path d="M4 8a2 2 0 0 0 0 8v2h16v-2a2 2 0 0 1 0-8V6H4z"/>', snow: '<path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/>'
 };
 const ic = (n) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
 const PILL = { standard: 'grey', waiting: 'amber', agreed: 'purple', confirmed: 'green', declined: 'red', 'needs-person': 'red', 'sent-back': 'amber' };
@@ -888,6 +932,10 @@ function lane(key) {
   }[key];
   return `<ol class="lane" aria-hidden="true">${['Requested', 'Customer agrees', 'Operator confirms', 'Approval'].map((l, i) => `<li class="${defs[i]}">${l}</li>`).join('')}</ol>`;
 }
+function notifyLine(r) {
+  const n = notifyRule(state.policy, r.customer, r.template);
+  return `<div class="why notice${n.inform ? ' on' : ''}">${ic(n.inform ? 'bell' : 'clock')} ${esc(n.text)}</div>`;
+}
 function requestCard(r, i) {
   const c = cust(r.customer), st = statusOf(r, state.policy), na = needsAgreement(state.policy, r), res = r.result;
   const th = na.hours, max = 8;
@@ -903,7 +951,7 @@ function requestCard(r, i) {
   if (r.state === 'confirmed' && r.result && r.result.start) ops += r.mailed ? `<div class="res sent">${ic('check')} Confirmation sent to ${esc(r.mailed.to)} · ${esc(r.mailed.at.slice(0, 16).replace('T', ' '))} UTC</div>`
     : hosted ? `<div class="ops"><button class="ghost" data-op="mail" data-id="${r.id}">${ic('phone')} Send confirmation to customer</button></div>` : '<div class="note">Sending the confirmation needs the desktop app.</div>';
   const focus = state.focus === r.id ? ' focus' : '';
-  return `<article class="req rise${focus}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(r.id)} · ${esc(labelOf(DATA, r.template))}</div><div class="who">${esc(c.name)} · ${esc(c.sla)} · ${esc(r.target)}</div></div><div style="text-align:right"><span class="pill ${PILL[st.key]}">${esc(st.label)}</span><div class="note" style="margin-top:4px">${esc(st.who)}</div></div></div>${meter}<div class="why">${esc(na.text)}</div>${lane(st.key)}${extra}${ops}</article>`;
+  return `<article class="req rise${focus}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(r.id)} · ${esc(labelOf(DATA, r.template))}</div><div class="who">${esc(c.name)} · ${esc(c.sla)} · ${esc(r.target)}</div></div><div style="text-align:right"><span class="pill ${PILL[st.key]}">${esc(st.label)}</span><div class="note" style="margin-top:4px">${esc(st.who)}</div></div></div>${meter}<div class="why">${esc(na.text)}</div>${notifyLine(r)}${lane(st.key)}${extra}${ops}</article>`;
 }
 function mailPanel() {
   const m = state.mail; if (!m) return '';
@@ -1005,6 +1053,9 @@ function policyView() {
   <div class="scale"><span>Asks often</span><i></i><span>asks rarely</span><span style="margin-left:12px">Striped: never asks</span></div>
   <div class="leadrow"><label>Notice the agent needs before a window <select id="lead">${lead}</select></label></div>
   <ul class="note" style="margin:12px 0 0;padding-left:18px">${notes}</ul></div>
+  <div class="card rise" style="--d:40ms"><h2>Who is informed while the work runs?</h2><p class="sub">For some tasks the customer is always informed while the actions run, whatever the length of the window: ${esc(notifyRule(state.policy, '', '').when)}. A customer rule overrides the default (purple frame). This view only shows the rule; it is set in the policy data.</p>
+  <div class="scroll"><table class="heat"><thead>${head}</thead><tbody>${DATA.templates.map((tp) => `<tr><td class="tk">${esc(tp.label)}</td><td class="def"><span class="nflag${notifyRule(state.policy, '', tp.id).inform ? ' yes' : ''}">${notifyRule(state.policy, '', tp.id).inform ? 'Informed' : 'No notice'}</span></td>${DATA.customers.map((c) => { const n = notifyRule(state.policy, c.id, tp.id); return `<td class="${n.source === 'customer' ? 'own' : ''}"><span class="nflag${n.inform ? ' yes' : ''}">${n.inform ? 'Informed' : 'No notice'}</span></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
+  <ul class="note" style="margin:12px 0 0;padding-left:18px">${((state.policy.notify || {}).overrides || []).filter((o) => o.note).map((o) => `<li><b>${esc(cust(o.customer).name)}, ${o.template === '*' ? 'all tasks' : esc(labelOf(DATA, o.template))}:</b> ${esc(o.note)}</li>`).join('')}</ul></div>
   <div class="card rise" style="--d:80ms"><h2>What the agent may offer</h2><p class="sub">Only nights the customer allows, outside freezes, as long as the window fits before the business day starts.</p><div class="rules">${DATA.customers.map((c) => `<div class="rulecard"><b>${esc(c.name)}</b>${nightsChips(c)}<div class="note">From ${esc(c.from)}, end by ${esc(c.until)}</div>${nightBar(c, null)}</div>`).join('')}</div>
   <div class="freezes">${DATA.freezes.map((f) => `<span class="pill red">${ic('snow')} ${esc(f.reason)} · ${f.from} to ${f.to}${f.customer ? '' : ' · all customers'}</span>`).join('')}</div></div>`;
 }
@@ -1080,7 +1131,7 @@ function report(id) {
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, st = m.state;
-  if (st && Array.isArray(st.requests)) { state.requests = st.requests; if (st.policy) state.policy = st.policy; state.tab = st.tab || state.tab; state.caller = st.caller || state.caller; state.focus = st.focus || ''; }
+  if (st && Array.isArray(st.requests)) { state.requests = st.requests; if (st.policy) state.policy = { notify: clone(DATA.policy.notify), ...st.policy }; state.tab = st.tab || state.tab; state.caller = st.caller || state.caller; state.focus = st.focus || ''; }
   (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => {
     const p = h && h.payload, t = p && p.task; if (!p || p.type !== 'window-request' || !t || typeof t.id !== 'string') return;
     if (!DATA.customers.some((c) => c.id === t.customer) || !DATA.templates.some((x) => x.id === t.template)) return;

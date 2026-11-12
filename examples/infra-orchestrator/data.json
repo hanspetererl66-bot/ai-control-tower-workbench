@@ -161,7 +161,28 @@
     "hours": null,
     "note": "Standard SLA: the contract allows the provider to choose the window"
    }
-  ]
+  ],
+  "notify": {
+   "events": [
+    "when the work starts",
+    "when it is finished",
+    "if something goes wrong"
+   ],
+   "defaults": {
+    "renew-certificate": false,
+    "patch-vm": true,
+    "move-vm": true,
+    "update-dns-record": false
+   },
+   "overrides": [
+    {
+     "customer": "bp",
+     "template": "*",
+     "inform": true,
+     "note": "GxP: the customer is informed about every running action"
+    }
+   ]
+  }
  },
  "runbooks": [
   {
