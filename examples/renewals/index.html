@@ -233,6 +233,8 @@ h2{font-size:15px;font-weight:650;margin:0 0 4px}h3{font-size:13px;margin:0 0 4p
 .card{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpis.primary .kpi .v{font-size:30px}.kpis.primary .kpi{padding:16px 18px}
+.kpis.second{margin-top:-4px}.kpis.second .kpi{padding:9px 12px;box-shadow:none;background:var(--wash)}.kpis.second .kpi .v{font-size:17px}.kpis.second .kpi .s{font-size:10.5px}
 .kpi.assumed .v{color:var(--muted);font-weight:500}.kpi.assumed{border-style:dashed}.kpi .v{font-size:22px;font-weight:600}.kpi .k{color:var(--muted);font-size:12px}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
 .kpi.red{border-color:var(--red-border)}.kpi.red .v{color:var(--red)}.kpi.amber{border-color:var(--amber-border)}.kpi.amber .v{color:var(--amber)}.kpi.green{border-color:var(--green-border)}.kpi.green .v{color:var(--green)}
 .bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:12px}
@@ -521,7 +523,7 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
   <details class="card intro">
     <summary><h2>What is this page?</h2><span class="hint">Fictional data · nothing is sent · click to show or hide</span></summary>
     <div class="body"><p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of three fictional customers: which renewals need a decision first, why, and what to do next. Everything is tied to a customer: pick one at the top, or keep “All customers”.</p>
-    <div class="cols"><div><h3>1. Overview (start)</h3><p>The renewals that decide in the next six weeks, and the landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the customer.</p></div><div><h3>2. Renewal process</h3><p>The map of one customer: its contracts, and around them open tickets, invoices, mails and usage. Below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Next best action</h3><p>The one renewal to take care of first and the queue behind it.</p></div><div><h3>4. Radar and list</h3><p>The radar shows every contract on a time line, the list sorts them by decision date. Click a row for the signals behind its health, the price against the contract cap, the next actions and the approval. Sending and signing are simulated; “Start demo” walks through ten steps.</p></div></div>
+    <div class="cols"><div><h3>1. Today (start)</h3><p>Three numbers, the decisions of the next six weeks on a time line, what to do first (grouped), and the landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the customer.</p></div><div><h3>2. Renewal process</h3><p>The map of one customer: its contracts, and around them open tickets, invoices, mails and usage. Below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Next best action</h3><p>The one renewal to take care of first and the queue behind it.</p></div><div><h3>4. Radar and list</h3><p>The radar shows every contract on a time line, the list sorts them by decision date. Click a row for the signals behind its health, the price against the contract cap, the next actions and the approval. Sending and signing are simulated; “Start demo” walks through ten steps.</p></div></div>
     <details><summary class="t">Terms used on this page</summary><dl><dt>Decision date</dt><dd>Contract end minus the notice period: the last day to decide.</dd><dt>Notice period</dt><dd>How long before the end the customer or SAP must act.</dd><dt>Health</dt><dd>The worst of the signals: decision date, missing or expiring offer, price above the cap, competitor, usage, open tickets, overdue invoices.</dd><dt>Contract cap</dt><dd>The largest price rise the contract allows at renewal.</dd><dt>Retention</dt><dd>Expected chance that the customer renews, weighted by annual value.</dd><dt>Customer lifetime value</dt><dd>Expected value of the customer over the years if it stays.</dd><dt>Automatic renewal</dt><dd>Small renewals without a warning signal get an offer and an e-mail without a person (simulated).</dd></dl></details></div>
   </details>
   <div class="card guide" id="guide" aria-live="polite"></div>
@@ -534,10 +536,11 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
   <nav class="tabs" id="tabs" role="tablist" aria-label="Renewal views"></nav>
 
   <section class="pg" id="pg-overview" role="tabpanel" aria-labelledby="tab-overview">
-    <div class="kpis" id="kpis"></div>
+    <div id="kpis"></div>
     <p class="kpi-hint">Double-click a box to see the renewals behind the number.</p>
     <div class="card" id="kpi-detail" hidden></div>
     <div class="card" id="six"></div>
+    <div class="card" id="today-groups"></div>
     <div class="card land" id="land"></div>
   </section>
 
@@ -1808,10 +1811,13 @@ function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c
 const tip = $('#tip');
 function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, e.clientX + 14)) + 'px'; tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, e.clientY + 14)) + 'px'; }
 function hover(el, html) { el.addEventListener('mousemove', (e) => showTip(e, html())); el.addEventListener('mouseleave', () => { tip.hidden = true; }); el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); showTip({ clientX: r.left, clientY: r.bottom - 14 }, html()); }); el.addEventListener('blur', () => { tip.hidden = true; }); }
+/** What needs a person now: red, or the decision date is within DUE_DAYS (or passed); automatic renewals handle themselves. */
+const DUE_DAYS = 14;
+const needsMe = (c) => live(c) && !c.autoRun && (c.health === 'red' || c.sig.days <= DUE_DAYS);
 const KPI_ROWS = {
-  open: { title: 'Renewals to handle', list: (m) => m.filter(live), extra: [['Decision date', (c) => c.decisionDate]] },
+  need: { title: 'Needs me now', list: (m) => m.filter(needsMe), extra: [['Why', (c) => c.reasons[0] || '']] },
   red: { title: 'Red renewals', list: (m) => m.filter(live).filter((c) => c.health === 'red'), extra: [['Why', (c) => (c.sig.signals.find((x) => x.level !== 'plus') || { text: '' }).text]] },
-  soon: { title: 'Decision within 30 days', list: (m) => m.filter(live).filter((c) => c.sig.days <= 30), extra: [['Days left', (c) => (c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d ago' : c.sig.days + ' d')]] },
+  due: { title: 'Decision within ' + DUE_DAYS + ' days', list: (m) => m.filter(live).filter((c) => c.sig.days <= DUE_DAYS), extra: [['Days left', (c) => (c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d ago' : c.sig.days + ' d')]] },
   ret: { title: 'Expected retention', list: (m) => m.filter(live), extra: [['Retention', (c) => Math.round(c.pRet * 100) + ' %'], ['Expected a year', (c) => eur(c.annualEur * c.pRet)]] },
   clv: { title: 'Customer lifetime value', list: (m) => m.filter(live), extra: [['Lifetime value', (c) => eur(c.clv)]] },
   auto: { title: 'Handled automatically', list: (m) => m.filter((c) => c.autoRun && c.stage >= 3), extra: [['Stage', (c) => FLOW[c.stage]]] },
@@ -1828,11 +1834,11 @@ function renderKpiDetail() {
   el.querySelectorAll('tbody tr').forEach((r) => { const go = () => openRenewal(r.dataset.id); r.onclick = go; r.onkeydown = (e) => { if (e.key === 'Enter') go(); }; });
 }
 function renderKpis() {
-  const open = scoped().filter(live), red = open.filter((c) => c.health === 'red'), soon = open.filter((c) => c.sig.days <= 30);
+  const open = scoped().filter(live), red = open.filter((c) => c.health === 'red'), due = open.filter((c) => c.sig.days <= DUE_DAYS), need = scoped().filter(needsMe);
   const sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), signed = scoped().filter((c) => c.stage === 4);
   const k = (key, cls, v, name, s) => `<div class="kpi ${cls}" data-k="${key}" role="button" tabindex="0" aria-pressed="${state.kpi === key}" title="Double-click for the details"><div class="v">${v}</div><div class="k">${name}</div><div class="s">${s}</div></div>`;
-  $('#kpis').innerHTML = k('open', '', open.length, 'Renewals to handle', eur(sum(open)) + ' a year') + k('red', 'red', red.length, 'Red renewals', eur(sum(red)) + ' at risk') + k('soon', 'amber', soon.length, 'Decision within 30 days', soon.length ? 'incl. passed dates' : 'none') +
-    k('ret', '', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('clv', 'assumed', eur(open.reduce((a, c) => a + c.clv, 0)), 'Lifetime value (assumption)', 'not a forecast: margin and retention are assumed (list view)') + k('auto', 'green', scoped().filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('signed', 'green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)');
+  $('#kpis').innerHTML = `<div class="kpis primary">` + k('need', need.length ? 'amber' : '', need.length, 'Needs me now', `${eur(sum(need))} a year · red or due within ${DUE_DAYS} days`) + k('due', '', eur(sum(due)), `Due within ${DUE_DAYS} days`, `${due.length} renewal${due.length === 1 ? '' : 's'}${due.some((c) => c.sig.days < 0) ? ', incl. passed dates' : ''}`) + k('red', 'red', eur(sum(red)), 'In the red', `${red.length} renewal${red.length === 1 ? '' : 's'} · act now`) + `</div>` +
+    `<div class="kpis second">` + k('ret', '', Math.round((open.reduce((a, c) => a + c.annualEur * c.pRet, 0) / Math.max(1, sum(open))) * 100) + ' %', 'Expected retention', 'weighted by annual value') + k('clv', 'assumed', eur(open.reduce((a, c) => a + c.clv, 0)), 'Lifetime value (assumption)', 'not a forecast: margin and retention are assumed (list view)') + k('auto', 'green', scoped().filter((c) => c.autoRun && c.stage >= 3).length, 'Handled automatically', state.auto ? 'offer and e-mail, no person (simulated)' : 'switch is off') + k('signed', 'green', signed.length, 'Signed in this demo', eur(signed.reduce((a, c) => a + c.chosen.annualEur, 0)) + ' a year (simulated)') + `</div>`;
   const toggle = (key) => { state.kpi = state.kpi === key ? null : key; renderKpis(); renderKpiDetail(); if (state.kpi) $('#kpi-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
   $('#kpis').querySelectorAll('.kpi').forEach((b) => { b.ondblclick = () => toggle(b.dataset.k); b.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(b.dataset.k); } }; });
 }
@@ -2004,7 +2010,7 @@ function renderAlt() {
 }
 /* ---------- tabs, customer context and entrance motion ---------- */
 const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const TABS = [['overview', 'Overview'], ['process', 'Renewal process'], ['nba', 'Next best action'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
+const TABS = [['overview', 'Today'], ['process', 'Renewal process'], ['nba', 'Next best action'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
 const WINDOW_DAYS = 42; /* "the next six weeks" */
 /* Entrance motion runs once per picture and key; later renders show the finished picture (no replay on every click). */
 const played = {};
@@ -2057,18 +2063,9 @@ function renderSix() {
   const lanes = {};
   const dots = upcoming.map((c, i) => { const d = c.sig.days, l = lanes[d] = (lanes[d] || 0) + 1; return `<button type="button" class="rdot ${c.health}" data-id="${esc(c.id)}" style="left:${(d / WINDOW_DAYS) * 100}%;top:${8 + (l - 1) * 20}px;--d:${150 + i * 80}ms" aria-label="${esc(shortName(c) + ', ' + c.customer + ', decision ' + c.decisionDate)}"></button>`; }).join('');
   const pdots = passed.map((c, i) => `<button type="button" class="rdot ${c.health}" data-id="${esc(c.id)}" style="left:${12 + i * 20}px;top:8px;--d:${80 + i * 80}ms" aria-label="${esc(shortName(c) + ', ' + c.customer + ', decision date passed')}"></button>`).join('');
-  const rows = (list, base) => list.map((c, i) => {
-    const d = c.sig.days, C = 2 * Math.PI * 15, p = clamp(1 - d / WINDOW_DAYS, 0, 1), dm = dayMonth(c.decisionDate).split(' ');
-    return `<button type="button" class="srow ${c.health}" data-id="${esc(c.id)}" style="--i:${base + i}"><span class="sdate ${d < 0 ? 'late' : ''}"><b>${d < 0 ? '−' + -d : dm[0]}</b><small>${d < 0 ? 'days late' : dm[1]}</small></span>` +
-      `<span class="smain"><b>${esc(shortName(c))}</b> <span class="sc">${esc(c.customer)}</span>${autoTag(c)}${mailChip(c)}<span class="sact">${esc(c.actions[0])}</span></span>` +
-      `<svg class="sring" viewBox="0 0 40 40" aria-hidden="true"><circle class="t" cx="20" cy="20" r="15"/><circle class="f" cx="20" cy="20" r="15" stroke-dasharray="${(p * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle">${d < 0 ? '!' : d}</text></svg>` +
-      `<span class="sval">${eur(c.annualEur)}</span><span class="pill ${c.health}">${LABEL[c.health]}</span></button>`;
-  }).join('');
   el.innerHTML = `<div class="head"><div style="flex:1 1 320px"><h2>Next ${WINDOW_DAYS / 7} weeks: decisions until ${esc(dayMonth(isoPlus(WINDOW_DAYS)))}</h2>` +
     `<p class="sub" style="margin:0"><b data-count="${mine.length}">${mine.length}</b> renewals · <b data-count="${total}" data-fmt="eur">${eur(total)}</b> a year · ${red} red${passed.length ? ' · ' + passed.length + ' with the decision date already passed' : ''}</p></div></div>` +
-    (mine.length ? `<div class="ribbon${ent}" style="--rh:${Math.max(62, 30 + Math.max(1, ...Object.values(lanes), passed.length ? 1 : 0) * 20)}px"><div class="rpast${passed.length ? '' : ' empty'}"><span>Passed</span>${pdots}</div><div class="rweeks">${Array.from({ length: WINDOW_DAYS / 7 }, (_, i) => `<div class="rwk"><span>${esc(dayMonth(isoPlus(i * 7)))}</span></div>`).join('')}<i class="rtoday"><em>today</em></i>${dots}</div></div>` : '') +
-    (passed.length ? `<h3 class="grp">Decision date passed (${passed.length})</h3><div class="slist${ent}">${rows(passed, 0)}</div>` : '') +
-    (upcoming.length ? `<h3 class="grp">Decision in the next six weeks (${upcoming.length})</h3><div class="slist${ent}">${rows(upcoming, passed.length)}</div>` : '') +
+    (mine.length ? `<p class="sub" style="margin:8px 0 0">Click a dot to open the renewal. What to do first is listed below.</p><div class="ribbon${ent}" style="--rh:${Math.max(62, 30 + Math.max(1, ...Object.values(lanes), passed.length ? 1 : 0) * 20)}px"><div class="rpast${passed.length ? '' : ' empty'}"><span>Passed</span>${pdots}</div><div class="rweeks">${Array.from({ length: WINDOW_DAYS / 7 }, (_, i) => `<div class="rwk"><span>${esc(dayMonth(isoPlus(i * 7)))}</span></div>`).join('')}<i class="rtoday"><em>today</em></i>${dots}</div></div>` : '') +
     (!mine.length ? '<p class="note">No decision date in the next six weeks.</p>' : '') +
     `<p class="note">${later} more renewals decide later, ${lapsed} contracts have lapsed (win-back). <button class="small" id="six-all" type="button">Show all by decision date</button></p>`;
   if (ent) runCounts(el);
@@ -2189,17 +2186,19 @@ function groupPrompt(g) {
   for (const n of names) { const next = (list ? '; ' : '') + n, more = names.length - used - 1; if ((head + list + next + (more > 0 ? ' and 99 more' : '') + tail).length > 600) break; list += next; used++; }
   return head + list + (used < names.length ? ` and ${names.length - used} more` : '') + tail;
 }
-function renderQueue() {
-  const el = $('#queue'), groups = actionGroups(), ent = enter('queue:' + state.customer), total = groups.reduce((a, g) => a + g.items.length, 0);
+function renderQueue() { renderGroups($('#queue'), 'q', 'Action queue', 'queue:'); }
+/** The grouped cards in one container (the action queue tab and the Today tab). pre keeps the element ids apart. */
+function renderGroups(el, pre, title, key) {
+  const groups = actionGroups(), ent = enter(key + state.customer), total = groups.reduce((a, g) => a + g.items.length, 0);
   const days = (c) => (c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d' : c.sig.days + ' d');
-  el.innerHTML = `<h2>Action queue</h2><p class="sub">${total} renewal${total === 1 ? '' : 's'} that need a person, grouped by what to do first: ${groups.length} action${groups.length === 1 ? '' : 's'}. Red before yellow, then the earlier decision date, then the higher value. Open a card to see the renewals, click one to open it.</p>` +
+  el.innerHTML = `<h2>${title}</h2><p class="sub">${total} renewal${total === 1 ? '' : 's'} that need a person, grouped by what to do first: ${groups.length} action${groups.length === 1 ? '' : 's'}. Red before yellow, then the earlier decision date, then the higher value. Open a card to see the renewals, click one to open it.</p>` +
     (groups.length ? `<div class="queue${ent}">${groups.map((g, i) => {
       const open = state.groups[g.key] !== undefined ? state.groups[g.key] : i === 0, n = (h) => g.items.filter((c) => c.health === h).length, worst = ['red', 'yellow', 'green'][g.worst];
-      return `<section class="qgrp ${worst}" style="--i:${i}"><button type="button" class="qhead" data-gk="${esc(g.key)}" aria-expanded="${open}" aria-controls="qb-${esc(g.key)}"><span class="qn">${i + 1}</span><span class="qm"><b>${esc(g.text)}</b><small>${g.items.length} renewal${g.items.length === 1 ? '' : 's'} · ${esc(g.customers.join(', '))} · earliest decision ${g.days < 0 ? 'passed ' + -g.days + ' d ago' : 'in ' + g.days + ' d'}</small></span><span class="qbar" role="img" aria-label="${n('red')} red, ${n('yellow')} yellow, ${n('green')} green">${['red', 'yellow', 'green'].filter((h) => n(h)).map((h) => `<i class="${h}" style="flex:${n(h)}"></i>`).join('')}</span><span class="qv">${eur(g.value)}</span><span class="chev" aria-hidden="true"></span></button>
-        <div class="qbody" id="qb-${esc(g.key)}"${open ? '' : ' hidden'}>${g.items.map((c) => `<button type="button" class="qrow ${c.health}" data-id="${esc(c.id)}"><span class="qm"><b>${esc(shortName(c))} · ${esc(c.customer)}</b><small>${c.reasons.length ? esc(c.reasons.join(' · ')) : 'No warning signal'}${mailChip(c)}</small></span><span class="qd">${days(c)}</span><span class="qv">${eur(c.annualEur)}</span><span class="pill ${c.health}">${LABEL[c.health]}</span></button>`).join('')}
+      return `<section class="qgrp ${worst}" style="--i:${i}"><button type="button" class="qhead" data-gk="${esc(g.key)}" aria-expanded="${open}" aria-controls="${pre}b-${esc(g.key)}"><span class="qn">${i + 1}</span><span class="qm"><b>${esc(g.text)}</b><small>${g.items.length} renewal${g.items.length === 1 ? '' : 's'} · ${esc(g.customers.join(', '))} · earliest decision ${g.days < 0 ? 'passed ' + -g.days + ' d ago' : 'in ' + g.days + ' d'}</small></span><span class="qbar" role="img" aria-label="${n('red')} red, ${n('yellow')} yellow, ${n('green')} green">${['red', 'yellow', 'green'].filter((h) => n(h)).map((h) => `<i class="${h}" style="flex:${n(h)}"></i>`).join('')}</span><span class="qv">${eur(g.value)}</span><span class="chev" aria-hidden="true"></span></button>
+        <div class="qbody" id="${pre}b-${esc(g.key)}"${open ? '' : ' hidden'}>${g.items.map((c) => `<button type="button" class="qrow ${c.health}" data-id="${esc(c.id)}"><span class="qm"><b>${esc(shortName(c))} · ${esc(c.customer)}</b><small>${c.reasons.length ? esc(c.reasons.join(' · ')) : 'No warning signal'}${mailChip(c)}</small></span><span class="qd">${days(c)}</span><span class="qv">${eur(c.annualEur)}</span><span class="pill ${c.health}">${LABEL[c.health]}</span></button>`).join('')}
         <div class="qfoot"><button class="small" type="button" data-gask="${esc(g.key)}">Ask Joule to prepare all ${g.items.length}</button><span class="sub" style="margin:0">Joule answers in the chat; nothing is sent.</span></div></div></section>`;
     }).join('')}</div>` : '<p class="note">Nothing open for this selection.</p>');
-  el.querySelectorAll('[data-gk]').forEach((b) => (b.onclick = () => { const g = groups.findIndex((x) => x.key === b.dataset.gk); const cur = state.groups[b.dataset.gk] !== undefined ? state.groups[b.dataset.gk] : g === 0; state.groups[b.dataset.gk] = !cur; renderQueue(); saveState(); }));
+  el.querySelectorAll('[data-gk]').forEach((b) => (b.onclick = () => { const g = groups.findIndex((x) => x.key === b.dataset.gk); const cur = state.groups[b.dataset.gk] !== undefined ? state.groups[b.dataset.gk] : g === 0; state.groups[b.dataset.gk] = !cur; renderGroups(el, pre, title, key); saveState(); }));
   el.querySelectorAll('[data-gask]').forEach((b) => (b.onclick = () => send(groupPrompt(groups.find((x) => x.key === b.dataset.gask)))));
   el.querySelectorAll('[data-id]').forEach((b) => { b.onclick = () => openRenewal(b.dataset.id); hover(b, () => tipHtml(byId(b.dataset.id))); });
 }
@@ -2208,7 +2207,7 @@ const byId = (id) => model.find((c) => c.id === id);
 const named = (id) => { const c = byId(id); return c ? `${c.customer} · ${c.product} · contract ${c.contractId} · SAP customer ID ${c.sapCustomerId}` : ''; };
 const cnt = (f) => model.filter(f).length;
 const STEPS = [
-  { t: 'Start: the next six weeks', tab: 'overview', where: ['#six'], area: 'Overview (the start page)', x: 'The start page lists every renewal whose decision date falls in the next six weeks, plus the ones that are already late, and shows all customers as a landscape: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Click a planet to open the customer.', data: () => { const w = model.filter((c) => live(c) && c.sig.days <= WINDOW_DAYS); return `${w.length} renewals decide within six weeks (${w.filter((c) => c.sig.days < 0).length} already late), ${eur(w.reduce((a, c) => a + c.annualEur, 0))} a year.`; }, on: () => {} },
+  { t: 'Start: today', tab: 'overview', where: ['#six', '#today-groups'], area: 'Today (the start page)', x: 'The start page shows three numbers, the decisions of the next six weeks on a time line (the late ones on the left), what to do first as grouped cards, and all customers as a landscape: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Click a planet to open the customer.', data: () => { const w = model.filter((c) => live(c) && c.sig.days <= WINDOW_DAYS); return `${w.length} renewals decide within six weeks (${w.filter((c) => c.sig.days < 0).length} already late), ${eur(w.reduce((a, c) => a + c.annualEur, 0))} a year.`; }, on: () => {} },
   { t: 'The renewal process', tab: 'process', where: ['#process'], area: 'Renewal process', x: 'This is how the renewal team works, from watching a contract to the signed order. Every contract of the three customers sits in exactly one phase today. The page below follows the same order: customers, radar, list, details.', data: () => `${model.length} contracts of 3 customers. In the offer phase: ${cnt((c) => c.ph.phase === 'offer')}, of which ${cnt((c) => c.ph.late)} are behind. With the customer (negotiate): ${cnt((c) => c.ph.phase === 'negotiate')}. Past the decision date: ${cnt((c) => c.ph.phase === 'decide')}.`, on: () => { state.status = 'all'; } },
   { t: 'One customer, one map', tab: 'process', where: ['#cmap-wrap'], area: 'Renewal map of Muster Industrie', x: 'Pick a customer and its renewal map opens: the contracts around the customer, each with the open tickets, invoices, mail and usage along its spoke. Below it the four tiles say where we stand; on the right are the details with the e-mail communication. Click a contract to see its signals.', data: () => DATA.customers.map((cu) => { const l = model.filter((c) => c.customerId === cu.id && live(c)); return `${cu.name.split(' ')[0]}: ${l.length} contracts, ${eur(l.reduce((a, c) => a + c.annualEur, 0))} a year`; }).join(' · '), on: () => { state.customer = 'muster'; } },
   { t: 'The renewal radar', tab: 'radar', where: ['#radar'], area: 'Renewal radar', x: 'Every contract of all three customers on one time line. The diamond is the decision date, the bar runs to the contract end, the dashed line is today. Red and yellow bars are the ones to look at first.', data: () => `${cnt((c) => c.health === 'red')} red, ${cnt((c) => c.health === 'yellow')} yellow, ${cnt((c) => c.health === 'green')} green. Lapsed contracts show only the diamond and a mark for the end.`, on: () => { state.customer = 'all'; } },
@@ -2235,7 +2234,7 @@ function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
-  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderLand(); }
+  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); renderLand(); }
   else if (state.tab === 'process') renderCustomerView();
   else if (state.tab === 'nba') { renderNba(); renderQueue(); }
   else if (state.tab === 'radar') { renderBar(); renderTimeline(); renderDetail(); }
