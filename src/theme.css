@@ -812,7 +812,8 @@ button {
 .list {
   background: var(--panel);
   border-right: 1px solid var(--line);
-  padding: calc(var(--titlebar) + 6px) 12px 12px;
+  /* The bottom padding keeps the last item above the "JouleX Design Study" badge (fixed, bottom left) when the list is scrolled to its end. */
+  padding: calc(var(--titlebar) + 6px) 12px 56px;
   overflow-y: auto;
   min-height: 0;
 }
@@ -4081,7 +4082,7 @@ button {
 .side-tab:hover { color: var(--ink); }
 .side-tab-on { color: var(--accent, var(--ink)); border-bottom-color: var(--accent, var(--ink)); }
 .side-tab:focus-visible { outline: 2px solid var(--accent, #6f5ce6); outline-offset: -2px; border-radius: 6px; }
-.side-body { flex: 1; overflow-y: auto; padding: 4px 0 20px; }
+.side-body { flex: 1; overflow-y: auto; padding: 4px 0 56px; } /* 56px: clear of the Design Study badge at the bottom left */
 .side-section { padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
 .side-section h4 { margin: 0; font-size: 13.5px; font-weight: 650; }
 .side-hint { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }

@@ -63,3 +63,30 @@ test('every bundled Space still parses with the script injected', () => {
     assert.equal((html.match(/id="werkbank-space-tools"/g) ?? []).length, 1, name);
   }
 });
+
+test('columns that only hold symbols (check marks, dots) are no filters, columns with words still are', () => {
+  const headers = ['Person', 'call', 'escalate', 'Role'];
+  const rows = [
+    ['Sven', '✓', '✗', 'Account Executive'],
+    ['Marlene', '✓', '✓', 'Sales Director'],
+    ['Claude', '✗', '✗', 'AI assistant'],
+    ['Agent', '✗', '✗', 'AI assistant'],
+  ];
+  const cols = t.columns(headers, rows);
+  assert.deepEqual(cols.map((c) => c.label), ['Role'], 'only the column with words is a filter');
+  // words next to a symbol still count
+  const mixed = t.columns(['Forecast'], [['▲ likely late'], ['✓ on time'], ['▲ likely late'], ['◆ watch']]);
+  assert.deepEqual(mixed.map((c) => c.label), ['Forecast']);
+});
+
+test('the Spaces list and the side body leave room for the Design Study badge at the bottom left', () => {
+  const css = readFileSync(join(import.meta.dirname, '../src/theme.css'), 'utf8');
+  const rule = (selector) => new RegExp(`(?:^|\\n)${selector.replace('.', '\\.')} \\{([\\s\\S]*?)\\}`).exec(css)[1];
+  const badge = rule('.study-badge');
+  const bottom = Number(/bottom: (\d+)px/.exec(badge)[1]);
+  const badgeHeight = 36; // bar, gap and one line of text, with some air
+  // the last length of the padding shorthand is the bottom padding
+  const reserved = (body) => Number(/padding:[^;]*?(\d+)px\s*;/.exec(body.replace(/\/\*[\s\S]*?\*\//g, ''))[1]);
+  assert.ok(reserved(rule('.list')) >= bottom + badgeHeight, '.list reserves space for the badge');
+  assert.ok(reserved(rule('.side-body')) >= bottom + badgeHeight, '.side-body reserves space for the badge');
+});

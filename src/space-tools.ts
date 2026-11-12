@@ -34,23 +34,24 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
     for (var i = 0; i < t.length; i++) if (hay.indexOf(t[i]) < 0) return false;
     return true;
   }
-  /** headers: string[]; rows: string[][]. Columns with 2-8 short, non-numeric values of which at least one repeats become filters. */
+  /** headers: string[]; rows: string[][]. Columns with 2-8 short, non-numeric values of which at least one repeats become filters. Columns that only hold symbols (check marks, dots) are no filter: they have no words to pick from. */
   function columns(headers, rows) {
     var out = [];
     if (rows.length < 3) return out;
     for (var c = 0; c < headers.length; c++) {
       var label = String(headers[c] || '').trim();
       if (!label) continue;
-      var seen = {}, order = [], numeric = true, ok = true, filled = 0;
+      var seen = {}, order = [], numeric = true, ok = true, filled = 0, words = false;
       for (var r = 0; r < rows.length; r++) {
         var v = String(rows[r][c] == null ? '' : rows[r][c]).trim();
         if (!v) continue;
         filled++;
         if (v.length > 28) { ok = false; break; }
         if (!/^[\d.,%\s€$+\-\/:]+$/.test(v)) numeric = false;
+        if (/[A-Za-z\u00C0-\u024F]/.test(v)) words = true;
         if (!seen[v]) { seen[v] = 1; order.push(v); if (order.length > 8) { ok = false; break; } }
       }
-      if (ok && !numeric && order.length >= 2 && order.length < filled) out.push({ index: c, label: label, values: order.sort() });
+      if (ok && !numeric && words && order.length >= 2 && order.length < filled) out.push({ index: c, label: label, values: order.sort() });
     }
     return out;
   }
