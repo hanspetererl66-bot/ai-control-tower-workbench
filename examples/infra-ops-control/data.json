@@ -149,7 +149,8 @@
    "approver": "Security",
    "fix": {
     "certExpiresInDays": 365
-   }
+   },
+   "minutes": 12
   },
   "patch": {
    "title": "Install security patch",
@@ -164,7 +165,8 @@
     "patchLagDays": 0,
     "uptimeDays": 0
    },
-   "hours": 2
+   "hours": 2,
+   "minutes": 55
   },
   "disk": {
    "title": "Free up disk space",
@@ -177,7 +179,8 @@
    "approver": "Service owner",
    "fix": {
     "diskPct": 61
-   }
+   },
+   "minutes": 20
   },
   "backup": {
    "title": "Catch up the backup",
@@ -190,7 +193,8 @@
    "approver": "Backup owner",
    "fix": {
     "backupAgeHours": 1
-   }
+   },
+   "minutes": 30
   },
   "unreachable": {
    "title": "Check an unreachable VM",
@@ -208,7 +212,8 @@
     "diskPct": 40,
     "uptimeDays": 0
    },
-   "hours": 1
+   "hours": 1,
+   "minutes": 40
   },
   "cpu": {
    "title": "Analyse the CPU peak",
@@ -221,7 +226,8 @@
    "approver": "Service owner",
    "fix": {
     "cpuPct": 45
-   }
+   },
+   "minutes": 15
   },
   "mem": {
    "title": "Check memory pressure",
@@ -234,7 +240,8 @@
    "approver": "Service owner",
    "fix": {
     "memPct": 60
-   }
+   },
+   "minutes": 15
   }
  },
  "vms": [
@@ -870,6 +877,7 @@
     "customer": null,
     "reason": "Year-end freeze"
    }
-  ]
+  ],
+  "customerMin": 180
  }
 }

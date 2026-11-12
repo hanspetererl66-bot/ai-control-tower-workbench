@@ -347,6 +347,43 @@ test('a customer without a hotline profile can only simulate the agreement, and 
   assert.match(doc.querySelector('#fix-slot').textContent, /no profile in the Customer Hotline Space, so the agreement is simulated/);
   doc.querySelector('[data-agree="sim"]').click();
   await until(doc, '.runbar li.done:last-child');
-  assert.ok(!posted.some((m) => m.type === 'wb:handoff'), 'nothing was handed to the hotline');
+  assert.ok(!posted.some((m) => m.type === 'wb:handoff' && m.to === 'infra-hotline'), 'nothing was handed to the hotline');
   dom.window.close();
+});
+
+test('a closed repair reports its outcome to the Orchestrator, queued without opening it; outside the Werkbank nothing is sent', async () => {
+  const h = host();
+  h.doc.querySelector('#speed').value = 'fast';
+  h.doc.querySelector('#speed').dispatchEvent(new h.w.Event('change'));
+  h.doc.querySelector('[data-cust="hansa"]').click();
+  [...h.doc.querySelectorAll('[data-vm]')].find((t) => t.textContent.includes('port-gw-01')).click();
+  h.doc.querySelector('[data-fix]').click();
+  await until(h.doc, '.runbar li.done:last-child');
+  const m = h.posted.find((x) => x.type === 'wb:handoff' && x.payload.type === 'outcome');
+  assert.equal(m.to, 'infra-orchestrator');
+  assert.equal(m.open, false, 'queued, the Orchestrator is not opened');
+  assert.deepEqual(JSON.parse(JSON.stringify(m.payload.outcome)), { source: 'auto-fix', id: 'OP-2101', template: 'patch-vm', label: 'Check an unreachable VM', customer: 'Hansa Maritime', host: 'port-gw-01', by: 'agent', result: 'done', durationMin: 40, waitedMin: 0, attempts: 1, floors: [] });
+  const alone = open();
+  alone.querySelector('#speed').value = 'fast';
+  alone.querySelector('#speed').dispatchEvent(new alone.defaultView.Event('change'));
+  alone.querySelector('[data-cust="hansa"]').click();
+  [...alone.querySelectorAll('[data-vm]')].find((t) => t.textContent.includes('port-gw-01')).click();
+  alone.querySelector('[data-fix]').click();
+  await until(alone, '.runbar li.done:last-child');
+});
+
+test('a repair that waited for the customer reports the waiting and all its tasks', async () => {
+  const h = host();
+  h.doc.querySelector('#speed').value = 'fast';
+  h.doc.querySelector('#speed').dispatchEvent(new h.w.Event('change'));
+  h.doc.querySelector('[data-cust="musind"]').click();
+  [...h.doc.querySelectorAll('[data-vm]')].find((t) => t.textContent.includes('proxy-edge-01')).click();
+  h.doc.querySelector('[data-fix]').click();
+  h.doc.querySelector('[data-agree="hotline"]').click();
+  h.send(null, [{ from: 'infra-hotline', payload: { type: 'window-result', taskId: 'OP-2101', status: 'confirmed', window: ['2026-10-21T21:00', '2026-10-21T23:00'] } }]);
+  await until(h.doc, '.runbar li.done:last-child');
+  const o = h.posted.find((x) => x.type === 'wb:handoff' && x.payload.type === 'outcome').payload.outcome;
+  assert.equal(o.waitedMin, data.window.customerMin);
+  assert.equal(o.durationMin, data.tasks.cert.minutes + data.tasks.patch.minutes + data.window.customerMin);
+  assert.equal(o.template, 'renew-certificate', 'named after the most severe reason');
 });
