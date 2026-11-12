@@ -60,6 +60,7 @@ import { MONITORING_SPACE } from './monitoring-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
 import { INTERVIEW_SPACE } from './interview-bridge';
 import { CUSTOMER360_SPACE } from './customer360-bridge';
+import { RENEWALS_SPACE } from './renewals-bridge';
 import { precloseExtensionFor } from './databricks-preclose-bridge';
 import { AGENT_GOV_KEY, agentPrompt, agentSchedules, buildCatalog, expandAgentCommand, loadAgents, registryEntries, saveAgents, type StudioAgent } from './agent-studio';
 import { createBroker, replyOf, type RunEvent } from './agent-network-runtime';
@@ -1776,10 +1777,11 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === CUSTOMER360_SPACE}
+            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === CUSTOMER360_SPACE}
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
+            renewalsDeps={space.slug === RENEWALS_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}

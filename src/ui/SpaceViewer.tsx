@@ -11,6 +11,7 @@ import { OBSERVABILITY_SPACE, handleObservabilityMessage, type ObservabilityHost
 import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
 import { handleSalesKnowledgeMessage, type SalesKnowledgeDeps } from '../sales-knowledge-bridge';
 import { handleCustomer360Message, CUSTOMER360_SPACE, type Customer360Deps } from '../customer360-bridge';
+import { handleRenewalsMessage, RENEWALS_SPACE, type RenewalsDeps } from '../renewals-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
@@ -31,6 +32,7 @@ export default function SpaceViewer({
   bridgeEnabled = false,
   interviewDeps,
   customer360Deps,
+  renewalsDeps,
   salesKnowledgeDeps,
   onOpenHiringTools,
   onAsk,
@@ -57,6 +59,7 @@ export default function SpaceViewer({
   bridgeEnabled?: boolean;
   interviewDeps?: InterviewDeps;
   customer360Deps?: Customer360Deps;
+  renewalsDeps?: RenewalsDeps;
   salesKnowledgeDeps?: SalesKnowledgeDeps;
   /** Hiring Approvals Space: open the proposals and criteria screen. */
   onOpenHiringTools?: () => void;
@@ -154,6 +157,8 @@ export default function SpaceViewer({
   interviewRef.current = interviewDeps;
   const c360Ref = useRef(customer360Deps);
   c360Ref.current = customer360Deps;
+  const renewalsRef = useRef(renewalsDeps);
+  renewalsRef.current = renewalsDeps;
   const salesKnRef = useRef(salesKnowledgeDeps);
   salesKnRef.current = salesKnowledgeDeps;
   useEffect(() => {
@@ -162,6 +167,7 @@ export default function SpaceViewer({
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
       const handle = space.slug === CUSTOMER360_SPACE ? (data: unknown) => handleCustomer360Message(data, c360Ref.current ?? {})
+        : space.slug === RENEWALS_SPACE ? (data: unknown) => handleRenewalsMessage(data, renewalsRef.current ?? {})
         : space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
         : space.slug === PRD_SPACE ? handlePrdMessage
         : space.slug === SALES_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handleSalesKnowledgeMessage(data, salesKnRef.current ?? {})) ?? handleSalesMessage(data, call)
