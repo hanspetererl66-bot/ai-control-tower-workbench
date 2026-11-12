@@ -13,7 +13,8 @@ test('the public product surface uses the Joule Work X - Next Gen Design Study t
   const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
   assert.match(product, /PRODUCT_NAME = 'Joule Work X - Next Gen'/);
   assert.match(product, /PRODUCT_TITLE = `\$\{PRODUCT_NAME\} Design Study`/);
-  assert.match(app, /\{PRODUCT_TITLE\} uses AI/);
+  assert.match(app, /\{FOOTER_TITLE\} uses AI/);
+  assert.match(product, /FOOTER_TITLE = 'Joule Work X - Design Study'/);
   assert.match(composer, /Message \$\{PRODUCT_TITLE\}/);
   assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen Design Study<\/title>/);
 });
