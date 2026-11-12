@@ -848,6 +848,8 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const state = { tab: 'requests', caller: 'mi', call: null, voice: false, policy: clone(DATA.policy), requests: clone(DATA.requests), focus: '', mail: null };
 const hosted = window.parent !== window;
+/** Who may ask the hotline for a window, and what the button says when the answer goes back. */
+const ASKER = { 'infra-orchestrator': 'the orchestrator', 'infra-ops-control': 'Auto-fix' };
 const ctx = () => ({ templates: DATA.templates, customers: DATA.customers, freezes: DATA.freezes, hotline: DATA.hotline, policy: state.policy, requests: state.requests, today: DATA.asOf, lead: state.policy.leadDays });
 const cust = (id) => DATA.customers.find((c) => c.id === id);
 const P = {
@@ -897,7 +899,7 @@ function requestCard(r, i) {
   let ops = '';
   if (r.state === 'agreed') ops = `<div class="ops"><button class="primary" data-op="confirm" data-id="${r.id}">Confirm the window</button><button class="ghost" data-op="back" data-id="${r.id}">Send back</button></div>`;
   else if (['declined', 'needs-person', 'sent-back'].includes(r.state)) ops = `<div class="ops"><button class="ghost" data-op="reopen" data-id="${r.id}">Reopen for the hotline</button></div>`;
-  if (r.fromOps && hosted && ['standard', 'confirmed', 'declined', 'needs-person', 'sent-back'].includes(st.key)) ops += `<div class="ops"><button class="primary" data-op="report" data-id="${r.id}">Report back to ${r.origin && r.origin !== 'infra-ops' ? 'the orchestrator' : 'the service request'}</button></div>`;
+  if (r.fromOps && hosted && ['standard', 'confirmed', 'declined', 'needs-person', 'sent-back'].includes(st.key)) ops += `<div class="ops"><button class="primary" data-op="report" data-id="${r.id}">Report back to ${ASKER[r.origin] || 'the service request'}</button></div>`;
   if (r.state === 'confirmed' && r.result && r.result.start) ops += r.mailed ? `<div class="res sent">${ic('check')} Confirmation sent to ${esc(r.mailed.to)} · ${esc(r.mailed.at.slice(0, 16).replace('T', ' '))} UTC</div>`
     : hosted ? `<div class="ops"><button class="ghost" data-op="mail" data-id="${r.id}">${ic('phone')} Send confirmation to customer</button></div>` : '<div class="note">Sending the confirmation needs the desktop app.</div>';
   const focus = state.focus === r.id ? ' focus' : '';
@@ -1084,7 +1086,7 @@ window.addEventListener('message', (e) => {
     if (!DATA.customers.some((c) => c.id === t.customer) || !DATA.templates.some((x) => x.id === t.template)) return;
     const hours = Math.max(0.5, Math.min(24, +p.hours || 2)), id = t.id.slice(0, 20);
     const from = typeof h.from === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/.test(h.from) ? h.from : 'infra-ops';
-    const req = { id, template: t.template, customer: t.customer, target: String(t.target || '').slice(0, 60), hours, state: 'open', note: from === 'infra-ops' ? 'From service request ' + id : 'From the orchestrator: ' + id, fromOps: true, origin: from };
+    const req = { id, template: t.template, customer: t.customer, target: String(t.target || '').slice(0, 60), hours, state: 'open', note: 'From ' + (ASKER[from] || 'the service request') + ': ' + id, fromOps: true, origin: from };
     const at = state.requests.findIndex((x) => x.id === id);
     if (at >= 0) state.requests[at] = req; else state.requests.unshift(req);
     state.tab = 'requests'; state.focus = id; state.caller = t.customer; state.call = null;

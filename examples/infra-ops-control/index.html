@@ -309,6 +309,7 @@ table.ev th{color:var(--muted);font-weight:500}
 .speed{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
 .speed select{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);padding:3px 8px}
 @media (max-width:640px){.metric{grid-template-columns:110px 1fr 70px}}
+.gate p{margin:8px 0;font-size:13px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -375,7 +376,17 @@ table.ev th{color:var(--muted);font-weight:500}
    "sapCustomerId": "0010048211",
    "industry": "Manufacturing",
    "region": "Frankfurt",
-   "contact": "it-operations@musterindustrie.example"
+   "contact": "it-operations@musterindustrie.example",
+   "nights": {
+    "days": [
+     2,
+     3,
+     4
+    ],
+    "from": "21:00",
+    "until": "05:00"
+   },
+   "hotlineId": "mi"
   },
   {
    "id": "nordlicht",
@@ -383,7 +394,18 @@ table.ev th{color:var(--muted);font-weight:500}
    "sapCustomerId": "0010048305",
    "industry": "Logistics",
    "region": "Hamburg",
-   "contact": "it-betrieb@nordlicht-logistik.example"
+   "contact": "it-betrieb@nordlicht-logistik.example",
+   "nights": {
+    "days": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "from": "22:00",
+    "until": "06:00"
+   },
+   "hotlineId": "nl"
   },
   {
    "id": "pharma",
@@ -391,7 +413,16 @@ table.ev th{color:var(--muted);font-weight:500}
    "sapCustomerId": "0010048377",
    "industry": "Life sciences",
    "region": "Basel",
-   "contact": "it-support@beispiel-pharma.example"
+   "contact": "it-support@beispiel-pharma.example",
+   "nights": {
+    "days": [
+     0,
+     6
+    ],
+    "from": "20:00",
+    "until": "06:00"
+   },
+   "hotlineId": "bp"
   },
   {
    "id": "alpen",
@@ -399,7 +430,16 @@ table.ev th{color:var(--muted);font-weight:500}
    "sapCustomerId": "0010048412",
    "industry": "Retail",
    "region": "Vienna",
-   "contact": "it@alpenblick-retail.example"
+   "contact": "it@alpenblick-retail.example",
+   "nights": {
+    "days": [
+     0,
+     1,
+     2
+    ],
+    "from": "23:00",
+    "until": "06:00"
+   }
   },
   {
    "id": "hansa",
@@ -407,7 +447,17 @@ table.ev th{color:var(--muted);font-weight:500}
    "sapCustomerId": "0010048498",
    "industry": "Shipping",
    "region": "Rotterdam",
-   "contact": "ops@hansa-maritime.example"
+   "contact": "ops@hansa-maritime.example",
+   "nights": {
+    "days": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "from": "21:00",
+    "until": "05:00"
+   }
   },
   {
    "id": "rhein",
@@ -415,7 +465,16 @@ table.ev th{color:var(--muted);font-weight:500}
    "sapCustomerId": "0010048563",
    "industry": "Energy",
    "region": "Cologne",
-   "contact": "it-service@rheinwerk-energie.example"
+   "contact": "it-service@rheinwerk-energie.example",
+   "nights": {
+    "days": [
+     2,
+     3,
+     4
+    ],
+    "from": "22:00",
+    "until": "06:00"
+   }
   }
  ],
  "rules": {
@@ -471,7 +530,8 @@ table.ev th{color:var(--muted);font-weight:500}
    "fix": {
     "patchLagDays": 0,
     "uptimeDays": 0
-   }
+   },
+   "hours": 2
   },
   "disk": {
    "title": "Free up disk space",
@@ -514,7 +574,8 @@ table.ev th{color:var(--muted);font-weight:500}
     "memPct": 35,
     "diskPct": 40,
     "uptimeDays": 0
-   }
+   },
+   "hours": 1
   },
   "cpu": {
    "title": "Analyse the CPU peak",
@@ -1133,7 +1194,51 @@ table.ev th{color:var(--muted);font-weight:500}
    "ramGb": 16,
    "certExpiresInDays": 60
   }
- ]
+ ],
+ "window": {
+  "leadDays": 2,
+  "note": "The same rules as in the Customer Hotline and the Orchestrator: a window longer than the threshold for this task and customer has to be agreed with the customer; the customer rule beats the default; windows only in the customer's nights and never in a freeze.",
+  "policy": {
+   "defaults": {
+    "patch": 2,
+    "unreachable": 4
+   },
+   "overrides": [
+    {
+     "customer": "musind",
+     "task": "patch",
+     "hours": 1,
+     "note": "Premium Plus: asks for every patch window longer than one hour"
+    },
+    {
+     "customer": "pharma",
+     "task": "patch",
+     "hours": 0,
+     "note": "GxP: the customer agrees to every change window"
+    },
+    {
+     "customer": "pharma",
+     "task": "unreachable",
+     "hours": 0,
+     "note": "GxP: the customer agrees to every change window"
+    }
+   ]
+  },
+  "freezes": [
+   {
+    "from": "2026-10-26",
+    "to": "2026-10-28",
+    "customer": "pharma",
+    "reason": "GxP audit at Beispiel Pharma"
+   },
+   {
+    "from": "2026-12-18",
+    "to": "2027-01-04",
+    "customer": null,
+    "reason": "Year-end freeze"
+   }
+  ]
+ }
 }
 </script>
 <script id="ctl-logic">
@@ -1183,14 +1288,58 @@ function evidence(before, after, reasons) {
   return reasons.map((r) => ({ key: r.key, field: FIELD[r.key], before: show(r.key, before[FIELD[r.key]]), after: show(r.key, after[FIELD[r.key]]) }));
 }
 /** The e-mail to the customer once the VM is green. Only a preview: nothing is sent. */
-function composeMail(customer, vm, reasons, defs, ticketId) {
+function composeMail(customer, vm, reasons, defs, ticketId, win) {
   const found = reasons.map((r) => '- ' + say(r.text)).join('\n');
-  const did = reasons.map((r) => '- ' + defs[r.key].title + (defs[r.key].reboot ? ' (with a restart in a maintenance window)' : '')).join('\n');
+  const did = reasons.map((r) => '- ' + defs[r.key].title + (defs[r.key].reboot ? (win ? ` (with a restart in the maintenance window ${slotOf(win)})` : ' (with a restart in a maintenance window)') : '')).join('\n');
   return {
     to: customer.contact,
     subject: `[${ticketId}] ${vm.name} is back to normal`,
     body: `Dear ${customer.name} IT team,\n\nOur monitoring found a problem on ${vm.name} (${vm.role}):\n${found}\n\nWe corrected it automatically:\n${did}\n\nAfterwards the VM was checked again and all checks are within their limits. No action is needed from your side.\n\nTicket ${ticketId} is closed. If you notice anything unusual, reply to this e-mail and we will reopen it.\n\nYour Infrastructure Operations team`,
   };
+}
+
+/* The window rules, the same as in the Customer Hotline and the Orchestrator (a test keeps the three equal). */
+const DAY_MS = 86400000, MIN_MS = 60000;
+const pad2 = (n) => String(n).padStart(2, '0');
+const fmtMs = (ms) => { const d = new Date(ms); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}T${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`; };
+const dayMs = (iso) => Date.parse(iso.slice(0, 10) + 'T00:00:00Z');
+/** How long may the window be before the customer has to agree? A customer rule beats the default; null means never ask. */
+function thresholdFor(policy, customer, task) {
+  const o = policy.overrides.find((x) => x.customer === customer && x.task === task);
+  if (o) return { hours: o.hours, source: 'customer' };
+  const d = policy.defaults[task];
+  return { hours: d === undefined ? 0 : d, source: 'default' };
+}
+/** The first allowed night of the customer from the given day on that does not touch a freeze. */
+function nextWindow(data, customer, hours, fromMs) {
+  const n = customer.nights, [fh, fm] = n.from.split(':').map(Number), [uh, um] = n.until.split(':').map(Number);
+  const nightMin = ((uh * 60 + um) - (fh * 60 + fm) + 1440) % 1440 || 1440;
+  let moved = null;
+  for (let i = 0; i < 120; i++) {
+    const day = fromMs + i * DAY_MS;
+    if (!n.days.includes(new Date(day).getUTCDay())) continue;
+    const start = day + (fh * 60 + fm) * MIN_MS, end = start + hours * 60 * MIN_MS;
+    const first = fmtMs(start).slice(0, 10), last = fmtMs(end - MIN_MS).slice(0, 10);
+    const fr = data.window.freezes.find((f) => (f.customer === null || f.customer === customer.id) && first <= f.to && last >= f.from);
+    if (fr) { moved = moved || fr.reason; continue; }
+    return { start: fmtMs(start), end: fmtMs(end), fits: hours * 60 <= nightMin, moved };
+  }
+  return null;
+}
+const slotOf = (w) => { const [d, a] = w.start.split('T'), [e, b] = w.end.split('T'); return `${d} ${a}–${b}${e !== d ? ' (next day)' : ''}`; };
+/** A repair that restarts the VM needs a window. Does the customer have to agree it? null when nothing is restarted. */
+function windowPlan(data, customer, reasons) {
+  const task = reasons.map((r) => ({ key: r.key, def: data.tasks[r.key] })).filter((x) => x.def.reboot).sort((a, b) => b.def.hours - a.def.hours)[0];
+  if (!task) return null;
+  const hours = task.def.hours, t = thresholdFor(data.window.policy, customer.id, task.key);
+  const window = nextWindow(data, customer, hours, dayMs(data.asOf) + data.window.leadDays * DAY_MS);
+  const needed = t.hours !== null && (hours > t.hours || !window || !window.fits);
+  const rule = `${t.source} rule`;
+  const text = t.hours === null ? 'The customer rule lets the provider choose the window: no call.'
+    : hours > t.hours ? (t.hours === 0 ? `Every window needs the customer's agreement (${rule}).` : `The window of ${hours} h is longer than ${t.hours} h (${rule}): the customer has to agree.`)
+    : window && !window.fits ? 'The work is longer than the nights the customer allows: the customer has to agree.'
+    : `The window of ${hours} h is within ${t.hours} h (${rule}): standard window, no call.`;
+  return { task: task.key, title: task.def.title, hours, needed, threshold: t, text, window };
 }
 
 const ASK_MAX = 600; /* what the host accepts for Ask Joule */
@@ -1212,7 +1361,7 @@ const DATA = JSON.parse(document.getElementById('ctl-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' }, ICON = { green: '✓', yellow: '!', red: '✕' };
-const state = { cust: null, vm: null, filter: 'all', speed: 'normal', over: {}, records: {}, run: null, nextTicket: DATA.ticketStart };
+const state = { cust: null, vm: null, filter: 'all', speed: 'normal', over: {}, records: {}, run: null, gate: null, nextTicket: DATA.ticketStart };
 const DELAY = { normal: 750, fast: 12 };
 const RUN_STEPS = ['Ticket opened', 'Diagnosis and pre-check', 'Approval (auto, policy)', 'Correction', 'Verification', 'Customer e-mail', 'Ticket closed'];
 let vms = [], customers = [];
@@ -1307,10 +1456,38 @@ function mailBox(m) {
 function fixPanel(v) {
   const run = state.run, rec = state.records[v.id];
   if (run && run.vmId === v.id) return runPanel(run);
+  if (state.gate && state.gate.vmId === v.id) return gatePanel(state.gate);
   if (rec) return recordPanel(rec) + realPanel(rec);
   if (v.status !== 'red') return '';
   const n = v.reasons.length;
-  return `<div class="fixcard"><h2>Fix automatically</h2><p>One click runs the whole repair: open a ticket, correct ${n === 1 ? 'the reason' : 'all ' + n + ' reasons'} by the SOP steps, check the VM again, send the customer an e-mail (preview) and close the ticket. Simulated: nothing is changed on a real VM and no e-mail leaves this page.</p><button type="button" class="primary" data-fix="${v.id}"${run ? ' disabled' : ''}>Fix automatically</button>${run ? '<span class="note"> Another repair is running.</span>' : ''}</div>`;
+  return `<div class="fixcard"><h2>Fix automatically</h2><p>One click runs the whole repair: open a ticket, correct ${n === 1 ? 'the reason' : 'all ' + n + ' reasons'} by the SOP steps, check the VM again, send the customer an e-mail (preview) and close the ticket. Simulated: nothing is changed on a real VM and no e-mail leaves this page.</p><button type="button" class="primary" data-fix="${v.id}"${run || state.gate ? ' disabled' : ''}>Fix automatically</button>${run ? '<span class="note"> Another repair is running.</span>' : state.gate ? '<span class="note"> Another repair waits for the customer.</span>' : ''}</div>`;
+}
+/* the gate text is as small as the other card text */
+function gatePanel(g) {
+  const c = DATA.customers.find((x) => x.id === DATA.vms.find((v) => v.id === g.vmId).customer), w = g.plan.window;
+  const hot = inHost() && c.hotlineId;
+  return `<div class="card gate"><h2>Waiting for the customer ${pill('yellow', 'Ticket ' + esc(g.ticket))}</h2>
+  <p>${esc(g.plan.title)} restarts the VM, so it needs a window. ${esc(g.plan.text)}</p>
+  <p><b>Proposed window:</b> ${w ? esc(slotOf(w)) : 'none found'}${w && w.moved ? ` <span class="note">(moved because of: ${esc(w.moved)})</span>` : ''}<br><span class="note">Auto-fix never sets a window the customer has to agree. The repair starts when the window is agreed.</span></p>
+  ${g.note ? `<p class="note">${esc(g.note)}</p>` : ''}
+  <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">${hot ? `<button type="button" class="primary" data-agree="hotline">Agree the window with the customer (hotline)</button>` : `<button type="button" class="primary" data-agree="sim">Simulate: the customer agrees</button>`}<button type="button" class="ghost" data-agree="cancel">Cancel the repair</button></div>
+  ${!hot && inHost() ? '<p class="note">This customer has no profile in the Customer Hotline Space, so the agreement is simulated here.</p>' : ''}</div>`;
+}
+/** Hand the window to the Customer Hotline; the answer comes back as a hand-over (see the restore handler below). */
+function toHotline() {
+  const g = state.gate; if (!g) return;
+  const raw = DATA.vms.find((x) => x.id === g.vmId), c = DATA.customers.find((x) => x.id === raw.customer), w = g.plan.window;
+  if (!inHost() || !c.hotlineId || !w) return;
+  save();
+  window.parent.postMessage({ type: 'wb:handoff', to: 'infra-hotline', payload: { type: 'window-request', hours: g.plan.hours, task: { id: g.ticket, template: 'patch-vm', target: raw.name, customer: c.hotlineId, window: [w.start, w.end], requester: 'auto-fix', params: {} } }, open: true, notice: 'Window for ' + g.ticket }, '*');
+}
+function agreeWindow(win) { const g = state.gate; if (!g) return; startFix(g.vmId, { ticket: g.ticket, window: win || g.plan.window }); }
+function cancelGate() { state.gate = null; render(); }
+const TIME_RE = /^\d{4}-\d\d-\d\dT\d\d:\d\d$/;
+/** What survives a trip to another Space: the host keeps it and gives it back. A running repair is not kept. */
+function save() {
+  if (!inHost()) return;
+  window.parent.postMessage({ type: 'wb:state', state: { cust: state.cust, vm: state.vm, filter: state.filter, speed: state.speed, over: state.over, records: state.records, gate: state.gate, nextTicket: state.nextTicket } }, '*');
 }
 function runPanel(r) {
   const cur = r.shown ? r.events[r.shown - 1].step : 0;
@@ -1331,14 +1508,19 @@ function paint() {
   const r = state.run;
   if (r && state.vm === r.vmId && $('#fix-slot')) $('#fix-slot').innerHTML = runPanel(r);
 }
-function startFix(vmId) {
-  if (state.run) return;
+function startFix(vmId, resume) {
+  if (state.run || (state.gate && !resume)) return;
   const v = vms.find((x) => x.id === vmId);
   if (!v || v.status !== 'red') return;
   const c = customers.find((x) => x.id === v.customer), raw = DATA.vms.find((x) => x.id === vmId), reasons = v.reasons;
-  const ticket = 'OP-' + state.nextTicket++;
+  const plan = windowPlan(DATA, c, reasons);
+  const ticket = resume ? resume.ticket : 'OP-' + state.nextTicket++;
+  let win = plan && plan.window;
+  if (resume) win = resume.window;
+  else if (plan && plan.needed) { state.gate = { vmId, ticket, plan, note: '' }; render(); save(); const slot = $('#fix-slot'); if (slot && slot.scrollIntoView) slot.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  state.gate = null;
   const after = applyFixes(raw, reasons, DATA.tasks);
-  const mail = composeMail(c, raw, reasons, DATA.tasks, ticket);
+  const mail = composeMail(c, raw, reasons, DATA.tasks, ticket, plan && win);
   const approvers = [...new Set(reasons.map((r) => DATA.tasks[r.key].approver))].join(', ');
   const ev = evidence(raw, after, reasons);
   const E = [];
@@ -1346,6 +1528,8 @@ function startFix(vmId) {
   E.push({ step: 1, text: `Diagnosis: ${reasons.map((r) => DATA.tasks[r.key].title + ' (' + r.level + ')').join('; ')}.` });
   E.push({ step: 1, sub: true, text: raw.env === 'prod' ? `Pre-check: production VM, last backup ${raw.backupAgeHours} h ago, dependencies and owner checked (simulated).` : 'Pre-check: test VM, no backup needed, owner checked (simulated).' });
   E.push({ step: 2, text: `Approved automatically by policy for: ${approvers}. In production this change would normally need two approvals; the policy covers it and records it in the ticket.` });
+  if (plan && win) E.push({ step: 2, sub: true, text: resume ? `Window ${slotOf(win)} agreed with the customer through the hotline.` : `Window ${slotOf(win)} set from the nights of the customer${plan.window && plan.window.moved ? ', moved because of: ' + plan.window.moved : ''}. ${plan.text}` });
+  if (plan && win) E.push({ step: 3, sub: true, text: 'The restart waits for the window (simulated: the time is skipped).' });
   reasons.forEach((r) => {
     const d = DATA.tasks[r.key];
     E.push({ step: 3, text: `${d.title}${d.reboot ? ' (restart in a maintenance window)' : ''}` });
@@ -1373,7 +1557,7 @@ function tick() {
 }
 function resetDemo() {
   if (state.run) clearTimeout(state.run.timer);
-  state.run = null; state.records = {}; state.over = {}; state.nextTicket = DATA.ticketStart;
+  state.run = null; state.gate = null; state.records = {}; state.over = {}; state.nextTicket = DATA.ticketStart;
   state.cust = null; state.vm = null; state.filter = 'all';
   render();
 }
@@ -1381,10 +1565,12 @@ function resetDemo() {
 function render() {
   recompute(); crumbs();
   $('#view').innerHTML = state.vm ? viewVm() : state.cust ? viewCustomer() : viewCustomers();
+  save();
 }
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-cust],[data-vm],[data-go],[data-f],[data-fix],[data-reset],[data-open],[data-real]');
+  const t = e.target.closest('[data-cust],[data-vm],[data-go],[data-f],[data-fix],[data-reset],[data-open],[data-real],[data-agree]');
   if (!t) return;
+  if (t.dataset.agree) { if (t.dataset.agree === 'hotline') toHotline(); else if (t.dataset.agree === 'sim') agreeWindow(); else cancelGate(); return; }
   if (t.dataset.fix) { startFix(t.dataset.fix); return; }
   if (t.dataset.reset) { resetDemo(); return; }
   if (t.dataset.real) {
@@ -1402,6 +1588,20 @@ document.addEventListener('click', (e) => {
   window.scrollTo(0, 0);
 });
 $('#speed').addEventListener('change', (e) => { state.speed = e.target.value; });
+window.addEventListener('message', (e) => {
+  if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+  const m = e.data, st = m.state;
+  if (st && st.records && st.over) { state.cust = st.cust || null; state.vm = st.vm || null; state.filter = st.filter || 'all'; state.speed = st.speed === 'fast' ? 'fast' : 'normal'; state.over = st.over; state.records = st.records; state.gate = st.gate || null; state.nextTicket = st.nextTicket || state.nextTicket; $('#speed').value = state.speed; }
+  render();
+  (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => {
+    const p = h && h.payload, g = state.gate;
+    if (!p || p.type !== 'window-result' || !g || p.taskId !== g.ticket) return;
+    const w = Array.isArray(p.window) && p.window.length === 2 && TIME_RE.test(p.window[0]) && TIME_RE.test(p.window[1]) ? { start: p.window[0], end: p.window[1], fits: true, moved: null } : null;
+    if (p.status === 'confirmed' && w) agreeWindow(w);
+    else { g.note = 'The customer has not agreed yet (hotline status: ' + String(p.status || 'open').slice(0, 20) + ').'; render(); }
+  });
+  save();
+});
 render();
 })();
 </script>

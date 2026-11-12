@@ -9,7 +9,17 @@
    "sapCustomerId": "0010048211",
    "industry": "Manufacturing",
    "region": "Frankfurt",
-   "contact": "it-operations@musterindustrie.example"
+   "contact": "it-operations@musterindustrie.example",
+   "nights": {
+    "days": [
+     2,
+     3,
+     4
+    ],
+    "from": "21:00",
+    "until": "05:00"
+   },
+   "hotlineId": "mi"
   },
   {
    "id": "nordlicht",
@@ -17,7 +27,18 @@
    "sapCustomerId": "0010048305",
    "industry": "Logistics",
    "region": "Hamburg",
-   "contact": "it-betrieb@nordlicht-logistik.example"
+   "contact": "it-betrieb@nordlicht-logistik.example",
+   "nights": {
+    "days": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "from": "22:00",
+    "until": "06:00"
+   },
+   "hotlineId": "nl"
   },
   {
    "id": "pharma",
@@ -25,7 +46,16 @@
    "sapCustomerId": "0010048377",
    "industry": "Life sciences",
    "region": "Basel",
-   "contact": "it-support@beispiel-pharma.example"
+   "contact": "it-support@beispiel-pharma.example",
+   "nights": {
+    "days": [
+     0,
+     6
+    ],
+    "from": "20:00",
+    "until": "06:00"
+   },
+   "hotlineId": "bp"
   },
   {
    "id": "alpen",
@@ -33,7 +63,16 @@
    "sapCustomerId": "0010048412",
    "industry": "Retail",
    "region": "Vienna",
-   "contact": "it@alpenblick-retail.example"
+   "contact": "it@alpenblick-retail.example",
+   "nights": {
+    "days": [
+     0,
+     1,
+     2
+    ],
+    "from": "23:00",
+    "until": "06:00"
+   }
   },
   {
    "id": "hansa",
@@ -41,7 +80,17 @@
    "sapCustomerId": "0010048498",
    "industry": "Shipping",
    "region": "Rotterdam",
-   "contact": "ops@hansa-maritime.example"
+   "contact": "ops@hansa-maritime.example",
+   "nights": {
+    "days": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "from": "21:00",
+    "until": "05:00"
+   }
   },
   {
    "id": "rhein",
@@ -49,7 +98,16 @@
    "sapCustomerId": "0010048563",
    "industry": "Energy",
    "region": "Cologne",
-   "contact": "it-service@rheinwerk-energie.example"
+   "contact": "it-service@rheinwerk-energie.example",
+   "nights": {
+    "days": [
+     2,
+     3,
+     4
+    ],
+    "from": "22:00",
+    "until": "06:00"
+   }
   }
  ],
  "rules": {
@@ -105,7 +163,8 @@
    "fix": {
     "patchLagDays": 0,
     "uptimeDays": 0
-   }
+   },
+   "hours": 2
   },
   "disk": {
    "title": "Free up disk space",
@@ -148,7 +207,8 @@
     "memPct": 35,
     "diskPct": 40,
     "uptimeDays": 0
-   }
+   },
+   "hours": 1
   },
   "cpu": {
    "title": "Analyse the CPU peak",
@@ -767,5 +827,49 @@
    "ramGb": 16,
    "certExpiresInDays": 60
   }
- ]
+ ],
+ "window": {
+  "leadDays": 2,
+  "note": "The same rules as in the Customer Hotline and the Orchestrator: a window longer than the threshold for this task and customer has to be agreed with the customer; the customer rule beats the default; windows only in the customer's nights and never in a freeze.",
+  "policy": {
+   "defaults": {
+    "patch": 2,
+    "unreachable": 4
+   },
+   "overrides": [
+    {
+     "customer": "musind",
+     "task": "patch",
+     "hours": 1,
+     "note": "Premium Plus: asks for every patch window longer than one hour"
+    },
+    {
+     "customer": "pharma",
+     "task": "patch",
+     "hours": 0,
+     "note": "GxP: the customer agrees to every change window"
+    },
+    {
+     "customer": "pharma",
+     "task": "unreachable",
+     "hours": 0,
+     "note": "GxP: the customer agrees to every change window"
+    }
+   ]
+  },
+  "freezes": [
+   {
+    "from": "2026-10-26",
+    "to": "2026-10-28",
+    "customer": "pharma",
+    "reason": "GxP audit at Beispiel Pharma"
+   },
+   {
+    "from": "2026-12-18",
+    "to": "2027-01-04",
+    "customer": null,
+    "reason": "Year-end freeze"
+   }
+  ]
+ }
 }

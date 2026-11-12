@@ -172,3 +172,19 @@ test('the Hotline reports back to whoever asked: the orchestrator gets its answe
   assert.equal(m.payload.type, 'window-result');
   assert.equal(m.payload.status, 'confirmed');
 });
+
+test('the Hotline answers Auto-fix too: the window of a repair goes back to the Space that asked', () => {
+  const hot = load('infra-hotline');
+  hot.send(null, [{ from: 'infra-ops-control', payload: { type: 'window-request', hours: 2, task: { ...TASK, id: 'OP-2101', template: 'patch-vm', customer: 'mi', target: 'proxy-edge-01' } } }]);
+  assert.match(hot.doc.body.textContent, /OP-2101/);
+  hot.doc.querySelector('[data-tab=hotline]').click();
+  hot.doc.querySelector('[data-call]').click();
+  for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();
+  hot.doc.querySelector('[data-tab=requests]').click();
+  hot.doc.querySelector('[data-op=confirm][data-id=OP-2101]').click();
+  assert.match(hot.doc.body.textContent, /Report back to Auto-fix/);
+  hot.doc.querySelector('[data-op=report][data-id=OP-2101]').click();
+  const m = hot.last('wb:handoff');
+  assert.equal(m.to, 'infra-ops-control');
+  assert.equal(m.payload.status, 'confirmed');
+});
