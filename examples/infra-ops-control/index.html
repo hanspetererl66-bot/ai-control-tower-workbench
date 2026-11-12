@@ -1495,7 +1495,9 @@ const TIME_RE = /^\d{4}-\d\d-\d\dT\d\d:\d\d$/;
 /** What survives a trip to another Space: the host keeps it and gives it back. A running repair is not kept. */
 function save() {
   if (!inHost()) return;
-  window.parent.postMessage({ type: 'wb:state', state: { cust: state.cust, vm: state.vm, filter: state.filter, speed: state.speed, over: state.over, records: state.records, gate: state.gate, nextTicket: state.nextTicket } }, '*');
+  /* Only plain data goes to the host: the log of a run carries a function (the step that switches the VM to green), and a function cannot be cloned by postMessage. */
+  const plain = JSON.parse(JSON.stringify({ cust: state.cust, vm: state.vm, filter: state.filter, speed: state.speed, over: state.over, records: state.records, gate: state.gate, nextTicket: state.nextTicket }));
+  window.parent.postMessage({ type: 'wb:state', state: plain }, '*');
 }
 function runPanel(r) {
   const cur = r.shown ? r.events[r.shown - 1].step : 0;
