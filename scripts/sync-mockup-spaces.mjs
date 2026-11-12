@@ -21,6 +21,7 @@ export const MOCKUPS = [
   { page: 'examples/recruiting-analytics/index.html', data: 'examples/recruiting-analytics/data.json' },
   { page: 'examples/onboarding/index.html', data: 'examples/onboarding/data.json' },
   { page: 'examples/order-to-cash/index.html', data: 'examples/order-to-cash/data.json' },
+  { page: 'examples/collections/index.html', data: 'examples/collections/data.json' },
   { page: 'examples/order-to-cash-software/index.html', data: 'examples/order-to-cash-software/data.json' },
   { page: 'examples/revenue-recognition/index.html', data: 'examples/revenue-recognition/data.json' },
   { page: 'examples/customer-360/index.html', data: 'examples/customer-360/data.json', extra: { 'data-lindenau': 'examples/customer-360/data-lindenau.json' } },

@@ -1,0 +1,582 @@
+{
+ "asOf": "2026-11-12",
+ "currency": "EUR",
+ "lateAfterDays": 14,
+ "company": "Nordwerk Software (fictional)",
+ "forecastNote": "Sample forecast: fictional numbers shaped like the TabPFN late-payment forecast (predict_late_payments). Not model output, not a credit assessment.",
+ "policy": {
+  "highFrom": 0.6,
+  "mediumFrom": 0.3,
+  "escalateFromExposure": 150000
+ },
+ "tools": {
+  "read": "predict_late_payments",
+  "call": "create_task",
+  "reminder": "draft_email",
+  "escalate": "create_approval_request",
+  "clarify": "create_ticket",
+  "watch": "create_task"
+ },
+ "persons": {
+  "sven": {
+   "name": "Sven Albrecht",
+   "role": "Account Executive",
+   "can": {
+    "call": true,
+    "reminder": true,
+    "clarify": true,
+    "watch": true,
+    "escalate": false
+   }
+  },
+  "marlene": {
+   "name": "Marlene Voss",
+   "role": "Sales Director",
+   "can": {
+    "call": true,
+    "reminder": true,
+    "clarify": true,
+    "watch": true,
+    "escalate": true
+   }
+  },
+  "claude": {
+   "name": "Claude",
+   "role": "AI assistant",
+   "agent": true,
+   "can": {
+    "call": false,
+    "reminder": false,
+    "clarify": false,
+    "watch": false,
+    "escalate": false
+   }
+  },
+  "agent": {
+   "name": "Collections agent",
+   "role": "AI agent",
+   "agent": true,
+   "can": {
+    "call": false,
+    "reminder": false,
+    "clarify": false,
+    "watch": false,
+    "escalate": false
+   }
+  }
+ },
+ "customers": [
+  {
+   "id": "nordlicht",
+   "name": "Nordlicht Maschinenbau GmbH",
+   "contact": "Katrin Brandt",
+   "contactRole": "Head of Accounts Payable",
+   "since": 2023,
+   "history": [
+    {
+     "id": "INV-N-0001",
+     "due": "2024-07-31",
+     "paid": "2024-08-14",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0002",
+     "due": "2024-10-31",
+     "paid": "2024-11-21",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0003",
+     "due": "2025-01-31",
+     "paid": "2025-02-09",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0004",
+     "due": "2025-05-01",
+     "paid": "2025-05-29",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0005",
+     "due": "2025-07-31",
+     "paid": "2025-09-04",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0006",
+     "due": "2025-10-31",
+     "paid": "2025-11-18",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0007",
+     "due": "2026-01-31",
+     "paid": "2026-02-26",
+     "gross": 99960
+    },
+    {
+     "id": "INV-N-0008",
+     "due": "2026-05-01",
+     "paid": "2026-06-01",
+     "gross": 99960
+    }
+   ],
+   "open": [
+    {
+     "id": "INV-2026-N0009",
+     "gross": 99960,
+     "due": "2026-10-31",
+     "p": 0.93,
+     "lo": 14,
+     "hi": 30,
+     "extra": [
+      "Already 12 days past due; the customer usually pays 2 to 4 weeks after the due date."
+     ]
+    },
+    {
+     "id": "INV-2026-N0010",
+     "gross": 99960,
+     "due": "2026-11-14",
+     "p": 0.84,
+     "lo": 15,
+     "hi": 31,
+     "extra": [
+      "Same amount and the same payer as the invoice that is already late."
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "source": "Customer 360",
+     "text": "No open complaint or escalation for this account.",
+     "ok": true
+    },
+    {
+     "source": "Order-to-Cash",
+     "text": "Both invoices match order and delivery; no credit memo request pending.",
+     "ok": true
+    },
+    {
+     "source": "Tickets",
+     "text": "No open ticket mentions these invoices.",
+     "ok": true
+    },
+    {
+     "source": "Contract",
+     "text": "Contract C-2024-0820 active, payment terms 30 days net.",
+     "ok": true
+    }
+   ],
+   "note": "Reminders usually trigger payment within a week."
+  },
+  {
+   "id": "kuestenlogistik",
+   "name": "Küstenlogistik AG",
+   "contact": "Jonas Petersen",
+   "contactRole": "Accounts Payable",
+   "since": 2021,
+   "history": [
+    {
+     "id": "INV-K-0001",
+     "due": "2025-01-31",
+     "paid": "2025-02-04",
+     "gross": 148500
+    },
+    {
+     "id": "INV-K-0002",
+     "due": "2025-03-31",
+     "paid": "2025-04-09",
+     "gross": 148500
+    },
+    {
+     "id": "INV-K-0003",
+     "due": "2025-05-31",
+     "paid": "2025-06-02",
+     "gross": 148500
+    },
+    {
+     "id": "INV-K-0004",
+     "due": "2025-07-31",
+     "paid": "2025-08-12",
+     "gross": 148500
+    },
+    {
+     "id": "INV-K-0005",
+     "due": "2025-10-01",
+     "paid": "2025-10-07",
+     "gross": 148500
+    },
+    {
+     "id": "INV-K-0006",
+     "due": "2025-12-01",
+     "paid": "2025-12-16",
+     "gross": 148500
+    }
+   ],
+   "open": [
+    {
+     "id": "KL-2026-0412",
+     "gross": 148500,
+     "due": "2026-11-16",
+     "p": 0.66,
+     "lo": 8,
+     "hi": 24,
+     "extra": [
+      "The customer has questioned the price on this invoice; payment is probably on hold."
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "source": "Customer 360",
+     "text": "No escalation on the account.",
+     "ok": true
+    },
+    {
+     "source": "Order-to-Cash",
+     "text": "Invoice price is 2,400.00 EUR above the contract price; the credit memo request is not yet released.",
+     "ok": false
+    },
+    {
+     "source": "Tickets",
+     "text": "Ticket T-5521 'Price differs from contract' is open since 3 Nov.",
+     "ok": false
+    },
+    {
+     "source": "Contract",
+     "text": "Contract active, payment terms 30 days net.",
+     "ok": true
+    }
+   ],
+   "note": ""
+  },
+  {
+   "id": "lindenau",
+   "name": "Lindenau Pharma AG",
+   "contact": "Miriam Haas",
+   "contactRole": "Procurement",
+   "since": 2022,
+   "history": [
+    {
+     "id": "INV-L-0001",
+     "due": "2025-03-31",
+     "paid": "2025-04-01",
+     "gross": 118000
+    },
+    {
+     "id": "INV-L-0002",
+     "due": "2025-05-31",
+     "paid": "2025-06-03",
+     "gross": 118000
+    },
+    {
+     "id": "INV-L-0003",
+     "due": "2025-07-31",
+     "paid": "2025-07-31",
+     "gross": 118000
+    },
+    {
+     "id": "INV-L-0004",
+     "due": "2025-10-01",
+     "paid": "2025-10-09",
+     "gross": 118000
+    },
+    {
+     "id": "INV-L-0005",
+     "due": "2025-12-01",
+     "paid": "2025-12-17",
+     "gross": 118000
+    },
+    {
+     "id": "INV-L-0006",
+     "due": "2026-01-31",
+     "paid": "2026-02-12",
+     "gross": 118000
+    }
+   ],
+   "open": [
+    {
+     "id": "LI-2026-0301",
+     "gross": 118000,
+     "due": "2026-12-01",
+     "p": 0.37,
+     "lo": 3,
+     "hi": 19,
+     "extra": [
+      "Since September the customer needs a purchase order number on every invoice; two of the last three invoices waited for one."
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "source": "Customer 360",
+     "text": "No open complaint.",
+     "ok": true
+    },
+    {
+     "source": "Order-to-Cash",
+     "text": "Invoice matches order and delivery.",
+     "ok": true
+    },
+    {
+     "source": "Tickets",
+     "text": "No open ticket.",
+     "ok": true
+    },
+    {
+     "source": "Contract",
+     "text": "The purchase order number is on the invoice.",
+     "ok": true
+    }
+   ],
+   "note": ""
+  },
+  {
+   "id": "muster",
+   "name": "Muster Industrie AG",
+   "contact": "Peter Lang",
+   "contactRole": "Finance",
+   "since": 2019,
+   "history": [
+    {
+     "id": "INV-M-0001",
+     "due": "2025-03-31",
+     "paid": "2025-03-28",
+     "gross": 62000
+    },
+    {
+     "id": "INV-M-0002",
+     "due": "2025-05-31",
+     "paid": "2025-05-29",
+     "gross": 62000
+    },
+    {
+     "id": "INV-M-0003",
+     "due": "2025-07-31",
+     "paid": "2025-07-26",
+     "gross": 62000
+    },
+    {
+     "id": "INV-M-0004",
+     "due": "2025-10-01",
+     "paid": "2025-09-30",
+     "gross": 62000
+    },
+    {
+     "id": "INV-M-0005",
+     "due": "2025-12-01",
+     "paid": "2025-11-27",
+     "gross": 62000
+    },
+    {
+     "id": "INV-M-0006",
+     "due": "2026-01-31",
+     "paid": "2026-01-28",
+     "gross": 62000
+    }
+   ],
+   "open": [
+    {
+     "id": "MU-2026-0233",
+     "gross": 62000,
+     "due": "2026-11-20",
+     "p": 0.07,
+     "lo": -6,
+     "hi": 4,
+     "extra": []
+    }
+   ],
+   "checks": [
+    {
+     "source": "Customer 360",
+     "text": "No open complaint.",
+     "ok": true
+    },
+    {
+     "source": "Order-to-Cash",
+     "text": "Invoice matches order and delivery.",
+     "ok": true
+    },
+    {
+     "source": "Tickets",
+     "text": "No open ticket.",
+     "ok": true
+    },
+    {
+     "source": "Contract",
+     "text": "Contract active, 30 days net.",
+     "ok": true
+    }
+   ],
+   "note": ""
+  },
+  {
+   "id": "hanse",
+   "name": "Hanse Handelsgruppe AG",
+   "contact": "Eva Lund",
+   "contactRole": "Finance",
+   "since": 2020,
+   "history": [
+    {
+     "id": "INV-H-0001",
+     "due": "2025-03-31",
+     "paid": "2025-03-29",
+     "gross": 41300
+    },
+    {
+     "id": "INV-H-0002",
+     "due": "2025-05-31",
+     "paid": "2025-05-27",
+     "gross": 41300
+    },
+    {
+     "id": "INV-H-0003",
+     "due": "2025-07-31",
+     "paid": "2025-07-31",
+     "gross": 41300
+    },
+    {
+     "id": "INV-H-0004",
+     "due": "2025-10-01",
+     "paid": "2025-09-28",
+     "gross": 41300
+    },
+    {
+     "id": "INV-H-0005",
+     "due": "2025-12-01",
+     "paid": "2025-11-26",
+     "gross": 41300
+    },
+    {
+     "id": "INV-H-0006",
+     "due": "2026-01-31",
+     "paid": "2026-01-30",
+     "gross": 41300
+    }
+   ],
+   "open": [
+    {
+     "id": "HA-2026-0178",
+     "gross": 41300,
+     "due": "2026-11-25",
+     "p": 0.09,
+     "lo": -5,
+     "hi": 5,
+     "extra": []
+    }
+   ],
+   "checks": [
+    {
+     "source": "Customer 360",
+     "text": "No open complaint.",
+     "ok": true
+    },
+    {
+     "source": "Order-to-Cash",
+     "text": "Invoice matches order and delivery.",
+     "ok": true
+    },
+    {
+     "source": "Tickets",
+     "text": "No open ticket.",
+     "ok": true
+    },
+    {
+     "source": "Contract",
+     "text": "Contract active, 30 days net.",
+     "ok": true
+    }
+   ],
+   "note": ""
+  }
+ ],
+ "backtest": {
+  "note": "Fictional sample: the last 90 days of invoices that the forecast had marked as likely late. Replace with real numbers before anyone reads this as model quality.",
+  "flagged": [
+   {
+    "id": "S-101",
+    "late": true
+   },
+   {
+    "id": "S-102",
+    "late": true
+   },
+   {
+    "id": "S-103",
+    "late": false
+   },
+   {
+    "id": "S-104",
+    "late": true
+   },
+   {
+    "id": "S-105",
+    "late": true
+   },
+   {
+    "id": "S-106",
+    "late": true
+   },
+   {
+    "id": "S-107",
+    "late": false
+   },
+   {
+    "id": "S-108",
+    "late": true
+   },
+   {
+    "id": "S-109",
+    "late": true
+   },
+   {
+    "id": "S-110",
+    "late": false
+   },
+   {
+    "id": "S-111",
+    "late": true
+   },
+   {
+    "id": "S-112",
+    "late": true
+   }
+  ],
+  "missed": [
+   "S-201",
+   "S-202",
+   "S-203"
+  ]
+ },
+ "history": [
+  {
+   "t": "08:55",
+   "who": "agent",
+   "what": "Reads the open invoices of Sven's five accounts and asks for the late-payment forecast.",
+   "tool": "predict_late_payments",
+   "mode": "read"
+  },
+  {
+   "t": "08:56",
+   "who": "agent",
+   "what": "Ranks the accounts by expected amount at risk.",
+   "tool": "",
+   "mode": "draft"
+  },
+  {
+   "t": "08:57",
+   "who": "claude",
+   "what": "Checks complaints, document flow, tickets and contract of each account before suggesting contact.",
+   "tool": "customer_360, tickets",
+   "mode": "read"
+  },
+  {
+   "t": "08:58",
+   "who": "agent",
+   "what": "Prepares proposals. Nothing is sent.",
+   "tool": "",
+   "mode": "draft"
+  }
+ ]
+}
