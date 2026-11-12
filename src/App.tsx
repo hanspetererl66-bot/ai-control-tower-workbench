@@ -56,6 +56,7 @@ import { HIRING_SPACE } from './hiring-bridge';
 import { OBSERVABILITY_SPACE } from './observability-bridge';
 import { ONBOARDING_SPACE } from './onboarding-bridge';
 import { HOTLINE_SPACE } from './hotline-mail-bridge';
+import { MONITORING_SPACE } from './monitoring-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, FORECAST_EXTENSION, PRECLOSE_SPACE } from './forecast-bridge';
 import { INTERVIEW_SPACE } from './interview-bridge';
 import { CUSTOMER360_SPACE } from './customer360-bridge';
@@ -1775,7 +1776,7 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === CUSTOMER360_SPACE}
+            bridgeEnabled={space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === CUSTOMER360_SPACE}
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
