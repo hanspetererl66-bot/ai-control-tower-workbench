@@ -156,3 +156,19 @@ test('a cancelled dialog or an error leaves the mail unsent and says so', async 
   assert.match(hot.doc.body.textContent, /No test recipient is set/);
   assert.equal(hot.doc.querySelector('[data-mail=send]'), null);
 });
+
+test('the Hotline reports back to whoever asked: the orchestrator gets its answer, the service request keeps its own', () => {
+  const hot = load('infra-hotline');
+  hot.send(null, [{ from: 'infra-orchestrator', payload: { type: 'window-request', hours: 4, task: { ...TASK, id: 'F-807', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.doc.querySelector('[data-tab=hotline]').click();
+  hot.doc.querySelector('[data-call]').click();
+  for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();
+  hot.doc.querySelector('[data-tab=requests]').click();
+  hot.doc.querySelector('[data-op=confirm][data-id=F-807]').click();
+  assert.match(hot.doc.body.textContent, /Report back to the orchestrator/);
+  hot.doc.querySelector('[data-op=report][data-id=F-807]').click();
+  const m = hot.last('wb:handoff');
+  assert.equal(m.to, 'infra-orchestrator');
+  assert.equal(m.payload.type, 'window-result');
+  assert.equal(m.payload.status, 'confirmed');
+});

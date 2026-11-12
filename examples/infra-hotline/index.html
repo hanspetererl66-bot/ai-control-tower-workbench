@@ -392,7 +392,8 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
     { slug: 'infra-rca', t: 'RCA', x: 'Why did it happen, and has it happened before? An RCA agent (simulated) looks into former cases and the documentation, names the most likely root cause with evidence and confidence, and proposes the next best action. A person decides.' },
     { slug: 'infra-ops', t: 'Service request', x: 'From finding to fix: the ticket for Muster Industrie AG becomes a service request for a certificate renewal. Pre-check, two approvals from different roles, simulated execution, audit evidence.' },
     { slug: 'infra-hotline', t: 'Hotline', x: 'Long downtime windows are agreed with the customer first: the customer calls the central hotline and an AI voice agent (simulated) offers windows inside the nights the customer allows. The policy says per task and customer from which length it asks; a person confirms.' },
-    { slug: 'infra-ops-control', t: 'Auto-fix', x: 'The same path without the manual work: all customers, one customer, one red VM. One click opens a ticket, corrects the VM by the SOP steps, checks it, writes the customer an e-mail (preview) and closes the ticket.' }
+    { slug: 'infra-ops-control', t: 'Auto-fix', x: 'The same path without the manual work: all customers, one customer, one red VM. One click opens a ticket, corrects the VM by the SOP steps, checks it, writes the customer an e-mail (preview) and closes the ticket.' },
+    { slug: 'infra-orchestrator', t: 'Orchestrator', x: 'Proactive instead of reactive: the orchestrator agent (simulated) looks ahead at certificates, patches, disks and DNS, plans the work with the same building blocks and, with human in the loop switched off, runs the low-risk part by itself. High risk, production above low risk, customer agreement and freezes stay with people.' }
   ];
   var TICKET = { type: 'ticket', id: 'OP-2090', customerId: 'musind', customerName: 'Muster Industrie AG', vm: 'musind-int04', kind: 'cert', priority: 'High', reasons: ['TLS certificate expires in days'], createdBy: 'Story: alert triage' };
   /* No address in the page (Spaces have no network): the chat gets the host and path and reads the page itself. The prompt stays under the 600 characters the host allows. */
@@ -896,7 +897,7 @@ function requestCard(r, i) {
   let ops = '';
   if (r.state === 'agreed') ops = `<div class="ops"><button class="primary" data-op="confirm" data-id="${r.id}">Confirm the window</button><button class="ghost" data-op="back" data-id="${r.id}">Send back</button></div>`;
   else if (['declined', 'needs-person', 'sent-back'].includes(r.state)) ops = `<div class="ops"><button class="ghost" data-op="reopen" data-id="${r.id}">Reopen for the hotline</button></div>`;
-  if (r.fromOps && hosted && ['standard', 'confirmed', 'declined', 'needs-person', 'sent-back'].includes(st.key)) ops += `<div class="ops"><button class="primary" data-op="report" data-id="${r.id}">Report to service request ${esc(r.id)}</button></div>`;
+  if (r.fromOps && hosted && ['standard', 'confirmed', 'declined', 'needs-person', 'sent-back'].includes(st.key)) ops += `<div class="ops"><button class="primary" data-op="report" data-id="${r.id}">Report back to ${r.origin && r.origin !== 'infra-ops' ? 'the orchestrator' : 'the service request'}</button></div>`;
   if (r.state === 'confirmed' && r.result && r.result.start) ops += r.mailed ? `<div class="res sent">${ic('check')} Confirmation sent to ${esc(r.mailed.to)} · ${esc(r.mailed.at.slice(0, 16).replace('T', ' '))} UTC</div>`
     : hosted ? `<div class="ops"><button class="ghost" data-op="mail" data-id="${r.id}">${ic('phone')} Send confirmation to customer</button></div>` : '<div class="note">Sending the confirmation needs the desktop app.</div>';
   const focus = state.focus === r.id ? ' focus' : '';
@@ -1072,7 +1073,7 @@ function report(id) {
   const r = state.requests.find((x) => x.id === id); if (!r || !hosted) return;
   const key = statusOf(r, state.policy).key, res = r.result;
   const payload = { type: 'window-result', taskId: r.id, status: key, window: key === 'confirmed' && res && res.start ? [res.start, res.end] : null };
-  window.parent.postMessage({ type: 'wb:handoff', to: 'infra-ops', payload, open: true, notice: 'Downtime window for ' + r.id + ' sent to the service request' }, '*');
+  window.parent.postMessage({ type: 'wb:handoff', to: r.origin || 'infra-ops', payload, open: true, notice: 'Downtime window for ' + r.id + ' sent back' }, '*');
 }
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
@@ -1082,7 +1083,8 @@ window.addEventListener('message', (e) => {
     const p = h && h.payload, t = p && p.task; if (!p || p.type !== 'window-request' || !t || typeof t.id !== 'string') return;
     if (!DATA.customers.some((c) => c.id === t.customer) || !DATA.templates.some((x) => x.id === t.template)) return;
     const hours = Math.max(0.5, Math.min(24, +p.hours || 2)), id = t.id.slice(0, 20);
-    const req = { id, template: t.template, customer: t.customer, target: String(t.target || '').slice(0, 60), hours, state: 'open', note: 'From service request ' + id, fromOps: true };
+    const from = typeof h.from === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/.test(h.from) ? h.from : 'infra-ops';
+    const req = { id, template: t.template, customer: t.customer, target: String(t.target || '').slice(0, 60), hours, state: 'open', note: from === 'infra-ops' ? 'From service request ' + id : 'From the orchestrator: ' + id, fromOps: true, origin: from };
     const at = state.requests.findIndex((x) => x.id === id);
     if (at >= 0) state.requests[at] = req; else state.requests.unshift(req);
     state.tab = 'requests'; state.focus = id; state.caller = t.customer; state.call = null;

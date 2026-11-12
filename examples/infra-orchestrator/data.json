@@ -1,0 +1,301 @@
+{
+ "asOf": "2026-10-21",
+ "note": "Fictional findings and fixed rules. The orchestrator is simulated: no monitoring is read, nothing is executed, nothing is saved.",
+ "templates": [
+  {
+   "id": "renew-certificate",
+   "label": "Renew a TLS certificate"
+  },
+  {
+   "id": "patch-vm",
+   "label": "Patch and restart a VM"
+  },
+  {
+   "id": "move-vm",
+   "label": "Move a VM"
+  },
+  {
+   "id": "update-dns-record",
+   "label": "Change a DNS record"
+  }
+ ],
+ "customers": [
+  {
+   "id": "mi",
+   "name": "Muster Industrie AG",
+   "sla": "Premium Plus",
+   "contact": "IT operations lead",
+   "days": [
+    2,
+    3,
+    4
+   ],
+   "from": "21:00",
+   "until": "05:00"
+  },
+  {
+   "id": "bp",
+   "name": "Beispiel Pharma GmbH",
+   "sla": "Premium Plus (GxP)",
+   "contact": "Head of IT quality",
+   "days": [
+    0,
+    6
+   ],
+   "from": "20:00",
+   "until": "06:00"
+  },
+  {
+   "id": "nl",
+   "name": "Nordlicht Logistik AG",
+   "sla": "Premium",
+   "contact": "Infrastructure manager",
+   "days": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "from": "22:00",
+   "until": "06:00"
+  },
+  {
+   "id": "aw",
+   "name": "Alpenwerk Maschinenbau AG",
+   "sla": "Premium",
+   "contact": "IT service manager",
+   "days": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "from": "20:00",
+   "until": "04:00"
+  },
+  {
+   "id": "ke",
+   "name": "Kurpfalz Energie eG",
+   "sla": "Standard",
+   "contact": "Head of IT",
+   "days": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "from": "21:00",
+   "until": "05:00"
+  },
+  {
+   "id": "hr",
+   "name": "Hanseatic Retail GmbH",
+   "sla": "Standard",
+   "contact": "IT lead",
+   "days": [
+    0,
+    1,
+    2
+   ],
+   "from": "23:00",
+   "until": "06:00"
+  }
+ ],
+ "freezes": [
+  {
+   "from": "2026-10-26",
+   "to": "2026-10-28",
+   "customer": "bp",
+   "reason": "GxP audit at Beispiel Pharma"
+  },
+  {
+   "from": "2026-12-18",
+   "to": "2027-01-04",
+   "customer": null,
+   "reason": "Year-end freeze"
+  }
+ ],
+ "hotline": {
+  "leadDays": 2,
+  "defaults": {
+   "renew-certificate": 2,
+   "patch-vm": 2,
+   "move-vm": 1,
+   "update-dns-record": 4
+  },
+  "overrides": [
+   {
+    "customer": "mi",
+    "template": "patch-vm",
+    "hours": 1,
+    "note": "Premium Plus: asks for every patch window longer than one hour"
+   },
+   {
+    "customer": "bp",
+    "template": "renew-certificate",
+    "hours": 0,
+    "note": "GxP: the customer agrees to every change window"
+   },
+   {
+    "customer": "bp",
+    "template": "patch-vm",
+    "hours": 0,
+    "note": "GxP: the customer agrees to every change window"
+   },
+   {
+    "customer": "bp",
+    "template": "move-vm",
+    "hours": 0,
+    "note": "GxP: the customer agrees to every change window"
+   },
+   {
+    "customer": "bp",
+    "template": "update-dns-record",
+    "hours": 0,
+    "note": "GxP: the customer agrees to every change window"
+   },
+   {
+    "customer": "ke",
+    "template": "move-vm",
+    "hours": null,
+    "note": "Standard SLA: the contract allows the provider to choose the window"
+   }
+  ]
+ },
+ "runbooks": [
+  {
+   "template": "renew-certificate",
+   "risk": "low",
+   "hours": 1,
+   "does": "Issue the new certificate, install it, reload the service (no restart), check the chain and a TLS handshake."
+  },
+  {
+   "template": "patch-vm",
+   "risk": "medium",
+   "hours": 4,
+   "does": "Snapshot, apply the patches, restart the VM, wait for the dependent systems, check health."
+  },
+  {
+   "template": "move-vm",
+   "risk": "high",
+   "hours": 6,
+   "does": "Snapshot, move the VM to larger storage, start it, check dependencies and data."
+  },
+  {
+   "template": "update-dns-record",
+   "risk": "low",
+   "hours": 1,
+   "does": "Change the record with a short TTL, check the resolution from two places."
+  }
+ ],
+ "autonomy": {
+  "hitl": true,
+  "defaults": {
+   "renew-certificate": "auto",
+   "patch-vm": "human",
+   "move-vm": "human",
+   "update-dns-record": "auto"
+  },
+  "overrides": [
+   {
+    "customer": "hr",
+    "template": "patch-vm",
+    "mode": "auto",
+    "note": "Retail QAS landscape: patching may run on its own"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "F-801",
+   "customer": "mi",
+   "host": "proxy-edge-01",
+   "env": "PRD",
+   "kind": "cert-expiry",
+   "template": "renew-certificate",
+   "deadlineDays": 12,
+   "signal": "TLS certificate expires on 2026-11-02 (12 days)",
+   "evidence": "Not After 2026-11-02; the renewal job has not run since 2026-09-30."
+  },
+  {
+   "id": "F-802",
+   "customer": "aw",
+   "host": "aw-s4-prd",
+   "env": "PRD",
+   "kind": "cert-expiry",
+   "template": "renew-certificate",
+   "deadlineDays": 20,
+   "signal": "TLS certificate expires on 2026-11-10 (20 days)",
+   "evidence": "Not After 2026-11-10; the chain contains an intermediate that is about to be replaced.",
+   "failsOnce": true
+  },
+  {
+   "id": "F-803",
+   "customer": "bp",
+   "host": "bp-prd-app01",
+   "env": "PRD",
+   "kind": "patch-age",
+   "template": "patch-vm",
+   "deadlineDays": 30,
+   "signal": "Critical patches open for 41 days",
+   "evidence": "Three critical patches published 2026-09-10; none installed."
+  },
+  {
+   "id": "F-804",
+   "customer": "hr",
+   "host": "hr-qas-app01",
+   "env": "QAS",
+   "kind": "patch-age",
+   "template": "patch-vm",
+   "hours": 2,
+   "deadlineDays": 25,
+   "signal": "Security patches open for 33 days",
+   "evidence": "Two security patches published 2026-09-18; QAS system, no production traffic."
+  },
+  {
+   "id": "F-805",
+   "customer": "mi",
+   "host": "fs-archive-01",
+   "env": "PRD",
+   "kind": "disk-trend",
+   "template": "move-vm",
+   "deadlineDays": 3,
+   "signal": "Disk at 97 %, growing 1.2 points per day",
+   "evidence": "Fill level 97 % on 2026-10-21, trend +1.2 points per day over 14 days: full in about 3 days."
+  },
+  {
+   "id": "F-806",
+   "customer": "nl",
+   "host": "nl-qas-app01",
+   "env": "QAS",
+   "kind": "dns-stale",
+   "template": "update-dns-record",
+   "deadlineDays": 14,
+   "signal": "DNS record points to the old address",
+   "evidence": "A record qas-app.nordlicht.example still resolves to 10.4.1.20; the VM moved to 10.4.7.20 on 2026-10-12."
+  },
+  {
+   "id": "F-807",
+   "customer": "ke",
+   "host": "ke-prd-app01",
+   "env": "PRD",
+   "kind": "patch-age",
+   "template": "patch-vm",
+   "deadlineDays": 21,
+   "signal": "Security patches open for 28 days",
+   "evidence": "Four security patches published 2026-09-23; one touches the database driver."
+  },
+  {
+   "id": "F-808",
+   "customer": "ke",
+   "host": "ke-s4-prd",
+   "env": "PRD",
+   "kind": "cert-expiry",
+   "template": "renew-certificate",
+   "deadlineDays": 9,
+   "signal": "TLS certificate expires on 2026-10-30 (9 days)",
+   "evidence": "Not After 2026-10-30; automatic renewal is not configured for this system."
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Orchestrator",
+  "description": "A proactive orchestrator agent (simulated) looks ahead at certificates, patches, disks and DNS, plans the work with the same building blocks and, with human in the loop switched off, does the low-risk part itself. Hard floors stay.",
+  "domain": "Autonomous Operations",
+  "parent": "it-fleet",
+  "insights": [
+    "Fictional findings, simulated orchestrator: no monitoring is read, nothing is executed and nothing is saved.",
+    "Human in the loop is a switch. On: every plan waits for a person. Off: the agent runs low-risk plans by itself, per task and customer as set in the autonomy matrix.",
+    "Some floors cannot be switched off: high risk, production changes above low risk, a window the customer has to agree, a freeze, a deadline the window cannot meet.",
+    "Every decision is written to the audit log with its evidence; a pause switch stops all autonomous runs at once."
+  ],
+  "prompt": "Bundled example: Orchestrator (static, data embedded by npm run sync:infra-orchestrator)."
+}
