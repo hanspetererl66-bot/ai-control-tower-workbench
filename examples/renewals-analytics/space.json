@@ -1,0 +1,12 @@
+{
+  "title": "Renewal Analytics",
+  "description": "Read-only dashboard for the sales manager: open renewal value and expected loss, value by decision month, the biggest risks, the seven process phases, customers across their products, renewals without an offer, team load (names hidden by default), offer price against contract cap and competitors.",
+  "domain": "Sales",
+  "insights": [
+    "Same fictional data and the same rules as the Renewals Space; the logic comes from one shared source (examples/renewals/logic.js).",
+    "Expected retention and loss rest on assumptions listed on the page, they are not a forecast.",
+    "The team block shows workload per renewal owner as Owner 1 to 4; names appear only after pressing Show names.",
+    "Nothing is sent and nothing is stored."
+  ],
+  "prompt": "Bundled example: Renewal Analytics (static, data and logic embedded by npm run sync:renewals)."
+}
