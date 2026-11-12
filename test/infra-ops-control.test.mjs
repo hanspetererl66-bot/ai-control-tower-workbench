@@ -291,12 +291,15 @@ test('Fix automatically for a customer that does not need to agree sets the wind
 /* ---- the page in a fake host: the gate hands the window to the hotline and continues with the answer ---- */
 function host() {
   const posted = [];
-  const parent = { postMessage: (m) => posted.push(m) };
+  /* like a real window: a message is structured-cloned, so a function inside it throws a DataCloneError */
+  const parent = { postMessage: (m) => posted.push(structuredClone(m)) };
   const dom = new JSDOM(page, { runScripts: 'dangerously', beforeParse(w) { Object.defineProperty(w, 'parent', { value: parent }); } });
   const w = dom.window, doc = w.document;
+  const errors = [];
+  w.addEventListener('error', (e) => { errors.push(String(e.error || e.message)); e.preventDefault(); });
   const send = (state, handoffs) => { const ev = new w.Event('message'); ev.source = parent; ev.data = { type: 'wb:restore', state: state ?? null, handoffs }; w.dispatchEvent(ev); };
   const lastState = () => posted.filter((m) => m.type === 'wb:state').at(-1).state;
-  return { doc, posted, send, lastState, w };
+  return { doc, posted, send, lastState, w, errors };
 }
 
 test('in the Werkbank the gate hands the window to the Customer Hotline and the repair continues with the agreed window', async () => {
@@ -386,4 +389,24 @@ test('a repair that waited for the customer reports the waiting and all its task
   assert.equal(o.waitedMin, data.window.customerMin);
   assert.equal(o.durationMin, data.tasks.cert.minutes + data.tasks.patch.minutes + data.window.customerMin);
   assert.equal(o.template, 'renew-certificate', 'named after the most severe reason');
+});
+
+test('in the Werkbank a finished repair saves plain data: no error, the closed ticket survives a reload of the page', async () => {
+  const h = host();
+  h.doc.querySelector('#speed').value = 'fast';
+  h.doc.querySelector('#speed').dispatchEvent(new h.w.Event('change'));
+  h.doc.querySelector('[data-cust="hansa"]').click();
+  [...h.doc.querySelectorAll('[data-vm]')].find((t) => t.textContent.includes('port-gw-01')).click();
+  h.doc.querySelector('[data-fix]').click();
+  await until(h.doc, '.runbar li.done:last-child');
+  await sleep(100);
+  assert.deepEqual(h.errors, [], 'nothing uncaught while the run finishes and the state is saved');
+  const saved = h.lastState();
+  assert.ok(Object.values(saved.records).some((r) => r.ticket === 'OP-2101'), 'the record is in the saved state');
+  assert.doesNotThrow(() => structuredClone(saved), 'the saved state is plain data');
+  assert.equal(JSON.stringify(saved), JSON.stringify(JSON.parse(JSON.stringify(saved))), 'and has nothing a copy would lose');
+  const h2 = host();
+  h2.send(saved, []);
+  assert.match(h2.doc.querySelector('#fix-slot').textContent, /Repaired automatically[\s\S]*OP-2101[\s\S]*closed/, 'after the reload the page is on the same VM and shows the closed ticket again');
+  assert.deepEqual(h2.errors, []);
 });
