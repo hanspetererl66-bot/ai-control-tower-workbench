@@ -63,7 +63,7 @@ test('page: radar, table, detail, ten demo steps, English chat prompts, no netwo
   assert.equal((page.match(/\{ t: '/g) || []).length, 10);
   assert.match(page, /customer-call-prep/);
   assert.match(page, /pricing-guard/);
-  assert.equal((page.match(/Please answer in English/g) || []).length, 6);
+  assert.equal((page.match(/Please answer in English/g) || []).length, 7, 'six prompts of the buttons and the group prompt');
   assert.doesNotMatch(page.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage/);
 });
 

@@ -227,3 +227,55 @@ test('renewals state: the page reports its working state to the host and takes i
   assert.deepEqual(d.p.errors, []);
   d.p.w.close();
 });
+
+test('renewals action queue: one card per first action, most urgent first, the renewals behind it, one Joule prompt per group', async () => {
+  const hosted = async () => { const p = await open(); const sent = []; Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } }); return { p, sent }; };
+  const { p, sent } = await hosted();
+  const model = p.w.__renewals(), open_ = model.filter((c) => c.status !== 'Lapsed' && c.stage < 4 && !c.autoRun);
+  click(p.w, p.q('#tab-nba'));
+  const cards = p.qa('#queue .qgrp');
+  const keys = [...new Set(open_.map((c) => c.actionKeys[0]))];
+  assert.equal(cards.length, keys.length, 'one card per first action');
+  assert.ok(cards.length < open_.length, 'grouping shortens the list');
+  assert.equal(p.qa('#queue .qrow').length, open_.length, 'every renewal is behind exactly one card');
+  const order = cards.map((c) => c.className.match(/\b(red|yellow|green)\b/)[1]), rank = { red: 0, yellow: 1, green: 2 };
+  assert.deepEqual(order, [...order].sort((a, b) => rank[a] - rank[b]), 'red before yellow before green');
+  // the first card is open, the others are closed and their rows hidden
+  assert.equal(p.qa('#queue .qhead')[0].getAttribute('aria-expanded'), 'true');
+  assert.equal(p.qa('#queue .qhead')[1].getAttribute('aria-expanded'), 'false');
+  assert.equal(p.q('#queue .qbody[hidden]') !== null, true);
+  click(p.w, p.qa('#queue .qhead')[1]);
+  assert.equal(p.qa('#queue .qhead')[1].getAttribute('aria-expanded'), 'true');
+  assert.ok(sent.filter((m) => m.type === 'wb:state').at(-1).state.groups, 'the open cards are part of the saved state');
+  // each row names up to two reasons, not only the action
+  const row = p.q('#queue .qrow'), small = row.querySelector('small').textContent;
+  assert.ok(small.length > 10 && small.split(' · ').length <= 3, small);
+  // the prompt: for the whole group, within the bridge limit, nothing is sent by the page
+  const btn = p.qa('#queue [data-gask]')[0], group = open_.filter((c) => c.actionKeys[0] === btn.dataset.gask);
+  click(p.w, btn);
+  const ask = sent.filter((m) => m.type === 'wb:ask').at(-1).prompt;
+  assert.ok(ask.length <= 600 && /customer-call-prep/.test(ask) && new RegExp(`${group.length} renewals`).test(ask));
+  assert.match(btn.textContent, new RegExp(`all ${group.length}$`));
+  assert.ok(!sent.some((m) => m.type === 'wb:handoff'), 'asking Joule hands nothing over');
+  // a row still opens its renewal
+  click(p.w, p.q('#queue .qrow'));
+  assert.ok(p.w.__state.sel, 'a click on a row opens the renewal');
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewals action queue: a long group prompt ends with "and N more" and stays within 600 characters', async () => {
+  const p = await open();
+  const sent = []; Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } });
+  click(p.w, p.q('#tab-nba'));
+  const biggest = p.qa('#queue [data-gask]')[0];
+  const model = p.w.__renewals();
+  const first = model.find((c) => c.actionKeys[0] === biggest.dataset.gask);
+  // use the real page function with a made-up group of 30 renewals
+  const g = { text: 'Create the renewal offer now and send it to the deal desk', items: Array.from({ length: 30 }, (_, i) => ({ ...first, id: 'x' + i })) };
+  const prompt = p.w.__groupPrompt(g);
+  assert.ok(prompt.length <= 600, String(prompt.length));
+  assert.match(prompt, /and \d+ more\. Use the skill/);
+  assert.match(prompt, /30 renewals/);
+  p.w.close();
+});
