@@ -309,3 +309,61 @@ test('renewals action queue: a long group prompt ends with "and N more" and stay
   assert.match(prompt, /30 renewals/);
   p.w.close();
 });
+
+test('renewals me filter: one account executive narrows numbers, queue, time line, radar and list; the customer pictures stay whole', async () => {
+  const p = await open();
+  const model = p.w.__renewals(), owners = [...new Set(model.map((c) => c.owner))].sort();
+  assert.deepEqual(p.qa('#owner option').map((o) => o.value), ['all', ...owners]);
+  assert.equal(p.w.__state.owner, 'all');
+  assert.equal(p.q('#owner-note').hidden, true);
+  const me = owners.find((o) => model.filter((c) => c.owner === o && c.status !== 'Lapsed').length >= 3 && model.some((c) => c.owner !== o));
+  const sel = p.q('#owner'); sel.value = me; sel.dispatchEvent(new p.w.Event('change'));
+  const mine = model.filter((c) => c.owner === me), live = mine.filter((c) => c.status !== 'Lapsed' && c.stage < 4);
+  assert.equal(p.w.__state.owner, me);
+  assert.equal(p.q('#owner-note').hidden, false);
+  assert.match(p.q('#ctx-note').textContent, new RegExp(`${me} · ${live.length} renewals`));
+  // Today: numbers and cards
+  assert.equal(p.q('.kpi[data-k="need"] .v').textContent, String(live.filter((c) => !c.autoRun && (c.health === 'red' || c.sig.days <= 14)).length));
+  assert.equal(p.qa('#today-groups .qrow').length, live.filter((c) => !c.autoRun).length);
+  assert.ok(p.qa('#six .rdot').every((d) => mine.some((c) => c.id === d.dataset.id)), 'the time line holds only my renewals');
+  // the journey strip names the person
+  assert.match(p.q('#jr').textContent, new RegExp(`${me.split(' ')[0]}: renewals at stake`));
+  // queue, radar and list
+  click(p.w, p.q('#tab-nba')); assert.equal(p.qa('#queue .qrow').length, live.filter((c) => !c.autoRun).length);
+  click(p.w, p.q('#tab-list')); assert.ok(p.qa('#rows tr[data-id]').length > 0 && p.qa('#rows tr[data-id]').every((r) => mine.some((c) => c.id === r.dataset.id)));
+  click(p.w, p.q('#tab-radar')); assert.ok(p.qa('#tl .row').every((r) => mine.some((c) => c.id === r.dataset.id)));
+  // the customer pictures keep showing the whole customer
+  click(p.w, p.q('#tab-overview'));
+  assert.equal(p.qa('#land .planet').length, data.customers.length, 'every customer is still a planet');
+  assert.equal(p.qa('#land .moon').length, data.cases.length, 'every contract is still a dot: the picture shows the whole customer');
+  assert.equal(p.w.__renewals().length, model.length, 'the model itself is not narrowed');
+  // opening a renewal of somebody else clears the filter
+  const other = model.find((c) => c.owner !== me && c.status !== 'Lapsed');
+  p.w.dispatchEvent(new p.w.MessageEvent('message', { data: { type: 'wb:restore', state: null, handoffs: [{ from: 'x', payload: { journey: { customer: other.customerId, step: 'decide', tab: 'list', deal: other.contractId } } }] }, source: p.w.parent }));
+  assert.equal(p.w.__state.owner, 'all', 'the filter is cleared so the renewal can be shown');
+  assert.equal(p.w.__state.sel, other.id);
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewals me filter: reported with the state, taken back, damaged values fall back to everyone, reset clears it', async () => {
+  const hosted = async () => { const p = await open(); const sent = []; Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } }); return { p, sent }; };
+  const restore = (p, state) => p.w.dispatchEvent(new p.w.MessageEvent('message', { data: { type: 'wb:restore', state, handoffs: [] }, source: p.w.parent }));
+  const a = await hosted();
+  const me = [...new Set(a.p.w.__renewals().map((c) => c.owner))].sort()[0];
+  const sel = a.p.q('#owner'); sel.value = me; sel.dispatchEvent(new a.p.w.Event('change'));
+  const saved = JSON.parse(JSON.stringify(a.sent.filter((m) => m.type === 'wb:state').at(-1).state));
+  assert.equal(saved.owner, me);
+  const first = a.p.w.__renewals()[0].id; a.p.w.__state.asked[first] = true; a.p.w.__state.groups.invoice = true;
+  a.p.q('#reset').click();
+  assert.equal(a.p.w.__state.owner, 'all', 'reset clears the filter');
+  assert.deepEqual({ ...a.p.w.__state.asked }, {}, 'reset clears "asked"'); assert.deepEqual({ ...a.p.w.__state.groups }, {}, 'reset closes the cards again');
+  a.p.w.close();
+  const b = await hosted(); restore(b.p, saved);
+  assert.equal(b.p.w.__state.owner, me); assert.equal(b.p.q('#owner').value, me);
+  b.p.w.close();
+  const c = await hosted(); restore(c.p, { owner: '<img src=x>' });
+  assert.equal(c.p.w.__state.owner, 'all');
+  assert.deepEqual(c.p.errors, []);
+  c.p.w.close();
+});

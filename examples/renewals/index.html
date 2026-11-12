@@ -529,9 +529,11 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
   <div class="card guide" id="guide" aria-live="polite"></div>
   <div class="ctx" id="ctx">
     <label class="ctxsel">Customer <select id="customer" aria-label="Customer"></select></label>
+    <label class="ctxsel">Account executive <select id="owner" aria-label="Account executive"></select></label>
     <span class="ctxnote" id="ctx-note"></span>
+    <p class="ctxnote" id="owner-note" style="flex-basis:100%;margin:0" hidden></p>
     <button class="ghost spacer" id="to-analytics" type="button" title="Open the Renewal Analytics Space (sales manager view)">Manager view</button>
-    <button class="ghost spacer" id="reset" type="button">Reset demo</button>
+    <button class="ghost" id="reset" type="button">Reset demo</button>
   </div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Renewal views"></nav>
 
@@ -1788,7 +1790,7 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared (by you)', 'Offer approved (simulated)', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
+const state = { owner: 'all', groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -1804,7 +1806,7 @@ function compute() {
   });
 }
 const byAuto = (a, b) => (b.autoRun - a.autoRun) || (a.autoRun ? a.customer.localeCompare(b.customer) || a.decisionDate.localeCompare(b.decisionDate) : 0);
-const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && (!state.phase || c.ph.phase === state.phase) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase()))).sort(state.auto ? byAuto : () => 0);
+const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && byOwner(c) && (!state.phase || c.ph.phase === state.phase) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase()))).sort(state.auto ? byAuto : () => 0);
 const autoTag = (c) => (c.autoRun ? ' <span class="pill auto" title="Handled by automatic renewal (simulated)">Auto</span>' : '');
 const live = (c) => c.status !== 'Lapsed' && c.stage < 4;
 function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c.customer)} · SAP customer ID ${esc(c.sapCustomerId)}</div><div style="margin-top:4px"><span class="pill ${c.health}">${LABEL[c.health]}</span> ${eur(c.annualEur)} a year</div><ul>${c.sig.signals.slice(0, 4).map((s) => `<li>${esc(s.text)}</li>`).join('')}</ul>`; }
@@ -2016,7 +2018,9 @@ const WINDOW_DAYS = 42; /* "the next six weeks" */
 const played = {};
 const enter = (key) => { if (REDUCED || played[key]) return ''; played[key] = true; return ' enter'; };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const scoped = () => model.filter((c) => state.customer === 'all' || c.customerId === state.customer);
+/** The account executive filter ("me"): there is no login, the person picks a name. It narrows numbers, lists, the time line and the radar; the customer pictures keep showing the whole customer. */
+const byOwner = (c) => state.owner === 'all' || c.owner === state.owner;
+const scoped = () => model.filter((c) => (state.customer === 'all' || c.customerId === state.customer) && byOwner(c));
 const shortName = (c) => c.product.replace(/\s*\(.*\)/, '');
 const custOf = (id) => DATA.customers.find((x) => x.id === id);
 const isoPlus = (n) => new Date(toDay(DATA.asOf) + n * DAY).toISOString().slice(0, 10);
@@ -2032,9 +2036,11 @@ function countUp(el, to, fmt) {
 const runCounts = (root) => root.querySelectorAll('[data-count]').forEach((el) => countUp(el, +el.dataset.count, el.dataset.fmt === 'eur' ? eur : String));
 const activate = (el, fn) => { el.onclick = fn; el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } }; };
 function renderCtx() {
-  $('#customer').value = state.customer;
+  $('#customer').value = state.customer; $('#owner').value = state.owner;
   const live_ = scoped().filter(live).length;
-  $('#ctx-note').textContent = (state.customer === 'all' ? 'All customers' : custOf(state.customer).name) + ' · ' + live_ + ' renewals to handle';
+  $('#ctx-note').textContent = (state.customer === 'all' ? 'All customers' : custOf(state.customer).name) + (state.owner === 'all' ? '' : ' · ' + state.owner) + ' · ' + live_ + ' renewals to handle';
+  const on = $('#owner-note'); on.hidden = state.owner === 'all';
+  on.textContent = state.owner === 'all' ? '' : 'Numbers, time line, lists and the radar show only the renewals of ' + state.owner + '. The customer pictures (landscape, customer map) still show every contract of the customer.';
 }
 function renderTabs() {
   $('#tabs').innerHTML = TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-selected="${state.tab === id}" aria-controls="pg-${id}" tabindex="${state.tab === id ? 0 : -1}" data-tab="${id}">${label}</button>`).join('');
@@ -2048,7 +2054,7 @@ function setTab(t) { state.tab = t; renderAll(); }
 /* A renewal opens in the list (detail on the right); the customer context follows it. */
 function openRenewal(id) {
   const c = byId(id); if (!c) return;
-  state.sel = id; if (state.customer !== 'all') state.customer = c.customerId; state.tab = 'list'; renderAll();
+  state.sel = id; if (state.customer !== 'all') state.customer = c.customerId; if (!byOwner(c)) state.owner = 'all'; state.tab = 'list'; renderAll();
   const d = $('#detail'); if (d) d.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'nearest' });
 }
 function openCustomer(id) { state.customer = id; state.csel = null; state.focus = null; state.sel = null; state.tab = 'process'; renderAll(); }
@@ -2064,7 +2070,7 @@ function renderSix() {
   const dots = upcoming.map((c, i) => { const d = c.sig.days, l = lanes[d] = (lanes[d] || 0) + 1; return `<button type="button" class="rdot ${c.health}" data-id="${esc(c.id)}" style="left:${(d / WINDOW_DAYS) * 100}%;top:${8 + (l - 1) * 20}px;--d:${150 + i * 80}ms" aria-label="${esc(shortName(c) + ', ' + c.customer + ', decision ' + c.decisionDate)}"></button>`; }).join('');
   const pdots = passed.map((c, i) => `<button type="button" class="rdot ${c.health}" data-id="${esc(c.id)}" style="left:${12 + i * 20}px;top:8px;--d:${80 + i * 80}ms" aria-label="${esc(shortName(c) + ', ' + c.customer + ', decision date passed')}"></button>`).join('');
   el.innerHTML = `<div class="head"><div style="flex:1 1 320px"><h2>Next ${WINDOW_DAYS / 7} weeks: decisions until ${esc(dayMonth(isoPlus(WINDOW_DAYS)))}</h2>` +
-    `<p class="sub" style="margin:0"><b data-count="${mine.length}">${mine.length}</b> renewals · <b data-count="${total}" data-fmt="eur">${eur(total)}</b> a year · ${red} red${passed.length ? ' · ' + passed.length + ' with the decision date already passed' : ''}</p></div></div>` +
+    `<p class="sub" style="margin:0"><b data-count="${mine.length}">${mine.length}</b> renewal${mine.length === 1 ? '' : 's'} · <b data-count="${total}" data-fmt="eur">${eur(total)}</b> a year · ${red} red${passed.length ? ' · ' + passed.length + ' with the decision date already passed' : ''}</p></div></div>` +
     (mine.length ? `<p class="sub" style="margin:8px 0 0">Click a dot to open the renewal. What to do first is listed below.</p><div class="ribbon${ent}" style="--rh:${Math.max(62, 30 + Math.max(1, ...Object.values(lanes), passed.length ? 1 : 0) * 20)}px"><div class="rpast${passed.length ? '' : ' empty'}"><span>Passed</span>${pdots}</div><div class="rweeks">${Array.from({ length: WINDOW_DAYS / 7 }, (_, i) => `<div class="rwk"><span>${esc(dayMonth(isoPlus(i * 7)))}</span></div>`).join('')}<i class="rtoday"><em>today</em></i>${dots}</div></div>` : '') +
     (!mine.length ? '<p class="note">No decision date in the next six weeks.</p>' : '') +
     `<p class="note">${later} more renewals decide later, ${lapsed} contracts have lapsed (win-back). <button class="small" id="six-all" type="button">Show all by decision date</button></p>`;
@@ -2230,7 +2236,7 @@ function renderGuide() {
   g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="where"><b>Where:</b> ${esc(s.area)} (outlined below) · <b>Data:</b> ${esc(s.data())}</div><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll(), spot(null)) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); spot(null); };
 }
-function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, groups: {}, asked: {}, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
+function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, owner: 'all', groups: {}, asked: {}, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
@@ -2243,10 +2249,13 @@ function renderAll() {
   saveState();
 }
 $('#customer').innerHTML = '<option value="all">All customers</option>' + [...new Map(DATA.cases.map((c) => [c.customerId, c.customer]))].map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
+const OWNERS = [...new Set(DATA.cases.map((c) => c.owner))].sort();
+$('#owner').innerHTML = '<option value="all">All account executives</option>' + OWNERS.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+$('#owner').onchange = (e) => { state.owner = OWNERS.includes(e.target.value) ? e.target.value : 'all'; state.csel = null; state.focus = null; if (state.sel && !byOwner(byId(state.sel) || {})) state.sel = null; renderAll(); };
 $('#customer').onchange = (e) => { state.customer = e.target.value; state.csel = null; state.focus = null; if (state.sel && state.customer !== 'all' && (byId(state.sel) || {}).customerId !== state.customer) state.sel = null; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
 $('#to-analytics').onclick = () => { if (window.parent === window) { $('#ctx-note').textContent = 'Open this Space in the app to move to Renewal Analytics.'; return; } window.parent.postMessage({ type: 'wb:handoff', to: 'renewals-analytics', payload: { from: 'renewals' }, open: true, notice: 'Renewal Analytics (sales manager view)' }, '*'); };
-$('#reset').onclick = () => { $('#auto').checked = false; for (const k of Object.keys(played)) delete played[k]; Object.assign(state, { tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#reset').onclick = () => { $('#auto').checked = false; for (const k of Object.keys(played)) delete played[k]; Object.assign(state, { tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', owner: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, asked: {}, groups: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
 $('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 $('#assump').textContent = `Illustrative assumptions, not real figures: gross margin ${DATA.rules.marginPct} %; expected retention by health: green ${DATA.rules.retention.green * 100} %, yellow ${DATA.rules.retention.yellow * 100} %, red ${DATA.rules.retention.red * 100} %, lapsed ${DATA.rules.retention.lapsed * 100} %. Expected lifetime = 1 / (1 − retention), at most ${DATA.rules.lifetimeCapYears} years. Lifetime value = annual value × margin × expected lifetime. Each alternative offer changes the annual value, the term and the retention.`;
@@ -2360,9 +2369,9 @@ const JR_AT = { overview: ['today', 'renewals'], process: ['understand', 'renewa
 const JR_TAB = { today: 'overview', understand: 'process', decide: 'nba' };
 const jrCustomer = () => (state.customer !== 'all' && J.CUSTOMERS[state.customer] ? state.customer : jr.customer);
 function renderJourney() {
-  const cust = jrCustomer(), all = state.customer === 'all', mine = all ? model : model.filter((c) => c.customerId === cust), open = mine.filter(live), [step, stop] = JR_AT[state.tab] || ['today', null];
+  const cust = jrCustomer(), all = state.customer === 'all', mine = (all ? model : model.filter((c) => c.customerId === cust)).filter(byOwner), open = mine.filter(live), [step, stop] = JR_AT[state.tab] || ['today', null];
   $('#jr').innerHTML = J.railHtml({ customer: cust, step, stop },
-    [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]], jr.note);
+    [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]], jr.note);
 }
 function jrGo(stopId) {
   const s = J.stop(stopId), cust = jrCustomer(); if (!s || !J.available(s, cust)) return;
@@ -2382,7 +2391,7 @@ function jrApply(j) {
    Only what the person chose is kept. The host keeps it until the app closes; nothing is written to a disk or a server by this page. */
 function saveState() {
   if (window.parent === window) return;
-  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, sel: state.sel, csel: state.csel, stage: state.stage, option: state.option, asked: state.asked, groups: state.groups, auto: state.auto, jr: jr.customer } }, '*');
+  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, owner: state.owner, sel: state.sel, csel: state.csel, stage: state.stage, option: state.option, asked: state.asked, groups: state.groups, auto: state.auto, jr: jr.customer } }, '*');
 }
 /** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
 function applyState(st) {
@@ -2392,6 +2401,7 @@ function applyState(st) {
   if (TABS.some(([id]) => id === st.tab)) state.tab = st.tab;
   if (st.customer === 'all' || DATA.cases.some((c) => c.customerId === st.customer)) state.customer = st.customer;
   if (['all', 'red', 'yellow', 'green'].includes(st.status)) state.status = st.status;
+  state.owner = OWNERS.includes(st.owner) ? st.owner : 'all';
   state.phase = PHASES.some((ph) => ph.id === st.phase) ? st.phase : null;
   state.sel = ids.has(st.sel) ? st.sel : null; state.csel = ids.has(st.csel) ? st.csel : null;
   state.stage = pick(st.stage, (v) => Number.isInteger(v) && v >= 0 && v <= 4);
