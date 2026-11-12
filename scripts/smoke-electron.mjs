@@ -10,12 +10,17 @@
 // Not covered: agent runs, live services, other views.
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+/** The Electron binary of this machine: the package exports its path (dist/electron on Linux, dist/Electron.app/Contents/MacOS/Electron on macOS). */
+const electronPath = (() => {
+  try { return createRequire(import.meta.url)('electron'); } catch { return join(ROOT, 'node_modules/electron/dist/electron'); }
+})();
 const argv = process.argv.slice(2);
 const opt = (name, fallback) => {
   const i = argv.indexOf(`--${name}`);
@@ -79,7 +84,7 @@ try {
     await waitFor(() => portOpen(VITE_PORT), 30000, 'the Vite dev server');
   }
   console.log('Starting Electron ...');
-  children.push(spawn(join(ROOT, 'node_modules/electron/dist/electron'), ['.', `--remote-debugging-port=${PORT}`], { cwd: ROOT, stdio: 'ignore' }));
+  children.push(spawn(electronPath, ['.', `--remote-debugging-port=${PORT}`], { cwd: ROOT, stdio: 'ignore' }));
   const page = await waitFor(async () => {
     const pages = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();
     return pages.find((p) => p.type === 'page' && p.url.startsWith('http://localhost'));

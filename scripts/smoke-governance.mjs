@@ -11,12 +11,17 @@
 // Not covered: the Spaces' own content beyond the title, studio agents in the registry, agent runs, live services.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+/** The Electron binary of this machine: the package exports its path (dist/electron on Linux, dist/Electron.app/Contents/MacOS/Electron on macOS). */
+const electronPath = (() => {
+  try { return createRequire(import.meta.url)('electron'); } catch { return join(ROOT, 'node_modules/electron/dist/electron'); }
+})();
 const argv = process.argv.slice(2);
 const opt = (name, fallback) => {
   const i = argv.indexOf(`--${name}`);
@@ -86,7 +91,7 @@ try {
     await waitFor(() => portOpen(VITE_PORT), 30000, 'the Vite dev server');
   }
   console.log('Starting Electron ...');
-  start(join(ROOT, 'node_modules/electron/dist/electron'), ['.', `--remote-debugging-port=${PORT}`]);
+  start(electronPath, ['.', `--remote-debugging-port=${PORT}`]);
   const page = await waitFor(async () => {
     if (spawnError) throw new Error(`could not start ${spawnError.path ?? 'a program'}: ${spawnError.code}`);
     const pages = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();
