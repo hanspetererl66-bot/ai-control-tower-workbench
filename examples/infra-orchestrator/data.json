@@ -523,5 +523,21 @@
    "sample": true,
    "label": "Renew a TLS certificate"
   }
- ]
+ ],
+ "escalation": {
+  "remindAfterH": 24,
+  "escalateAfterH": 48,
+  "nearDeadlineDays": 3,
+  "roles": {
+   "approval": [
+    "Approvers",
+    "Operations lead"
+   ],
+   "customer": [
+    "Hotline team",
+    "Account manager"
+   ]
+  },
+  "note": "Simulated time. A plan that waits for a person or the customer gets a reminder after 24 hours and an escalation after 48 hours; a deadline within 3 days gets a reminder at once, a missed deadline an escalation. An escalation only writes a message preview: it never approves, decides or sends."
+ }
 }

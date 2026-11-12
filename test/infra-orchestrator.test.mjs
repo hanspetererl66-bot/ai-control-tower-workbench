@@ -12,7 +12,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/infra-orchestrator/index.html');
 const logicSource = /<script id="orch-logic">([\s\S]*?)<\/script>/.exec(page)[1];
-const L = vm.runInNewContext(`${logicSource}; ({ threshold, autonomyOf, nextWindow, assess, statusOf, autoStarts, stepItem, orderOf, RUN_STEPS, outcomeOf, cleanOutcome, summarize, stats })`);
+const L = vm.runInNewContext(`${logicSource}; ({ threshold, autonomyOf, nextWindow, assess, statusOf, autoStarts, stepItem, orderOf, RUN_STEPS, outcomeOf, cleanOutcome, summarize, stats, escalationStage, escalationMessage, waitKind, ageText })`);
 const data = repoOrchestratorData();
 const plain = (x) => JSON.parse(JSON.stringify(x));
 const auto = (hitl, extra = {}) => ({ ...plain(data.autonomy), hitl, ...extra });
@@ -303,5 +303,119 @@ test('page: the plans of this Space become outcomes with the waiting; outcomes f
     assert.match(p.doc.querySelector('#view').textContent, /Install security patch/);
     const saved = p.posted.filter((x) => x.type === 'wb:state').at(-1).state;
     assert.equal(saved.external.length, 1, 'kept across a trip');
+  } finally { p.close(); }
+});
+
+/* ---- deadlines and escalation (phase 0, package D) ---- */
+const esc = data.escalation;
+
+test('escalationStage: a reminder after 24 h, an escalation after 48 h, a close deadline reminds at once, a missed one escalates', () => {
+  assert.equal(L.escalationStage(esc, 0, 20), 0);
+  assert.equal(L.escalationStage(esc, 23, 20), 0);
+  assert.equal(L.escalationStage(esc, 24, 20), 1);
+  assert.equal(L.escalationStage(esc, 47, 20), 1);
+  assert.equal(L.escalationStage(esc, 48, 20), 2);
+  assert.equal(L.escalationStage(esc, 0, 3), 1, 'within 3 days');
+  assert.equal(L.escalationStage(esc, 0, 4), 0);
+  assert.equal(L.escalationStage(esc, 0, -1), 2, 'missed');
+  assert.equal(L.escalationStage(esc, 30, 2), 1);
+});
+
+test('assess with later days: the windows move on and a deadline that can no longer be met becomes a floor; running time does not change the plan of day 0', () => {
+  assert.equal(A('F-808').late, false);
+  const a8 = plain(L.assess(data, auto(false), f('F-808'), 8));
+  assert.equal(a8.late, true, 'on day 8 the next night is after the deadline of day 9');
+  assert.ok(a8.floors.some((x) => x.id === 'deadline'));
+  assert.equal(a8.mode, 'approval', 'now a person decides');
+  assert.equal(a8.deadline, A('F-808').deadline, 'the deadline stays the same date');
+  assert.deepEqual(plain(L.assess(data, auto(false), f('F-801'), 0)), A('F-801'));
+});
+
+test('escalationMessage: a fixed text that says what is needed, names the role and states that nothing is decided or sent', () => {
+  const a = L.assess(data, auto(true), f('F-803'));
+  const m = plain(L.escalationMessage(data, a, 'customer', 1, 26, 29));
+  assert.equal(m.to, 'Hotline team');
+  assert.match(m.subject, /^\[Reminder\] F-803: patch-vm on bp-prd-app01 waits for the customer$/);
+  assert.match(m.body, /waited 1 d 2 h/);
+  assert.match(m.body, /hotline agrees the window/);
+  assert.match(m.body, /decides nothing on its own/);
+  const e = plain(L.escalationMessage(data, a, 'approval', 2, 50, -2));
+  assert.equal(e.to, 'Operations lead');
+  assert.match(e.subject, /^\[Escalation\]/);
+  assert.match(e.body, /deadline .* has passed \(2 days ago\)/);
+  assert.equal(L.ageText(5), '5 h'); assert.equal(L.ageText(48), '2 d'); assert.equal(L.ageText(50), '2 d 2 h');
+});
+
+test('page: the clock moves on, plans that wait get a reminder after a day and an escalation after two, and nothing is approved by it', () => {
+  const p = load();
+  try {
+    p.doc.querySelector('[data-act=sweep]').click();
+    const io = p.w.__io, state = io.state;
+    assert.equal(state.items['F-805'].stage, 1, 'the disk plan is 3 days from its deadline: a reminder at once');
+    assert.ok(!state.items['F-803'].stage, 'nothing yet for the others');
+    p.doc.querySelector('[data-act=time][data-h="24"]').click();
+    assert.equal(state.hours, 24);
+    assert.equal(state.items['F-803'].stage, 1);
+    assert.match(p.doc.body.textContent, /Reminder/);
+    assert.match(p.doc.querySelector('.clock b').textContent, /2026-10-22 00:00/);
+    p.doc.querySelector('[data-act=time][data-h="24"]').click();
+    assert.equal(state.items['F-803'].stage, 2);
+    assert.equal(state.items['F-805'].stage, 2, 'the disk deadline of day 3 is only one day away: not yet missed, but 48 h of waiting');
+    for (const id of ['F-803', 'F-805', 'F-807']) assert.ok(!state.items[id].approved && !state.items[id].done && !state.items[id].running, `${id} is not approved by an escalation`);
+    assert.match(p.doc.body.textContent, /Message to Operations lead \(preview, not sent\)|Message to Account manager \(preview, not sent\)/);
+    const det = p.doc.querySelector('.waitbox details pre').textContent;
+    assert.match(det, /decides nothing on its own/);
+    p.doc.querySelector('[data-tab=audit]').click();
+    assert.match(p.doc.body.textContent, /F-803: escalated to Account manager after 2 d/);
+    assert.match(p.doc.body.textContent, /Message preview only, nothing is sent and nothing is approved/);
+    assert.deepEqual(p.errors, []);
+  } finally { p.close(); }
+});
+
+test('page: a missed deadline is shown as overdue and escalated; the clock survives a trip; a paused orchestrator still escalates', () => {
+  const p = load();
+  try {
+    p.doc.querySelector('[data-act=sweep]').click();
+    p.doc.querySelector('[data-act=pause]').click();
+    for (let i = 0; i < 4; i++) p.doc.querySelector('[data-act=time][data-h="24"]').click();
+    const s = p.w.__io.state;
+    assert.equal(s.hours, 96);
+    assert.equal(s.items['F-805'].stage, 2);
+    assert.match(p.doc.body.textContent, /Overdue by 1 day/);
+    assert.ok(s.items['F-803'].stage === 2, 'a paused orchestrator still writes its escalations');
+    const saved = p.posted.filter((x) => x.type === 'wb:state').at(-1).state;
+    assert.equal(saved.hours, 96);
+    const q = load();
+    try { q.send(saved, []); assert.equal(q.w.__io.state.hours, 96); assert.match(q.doc.querySelector('.clock b').textContent, /2026-10-25 00:00/); } finally { q.close(); }
+  } finally { p.close(); }
+});
+
+test('page: the waiting time of the clock flows into the outcome (a plan approved after two days has waited two days plus the approval)', () => {
+  const p = load();
+  try {
+    p.doc.querySelector('[data-act=sweep]').click();
+    p.doc.querySelector('[data-act=time][data-h="24"]').click();
+    p.doc.querySelector('[data-act=time][data-h="24"]').click();
+    p.doc.querySelector('[data-act=approve][data-id=F-808]').click();
+    p.w.__io.finish();
+    const o = p.w.__io.outcomes().find((x) => x.id === 'F-808');
+    assert.equal(o.waitedMin, 48 * 60 + data.timing.approvalMin);
+    assert.equal(o.durationMin, 48 * 60 + data.timing.approvalMin + 12);
+  } finally { p.close(); }
+});
+
+test('page: after a rollback the waiting starts again, and the customer agreement starts the waiting for approval', () => {
+  const p = load();
+  try {
+    p.doc.querySelector('[data-act=sweep]').click();
+    p.doc.querySelector('#hitl').click();
+    p.doc.querySelector('[data-act=time][data-h="6"]').click();
+    p.w.__io.finish();
+    assert.equal(p.w.__io.state.items['F-802'].rolledBack, true);
+    assert.equal(p.w.__io.state.items['F-802'].since, 6, 'waiting for the new try starts at the rollback');
+    p.doc.querySelector('[data-act=time][data-h="24"]').click();
+    p.w.__io.agree('F-803');
+    assert.equal(p.w.__io.state.items['F-803'].since, 30, 'now it waits for the approval');
+    assert.ok(!p.w.__io.state.items['F-803'].stage || p.w.__io.state.items['F-803'].stage === 1);
   } finally { p.close(); }
 });
