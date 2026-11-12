@@ -1353,6 +1353,18 @@ function makeLogic(D) {
   }
   function pos(e) { var r = cv.getBoundingClientRect(); var z = r.width ? W / r.width : 1; return [(e.clientX - r.left) * z, (e.clientY - r.top) * z]; }
   on(cv, 'pointerdown', function (e) { cv.setPointerCapture(e.pointerId); var p = pos(e); drag = { x: p[0], y: p[1], moved: 0 }; cv.classList.add('drag'); lastInteract = performance.now(); tween = null; });
+  /** Puts a tooltip beside the pointer, never over it: right and below when it fits, otherwise left and/or above, so it does not hide the field that is hovered.
+   *  (x, y) is the pointer, vw and vh the space the tooltip may use. */
+  function placeTip(el, x, y, vw, vh) {
+    const w = el.offsetWidth, h = el.offsetHeight, gap = 16, pad = 8, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const roomR = vw - pad - (x + gap), roomL = x - gap - pad, roomB = vh - pad - (y + gap), roomA = y - gap - pad;
+    let left, top;
+    if (w <= roomR || w <= roomL) { left = w <= roomR ? x + gap : x - gap - w; top = h <= roomB ? y + gap : h <= roomA ? y - gap - h : y - h / 2; }
+    else if (h <= roomB || h <= roomA) { top = h <= roomB ? y + gap : y - gap - h; left = x - w / 2; }
+    else { left = roomR >= roomL ? x + gap : x - gap - w; top = y + gap; }
+    el.style.left = clamp(left, pad, Math.max(pad, vw - w - pad)) + 'px';
+    el.style.top = clamp(top, pad, Math.max(pad, vh - h - pad)) + 'px';
+  }
   on(cv, 'pointermove', function (e) {
     var p = pos(e);
     if (drag) {
@@ -1360,7 +1372,7 @@ function makeLogic(D) {
       cam.yaw += dx * 0.0052; cam.pitch = clamp(cam.pitch - dy * 0.004, -1.25, 0.6); lastInteract = performance.now();
     } else {
       var o = pick(p[0], p[1]); hover = o ? o.id : null; cv.style.cursor = o ? 'pointer' : 'grab';
-      var tip = $('tip'); if (o) { tip.hidden = false; tip.innerHTML = '<b>' + esc(o.n.label) + '</b> · ' + esc(L.TYPES[o.n.type].label); tip.style.left = clamp(p[0] + 14, 4, W - 200) + 'px'; tip.style.top = clamp(p[1] + 14, 4, H - 40) + 'px'; } else tip.hidden = true;
+      var tip = $('tip'); if (o) { tip.hidden = false; tip.innerHTML = '<b>' + esc(o.n.label) + '</b> · ' + esc(L.TYPES[o.n.type].label); placeTip(tip, p[0], p[1], W, H); } else tip.hidden = true;
     }
   });
   on(cv, 'pointerup', function (e) {
