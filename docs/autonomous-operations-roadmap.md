@@ -126,5 +126,8 @@ Phase 0 kann sofort beginnen und ist unabhängig von Zugängen; 1 und 3 können 
 ### Was bewusst fehlt
 Echte Ausführung (nur als Entscheidungsvorlage in Phase 5), Sprache und Telefonie (bleibt Demo, bis Recht und Anbieter geklärt sind), Mails an echte Kunden, Zertifikatsstelle und Schlüsselverwaltung, Anbindung eines Produktions-Ticketsystems, Mandantentrennung mehrerer Kunden in einer Installation, Kostenrechnung.
 
+## Nachtrag Phase 1 (12.11.2026)
+Entschieden: **neutrales Gerüst, minimale Felder.** Gebaut: Lesezugang `shared/monitoring-read.mjs` mit Adapter-Schnittstelle (nur `listAlerts`), Adapter `http-json`, Abbildung auf das Alarm-Format, feste Brücke `mon:*`, Alerts-Space mit *Load live alerts* (Anleitung `docs/monitoring-read.md`). **Abweichung von der Tabelle oben:** kein Connector für den Agenten, sondern ein Zugang nur für den Hauptprozess; der Orchestrator wird in Phase 1 nicht gespeist (minimale Felder liefern Alarme, keine Kennwerte). Offen: der Adapter für ein bestimmtes System und der Eingabedialog für Zugang und Token; beides braucht deine Angabe zu System und Lesetoken. Nicht gegen ein echtes Monitoring getestet.
+
 ## Nicht geprüft
 Aufwände und Abbruchkriterien der Roadmap sind Annahmen, keine Messung. Alle Aussagen über den Bestand sind aus dem Code und den Dokumenten gelesen, nicht in der Electron-App ausprobiert. Der n8n-Workflow wurde nicht gegen einen echten n8n-Server gelaufen. Externe Quellen: nur über die Websuche gelesen, nicht im Original geprüft; Datumsangaben teils aus der Adresse abgeleitet. Rechtliche Aussagen sind kein Rechtsrat.
