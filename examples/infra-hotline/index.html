@@ -263,6 +263,11 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 /* requests */
 .reqs{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
 .req{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.mailbox{border-color:var(--purple-border)}
+.mailbox .mh{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px;margin:8px 0 12px}
+.mailbox .mh b{color:var(--muted);font-weight:600}
+.mailbox pre{white-space:pre-wrap;font:inherit;font-size:13px;background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;margin:0 0 12px;color:var(--ink-2)}
+.req .sent{font-size:12px;color:var(--green)}
 .req.focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
 .req .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .req .id{font-weight:650;font-size:14px}
@@ -840,7 +845,7 @@ function statusOf(req, policy) {
 const DATA = JSON.parse(document.getElementById('hot-data').textContent);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const state = { tab: 'requests', caller: 'mi', call: null, voice: false, policy: clone(DATA.policy), requests: clone(DATA.requests), focus: '' };
+const state = { tab: 'requests', caller: 'mi', call: null, voice: false, policy: clone(DATA.policy), requests: clone(DATA.requests), focus: '', mail: null };
 const hosted = window.parent !== window;
 const ctx = () => ({ templates: DATA.templates, customers: DATA.customers, freezes: DATA.freezes, hotline: DATA.hotline, policy: state.policy, requests: state.requests, today: DATA.asOf, lead: state.policy.leadDays });
 const cust = (id) => DATA.customers.find((c) => c.id === id);
@@ -892,15 +897,52 @@ function requestCard(r, i) {
   if (r.state === 'agreed') ops = `<div class="ops"><button class="primary" data-op="confirm" data-id="${r.id}">Confirm the window</button><button class="ghost" data-op="back" data-id="${r.id}">Send back</button></div>`;
   else if (['declined', 'needs-person', 'sent-back'].includes(r.state)) ops = `<div class="ops"><button class="ghost" data-op="reopen" data-id="${r.id}">Reopen for the hotline</button></div>`;
   if (r.fromOps && hosted && ['standard', 'confirmed', 'declined', 'needs-person', 'sent-back'].includes(st.key)) ops += `<div class="ops"><button class="primary" data-op="report" data-id="${r.id}">Report to service request ${esc(r.id)}</button></div>`;
+  if (r.state === 'confirmed' && r.result && r.result.start) ops += r.mailed ? `<div class="res sent">${ic('check')} Confirmation sent to ${esc(r.mailed.to)} · ${esc(r.mailed.at.slice(0, 16).replace('T', ' '))} UTC</div>`
+    : hosted ? `<div class="ops"><button class="ghost" data-op="mail" data-id="${r.id}">${ic('phone')} Send confirmation to customer</button></div>` : '<div class="note">Sending the confirmation needs the desktop app.</div>';
   const focus = state.focus === r.id ? ' focus' : '';
   return `<article class="req rise${focus}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(r.id)} · ${esc(labelOf(DATA, r.template))}</div><div class="who">${esc(c.name)} · ${esc(c.sla)} · ${esc(r.target)}</div></div><div style="text-align:right"><span class="pill ${PILL[st.key]}">${esc(st.label)}</span><div class="note" style="margin-top:4px">${esc(st.who)}</div></div></div>${meter}<div class="why">${esc(na.text)}</div>${lane(st.key)}${extra}${ops}</article>`;
 }
+function mailPanel() {
+  const m = state.mail; if (!m) return '';
+  const head = `<p class="eyebrow">Confirmation mail for ${esc(m.id)}</p>`;
+  if (m.busy && !m.subject) return `<div class="card mailbox rise">${head}<p class="note">Preparing the mail…</p></div>`;
+  const err = m.error ? `<div class="banner"><span>${esc(m.error)}</span></div>` : '';
+  if (!m.subject) return `<div class="card mailbox rise">${head}${err}<div class="ops"><button class="ghost" data-mail="close">Close</button></div></div>`;
+  return `<div class="card mailbox rise">${head}<div class="mh"><b>To</b><span>${esc(m.to)}</span><b>Subject</b><span>${esc(m.subject)}</span></div><pre>${esc(m.body)}</pre>${err}
+    <div class="ops"><button class="primary" data-mail="send"${m.busy ? ' disabled' : ''}>${m.busy ? 'Waiting for your confirmation…' : 'Send'}</button><button class="ghost" data-mail="close"${m.busy ? ' disabled' : ''}>Close</button></div>
+    <p class="note" style="margin:10px 0 0">The Werkbank asks once more before it sends. The recipient is a test address, not the customer.</p></div>`;
+}
+const pending = new Map(); let seq = 0;
+function ask(type, fields) {
+  const requestId = 'hm' + (++seq);
+  window.parent.postMessage({ type, requestId, fields }, '*');
+  return new Promise((done) => { pending.set(requestId, done); setTimeout(() => { if (pending.delete(requestId)) done({ type: 'ct:error', message: 'No answer from the Werkbank.' }); }, 600000); });
+}
+const mailFields = (r) => { const c = DATA.customers.find((x) => x.id === r.customer); return { id: r.id, customer: c ? c.name : r.customer, task: labelOf(DATA, r.template), target: r.target, start: r.result.start, end: r.result.end }; };
+async function openMail(id) {
+  const r = state.requests.find((x) => x.id === id); if (!r || !r.result || !hosted) return;
+  state.mail = { id, busy: true }; render();
+  const a = await ask('hm:preview-request', mailFields(r));
+  state.mail = a.type === 'hm:preview' ? { id, ...a.mail } : { id, error: a.message || 'The mail could not be prepared.' }; render();
+}
+async function sendMail() {
+  const m = state.mail, r = m && state.requests.find((x) => x.id === m.id); if (!r || m.busy) return;
+  m.busy = true; m.error = ''; render();
+  const a = await ask('hm:send-request', mailFields(r));
+  if (a.type === 'hm:sent' && a.result.sent) { r.mailed = { at: a.result.at, to: a.result.to }; state.mail = null; }
+  else { m.busy = false; m.error = a.type === 'hm:sent' ? 'Not sent: the dialog was cancelled.' : (a.message || 'The mail could not be sent.'); }
+  render();
+}
+window.addEventListener('message', (e) => {
+  const d = e.data; if (e.source !== window.parent || !d || typeof d.requestId !== 'string' || !pending.has(d.requestId)) return;
+  const done = pending.get(d.requestId); pending.delete(d.requestId); done(d);
+});
 function requestsView() {
   const n = (k) => state.requests.filter((r) => statusOf(r, state.policy).key === k).length;
   const tiles = [['amber', 'clock', n('waiting'), 'waiting for the customer'], ['purple', 'phone', n('agreed'), 'agreed, operator to confirm'], ['green', 'check', n('confirmed'), 'window confirmed'], ['grey', 'ticket', n('standard'), 'standard window, no call'], ['red', 'alert', n('declined') + n('needs-person') + n('sent-back'), 'need a person']];
   return `<div class="kpis">${tiles.map(([k, i, v, l]) => `<div class="kpi ${k}"><span class="ico">${ic(i)}</span><div><b>${v}</b><span>${l}</span></div></div>`).join('')}</div>
   <p class="sub">Whether a request needs a call comes from the policy (tab Policy): the window is compared with the threshold for this task and this customer. A person confirms every agreed window before the request goes to approval.</p>
-  <div class="reqs">${state.requests.map(requestCard).join('')}</div>`;
+  ${mailPanel()}<div class="reqs">${state.requests.map(requestCard).join('')}</div>`;
 }
 
 /* ---------- tab: hotline ---------- */
@@ -1001,6 +1043,9 @@ document.addEventListener('click', (e) => {
   if (b.dataset.counter) { step({ type: 'counter', date: $('#cd').value, time: $('#ct').value }); return; }
   if (b.dataset.decline) { step({ type: 'decline' }); return; }
   if (b.dataset.person) { step({ type: 'person' }); return; }
+  if (b.dataset.op === 'mail') { openMail(b.dataset.id); return; }
+  if (b.dataset.mail === 'close') { state.mail = null; render(); return; }
+  if (b.dataset.mail === 'send') { sendMail(); return; }
   if (b.dataset.op === 'report') { report(b.dataset.id); return; }
   if (b.dataset.op) {
     const r = state.requests.find((x) => x.id === b.dataset.id);

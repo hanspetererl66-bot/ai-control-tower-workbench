@@ -111,3 +111,48 @@ test('the Hotline ignores a request for an unknown customer or task', () => {
   hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1', customer: 'zz' } } }]);
   assert.equal(hot.w.document.querySelectorAll('.req').length, n);
 });
+
+test('the Hotline previews the confirmation mail, sends it only through the host and shows that it was sent', async () => {
+  const hot = load('infra-hotline');
+  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1060', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.doc.querySelector('[data-tab=hotline]').click();
+  hot.doc.querySelector('[data-call]').click();
+  for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();
+  hot.doc.querySelector('[data-tab=requests]').click();
+  assert.equal(hot.doc.querySelector('[data-op=mail][data-id=CHG-1060]'), null, 'no mail before the window is confirmed');
+  hot.doc.querySelector('[data-op=confirm][data-id=CHG-1060]').click();
+  const answer = (m) => { const ev = new hot.w.Event('message'); ev.source = hot.w.parent; ev.data = m; hot.w.dispatchEvent(ev); };
+  hot.doc.querySelector('[data-op=mail][data-id=CHG-1060]').click();
+  const pre = hot.posted.find((m) => m.type === 'hm:preview-request');
+  assert.equal(pre.fields.id, 'CHG-1060');
+  assert.equal(pre.fields.customer, 'Muster Industrie AG');
+  assert.ok(!('to' in pre.fields), 'the Space never names a recipient');
+  answer({ type: 'hm:preview', requestId: pre.requestId, mail: { to: 'test@example.com', subject: 'Subject <b>x</b>', body: 'Body text' } });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.match(hot.doc.body.textContent, /Body text/);
+  assert.equal(hot.doc.querySelector('.mailbox b b'), null, 'markup in the mail is shown as text');
+  hot.doc.querySelector('[data-mail=send]').click();
+  const sent = hot.posted.find((m) => m.type === 'hm:send-request');
+  assert.equal(sent.fields.id, 'CHG-1060');
+  answer({ type: 'hm:sent', requestId: sent.requestId, result: { sent: true, at: '2026-11-12T10:00:00.000Z', to: 'test@example.com' } });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.match(hot.doc.body.textContent, /Confirmation sent to test@example\.com/);
+  assert.equal(hot.doc.querySelector('[data-op=mail][data-id=CHG-1060]'), null);
+  assert.deepEqual(hot.errors, []);
+});
+
+test('a cancelled dialog or an error leaves the mail unsent and says so', async () => {
+  const hot = load('infra-hotline');
+  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1061', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.doc.querySelector('[data-tab=hotline]').click();
+  hot.doc.querySelector('[data-call]').click();
+  for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();
+  hot.doc.querySelector('[data-tab=requests]').click();
+  hot.doc.querySelector('[data-op=confirm][data-id=CHG-1061]').click();
+  const answer = (m) => { const ev = new hot.w.Event('message'); ev.source = hot.w.parent; ev.data = m; hot.w.dispatchEvent(ev); };
+  hot.doc.querySelector('[data-op=mail][data-id=CHG-1061]').click();
+  answer({ type: 'ct:error', requestId: hot.posted.find((m) => m.type === 'hm:preview-request').requestId, message: 'No test recipient is set.' });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.match(hot.doc.body.textContent, /No test recipient is set/);
+  assert.equal(hot.doc.querySelector('[data-mail=send]'), null);
+});

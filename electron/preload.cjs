@@ -40,6 +40,8 @@ contextBridge.exposeInMainWorld('host', {
   recruitingProposals: (args) => ipcRenderer.invoke('recruiting-proposals', args),
   observabilityCall: (view, params) => ipcRenderer.invoke('observability-call', view, params),
   recruitingHireList: (args) => ipcRenderer.invoke('recruiting-hire-list', args),
+  hotlineMailPreview: (fields) => ipcRenderer.invoke('hotline-mail-preview', fields),
+  hotlineMailSend: (fields) => ipcRenderer.invoke('hotline-mail-send', fields),
   onboardingList: () => ipcRenderer.invoke('onboarding-list'),
   onboardingHandover: (id, start) => ipcRenderer.invoke('onboarding-handover', id, start),
   onboardingSet: (id, step, status, note) => ipcRenderer.invoke('onboarding-set', id, step, status, note),

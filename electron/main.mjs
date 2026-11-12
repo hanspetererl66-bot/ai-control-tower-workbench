@@ -1,6 +1,6 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
@@ -18,6 +18,7 @@ import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } fro
 import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ensureGooseConfig } from '../shared/goose-config.mjs';
+import { createHotlineMail } from '../shared/hotline-mail.mjs';
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1545,6 +1546,19 @@ ipcMain.handle('recruiting-hire-list', async (_event, args) => {
   try { return { ok: true, data: await workStore.listHireRequests(args) }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; }
 });
 const obWrap = async (fn) => { try { return { ok: true, data: await fn() }; } catch (e) { return { ok: false, error: String(e?.message ?? e).slice(0, 300) }; } };
+/** Confirmation mail of the Customer Hotline: the Space gives plain fields; wording, recipient, login and the dialog are here. */
+const hotlineMail = createHotlineMail({
+  recipientFile: join(ROOT, 'goose-home', 'hotline-mail.json'),
+  env: () => loadSecrets(),
+  confirm: async (mail) => {
+    const { response } = await dialog.showMessageBox(mainWindow ?? undefined, { type: 'question', buttons: ['Cancel', 'Send'], defaultId: 0, cancelId: 0, title: 'Send the confirmation mail?',
+      message: `Send this mail to ${mail.to}?`, detail: `${mail.subject}\n\n${mail.body}` });
+    return response === 1;
+  },
+  log: (entry) => { try { appendFileSync(join(ROOT, 'goose-home', 'hotline-mail.log.jsonl'), `${JSON.stringify(entry)}\n`); } catch { /* the log must not block the mail that was sent */ } },
+});
+ipcMain.handle('hotline-mail-preview', (_event, fields) => obWrap(async () => hotlineMail.preview(fields)));
+ipcMain.handle('hotline-mail-send', (_event, fields) => obWrap(() => hotlineMail.send(fields)));
 ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
 ipcMain.handle('onboarding-handover', (_event, id, start) => obWrap(() => workStore.onboardingHandover(id, start)));
 ipcMain.handle('onboarding-set', (_event, id, step, status, note) => obWrap(() => workStore.onboardingSet(id, step, status, note)));
