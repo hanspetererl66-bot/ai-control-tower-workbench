@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEve
 import { flushSync } from 'react-dom';
 import type { Space } from '../spaces';
 import { relativeTime, spaceHighlight } from '../spaces';
-import { constellation, countAt, freshSlugs } from '../overview-motion';
+import { countAt, freshSlugs } from '../overview-motion';
+import DomainIcon from './DomainIcon';
 
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const stagger = (i: number): CSSProperties => ({ ['--i' as string]: Math.min(i, 14) });
@@ -26,20 +27,6 @@ function transition(run: () => void) {
   const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
   if (reducedMotion() || !doc.startViewTransition) { run(); return; }
   doc.startViewTransition(() => flushSync(run));
-}
-
-/** One dot per Space of a domain; the recently changed ones are brighter. Still until the tile is touched. */
-function Constellation({ spaces, fresh }: { spaces: Space[]; fresh: Set<string> }) {
-  const c = useMemo(() => constellation(spaces.map((s) => s.slug)), [spaces]);
-  return (
-    <svg className="sov-const" viewBox="0 0 240 34" aria-hidden="true" focusable="false">
-      {c.links.map(([a, b]) => <line key={`${a}-${b}`} x1={c.dots[a].x} y1={c.dots[a].y} x2={c.dots[b].x} y2={c.dots[b].y} />)}
-      {c.dots.map((d, i) => (
-        <circle key={spaces[i].slug} className="sov-dot" data-fresh={fresh.has(spaces[i].slug) ? '' : undefined} cx={d.x} cy={d.y} r={fresh.has(spaces[i].slug) ? 3.2 : 2.4}
-          style={{ ['--dl' as string]: `${d.delay}s`, ['--dr' as string]: `${d.drift}s` }} />
-      ))}
-    </svg>
-  );
 }
 
 /** Feeds the pointer position to the CSS spotlight of a tile (no re-render). */
@@ -139,7 +126,7 @@ export default function SpacesOverview({
             const news = top.filter((s) => fresh.has(s.slug)).length;
             return (
               <button key={d.name} className="sov-tile" style={stagger(i)} onPointerMove={track} onClick={(e) => open(e, d.name)}>
-                <Constellation spaces={top} fresh={fresh} />
+                <DomainIcon name={d.name} />
                 <span className="sov-tile-head">
                   <span className="sov-tile-name" style={lastDomain.current === d.name ? { viewTransitionName: 'sov-title' } : undefined}>{d.name}</span>
                   <span className="sov-go" aria-hidden="true">→</span>
