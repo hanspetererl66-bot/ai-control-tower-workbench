@@ -84,9 +84,11 @@ test('the Spaces list and the side body leave room for the Design Study badge at
   const rule = (selector) => new RegExp(`(?:^|\\n)${selector.replace('.', '\\.')} \\{([\\s\\S]*?)\\}`).exec(css)[1];
   const badge = rule('.study-badge');
   const bottom = Number(/bottom: (\d+)px/.exec(badge)[1]);
-  const badgeHeight = 36; // bar, gap and one line of text, with some air
+  const badgeHeight = 46; // padding, bar, gap, one line of text and border, with some air
   // the last length of the padding shorthand is the bottom padding
   const reserved = (body) => Number(/padding:[^;]*?(\d+)px\s*;/.exec(body.replace(/\/\*[\s\S]*?\*\//g, ''))[1]);
+  assert.match(badge, /background: color-mix\(in srgb, var\(--panel\)/, 'the badge has a background from the panel token');
+  assert.doesNotMatch(badge, /#[0-9a-f]{3,6}\b/i, 'tokens only');
   assert.ok(reserved(rule('.list')) >= bottom + badgeHeight, '.list reserves space for the badge');
   assert.ok(reserved(rule('.side-body')) >= bottom + badgeHeight, '.side-body reserves space for the badge');
 });
