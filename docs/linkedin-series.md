@@ -36,7 +36,7 @@ Veröffentlichung: Serien-Trailer, Post 0, Pre-Trailer, dann Post 1 bis 18. Gege
 | 16 | Jira-, Notion-, Slack- und Teams-Integration im Agentic-Engineering-Prozess | 12 | fertig |
 | 17 | Prozessinterview und Erstellung des n8n-Workflows (per Sprache) | 13 | noch zu bauen (Auftrag unten) |
 | **Finale** | | | |
-| 18 | IT Infrastructure Operations: Zertifikat läuft ab, vom SOP im Infra Wiki bis zum Nachweis (acht Spaces, ca. 8 Minuten Story) | 14 | Video neu schneiden: der Ablauf wurde am 08./09.11. umgebaut |
+| 18 | IT Infrastructure Operations: Zertifikat läuft ab, vom SOP im Infra Wiki bis zum Nachweis (neun Spaces, ca. 8 Minuten Story) | 14 | Video neu schneiden: der Ablauf wurde am 08./09.11. umgebaut |
 
 Aus der Serie entfallen: Überblick Chat/Workflow/Agent/Skill und der Ontology Manager (er kam zuletzt nur noch als Teil der Admin console in Post 15 vor; mit dem Zuschnitt dort gibt es keinen Ontology-Teil mehr). Der Joule Design Study Space wurde am 09.11. aus dem Repo entfernt; das berührt die Videos nicht. Kandidaten für eine spätere Staffel: Sub4Me, Ontologies und Solution register als eigener Post, Quellen-Testbett (Jira/Slack).
 
