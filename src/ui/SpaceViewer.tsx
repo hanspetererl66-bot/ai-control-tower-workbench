@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
@@ -19,6 +19,7 @@ import { applySpacePrefs } from '../preferences-style';
 import type { Preferences } from '../preferences';
 import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
+import { applySpaceTerms, pageEntries, parseOpenTermMessage, type SpaceTermsControl } from '../space-terms';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
 import { parseOpenViewMessage, type OpenableView } from '../space-open';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
@@ -50,6 +51,7 @@ export default function SpaceViewer({
   installedSpaces,
   onIncomingDelivered,
   onEditDesign,
+  terms,
 }: {
   space: Space;
   /** Opens the Space in the Designer (only given for Spaces made there). */
@@ -88,6 +90,8 @@ export default function SpaceViewer({
   /** Slugs of the installed Spaces; only the AI Control Tower gets them (its tiles show which subspaces are missing). */
   installedSpaces?: string[];
   onIncomingDelivered?: () => void;
+  /** Terms of the ontology marked in the page (act B); not given: no switch. */
+  terms?: SpaceTermsControl;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const loaded = useRef(false);
@@ -259,6 +263,34 @@ export default function SpaceViewer({
     sendTools({ type: 'sp:clear' });
   }
 
+  // Terms of the ontology: the page script (space-terms.ts) marks them and draws the card; the host sends the glossary and the switch.
+  const termsRef = useRef(terms);
+  termsRef.current = terms;
+  const [termCount, setTermCount] = useState<number | null>(null);
+  const knownTerms = useMemo(() => new Set((terms?.glossary?.entries ?? []).map((e) => e.key)), [terms?.glossary]);
+  const knownTermsRef = useRef(knownTerms);
+  knownTermsRef.current = knownTerms;
+  const postTerms = () => {
+    if (!loaded.current) return;
+    const t = termsRef.current;
+    const ready = Boolean(t?.on && t.state === 'ready' && t.glossary);
+    if (ready && t?.glossary) frame.current?.contentWindow?.postMessage({ type: 'ot:glossary', entries: pageEntries(t.glossary.entries) }, '*');
+    frame.current?.contentWindow?.postMessage({ type: 'ot:enable', on: ready }, '*');
+    if (!ready) setTermCount(null);
+  };
+  useEffect(postTerms, [terms?.on, terms?.state, terms?.glossary]);
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (!frame.current || event.source !== frame.current.contentWindow) return;
+      const data = event.data;
+      if (data && data.type === 'ot:state') setTermCount(data.enabled === true && typeof data.count === 'number' ? data.count : null);
+      const key = parseOpenTermMessage(data, knownTermsRef.current);
+      if (key) termsRef.current?.onOpen(key);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   const [bust, setBust] = useState(space.updatedAt);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -346,6 +378,25 @@ export default function SpaceViewer({
               Zurücksetzen
             </button>
           )}
+          {terms && (
+            <span className="space-terms">
+              <button
+                className={`ghost-btn ${terms.on ? 'ghost-btn-on' : ''}`}
+                aria-pressed={terms.on}
+                onClick={() => terms.onToggle(!terms.on)}
+                title="Mark terms of the ontology in this Space and show their definition (off by default)"
+              >
+                Terms{terms.on && terms.state === 'ready' && termCount !== null ? ` · ${termCount}` : ''}
+              </button>
+              {terms.on && terms.state === 'loading' && <span className="space-count" role="status">Loading vocabulary…</span>}
+              {terms.on && terms.state === 'unavailable' && <span className="space-count" role="status" title={terms.reason}>Vocabulary not available</span>}
+              {terms.on && (
+                <label className="space-terms-domain" title={`Terms stay on for every Space of the domain ${terms.domain}`}>
+                  <input type="checkbox" checked={terms.domainOn} onChange={(event) => terms.onToggleDomain(event.target.checked)} /> all in {terms.domain}
+                </label>
+              )}
+            </span>
+          )}
         </div>
 
         {onTextScale && (
@@ -422,13 +473,14 @@ export default function SpaceViewer({
             postTab();
             postAgents();
             postInstalled();
+            postTerms();
             if (query) sendTools({ type: 'sp:search', query });
             if (filtersActive) sendTools({ type: 'sp:filter', filters: selected });
           }}
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(html ?? '', theme); return prefs ? applySpacePrefs(themed, prefs) : themed; })(), textScale)))}
+          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(html ?? '', theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, prefs) : themed); })(), textScale)))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

@@ -82,6 +82,8 @@ import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
+import { buildGlossary } from './ontology-glossary';
+import { setTermsForDomain, setTermsForSpace, termsOn, type SpaceTermsControl } from './space-terms';
 import AdminView from './ui/AdminView';
 import HiringApprovals from './ui/HiringApprovals';
 import { applyGovernance, emptyGovernance, resolveCatalog, type Governance, type OntologyData } from './ontology-manager';
@@ -391,6 +393,30 @@ export default function App() {
   }, []);
   const spaces = useMemo(() => applySpaceTitles(rawSpaces, prefs), [rawSpaces, prefs]);
   const { active: activeSpaces, archived: archivedSpaces } = useMemo(() => splitArchived(spaces, prefs), [spaces, prefs]);
+  // Terms of the ontology in Spaces (act B): the vocabulary is read once, when a Space with terms switched on is opened.
+  const [ontologyFocus, setOntologyFocus] = useState<{ slug: string; term: string } | null>(null);
+  const termsSpace = view === 'spaces' ? activeSpaces.find((x) => x.slug === selectedSpace) ?? null : null;
+  const termsDomain = termsSpace ? effectiveDomain(termsSpace, spaces, prefs) : '';
+  const termsWanted = Boolean(termsSpace && termsOn(prefs, termsSpace.slug, termsDomain));
+  const termsRequested = useRef(false);
+  useEffect(() => { if (view !== 'ontology') setOntologyFocus(null); }, [view]);
+  useEffect(() => {
+    if (!termsWanted || termsRequested.current || ontologyData.source.kind !== 'loading') return;
+    termsRequested.current = true;
+    void loadOntologies();
+  }, [termsWanted, ontologyData.source.kind, loadOntologies]);
+  const glossary = useMemo(() => (termsWanted && ontologyData.source.kind === 'catalog' ? buildGlossary(ontologyData.ontologies, ontologyData.governance) : null), [termsWanted, ontologyData]);
+  const termsControl: SpaceTermsControl | undefined = termsSpace ? {
+    on: termsWanted,
+    domain: termsDomain,
+    domainOn: prefs.termDomains.includes(termsDomain),
+    state: ontologyData.source.kind === 'catalog' ? 'ready' : ontologyData.source.kind === 'loading' ? 'loading' : 'unavailable',
+    reason: ontologyData.source.kind === 'example' ? ontologyData.source.reason : '',
+    glossary,
+    onToggle: (on) => updatePrefs((c) => setTermsForSpace(c, termsSpace.slug, termsDomain, on)),
+    onToggleDomain: (on) => updatePrefs((c) => setTermsForDomain(c, termsDomain, on)),
+    onOpen: (key) => { const at = key.indexOf('|'); setOntologyFocus({ slug: key.slice(0, at), term: key.slice(at + 1) }); setView('ontology'); },
+  } : undefined;
   const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
@@ -1705,7 +1731,7 @@ export default function App() {
       ) : view === 'admin' ? (
         <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
       ) : view === 'ontology' ? (
-        <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} actor={identity?.email ?? ''} />
+        <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} actor={identity?.email ?? ''} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}
@@ -1808,6 +1834,7 @@ export default function App() {
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onOpenView={(next) => setView(next)}
+            terms={termsControl}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}
             incoming={incoming[space.slug]}

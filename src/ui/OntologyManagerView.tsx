@@ -25,15 +25,17 @@ const FILTERS: Array<{ id: TermFilter; label: string }> = [
  * when that cannot be read it shows the bundled Finance Pre-Close sample and says why. Owners, declared users, views
  * and plans are saved in `governance.json` next to the catalog; the catalog itself is only changed by the connector.
  */
-export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '' }: {
+export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '', focusTerm = null }: {
   data: OntologyData; onReload: () => void; onBack: () => void; onGovernance: (g: Governance) => void; saveNote: string;
   generate?: Generate; onStop?: () => void; ready: boolean; knownSkills: string[];
   /** Who acts (the e-mail label of this window): written next to a decision about a found user. */
   actor?: string;
+  /** Opens the Catalog at this term (asked for from a term in a Space). */
+  focusTerm?: { slug: string; term: string } | null;
 }) {
   const { ontologies, source, proposals, history, governance } = data;
   const [tab, setTab] = useState<Tab>('catalog');
-  const [focus, setFocus] = useState<{ slug: string; term: string } | null>(null);
+  const [focus, setFocus] = useState<{ slug: string; term: string } | null>(focusTerm);
   const toReview = proposals.filter((p) => p.status === 'proposed').length;
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
   const blocked = useMemo(() => ontologies.reduce((n, o) => n + governance.questions.filter((q) => q.slug === o.slug && checkQuestion(o, governance, q).state === 'blocked').length, 0), [ontologies, governance]);
