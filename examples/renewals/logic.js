@@ -214,8 +214,8 @@ function apAct(st, action, who, ctx, arg) {
   }
   if (st.status === 'waiting-customer') {
     if (action === 'signed') return apRun(apLog({ ...st, status: 'running', step: AP_STEP_INDEX.order }, 'Customer', 'negotiate', 'The customer signed the offer.'), { ...ctx, mode: st.mode });
-    if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes: the autopilot builds a new offer and the policy check runs again.'), { ...ctx, mode: 'supervised' });
-    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. A win-back case is opened for the account team.');
+    if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes. The autopilot prepares the offer again from the options and a person checks it at the deal desk.'), { ...ctx, mode: 'supervised' });
+    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. The renewal stays a win-back candidate for the account team (a status only, no case is opened).');
   }
   if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return apLog({ ...st, status: 'stopped', gate: null }, person, AP_STEPS[Math.min(st.step, AP_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
   return st;

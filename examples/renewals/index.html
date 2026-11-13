@@ -1871,8 +1871,8 @@ function apAct(st, action, who, ctx, arg) {
   }
   if (st.status === 'waiting-customer') {
     if (action === 'signed') return apRun(apLog({ ...st, status: 'running', step: AP_STEP_INDEX.order }, 'Customer', 'negotiate', 'The customer signed the offer.'), { ...ctx, mode: st.mode });
-    if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes: the autopilot builds a new offer and the policy check runs again.'), { ...ctx, mode: 'supervised' });
-    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. A win-back case is opened for the account team.');
+    if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes. The autopilot prepares the offer again from the options and a person checks it at the deal desk.'), { ...ctx, mode: 'supervised' });
+    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. The renewal stays a win-back candidate for the account team (a status only, no case is opened).');
   }
   if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return apLog({ ...st, status: 'stopped', gate: null }, person, AP_STEPS[Math.min(st.step, AP_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
   return st;
@@ -2093,7 +2093,7 @@ function paintDetail(el) {
     (mailsOfCase(c).length ? `<h3 style="margin-top:12px">E-mail about this renewal</h3>${mailTimeline(mailsOfCase(c))}` : '') +
     `<h3 style="margin-top:12px">Next best action</h3><div class="act-first">${esc(c.actions[0])}</div>` + (c.actions.length > 1 ? `<div class="sub" style="margin:6px 0 0">After that</div><ol class="act">${c.actions.slice(1).map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` : '') +
     autoBlock(c) + briefBlock(c) +
-    `<div class="flow">${FLOW.map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step. Joule answers in the chat, not here: mark a step yourself once it is done. Approving, sending and signing are simulated, and the stages are kept for this session only.</p>`;
+    `<div class="flow">${FLOW.map((f, i) => (i === 1 && apPrepared(c) ? 'Prepared (autopilot)' : f)).map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step. Joule answers in the chat, not here: mark a step yourself once it is done. Approving, sending and signing are simulated, and the stages are kept for this session only.</p>`;
   el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
     const a = b.dataset.act;
     if (a === 'ask') return send(`Explain the renewal of ${c.product} for ${c.customer} (SAP customer ID ${c.sapCustomerId}): health ${c.health} because ${c.sig.signals.filter((s) => s.level !== 'plus').map((s) => s.text).join('; ') || 'no warning'}. What would you do first? Please answer in English.`);
@@ -2361,10 +2361,13 @@ const apCtx = (id) => { const raw = DATA.cases.find((x) => x.id === id), sig = s
 /** The stage of the renewal (shown on the other pages) follows the autopilot. */
 function apSync(id) {
   const st = state.ap[id]; if (!st) return;
-  state.stage[id] = st.status === 'done' ? 4 : st.sent ? 3 : st.gate === 'send' ? 2 : 1;
+  const own = st.status === 'done' ? 4 : st.sent ? 3 : st.gate === 'send' ? 2 : 1;
+  state.stage[id] = Math.max(st.prevStage || 0, own); /* never below what a person had set before the autopilot started */
 }
+/** True when the autopilot, not a person, brought the renewal to "Prepared". */
+const apPrepared = (c) => { const a = state.ap[c.id]; return !!a && (a.prevStage || 0) < 1; };
 function apStartAll() {
-  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id]) { state.ap[c.id] = apStart(apCtx(c.id)); apSync(c.id); }
+  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id]) { state.ap[c.id] = { ...apStart(apCtx(c.id)), prevStage: state.stage[c.id] || 0 }; apSync(c.id); }
   compute(); renderAll();
 }
 function apDo(id, action, arg) {
@@ -2446,7 +2449,7 @@ function renderAutopilot() {
     ${grp('Stopped or declined', 'A person took over, rejected the offer, or the customer declined.', by('stopped').concat(by('lost')))}`;
   $('#ap-mode').onchange = (e) => { state.apMode = e.target.value === 'supervised' ? 'supervised' : 'autopilot'; renderAll(); };
   $('#ap-run').onclick = apStartAll;
-  $('#ap-reset').onclick = () => { for (const c of started) { delete state.ap[c.id]; delete state.stage[c.id]; } compute(); renderAll(); };
+  $('#ap-reset').onclick = () => { for (const c of started) { const prev = state.ap[c.id].prevStage || 0; delete state.ap[c.id]; if (prev) state.stage[c.id] = prev; else delete state.stage[c.id]; } compute(); renderAll(); };
   $('#ap').querySelectorAll('[data-apa]').forEach((b) => { b.onclick = () => { apDo(b.dataset.id, b.dataset.apa); }; });
   $('#ap').querySelectorAll('select[data-apc]').forEach((el) => { el.onchange = () => apDo(el.dataset.apc, 'change', el.value); });
   $('#ap').querySelectorAll('[data-apdraft]').forEach((b) => { b.onclick = () => {
@@ -2678,7 +2681,7 @@ function saveState() {
 }
 /** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
 const AP_STATES = ['running', 'waiting-person', 'waiting-customer', 'done', 'stopped', 'lost'];
-const apValid = (v) => v && typeof v === 'object' && AP_STATES.includes(v.status) && Number.isInteger(v.step) && v.step >= 0 && v.step <= AP_STEPS.length && (v.mode === 'autopilot' || v.mode === 'supervised') && (v.pick === null || typeof v.pick === 'string') && (v.gate === null || ['approve', 'send'].includes(v.gate)) && Array.isArray(v.reasons) && Array.isArray(v.log) && v.log.length <= 60 && (v.handed === undefined || v.handed === true) && (v.drafted === undefined || v.drafted === true) && (v.booked === undefined || /^SO-\d{3,8}$/.test(v.booked)) && v.log.every((e) => e && typeof e.text === 'string' && e.text.length < 600 && typeof e.actor === 'string' && e.actor.length < 80 && AP_STEPS.some((x) => x.id === e.step) && Number.isInteger(e.n));
+const apValid = (v) => v && typeof v === 'object' && AP_STATES.includes(v.status) && Number.isInteger(v.step) && v.step >= 0 && v.step <= AP_STEPS.length && (v.mode === 'autopilot' || v.mode === 'supervised') && (v.pick === null || typeof v.pick === 'string') && (v.gate === null || ['approve', 'send'].includes(v.gate)) && Array.isArray(v.reasons) && Array.isArray(v.log) && v.log.length <= 60 && (v.handed === undefined || v.handed === true) && (v.prevStage === undefined || (Number.isInteger(v.prevStage) && v.prevStage >= 0 && v.prevStage <= 4)) && (v.drafted === undefined || v.drafted === true) && (v.booked === undefined || /^SO-\d{3,8}$/.test(v.booked)) && v.log.every((e) => e && typeof e.text === 'string' && e.text.length < 600 && typeof e.actor === 'string' && e.actor.length < 80 && AP_STEPS.some((x) => x.id === e.step) && Number.isInteger(e.n));
 function applyState(st) {
   if (!st || typeof st !== 'object') return;
   const ids = new Set(DATA.cases.map((c) => c.id));
@@ -2704,7 +2707,7 @@ function applyState(st) {
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   if (e.data.state) { applyState(e.data.state); renderAll(); }
-  (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { if (h && h.payload && h.payload.type === 'order-confirmed') { apConfirmed(h.payload); renderAll(); return; } const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
+  (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { if (h && h.payload && h.payload.type === 'order-confirmed') { if (h.from === 'order-to-cash-software') apConfirmed(h.payload); renderAll(); return; } const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
 });
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
 compute(); renderAll();
