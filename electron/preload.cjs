@@ -99,6 +99,7 @@ contextBridge.exposeInMainWorld('host', {
   duplicateSkill: (dir) => ipcRenderer.invoke('skill-duplicate', dir),
   exportSkill: (dir) => ipcRenderer.invoke('skill-export', dir),
   designerPickDataFile: () => ipcRenderer.invoke('designer-pick-data-file'),
+  designerDataView: (id, days) => ipcRenderer.invoke('designer-data-view', id, days),
   importSkillOpen: () => ipcRenderer.invoke('skill-import-open'),
   importSkillInstall: (id, overwrite) => ipcRenderer.invoke('skill-import-install', id, overwrite),
   skillDbSync: () => ipcRenderer.invoke('skill-db-sync'),

@@ -4,6 +4,7 @@ import type { Preferences } from '../preferences';
 import { applySpacePrefs } from '../preferences-style';
 import { applySpaceScale, applySpaceTheme, type SpaceScale } from '../space-scale';
 import { diffLayouts, diffText, layoutPrompt, parseLayoutAnswer, type LayoutAnswer } from '../space-designer-ai';
+import { DAY_CHOICES, DB_VIEWS, dbView } from '../../shared/designer-db-views.mjs';
 import { parseDataFile } from '../space-designer-file';
 import { dataPrompt, diffDataset, nowMinute, parseDataAnswer, type DataAnswer } from '../space-designer-data';
 import { canRedo, canUndo, commit, parsePreviewMessage, redo, startHistory, undo, withPreview, type History } from '../space-designer-state';
@@ -175,6 +176,16 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
       else setProposal({ ...answer, sources: `File ${r.name ?? ''}`.trim() });
     } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
   }
+  async function loadView() {
+    if (current.source?.kind !== 'database') return;
+    setFilling(true); setFillNote(''); setProposal(null);
+    try {
+      const r = await window.host?.designerDataView?.(current.source.view, current.source.days);
+      if (!r?.ok || !r.table) { setFillNote(r?.detail || 'The view could not be read.'); return; }
+      if (!r.table.rows.length) { setFillNote('The view has no rows for this period.'); return; }
+      setProposal({ columns: r.table.columns, rows: r.table.rows, sources: r.table.sources, notes: r.table.notes });
+    } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
+  }
   function applyFill() {
     if (!proposal || !current.source) return;
     const fileName = current.source.kind === 'file' ? proposal.sources.replace(/^File /, '').replace(/[\\/]/g, '').slice(0, 120) : '';
@@ -236,6 +247,25 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
             <button type="button" className="ghost-btn" onClick={() => void fill()} disabled={!ready || !generate || filling || !ds.source.prompt.trim()}>{filling ? 'Joule is working…' : ds.source.asOf ? 'Fill again' : 'Fill now'}</button>
           </>
         )}
+        {window.host?.designerDataView && <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={ds.source?.kind === 'database'} onChange={() => { put({ ...ds, source: { kind: 'database', view: DB_VIEWS[0].id, days: 30, asOf: '', note: '' } }); setProposal(null); setFillNote(''); }} /> Database view (Agent Observability)</label>}
+        {ds.source?.kind === 'database' && (
+          <>
+            <label className="sd-field"><span>View</span>
+              <select value={ds.source.view} onChange={(e) => put({ ...ds, source: { ...(ds.source as Extract<NonNullable<Dataset['source']>, { kind: 'database' }>), view: e.target.value } })}>
+                {DB_VIEWS.map((v) => <option key={v.id} value={v.id}>{v.title}</option>)}
+              </select>
+            </label>
+            {dbView(ds.source.view)?.days && (
+              <label className="sd-field"><span>Period</span>
+                <select value={ds.source.days} onChange={(e) => put({ ...ds, source: { ...(ds.source as Extract<NonNullable<Dataset['source']>, { kind: 'database' }>), days: Number(e.target.value) } })}>
+                  {DAY_CHOICES.map((d) => <option key={d} value={d}>Last {d} days</option>)}
+                </select>
+              </label>
+            )}
+            <p className="sd-hint">A fixed, read-only list of views of the shared database; the app reads it, never the page. The values are copied into this data set, and you see the changes before they are applied.</p>
+            <button type="button" className="ghost-btn" onClick={() => void loadView()} disabled={filling}>{filling ? 'Reading…' : ds.source.asOf ? 'Load again' : 'Load view'}</button>
+          </>
+        )}
         {ds.source?.kind === 'file' && (
           <>
             <p className="sd-hint">Choose a JSON file (a list of objects, a list of lists, or {'{"columns": […], "rows": […]}'}) or a CSV/TSV file, up to 2 MB. The values are copied into this data set; the page never reads the file, and only the file name is saved, not the path. You see the changes before they are applied.</p>
@@ -247,7 +277,7 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
             {ds.source.asOf && <p className="sd-hint">{ds.source.kind === 'file' && ds.source.name ? `${ds.source.name}, loaded` : 'Filled'} {ds.source.asOf.replace('T', ' ')} UTC{ds.source.note ? ` · ${ds.source.note}` : ''}. The page says so under the numbers.</p>}
             {proposal && (
               <div className="sd-proposal">
-                <p><b>{ds.source.kind === 'file' ? 'The file brings:' : 'Joule proposes:'}</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
+                <p><b>{ds.source.kind === 'file' ? 'The file brings:' : ds.source.kind === 'database' ? 'The view brings:' : 'Joule proposes:'}</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
                 {proposal.notes.map((n) => <p key={n} className="sd-hint">{n}</p>)}
                 <div className="sd-grid-wrap"><table className="sd-grid"><thead><tr>{proposal.columns.map((c, j) => <th key={j}>{c}</th>)}</tr></thead><tbody>{proposal.rows.slice(0, 8).map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
                 {proposal.rows.length > 8 && <p className="sd-hint">… and {proposal.rows.length - 8} more rows.</p>}

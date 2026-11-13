@@ -9,6 +9,7 @@
  * Everything here is pure: the editor, the dev server and the tests use the same functions. Nothing a person or the
  * agent writes is trusted: `normalizeLayout` clamps lengths and counts, drops unknown blocks and repairs ids.
  */
+import { dayChoice, dbView } from '../shared/designer-db-views.mjs';
 
 export const LAYOUT_VERSION = 1;
 export const MAX_BLOCKS = 60;
@@ -29,7 +30,8 @@ export type ChartKind = (typeof CHART_KINDS)[number];
  * (only its name is kept, never the path), both at the time `asOf`. */
 export type DataSource =
   | { kind: 'joule'; prompt: string; asOf: string; note: string }
-  | { kind: 'file'; name: string; asOf: string; note: string };
+  | { kind: 'file'; name: string; asOf: string; note: string }
+  | { kind: 'database'; view: string; days: number; asOf: string; note: string };
 export type Dataset = { id: string; name: string; columns: string[]; rows: string[][]; source?: DataSource };
 
 export type Kpi = { label: string; value: string; delta: string; tone: Tone; trend: string };
@@ -120,7 +122,9 @@ function normalizeDataset(raw: unknown, taken: Set<string>): Dataset | null {
     ? { kind: 'joule', prompt: clip(src.prompt, 600).trim(), asOf, note: line(src.note, 160) }
     : src.kind === 'file'
       ? { kind: 'file', name: line(src.name, 120).replace(/[\\/]/g, ''), asOf, note: line(src.note, 160) }
-      : undefined;
+      : src.kind === 'database' && dbView(String(src.view))
+        ? { kind: 'database', view: String(src.view), days: dayChoice(src.days), asOf, note: line(src.note, 160) }
+        : undefined;
   return { id, name: line(o.name, 60) || id, columns, rows, ...(source ? { source } : {}) };
 }
 
