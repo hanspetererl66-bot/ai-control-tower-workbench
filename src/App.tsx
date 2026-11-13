@@ -1820,6 +1820,8 @@ export default function App() {
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
             onEditDesign={space.designer ? () => { setDesignSlug(space.slug); setDesignKey((k) => k + 1); setView('designer'); } : undefined}
+            refreshHost={space.designer ? { generate: agent ? developGenerate : undefined, pickFile: window.host?.designerPickDataFile, dataView: window.host?.designerDataView } : undefined}
+            onRefreshed={async () => { await refreshSpaces(); }}
             tabRequest={spaceTab && (spaceTab.space ?? 'ai-control-tower') === space.slug ? spaceTab : null}
             textScale={spaceScale}
             onTextScale={changeSpaceScale}
