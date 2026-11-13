@@ -97,9 +97,18 @@ Du trägst in den Einstellungen der App eine der Testadressen als deine E-Mail e
 2. **Aufbewahrung:** Wie lange bleiben archivierte Fälle und Ereignisse?
 3. **Wer pflegt** die Zuordnung Name zu E-Mail und die Vertriebsleiter bei echten Daten? Heute von Hand im SQL-Editor.
 
+## Stand (13.11.2026)
+
+- Schritt 1 (Migration 050): angewendet, Kontrollabfrage ohne Beanstandung (PR #420).
+- Schritt 2 (Hostteil): PR #424, gemergt.
+- Schritt 3 (Seite): `examples/renewals/index.html`. Beim Start fragt die Seite die Fälle ab (`rn:cases-request`, Aktion `list`); danach speichert sie **nach jedem Zeichnen** jeden geänderten Fall einzeln mit der Revision (`save`), ein verschwundener Fall wird archiviert (`reset`). Pro Fall läuft immer nur eine Anfrage; ein abgelehnter Stand wird nicht in einer Schleife wiederholt. Bei einem Revisionskonflikt lädt die Seite neu (die Datenbank gewinnt). Ohne Datenbank oder ohne App arbeitet sie wie bisher im Speicher; mit Datenbank steht über dem Autopilot ein Hinweis (wer du bist, was du siehst) und bei einem Fehler "Not saved: <Grund>". Fälle, die der Mensch nicht ändern darf, sind sichtbar, aber gesperrt (Schaltflächen aus); "Run autopilot" startet nur eigene Fälle; "Reset" nur eigene.
+- Nach dem Merge braucht die App einen **Neustart**, und das Renewals-Space muss neu installiert werden (`npm run install:examples`).
+
 ## Nicht geprüft
 
-- Nichts ist gebaut. Die Migration wäre gegen kein Postgres getestet.
+- Die Seite ist nur mit einem Ersatz-Host im Headless-Browser (jsdom) getestet; nicht in der Electron-App und nicht gegen echtes Supabase.
+- Die SQL-Tests zu Migration 050 sind nie gegen Postgres gelaufen.
 - Ob das eigene Konto in der Admin-Gruppe steht, ist nicht geprüft.
-- Die Größe eines Falls mit Protokoll gegen die Grenze von 64 KB ist nicht gemessen.
-- Die Form der Aufrufe richtet sich nach Onboarding und Recruiting; ob alle Teile für diesen Fall passen, zeigt sich erst beim Bauen.
+- Ein Fall mit Protokoll ist im Test unter 20 KB (Grenze der Datenbank: 64 KB); mit sehr vielen Aktionen nicht gemessen.
+- Ein Fall, den die Seite im Speicher hat und der beim Neuladen in der Datenbank älter ist, wird von der Datenbank überschrieben, wenn ein Speichern vorher nicht gelang ("Not saved").
+- Der Besitzer eines Win-back-Falls ist in der Datenbank der Besitzer des Vertrags; ein später im Win-back gewählter Besitzer ändert die Zuordnung nicht.
