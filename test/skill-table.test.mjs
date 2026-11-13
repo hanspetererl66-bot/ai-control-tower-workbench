@@ -86,3 +86,36 @@ test('wiring: the Skills tab is a table with a side panel, the old board, steps 
   const block = css.slice(css.indexOf('/* ---------- skills: table with a side panel'), css.indexOf('.sgov-empty {'));
   assert.doesNotMatch(block, /#[0-9a-f]{3,6}\b/i, 'tokens only in the new rules');
 });
+
+import { ACTORS, canDecideAs, deciderOf, stationCounts } from '../src/skill-approval.ts';
+
+test('approval: who decides which step, and the roles of the simulation', () => {
+  assert.equal(deciderOf(1), 'lead');
+  assert.equal(deciderOf(2), 'board');
+  assert.equal(canDecideAs('lead', 1), true);
+  assert.equal(canDecideAs('lead', 2), false, 'the department lead cannot decide the organization level');
+  assert.equal(canDecideAs('board', 2), true);
+  assert.equal(canDecideAs('board', 1), false);
+  assert.equal(canDecideAs('owner', 1), false);
+  assert.equal(canDecideAs('owner', 2), false);
+  assert.equal(canDecideAs('lead', 0), false);
+  assert.deepEqual(ACTORS.map((a) => a.id), ['owner', 'lead', 'board']);
+});
+
+test('approval: counts per station follow the status of the requests', () => {
+  assert.deepEqual(stationCounts([]), { submitted: 0, checked: 0, inReview: 0, published: 0, rejected: 0 });
+  assert.deepEqual(stationCounts([{ status: 'pending' }, { status: 'pending' }, { status: 'approved' }, { status: 'rejected' }]),
+    { submitted: 4, checked: 4, inReview: 2, published: 1, rejected: 1 });
+});
+
+test('wiring: the Approvals tab shows the four stations, plays the roles and can run an example', () => {
+  const ui = readFileSync(new URL('../src/ui/SkillGovernance.tsx', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/theme.css', import.meta.url), 'utf8');
+  assert.match(ui, /aria-label="The approval process"/);
+  assert.match(ui, /role="group" aria-label="Acting as"/);
+  assert.match(ui, /Run an example/);
+  assert.match(ui, /disabled=\{dbBusy \|\| blocked \|\| roleBlocked\}/, 'the buttons follow the role');
+  assert.match(ui, /roleBlocked = db !== 'on' && !canDecideAs\(actor, r\.to\)/, 'with the shared database the database decides, not the simulated role');
+  assert.match(ui, /disabled=\{db === 'on'\} title=\{a\.can\}/);
+  assert.match(css, /\.sgov-flowbar \{ list-style: none; display: grid; grid-template-columns: repeat\(4/);
+});

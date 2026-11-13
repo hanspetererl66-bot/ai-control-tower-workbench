@@ -30,3 +30,21 @@ export function approvalSteps(to: LevelIndex, request?: Pick<PromotionRequest, '
   if (!request && checksState) { states[0] = 'done'; states[1] = checksState; }
   return base.map((b, i) => ({ ...b, state: states[i] }));
 }
+
+/** The three roles you can play in the local simulation of the approval process (with the shared database the database decides). */
+export type Actor = 'owner' | 'lead' | 'board';
+export const ACTORS: Array<{ id: Actor; label: string; can: string }> = [
+  { id: 'owner', label: 'Skill owner', can: 'asks for a level up, cannot decide' },
+  { id: 'lead', label: 'Department lead', can: 'decides Individual → Department' },
+  { id: 'board', label: 'Governance board', can: 'decides Department → Organization' },
+];
+
+/** Who decides when a skill moves up to this level. */
+export function deciderOf(to: LevelIndex): Actor { return to >= 2 ? 'board' : 'lead'; }
+export function canDecideAs(actor: Actor, to: LevelIndex): boolean { return to >= 1 && actor === deciderOf(to); }
+
+/** How many requests stand at each station of the process; rejected ones stopped at the review. */
+export function stationCounts(requests: Array<Pick<PromotionRequest, 'status'>>): { submitted: number; checked: number; inReview: number; published: number; rejected: number } {
+  const n = (s: PromotionRequest['status']) => requests.filter((r) => r.status === s).length;
+  return { submitted: requests.length, checked: requests.length, inReview: n('pending'), published: n('approved'), rejected: n('rejected') };
+}

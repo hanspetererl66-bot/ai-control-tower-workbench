@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import SkillIcon from './SkillIcon';
 import { readSkill, type Skill } from '../skills';
 import { reviewOutcome, reviewSkill, type CheckResult } from '../skill-review';
-import { APPROVER, approvalSteps, type ApprovalStep } from '../skill-approval';
+import { ACTORS, APPROVER, approvalSteps, canDecideAs, deciderOf, stationCounts, type Actor, type ApprovalStep } from '../skill-approval';
 import { reconcile, applyDbLevels, dbTarget, type DbRequest } from '../skill-db';
 import { buildRows, filterRows, moveSelection, nextSort, NO_FILTER, sortRows, type SortDir, type SortKey, type TableFilter } from '../skill-table';
 import { CHECKS, decide, demote, levelOf, loadGov, pendingFor, renameLevel, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
@@ -59,6 +59,8 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
   const [filter, setFilter] = useState<TableFilter>(NO_FILTER);
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: 'name', dir: 'asc' });
   const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const [actor, setActor] = useState<Actor>('owner');
+  const [exMsg, setExMsg] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<string[]>([]);
@@ -120,6 +122,20 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
     e.preventDefault();
     setPicked(next);
     requestAnimationFrame(() => bodyRef.current?.querySelector<HTMLElement>(`[data-skill="${CSS.escape(next)}"]`)?.focus());
+  };
+
+  /** Local simulation only: ask for the next level for the first skill that can move up, with the real automatic review, so the process can be played through. */
+  const runExample = async () => {
+    const s = skills.find((x) => levelOf(gov, x.name) < 2 && !pendingFor(gov, x.name));
+    if (!s) { setExMsg('Every skill is at the top level or already in review.'); return; }
+    setExMsg('');
+    const to = (levelOf(gov, s.name) + 1) as LevelIndex;
+    const body = await readSkill(s.dir);
+    if (!body) { setExMsg(`The SKILL.md of ${s.name} could not be read, so nothing could be checked.`); return; }
+    const results = reviewSkill(body, to === 2 ? 'organization' : 'department');
+    if (reviewOutcome(results) === 'blocked') { setExMsg(`${s.name} is blocked by the automatic review. Try again after the next skill or fix it first.`); return; }
+    change((g) => requestPromotion(g, s.name, `Example request to try the process (simulation, ${new Date().toLocaleTimeString()}).`, Date.now(), results.map(({ id, status, detail }) => ({ id, status, detail }))));
+    setActor('owner');
   };
 
   const startEdit = () => { setDraft([...gov.levels]); setEditing(true); };
@@ -280,6 +296,36 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
 
       {tab === 'approvals' && (
         <div className="sgov-queue">
+          {(() => {
+            const c = stationCounts(gov.requests);
+            const stations: Array<[string, string, number, string?]> = [
+              ['Request submitted', 'Skill owner', c.submitted],
+              ['Automatic checks', 'Platform', c.checked],
+              ['Review and decision', 'Department lead or board', c.inReview, c.rejected ? `${c.rejected} rejected` : undefined],
+              ['Published and visible', 'Platform', c.published],
+            ];
+            return (
+              <ol className="sgov-flowbar" aria-label="The approval process">
+                {stations.map(([title, who, n, extra], i) => (
+                  <li key={title} className={`sgov-station ${i === 2 && c.inReview > 0 ? 'hot' : ''}`}>
+                    <span className="sgov-station-n">{n}</span>
+                    <b>{title}</b>
+                    <small>{who}{extra ? ` · ${extra}` : ''}</small>
+                  </li>
+                ))}
+              </ol>
+            );
+          })()}
+          <div className="sgov-actor" role="group" aria-label="Acting as">
+            <span className="sgov-help">Acting as</span>
+            {ACTORS.map((a) => (
+              <button key={a.id} type="button" className={`sgov-view ${actor === a.id ? 'on' : ''}`} aria-pressed={actor === a.id} disabled={db === 'on'} title={a.can} onClick={() => setActor(a.id)}>{a.label}</button>
+            ))}
+            {db !== 'on' && (
+              <button type="button" className="dialog-btn" onClick={() => void runExample()} title="Asks for the next level for a skill (with its real automatic review), so you can play the process through">Run an example</button>
+            )}
+          </div>
+          {exMsg && <p className="sgov-help" role="alert">{exMsg}</p>}
           <p className="sgov-help">
             {db === 'on' ? 'Stored in the shared database. The database decides who may approve: not the requester, only a department admin or a Governance board admin.' : db === 'off' ? `Local simulation: not connected to the shared database${dbMsg ? ` (${dbMsg})` : ''}.` : 'Checking the shared database…'}
             {db === 'on' && <> <button className="dialog-btn" onClick={() => void syncDb()}>Refresh</button></>}
@@ -321,6 +367,11 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                 <span className={`sgov-badge ${r.status === 'approved' ? 'sgov-badge-ok' : r.status === 'rejected' ? 'sgov-badge-no' : 'sgov-badge-wait'}`}>{r.status === 'pending' ? 'Pending' : r.status === 'approved' ? 'Approved' : 'Rejected'}</span>
               </div>
               <Steps steps={approvalSteps(r.to, r)} />
+              {r.status === 'pending' && (
+                <p className="sgov-waiting">Waiting for the {APPROVER[r.to as 1 | 2].role.split(' (')[0]}, {APPROVER[r.to as 1 | 2].sla}.
+                  {db !== 'on' && !canDecideAs(actor, r.to) && <> <button type="button" className="sgov-chip" onClick={() => setActor(deciderOf(r.to))}>Act as {ACTORS.find((a) => a.id === deciderOf(r.to))?.label}</button></>}
+                </p>
+              )}
               {r.checks && <Checks results={r.checks} />}
               {r.note && <p className="row-detail">{r.note}</p>}
               <p className="row-detail">Requested {new Date(r.createdAt).toLocaleString()}{r.decidedAt ? ` · decided ${new Date(r.decidedAt).toLocaleString()}` : ''}{r.reason ? ` · “${r.reason}”` : ''}</p>
@@ -330,9 +381,10 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                   {(['Approve', 'Reject'] as const).map((label) => {
                     const approve = label === 'Approve';
                     const blocked = !!r.dbId && canDecide[r.dbId] === false;
+                    const roleBlocked = db !== 'on' && !canDecideAs(actor, r.to);
                     return (
-                      <button key={label} className={`dialog-btn ${approve ? '' : 'dialog-btn-danger'}`} disabled={dbBusy || blocked}
-                        title={blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the organization level).' : undefined}
+                      <button key={label} className={`dialog-btn ${approve ? '' : 'dialog-btn-danger'}`} disabled={dbBusy || blocked || roleBlocked}
+                        title={roleBlocked ? `In this simulation only the ${APPROVER[r.to as 1 | 2].role.split(' (')[0]} decides this step. Switch “Acting as” above.` : blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the organization level).' : undefined}
                         onClick={async () => {
                           if (r.dbId && host?.skillDbPromotion) {
                             setDbBusy(true); setDbMsg('');
