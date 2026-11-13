@@ -197,3 +197,64 @@ test('page: the "What is this page?" box is gone and nothing points at it any mo
   assert.doesNotMatch(page, /see "What is this page\?"/, 'no text points at the box');
   assert.match(page, /class="demo">Mockup with fictional data/, 'the note that the page is a mockup stays');
 });
+
+test('timeline events: one per contract, invoice, ticket, order, message and deal, dated, oldest first, and every click lands on a node of the graph', () => {
+  const ev = L.events();
+  const n = (list) => list.length;
+  assert.equal(ev.length, n(data.contracts) + n(data.invoices) + n(data.tickets) + n(data.orders) + n(data.signals) + n(data.opportunities));
+  assert.deepEqual(ev.map((e) => e.date), ev.map((e) => e.date).sort(), 'oldest first');
+  for (const e of ev) {
+    assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(e.date), e.id);
+    assert.ok(['ok', 'info', 'warn', 'bad'].includes(e.tone), e.id);
+    assert.ok(e.node && L.node(e.node), `${e.id} has a node (${e.node})`);
+    assert.ok(L.ent(e.entity), e.id);
+    if (e.kind === 'contract') assert.ok(e.end > e.date, e.id);
+  }
+  const inv = (id) => ev.find((e) => e.id === id);
+  const overdue = data.invoices.find((i) => i.status === 'Overdue');
+  assert.equal(inv(overdue.id).tone, 'bad');
+  assert.equal(inv(overdue.id).node, `invoice:${overdue.id}`);
+  const paid = data.invoices.find((i) => i.status === 'Paid');
+  assert.equal(inv(paid.id).node, `pay:${paid.entity}`, 'a paid invoice leads to the payment history of its company');
+});
+
+test('timeline: periods, kinds and one lane per company', () => {
+  const t = L.timeline({ range: '12m' });
+  assert.equal(t.lanes.length, data.entities.length);
+  assert.equal(t.from, L.timeline({ range: '12m' }).from);
+  assert.equal(L.daysBetween(t.from, t.asOf), 365);
+  assert.equal(L.daysBetween(t.asOf, t.to), 180);
+  assert.equal(L.daysBetween(L.timeline({ range: '90d' }).from, t.asOf), 90);
+  assert.equal(L.timeline({ range: 'nonsense' }).range, '12m');
+  const all = L.timeline({ range: 'all' });
+  assert.equal(all.total, L.events().length, 'all shows every event');
+  const only = L.timeline({ range: 'all', kinds: ['ticket'] });
+  assert.equal(only.total, data.tickets.length);
+  assert.ok(only.lanes.every((l) => l.events.every((e) => e.kind === 'ticket')));
+  assert.equal(L.timeline({ range: 'all', kinds: [] }).total, 0);
+  assert.equal(L.timeline({ range: 'all', kinds: ['nope'] }).total, 0, 'unknown kinds are ignored');
+  assert.deepEqual(Object.keys(all.counts).sort(), L.TL_KINDS.map((k) => k.id).sort());
+  const window = L.timeline({ range: '90d' });
+  for (const l of window.lanes) for (const e of l.events) assert.ok((e.end || e.date) >= window.from && e.date <= window.to);
+});
+
+test('timeline marks: events of one kind close together become one mark with a count and the worst colour; contracts never merge', () => {
+  const mk = (id, kind, date, tone, end) => ({ id, kind, date, tone, end, entity: 'x', node: 'n' });
+  const list = [mk('a', 'invoice', '2026-01-01', 'ok'), mk('b', 'invoice', '2026-01-05', 'bad'), mk('c', 'invoice', '2026-03-01', 'ok'), mk('t', 'ticket', '2026-01-02', 'warn'), mk('k1', 'contract', '2026-01-01', 'ok', '2027-01-01'), mk('k2', 'contract', '2026-01-02', 'ok', '2027-01-01')];
+  const b = L.bucketEvents(list, 10);
+  const inv = b.filter((m) => m.kind === 'invoice');
+  assert.equal(inv.length, 2);
+  assert.deepEqual([inv[0].count, inv[0].tone, inv[0].last], [2, 'bad', '2026-01-05']);
+  assert.equal(inv[1].count, 1);
+  assert.equal(b.filter((m) => m.kind === 'ticket').length, 1, 'a ticket is not merged with an invoice');
+  assert.equal(b.filter((m) => m.kind === 'contract').length, 2);
+  assert.equal(L.bucketEvents(list, 0).filter((m) => m.kind === 'invoice').length, 3, 'nothing merges when the gap is 0');
+});
+
+test('page: the timeline card has filters per kind and period, a list for narrow screens, keyboard use and no external code', () => {
+  assert.match(page, /id="tlHost"/);
+  assert.match(page, /data-tlkind="' \+ k\.id/);
+  assert.match(page, /data-tlrange="' \+ r\[0\]/);
+  assert.match(page, /role="button" aria-label="'/, 'every mark is a button with a label');
+  assert.match(page, /\.c3-tl svg,\.c3-tlbar \.rng\{display:none\}\.c3-tllist\{display:block\}/, 'under 860 px the list replaces the axis');
+});

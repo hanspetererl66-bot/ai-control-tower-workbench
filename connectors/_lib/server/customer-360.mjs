@@ -612,6 +612,80 @@ export function makeLogic(D) {
     rows.forEach(function (r) { r.pct = max > 0 ? Math.round((r.value / max) * 100) : 0; });
     return { metric: m.id, label: m.label, unit: m.unit, rows: rows, max: max, total: sum(rows, function (r) { return r.value; }), totalText: m.id === 'heat' ? '' : m.id === 'tickets' ? String(sum(rows, function (r) { return r.value; })) : eurShort(sum(rows, function (r) { return r.value; })) };
   }
+  /** The things that happen to the companies, each with a date (the "Timeline" card). */
+  var TL_KINDS = [
+    { id: 'contract', label: 'Contracts', glyph: '▬' },
+    { id: 'invoice', label: 'Invoices', glyph: '●' },
+    { id: 'ticket', label: 'Tickets', glyph: '▲' },
+    { id: 'order', label: 'Orders', glyph: '■' },
+    { id: 'message', label: 'Messages', glyph: '◆' },
+    { id: 'deal', label: 'Deals', glyph: '★' },
+  ];
+  var TONE_RANK = { ok: 0, info: 1, warn: 2, bad: 3 };
+  /** One event per contract (a span from start to end), invoice (at its due date), ticket, order, message and deal (at its close date), oldest first. `node` is the graph node a click selects. */
+  function events() {
+    var out = [], gaps = o2c();
+    D.contracts.forEach(function (c) {
+      var r = renewalOf(c), p = product(c.product);
+      out.push({ id: c.id, kind: 'contract', entity: c.entity, date: c.start, end: c.end, tone: r.status === 'lapsed' ? 'bad' : r.status === 'near' ? 'warn' : 'ok', node: resolve(c.id),
+        title: c.id + ' · ' + (p ? p.name : c.product) + ' · ' + eur(c.annualEur) + ' EUR a year · ' + c.start + ' to ' + c.end + ' · ' + c.status });
+    });
+    D.invoices.forEach(function (i) {
+      var late = i.status === 'Paid' && i.daysLate > 0;
+      out.push({ id: i.id, kind: 'invoice', entity: i.entity, date: i.dueOn, tone: i.status === 'Overdue' ? 'bad' : i.status === 'Open' ? 'info' : late ? 'warn' : 'ok', node: i.status === 'Paid' ? 'pay:' + i.entity : resolve(i.id),
+        title: i.id + ' · due ' + i.dueOn + ' · ' + eur(i.grossEur) + ' EUR gross · ' + (i.status === 'Paid' ? 'paid ' + i.paidOn + (late ? ', ' + i.daysLate + ' days late' : '') : i.status.toLowerCase()) });
+    });
+    D.tickets.forEach(function (t) {
+      out.push({ id: t.id, kind: 'ticket', entity: t.entity, date: t.openedOn, tone: t.status === 'Resolved' ? 'ok' : t.severity === 'P1' || t.severity === 'P2' ? 'bad' : 'warn', node: resolve(t.id),
+        title: t.id + ' ' + t.severity + ' · opened ' + t.openedOn + ' · ' + t.status.toLowerCase() + ' · ' + t.title });
+    });
+    D.orders.forEach(function (o) {
+      var gap = gaps.filter(function (g) { return g.order === o.id; })[0];
+      out.push({ id: o.id, kind: 'order', entity: o.entity, date: o.orderedOn, tone: gap ? 'warn' : 'info', node: resolve(o.id), title: o.id + ' · ordered ' + o.orderedOn + ' · ' + eur(o.netEur) + ' EUR net · ' + o.title + (gap ? ' · ' + gap.text : '') });
+    });
+    D.signals.forEach(function (s) {
+      out.push({ id: s.id, kind: 'message', entity: s.entity, date: s.date, tone: 'info', node: resolve(s.id), title: s.id + ' · ' + s.kind + ' · ' + s.date + ' · ' + String(s.text).replace(/\s+/g, ' ').slice(0, 90) });
+    });
+    D.opportunities.forEach(function (o) {
+      out.push({ id: o.id, kind: 'deal', entity: o.entity, date: o.closeDate, tone: 'info', node: resolve(o.id), title: o.id + ' · expected ' + o.closeDate + ' · ' + eur(o.acvEur) + ' EUR · ' + o.title + ' · ' + o.stage + ' ' + o.probability + ' %' });
+    });
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1; });
+    return out;
+  }
+  /** The timeline for a period ('90d', '12m' = the last year and the next half year, 'all') and a set of kinds: one lane per company. */
+  function timeline(opts) {
+    opts = opts || {};
+    var ids = TL_KINDS.map(function (k) { return k.id; });
+    var kinds = Array.isArray(opts.kinds) ? opts.kinds.filter(function (k) { return ids.indexOf(k) >= 0; }) : ids;
+    var range = opts.range === '90d' || opts.range === 'all' ? opts.range : '12m';
+    var all = events(), from, to;
+    if (range === 'all') {
+      from = all.reduce(function (m, e) { return e.date < m ? e.date : m; }, ASOF); to = all.reduce(function (m, e) { var d = e.end || e.date; return d > m ? d : m; }, ASOF);
+    } else { from = addDays(ASOF, range === '90d' ? -90 : -365); to = addDays(ASOF, range === '90d' ? 90 : 180); }
+    var inWindow = all.filter(function (e) { return (e.end || e.date) >= from && e.date <= to; });
+    var counts = {}; ids.forEach(function (k) { counts[k] = inWindow.filter(function (e) { return e.kind === k; }).length; });
+    var shown = inWindow.filter(function (e) { return kinds.indexOf(e.kind) >= 0; });
+    return {
+      asOf: ASOF, range: range, from: from, to: to, days: Math.max(1, daysBetween(from, to)), kinds: TL_KINDS, active: kinds, counts: counts, total: shown.length,
+      lanes: D.entities.map(function (e) { return { entity: e.id, short: e.short, name: e.name, node: resolve(e.id), events: shown.filter(function (x) { return x.entity === e.id; }) }; }),
+    };
+  }
+  /** Events of one kind that lie within `gapDays` of each other become one mark with a count, so a crowded stretch stays readable. A contract is never merged. The mark has the worst tone of its events. */
+  function bucketEvents(list, gapDays) {
+    var out = [], open = {};
+    list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).forEach(function (e) {
+      var b = open[e.kind];
+      if (e.kind !== 'contract' && b && daysBetween(b.last, e.date) <= gapDays) {
+        b.events.push(e); b.count += 1; b.last = e.date; if (TONE_RANK[e.tone] > TONE_RANK[b.tone]) b.tone = e.tone;
+      } else {
+        b = { kind: e.kind, date: e.date, last: e.date, end: e.end || null, tone: e.tone, events: [e], count: 1 };
+        if (e.kind !== 'contract') open[e.kind] = b;
+        out.push(b);
+      }
+    });
+    return out;
+  }
+
   /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
   function clampBox(left, top, w, h, W, H, pad) {
     function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
@@ -619,7 +693,7 @@ export function makeLogic(D) {
   }
 
   return {
-    metrics: METRICS, figures: figures, clampBox: clampBox,
+    metrics: METRICS, figures: figures, clampBox: clampBox, events: events, timeline: timeline, bucketEvents: bucketEvents, TL_KINDS: TL_KINDS,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,

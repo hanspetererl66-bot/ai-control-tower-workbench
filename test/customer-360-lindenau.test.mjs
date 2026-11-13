@@ -123,3 +123,10 @@ test('Lindenau: figures per company add up like the summaries (the same card as 
   assert.equal(L.figures('overdue').total, g.summaries.reduce((a, s) => a + s.payment.overdueGross, 0));
   assert.equal(L.figures('tickets').total, g.summaries.reduce((a, s) => a + s.openTickets, 0));
 });
+
+test('Lindenau: the timeline has an event for every dated record and each one leads to a node', () => {
+  const ev = L.events();
+  assert.equal(ev.length, data.contracts.length + data.invoices.length + data.tickets.length + data.orders.length + data.signals.length + data.opportunities.length);
+  for (const e of ev) assert.ok(e.node && L.node(e.node), `${e.id} -> ${e.node}`);
+  assert.equal(L.timeline({ range: 'all' }).total, ev.length);
+});
