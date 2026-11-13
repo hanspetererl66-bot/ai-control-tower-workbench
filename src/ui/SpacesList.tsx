@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { PRODUCT_TITLE } from '../product';
+import { sortByTitle } from '../space-order';
 import { relativeTime, type Space } from '../spaces';
 import { SPACES_DOCKS, type SpacesDock, type SpacesView } from '../preferences';
 import { DOCK_LABEL, isBarDock } from '../spaces-dock';
@@ -14,6 +15,8 @@ type Props = {
   onReorder?: (from: string, to: string, after: boolean) => void;
   /** Alt+Arrow keys: move one step up or down. */
   onNudge?: (slug: string, direction: -1 | 1) => void;
+  /** Put all Spaces in alphabetical order (the slugs in the new order); dragging afterwards still works. */
+  onSortAll?: (slugs: string[]) => void;
   /** Pinned Spaces (kept at the top) and the toggle. */
   pinned?: string[];
   onTogglePin?: (slug: string) => void;
@@ -62,7 +65,7 @@ function loadCollapsed(): string[] {
 /** `into`: the middle of a top-level card, dropping there makes the dragged Space a subspace of it. */
 type DropMark = { slug: string; after: boolean; into: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace, view = 'cards', onViewChange, dock = 'left', onDockChange }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, onSortAll, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace, view = 'cards', onViewChange, dock = 'left', onDockChange }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
   const bar = isBarDock(dock);
   /* The bar form: the tab the person clicked, and the open popover ('sub:<slug>', 'manage' or 'archived'). */
@@ -642,6 +645,12 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             <button type="button" className={`icon-btn ${tree ? 'icon-btn-on' : ''}`} aria-pressed={tree} title="Tree: one line per Space, like a folder tree" aria-label="Show Spaces as a tree" onClick={() => onViewChange('tree')}><TreeIcon /></button>
           </span>
         )}
+        {onSortAll && (
+          <span className="view-switch" role="group" aria-label="Sort the Spaces by name">
+            <button type="button" className="icon-btn" title="Sort all Spaces A to Z (you can still drag them afterwards)" aria-label="Sort Spaces A to Z" onClick={() => onSortAll(sortByTitle(spaces, 'asc'))}><SortIcon dir="asc" /></button>
+            <button type="button" className="icon-btn" title="Sort all Spaces Z to A (you can still drag them afterwards)" aria-label="Sort Spaces Z to A" onClick={() => onSortAll(sortByTitle(spaces, 'desc'))}><SortIcon dir="desc" /></button>
+          </span>
+        )}
         {renderDockMenu()}
         {onImportSpace && (
           <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
@@ -780,6 +789,18 @@ function SearchIcon() {
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.4" />
       <path d="m10.5 10.5 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Two letters and an arrow: the first letter on top for A to Z, the other way round for Z to A. */
+function SortIcon({ dir }: { dir: 'asc' | 'desc' }) {
+  const [top, bottom] = dir === 'asc' ? ['A', 'Z'] : ['Z', 'A'];
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <text x="1" y="7" fontSize="7" fontWeight="700" fill="currentColor" fontFamily="inherit">{top}</text>
+      <text x="1" y="14.5" fontSize="7" fontWeight="700" fill="currentColor" fontFamily="inherit">{bottom}</text>
+      <path d="M12 2.5v11M12 13.5l-2.4-2.6M12 13.5l2.4-2.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" transform={dir === 'desc' ? 'rotate(180 12 8)' : undefined} />
     </svg>
   );
 }

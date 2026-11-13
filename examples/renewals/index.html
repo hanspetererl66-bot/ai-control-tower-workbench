@@ -229,7 +229,7 @@ body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);
 main{max-width:1240px;margin:0 auto;padding:20px 24px 48px}
 .demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
 h2{font-size:15px;font-weight:650;margin:0 0 4px}h3{font-size:13px;margin:0 0 4px}
-.sub{color:var(--muted);font-size:12px;margin:0 0 12px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 12px}.sub.bad{color:var(--bad)}
 .card{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -2434,12 +2434,12 @@ function apSync(id) {
 /** True when the autopilot, not a person, brought the renewal to "Prepared". */
 const apPrepared = (c) => { const a = state.ap[c.id]; return !!a && (a.prevStage || 0) < 1; };
 function apStartAll() {
-  /* A lapsed contract is not a renewal any more: it goes straight to a win-back case. */
-  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id] && !state.wb[c.id]) { if (c.status === 'Lapsed') state.wb[c.id] = wbStart(apCtx(c.id), 'unknown'); else { state.ap[c.id] = { ...apStart(apCtx(c.id)), prevStage: state.stage[c.id] || 0 }; apSync(c.id); } }
+  /* A lapsed contract is not a renewal any more: it goes straight to a win-back case. With a database only the cases of this person start. */
+  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id] && !state.wb[c.id] && can(c.id, c.status === 'Lapsed' ? 'winback' : 'renewal')) { if (c.status === 'Lapsed') state.wb[c.id] = wbStart(apCtx(c.id), 'unknown'); else { state.ap[c.id] = { ...apStart(apCtx(c.id)), prevStage: state.stage[c.id] || 0 }; apSync(c.id); } }
   compute(); renderAll();
 }
 function apDo(id, action, arg) {
-  const st = state.ap[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c) return;
+  const st = state.ap[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c || !can(id, 'renewal')) return;
   const who = ['signed', 'changes', 'declined'].includes(action) ? 'Customer' : c.owner;
   state.ap[id] = apAct(st, action, who, apCtx(id), arg);
   if (state.ap[id].status === 'lost' && st.status !== 'lost' && !state.wb[id]) state.wb[id] = wbStart(apCtx(id), state.ap[id].reason);
@@ -2463,15 +2463,15 @@ function apHandOver(id, open) {
 function apConfirmed(p) {
   if (!p || p.type !== 'order-confirmed' || typeof p.contractId !== 'string' || !/^SO-\d{3,8}$/.test(String(p.orderNo))) return;
   const c = DATA.cases.find((x) => x.contractId === p.contractId), w = c && state.wb[c.id];
-  if (w && w.handed && !w.booked) { state.wb[c.id] = wbLog({ ...w, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`); return; }
+  if (w && w.handed && !w.booked && can(c.id, 'winback')) { state.wb[c.id] = wbLog({ ...w, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`); return; }
   const st = c && state.ap[c.id];
-  if (!st || st.booked) return;
+  if (!st || st.booked || !can(c.id, 'renewal')) return;
   state.ap[c.id] = apLog({ ...st, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`);
 }
 /* ---------- Win-back cases ---------- */
 const WB_STATUS = { running: ['Running', 'planned'], 'waiting-person': ['Waiting for you', 'yellow'], 'waiting-customer': ['Waiting for the customer', 'planned'], done: ['Won back', 'green'], stopped: ['Stopped', 'red'], closed: ['Closed, not won back', 'red'] };
 function wbDo(id, action, arg) {
-  const st = state.wb[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c) return;
+  const st = state.wb[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c || !can(id, 'winback')) return;
   const who = ['won', 'lost'].includes(action) ? 'Customer' : st.owner;
   state.wb[id] = wbAct(st, action, who, apCtx(id), arg);
   if (state.wb[id].status === 'done' && !state.wb[id].handed) wbHandOver(id);
@@ -2546,6 +2546,7 @@ function renderAutopilot() {
   const by = (k) => started.filter((c) => state.ap[c.id].status === k);
   $('#ap').innerHTML = `<div class="card"><h2>Renewal autopilot</h2>
     <p class="sub">The autopilot watches, briefs, builds the offer, checks the policy, asks for approval, sends, waits for the customer and hands the signed renewal over to the order. It works alone while everything is within policy and stops at a gate when a person has to decide. Every step is written to a log. <b>Sending, signing and the order are simulated here.</b></p>
+    <p class="sub" id="ap-store"></p>
     <div class="aptop"><label class="sub">Mode <select id="ap-mode"><option value="autopilot"${state.apMode === 'autopilot' ? ' selected' : ''}>Autopilot: a person only at exceptions</option><option value="supervised"${state.apMode === 'supervised' ? ' selected' : ''}>Supervised: a person approves and sends every offer</option></select></label>
     <button class="primary" type="button" id="ap-run"${open ? '' : ' disabled'}>Run autopilot on ${open} open renewal${open === 1 ? '' : 's'}</button><button class="ghost" type="button" id="ap-reset"${started.length || wbs.length ? '' : ' disabled'}>Reset autopilot</button></div></div>
     <div class="kpis"><div class="kpi"><div class="v">${sum.person}</div><div class="k">Waiting for you</div><div class="s">gates that need a person</div></div><div class="kpi"><div class="v">${sum.customer}</div><div class="k">With the customer</div><div class="s">offer sent, answer open</div></div><div class="kpi"><div class="v">${sum.done}</div><div class="k">Done</div><div class="s">signed and handed to the order</div></div><div class="kpi"><div class="v">${sum.auto} : ${sum.human}</div><div class="k">Autopilot : person steps</div><div class="s">steps done alone against steps by people</div></div><div class="kpi"><div class="v">${sum.touchless} %</div><div class="k">Without a person</div><div class="s">of the finished cases</div></div><div class="kpi"><div class="v">${wbOpen}</div><div class="k">Win-back open</div><div class="s">lapsed or declined, still in play</div></div></div>
@@ -2555,18 +2556,24 @@ function renderAutopilot() {
     ${grp('Done', 'Signed and handed over to the Space Order-to-Cash (Software), where Order management books it. The booking itself is simulated.', by('done'))}
     ${grp('Stopped or declined', 'A person took over, rejected the offer, or the customer declined.', by('stopped').concat(by('lost')))}
     ${wbs.length ? `<div class="card"><h2>Win-back <span class="pill planned">${wbs.length}</span></h2><p class="sub">Lapsed contracts and declined renewals. A win-back always needs a person: the plan and the first message.</p>${wbs.map((c) => wbCase(c, state.wb[c.id])).join('')}</div>` : ''}`;
+  renderNote();
+  if (store.on) $('#ap').querySelectorAll('.apcase').forEach((el) => {
+    const wb = el.dataset.wb !== undefined, id = wb ? el.dataset.wb : el.dataset.case;
+    if (can(id, wb ? 'winback' : 'renewal')) return;
+    el.querySelectorAll('button, select').forEach((x) => { x.disabled = true; });
+  });
   $('#ap-mode').onchange = (e) => { state.apMode = e.target.value === 'supervised' ? 'supervised' : 'autopilot'; renderAll(); };
   $('#ap-run').onclick = apStartAll;
-  $('#ap-reset').onclick = () => { for (const c of scope) { const a = state.ap[c.id], prev = a ? a.prevStage || 0 : 0; delete state.ap[c.id]; delete state.wb[c.id]; if (prev) state.stage[c.id] = prev; else delete state.stage[c.id]; } compute(); renderAll(); };
+  $('#ap-reset').onclick = () => { for (const c of scope.filter((x) => can(x.id, 'renewal') && can(x.id, 'winback'))) { const a = state.ap[c.id], prev = a ? a.prevStage || 0 : 0; delete state.ap[c.id]; delete state.wb[c.id]; if (prev) state.stage[c.id] = prev; else delete state.stage[c.id]; } compute(); renderAll(); };
   $('#ap').querySelectorAll('[data-apa]').forEach((b) => { b.onclick = () => { const r = b.dataset.apa === 'declined' ? $('#ap').querySelector(`select[data-apreason="${b.dataset.id}"]`) : null; apDo(b.dataset.id, b.dataset.apa, r ? r.value : undefined); }; });
   $('#ap').querySelectorAll('select[data-apc]').forEach((el) => { el.onchange = () => apDo(el.dataset.apc, 'change', el.value); });
   $('#ap').querySelectorAll('[data-apdraft]').forEach((b) => { b.onclick = () => {
-    const id = b.dataset.apdraft, st = state.ap[id], ctx = apCtx(id), o = ctx.opts.find((x) => x.key === st.pick); if (!o || st.drafted) return;
+    const id = b.dataset.apdraft, st = state.ap[id], ctx = apCtx(id), o = ctx.opts.find((x) => x.key === st.pick); if (!o || st.drafted || !can(id, 'renewal')) return;
     send(apDraftAsk(ctx.c, o)); state.ap[id] = apLog({ ...st, drafted: true }, ctx.c.owner, 'send', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll();
   }; });
   $('#ap').querySelectorAll('[data-apopen]').forEach((b) => { b.onclick = () => apHandOver(b.dataset.apopen, true) || renderAll(); });
   $('#ap').querySelectorAll('[data-wba]').forEach((b) => { b.onclick = () => { const o = b.dataset.wba === 'approve' ? $('#ap').querySelector(`select[data-wbo="${b.dataset.id}"]`) : null; wbDo(b.dataset.id, b.dataset.wba, o ? o.value : undefined); }; });
-  $('#ap').querySelectorAll('[data-wbdraft]').forEach((b) => { b.onclick = () => { const id = b.dataset.wbdraft, st = state.wb[id]; if (!st || st.drafted) return; send(wbDraftAsk(DATA.cases.find((x) => x.id === id), st)); state.wb[id] = wbLog({ ...st, drafted: true }, st.owner, 'reach', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll(); }; });
+  $('#ap').querySelectorAll('[data-wbdraft]').forEach((b) => { b.onclick = () => { const id = b.dataset.wbdraft, st = state.wb[id]; if (!st || st.drafted || !can(id, 'winback')) return; send(wbDraftAsk(DATA.cases.find((x) => x.id === id), st)); state.wb[id] = wbLog({ ...st, drafted: true }, st.owner, 'reach', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll(); }; });
   $('#ap').querySelectorAll('[data-wbopen]').forEach((b) => { b.onclick = () => { wbHandOver(b.dataset.wbopen, true); renderAll(); }; });
   $('#ap').querySelectorAll('details[data-apd]').forEach((d) => { d.ontoggle = () => { state.apOpen[d.dataset.apd] = d.open; }; });
 }
@@ -2788,6 +2795,7 @@ window.addEventListener('message', (e) => {
    Only what the person chose is kept. The host keeps it until the app closes; nothing is written to a disk or a server by this page. */
 function saveState() {
   if (window.parent === window) return;
+  persist();
   window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, owner: state.owner, sel: state.sel, csel: state.csel, stage: state.stage, ap: state.ap, wb: state.wb, apMode: state.apMode, option: state.option, asked: state.asked, groups: state.groups, briefs: state.briefs, stats: state.stats, auto: state.auto, jr: jr.customer } }, '*');
 }
 /** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
@@ -2819,11 +2827,110 @@ function applyState(st) {
 }
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
-  if (e.data.state) { applyState(e.data.state); renderAll(); }
+  if (e.data.state) { applyState(e.data.state); applyStored(); renderAll(); }
   (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { if (h && h.payload && h.payload.type === 'order-confirmed') { if (h.from === 'order-to-cash-software') apConfirmed(h.payload); renderAll(); return; } const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
 });
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
+/* ---------- Storage of the autopilot and win-back cases in the shared database (rn:cases-request, migration 050) ----------
+   The page never sees the key and never names the person: the app uses the stored e-mail. Every change of a case is saved after the render
+   (one case at a time, with the revision the page last saw). If the database is missing or refuses, the page works from memory and says
+   "Not saved: <reason>". Cases of other owners are shown but cannot be operated: managers read only. */
+const store = { on: false, me: null, rev: {}, saved: {}, failed: {}, busy: {}, can: {}, note: '', pending: {}, seq: 0, loading: false };
+const skey = (id, kind) => id + '|' + kind;
+const kindMap = (kind) => (kind === 'renewal' ? state.ap : state.wb);
+const ownerOf = (id) => (DATA.cases.find((x) => x.id === id) || {}).owner || '';
+/** May this person operate the case? Without a database everything is allowed (memory only); with one, the owner and board admins. */
+function can(id, kind) {
+  if (!store.on || !store.me) return true;
+  const k = skey(id, kind);
+  if (store.can[k] !== undefined) return store.can[k];
+  return store.me.admin === true || (Array.isArray(store.me.owners) && store.me.owners.includes(ownerOf(id)));
+}
+function storeAsk(action, payload) {
+  return new Promise((resolve) => {
+    if (!inHostAp()) { resolve({ ok: false, error: 'Not in the app.' }); return; }
+    const requestId = 'c' + (++store.seq);
+    const t = setTimeout(() => { delete store.pending[requestId]; resolve({ ok: false, error: 'The app did not answer.' }); }, 20000);
+    store.pending[requestId] = (m) => { clearTimeout(t); resolve(m); };
+    window.parent.postMessage({ type: 'rn:cases-request', requestId, action, ...payload }, '*');
+  });
+}
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (e.source !== window.parent || !d || d.type !== 'rn:cases-answer' || typeof d.requestId !== 'string') return;
+  const f = store.pending[d.requestId]; if (!f) return;
+  delete store.pending[d.requestId]; f(d.ok === true ? { ok: true, data: d.data || {} } : { ok: false, error: String(d.error || 'unknown error').slice(0, 200) });
+});
+/** Puts the last persisted copy of every case into the page (after loading, and after the host restored its memory copy). */
+function applyStored() {
+  const ids = new Set(DATA.cases.map((c) => c.id));
+  for (const [k, js] of Object.entries(store.saved)) {
+    const [id, kind] = k.split('|');
+    if (!ids.has(id)) continue;
+    let st; try { st = JSON.parse(js); } catch { continue; }
+    if (!(kind === 'renewal' ? apValid(st) : wbValid(st))) continue;
+    kindMap(kind)[id] = st;
+    if (kind === 'renewal') apSync(id);
+  }
+}
+async function loadCases() {
+  if (store.loading) return; store.loading = true;
+  const r = await storeAsk('list'); store.loading = false;
+  if (!r.ok) { store.on = false; store.note = inHostAp() ? 'Cases stay in memory only: ' + r.error : ''; if (inHostAp()) renderAll(); return; }
+  const data = r.data, ids = new Set(DATA.cases.map((c) => c.id));
+  store.on = true; store.me = data.me && typeof data.me === 'object' ? data.me : { owners: [], admin: false, manager: false };
+  store.rev = {}; store.saved = {}; store.failed = {}; store.can = {}; store.note = '';
+  let skipped = 0;
+  for (const c of Array.isArray(data.cases) ? data.cases : []) {
+    const kind = c && c.kind, st = c && c.state;
+    if (!c || !ids.has(c.caseId) || (kind !== 'renewal' && kind !== 'winback') || !(kind === 'renewal' ? apValid(st) : wbValid(st))) { skipped++; continue; }
+    const k = skey(c.caseId, kind);
+    store.rev[k] = Number.isInteger(c.rev) ? c.rev : 0; store.saved[k] = JSON.stringify(st); store.can[k] = c.canChange === true;
+  }
+  if (skipped) store.note = skipped + ' stored case(s) could not be read and are left out.';
+  applyStored(); compute(); renderAll();
+}
+async function saveCase(id, kind, st, js) {
+  const k = skey(id, kind); store.busy[k] = true;
+  const c = DATA.cases.find((x) => x.id === id);
+  const r = await storeAsk('save', { caseId: id, kind, owner: ownerOf(id), customer: c ? c.customer : '', state: st, expectedRev: store.rev[k] || 0 });
+  store.busy[k] = false;
+  if (r.ok) { store.rev[k] = Number.isInteger(r.data.rev) ? r.data.rev : (store.rev[k] || 0) + 1; store.saved[k] = js; store.can[k] = true; delete store.failed[k]; store.note = ''; }
+  else { store.failed[k] = js; store.note = 'Not saved: ' + r.error; if (/conflict/.test(r.error)) { renderAll(); loadCases(); return; } }
+  renderNote(); persist();
+}
+async function resetCase(id, kind) {
+  const k = skey(id, kind); store.busy[k] = true;
+  const r = await storeAsk('reset', { caseId: id, kind });
+  store.busy[k] = false;
+  if (r.ok || /no active case/.test(r.error)) { delete store.saved[k]; delete store.rev[k]; delete store.failed[k]; delete store.can[k]; store.note = ''; }
+  else { store.failed[k] = 'reset'; store.note = 'Not saved: ' + r.error; }
+  renderNote(); persist();
+}
+/** Writes what changed since the last save: one request per case, never two at once for the same case. */
+function persist() {
+  if (!store.on) return;
+  for (const kind of ['renewal', 'winback']) {
+    for (const [id, st] of Object.entries(kindMap(kind))) {
+      const k = skey(id, kind);
+      if (store.busy[k] || !can(id, kind)) continue;
+      const js = JSON.stringify(st);
+      if (store.saved[k] !== js && store.failed[k] !== js) saveCase(id, kind, st, js);
+    }
+  }
+  for (const k of Object.keys(store.saved)) {
+    const [id, kind] = k.split('|');
+    if (!kindMap(kind)[id] && !store.busy[k] && store.failed[k] !== 'reset' && can(id, kind)) resetCase(id, kind);
+  }
+}
+function renderNote() {
+  const el = $('#ap-store'); if (!el) return;
+  const me = store.me, role = !store.on ? '' : me && me.admin ? 'You see and operate all cases (board admin).' : me && me.manager ? 'You see all cases and can only read them (sales manager).' : me && me.owners && me.owners.length ? 'You see and operate your own cases (' + me.owners.join(', ') + ').' : 'No renewals are assigned to your e-mail: you see no cases.';
+  el.textContent = [store.on ? 'Cases are stored in the shared database. ' + role : '', store.note].filter(Boolean).join(' ');
+  el.className = 'sub' + (/^Not saved|^Cases stay/.test(store.note) ? ' bad' : '');
+}
 compute(); renderAll();
+loadCases();
 window.__renewals = () => model; window.__state = state; window.__go = go; window.__groupPrompt = groupPrompt; window.__briefPrompt = briefPrompt; window.__briefFacts = briefFacts;
 })();
 </script>

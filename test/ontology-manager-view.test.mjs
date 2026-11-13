@@ -121,7 +121,7 @@ test('the view uses tokens only (no hex colours), respects reduced motion, and i
   assert.match(rail, /onView\('admin'\)/);
   assert.doesNotMatch(rail, /DEVELOP_VIEWS: View\[\] = [^;]*'ontology'/);
   assert.match(read('src/App.tsx'), /view === 'admin'/);
-  assert.match(read('src/ui/AdminView.tsx'), /Open Ontologies/);
+  assert.match(read('src/ui/AdminView.tsx'), /Open Ontology Manager/);
   assert.doesNotMatch(read('src/ui/DevelopHub.tsx'), /ntolog/);
 });
 

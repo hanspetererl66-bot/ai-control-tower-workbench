@@ -15,7 +15,7 @@ test('the public product surface uses the Joule Work X - Next Gen Design Study t
   assert.match(product, /PRODUCT_TITLE = `\$\{PRODUCT_NAME\} Design Study`/);
   assert.match(app, /\{FOOTER_TITLE\} uses AI/);
   assert.match(product, /FOOTER_TITLE = 'Joule Work X - Design Study'/);
-  assert.match(composer, /Message \$\{PRODUCT_TITLE\}/);
+  assert.match(composer, /placeholder=\{agent \? 'Text \. \. \.' : 'Connecting…'\}/, 'the chat input says "Text . . ." (the product title is no longer in it)');
   assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen Design Study<\/title>/);
 });
 
@@ -99,12 +99,13 @@ test('the embedded n8n view offers Back, Forward and Home so a page without a wa
   assert.match(main, /n8n-nav-state/);
 });
 
-test('every main view shows a small purple progress bar with "JouleX Design Study" below it at the bottom left, as decoration only', () => {
+test('every main view shows a small progress bar with "JouleX Design Study" below it, bottom left by default; the bar glows in rainbow colours and the badge can be moved', () => {
   const app = readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
   const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
-  assert.match(app, /<div className="study-badge" aria-hidden="true"><span className="study-bar"><i \/><\/span><span className="study-name">JouleX Design Study<\/span><\/div>\s*<Rail/);
-  assert.match(css, /\.study-badge \{[^}]*position: fixed;[^}]*left: calc\(var\(--rail-w\) \+ 14px\);[^}]*bottom: 14px;[^}]*color: var\(--accent\);[^}]*pointer-events: none;/);
-  assert.match(css, /\.study-bar i \{[^}]*background: var\(--accent\);[^}]*animation: study-slide/);
+  assert.match(app, /<StudyBadge \/>\s*<Rail/);
+  assert.match(readFileSync(path.join(root, 'src/ui/StudyBadge.tsx'), 'utf8'), /<span className="study-bar"><i \/><\/span>\s*<span className="study-name">JouleX Design Study<\/span>/);
+  assert.match(css, /\.study-badge \{[^}]*position: fixed;[^}]*left: calc\(var\(--rail-w\) \+ 14px\);[^}]*bottom: 14px;[^}]*color: var\(--accent\);/);
+  assert.match(css, /\.study-bar i \{[^}]*animation: study-slide[^;]*, study-rainbow/);
   assert.ok(!/study-badge[^}]*--error/.test(css), 'no red any more');
   assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.study-bar i \{ animation: none;/);
 });

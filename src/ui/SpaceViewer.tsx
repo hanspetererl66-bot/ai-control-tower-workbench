@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import RefreshDataDialog from './RefreshDataDialog';
+import { layoutFromHtml } from '../space-layout-render';
+import { refreshable, type RefreshHost } from '../space-designer-refresh';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
@@ -21,7 +24,7 @@ import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, 
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { applySpaceTerms, pageEntries, parseOpenTermMessage, type SpaceTermsControl } from '../space-terms';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
-import { parseOpenViewMessage, type OpenableView } from '../space-open';
+import { parseOpenSpaceMessage, parseOpenViewMessage, type OpenableView } from '../space-open';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
@@ -44,6 +47,7 @@ export default function SpaceViewer({
   prefs,
   onHandoff,
   onOpenView,
+  onOpenSpace,
   onSpaceState,
   savedState,
   incoming,
@@ -51,11 +55,16 @@ export default function SpaceViewer({
   installedSpaces,
   onIncomingDelivered,
   onEditDesign,
+  refreshHost,
+  onRefreshed,
   terms,
 }: {
   space: Space;
   /** Opens the Space in the Designer (only given for Spaces made there). */
   onEditDesign?: () => void;
+  /** Designed Spaces with data sources: what "Refresh data" may use, and what to do after the page was rewritten. */
+  refreshHost?: RefreshHost;
+  onRefreshed?: () => void | Promise<void>;
   tabRequest?: SpaceTabRequest | null;
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
@@ -80,6 +89,8 @@ export default function SpaceViewer({
   onHandoff?: (handoff: Handoff) => void;
   /** The Space asks the app to open one of its own views (e.g. the Agent Studio). */
   onOpenView?: (view: OpenableView) => void;
+  /** A page made in the Designer links to another Space (only its folder name comes over). */
+  onOpenSpace?: (slug: string) => void;
   /** The Space reports its working state so it survives a trip to another Space. */
   onSpaceState?: (state: Record<string, unknown>) => void;
   savedState?: Record<string, unknown>;
@@ -132,6 +143,8 @@ export default function SpaceViewer({
   handoffRef.current = onHandoff;
   const openViewRef = useRef(onOpenView);
   openViewRef.current = onOpenView;
+  const openSpaceRef = useRef(onOpenSpace);
+  openSpaceRef.current = onOpenSpace;
   const stateRef = useRef(onSpaceState);
   stateRef.current = onSpaceState;
   useEffect(() => {
@@ -141,6 +154,8 @@ export default function SpaceViewer({
       if (handoff) { handoffRef.current?.(handoff); return; }
       const openView = parseOpenViewMessage(event.data);
       if (openView) { openViewRef.current?.(openView); return; }
+      const openSpace = parseOpenSpaceMessage(event.data);
+      if (openSpace) { openSpaceRef.current?.(openSpace); return; }
       const state = parseStateMessage(event.data);
       if (state) stateRef.current?.(state);
     };
@@ -307,6 +322,8 @@ export default function SpaceViewer({
     setTimeout(() => setShareNote(''), 8000);
   }
   const [html, setHtml] = useState<string | null>(null);
+  const [refreshOpen, setRefreshOpen] = useState(false);
+  const designedLayout = useMemo(() => (onEditDesign && html ? layoutFromHtml(html) : null), [onEditDesign, html]);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -442,12 +459,16 @@ export default function SpaceViewer({
           <RefreshIcon />
         </button>
         {onEditDesign && <button className="ghost-btn" onClick={onEditDesign} title="Edit this Space in the Designer">Edit design</button>}
+        {designedLayout && refreshHost && refreshable(designedLayout).length > 0 && <button className="ghost-btn" onClick={() => setRefreshOpen(true)} title="Fetch new numbers from the sources of this page; you see the changes first">Refresh data</button>}
         {onAsk && (
           <button className="ghost-btn" onClick={() => onAsk(`Ich möchte den Space „${space.title}“ (${space.slug}) ändern. Frag mich kurz, was anders sein soll, und passe ihn danach an.`)} title="Open the chat and describe what should change in this Space">
             Change with Joule
           </button>
         )}
       </header>
+      {refreshOpen && designedLayout && refreshHost && (
+        <RefreshDataDialog layout={designedLayout} space={space} host={refreshHost} onClose={() => setRefreshOpen(false)} onSaved={async () => { await onRefreshed?.(); }} />
+      )}
 
       {insightsOpen && space.insights.length > 0 && (
         <section className="insights">

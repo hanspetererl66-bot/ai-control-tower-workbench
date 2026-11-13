@@ -128,8 +128,8 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .ck-acts button{font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--purple-border);background:var(--panel);color:var(--ink);border-radius:99px;padding:6px 12px;display:flex;gap:6px;align-items:center}
 .ck-acts button:hover{border-color:var(--brand);color:var(--brand)}
 .ck-acts b{color:var(--brand);font-weight:700}
-.ck-body{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:22px;padding:8px 22px 8px;align-items:center}
-.ck-rings{position:relative;width:100%;max-width:330px;margin:0 auto}
+.ck-body{display:grid;grid-template-columns:minmax(195px,248px) minmax(0,1fr);gap:22px;padding:8px 22px 8px;align-items:center}
+.ck-rings{position:relative;width:100%;max-width:248px;margin:0 auto}
 .ck-rings svg{display:block;width:100%;height:auto}
 .ck-rings .trk{fill:none;stroke:var(--line-2);stroke-width:8;opacity:.7}
 .ck-rings .arc{fill:none;stroke-width:8;stroke-linecap:round;transform:rotate(-90deg);transform-origin:150px 150px;transition:stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1),stroke .4s}
@@ -235,8 +235,8 @@ body.s4m button.kcard:hover,body.s4m .ov-grid>.card:hover{transform:translateY(-
 .ck-rings .trk{stroke-width:16;opacity:.55}
 .ck-rings .arc{stroke-width:16}
 .ck-rings .arc.fc{opacity:.26}
-.ck-center b{font-size:44px}
-.ck-center span{font-size:12px;max-width:110px}
+.ck-center b{font-size:33px}
+.ck-center span{font-size:9px;max-width:83px}
 .ck-prods{display:grid;gap:8px;margin:6px 0 6px}
 .ck-prod{display:grid;grid-template-columns:minmax(0,1fr) 120px 44px;gap:10px;align-items:center;font-size:12px}
 .ck-prod span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -571,7 +571,8 @@ details.intro .body{margin-top:8px}
     "name": "Muster Industrie AG",
     "number": "100-482-117",
     "sapCustomerId": "0010048211",
-    "contact": "A. Beispiel",
+    "contact": "Mr. Miller",
+    "lastLogin": "2026-10-17",
     "country": "Germany"
   },
   "aiUnits": {
@@ -4355,8 +4356,8 @@ details.intro .body{margin-top:8px}
   /* Portal entry: greeting and the four things people come for, then a gentle entrance and counting numbers (once per customer) */
   function renderHero(){
     var c = (D.customer.contact || '').trim(), openInv = D.invoices.filter(function(i){ return i.status === 'Open' || i.status === 'Overdue'; }).length;
-    $('hero').innerHTML = '<div class="hero-eye">Customer portal</div><h1 class="hero-title">' + (c ? 'Welcome back, ' + esc(c) + '.' : 'Welcome back.') + '</h1>' +
-      '<p class="hero-sub">' + esc(D.customer.name) + ' · customer no. ' + esc(D.customer.number) + ' · your account as of ' + esc(D.asOf) + '</p>' +
+    $('hero').innerHTML = '<div class="hero-eye">Customer portal</div><h1 class="hero-title">' + (c ? 'Welcome, ' + esc(c) + '.' : 'Welcome.') + '</h1>' +
+      '<p class="hero-sub">' + esc(D.customer.name) + ' · customer no. ' + esc(D.customer.number) + ' · your account as of ' + esc(D.asOf) + (D.customer.lastLogin ? ' · last login ' + esc(D.customer.lastLogin) : '') + '</p>' +
       '<div class="hero-acts"><button type="button" class="p" data-go="tickets">Open a ticket</button><button type="button" data-go="invoices">Invoices <b>' + openInv + ' open</b></button><button type="button" data-go="contracts">Offers <b>' + openOffers().length + '</b></button><button type="button" data-go="usage">AI units <b>' + pctUsed + '%</b></button></div>';
   }
   function countUp(el){

@@ -126,3 +126,84 @@ test('map: the focus on a term reaches its confirmed and its suspected users one
   assert.ok([...focus.edges].some((e) => e.from === maybe.id && e.uncertain));
   assert.ok([...focus.edges].every((e) => e.from !== sure.id || !e.uncertain));
 });
+
+// ---------------------------------------------------------------- guidance: starting points and the sentence
+import { startingPoints, describeFocus, linkWord } from '../src/graph-map.ts';
+import { resolveCatalog } from '../src/ontology-manager.ts';
+
+test('startingPoints: terms with something hanging on them, biggest first, one per ontology before a second one', async () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const starts = startingPoints(map, 5);
+  assert.equal(starts.length, 5);
+  assert.ok(starts.every((s) => s.affected > 0 && ['class', 'metric', 'resource'].includes(s.node.kind)));
+  assert.equal(new Set(starts.map((s) => s.node.slug)).size, 5, 'five different ontologies');
+  assert.deepEqual(startingPoints(map, 5).map((s) => s.node.id), starts.map((s) => s.node.id), 'same answer every time');
+  for (const s of starts) assert.equal(focusOf(map, s.node.id, 3).level.size - 1, s.affected);
+  assert.deepEqual(startingPoints(buildMap([], emptyGovernance())), []);
+});
+
+test('describeFocus: says in words what would be affected, and says plainly when nothing is', () => {
+  const map = buildMap(onts, gov);
+  const root = `${metric.o.slug}:${metric.t.id}`;
+  const text = describeFocus(map, focusOf(map, root, 3), 3);
+  assert.match(text, new RegExp(`^If ${metric.t.label} changes, \\d+ other things? would be affected: `));
+  assert.match(text, /agents?/);
+  assert.match(text, /reports?/);
+  assert.doesNotMatch(text, /classs/);
+  const lonely = map.nodes.find((n) => n.kind === 'class' && focusOf(map, n.id, 3).level.size === 1);
+  assert.match(describeFocus(map, focusOf(map, lonely.id, 3), 3), /^Nothing depends on /);
+  assert.equal(linkWord('derivedFrom'), 'derived from');
+  assert.equal(linkWord('somethingNew'), 'somethingNew');
+});
+
+test('the example catalog is a real graph: every term of the extra ontologies is linked to something, and users hang on all of them', async () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const solid = map.edges.filter((e) => !e.weak);
+  assert.ok(map.nodes.length > 140 && solid.length > 140, `${map.nodes.length} nodes, ${solid.length} links`);
+  const users = map.nodes.filter((n) => ['agent', 'skill', 'report'].includes(n.kind));
+  assert.ok(users.length >= 40, `${users.length} users`);
+  for (const o of cat.ontologies.filter((x) => x.slug !== 'werkbank_fin' && x.slug !== 'procurement_docs')) {
+    const loose = o.terms.filter((t) => !map.edges.some((e) => !e.weak && (e.from === `${o.slug}:${t.id}` || e.to === `${o.slug}:${t.id}`)));
+    assert.deepEqual(loose.map((t) => t.id), [], `${o.slug}: terms with no link`);
+  }
+});
+
+// ---------------------------------------------------------------- sorted layout
+import { layoutLanes, LANES, laneIndexOf } from '../src/graph-map.ts';
+
+test('layoutLanes: one panel per ontology, every node inside its own panel and lane, nothing on top of anything', () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const lay = layoutLanes(map);
+  assert.equal(lay.panels.length, cat.ontologies.length);
+  assert.ok([...lay.x, ...lay.y].every(Number.isFinite));
+  map.nodes.forEach((n, i) => {
+    const p = lay.panels.find((q) => q.slug === n.slug);
+    assert.ok(lay.x[i] >= p.x && lay.x[i] <= p.x + p.w && lay.y[i] >= p.y && lay.y[i] <= p.y + p.h, `${n.label} inside ${p.title}`);
+    if (n.kind !== 'ontology') {
+      const lane = p.lanes.find((l) => l.id === LANES[laneIndexOf(n.kind)].id);
+      assert.ok(lane && lay.x[i] >= lane.x && lay.x[i] <= lane.x + lane.w, `${n.label} in its lane`);
+    }
+  });
+  const seen = new Set();
+  map.nodes.forEach((_, i) => { const k = `${Math.round(lay.x[i])},${Math.round(lay.y[i])}`; assert.ok(!seen.has(k), `two nodes at ${k}`); seen.add(k); });
+  for (let a = 0; a < lay.panels.length; a++) for (let b = a + 1; b < lay.panels.length; b++) {
+    const p = lay.panels[a], q = lay.panels[b];
+    assert.ok(p.x + p.w <= q.x || q.x + q.w <= p.x || p.y + p.h <= q.y || q.y + q.h <= p.y, `${p.title} and ${q.title} overlap`);
+  }
+  assert.deepEqual(Array.from(layoutLanes(map).x), Array.from(lay.x), 'same answer every time');
+});
+
+test('layoutLanes: lanes read left to right as data, terms, metrics, users, and the best connected stand on top', () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const lay = layoutLanes(map);
+  const hr = lay.panels.find((p) => p.slug === 'werkbank_hr');
+  assert.deepEqual(hr.lanes.map((l) => l.id), ['source', 'term', 'metric', 'user']);
+  assert.ok(hr.lanes.every((l, i) => i === 0 || l.x >= hr.lanes[i - 1].x + hr.lanes[i - 1].w));
+  const terms = map.nodes.map((n, i) => ({ n, i })).filter(({ n }) => n.slug === 'werkbank_hr' && n.kind === 'class').sort((a, b) => lay.y[a.i] - lay.y[b.i]);
+  assert.ok(terms[0].n.degree >= terms[terms.length - 1].n.degree);
+  assert.ok(layoutLanes(buildMap([], emptyGovernance())).panels.length === 0);
+});

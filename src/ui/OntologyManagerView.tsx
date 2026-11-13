@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   HEALTH_LABEL, STATUS_LABEL, checkQuestion, filterTerms, healthOf, kpis, metaOf, ownerLabel, qualityFindings, setMeta, statusOf, usedLabel,
   type Governance, type Ontology, type OntologyData, type TermFilter,
 } from '../ontology-manager';
+import { readGuidePref, writeGuidePref, type GuidePref } from '../ontology-guide';
 import OntologyDetails from './OntologyDetails';
+import OntologyGuide from './OntologyGuide';
 import OntologyHistory from './OntologyHistory';
 import OntologyMap from './OntologyMap';
 import OntologyExport from './OntologyExport';
@@ -25,7 +27,10 @@ const FILTERS: Array<{ id: TermFilter; label: string }> = [
  * when that cannot be read it shows the bundled Finance Pre-Close sample and says why. Owners, declared users, views
  * and plans are saved in `governance.json` next to the catalog; the catalog itself is only changed by the connector.
  */
-export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '', focusTerm = null }: {
+export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '', focusTerm = null, tipsOn = true, onTipsOff }: {
+  /** The tips switch lives in Settings (Skin); the bubble's "Turn off tips" asks the app to switch it off. */
+  tipsOn?: boolean;
+  onTipsOff?: () => void;
   data: OntologyData; onReload: () => void; onBack: () => void; onGovernance: (g: Governance) => void; saveNote: string;
   generate?: Generate; onStop?: () => void; ready: boolean; knownSkills: string[];
   /** Who acts (the e-mail label of this window): written next to a decision about a found user. */
@@ -36,6 +41,12 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   const { ontologies, source, proposals, history, governance } = data;
   const [tab, setTab] = useState<Tab>('catalog');
   const [focus, setFocus] = useState<{ slug: string; term: string } | null>(focusTerm);
+  const root = useRef<HTMLElement>(null);
+  const [guide, setGuide] = useState<GuidePref>(() => readGuidePref(typeof window === 'undefined' ? null : window.localStorage));
+  const [tourOpen, setTourOpen] = useState(true);
+  const saveGuide = (g: GuidePref) => { setGuide(g); writeGuidePref(typeof window === 'undefined' ? null : window.localStorage, g); };
+  const showTour = tipsOn && tourOpen && !guide.seen.includes(tab) && ontologies.length > 0 && source.kind !== 'loading';
+  useEffect(() => { setTourOpen(true); }, [tab]);
   const toReview = proposals.filter((p) => p.status === 'proposed').length;
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
   const blocked = useMemo(() => ontologies.reduce((n, o) => n + governance.questions.filter((q) => q.slug === o.slug && checkQuestion(o, governance, q).state === 'blocked').length, 0), [ontologies, governance]);
@@ -45,14 +56,19 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   ];
 
   return (
-    <main className="om">
-      <header className="om-hero">
+    <main className="om" ref={root}>
+      <header className="om-hero" data-guide="hero">
         <button className="om-back" onClick={onBack} aria-label="Back to the Admin console">←</button>
         <div className="om-hero-text">
           <p className="om-crumb">Admin console</p>
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
           <p className="om-lede">The shared vocabulary of your agents in one place: owned, reviewed and traceable to the document it came from.</p>
         </div>
+        <button className="om-filter om-tips" data-guide="tips" disabled={!tipsOn}
+          title={tipsOn ? 'Show the tips of this tab again. Size, colours and the on/off switch are in Settings, Skin.' : 'The tips are off. Switch them on in Settings, Skin.'}
+          onClick={() => { setTourOpen(true); saveGuide({ ...guide, seen: guide.seen.filter((t) => t !== tab) }); }}>
+          {tipsOn ? 'Show tips' : 'Tips are off'}
+        </button>
       </header>
 
       <div className="om-source">
@@ -70,9 +86,9 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
         <button className="om-filter" onClick={onReload} disabled={source.kind === 'loading'}>Reload</button>
       </div>
 
-      <nav className="om-tabs" aria-label="Ontology Manager sections">
+      <nav className="om-tabs" aria-label="Ontology Manager sections" data-guide="tabs">
         {TABS.map((t) => (
-          <button key={t.id} className={`om-tab ${tab === t.id ? 'om-tab-on' : ''}`} aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>
+          <button key={t.id} data-guide={`tab-${t.id}`} className={`om-tab ${tab === t.id ? 'om-tab-on' : ''}`} aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>
             {t.label}{t.n ? <span className="om-badge">{t.n}</span> : null}
           </button>
         ))}
@@ -86,6 +102,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
       {tab === 'use' && <OntologyUse ontologies={ontologies} gov={governance} onGovernance={onGovernance} knownSkills={knownSkills} generate={generate} ready={ready} />}
       {tab === 'history' && <OntologyHistory ontologies={ontologies} history={history} />}
       {tab === 'export' && <OntologyExport ontologies={ontologies} gov={governance} />}
+      {showTour && <OntologyGuide tab={tab} root={root} onDone={() => { setTourOpen(false); saveGuide({ ...guide, seen: [...guide.seen, tab] }); }} onOff={() => onTipsOff?.()} />}
     </main>
   );
 }
@@ -115,7 +132,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
 
   return (
     <>
-      <section className="om-kpis" aria-label="Summary">
+      <section className="om-kpis" aria-label="Summary" data-guide="kpis">
         <div className="om-kpi"><span>Classes</span><b>{k.classes}</b></div>
         <div className="om-kpi"><span>Properties</span><b>{k.properties}</b></div>
         <div className="om-kpi"><span>Certified metrics</span><b>{k.metrics}</b></div>
@@ -128,7 +145,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
       </section>
 
       <div className="om-grid">
-        <aside className="om-side" aria-label="Ontologies">
+        <aside className="om-side" aria-label="Ontologies" data-guide="side">
           <h2>Ontologies</h2>
           {ontologies.map((o) => {
             const ok = kpis(o);
@@ -145,10 +162,10 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
           <OwnerForm key={onto.slug} onto={onto} gov={gov} onGovernance={onGovernance} />
         </aside>
 
-        <section className="om-table" aria-label="Terms">
+        <section className="om-table" aria-label="Terms" data-guide="terms">
           <div className="om-table-head">
             <h2>Terms in {onto.slug}</h2>
-            <label className="om-search om-search-inline">
+            <label className="om-search om-search-inline" data-guide="search">
               <span className="om-sr">Search terms</span>
               <input type="search" value={query} placeholder="Search terms, synonyms, definitions, owners" onChange={(e) => setQuery(e.target.value)} />
             </label>

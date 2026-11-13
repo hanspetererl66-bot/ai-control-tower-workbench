@@ -43,6 +43,9 @@ declare global {
       monitoringAlerts?: (sinceHours: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailPreview?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailSend?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      renewalsCases?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      renewalsCaseSave?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      renewalsCaseReset?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingList?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingHandover?: (id: number, start: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingSet?: (id: number, step: string, status: string, note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
@@ -136,6 +139,7 @@ declare global {
       exportSkill?: (dir: string) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; files?: number }>;
       designerPickDataFile?: () => Promise<{ ok: boolean; canceled?: boolean; detail?: string; name?: string; text?: string }>;
       designerDataView?: (id: string, days: number) => Promise<{ ok: boolean; detail?: string; table?: { columns: string[]; rows: string[][]; sources: string; notes: string[] } }>;
+      designerPickImage?: () => Promise<{ ok: boolean; canceled?: boolean; detail?: string; name?: string; kind?: string; data?: string }>;
       importSkillOpen?: () => Promise<null | { ok: boolean; detail?: string; id?: string; slug?: string; name?: string; description?: string; files?: { path: string; bytes: number }[]; text?: string; exists?: boolean }>;
       importSkillInstall?: (id: string, overwrite: boolean) => Promise<{ ok: boolean; detail?: string; slug?: string; replaced?: boolean; db?: { ok: boolean; detail?: string; version?: number | null } }>;
       skillDbSync?: () => Promise<{ ok: boolean; detail?: string; result?: { installed: string[]; updated: string[]; removed: string[]; skipped: string[] } }>;

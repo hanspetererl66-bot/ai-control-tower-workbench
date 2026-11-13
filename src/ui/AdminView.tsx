@@ -1,5 +1,5 @@
 /**
- * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontologies, Solution register and
+ * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontology Manager, Solution register and
  * Skill Health Monitor; more can follow. Agent observability is not a tile here: it is a subspace of the AI Governance entry page (AI Control Tower). Hiring approvals is a Space of its own,
  * not part of Admin. Admin is not part of Develop.
  */
@@ -9,16 +9,16 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
       <h1 className="develop-title">Joule Administration Console</h1>
       <p className="develop-sub">Look after what everyone shares. More tiles will follow.</p>
       <div className="adm-grid">
-        <section className="develop-card develop-card-block" aria-label="Ontologies">
+        <section className="develop-card develop-card-block" aria-label="Ontology Manager">
           <span className="develop-logo adm-logo adm-logo-ontology" aria-hidden="true"><OntologyMark /></span>
-          <span className="develop-card-title">Ontologies</span>
+          <span className="develop-card-title">Ontology Manager</span>
           <span className="develop-card-brand">the vocabulary</span>
           <span className="develop-card-text">The shared meaning of your terms, so that every agent reads a metric or a class the same way.</span>
           <ul className="develop-blocks">
             <li><span>Owned terms with a definition and a source</span></li>
             <li><span>See what depends on a term before you change it</span></li>
           </ul>
-          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenOntology}>Open Ontologies</button>
+          <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenOntology}>Open Ontology Manager</button>
         </section>
         <section className="develop-card develop-card-block" aria-label="Solution register">
           <span className="develop-logo adm-logo adm-logo-register" aria-hidden="true"><RegistryMark /></span>
