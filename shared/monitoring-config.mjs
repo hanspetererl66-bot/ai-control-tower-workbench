@@ -3,7 +3,7 @@
  * The token goes in and is never given back: the dialog only learns THAT a token is saved, not what it is.
  * Storage is the app's encrypted secret store (OS keychain); this module only decides what may be stored and what may be shown.
  */
-import { checkBaseUrl, checkToken, MonitoringError } from './monitoring-read.mjs';
+import { ADAPTERS, checkBaseUrl, checkToken, MonitoringError } from './monitoring-read.mjs';
 
 const NAME = 'monitoring';
 
@@ -22,7 +22,13 @@ export function takeMainOnlyEnv(env) {
 export function agentSecrets(store) {
   return Object.assign({}, ...Object.entries(store).filter(([owner]) => !MAIN_ONLY_OWNERS.has(owner)).map(([, v]) => v));
 }
-const KEYS = { url: 'MONITORING_BASE_URL', token: 'MONITORING_READ_TOKEN' };
+const KEYS = { url: 'MONITORING_BASE_URL', token: 'MONITORING_READ_TOKEN', adapter: 'MONITORING_ADAPTER' };
+
+/** What the dialog offers: the systems that have an adapter, with an example address. */
+export const ADAPTER_INFO = {
+  'http-json': { label: 'Neutral JSON (any system behind a small proxy)', hint: 'https://monitoring.example/api', tokenHint: 'Read-only token' },
+  zabbix: { label: 'Zabbix 6.4 or newer', hint: 'https://zabbix.example/zabbix', tokenHint: 'API token of a user with a read-only role' },
+};
 
 /**
  * store: { read(name) -> object of saved values, write(name, values), forget(name) }; env: process environment (settings from there count too);
@@ -34,15 +40,18 @@ export function createMonitoringConfig({ store, env = {}, monitoring }) {
     const s = saved();
     const fromApp = !!(s[KEYS.url] && s[KEYS.token]);
     const fromEnv = !fromApp && !!(env[KEYS.url] && env[KEYS.token]);
-    return { configured: fromApp || fromEnv, source: fromApp ? 'app' : fromEnv ? 'environment' : 'none', baseUrl: String(s[KEYS.url] || ''), tokenSet: !!s[KEYS.token], adapter: 'http-json' };
+    const adapter = Object.hasOwn(ADAPTERS, s[KEYS.adapter]) ? s[KEYS.adapter] : fromEnv && Object.hasOwn(ADAPTERS, env[KEYS.adapter]) ? env[KEYS.adapter] : 'http-json';
+    return { configured: fromApp || fromEnv, source: fromApp ? 'app' : fromEnv ? 'environment' : 'none', baseUrl: String(s[KEYS.url] || ''), tokenSet: !!s[KEYS.token], adapter, adapters: Object.entries(ADAPTER_INFO).map(([id, i]) => ({ id, ...i })) };
   };
   return {
     /** What the dialog may see. Never the token. */
     get: view,
     /** Save the address and, when one is given, a new token. Without a token the saved token stays. */
-    set({ baseUrl, token } = {}) {
+    set({ baseUrl, token, adapter } = {}) {
+      const kind = adapter === undefined || adapter === '' ? 'http-json' : String(adapter);
+      if (!Object.hasOwn(ADAPTERS, kind)) throw new MonitoringError('Unknown monitoring system.');
       const url = checkBaseUrl(baseUrl);
-      const next = { [KEYS.url]: url };
+      const next = { [KEYS.url]: url, [KEYS.adapter]: kind };
       if (typeof token === 'string' && token.trim()) next[KEYS.token] = checkToken(token);
       else if (!saved()[KEYS.token]) throw new MonitoringError('A token is needed: paste a token that may only read.');
       store.write(NAME, next);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-type Config = { configured: boolean; source: string; baseUrl: string; tokenSet: boolean; adapter: string };
+type Config = { configured: boolean; source: string; baseUrl: string; tokenSet: boolean; adapter: string; adapters: Array<{ id: string; label: string; hint: string; tokenHint: string }> };
 
 /**
  * Address and read token of the monitoring access. The token is typed in, sent to the main process and forgotten here:
@@ -10,6 +10,7 @@ export default function MonitoringPanel() {
   const host = window.host;
   const [config, setConfig] = useState<Config | null>(null);
   const [baseUrl, setBaseUrl] = useState('');
+  const [adapter, setAdapter] = useState('http-json');
   const [token, setToken] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -18,7 +19,7 @@ export default function MonitoringPanel() {
     let live = true;
     void host?.monitoringConfigGet?.().then((r) => {
       if (!live || !r) return;
-      if (r.ok) { setConfig(r.data); setBaseUrl(r.data.baseUrl); } else setMessage(r.error);
+      if (r.ok) { setConfig(r.data); setBaseUrl(r.data.baseUrl); setAdapter(r.data.adapter); } else setMessage(r.error);
     });
     return () => { live = false; };
   }, [host]);
@@ -27,8 +28,9 @@ export default function MonitoringPanel() {
     return <div className="settings-section"><div className="settings-section-copy"><h4>Monitoring</h4><p>The monitoring connection can be set in the desktop app.</p></div></div>;
   }
 
+  const info = config?.adapters.find((a) => a.id === adapter);
   const status = !config ? 'Reading the settings …'
-    : config.source === 'app' ? `Connected to ${config.baseUrl}. A token is saved.`
+    : config.source === 'app' ? `Connected to ${config.baseUrl} (${config.adapters.find((a) => a.id === config.adapter)?.label ?? config.adapter}). A token is saved.`
     : config.source === 'environment' ? 'Set through the environment variables MONITORING_BASE_URL and MONITORING_READ_TOKEN of the app.'
     : 'Not connected.';
 
@@ -52,23 +54,29 @@ export default function MonitoringPanel() {
       </div>
       <p className="voice-message" role="status">{status}</p>
       <label className="voice-option">
+        <span>Monitoring system</span>
+        <select className="voice-key" value={adapter} onChange={(e) => setAdapter(e.target.value)} aria-label="Monitoring system">
+          {(config?.adapters ?? []).map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
+        </select>
+      </label>
+      <label className="voice-option">
         <span>Address (https)</span>
-        <input className="voice-key" type="url" value={baseUrl} placeholder="https://monitoring.example/api" autoComplete="off" spellCheck={false}
+        <input className="voice-key" type="url" value={baseUrl} placeholder={info?.hint ?? 'https://monitoring.example/api'} autoComplete="off" spellCheck={false}
           onChange={(e) => setBaseUrl(e.target.value)} aria-label="Monitoring address" />
       </label>
       <div className="voice-row">
         <input className="voice-key" type="password" value={token} autoComplete="off" spellCheck={false}
-          placeholder={config?.tokenSet ? 'Token saved — paste a new one to replace it' : 'Read-only token'}
+          placeholder={config?.tokenSet ? 'Token saved — paste a new one to replace it' : (info?.tokenHint ?? 'Read-only token')}
           onChange={(e) => setToken(e.target.value)} aria-label="Monitoring read token" />
       </div>
       <div className="voice-row">
         <button className="ghost-btn" disabled={busy || !baseUrl.trim() || (!token.trim() && !config?.tokenSet)}
-          onClick={() => run(async () => { const r = await host.monitoringConfigSet?.(baseUrl, token); setToken(''); return r; }, (d) => { setConfig(d); return 'Saved.'; })}>Save</button>
+          onClick={() => run(async () => { const r = await host.monitoringConfigSet?.(baseUrl, token, adapter); setToken(''); return r; }, (d) => { setConfig(d); return 'Saved.'; })}>Save</button>
         <button className="ghost-btn" disabled={busy || !config?.configured}
           onClick={() => run(async () => host.monitoringConfigTest?.(), (d) => `The connection works: ${d.count} alert${d.count === 1 ? '' : 's'} in the last hour.`)}>Test the connection</button>
         {config?.source === 'app' && (
           <button className="ghost-btn" disabled={busy}
-            onClick={() => run(async () => host.monitoringConfigClear?.(), (d) => { setConfig(d); setBaseUrl(''); setToken(''); return 'Removed.'; })}>Remove</button>
+            onClick={() => run(async () => host.monitoringConfigClear?.(), (d) => { setConfig(d); setBaseUrl(''); setToken(''); setAdapter(d.adapter); return 'Removed.'; })}>Remove</button>
         )}
       </div>
       {message && <p className="voice-message" role="status">{message}</p>}
