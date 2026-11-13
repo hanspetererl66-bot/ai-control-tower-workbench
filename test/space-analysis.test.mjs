@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import test from 'node:test';
-import { analyzeSpace, failedReport, filterReports, fixRequest, summarize } from '../src/space-analysis.ts';
+import { FEATURES, analyzeSpace, detectFeatures, failedReport, filterReports, fixRequest, summarize } from '../src/space-analysis.ts';
 
 const NOW = Date.parse('2026-11-13');
 const meta = (o = {}) => ({ slug: 's', title: 'S', description: 'd', insights: ['i'], domain: 'Sales', cardCount: 3, updatedAt: NOW - 5 * 86_400_000, ...o });
@@ -86,4 +86,22 @@ test('Space Analysis is a tile of the Admin console, reads only, and keeps the S
   assert.doesNotMatch(view, /localStorage|XMLHttpRequest/);
   const block = css.slice(css.indexOf('/* Admin console: Space Analysis'));
   assert.doesNotMatch(block, /#[0-9a-fA-F]{3,6}\b/, "colours only as tokens");
+});
+
+test('functions are counted from the page, not from its data', () => {
+  const html = '<div role="tab">A</div><div role="tab">B</div><table></table><input type="search"><select></select><button>x</button><button>y</button><svg viewBox="0 0 1 1"></svg><div class="kpi-card"></div><dialog></dialog><script>window.parent.postMessage({},"*");document.addEventListener("keydown",f)</script><script type="application/json">{"t":"<table> <button> download"}</script>';
+  const f = detectFeatures(html);
+  assert.deepEqual([f.tabs, f.tables, f.search, f.actions, f.charts, f.kpis, f.detail, f.chat, f.keyboard], [2, 1, 1, 2, 1, 1, 1, 1, 1]);
+  assert.equal(f.export, 0, 'text in a data block is not a function');
+  assert.equal(Object.keys(f).length, FEATURES.length);
+});
+
+test('the summary says in how many Spaces a function is found, and the filter lists with or without', () => {
+  const a = analyzeSpace(meta({ slug: 'a', title: 'A' }), '<table></table><table></table>', NOW);
+  const b = analyzeSpace(meta({ slug: 'b', title: 'B' }), '<div></div>', NOW);
+  const bad = failedReport(meta({ slug: 'c', title: 'C' }), 'HTTP 500');
+  const sum = summarize([a, b, bad]), t = sum.features.find((x) => x.id === 'tables');
+  assert.deepEqual([t.spaces, t.total, t.share], [1, 2, 0.5], 'the unreadable Space is not counted either way');
+  assert.deepEqual(filterReports([a, b, bad], 'all', '', '', { id: 'tables', has: true }).map((r) => r.slug), ['a']);
+  assert.deepEqual(filterReports([a, b, bad], 'all', '', '', { id: 'tables', has: false }).map((r) => r.slug), ['b']);
 });

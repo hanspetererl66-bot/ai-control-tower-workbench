@@ -5783,3 +5783,15 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .sa-findings p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }
 .sa-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 @media (max-width: 900px) { .sa-grid { grid-template-columns: 1fr; } .sa-row { grid-template-columns: minmax(0, 2fr) 1fr 1fr; } .sa-row > :nth-child(n+4) { display: none; } .sa-row-head > :nth-child(n+4) { display: none; } }
+
+.sa-fns h2 { margin: 0 0 4px; font-size: 18px; }
+.sa-fns > p { margin: 0 0 12px; font-size: 13px; }
+.sa-fn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.sa-fn { display: grid; gap: 6px; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; transition: border-color .15s; }
+.sa-fn:hover, .sa-fn-on { border-color: var(--accent); }
+.sa-fn-name { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.sa-fn b { font-size: 26px; letter-spacing: -.02em; }
+.sa-fn b small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.sa-sub { margin: 14px 0 4px; font-size: 13px; color: var(--muted); }
+.sa-have { margin: 0; font-size: 13px; line-height: 1.6; }
+@media (prefers-reduced-motion: reduce) { .sa-fn { transition: none; } }

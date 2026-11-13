@@ -13,9 +13,35 @@ export type Finding = { rule: RuleId; severity: Severity; title: string; detail:
 export type Health = 'fix' | 'review' | 'minor' | 'ok';
 export type SpaceReport = {
   slug: string; title: string; domain: string; bytes: number; cards: number; asOf: string | null; updatedAt: number;
-  findings: Finding[]; health: Health; score: number; error: string;
+  findings: Finding[]; health: Health; score: number; error: string; features: FeatureCounts;
 };
 export type HealthFilter = 'all' | Health;
+
+/** The functions a Space can offer, found by patterns in its page (not by running it). `total` of a function is how often it appears. */
+export const FEATURES = [
+  { id: 'tabs', label: 'Tabs', hint: 'Views to switch between', re: /role=["']tab["']|class=["'][^"']*\btab(?:-btn|-button|s-btn)?\b[^"']*["']/gi },
+  { id: 'kpis', label: 'Key figures', hint: 'KPI tiles with numbers', re: /class=["'][^"']*\b(?:kpi|stat|metric)s?(?:-\w+)?\b/gi },
+  { id: 'tables', label: 'Tables', hint: 'Rows and columns', re: /<table\b/gi },
+  { id: 'charts', label: 'Charts', hint: 'Inline SVG or canvas drawings', re: /<canvas\b|<svg\b[^>]*\b(?:viewBox|width)=/gi },
+  { id: 'search', label: 'Search', hint: 'A search field', re: /type=["']search["']|<input\b[^>]*placeholder=["'][^"']*(?:search|suche|find)/gi },
+  { id: 'filters', label: 'Filters', hint: 'Drop-downs and filter buttons', re: /<select\b|class=["'][^"']*\b(?:filter|chip|seg)\b/gi },
+  { id: 'detail', label: 'Detail panel', hint: 'Drawer, dialog or side panel', re: /<dialog\b|role=["']dialog["']|class=["'][^"']*\b(?:drawer|modal|detail|panel-side)\b/gi },
+  { id: 'actions', label: 'Actions', hint: 'Buttons that do something', re: /<button\b/gi },
+  { id: 'chat', label: 'Hand-over to the chat', hint: 'Sends a message to the Werkbank', re: /postMessage\s*\(|ct:open|Ask the agent|Open in (?:the )?chat/gi },
+  { id: 'export', label: 'Export', hint: 'Download or copy', re: /\bdownload\b|\.csv\b|navigator\.clipboard|Export\b/g },
+  { id: 'keyboard', label: 'Keyboard use', hint: 'Responds to keys', re: /addEventListener\(\s*["']key(?:down|up)["']|\bonkey(?:down|up)=/gi },
+  { id: 'dark', label: 'Dark mode', hint: 'Follows the theme', re: /data-theme=["']dark["']|prefers-color-scheme:\s*dark|:root\[data-theme/gi },
+] as const;
+export type FeatureId = (typeof FEATURES)[number]['id'];
+export type FeatureCounts = Record<FeatureId, number>;
+const noFeatures = (): FeatureCounts => Object.fromEntries(FEATURES.map((f) => [f.id, 0])) as FeatureCounts;
+export function detectFeatures(html: string): FeatureCounts {
+  const code = html.replace(/<script[^>]*type=["']application\/json["'][^>]*>[\s\S]*?<\/script>/gi, '');
+  const out = noFeatures();
+  for (const f of FEATURES) out[f.id] = (code.match(f.re) ?? []).length;
+  return out;
+}
+export type FeatureFilter = { id: FeatureId; has: boolean } | null;
 
 export const HEALTH_LABEL: Record<Health, string> = { fix: 'Must fix', review: 'Review', minor: 'Minor', ok: 'Clean' };
 export const RULE_LABEL: Record<RuleId, string> = {
@@ -103,31 +129,35 @@ export function analyzeSpace(space: Space, html: string, now = Date.now()): Spac
   findings.sort((a, b) => WEIGHT[b.severity] - WEIGHT[a.severity] || b.count - a.count);
   const score = Math.max(0, 100 - findings.reduce((n, f) => n + WEIGHT[f.severity], 0));
   const health: Health = findings.some((f) => f.severity === 'high') ? 'fix' : findings.some((f) => f.severity === 'medium') ? 'review' : findings.length ? 'minor' : 'ok';
-  return { slug: space.slug, title: space.title, domain: space.domain ?? '', bytes, cards, asOf, updatedAt: space.updatedAt, findings, health, score, error: '' };
+  return { slug: space.slug, title: space.title, domain: space.domain ?? '', bytes, cards, asOf, updatedAt: space.updatedAt, findings, health, score, error: '', features: detectFeatures(html) };
 }
 
 /** A Space whose page could not be read is reported as such, never as clean. */
 export function failedReport(space: Space, why: string): SpaceReport {
-  return { slug: space.slug, title: space.title, domain: space.domain ?? '', bytes: 0, cards: space.cardCount ?? 0, asOf: null, updatedAt: space.updatedAt, findings: [], health: 'review', score: 0, error: why };
+  return { slug: space.slug, title: space.title, domain: space.domain ?? '', bytes: 0, cards: space.cardCount ?? 0, asOf: null, updatedAt: space.updatedAt, findings: [], health: 'review', score: 0, error: why, features: noFeatures() };
 }
 
-export type AnalysisSummary = { spaces: number; clean: number; minor: number; review: number; fix: number; findings: number; byRule: Array<{ rule: RuleId; spaces: number }> };
+export type AnalysisSummary = { spaces: number; clean: number; minor: number; review: number; fix: number; findings: number; byRule: Array<{ rule: RuleId; spaces: number }>; features: Array<{ id: FeatureId; label: string; hint: string; spaces: number; share: number; total: number }> };
 export function summarize(reports: SpaceReport[]): AnalysisSummary {
   const byRule = new Map<RuleId, number>();
   for (const r of reports) for (const f of r.findings) byRule.set(f.rule, (byRule.get(f.rule) ?? 0) + 1);
   return {
     spaces: reports.length, clean: reports.filter((r) => r.health === 'ok').length, minor: reports.filter((r) => r.health === 'minor').length, review: reports.filter((r) => r.health === 'review').length, fix: reports.filter((r) => r.health === 'fix').length,
     findings: reports.reduce((n, r) => n + r.findings.length, 0),
+    features: FEATURES.map((f) => {
+      const read = reports.filter((r) => !r.error), has = read.filter((r) => r.features[f.id] > 0);
+      return { id: f.id, label: f.label, hint: f.hint, spaces: has.length, share: read.length ? has.length / read.length : 0, total: has.reduce((n, r) => n + r.features[f.id], 0) };
+    }),
     byRule: [...byRule].map(([rule, spaces]) => ({ rule, spaces })).sort((a, b) => b.spaces - a.spaces),
   };
 }
 
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 /** Worst first, then by name. Filter by health, domain and a search over title, slug and findings. */
-export function filterReports(reports: SpaceReport[], health: HealthFilter, domain: string, query: string): SpaceReport[] {
+export function filterReports(reports: SpaceReport[], health: HealthFilter, domain: string, query: string, fn: FeatureFilter = null): SpaceReport[] {
   const q = norm(query).split(/\s+/).filter(Boolean), order: Record<Health, number> = { fix: 0, review: 1, minor: 2, ok: 3 };
   return reports
-    .filter((r) => (health === 'all' || r.health === health) && (!domain || r.domain === domain))
+    .filter((r) => (health === 'all' || r.health === health) && (!domain || r.domain === domain) && (!fn || (!r.error && (r.features[fn.id] > 0) === fn.has)))
     .filter((r) => { const hay = norm(`${r.title} ${r.slug} ${r.domain} ${r.findings.map((f) => `${f.title} ${RULE_LABEL[f.rule]}`).join(' ')}`); return q.every((w) => hay.includes(w)); })
     .sort((a, b) => order[a.health] - order[b.health] || a.score - b.score || a.title.localeCompare(b.title));
 }

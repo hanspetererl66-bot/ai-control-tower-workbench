@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { analyzeSpace, failedReport, filterReports, fixRequest, summarize, HEALTH_LABEL, RULE_LABEL, type HealthFilter, type SpaceReport } from '../space-analysis';
+import { FEATURES, analyzeSpace, failedReport, filterReports, fixRequest, summarize, HEALTH_LABEL, RULE_LABEL, type FeatureFilter, type HealthFilter, type SpaceReport } from '../space-analysis';
 import { fetchSpaceHtml, type Space } from '../spaces';
 
 const FILTERS: HealthFilter[] = ['all', 'fix', 'review', 'minor', 'ok'];
@@ -21,6 +21,7 @@ export default function SpaceAnalysisView({ spaces, onBack, onOpenSpace, fetchHt
   const [health, setHealth] = useState<HealthFilter>('all');
   const [domain, setDomain] = useState('');
   const [query, setQuery] = useState('');
+  const [fn, setFn] = useState<FeatureFilter>(null);
   const [picked, setPicked] = useState('');
   const [copied, setCopied] = useState('');
   const run = useRef(0);
@@ -44,7 +45,7 @@ export default function SpaceAnalysisView({ spaces, onBack, onOpenSpace, fetchHt
 
   const sum = useMemo(() => summarize(reports), [reports]);
   const domains = useMemo(() => [...new Set(reports.map((r) => r.domain).filter(Boolean))].sort(), [reports]);
-  const rows = useMemo(() => filterReports(reports, health, domain, query), [reports, health, domain, query]);
+  const rows = useMemo(() => filterReports(reports, health, domain, query, fn), [reports, health, domain, query, fn]);
   const selected = reports.find((r) => r.slug === picked) ?? rows[0] ?? null;
   const counts: Record<HealthFilter, number> = { all: sum.spaces, fix: sum.fix, review: sum.review, minor: sum.minor, ok: sum.clean };
 
@@ -82,6 +83,25 @@ export default function SpaceAnalysisView({ spaces, onBack, onOpenSpace, fetchHt
         </div>
       </section>
 
+      <section className="sa-fns" aria-label="Key functions of the Spaces" data-guide="functions">
+        <h2>Key functions <span className="om-dim">in how many Spaces</span></h2>
+        <p className="om-dim">Click a function to list the Spaces that have it; click again to list those that lack it; a third time clears the filter.</p>
+        <div className="sa-fn-grid">
+          {sum.features.map((f) => {
+            const on = fn?.id === f.id, state = on ? (fn?.has ? 'has' : 'lacks') : '';
+            const cycle = () => setFn(!on ? { id: f.id, has: true } : fn?.has ? { id: f.id, has: false } : null);
+            return (
+              <button key={f.id} className={`sa-fn ${on ? 'sa-fn-on' : ''}`} aria-pressed={on} onClick={cycle} title={f.hint}>
+                <span className="sa-fn-name">{f.label}{on && <span className="om-chip om-chip-sm">{state === 'has' ? 'with' : 'without'}</span>}</span>
+                <b>{f.spaces}<small> of {sum.spaces - reports.filter((r) => r.error).length}</small></b>
+                <i className="om-meter" role="img" aria-label={`${Math.round(f.share * 100)} percent`}><i style={{ width: `${Math.round(f.share * 100)}%` }} /></i>
+                <span className="om-dim">{f.total} in total</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <div className="sa-grid">
         <section className="om-table" aria-label="Spaces">
           <div className="om-table-head">
@@ -100,6 +120,7 @@ export default function SpaceAnalysisView({ spaces, onBack, onOpenSpace, fetchHt
             </div>
           </div>
           <div className="sa-row sa-row-head" aria-hidden="true"><span>Space</span><span>Group</span><span>Cards</span><span>Size</span><span>Findings</span><span>Result</span></div>
+          {fn && <p className="om-note" role="status">Showing Spaces {fn.has ? 'with' : 'without'}: {sum.features.find((f) => f.id === fn.id)?.label}. Unreadable Spaces are left out.</p>}
           {!running && rows.length === 0 && <p className="om-empty">No Space matches.</p>}
           {rows.map((r) => (
             <button key={r.slug} className={`sa-row ${r.slug === selected?.slug ? 'om-row-on' : ''}`} aria-pressed={r.slug === selected?.slug} onClick={() => setPicked(r.slug)}>
@@ -121,6 +142,8 @@ export default function SpaceAnalysisView({ spaces, onBack, onOpenSpace, fetchHt
             <p className="om-dim">{selected.slug} · {selected.cards} cards · {kb(selected.bytes)}{selected.asOf ? ` · data as of ${selected.asOf}` : ''}</p>
             {selected.error && <p className="om-note" role="alert">The page could not be read: {selected.error}. It is not counted as clean.</p>}
             {!selected.error && selected.findings.length === 0 && <p className="om-note">No findings. This Space keeps the rules that were checked.</p>}
+            <h3 className="sa-sub">Functions on this page</h3>
+            <p className="sa-have">{FEATURES.filter((f) => selected.features[f.id] > 0).map((f) => `${f.label} (${selected.features[f.id]})`).join(' · ') || 'None found'}</p>
             <ul className="sa-findings">
               {selected.findings.map((f) => (
                 <li key={f.rule}>
