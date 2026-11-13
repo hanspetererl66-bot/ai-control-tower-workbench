@@ -189,3 +189,81 @@ test('every table has a header row on every tab and customer, so the Space toolb
   assert.ok(tables.length >= 12, 'tables were found');
   assert.deepEqual(tables.filter((x) => x.endsWith('NO HEADER')), []);
 });
+
+test('guide: seven steps, each with a task, a reason and a way to tell it is done', () => {
+  assert.equal(L.guide.steps.length, 7);
+  for (const s of L.guide.steps) {
+    assert.ok(s.title && s.todo && s.why, `${s.id} has its texts`);
+    assert.ok(data.customers.some((c) => c.id === s.cid) && data.persons[s.actor], `${s.id} points at a real customer and person`);
+  }
+  const S = { tab: 'list', actor: 'sven', cid: 'nordlicht', rel: {}, msg: {}, wrong: {}, seen: {} };
+  const G = L.guide.fresh();
+  assert.equal(L.guide.advance(G, S), '', 'nothing done yet');
+  S.seen.why = true;
+  assert.equal(L.guide.advance(G, S), 'Start with the ranking');
+  assert.equal(G.i, 1);
+  S.wrong.X = true; S.seen.ours = true; S.tab = 'ours'; S.cid = 'kuestenlogistik';
+  L.guide.advance(G, S);
+  assert.equal(G.i, 3, 'reasons and our side are done together');
+  S.rel['nordlicht:P1'] = { by: 'sven' };
+  L.guide.advance(G, S);
+  assert.equal(G.i, 3, 'P2 is still missing');
+  S.rel['nordlicht:P2'] = { by: 'sven' };
+  S.msg.k = { ok: false, code: 'agent' };
+  S.seen.track = true; S.seen.rights = true;
+  L.guide.advance(G, S);
+  assert.equal(G.i, 7, 'the guide is complete');
+  assert.equal(G.flash, 'Who may release what, and the audit trail');
+});
+
+test('guide in the page: it leads through the flow by itself, can be hidden and restarted, and tips open and close', async () => {
+  const { VirtualConsole } = await import('jsdom');
+  const errors = [];
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', (e) => errors.push(String(e.message)));
+  const d = new JSDOM(page, { runScripts: 'dangerously', virtualConsole: vc }).window.document;
+  const click = (sel) => { const el = d.querySelector(sel); assert.ok(el, `missing ${sel}`); el.click(); };
+  const guide = () => d.querySelector('#guide').textContent;
+  assert.match(guide(), /Step 1 of 7.*Start with the ranking/s);
+  click('#main tr.click[data-id="nordlicht"]');
+  assert.match(guide(), /Done: Start with the ranking/);
+  assert.match(guide(), /Step 2 of 7/);
+  click('#guide [data-act="gnext"]');
+  assert.match(guide(), /Step 3 of 7.*Check our side first/s);
+  click('#guide [data-act="gback"]');
+  assert.match(guide(), /Step 2 of 7/);
+  click('#guide [data-act="gnext"]');
+  click('#guide [data-act="ggo"]');
+  click('#main [data-act="cust"][data-id="kuestenlogistik"]');
+  assert.match(guide(), /Step 4 of 7.*Release the steps in order/s);
+  click('#guide [data-act="ggo"]');
+  click('#main [data-act="release"][data-id="P2"]');
+  assert.match(d.querySelector('#main .verdict.warn').textContent, /P2 needs P1 first/);
+  assert.match(guide(), /Step 4 of 7/, 'a blocked try does not finish the step');
+  click('#main [data-act="release"][data-id="P1"]');
+  click('#main [data-act="release"][data-id="P2"]');
+  assert.match(guide(), /Step 5 of 7.*Claude cannot release/s);
+  click('#guide [data-act="ggo"]');
+  click('#main [data-act="release"][data-id="P3"]');
+  assert.match(guide(), /Step 6 of 7/);
+  click('#guide [data-act="ggo"]');
+  assert.match(guide(), /Step 7 of 7/);
+  click('#guide [data-act="ggo"]');
+  assert.match(guide(), /Guide complete/);
+  click('#guide [data-act="ghide"]');
+  assert.doesNotMatch(guide(), /Guide complete/);
+  click('#guide [data-act="gshow"]');
+  click('#guide [data-act="gstart"]');
+  assert.match(guide(), /Step 1 of 7/);
+  click('#tabs [data-id="list"]');
+  const tipb = d.querySelector('#main .tipb');
+  assert.ok(tipb, 'the list has a tip button');
+  assert.equal(tipb.getAttribute('aria-expanded'), 'false');
+  tipb.click();
+  assert.match(d.querySelector('#guide .tipline').textContent, /open amount times the chance of a late payment/i);
+  assert.equal(d.querySelector('#main .tipb').getAttribute('aria-expanded'), 'true');
+  click('#guide .tipx');
+  assert.equal(d.querySelector('#guide .tipline'), null);
+  for (const t of ['why', 'ours', 'act', 'track', 'rights']) { click(`#tabs [data-id="${t}"]`); assert.ok(d.querySelector('#main .tipb'), `${t} has a tip`); }
+  assert.deepEqual(errors, []);
+});
