@@ -5769,3 +5769,47 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .om-plan-notes summary, .om-plan-record summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
 .om-plan-notes > div { margin: 8px 0; }
 .om-plan-record { margin-top: 6px; }
+
+/* Diagrams the agent writes as ```mermaid blocks */
+.mermaid-diagram {
+  margin: 6px 0;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.mermaid-diagram figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.mermaid-actions {
+  display: flex;
+  gap: 10px;
+}
+.mermaid-svg {
+  padding: 10px;
+  overflow-x: auto;
+}
+.mermaid-svg svg {
+  max-width: 100%;
+  height: auto;
+}
+.mermaid-pending,
+.mermaid-error {
+  padding: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.mermaid-source {
+  margin: 0;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+  overflow-x: auto;
+  font-size: 12px;
+}
