@@ -55,6 +55,8 @@ Zum Einüben (nicht gewertet) dient ein dritter Fall, zum Beispiel Lindenau, AI 
 
 **Bedingung B (mit):** Der Teilnehmer darf "Draft a briefing" nutzen und das Ergebnis ändern, ergänzen oder verwerfen. Zeit, die er mit dem Prüfen und Ändern verbringt, zählt mit.
 
+**Regel für beide Bedingungen: Der Reiter "Autopilot" wird nicht benutzt.** Er ist seit PR #390 im Space. "Run autopilot" spielt Angebot, Richtlinienprüfung und Versand durch, verändert dabei die Stufen der Renewals und nimmt sie nach "Customer signs" aus "Today" und der Aktionsliste. Sein Schritt "Brief" ist ein regelbasierter Text aus den Signalen, nicht das Briefing des Agenten. Beides würde die Zeitmessung und den Vergleich verfälschen. Die Pilotleitung sagt es in der Einführung und achtet während der Sitzung darauf.
+
 **Ablauf je Sitzung (etwa 60 Minuten):** Einführung und Einüben 10 Minuten, Aufgabe 1 (höchstens 20), Pause 5, Aufgabe 2 (höchstens 20), kurzer Fragebogen 5.
 
 ## Messgrößen
@@ -87,7 +89,7 @@ Die Antworten stehen im Erfassungsbogen (`docs/pilot/renewals-briefing-pilot-she
 1. **Datenfehler H-202 (erledigt am 13.11.2026):** Die Mail `H-202` sprach von einem Ariba-Preisanstieg über dem Cap von 3 %, hing aber am Angebot der Commerce Cloud von Hanse (`OFF-2026-0402`). Hanse hat einen Ariba-Vertrag (`C-2025-0458`, bis 30.06.2028, kein Renewal-Fall); die frühere Aussage in diesem Dokument, Hanse habe keinen Ariba-Vertrag, war falsch. Die Mail handelt jetzt von der Commerce Cloud (Cap 4 %). Die Mail `H-201` hing am Angebot der Integration Suite statt am Angebot der Commerce Cloud und erschien auch dort; sie ist umgehängt, ein Test prüft jetzt, dass Angebot und Vertrag einer Mail zusammenpassen. Wer den Pilot vorbereitet, prüft, dass der Stand `main` diese Korrektur enthält und der Space neu installiert ist (`npm run install:examples`).
 2. **App neu starten** (nötig nach Änderungen in `src/`), Renewals-Space aktualisieren (`npm run install:examples`).
 3. **Ein Agent, ein Lauf:** Der Agent bearbeitet nur eine Antwort zugleich. Während der Sitzung darf niemand im Chat arbeiten, sonst kommt "The agent is still busy". Die Sitzungen laufen nacheinander.
-4. **Sitzungszählung zurücksetzen** ("Reset demo") vor jeder Person, damit Durchschnitt und Anzahl zu ihr gehören.
+4. **Sitzungszählung zurücksetzen** ("Reset demo") vor jeder Person, damit Durchschnitt und Anzahl zu ihr gehören. Das setzt auch den Autopiloten zurück; im Reiter "Autopilot" muss danach "Nothing started yet" stehen. Eine Sitzung beginnt erst dann.
 5. **Chats aufräumen:** Jedes Briefing legt einen eigenen Chat "Renewal briefing" an. Nach dem Pilot löschen.
 6. **Material:** Stoppuhr, Erfassungsbogen, Aufgabenblatt (Abschnitt "Aufgabe"), Prüfliste (Anhang A), Fragebogen.
 7. **Keine echten Kundendaten** und keine echten Mails im Pilot.
@@ -97,6 +99,7 @@ Die Antworten stehen im Erfassungsbogen (`docs/pilot/renewals-briefing-pilot-she
 
 - **Beispieldaten:** Die Vergleichsaufgabe ist kürzer und klarer als echte Vorbereitung. `s` kann dort größer oder kleiner sein.
 - **Kleine Zahl:** 8 Teilnehmer, 16 gewertete Aufgaben. Die Spanne wird groß sein.
+- **Autopilot:** Wird der Reiter doch benutzt, ändern sich Stufen und die Liste "Today". Die Sitzung wird dann mit einem Vermerk im Erfassungsbogen (`comments`) markiert und nicht gewertet.
 - **Nicht verblindet bei den Teilnehmern:** Sie wissen, ob sie das Briefing nutzen. Erwartungen können die Zeit und den Eindruck färben. Die Qualität wird verblindet bewertet.
 - **Lern- und Reihenfolgeeffekte:** durch die Zuordnung ausgeglichen, nicht beseitigt.
 - **Wartezeit des Agenten:** Sie zählt zur Zeit in Bedingung B. Schwankt sie stark (Modellanbieter, Last), schwankt auch `s`.
