@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { FUNNY, FUNNY_BY_PERIOD, FUNNY_SHARE, GREETINGS, greetingFor, periodOf } from '../src/greeting.ts';
+import { DAY_SHARE, FUNNY, FUNNY_BY_PERIOD, FUNNY_SHARE, GREETINGS, OCCASIONS, greetingFor, occasionOf, periodOf } from '../src/greeting.ts';
 
 const at = (hour) => new Date(2026, 10, 12, hour, 30);
 const seq = (...values) => { let i = 0; return () => values[Math.min(i++, values.length - 1)]; };
@@ -32,8 +32,8 @@ test('a plain greeting fits the time of day; a low first draw gives a light ques
 });
 
 test('every text is short English, one or two lines, and no text is used twice', () => {
-  const all = [...Object.values(GREETINGS).flat(), ...FUNNY, ...Object.values(FUNNY_BY_PERIOD).flat()];
-  assert.ok(all.length >= 20);
+  const all = [...Object.values(GREETINGS).flat(), ...FUNNY, ...Object.values(FUNNY_BY_PERIOD).flat(), ...Object.values(OCCASIONS).flat()];
+  assert.ok(all.length >= 30);
   for (const lines of all) {
     assert.ok(lines.length >= 1 && lines.length <= 2, lines.join('|'));
     for (const line of lines) {
@@ -65,4 +65,50 @@ test('the app uses it once per conversation and no longer has the fixed sentence
   assert.match(app, /const greeting = useMemo\(\(\) => greetingFor\(new Date\(\), Math\.random\), \[conversationState\.selectedId\]\)/);
   assert.match(app, /greeting\.lines\.map\(/);
   assert.ok(!app.includes('to get things done?'), 'the fixed headline is gone');
+});
+
+const day = (y, m, d, h = 9) => new Date(y, m - 1, d, h, 30);
+
+test('the occasion of a day follows the local date, the first that applies wins', () => {
+  const o = (y, m, d) => occasionOf(day(y, m, d));
+  assert.equal(o(2027, 1, 1), 'new-year');
+  assert.equal(o(2026, 11, 13), 'friday13', 'a Friday the 13th');
+  assert.equal(o(2026, 3, 13), 'friday13');
+  assert.equal(o(2026, 3, 30), 'quarter-end'); assert.equal(o(2026, 12, 31), 'quarter-end'); assert.equal(o(2026, 9, 28), 'quarter-end');
+  assert.equal(o(2026, 11, 30), 'month-end'); assert.equal(o(2026, 11, 29), 'month-end'); assert.equal(o(2026, 11, 28), 'weekend', 'the third last day of a month is not a month end');
+  assert.equal(o(2026, 2, 27), 'month-end', 'February has 28 days in 2026'); assert.equal(o(2028, 2, 28), 'month-end', 'and 29 in 2028 (28 is the second last day)');
+  assert.equal(o(2026, 11, 1), 'month-start', 'a Sunday that starts a month is a month start first'); assert.equal(o(2026, 11, 2), 'month-start');
+  assert.equal(o(2026, 11, 14), 'weekend'); assert.equal(o(2026, 11, 15), 'weekend');
+  assert.equal(o(2026, 11, 9), 'monday'); assert.equal(o(2026, 11, 20), 'friday'); assert.equal(o(2026, 11, 11), 'wednesday');
+  assert.equal(o(2026, 11, 12), null, 'a Thursday in the middle of a month has none'); assert.equal(o(2026, 11, 10), null, 'neither has a Tuesday');
+  assert.equal(o(2026, 11, 3), null);
+  assert.equal(occasionOf(day(2026, 11, 9, 23)), 'monday', 'the hour does not matter');
+});
+
+test('on a day with an occasion the plain greeting sometimes speaks about the day, a question still comes first', () => {
+  const monday = day(2026, 11, 9);
+  const dayGreeting = greetingFor(monday, seq(0.9, 0.1, 0));
+  assert.equal(dayGreeting.occasion, 'monday'); assert.equal(dayGreeting.funny, false);
+  assert.deepEqual(dayGreeting.lines, OCCASIONS.monday[0]);
+  assert.deepEqual(greetingFor(monday, seq(0.9, 0.1, 0.9999)).lines, OCCASIONS.monday.at(-1));
+  const timeGreeting = greetingFor(monday, seq(0.9, 0.9, 0));
+  assert.deepEqual(timeGreeting.lines, GREETINGS.morning[0], 'the time of day when the day draw says no');
+  assert.equal(timeGreeting.occasion, 'monday', 'the occasion is still reported');
+  const q = greetingFor(monday, seq(0.1, 0));
+  assert.equal(q.funny, true); assert.deepEqual(q.lines, FUNNY[0]);
+  // the Friday the 13th has its own line
+  assert.deepEqual(greetingFor(day(2026, 11, 13), seq(0.9, 0, 0)).lines, OCCASIONS.friday13[0]);
+  // a day without an occasion makes no extra draw: the same draws give the time-of-day greeting as before
+  assert.deepEqual(greetingFor(at(9), seq(0.9, 0)).lines, GREETINGS.morning[0]);
+  assert.equal(greetingFor(at(9), seq(0.9, 0)).occasion, null);
+});
+
+test('on an occasion day the shares are about one in four a question and a share of the rest about the day', () => {
+  let funny = 0, dayLines = 0, n = 0;
+  for (let a = 0; a < 40; a++) for (let b = 0; b < 40; b++) {
+    const g = greetingFor(day(2026, 11, 9), seq(a / 40, b / 40, 0.5));
+    funny += g.funny ? 1 : 0; dayLines += !g.funny && OCCASIONS.monday.includes(g.lines) ? 1 : 0; n++;
+  }
+  assert.ok(Math.abs(funny / n - FUNNY_SHARE) < 0.03, String(funny / n));
+  assert.ok(Math.abs(dayLines / n - (1 - FUNNY_SHARE) * DAY_SHARE) < 0.03, String(dayLines / n));
 });
