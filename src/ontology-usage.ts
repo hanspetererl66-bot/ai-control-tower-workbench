@@ -7,7 +7,7 @@
  * A found usage is only ever "suspected". It becomes "confirmed" when a person says so (`UsageDecision`), and a usage that
  * somebody declared by hand (`Binding`) is "declared". The app never writes the catalog; nothing here changes anything.
  */
-import { metaOf, type Binding, type Governance, type Ontology } from './ontology-manager.ts';
+import { metaOf, type Binding, type Governance, type Ontology, type UsageDecision } from './ontology-manager.ts';
 import type { RItem } from './registry.ts';
 
 // ---------------------------------------------------------------- types
@@ -54,7 +54,7 @@ export interface Usage {
   ambiguous: boolean;
 }
 
-export interface UsageDecision { decision: 'confirmed' | 'dismissed'; by: string; at: string }
+export type { UsageDecision };
 export type DecisionMap = Record<string, UsageDecision>;
 
 export const MAX_USAGES_PER_TERM = 50;
@@ -355,4 +355,17 @@ export function sourcesFromSpaces(spaces: ReadonlyArray<{ slug: string; title: s
     if (texts[s.slug]) fields.push({ field: 'body', text: clip(texts[s.slug], 20000) });
     return { kind: 'space' as const, ref: s.slug, name: s.title, owner: '', criticality: '', fields };
   });
+}
+
+// ---------------------------------------------------------------- decisions in the governance file
+
+/** The decisions of people as stored in `governance.json` (older files have none). */
+export const decisionsOf = (gov: Governance): DecisionMap => gov.usageDecisions ?? {};
+
+/**
+ * Records (or takes back) a decision about one found user. Returns a new Governance; the caller saves it like every other
+ * governance change. Nothing else changes: no binding is created and the catalog is never touched.
+ */
+export function setUsageDecision(gov: Governance, key: string, decision: UsageDecision['decision'], by: string, now: number): Governance {
+  return { ...gov, usageDecisions: decide(decisionsOf(gov), key, decision, by, now) };
 }

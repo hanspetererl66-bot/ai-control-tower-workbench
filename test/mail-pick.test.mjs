@@ -86,3 +86,33 @@ test('wired: the + menu has "E-mail…", the app reads Gmail itself and only wit
   assert.match(app, /mail=\{mailPick\}/); assert.match(app, /mailHint=\{mailHint\}/);
   assert.match(app, /Connect Gmail under Connectors & Skills/);
 });
+
+test('the chat history keeps the name of a mail and a flag, never its text', async () => {
+  const { historyAttachment } = await import('../src/attachments.ts');
+  const { MAIL_HISTORY_NOTE } = await import('../src/mail-pick.ts');
+  const mail = mailToAttachment(normalizeMessage({ id: 'm1', from: 'Anna', subject: 'Offer', body: 'The secret body text.' }));
+  const kept = historyAttachment(mail);
+  assert.deepEqual(kept, { name: 'Mail: Offer', kind: 'text', mimeType: 'text/plain', inline: true });
+  assert.ok(!JSON.stringify(kept).includes('secret body'), 'the text is not part of the history entry');
+  assert.ok(!('path' in kept) && !('uri' in kept) && !('extractedText' in kept));
+  const file = { id: 'f', name: 'a.txt', path: '/tmp/a.txt', uri: 'file:///tmp/a.txt', size: 1, mimeType: 'text/plain', kind: 'text', extractedText: 'file text', imageData: '', warning: '' };
+  assert.deepEqual(historyAttachment(file), { name: 'a.txt', kind: 'text', mimeType: 'text/plain' }, 'a file keeps no flag');
+  assert.match(MAIL_HISTORY_NOTE, /not kept in the history/); assert.match(MAIL_HISTORY_NOTE, /Attach it again/);
+  // a stored conversation brings the flag back, nothing else is added
+  const { loadConversationState, saveConversationState, createConversation } = await import('../src/conversations.ts');
+  const conv = { ...createConversation(), messages: [{ role: 'user', text: 'Summarise', tools: [], attachments: [kept] }] };
+  const store = new Map();
+  const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) };
+  saveConversationState(storage, { items: [conv], selectedId: conv.id });
+  assert.ok(![...store.values()].join('').includes('secret body'));
+  assert.deepEqual(loadConversationState(storage).items[0].messages[0].attachments, [kept]);
+});
+
+test('wired: the history entry is built by historyAttachment and the chat shows the note next to a mail', () => {
+  const app = read('src/App.tsx'), chat = read('src/ui/Chat.tsx'), css = read('src/theme.css');
+  assert.match(app, /attachments: attachments\.map\(historyAttachment\)/);
+  assert.ok(!/attachments\.map\(\(\{ name, kind, mimeType \}\)/.test(app), 'no second place that builds the entry by hand');
+  assert.match(chat, /attachment\.inline \? MAIL_HISTORY_NOTE : undefined/);
+  assert.match(chat, /m\.attachments\?\.some\(\(attachment\) => attachment\.inline\) && <div className="msg-attachment-note">\{MAIL_HISTORY_NOTE\}<\/div>/);
+  assert.match(css, /\.msg-attachment-note \{/);
+});

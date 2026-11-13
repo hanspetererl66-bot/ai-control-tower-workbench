@@ -1021,6 +1021,14 @@ button {
   margin-bottom: 7px;
 }
 
+.msg-attachment-note {
+  margin: -2px 0 7px;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.75;
+  white-space: normal;
+}
+
 .msg-attachment {
   display: inline-flex;
   align-items: center;
@@ -4982,6 +4990,11 @@ textarea.studio-field { min-height: 120px; }
 .develop-card-wide .develop-card-text { max-width: 78ch; min-height: 0; }
 .develop-go-wide { width: auto; min-width: 170px; margin-top: 0; flex: none; }
 @media (max-width: 700px) { .develop-card-wide { flex-direction: column; align-items: stretch; } .develop-go-wide { width: 100%; } }
+/* The Develop start page scales to the window (develop-fit.ts): laid out at a fixed design width with four tiles in a row, then scaled as a whole so every tile is always shown. Too small to read: the responsive grid and scrolling take over. */
+.develop-fit { margin-block: auto; flex: none; }
+.develop-fit:not(.develop-fit-on) { display: contents; }
+.develop-fit-on .develop { width: 1240px; max-width: none; margin: 0; transform-origin: top left; }
+.develop-fit-on .develop-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: none; margin: 0; }
 
 /* ---------- Sources view (start from requirements) ---------- */
 .sx-steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
@@ -5702,3 +5715,14 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
   display: grid;
   gap: 4px;
 }
+
+/* Ontology Manager: probable users of a term (found in registry, skills and spaces; suspected until a person decides). Tokens only. */
+.om-usage { margin: 14px 0 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.om-usage h4 { margin: 0 0 6px; }
+.om-usage-summary { margin: 6px 0; font-size: 13px; line-height: 1.5; }
+.om-usage-list { margin: 8px 0; }
+.om-usage-row { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.om-usage-row:last-child { border-bottom: 0; }
+.om-usage-evidence { margin: 0; font-size: 12px; color: var(--ink); line-height: 1.45; overflow-wrap: anywhere; }
+.om-usage-warn { color: var(--om-warn); font-size: 12px; }
+.om-usage-notes { margin: 10px 0 8px; padding-left: 18px; }
