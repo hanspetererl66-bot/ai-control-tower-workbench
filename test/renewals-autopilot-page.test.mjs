@@ -135,3 +135,57 @@ test('renewals autopilot: a booking is only accepted from Order-to-Cash (Softwar
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
+
+test('renewals autopilot: it never lowers a stage a person set, and "Reset autopilot" gives that stage back', async () => {
+  const p = await open();
+  const [byHand, untouched] = p.w.__renewals().filter((x) => x.status !== 'Lapsed' && x.annualEur >= 30000 && x.stage === 0);
+  p.w.__state.stage[byHand.id] = 3; // a person took this renewal to "Sent" by hand
+  click(p.w, p.q('#tab-autopilot')); click(p.w, p.q('#ap-run'));
+  assert.ok(p.w.__state.ap[byHand.id], 'the autopilot ran on it');
+  assert.equal(p.w.__state.ap[byHand.id].prevStage, 3, 'it remembers the stage from before');
+  assert.equal(p.w.__state.stage[byHand.id], 3, 'the stage is not lowered');
+  assert.equal(p.w.__state.stage[untouched.id], 1, 'a renewal nobody touched starts at 1');
+  click(p.w, p.q('#ap-reset'));
+  assert.equal(p.w.__state.stage[byHand.id], 3, 'reset gives back the stage a person had set');
+  assert.equal(p.w.__state.stage[untouched.id], undefined, 'and removes what the autopilot set');
+  assert.equal(p.w.__state.ap[byHand.id], undefined);
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewals autopilot: the stage "Prepared" says who prepared it', async () => {
+  const p = await open();
+  const [auto, person] = p.w.__renewals().filter((x) => x.status !== 'Lapsed' && x.annualEur >= 30000 && x.stage === 0);
+  p.w.__state.stage[person.id] = 1; // a person marked this one as prepared
+  click(p.w, p.q('#tab-autopilot')); click(p.w, p.q('#ap-run'));
+  click(p.w, p.q('#tab-list'));
+  click(p.w, p.q(`#rows tr[data-id="${auto.id}"]`));
+  assert.match(p.q('#detail .flow').textContent, /Prepared \(autopilot\)/);
+  assert.doesNotMatch(p.q('#detail .flow').textContent, /by you/, 'the autopilot is not "you"');
+  click(p.w, p.q(`#rows tr[data-id="${person.id}"]`));
+  assert.match(p.q('#detail .flow').textContent, /Prepared \(by you\)/, 'a person who prepared it is still named');
+  assert.doesNotMatch(p.q('#detail .flow').textContent, /Prepared \(autopilot\)/);
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewals autopilot: the remembered stage is part of the saved state and a damaged value is dropped', async () => {
+  const hosted = async () => { const p = await open(); const sent = []; Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } }); return { p, sent }; };
+  const restore = (p, state) => p.w.dispatchEvent(new p.w.MessageEvent('message', { data: { type: 'wb:restore', state, handoffs: [] }, source: p.w.parent }));
+  const a = await hosted();
+  const c = a.p.w.__renewals().find((x) => x.status !== 'Lapsed' && x.annualEur >= 30000 && x.stage === 0);
+  a.p.w.__state.stage[c.id] = 2;
+  click(a.p.w, a.p.q('#tab-autopilot')); click(a.p.w, a.p.q('#ap-run'));
+  const saved = JSON.parse(JSON.stringify(a.sent.filter((m) => m.type === 'wb:state').at(-1).state));
+  assert.equal(saved.ap[c.id].prevStage, 2);
+  a.p.w.close();
+  const ok = await hosted(); restore(ok.p, saved);
+  assert.equal(ok.p.w.__state.ap[c.id].prevStage, 2, 'it comes back');
+  ok.p.w.close();
+  for (const bad of [9, -1, 'x', 1.5]) {
+    const b = await hosted(); const broken = JSON.parse(JSON.stringify(saved)); broken.ap[c.id].prevStage = bad;
+    restore(b.p, broken);
+    assert.equal(b.p.w.__state.ap[c.id], undefined, `prevStage ${JSON.stringify(bad)} is not trusted`);
+    b.p.w.close();
+  }
+});
