@@ -41,7 +41,7 @@ contextBridge.exposeInMainWorld('host', {
   observabilityCall: (view, params) => ipcRenderer.invoke('observability-call', view, params),
   recruitingHireList: (args) => ipcRenderer.invoke('recruiting-hire-list', args),
   monitoringConfigGet: () => ipcRenderer.invoke('monitoring-config-get'),
-  monitoringConfigSet: (baseUrl, token) => ipcRenderer.invoke('monitoring-config-set', { baseUrl, token }),
+  monitoringConfigSet: (baseUrl, token, adapter) => ipcRenderer.invoke('monitoring-config-set', { baseUrl, token, adapter }),
   monitoringConfigClear: () => ipcRenderer.invoke('monitoring-config-clear'),
   monitoringConfigTest: () => ipcRenderer.invoke('monitoring-config-test'),
   monitoringAlerts: (hours) => ipcRenderer.invoke('monitoring-alerts', hours),

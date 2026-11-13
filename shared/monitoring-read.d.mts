@@ -9,6 +9,8 @@ export function checkBaseUrl(raw: unknown): string;
 export function checkToken(raw: unknown): string;
 export function assertReadOnly(adapter: unknown): MonitoringAdapter;
 export function createHttpJsonAdapter(opts: { baseUrl: string; token: string; fetchImpl?: typeof fetch; timeoutMs?: number }): MonitoringAdapter;
+export function createZabbixAdapter(opts: { baseUrl: string; token: string; fetchImpl?: typeof fetch; timeoutMs?: number }): MonitoringAdapter;
+export const ADAPTERS: Record<string, (opts: { baseUrl: string; token: string; fetchImpl?: typeof fetch }) => MonitoringAdapter>;
 export function adapterFromEnv(env: Record<string, string | undefined> | null | undefined, fetchImpl?: typeof fetch): MonitoringAdapter | null;
 export function readMap(file: string): { hosts: Record<string, unknown>; topology: Record<string, string[]> };
 export function createMonitoringRead(opts: { adapter: MonitoringAdapter | null | (() => MonitoringAdapter | null); mapFile: string; now?: () => Date; log?: (e: Record<string, unknown>) => void }): {

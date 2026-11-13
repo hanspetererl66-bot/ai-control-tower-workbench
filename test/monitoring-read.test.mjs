@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { adapterFromEnv, assertReadOnly, createHttpJsonAdapter, createMonitoringRead, MonitoringError, normalizeAlert, normalizeAll, readMap, toMinute } from '../shared/monitoring-read.mjs';
+import { adapterFromEnv, assertReadOnly, createHttpJsonAdapter, createMonitoringRead, createZabbixAdapter, MonitoringError, normalizeAlert, normalizeAll, readMap, toMinute } from '../shared/monitoring-read.mjs';
 
 const dir = mkdtempSync(join(tmpdir(), 'mon-'));
 const mapFile = join(dir, 'monitoring-map.json');
@@ -93,11 +93,12 @@ test('the adapter accepts a plain array too, and refuses http, logins in the add
   await assert.rejects(run(failing), (e) => e instanceof MonitoringError && !e.message.includes(TOKEN));
 });
 
-test('adapterFromEnv: nothing configured gives null; only the http-json adapter exists', () => {
+test('adapterFromEnv: nothing configured gives null; http-json and zabbix exist, anything else is refused', () => {
   assert.equal(adapterFromEnv({}), null);
   assert.equal(adapterFromEnv({ MONITORING_BASE_URL: 'https://m.example' }), null);
   assert.equal(adapterFromEnv({ MONITORING_BASE_URL: 'https://m.example', MONITORING_READ_TOKEN: TOKEN }, fakeFetch([])).name, 'http-json');
-  assert.throws(() => adapterFromEnv({ MONITORING_BASE_URL: 'https://m.example', MONITORING_READ_TOKEN: TOKEN, MONITORING_ADAPTER: 'zabbix' }), /Only http-json/);
+  assert.equal(adapterFromEnv({ MONITORING_BASE_URL: 'https://m.example', MONITORING_READ_TOKEN: TOKEN, MONITORING_ADAPTER: 'zabbix' }, fakeFetch([])).name, 'zabbix');
+  assert.throws(() => adapterFromEnv({ MONITORING_BASE_URL: 'https://m.example', MONITORING_READ_TOKEN: TOKEN, MONITORING_ADAPTER: 'prometheus' }), /Unknown monitoring adapter[\s\S]*Known: http-json, zabbix/);
 });
 
 test('readMap: valid hosts only, dependencies as a topology, a missing file is an empty map', () => {
@@ -129,4 +130,89 @@ test('an adapter with a write method is refused even when it is passed in', asyn
   const bad = { name: 'bad', listAlerts: async () => [], silence: () => {} };
   await assert.rejects(createMonitoringRead({ adapter: bad, mapFile }).alerts(), /may only read/);
   assert.deepEqual(createMonitoringRead({ adapter: bad, mapFile }).status(), { configured: false, adapter: '' });
+});
+
+/* ---- Zabbix: answers as the Zabbix API gives them (numbers are strings) ---- */
+const sec = (iso) => String(Date.parse(iso) / 1000);
+const PROBLEMS = [
+  { eventid: '9003', objectid: '501', name: 'Error rate above 30 % on /v1/chat', severity: '5', clock: sec('2026-11-12T08:55:00Z') },
+  { eventid: '9002', objectid: '502', name: 'Deployment quota above 95 %', severity: '4', clock: sec('2026-11-12T08:41:00Z') },
+  { eventid: '9001', objectid: '503', name: 'Backup older than 24 h', severity: '2', clock: sec('2026-11-12T03:20:00Z') },
+  { eventid: '9000', objectid: '504', name: 'Trigger without a host', severity: '9', clock: sec('2026-11-12T03:21:00Z') },
+];
+const TRIGGERS = [
+  { triggerid: '501', hosts: [{ hostid: '10', host: 'gw-01' }] }, { triggerid: '502', hosts: [{ hostid: '11', host: 'gw-02' }] },
+  { triggerid: '503', hosts: [{ hostid: '12', host: 'backup-02' }] }, { triggerid: '504', hosts: [] },
+];
+function zabbixFetch(calls, { problems = PROBLEMS, triggers = TRIGGERS, error = null, status = 200, raw = null } = {}) {
+  return async (url, init) => {
+    const body = JSON.parse(init.body); calls.push({ url: String(url), init, body });
+    const result = body.method === 'problem.get' ? problems : triggers;
+    const text = raw ?? JSON.stringify(error ? { jsonrpc: '2.0', error, id: body.id } : { jsonrpc: '2.0', result, id: body.id });
+    return { ok: status < 400, status, text: async () => text };
+  };
+}
+const zab = (calls, opts) => createZabbixAdapter({ baseUrl: 'https://zabbix.example/zabbix/', token: TOKEN, fetchImpl: zabbixFetch(calls, opts) });
+
+test('Zabbix: two reads, problem.get then trigger.get, each a POST with the token as Bearer header, no redirects, only the fields it needs', async () => {
+  const calls = [];
+  const a = zab(calls);
+  assert.ok(Object.isFrozen(a));
+  assert.deepEqual(Object.keys(a).sort(), ['listAlerts', 'name']);
+  const list = await a.listAlerts({ since: '2026-11-12T08:00:00.000Z', limit: 200 });
+  assert.deepEqual(calls.map((c) => c.body.method), ['problem.get', 'trigger.get']);
+  for (const c of calls) {
+    assert.equal(c.url, 'https://zabbix.example/zabbix/api_jsonrpc.php');
+    assert.equal(c.init.method, 'POST');
+    assert.equal(c.init.redirect, 'error');
+    assert.equal(c.init.headers.Authorization, `Bearer ${TOKEN}`);
+    assert.equal(c.init.headers['Content-Type'], 'application/json-rpc');
+    assert.equal(c.body.jsonrpc, '2.0');
+    assert.ok(!c.url.includes(TOKEN) && !('auth' in c.body), 'the token is only in the header, never in the address or the deprecated auth field');
+  }
+  assert.deepEqual(calls[0].body.params, { output: ['eventid', 'objectid', 'name', 'severity', 'clock'], source: 0, object: 0, recent: false, time_from: Math.floor(Date.parse('2026-11-12T08:00:00Z') / 1000), sortfield: ['eventid'], sortorder: 'DESC', limit: 200 });
+  assert.deepEqual(calls[1].body.params, { triggerids: ['501', '502', '503', '504'], output: ['triggerid'], selectHosts: ['host'] });
+  assert.equal(list.length, 4);
+  assert.deepEqual(list[0], { id: '9003', host: 'gw-01', severity: 'disaster', at: Date.parse('2026-11-12T08:55:00Z'), text: 'Error rate above 30 % on /v1/chat' });
+});
+
+test('Zabbix: only the two read methods can be sent, nothing in the source names another method, no problems means no second call', async () => {
+  const src = readFileSync(join(import.meta.dirname, '..', 'shared/monitoring-read.mjs'), 'utf8');
+  const zabbixPart = src.slice(src.indexOf('export function createZabbixAdapter'), src.indexOf('export const ADAPTERS'));
+  const named = [...zabbixPart.matchAll(/call\('([A-Za-z.]+)'/g)].map((m) => m[1]).sort();
+  assert.deepEqual(named, ['problem.get', 'trigger.get']);
+  assert.match(src, /const ZABBIX_READ_METHODS = Object\.freeze\(\['problem\.get', 'trigger\.get'\]\)/);
+  assert.doesNotMatch(zabbixPart, /\.(update|create|delete|acknowledge|massadd|massupdate|execute)\b|user\.login|event\.acknowledge/, 'no write or login method anywhere');
+  const calls = [];
+  assert.deepEqual(await zab(calls, { problems: [] }).listAlerts({ since: '2026-11-12T08:00:00Z', limit: 10 }), []);
+  assert.equal(calls.length, 1);
+});
+
+test('Zabbix: severity numbers become words, a trigger without a host and an unknown severity are handled, everything runs through the normal cut-down', async () => {
+  const mon = createMonitoringRead({ adapter: zab([]), mapFile, now: () => new Date('2026-11-12T10:00:00Z') });
+  const r = await mon.alerts({ sinceHours: 24 });
+  assert.deepEqual(r.alerts.map((a) => [a.id, a.host, a.severity, a.at]), [['9001', 'backup-02', 'medium', '2026-11-12T03:20'], ['9002', 'gw-02', 'high', '2026-11-12T08:41'], ['9003', 'gw-01', 'critical', '2026-11-12T08:55']]);
+  assert.ok(!r.alerts.some((a) => a.id === '9000'), 'a problem whose trigger has no host is dropped');
+  assert.equal(r.alerts.find((a) => a.id === '9003').customer, 'Muster Industrie AG', 'the customer comes from the local map');
+  assert.deepEqual(r.topology, { 'gw-01': ['gw-02'] });
+  assert.equal(r.adapter, 'zabbix');
+});
+
+test('Zabbix: errors say what is wrong and never contain the token; an unauthorised token is reported as that', async () => {
+  const run = (opts) => zab([], opts).listAlerts({ since: '2026-11-12T08:00:00Z', limit: 10 });
+  await assert.rejects(run({ error: { code: -32602, message: 'Not authorized.', data: `Session terminated, re-login, ${TOKEN}` } }), (e) => e instanceof MonitoringError && /Zabbix refused the request: Not authorized/.test(e.message) && !e.message.includes(TOKEN));
+  await assert.rejects(run({ status: 412 }), /HTTP 412/);
+  await assert.rejects(run({ raw: '<html>login</html>' }), /not JSON/);
+  await assert.rejects(run({ raw: 'x'.repeat(1_000_001) }), /too large/);
+  const failing = createZabbixAdapter({ baseUrl: 'https://z.example', token: TOKEN, fetchImpl: async () => { throw new Error(`boom ${TOKEN}`); } });
+  await assert.rejects(failing.listAlerts({ since: '2026-11-12T08:00:00Z', limit: 1 }), (e) => !e.message.includes(TOKEN));
+});
+
+test('Zabbix: the same address rules as the other adapter, and an address that already ends with api_jsonrpc.php works', async () => {
+  assert.throws(() => createZabbixAdapter({ baseUrl: 'http://zabbix.example', token: TOKEN }), /https/);
+  assert.throws(() => createZabbixAdapter({ baseUrl: 'https://u:p@zabbix.example', token: TOKEN }), /login/);
+  assert.throws(() => createZabbixAdapter({ baseUrl: 'https://zabbix.example', token: '' }), /token is missing/);
+  const calls = [];
+  await createZabbixAdapter({ baseUrl: 'https://zabbix.example/api_jsonrpc.php', token: TOKEN, fetchImpl: zabbixFetch(calls) }).listAlerts({ since: '2026-11-12T08:00:00Z', limit: 1 });
+  assert.equal(calls[0].url, 'https://zabbix.example/api_jsonrpc.php');
 });

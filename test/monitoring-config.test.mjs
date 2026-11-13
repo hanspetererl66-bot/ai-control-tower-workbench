@@ -9,6 +9,7 @@ import { TAB_HELP } from '../src/settings-help.ts';
 const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const TOKEN = 'read-only-token-12345';
+const bare = (v) => { const { adapters, ...rest } = v; return rest; };
 
 function setup(env = {}) {
   const data = {};
@@ -21,7 +22,7 @@ function setup(env = {}) {
 
 test('nothing configured; saving needs an https address and a token; the token is never given back', () => {
   const { config, data } = setup();
-  assert.deepEqual(config.get(), { configured: false, source: 'none', baseUrl: '', tokenSet: false, adapter: 'http-json' });
+  assert.deepEqual(bare(config.get()), { configured: false, source: 'none', baseUrl: '', tokenSet: false, adapter: 'http-json' });
   assert.throws(() => config.set({ baseUrl: 'https://mon.example/api' }), /A token is needed/);
   assert.throws(() => config.set({ baseUrl: 'http://mon.example', token: TOKEN }), /https/);
   assert.throws(() => config.set({ baseUrl: 'https://u:p@mon.example', token: TOKEN }), /login/);
@@ -29,7 +30,7 @@ test('nothing configured; saving needs an https address and a token; the token i
   assert.throws(() => config.set({ baseUrl: 'https://mon.example', token: 'has a space in it' }), /token looks wrong/);
   assert.throws(() => config.set({ baseUrl: 'https://mon.example', token: 'x'.repeat(2001) }), MonitoringError);
   const v = config.set({ baseUrl: 'https://mon.example/api/', token: ` ${TOKEN} ` });
-  assert.deepEqual(v, { configured: true, source: 'app', baseUrl: 'https://mon.example/api', tokenSet: true, adapter: 'http-json' });
+  assert.deepEqual(bare(v), { configured: true, source: 'app', baseUrl: 'https://mon.example/api', tokenSet: true, adapter: 'http-json' });
   assert.equal(data.monitoring.MONITORING_READ_TOKEN, TOKEN, 'stored trimmed');
   assert.ok(!JSON.stringify(v).includes(TOKEN) && !JSON.stringify(config.get()).includes(TOKEN), 'the token is never in what the dialog sees');
 });
@@ -42,13 +43,13 @@ test('a new address without a token keeps the saved token; a new token replaces 
   config.set({ baseUrl: 'https://other.example/v2', token: 'second-token-6789' });
   assert.equal(data.monitoring.MONITORING_READ_TOKEN, 'second-token-6789');
   const gone = config.clear();
-  assert.deepEqual(gone, { configured: false, source: 'none', baseUrl: '', tokenSet: false, adapter: 'http-json' });
+  assert.deepEqual(bare(gone), { configured: false, source: 'none', baseUrl: '', tokenSet: false, adapter: 'http-json' });
   assert.equal(data.monitoring, undefined);
 });
 
 test('settings from the environment count as configured but are not shown or changed', () => {
   const { config } = setup({ MONITORING_BASE_URL: 'https://env.example', MONITORING_READ_TOKEN: TOKEN });
-  assert.deepEqual(config.get(), { configured: true, source: 'environment', baseUrl: '', tokenSet: false, adapter: 'http-json' });
+  assert.deepEqual(bare(config.get()), { configured: true, source: 'environment', baseUrl: '', tokenSet: false, adapter: 'http-json' });
 });
 
 test('the test of the connection reports only the adapter and a count, and a failure never contains the token', async () => {
@@ -97,4 +98,18 @@ test('the Settings tab: it exists, it is explained, the token field is a passwor
   assert.match(panel, /type="password" value=\{token\}/);
   assert.doesNotMatch(panel, /\.(token|MONITORING_READ_TOKEN)\b(?!Set)/, 'nothing reads a token out of an answer');
   assert.match(panel, /setToken\(''\)/, 'forgotten after saving');
+});
+
+test('the system can be chosen: Zabbix is saved with its name, an unknown system is refused, the dialog is offered both with example addresses', () => {
+  const { config, data } = setup();
+  assert.deepEqual(config.get().adapters.map((a) => a.id), ['http-json', 'zabbix']);
+  assert.match(config.get().adapters.find((a) => a.id === 'zabbix').hint, /^https:\/\/zabbix\.example/);
+  assert.throws(() => config.set({ baseUrl: 'https://z.example/zabbix', token: TOKEN, adapter: 'prometheus' }), /Unknown monitoring system/);
+  assert.equal(data.monitoring, undefined, 'nothing saved after a refusal');
+  const v = config.set({ baseUrl: 'https://z.example/zabbix', token: TOKEN, adapter: 'zabbix' });
+  assert.equal(v.adapter, 'zabbix');
+  assert.equal(data.monitoring.MONITORING_ADAPTER, 'zabbix');
+  assert.equal(config.set({ baseUrl: 'https://z.example/zabbix', token: '' }).adapter, 'http-json', 'no choice means the default, not a leftover');
+  const env = setup({ MONITORING_BASE_URL: 'https://e.example', MONITORING_READ_TOKEN: TOKEN, MONITORING_ADAPTER: 'zabbix' });
+  assert.equal(env.config.get().adapter, 'zabbix');
 });

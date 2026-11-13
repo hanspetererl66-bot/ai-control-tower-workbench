@@ -109,12 +109,59 @@ export function createHttpJsonAdapter({ baseUrl: base, token, fetchImpl = fetch,
   });
 }
 
-/** The adapter named by the settings, or null while nothing is configured. env: MONITORING_BASE_URL, MONITORING_READ_TOKEN, optional MONITORING_ADAPTER (only http-json). */
+
+/** The only JSON-RPC methods the Zabbix adapter may send. Both only read. There is no way to name another method. */
+const ZABBIX_READ_METHODS = Object.freeze(['problem.get', 'trigger.get']);
+const ZABBIX_SEVERITY = ['info', 'info', 'warning', 'average', 'high', 'disaster']; // 0 not classified .. 5 disaster
+
+/**
+ * Zabbix 6.4 or newer, through its JSON-RPC API with an API token (Authorization: Bearer). JSON-RPC sends every call as an HTTP POST, also a read,
+ * so "read only" here means: only the two read methods above can be sent, and the token should belong to a user with a read-only role.
+ * Unresolved problems since a time (problem.get), with the host of each one (trigger.get). The base address is the Zabbix address (…/zabbix).
+ */
+export function createZabbixAdapter({ baseUrl: base, token, fetchImpl = fetch, timeoutMs = TIMEOUT_MS }) {
+  const root = baseUrl(base).replace(/\/api_jsonrpc\.php$/, '');
+  if (typeof token !== 'string' || !token.trim()) throw new MonitoringError('The monitoring read token is missing.');
+  let id = 0;
+  async function call(method, params) {
+    if (!ZABBIX_READ_METHODS.includes(method)) throw new MonitoringError('The Zabbix adapter may only read.');
+    let res;
+    try {
+      res = await fetchImpl(`${root}/api_jsonrpc.php`, { method: 'POST', headers: { 'Content-Type': 'application/json-rpc', Accept: 'application/json', Authorization: `Bearer ${token.trim()}` },
+        body: JSON.stringify({ jsonrpc: '2.0', method, params, id: ++id }), redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
+    } catch { throw new MonitoringError('Zabbix did not answer (network, timeout or a redirect).'); }
+    if (!res.ok) throw new MonitoringError(`Zabbix answered HTTP ${res.status}.`);
+    const body = await res.text();
+    if (body.length > MAX_BYTES) throw new MonitoringError('The Zabbix answer is too large.');
+    let json;
+    try { json = JSON.parse(body); } catch { throw new MonitoringError('The Zabbix answer is not JSON.'); }
+    if (json && json.error) throw new MonitoringError(`Zabbix refused the request: ${clip(`${json.error.message || ''} ${json.error.data || ''}`, 160) || 'unknown error'}`.replaceAll(token.trim(), '***'));
+    return Array.isArray(json?.result) ? json.result : [];
+  }
+  return Object.freeze({
+    name: 'zabbix',
+    async listAlerts({ since, limit }) {
+      const from = Math.floor(Date.parse(since) / 1000);
+      const problems = await call('problem.get', { output: ['eventid', 'objectid', 'name', 'severity', 'clock'], source: 0, object: 0, recent: false, time_from: Number.isFinite(from) ? from : 0,
+        sortfield: ['eventid'], sortorder: 'DESC', limit: Math.max(1, Math.min(MAX_ALERTS, Number(limit) || MAX_ALERTS)) });
+      if (!problems.length) return [];
+      const triggerIds = [...new Set(problems.map((p) => String(p.objectid)).filter((x) => /^\d{1,20}$/.test(x)))];
+      const triggers = await call('trigger.get', { triggerids: triggerIds, output: ['triggerid'], selectHosts: ['host'] });
+      const hostOf = new Map(triggers.map((t) => [String(t.triggerid), Array.isArray(t.hosts) && t.hosts[0] ? String(t.hosts[0].host) : '']));
+      return problems.map((p) => ({ id: p.eventid, host: hostOf.get(String(p.objectid)) || '', severity: ZABBIX_SEVERITY[Number(p.severity)] || 'info', at: Number(p.clock) * 1000, text: p.name }));
+    },
+  });
+}
+
+export const ADAPTERS = { 'http-json': createHttpJsonAdapter, zabbix: createZabbixAdapter };
+
+/** The adapter named by the settings, or null while nothing is configured. env: MONITORING_BASE_URL, MONITORING_READ_TOKEN, optional MONITORING_ADAPTER (http-json or zabbix). */
 export function adapterFromEnv(env, fetchImpl = fetch) {
   if (!env || !env.MONITORING_BASE_URL || !env.MONITORING_READ_TOKEN) return null;
   const kind = (env.MONITORING_ADAPTER || 'http-json').trim();
-  if (kind !== 'http-json') throw new MonitoringError(`Unknown monitoring adapter "${clip(kind, 30)}". Only http-json exists so far.`);
-  return createHttpJsonAdapter({ baseUrl: env.MONITORING_BASE_URL, token: env.MONITORING_READ_TOKEN, fetchImpl });
+  const make = ADAPTERS[kind];
+  if (!make) throw new MonitoringError(`Unknown monitoring adapter "${clip(kind, 30)}". Known: ${Object.keys(ADAPTERS).join(', ')}.`);
+  return make({ baseUrl: env.MONITORING_BASE_URL, token: env.MONITORING_READ_TOKEN, fetchImpl });
 }
 
 /** The local map (not in the repository): { "hosts": { "<host>": { customer, service, impact, customerFacing, dependsOn: ["<host>"] } } }. Missing or broken: empty. */

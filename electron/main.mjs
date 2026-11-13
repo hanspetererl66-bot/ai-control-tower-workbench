@@ -1577,7 +1577,7 @@ const monitoringConfig = createMonitoringConfig({
   monitoring,
 });
 ipcMain.handle('monitoring-config-get', () => obWrap(async () => monitoringConfig.get()));
-ipcMain.handle('monitoring-config-set', (_event, args) => obWrap(async () => monitoringConfig.set({ baseUrl: args?.baseUrl, token: args?.token })));
+ipcMain.handle('monitoring-config-set', (_event, args) => obWrap(async () => monitoringConfig.set({ baseUrl: args?.baseUrl, token: args?.token, adapter: args?.adapter })));
 ipcMain.handle('monitoring-config-clear', () => obWrap(async () => monitoringConfig.clear()));
 ipcMain.handle('monitoring-config-test', () => obWrap(() => monitoringConfig.test()));
 ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
