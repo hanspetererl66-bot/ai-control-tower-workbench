@@ -5772,6 +5772,34 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .om-plan-notes > div { margin: 8px 0; }
 .om-plan-record { margin-top: 6px; }
 
+/* Terms of the ontology in the chat: a dotted underline, a card with the definition, the ask-back under the composer. */
+.chat-term { border-bottom: 1px dotted var(--accent); cursor: help; }
+.chat-term:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.chat-term-card {
+  position: fixed; z-index: 60; box-sizing: border-box; max-height: 70vh; overflow: auto; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font-size: 13px; line-height: 1.45;
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.chat-term-card p { margin: 0; }
+.chat-term-item + .chat-term-item { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.chat-term-amb { margin-bottom: 8px !important; font-weight: 600; }
+.chat-term-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chat-term-chip { padding: 0 6px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; }
+.chat-term-chip-old { font-style: italic; }
+.chat-term-def { margin-top: 4px !important; }
+.chat-term-meta { margin-top: 3px !important; color: var(--muted); font-size: 12px; }
+.chat-term-open { margin-top: 8px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; }
+.chat-term-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.msg-terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.msg-terms-chip { padding: 0 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 12px; }
+.term-ask { margin: 0 auto 8px; max-width: 760px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.term-ask-lead { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+.term-ask-item + .term-ask-item { margin-top: 8px; }
+.term-ask-q { margin: 0 0 4px; font-weight: 600; }
+.term-ask-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.term-ask-options .ghost-btn { border: 1px solid var(--line); text-align: left; }
+.term-ask-def { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+
 /* Diagrams the agent writes as ```mermaid blocks */
 .mermaid-diagram {
   margin: 6px 0;

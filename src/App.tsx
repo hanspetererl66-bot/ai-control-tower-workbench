@@ -82,7 +82,9 @@ import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
 import OntologyManagerView from './ui/OntologyManagerView';
-import { buildGlossary } from './ontology-glossary';
+import { buildGlossary, buildIndex } from './ontology-glossary';
+import { choiceLabels, choose, pendingChoices, termContext, termsNote, type Ambiguity, type Choices } from './ontology-chat';
+import { AskBack, type ChatTermsControl } from './ui/ChatTerms';
 import { setTermsForDomain, setTermsForSpace, termsOn, type SpaceTermsControl } from './space-terms';
 import AdminView from './ui/AdminView';
 import HiringApprovals from './ui/HiringApprovals';
@@ -398,7 +400,8 @@ export default function App() {
   const [ontologyFocus, setOntologyFocus] = useState<{ slug: string; term: string } | null>(null);
   const termsSpace = view === 'spaces' ? activeSpaces.find((x) => x.slug === selectedSpace) ?? null : null;
   const termsDomain = termsSpace ? effectiveDomain(termsSpace, spaces, prefs) : '';
-  const termsWanted = Boolean(termsSpace && termsOn(prefs, termsSpace.slug, termsDomain));
+  const spaceTermsWanted = Boolean(termsSpace && termsOn(prefs, termsSpace.slug, termsDomain));
+  const termsWanted = spaceTermsWanted || prefs.chat.terms;
   const termsRequested = useRef(false);
   useEffect(() => { if (view !== 'ontology') setOntologyFocus(null); }, [view]);
   useEffect(() => {
@@ -406,9 +409,15 @@ export default function App() {
     termsRequested.current = true;
     void loadOntologies();
   }, [termsWanted, ontologyData.source.kind, loadOntologies]);
-  const glossary = useMemo(() => (termsWanted && ontologyData.source.kind === 'catalog' ? buildGlossary(ontologyData.ontologies, ontologyData.governance) : null), [termsWanted, ontologyData]);
+  // While the catalog is read again the last good vocabulary stays (a gap would let a message go out without the ask-back).
+  const lastGlossary = useRef<ReturnType<typeof buildGlossary> | null>(null);
+  const glossary = useMemo(() => {
+    if (!termsWanted) return null;
+    if (ontologyData.source.kind === 'catalog') { lastGlossary.current = buildGlossary(ontologyData.ontologies, ontologyData.governance); return lastGlossary.current; }
+    return ontologyData.source.kind === 'loading' ? lastGlossary.current : null;
+  }, [termsWanted, ontologyData]);
   const termsControl: SpaceTermsControl | undefined = termsSpace ? {
-    on: termsWanted,
+    on: spaceTermsWanted,
     domain: termsDomain,
     domainOn: prefs.termDomains.includes(termsDomain),
     state: ontologyData.source.kind === 'catalog' ? 'ready' : ontologyData.source.kind === 'loading' ? 'loading' : 'unavailable',
@@ -416,8 +425,15 @@ export default function App() {
     glossary,
     onToggle: (on) => updatePrefs((c) => setTermsForSpace(c, termsSpace.slug, termsDomain, on)),
     onToggleDomain: (on) => updatePrefs((c) => setTermsForDomain(c, termsDomain, on)),
-    onOpen: (key) => { const at = key.indexOf('|'); setOntologyFocus({ slug: key.slice(0, at), term: key.slice(at + 1) }); setView('ontology'); },
+    onOpen: (key) => openTerm(key),
   } : undefined;
+  function openTerm(key: string) { const at = key.indexOf('|'); setOntologyFocus({ slug: key.slice(0, at), term: key.slice(at + 1) }); setView('ontology'); }
+  // Terms in the chat: marks and cards, and the ask-back when a name exists in two ontologies (choices are kept for this conversation).
+  const termIndex = useMemo(() => (glossary ? buildIndex(glossary) : null), [glossary]);
+  const chatTerms: ChatTermsControl | undefined = prefs.chat.terms && glossary && termIndex ? { glossary, index: termIndex, onOpen: openTerm } : undefined;
+  const [termChoices, setTermChoices] = useState<Choices>({});
+  const [termAsk, setTermAsk] = useState<Ambiguity[]>([]);
+  const [termHold, setTermHold] = useState('');
   const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
@@ -924,6 +940,10 @@ export default function App() {
     tools.current = [];
     speaker.current?.stop();
     speaker.current = voiceRef.current.speak ? new ReplySpeaker(voiceRef.current.language) : null;
+    // Terms of the ontology: the meanings the person chose are shown on the message; the definitions go to the model only when that is switched on.
+    const termCtx = prefs.chat.terms && glossary && !options.plain && options.trigger !== 'schedule' && !runTarget ? termContext(typed, glossary, termChoices) : null;
+    const termLabels = termCtx && glossary ? choiceLabels(typed, glossary, termChoices) : [];
+    const termSent = prefs.chat.termsContext && termCtx ? termCtx : null;
     setMessages((prev) => [
       ...prev,
       {
@@ -931,6 +951,7 @@ export default function App() {
         text: typed,
         tools: [],
         attachments: attachments.map(historyAttachment),
+        ...(termLabels.length || termSent?.lines.length ? { terms: { chosen: termLabels, sent: termSent?.lines.length ?? 0 } } : {}),
       },
       { role: 'agent', text: '', tools: [], startedAt },
     ]);
@@ -954,7 +975,7 @@ export default function App() {
       blockedWebTool.current = false;
       const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
       const docContext = dockProject && dockFocus ? documentNote(dockProject, dockFocus.docKey) : '';
-      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '', !spaceRequested && wantsDiagram(text) ? DIAGRAM_NOTE : '']
+      const prompt = [historyGrounding, text, termSent ? termsNote(termSent) : '', docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '', !spaceRequested && wantsDiagram(text) ? DIAGRAM_NOTE : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -1406,6 +1427,14 @@ export default function App() {
   /** In the docked chat, "yes, confirm" confirms the document on screen instead of going to the model. */
   const interceptSend = (typed: string, attachments: ChatAttachment[] = []) => {
     if (dockProject && dockFocus && attachments.length === 0 && isConfirmCommand(typed)) { confirmDockDoc(); return; }
+    // A name that exists in two ontologies is never guessed: the person chooses first (no model involved), the draft stays in the box.
+    if (prefs.chat.terms && !glossary && ontologyData.source.kind === 'loading') { setTermAsk([]); setTermHold('Reading the ontology vocabulary. Press Send again in a moment.'); return 'held' as const; }
+    setTermHold('');
+    if (prefs.chat.terms && glossary) {
+      const pending = pendingChoices(typed, glossary, termChoices);
+      if (pending.length) { setTermAsk(pending); return 'held' as const; }
+    }
+    setTermAsk([]);
     return send(typed, attachments);
   };
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
@@ -1454,7 +1483,10 @@ export default function App() {
     },
   } : undefined;
   const mailHint = !agent ? 'Joule is not connected yet.' : !gmailName ? 'Connect Gmail under Connectors & Skills.' : '';
+  const askPanel = <AskBack hold={termHold} pending={termAsk} onChoose={(a, key) => { setTermChoices((c) => choose(c, a, key)); setTermAsk((p) => p.filter((x) => x.id !== a.id)); }} />;
   const composer = (
+    <>
+    {askPanel}
     <Composer
       mail={mailPick}
       mailHint={mailHint}
@@ -1483,6 +1515,7 @@ export default function App() {
       catalogSkills={skillList}
       spaces={spaces}
     />
+    </>
   );
   const suggestionBar = memorySuggestion && (
     <div className="memory-suggest" role="status">
@@ -1532,6 +1565,8 @@ export default function App() {
     if (busy) return null;
     setContextSpace('');
     setDismissedIdeas([]);
+    setTermChoices({});
+    setTermAsk([]);
     const conversation = createConversation();
     setConversationState((state) => ({
       selectedId: conversation.id,
@@ -1939,6 +1974,7 @@ export default function App() {
                 onAsk={askFromSpace}
                 onSaveAsSpace={saveAnswerAsSpace}
                 chatTools={prefs.chat}
+                terms={chatTerms}
                 meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
@@ -1995,6 +2031,7 @@ export default function App() {
               onAsk={askFromSpace}
               onSaveAsSpace={saveAnswerAsSpace}
               chatTools={prefs.chat}
+              terms={chatTerms}
               meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
               onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }}
             />
