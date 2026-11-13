@@ -47,3 +47,16 @@ test('the chat draws mermaid blocks with strict security and colour tokens, and 
   const css = readFileSync(new URL('../src/theme.css', import.meta.url), 'utf8');
   assert.match(css, /\.mermaid-diagram\s*\{/);
 });
+
+import { DIAGRAM_NOTE, wantsDiagram } from '../src/mermaid-diagram.ts';
+
+test('the hint for the agent is added only when a diagram is asked for', () => {
+  for (const yes of ['Draw a flowchart of the signup', 'Zeichne ein Flussdiagramm für den Onboarding-Prozess', 'Mach daraus ein Sequenzdiagramm', 'Create a Gantt chart for the rollout', 'a state diagram please', 'as mermaid', 'Erstelle ein Diagramm']) assert.ok(wantsDiagram(yes), yes);
+  for (const no of ['Summarise the renewals', 'Wie ist der Status von Lindenau?', 'Build a dashboard Space', 'diagrammatic', '']) assert.ok(!wantsDiagram(no), no);
+});
+
+test('the hint names the four kinds, forbids init directives and Figma claims, and is wired into the prompt', () => {
+  for (const w of ['flowchart', 'gantt', 'sequenceDiagram', 'stateDiagram-v2', 'mermaid', '%%{init}%%', 'Figma']) assert.ok(DIAGRAM_NOTE.includes(w), w);
+  const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /!spaceRequested && wantsDiagram\(text\) \? DIAGRAM_NOTE : ''/);
+});
