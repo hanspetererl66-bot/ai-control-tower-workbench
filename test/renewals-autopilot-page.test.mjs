@@ -120,6 +120,22 @@ test('renewals autopilot: "Draft with Joule" asks for a Gmail draft to the own a
   p.w.close();
 });
 
+test('renewals autopilot: a booking is only accepted from Order-to-Cash (Software), not from any other Space', async () => {
+  const p = await openInHost();
+  click(p.w, p.q('#tab-autopilot')); click(p.w, p.q('#ap-run'));
+  const first = p.q('.apcase.st-waiting-person [data-apa=approve]'), id = first.dataset.id;
+  click(p.w, first); click(p.w, p.q(`[data-apa=send][data-id="${id}"]`)); click(p.w, p.q(`[data-apa=signed][data-id="${id}"]`));
+  const c = data.cases.find((x) => x.id === id);
+  const answer = (from) => toHost(p.w, { type: 'wb:restore', state: null, handoffs: [{ from, payload: { type: 'order-confirmed', contractId: c.contractId, orderNo: 'SO-92777', invoiceFrom: '2027-01-01' } }] });
+  answer('sales'); answer('renewals-analytics'); answer(undefined);
+  assert.equal(p.w.__state.ap[id].booked, undefined, 'a valid-looking answer from another Space books nothing');
+  assert.ok(!p.w.__state.ap[id].log.some((e) => e.actor === 'Order management'));
+  answer('order-to-cash-software');
+  assert.equal(p.w.__state.ap[id].booked, 'SO-92777', 'the same answer from Order-to-Cash (Software) is accepted');
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
 test('renewals autopilot: it never lowers a stage a person set, and "Reset autopilot" gives that stage back', async () => {
   const p = await open();
   const [byHand, untouched] = p.w.__renewals().filter((x) => x.status !== 'Lapsed' && x.annualEur >= 30000 && x.stage === 0);
