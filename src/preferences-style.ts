@@ -2,7 +2,7 @@
  * Turns the personal settings into CSS for the app and into a small override for Spaces.
  * Pure functions: the App only puts the result into a <style> element, so the output can be tested.
  */
-import { FONT_STACKS, type Preferences } from './preferences.ts';
+import { FONT_STACKS, TIP_SIZE_PX, type Preferences } from './preferences.ts';
 import { DEFAULT_LAYOUT, layoutAppCss, layoutSpaceRules, type LayoutId } from './layouts.ts';
 import { DEFAULT_SKIN, skinAppCss, skinSpaceRules, type SkinId } from './skins.ts';
 
@@ -19,6 +19,23 @@ export function luminance(hex: string): number {
     return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** WCAG contrast ratio of two #RRGGBB colours (1 to 21). Used to warn when a tip's text and bubble colours are hard to read together. */
+export function contrastRatio(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** The Ontology Manager tips: size and colours as CSS variables. Only what the person changed is set; the rest follows the skin. */
+export function tipCss(tips: Preferences['tips'] | undefined): string[] {
+  if (!tips) return [];
+  const vars: string[] = [];
+  if (tips.size !== 'normal') vars.push(`--tip-size:${TIP_SIZE_PX[tips.size]}px`);
+  if (tips.textColor) vars.push(`--tip-text:${tips.textColor}`);
+  if (tips.bubbleColor) vars.push(`--tip-bg:${tips.bubbleColor}`);
+  if (tips.highlightColor) vars.push(`--tip-mark:${tips.highlightColor}`);
+  return vars.length ? [`:root{${vars.join(';')}}`] : [];
 }
 
 /** Accent values for the light and dark theme. White text must stay readable on it; a light colour is darkened. */
@@ -53,6 +70,7 @@ export function buildPreferenceCss(prefs: Preferences): string {
     const a = accentVariants(prefs.accent);
     css.push(`:root{--accent:${a.light};--send:${a.light}}`, `:root[data-theme="dark"]{--accent:${a.dark};--send:${a.dark}}`);
   }
+  css.push(...tipCss(prefs.tips));
   const stack = FONT_STACKS[prefs.font];
   if (stack) css.push(`html,body,button,input,textarea,select{font-family:${stack}}`);
   if (prefs.density !== 'normal') css.push(`:root{--dens:${DENSITY[prefs.density]}}`);

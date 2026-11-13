@@ -5,8 +5,8 @@ import { applySpacePrefs } from '../preferences-style';
 import { applySpaceScale, applySpaceTheme, type SpaceScale } from '../space-scale';
 import { diffLayouts, diffText, layoutPrompt, parseLayoutAnswer, type LayoutAnswer } from '../space-designer-ai';
 import { DAY_CHOICES, DB_VIEWS, dbView } from '../../shared/designer-db-views.mjs';
-import { parseDataFile } from '../space-designer-file';
-import { dataPrompt, diffDataset, nowMinute, parseDataAnswer, type DataAnswer } from '../space-designer-data';
+import { applyProposal, runSource } from '../space-designer-refresh';
+import { diffDataset, type DataAnswer } from '../space-designer-data';
 import { canRedo, canUndo, commit, parsePreviewMessage, redo, startHistory, undo, withPreview, type History } from '../space-designer-state';
 import {
   AGGREGATES, BLOCK_INFO, CHART_KINDS, MAX_BLOCKS, MAX_COLUMNS, MAX_DATASETS, MAX_ROWS, TONES, addBlock, duplicateBlock, moveBlock, parseTable, pointBlockAt, removeBlock, setDataset, updateBlock, datasetValue, makeToken, resolveLayout,
@@ -153,43 +153,16 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
   const addCol = () => ds.columns.length < MAX_COLUMNS && put({ ...ds, columns: [...ds.columns, `Column ${ds.columns.length + 1}`], rows: ds.rows.map((r) => [...r, '']) });
   const delRow = (r: number) => put({ ...ds, rows: ds.rows.filter((_, i) => i !== r) });
   const delCol = (c: number) => ds.columns.length > 1 && put({ ...ds, columns: ds.columns.filter((_, j) => j !== c), rows: ds.rows.map((r) => r.filter((_, j) => j !== c)) });
-  async function fill() {
-    if (!generate || current.source?.kind !== 'joule' || !current.source.prompt.trim()) return;
+  async function run() {
     setFilling(true); setFillNote(''); setProposal(null);
     try {
-      const text = await generate(dataPrompt(title, current.name, current.columns, current.source.prompt), 'Space Designer data', 'space-designer-data');
-      if (!text) { setFillNote('Stopped.'); return; }
-      const answer = parseDataAnswer(text, current.columns);
-      if (!answer) setFillNote('Joule did not send a table I can read. Ask again, or say in other words which data you want.');
-      else if ('error' in answer) setFillNote(`Joule could not get the data: ${answer.error}`);
-      else setProposal(answer);
-    } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
-  }
-  async function pickFile() {
-    setFilling(true); setFillNote(''); setProposal(null);
-    try {
-      const r = await window.host?.designerPickDataFile?.();
-      if (!r || r.canceled) return;
-      if (!r.ok || typeof r.text !== 'string') { setFillNote(r.detail || 'The file could not be read.'); return; }
-      const answer = parseDataFile(r.name ?? 'file', r.text);
-      if ('error' in answer) setFillNote(answer.error);
-      else setProposal({ ...answer, sources: `File ${r.name ?? ''}`.trim() });
-    } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
-  }
-  async function loadView() {
-    if (current.source?.kind !== 'database') return;
-    setFilling(true); setFillNote(''); setProposal(null);
-    try {
-      const r = await window.host?.designerDataView?.(current.source.view, current.source.days);
-      if (!r?.ok || !r.table) { setFillNote(r?.detail || 'The view could not be read.'); return; }
-      if (!r.table.rows.length) { setFillNote('The view has no rows for this period.'); return; }
-      setProposal({ columns: r.table.columns, rows: r.table.rows, sources: r.table.sources, notes: r.table.notes });
-    } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
+      const r = await runSource(current, { generate, pickFile: window.host?.designerPickDataFile, dataView: window.host?.designerDataView }, title);
+      if ('proposal' in r) setProposal(r.proposal); else setFillNote(r.note);
+    } finally { setFilling(false); }
   }
   function applyFill() {
     if (!proposal || !current.source) return;
-    const fileName = current.source.kind === 'file' ? proposal.sources.replace(/^File /, '').replace(/[\\/]/g, '').slice(0, 120) : '';
-    put({ ...current, columns: proposal.columns, rows: proposal.rows, source: current.source.kind === 'file' ? { kind: 'file', name: fileName, asOf: nowMinute(), note: proposal.notes[0] ?? '' } : { ...current.source, asOf: nowMinute(), note: proposal.sources } });
+    put(applyProposal(current, proposal));
     setProposal(null); setFillNote('Applied. Undo brings back the numbers as they were.');
   }
   const applyPaste = () => {
@@ -244,7 +217,7 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
           <>
             <Area label="What Joule is asked (max. 600 characters)" rows={3} value={ds.source.prompt} onChange={(v) => put({ ...ds, source: { ...(ds.source as Extract<NonNullable<Dataset['source']>, { kind: 'joule' }>), prompt: v.slice(0, 600) } })} />
             <p className="sd-hint">Joule fills the columns {ds.columns.join(', ')}. Rename the headers above to change what is asked for. Joule reads with the connected tools only; it is asked not to change anything. The question runs only when you click Fill now.</p>
-            <button type="button" className="ghost-btn" onClick={() => void fill()} disabled={!ready || !generate || filling || !ds.source.prompt.trim()}>{filling ? 'Joule is working…' : ds.source.asOf ? 'Fill again' : 'Fill now'}</button>
+            <button type="button" className="ghost-btn" onClick={() => void run()} disabled={!ready || !generate || filling || !ds.source.prompt.trim()}>{filling ? 'Joule is working…' : ds.source.asOf ? 'Fill again' : 'Fill now'}</button>
           </>
         )}
         {window.host?.designerDataView && <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={ds.source?.kind === 'database'} onChange={() => { put({ ...ds, source: { kind: 'database', view: DB_VIEWS[0].id, days: 30, asOf: '', note: '' } }); setProposal(null); setFillNote(''); }} /> Database view (Agent Observability)</label>}
@@ -263,13 +236,13 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
               </label>
             )}
             <p className="sd-hint">A fixed, read-only list of views of the shared database; the app reads it, never the page. The values are copied into this data set, and you see the changes before they are applied.</p>
-            <button type="button" className="ghost-btn" onClick={() => void loadView()} disabled={filling}>{filling ? 'Reading…' : ds.source.asOf ? 'Load again' : 'Load view'}</button>
+            <button type="button" className="ghost-btn" onClick={() => void run()} disabled={filling}>{filling ? 'Reading…' : ds.source.asOf ? 'Load again' : 'Load view'}</button>
           </>
         )}
         {ds.source?.kind === 'file' && (
           <>
             <p className="sd-hint">Choose a JSON file (a list of objects, a list of lists, or {'{"columns": […], "rows": […]}'}) or a CSV/TSV file, up to 2 MB. The values are copied into this data set; the page never reads the file, and only the file name is saved, not the path. You see the changes before they are applied.</p>
-            <button type="button" className="ghost-btn" onClick={() => void pickFile()} disabled={filling}>{filling ? 'Reading…' : ds.source.asOf ? 'Choose the file again' : 'Choose file…'}</button>
+            <button type="button" className="ghost-btn" onClick={() => void run()} disabled={filling}>{filling ? 'Reading…' : ds.source.asOf ? 'Choose the file again' : 'Choose file…'}</button>
           </>
         )}
         {ds.source && (

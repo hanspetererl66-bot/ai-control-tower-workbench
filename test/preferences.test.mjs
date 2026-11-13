@@ -202,3 +202,30 @@ test('text size in Spaces: every step is kept, old 130% and 150% move to 125%, n
   assert.equal(sanitizeForScale({ spaceScale: 1.3 }).spaceScale, 1.25);
   assert.equal(sanitizeForScale({}).spaceScale, DEFAULTS_FOR_SCALE.spaceScale);
 });
+
+// ---------------------------------------------------------------- tips (Ontology Manager speech bubbles)
+import { DEFAULT_TIPS, TIP_SIZE_PX, sanitizeTips } from '../src/preferences.ts';
+import { contrastRatio, tipCss } from '../src/preferences-style.ts';
+
+test('tips: defaults are on, normal size, colours follow the skin; broken values fall back', () => {
+  assert.deepEqual(sanitizePreferences({}).tips, DEFAULT_TIPS);
+  assert.deepEqual(sanitizeTips({ enabled: false, size: 'xlarge', textColor: '#abcdef', bubbleColor: 'red', highlightColor: '#12345' }),
+    { enabled: false, size: 'xlarge', textColor: '#ABCDEF', bubbleColor: '', highlightColor: '' });
+  assert.deepEqual(sanitizeTips({ enabled: 'no', size: 'huge' }), DEFAULT_TIPS);
+  assert.deepEqual(sanitizePreferences({ tips: { enabled: false } }).tips.enabled, false);
+});
+
+test('tips: only what was changed becomes a CSS variable, and the preview keeps the same values', () => {
+  assert.deepEqual(tipCss(DEFAULT_TIPS), []);
+  assert.equal(buildPreferenceCss(sanitizePreferences({})).includes('--tip-'), false);
+  const css = tipCss({ enabled: true, size: 'large', textColor: '#111111', bubbleColor: '#FFEEAA', highlightColor: '#00AA55' })[0];
+  assert.match(css, new RegExp(`--tip-size:${TIP_SIZE_PX.large}px`));
+  assert.match(css, /--tip-text:#111111/); assert.match(css, /--tip-bg:#FFEEAA/); assert.match(css, /--tip-mark:#00AA55/);
+  assert.match(buildPreferenceCss(sanitizePreferences({ tips: { size: 'small' } })), /--tip-size:12px/);
+});
+
+test('tips: contrast ratio is the WCAG one', () => {
+  assert.equal(Math.round(contrastRatio('#000000', '#FFFFFF')), 21);
+  assert.equal(contrastRatio('#777777', '#777777'), 1);
+  assert.ok(contrastRatio('#FFFFFF', '#FFEEAA') < 2);
+});

@@ -18,7 +18,7 @@ export default function OntologyDetails({ onto, term, gov, onGovernance, ontolog
   const usage = useTermUsage(onto, term, ontologies, gov);
   const health = healthOf(term);
   return (
-    <aside className="om-detail" aria-label="Term details">
+    <aside className="om-detail" aria-label="Term details" data-guide="detail">
       <div className="om-detail-top">
         <span className="om-dim">{term.kind === 'metric' ? 'Metric' : 'Class'}</span>
         <span className={`om-chip ${statusOf(onto, gov, term) === 'deprecated' ? 'om-bad' : statusOf(onto, gov, term) === 'draft' ? 'om-warn' : 'om-ok'}`}>{STATUS_LABEL[statusOf(onto, gov, term)]}</span>

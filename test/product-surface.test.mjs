@@ -15,7 +15,7 @@ test('the public product surface uses the Joule Work X - Next Gen Design Study t
   assert.match(product, /PRODUCT_TITLE = `\$\{PRODUCT_NAME\} Design Study`/);
   assert.match(app, /\{FOOTER_TITLE\} uses AI/);
   assert.match(product, /FOOTER_TITLE = 'Joule Work X - Design Study'/);
-  assert.match(composer, /Message \$\{PRODUCT_TITLE\}/);
+  assert.match(composer, /placeholder=\{agent \? 'Text \. \. \.' : 'Connecting…'\}/, 'the chat input says "Text . . ." (the product title is no longer in it)');
   assert.match(readFileSync(path.join(root, 'index.html'), 'utf8'), /<title>Joule Work X - Next Gen Design Study<\/title>/);
 });
 
