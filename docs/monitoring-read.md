@@ -48,9 +48,24 @@ Der Orchestrator kann im **Schattenmodus** auf echten Befunden planen (Knopf *Lo
 ```
 - `match`: ein Muster (ohne Beachtung der Groß-/Kleinschreibung, höchstens 100 Zeichen) auf den Alarmtext. Passt kein Muster, ist der Alarm **kein Befund** (wird gezählt, nicht geraten). Höchstens 30 Regeln, ungültige werden verworfen.
 - `kind`: `cert-expiry` (Aufgabe *Zertifikat erneuern*, Frist 14 Tage), `patch-age` (*Patchen*, 30), `disk-trend` (*VM verschieben*, 7), `dns-stale` (*DNS ändern*, 14). `template` und `deadlineDays` sind optional und ersetzen die Vorgaben.
+- **Ignorierte Regeln werden angezeigt:** eine Regel wird verworfen, wenn ihr Muster länger als 100 Zeichen oder ungültig ist, die Art unbekannt ist oder sie nach der 30. kommt. Der Schattenmodus zeigt dann ein Banner "N rules ignored" (bei 0 nichts), weil sonst Befunde ohne Hinweis fehlen würden.
 - Je Host und Art **ein** Befund (der älteste Alarm). Alarme mit einer Anweisung an einen KI-Assistenten werden **nie** zu einem Befund (zurückgehalten und gezählt).
 - Je Host optional `customerId` (kurz, Buchstaben und Ziffern) und `env` (PRD, QAS, DEV; sonst PRD). Kennt die Demo die Kunden-Id (`mi`, `bp`, `nl`, `aw`, `ke`, `hr`), gelten deren Nächte und Regeln. **Sonst bekommt der Kunde angenommene Nächte (täglich 22:00 bis 06:00) und die Standard-Schwellen** und ist als *assumed nights* gekennzeichnet; echte Kundenregeln gibt es für die Werkbank noch nicht.
 - **Im Schattenmodus wird nichts ausgeführt oder freigegeben:** keine Knöpfe zum Freigeben, Wiederholen oder zur Kundenabsprache, kein Lauf startet, auch nicht mit ausgeschaltetem *Human in the loop*; auch ein direkter Aufruf wird abgewiesen. Pläne zeigen, was der Orchestrator *täte* ("would run by itself", "would wait for a person", "would wait for the customer"). Als Datum gilt heute (Abrufzeit), die Frist zählt ab dann.
+### Beispielregeln für übliche Zabbix-Trigger
+Gegen 23 typische Triggertexte geprüft (`test/monitoring-rules-example.test.mjs`), **nicht gegen deine**: Die Texte stammen aus gängigen Vorlagen und der Praxis. Heißen deine Trigger anders (zum Beispiel deutsch), passen die Muster nicht und müssen angepasst werden. Die Reihenfolge zählt: die erste passende Regel gewinnt, deshalb steht "kritisch voll" mit kurzer Frist vor der allgemeinen Plattenregel.
+```json
+{ "findingRules": [
+  { "match": "(disk|file ?system|space).*(critically|will be full|full in|9[5-9] ?%|100 ?%)", "kind": "disk-trend", "deadlineDays": 3 },
+  { "match": "(disk|file ?system|volume|space).*(low|full|free|used|inodes)", "kind": "disk-trend" },
+  { "match": "certificate.*(expire|expiry|expiring|expires)", "kind": "cert-expiry" },
+  { "match": "(updates?|patches?|hotfix).*(pending|available|missing|outstanding|not installed)", "kind": "patch-age" },
+  { "match": "(pending|missing|outstanding).*(updates?|patches?)", "kind": "patch-age" },
+  { "match": "dns.*(mismatch|stale|wrong|outdated|points to|resolution failed|not resolving)", "kind": "dns-stale" },
+  { "match": "(a|aaaa|cname) record.*(mismatch|stale|wrong|outdated|points to|does not match)", "kind": "dns-stale" }
+] }
+```
+
 ## Urteil und Protokoll im Schattenbetrieb (Schritt 2, 13.11.2026)
 Im Schattenmodus wird **jede Entscheidung des Orchestrators protokolliert** und du gibst ein **Urteil** ab.
 - **Beurteilt wird so, als wäre *Human in the loop* aus.** Das ist die Entscheidung, die du prüfen musst: Würde der Agent das selbst ausführen (`auto`), oder wartet er auf eine Person (`approval`)? Der Schalter ist im Schattenmodus gesperrt.

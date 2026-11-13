@@ -41,10 +41,10 @@ const finding = (o = {}) => ({ id: 'L-A1', customer: 'mi', customerName: 'Muster
 
 test('the findings request is answered with the findings cut down to the fields the Orchestrator reads, and the counts', async () => {
   const calls = [];
-  const h = { alerts: async () => ({ ok: true, data: {} }), findings: async (hrs) => { calls.push(hrs); return { ok: true, data: { adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', alerts: 5, skipped: 2, withheld: 1, findings: [finding({ secret: 'x' })] } }; } };
+  const h = { alerts: async () => ({ ok: true, data: {} }), findings: async (hrs) => { calls.push(hrs); return { ok: true, data: { adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', alerts: 5, skipped: 2, withheld: 1, rulesDropped: 3, findings: [finding({ secret: 'x' })] } }; } };
   const r = await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r', sinceHours: 12 }, h);
   assert.deepEqual(calls, [12]);
-  assert.deepEqual(r, { type: 'mon:findings', requestId: 'r', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', sinceHours: 12, alerts: 5, skipped: 2, withheld: 1, findings: [finding()] });
+  assert.deepEqual(r, { type: 'mon:findings', requestId: 'r', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', sinceHours: 12, alerts: 5, skipped: 2, withheld: 1, rulesDropped: 3, findings: [finding()] });
   assert.equal((await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r' }, { alerts: async () => ({ ok: true, data: {} }) })).type, 'ct:error');
   assert.equal((await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r' }, { alerts: async () => ({ ok: true, data: {} }), findings: async () => ({ ok: false, error: 'No monitoring is connected.' }) })).message, 'No monitoring is connected.');
 });

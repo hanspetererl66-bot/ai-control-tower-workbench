@@ -177,8 +177,9 @@ export function readMap(file) {
     const deps = (Array.isArray(m.dependsOn) ? m.dependsOn : []).filter((d) => typeof d === 'string' && HOST.test(d)).slice(0, 10);
     if (deps.length) topology[h] = deps;
   }
-  const rules = (Array.isArray(raw && raw.findingRules) ? raw.findingRules : []).slice(0, 30).map(cleanRule).filter(Boolean);
-  return { hosts, topology, rules };
+  const asked = Array.isArray(raw && raw.findingRules) ? raw.findingRules : [];
+  const rules = asked.slice(0, 30).map(cleanRule).filter(Boolean);
+  return { hosts, topology, rules, rulesDropped: asked.length - rules.length };
 }
 
 
@@ -195,7 +196,7 @@ const TEMPLATES = ['renew-certificate', 'patch-vm', 'move-vm', 'update-dns-recor
 /** Alert texts with an instruction aimed at an AI assistant never become a finding (the same patterns as the Alerts Space). */
 const INJECTION = [/ignore (all |your )?(previous|prior) instructions/i, /\bai assistants?\b/i, /system prompt/i, /(restart|delete|shut ?down|disable) (every|all) [^.]*servers?/i];
 
-/** One rule of the local map: { match: text pattern, kind, template?, deadlineDays? }. Anything else is dropped. */
+/** One rule of the local map: { match: text pattern, kind, template?, deadlineDays? }. Anything else is dropped (and counted: readMap reports rulesDropped). */
 function cleanRule(r) {
   if (!r || typeof r !== 'object' || typeof r.match !== 'string' || r.match.length < 1 || r.match.length > 100 || !Object.hasOwn(FINDING_KINDS, r.kind)) return null;
   try { new RegExp(r.match, 'i'); } catch { return null; }
@@ -245,7 +246,7 @@ export function createMonitoringRead({ adapter, mapFile, now = () => new Date(),
     /** The alerts as findings by the rules of the local map: what the Orchestrator plans in shadow mode. */
     async findings({ sinceHours } = {}) {
       const r = await self.alerts({ sinceHours }), map = readMap(mapFile);
-      return { source: 'live', adapter: r.adapter, fetchedAt: r.fetchedAt, sinceHours: r.sinceHours, alerts: r.alerts.length, ...toFindings(r.alerts, map.rules, map.hosts) };
+      return { source: 'live', adapter: r.adapter, fetchedAt: r.fetchedAt, sinceHours: r.sinceHours, alerts: r.alerts.length, rulesDropped: map.rulesDropped, ...toFindings(r.alerts, map.rules, map.hosts) };
     },
   };
   return self;
