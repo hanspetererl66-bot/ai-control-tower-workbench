@@ -8,7 +8,7 @@ Stand 13.11.2026. Neuer Reiter **Autopilot** im Space `examples/renewals/`.
 - Modus **Autopilot**: Fälle innerhalb der Richtlinie (unter 30.000 EUR im Jahr, kein Warnsignal, Angebot innerhalb des Vertrags-Caps) laufen allein bis zur Antwort des Kunden. Alles andere hält an einem Tor und nennt die Gründe. Modus **Supervised**: eine Person gibt jedes Angebot frei und sendet es.
 - Tore: Angebot freigeben (anderes Angebot wählen, ablehnen, übernehmen), Mail senden (Entwurf mit Joule möglich). Änderungswunsch des Kunden führt wieder zu einer Person. Absage endet als "Declined, win-back".
 - Jeder Schritt steht im Protokoll (Autopilot, Person, Customer). Kennzahlen: wartet auf dich, beim Kunden, fertig, Schritte Autopilot : Person, Anteil ohne Person.
-- Die Stufe der anderen Reiter folgt dem Autopilot. Der Zustand geht über `wb:state` an den Host und wird beim Zurückkommen geprüft.
+- Die Stufe der anderen Reiter folgt dem Autopilot, aber nie unter die Stufe, die eine Person vor dem Start gesetzt hatte; "Reset autopilot" stellt diese Stufe wieder her. Die Stufe 1 heißt "Prepared (autopilot)", wenn der Autopilot sie gesetzt hat, und "Prepared (by you)", wenn eine Person es markiert hat. Der Zustand geht über `wb:state` an den Host und wird beim Zurückkommen geprüft.
 
 ## Schritt 2: Übergabe und Mailentwurf
 - Nach der Unterschrift geht der Auftrag über `wb:handoff` (open: false, in die Warteschlange) an den Space `order-to-cash-software`. Neuer Reiter **Renewal orders** dort: Bestellung anlegen, Berechtigung für die neue Laufzeit verlängern, Rechnung einplanen (je ein Knopf, "Order management"). Prüft jede Übergabe neu (Vertragsnummer, Laufzeit, Betrag), verwirft Doppelte und Ungültiges, behält den Zustand über `wb:state`.
