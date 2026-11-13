@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { handleMonitoringMessage, pickAlerts, pickFindings, pickTopology } from '../src/monitoring-bridge.ts';
+import { handleMonitoringMessage, pickAlerts, pickFindings, pickTopology, pickUnmatched } from '../src/monitoring-bridge.ts';
 
 const alert = (o = {}) => ({ id: 'A1', customer: 'C', host: 'gw-01', service: 'S', severity: 'high', impact: 'high', customerFacing: true, repeat24h: 2, text: 'Down', at: '2026-11-12T08:55', ...o });
 const host = (data) => { const calls = []; return { calls, alerts: async (h) => { calls.push(h); return { ok: true, data }; } }; };
@@ -41,10 +41,10 @@ const finding = (o = {}) => ({ id: 'L-A1', customer: 'mi', customerName: 'Muster
 
 test('the findings request is answered with the findings cut down to the fields the Orchestrator reads, and the counts', async () => {
   const calls = [];
-  const h = { alerts: async () => ({ ok: true, data: {} }), findings: async (hrs) => { calls.push(hrs); return { ok: true, data: { adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', alerts: 5, skipped: 2, withheld: 1, rulesDropped: 3, findings: [finding({ secret: 'x' })] } }; } };
+  const h = { alerts: async () => ({ ok: true, data: {} }), findings: async (hrs) => { calls.push(hrs); return { ok: true, data: { adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', alerts: 5, skipped: 2, withheld: 1, rulesDropped: 3, findings: [finding({ secret: 'x' })], unmatched: [{ id: 'U1', host: 'gw-02', severity: 'high', text: 'Plain noise', secret: 'x' }] } }; } };
   const r = await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r', sinceHours: 12 }, h);
   assert.deepEqual(calls, [12]);
-  assert.deepEqual(r, { type: 'mon:findings', requestId: 'r', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', sinceHours: 12, alerts: 5, skipped: 2, withheld: 1, rulesDropped: 3, findings: [finding()] });
+  assert.deepEqual(r, { type: 'mon:findings', requestId: 'r', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', sinceHours: 12, alerts: 5, skipped: 2, withheld: 1, rulesDropped: 3, findings: [finding()], unmatched: [{ id: 'U1', host: 'gw-02', severity: 'high', text: 'Plain noise' }] });
   assert.equal((await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r' }, { alerts: async () => ({ ok: true, data: {} }) })).type, 'ct:error');
   assert.equal((await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r' }, { alerts: async () => ({ ok: true, data: {} }), findings: async () => ({ ok: false, error: 'No monitoring is connected.' }) })).message, 'No monitoring is connected.');
 });
@@ -56,4 +56,14 @@ test('pickFindings keeps only valid findings: known kind, task and environment, 
   assert.equal(list[1].customer, '', 'a customer id that is not plain is dropped');
   assert.ok(!/[<>\n]/.test(list[1].signal));
   assert.deepEqual(pickFindings('nope'), []);
+});
+
+test('pickUnmatched keeps only plain alerts: a valid id and host, a known severity (else low), plain text of at most 200 characters, at most 50', () => {
+  const list = pickUnmatched([{ id: 'A', host: 'gw-01', severity: 'weird', text: '<b>x</b>\ny' }, { id: 'bad id', host: 'h', severity: 'low', text: 'x' }, { id: 'B', host: 'bad host', severity: 'low', text: 'x' }, { id: 'C', host: 'h', severity: 'high', text: '   ' }, 'x', null,
+    { id: 'D', host: 'h-1', severity: 'critical', text: 'y'.repeat(400) }]);
+  assert.deepEqual(list.map((a) => [a.id, a.severity]), [['A', 'low'], ['D', 'critical']]);
+  assert.ok(!/[<>\n]/.test(list[0].text));
+  assert.equal(list[1].text.length, 200);
+  assert.deepEqual(pickUnmatched('nope'), []);
+  assert.equal(pickUnmatched(Array.from({ length: 80 }, (_, i) => ({ id: 'N' + i, host: 'h', severity: 'low', text: 't' }))).length, 50);
 });
