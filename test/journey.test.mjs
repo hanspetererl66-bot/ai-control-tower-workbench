@@ -57,8 +57,7 @@ test('journey: a stop is only open for a customer with sample data for it', () =
   assert.ok(!J.available(J.stop('c360'), 'muster') && !J.available(J.stop('c360'), 'hanse'));
   assert.ok(J.available(J.stop('mails'), 'muster') && !J.available(J.stop('mails'), 'hanse') && !J.available(J.stop('mails'), 'nordlicht'));
   assert.ok(!J.available(J.stop('pipeline'), 'nordlicht'), 'Nordlicht has no deals in Sales');
-  for (const k of ['muster', 'hanse', 'lindenau']) assert.ok(J.available(J.stop('renewals'), k) && J.available(J.stop('renewal-map'), k) && J.available(J.stop('renewal-actions'), k), `${k} has renewals`);
-  assert.ok(!J.available(J.stop('renewals'), 'nordlicht'), 'Nordlicht has no renewals');
+  for (const id of ['renewals', 'renewal-map', 'renewal-actions']) assert.equal(J.stop(id), null, `${id}: the renewal process is its own Space, not a stop of the Sales journey`);
   assert.ok(!J.available(J.stop('pipeline'), 'unknown'));
   for (const [k, c] of Object.entries(J.CUSTOMERS)) if (c.sales) assert.ok(sales.deals.some((d) => d.account === c.name), `${k} has deals in Sales`);
   for (const [k, c] of Object.entries(J.CUSTOMERS)) if (c.mail) assert.ok(mails.customers.some((m) => m.id === c.mail && m.name === c.name), `${k} has a mailbox`);
