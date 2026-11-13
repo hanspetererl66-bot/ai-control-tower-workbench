@@ -9,7 +9,7 @@ Stand: 13.11.2026. Konzept, noch nichts gebaut. Ergänzt `docs/renewals-prozessl
 3. **Testadressen:** vier Testadressen für die vier Verantwortlichen der Beispieldaten, dazu das eigene Konto als Admin.
 4. **Reset:** **archivieren**, nicht löschen. Die Geschichte bleibt.
 
-**Annahme, zu bestätigen:** Vertriebsleiter **lesen** alle Fälle, **ändern** sie aber nicht. Ändern (Tore, Kundenantwort, Reset) dürfen der Besitzer und Board-Admins.
+**Entschieden (13.11.2026):** Vertriebsleiter **lesen** alle Fälle, **ändern** sie aber nicht. Ändern (Tore, Kundenantwort, Reset) dürfen der Besitzer und Board-Admins.
 
 ## Ziel
 
@@ -29,10 +29,10 @@ Fälle, Protokolle und Stufen der Fälle gehen heute mit dem Schließen der App 
 |---|---|
 | `owner_email` | Name des Verantwortlichen zu E-Mail. Mit den **vier Testadressen** vorbefüllt (siehe unten). |
 | `manager` | E-Mails der Vertriebsleiter. Mit **einer Testadresse** vorbefüllt. |
-| `case` | ein Fall je Renewal und Art (`renewal` oder `winback`): Fall-Kennung, Besitzer (Name und E-Mail), Kunde, Status, der Zustand als `jsonb`, Revisionsnummer, wer und wann zuletzt geändert, `archived_at` |
-| `case_event` | jede Zeile des Protokolls, **nur anhängend** (ein Trigger verhindert Ändern und Löschen, wie bei `onboarding_event`) |
+| `cases` | ein Fall je Renewal und Art (`renewal` oder `winback`): Fall-Kennung, Besitzer (Name und E-Mail), Kunde, Status, der Zustand als `jsonb`, Revisionsnummer, wer und wann zuletzt geändert, `archived_at` |
+| `case_events` | jede Zeile des Protokolls, **nur anhängend** (ein Trigger verhindert Ändern und Löschen, wie bei `onboarding_event`) |
 
-Primärschlüssel von `case`: (Fall-Kennung, Art). Eine Renewal kann zuerst einen Autopilot-Fall haben und nach einer Absage einen Win-back-Fall.
+Die Tabellen heißen `cases` und `case_events` (`case` ist in SQL ein reserviertes Wort). Einen aktiven Fall je (Fall-Kennung, Art) erzwingt ein Teilindex (`cases_one_active`, nur nicht archivierte Zeilen); archivierte Fälle bleiben mit eigener Zeile. Eine Renewal kann zuerst einen Autopilot-Fall haben und nach einer Absage einen Win-back-Fall.
 
 **Testadressen** (reservierte Domain, kein echtes Postfach): `mira.hoffmann@renewals.example`, `sven.albrecht@renewals.example`, `clara.neumann@renewals.example`, `katrin.lindner@renewals.example`; Vertriebsleiter-Test: `vertrieb@renewals.example`. Das eigene Konto sieht alles, **wenn es in der Admin-Gruppe steht** (nicht geprüft).
 
@@ -41,7 +41,7 @@ Primärschlüssel von `case`: (Fall-Kennung, Art). Eine Renewal kann zuerst eine
 | Rolle | Sehen | Ändern (Tore, Kunde, Reset) |
 |---|---|---|
 | Verantwortlicher | nur Fälle, deren Besitzer seine E-Mail hat | dieselben |
-| Vertriebsleiter (`manager`) | alle | nein (Annahme) |
+| Vertriebsleiter (`manager`) | alle | nein (entschieden) |
 | Board-Admin | alle | ja |
 | E-Mail ohne Zuordnung | nichts | nein |
 
@@ -93,7 +93,7 @@ Du trägst in den Einstellungen der App eine der Testadressen als deine E-Mail e
 
 ## Offen
 
-1. **Vertriebsleiter lesen nur** (Annahme) oder dürfen sie auch ändern?
+1. ~~Vertriebsleiter lesen nur~~ entschieden: nur lesen.
 2. **Aufbewahrung:** Wie lange bleiben archivierte Fälle und Ereignisse?
 3. **Wer pflegt** die Zuordnung Name zu E-Mail und die Vertriebsleiter bei echten Daten? Heute von Hand im SQL-Editor.
 
