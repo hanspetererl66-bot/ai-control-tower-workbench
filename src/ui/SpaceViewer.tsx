@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import RefreshDataDialog from './RefreshDataDialog';
+import { layoutFromHtml } from '../space-layout-render';
+import { refreshable, type RefreshHost } from '../space-designer-refresh';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
 import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
@@ -51,11 +54,16 @@ export default function SpaceViewer({
   installedSpaces,
   onIncomingDelivered,
   onEditDesign,
+  refreshHost,
+  onRefreshed,
   terms,
 }: {
   space: Space;
   /** Opens the Space in the Designer (only given for Spaces made there). */
   onEditDesign?: () => void;
+  /** Designed Spaces with data sources: what "Refresh data" may use, and what to do after the page was rewritten. */
+  refreshHost?: RefreshHost;
+  onRefreshed?: () => void | Promise<void>;
   tabRequest?: SpaceTabRequest | null;
   /** Connector calls for spaces that need them (Sub4Me tickets). */
   bridge?: BridgeCall;
@@ -307,6 +315,8 @@ export default function SpaceViewer({
     setTimeout(() => setShareNote(''), 8000);
   }
   const [html, setHtml] = useState<string | null>(null);
+  const [refreshOpen, setRefreshOpen] = useState(false);
+  const designedLayout = useMemo(() => (onEditDesign && html ? layoutFromHtml(html) : null), [onEditDesign, html]);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -442,12 +452,16 @@ export default function SpaceViewer({
           <RefreshIcon />
         </button>
         {onEditDesign && <button className="ghost-btn" onClick={onEditDesign} title="Edit this Space in the Designer">Edit design</button>}
+        {designedLayout && refreshHost && refreshable(designedLayout).length > 0 && <button className="ghost-btn" onClick={() => setRefreshOpen(true)} title="Fetch new numbers from the sources of this page; you see the changes first">Refresh data</button>}
         {onAsk && (
           <button className="ghost-btn" onClick={() => onAsk(`Ich möchte den Space „${space.title}“ (${space.slug}) ändern. Frag mich kurz, was anders sein soll, und passe ihn danach an.`)} title="Open the chat and describe what should change in this Space">
             Change with Joule
           </button>
         )}
       </header>
+      {refreshOpen && designedLayout && refreshHost && (
+        <RefreshDataDialog layout={designedLayout} space={space} host={refreshHost} onClose={() => setRefreshOpen(false)} onSaved={async () => { await onRefreshed?.(); }} />
+      )}
 
       {insightsOpen && space.insights.length > 0 && (
         <section className="insights">
