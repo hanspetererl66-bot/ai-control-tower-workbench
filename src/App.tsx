@@ -1732,7 +1732,7 @@ export default function App() {
       ) : view === 'admin' ? (
         <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
       ) : view === 'ontology' ? (
-        <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} actor={identity?.email ?? ''} />
+        <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} tipsOn={prefs.tips.enabled} onTipsOff={() => updatePrefs((c) => ({ ...c, tips: { ...c.tips, enabled: false } }))} actor={identity?.email ?? ''} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

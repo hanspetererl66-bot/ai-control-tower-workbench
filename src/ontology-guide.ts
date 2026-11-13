@@ -8,7 +8,7 @@ export type GuideStep = { target: string; title: string; text: string; side?: 'b
 
 export const GUIDE_STEPS: Record<GuideTab, GuideStep[]> = {
   catalog: [
-    { target: 'tips', title: 'Welcome to the Ontology Manager', text: 'This is where the meaning of your terms is kept, so every agent reads "DSO" or "customer" the same way. A short tour shows each part. This Tips switch turns the bubbles off or on again.', side: 'below' },
+    { target: 'tips', title: 'Welcome to the Ontology Manager', text: 'This is where the meaning of your terms is kept, so every agent reads "DSO" or "customer" the same way. A short tour shows each part. Switch them off, or change their size and colours, in Settings under Skin.', side: 'below' },
     { target: 'tabs', title: 'Eight views, one vocabulary', text: 'Catalog is the home base. Map shows how terms depend on each other, Proposals turns a document into new terms, Quality lists what needs fixing. Click a tab to see its tips.', side: 'below' },
     { target: 'kpis', title: 'How healthy is it?', text: 'Counts of classes, properties and certified metrics. The bar shows how many classes have a definition: aim for all of them.', side: 'below' },
     { target: 'side', title: 'Pick an ontology', text: 'Each card is one vocabulary (Finance, Sales, IT operations …). Click one to see its terms. Under the list you can set its owner, domain and who approves changes.', side: 'right' },

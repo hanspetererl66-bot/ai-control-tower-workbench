@@ -62,6 +62,15 @@ export type ChatTools = {
   hiddenBriefing: string[];
 };
 export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [], hiddenBriefing: [] };
+/**
+ * The tips of the Ontology Manager (speech bubbles that explain each part). `enabled` is the on/off switch; the colours are empty
+ * (= follow the skin, light or dark) or one #RRGGBB value each: text, bubble (its fill) and highlight (the tint and frame around the part a tip points at).
+ */
+export const TIP_SIZES = ['small', 'normal', 'large', 'xlarge'] as const;
+export type TipSize = (typeof TIP_SIZES)[number];
+export const TIP_SIZE_PX: Record<TipSize, number> = { small: 12, normal: 13.5, large: 16, xlarge: 18.5 };
+export type TipsPrefs = { enabled: boolean; size: TipSize; textColor: string; bubbleColor: string; highlightColor: string };
+export const DEFAULT_TIPS: TipsPrefs = { enabled: true, size: 'normal', textColor: '', bubbleColor: '', highlightColor: '' };
 export type Starter = { label: string; prompt: string };
 export type StorageLocation = { id: string; name: string; purpose: (typeof PURPOSES)[number]; location: string };
 
@@ -103,6 +112,7 @@ export type ProfileSettings = {
   favoriteSkills: string[];
   assistant: Assistant;
   chat: ChatTools;
+  tips: TipsPrefs;
 };
 export type Profile = { id: string; name: string; settings: Partial<ProfileSettings> };
 
@@ -151,6 +161,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   favoriteSkills: [],
   assistant: { ...DEFAULT_ASSISTANT },
   chat: { ...DEFAULT_CHAT_TOOLS },
+  tips: { ...DEFAULT_TIPS },
   starters: [],
   setup: { model: '', connectors: [] },
   storages: [],
@@ -198,6 +209,15 @@ const list = (value: unknown, ok: (s: string) => boolean, max: number): string[]
   Array.isArray(value) ? [...new Set(value.filter((v): v is string => typeof v === 'string' && ok(v)))].slice(0, max) : [];
 
 const price = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.min(1000, Math.round(value * 100) / 100) : 0);
+export function sanitizeTips(value: unknown): TipsPrefs {
+  const v = isObject(value) ? value : {};
+  const color = (x: unknown) => (typeof x === 'string' && HEX.test(x) ? x.toUpperCase() : '');
+  return {
+    enabled: typeof v.enabled === 'boolean' ? v.enabled : DEFAULT_TIPS.enabled,
+    size: pick(TIP_SIZES, v.size, DEFAULT_TIPS.size),
+    textColor: color(v.textColor), bubbleColor: color(v.bubbleColor), highlightColor: color(v.highlightColor),
+  };
+}
 export function sanitizeChatTools(value: unknown): ChatTools {
   const v = isObject(value) ? value : {};
   const flag = (x: unknown, fallback: boolean) => (typeof x === 'boolean' ? x : fallback);
@@ -268,6 +288,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (Array.isArray(v.favoriteSkills)) out.favoriteSkills = list(v.favoriteSkills, (s) => SLUG.test(s), 12);
   if (isObject(v.assistant)) out.assistant = sanitizeAssistant(v.assistant);
   if (isObject(v.chat)) out.chat = sanitizeChatTools(v.chat);
+  if (isObject(v.tips)) out.tips = sanitizeTips(v.tips);
   return out;
 }
 
@@ -312,8 +333,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat } = prefs;
-  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
+  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
+  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
