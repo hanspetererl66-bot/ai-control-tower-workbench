@@ -126,3 +126,61 @@ test('map: the focus on a term reaches its confirmed and its suspected users one
   assert.ok([...focus.edges].some((e) => e.from === maybe.id && e.uncertain));
   assert.ok([...focus.edges].every((e) => e.from !== sure.id || !e.uncertain));
 });
+
+// ---------------------------------------------------------------- guidance: starting points and the sentence
+import { startingPoints, describeFocus, linkWord } from '../src/graph-map.ts';
+import { resolveCatalog } from '../src/ontology-manager.ts';
+
+test('startingPoints: terms with something hanging on them, biggest first, one per ontology before a second one', async () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const starts = startingPoints(map, 5);
+  assert.equal(starts.length, 5);
+  assert.ok(starts.every((s) => s.affected > 0 && ['class', 'metric', 'resource'].includes(s.node.kind)));
+  assert.equal(new Set(starts.map((s) => s.node.slug)).size, 5, 'five different ontologies');
+  assert.deepEqual(startingPoints(map, 5).map((s) => s.node.id), starts.map((s) => s.node.id), 'same answer every time');
+  for (const s of starts) assert.equal(focusOf(map, s.node.id, 3).level.size - 1, s.affected);
+  assert.deepEqual(startingPoints(buildMap([], emptyGovernance())), []);
+});
+
+test('describeFocus: says in words what would be affected, and says plainly when nothing is', () => {
+  const map = buildMap(onts, gov);
+  const root = `${metric.o.slug}:${metric.t.id}`;
+  const text = describeFocus(map, focusOf(map, root, 3), 3);
+  assert.match(text, new RegExp(`^If ${metric.t.label} changes, \\d+ other things? would be affected: `));
+  assert.match(text, /agents?/);
+  assert.match(text, /reports?/);
+  assert.doesNotMatch(text, /classs/);
+  const lonely = map.nodes.find((n) => n.kind === 'class' && focusOf(map, n.id, 3).level.size === 1);
+  assert.match(describeFocus(map, focusOf(map, lonely.id, 3), 3), /^Nothing depends on /);
+  assert.equal(linkWord('derivedFrom'), 'derived from');
+  assert.equal(linkWord('somethingNew'), 'somethingNew');
+});
+
+test('the example catalog is a real graph: every term of the extra ontologies is linked to something, and users hang on all of them', async () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const solid = map.edges.filter((e) => !e.weak);
+  assert.ok(map.nodes.length > 140 && solid.length > 140, `${map.nodes.length} nodes, ${solid.length} links`);
+  const users = map.nodes.filter((n) => ['agent', 'skill', 'report'].includes(n.kind));
+  assert.ok(users.length >= 40, `${users.length} users`);
+  for (const o of cat.ontologies.filter((x) => x.slug !== 'werkbank_fin' && x.slug !== 'procurement_docs')) {
+    const loose = o.terms.filter((t) => !map.edges.some((e) => !e.weak && (e.from === `${o.slug}:${t.id}` || e.to === `${o.slug}:${t.id}`)));
+    assert.deepEqual(loose.map((t) => t.id), [], `${o.slug}: terms with no link`);
+  }
+});
+
+import { mapTourSeen, markMapTourSeen, MAP_TOUR_KEY } from '../src/map-tour.ts';
+
+test('the map tour is remembered once, and a blocked or missing storage just means it is offered again', () => {
+  const data = new Map();
+  const store = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => { data.set(k, v); } };
+  assert.equal(mapTourSeen(store), false);
+  markMapTourSeen(store);
+  assert.equal(data.get(MAP_TOUR_KEY), 'done');
+  assert.equal(mapTourSeen(store), true);
+  const blocked = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
+  assert.equal(mapTourSeen(blocked), false);
+  assert.doesNotThrow(() => markMapTourSeen(blocked));
+  assert.equal(mapTourSeen(null), false);
+});

@@ -31,6 +31,7 @@ function recruiting(): Ontology {
     metric('CostPerHire', 'Cost per hire', 'What a source cost divided by the hires it brought.', 'cost_eur / hires', 'HR Controlling'),
     metric('WaitTime', 'Wait time per stage', 'Average days applicants wait for the next step, against the stage target.', 'weighted average of wait days', 'HR Analytics'),
     metric('SelectionRate', 'Selection rate', 'Interviews divided by applications for one applicant group. Shown only for groups of at least 10 applications.', 'interviews / applications', 'HR Analytics'),
+    metric('ApprovalCycleTime', 'Approval cycle time', 'Days from sending a hire request to the last approval.', 'last_approval - sent_on', 'HR Controlling'),
   ];
   return {
     slug: 'werkbank_hr', title: 'Recruiting and hiring', status: 'published', properties: 11, openProposals: 0, ...base, terms,
@@ -40,6 +41,7 @@ function recruiting(): Ontology {
       res('ds_funnel', 'funnel_snapshot', 'Dataset', 'recruiting_analytics: applied, screened, interviewed, waits'),
       res('ds_source', 'source_stat', 'Dataset', 'recruiting_analytics: applications, hires, cost'),
       res('ds_group', 'group_stat', 'Dataset', 'recruiting_analytics: applications and interviews per group'),
+      res('ds_hire_requests', 'hiring_approvals', 'Dataset', 'Hire requests with approvers and decisions'),
       res('chk_min_group', 'Minimum group size', 'Quality Check', 'Groups under 10 applications are hidden'),
       res('chk_four_fifths', 'Four-fifths hint', 'Quality Check', 'Review hint when a rate is below 0.8 of the top group'),
     ],
@@ -49,6 +51,13 @@ function recruiting(): Ontology {
       link('WaitTime', 'derivedFrom', 'ds_funnel'), link('SelectionRate', 'derivedFrom', 'ds_group'),
       link('chk_min_group', 'measuredBy', 'SelectionRate'), link('chk_four_fifths', 'measuredBy', 'SelectionRate'),
       link('chk_four_fifths', 'dependsOn', 'chk_min_group'), link('WaitTime', 'dependsOn', 'TimeToFill'),
+      // how the things of hiring relate: a change to the target of a link reaches everything on its source side
+      link('Requisition', 'partOf', 'Department'), link('Candidate', 'dependsOn', 'Requisition'), link('Candidate', 'dependsOn', 'Stage'),
+      link('Candidate', 'references', 'Source'), link('Offer', 'dependsOn', 'Candidate'), link('Offer', 'dependsOn', 'Requisition'),
+      link('HireRequest', 'dependsOn', 'Offer'), link('ApplicantGroup', 'dependsOn', 'Candidate'),
+      link('TimeToFill', 'dependsOn', 'Requisition'), link('OfferAcceptance', 'dependsOn', 'Offer'), link('CostPerHire', 'dependsOn', 'Source'),
+      link('WaitTime', 'dependsOn', 'Stage'), link('SelectionRate', 'dependsOn', 'ApplicantGroup'),
+      link('ApprovalCycleTime', 'derivedFrom', 'ds_hire_requests'), link('ApprovalCycleTime', 'dependsOn', 'HireRequest'),
     ],
   };
 }
@@ -67,6 +76,7 @@ function sales(): Ontology {
     metric('PipelineCoverage', 'Pipeline coverage', 'Open pipeline value divided by the quota.', 'open_value / quota', 'Sales Operations'),
     metric('NoticeDate', 'Notice date', 'Last day to give notice: contract end minus the notice period.', 'end - notice_days', 'Contract Management'),
     metric('DiscountShare', 'Discount share', 'Discount in percent of the list price. Above the threshold a person must approve.', 'discount / list_price', ''),
+    metric('WinRate', 'Win rate', 'Won deals divided by closed deals in the period.', 'won / (won + lost)', 'Sales Operations'),
   ];
   return {
     slug: 'werkbank_sales', title: 'Sales and customers', status: 'published', properties: 9, openProposals: 0, ...base, terms,
@@ -75,6 +85,7 @@ function sales(): Ontology {
       res('ds_pipeline', 'pipeline.json', 'Dataset', 'examples/sales (sample deals, forecast, meetings)'),
       res('ds_offers', 'Sub4Me offers', 'Dataset', 'Offers of the customer portal'),
       res('ds_contracts', 'Sub4Me contracts', 'Dataset', 'Contracts with notice periods'),
+      res('ds_meetings', 'meetings.json', 'Dataset', 'examples/sales (customer meetings with notes and next steps)'),
       res('chk_discount', 'Discount approval', 'Approval Rule', 'A discount above the threshold is not cleared until approved'),
       res('chk_renewal', 'Renewal radar', 'Process Check', 'Contracts ending within 180 days'),
       res('muster', 'Muster Industrie AG', 'Customer', 'SAP customer ID 0010048211'),
@@ -84,6 +95,10 @@ function sales(): Ontology {
       link('PipelineCoverage', 'dependsOn', 'ACV'), link('NoticeDate', 'derivedFrom', 'ds_contracts'), link('DiscountShare', 'derivedFrom', 'ds_offers'),
       link('chk_discount', 'measuredBy', 'DiscountShare'), link('chk_renewal', 'measuredBy', 'NoticeDate'), link('chk_renewal', 'appliesTo', 'muster'),
       link('chk_discount', 'appliesTo', 'muster'),
+      link('Deal', 'dependsOn', 'Customer'), link('Deal', 'references', 'Competitor'), link('Offer', 'dependsOn', 'Deal'), link('Contract', 'dependsOn', 'Offer'),
+      link('Renewal', 'dependsOn', 'Contract'), link('Meeting', 'references', 'Customer'), link('Meeting', 'derivedFrom', 'ds_meetings'),
+      link('ForecastCategory', 'dependsOn', 'Deal'), link('PipelineCoverage', 'dependsOn', 'ForecastCategory'), link('ACV', 'dependsOn', 'Contract'),
+      link('DiscountShare', 'dependsOn', 'Offer'), link('WinRate', 'dependsOn', 'Deal'), link('WinRate', 'derivedFrom', 'ds_pipeline'),
     ],
   };
 }
@@ -99,6 +114,7 @@ function itOps(): Ontology {
     metric('MTTR', 'Mean time to repair', 'Average hours from an alert opening to its resolution.', 'resolved_at - opened_at', 'Infrastructure Operations'),
     metric('CertDaysLeft', 'Certificate days left', 'Days until a certificate expires.', 'not_after - today', 'Infrastructure Operations'),
     metric('PatchCompliance', 'Patch compliance', 'Share of hosts that have every critical patch.', 'patched_hosts / hosts', 'Security Operations'),
+    metric('AlertVolume', 'Alert volume', 'Alerts per host and week. A jump often means a change went wrong.', 'alerts / hosts / week', 'Infrastructure Operations'),
   ];
   return {
     slug: 'werkbank_itops', title: 'IT operations', status: 'published', properties: 8, openProposals: 0, ...base, terms,
@@ -115,6 +131,9 @@ function itOps(): Ontology {
       link('MTTR', 'derivedFrom', 'ds_alerts'), link('CertDaysLeft', 'derivedFrom', 'ds_fleet'), link('PatchCompliance', 'derivedFrom', 'ds_fleet'),
       link('chk_cert', 'measuredBy', 'CertDaysLeft'), link('chk_cert', 'appliesTo', 'proxy-edge-01'), link('sop_cert', 'appliesTo', 'chk_cert'),
       link('sop_patch', 'dependsOn', 'PatchCompliance'), link('MTTR', 'dependsOn', 'CertDaysLeft'),
+      link('Host', 'partOf', 'Region'), link('Alert', 'dependsOn', 'Host'), link('Certificate', 'dependsOn', 'Host'), link('ChangeTicket', 'dependsOn', 'Procedure'),
+      link('ChangeTicket', 'references', 'Alert'), link('CertDaysLeft', 'dependsOn', 'Certificate'), link('MTTR', 'dependsOn', 'Alert'),
+      link('PatchCompliance', 'dependsOn', 'Host'), link('AlertVolume', 'derivedFrom', 'ds_alerts'), link('AlertVolume', 'dependsOn', 'Alert'),
     ],
   };
 }
@@ -149,6 +168,11 @@ function orderToCash(): Ontology {
       link('ContractAsset', 'dependsOn', 'RecognisedRevenue'), link('DaysToFirstInvoice', 'derivedFrom', 'ds_o2c'),
       link('chk_entitlement', 'measuredBy', 'DaysToFirstInvoice'), link('chk_trueup', 'measuredBy', 'BilledAmount'),
       link('chk_trueup', 'appliesTo', 'kestrel'), link('chk_entitlement', 'appliesTo', 'kestrel'),
+      link('BillOfMaterial', 'dependsOn', 'SalesOrder'), link('Entitlement', 'dependsOn', 'BillOfMaterial'), link('Tenant', 'dependsOn', 'Entitlement'),
+      link('CustomerInvoice', 'dependsOn', 'SalesOrder'), link('Meter', 'partOf', 'Tenant'), link('UsageRecord', 'dependsOn', 'Meter'),
+      link('PerformanceObligation', 'dependsOn', 'SalesOrder'), link('BilledAmount', 'dependsOn', 'CustomerInvoice'),
+      link('RecognisedRevenue', 'dependsOn', 'PerformanceObligation'), link('DaysToFirstInvoice', 'dependsOn', 'CustomerInvoice'),
+      link('chk_trueup', 'dependsOn', 'UsageRecord'),
     ],
   };
 }
@@ -162,7 +186,7 @@ function procurementMore(): Ontology {
   return {
     slug: 'procurement_more', title: 'Procurement terms (draft, from the handbook)', status: 'draft', properties: 3, openProposals: 0, ...base, terms,
     nodes: [res('Supplier_x', 'Supplier (see procurement_docs)', 'Reference', 'Defined in another ontology')],
-    edges: [link('SupplierInvoice', 'dependsOn', 'GoodsReceipt')],
+    edges: [link('SupplierInvoice', 'dependsOn', 'GoodsReceipt'), link('SupplierInvoice', 'dependsOn', 'PaymentTerms')],
   };
 }
 
@@ -200,11 +224,36 @@ export function extraExampleGovernance(): Extra {
       { slug: 'werkbank_itops', term: 'MTTR', kind: 'report', name: 'Operations review' },
       { slug: 'werkbank_o2c', term: 'RecognisedRevenue', kind: 'report', name: 'Revenue Recognition space' },
       { slug: 'werkbank_o2c', term: 'BilledAmount', kind: 'skill', name: 'board-briefing' },
+      { slug: 'werkbank_hr', term: 'Stage', kind: 'agent', name: 'Interview scheduler' },
+      { slug: 'werkbank_hr', term: 'Requisition', kind: 'agent', name: 'Job posting assistant' },
+      { slug: 'werkbank_hr', term: 'HireRequest', kind: 'skill', name: 'hiring-approval-routing' },
+      { slug: 'werkbank_hr', term: 'ApprovalCycleTime', kind: 'report', name: 'Hiring approvals board' },
+      { slug: 'werkbank_hr', term: 'OfferAcceptance', kind: 'report', name: 'Offer pipeline' },
+      { slug: 'werkbank_hr', term: 'Candidate', kind: 'report', name: 'Recruiting Workbench space' },
+      { slug: 'werkbank_sales', term: 'Renewal', kind: 'agent', name: 'Renewal autopilot' },
+      { slug: 'werkbank_sales', term: 'Renewal', kind: 'agent', name: 'Win-back agent' },
+      { slug: 'werkbank_sales', term: 'Meeting', kind: 'skill', name: 'meeting-notes-summary' },
+      { slug: 'werkbank_sales', term: 'PipelineCoverage', kind: 'report', name: 'Pipeline review' },
+      { slug: 'werkbank_sales', term: 'Deal', kind: 'report', name: 'Sales space' },
+      { slug: 'werkbank_sales', term: 'DiscountShare', kind: 'agent', name: 'Discount approval flow' },
+      { slug: 'werkbank_sales', term: 'Offer', kind: 'report', name: 'Sub4Me portal space' },
+      { slug: 'werkbank_itops', term: 'Alert', kind: 'agent', name: 'Alert triage agent' },
+      { slug: 'werkbank_itops', term: 'Alert', kind: 'report', name: 'Infra Ops space' },
+      { slug: 'werkbank_itops', term: 'Certificate', kind: 'skill', name: 'renew-tls-certificate' },
+      { slug: 'werkbank_itops', term: 'PatchCompliance', kind: 'report', name: 'Fleet health' },
+      { slug: 'werkbank_itops', term: 'ChangeTicket', kind: 'agent', name: 'Change approval flow' },
+      { slug: 'werkbank_o2c', term: 'SalesOrder', kind: 'agent', name: 'Order-to-cash agent' },
+      { slug: 'werkbank_o2c', term: 'UsageRecord', kind: 'agent', name: 'Usage true-up flow' },
+      { slug: 'werkbank_o2c', term: 'Entitlement', kind: 'skill', name: 'entitlement-check' },
+      { slug: 'werkbank_o2c', term: 'CustomerInvoice', kind: 'report', name: 'Order-to-Cash space' },
+      { slug: 'procurement_more', term: 'SupplierInvoice', kind: 'skill', name: 'invoice-matching' },
     ],
     views: [
       { name: 'Hiring control tower', slugs: ['werkbank_hr'] },
       { name: 'Customer 360 briefing', slugs: ['werkbank_sales', 'werkbank_o2c'] },
       { name: 'Infrastructure Operations agent', slugs: ['werkbank_itops'] },
+      { name: 'Renewal autopilot', slugs: ['werkbank_sales'] },
+      { name: 'Order-to-cash agent', slugs: ['werkbank_o2c', 'werkbank_sales'] },
     ],
     termMeta: {
       [m('werkbank_hr', 'TimeToFill')]: { status: 'approved', replacedBy: '', synonyms: ['time to hire', 'days to fill', 'TTF'], mappings: [{ system: 'SAP SuccessFactors', ref: 'Recruiting: requisition cycle time' }] },
