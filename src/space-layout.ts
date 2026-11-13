@@ -14,6 +14,12 @@ import { dayChoice, dbView } from '../shared/designer-db-views.mjs';
 export const LAYOUT_VERSION = 1;
 export const SPACE_SLUG = /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/;
 export const MAX_BLOCKS = 60;
+/** Pictures travel inside the page as data (the layout holds them a second time), and a saved page may be 2 MB: 4 pictures of at most 150 KB stay far below that. */
+export const MAX_IMAGES = 4;
+export const MAX_IMAGE_BYTES = 150_000;
+export const MAX_IMAGE_CHARS = Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 80;
+const IMAGE_SRC = /^data:image\/(?:webp|jpeg|png);base64,[A-Za-z0-9+/]+={0,2}$/;
+export const isImageSrc = (v: unknown): v is string => typeof v === 'string' && v.length <= MAX_IMAGE_CHARS && IMAGE_SRC.test(v);
 export const MAX_DATASETS = 12;
 export const MAX_ROWS = 200;
 export const MAX_COLUMNS = 12;
@@ -61,7 +67,8 @@ export type Block =
   | { id: string; type: 'divider' }
   | { id: string; type: 'ask'; label: string; prompt: string }
   | { id: string; type: 'filter'; label: string; table: string; column: string }
-  | { id: string; type: 'spacelink'; label: string; text: string; space: string };
+  | { id: string; type: 'spacelink'; label: string; text: string; space: string }
+  | { id: string; type: 'image'; src: string; alt: string; caption: string; width: 'small' | 'medium' | 'full' };
 
 export type BlockType = Block['type'];
 export type Layout = { version: 1; datasets: Dataset[]; blocks: Block[] };
@@ -74,6 +81,7 @@ export const BLOCK_INFO: readonly BlockInfo[] = [
   { type: 'text', label: 'Text', group: 'Text', hint: 'Paragraphs and bullet points' },
   { type: 'quote', label: 'Quote', group: 'Text', hint: 'A statement with its source' },
   { type: 'callout', label: 'Note', group: 'Text', hint: 'Info, success, warning or problem' },
+  { type: 'image', label: 'Image', group: 'Media', hint: 'A picture from a file, shrunk to fit; it travels inside the page' },
   { type: 'columns', label: 'Boxes side by side', group: 'Boxes', hint: 'Two, three or four boxes with parallel text' },
   { type: 'compare', label: 'Comparison', group: 'Boxes', hint: 'Two sides, for example pros and cons' },
   { type: 'accordion', label: 'Fold-out list', group: 'Boxes', hint: 'Questions and answers that open on click' },
@@ -185,9 +193,22 @@ function normalizeBlock(raw: unknown, taken: Set<string>, datasets: Dataset[], n
     }
     case 'divider': return { id, type };
     case 'ask': return { id, type, label: line(o.label, 60) || 'Ask Joule', prompt: clip(o.prompt, 600).trim() };
+    case 'image': return { id, type, src: isImageSrc(o.src) ? o.src : '', alt: line(o.alt, 200), caption: line(o.caption, 200), width: o.width === 'small' || o.width === 'full' ? o.width : 'medium' };
     case 'filter': return { id, type, label: line(o.label, 60) || 'Search', table: line(o.table, 24), column: line(o.column, 40) };
     case 'spacelink': return { id, type, label: line(o.label, 60) || 'Open', text: line(o.text, 200), space: SPACE_SLUG.test(String(o.space ?? '')) ? String(o.space) : '' };
   }
+}
+
+/** At most MAX_IMAGES pictures per page: the later ones lose their picture (the block stays, empty). */
+function limitImages(blocks: Block[], notes: string[]): Block[] {
+  let seen = 0;
+  return blocks.map((b) => {
+    if (b.type !== 'image' || !b.src) return b;
+    seen += 1;
+    if (seen <= MAX_IMAGES) return b;
+    if (seen === MAX_IMAGES + 1) notes.push(`Only ${MAX_IMAGES} pictures fit in a page; the later ones were emptied.`);
+    return { ...b, src: '' };
+  });
 }
 
 /** A filter belongs to a table block of the same page: a missing or wrong one points at the next table (else the first), a column the table does not have is dropped. */
@@ -222,7 +243,7 @@ export function normalizeLayout(raw: unknown, notes: string[] = []): Layout {
     const n = normalizeBlock(b, blockIds, datasets, notes);
     if (n) blocks.push(n);
   }
-  return pruneDatasets({ version: LAYOUT_VERSION, datasets, blocks: repairFilters(blocks, datasets, notes) });
+  return pruneDatasets({ version: LAYOUT_VERSION, datasets, blocks: limitImages(repairFilters(blocks, datasets, notes), notes) });
 }
 
 export const emptyLayout = (): Layout => ({ version: LAYOUT_VERSION, datasets: [], blocks: [] });
@@ -318,6 +339,7 @@ export function blockDefaults(type: BlockType, layout: Layout): { block: Block; 
     case 'accordion': return { block: { id, type, title: 'Questions', items: [{ title: 'What is this?', text: 'A short answer.' }, { title: 'Who owns it?', text: 'Name the owner.' }] } };
     case 'divider': return { block: { id, type } };
     case 'ask': return { block: { id, type, label: 'Ask Joule', prompt: 'Summarise what changed on this page and what I should look at first.' } };
+    case 'image': return { block: { id, type, src: '', alt: '', caption: '', width: 'medium' } };
     case 'filter': return { block: { id, type, label: 'Search', table: layout.blocks.find((b) => b.type === 'table')?.id ?? '', column: '' } };
     case 'spacelink': return { block: { id, type, label: 'Open the other Space', text: '', space: '' } };
   }

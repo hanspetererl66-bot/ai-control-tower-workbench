@@ -1345,6 +1345,30 @@ ipcMain.handle('designer-pick-data-file', async () => {
   }
 });
 
+/** A picture for an image block in the Space Designer. The person picks it in the native dialog; the window gets the name, the kind
+ * (read from the first bytes, not from the name) and the bytes (max. 10 MB), never the path. The window shrinks it. */
+ipcMain.handle('designer-pick-image', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow ?? undefined, {
+      title: 'Choose a picture',
+      buttonLabel: 'Use picture',
+      properties: ['openFile'],
+      filters: [{ name: 'Pictures (PNG, JPEG, WebP, GIF)', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }],
+    });
+    if (result.canceled || result.filePaths.length === 0) return { ok: false, canceled: true };
+    const file = result.filePaths[0];
+    const size = statSync(file).size;
+    if (size > 10_000_000) return { ok: false, detail: `The file is ${(size / 1_000_000).toFixed(1)} MB; the limit is 10 MB.` };
+    const bytes = readFileSync(file);
+    const at = (i, ...v) => v.every((x, k) => bytes[i + k] === x);
+    const kind = at(0, 0x89, 0x50, 0x4e, 0x47) ? 'png' : at(0, 0xff, 0xd8, 0xff) ? 'jpeg' : at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50) ? 'webp' : at(0, 0x47, 0x49, 0x46, 0x38) ? 'gif' : null;
+    if (!kind) return { ok: false, detail: 'This is not a PNG, JPEG, WebP or GIF picture.' };
+    return { ok: true, name: basename(file), kind, data: bytes.toString('base64') };
+  } catch (error) {
+    return { ok: false, detail: error?.message ?? String(error) };
+  }
+});
+
 /** A fixed, read-only database view for a data set in the Space Designer: the window names an id from the list and a number of days. */
 ipcMain.handle('designer-data-view', async (_event, id, days) => {
   try {

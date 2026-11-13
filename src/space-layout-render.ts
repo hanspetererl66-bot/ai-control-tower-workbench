@@ -160,6 +160,7 @@ th[aria-sort="descending"] .wb-sortbtn::after{content:"▼"}
 .wb-timeline strong{color:var(--ink)}
 .wb-timeline p{font-size:13px;color:var(--ink-2)}
 .wb-ask{display:flex;align-items:center;gap:12px}
+.wb-image{margin-left:0;margin-right:0;text-align:center}.wb-image img{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:8px}.wb-image figcaption{margin-top:8px;color:var(--muted);font-size:13px}.wb-w-small img{max-width:280px}.wb-w-medium img{max-width:560px}
 .wb-spacelink{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.wb-spacelink-text{color:var(--muted);font-size:13px}
 .wb-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wb-filter-in{flex:1 1 220px;min-width:0}.wb-count{color:var(--muted);font-size:12px}.wb-table tr[hidden]{display:none}
 .wb-empty{color:var(--muted)}
@@ -471,6 +472,9 @@ function renderOne(block: Block, layout: Layout): string {
     case 'steps': return `<section class="card" ${id}>${titleHtml(block.title)}<ol class="wb-steps">${block.items.map((s, i) => `<li class="wb-step"><span class="wb-num">${i + 1}</span><strong>${esc(s.title)}</strong>${richHtml(s.text)}</li>`).join('')}</ol></section>`;
     case 'timeline': return `<section class="card" ${id}>${titleHtml(block.title)}<ol class="wb-timeline">${block.items.map((t) => `<li><span class="wb-when">${esc(t.when)}</span><span class="wb-dot"></span><div><strong>${esc(t.title)}</strong>${richHtml(t.text)}</div></li>`).join('')}</ol></section>`;
     case 'divider': return `<hr class="wb-hr" ${id}>`;
+    case 'image': return block.src
+      ? `<figure class="card wb-image wb-w-${block.width}" ${id}><img src="${esc(block.src)}" alt="${esc(block.alt)}">${block.caption ? `<figcaption>${esc(block.caption)}</figcaption>` : ''}</figure>`
+      : `<section class="card wb-empty" ${id}><p>No image yet.</p></section>`;
     case 'filter': return filterBlock(block, layout);
     case 'spacelink': return `<section class="card wb-spacelink" ${id}><button type="button" class="primary" data-wb-open-space="${esc(block.space)}"${block.space ? '' : ' disabled'}>${esc(block.label)}</button>${block.text ? `<span class="wb-spacelink-text">${esc(block.text)}</span>` : ''}</section>`;
     case 'ask': return `<section class="card wb-ask" ${id}><button type="button" class="primary" data-wb-ask="${esc(block.prompt)}"${block.prompt ? '' : ' disabled'}>${esc(block.label)}</button></section>`;

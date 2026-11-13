@@ -30,11 +30,26 @@ Every block has "id" (keep the ids of blocks you do not change) and "type":
 - ask: label, prompt (a button that sends the prompt to Joule)
 - filter: label (placeholder of the search box), table (the id of a table block on the page), column (optional: a column of that table that gets a pick list)
 - spacelink: label (button text), text (one line beside it), space (the folder name of another Space; leave it "" when you do not know one)
+- image: src (the picture, set by the app: copy it exactly as you got it, never invent or change it), alt, caption, width (small|medium|full)
 - divider`;
 
+/** The marker the agent sees instead of the picture data (which would fill the request). */
+export const IMAGE_KEPT = '<picture kept by the app>';
+
+/** The layout with every picture replaced by a marker, for the agent. */
+export function withoutPictures(layout: Layout): Layout {
+  return { ...layout, blocks: layout.blocks.map((b) => (b.type === 'image' && b.src ? { ...b, src: IMAGE_KEPT } : b)) };
+}
+
+/** Puts the pictures back into an answer: a picture block with the same id (and no picture of its own) gets the picture it had. */
+export function restorePictures(answer: Layout, before: Layout): Layout {
+  const had = new Map(before.blocks.flatMap((b) => (b.type === 'image' && b.src ? [[b.id, b.src] as const] : [])));
+  return normalizeLayout({ ...answer, blocks: answer.blocks.map((b) => (b.type === 'image' && !b.src && had.has(b.id) ? { ...b, src: had.get(b.id) } : b)) });
+}
+
 export function layoutPrompt(title: string, layout: Layout, request: string): string {
-  const json = JSON.stringify(layout);
-  const current = json.length > MAX_LAYOUT_CHARS ? JSON.stringify({ ...layout, datasets: layout.datasets.map((d) => ({ ...d, rows: d.rows.slice(0, 20) })) }) : json;
+  const json = JSON.stringify(withoutPictures(layout));
+  const current = json.length > MAX_LAYOUT_CHARS ? JSON.stringify({ ...withoutPictures(layout), datasets: layout.datasets.map((d) => ({ ...d, rows: d.rows.slice(0, 20) })) }) : json;
   return `You edit the page layout of the Werkbank Space "${title.replace(/"/g, "'").slice(0, 120)}". The page is a list of building blocks; the person looks at the result next to this chat.
 
 Current layout:
@@ -57,7 +72,7 @@ Rules:
 export type LayoutAnswer = { layout: Layout; notes: string[]; message: string };
 
 /** The layout in an answer (last ```json block, or the first {...} that parses), checked; null when there is none. */
-export function parseLayoutAnswer(text: string): LayoutAnswer | null {
+export function parseLayoutAnswer(text: string, before?: Layout): LayoutAnswer | null {
   const body = String(text ?? '');
   const candidates: string[] = [];
   for (const m of body.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)) candidates.push(m[1]);
@@ -69,7 +84,8 @@ export function parseLayoutAnswer(text: string): LayoutAnswer | null {
     try { raw = JSON.parse(candidate); } catch { continue; }
     if (!raw || typeof raw !== 'object' || !Array.isArray((raw as { blocks?: unknown }).blocks)) continue;
     const notes: string[] = [];
-    const layout = normalizeLayout(raw, notes);
+    const checked = normalizeLayout(raw, notes);
+    const layout = before ? restorePictures(checked, before) : checked;
     const message = body.replace(/```[\s\S]*?```/g, '').replace(/\s+/g, ' ').trim().slice(0, 400);
     return { layout, notes, message };
   }
