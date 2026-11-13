@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MAP_KIND_LABEL, buildMap, createSimulation, focusOf, layoutMap, searchMap, visibleMap, type MapEdge, type MapKind, type MapNode } from '../graph-map';
+import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL, buildMap, createSimulation, focusOf, layoutMap, searchMap, visibleMap, type MapEdge, type MapKind, type MapNode } from '../graph-map';
+import { cachedSuspected } from './useTermUsage';
 import { consumersOf, impactOf, ownerLabel, statusOf, type Governance, type Ontology, type TermStatus } from '../ontology-manager';
 
-const ALL_KINDS: MapKind[] = ['ontology', 'class', 'metric', 'resource', 'agent', 'skill', 'report'];
+const ALL_KINDS: MapKind[] = ['ontology', 'class', 'metric', 'resource', 'agent', 'skill', 'report', 'workflow', 'feature', 'space'];
 const SHAPE: Record<MapKind, 'hex' | 'round' | 'circle' | 'square' | 'diamond'> = {
-  ontology: 'hex', class: 'round', metric: 'circle', resource: 'square', agent: 'diamond', skill: 'diamond', report: 'diamond',
+  ontology: 'hex', class: 'round', metric: 'circle', resource: 'square', agent: 'diamond', skill: 'diamond', report: 'diamond', workflow: 'diamond', feature: 'diamond', space: 'diamond',
 };
-const RADIUS: Record<MapKind, number> = { ontology: 17, class: 10, metric: 9, resource: 7, agent: 8, skill: 8, report: 8 };
+const RADIUS: Record<MapKind, number> = { ontology: 17, class: 10, metric: 9, resource: 7, agent: 8, skill: 8, report: 8, workflow: 8, feature: 8, space: 8 };
 const HEAT_START = 1, HEAT_STOP = 0.025, HEAT_DECAY = 0.985;
 
 interface Cam { k: number; x: number; y: number }
@@ -48,7 +49,9 @@ const hash = (s: string): number => { let h = 7; for (let i = 0; i < s.length; i
  * map, so the map is never the only way to read it. With reduced motion the finished layout is shown and nothing moves by itself.
  */
 export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: Ontology[]; gov: Governance; onOpen: (slug: string, term: string) => void }) {
-  const map = useMemo(() => buildMap(ontologies, gov), [ontologies, gov]);
+  // Users that were searched for in this window and are still only suspected join the map dashed (nothing is read here).
+  const suspected = useMemo(() => cachedSuspected(ontologies, gov), [ontologies, gov]);
+  const map = useMemo(() => buildMap(ontologies, gov, suspected), [ontologies, gov, suspected]);
   const index = useMemo(() => new Map(map.nodes.map((n, i) => [n.id, i])), [map]);
   const status = useMemo(() => {
     const m = new Map<string, TermStatus>();
@@ -105,7 +108,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
     const cs = getComputedStyle(c);
     const g = (n: string, f: string) => cs.getPropertyValue(n).trim() || f;
     const col = { bg: g('--panel', '#fff'), ink: g('--ink', '#111'), muted: g('--muted', '#777'), line: g('--line', '#ddd'), accent: g('--accent', '#6d28d9'), ok: g('--om-ok', '#1b7f3b'), warn: g('--om-warn', '#9a5a00'), bad: g('--om-bad', '#b3261e') };
-    const kindColor: Record<MapKind, string> = { ontology: col.ink, class: col.accent, metric: col.ok, resource: col.muted, agent: col.warn, skill: col.warn, report: col.warn };
+    const kindColor: Record<MapKind, string> = { ontology: col.ink, class: col.accent, metric: col.ok, resource: col.muted, agent: col.warn, skill: col.warn, report: col.warn, workflow: col.warn, feature: col.warn, space: col.warn };
     const tints = [col.accent, col.ok, col.warn, col.bad, col.muted];
     const dpr = Math.min(2, window.devicePixelRatio || 1), { w, h } = size.current, { k, x: cx, y: cy } = cam.current;
     const t = now / 1000, intro = quiet ? 1 : Math.min(1, Math.max(0, (now - born.current) / 1400));
@@ -122,7 +125,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
     // ontologies as soft coloured areas
     const slugs = [...new Set(sh.nodes.map((n) => n.slug))];
     slugs.forEach((sg, si) => {
-      const mem = sh.nodes.filter((n) => n.slug === sg && !['agent', 'skill', 'report'].includes(n.kind));
+      const mem = sh.nodes.filter((n) => n.slug === sg && !CONSUMER_MAP_KINDS.includes(n.kind));
       if (mem.length < 3) return;
       let mx = 0, my = 0;
       for (const n of mem) { const i = ix.get(n.id) as number; mx += sx(i); my += sy(i); }
@@ -161,7 +164,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       const base = fo ? (inF ? 0.95 : 0.05) : e.weak ? 0.1 : touchesHover ? 0.8 : 0.4;
       ctx.globalAlpha = base * Math.max(0.25, va) * intro;
       ctx.strokeStyle = inF ? col.bad : touchesHover ? col.accent : col.muted; ctx.lineWidth = inF ? 2.2 : touchesHover ? 1.6 : 1;
-      if (e.weak) ctx.setLineDash([3, 5]);
+      if (e.weak || e.uncertain) ctx.setLineDash([3, 5]);
       ctx.beginPath(); ctx.moveTo(q.ax, q.ay);
       if (e.weak) ctx.lineTo(q.bx, q.by); else ctx.quadraticCurveTo(q.qx, q.qy, q.bx, q.by);
       ctx.stroke(); ctx.setLineDash([]);
@@ -210,6 +213,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       fill.addColorStop(0, rgba(colr, 0.78)); fill.addColorStop(1, colr);
       ctx.fillStyle = fill; ctx.strokeStyle = col.bg; ctx.lineWidth = 1.6;
       path(ctx, SHAPE[n.kind], x, y, r); ctx.fill(); ctx.stroke();
+      if (n.uncertain) { ctx.setLineDash([3, 2]); ctx.strokeStyle = col.warn; ctx.lineWidth = 1.6; path(ctx, SHAPE[n.kind], x, y, r + 3); ctx.stroke(); ctx.setLineDash([]); }
       if (state === 'deprecated' || state === 'draft') { ctx.setLineDash([3, 2]); ctx.strokeStyle = state === 'deprecated' ? col.bad : col.warn; ctx.lineWidth = 1.6; path(ctx, SHAPE[n.kind], x, y, r + 3); ctx.stroke(); ctx.setLineDash([]); }
       if (n.id === sl) {
         ctx.globalAlpha = 1; ctx.strokeStyle = col.ink; ctx.lineWidth = 2; path(ctx, SHAPE[n.kind], x, y, r + 5); ctx.stroke();
@@ -480,8 +484,8 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
           {!selNode && (
             <>
               <h3>How to read this</h3>
-              <p className="om-note-small">Each shape is a kind of thing: hexagon = ontology, rounded square = class, circle = metric, square = resource (dataset, check, company code), diamond = agent, skill or report that someone declared uses a term. A line means "derived from", "depends on" or "uses". Pick a node to see what breaks if it changes.</p>
-              <p className="om-note-small">{map.nodes.length} nodes, {map.edges.filter((e) => !e.weak).length} links{counts.agent || counts.skill || counts.report ? '' : '. No agent, skill or report is declared yet: add them in the tab Use.'}</p>
+              <p className="om-note-small">Each shape is a kind of thing: hexagon = ontology, rounded square = class, circle = metric, square = resource (dataset, check, company code), diamond = agent, skill, report, workflow, feature or space that someone declared or confirmed uses a term; dashed = only suspected, found but not yet confirmed. A line means "derived from", "depends on" or "uses". Pick a node to see what breaks if it changes.</p>
+              <p className="om-note-small">{map.nodes.length} nodes, {map.edges.filter((e) => !e.weak).length} links{CONSUMER_MAP_KINDS.some((k) => counts[k]) ? '' : '. No user is declared or confirmed yet: add them in the tab Use or find them in the catalog.'}{suspected.length ? ` ${suspected.length} suspected (dashed).` : ''}</p>
             </>
           )}
           {selNode && (

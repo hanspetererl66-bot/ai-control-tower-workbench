@@ -159,6 +159,14 @@ export function normalizeGovernance(input) {
       status: PLAN_STATUS.includes(p?.status) ? p.status : 'draft', createdAt: str(p?.createdAt, 40),
       asked: (Array.isArray(p?.asked) ? p.asked : []).map((x) => str(x, 120)).filter(Boolean).slice(0, 20),
     };
+    const a = p?.approval;
+    if (a && typeof a === 'object' && plan.status === 'approved') {
+      const users = (Array.isArray(a.users) ? a.users : []).slice(0, 50).map((u) => ({ name: str(u?.name, 120), kind: str(u?.kind, 20), state: str(u?.state, 20), owner: str(u?.owner, 120) })).filter((u) => u.name);
+      plan.approval = {
+        by: str(a.by, 120), at: str(a.at, 40), users, confirmed: Math.max(0, Number(a.confirmed) || 0), suspected: Math.max(0, Number(a.suspected) || 0), dismissed: Math.max(0, Number(a.dismissed) || 0),
+        owners: (Array.isArray(a.owners) ? a.owners : []).map((x) => str(x, 120)).filter(Boolean).slice(0, 20), questions: (Array.isArray(a.questions) ? a.questions : []).map((x) => str(x, 300)).filter(Boolean).slice(0, 5),
+      };
+    }
     if (plan.id && SLUG.test(plan.slug) && plan.term && plan.change) g.plans.push(plan);
   }
   // Lifecycle, synonyms and mappings per term, keyed "<slug>|<term id>" (additive: older files simply have none).
@@ -198,7 +206,7 @@ export function normalizeGovernance(input) {
     const [slug, term, rest] = k.split('|');
     if (decisionCount >= 2000 || !SLUG.test(slug ?? '') || !term || !/^(agent|workflow|feature|skill|space|report):.+/.test(rest ?? '')) continue;
     if (v?.decision !== 'confirmed' && v?.decision !== 'dismissed') continue;
-    g.usageDecisions[k] = { decision: v.decision, by: str(v?.by, 120), at: str(v?.at, 40) };
+    g.usageDecisions[k] = { decision: v.decision, by: str(v?.by, 120), at: str(v?.at, 40), ...(str(v?.name, 120) ? { name: str(v.name, 120) } : {}) };
     decisionCount++;
   }
   return g;

@@ -217,3 +217,98 @@ test('a single everyday word is searched in relations, tags and names, not in ru
   assert.deepEqual(usages.map((u) => `${u.term}:${u.ref}`).sort(), ['C:tag', 'CA:prose']);
   assert.equal(usages.find((u) => u.term === 'C').strength, 'medium');
 });
+
+// ---------------------------------------------------------------- step 3: the plan, the approval
+
+import { approvalRecord, approvePlan, approverMatches, ownerNotes, questionsAtRisk, setUsageDecision } from '../src/ontology-usage.ts';
+import { normalizeGovernance } from '../electron/ontology-store.mjs';
+
+const found = (over = {}) => {
+  const { usages } = findUsages([T('fin', 'CA', 'Contract asset')], [
+    src('agent', 'a1', 'Closing agent', [{ field: 'relation.data', text: 'Contract asset' }], { owner: 'Lena', criticality: 'critical' }),
+    src('workflow', 'w1', 'Accrual flow', [{ field: 'relation.process', text: 'Contract asset' }], { owner: 'Lena' }),
+    src('space', 'p1', 'Revenue Recognition', [{ field: 'body', text: 'The contract asset grows' }]),
+  ]);
+  return applyDecisions(usages, [], over);
+};
+const planGov = (extra = {}) => ({ ...emptyGovernance(), plans: [{ id: 'p1', slug: 'fin', term: 'CA', change: 'Rename to Contract liability', status: 'asked', createdAt: '2026-11-13T00:00:00.000Z', asked: [] }], questions: [{ id: 'q1', slug: 'fin', text: 'Which contract assets are unbilled?', terms: ['CA', 'X'] }, { id: 'q2', slug: 'fin', text: 'Other?', terms: ['Y'] }], ...extra });
+
+test('the approver field may hold several names or e-mails; the actor is compared as a label', () => {
+  assert.equal(approverMatches('Head of Revenue, jonas@example.com; lena@example.com', ' JONAS@example.com '), true);
+  assert.equal(approverMatches('Group Controlling', 'jonas@example.com'), false);
+  assert.equal(approverMatches('jonas@example.com', ''), false);
+  assert.equal(approverMatches('', 'jonas@example.com'), false);
+});
+
+test('approval needs an identity, the approver, a search of the users, and no critical user that is only suspected', () => {
+  const clear = summarize(found());
+  const ask = (over) => mayApprove({ approver: 'jonas@example.com', actor: 'jonas@example.com', actorIsAgent: false, summary: clear, searched: true, ...over });
+  assert.equal(ask({ summary: summarize({ usages: [], dismissed: 0 }) }).allowed, true);
+  assert.match(ask({ actor: '' }).reason, /no identity/);
+  assert.match(ask({ actor: 'lena@example.com' }).reason, /acts as lena@example.com/);
+  assert.match(ask({ searched: false, summary: summarize({ usages: [], dismissed: 0 }) }).reason, /Find the probable users first/);
+  assert.equal(ask({ searched: false, summary: summarize({ usages: [], dismissed: 0 }), settings: { requireSearch: false } }).allowed, true);
+  assert.match(ask({}).reason, /1 critical user is still only suspected \(Closing agent\)/, 'the critical agent of the sample blocks');
+  assert.equal(ask({ summary: summarize(found({ 'fin|CA|agent:a1': { decision: 'confirmed', by: 'x', at: '' } })) }).allowed, true, 'confirmed, it no longer blocks');
+  assert.equal(ask({ summary: summarize(found({ 'fin|CA|agent:a1': { decision: 'dismissed', by: 'x', at: '' } })) }).allowed, true, 'dismissed, it no longer blocks');
+});
+
+test('competency questions that name the term are listed as depending on it', () => {
+  assert.deepEqual(questionsAtRisk(planGov(), 'fin', 'CA').map((q) => q.id), ['q1']);
+  assert.deepEqual(questionsAtRisk(planGov(), 'other', 'CA'), []);
+});
+
+test('the record keeps what the approver saw, with the same limits as the store', () => {
+  const decided = found({ 'fin|CA|agent:a1': { decision: 'confirmed', by: 'x', at: '' } });
+  const rec = approvalRecord(decided, summarize(decided), questionsAtRisk(planGov(), 'fin', 'CA'), ' jonas@example.com ', Date.UTC(2026, 10, 13));
+  assert.equal(rec.by, 'jonas@example.com');
+  assert.equal(rec.at, '2026-11-13T00:00:00.000Z');
+  assert.equal(rec.users.length, 3);
+  assert.deepEqual(rec.users.map((u) => u.state).sort(), ['confirmed', 'suspected', 'suspected']);
+  assert.deepEqual(rec.owners, ['Lena']);
+  assert.deepEqual(rec.questions, ['Which contract assets are unbilled?']);
+  assert.equal(rec.confirmed, 1);
+  const many = Array.from({ length: 80 }, (_, i) => ({ ...decided.usages[0], key: `k${i}`, name: `U${i}` }));
+  assert.equal(approvalRecord({ usages: many, dismissed: 0 }, summarize({ usages: many, dismissed: 0 }), [], 'x', 0).users.length, 50);
+});
+
+test('one draft per owner, only their users, nothing sent; users without an owner are grouped last', () => {
+  const notes = ownerNotes({ termLabel: 'Contract asset', ontologyTitle: 'Finance', slug: 'fin', change: ' Rename to Contract liability ', approver: 'jonas@example.com', usages: found().usages });
+  assert.deepEqual(notes.map((n) => n.owner), ['Lena', 'No owner named']);
+  assert.match(notes[0].text, /Proposed change to "Contract asset" in Finance \(fin\):\nRename to Contract liability/);
+  assert.match(notes[0].text, /Your users of this term that this reaches:\n- Accrual flow \(workflow, suspected, please confirm or correct\)\n- Closing agent \(agent, suspected/);
+  assert.doesNotMatch(notes[0].text, /Revenue Recognition/, 'only the users of this owner');
+  assert.match(notes[1].text, /This user of this term that this reaches:/, 'one user without an owner reads correctly');
+  assert.match(notes[1].text, /- Revenue Recognition \(space, suspected/);
+  assert.match(notes[0].text, /Approver for this ontology: jonas@example.com\./);
+});
+
+test('approving a plan: allowed once, refused with the reason otherwise, and what the approver saw stays on the plan', () => {
+  const decided = found({ 'fin|CA|agent:a1': { decision: 'confirmed', by: 'x', at: '' } });
+  const args = { actor: 'jonas@example.com', actorIsAgent: false, approver: 'jonas@example.com', decided, summary: summarize(decided), searched: true, now: Date.UTC(2026, 10, 13) };
+  const gov = planGov();
+  const ok = approvePlan(gov, 'p1', args);
+  assert.equal(ok.check.allowed, true);
+  assert.equal(ok.gov.plans[0].status, 'approved');
+  assert.equal(ok.gov.plans[0].approval.by, 'jonas@example.com');
+  assert.equal(gov.plans[0].status, 'asked', 'the old governance is not changed');
+  assert.equal(approvePlan(ok.gov, 'p1', args).check.reason, 'This plan is already approved.');
+  assert.equal(approvePlan(gov, 'nope', args).check.reason, 'There is no such plan.');
+  for (const [over, re] of [[{ actorIsAgent: true }, /AI actor/], [{ actor: 'lena@example.com' }, /Only the approver/], [{ searched: false }, /Find the probable users/], [{ summary: summarize(found()), decided: found() }, /critical user/]]) {
+    const r = approvePlan(gov, 'p1', { ...args, ...over });
+    assert.equal(r.gov, gov, 'refused: the governance is returned as it was');
+    assert.match(r.check.reason, re);
+  }
+  // the store keeps the record, clips it, and drops it from a plan that is not approved
+  const stored = normalizeGovernance(JSON.parse(JSON.stringify(ok.gov)));
+  assert.deepEqual(stored.plans[0].approval, ok.gov.plans[0].approval);
+  const forged = JSON.parse(JSON.stringify(gov)); forged.plans[0].approval = { by: 'x', at: '', users: [], confirmed: 1, suspected: 0, dismissed: 0, owners: [], questions: [] };
+  assert.equal(normalizeGovernance(forged).plans[0].approval, undefined, 'a plan that is not approved carries no approval record');
+});
+
+test('a decision can remember the name of the user; the store keeps it', () => {
+  const g = setUsageDecision(emptyGovernance(), 'fin|CA|agent:a1', 'confirmed', 'jonas@example.com', 0, ' Closing agent ');
+  assert.equal(g.usageDecisions['fin|CA|agent:a1'].name, 'Closing agent');
+  assert.equal(normalizeGovernance(JSON.parse(JSON.stringify(g))).usageDecisions['fin|CA|agent:a1'].name, 'Closing agent');
+  assert.equal(setUsageDecision(emptyGovernance(), 'fin|CA|agent:a1', 'confirmed', 'x', 0).usageDecisions['fin|CA|agent:a1'].name, undefined);
+});

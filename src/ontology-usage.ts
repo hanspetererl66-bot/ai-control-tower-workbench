@@ -7,7 +7,7 @@
  * A found usage is only ever "suspected". It becomes "confirmed" when a person says so (`UsageDecision`), and a usage that
  * somebody declared by hand (`Binding`) is "declared". The app never writes the catalog; nothing here changes anything.
  */
-import { metaOf, type Binding, type Governance, type Ontology, type UsageDecision } from './ontology-manager.ts';
+import { metaOf, type Binding, type Governance, type Ontology, type PlanApproval, type Question, type UsageDecision } from './ontology-manager.ts';
 import type { RItem } from './registry.ts';
 
 // ---------------------------------------------------------------- types
@@ -254,10 +254,10 @@ export function applyDecisions(found: readonly Usage[], declared: readonly Usage
 const stateRank = (s: UsageState) => (s === 'suspected' ? 1 : 0);
 
 /** Records a decision; asking again with the same decision takes it back (a person may change their mind). Returns a new map. */
-export function decide(decisions: DecisionMap, key: string, decision: UsageDecision['decision'], by: string, now: number): DecisionMap {
+export function decide(decisions: DecisionMap, key: string, decision: UsageDecision['decision'], by: string, now: number, name = ''): DecisionMap {
   const next = { ...decisions };
   if (next[key]?.decision === decision) delete next[key];
-  else next[key] = { decision, by: by.trim().slice(0, 120), at: new Date(now).toISOString() };
+  else next[key] = { decision, by: by.trim().slice(0, 120), at: new Date(now).toISOString(), ...(name.trim() ? { name: name.trim().slice(0, 120) } : {}) };
   return next;
 }
 
@@ -296,25 +296,84 @@ export function summarize(decided: Decided): UsageSummary {
   };
 }
 
-export interface ApprovalSettings { blockOnCritical: boolean }
-export const DEFAULT_APPROVAL: ApprovalSettings = { blockOnCritical: true };
+export interface ApprovalSettings {
+  /** A critical user that is only suspected blocks the approval. */
+  blockOnCritical: boolean;
+  /** The probable users must have been searched before somebody approves (approving without looking defeats the point). */
+  requireSearch: boolean;
+}
+export const DEFAULT_APPROVAL: ApprovalSettings = { blockOnCritical: true, requireSearch: true };
 
 export interface ApprovalCheck { allowed: boolean; reason: string }
 
+/** The approver field is free text: one or several names or e-mails separated by comma or semicolon. The actor is an e-mail label. */
+export function approverMatches(approver: string, actor: string): boolean {
+  const who = norm(actor);
+  return !!who && approver.split(/[;,]/).some((a) => norm(a) === who);
+}
+
 /**
- * May this person approve the change? Only the approver of the ontology; never an AI actor; and, when the rule is on, not
- * while a critical user is still only suspected. Identity in the Werkbank is a label (an e-mail), not protection.
+ * May this person approve the change? Only the approver of the ontology; never an AI actor; only after the users were searched;
+ * and, when the rule is on, not while a critical user is still only suspected. Identity in the Werkbank is a label (an e-mail),
+ * not protection (decision 002): this is a rule the page applies, not a lock.
  */
-export function mayApprove(args: { approver: string; actor: string; actorIsAgent: boolean; summary: UsageSummary; settings?: ApprovalSettings }): ApprovalCheck {
-  const settings = args.settings ?? DEFAULT_APPROVAL;
+export function mayApprove(args: { approver: string; actor: string; actorIsAgent: boolean; summary: UsageSummary; searched?: boolean; settings?: Partial<ApprovalSettings> }): ApprovalCheck {
+  const settings = { ...DEFAULT_APPROVAL, ...(args.settings ?? {}) };
   if (args.actorIsAgent) return { allowed: false, reason: 'An AI actor cannot approve. A person decides.' };
   if (!args.approver.trim()) return { allowed: false, reason: 'No approver is assigned to this ontology.' };
-  if (norm(args.actor) !== norm(args.approver)) return { allowed: false, reason: `Only the approver (${args.approver.trim()}) approves this change.` };
+  if (!norm(args.actor)) return { allowed: false, reason: 'This window has no identity (e-mail) set, so nobody can approve here.' };
+  if (!approverMatches(args.approver, args.actor)) return { allowed: false, reason: `Only the approver (${args.approver.trim()}) approves this change. This window acts as ${args.actor.trim()}.` };
+  if (settings.requireSearch && args.searched === false) return { allowed: false, reason: 'Find the probable users first, then approve.' };
   if (settings.blockOnCritical && args.summary.openCritical.length) {
     const names = args.summary.openCritical.map((u) => u.name).slice(0, 3).join(', ');
     return { allowed: false, reason: `${args.summary.openCritical.length} critical ${args.summary.openCritical.length === 1 ? 'user is' : 'users are'} still only suspected (${names}). Confirm or dismiss ${args.summary.openCritical.length === 1 ? 'it' : 'them'} first.` };
   }
   return { allowed: true, reason: '' };
+}
+
+// ---------------------------------------------------------------- the plan: questions, record, notes, approval
+
+/** The competency questions that name this term: they depend on it, whatever the change is. */
+export function questionsAtRisk(gov: Governance, slug: string, termId: string): Question[] {
+  return gov.questions.filter((q) => q.slug === slug && q.terms.includes(termId));
+}
+
+/** What the approver saw: kept on the plan when it is approved. Limits match the store. */
+export function approvalRecord(decided: Decided, summary: UsageSummary, questions: readonly Question[], by: string, now: number): PlanApproval {
+  return {
+    by: by.trim().slice(0, 120), at: new Date(now).toISOString(),
+    users: decided.usages.slice(0, 50).map((u) => ({ name: u.name, kind: u.kind, state: u.state, owner: u.owner })),
+    confirmed: summary.confirmed, suspected: summary.suspected, dismissed: summary.dismissed, owners: summary.owners.slice(0, 20), questions: questions.slice(0, 5).map((q) => q.text),
+  };
+}
+
+/** One draft per owner: what is planned and which of their users it reaches. Nothing is sent by the app. */
+export function ownerNotes(args: { termLabel: string; ontologyTitle: string; slug: string; change: string; approver: string; usages: readonly Usage[] }): Array<{ owner: string; text: string }> {
+  const byOwner = new Map<string, Usage[]>();
+  for (const u of args.usages) byOwner.set(u.owner || '', [...(byOwner.get(u.owner || '') ?? []), u]);
+  return [...byOwner.entries()].sort((a, b) => (a[0] === '' ? 1 : b[0] === '' ? -1 : a[0].localeCompare(b[0]))).slice(0, 10).map(([owner, list]) => ({
+    owner: owner || 'No owner named',
+    text: [
+      `Proposed change to "${args.termLabel}" in ${args.ontologyTitle} (${args.slug}):`, args.change.trim(), '',
+      `${owner ? 'Your' : list.length === 1 ? 'This' : 'These'} ${list.length === 1 ? 'user of this term' : 'users of this term'} that this reaches:`,
+      ...list.map((u) => `- ${u.name} (${u.kind}, ${u.state === 'suspected' ? 'suspected, please confirm or correct' : u.state})`), '',
+      `Please confirm or object. Approver for this ontology: ${args.approver.trim() || 'not assigned'}.`,
+    ].join('\n'),
+  }));
+}
+
+/**
+ * Approves a plan if the rules allow it. Returns the new Governance (the plan is "approved" and carries what the approver saw)
+ * or the old one with the reason. This is the one place that sets "approved"; the page uses it for the button.
+ */
+export function approvePlan(gov: Governance, planId: string, args: { actor: string; actorIsAgent: boolean; approver: string; decided: Decided; summary: UsageSummary; searched: boolean; now: number; settings?: Partial<ApprovalSettings> }): { gov: Governance; check: ApprovalCheck } {
+  const plan = gov.plans.find((p) => p.id === planId);
+  if (!plan) return { gov, check: { allowed: false, reason: 'There is no such plan.' } };
+  if (plan.status === 'approved') return { gov, check: { allowed: false, reason: 'This plan is already approved.' } };
+  const check = mayApprove({ approver: args.approver, actor: args.actor, actorIsAgent: args.actorIsAgent, summary: args.summary, searched: args.searched, settings: args.settings });
+  if (!check.allowed) return { gov, check };
+  const record = approvalRecord(args.decided, args.summary, questionsAtRisk(gov, plan.slug, plan.term), args.actor, args.now);
+  return { gov: { ...gov, plans: gov.plans.map((p) => (p.id === planId ? { ...p, status: 'approved', approval: record } : p)) }, check };
 }
 
 // ---------------------------------------------------------------- sources
@@ -366,6 +425,6 @@ export const decisionsOf = (gov: Governance): DecisionMap => gov.usageDecisions 
  * Records (or takes back) a decision about one found user. Returns a new Governance; the caller saves it like every other
  * governance change. Nothing else changes: no binding is created and the catalog is never touched.
  */
-export function setUsageDecision(gov: Governance, key: string, decision: UsageDecision['decision'], by: string, now: number): Governance {
-  return { ...gov, usageDecisions: decide(decisionsOf(gov), key, decision, by, now) };
+export function setUsageDecision(gov: Governance, key: string, decision: UsageDecision['decision'], by: string, now: number, name = ''): Governance {
+  return { ...gov, usageDecisions: decide(decisionsOf(gov), key, decision, by, now, name) };
 }
