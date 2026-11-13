@@ -45,7 +45,7 @@ function blockLine(b: Block): string {
     case 'text': case 'columns': case 'table': case 'chart': case 'progress': case 'steps': case 'timeline': case 'compare': case 'matrix': case 'accordion': return s(b.title);
     case 'callout': return s(b.title || b.text);
     case 'quote': return s(b.text);
-    case 'ask': return s(b.label);
+    case 'ask': case 'filter': case 'spacelink': return s(b.label);
     case 'kpis': return `${b.items.length} figures`;
     default: return '';
   }
@@ -270,7 +270,7 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
 }
 
 /** Fields of the selected block. */
-function Inspector({ layout, block, onLayout, generate, ready, title }: { layout: Layout; block: Block; onLayout: (next: Layout) => void; generate?: Generate; ready?: boolean; title: string }) {
+function Inspector({ layout, block, onLayout, generate, ready, title, spaces = [], ownSlug = null }: { layout: Layout; block: Block; onLayout: (next: Layout) => void; generate?: Generate; ready?: boolean; title: string; spaces?: Space[]; ownSlug?: string | null }) {
   const up = (patch: Record<string, unknown>) => onLayout(updateBlock(layout, block.id, patch));
   switch (block.type) {
     case 'heading':
@@ -369,6 +369,30 @@ function Inspector({ layout, block, onLayout, generate, ready, title }: { layout
         <Text label="Button text" value={block.label} onChange={(v) => up({ label: v })} />
         <Area label="What Joule is asked (max. 600 characters)" value={block.prompt} onChange={(v) => up({ prompt: v.slice(0, 600) })} />
       </>;
+    case 'filter': {
+      const tables = layout.blocks.filter((b): b is Extract<Block, { type: 'table' }> => b.type === 'table');
+      const table = tables.find((t) => t.id === block.table);
+      const columns = layout.datasets.find((d) => d.id === table?.dataset)?.columns ?? [];
+      return <>
+        <Text label="Search box text" value={block.label} onChange={(v) => up({ label: v })} />
+        {tables.length === 0
+          ? <p className="sd-hint">Add a table block first; a filter works on a table.</p>
+          : <>
+            <Pick label="Table" value={block.table} options={tables.map((t, i) => ({ value: t.id, label: t.title || `Table ${i + 1}` }))} onChange={(v) => up({ table: v, column: '' })} />
+            <Pick label="Pick list for the column" value={block.column} options={[{ value: '', label: 'None, only the search box' }, ...columns.map((c) => ({ value: c, label: c }))]} onChange={(v) => up({ column: v })} />
+          </>}
+        <p className="sd-hint">The search box and the pick list hide the rows that do not match, in the page itself. A total row still adds up all rows.</p>
+      </>;
+    }
+    case 'spacelink': {
+      const others = spaces.filter((x) => x.slug !== ownSlug);
+      return <>
+        <Text label="Button text" value={block.label} onChange={(v) => up({ label: v })} />
+        <Text label="Line beside the button" value={block.text} onChange={(v) => up({ text: v })} />
+        <Pick label="Opens" value={block.space} options={[{ value: '', label: 'Choose a Space…' }, ...(block.space && !others.some((x) => x.slug === block.space) ? [{ value: block.space, label: `${block.space} (not installed)` }] : []), ...others.map((x) => ({ value: x.slug, label: x.title }))]} onChange={(v) => up({ space: v })} />
+        <p className="sd-hint">The button only opens the other Space; nothing is sent to it.</p>
+      </>;
+    }
     case 'divider':
       return <p className="sd-hint">A thin line between two parts of the page. Nothing to set.</p>;
   }
@@ -599,7 +623,7 @@ export default function SpaceDesigner({ slug: initialSlug, spaces, domains, them
                       <button className="ghost-btn sd-danger" onClick={() => { const next = layout.blocks[index + 1] ?? layout.blocks[index - 1]; change(removeBlock(layout, block.id), next?.id ?? null); }}>Delete</button>
                     </div>
                   </div>
-                  <Inspector layout={layout} block={block} onLayout={(l) => change(l)} generate={generate} ready={ready} title={title} />
+                  <Inspector layout={layout} block={block} onLayout={(l) => change(l)} generate={generate} ready={ready} title={title} spaces={spaces} ownSlug={slug} />
                   <ValuesHelper layout={layout} />
                 </div>
               ) : (

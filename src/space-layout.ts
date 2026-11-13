@@ -12,6 +12,7 @@
 import { dayChoice, dbView } from '../shared/designer-db-views.mjs';
 
 export const LAYOUT_VERSION = 1;
+export const SPACE_SLUG = /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/;
 export const MAX_BLOCKS = 60;
 export const MAX_DATASETS = 12;
 export const MAX_ROWS = 200;
@@ -58,7 +59,9 @@ export type Block =
   | { id: string; type: 'matrix'; title: string; xLabel: string; yLabel: string; points: MatrixPoint[] }
   | { id: string; type: 'accordion'; title: string; items: Item[] }
   | { id: string; type: 'divider' }
-  | { id: string; type: 'ask'; label: string; prompt: string };
+  | { id: string; type: 'ask'; label: string; prompt: string }
+  | { id: string; type: 'filter'; label: string; table: string; column: string }
+  | { id: string; type: 'spacelink'; label: string; text: string; space: string };
 
 export type BlockType = Block['type'];
 export type Layout = { version: 1; datasets: Dataset[]; blocks: Block[] };
@@ -81,7 +84,9 @@ export const BLOCK_INFO: readonly BlockInfo[] = [
   { type: 'matrix', label: 'Matrix', group: 'Data', hint: 'Points on two axes, for example impact and effort' },
   { type: 'steps', label: 'Steps', group: 'Process', hint: 'A numbered sequence' },
   { type: 'timeline', label: 'Timeline', group: 'Process', hint: 'Dated events' },
+  { type: 'filter', label: 'Filter for a table', group: 'Data', hint: 'A search box (and a pick list) that shows only the matching rows of a table' },
   { type: 'ask', label: 'Ask Joule button', group: 'Action', hint: 'A button that sends a question to Joule' },
+  { type: 'spacelink', label: 'Link to another Space', group: 'Action', hint: 'A button that opens another Space of the app' },
   { type: 'divider', label: 'Divider', group: 'Action', hint: 'A thin line between sections' },
 ];
 
@@ -180,7 +185,21 @@ function normalizeBlock(raw: unknown, taken: Set<string>, datasets: Dataset[], n
     }
     case 'divider': return { id, type };
     case 'ask': return { id, type, label: line(o.label, 60) || 'Ask Joule', prompt: clip(o.prompt, 600).trim() };
+    case 'filter': return { id, type, label: line(o.label, 60) || 'Search', table: line(o.table, 24), column: line(o.column, 40) };
+    case 'spacelink': return { id, type, label: line(o.label, 60) || 'Open', text: line(o.text, 200), space: SPACE_SLUG.test(String(o.space ?? '')) ? String(o.space) : '' };
   }
+}
+
+/** A filter belongs to a table block of the same page: a missing or wrong one points at the next table (else the first), a column the table does not have is dropped. */
+function repairFilters(blocks: Block[], datasets: Dataset[], notes: string[]): Block[] {
+  return blocks.map((b, i) => {
+    if (b.type !== 'filter') return b;
+    const tables = blocks.filter((x): x is Extract<Block, { type: 'table' }> => x.type === 'table');
+    const table = tables.find((t) => t.id === b.table) ?? tables.find((t) => blocks.indexOf(t) > i) ?? tables[0];
+    if (b.table && table?.id !== b.table) notes.push('A filter pointed at a table that is not on the page; it now uses another table.');
+    const columns = datasets.find((d) => d.id === table?.dataset)?.columns ?? [];
+    return { ...b, table: table?.id ?? '', column: columns.includes(b.column) ? b.column : '' };
+  });
 }
 
 /**
@@ -203,7 +222,7 @@ export function normalizeLayout(raw: unknown, notes: string[] = []): Layout {
     const n = normalizeBlock(b, blockIds, datasets, notes);
     if (n) blocks.push(n);
   }
-  return pruneDatasets({ version: LAYOUT_VERSION, datasets, blocks });
+  return pruneDatasets({ version: LAYOUT_VERSION, datasets, blocks: repairFilters(blocks, datasets, notes) });
 }
 
 export const emptyLayout = (): Layout => ({ version: LAYOUT_VERSION, datasets: [], blocks: [] });
@@ -299,6 +318,8 @@ export function blockDefaults(type: BlockType, layout: Layout): { block: Block; 
     case 'accordion': return { block: { id, type, title: 'Questions', items: [{ title: 'What is this?', text: 'A short answer.' }, { title: 'Who owns it?', text: 'Name the owner.' }] } };
     case 'divider': return { block: { id, type } };
     case 'ask': return { block: { id, type, label: 'Ask Joule', prompt: 'Summarise what changed on this page and what I should look at first.' } };
+    case 'filter': return { block: { id, type, label: 'Search', table: layout.blocks.find((b) => b.type === 'table')?.id ?? '', column: '' } };
+    case 'spacelink': return { block: { id, type, label: 'Open the other Space', text: '', space: '' } };
   }
 }
 
@@ -324,7 +345,8 @@ export function moveBlock(layout: Layout, id: string, toIndex: number): Layout {
 }
 
 export function removeBlock(layout: Layout, id: string): Layout {
-  return pruneDatasets({ ...layout, blocks: layout.blocks.filter((b) => b.id !== id) });
+  const blocks = layout.blocks.filter((b) => b.id !== id);
+  return pruneDatasets({ ...layout, blocks: repairFilters(blocks, layout.datasets, []) });
 }
 
 /** Copy of a block right behind it. A table or chart gets its own copy of the data, so the two can differ. */
