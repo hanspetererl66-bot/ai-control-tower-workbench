@@ -377,15 +377,6 @@ body{margin:0}
 
   <div class="demo">Mockup with fictional data. This page changes nothing and calls no system. Facts come from the sample documents; a live question to Cognee goes through the app.</div>
 
-  <details class="intro">
-    <summary><h2>What is this page?</h2><span class="hint">How the picture is made</span></summary>
-    <div class="body">
-      <p>One customer group seen as a graph: companies, people, contracts, deals, orders, invoices, tickets and what people wrote. The facts live in text documents (one per node) that a knowledge engine (Cognee) reads. Each step of the story asks the documents one question; what comes back is lit up in the graph, with the lines that matched.</p>
-      <p><b>Retrieval here is local:</b> a keyword ranking over the same documents, so the page works without a server. Switch on "Ask Cognee live" to send a question to the real Cognee memory through the app (needs the Cognee connector and the corpus; see docs/customer-360.md).</p>
-      <p>The "heat" of a company is a stated rule of thumb (payment record, renewal date, tickets, order gaps), not a model. Statements that are conclusions, not facts, carry the mark Inference. All data is fictional.</p>
-    </div>
-  </details>
-
   <nav class="c3-acts" id="acts" aria-label="Story"></nav>
 
   <section class="c3-stage" id="stage" aria-label="Graph of the customer group">
@@ -1502,7 +1493,7 @@ function makeLogic(D) {
     var figRows = fg.rows.map(function (r) { return row(r.node, [{ h: '<b>' + esc(r.short) + '</b>' }, { cls: 'figbar', h: '<div class="c3-bar" role="img" aria-label="' + esc(r.short + ': ' + r.text) + '"><i class="' + (fg.metric === 'heat' ? r.level : '') + '" style="width:' + r.pct + '%"></i></div>' }, { h: esc(r.text), n: 1 }]); }).join('');
     html += '<div class="card"><div class="c3-h">Figures per company <span class="c3-sub">· click a row to find the company in the graph</span></div><div class="c3-mts" role="group" aria-label="Which figure">' + L.metrics.map(function (m) { return '<button type="button" data-metric="' + m.id + '" aria-pressed="' + (m.id === fg.metric) + '"' + (m.id === fg.metric ? ' class="on"' : '') + '>' + esc(m.label) + '</button>'; }).join('') + '</div>' +
       '<table class="c3-tbl c3-fig"><thead><tr><th>Company</th><th>' + esc(fg.label) + '</th><th class="n">' + esc(fg.unit || 'Number') + '</th></tr></thead><tbody>' + figRows + '</tbody></table>' +
-      (fg.totalText ? '<div class="c3-note">Group total: ' + esc(fg.totalText) + (fg.unit ? ' ' + esc(fg.unit) : '') + '. The bar shows the share of the largest company.</div>' : '<div class="c3-note">Heat is a stated rule of thumb (see "What is this page?"), not a model.</div>') + '</div>';
+      (fg.totalText ? '<div class="c3-note">Group total: ' + esc(fg.totalText) + (fg.unit ? ' ' + esc(fg.unit) : '') + '. The bar shows the share of the largest company.</div>' : '<div class="c3-note">Heat is a stated rule of thumb, not a model.</div>') + '</div>';
     html += '<div class="card" style="margin-top:16px"><div class="c3-h">Companies by heat</div><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">People</th><th class="n">Per year (EUR)</th><th class="n">Weighted pipeline (EUR)</th><th class="n">Outstanding (EUR, gross)</th><th>Heat</th></tr></thead><tbody>' + heat + '</tbody></table><div class="c3-note">Heat = payment record + renewal date + tickets + order gaps, 0 to 100. A stated rule of thumb (see data rules), not a forecast.</div></div>';
     if (S.mode === 'explore' || S.act === 2) {
       var ct = D.contracts.map(function (c) { var r = L.renewalOf(c); return row('contract:' + c.id, [{ h: '<b>' + esc(c.id) + '</b><div class="c3-why">' + esc(L.ent(c.entity).short) + ' · ' + esc(D.products.filter(function (p) { return p.id === c.product; })[0].name) + '</div>' }, { h: L.eur(c.annualEur), n: 1 }, { h: esc(r.decisionDate) + '<div class="c3-why">' + (r.status === 'lapsed' ? 'lapsed' : r.status === 'auto-renews' ? 'renews by itself' : r.daysToDecision + ' days') + '</div>' }]); }).join('');

@@ -191,3 +191,9 @@ test('page: the story window has a grip with a label and keys, the figures card 
   assert.match(page, /Figures per company/);
   assert.match(page, /data-metric="' \+ m\.id/);
 });
+
+test('page: the "What is this page?" box is gone and nothing points at it any more', () => {
+  assert.doesNotMatch(page, /<details class="intro"|<h2>What is this page\?/, 'the box itself (its styles belong to the shared design system and stay)');
+  assert.doesNotMatch(page, /see "What is this page\?"/, 'no text points at the box');
+  assert.match(page, /class="demo">Mockup with fictional data/, 'the note that the page is a mockup stays');
+});
