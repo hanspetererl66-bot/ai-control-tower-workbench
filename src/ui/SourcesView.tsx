@@ -4,6 +4,7 @@ import {
   mergeRequirements, moveRequirement, overrideClass, parseClusters, parseRequirements, setTarget,
   type Cluster, type Handover, type RegistryRef, type ReqClass, type Requirement, type SourceKind,
 } from '../requirements';
+import SourceLogo from './SourceLogo';
 import { hostApi, loadRegistry, targetsOf } from '../registry';
 import { loadMap } from '../work-sync';
 import { handoverComment, handoverLabels, handoverMarker, handoverTickets, isDone, parseWriteback, summaryOf, writebackPrompt, type WriteResult } from '../writeback';
@@ -136,7 +137,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
         <>
           <section className="sh-card sx-source">
             <div className="sx-tabs" role="tablist" aria-label="Source">
-              {SOURCES.map((s) => <button key={s.id} role="tab" aria-selected={source === s.id} className={source === s.id ? 'sx-tab-on' : ''} onClick={() => { setSource(s.id); setDetected(''); setTrouble(false); }} title={`${s.label}: ${NATURE_HINT[NATURE[s.id]]}`}>{s.label}<small className="sx-nature">{NATURE[s.id]}</small></button>)}
+              {SOURCES.map((s) => <button key={s.id} role="tab" aria-selected={source === s.id} className={source === s.id ? 'sx-tab-on' : ''} onClick={() => { setSource(s.id); setDetected(''); setTrouble(false); }} title={`${s.label}: ${NATURE_HINT[NATURE[s.id]]}`}><SourceLogo id={s.id} /><span className="sx-tab-text">{s.label}<small className="sx-nature">{NATURE[s.id]}</small></span></button>)}
             </div>
             <label className="sx-q">{meta.query}
               <span className="sx-qrow">
@@ -164,7 +165,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
               </div>
               <div className="sx-chips" role="group" aria-label="Where the list comes from">
                 {countBySource(reqs).map(({ source: id, count }) => (
-                  <span key={id} className="sx-chip">{SOURCES.find((x) => x.id === id)?.label} <b>{count}</b>
+                  <span key={id} className="sx-chip"><SourceLogo id={id} size={16} />{SOURCES.find((x) => x.id === id)?.label} <b>{count}</b>
                     <button aria-label={`Remove the ${count} requirements from ${SOURCES.find((x) => x.id === id)?.label}`} title="Remove these from the list" onClick={() => { const gone = new Set(reqs.filter((r) => r.source === id).map((r) => r.id)); setReqs((cur) => cur.filter((r) => !gone.has(r.id))); setChecked((cur) => new Set([...cur].filter((k) => !gone.has(k)))); }}>×</button>
                   </span>
                 ))}
@@ -177,7 +178,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
                       <input type="checkbox" checked={checked.has(r.id)} onChange={() => toggle(r.id)} />
                       <span className="sx-key">{r.key}</span>
                       <span className="sx-rtext"><b>{r.title}</b>{r.text && r.text !== r.title && <small>{r.text}</small>}
-                        <small className="sx-meta">{SOURCES.find((s) => s.id === r.source)?.label} {NATURE[r.source]}{r.author ? ` · ${r.author}` : ''}{r.date ? ` · ${r.date}` : ''}{r.mentions && r.mentions > 1 ? ` · ${r.mentions} mentions` : ''}{r.url && <> · <a href={r.url} target="_blank" rel="noreferrer">open</a></>}</small></span>
+                        <small className="sx-meta"><SourceLogo id={r.source} size={14} /> {SOURCES.find((s) => s.id === r.source)?.label} {NATURE[r.source]}{r.author ? ` · ${r.author}` : ''}{r.date ? ` · ${r.date}` : ''}{r.mentions && r.mentions > 1 ? ` · ${r.mentions} mentions` : ''}{r.url && <> · <a href={r.url} target="_blank" rel="noreferrer">open</a></>}</small></span>
                     </label>
                   </li>
                 ))}

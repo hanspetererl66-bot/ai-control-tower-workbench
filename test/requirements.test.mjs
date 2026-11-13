@@ -262,3 +262,14 @@ test('a pasted link or query tells which source it belongs to; unclear input is 
   const list = [{ source: 'slack' }, { source: 'jira' }, { source: 'slack' }];
   assert.deepEqual(countBySource(list), [{ source: 'jira', count: 1 }, { source: 'slack', count: 2 }]);
 });
+
+test('every source has a logo in the tabs, the chips and the requirement rows', async () => {
+  const { readFileSync } = await import('node:fs');
+  const view = readFileSync(new URL('../src/ui/SourcesView.tsx', import.meta.url), 'utf8');
+  const logo = readFileSync(new URL('../src/ui/SourceLogo.tsx', import.meta.url), 'utf8');
+  assert.match(view, /<SourceLogo id=\{s\.id\} \/>/, 'tabs');
+  assert.match(view, /<SourceLogo id=\{id\} size=\{16\}/, 'chips');
+  assert.match(view, /<SourceLogo id=\{r\.source\}/, 'rows');
+  assert.match(logo, /id === 'teams'/); assert.match(logo, /id === 'notion'/); assert.match(logo, /<ToolLogo id=\{id\} \/>/, 'the four marks of the Connectors page are reused');
+  assert.match(logo, /aria-hidden="true"/, 'decorative: the name stands next to it');
+});
