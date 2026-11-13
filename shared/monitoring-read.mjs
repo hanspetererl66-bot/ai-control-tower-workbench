@@ -66,6 +66,16 @@ export function assertReadOnly(adapter) {
   return adapter;
 }
 
+/** The address as the adapter will use it, or an error that says what is wrong. */
+export function checkBaseUrl(raw) { return baseUrl(raw); }
+
+/** A token is visible characters without spaces, 8 to 2000 of them. */
+export function checkToken(raw) {
+  const t = typeof raw === 'string' ? raw.trim() : '';
+  if (t.length < 8 || t.length > 2000 || !/^[\x21-\x7e]+$/.test(t)) throw new MonitoringError('The token looks wrong: 8 to 2000 visible characters, no spaces.');
+  return t;
+}
+
 function baseUrl(raw) {
   let u;
   try { u = new URL(String(raw).trim()); } catch { throw new MonitoringError('The monitoring address is not a valid URL.'); }

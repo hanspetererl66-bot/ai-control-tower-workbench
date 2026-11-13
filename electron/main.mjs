@@ -20,6 +20,10 @@ import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError
 import { ensureGooseConfig } from '../shared/goose-config.mjs';
 import { createHotlineMail } from '../shared/hotline-mail.mjs';
 import { adapterFromEnv, createMonitoringRead } from '../shared/monitoring-read.mjs';
+import { agentSecrets, createMonitoringConfig, takeMainOnlyEnv } from '../shared/monitoring-config.mjs';
+
+/** The monitoring settings of the environment stay in this process: taken out of process.env before any child process (the agent runtime, skill installs) can inherit them. */
+const MONITORING_ENV = takeMainOnlyEnv(process.env);
 import { ALLOWED_COMMANDS, parseMcpbUrl, parseMcpUrl, parseSkillUrl } from './install-deep-link.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -214,7 +218,7 @@ function loadSecretStore() {
 
 /** Flattened for goosed's environment — stdio extensions inherit it. */
 function loadSecrets() {
-  return Object.assign({}, ...Object.values(loadSecretStore()));
+  return agentSecrets(loadSecretStore()); // not the monitoring login: it stays in this process
 }
 
 /** Just this connector's secrets, for deciding what Configure may edit. */
@@ -1562,10 +1566,20 @@ ipcMain.handle('hotline-mail-preview', (_event, fields) => obWrap(async () => ho
 ipcMain.handle('hotline-mail-send', (_event, fields) => obWrap(() => hotlineMail.send(fields)));
 /** Read-only access to the monitoring for the Alerts Space. The login comes from the app's secret store or the environment and never leaves this process. */
 const monitoring = createMonitoringRead({
-  adapter: () => { const s = loadSecrets(); return adapterFromEnv({ MONITORING_BASE_URL: s.MONITORING_BASE_URL ?? process.env.MONITORING_BASE_URL, MONITORING_READ_TOKEN: s.MONITORING_READ_TOKEN ?? process.env.MONITORING_READ_TOKEN, MONITORING_ADAPTER: s.MONITORING_ADAPTER ?? process.env.MONITORING_ADAPTER }); },
+  adapter: () => { const s = secretsFor('monitoring'); return adapterFromEnv({ MONITORING_BASE_URL: s.MONITORING_BASE_URL ?? MONITORING_ENV.MONITORING_BASE_URL, MONITORING_READ_TOKEN: s.MONITORING_READ_TOKEN ?? MONITORING_ENV.MONITORING_READ_TOKEN, MONITORING_ADAPTER: s.MONITORING_ADAPTER ?? MONITORING_ENV.MONITORING_ADAPTER }); },
   mapFile: join(ROOT, 'goose-home', 'monitoring-map.json'),
 });
 ipcMain.handle('monitoring-alerts', (_event, hours) => obWrap(() => monitoring.alerts({ sinceHours: hours })));
+/** The Settings dialog: address and read token. The token goes in and never comes back out. */
+const monitoringConfig = createMonitoringConfig({
+  store: { read: (name) => secretsFor(name), write: (name, values) => saveSecrets(name, values), forget: (name) => forgetConnectorSecrets(name) },
+  env: MONITORING_ENV,
+  monitoring,
+});
+ipcMain.handle('monitoring-config-get', () => obWrap(async () => monitoringConfig.get()));
+ipcMain.handle('monitoring-config-set', (_event, args) => obWrap(async () => monitoringConfig.set({ baseUrl: args?.baseUrl, token: args?.token })));
+ipcMain.handle('monitoring-config-clear', () => obWrap(async () => monitoringConfig.clear()));
+ipcMain.handle('monitoring-config-test', () => obWrap(() => monitoringConfig.test()));
 ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
 ipcMain.handle('onboarding-handover', (_event, id, start) => obWrap(() => workStore.onboardingHandover(id, start)));
 ipcMain.handle('onboarding-set', (_event, id, step, status, note) => obWrap(() => workStore.onboardingSet(id, step, status, note)));

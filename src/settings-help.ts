@@ -45,6 +45,11 @@ export const TAB_HELP: Record<string, TabHelp> = {
     where: 'The row above the message box, the slash menu in the message box and the briefing on a new conversation.',
     effect: 'A persona and your commands are added to the message when you use them. Everything stays on this computer.',
   },
+  monitoring: {
+    what: 'The read-only connection to your monitoring system: its address and a token that may only read.',
+    where: 'The Alerts Space, button "Load live alerts". Nothing else uses it.',
+    effect: 'The token is stored encrypted in the keychain of this computer and is never shown again, never sent to a Space, the chat or the assistant.',
+  },
   data: {
     what: 'Everything personal the app keeps on this computer, and a trail of who approved what.',
     where: 'Memory, personas, commands, approvals, agents, groups and schedules. Conversations and look settings are not included.',
