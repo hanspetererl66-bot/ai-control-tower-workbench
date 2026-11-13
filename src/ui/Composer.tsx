@@ -26,7 +26,8 @@ import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
 
 type Props = {
-  onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void>;
+  /** Returning 'held' keeps the draft in the box: the message was not sent (the app asks something first). */
+  onSend: (text: string, attachments: ChatAttachment[]) => void | Promise<void> | 'held';
   /** Install a Space file made from attached tables and open it. */
   onCreateTableSpace?: (file: File) => void | Promise<void>;
   agent: Agent | null;
@@ -425,7 +426,7 @@ export default function Composer({
       void onSend(t, []);
       return;
     }
-    void onSend(t, attachments);
+    if (onSend(t, attachments) === 'held') return;
     setText('');
     setAttachments([]);
     setAttachmentError('');

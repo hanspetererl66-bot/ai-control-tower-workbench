@@ -51,6 +51,10 @@ export type ChatTools = {
   readAloud: boolean;
   privacyBar: boolean;
   usage: boolean;
+  /** Terms of the ontology in the chat (marks, card, ask-back when a name means two things). Default off. */
+  terms: boolean;
+  /** Send the definitions of the terms in a message to the model with it. Default off: the text goes to the model provider. */
+  termsContext: boolean;
   /** Ask before an action that changes something (approval card). */
   askBeforeActions: boolean;
   /** Price per million tokens in EUR; 0 means no cost is shown. */
@@ -61,7 +65,7 @@ export type ChatTools = {
   /** Briefing cards (by id) and whole groups ("cat:<id>") under the chat that the person switched off. */
   hiddenBriefing: string[];
 };
-export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [], hiddenBriefing: [] };
+export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, terms: false, termsContext: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [], hiddenBriefing: [] };
 export type Starter = { label: string; prompt: string };
 export type StorageLocation = { id: string; name: string; purpose: (typeof PURPOSES)[number]; location: string };
 
@@ -205,6 +209,8 @@ export function sanitizeChatTools(value: unknown): ChatTools {
     readAloud: flag(v.readAloud, DEFAULT_CHAT_TOOLS.readAloud),
     privacyBar: flag(v.privacyBar, DEFAULT_CHAT_TOOLS.privacyBar),
     usage: flag(v.usage, DEFAULT_CHAT_TOOLS.usage),
+    terms: flag(v.terms, DEFAULT_CHAT_TOOLS.terms),
+    termsContext: flag(v.terms === true ? v.termsContext : false, DEFAULT_CHAT_TOOLS.termsContext),
     askBeforeActions: flag(v.askBeforeActions, DEFAULT_CHAT_TOOLS.askBeforeActions),
     priceInPerM: price(v.priceInPerM),
     priceOutPerM: price(v.priceOutPerM),

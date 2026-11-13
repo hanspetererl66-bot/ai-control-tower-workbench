@@ -289,6 +289,10 @@ export function AssistantPanel({ prefs, update }: Common) {
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.askBeforeActions} onChange={(e) => setChat({ askBeforeActions: e.target.checked })} /><span>Ask before actions (approval card for anything that changes something)</span></label>
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.readAloud} onChange={(e) => setChat({ readAloud: e.target.checked })} /><span>Read aloud: “Listen” button under each answer</span></label>
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.privacyBar} onChange={(e) => setChat({ privacyBar: e.target.checked })} /><span>Privacy bar: web search, connectors and model in use</span></label>
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.terms} onChange={(e) => setChat({ terms: e.target.checked, ...(e.target.checked ? {} : { termsContext: false }) })} /><span>Terms: mark terms of the ontology in the chat, show their definition, and ask which meaning you want when a name exists in two ontologies</span></label>
+        {prefs.chat.terms && (
+          <label className="voice-option"><input type="checkbox" checked={prefs.chat.termsContext} onChange={(e) => setChat({ termsContext: e.target.checked })} /><span>Send the definitions of the terms in a message to the model together with it (up to 5; this text goes to the model provider)</span></label>
+        )}
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.usage} onChange={(e) => setChat({ usage: e.target.checked })} /><span>Usage and cost estimate for this conversation</span></label>
         {prefs.chat.usage && (
           <div className="prefs-row">
