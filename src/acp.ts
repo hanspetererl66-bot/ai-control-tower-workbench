@@ -1,6 +1,6 @@
 import { DEFAULT_GOOSE_MCP_HOST_CAPABILITIES, GooseClient } from '@aaif/goose-sdk';
 import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk';
-import type { ChatAttachment } from './attachments';
+import { attachmentContextLines, type ChatAttachment } from './attachments';
 
 export type FileLocation = { path: string; line?: number };
 
@@ -206,10 +206,7 @@ export async function connect(url: string, cwd: string, handlers: Handlers): Pro
     extensions: session._meta?.extensionResults ?? [],
     promptCapabilities,
     async send(text: string, attachments: ChatAttachment[] = []) {
-      const contextLines = attachments.map(
-        (attachment) =>
-          `- ${attachment.name} (${attachment.kind}, ${attachment.mimeType}) at ${attachment.path}`
-      );
+      const contextLines = attachmentContextLines(attachments);
       const basePromptText = contextLines.length
         ? `${text}\n\nAttached files copied into this workspace:\n${contextLines.join('\n')}\nUse the attached content as primary source context.`
         : text;
@@ -219,7 +216,7 @@ export async function connect(url: string, cwd: string, handlers: Handlers): Pro
           : basePromptText;
         const prompt: any[] = [{ type: 'text', text: promptText }];
         for (const attachment of attachments) {
-          prompt.push({
+          if (!attachment.inline) prompt.push({
             type: 'resource_link',
             name: attachment.name,
             title: attachment.name,

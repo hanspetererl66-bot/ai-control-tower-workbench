@@ -32,7 +32,14 @@ export type ChatAttachment = {
   extractedText: string;
   imageData: string;
   warning: string;
+  /** The content travels as text and there is no file (a mail from the inbox): the agent gets the text, no file path and no file link. */
+  inline?: boolean;
 };
+
+/** The lines that name the attached files for the agent. Inline attachments (mails) have no file and are left out. */
+export function attachmentContextLines(attachments: ChatAttachment[]): string[] {
+  return attachments.filter((a) => !a.inline).map((a) => `- ${a.name} (${a.kind}, ${a.mimeType}) at ${a.path}`);
+}
 
 export type AttachmentPickerResult = {
   files: ChatAttachment[];

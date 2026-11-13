@@ -9,6 +9,7 @@ import {
 import type { ChatAttachment } from './attachments';
 import { isWebTool, webSearchNote, WEB_SEARCH_BLOCKED_NOTE } from './web-search';
 import { greetingFor } from './greeting';
+import { MAIL_LIST_SIZE, buildQuery, normalizeHits, normalizeMessage } from './mail-pick';
 import {
   archiveConversation as archiveConversationState,
   deleteConversation as deleteConversationState,
@@ -1414,8 +1415,21 @@ export default function App() {
       onMakeSkill={() => { void send('/make-skill'); }}
     />
   );
+  // "E-mail…" in the + menu: the app reads the Gmail inbox itself (read only, not through the model); the picked mail becomes a chat attachment.
+  const gmailName = gmailExtension(extensionNames);
+  const mailPick = agent && gmailName ? {
+    search: async (query: string) => normalizeHits(parseToolResult(await agent.callTool(`${gmailName}__search_mail`, { query: buildQuery(query), max_results: MAIL_LIST_SIZE }))?.results),
+    read: async (id: string) => {
+      const message = normalizeMessage(parseToolResult(await agent.callTool(`${gmailName}__read_mail`, { id })));
+      if (!message) throw new Error('The mail could not be read.');
+      return message;
+    },
+  } : undefined;
+  const mailHint = !agent ? 'Joule is not connected yet.' : !gmailName ? 'Connect Gmail under Connectors & Skills.' : '';
   const composer = (
     <Composer
+      mail={mailPick}
+      mailHint={mailHint}
       contextSlot={contextBar}
       commands={allCommands(ownCommands)}
       onSend={interceptSend}
