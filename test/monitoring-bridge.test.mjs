@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { handleMonitoringMessage, pickAlerts, pickTopology } from '../src/monitoring-bridge.ts';
+import { handleMonitoringMessage, pickAlerts, pickFindings, pickTopology } from '../src/monitoring-bridge.ts';
 
 const alert = (o = {}) => ({ id: 'A1', customer: 'C', host: 'gw-01', service: 'S', severity: 'high', impact: 'high', customerFacing: true, repeat24h: 2, text: 'Down', at: '2026-11-12T08:55', ...o });
 const host = (data) => { const calls = []; return { calls, alerts: async (h) => { calls.push(h); return { ok: true, data }; } }; };
@@ -35,4 +35,25 @@ test('a failing or throwing host becomes an error message, nothing else', async 
   assert.deepEqual(await handleMonitoringMessage({ type: 'mon:alerts-request', requestId: 'r' }, fail), { type: 'ct:error', requestId: 'r', message: 'No monitoring is connected.' });
   const boom = { alerts: async () => { throw new Error('boom'); } };
   assert.equal((await handleMonitoringMessage({ type: 'mon:alerts-request', requestId: 'r' }, boom)).message, 'boom');
+});
+
+const finding = (o = {}) => ({ id: 'L-A1', customer: 'mi', customerName: 'Muster Industrie AG', host: 'gw-01', env: 'PRD', kind: 'cert-expiry', template: 'renew-certificate', deadlineDays: 14, signal: 'Certificate expires', evidence: 'Monitoring alert A1', live: true, ...o });
+
+test('the findings request is answered with the findings cut down to the fields the Orchestrator reads, and the counts', async () => {
+  const calls = [];
+  const h = { alerts: async () => ({ ok: true, data: {} }), findings: async (hrs) => { calls.push(hrs); return { ok: true, data: { adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', alerts: 5, skipped: 2, withheld: 1, findings: [finding({ secret: 'x' })] } }; } };
+  const r = await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r', sinceHours: 12 }, h);
+  assert.deepEqual(calls, [12]);
+  assert.deepEqual(r, { type: 'mon:findings', requestId: 'r', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-12T10:00', sinceHours: 12, alerts: 5, skipped: 2, withheld: 1, findings: [finding()] });
+  assert.equal((await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r' }, { alerts: async () => ({ ok: true, data: {} }) })).type, 'ct:error');
+  assert.equal((await handleMonitoringMessage({ type: 'mon:findings-request', requestId: 'r' }, { alerts: async () => ({ ok: true, data: {} }), findings: async () => ({ ok: false, error: 'No monitoring is connected.' }) })).message, 'No monitoring is connected.');
+});
+
+test('pickFindings keeps only valid findings: known kind, task and environment, a deadline of 1 to 365 days, plain text', () => {
+  const list = pickFindings([finding(), finding({ id: 'bad id' }), finding({ host: 'bad host' }), finding({ kind: 'weird' }), finding({ template: 'drop-everything' }), finding({ env: 'LIVE' }), finding({ deadlineDays: 0 }), finding({ deadlineDays: 400 }), finding({ deadlineDays: 2.5 }), 'x', null,
+    finding({ id: 'L-B', customer: 'BAD ID', signal: '<b>x</b>\ny' })]);
+  assert.deepEqual(list.map((f) => f.id), ['L-A1', 'L-B']);
+  assert.equal(list[1].customer, '', 'a customer id that is not plain is dropped');
+  assert.ok(!/[<>\n]/.test(list[1].signal));
+  assert.deepEqual(pickFindings('nope'), []);
 });

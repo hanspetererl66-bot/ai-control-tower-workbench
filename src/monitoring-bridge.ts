@@ -5,9 +5,11 @@
  * The answer is cut down again here to the fields the Space shows. Alert text stays untrusted: the Space checks it itself.
  */
 export const MONITORING_SPACE = 'it-operations';
+/** The Orchestrator reads findings (live alerts through the rules of the local map) in shadow mode, with the same limits. */
+export const SHADOW_SPACE = 'infra-orchestrator';
 
 type Res = { ok: true; data: Record<string, unknown> } | { ok: false; error: string };
-export interface MonitoringHost { alerts: (sinceHours: number) => Promise<Res> }
+export interface MonitoringHost { alerts: (sinceHours: number) => Promise<Res>; findings?: (sinceHours: number) => Promise<Res> }
 
 const REQUEST_ID = /^[A-Za-z0-9_-]{1,40}$/;
 const ID = /^[A-Za-z0-9._:-]{1,40}$/;
@@ -42,14 +44,39 @@ export function pickTopology(raw: unknown): Record<string, string[]> {
   return out;
 }
 
+const KINDS = ['cert-expiry', 'patch-age', 'disk-trend', 'dns-stale'];
+const TEMPLATES = ['renew-certificate', 'patch-vm', 'move-vm', 'update-dns-record'];
+const ENVS = ['PRD', 'QAS', 'DEV'];
+
+export function pickFindings(raw: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(raw)) return [];
+  const out: Record<string, unknown>[] = [];
+  for (const f of raw.slice(0, 100)) {
+    if (!isObject(f) || typeof f.id !== 'string' || !ID.test(f.id) || typeof f.host !== 'string' || !HOST.test(f.host)) continue;
+    if (!KINDS.includes(String(f.kind)) || !TEMPLATES.includes(String(f.template)) || !ENVS.includes(String(f.env))) continue;
+    const days = typeof f.deadlineDays === 'number' && Number.isInteger(f.deadlineDays) ? f.deadlineDays : 0;
+    if (days < 1 || days > 365) continue;
+    const customer = typeof f.customer === 'string' && /^[a-z0-9]{0,12}$/.test(f.customer) ? f.customer : '';
+    out.push({ id: f.id, customer, customerName: str(f.customerName, 60), host: f.host, env: f.env, kind: f.kind, template: f.template, deadlineDays: days, signal: str(f.signal, 120), evidence: str(f.evidence, 240), live: true });
+  }
+  return out;
+}
+
 export async function handleMonitoringMessage(data: unknown, host: MonitoringHost | undefined): Promise<Record<string, unknown> | null> {
-  if (!isObject(data) || data.type !== 'mon:alerts-request') return null;
+  if (!isObject(data) || (data.type !== 'mon:alerts-request' && data.type !== 'mon:findings-request')) return null;
   const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
   if (!requestId) return null;
   const fail = (message: string) => ({ type: 'ct:error', requestId, message });
   if (!host) return fail('Live alerts need the desktop app.');
   const hours = typeof data.sinceHours === 'number' && Number.isFinite(data.sinceHours) ? Math.max(1, Math.min(168, Math.round(data.sinceHours))) : 24;
   try {
+    if (data.type === 'mon:findings-request') {
+      if (!host.findings) return fail('Live findings need the desktop app.');
+      const f = await host.findings(hours);
+      if (!f.ok) return fail(f.error);
+      const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100000, Math.round(v))) : 0);
+      return { type: 'mon:findings', requestId, source: 'live', adapter: str(f.data.adapter, 30), fetchedAt: str(f.data.fetchedAt, 16), sinceHours: hours, alerts: num(f.data.alerts), skipped: num(f.data.skipped), withheld: num(f.data.withheld), findings: pickFindings(f.data.findings) };
+    }
     const res = await host.alerts(hours);
     if (!res.ok) return fail(res.error);
     return { type: 'mon:alerts', requestId, source: 'live', adapter: str(res.data.adapter, 30), fetchedAt: str(res.data.fetchedAt, 16), sinceHours: hours, alerts: pickAlerts(res.data.alerts), topology: pickTopology(res.data.topology) };
