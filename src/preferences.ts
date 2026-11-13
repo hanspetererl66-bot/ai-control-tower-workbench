@@ -15,6 +15,8 @@ export const PREFERENCES_VERSION = 1;
 
 export const APPEARANCES = ['system', 'light', 'dark'] as const;
 export const APP_SCALES = [0.9, 1, 1.1, 1.25] as const;
+/** Size of the small icons (12 to 18 px) in the app, apart from the text: standard, large, extra large. */
+export const ICON_SCALES = [1, 1.2, 1.4] as const;
 export const FONTS = ['default', 'arial', 'system', 'readable', 'mono'] as const;
 export const DENSITIES = ['compact', 'normal', 'roomy'] as const;
 export const CONTRASTS = ['normal', 'high'] as const;
@@ -99,6 +101,8 @@ export type ProfileSettings = {
   spacesDock: SpacesDock;
   accent: string;
   appScale: number;
+  /** One of ICON_SCALES. */
+  iconScale: number;
   spaceScale: number;
   font: (typeof FONTS)[number];
   density: (typeof DENSITIES)[number];
@@ -148,6 +152,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   spacesDock: 'left',
   accent: '',
   appScale: 1,
+  iconScale: 1,
   spaceScale: 1.15,
   font: 'default',
   density: 'normal',
@@ -260,6 +265,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (SPACES_DOCKS.includes(v.spacesDock as never)) out.spacesDock = v.spacesDock as SpacesDock;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
+  if (ICON_SCALES.includes(v.iconScale as never)) out.iconScale = v.iconScale as number;
   if (typeof v.spaceScale === 'number' && Number.isFinite(v.spaceScale) && v.spaceScale >= 0.5 && v.spaceScale <= 1.5) out.spaceScale = parseSpaceScale(v.spaceScale);
   if (FONTS.includes(v.font as never)) out.font = v.font as ProfileSettings['font'];
   if (DENSITIES.includes(v.density as never)) out.density = v.density as ProfileSettings['density'];
@@ -339,8 +345,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
-  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
+  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
+  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -639,7 +645,7 @@ export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pi
 
 // ---------- back to the original ----------
 
-const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'appScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
 
 /** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
 export function resetLook<T extends Preferences>(prefs: T): T {
