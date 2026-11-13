@@ -19,11 +19,11 @@ async function open() {
 }
 const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 
-test('renewals: five tabs, the overview is the start page, only one panel is shown', async () => {
+test('renewals: six tabs, the overview is the start page, only one panel is shown', async () => {
   const p = await open();
-  assert.deepEqual(p.qa('#tabs [role=tab]').map((b) => b.textContent), ['Today', 'Renewal process', 'Next best action', 'Renewal radar', 'By decision date']);
+  assert.deepEqual(p.qa('#tabs [role=tab]').map((b) => b.textContent), ['Today', 'Autopilot', 'Renewal process', 'Next best action', 'Renewal radar', 'By decision date']);
   assert.deepEqual(p.visible(), ['pg-overview']);
-  for (const [id, pg] of [['nba', 'pg-nba'], ['radar', 'pg-radar'], ['list', 'pg-list'], ['process', 'pg-process'], ['overview', 'pg-overview']]) { click(p.w, p.q('#tab-' + id)); assert.deepEqual(p.visible(), [pg], id); assert.equal(p.q('#tab-' + id).getAttribute('aria-selected'), 'true'); }
+  for (const [id, pg] of [['autopilot', 'pg-autopilot'], ['nba', 'pg-nba'], ['radar', 'pg-radar'], ['list', 'pg-list'], ['process', 'pg-process'], ['overview', 'pg-overview']]) { click(p.w, p.q('#tab-' + id)); assert.deepEqual(p.visible(), [pg], id); assert.equal(p.q('#tab-' + id).getAttribute('aria-selected'), 'true'); }
   assert.deepEqual(p.errors, []);
   p.w.close();
 });

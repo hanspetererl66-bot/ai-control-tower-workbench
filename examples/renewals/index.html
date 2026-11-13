@@ -257,6 +257,17 @@ button:disabled{opacity:.5;cursor:default}
 .tile .n{font-weight:650;font-size:12px;line-height:1.25;overflow:hidden}.tile .c{font-size:11px;margin-top:2px;color:var(--ink-2)}
 .tile.green{background:var(--green-dim);box-shadow:inset 0 0 0 1.5px var(--green-border)}.tile.yellow{background:var(--amber-dim);box-shadow:inset 0 0 0 1.5px var(--amber-border)}.tile.red{background:var(--red-dim);box-shadow:inset 0 0 0 1.5px var(--red)}
 .tile:hover,.tile:focus-visible,.tile[aria-pressed=true]{outline:2px solid var(--purple);outline-offset:-1px;z-index:2}
+.aptop{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.aptop select{font:inherit;font-size:13px;padding:6px 8px;border-radius:var(--radius-sm,8px);border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.apcase{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin:10px 0;background:var(--surface)}.apcase.st-waiting-person{border-color:var(--amber-border)}
+.aphead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.apbar{list-style:none;display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 10px;padding:0;font-size:12px;color:var(--muted)}.apbar li{display:flex;flex-direction:column;align-items:flex-start;gap:1px}.apbar small{font-size:10px;color:var(--muted)}
+.apbar .d{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--line);background:var(--surface);margin-bottom:2px}
+.apbar li.done{color:var(--ink)}.apbar li.done .d{background:var(--green);border-color:var(--green)}.apbar li.now .d{border-color:var(--purple)}.apbar li.gate{color:var(--ink);font-weight:650}.apbar li.gate .d{background:var(--amber);border-color:var(--amber)}.apbar li.wait .d{border-color:var(--purple);background:var(--purple-dim)}.apbar li.stop .d{background:var(--red);border-color:var(--red)}
+.apgate{background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:var(--radius);padding:10px 12px;margin:6px 0}.apgate.soft{background:var(--purple-dim);border-color:var(--purple-border)}
+.apwhy{margin:6px 0 8px;padding-left:18px;font-size:13px}.apbtn{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.apmail{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:8px 10px;margin:8px 0;font-size:13px}
+.aplog{list-style:none;margin:6px 0 0;padding:0;font-size:12.5px}.aplog li{padding:3px 0;border-top:1px solid var(--line)}.aplog .who{font-size:11px;padding:0 6px;border-radius:999px;margin-right:4px}.aplog .who.auto{background:var(--purple-dim);color:var(--purple-ink)}.aplog .who.pers{background:var(--amber-dim);color:var(--ink)}.aplog .who.cust{background:var(--line);color:var(--ink)}
+.apcase details summary{cursor:pointer;font-size:12px;color:var(--muted);margin-top:6px}
 .pill.auto{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple);font-size:10px;padding:0 7px;margin-left:4px}tr.isauto td:first-child{box-shadow:inset 3px 0 0 var(--purple)}
 .cview{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start;margin-bottom:16px}
 .cust-cards{display:grid;gap:12px}
@@ -591,6 +602,9 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     </div>
     <div class="card" id="alt" hidden></div>
     <div class="card"><h2>Assumptions behind retention and lifetime value</h2><p class="sub" style="margin:0" id="assump"></p></div>
+  </section>
+  <section class="pg" id="pg-autopilot" role="tabpanel" aria-labelledby="tab-autopilot" hidden>
+    <div id="ap"></div>
   </section>
 </main>
 <div class="tip" id="tip" role="tooltip" hidden></div>
@@ -1784,6 +1798,92 @@ function actionList(c, sig) {
 const actions = (c, sig) => actionList(c, sig).map((a) => a.text);
 /** The stable keys of the same actions, in the same order (what the page groups by). */
 const actionKeys = (c, sig) => actionList(c, sig).map((a) => a.key);
+/* ---------- Autopilot: the whole renewal as steps; the machine does the routine, a person decides at fixed gates ----------
+   Pure state machine. A case state is plain data: { mode, step, status, pick, log[], gate }. Nothing here sends, signs or books:
+   the page shows what the autopilot did and what waits for a person; the real mail and the order are handed over by the page. */
+const AP_STEPS = [
+  { id: 'watch', name: 'Watch', by: 'Autopilot' }, { id: 'brief', name: 'Brief', by: 'Autopilot' }, { id: 'offer', name: 'Offer', by: 'Autopilot' },
+  { id: 'check', name: 'Policy check', by: 'Autopilot' }, { id: 'approve', name: 'Deal desk', by: 'Person' }, { id: 'send', name: 'Send', by: 'Person' },
+  { id: 'negotiate', name: 'Customer', by: 'Customer' }, { id: 'order', name: 'Order', by: 'Autopilot' },
+];
+const AP_STEP_INDEX = Object.fromEntries(AP_STEPS.map((s, i) => [s.id, i]));
+/** What the policy asks a person to look at (empty = within policy). Same rules as autoCheck, but listed as reasons, plus the escalation of the customer. */
+function apPolicy(c, sig, opts, rules, pick) {
+  const reasons = [];
+  if (c.annualEur >= rules.autoThresholdEur) reasons.push(`Annual value ${eur(c.annualEur)} is not below ${eur(rules.autoThresholdEur)}`);
+  if (c.status === 'Lapsed') reasons.push('Lapsed contract: a person decides about a win-back');
+  for (const x of sig.signals) if (x.level !== 'plus' && x.key !== 'timing' && x.key !== 'no-offer') reasons.push(x.text);
+  if (!pick) reasons.push('No offer stays within the contract cap');
+  else if (!pick.withinCap) reasons.push(`The chosen offer is above the contract cap (${pick.changePct} %)`);
+  return reasons;
+}
+const apLog = (st, actor, step, text) => ({ ...st, log: [...st.log, { n: st.log.length + 1, actor, step, text }] });
+/** Runs the automatic steps from the current one until something waits for a person or for the customer. */
+function apRun(st, ctx) {
+  const { c, sig, opts, rules, mode } = ctx;
+  let s = { ...st };
+  for (let guard = 0; guard < 20; guard++) {
+    if (s.status !== 'running') return s;
+    const id = AP_STEPS[s.step].id;
+    if (id === 'watch') { s = apLog(s, 'Autopilot', id, `Decision date ${c.decisionDate} (${sig.days < 0 ? -sig.days + ' days ago' : 'in ' + sig.days + ' days'}), health ${sig.health}, ${sig.signals.filter((x) => x.level !== 'plus').length} warning signal(s).`); s.step++; }
+    else if (id === 'brief') { s = apLog(s, 'Autopilot', id, 'Briefing from the signals: ' + (levers(sig, rules).slice(0, 2).join('; ') || 'nothing special, keep the cadence') + '.'); s.step++; }
+    else if (id === 'offer') {
+      const pick = (s.pick && opts.find((o) => o.key === s.pick)) || opts.filter((o) => o.withinCap).sort((a, b) => b.clvEur - a.clvEur)[0] || opts.find((o) => o.recommended) || opts[0] || null;
+      s.pick = pick ? pick.key : null;
+      s = apLog(s, 'Autopilot', id, pick ? `Offer built: ${pick.name}, ${eur(pick.annualEur)} a year for ${pick.termMonths} months (${pick.changePct > 0 ? '+' : ''}${pick.changePct} % against today).` : 'No offer could be built.'); s.step++;
+    } else if (id === 'check') {
+      const pick = opts.find((o) => o.key === s.pick) || null, reasons = apPolicy(c, sig, opts, rules, pick);
+      s.reasons = reasons;
+      s = apLog(s, 'Autopilot', id, reasons.length ? `Policy check: ${reasons.length} point(s) for a person.` : 'Policy check: within policy, nothing for a person.'); s.step++;
+    } else if (id === 'approve') {
+      if (s.reasons.length === 0 && mode === 'autopilot') { s = apLog(s, 'Autopilot', id, 'Approved by rule: below the threshold, no warning signal, within the contract cap.'); s.step++; }
+      else { s.status = 'waiting-person'; s.gate = 'approve'; return apLog(s, 'Autopilot', id, 'Waiting for the deal desk: ' + (s.reasons.length ? s.reasons[0] : 'supervised mode, every offer is checked') + '.'); }
+    } else if (id === 'send') {
+      if (s.reasons.length === 0 && mode === 'autopilot') { s = apLog(s, 'Autopilot', id, 'Offer e-mail sent to the customer (simulated).'); s.sent = true; s.step++; }
+      else { s.status = 'waiting-person'; s.gate = 'send'; return apLog(s, 'Autopilot', id, 'E-mail to the customer is ready as a draft. Waiting for a person to send it.'); }
+    } else if (id === 'negotiate') { s.status = 'waiting-customer'; s.gate = null; return apLog(s, 'Autopilot', id, 'Waiting for the answer of the customer. A reminder follows before the offer expires.'); }
+    else if (id === 'order') {
+      const pick = opts.find((o) => o.key === s.pick);
+      s = apLog(s, 'Autopilot', id, `Signed. The renewal order for Order-to-Cash is prepared: new term ${pick ? pick.termMonths : 12} months, entitlements, invoice.`); s.step++; s.status = 'done'; s.gate = null;
+    } else s.step++;
+  }
+  return s;
+}
+/** Starts the autopilot for one renewal. mode: 'autopilot' (a person only at exceptions) or 'supervised' (a person approves and sends every offer). */
+function apStart(ctx) {
+  return apRun({ mode: ctx.mode, step: 0, status: 'running', pick: null, gate: null, reasons: [], sent: false, log: [] }, ctx);
+}
+/** A person or the customer acts. actions: approve, reject, send, signed, changes, declined, takeover. Returns the new state; an action that does not fit the state changes nothing. */
+function apAct(st, action, who, ctx, arg) {
+  const person = who || 'A person';
+  if (st.status === 'waiting-person' && st.gate === 'approve') {
+    if (action === 'approve') return apRun(apLog({ ...st, status: 'running', gate: null, step: AP_STEP_INDEX.send }, person, 'approve', 'Offer approved.'), { ...ctx, mode: st.mode });
+    if (action === 'reject') return apLog({ ...st, status: 'stopped', gate: null }, person, 'approve', 'Offer rejected: the case stays with the account executive.');
+    if (action === 'change' && arg && ctx.opts.some((o) => o.key === arg)) {
+      const o = ctx.opts.find((x) => x.key === arg), pick = o.key;
+      const reasons = apPolicy(ctx.c, ctx.sig, ctx.opts, ctx.rules, o);
+      return apLog({ ...st, pick, reasons }, person, 'approve', `Offer changed to "${o.name}" (${eur(o.annualEur)}, ${o.changePct > 0 ? '+' : ''}${o.changePct} %). It still needs the approval.`);
+    }
+  }
+  if (st.status === 'waiting-person' && st.gate === 'send') {
+    if (action === 'send') return apRun(apLog({ ...st, status: 'running', gate: null, sent: true, step: AP_STEP_INDEX.negotiate }, person, 'send', 'Offer e-mail sent to the customer (simulated).'), { ...ctx, mode: st.mode });
+    if (action === 'reject') return apLog({ ...st, status: 'stopped', gate: null }, person, 'send', 'Not sent: the case stays with the account executive.');
+  }
+  if (st.status === 'waiting-customer') {
+    if (action === 'signed') return apRun(apLog({ ...st, status: 'running', step: AP_STEP_INDEX.order }, 'Customer', 'negotiate', 'The customer signed the offer.'), { ...ctx, mode: st.mode });
+    if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes: the autopilot builds a new offer and the policy check runs again.'), { ...ctx, mode: 'supervised' });
+    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. A win-back case is opened for the account team.');
+  }
+  if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return apLog({ ...st, status: 'stopped', gate: null }, person, AP_STEPS[Math.min(st.step, AP_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
+  return st;
+}
+/** Counts for the page: how much the autopilot did alone and how much needed a person. */
+function apSummary(states) {
+  const list = Object.values(states || {}), logs = list.flatMap((s) => s.log);
+  const auto = logs.filter((e) => e.actor === 'Autopilot').length, human = logs.filter((e) => e.actor !== 'Autopilot' && e.actor !== 'Customer').length;
+  const by = (k) => list.filter((s) => s.status === k).length;
+  return { cases: list.length, done: by('done'), person: by('waiting-person'), customer: by('waiting-customer'), stopped: by('stopped'), lost: by('lost'), auto, human, touchless: list.length ? Math.round((list.filter((s) => s.status === 'done' && !s.log.some((e) => e.actor !== 'Autopilot' && e.actor !== 'Customer')).length / list.length) * 100) : 0 };
+}
 </script>
 <script>
 (function () {
@@ -1794,7 +1894,7 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared (by you)', 'Offer approved (simulated)', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', owner: 'all', groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false };
+const state = { briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', owner: 'all', groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, step: -1, auto: false, ap: {}, apMode: 'autopilot', apOpen: {} };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -2030,7 +2130,7 @@ function renderAlt() {
 }
 /* ---------- tabs, customer context and entrance motion ---------- */
 const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const TABS = [['overview', 'Today'], ['process', 'Renewal process'], ['nba', 'Next best action'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
+const TABS = [['overview', 'Today'], ['autopilot', 'Autopilot'], ['process', 'Renewal process'], ['nba', 'Next best action'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
 const WINDOW_DAYS = 42; /* "the next six weeks" */
 /* Entrance motion runs once per picture and key; later renders show the finished picture (no replay on every click). */
 const played = {};
@@ -2255,10 +2355,112 @@ function renderGuide() {
   $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll(), spot(null)) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); spot(null); };
 }
 function go(i) { state.step = i; $('#auto').checked = false; Object.assign(state, { auto: false, briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', owner: 'all', groups: {}, asked: {}, stage: {}, option: {}, sel: null, csel: null, focus: null, status: 'all', customer: 'all', q: '', phase: null, kpi: null }); $('#customer').value = 'all'; $('#q').value = ''; for (let k = 0; k <= i; k++) STEPS[k].on(); state.tab = STEPS[i].tab || state.tab; compute(); renderAll(); spot(STEPS[i].where); }
+/* ---------- Autopilot: the whole renewal runs by itself, a person decides at the gates ---------- */
+const AP_STATUS = { running: ['Running', 'planned'], 'waiting-person': ['Waiting for you', 'yellow'], 'waiting-customer': ['Waiting for the customer', 'planned'], done: ['Done', 'green'], stopped: ['Stopped, with the account executive', 'red'], lost: ['Declined, win-back', 'red'] };
+const apCtx = (id) => { const raw = DATA.cases.find((x) => x.id === id), sig = signals(raw, DATA.asOf); return { c: raw, sig, opts: options(raw, sig, DATA.rules), rules: DATA.rules, mode: state.apMode }; };
+/** The stage of the renewal (shown on the other pages) follows the autopilot. */
+function apSync(id) {
+  const st = state.ap[id]; if (!st) return;
+  state.stage[id] = st.status === 'done' ? 4 : st.sent ? 3 : st.gate === 'send' ? 2 : 1;
+}
+function apStartAll() {
+  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id]) { state.ap[c.id] = apStart(apCtx(c.id)); apSync(c.id); }
+  compute(); renderAll();
+}
+function apDo(id, action, arg) {
+  const st = state.ap[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c) return;
+  const who = ['signed', 'changes', 'declined'].includes(action) ? 'Customer' : c.owner;
+  state.ap[id] = apAct(st, action, who, apCtx(id), arg);
+  if (state.ap[id].status === 'done' && !state.ap[id].handed) apHandOver(id);
+  apSync(id); compute(); renderAll();
+}
+/** After the signature the renewal order goes to the Space Order-to-Cash (Software). The host queues it; the other Space shows it when it is opened. */
+function apOrderPayload(id) {
+  const c = DATA.cases.find((x) => x.id === id), st = state.ap[id], o = apCtx(id).opts.find((x) => x.key === st.pick);
+  return { type: 'renewal-order', contractId: c.contractId, customer: c.customer, product: c.product, end: c.end, offer: o.name, annualEur: o.annualEur, termMonths: o.termMonths, changePct: o.changePct };
+}
+function apHandOver(id, open) {
+  const c = DATA.cases.find((x) => x.id === id), st = state.ap[id]; if (!st) return;
+  if (!inHostAp()) { state.ap[id] = apLog({ ...st, handed: true }, 'Autopilot', 'order', 'Not in the app: the order could not be handed over.'); return; }
+  const again = st.handed === true;
+  window.parent.postMessage({ type: 'wb:handoff', to: 'order-to-cash-software', open: open === true, notice: `Renewal order for ${c.customer} (${c.product}) is waiting in Order-to-Cash (Software).`, payload: apOrderPayload(id) }, '*');
+  if (again) return;
+  state.ap[id] = apLog({ ...st, handed: true }, 'Autopilot', 'order', `Renewal order handed over to the Space Order-to-Cash (Software): ${c.contractId}, ${apCtx(id).opts.find((x) => x.key === st.pick).name}.`);
+}
+/** Order management answers from the other Space: the order is booked. */
+function apConfirmed(p) {
+  if (!p || p.type !== 'order-confirmed' || typeof p.contractId !== 'string' || !/^SO-\d{3,8}$/.test(String(p.orderNo))) return;
+  const c = DATA.cases.find((x) => x.contractId === p.contractId), st = c && state.ap[c.id];
+  if (!st || st.booked) return;
+  state.ap[c.id] = apLog({ ...st, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`);
+}
+function apBar(st) {
+  return `<ol class="apbar" aria-label="Steps">${AP_STEPS.map((x, i) => {
+    const cls = st.status === 'done' || i < st.step ? 'done' : i === st.step ? (st.status === 'waiting-person' ? 'gate' : st.status === 'waiting-customer' ? 'wait' : st.status === 'stopped' || st.status === 'lost' ? 'stop' : 'now') : '';
+    return `<li class="${cls}"><span class="d"></span>${esc(x.name)}<small>${esc(x.by)}</small></li>`;
+  }).join('')}</ol>`;
+}
+function apLogHtml(st) {
+  return `<ul class="aplog">${st.log.map((e) => `<li><b class="who ${e.actor === 'Autopilot' ? 'auto' : e.actor === 'Customer' ? 'cust' : 'pers'}">${esc(e.actor)}</b> ${esc(e.text)}</li>`).join('')}</ul>`;
+}
+function apCase(c, st) {
+  const ctx = apCtx(c.id), [lab, cls] = AP_STATUS[st.status], pick = ctx.opts.find((o) => o.key === st.pick);
+  let body = '';
+  if (st.gate === 'approve') {
+    body = `<div class="apgate"><b>Your decision: approve the offer</b><ul class="apwhy">${st.reasons.map((r) => `<li>${esc(r)}</li>`).join('') || '<li>Supervised mode: every offer is checked.</li>'}</ul>
+      <label class="sub">Offer <select data-apc="${esc(c.id)}">${ctx.opts.map((o) => `<option value="${esc(o.key)}"${o.key === st.pick ? ' selected' : ''}>${esc(o.name)}: ${eur(o.annualEur)}, ${o.changePct > 0 ? '+' : ''}${o.changePct} %${o.withinCap ? '' : ' (above cap)'}</option>`).join('')}</select></label>
+      <div class="apbtn"><button class="primary" type="button" data-apa="approve" data-id="${esc(c.id)}">Approve offer</button><button class="ghost" type="button" data-apa="reject" data-id="${esc(c.id)}">Reject</button><button class="ghost" type="button" data-apa="takeover" data-id="${esc(c.id)}">Take over</button></div></div>`;
+  } else if (st.gate === 'send' && pick) {
+    const m = autoEmail(c, pick);
+    body = `<div class="apgate"><b>Your decision: send the offer e-mail</b><div class="apmail"><div class="sub">To ${esc(m.to)}<br>${esc(m.subject)}</div><div>${esc(m.body)}</div></div>
+      <div class="apbtn"><button class="primary" type="button" data-apa="send" data-id="${esc(c.id)}">Send (simulated)</button><button class="ghost" type="button" data-apa="reject" data-id="${esc(c.id)}">Do not send</button>${inHostAp() ? `<button class="ghost" type="button" data-apdraft="${esc(c.id)}"${st.drafted ? ' disabled' : ''}>${st.drafted ? 'Asked Joule, see the chat' : 'Draft with Joule'}</button>` : ''}</div></div>`;
+  } else if (st.status === 'waiting-customer') {
+    body = `<div class="apgate soft"><b>The offer is with the customer</b><span class="sub"> Simulate the answer:</span>
+      <div class="apbtn"><button class="small" type="button" data-apa="signed" data-id="${esc(c.id)}">Customer signs</button><button class="small" type="button" data-apa="changes" data-id="${esc(c.id)}">Asks for changes</button><button class="small" type="button" data-apa="declined" data-id="${esc(c.id)}">Declines</button><button class="ghost" type="button" data-apa="takeover" data-id="${esc(c.id)}">Take over</button></div></div>`;
+  }
+  if (st.status === 'done') body = `<div class="apgate soft"><b>${st.booked ? 'Booked in Order-to-Cash: ' + esc(st.booked) : st.handed ? 'Order handed over, waiting for Order management' : 'Signed'}</b>${inHostAp() ? ` <button class="small" type="button" data-apopen="${esc(c.id)}">Open Order-to-Cash</button>` : ''}</div>`;
+  const open = state.apOpen[c.id] ? ' open' : '';
+  return `<div class="apcase st-${esc(st.status)}" data-case="${esc(c.id)}"><div class="aphead"><div><b>${esc(c.customer)}</b> · ${esc(c.product)} <span class="sub">${eur(c.annualEur)} a year, decision ${esc(c.decisionDate)}, ${esc(c.owner)}</span></div><span class="pill ${cls}">${esc(lab)}</span></div>${apBar(st)}${body}<details data-apd="${esc(c.id)}"${open}><summary>Log (${st.log.length})</summary>${apLogHtml(st)}</details></div>`;
+}
+const inHostAp = () => window.parent !== window;
+/** The request to the agent (at most 600 characters): a Gmail draft to the person's own address, nothing is sent. */
+function apDraftAsk(c, o) {
+  const head = `Gmail create_draft to my own address (ask if unknown), do NOT send. Subject "Your renewal of ${c.product} (${c.contractId})". Short friendly plain text for ${c.customer}: the renewal offer is ${o.name}, ${eur(o.annualEur)} a year for ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} % against today), valid until ${c.offer ? c.offer.validUntil : 'the decision date'}. English.`;
+  return head.slice(0, 600);
+}
+function renderAutopilot() {
+  const scope = scoped().filter((c) => state.ap[c.id] || c.stage < 4), started = scope.filter((c) => state.ap[c.id]);
+  const sum = apSummary(Object.fromEntries(started.map((c) => [c.id, state.ap[c.id]])));
+  const open = scope.filter((c) => !state.ap[c.id]).length;
+  const grp = (title, hint, items) => items.length ? `<div class="card"><h2>${title} <span class="pill planned">${items.length}</span></h2><p class="sub">${hint}</p>${items.map((c) => apCase(c, state.ap[c.id])).join('')}</div>` : '';
+  const by = (k) => started.filter((c) => state.ap[c.id].status === k);
+  $('#ap').innerHTML = `<div class="card"><h2>Renewal autopilot</h2>
+    <p class="sub">The autopilot watches, briefs, builds the offer, checks the policy, asks for approval, sends, waits for the customer and hands the signed renewal over to the order. It works alone while everything is within policy and stops at a gate when a person has to decide. Every step is written to a log. <b>Sending, signing and the order are simulated here.</b></p>
+    <div class="aptop"><label class="sub">Mode <select id="ap-mode"><option value="autopilot"${state.apMode === 'autopilot' ? ' selected' : ''}>Autopilot: a person only at exceptions</option><option value="supervised"${state.apMode === 'supervised' ? ' selected' : ''}>Supervised: a person approves and sends every offer</option></select></label>
+    <button class="primary" type="button" id="ap-run"${open ? '' : ' disabled'}>Run autopilot on ${open} open renewal${open === 1 ? '' : 's'}</button><button class="ghost" type="button" id="ap-reset"${started.length ? '' : ' disabled'}>Reset autopilot</button></div></div>
+    <div class="kpis"><div class="kpi"><div class="v">${sum.person}</div><div class="k">Waiting for you</div><div class="s">gates that need a person</div></div><div class="kpi"><div class="v">${sum.customer}</div><div class="k">With the customer</div><div class="s">offer sent, answer open</div></div><div class="kpi"><div class="v">${sum.done}</div><div class="k">Done</div><div class="s">signed and handed to the order</div></div><div class="kpi"><div class="v">${sum.auto} : ${sum.human}</div><div class="k">Autopilot : person steps</div><div class="s">steps done alone against steps by people</div></div><div class="kpi"><div class="v">${sum.touchless} %</div><div class="k">Without a person</div><div class="s">of the finished cases</div></div></div>
+    ${started.length ? '' : '<div class="card"><p class="sub" style="margin:0">Nothing started yet. Press "Run autopilot" to let it work through the open renewals of the customer and owner you picked at the top.</p></div>'}
+    ${grp('Waiting for you', 'Approve, change or reject. Nothing goes to a customer without a person when the policy finds a reason.', by('waiting-person'))}
+    ${grp('With the customer', 'The offer is out. The answer of the customer is simulated with the buttons.', by('waiting-customer'))}
+    ${grp('Done', 'Signed and handed over to the Space Order-to-Cash (Software), where Order management books it. The booking itself is simulated.', by('done'))}
+    ${grp('Stopped or declined', 'A person took over, rejected the offer, or the customer declined.', by('stopped').concat(by('lost')))}`;
+  $('#ap-mode').onchange = (e) => { state.apMode = e.target.value === 'supervised' ? 'supervised' : 'autopilot'; renderAll(); };
+  $('#ap-run').onclick = apStartAll;
+  $('#ap-reset').onclick = () => { for (const c of started) { delete state.ap[c.id]; delete state.stage[c.id]; } compute(); renderAll(); };
+  $('#ap').querySelectorAll('[data-apa]').forEach((b) => { b.onclick = () => { apDo(b.dataset.id, b.dataset.apa); }; });
+  $('#ap').querySelectorAll('select[data-apc]').forEach((el) => { el.onchange = () => apDo(el.dataset.apc, 'change', el.value); });
+  $('#ap').querySelectorAll('[data-apdraft]').forEach((b) => { b.onclick = () => {
+    const id = b.dataset.apdraft, st = state.ap[id], ctx = apCtx(id), o = ctx.opts.find((x) => x.key === st.pick); if (!o || st.drafted) return;
+    send(apDraftAsk(ctx.c, o)); state.ap[id] = apLog({ ...st, drafted: true }, ctx.c.owner, 'send', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll();
+  }; });
+  $('#ap').querySelectorAll('[data-apopen]').forEach((b) => { b.onclick = () => apHandOver(b.dataset.apopen, true) || renderAll(); });
+  $('#ap').querySelectorAll('details[data-apd]').forEach((d) => { d.ontoggle = () => { state.apOpen[d.dataset.apd] = d.open; }; });
+}
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
   if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); renderLand(); }
+  else if (state.tab === 'autopilot') renderAutopilot();
   else if (state.tab === 'process') renderCustomerView();
   else if (state.tab === 'nba') { renderNba(); renderQueue(); }
   else if (state.tab === 'radar') { renderBar(); renderTimeline(); renderDetail(); }
@@ -2273,7 +2475,7 @@ $('#owner').onchange = (e) => { state.owner = OWNERS.includes(e.target.value) ? 
 $('#customer').onchange = (e) => { state.customer = e.target.value; state.csel = null; state.focus = null; if (state.sel && state.customer !== 'all' && (byId(state.sel) || {}).customerId !== state.customer) state.sel = null; renderAll(); };
 $('#q').oninput = (e) => { state.q = e.target.value; renderAll(); };
 $('#to-analytics').onclick = () => { if (window.parent === window) { $('#ctx-note').textContent = 'Open this Space in the app to move to Renewal Analytics.'; return; } window.parent.postMessage({ type: 'wb:handoff', to: 'renewals-analytics', payload: { from: 'renewals' }, open: true, notice: 'Renewal Analytics (sales manager view)' }, '*'); };
-$('#reset').onclick = () => { $('#auto').checked = false; for (const k of Object.keys(played)) delete played[k]; Object.assign(state, { tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', owner: 'all', briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, asked: {}, groups: {}, step: -1, auto: false }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
+$('#reset').onclick = () => { $('#auto').checked = false; for (const k of Object.keys(played)) delete played[k]; Object.assign(state, { tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', owner: 'all', briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, asked: {}, groups: {}, step: -1, auto: false, ap: {}, apMode: 'autopilot', apOpen: {} }); $('#customer').value = 'all'; $('#q').value = ''; compute(); renderAll(); };
 $('#auto').onchange = (e) => { state.auto = e.target.checked; if (!state.auto) for (const c of model) if (c.autoRun && state.stage[c.id] === 3) delete state.stage[c.id]; compute(); renderAll(); };
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { tip.hidden = true; state.sel = null; renderAll(); } });
 $('#assump').textContent = `Illustrative assumptions, not real figures: gross margin ${DATA.rules.marginPct} %; expected retention by health: green ${DATA.rules.retention.green * 100} %, yellow ${DATA.rules.retention.yellow * 100} %, red ${DATA.rules.retention.red * 100} %, lapsed ${DATA.rules.retention.lapsed * 100} %. Expected lifetime = 1 / (1 − retention), at most ${DATA.rules.lifetimeCapYears} years. Lifetime value = annual value × margin × expected lifetime. Each alternative offer changes the annual value, the term and the retention.`;
@@ -2472,9 +2674,11 @@ window.addEventListener('message', (e) => {
    Only what the person chose is kept. The host keeps it until the app closes; nothing is written to a disk or a server by this page. */
 function saveState() {
   if (window.parent === window) return;
-  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, owner: state.owner, sel: state.sel, csel: state.csel, stage: state.stage, option: state.option, asked: state.asked, groups: state.groups, briefs: state.briefs, stats: state.stats, auto: state.auto, jr: jr.customer } }, '*');
+  window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, owner: state.owner, sel: state.sel, csel: state.csel, stage: state.stage, ap: state.ap, apMode: state.apMode, option: state.option, asked: state.asked, groups: state.groups, briefs: state.briefs, stats: state.stats, auto: state.auto, jr: jr.customer } }, '*');
 }
 /** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
+const AP_STATES = ['running', 'waiting-person', 'waiting-customer', 'done', 'stopped', 'lost'];
+const apValid = (v) => v && typeof v === 'object' && AP_STATES.includes(v.status) && Number.isInteger(v.step) && v.step >= 0 && v.step <= AP_STEPS.length && (v.mode === 'autopilot' || v.mode === 'supervised') && (v.pick === null || typeof v.pick === 'string') && (v.gate === null || ['approve', 'send'].includes(v.gate)) && Array.isArray(v.reasons) && Array.isArray(v.log) && v.log.length <= 60 && (v.handed === undefined || v.handed === true) && (v.drafted === undefined || v.drafted === true) && (v.booked === undefined || /^SO-\d{3,8}$/.test(v.booked)) && v.log.every((e) => e && typeof e.text === 'string' && e.text.length < 600 && typeof e.actor === 'string' && e.actor.length < 80 && AP_STEPS.some((x) => x.id === e.step) && Number.isInteger(e.n));
 function applyState(st) {
   if (!st || typeof st !== 'object') return;
   const ids = new Set(DATA.cases.map((c) => c.id));
@@ -2486,6 +2690,7 @@ function applyState(st) {
   state.phase = PHASES.some((ph) => ph.id === st.phase) ? st.phase : null;
   state.sel = ids.has(st.sel) ? st.sel : null; state.csel = ids.has(st.csel) ? st.csel : null;
   state.stage = pick(st.stage, (v) => Number.isInteger(v) && v >= 0 && v <= 4);
+  state.ap = pick(st.ap, apValid); state.apMode = st.apMode === 'supervised' ? 'supervised' : 'autopilot';
   state.option = pick(st.option, (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,30}$/.test(v));
   state.asked = pick(st.asked, (v) => v === true);
   state.groups = Object.fromEntries(Object.entries(st.groups && typeof st.groups === 'object' ? st.groups : {}).filter(([k, v]) => /^[a-z]+(-[a-z]+)*$/.test(k) && typeof v === 'boolean'));
@@ -2499,7 +2704,7 @@ function applyState(st) {
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   if (e.data.state) { applyState(e.data.state); renderAll(); }
-  (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
+  (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { if (h && h.payload && h.payload.type === 'order-confirmed') { apConfirmed(h.payload); renderAll(); return; } const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
 });
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
 compute(); renderAll();
