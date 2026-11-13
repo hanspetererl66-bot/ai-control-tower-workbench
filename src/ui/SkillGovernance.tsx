@@ -1,14 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import SkillIcon from './SkillIcon';
 import { readSkill, type Skill } from '../skills';
 import { reviewOutcome, reviewSkill, type CheckResult } from '../skill-review';
-import { APPROVER, approvalSteps, type ApprovalStep } from '../skill-approval';
+import { ACTORS, APPROVER, approvalSteps, canDecideAs, deciderOf, stationCounts, type Actor, type ApprovalStep } from '../skill-approval';
 import { reconcile, applyDbLevels, dbTarget, type DbRequest } from '../skill-db';
+import { buildRows, filterRows, moveSelection, nextSort, NO_FILTER, sortRows, type SortDir, type SortKey, type TableFilter } from '../skill-table';
 import { CHECKS, decide, demote, levelOf, loadGov, pendingFor, renameLevel, requestPromotion, saveGov, type LevelIndex, type SkillGov } from '../skill-governance';
 
 type Tab = 'map' | 'approvals';
-type MapView = 'board' | 'steps' | 'rings';
-const MAP_VIEW_LABEL: Record<MapView, string> = { board: 'Board', steps: 'Steps', rings: 'Rings' };
-const ROLE = ['Individual', 'Department', 'Organization'] as const;
 const MARK = { done: '✓', active: '…', todo: '', rejected: '✕' } as const;
 
 function Steps({ steps }: { steps: ApprovalStep[] }) {
@@ -57,7 +56,11 @@ export function Checks({ results, version }: { results: { id: string; status: 'p
 export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]; renderRow: (skill: Skill, extra: ReactNode) => ReactNode }) {
   const [gov, setGov] = useState<SkillGov>(() => loadGov());
   const [tab, setTab] = useState<Tab>('map');
-  const [mapView, setMapView] = useState<MapView>('board');
+  const [filter, setFilter] = useState<TableFilter>(NO_FILTER);
+  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: 'name', dir: 'asc' });
+  const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const [actor, setActor] = useState<Actor>('owner');
+  const [exMsg, setExMsg] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<string[]>([]);
@@ -111,33 +114,28 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
   const change = (fn: (g: SkillGov) => SkillGov) => setGov((g) => fn(g));
   const pending = gov.requests.filter((r) => r.status === 'pending');
   const levels: LevelIndex[] = [0, 1, 2];
-  const levelHead = (i: LevelIndex): ReactNode => {
-    const n = skills.filter((s) => levelOf(gov, s.name) === i).length;
-    return (
-      <header>
-        <span className="sgov-role">{ROLE[i]}</span>
-        <b>{gov.levels[i]}</b>
-        <span className="sgov-n">{n} {n === 1 ? 'skill' : 'skills'}</span>
-        <span className="sgov-reach">{i === 2 ? 'visible to everyone' : i === 1 ? 'visible to the team' : 'visible to you only'}</span>
-      </header>
-    );
+  const shown = sortRows(filterRows(buildRows(skills, gov), filter), sort.key, sort.dir);
+  const onTableKey = (e: React.KeyboardEvent<HTMLTableSectionElement>) => {
+    if (e.key === 'Escape') { setPicked(null); return; }
+    const next = moveSelection(shown.map((r) => r.skill.name), picked, e.key);
+    if (!next) return;
+    e.preventDefault();
+    setPicked(next);
+    requestAnimationFrame(() => bodyRef.current?.querySelector<HTMLElement>(`[data-skill="${CSS.escape(next)}"]`)?.focus());
   };
-  const chips = (i: LevelIndex): ReactNode => {
-    const inLane = skills.filter((s) => levelOf(gov, s.name) === i);
-    const waiting = i > 0 ? pending.filter((r) => r.to === i).length : 0;
-    return (
-      <div className="sgov-chips">
-        {inLane.length === 0 && <span className="sgov-none">Nothing here yet{waiting ? `, ${waiting} in review` : ''}</span>}
-        {inLane.map((s) => {
-          const req = pendingFor(gov, s.name);
-          return (
-            <button key={s.dir} className={`sgov-chip ${picked === s.name ? 'on' : ''}`} aria-pressed={picked === s.name} onClick={() => setPicked(picked === s.name ? null : s.name)}>
-              {s.name}{req && <span className="sgov-badge sgov-badge-wait">in review</span>}
-            </button>
-          );
-        })}
-      </div>
-    );
+
+  /** Local simulation only: ask for the next level for the first skill that can move up, with the real automatic review, so the process can be played through. */
+  const runExample = async () => {
+    const s = skills.find((x) => levelOf(gov, x.name) < 2 && !pendingFor(gov, x.name));
+    if (!s) { setExMsg('Every skill is at the top level or already in review.'); return; }
+    setExMsg('');
+    const to = (levelOf(gov, s.name) + 1) as LevelIndex;
+    const body = await readSkill(s.dir);
+    if (!body) { setExMsg(`The SKILL.md of ${s.name} could not be read, so nothing could be checked.`); return; }
+    const results = reviewSkill(body, to === 2 ? 'organization' : 'department');
+    if (reviewOutcome(results) === 'blocked') { setExMsg(`${s.name} is blocked by the automatic review. Try again after the next skill or fix it first.`); return; }
+    change((g) => requestPromotion(g, s.name, `Example request to try the process (simulation, ${new Date().toLocaleTimeString()}).`, Date.now(), results.map(({ id, status, detail }) => ({ id, status, detail }))));
+    setActor('owner');
   };
 
   const startEdit = () => { setDraft([...gov.levels]); setEditing(true); };
@@ -149,7 +147,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
   return (
     <div className="sgov">
       <div className="sgov-tabs" role="tablist">
-        <button role="tab" aria-selected={tab === 'map'} className={`sgov-tab ${tab === 'map' ? 'on' : ''}`} onClick={() => setTab('map')}>Organization map <span className="sgov-n">{skills.length}</span></button>
+        <button role="tab" aria-selected={tab === 'map'} className={`sgov-tab ${tab === 'map' ? 'on' : ''}`} onClick={() => setTab('map')}>Skills <span className="sgov-n">{skills.length}</span></button>
         <button role="tab" aria-selected={tab === 'approvals'} className={`sgov-tab ${tab === 'approvals' ? 'on' : ''}`} onClick={() => setTab('approvals')}>
           Approvals {pending.length > 0 && <span className="sgov-n sgov-n-hot">{pending.length}</span>}
         </button>
@@ -173,45 +171,51 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
 
       {tab === 'map' && (
         <>
-          <div className="sgov-views" role="group" aria-label="Way to show the levels">
-            {(['board', 'steps', 'rings'] as MapView[]).map((v) => (
-              <button key={v} className={`sgov-view ${mapView === v ? 'on' : ''}`} aria-pressed={mapView === v} onClick={() => setMapView(v)}>{MAP_VIEW_LABEL[v]}</button>
-            ))}
+          <div className="sgov-toolbar">
+            <input className="sgov-search" type="search" placeholder="Search skills" aria-label="Search skills" value={filter.query} onChange={(e) => setFilter((f) => ({ ...f, query: e.target.value }))} />
+            <select aria-label="Level" value={String(filter.level)} onChange={(e) => setFilter((f) => ({ ...f, level: e.target.value === 'all' ? 'all' : (Number(e.target.value) as LevelIndex) }))}>
+              <option value="all">All levels</option>
+              {levels.map((i) => <option key={i} value={i}>{gov.levels[i]}</option>)}
+            </select>
+            <select aria-label="Status" value={filter.status} onChange={(e) => setFilter((f) => ({ ...f, status: e.target.value as TableFilter['status'] }))}>
+              <option value="all">All states</option>
+              <option value="active">Active</option>
+              <option value="review">In review</option>
+            </select>
+            <span className="sgov-n" aria-live="polite">{shown.length} of {skills.length} skills</span>
           </div>
-          {mapView === 'rings' ? (
-            <div className="sgov-rings" aria-label="Skills by organisation level">
-              {(() => {
-                const ring = (i: LevelIndex): ReactNode => (
-                  <section className={`sgov-ring sgov-ring-${i}`} key={i}>
-                    {levelHead(i)}
-                    {i > 0 && <div className="sgov-ring-gate">↑ approval by {APPROVER[i as 1 | 2].role.split(' (')[0]}{pending.filter((r) => r.to === i).length > 0 && <em> · {pending.filter((r) => r.to === i).length} waiting</em>}</div>}
-                    {chips(i)}
-                    {i > 0 && ring((i - 1) as LevelIndex)}
-                  </section>
-                );
-                return ring(2);
-              })()}
-            </div>
-          ) : (
-            <div className={`sgov-board sgov-board-${mapView}`} aria-label="Skills by organisation level">
-              {levels.map((i) => (
-                <div className={`sgov-col-wrap sgov-col-wrap-${i}`} key={i}>
-                  <section className={`sgov-col sgov-col-${i}`}>
-                    {levelHead(i)}
-                    {chips(i)}
-                  </section>
-                  {i < 2 && (
-                    <div className="sgov-arrow" aria-hidden="true">
-                      <span>→</span>
-                      <small>approval by {APPROVER[(i + 1) as 1 | 2].role.split(' (')[0]}</small>
-                      {pending.filter((r) => r.to === i + 1).length > 0 && <em>{pending.filter((r) => r.to === i + 1).length} waiting</em>}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
+          <div className="sgov-layout">
+          <div className="sgov-tablewrap">
+            <table className="sgov-table">
+              <thead>
+                <tr>
+                  {([['name', 'Name'], ['level', 'Level'], ['status', 'Status'], ['checks', 'Checks']] as Array<[SortKey, string]>).map(([k, label]) => (
+                    <th key={k} aria-sort={sort.key === k ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                      <button type="button" className="sgov-th" onClick={() => setSort((cur) => nextSort(cur, k))}>{label}{sort.key === k && <span aria-hidden="true">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>}</button>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody ref={bodyRef} onKeyDown={onTableKey}>
+                {shown.map((r) => {
+                  const on = picked === r.skill.name;
+                  return (
+                    <tr key={r.skill.dir} data-skill={r.skill.name} className={`sgov-tr ${on ? 'on' : ''}`} tabIndex={on || (!picked && r === shown[0]) ? 0 : -1} aria-selected={on} onClick={() => setPicked(r.skill.name)}>
+                      <td className="sgov-td-name"><span className="sgov-skill-name"><SkillIcon name={r.skill.name} />{r.skill.name}</span><small>{r.skill.description}</small></td>
+                      <td>{gov.levels[r.level]}</td>
+                      <td>{r.status === 'review' ? <span className="sgov-badge sgov-badge-wait">In review{r.target !== undefined ? ` for ${gov.levels[r.target]}` : ''}</span> : 'Active'}</td>
+                      <td>{r.checks === 'none' ? <span className="sgov-none" aria-label="No review yet">–</span> : <span className={`sgov-ck-${r.checks}`}><span className="sgov-ck-dot" role="img" aria-label={`Review: ${r.checks}`}>{CHECK_MARK[r.checks]}</span></span>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {shown.length === 0 && (
+              <p className="sgov-none sgov-table-empty">No skill matches. <button type="button" className="sgov-chip" onClick={() => setFilter(NO_FILTER)}>Clear filters</button></p>
+            )}
+          </div>
+          <aside className="sgov-panel" aria-label="Selected skill">
+            {picked && <button type="button" className="sgov-close" aria-label="Close the skill details" title="Close (Escape)" onClick={() => setPicked(null)}>×</button>}
           {(() => {
             const s = skills.find((x) => x.name === picked);
             if (!s) {
@@ -285,11 +289,43 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
               </div>
             );
           })()}
+          </aside>
+          </div>
         </>
       )}
 
       {tab === 'approvals' && (
         <div className="sgov-queue">
+          {(() => {
+            const c = stationCounts(gov.requests);
+            const stations: Array<[string, string, number, string?]> = [
+              ['Request submitted', 'Skill owner', c.submitted],
+              ['Automatic checks', 'Platform', c.checked],
+              ['Review and decision', 'Department lead or board', c.inReview, c.rejected ? `${c.rejected} rejected` : undefined],
+              ['Published and visible', 'Platform', c.published],
+            ];
+            return (
+              <ol className="sgov-flowbar" aria-label="The approval process">
+                {stations.map(([title, who, n, extra], i) => (
+                  <li key={title} className={`sgov-station ${i === 2 && c.inReview > 0 ? 'hot' : ''}`}>
+                    <span className="sgov-station-n">{n}</span>
+                    <b>{title}</b>
+                    <small>{who}{extra ? ` · ${extra}` : ''}</small>
+                  </li>
+                ))}
+              </ol>
+            );
+          })()}
+          <div className="sgov-actor" role="group" aria-label="Acting as">
+            <span className="sgov-help">Acting as</span>
+            {ACTORS.map((a) => (
+              <button key={a.id} type="button" className={`sgov-view ${actor === a.id ? 'on' : ''}`} aria-pressed={actor === a.id} disabled={db === 'on'} title={a.can} onClick={() => setActor(a.id)}>{a.label}</button>
+            ))}
+            {db !== 'on' && (
+              <button type="button" className="dialog-btn" onClick={() => void runExample()} title="Asks for the next level for a skill (with its real automatic review), so you can play the process through">Run an example</button>
+            )}
+          </div>
+          {exMsg && <p className="sgov-help" role="alert">{exMsg}</p>}
           <p className="sgov-help">
             {db === 'on' ? 'Stored in the shared database. The database decides who may approve: not the requester, only a department admin or a Governance board admin.' : db === 'off' ? `Local simulation: not connected to the shared database${dbMsg ? ` (${dbMsg})` : ''}.` : 'Checking the shared database…'}
             {db === 'on' && <> <button className="dialog-btn" onClick={() => void syncDb()}>Refresh</button></>}
@@ -331,6 +367,11 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                 <span className={`sgov-badge ${r.status === 'approved' ? 'sgov-badge-ok' : r.status === 'rejected' ? 'sgov-badge-no' : 'sgov-badge-wait'}`}>{r.status === 'pending' ? 'Pending' : r.status === 'approved' ? 'Approved' : 'Rejected'}</span>
               </div>
               <Steps steps={approvalSteps(r.to, r)} />
+              {r.status === 'pending' && (
+                <p className="sgov-waiting">Waiting for the {APPROVER[r.to as 1 | 2].role.split(' (')[0]}, {APPROVER[r.to as 1 | 2].sla}.
+                  {db !== 'on' && !canDecideAs(actor, r.to) && <> <button type="button" className="sgov-chip" onClick={() => setActor(deciderOf(r.to))}>Act as {ACTORS.find((a) => a.id === deciderOf(r.to))?.label}</button></>}
+                </p>
+              )}
               {r.checks && <Checks results={r.checks} />}
               {r.note && <p className="row-detail">{r.note}</p>}
               <p className="row-detail">Requested {new Date(r.createdAt).toLocaleString()}{r.decidedAt ? ` · decided ${new Date(r.decidedAt).toLocaleString()}` : ''}{r.reason ? ` · “${r.reason}”` : ''}</p>
@@ -340,9 +381,10 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                   {(['Approve', 'Reject'] as const).map((label) => {
                     const approve = label === 'Approve';
                     const blocked = !!r.dbId && canDecide[r.dbId] === false;
+                    const roleBlocked = db !== 'on' && !canDecideAs(actor, r.to);
                     return (
-                      <button key={label} className={`dialog-btn ${approve ? '' : 'dialog-btn-danger'}`} disabled={dbBusy || blocked}
-                        title={blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the organization level).' : undefined}
+                      <button key={label} className={`dialog-btn ${approve ? '' : 'dialog-btn-danger'}`} disabled={dbBusy || blocked || roleBlocked}
+                        title={roleBlocked ? `In this simulation only the ${APPROVER[r.to as 1 | 2].role.split(' (')[0]} decides this step. Switch “Acting as” above.` : blocked ? 'The database only lets another person decide: not the requester, and only a department admin (or a Governance board admin for the organization level).' : undefined}
                         onClick={async () => {
                           if (r.dbId && host?.skillDbPromotion) {
                             setDbBusy(true); setDbMsg('');
