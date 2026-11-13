@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PROJECTS_PULLED, schedule as scheduleWorkSync } from '../work-sync-runner';
 import SharedSaveLine from './SharedSaveLine';
 import { emptyIntent, extendProject, loadProjects, newProject, saveProjects, upsertProject, type Project } from '../develop';
@@ -9,6 +9,41 @@ import { appendDictation } from '../voice-text';
 import SourcesView from './SourcesView';
 import { localTarget, newExtension, requirementLines, SOURCES, type Handover } from '../requirements';
 import { featureArgs, hostApi, newFeature } from '../registry';
+import { FIT_WIDTH, fitScale } from '../develop-fit';
+
+/**
+ * Fits the start page to its window: the page is laid out at the design width and scaled as a whole (see develop-fit.ts).
+ * `null` means the window is too small for that: the responsive grid and scrolling take over.
+ */
+function useFit(active: boolean) {
+  const mainRef = useRef<HTMLElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<{ scale: number; h: number } | null>({ scale: 1, h: 0 });
+  const fitted = useRef(true);
+  const height = useRef(0);
+  fitted.current = fit !== null;
+  useLayoutEffect(() => {
+    const main = mainRef.current, inner = innerRef.current;
+    if (!active || !main || !inner) return;
+    const measure = () => {
+      const css = getComputedStyle(main);
+      const w = main.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight);
+      const h = main.clientHeight - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom);
+      if (fitted.current) height.current = inner.offsetHeight; /* the natural height at the design width; a transform does not change it */
+      const scale = fitScale({ w, h }, { w: FIT_WIDTH, h: height.current });
+      setFit((cur) => {
+        if (scale === null) return cur === null ? cur : null;
+        return cur && cur.scale === scale && cur.h === height.current ? cur : { scale, h: height.current };
+      });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(main);
+    observer.observe(inner);
+    return () => observer.disconnect();
+  }, [active]);
+  return { mainRef, innerRef, fit };
+}
 
 type Props = {
   onAgentIntent: (intent: string) => void;
@@ -44,6 +79,7 @@ export default function DevelopHub(props: Props) {
   }, []);
   const open = projects.find((p) => p.id === openId) ?? null;
   const [mode, setMode] = useState<'hub' | 'sources'>('hub');
+  const { mainRef, innerRef, fit } = useFit(!open && mode === 'hub');
 
   const startWorkflow = (goal: string) => {
     const p = newProject('workflow');
@@ -106,8 +142,9 @@ export default function DevelopHub(props: Props) {
   }
 
   return (
-    <main className="main develop-main">
-      <div className="develop">
+    <main className="main develop-main" ref={mainRef}>
+      <div className={`develop-fit ${fit ? 'develop-fit-on' : ''}`} style={fit ? { width: FIT_WIDTH * fit.scale, height: fit.h * fit.scale } : undefined}>
+      <div className="develop" ref={innerRef} style={fit ? { transform: `scale(${fit.scale})` } : undefined}>
         <h1 className="develop-title">Develop</h1>
         <SharedSaveLine />
         <p className="develop-sub">Say what you want to achieve. Joule turns the goal into a draft, you refine and approve it.</p>
@@ -151,6 +188,7 @@ export default function DevelopHub(props: Props) {
           Build an agent from a goal, or a workflow that runs on its own in n8n. Agents combine skills (the know-how) with connectors (the tools),
           so open Skills and Connectors to see, add and manage what is available. Nothing is used before you have confirmed it.
         </p>
+      </div>
       </div>
     </main>
   );
