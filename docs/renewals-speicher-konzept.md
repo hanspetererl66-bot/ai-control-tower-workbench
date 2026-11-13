@@ -102,11 +102,12 @@ Du trägst in den Einstellungen der App eine der Testadressen als deine E-Mail e
 - Schritt 1 (Migration 050): angewendet, Kontrollabfrage ohne Beanstandung (PR #420).
 - Schritt 2 (Hostteil): PR #424, gemergt.
 - Schritt 3 (Seite): `examples/renewals/index.html`. Beim Start fragt die Seite die Fälle ab (`rn:cases-request`, Aktion `list`); danach speichert sie **nach jedem Zeichnen** jeden geänderten Fall einzeln mit der Revision (`save`), ein verschwundener Fall wird archiviert (`reset`). Pro Fall läuft immer nur eine Anfrage; ein abgelehnter Stand wird nicht in einer Schleife wiederholt. Bei einem Revisionskonflikt lädt die Seite neu (die Datenbank gewinnt). Ohne Datenbank oder ohne App arbeitet sie wie bisher im Speicher; mit Datenbank steht über dem Autopilot ein Hinweis (wer du bist, was du siehst) und bei einem Fehler "Not saved: <Grund>". Fälle, die der Mensch nicht ändern darf, sind sichtbar, aber gesperrt (Schaltflächen aus); "Run autopilot" startet nur eigene Fälle; "Reset" nur eigene.
-- Nach dem Merge braucht die App einen **Neustart**, und das Renewals-Space muss neu installiert werden (`npm run install:examples`).
+- Nach dem Merge braucht die App einen **Neustart**, und das Renewals-Space muss neu installiert werden (`npm run install:examples`). Beides ist geschehen (13.11.2026).
 
 ## Nicht geprüft
 
-- Die Seite ist nur mit einem Ersatz-Host im Headless-Browser (jsdom) getestet; nicht in der Electron-App und nicht gegen echtes Supabase.
+- **In der echten App ausprobiert (13.11.2026, von Hans-Peter):** mit der Testadresse `mira.hoffmann@renewals.example` werden die Fälle gespeichert und sind nach einem Neustart der App wieder da. **Nicht ausprobiert:** der Vertriebsleiter (`vertrieb@renewals.example`, nur lesend), die Trennung zwischen Verantwortlichen, ein Reset (Archivieren), ein Revisionskonflikt, das eigene Konto als Board-Admin.
+- Die Seitenlogik ist außerdem mit einem Ersatz-Host im Headless-Browser (jsdom) getestet.
 - Die SQL-Tests zu Migration 050 sind nie gegen Postgres gelaufen.
 - Ob das eigene Konto in der Admin-Gruppe steht, ist nicht geprüft.
 - Ein Fall mit Protokoll ist im Test unter 20 KB (Grenze der Datenbank: 64 KB); mit sehr vielen Aktionen nicht gemessen.
