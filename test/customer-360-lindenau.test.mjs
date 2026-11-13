@@ -130,3 +130,13 @@ test('Lindenau: the timeline has an event for every dated record and each one le
   for (const e of ev) assert.ok(e.node && L.node(e.node), `${e.id} -> ${e.node}`);
   assert.equal(L.timeline({ range: 'all' }).total, ev.length);
 });
+
+test('Lindenau: payment behaviour and unpaid invoices work the same way (one company, five unpaid invoices)', () => {
+  const rows = L.behaviour();
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].invoices, data.invoices.length);
+  assert.equal(rows[0].risk, L.paymentOf(rows[0].entity).risk);
+  const open = L.openInvoices();
+  assert.equal(open.length, data.invoices.filter((i) => i.status !== 'Paid').length);
+  assert.ok(open.every((o) => L.node(o.node)));
+});

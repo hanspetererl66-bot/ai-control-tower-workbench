@@ -258,3 +258,63 @@ test('page: the timeline card has filters per kind and period, a list for narrow
   assert.match(page, /role="button" aria-label="'/, 'every mark is a button with a label');
   assert.match(page, /\.c3-tl svg,\.c3-tlbar \.rng\{display:none\}\.c3-tllist\{display:block\}/, 'under 860 px the list replaces the axis');
 });
+
+test('payment behaviour per company: measured from the paid invoices, the numbers equal paymentOf, the trend compares the last four with the rest', () => {
+  const rows = L.behaviour();
+  assert.ok(rows.length >= 1);
+  const withInvoices = new Set(data.invoices.map((i) => i.entity));
+  assert.deepEqual(new Set(rows.map((r) => r.entity)), withInvoices, 'a company without invoices has no row');
+  for (const r of rows) {
+    const p = L.paymentOf(r.entity);
+    assert.equal(r.invoices, data.invoices.filter((i) => i.entity === r.entity).length);
+    assert.equal(r.paid, p.paid);
+    assert.equal(r.avgDaysLate, p.avgDaysLate);
+    assert.equal(r.maxDaysLate, p.maxDaysLate);
+    assert.equal(r.exposureGross, p.exposureGross);
+    assert.equal(r.risk, p.risk);
+    assert.equal(r.latePct, r.paid ? Math.round((p.lateCount / r.paid) * 100) : 0);
+    assert.equal(r.points.length, r.paid);
+    assert.ok(r.points.every((x) => x.node === `pay:${r.entity}` && L.node(x.node)));
+    assert.ok(r.overdue.every((x) => x.daysLate > 0 && L.node(x.node)));
+    if (r.paid < 6) assert.equal(r.trend, null, 'too few invoices for a trend');
+  }
+  const sorted = rows.map((r) => r.exposureGross);
+  assert.deepEqual([...sorted].sort((a, b) => b - a), sorted, 'the most unpaid money first');
+  const worse = rows.find((r) => r.trend && r.trend.label === 'worse');
+  const paid = data.invoices.filter((i) => i.entity === worse.entity && i.status === 'Paid').sort((a, b) => (a.dueOn < b.dueOn ? -1 : 1));
+  const avg = (l) => l.reduce((a, i) => a + i.daysLate, 0) / l.length;
+  assert.equal(worse.trend.delta, Math.round((avg(paid.slice(-4)) - avg(paid.slice(0, -4))) * 10) / 10);
+  assert.ok(worse.trend.delta >= 2);
+});
+
+test('unpaid invoices: every one is listed, the reason is a message that names the invoice, the expected date is a rule of thumb from the paid invoices', () => {
+  const open = L.openInvoices();
+  assert.equal(open.length, data.invoices.filter((i) => i.status !== 'Paid').length);
+  assert.deepEqual(open.map((o) => o.dueOn), open.map((o) => o.dueOn).sort(), 'oldest first');
+  for (const o of open) {
+    assert.ok(L.node(o.node), o.id);
+    if (o.reason) {
+      const s = data.signals.find((x) => x.id === o.reason.signal);
+      assert.ok(s.about.includes(o.id), `${o.id}: the message names the invoice`);
+      assert.ok(o.reason.text.length <= 201);
+      assert.ok(L.node(o.reason.node));
+    }
+    const p = L.paymentOf(o.entity);
+    if (p.paid) {
+      assert.equal(o.expected.on, new Date(Date.parse(o.dueOn) + Math.max(0, Math.round(p.avgDaysLate)) * 86400000).toISOString().slice(0, 10), 'due date + the average delay of the paid invoices');
+      assert.equal(o.expected.basedOn, p.paid);
+      assert.equal(o.expected.later, o.expected.on < data.asOf, 'later = the usual delay has already passed');
+      assert.ok(o.expected.avgDaysLate >= 0, 'an early payer is not expected to pay before the due date');
+    } else assert.equal(o.expected, null);
+    if (o.status === 'Overdue') assert.ok(o.daysToDue < 0, `${o.id} is overdue, so its due date is in the past`);
+  }
+});
+
+test('page: the payment card has a table with a row per company, a chart with the thresholds from the data, the unpaid list, and says it is no forecast', () => {
+  assert.match(page, /id="payHost"/);
+  assert.match(page, /measured from the paid invoices, not a forecast/);
+  assert.match(page, /Not a forecast\./);
+  assert.match(page, /data-payent="' \+ esc\(r\.entity\)/);
+  assert.match(page, /P\.mediumAvgDaysLate[\s\S]*P\.highAvgDaysLate/, 'the lines come from the rules in the data, not from numbers in the page');
+  assert.match(page, /\.c3-pay \.c3-payfig\{display:none\}/);
+});
