@@ -73,7 +73,7 @@ export function norm(s: unknown): string {
 }
 
 /** The normalised text and, for every normalised character, where it came from in the original (to cut the excerpt from the original). */
-function normMap(text: string): { norm: string; at: number[] } {
+export function normMap(text: string): { norm: string; at: number[] } {
   let out = '';
   const at: number[] = [];
   let pendingSpace = false;
