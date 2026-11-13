@@ -20,6 +20,7 @@ const TIMEOUT_MS = 10_000;
 const SEVERITY = { critical: 'critical', fatal: 'critical', disaster: 'critical', high: 'high', major: 'high', error: 'high', average: 'medium', medium: 'medium', warning: 'medium', warn: 'medium', low: 'low', minor: 'low', info: 'low', information: 'low' };
 const LEVEL = ['high', 'medium', 'low'];
 const ENVS = ['PRD', 'QAS', 'DEV'];
+const MAX_UNMATCHED = 50;
 
 /** Plain short text: no control characters or angle brackets, one line, cut to length. */
 export const clip = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n) : '');
@@ -177,8 +178,9 @@ export function readMap(file) {
     const deps = (Array.isArray(m.dependsOn) ? m.dependsOn : []).filter((d) => typeof d === 'string' && HOST.test(d)).slice(0, 10);
     if (deps.length) topology[h] = deps;
   }
-  const rules = (Array.isArray(raw && raw.findingRules) ? raw.findingRules : []).slice(0, 30).map(cleanRule).filter(Boolean);
-  return { hosts, topology, rules };
+  const asked = Array.isArray(raw && raw.findingRules) ? raw.findingRules : [];
+  const rules = asked.slice(0, 30).map(cleanRule).filter(Boolean);
+  return { hosts, topology, rules, rulesDropped: asked.length - rules.length };
 }
 
 
@@ -195,7 +197,7 @@ const TEMPLATES = ['renew-certificate', 'patch-vm', 'move-vm', 'update-dns-recor
 /** Alert texts with an instruction aimed at an AI assistant never become a finding (the same patterns as the Alerts Space). */
 const INJECTION = [/ignore (all |your )?(previous|prior) instructions/i, /\bai assistants?\b/i, /system prompt/i, /(restart|delete|shut ?down|disable) (every|all) [^.]*servers?/i];
 
-/** One rule of the local map: { match: text pattern, kind, template?, deadlineDays? }. Anything else is dropped. */
+/** One rule of the local map: { match: text pattern, kind, template?, deadlineDays? }. Anything else is dropped (and counted: readMap reports rulesDropped). */
 function cleanRule(r) {
   if (!r || typeof r !== 'object' || typeof r.match !== 'string' || r.match.length < 1 || r.match.length > 100 || !Object.hasOwn(FINDING_KINDS, r.kind)) return null;
   try { new RegExp(r.match, 'i'); } catch { return null; }
@@ -205,16 +207,17 @@ function cleanRule(r) {
 
 /**
  * Alerts -> findings by the rules of the local map. An alert that matches no rule is no finding (counted); an alert with an instruction
- * aimed at an AI assistant is withheld (counted); one finding per host and kind, the oldest alert wins.
+ * aimed at an AI assistant is withheld (counted, its text is never passed on); one finding per host and kind, the oldest alert wins.
+ * The alerts that matched no rule come back too (at most 50, plain short text), so the rules can be fitted to the real wording.
  */
 export function toFindings(alerts, rules = [], hosts = {}) {
   const compiled = rules.map((r) => { try { return { ...r, re: new RegExp(r.match, 'i') }; } catch { return null; } }).filter(Boolean);
-  const seen = new Set(), findings = [];
+  const seen = new Set(), findings = [], unmatched = [];
   let skipped = 0, withheld = 0;
   for (const a of (Array.isArray(alerts) ? alerts : []).slice().sort((x, y) => String(x.at).localeCompare(String(y.at)) || String(x.id).localeCompare(String(y.id)))) {
     if (INJECTION.some((p) => p.test(a.text))) { withheld++; continue; }
     const rule = compiled.find((r) => r.re.test(a.text));
-    if (!rule) { skipped++; continue; }
+    if (!rule) { skipped++; if (unmatched.length < MAX_UNMATCHED) unmatched.push({ id: a.id, host: a.host, severity: a.severity, text: clip(a.text, 200) }); continue; }
     const key = `${a.host}|${rule.kind}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -222,7 +225,7 @@ export function toFindings(alerts, rules = [], hosts = {}) {
     findings.push({ id: `L-${a.id}`.slice(0, 40), customer: m.customerId || '', customerName: clip(a.customer || m.customer, 60), host: a.host, env: ENVS.includes(m.env) ? m.env : 'PRD', kind: rule.kind,
       template: rule.template || kind.template, deadlineDays: rule.deadlineDays || kind.days, signal: clip(a.text, 120), evidence: clip(`Monitoring alert ${a.id} at ${String(a.at).replace('T', ' ')} UTC on ${a.host}: ${a.text}`, 240), live: true });
   }
-  return { findings, skipped, withheld };
+  return { findings, skipped, withheld, unmatched };
 }
 
 /** adapter: an adapter or a function that returns one (or null) each time, so a changed setting needs no restart. */
@@ -245,7 +248,7 @@ export function createMonitoringRead({ adapter, mapFile, now = () => new Date(),
     /** The alerts as findings by the rules of the local map: what the Orchestrator plans in shadow mode. */
     async findings({ sinceHours } = {}) {
       const r = await self.alerts({ sinceHours }), map = readMap(mapFile);
-      return { source: 'live', adapter: r.adapter, fetchedAt: r.fetchedAt, sinceHours: r.sinceHours, alerts: r.alerts.length, ...toFindings(r.alerts, map.rules, map.hosts) };
+      return { source: 'live', adapter: r.adapter, fetchedAt: r.fetchedAt, sinceHours: r.sinceHours, alerts: r.alerts.length, rulesDropped: map.rulesDropped, ...toFindings(r.alerts, map.rules, map.hosts) };
     },
   };
   return self;

@@ -274,6 +274,9 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 .verdict select,.verdict input{font:inherit;font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
 .redbar{border-color:var(--red-border);background:var(--red-dim)}
 .switch[disabled]{opacity:.5;cursor:not-allowed}
+.unmatched{margin:0 0 14px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-s);padding:10px 14px;font-size:13px}
+.unmatched summary{cursor:pointer;font-weight:600;color:var(--purple-deep)}
+.unmatched ul{margin:8px 0 0}
 /* outcomes */
 .otab{border-collapse:collapse;width:100%;font-size:12px}
 .otab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px;padding:0 10px 8px 0;white-space:nowrap}
@@ -1198,7 +1201,7 @@ async function loadShadow() {
   const a = await askHost({ type: 'mon:findings-request', sinceHours: 24 });
   if (a.type !== 'mon:findings') { state.liveNote = (a.message || 'The live findings could not be loaded.') + ' The demo findings stay.'; render(); return; }
   Object.keys(timers).forEach((id) => { clearTimeout(timers[id]); delete timers[id]; });
-  state.live = a.findings; state.shadow = { adapter: a.adapter, fetchedAt: a.fetchedAt, hours: a.sinceHours, alerts: a.alerts, skipped: a.skipped, withheld: a.withheld };
+  state.live = a.findings; state.shadow = { adapter: a.adapter, fetchedAt: a.fetchedAt, hours: a.sinceHours, alerts: a.alerts, skipped: a.skipped, withheld: a.withheld, rulesDropped: a.rulesDropped || 0, unmatched: Array.isArray(a.unmatched) ? a.unmatched : [] };
   state.items = {}; state.hours = 0; state.liveNote = '';
   log('person', `Shadow mode on: ${a.findings.length} live finding${a.findings.length === 1 ? '' : 's'} from ${a.adapter} (${a.alerts} alerts, ${a.skipped} not matched by a rule, ${a.withheld} withheld).`);
   state.proto = null; state.decisionIds = {}; state.verdicts = {}; state.draft = {}; state.summary = null;
@@ -1325,12 +1328,19 @@ function onWindowResult(p) {
 }
 
 /* ---------- views ---------- */
+/** The alerts that matched no rule, with their wording: what the rules have to be fitted to. Plain text, escaped. */
+function unmatchedBox() {
+  const list = state.shadow.unmatched, more = state.shadow.skipped - list.length;
+  return `<details class="unmatched"><summary>${state.shadow.skipped} alert${state.shadow.skipped === 1 ? '' : 's'} match${state.shadow.skipped === 1 ? 'es' : ''} no rule: show ${list.length === 1 ? 'it' : 'them'}</summary>
+    <p class="note">A rule is a text pattern on this wording (see monitoring-map.json). Alerts that are not a certificate, patch, disk or DNS problem are meant to stay here.</p>
+    <ul class="plain">${list.map((a) => `<li><b>${esc(a.host)}</b> · ${esc(a.severity)} · ${esc(a.text)}</li>`).join('')}</ul>${more > 0 ? `<p class="note">… and ${more} more.</p>` : ''}</details>`;
+}
 function controls() {
   const on = state.auto.hitl;
   return `<div class="card ctrl rise"><div class="sw"><button class="switch" id="hitl" type="button" role="switch" aria-checked="${on}" aria-label="Human in the loop"${state.shadow ? ' disabled title="Shadow mode judges every plan as if human in the loop were off"' : ''}><i></i></button>
     <div><b>Human in the loop: ${on ? 'on' : 'off'}</b><span>${on ? 'Every plan waits for a person. The agent plans and proposes, a person decides.' : 'The agent runs low-risk plans by itself, as the autonomy matrix says. The floors stay: they cannot be switched off.'}</span></div></div>
     <div class="acts"><button class="primary" data-act="sweep">${ic('eye')} ${state.swept ? 'Sweep again' : 'Run a sweep'}</button><span class="clock" title="Simulated time">${ic('clock')}<b>${esc(clockText())}</b><button class="ghost" data-act="time" data-h="6">+6 h</button><button class="ghost" data-act="time" data-h="24">+1 day</button></span>${hosted ? `<button class="ghost" data-act="${state.shadow ? 'shadow-off' : 'shadow-load'}" id="shadow">${ic('eye')} ${state.shadow ? 'Back to demo findings' : 'Load live findings (shadow mode)'}</button>` : ''}<button class="ghost" data-act="pause">${ic(state.paused ? 'play' : 'pause')} ${state.paused ? 'Resume' : 'Pause the orchestrator'}</button></div></div>
-    ${state.shadow ? `<div class="banner shadowbar">${ic('eye')}<span><b>Shadow mode.</b> Live findings from ${esc(state.shadow.adapter)} (fetched ${esc(state.shadow.fetchedAt.replace('T', ' '))} UTC, last ${state.shadow.hours} h): ${state.shadow.alerts} alerts, ${state.live.length} finding${state.live.length === 1 ? '' : 's'}, ${state.shadow.skipped} not matched by a rule, ${state.shadow.withheld} withheld. The orchestrator plans and decides, nothing is executed or approved. Customers the demo data does not know get assumed nights.</span></div>` : ''}${state.liveNote ? `<div class="banner">${ic('alert')}<span>${esc(state.liveNote)}</span></div>` : ''}
+    ${state.shadow ? `<div class="banner shadowbar">${ic('eye')}<span><b>Shadow mode.</b> Live findings from ${esc(state.shadow.adapter)} (fetched ${esc(state.shadow.fetchedAt.replace('T', ' '))} UTC, last ${state.shadow.hours} h): ${state.shadow.alerts} alerts, ${state.live.length} finding${state.live.length === 1 ? '' : 's'}, ${state.shadow.skipped} not matched by a rule, ${state.shadow.withheld} withheld. The orchestrator plans and decides, nothing is executed or approved. Customers the demo data does not know get assumed nights.</span></div>${state.shadow.unmatched && state.shadow.unmatched.length ? unmatchedBox() : ''}${state.shadow.rulesDropped > 0 ? `<div class="banner">${ic('alert')}<span><b>${state.shadow.rulesDropped} rule${state.shadow.rulesDropped === 1 ? '' : 's'} ignored.</b> A finding rule in monitoring-map.json is ignored when its pattern is longer than 100 characters or not a valid pattern, when its kind is unknown, or when there are more than 30 rules. Findings may be missing.</span></div>` : ''}` : ''}${state.liveNote ? `<div class="banner">${ic('alert')}<span>${esc(state.liveNote)}</span></div>` : ''}
     ${state.paused ? `<div class="banner pausebar">${ic('pause')}<span><b>Paused.</b> No autonomous run starts and running plans stand still until you resume.</span></div>` : ''}`;
 }
 function lane(a, s) {

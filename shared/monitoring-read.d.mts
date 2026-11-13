@@ -15,10 +15,11 @@ export function adapterFromEnv(env: Record<string, string | undefined> | null | 
 export interface FindingRule { match: string; kind: string; template: string; deadlineDays: number }
 export interface Finding { id: string; customer: string; customerName: string; host: string; env: 'PRD' | 'QAS' | 'DEV'; kind: string; template: string; deadlineDays: number; signal: string; evidence: string; live: true }
 export const FINDING_KINDS: Readonly<Record<string, { template: string; days: number }>>;
-export function toFindings(alerts: MonitoringAlert[], rules?: FindingRule[], hosts?: Record<string, any>): { findings: Finding[]; skipped: number; withheld: number };
-export function readMap(file: string): { hosts: Record<string, any>; topology: Record<string, string[]>; rules: FindingRule[] };
+export interface UnmatchedAlert { id: string; host: string; severity: string; text: string }
+export function toFindings(alerts: MonitoringAlert[], rules?: FindingRule[], hosts?: Record<string, any>): { findings: Finding[]; skipped: number; withheld: number; unmatched: UnmatchedAlert[] };
+export function readMap(file: string): { hosts: Record<string, any>; topology: Record<string, string[]>; rules: FindingRule[]; rulesDropped: number };
 export function createMonitoringRead(opts: { adapter: MonitoringAdapter | null | (() => MonitoringAdapter | null); mapFile: string; now?: () => Date; log?: (e: Record<string, unknown>) => void }): {
   status(): { configured: boolean; adapter: string };
   alerts(args?: { sinceHours?: number }): Promise<{ source: 'live'; adapter: string; fetchedAt: string; sinceHours: number; alerts: MonitoringAlert[]; topology: Record<string, string[]> }>;
-  findings(args?: { sinceHours?: number }): Promise<{ source: 'live'; adapter: string; fetchedAt: string; sinceHours: number; alerts: number; findings: Finding[]; skipped: number; withheld: number }>;
+  findings(args?: { sinceHours?: number }): Promise<{ source: 'live'; adapter: string; fetchedAt: string; sinceHours: number; alerts: number; rulesDropped: number; findings: Finding[]; skipped: number; withheld: number; unmatched: UnmatchedAlert[] }>;
 };

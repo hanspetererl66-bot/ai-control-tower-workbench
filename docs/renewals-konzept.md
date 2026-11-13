@@ -21,7 +21,7 @@ Was fehlt:
 - Verhandeln, Bestellung und Win-back sind nur Text
 - keine Deal-Desk-Freigabe als Schritt; die Automatik prüft Rabatt und Deal Desk nicht
 - der Fortschritt (Stufe) liegt nur im Speicher der Seite
-- Unstimmigkeit in den Beispieldaten: die Hanse-Mail H-202 spricht von einem Ariba-Preisanstieg über dem Cap (Vertrag C-2025-0458), dieser Vertrag steht nicht in den Fällen und Hanse hat kein Ariba
+- Unstimmigkeit in den Beispieldaten (behoben am 13.11.2026): die Hanse-Mail H-202 sprach von einem Ariba-Preisanstieg über dem Cap von 3 % (Vertrag `C-2025-0458`, der Ariba-Vertrag von Hanse; er läuft bis 30.06.2028 und ist deshalb kein Renewal-Fall), hing aber am Angebot der Commerce Cloud (`OFF-2026-0402`) und erschien dort im Detailfenster. Sie handelt jetzt von der Commerce Cloud (Vertrag `C-2024-0611`, Cap 4 %). Dieselbe Art Fehler hatte `H-201` (Vertrag Commerce Cloud, aber am Angebot der Integration Suite `OFF-2026-0407`, so erschien sie auch dort); sie hängt jetzt am Angebot der Commerce Cloud.
 - Stichtag der Seite fest `2026-10-19`, die Briefing-Karten im Chat rechnen mit dem aktuellen Datum (README behauptet Gleichheit)
 
 ## 2. Befunde der Recherche

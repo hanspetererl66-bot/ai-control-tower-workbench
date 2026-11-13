@@ -62,6 +62,18 @@ export function pickFindings(raw: unknown): Record<string, unknown>[] {
   return out;
 }
 
+/** The alerts that matched no rule: only what the person needs to fit a rule to the wording. */
+export function pickUnmatched(raw: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(raw)) return [];
+  const out: Record<string, unknown>[] = [];
+  for (const a of raw.slice(0, 50)) {
+    if (!isObject(a) || typeof a.id !== 'string' || !ID.test(a.id) || typeof a.host !== 'string' || !HOST.test(a.host)) continue;
+    const text = str(a.text, 200).trim();
+    if (text) out.push({ id: a.id, host: a.host, severity: SEVERITIES.includes(String(a.severity)) ? a.severity : 'low', text });
+  }
+  return out;
+}
+
 export async function handleMonitoringMessage(data: unknown, host: MonitoringHost | undefined): Promise<Record<string, unknown> | null> {
   if (!isObject(data) || (data.type !== 'mon:alerts-request' && data.type !== 'mon:findings-request')) return null;
   const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
@@ -75,7 +87,7 @@ export async function handleMonitoringMessage(data: unknown, host: MonitoringHos
       const f = await host.findings(hours);
       if (!f.ok) return fail(f.error);
       const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100000, Math.round(v))) : 0);
-      return { type: 'mon:findings', requestId, source: 'live', adapter: str(f.data.adapter, 30), fetchedAt: str(f.data.fetchedAt, 16), sinceHours: hours, alerts: num(f.data.alerts), skipped: num(f.data.skipped), withheld: num(f.data.withheld), findings: pickFindings(f.data.findings) };
+      return { type: 'mon:findings', requestId, source: 'live', adapter: str(f.data.adapter, 30), fetchedAt: str(f.data.fetchedAt, 16), sinceHours: hours, alerts: num(f.data.alerts), skipped: num(f.data.skipped), withheld: num(f.data.withheld), rulesDropped: num(f.data.rulesDropped), findings: pickFindings(f.data.findings), unmatched: pickUnmatched(f.data.unmatched) };
     }
     const res = await host.alerts(hours);
     if (!res.ok) return fail(res.error);
