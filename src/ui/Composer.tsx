@@ -20,7 +20,6 @@ import {
 } from '../starter-prompts';
 import ChatTabs from './ChatTabs';
 import type { SkillLike, SpaceLike } from '../chat-tabs';
-import { PRODUCT_TITLE } from '../product';
 import type { Command } from '../chat-context';
 import { MODEL_PROVIDERS } from '../web-search';
 import { startRecording, type Recording, type VoiceSettings } from '../voice';
@@ -534,7 +533,7 @@ export default function Composer({
       <textarea
         ref={inputRef}
         className="composer-input"
-        placeholder={agent ? `Message ${PRODUCT_TITLE}…` : 'Connecting…'}
+        placeholder={agent ? 'Text . . .' : 'Connecting…'}
         rows={1}
         autoFocus
         value={text}
