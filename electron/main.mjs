@@ -1,7 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell, WebContentsView } from 'electron';
 import { parseDocument } from 'yaml';
@@ -1321,6 +1321,26 @@ ipcMain.handle('pick-chat-files', async () => {
     return prepareAttachments(result.filePaths, WORKSPACE);
   } catch (error) {
     return { files: [], errors: [error?.message ?? String(error)] };
+  }
+});
+
+/** A JSON or CSV file for a data set in the Space Designer. The person picks it in the native dialog; only its name and text (max. 2 MB) go
+ * to the window, never the path, and the window cannot name a path of its own. */
+ipcMain.handle('designer-pick-data-file', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow ?? undefined, {
+      title: 'Choose a data file',
+      buttonLabel: 'Use file',
+      properties: ['openFile'],
+      filters: [{ name: 'Table data (JSON, CSV, TSV, text)', extensions: ['json', 'csv', 'tsv', 'txt'] }],
+    });
+    if (result.canceled || result.filePaths.length === 0) return { ok: false, canceled: true };
+    const file = result.filePaths[0];
+    const size = statSync(file).size;
+    if (size > 2_000_000) return { ok: false, detail: `The file is ${(size / 1_000_000).toFixed(1)} MB; the limit is 2 MB.` };
+    return { ok: true, name: basename(file), text: readFileSync(file, 'utf8') };
+  } catch (error) {
+    return { ok: false, detail: error?.message ?? String(error) };
   }
 });
 

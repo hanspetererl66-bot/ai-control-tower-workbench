@@ -4,6 +4,7 @@ import type { Preferences } from '../preferences';
 import { applySpacePrefs } from '../preferences-style';
 import { applySpaceScale, applySpaceTheme, type SpaceScale } from '../space-scale';
 import { diffLayouts, diffText, layoutPrompt, parseLayoutAnswer, type LayoutAnswer } from '../space-designer-ai';
+import { parseDataFile } from '../space-designer-file';
 import { dataPrompt, diffDataset, nowMinute, parseDataAnswer, type DataAnswer } from '../space-designer-data';
 import { canRedo, canUndo, commit, parsePreviewMessage, redo, startHistory, undo, withPreview, type History } from '../space-designer-state';
 import {
@@ -152,7 +153,7 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
   const delRow = (r: number) => put({ ...ds, rows: ds.rows.filter((_, i) => i !== r) });
   const delCol = (c: number) => ds.columns.length > 1 && put({ ...ds, columns: ds.columns.filter((_, j) => j !== c), rows: ds.rows.map((r) => r.filter((_, j) => j !== c)) });
   async function fill() {
-    if (!generate || !current.source || !current.source.prompt.trim()) return;
+    if (!generate || current.source?.kind !== 'joule' || !current.source.prompt.trim()) return;
     setFilling(true); setFillNote(''); setProposal(null);
     try {
       const text = await generate(dataPrompt(title, current.name, current.columns, current.source.prompt), 'Space Designer data', 'space-designer-data');
@@ -163,9 +164,21 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
       else setProposal(answer);
     } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
   }
+  async function pickFile() {
+    setFilling(true); setFillNote(''); setProposal(null);
+    try {
+      const r = await window.host?.designerPickDataFile?.();
+      if (!r || r.canceled) return;
+      if (!r.ok || typeof r.text !== 'string') { setFillNote(r.detail || 'The file could not be read.'); return; }
+      const answer = parseDataFile(r.name ?? 'file', r.text);
+      if ('error' in answer) setFillNote(answer.error);
+      else setProposal({ ...answer, sources: `File ${r.name ?? ''}`.trim() });
+    } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
+  }
   function applyFill() {
     if (!proposal || !current.source) return;
-    put({ ...current, columns: proposal.columns, rows: proposal.rows, source: { ...current.source, asOf: nowMinute(), note: proposal.sources } });
+    const fileName = current.source.kind === 'file' ? proposal.sources.replace(/^File /, '').replace(/[\\/]/g, '').slice(0, 120) : '';
+    put({ ...current, columns: proposal.columns, rows: proposal.rows, source: current.source.kind === 'file' ? { kind: 'file', name: fileName, asOf: nowMinute(), note: proposal.notes[0] ?? '' } : { ...current.source, asOf: nowMinute(), note: proposal.sources } });
     setProposal(null); setFillNote('Applied. Undo brings back the numbers as they were.');
   }
   const applyPaste = () => {
@@ -214,16 +227,27 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
       <div className="sd-source">
         <h3>Where the numbers come from</h3>
         <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={!ds.source} onChange={() => { const { source: _drop, ...rest } = ds; put(rest); setProposal(null); setFillNote(''); }} /> Typed or pasted</label>
-        <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={!!ds.source} onChange={() => put({ ...ds, source: ds.source ?? { kind: 'joule', prompt: '', asOf: '', note: '' } })} /> Joule query</label>
-        {ds.source && (
+        <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={ds.source?.kind === 'joule'} onChange={() => { put({ ...ds, source: { kind: 'joule', prompt: '', asOf: '', note: '' } }); setProposal(null); setFillNote(''); }} /> Joule query</label>
+        {window.host?.designerPickDataFile && <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={ds.source?.kind === 'file'} onChange={() => { put({ ...ds, source: { kind: 'file', name: '', asOf: '', note: '' } }); setProposal(null); setFillNote(''); }} /> File (JSON or CSV)</label>}
+        {ds.source?.kind === 'joule' && (
           <>
-            <Area label="What Joule is asked (max. 600 characters)" rows={3} value={ds.source.prompt} onChange={(v) => put({ ...ds, source: { ...ds.source!, prompt: v.slice(0, 600) } })} />
+            <Area label="What Joule is asked (max. 600 characters)" rows={3} value={ds.source.prompt} onChange={(v) => put({ ...ds, source: { ...(ds.source as Extract<NonNullable<Dataset['source']>, { kind: 'joule' }>), prompt: v.slice(0, 600) } })} />
             <p className="sd-hint">Joule fills the columns {ds.columns.join(', ')}. Rename the headers above to change what is asked for. Joule reads with the connected tools only; it is asked not to change anything. The question runs only when you click Fill now.</p>
             <button type="button" className="ghost-btn" onClick={() => void fill()} disabled={!ready || !generate || filling || !ds.source.prompt.trim()}>{filling ? 'Joule is working…' : ds.source.asOf ? 'Fill again' : 'Fill now'}</button>
-            {ds.source.asOf && <p className="sd-hint">Filled {ds.source.asOf.replace('T', ' ')} UTC{ds.source.note ? ` · ${ds.source.note}` : ''}. The page says so under the numbers.</p>}
+          </>
+        )}
+        {ds.source?.kind === 'file' && (
+          <>
+            <p className="sd-hint">Choose a JSON file (a list of objects, a list of lists, or {'{"columns": […], "rows": […]}'}) or a CSV/TSV file, up to 2 MB. The values are copied into this data set; the page never reads the file, and only the file name is saved, not the path. You see the changes before they are applied.</p>
+            <button type="button" className="ghost-btn" onClick={() => void pickFile()} disabled={filling}>{filling ? 'Reading…' : ds.source.asOf ? 'Choose the file again' : 'Choose file…'}</button>
+          </>
+        )}
+        {ds.source && (
+          <>
+            {ds.source.asOf && <p className="sd-hint">{ds.source.kind === 'file' && ds.source.name ? `${ds.source.name}, loaded` : 'Filled'} {ds.source.asOf.replace('T', ' ')} UTC{ds.source.note ? ` · ${ds.source.note}` : ''}. The page says so under the numbers.</p>}
             {proposal && (
               <div className="sd-proposal">
-                <p><b>Joule proposes:</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
+                <p><b>{ds.source.kind === 'file' ? 'The file brings:' : 'Joule proposes:'}</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
                 {proposal.notes.map((n) => <p key={n} className="sd-hint">{n}</p>)}
                 <div className="sd-grid-wrap"><table className="sd-grid"><thead><tr>{proposal.columns.map((c, j) => <th key={j}>{c}</th>)}</tr></thead><tbody>{proposal.rows.slice(0, 8).map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
                 {proposal.rows.length > 8 && <p className="sd-hint">… and {proposal.rows.length - 8} more rows.</p>}
