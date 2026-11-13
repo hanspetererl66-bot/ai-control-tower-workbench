@@ -11,7 +11,7 @@
  * The layout travels inside the page (<script type="application/json" id="wb-layout">), so the page can be opened in
  * the Designer again after it was copied, shared or imported.
  */
-import { cellNumber, normalizeLayout, type Block, type ChartKind, type Dataset, type Layout, type Tone } from './space-layout.ts';
+import { cellNumber, normalizeLayout, resolveLayout, tokenDatasets, type Block, type ChartKind, type Dataset, type Layout, type Tone } from './space-layout.ts';
 
 export const LAYOUT_SCRIPT_ID = 'wb-layout';
 
@@ -67,6 +67,7 @@ export const LAYOUT_CSS = `
 .wb-heading p{margin:0;color:var(--muted);font-size:13px}
 .wb-title{margin:0 0 12px;font-size:15px;font-weight:650;color:var(--ink)}
 .wb-sub{margin:-8px 0 12px;font-size:12px;color:var(--muted)}
+.wb-asof{margin:-8px 0 12px;font-size:11px;color:var(--muted)}
 .wb-hr{border:0;border-top:1px solid var(--line);margin:24px 0}
 .wb-quote{border-left:3px solid var(--purple)}
 .wb-quote p{font-size:17px;line-height:1.5;color:var(--ink)}
@@ -421,7 +422,23 @@ function matrixBlock(block: Extract<Block, { type: 'matrix' }>): string {
   return `<section class="card" data-wb-block="${block.id}">${titleHtml(block.title)}<svg class="wb-chart" viewBox="0 0 ${mw} ${mh}" role="img" aria-label="${esc(`Matrix of ${block.points.length} points`)}">${out.join('')}</svg></section>`;
 }
 
-function renderBlock(block: Block, layout: Layout): string {
+/** "Data as of 2026-11-13 08:30 · Jira via Joule" under a block whose figures were filled by Joule. */
+function asOfNote(block: Block, layout: Layout): string {
+  const ids = new Set<string>([...tokenDatasets([block]), ...(block.type === 'table' || block.type === 'chart' ? [block.dataset] : [])]);
+  const lines = layout.datasets.filter((d) => ids.has(d.id) && d.source).map((d) => {
+    const when = d.source!.asOf ? `Data as of ${d.source!.asOf.replace('T', ' ')} UTC` : 'Data not filled yet';
+    return `<p class="wb-asof">${esc(`${when}${d.source!.note ? ' · ' + d.source!.note : ''}`)}</p>`;
+  });
+  return lines.join('');
+}
+
+function renderBlock(block: Block, layout: Layout, original: Block = block): string {
+  const html = renderOne(block, layout);
+  const note = asOfNote(original, layout); // the original still holds the tokens that name the data sets
+  return note ? `${html}${note}` : html;
+}
+
+function renderOne(block: Block, layout: Layout): string {
   const id = `data-wb-block="${block.id}"`;
   switch (block.type) {
     case 'heading': return `<header class="wb-heading wb-h-${block.level}" ${id}><h2>${esc(block.text)}</h2>${block.sub ? `<p>${esc(block.sub)}</p>` : ''}</header>`;
@@ -454,8 +471,9 @@ const scriptJson = (value: unknown): string => JSON.stringify(value).replace(/</
 
 export function renderSpacePage({ title, layout, css }: { title: string; layout: Layout; css: string }): string {
   const checked = normalizeLayout(layout);
+  const shown = resolveLayout(checked).layout; // the page shows the figures; the stored layout keeps the tokens
   const body = checked.blocks.length
-    ? checked.blocks.map((b) => renderBlock(b, checked)).join('\n')
+    ? shown.blocks.map((b, i) => renderBlock(b, shown, checked.blocks[i])).join('\n')
     : '<section class="card wb-empty"><p>This page is empty. Open the Designer and add a first block.</p></section>';
   const scripts = [checked.blocks.some((b) => b.type === 'table' && b.sortable) ? SORT_SCRIPT : '', checked.blocks.some((b) => b.type === 'ask') ? ASK_SCRIPT : ''].filter(Boolean);
   return `<!doctype html>

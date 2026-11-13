@@ -25,7 +25,9 @@ export const CHART_KINDS = ['bar', 'stacked', 'line', 'area', 'donut'] as const;
 export type ChartKind = (typeof CHART_KINDS)[number];
 
 /** A table of text cells. Tables and charts point at a dataset, so several blocks can show the same numbers. */
-export type Dataset = { id: string; name: string; columns: string[]; rows: string[][] };
+/** Where the numbers of a data set come from. Only "joule": a question that Joule answered with a table, at the time `asOf`. */
+export type DataSource = { kind: 'joule'; prompt: string; asOf: string; note: string };
+export type Dataset = { id: string; name: string; columns: string[]; rows: string[][]; source?: DataSource };
 
 export type Kpi = { label: string; value: string; delta: string; tone: Tone; trend: string };
 export type Box = { title: string; text: string };
@@ -96,6 +98,7 @@ export function freeId(prefix: string, taken: Iterable<string>): string {
 }
 
 const ID = /^[a-z][a-z0-9-]{0,23}$/;
+const AS_OF = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 function normalizeDataset(raw: unknown, taken: Set<string>): Dataset | null {
   const o = obj(raw);
@@ -108,7 +111,11 @@ function normalizeDataset(raw: unknown, taken: Set<string>): Dataset | null {
   });
   const id = typeof o.id === 'string' && ID.test(o.id) && !taken.has(o.id) ? o.id : freeId('d', taken);
   taken.add(id);
-  return { id, name: line(o.name, 60) || id, columns, rows };
+  const src = obj(o.source);
+  const source: DataSource | undefined = src.kind === 'joule'
+    ? { kind: 'joule', prompt: clip(src.prompt, 600).trim(), asOf: typeof src.asOf === 'string' && AS_OF.test(src.asOf) ? src.asOf : '', note: line(src.note, 160) }
+    : undefined;
+  return { id, name: line(o.name, 60) || id, columns, rows, ...(source ? { source } : {}) };
 }
 
 function normalizeBlock(raw: unknown, taken: Set<string>, datasets: Dataset[], notes: string[]): Block | null {
@@ -191,10 +198,67 @@ export function normalizeLayout(raw: unknown, notes: string[] = []): Layout {
 
 export const emptyLayout = (): Layout => ({ version: LAYOUT_VERSION, datasets: [], blocks: [] });
 
-/** Datasets that no table or chart uses are not kept. */
+/** Datasets that no table, chart or value in a text uses are not kept. */
 export function pruneDatasets(layout: Layout): Layout {
-  const used = new Set(layout.blocks.flatMap((b) => (b.type === 'table' || b.type === 'chart' ? [b.dataset] : [])));
+  const used = new Set([...layout.blocks.flatMap((b) => (b.type === 'table' || b.type === 'chart' ? [b.dataset] : [])), ...tokenDatasets(layout.blocks)]);
   return { ...layout, datasets: layout.datasets.filter((d) => used.has(d.id)) };
+}
+
+/* ---------------------------------------------------------------- values from data in texts */
+/**
+ * A value from a data set inside any text of a block: {{d1.Amount:sum}}. The column is the name in the header row,
+ * the function is first (default), last, sum, count, max, min or avg. The page shows the figure; the layout keeps the token,
+ * so a new Fill from Joule changes every place at once.
+ */
+export const AGGREGATES = ['first', 'last', 'sum', 'count', 'max', 'min', 'avg'] as const;
+export type Aggregate = (typeof AGGREGATES)[number];
+const TOKEN = () => /\{\{\s*([a-z][a-z0-9-]{0,23})\.([^:{}]{1,40}?)\s*(?::\s*([a-z]+))?\s*\}\}/g;
+export const makeToken = (dataset: string, column: string, agg: Aggregate = 'first'): string => `{{${dataset}.${column}${agg === 'first' ? '' : ':' + agg}}}`;
+
+const fmt = (n: number): string => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+/** The value of one column of a data set as text, or null when the column is unknown or the function needs numbers the column does not hold. */
+export function datasetValue(ds: Dataset, column: string, agg: Aggregate = 'first'): string | null {
+  const c = ds.columns.findIndex((x) => x.trim().toLowerCase() === column.trim().toLowerCase());
+  if (c < 0) return null;
+  const cells = ds.rows.map((r) => r[c] ?? '');
+  if (agg === 'count') return fmt(cells.filter((x) => x.trim() !== '').length);
+  if (agg === 'first') return cells.find((x) => x.trim() !== '')?.replace(/\{(ok|warn|bad|info)\}\s*/i, '') ?? null;
+  if (agg === 'last') return [...cells].reverse().find((x) => x.trim() !== '')?.replace(/\{(ok|warn|bad|info)\}\s*/i, '') ?? null;
+  const nums = cells.map(cellNumber).filter((n): n is number => n !== null);
+  if (!nums.length) return null;
+  const sum = nums.reduce((a, b) => a + b, 0);
+  return fmt(agg === 'sum' ? sum : agg === 'max' ? Math.max(...nums) : agg === 'min' ? Math.min(...nums) : sum / nums.length);
+}
+
+/** The data sets named by tokens anywhere in the blocks. */
+export function tokenDatasets(blocks: Block[]): string[] {
+  const ids = new Set<string>();
+  const walk = (v: unknown) => {
+    if (typeof v === 'string') { for (const m of v.matchAll(TOKEN())) ids.add(m[1]); } else if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+  };
+  blocks.forEach(walk);
+  return [...ids];
+}
+
+/**
+ * The layout with every token replaced by its figure (for the page). A token whose data set, column or function does not work
+ * becomes "n/a" and is reported in `issues`, so the person sees what is wrong instead of a broken page.
+ */
+export function resolveLayout(layout: Layout): { layout: Layout; issues: string[] } {
+  const issues: string[] = [];
+  const byId = new Map(layout.datasets.map((d) => [d.id, d]));
+  const fill = (text: string): string => text.replace(TOKEN(), (whole, id: string, column: string, fn?: string) => {
+    const agg = (fn ?? 'first') as Aggregate;
+    const ds = byId.get(id);
+    if (!(AGGREGATES as readonly string[]).includes(agg)) { issues.push(`${whole}: "${fn}" is not a function (use ${AGGREGATES.join(', ')}).`); return 'n/a'; }
+    if (!ds) { issues.push(`${whole}: there is no data set "${id}".`); return 'n/a'; }
+    const value = datasetValue(ds, column, agg);
+    if (value === null) { issues.push(`${whole}: ${ds.columns.some((x) => x.trim().toLowerCase() === column.trim().toLowerCase()) ? `the column "${column}" has no numbers or no values for ${agg}` : `the data set "${ds.name}" has no column "${column}"`}.`); return 'n/a'; }
+    return value;
+  });
+  const map = (v: unknown): unknown => (typeof v === 'string' ? fill(v) : Array.isArray(v) ? v.map(map) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, map(x)])) : v);
+  return { layout: { ...layout, blocks: layout.blocks.map((b) => map(b) as Block) }, issues: [...new Set(issues)] };
 }
 
 /* ---------------------------------------------------------------- editing (immutable) */
