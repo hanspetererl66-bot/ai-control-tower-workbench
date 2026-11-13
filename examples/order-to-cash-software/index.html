@@ -506,7 +506,7 @@ td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-n
   // @logic-end
   var L = makeLogic(D);
   var S = L.newState();
-  var TABS = [['proc', 'End-to-End O2C Process'], ['bom', 'Order and bill of material'], ['ent', 'Entitlement'], ['prov', 'Provisioning'], ['bill', 'Billing and consumption'], ['rev', 'Revenue and cash']];
+  var TABS = [['proc', 'End-to-End O2C Process'], ['bom', 'Order and bill of material'], ['ent', 'Entitlement'], ['prov', 'Provisioning'], ['bill', 'Billing and consumption'], ['rev', 'Revenue and cash'], ['ren', 'Renewal orders']];
   var SYS = {}; D.systems.forEach(function (s) { SYS[s.id] = s; });
 
   function $(s) { return document.querySelector(s); }
@@ -679,11 +679,72 @@ td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-n
     return h;
   }
 
-  var VIEWS = { proc: vProc, bom: vBom, ent: vEnt, prov: vProv, bill: vBill, rev: vRev };
+  // ---------- Renewal orders: what the Renewals autopilot hands over after a customer signed ----------
+  var R = [];
+  var RSTEPS = [['order', 'Create the renewal sales order'], ['ent', 'Extend the entitlement to the new term'], ['inv', 'Schedule the invoice']];
+  function addDays(d, n) { var t = new Date(d + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+  function addMonths(d, n) { var t = new Date(d + 'T00:00:00Z'); t.setUTCMonth(t.getUTCMonth() + n); return t.toISOString().slice(0, 10); }
+  /** Checks one hand-over (or one saved order) again; anything unknown is dropped. */
+  function cleanOrder(o) {
+    if (!o || typeof o !== 'object') return null;
+    var str = function (v, n) { return typeof v === 'string' && v.length > 0 && v.length <= n ? v : null; };
+    var cid = typeof o.contractId === 'string' && /^C-[A-Za-z0-9-]{1,30}$/.test(o.contractId) ? o.contractId : null;
+    var end = typeof o.end === 'string' && /^\d{4}-\d\d-\d\d$/.test(o.end) ? o.end : null;
+    var out = { contractId: cid, customer: str(o.customer, 80), product: str(o.product, 80), offer: str(o.offer, 120), end: end,
+      annualEur: typeof o.annualEur === 'number' && isFinite(o.annualEur) && o.annualEur >= 0 && o.annualEur < 1e9 ? Math.round(o.annualEur) : null,
+      termMonths: Number.isInteger(o.termMonths) && o.termMonths >= 1 && o.termMonths <= 120 ? o.termMonths : null,
+      changePct: typeof o.changePct === 'number' && isFinite(o.changePct) && Math.abs(o.changePct) < 1000 ? o.changePct : 0 };
+    if (!out.contractId || !out.customer || !out.product || !out.end || out.annualEur === null || !out.termMonths) return null;
+    var d = o.done && typeof o.done === 'object' ? o.done : {};
+    out.done = { order: d.order === true, ent: d.ent === true && d.order === true, inv: d.inv === true && d.ent === true && d.order === true };
+    out.notified = o.notified === true && out.done.inv;
+    out.id = typeof o.id === 'string' && /^RO-\d{1,4}$/.test(o.id) ? o.id : null;
+    return out;
+  }
+  function ingest(payload, list) {
+    if (!payload || payload.type !== 'renewal-order') return;
+    var o = cleanOrder(payload); if (!o || list.some(function (x) { return x.contractId === o.contractId; })) return;
+    o.done = { order: false, ent: false, inv: false }; o.notified = false; o.id = 'RO-' + (list.length + 1);
+    list.push(o);
+  }
+  function renNo(o) { return { so: 'SO-' + (92000 + (+o.id.slice(3))), start: addDays(o.end, 1) }; }
+  function saveRen() { if (window.parent !== window) window.parent.postMessage({ type: 'wb:state', state: { ren: JSON.parse(JSON.stringify(R)) } }, '*'); }
+  function renStep(o) {
+    var k = !o.done.order ? 'order' : !o.done.ent ? 'ent' : !o.done.inv ? 'inv' : null; if (!k) return;
+    o.done[k] = true;
+    if (o.done.inv && !o.notified) {
+      o.notified = true;
+      if (window.parent !== window) window.parent.postMessage({ type: 'wb:handoff', to: 'renewals', open: false, notice: 'Renewal order ' + renNo(o).so + ' for ' + o.customer + ' is booked in Order-to-Cash (simulated).', payload: { type: 'order-confirmed', contractId: o.contractId, orderNo: renNo(o).so, invoiceFrom: renNo(o).start } }, '*');
+    }
+  }
+  function vRen() {
+    var h = '<h2>Renewal orders</h2><p class="note">When a customer signs a renewal, the Renewals autopilot hands the order over here. Order management books it in three steps. Nothing is written to a real system; the steps are simulated and the result goes back to the Renewals Space.</p>';
+    if (!R.length) return h + '<div class="card"><p class="note" style="margin:0">No renewal order has arrived. Run the autopilot in the Renewals Space and let a customer sign.</p></div>';
+    R.forEach(function (o) {
+      var n = renNo(o), end = addMonths(n.start, o.termMonths), done = o.done.inv;
+      h += '<div class="card"><h2>' + esc(o.id) + ' · ' + esc(o.customer) + ' · ' + esc(o.product) + ' ' + (done ? tag('booked', 'ok') : tag('open', 'amber')) + '</h2>' +
+        '<p class="note">Contract ' + esc(o.contractId) + ' · ' + esc(o.offer || 'renewal') + ' · ' + m(o.annualEur) + ' ' + esc(D.currency) + ' a year for ' + o.termMonths + ' months (' + (o.changePct > 0 ? '+' : '') + o.changePct + ' % against today)</p><table class="tbl"><thead><tr><th>Step</th><th>Result</th><th></th></tr></thead><tbody>';
+      RSTEPS.forEach(function (st) {
+        var ok = o.done[st[0]], res = st[0] === 'order' ? 'Sales order ' + n.so + ', contract ' + o.contractId : st[0] === 'ent' ? 'Entitlement ' + n.start + ' to ' + end + ' (' + o.termMonths + ' months)' : 'Invoice from ' + n.start + ', ' + m(o.annualEur) + ' ' + esc(D.currency) + ' a year, payable in ' + D.terms + ' days';
+        h += '<tr><td><b>' + esc(st[1]) + '</b></td><td>' + (ok ? esc(res) : '') + '</td><td>' + (ok ? tag('done', 'ok') : '') + '</td></tr>';
+      });
+      h += '</tbody></table><div class="tools">' + (done ? '<span class="note">Booked. The confirmation went back to the Renewals Space.</span>' : '<button class="btn primary" data-act="ren-next" data-id="' + esc(o.id) + '">Run next step (Order management)</button><button class="btn" data-act="ren-all" data-id="' + esc(o.id) + '">Run all steps</button>') + '</div></div>';
+    });
+    return h;
+  }
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+    var st = e.data.state;
+    if (st && Array.isArray(st.ren)) { R = []; st.ren.slice(0, 50).forEach(function (x) { var o = cleanOrder(x); if (o && o.id && !R.some(function (y) { return y.contractId === o.contractId; })) R.push(o); }); }
+    (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach(function (hh) { ingest(hh && hh.payload, R); });
+    if (R.length && (e.data.handoffs || []).length) S.tab = 'ren';
+    saveRen(); render();
+  });
+  var VIEWS = { proc: vProc, bom: vBom, ent: vEnt, prov: vProv, bill: vBill, rev: vRev, ren: vRen };
   function render() {
     $('#tabs').innerHTML = TABS.map(function (t) { return '<button role="tab" aria-selected="' + (S.tab === t[0]) + '" data-act="tab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('');
     $('#sys').textContent = D.company + ' · ' + D.asOf;
-    $('#main').innerHTML = ctl() + VIEWS[S.tab]();
+    $('#main').innerHTML = (S.tab === 'ren' ? '' : ctl()) + VIEWS[S.tab]();
   }
   function log(t) { S.lastNote = t; }
   document.addEventListener('click', function (e) {
@@ -692,6 +753,7 @@ td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-n
     var act = b.getAttribute('data-act'), id = b.getAttribute('data-id');
     if (act === 'tab') S.tab = id;
     else if (act === 'sel') S.sel = +id;
+    else if (act === 'ren-next' || act === 'ren-all') { var ro = R.filter(function (x) { return x.id === id; })[0]; if (ro) { if (act === 'ren-all') { while (!ro.done.inv) renStep(ro); } else renStep(ro); saveRen(); } }
     else if (act === 'next') { var r = L.advance(S); if (r.ok) { S = r.state; S.sel = Math.min(S.step, D.stages.length - 1); } }
     else if (act === 'run') { var g = L.advance(S); while (g.ok) { S = g.state; g = L.advance(S); } S.sel = Math.min(S.step, D.stages.length - 1); }
     else if (act === 'reset') { var v0 = S.view; S = L.newState(); S.view = v0; }

@@ -6,6 +6,7 @@
     "A software order has no delivery: the signed order form is the order, activating the licenses takes the place of the goods issue.",
     "Two tracks start together at order confirmation. License activation waits for the credit decision (234,800.00 EUR against a limit of 200,000.00 EUR).",
     "Billed, recognised and deferred are different numbers: 226,800.00 billed, 18,900.00 recognised, 207,900.00 deferred at year end.",
+    "Renewal orders: when a customer signs a renewal in the Renewals Space, the autopilot hands the order over here. Order management books it in three steps (sales order, entitlement for the new term, invoice) and the booking goes back to the Renewals Space. Simulated, nothing is written to a system.",
     "Fictional sample data. No SAP system is called; tool names, prices and document numbers are illustrative."
   ],
   "prompt": "Bundled example: Order-to-Cash for a software company (static mockup, data embedded by npm run sync:mockups)."

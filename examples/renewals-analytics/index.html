@@ -1472,6 +1472,92 @@ function actionList(c, sig) {
 const actions = (c, sig) => actionList(c, sig).map((a) => a.text);
 /** The stable keys of the same actions, in the same order (what the page groups by). */
 const actionKeys = (c, sig) => actionList(c, sig).map((a) => a.key);
+/* ---------- Autopilot: the whole renewal as steps; the machine does the routine, a person decides at fixed gates ----------
+   Pure state machine. A case state is plain data: { mode, step, status, pick, log[], gate }. Nothing here sends, signs or books:
+   the page shows what the autopilot did and what waits for a person; the real mail and the order are handed over by the page. */
+const AP_STEPS = [
+  { id: 'watch', name: 'Watch', by: 'Autopilot' }, { id: 'brief', name: 'Brief', by: 'Autopilot' }, { id: 'offer', name: 'Offer', by: 'Autopilot' },
+  { id: 'check', name: 'Policy check', by: 'Autopilot' }, { id: 'approve', name: 'Deal desk', by: 'Person' }, { id: 'send', name: 'Send', by: 'Person' },
+  { id: 'negotiate', name: 'Customer', by: 'Customer' }, { id: 'order', name: 'Order', by: 'Autopilot' },
+];
+const AP_STEP_INDEX = Object.fromEntries(AP_STEPS.map((s, i) => [s.id, i]));
+/** What the policy asks a person to look at (empty = within policy). Same rules as autoCheck, but listed as reasons, plus the escalation of the customer. */
+function apPolicy(c, sig, opts, rules, pick) {
+  const reasons = [];
+  if (c.annualEur >= rules.autoThresholdEur) reasons.push(`Annual value ${eur(c.annualEur)} is not below ${eur(rules.autoThresholdEur)}`);
+  if (c.status === 'Lapsed') reasons.push('Lapsed contract: a person decides about a win-back');
+  for (const x of sig.signals) if (x.level !== 'plus' && x.key !== 'timing' && x.key !== 'no-offer') reasons.push(x.text);
+  if (!pick) reasons.push('No offer stays within the contract cap');
+  else if (!pick.withinCap) reasons.push(`The chosen offer is above the contract cap (${pick.changePct} %)`);
+  return reasons;
+}
+const apLog = (st, actor, step, text) => ({ ...st, log: [...st.log, { n: st.log.length + 1, actor, step, text }] });
+/** Runs the automatic steps from the current one until something waits for a person or for the customer. */
+function apRun(st, ctx) {
+  const { c, sig, opts, rules, mode } = ctx;
+  let s = { ...st };
+  for (let guard = 0; guard < 20; guard++) {
+    if (s.status !== 'running') return s;
+    const id = AP_STEPS[s.step].id;
+    if (id === 'watch') { s = apLog(s, 'Autopilot', id, `Decision date ${c.decisionDate} (${sig.days < 0 ? -sig.days + ' days ago' : 'in ' + sig.days + ' days'}), health ${sig.health}, ${sig.signals.filter((x) => x.level !== 'plus').length} warning signal(s).`); s.step++; }
+    else if (id === 'brief') { s = apLog(s, 'Autopilot', id, 'Briefing from the signals: ' + (levers(sig, rules).slice(0, 2).join('; ') || 'nothing special, keep the cadence') + '.'); s.step++; }
+    else if (id === 'offer') {
+      const pick = (s.pick && opts.find((o) => o.key === s.pick)) || opts.filter((o) => o.withinCap).sort((a, b) => b.clvEur - a.clvEur)[0] || opts.find((o) => o.recommended) || opts[0] || null;
+      s.pick = pick ? pick.key : null;
+      s = apLog(s, 'Autopilot', id, pick ? `Offer built: ${pick.name}, ${eur(pick.annualEur)} a year for ${pick.termMonths} months (${pick.changePct > 0 ? '+' : ''}${pick.changePct} % against today).` : 'No offer could be built.'); s.step++;
+    } else if (id === 'check') {
+      const pick = opts.find((o) => o.key === s.pick) || null, reasons = apPolicy(c, sig, opts, rules, pick);
+      s.reasons = reasons;
+      s = apLog(s, 'Autopilot', id, reasons.length ? `Policy check: ${reasons.length} point(s) for a person.` : 'Policy check: within policy, nothing for a person.'); s.step++;
+    } else if (id === 'approve') {
+      if (s.reasons.length === 0 && mode === 'autopilot') { s = apLog(s, 'Autopilot', id, 'Approved by rule: below the threshold, no warning signal, within the contract cap.'); s.step++; }
+      else { s.status = 'waiting-person'; s.gate = 'approve'; return apLog(s, 'Autopilot', id, 'Waiting for the deal desk: ' + (s.reasons.length ? s.reasons[0] : 'supervised mode, every offer is checked') + '.'); }
+    } else if (id === 'send') {
+      if (s.reasons.length === 0 && mode === 'autopilot') { s = apLog(s, 'Autopilot', id, 'Offer e-mail sent to the customer (simulated).'); s.sent = true; s.step++; }
+      else { s.status = 'waiting-person'; s.gate = 'send'; return apLog(s, 'Autopilot', id, 'E-mail to the customer is ready as a draft. Waiting for a person to send it.'); }
+    } else if (id === 'negotiate') { s.status = 'waiting-customer'; s.gate = null; return apLog(s, 'Autopilot', id, 'Waiting for the answer of the customer. A reminder follows before the offer expires.'); }
+    else if (id === 'order') {
+      const pick = opts.find((o) => o.key === s.pick);
+      s = apLog(s, 'Autopilot', id, `Signed. The renewal order for Order-to-Cash is prepared: new term ${pick ? pick.termMonths : 12} months, entitlements, invoice.`); s.step++; s.status = 'done'; s.gate = null;
+    } else s.step++;
+  }
+  return s;
+}
+/** Starts the autopilot for one renewal. mode: 'autopilot' (a person only at exceptions) or 'supervised' (a person approves and sends every offer). */
+function apStart(ctx) {
+  return apRun({ mode: ctx.mode, step: 0, status: 'running', pick: null, gate: null, reasons: [], sent: false, log: [] }, ctx);
+}
+/** A person or the customer acts. actions: approve, reject, send, signed, changes, declined, takeover. Returns the new state; an action that does not fit the state changes nothing. */
+function apAct(st, action, who, ctx, arg) {
+  const person = who || 'A person';
+  if (st.status === 'waiting-person' && st.gate === 'approve') {
+    if (action === 'approve') return apRun(apLog({ ...st, status: 'running', gate: null, step: AP_STEP_INDEX.send }, person, 'approve', 'Offer approved.'), { ...ctx, mode: st.mode });
+    if (action === 'reject') return apLog({ ...st, status: 'stopped', gate: null }, person, 'approve', 'Offer rejected: the case stays with the account executive.');
+    if (action === 'change' && arg && ctx.opts.some((o) => o.key === arg)) {
+      const o = ctx.opts.find((x) => x.key === arg), pick = o.key;
+      const reasons = apPolicy(ctx.c, ctx.sig, ctx.opts, ctx.rules, o);
+      return apLog({ ...st, pick, reasons }, person, 'approve', `Offer changed to "${o.name}" (${eur(o.annualEur)}, ${o.changePct > 0 ? '+' : ''}${o.changePct} %). It still needs the approval.`);
+    }
+  }
+  if (st.status === 'waiting-person' && st.gate === 'send') {
+    if (action === 'send') return apRun(apLog({ ...st, status: 'running', gate: null, sent: true, step: AP_STEP_INDEX.negotiate }, person, 'send', 'Offer e-mail sent to the customer (simulated).'), { ...ctx, mode: st.mode });
+    if (action === 'reject') return apLog({ ...st, status: 'stopped', gate: null }, person, 'send', 'Not sent: the case stays with the account executive.');
+  }
+  if (st.status === 'waiting-customer') {
+    if (action === 'signed') return apRun(apLog({ ...st, status: 'running', step: AP_STEP_INDEX.order }, 'Customer', 'negotiate', 'The customer signed the offer.'), { ...ctx, mode: st.mode });
+    if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes: the autopilot builds a new offer and the policy check runs again.'), { ...ctx, mode: 'supervised' });
+    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. A win-back case is opened for the account team.');
+  }
+  if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return apLog({ ...st, status: 'stopped', gate: null }, person, AP_STEPS[Math.min(st.step, AP_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
+  return st;
+}
+/** Counts for the page: how much the autopilot did alone and how much needed a person. */
+function apSummary(states) {
+  const list = Object.values(states || {}), logs = list.flatMap((s) => s.log);
+  const auto = logs.filter((e) => e.actor === 'Autopilot').length, human = logs.filter((e) => e.actor !== 'Autopilot' && e.actor !== 'Customer').length;
+  const by = (k) => list.filter((s) => s.status === k).length;
+  return { cases: list.length, done: by('done'), person: by('waiting-person'), customer: by('waiting-customer'), stopped: by('stopped'), lost: by('lost'), auto, human, touchless: list.length ? Math.round((list.filter((s) => s.status === 'done' && !s.log.some((e) => e.actor !== 'Autopilot' && e.actor !== 'Customer')).length / list.length) * 100) : 0 };
+}
 </script>
 <script>
 const DATA = JSON.parse(document.getElementById('renewal-data').textContent);

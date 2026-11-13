@@ -108,15 +108,15 @@ test('the n8n workflow calls every stage in order, with a Wait node at each deci
   assert.equal(seen, wf.nodes.length - 1, 'all nodes but the note are on the path');
 });
 
-test('the page runs: six tabs, Entitlement and Provisioning are separate, the n8n process sits under the flowchart, three tenants', async () => {
+test('the page runs: seven tabs, Entitlement and Provisioning are separate, the n8n process sits under the flowchart, three tenants', async () => {
   const { JSDOM, VirtualConsole } = await import('jsdom');
   const errs = [];
   const vc = new VirtualConsole();
   vc.on('jsdomError', (e) => errs.push(e.message));
   const w = new JSDOM(page, { runScripts: 'dangerously', virtualConsole: vc }).window;
   const labels = [...w.document.querySelectorAll('#tabs button')].map((b) => b.textContent);
-  assert.deepEqual(labels, ['End-to-End O2C Process', 'Order and bill of material', 'Entitlement', 'Provisioning', 'Billing and consumption', 'Revenue and cash']);
-  for (const t of ['proc', 'bom', 'ent', 'prov', 'bill', 'rev']) w.document.querySelector(`[data-act=tab][data-id=${t}]`).click();
+  assert.deepEqual(labels, ['End-to-End O2C Process', 'Order and bill of material', 'Entitlement', 'Provisioning', 'Billing and consumption', 'Revenue and cash', 'Renewal orders']);
+  for (const t of ['proc', 'bom', 'ent', 'prov', 'bill', 'rev', 'ren']) w.document.querySelector(`[data-act=tab][data-id=${t}]`).click();
   w.document.querySelector('[data-act=tab][data-id=proc]').click();
   assert.match(w.document.querySelector('#main').textContent, /n8n process behind it/);
   assert.equal(data.tenants.length, 3);
@@ -152,4 +152,32 @@ test('the flowchart has one node per step, the cases stop where the story says, 
   assert.deepEqual(errs, []);
   assert.ok(data.stages.every((s) => s.on && s.doc));
   assert.ok(data.stages.every((s, i, a) => i === 0 || s.on >= a[i - 1].on), 'dates never go backwards');
+});
+
+test('renewal orders: a hand-over from the Renewals Space is checked, booked in three steps and confirmed back; bad ones are dropped', async () => {
+  const { JSDOM, VirtualConsole } = await import('jsdom');
+  const errs = [], posted = [];
+  const vc = new VirtualConsole(); vc.on('jsdomError', (e) => errs.push(e.message));
+  const parent = { postMessage: (m) => posted.push(structuredClone(m)) };
+  const w = new JSDOM(page, { runScripts: 'dangerously', virtualConsole: vc, beforeParse(win) { Object.defineProperty(win, 'parent', { value: parent }); } }).window;
+  const good = { type: 'renewal-order', contractId: 'C-2025-0041', customer: 'Muster Industrie AG', product: 'Concur Travel', end: '2026-12-31', offer: 'Renewal as offered', annualEur: 24000, termMonths: 12, changePct: 3 };
+  const bad = [{ ...good, contractId: '<img src=x>' }, { ...good, contractId: 'C-9', termMonths: 0 }, { ...good, contractId: 'C-8', annualEur: -5 }, { type: 'other' }, null];
+  w.dispatchEvent(Object.assign(new w.Event('message'), { source: w.parent, data: { type: 'wb:restore', state: null, handoffs: [good, good, ...bad].map((payload) => ({ from: 'renewals', payload })) } }));
+  const doc = w.document;
+  assert.equal(doc.querySelector('[data-act=tab][aria-selected=true]').dataset.id, 'ren', 'the page opens on the orders');
+  assert.equal(doc.querySelectorAll('#main .card').length, 1, 'one order: the same contract twice and the bad ones are dropped');
+  assert.doesNotMatch(doc.querySelector('#main').innerHTML, /<img/);
+  doc.querySelector('[data-act=ren-next]').click();
+  assert.match(doc.querySelector('#main').textContent, /Sales order SO-92001/);
+  assert.equal(posted.filter((m) => m.type === 'wb:handoff').length, 0, 'not confirmed before the last step');
+  doc.querySelector('[data-act=ren-all]').click();
+  assert.match(doc.querySelector('#main').textContent, /Entitlement 2027-01-01 to 2028-01-01/);
+  const back = posted.filter((m) => m.type === 'wb:handoff');
+  assert.equal(back.length, 1);
+  assert.equal(back[0].to, 'renewals');
+  assert.deepEqual({ ...back[0].payload }, { type: 'order-confirmed', contractId: 'C-2025-0041', orderNo: 'SO-92001', invoiceFrom: '2027-01-01' });
+  const saved = posted.filter((m) => m.type === 'wb:state').at(-1).state;
+  assert.equal(saved.ren.length, 1);
+  assert.equal(saved.ren[0].notified, true);
+  assert.deepEqual(errs, []);
 });

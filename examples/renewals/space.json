@@ -1,13 +1,14 @@
 {
   "title": "Renewals",
-  "description": "Renewals in five views: an overview of everything that decides in the next six weeks plus a landscape of all customers, the renewal process with an animated map per customer (tickets, invoices, mail, usage, details), the next best action, the renewal radar and the list by decision date. Decision dates, transparent health signals, price against the contract cap and an approval flow, with a guided demo.",
+  "description": "Renewals in six views: an overview of everything that decides in the next six weeks plus a landscape of all customers, an autopilot that runs the renewals and stops at the gates a person decides, the renewal process with an animated map per customer (tickets, invoices, mail, usage, details), the next best action, the renewal radar and the list by decision date. Decision dates, transparent health signals, price against the contract cap and an approval flow, with a guided demo.",
   "domain": "Sales",
   "insights": [
     "Start page: the renewals that decide in the next six weeks (and the ones already late) and the landscape of all customers: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Everything is tied to a customer chosen at the top.",
     "Pick a customer and the renewal map opens: its contracts around it, with open tickets, invoices, mail and usage along each spoke, four tiles for where we stand, and the details with the e-mail communication on the right.",
     "Fictional renewals derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. The decision date is the contract end minus the notice period.",
     "Health is the worst signal: decision date, missing or expiring offer, price rise above the contract cap, competitor, usage, open tickets and overdue invoices. Every signal is listed with its reason.",
-    "Next actions are rule-based and ordered. A person approves each step; sending and signing are simulated.",
+    "Autopilot: the whole renewal runs step by step (watch, brief, offer, policy check, deal desk, send, customer, order). It works alone while a renewal is within policy and stops at a gate when a person has to decide: approve or change the offer, send the e-mail. Every step is logged. Sending, signing and the order are simulated.",
+    "Next actions are rule-based and ordered. Outside the autopilot a person approves each step; sending and signing are simulated.",
     "'Start demo' walks through ten steps from the start page to a signed renewal."
   ],
   "prompt": "Bundled example: Renewals (static, data embedded by npm run sync:renewals)."
