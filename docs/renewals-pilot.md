@@ -84,7 +84,7 @@ Die Antworten stehen im Erfassungsbogen (`docs/pilot/renewals-briefing-pilot-she
 
 ## Vorbereitung (vor dem ersten Termin)
 
-1. **Datenfehler beheben (Voraussetzung):** Die Mail `H-202` ("AW: Ariba renewal …") gehört laut Daten zu `C-2025-0458`, hängt aber am Angebot der Commerce Cloud von Hanse, und Hanse hat keinen Ariba-Vertrag. Der Text nennt zudem einen Cap von 3 %, der Vertrag hat 4 %. Das Briefing zu `R-C-2024-0611` würde das übernehmen. Entweder die Daten korrigieren oder Paar 1 durch ein anderes Paar ersetzen.
+1. **Datenfehler H-202 (erledigt am 13.11.2026):** Die Mail `H-202` sprach von einem Ariba-Preisanstieg über dem Cap von 3 %, hing aber am Angebot der Commerce Cloud von Hanse (`OFF-2026-0402`). Hanse hat einen Ariba-Vertrag (`C-2025-0458`, bis 30.06.2028, kein Renewal-Fall); die frühere Aussage in diesem Dokument, Hanse habe keinen Ariba-Vertrag, war falsch. Die Mail handelt jetzt von der Commerce Cloud (Cap 4 %). Die Mail `H-201` hing am Angebot der Integration Suite statt am Angebot der Commerce Cloud und erschien auch dort; sie ist umgehängt, ein Test prüft jetzt, dass Angebot und Vertrag einer Mail zusammenpassen. Wer den Pilot vorbereitet, prüft, dass der Stand `main` diese Korrektur enthält und der Space neu installiert ist (`npm run install:examples`).
 2. **App neu starten** (nötig nach Änderungen in `src/`), Renewals-Space aktualisieren (`npm run install:examples`).
 3. **Ein Agent, ein Lauf:** Der Agent bearbeitet nur eine Antwort zugleich. Während der Sitzung darf niemand im Chat arbeiten, sonst kommt "The agent is still busy". Die Sitzungen laufen nacheinander.
 4. **Sitzungszählung zurücksetzen** ("Reset demo") vor jeder Person, damit Durchschnitt und Anzahl zu ihr gehören.
@@ -106,7 +106,7 @@ Die Antworten stehen im Erfassungsbogen (`docs/pilot/renewals-briefing-pilot-she
 ## Offene Entscheidungen
 
 1. **Teilnehmer:** wer, wie viele (Vorschlag 8), und wer bewertet die Seiten.
-2. **Datenfehler H-202:** korrigieren (Vorschlag) oder Paar 1 ersetzen.
+2. **Datenfehler H-202:** erledigt (siehe Vorbereitung, Punkt 1). Offen bleibt nur, ob Paar 1 so bleibt.
 3. **Grenzen der Entscheidung:** 6 % und 30 % und die Qualitätsgrenze von 0,3 Punkten sind Vorschläge.
 4. **Termine** und Ort.
 
@@ -129,7 +129,7 @@ Die Fakten sind die, die das Briefing bekommt. **Alles, was auf der abgegebenen 
 - Angebot OFF-2026-0402: 405.000 EUR statt 380.000 EUR (6.6 % bei Cap 4 %), Stufe Proposal sent, Wettbewerber: Shopify Plus (evaluation)
 - Ticket (High): SAP Commerce Cloud: storefront search returns no results after catalog import
 - Mail 2026-10-15 (waiting-us, Ton mixed): Commerce Cloud renewal: bundle with the Analytics add-on?
-- Mail 2026-10-08 (waiting-customer, Ton negative): AW: Ariba renewal, price rise above the cap **(Achtung: gehört nach den Daten nicht zu Commerce Cloud, siehe Vorbereitung, Punkt 1)**
+- Mail 2026-10-08 (waiting-customer, Ton negative): AW: Commerce Cloud renewal, price rise above the cap
 
 #### Muster - Ariba Procurement (R-C-2023-0390, 290.000 EUR, red)
 - Entscheidungstermin 2026-11-02 (in 14 Tagen)
