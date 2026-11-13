@@ -1255,6 +1255,12 @@ export default function App() {
   }
 
   /** A Space hands work to another Space: queue it, open that Space unless told not to, and show the notice. */
+  /** A designed page links to another Space: open it, or say how to install it. Nothing is delivered to that Space. */
+  function openLinkedSpace(slug: string) {
+    if (!spaces.some((x) => x.slug === slug)) { setToast(missingSpaceNotice(slug)); setTimeout(() => setToast(null), 12000); return; }
+    setSelectedSpace(slug); setSpacesHome(false); setView('spaces');
+  }
+
   function handOff(fromSlug: string, handoff: Handoff) {
     const target = spaces.find((x) => x.slug === handoff.to);
     if (!target) { setToast(missingSpaceNotice(handoff.to)); setTimeout(() => setToast(null), 12000); return; }
@@ -1872,6 +1878,7 @@ export default function App() {
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onOpenView={(next) => setView(next)}
+            onOpenSpace={space.designer ? (slug) => openLinkedSpace(slug) : undefined}
             terms={termsControl}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}

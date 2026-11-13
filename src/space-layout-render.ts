@@ -160,6 +160,8 @@ th[aria-sort="descending"] .wb-sortbtn::after{content:"▼"}
 .wb-timeline strong{color:var(--ink)}
 .wb-timeline p{font-size:13px;color:var(--ink-2)}
 .wb-ask{display:flex;align-items:center;gap:12px}
+.wb-spacelink{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.wb-spacelink-text{color:var(--muted);font-size:13px}
+.wb-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wb-filter-in{flex:1 1 220px;min-width:0}.wb-count{color:var(--muted);font-size:12px}.wb-table tr[hidden]{display:none}
 .wb-empty{color:var(--muted)}
 @media(max-width:700px){.wb-page{padding:20px 16px 48px}.wb-cols,.wb-cmp{grid-template-columns:1fr}.wb-timeline li{grid-template-columns:60px 18px 1fr}.wb-timeline li::before{left:69px}}
 `.trim();
@@ -368,6 +370,19 @@ function tableBlock(block: Extract<Block, { type: 'table' }>, layout: Layout): s
   return `<section class="card" data-wb-block="${block.id}">${titleHtml(block.title)}<div class="wb-tablewrap"><table class="tbl wb-table"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody>${foot}</table></div></section>`;
 }
 
+/** The text of a cell as people read it: without the status marker. */
+const plainCell = (v: string): string => v.replace(/^\{(?:ok|warn|bad|info)\}\s*/i, '').trim();
+
+function filterBlock(block: Extract<Block, { type: 'filter' }>, layout: Layout): string {
+  const table = layout.blocks.find((b) => b.id === block.table && b.type === 'table') as Extract<Block, { type: 'table' }> | undefined;
+  if (!table) return `<section class="card" data-wb-block="${block.id}"><p class="wb-empty">This filter needs a table on the page.</p></section>`;
+  const ds = layout.datasets.find((d) => d.id === table.dataset);
+  const col = ds ? ds.columns.indexOf(block.column) : -1;
+  const values = ds && col >= 0 ? [...new Set(ds.rows.map((r) => plainCell(r[col] ?? '')).filter(Boolean))].sort((a, b) => a.localeCompare(b)).slice(0, 60) : [];
+  const select = values.length ? `<select class="wb-filter-sel" data-col="${col}" aria-label="${esc(block.column)}"><option value="">All: ${esc(block.column)}</option>${values.map((v) => `<option>${esc(v)}</option>`).join('')}</select>` : '';
+  return `<section class="card wb-filter" data-wb-block="${block.id}" data-wb-for="${esc(block.table)}"><input type="search" class="wb-filter-in" placeholder="${esc(block.label)}" aria-label="${esc(block.label)}">${select}<span class="wb-count" role="status"></span></section>`;
+}
+
 function sparkline(trend: string): string {
   const values = trend.split(/[;,\s]+/).map((v) => cellNumber(v)).filter((v): v is number => v !== null).slice(-12);
   if (values.length < 2) return '';
@@ -456,6 +471,8 @@ function renderOne(block: Block, layout: Layout): string {
     case 'steps': return `<section class="card" ${id}>${titleHtml(block.title)}<ol class="wb-steps">${block.items.map((s, i) => `<li class="wb-step"><span class="wb-num">${i + 1}</span><strong>${esc(s.title)}</strong>${richHtml(s.text)}</li>`).join('')}</ol></section>`;
     case 'timeline': return `<section class="card" ${id}>${titleHtml(block.title)}<ol class="wb-timeline">${block.items.map((t) => `<li><span class="wb-when">${esc(t.when)}</span><span class="wb-dot"></span><div><strong>${esc(t.title)}</strong>${richHtml(t.text)}</div></li>`).join('')}</ol></section>`;
     case 'divider': return `<hr class="wb-hr" ${id}>`;
+    case 'filter': return filterBlock(block, layout);
+    case 'spacelink': return `<section class="card wb-spacelink" ${id}><button type="button" class="primary" data-wb-open-space="${esc(block.space)}"${block.space ? '' : ' disabled'}>${esc(block.label)}</button>${block.text ? `<span class="wb-spacelink-text">${esc(block.text)}</span>` : ''}</section>`;
     case 'ask': return `<section class="card wb-ask" ${id}><button type="button" class="primary" data-wb-ask="${esc(block.prompt)}"${block.prompt ? '' : ' disabled'}>${esc(block.label)}</button></section>`;
   }
 }
@@ -463,6 +480,8 @@ function renderOne(block: Block, layout: Layout): string {
 /* ---------------------------------------------------------------- the page */
 
 const SORT_SCRIPT = `document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.wb-sortbtn');if(!b)return;var th=b.parentNode,tb=th.closest('table'),i=Array.prototype.indexOf.call(th.parentNode.children,th),dir=th.getAttribute('aria-sort')==='ascending'?'descending':'ascending';Array.prototype.forEach.call(th.parentNode.children,function(h){h.removeAttribute('aria-sort')});th.setAttribute('aria-sort',dir);var body=tb.tBodies[0],rows=Array.prototype.slice.call(body.rows);rows.sort(function(a,c){var x=a.cells[i],y=c.cells[i],nx=x.getAttribute('data-n'),ny=y.getAttribute('data-n'),r;if(nx!==null&&ny!==null&&nx!==''&&ny!=='')r=parseFloat(nx)-parseFloat(ny);else r=(x.textContent||'').localeCompare(y.textContent||'');return dir==='ascending'?r:-r});rows.forEach(function(r){body.appendChild(r)})});`;
+const FILTER_SCRIPT = `function wbFilter(e){var box=e.target.closest&&e.target.closest('.wb-filter');if(!box)return;var t=document.querySelector('[data-wb-block="'+box.getAttribute('data-wb-for')+'"] tbody');if(!t)return;var inp=box.querySelector('input'),q=inp?inp.value.toLowerCase().trim():'',s=box.querySelector('select'),col=s?Number(s.getAttribute('data-col')):-1,v=s?s.value:'',n=0,all=0;Array.prototype.forEach.call(t.rows,function(r){all++;var ok=(!q||r.textContent.toLowerCase().indexOf(q)>=0)&&(!v||(r.cells[col]&&r.cells[col].textContent.trim()===v));r.hidden=!ok;if(ok)n++});var c=box.querySelector('.wb-count');if(c)c.textContent=(q||v)?n+' of '+all+' rows':''}document.addEventListener('input',wbFilter);document.addEventListener('change',wbFilter);`;
+const OPEN_SPACE_SCRIPT = `document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wb-open-space]');if(!b)return;var s=b.getAttribute('data-wb-open-space');if(s&&window.parent!==window)window.parent.postMessage({type:'wb:open-space',to:s},'*')});`;
 const ASK_SCRIPT = `document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wb-ask]');if(!b)return;var p=b.getAttribute('data-wb-ask');if(p&&window.parent!==window)window.parent.postMessage({type:'wb:ask',prompt:p},'*')});`;
 
 /** JSON that is safe inside a <script> element. */
@@ -475,7 +494,7 @@ export function renderSpacePage({ title, layout, css }: { title: string; layout:
   const body = checked.blocks.length
     ? shown.blocks.map((b, i) => renderBlock(b, shown, checked.blocks[i])).join('\n')
     : '<section class="card wb-empty"><p>This page is empty. Open the Designer and add a first block.</p></section>';
-  const scripts = [checked.blocks.some((b) => b.type === 'table' && b.sortable) ? SORT_SCRIPT : '', checked.blocks.some((b) => b.type === 'ask') ? ASK_SCRIPT : ''].filter(Boolean);
+  const scripts = [checked.blocks.some((b) => b.type === 'table' && b.sortable) ? SORT_SCRIPT : '', checked.blocks.some((b) => b.type === 'ask') ? ASK_SCRIPT : '', checked.blocks.some((b) => b.type === 'filter') ? FILTER_SCRIPT : '', checked.blocks.some((b) => b.type === 'spacelink') ? OPEN_SPACE_SCRIPT : ''].filter(Boolean);
   return `<!doctype html>
 <html lang="en">
 <head>

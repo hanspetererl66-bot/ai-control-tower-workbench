@@ -28,6 +28,8 @@ Every block has "id" (keep the ids of blocks you do not change) and "type":
 - steps: title, items [{title,text}]
 - timeline: title, items [{when,title,text}]
 - ask: label, prompt (a button that sends the prompt to Joule)
+- filter: label (placeholder of the search box), table (the id of a table block on the page), column (optional: a column of that table that gets a pick list)
+- spacelink: label (button text), text (one line beside it), space (the folder name of another Space; leave it "" when you do not know one)
 - divider`;
 
 export function layoutPrompt(title: string, layout: Layout, request: string): string {

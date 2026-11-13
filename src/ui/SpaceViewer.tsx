@@ -24,7 +24,7 @@ import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, 
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { applySpaceTerms, pageEntries, parseOpenTermMessage, type SpaceTermsControl } from '../space-terms';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
-import { parseOpenViewMessage, type OpenableView } from '../space-open';
+import { parseOpenSpaceMessage, parseOpenViewMessage, type OpenableView } from '../space-open';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
@@ -47,6 +47,7 @@ export default function SpaceViewer({
   prefs,
   onHandoff,
   onOpenView,
+  onOpenSpace,
   onSpaceState,
   savedState,
   incoming,
@@ -88,6 +89,8 @@ export default function SpaceViewer({
   onHandoff?: (handoff: Handoff) => void;
   /** The Space asks the app to open one of its own views (e.g. the Agent Studio). */
   onOpenView?: (view: OpenableView) => void;
+  /** A page made in the Designer links to another Space (only its folder name comes over). */
+  onOpenSpace?: (slug: string) => void;
   /** The Space reports its working state so it survives a trip to another Space. */
   onSpaceState?: (state: Record<string, unknown>) => void;
   savedState?: Record<string, unknown>;
@@ -140,6 +143,8 @@ export default function SpaceViewer({
   handoffRef.current = onHandoff;
   const openViewRef = useRef(onOpenView);
   openViewRef.current = onOpenView;
+  const openSpaceRef = useRef(onOpenSpace);
+  openSpaceRef.current = onOpenSpace;
   const stateRef = useRef(onSpaceState);
   stateRef.current = onSpaceState;
   useEffect(() => {
@@ -149,6 +154,8 @@ export default function SpaceViewer({
       if (handoff) { handoffRef.current?.(handoff); return; }
       const openView = parseOpenViewMessage(event.data);
       if (openView) { openViewRef.current?.(openView); return; }
+      const openSpace = parseOpenSpaceMessage(event.data);
+      if (openSpace) { openSpaceRef.current?.(openSpace); return; }
       const state = parseStateMessage(event.data);
       if (state) stateRef.current?.(state);
     };
