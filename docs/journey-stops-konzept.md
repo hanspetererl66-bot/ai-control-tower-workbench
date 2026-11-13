@@ -4,13 +4,13 @@ Stand 13.11.2026. Nur ein Konzept, nichts davon ist gebaut. Grundlage ist der Co
 
 ## Ausgangslage
 
-Die Sales Journey ist eine Schrittleiste mit fünf Schritten und 13 Stops, die Sales, Customer 360, E-Mail und Renewals zeigen (je eine kopierte Fassung zwischen `@journey-start` und `@journey-end`; Renewal Analytics hat sie nicht). Ein Klick in einem anderen Space geht über die vorhandene Übergabe `wb:handoff` mit `{ journey: { customer, step, tab?, deal?, thread?, focus? } }`.
+Die Sales Journey ist eine Schrittleiste mit fünf Schritten und 10 Stops, die Sales, Customer 360 und E-Mail zeigen (seit 13.11.2026 ohne Renewals: der Renewal-Prozess ist ein eigener Ablauf mit vier Schritten im Space Renewal process, Domain Renewals) (je eine kopierte Fassung zwischen `@journey-start` und `@journey-end`; Renewal Analytics hat sie nicht). Ein Klick in einem anderen Space geht über die vorhandene Übergabe `wb:handoff` mit `{ journey: { customer, step, tab?, deal?, thread?, focus? } }`.
 
 | Schritt | Stops heute |
 |---|---|
-| 1 Today | Inbox, Meetings (Sales), Renewals due (Renewals) |
-| 2 Understand | Customer 360, E-mails, Deal graph (Sales), Renewal map (Renewals) |
-| 3 Decide | Pipeline, Forecast (Sales), Renewal actions (Renewals) |
+| 1 Today | Inbox, Meetings (Sales) |
+| 2 Understand | Customer 360, E-mails, Deal graph (Sales) |
+| 3 Decide | Pipeline, Forecast (Sales) |
 | 4 Act | Skills, Approvals (zwei Einstellungsreiter von Sales) |
 | 5 Follow up | Late payments (Sales) |
 
