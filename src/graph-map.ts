@@ -6,7 +6,9 @@
  */
 import { impactOf, type Governance, type Ontology } from './ontology-manager.ts';
 
-export type MapKind = 'ontology' | 'class' | 'metric' | 'resource' | 'agent' | 'skill' | 'report';
+export type MapKind = 'ontology' | 'class' | 'metric' | 'resource' | 'agent' | 'skill' | 'report' | 'workflow' | 'feature' | 'space';
+/** The kinds of things that use a term (everything the Use tab and the found users can name). */
+export const CONSUMER_MAP_KINDS: MapKind[] = ['agent', 'skill', 'report', 'workflow', 'feature', 'space'];
 
 export interface MapNode {
   /** `<slug>:<id>` for catalog items, `<slug>:<kind>:<name>` for consumers, `ontology:<slug>` for the hub. */
@@ -22,6 +24,8 @@ export interface MapNode {
   note: string;
   /** Number of links, filled in by `buildMap`. */
   degree: number;
+  /** A found user nobody has confirmed yet (drawn dashed). */
+  uncertain?: boolean;
 }
 
 export interface MapEdge {
@@ -31,18 +35,25 @@ export interface MapEdge {
   prop: string;
   /** Hub links are drawn faint and do not carry impact. */
   weak: boolean;
+  /** The user at the end is only suspected (drawn dashed). */
+  uncertain?: boolean;
 }
 
 export interface GraphMap { nodes: MapNode[]; edges: MapEdge[] }
 
 export const MAP_KIND_LABEL: Record<MapKind, string> = {
-  ontology: 'Ontology', class: 'Class', metric: 'Metric', resource: 'Resource', agent: 'Agent', skill: 'Skill', report: 'Report',
+  ontology: 'Ontology', class: 'Class', metric: 'Metric', resource: 'Resource', agent: 'Agent', skill: 'Skill', report: 'Report', workflow: 'Workflow', feature: 'Feature', space: 'Space',
 };
 
 const catalogId = (slug: string, id: string) => `${slug}:${id}`;
 const consumerId = (slug: string, kind: string, name: string) => `${slug}:${kind}:${name.toLowerCase()}`;
 
-export function buildMap(ontologies: Ontology[], gov: Governance): GraphMap {
+/** A found user that nobody has confirmed: it joins the map dashed. */
+export interface SuspectedUser { slug: string; term: string; kind: string; name: string }
+
+const isConsumerKind = (k: string): k is MapKind => (CONSUMER_MAP_KINDS as string[]).includes(k);
+
+export function buildMap(ontologies: Ontology[], gov: Governance, suspected: readonly SuspectedUser[] = []): GraphMap {
   const nodes = new Map<string, MapNode>();
   const edges: MapEdge[] = [];
   const add = (n: Omit<MapNode, 'degree'>) => { if (!nodes.has(n.id)) nodes.set(n.id, { ...n, degree: 0 }); };
@@ -74,6 +85,28 @@ export function buildMap(ontologies: Ontology[], gov: Governance): GraphMap {
     const id = consumerId(b.slug, b.kind, b.name);
     add({ id, label: b.name, kind: b.kind, slug: b.slug, local: '', type: '', owner: '', note: '' });
     link(id, term, 'uses', false);
+  }
+  // Users a person confirmed (stored decisions; the key is `<slug>|<term>|<kind>:<ref>`, the name was kept with the decision).
+  for (const [key, d] of Object.entries(gov.usageDecisions ?? {})) {
+    if (d.decision !== 'confirmed') continue;
+    const [slug, termId, rest = ''] = key.split('|');
+    const kind = rest.split(':')[0];
+    const term = catalogId(slug, termId);
+    if (!nodes.has(term) || !isConsumerKind(kind)) continue;
+    const name = d.name || rest.slice(kind.length + 1);
+    const id = consumerId(slug, kind, name);
+    add({ id, label: name, kind, slug, local: '', type: '', owner: '', note: '' });
+    link(id, term, 'uses', false);
+  }
+  // Users that were only found: dashed, so nobody mistakes them for confirmed ones. The focus still reaches them (they might break).
+  for (const u of suspected) {
+    const term = catalogId(u.slug, u.term);
+    if (!nodes.has(term) || !isConsumerKind(u.kind)) continue;
+    const id = consumerId(u.slug, u.kind, u.name);
+    if (nodes.has(id)) continue; // already declared or confirmed
+    add({ id, label: u.name, kind: u.kind, slug: u.slug, local: '', type: '', owner: '', note: '', uncertain: true });
+    link(id, term, 'uses', false);
+    const e = edges.find((x) => x.from === id && x.to === term); if (e) e.uncertain = true;
   }
 
   const list = [...nodes.values()];

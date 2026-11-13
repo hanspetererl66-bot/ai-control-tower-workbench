@@ -118,7 +118,7 @@ test('the store drops invalid decisions and limits what it keeps', () => {
 test('the Ontology Manager shows the probable users in the term details and passes the actor down; the styles use tokens only', async () => {
   const { readFileSync } = await import('node:fs');
   const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
-  assert.match(read('src/ui/OntologyDetails.tsx'), /<OntologyUsers onto=\{onto\} term=\{term\} ontologies=\{ontologies\} gov=\{gov\} onGovernance=\{onGovernance\} actor=\{actor\} \/>/);
+  assert.match(read('src/ui/OntologyDetails.tsx'), /<OntologyUsers gov=\{gov\} onGovernance=\{onGovernance\} actor=\{actor\} usage=\{usage\} \/>/);
   const view = read('src/ui/OntologyManagerView.tsx');
   assert.match(view, /ontologies=\{ontologies\} actor=\{actor\}/);
   assert.match(view, /<Catalog [^>]*actor=\{actor\}/);
@@ -136,4 +136,19 @@ test('decision 010 (the decision log itself) is decided', async () => {
   const dir = new URL('../docs/decisions/', import.meta.url);
   const f = readdirSync(dir).find((n) => n.startsWith('010-'));
   assert.match(readFileSync(new URL(f, dir), 'utf8'), /\*\*Status:\*\* entschieden/);
+});
+
+test('the plan shows the approval block: only approvePlan sets "approved", the old free status button is gone, the map reads the cache', async () => {
+  const { readFileSync } = await import('node:fs');
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  const details = read('src/ui/OntologyDetails.tsx');
+  assert.match(details, /approvePlan\(gov, planId,/);
+  assert.match(details, /\(\['asked', 'rejected'\] as PlanStatus\[\]\)/, 'the free status buttons no longer offer "approved"');
+  assert.doesNotMatch(details, /setPlanStatus\(gov, p\.id, 'approved'\)/);
+  assert.match(details, /Approval blocked: \{check\.reason\}/);
+  assert.match(details, /<ChangePlan [^\n]*usage=\{usage\} actor=\{actor\}/);
+  assert.match(read('src/ui/OntologyMap.tsx'), /cachedSuspected\(ontologies, gov\)/);
+  const css = read('src/theme.css');
+  const block = css.slice(css.indexOf('/* Ontology Manager: the plan shows what it reaches'));
+  assert.doesNotMatch(block, /#[0-9a-f]{3,6}\b/i, 'tokens only');
 });

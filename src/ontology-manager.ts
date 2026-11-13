@@ -343,10 +343,23 @@ export interface Binding { slug: string; term: string; kind: ConsumerKind; name:
 /** The ontologies an agent gets as its view (`compose` in the connector). */
 export interface AgentView { name: string; slugs: string[] }
 export type PlanStatus = 'draft' | 'asked' | 'approved' | 'rejected';
-export interface Plan { id: string; slug: string; term: string; change: string; status: PlanStatus; createdAt: string; asked: string[] }
+/** What the approver saw when the change was approved: kept with the plan as its record. */
+export interface PlanApproval {
+  by: string;
+  at: string;
+  /** The users at that moment (at most 50): name, kind, state (declared, confirmed or suspected) and owner. */
+  users: Array<{ name: string; kind: string; state: string; owner: string }>;
+  confirmed: number;
+  suspected: number;
+  dismissed: number;
+  owners: string[];
+  /** Competency questions that name the term (their text, at most 5). */
+  questions: string[];
+}
+export interface Plan { id: string; slug: string; term: string; change: string; status: PlanStatus; createdAt: string; asked: string[]; approval?: PlanApproval }
 export interface OntologyMeta { owner: string; domain: string; approver: string }
 /** A person's decision about a found user of a term (key `<slug>|<term>|<kind>:<ref>`, see ontology-usage.ts). Found users are never stored, only these decisions. */
-export interface UsageDecision { decision: 'confirmed' | 'dismissed'; by: string; at: string }
+export interface UsageDecision { decision: 'confirmed' | 'dismissed'; by: string; at: string; /** Display name of the user at the time of the decision (the key only holds the registry id, skill directory or space slug). */ name?: string }
 export interface Governance {
   version: number;
   ontologies: Record<string, OntologyMeta>;

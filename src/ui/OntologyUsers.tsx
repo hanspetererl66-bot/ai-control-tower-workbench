@@ -1,13 +1,8 @@
-import { useMemo, useState } from 'react';
-import type { Governance, Ontology, Term } from '../ontology-manager';
-import { exampleRegistry } from '../registry-examples';
-import { hostApi, loadRegistry } from '../registry';
-import { listSkills, readSkill } from '../skills';
-import { fetchSpaceHtml, listSpaces } from '../spaces';
-import {
-  applyDecisions, declaredUsages, decisionsOf, findUsages, searchTerms, setUsageDecision, summarize, type Evidence, type Usage,
-} from '../ontology-usage';
-import { loadUsageSources, type Loaded, type LoadNote } from '../ontology-usage-load';
+import { useState } from 'react';
+import type { Governance } from '../ontology-manager';
+import { setUsageDecision, type Evidence, type Usage } from '../ontology-usage';
+import type { LoadNote } from '../ontology-usage-load';
+import type { TermUsage } from './useTermUsage';
 
 const KIND_LABEL: Record<string, string> = { agent: 'Agent', workflow: 'Workflow', feature: 'Feature', skill: 'Skill', space: 'Space', report: 'Report' };
 const FIELD_LABEL: Record<string, string> = {
@@ -16,58 +11,22 @@ const FIELD_LABEL: Record<string, string> = {
 };
 const SOURCE_LABEL: Record<string, string> = { registry: 'Registry', skills: 'Skills', spaces: 'Spaces' };
 
-/** The sources are read once and kept for a few minutes: opening the next term does not read everything again. */
-const KEEP_MS = 5 * 60 * 1000;
-let cache: { at: number; example: boolean; loaded: Loaded } | null = null;
-
-async function readSources(): Promise<{ loaded: Loaded; example: boolean }> {
-  const api = hostApi();
-  const loaded = await loadUsageSources({
-    // Without the database (a plain browser) the invented example registry stands in, and the page says so.
-    registry: api ? () => loadRegistry(api) : async () => exampleRegistry().items,
-    skills: () => listSkills(),
-    readSkill: (dir) => readSkill(dir),
-    spaces: () => listSpaces(),
-    readSpaceHtml: (slug) => fetchSpaceHtml(slug, Date.now()),
-  });
-  return { loaded, example: !api };
-}
-
 const strongest = (u: Usage): Evidence | undefined => u.evidence[0];
 
 /**
  * Who probably uses this term: found in registry cards, skills and spaces. Everything found is only "suspected", with the place it
  * was found; a person confirms or dismisses it, and only that decision is saved (governance.json). Reads only.
  */
-export default function OntologyUsers({ onto, term, ontologies, gov, onGovernance, actor }: {
-  onto: Ontology; term: Term; ontologies: readonly Ontology[]; gov: Governance; onGovernance: (g: Governance) => void; actor: string;
+export default function OntologyUsers({ gov, onGovernance, actor, usage }: {
+  gov: Governance; onGovernance: (g: Governance) => void; actor: string; usage: TermUsage;
 }) {
-  const [phase, setPhase] = useState<'idle' | 'loading' | 'done'>(cache && Date.now() - cache.at < KEEP_MS ? 'done' : 'idle');
-  const [data, setData] = useState<{ loaded: Loaded; example: boolean } | null>(cache && Date.now() - cache.at < KEEP_MS ? cache : null);
-  const [error, setError] = useState('');
+  const { phase, data, error, run, decided, summary, dismissed } = usage;
   const [showWeak, setShowWeak] = useState(false);
-
-  const run = async () => {
-    setPhase('loading'); setError('');
-    try {
-      const read = await readSources();
-      cache = { at: Date.now(), ...read };
-      setData(read); setPhase('done');
-    } catch (e) { setError(String((e as { message?: unknown })?.message ?? e).slice(0, 200)); setPhase('idle'); }
-  };
-
-  const terms = useMemo(() => searchTerms(ontologies, gov), [ontologies, gov]);
-  const mine = useMemo(() => (data ? findUsages(terms, data.loaded.sources).usages.filter((u) => u.slug === onto.slug && u.term === term.id) : []), [data, terms, onto.slug, term.id]);
-  const decisions = decisionsOf(gov);
-  const declared = useMemo(() => declaredUsages(gov).filter((u) => u.slug === onto.slug && u.term === term.id), [gov, onto.slug, term.id]);
-  const decided = useMemo(() => applyDecisions(mine, declared, decisions), [mine, declared, decisions]);
-  const summary = useMemo(() => summarize(decided), [decided]);
-  const dismissed = mine.filter((u) => decisions[u.key]?.decision === 'dismissed');
   const found = decided.usages.filter((u) => u.state !== 'declared' || u.evidence.length);
   const strong = found.filter((u) => u.state !== 'suspected' || u.strength !== 'weak');
   const weak = found.filter((u) => u.state === 'suspected' && u.strength === 'weak');
 
-  const decide = (u: Usage, d: 'confirmed' | 'dismissed') => onGovernance(setUsageDecision(gov, u.key, d, actor, Date.now()));
+  const decide = (u: Usage, d: 'confirmed' | 'dismissed') => onGovernance(setUsageDecision(gov, u.key, d, actor, Date.now(), u.name));
   const row = (u: Usage) => {
     const ev = strongest(u);
     return (

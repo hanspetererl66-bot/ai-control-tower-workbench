@@ -75,3 +75,54 @@ test('many ontologies get a wider ring than two, so their areas do not sit on to
   for (let a = 0; a < hubs.length; a++) for (let b = a + 1; b < hubs.length; b++) nearest = Math.min(nearest, Math.hypot(p.x[hubs[a].i] - p.x[hubs[b].i], p.y[hubs[a].i] - p.y[hubs[b].i]));
   assert.ok(nearest > 200, `the closest two ontology hubs are ${Math.round(nearest)} apart`);
 });
+
+// ---------------------------------------------------------------- confirmed and suspected users (act A, step 3)
+
+import { setUsageDecision } from '../src/ontology-usage.ts';
+import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL } from '../src/graph-map.ts';
+
+test('map: confirmed users join as solid nodes with their name, dismissed ones do not, unknown terms and kinds are ignored', () => {
+  const slug = metric.o.slug, term = metric.t.id;
+  let g = emptyGovernance();
+  g = setUsageDecision(g, `${slug}|${term}|space:rr`, 'confirmed', 'x', 0, 'Revenue Recognition');
+  g = setUsageDecision(g, `${slug}|${term}|workflow:w1`, 'confirmed', 'x', 0); // no name kept: the id after the kind is shown
+  g = setUsageDecision(g, `${slug}|${term}|agent:gone`, 'dismissed', 'x', 0, 'Dismissed agent');
+  g = setUsageDecision(g, `${slug}|NoSuchTerm|space:x`, 'confirmed', 'x', 0, 'Orphan');
+  g = setUsageDecision(g, `${slug}|${term}|alien:x`, 'confirmed', 'x', 0, 'Alien');
+  const map = buildMap(onts, g);
+  const labels = map.nodes.filter((n) => CONSUMER_MAP_KINDS.includes(n.kind)).map((n) => `${n.kind}:${n.label}`).sort();
+  assert.deepEqual(labels, ['space:Revenue Recognition', 'workflow:w1']);
+  assert.ok(map.nodes.filter((n) => CONSUMER_MAP_KINDS.includes(n.kind)).every((n) => !n.uncertain));
+  assert.ok(map.edges.filter((e) => e.prop === 'uses').every((e) => !e.uncertain && !e.weak));
+  assert.equal(MAP_KIND_LABEL.space, 'Space');
+  assert.equal(new Set(map.nodes.map((n) => n.id)).size, map.nodes.length);
+});
+
+test('map: suspected users are dashed (node and link), never duplicate a declared user, and ignore unknown terms and kinds', () => {
+  const slug = metric.o.slug, term = metric.t.id;
+  const suspected = [
+    { slug, term, kind: 'space', name: 'Finance Pre-Close' },
+    { slug, term, kind: 'agent', name: 'Margin Analyst' }, // already declared by a person in `gov`
+    { slug, term: 'NoSuchTerm', kind: 'space', name: 'Orphan' },
+    { slug, term, kind: 'alien', name: 'Alien' },
+  ];
+  const map = buildMap(onts, gov, suspected);
+  const dashed = map.nodes.filter((n) => n.uncertain);
+  assert.deepEqual(dashed.map((n) => n.label), ['Finance Pre-Close']);
+  const link = map.edges.find((e) => e.to === `${slug}:${term}` && e.from === dashed[0].id);
+  assert.equal(link.uncertain, true);
+  assert.equal(map.nodes.find((n) => n.label === 'Margin Analyst').uncertain, undefined, 'the declared user stays solid');
+  assert.equal(buildMap(onts, gov).nodes.length + 1, map.nodes.length, 'only the one new node was added');
+});
+
+test('map: the focus on a term reaches its confirmed and its suspected users one hop beyond, suspected ones over a dashed link', () => {
+  const slug = metric.o.slug, term = metric.t.id;
+  const g = setUsageDecision(emptyGovernance(), `${slug}|${term}|space:rr`, 'confirmed', 'x', 0, 'Revenue Recognition');
+  const map = buildMap(onts, g, [{ slug, term, kind: 'workflow', name: 'Accrual flow' }]);
+  const focus = focusOf(map, `${slug}:${term}`, 3);
+  const sure = map.nodes.find((n) => n.label === 'Revenue Recognition'), maybe = map.nodes.find((n) => n.label === 'Accrual flow');
+  assert.equal(focus.level.get(sure.id), 1);
+  assert.equal(focus.level.get(maybe.id), 1);
+  assert.ok([...focus.edges].some((e) => e.from === maybe.id && e.uncertain));
+  assert.ok([...focus.edges].every((e) => e.from !== sure.id || !e.uncertain));
+});
