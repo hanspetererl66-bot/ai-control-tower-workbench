@@ -42,15 +42,19 @@ test('the switch and the seen tabs are remembered, and broken storage means tips
   assert.deepEqual(readGuidePref(null), { on: true, seen: [] });
 });
 
-test('the guide is wired in: switch in the header, one tour per tab, off for good, no network, tokens only', () => {
-  const view = read('src/ui/OntologyManagerView.tsx'), guide = read('src/ui/OntologyGuide.tsx'), css = read('src/theme.css');
-  assert.match(view, /role="switch"/);
+test('the guide is wired in: switch lives in Settings, one tour per tab, off for good, no network, tokens only', () => {
+  const view = read('src/ui/OntologyManagerView.tsx'), guide = read('src/ui/OntologyGuide.tsx'), css = read('src/theme.css'), panels = read('src/ui/PreferencesPanels.tsx'), app = read('src/App.tsx');
+  assert.doesNotMatch(view, /role="switch"/, 'the on/off switch moved to Settings');
+  assert.match(panels, /role="switch"[^>]*checked=\{prefs\.tips\.enabled\}/);
+  assert.match(app, /tipsOn=\{prefs\.tips\.enabled\}/);
   assert.match(view, /<OntologyGuide /);
   assert.match(view, /!guide\.seen\.includes\(tab\)/);
-  assert.match(view, /Tips \{guide\.on \? 'on' : 'off'\}/);
+  assert.match(view, /Tips are off/);
   assert.doesNotMatch(guide, /fetch\(|localStorage|XMLHttpRequest/);
   const block = css.slice(css.indexOf('/* Ontology Manager: Tips switch'));
   assert.doesNotMatch(block, /#[0-9a-fA-F]{3,6}\b/, 'colours only from tokens');
+  assert.match(block, /var\(--tip-bg, var\(--panel\)\)/);
+  assert.match(block, /var\(--tip-text, var\(--ink\)\)/);
   assert.match(block, /prefers-reduced-motion: reduce\) \{ \.om-guide \{ animation: none; \} \}/);
 });
 

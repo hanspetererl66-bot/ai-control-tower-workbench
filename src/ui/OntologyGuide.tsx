@@ -11,6 +11,7 @@ export default function OntologyGuide({ tab, root, onDone, onOff }: { tab: Guide
   const [i, setI] = useState(0);
   const [place, setPlace] = useState<Placement | null>(null);
   const [present, setPresent] = useState<number[]>([]);
+  const [mark, setMark] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const bubble = useRef<HTMLDivElement>(null);
 
   const find = useCallback((target: string) => root.current?.querySelector<HTMLElement>(`[data-guide="${target}"]`) ?? null, [root]);
@@ -25,6 +26,7 @@ export default function OntologyGuide({ tab, root, onDone, onOff }: { tab: Guide
     const el = find(step.target), b = bubble.current;
     if (!el || !b) return;
     const r = el.getBoundingClientRect();
+    setMark({ left: r.left, top: r.top, width: r.width, height: r.height });
     setPlace(placeBubble({ left: r.left, top: r.top, width: r.width, height: r.height }, { width: b.offsetWidth, height: b.offsetHeight }, { width: window.innerWidth, height: window.innerHeight }, step.side));
   }, [step, find]);
 
@@ -47,17 +49,20 @@ export default function OntologyGuide({ tab, root, onDone, onOff }: { tab: Guide
   if (!step) return null;
   const pos = Math.min(i, present.length - 1), last = pos === present.length - 1;
   return (
+    <>
+    {mark && <div className="om-guide-mark" aria-hidden="true" style={{ left: mark.left, top: mark.top, width: mark.width, height: mark.height }} />}
     <div ref={bubble} className={`om-guide om-guide-${place?.side ?? 'below'}`} role="note" aria-label={`Tip: ${step.title}`}
       style={{ left: place?.left ?? -9999, top: place?.top ?? -9999, ['--arrow' as string]: `${place?.arrow ?? 24}px` }}>
       <p className="om-guide-step">Tip {pos + 1} of {present.length}</p>
       <h3>{step.title}</h3>
       <p>{step.text}</p>
       <div className="om-guide-actions">
-        <button className="om-filter" onClick={onOff}>Turn off tips</button>
+        <button className="om-filter" onClick={onOff} title="Switch the tips off. You can switch them on again in Settings, Skin.">Turn off tips</button>
         <span className="om-guide-gap" />
         {pos > 0 && <button className="om-filter" onClick={() => setI(pos - 1)}>Back</button>}
         {last ? <button className="om-filter om-filter-on" onClick={onDone}>Done</button> : <button className="om-filter om-filter-on" onClick={() => setI(pos + 1)}>Next</button>}
       </div>
     </div>
+    </>
   );
 }

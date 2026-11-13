@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL, buildMap, createSimulation, describeFocus, focusOf, layoutMap, linkWord, searchMap, startingPoints, visibleMap, type MapEdge, type MapKind, type MapNode } from '../graph-map';
+import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL, buildMap, LANES, createSimulation, describeFocus, focusOf, layoutLanes, layoutMap, linkWord, searchMap, startingPoints, visibleMap, type LanePanel, type MapEdge, type MapKind, type MapNode } from '../graph-map';
 import { cachedSuspected } from './useTermUsage';
 import { consumersOf, impactOf, ownerLabel, statusOf, type Governance, type Ontology, type TermStatus } from '../ontology-manager';
 
@@ -82,7 +82,8 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   const [sel, setSel] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
   const [tour, setTour] = useState<number | null>(null);
-  const [key, setKey] = useState(true);
+  /** Sorted: one panel per ontology with lanes from left to right. Free: the living force layout. */
+  const [mode, setMode] = useState<'sorted' | 'free'>('sorted');
   const starts = useMemo(() => startingPoints(map, 4, depth), [map, depth]);
   const shown = useMemo(() => visibleMap(map, kinds, slug), [map, kinds, slug]);
   const shownIds = useMemo(() => new Set(shown.nodes.map((n) => n.id)), [shown]);
@@ -101,8 +102,9 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   /** True once the person has moved or zoomed the view themselves; until then the map keeps itself centred. */
   const touched = useRef(false);
   const raf = useRef(0);
-  const live = useRef({ shown, focus, sel, hover, status, index });
-  live.current = { shown, focus, sel, hover, status, index };
+  const panels = useRef<LanePanel[]>([]);
+  const live = useRef({ shown, focus, sel, hover, status, index, mode });
+  live.current = { shown, focus, sel, hover, status, index, mode };
   const quiet = useMemo(reduced, []);
 
   const fitTarget = (): Cam | null => {
@@ -112,19 +114,28 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
     // the 3 % at each end are left out, so one stray node does not make everything else small
     const xs = list.map((i) => sm.x[i]).sort((p, q) => p - q), ys = list.map((i) => sm.y[i]).sort((p, q) => p - q);
     const cut = list.length > 20 ? Math.floor(list.length * 0.03) : 0;
-    const x0 = xs[cut], x1 = xs[xs.length - 1 - cut], y0 = ys[cut], y1 = ys[ys.length - 1 - cut];
-    const { w, h } = size.current, pad = 70;
-    const k = Math.min((w - pad * 2) / Math.max(60, x1 - x0), (h - pad * 2) / Math.max(60, y1 - y0), 2.4);
-    return { k, x: w / 2 - ((x0 + x1) / 2) * k, y: h / 2 - ((y0 + y1) / 2) * k };
+    let x0 = xs[cut], x1 = xs[xs.length - 1 - cut], y0 = ys[cut], y1 = ys[ys.length - 1 - cut];
+    if (mode === 'sorted' && panels.current.length) {
+      // fit the boxes themselves (of the ontologies shown), so none is cut off
+      const own = panels.current.filter((pn) => shown.nodes.some((n) => n.slug === pn.slug));
+      if (own.length) { x0 = Math.min(...own.map((pn) => pn.x)); x1 = Math.max(...own.map((pn) => pn.x + pn.w)); y0 = Math.min(...own.map((pn) => pn.y)); y1 = Math.max(...own.map((pn) => pn.y + pn.h)); }
+    }
+    const { w, h } = size.current, pad = 70, top = 78, bottom = 44; // room for the buttons above and the hint below
+    const k = Math.min((w - pad * 2) / Math.max(60, x1 - x0), (h - top - bottom) / Math.max(60, y1 - y0), 2.4);
+    return { k, x: w / 2 - ((x0 + x1) / 2) * k, y: top + (h - top - bottom) / 2 - ((y0 + y1) / 2) * k };
   };
+  const fitRef = useRef<() => void>(() => {});
   const fit = () => { touched.current = false; const t = fitTarget(); if (!t) return; if (quiet) cam.current = t; else camTo.current = t; kick(); };
+
+  fitRef.current = fit;
 
   // ---------- one drawing routine, driven by the animation loop below
   const draw = (now: number) => {
     const c = cv.current, sm = sim.current;
     const ctx = c?.getContext('2d');
     if (!c || !ctx || !sm) return;
-    const { shown: sh, focus: fo, sel: sl, hover: hv, status: st, index: ix } = live.current;
+    const { shown: sh, focus: fo, sel: sl, hover: hv, status: st, index: ix, mode: md } = live.current;
+    const sorted = md === 'sorted';
     const cs = getComputedStyle(c);
     const g = (n: string, f: string) => cs.getPropertyValue(n).trim() || f;
     const col = { bg: g('--panel', '#fff'), ink: g('--ink', '#111'), muted: g('--muted', '#777'), line: g('--line', '#ddd'), accent: g('--accent', '#6d28d9'), ok: g('--om-ok', '#1b7f3b'), warn: g('--om-warn', '#9a5a00'), bad: g('--om-bad', '#b3261e') };
@@ -144,7 +155,30 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
 
     // ontologies as soft coloured areas
     const slugs = [...new Set(sh.nodes.map((n) => n.slug))];
-    slugs.forEach((sg, si) => {
+    if (sorted) {
+      const present = new Set(sh.nodes.map((n) => n.slug));
+      panels.current.forEach((pn, si) => {
+        if (!present.has(pn.slug)) return;
+        const tint = tints[si % tints.length], touched = !fo || sh.nodes.some((n) => n.slug === pn.slug && fo.level.has(n.id));
+        ctx.globalAlpha = (touched ? 1 : 0.35) * intro;
+        const px = pn.x * k + cx, py = pn.y * k + cy, pw = pn.w * k, ph = pn.h * k;
+        if (px > w || py > h || px + pw < 0 || py + ph < 0) return;
+        ctx.fillStyle = rgba(tint, 0.06); ctx.strokeStyle = rgba(tint, 0.38); ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 16 * Math.min(1.4, k)); ctx.fill(); ctx.stroke();
+        ctx.textAlign = 'left';
+        ctx.font = `700 ${Math.max(10, Math.round(14 * Math.min(1.6, k)))}px ${cs.fontFamily}`; ctx.fillStyle = tint;
+        ctx.fillText(pn.title.replace(/\s*\(.*$/, ''), px + 28 * k + 30 * Math.min(1.5, Math.max(0.6, k)), py + 29 * k + 4);
+        ctx.font = `600 ${Math.max(8, Math.round(10.5 * Math.min(1.5, k)))}px ${cs.fontFamily}`;
+        for (const ln of pn.lanes) {
+          const lx = ln.x * k + cx;
+          let head = ln.label.toUpperCase();
+          while (head.length > 3 && ctx.measureText(head).width > ln.w * k - 16 * k) head = `${head.slice(0, -2)}…`;
+          ctx.fillStyle = rgba(col.muted, 0.95); ctx.fillText(head, lx + 4 * k, py + 56 * k + 3);
+          ctx.strokeStyle = rgba(tint, 0.25); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(lx + 4 * k, py + 60 * k); ctx.lineTo(lx + ln.w * k - 10 * k, py + 60 * k); ctx.stroke();
+        }
+      });
+      ctx.globalAlpha = 1;
+    } else slugs.forEach((sg, si) => {
       const mem = sh.nodes.filter((n) => n.slug === sg && !CONSUMER_MAP_KINDS.includes(n.kind));
       if (mem.length < 3) return;
       let mx = 0, my = 0;
@@ -179,10 +213,11 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
     const lights: Array<{ q: ReturnType<typeof curve>; hot: boolean }> = [];
     const linkWords: Array<{ q: ReturnType<typeof curve>; text: string }> = [];
     for (const e of sh.edges) {
+      if (sorted && e.weak) continue; // the panel already shows what belongs to which ontology
       const q = curve(e), inF = focusKeys.has(`${e.from}>${e.to}`);
       const touchesHover = hv !== null && (e.from === hv || e.to === hv);
       const va = Math.min(alphaOf(e.from), alphaOf(e.to));
-      const base = fo ? (inF ? 0.95 : 0.05) : e.weak ? 0.1 : touchesHover ? 0.8 : 0.4;
+      const base = fo ? (inF ? 0.95 : 0.05) : e.weak ? 0.1 : touchesHover ? 0.8 : sorted ? 0.24 : 0.4;
       ctx.globalAlpha = base * Math.max(0.25, va) * intro;
       ctx.strokeStyle = inF ? col.bad : touchesHover ? col.accent : col.muted; ctx.lineWidth = inF ? 2.2 : touchesHover ? 1.6 : 1;
       if (e.weak || e.uncertain) ctx.setLineDash([3, 5]);
@@ -244,18 +279,20 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       }
       ctx.globalAlpha = 1;
       const strong = n.id === sl || n.id === hv || (lv !== undefined && lv > 0);
-      if (strong || k > 1.1 || n.kind === 'ontology' || n.degree >= 3) labels.push({ n, x, y: y + r + 12, strong, a: Math.max(0.15, va) });
+      if (sorted ? (n.kind !== 'ontology' && (strong || k > 0.42)) : (strong || k > 1.1 || n.kind === 'ontology' || n.degree >= 3)) labels.push({ n, x: sorted ? x + r + 7 : x, y: sorted ? y + 4 : y + r + 12, strong, a: Math.max(0.15, va) });
     }
-    ctx.font = `11px ${cs.fontFamily}`; ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+    ctx.font = `${sorted ? Math.max(9, Math.round(11.5 * Math.min(1.4, k))) : 11}px ${cs.fontFamily}`; ctx.textAlign = sorted ? 'left' : 'center'; ctx.lineJoin = 'round';
     const placed: number[][] = [];
     labels.sort((a, b) => Number(b.strong) - Number(a.strong) || b.n.degree - a.n.degree);
     for (const l of labels) {
-      const tw = ctx.measureText(l.n.label).width, box = [l.x - tw / 2, l.y - 9, l.x + tw / 2, l.y + 3];
-      if (l.n.id !== sl && placed.some((p) => box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1])) continue;
+      let text = l.n.label;
+      if (sorted) { const maxW = Math.max(28, 176 * k - 12 * k - 26); while (text.length > 3 && ctx.measureText(text).width > maxW) text = `${text.slice(0, -2)}…`; }
+      const tw = ctx.measureText(text).width, box = sorted ? [l.x, l.y - 9, l.x + tw, l.y + 3] : [l.x - tw / 2, l.y - 9, l.x + tw / 2, l.y + 3];
+      if (!sorted && l.n.id !== sl && placed.some((p) => box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1])) continue;
       placed.push(box);
       ctx.globalAlpha = l.a * intro;
-      ctx.lineWidth = 3.5; ctx.strokeStyle = col.bg; ctx.strokeText(l.n.label, l.x, l.y);
-      ctx.fillStyle = l.strong ? col.ink : col.muted; ctx.fillText(l.n.label, l.x, l.y);
+      ctx.lineWidth = 3.5; ctx.strokeStyle = col.bg; ctx.strokeText(text, l.x, l.y);
+      ctx.fillStyle = l.strong ? col.ink : col.muted; ctx.fillText(text, l.x, l.y);
     }
     ctx.globalAlpha = 1;
     ctx.font = `600 10px ${cs.fontFamily}`; ctx.textAlign = 'center';
@@ -319,15 +356,18 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   useEffect(() => {
     const sm = createSimulation(map);
     sim.current = sm; vis.current = new Map(); born.current = performance.now();
-    if (quiet) {
+    if (mode === 'sorted') {
+      const lay = layoutLanes(map);
+      sm.x.set(lay.x); sm.y.set(lay.y); panels.current = lay.panels; heat.current = 0;
+    } else if (quiet) {
       const done = layoutMap(map);
       sm.x.set(done.x); sm.y.set(done.y); heat.current = 0;
     } else heat.current = HEAT_START;
     const f = fitTarget(); if (f) cam.current = f;
     kick();
     return () => { if (raf.current) cancelAnimationFrame(raf.current); raf.current = 0; };
-  }, [map]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { fit(); }, [shown]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [map, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fit(); }, [shown, mode]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { kick(); }, [focus, sel, hover, status]); // eslint-disable-line react-hooks/exhaustive-deps
   // choosing a node brings it and what hangs on it into view; clearing the choice shows the whole map again
   useEffect(() => {
@@ -354,7 +394,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       const dpr = Math.min(2, window.devicePixelRatio || 1), w = el.clientWidth || 800, h = el.clientHeight || 520;
       size.current = { w, h };
       c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-      if (!touched.current && !live.current.focus) { const f = fitTarget(); if (f) cam.current = f; }
+      if (!touched.current && !live.current.focus) fitRef.current(); // the first fit ran before the size was known
       kick();
     };
     measure();
@@ -403,7 +443,8 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
     if (d?.kind === 'node' && sm) {
       d.moved = true; sm.pinned[d.i] = 1;
       const w = toWorld(p); sm.x[d.i] = w.x; sm.y[d.i] = w.y;
-      heat.current = Math.max(heat.current, 0.3); camTo.current = null; kick();
+      if (live.current.mode === 'free') heat.current = Math.max(heat.current, 0.3);
+      camTo.current = null; kick();
       return;
     }
     if (d?.kind === 'pan') {
@@ -481,7 +522,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   const tourText = (step: TourStep): { title: string; text: string } => {
     if (step === 'overview') return {
       title: 'What you are looking at',
-      text: `${orgCount} ${orgCount === 1 ? 'vocabulary' : 'vocabularies'} (the coloured areas), ${termCount} terms and ${userCount} agents, skills, reports or spaces that rely on them. A line with an arrow means "is built on": if the term at the arrow's tip changes, the term at the other end is affected. The key in the corner explains each shape.`,
+      text: `${orgCount} ${orgCount === 1 ? 'vocabulary' : 'vocabularies'} (${mode === 'sorted' ? `one box each; inside, the columns run left to right: ${LANES.map((l) => l.label).join(' → ')}` : 'the coloured areas'}), ${termCount} terms and ${userCount} agents, skills, reports or spaces that rely on them. A line with an arrow means "is built on": if the term at the arrow's tip changes, the term at the other end is affected. The key in the corner explains each shape.`,
     };
     if (step === 'select') return {
       title: selNode ? `You picked "${selNode.label}"` : 'Click a dot',
@@ -549,25 +590,14 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
             style={{ cursor: hover ? 'pointer' : drag.current ? 'grabbing' : 'grab' }}
             aria-label="Interactive map of the ontology catalog. Use the search box or the list beside it to pick a node. Plus and minus zoom, arrow keys move, 0 fits, Escape clears. You can drag a node to move it." />
           <div className="om-map-zoom">
+            <span className="om-map-mode" role="group" aria-label="Arrangement">
+              <button className={`om-filter ${mode === 'sorted' ? 'om-filter-on' : ''}`} aria-pressed={mode === 'sorted'} onClick={() => setMode('sorted')} title="One panel per ontology, left to right: data, terms, metrics, users">Sorted</button>
+              <button className={`om-filter ${mode === 'free' ? 'om-filter-on' : ''}`} aria-pressed={mode === 'free'} onClick={() => setMode('free')} title="The map arranges itself by how things are linked">Free</button>
+            </span>
             <button className="om-filter" onClick={() => zoom(1.3)} aria-label="Zoom in">+</button>
             <button className="om-filter" onClick={() => zoom(0.77)} aria-label="Zoom out">−</button>
             <button className="om-filter" onClick={fit} aria-label="Fit the map">Fit</button>
-            {!quiet && <button className="om-filter" onClick={rerun} aria-label="Let the map settle again">Replay</button>}
-          </div>
-          <div className="om-map-key" aria-label="Key to the map">
-            <button className="om-map-key-toggle" onClick={() => setKey(!key)} aria-expanded={key}>Key {key ? '−' : '+'}</button>
-            {key && (
-              <ul>
-                <li><Glyph kind="ontology" /> Ontology <span className="om-dim">a vocabulary</span></li>
-                <li><Glyph kind="class" /> Class <span className="om-dim">a thing, e.g. Customer</span></li>
-                <li><Glyph kind="metric" /> Metric <span className="om-dim">a certified number</span></li>
-                <li><Glyph kind="resource" /> Resource <span className="om-dim">dataset, check, code</span></li>
-                <li><Glyph kind="agent" /> User <span className="om-dim">agent, skill, report, space</span></li>
-                <li><i className="om-key-red" /> Red <span className="om-dim">affected by a change</span></li>
-                <li><i className="om-key-dash" /> Dashed <span className="om-dim">draft, deprecated or only suspected</span></li>
-                <li><i className="om-key-arrow" /> Arrow <span className="om-dim">"is built on"</span></li>
-              </ul>
-            )}
+            {!quiet && mode === 'free' && <button className="om-filter" onClick={rerun} aria-label="Let the map settle again">Replay</button>}
           </div>
           <p className="om-map-hint">{hover
             ? `${map.nodes.find((n) => n.id === hover)?.label ?? ''} · ${MAP_KIND_LABEL[map.nodes.find((n) => n.id === hover)?.kind ?? 'class']}${hover === sel ? ' (selected)' : ' · click to see what depends on it'}`
@@ -591,6 +621,20 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
                   ))}
                 </ul>
               )}
+              <details className="om-map-keybox" open={!selNode}>
+                <summary>Key to the map</summary>
+              <ul>
+                {mode === 'sorted' && <li className="om-key-lanes"><b>Boxes</b> are ontologies. <b>Columns</b>, left to right: {LANES.map((l) => l.label).join(' → ')}</li>}
+                <li><Glyph kind="ontology" /> Ontology <span className="om-dim">a vocabulary</span></li>
+                <li><Glyph kind="class" /> Class <span className="om-dim">a thing, e.g. Customer</span></li>
+                <li><Glyph kind="metric" /> Metric <span className="om-dim">a certified number</span></li>
+                <li><Glyph kind="resource" /> Resource <span className="om-dim">dataset, check, code</span></li>
+                <li><Glyph kind="agent" /> User <span className="om-dim">agent, skill, report, space</span></li>
+                <li><i className="om-key-red" /> Red <span className="om-dim">affected by a change</span></li>
+                <li><i className="om-key-dash" /> Dashed <span className="om-dim">draft, deprecated or only suspected</span></li>
+                <li><i className="om-key-arrow" /> Arrow <span className="om-dim">"is built on"</span></li>
+              </ul>
+              </details>
               <p className="om-note-small">{map.nodes.length} nodes, {map.edges.filter((e) => !e.weak).length} links{CONSUMER_MAP_KINDS.some((k) => counts[k]) ? '' : '. No user is declared or confirmed yet: add them in the tab Use or find them in the catalog.'}{suspected.length ? ` ${suspected.length} suspected (dashed).` : ''}</p>
             </>
           )}

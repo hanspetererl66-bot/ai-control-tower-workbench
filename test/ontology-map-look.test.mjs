@@ -22,9 +22,10 @@ test('the map is a living graph: a simulation that settles on screen, drag a nod
 test('the loop stops when nothing moves, and reduced motion shows the finished layout without any animation', () => {
   assert.match(map, /if \(busy\) kick\(\);/, 'the loop schedules itself only while something moves');
   assert.match(map, /prefers-reduced-motion: reduce/);
-  assert.match(map, /if \(quiet\) \{\s*const done = layoutMap\(map\)/, 'finished layout at once');
+  assert.match(map, /else if \(quiet\) \{\s*const done = layoutMap\(map\)/, 'finished layout at once (free layout)');
+  assert.match(map, /mode === 'sorted'\) \{\s*const lay = layoutLanes\(map\)/, 'the sorted layout is fixed, nothing animates');
   assert.match(map, /if \(!quiet && !e\.weak/, 'no travelling lights without motion');
-  assert.match(map, /\{!quiet && <button[^>]*>Replay<\/button>\}/);
+  assert.match(map, /\{!quiet && mode === 'free' && <button[^>]*>Replay<\/button>\}/);
 });
 
 test('the map takes its colours from tokens and touches no network or storage', () => {
