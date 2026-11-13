@@ -43,15 +43,18 @@ test('autopilot: a big renewal stops at the deal desk with the reasons, and noth
   assert.equal(L.apSummary({ a: done }).touchless, 0);
 });
 
-test('autopilot: reject and take-over stop the case, a decline opens the win-back, a change request needs a person again', () => {
+test('autopilot: reject and take-over stop the case, a decline ends the renewal and says a win-back case is opened, a change request needs a person again', () => {
   const ctx = ctxOf(big), st = L.apStart(ctx);
   assert.equal(L.apAct(st, 'reject', 'Anna', ctx).status, 'stopped');
   assert.equal(L.apAct(st, 'takeover', 'Anna', ctx).status, 'stopped');
   const sent = L.apAct(L.apAct(st, 'approve', 'Anna', ctx), 'send', 'Anna', ctx);
-  assert.equal(L.apAct(sent, 'declined', 'Customer', ctx).status, 'lost');
+  const lost = L.apAct(sent, 'declined', 'Customer', ctx);
+  assert.equal(lost.status, 'lost');
+  assert.match(lost.log.at(-1).text, /declined\. A win-back case is opened/, 'the log says what really happens: a win-back case follows');
   const again = L.apAct(sent, 'changes', 'Customer', ctx);
   assert.equal(again.status, 'waiting-person', 'a counter offer is checked by a person');
   assert.equal(again.gate, 'approve');
+  assert.match(again.log.find((e) => e.actor === 'Customer' && /asks for changes/.test(e.text)).text, /prepares the offer again.*a person checks it at the deal desk/, 'it does not claim a new offer');
   const sctx = ctxOf(small), sm = L.apAct(L.apStart(sctx), 'changes', 'Customer', sctx);
   assert.equal(sm.status, 'waiting-person', 'even a small case goes to a person after a change request');
 });
