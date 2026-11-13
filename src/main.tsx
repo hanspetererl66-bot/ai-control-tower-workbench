@@ -134,6 +134,7 @@ declare global {
       skillPackInfo?: (dir: string) => Promise<{ ok: boolean; detail?: string; files?: { path: string; bytes: number }[]; text?: string }>;
       duplicateSkill?: (dir: string) => Promise<{ ok: boolean; slug?: string; detail?: string }>;
       exportSkill?: (dir: string) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; files?: number }>;
+      designerPickDataFile?: () => Promise<{ ok: boolean; canceled?: boolean; detail?: string; name?: string; text?: string }>;
       importSkillOpen?: () => Promise<null | { ok: boolean; detail?: string; id?: string; slug?: string; name?: string; description?: string; files?: { path: string; bytes: number }[]; text?: string; exists?: boolean }>;
       importSkillInstall?: (id: string, overwrite: boolean) => Promise<{ ok: boolean; detail?: string; slug?: string; replaced?: boolean; db?: { ok: boolean; detail?: string; version?: number | null } }>;
       skillDbSync?: () => Promise<{ ok: boolean; detail?: string; result?: { installed: string[]; updated: string[]; removed: string[]; skipped: string[] } }>;
