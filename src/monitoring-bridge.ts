@@ -75,7 +75,7 @@ export async function handleMonitoringMessage(data: unknown, host: MonitoringHos
       const f = await host.findings(hours);
       if (!f.ok) return fail(f.error);
       const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100000, Math.round(v))) : 0);
-      return { type: 'mon:findings', requestId, source: 'live', adapter: str(f.data.adapter, 30), fetchedAt: str(f.data.fetchedAt, 16), sinceHours: hours, alerts: num(f.data.alerts), skipped: num(f.data.skipped), withheld: num(f.data.withheld), findings: pickFindings(f.data.findings) };
+      return { type: 'mon:findings', requestId, source: 'live', adapter: str(f.data.adapter, 30), fetchedAt: str(f.data.fetchedAt, 16), sinceHours: hours, alerts: num(f.data.alerts), skipped: num(f.data.skipped), withheld: num(f.data.withheld), rulesDropped: num(f.data.rulesDropped), findings: pickFindings(f.data.findings) };
     }
     const res = await host.alerts(hours);
     if (!res.ok) return fail(res.error);

@@ -22,7 +22,7 @@ function load(hosted = true) {
 const F = (o = {}) => ({ id: 'L-1', customer: 'mi', customerName: 'Muster Industrie AG', host: 'gw-01', env: 'PRD', kind: 'cert-expiry', template: 'renew-certificate', deadlineDays: 14, signal: 'Certificate for edge expires in 5 days', evidence: 'Monitoring alert 1 at 2026-11-13 08:00 UTC on gw-01: Certificate for edge expires in 5 days', live: true, ...o });
 const FINDINGS = [F(), F({ id: 'L-2', customer: '', customerName: 'Kunde X GmbH', host: 'x-app01', kind: 'patch-age', template: 'patch-vm', deadlineDays: 30 }), F({ id: 'L-3', customer: 'hr', customerName: 'Hanseatic Retail GmbH', host: 'hr-qas01', env: 'QAS', kind: 'patch-age', template: 'patch-vm', deadlineDays: 25 }),
   F({ id: 'L-4', host: 'gw-02', deadlineDays: 1, signal: 'Certificate expires tomorrow' })];
-const REPLY = (findings = FINDINGS, o = {}) => ({ type: 'mon:findings', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-13T08:30', sinceHours: 24, alerts: 7, skipped: 3, withheld: 1, findings, ...o });
+const REPLY = (findings = FINDINGS, o = {}) => ({ type: 'mon:findings', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-13T08:30', sinceHours: 24, alerts: 7, skipped: 3, withheld: 1, rulesDropped: 0, findings, ...o });
 const lastReq = (p) => p.posted.filter((m) => m.type === 'mon:findings-request').at(-1);
 const enter = async (p, reply = REPLY()) => { p.doc.querySelector('#shadow').click(); p.answer({ ...reply, requestId: lastReq(p).requestId }); await p.tick(); };
 
@@ -238,5 +238,25 @@ test('decisions and verdicts survive a trip to another Space; leaving shadow mod
     try { q.send(saved); assert.deepEqual(plain(q.w.__io.state.decisionIds), IDS); assert.match(q.doc.querySelector('#view').textContent, /You agree/); } finally { q.close(); }
     p.doc.querySelector('#shadow').click();
     assert.deepEqual(plain([p.w.__io.state.decisionIds, p.w.__io.state.verdicts, p.w.__io.state.proto]), [{}, {}, null]);
+  } finally { p.close(); }
+});
+
+test('ignored rules are shown: no banner at 0, a banner with the number and the reasons otherwise, and it survives a trip', async () => {
+  const p = load();
+  try {
+    await enter(p);
+    assert.ok(![...p.doc.querySelectorAll('.banner')].some((b) => /rules? ignored/.test(b.textContent)), 'nothing to say at 0');
+    p.doc.querySelector('#shadow').click();
+    await enter(p, REPLY(FINDINGS, { rulesDropped: 2 }));
+    const text = [...p.doc.querySelectorAll('.banner')].map((b) => b.textContent).join(' ');
+    assert.match(text, /2 rules ignored\./);
+    assert.match(text, /longer than 100 characters or not a valid pattern[\s\S]*kind is unknown[\s\S]*more than 30 rules[\s\S]*Findings may be missing/);
+    const saved = p.posted.filter((m) => m.type === 'wb:state').at(-1).state;
+    assert.equal(saved.shadow.rulesDropped, 2);
+    const q = load();
+    try { q.send(saved); assert.match(q.doc.body.textContent, /2 rules ignored\./); } finally { q.close(); }
+    p.doc.querySelector('#shadow').click();
+    await enter(p, REPLY(FINDINGS, { rulesDropped: 1 }));
+    assert.match([...p.doc.querySelectorAll('.banner')].map((b) => b.textContent).join(' '), /1 rule ignored\./, 'singular');
   } finally { p.close(); }
 });
