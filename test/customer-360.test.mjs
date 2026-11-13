@@ -146,3 +146,48 @@ test('customer 360: an answer without ids is matched to nodes by name', () => {
   assert.deepEqual(L.mentions('Nothing named here.'), []);
   assert.equal(L.mentions('Brandtmann and Xinv-2026-N0009x').length, 0, 'whole words only');
 });
+
+test('figures per company: one row per company, largest first, bars relative to the largest, numbers equal the summaries and the group', () => {
+  assert.deepEqual(L.metrics.map((m) => m.id), ['arr', 'pipeline', 'outstanding', 'overdue', 'tickets', 'heat']);
+  const g = L.group();
+  for (const m of L.metrics) {
+    const f = L.figures(m.id);
+    assert.equal(f.metric, m.id);
+    assert.equal(f.rows.length, data.entities.length, m.id);
+    const values = f.rows.map((r) => r.value);
+    assert.deepEqual([...values].sort((a, b) => b - a), values, `${m.id} is sorted, largest first`);
+    assert.equal(f.rows[0].pct, f.max > 0 ? 100 : 0);
+    for (const r of f.rows) {
+      assert.ok(r.pct >= 0 && r.pct <= 100);
+      assert.equal(r.node, L.resolve(r.entity), 'a click finds the node in the graph');
+      assert.ok(L.node(r.node), r.entity);
+    }
+  }
+  const byEntity = (id) => Object.fromEntries(L.figures(id).rows.map((r) => [r.entity, r.value]));
+  for (const s of g.summaries) {
+    assert.equal(byEntity('arr')[s.entity], s.arr);
+    assert.equal(byEntity('pipeline')[s.entity], s.pipeline.weighted);
+    assert.equal(byEntity('outstanding')[s.entity], s.payment.exposureGross);
+    assert.equal(byEntity('overdue')[s.entity], s.payment.overdueGross);
+    assert.equal(byEntity('tickets')[s.entity], s.openTickets);
+    assert.equal(byEntity('heat')[s.entity], s.heat);
+  }
+  assert.equal(L.figures('outstanding').total, g.summaries.reduce((a, s) => a + s.payment.exposureGross, 0));
+  assert.equal(L.figures('heat').totalText, '', 'a total of heat values means nothing');
+  assert.equal(L.figures('nope').metric, 'arr', 'an unknown figure gives the first one');
+});
+
+test('the story window stays inside the picture: positions are clamped, a window larger than the picture sits at the edge', () => {
+  assert.deepEqual(L.clampBox(100, 50, 300, 200, 1000, 700, 8), { left: 100, top: 50 });
+  assert.deepEqual(L.clampBox(-500, -500, 300, 200, 1000, 700, 8), { left: 8, top: 8 });
+  assert.deepEqual(L.clampBox(5000, 5000, 300, 200, 1000, 700, 8), { left: 692, top: 492 });
+  assert.deepEqual(L.clampBox(50, 50, 2000, 2000, 1000, 700, 8), { left: 8, top: 8 });
+});
+
+test('page: the story window has a grip with a label and keys, the figures card has one button per figure', () => {
+  assert.match(page, /id="storyBox"[^>]*>\s*<div class="c3-grip" id="storyGrip" role="button" tabindex="0" aria-label="Move the story window/);
+  assert.match(page, /on\(storyGrip, 'keydown'[\s\S]*e\.stopPropagation\(\)/, 'arrow keys that move the window do not turn the story pages');
+  assert.match(page, /\.c3-grip\{display:none\}/, 'on a narrow screen the window sits under the picture and is not moved');
+  assert.match(page, /Figures per company/);
+  assert.match(page, /data-metric="' \+ m\.id/);
+});

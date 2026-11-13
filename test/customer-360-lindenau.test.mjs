@@ -112,3 +112,14 @@ test('bridge: the customer decides the Cognee dataset, an unknown customer is re
   const bad = await handleCustomer360Message({ type: 'c360:ask-request', requestId: 'l2', question: 'Q', customer: 'evil' }, { ask });
   assert.equal(bad.type, 'c360:error');
 });
+
+test('Lindenau: figures per company add up like the summaries (the same card as for Nordlicht)', () => {
+  const g = L.group();
+  for (const m of L.metrics) {
+    const f = L.figures(m.id);
+    assert.equal(f.rows.length, data.entities.length);
+    assert.ok(f.rows.every((r) => L.node(r.node)));
+  }
+  assert.equal(L.figures('overdue').total, g.summaries.reduce((a, s) => a + s.payment.overdueGross, 0));
+  assert.equal(L.figures('tickets').total, g.summaries.reduce((a, s) => a + s.openTickets, 0));
+});

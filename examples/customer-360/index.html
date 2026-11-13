@@ -257,7 +257,11 @@ body{margin:0}
 .c3-kpi .v{font-size:17px;font-weight:650;letter-spacing:-.02em;margin-top:1px}
 .c3-kpi .v.bad{color:var(--red)}
 .c3-hint{position:absolute;right:16px;top:14px;font-size:11px;color:var(--muted);padding:6px 10px}
-.c3-story{position:absolute;left:16px;bottom:16px;width:min(392px,40%);padding:16px 18px 14px;max-height:calc(100% - 100px);overflow:auto}
+.c3-story{position:absolute;left:16px;bottom:16px;width:min(392px,40%);padding:0;max-height:calc(100% - 100px);overflow:hidden;display:flex;flex-direction:column}
+.c3-story #story{padding:4px 18px 14px;overflow:auto;min-height:0}
+.c3-grip{flex:none;text-align:center;font-size:12px;line-height:1;letter-spacing:3px;color:var(--muted);padding:7px 0 3px;cursor:grab;touch-action:none;user-select:none;border-radius:var(--radius-s) var(--radius-s) 0 0}
+.c3-grip:hover,.c3-grip:focus-visible{color:var(--ink);background:color-mix(in srgb,var(--purple) 8%,transparent)}
+.c3-grip.drag{cursor:grabbing}
 .c3-kick{font-size:11px;font-weight:600;color:var(--purple-mid);letter-spacing:.01em}
 .c3-story h2{font-size:18px;font-weight:650;letter-spacing:-.015em;margin:3px 0 7px}
 .c3-story p{font-size:13px;line-height:1.55;color:var(--ink-2);margin:0 0 10px}
@@ -313,6 +317,12 @@ body{margin:0}
 .c3-tbl tr.row{cursor:pointer}
 .c3-tbl tr.row:hover td{background:var(--wash)}
 .c3-tbl td.n,.c3-tbl th.n{text-align:right}
+.c3-mts{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.c3-mts button{font:inherit;font-size:12px;font-weight:550;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--ink-2);cursor:pointer}
+.c3-mts button.on{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-ink)}
+.c3-fig td.figbar{width:55%}.c3-bar{height:9px;border-radius:99px;background:var(--line-2);overflow:hidden}.c3-bar i{display:block;height:100%;border-radius:99px;background:var(--purple)}
+.c3-bar i.high{background:var(--red)}.c3-bar i.medium{background:var(--amber)}.c3-bar i.low{background:var(--green)}
+.c3-tbl tr.row.sel td{background:var(--purple-dim)}
 .c3-heat{display:flex;align-items:center;gap:8px;min-width:130px}
 .c3-heat .b{flex:1;height:7px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .c3-heat .b i{display:block;height:100%;border-radius:99px}
@@ -342,6 +352,7 @@ body{margin:0}
   .c3-stage{height:auto}
   .c3-stage canvas{position:relative;height:420px}
   .c3-story,.c3-detail,.c3-kpis{position:static;width:auto;max-width:none;margin:10px}
+  .c3-grip{display:none}
   .c3-hint,.c3-legend{display:none}
   .c3-grid{grid-template-columns:1fr}.c3-list{columns:1}
 }
@@ -381,7 +392,7 @@ body{margin:0}
     <canvas id="gl" role="img" aria-label="Three-dimensional graph of the customer group. Use the story panel or the node list to read it."></canvas>
     <div class="c3-kpis" id="kpis"></div>
     <div class="c3-hint c3-glass">Drag to turn · scroll to zoom · click a node</div>
-    <div class="c3-story c3-glass" id="story"></div>
+    <div class="c3-story c3-glass" id="storyBox"><div class="c3-grip" id="storyGrip" role="button" tabindex="0" aria-label="Move the story window: drag it, or use the arrow keys. Home puts it back." title="Drag to move · double-click to put it back"><span aria-hidden="true">⋯⋯⋯</span></div><div id="story"></div></div>
     <aside class="c3-detail c3-glass" id="detail" hidden></aside>
     <div class="c3-legend c3-glass" id="legend"></div>
     <div class="c3-tip c3-glass" id="tip" hidden></div>
@@ -1106,7 +1117,35 @@ function makeLogic(D) {
     return pos;
   }
 
+  /** The figures that can be compared between the companies of the group (the "Figures per company" card). */
+  var METRICS = [
+    { id: 'arr', label: 'Per year', unit: 'EUR', pick: function (s) { return s.arr; } },
+    { id: 'pipeline', label: 'Weighted pipeline', unit: 'EUR', pick: function (s) { return s.pipeline.weighted; } },
+    { id: 'outstanding', label: 'Outstanding', unit: 'EUR, gross', pick: function (s) { return s.payment.exposureGross; } },
+    { id: 'overdue', label: 'Overdue', unit: 'EUR, gross', pick: function (s) { return s.payment.overdueGross; } },
+    { id: 'tickets', label: 'Open tickets', unit: '', pick: function (s) { return s.openTickets; } },
+    { id: 'heat', label: 'Heat', unit: 'of 100', pick: function (s) { return s.heat; } },
+  ];
+  /** One figure for every company, largest first; `pct` is the share of the largest (for the bar). An unknown id gives the first figure. */
+  function figures(metricId) {
+    var m = METRICS.filter(function (x) { return x.id === metricId; })[0] || METRICS[0];
+    var rows = D.entities.map(function (e) {
+      var s = summary(e.id), v = m.pick(s);
+      return { entity: e.id, node: resolve(e.id), name: e.name, short: e.short, value: v, text: m.id === 'tickets' || m.id === 'heat' ? String(v) : eurShort(v), level: s.level };
+    });
+    rows.sort(function (a, b) { return b.value - a.value || (a.short < b.short ? -1 : a.short > b.short ? 1 : 0); });
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([0]));
+    rows.forEach(function (r) { r.pct = max > 0 ? Math.round((r.value / max) * 100) : 0; });
+    return { metric: m.id, label: m.label, unit: m.unit, rows: rows, max: max, total: sum(rows, function (r) { return r.value; }), totalText: m.id === 'heat' ? '' : m.id === 'tickets' ? String(sum(rows, function (r) { return r.value; })) : eurShort(sum(rows, function (r) { return r.value; })) };
+  }
+  /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
+  function clampBox(left, top, w, h, W, H, pad) {
+    function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
+    return { left: fit(left, w, W), top: fit(top, h, H) };
+  }
+
   return {
+    metrics: METRICS, figures: figures, clampBox: clampBox,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,
@@ -1198,7 +1237,7 @@ function makeLogic(D) {
 
   // ---- story state -----------------------------------------------------------------------------------------------------------------
   var BEATS = L.beats(), ACTS = L.ACTS;
-  var S = { mode: 'story', i: -1, act: 0, sel: null, retr: null, custom: false, live: false, lastAct: 0 };
+  var S = { mode: 'story', i: -1, act: 0, sel: null, retr: null, custom: false, live: false, lastAct: 0, metric: 'arr' };
   function actOfBeat(i) { return i < 0 ? 0 : BEATS[i].act; }
   var NEIGH = {};
   function neighIds(id) { return NEIGH[id] || (NEIGH[id] = L.neighbours(id)); }
@@ -1250,7 +1289,7 @@ function makeLogic(D) {
     applyVisibility(); applyFocus(); fly({ tx: 0, ty: 0, tz: 0, dist: 1180, yaw: cam.yaw, pitch: -0.32 }, 1400); renderAll();
   }
   function select(id, fromGraph) {
-    S.sel = id; applyFocus();
+    S.sel = id; applyFocus(); markRows();
     var o = id ? RN[id] : null;
     if (o) { if (!visible(o) && S.mode === 'story') { /* a node of a later act: show it */ o.tvis = 1; } fly({ tx: o.x, ty: o.y, tz: o.z, dist: Math.min(cam.dist, 640) }, 1000); }
     renderDetail();
@@ -1451,7 +1490,7 @@ function makeLogic(D) {
     ['group', 'entity', 'contact', 'contract', 'product', 'opportunity', 'order', 'invoice', 'payments', 'ticket', 'signal', 'rec'].forEach(function (t) { var tt = L.TYPES[t]; out.push('<span><i style="background:' + TOK[tt.color] + '"></i>' + esc(tt.label) + '</span>'); });
     $('legend').innerHTML = out.join('');
   }
-  function row(id, cells) { return '<tr class="row" data-node="' + esc(id) + '">' + cells.map(function (c) { return '<td' + (c.n ? ' class="n"' : '') + '>' + c.h + '</td>'; }).join('') + '</tr>'; }
+  function row(id, cells) { return '<tr class="row" data-node="' + esc(id) + '">' + cells.map(function (c) { return '<td' + (c.n ? ' class="n"' : c.cls ? ' class="' + c.cls + '"' : '') + '>' + c.h + '</td>'; }).join('') + '</tr>'; }
   function renderBelow() {
     var g = L.group(), html = '';
     var heat = g.summaries.slice().sort(function (a, b) { return b.heat - a.heat; }).map(function (s) {
@@ -1459,7 +1498,12 @@ function makeLogic(D) {
       return row(L.resolve(s.entity), [{ h: '<b>' + esc(s.short) + '</b><div class="c3-why">' + esc(e.city + ' · ' + e.role) + '</div>' }, { h: L.eur(e.employees), n: 1 }, { h: L.eurShort(s.arr), n: 1 }, { h: L.eurShort(s.pipeline.weighted), n: 1 }, { h: L.eur(s.payment.exposureGross), n: 1 },
         { h: '<div class="c3-heat"><div class="b"><i class="' + s.level + '" style="width:' + s.heat + '%"></i></div><b>' + s.heat + '</b></div><div class="c3-why">' + esc(why || 'nothing special') + '</div>' }]);
     }).join('');
-    html += '<div class="card"><div class="c3-h">Companies by heat</div><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">People</th><th class="n">Per year (EUR)</th><th class="n">Weighted pipeline (EUR)</th><th class="n">Outstanding (EUR, gross)</th><th>Heat</th></tr></thead><tbody>' + heat + '</tbody></table><div class="c3-note">Heat = payment record + renewal date + tickets + order gaps, 0 to 100. A stated rule of thumb (see data rules), not a forecast.</div></div>';
+    var fg = L.figures(S.metric);
+    var figRows = fg.rows.map(function (r) { return row(r.node, [{ h: '<b>' + esc(r.short) + '</b>' }, { cls: 'figbar', h: '<div class="c3-bar" role="img" aria-label="' + esc(r.short + ': ' + r.text) + '"><i class="' + (fg.metric === 'heat' ? r.level : '') + '" style="width:' + r.pct + '%"></i></div>' }, { h: esc(r.text), n: 1 }]); }).join('');
+    html += '<div class="card"><div class="c3-h">Figures per company <span class="c3-sub">· click a row to find the company in the graph</span></div><div class="c3-mts" role="group" aria-label="Which figure">' + L.metrics.map(function (m) { return '<button type="button" data-metric="' + m.id + '" aria-pressed="' + (m.id === fg.metric) + '"' + (m.id === fg.metric ? ' class="on"' : '') + '>' + esc(m.label) + '</button>'; }).join('') + '</div>' +
+      '<table class="c3-tbl c3-fig"><thead><tr><th>Company</th><th>' + esc(fg.label) + '</th><th class="n">' + esc(fg.unit || 'Number') + '</th></tr></thead><tbody>' + figRows + '</tbody></table>' +
+      (fg.totalText ? '<div class="c3-note">Group total: ' + esc(fg.totalText) + (fg.unit ? ' ' + esc(fg.unit) : '') + '. The bar shows the share of the largest company.</div>' : '<div class="c3-note">Heat is a stated rule of thumb (see "What is this page?"), not a model.</div>') + '</div>';
+    html += '<div class="card" style="margin-top:16px"><div class="c3-h">Companies by heat</div><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">People</th><th class="n">Per year (EUR)</th><th class="n">Weighted pipeline (EUR)</th><th class="n">Outstanding (EUR, gross)</th><th>Heat</th></tr></thead><tbody>' + heat + '</tbody></table><div class="c3-note">Heat = payment record + renewal date + tickets + order gaps, 0 to 100. A stated rule of thumb (see data rules), not a forecast.</div></div>';
     if (S.mode === 'explore' || S.act === 2) {
       var ct = D.contracts.map(function (c) { var r = L.renewalOf(c); return row('contract:' + c.id, [{ h: '<b>' + esc(c.id) + '</b><div class="c3-why">' + esc(L.ent(c.entity).short) + ' · ' + esc(D.products.filter(function (p) { return p.id === c.product; })[0].name) + '</div>' }, { h: L.eur(c.annualEur), n: 1 }, { h: esc(r.decisionDate) + '<div class="c3-why">' + (r.status === 'lapsed' ? 'lapsed' : r.status === 'auto-renews' ? 'renews by itself' : r.daysToDecision + ' days') + '</div>' }]); }).join('');
       var op = D.opportunities.map(function (o) { return row('opportunity:' + o.id, [{ h: '<b>' + esc(o.id) + '</b><div class="c3-why">' + esc(o.title) + '</div>' }, { h: L.eur(o.acvEur), n: 1 }, { h: esc(o.stage) + ' · ' + L.weighted(o) / o.acvEur * 100 + ' %' + (o.discountPct > D.rules.discountThresholdPct ? '<div class="c3-why">deal desk: ' + o.discountPct + ' % discount</div>' : '') }]); }).join('');
@@ -1477,8 +1521,10 @@ function makeLogic(D) {
       }).join('');
       html += '<div class="card" style="margin-top:16px"><div class="c3-h">Proposals, ranked by amount at stake × urgency</div><div class="c3-recs">' + recs + '</div><div class="c3-note">Joule drafts on request. Nothing is written to any system; each proposal names who approves it. Ranking orders the list, it does not predict an outcome.</div></div>';
     }
-    $('below').innerHTML = html;
+    $('below').innerHTML = html; markRows();
   }
+  /** The row of the selected node is marked in the tables under the graph. */
+  function markRows() { var rows = document.querySelectorAll('#below tr.row'); for (var i = 0; i < rows.length; i += 1) rows[i].classList.toggle('sel', !!S.sel && rows[i].dataset.node === S.sel); }
   function renderNodeList() {
     var by = {}; L.graph.nodes.forEach(function (n) { (by[n.type] = by[n.type] || []).push(n); });
     $('nodeCount').textContent = '· ' + L.graph.nodes.length + ' nodes, ' + L.graph.edges.length + ' connections';
@@ -1494,7 +1540,7 @@ function makeLogic(D) {
     var hits = r.hits.map(function (h) { var n = L.node(h.id); return '<div class="c3-hit">' + chip(h.id, n.label) + '<span>' + esc(clip([bestLine(h, r.terms)].concat((h.lines || []).filter(function (l) { return l !== bestLine(h, r.terms) && !/ is a (deal|company|person|contract|product|order|invoice|ticket) \(/.test(l); }).slice(0, 1)).join(' \u00b7 '), 260)) + (h.score != null ? ' <span style="color:var(--muted)">(' + h.score + ')</span>' : '') + '</span></div>'; }).join('');
     el.innerHTML = '<div class="card" style="margin:0">' + head + ans + hits + '</div>';
   }
-  function renderAll() { renderActs(); renderStory(); renderDetail(); renderBelow(); renderRes(); if (S.act > S.lastAct) S.lastAct = S.act; }
+  function renderAll() { renderActs(); renderStory(); if (typeof boxPos !== 'undefined' && boxPos) boxAt(boxPos.left, boxPos.top); renderDetail(); renderBelow(); renderRes(); if (S.act > S.lastAct) S.lastAct = S.act; }
 
   // ---- ask ---------------------------------------------------------------------------------------------------------------------------
   var pending = {};
@@ -1532,6 +1578,7 @@ function makeLogic(D) {
   // ---- events ------------------------------------------------------------------------------------------------------------------------
   on(document, 'click', function (e) {
     var t = e.target.closest ? e.target.closest('button, tr.row') : null; if (!t) return;
+    if (t.dataset.metric) { S.metric = t.dataset.metric; renderBelow(); return; }
     if (t.dataset.node) { select(t.dataset.node); return; }
     if (t.dataset.actFirst !== undefined) { go(+t.dataset.actFirst); return; }
     if (t.dataset.q) { ask(t.dataset.q); return; }
@@ -1549,6 +1596,35 @@ function makeLogic(D) {
       case 'askBtn': ask($('askIn').value); break;
     }
   });
+  // ---- the story window can be moved inside the picture: drag the grip, or use the arrow keys on it; Home or a double click puts it back.
+  // The position is kept only while the page is open (a Space keeps nothing in the browser).
+  var storyBox = $('storyBox'), storyGrip = $('storyGrip'), boxPos = null;
+  function boxAt(left, top) {
+    var st = $('stage').getBoundingClientRect(), b = storyBox.getBoundingClientRect();
+    boxPos = L.clampBox(left, top, b.width, b.height, st.width, st.height, 8);
+    storyBox.style.left = boxPos.left + 'px'; storyBox.style.top = boxPos.top + 'px'; storyBox.style.bottom = 'auto';
+  }
+  function boxHome() { boxPos = null; storyBox.style.left = storyBox.style.top = storyBox.style.bottom = ''; }
+  function boxNow() { var st = $('stage').getBoundingClientRect(), b = storyBox.getBoundingClientRect(); return { left: b.left - st.left, top: b.top - st.top }; }
+  var grab = null;
+  on(storyGrip, 'pointerdown', function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    var p = boxNow(); grab = { x: e.clientX, y: e.clientY, left: p.left, top: p.top };
+    storyGrip.classList.add('drag'); try { storyGrip.setPointerCapture(e.pointerId); } catch (err) { /* the move still works without capture */ }
+    e.preventDefault();
+  });
+  on(storyGrip, 'pointermove', function (e) { if (grab) boxAt(grab.left + e.clientX - grab.x, grab.top + e.clientY - grab.y); });
+  function dropGrab() { grab = null; storyGrip.classList.remove('drag'); }
+  on(storyGrip, 'pointerup', dropGrab); on(storyGrip, 'pointercancel', dropGrab);
+  on(storyGrip, 'dblclick', boxHome);
+  on(storyGrip, 'keydown', function (e) {
+    var step = e.shiftKey ? 48 : 16, p = boxNow(), moved = true;
+    if (e.key === 'ArrowLeft') boxAt(p.left - step, p.top); else if (e.key === 'ArrowRight') boxAt(p.left + step, p.top);
+    else if (e.key === 'ArrowUp') boxAt(p.left, p.top - step); else if (e.key === 'ArrowDown') boxAt(p.left, p.top + step);
+    else if (e.key === 'Home') boxHome(); else moved = false;
+    if (moved) { e.preventDefault(); e.stopPropagation(); } // the arrow keys also turn the story pages: not while the window is being moved
+  });
+  on(window, 'resize', function () { if (boxPos) boxAt(boxPos.left, boxPos.top); });
   on($('askForm'), 'submit', function (e) { e.preventDefault(); ask($('askIn').value); });
   on($('askIn'), 'keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ask($('askIn').value); } });
   on(document, 'keydown', function (e) {
