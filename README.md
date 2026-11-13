@@ -210,6 +210,8 @@ handoffs use the `werkbank://` protocol and always stop at an in-app review dial
 
 [![Add SAP Notes MCP to Werkbank](https://getwerkbank.com/assets/add-to-werkbank.svg)](https://getwerkbank.com/install-mcpb/?url=https%3A%2F%2Fgithub.com%2Fmarianfoo%2Fsap-mcp-servers%2Freleases%2Fdownload%2Fsap-notes-latest%2Fsap-notes.mcpb&title=SAP%20Notes%20MCP)
 
+[![Add SAP Docs MCP to Werkbank](https://getwerkbank.com/assets/add-to-werkbank.svg)](https://getwerkbank.com/install-mcp/?name=sap-docs&config=eyJ0eXBlIjoic3RyZWFtYWJsZV9odHRwIiwidXJsIjoiaHR0cHM6Ly9tY3Atc2FwLWRvY3MubWFyaWFuemVpcy5kZS9tY3AiLCJkZXNjcmlwdGlvbiI6IlNBUCBkb2N1bWVudGF0aW9uLCBub3RlcyBhbmQgY29tbXVuaXR5IHNlYXJjaCJ9&title=SAP+Docs+MCP)
+
 Connector maintainers can use the same button in their own README. Replace the encoded
 bundle URL and title in the link target; the hosted page validates the HTTPS source and
 opens Werkbank's guarded in-app confirmation. See [`site/README.md`](site/README.md) for
