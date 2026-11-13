@@ -110,6 +110,9 @@ export type Preferences = ProfileSettings & {
   version: number;
   /** Archived Spaces: hidden from the list and kept on this computer until restored or deleted. Not part of a profile. */
   archivedSpaces: string[];
+  /** Terms of the ontology marked in the Spaces (act B): the Spaces and the domains the person switched on. Default off; not part of a profile. */
+  termSpaces: string[];
+  termDomains: string[];
   starters: Starter[];
   setup: { model: string; connectors: string[] };
   storages: StorageLocation[];
@@ -139,6 +142,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   startView: 'chat',
   pinnedSpaces: [],
   archivedSpaces: [],
+  termSpaces: [],
+  termDomains: [],
   domains: [],
   spaceDomains: {},
   spaceParents: {},
@@ -293,6 +298,8 @@ export function sanitizePreferences(value: unknown): Preferences {
     ...base,
     version: PREFERENCES_VERSION,
     archivedSpaces: Array.isArray(v.archivedSpaces) ? list(v.archivedSpaces, (s) => SLUG.test(s), 200) : [],
+    termSpaces: Array.isArray(v.termSpaces) ? list(v.termSpaces, (s) => SLUG.test(s), 200) : [],
+    termDomains: Array.isArray(v.termDomains) ? list(v.termDomains, (s) => s.length > 0 && s.length <= 40, 50) : [],
     starters,
     setup: { model: text(setup.model, 80), connectors: list(setup.connectors, (s) => s.length > 0 && s.length <= 60, 12) },
     storages,
