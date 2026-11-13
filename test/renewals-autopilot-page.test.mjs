@@ -120,6 +120,47 @@ test('renewals autopilot: "Draft with Joule" asks for a Gmail draft to the own a
   p.w.close();
 });
 
+test('renewals win-back page: lapsed contracts start as win-back cases, a decline opens one with its reason, a person approves and sends, a win goes to the order', async () => {
+  const p = await openInHost();
+  click(p.w, p.q('#tab-autopilot')); click(p.w, p.q('#ap-run'));
+  const lapsedIds = data.cases.filter((c) => c.status === 'Lapsed').map((c) => c.id);
+  assert.deepEqual(p.qa('.apcase[data-wb]').map((e) => e.dataset.wb).sort(), [...lapsedIds].sort(), 'lapsed contracts go straight to win-back');
+  assert.equal(p.qa('.apcase[data-case]').length, data.cases.length - lapsedIds.length, 'the others are renewals');
+  // a decline with a reason opens a win-back case
+  const rid = p.q('.apcase.st-waiting-person [data-apa=approve]').dataset.id;
+  click(p.w, p.q(`[data-apa=approve][data-id="${rid}"]`)); click(p.w, p.q(`[data-apa=send][data-id="${rid}"]`));
+  const sel = p.q(`select[data-apreason="${rid}"]`); sel.value = 'budget';
+  click(p.w, p.q(`[data-apa=declined][data-id="${rid}"]`));
+  assert.ok(p.q(`.apcase[data-case="${rid}"].st-lost`));
+  const wbCard = () => p.q(`.apcase[data-wb="${rid}"]`);
+  assert.ok(wbCard(), 'a win-back case exists for the declined renewal');
+  assert.match(wbCard().textContent, /No budget/);
+  assert.ok(wbCard().querySelector('[data-wba=approve]'));
+  assert.ok(!wbCard().querySelector('[data-wba=send]'), 'nothing is sent before the plan is approved');
+  const owner = wbCard().querySelector('select[data-wbo]'); owner.value = [...owner.options].at(-1).value;
+  click(p.w, wbCard().querySelector('[data-wba=approve]'));
+  assert.ok(wbCard().querySelector('[data-wba=send]'));
+  click(p.w, wbCard().querySelector('[data-wbdraft]'));
+  const ask = p.posted.filter((m) => m.type === 'wb:ask').at(-1);
+  assert.match(ask.prompt, /create_draft to my own address/); assert.match(ask.prompt, /do NOT send/); assert.ok(ask.prompt.length <= 600); assert.doesNotMatch(ask.prompt, /@/);
+  click(p.w, wbCard().querySelector('[data-wba=send]'));
+  assert.ok(wbCard().classList.contains('st-waiting-customer'));
+  click(p.w, wbCard().querySelector('[data-wba=won]'));
+  assert.ok(wbCard().classList.contains('st-done'));
+  const hand = p.posted.filter((m) => m.type === 'wb:handoff');
+  assert.equal(hand.length, 1);
+  assert.equal(hand[0].payload.type, 'renewal-order');
+  assert.equal(hand[0].payload.contractId, data.cases.find((c) => c.id === rid).contractId);
+  assert.equal(hand[0].payload.termMonths, 12);
+  toHost(p.w, { type: 'wb:restore', state: null, handoffs: [{ from: 'order-to-cash-software', payload: { type: 'order-confirmed', contractId: hand[0].payload.contractId, orderNo: 'SO-92002', invoiceFrom: '2027-02-01' } }] });
+  assert.match(wbCard().textContent, /Booked in Order-to-Cash: SO-92002/);
+  // a saved state with bad win-back data is dropped
+  toHost(p.w, { type: 'wb:restore', state: { wb: { [lapsedIds[0]]: { status: 'done', step: 99, gate: null, reason: 'x', owner: 'a', offer: null, log: [] }, nope: {} } }, handoffs: [] });
+  assert.equal(p.w.__state.wb[lapsedIds[0]], undefined);
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
 test('renewals autopilot: a booking is only accepted from Order-to-Cash (Software), not from any other Space', async () => {
   const p = await openInHost();
   click(p.w, p.q('#tab-autopilot')); click(p.w, p.q('#ap-run'));
