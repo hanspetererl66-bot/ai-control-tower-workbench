@@ -8,6 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createWorkItemHandlers, WORK_ITEM_TOOL_DEFINITIONS } from '../connectors/_lib/server/work-items.mjs';
 import { createJobRunHandlers, recordJobRuns } from '../connectors/_lib/server/job-runs.mjs';
 import { createMockClient, importFromSmartRecruiters } from '../connectors/_lib/server/smartrecruiters.mjs';
+import { shadowStart, shadowSummary, shadowVerdict } from '../connectors/_lib/server/autonomy.mjs';
 import { createRecruitingHandlers, decideHire, decideProposal, releaseContract, onboardingList, onboardingHandover, onboardingSet } from '../connectors/_lib/server/recruiting.mjs';
 import { observeCall } from '../connectors/_lib/server/observability.mjs';
 import { saveInterviewRecord, saveAssessment, listAssessments } from '../connectors/_lib/server/interviews.mjs';
@@ -151,6 +152,10 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
       return releaseContract(rpc, email, id);
     },
     /** Onboarding: read, hand over (HR, signed contract) and mark a step. After a click only, never an agent tool. */
+    /** Shadow protocol of the Orchestrator: decisions and a person's verdict. After a click only, never an agent tool. */
+    async shadowStart(run, decisions) { const { rpc, email } = connect(); return shadowStart(rpc, email, run, decisions); },
+    async shadowVerdict(decisionId, verdict, reason, note) { const { rpc, email } = connect(); return shadowVerdict(rpc, email, decisionId, verdict, reason, note); },
+    async shadowSummary() { const { rpc, email } = connect(); return shadowSummary(rpc, email); },
     async onboardingList() { const { rpc, email } = connect(); return onboardingList(rpc, email); },
     async onboardingHandover(id, start) { const { rpc, email } = connect(); return onboardingHandover(rpc, email, id, start); },
     async onboardingSet(id, step, status, note) { const { rpc, email } = connect(); return onboardingSet(rpc, email, id, step, status, note); },

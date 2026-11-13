@@ -270,6 +270,10 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 .waitbox pre{white-space:pre-wrap;font:inherit;font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;margin:8px 0 0}
 .waitbox .mh2{margin-top:8px}
 .shadowbar{border-color:var(--purple-border);background:var(--purple-dim)}
+.verdict{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px;font-size:12px}
+.verdict select,.verdict input{font:inherit;font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+.redbar{border-color:var(--red-border);background:var(--red-dim)}
+.switch[disabled]{opacity:.5;cursor:not-allowed}
 /* outcomes */
 .otab{border-collapse:collapse;width:100%;font-size:12px}
 .otab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px;padding:0 10px 8px 0;white-space:nowrap}
@@ -1116,7 +1120,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const hosted = window.parent !== window;
-const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true, hours: 0, shadow: null, live: [], liveNote: '' };
+const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true, hours: 0, shadow: null, live: [], liveNote: '', proto: null, decisionIds: {}, verdicts: {}, draft: {}, summary: null };
 const timers = {};
 const label = (t) => (DATA.templates.find((x) => x.id === t) || { label: t }).label;
 /** Shadow mode: the findings come from the live alerts. A customer the demo data does not know gets assumed nights, and the date is today. */
@@ -1143,7 +1147,9 @@ const PILL = { done: 'green', running: 'purple', ready: 'purple', 'waiting-appro
 const st = (id) => (state.items[id] = state.items[id] || {});
 const dayNow = () => Math.floor(state.hours / 24);
 const findingsNow = () => (state.shadow ? state.live.map((f) => ({ ...f, customer: f.customer || 'unknown' })) : DATA.findings);
-const assessments = () => findingsNow().map((f) => assess(dataNow(), state.auto, f, dayNow()));
+/** In shadow mode every plan is judged as if human in the loop were off: that is the decision a person has to check. */
+const autoNow = () => (state.shadow ? { ...state.auto, hitl: false } : state.auto);
+const assessments = () => findingsNow().map((f) => assess(dataNow(), autoNow(), f, dayNow()));
 const waitedH = (s) => Math.max(0, state.hours - (s.since || 0));
 const daysLeft = (a) => a.finding.deadlineDays - dayNow();
 const clockText = () => fmtMs(dayMs(dataNow().asOf) + state.hours * HOUR_MS).replace('T', ' ');
@@ -1153,7 +1159,7 @@ const allOutcomes = () => [...(state.history ? DATA.history : []), ...state.exte
 const slot = (w) => { const [d, a] = w.start.split('T'), [e, b] = w.end.split('T'); return `${d} ${a}–${b}${e !== d ? ' (next day)' : ''}`; };
 
 function log(who, text, id) { state.n += 1; state.audit.push({ n: state.n, who, text, id: id || '' }); }
-function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history, hours: state.hours, shadow: state.shadow, live: state.live } }, '*'); }
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history, hours: state.hours, shadow: state.shadow, live: state.live, proto: state.proto, decisionIds: state.decisionIds, verdicts: state.verdicts, summary: state.summary } }, '*'); }
 
 /* ---------- runs ---------- */
 function schedule(id) {
@@ -1195,12 +1201,64 @@ async function loadShadow() {
   state.live = a.findings; state.shadow = { adapter: a.adapter, fetchedAt: a.fetchedAt, hours: a.sinceHours, alerts: a.alerts, skipped: a.skipped, withheld: a.withheld };
   state.items = {}; state.hours = 0; state.liveNote = '';
   log('person', `Shadow mode on: ${a.findings.length} live finding${a.findings.length === 1 ? '' : 's'} from ${a.adapter} (${a.alerts} alerts, ${a.skipped} not matched by a rule, ${a.withheld} withheld).`);
+  state.proto = null; state.decisionIds = {}; state.verdicts = {}; state.draft = {}; state.summary = null;
   sweep();
+  recordRun();
 }
 function leaveShadow() {
-  state.shadow = null; state.live = []; state.items = {}; state.hours = 0; state.liveNote = ''; state.swept = false;
+  state.shadow = null; state.live = []; state.items = {}; state.hours = 0; state.liveNote = ''; state.swept = false; state.proto = null; state.decisionIds = {}; state.verdicts = {}; state.draft = {}; state.summary = null;
   log('person', 'Shadow mode off: the demo findings are back.');
   render();
+}
+/* ---- the shadow protocol: every decision is written down, a person judges it, the numbers say whether the floors hold ---- */
+const REASONS = { 'floor-missed': 'A person should have decided: a floor did not hold', 'over-cautious': 'It could have run by itself', 'wrong-window': 'The window is wrong', 'wrong-customer-rule': 'The customer should (not) have been asked', 'wrong-plan': 'Wrong task for this finding', other: 'Something else' };
+const reasonsFor = (a) => Object.keys(REASONS).filter((k) => (k !== 'floor-missed' || a.mode === 'auto') && (k !== 'over-cautious' || a.mode === 'approval'));
+async function recordRun() {
+  const list = orderOf(assessments());
+  const decisions = list.map((a) => ({ findingId: a.id, host: a.finding.host, kind: a.finding.kind, template: a.finding.template, env: a.finding.env, customer: a.finding.customer === 'unknown' ? '' : a.finding.customer, deadlineDays: a.finding.deadlineDays,
+    mode: a.mode, customerNeeded: a.customer.needed, floors: a.floors.map((x) => x.id), windowStart: a.window ? a.window.start : '', windowEnd: a.window ? a.window.end : '', why: a.why }));
+  if (!decisions.length) { state.proto = { error: 'There is nothing to record: no findings.' }; render(); return; }
+  const r = await askHost({ type: 'sh:start-request', run: { adapter: state.shadow.adapter, fetchedAt: state.shadow.fetchedAt, alerts: state.shadow.alerts, skipped: state.shadow.skipped, withheld: state.shadow.withheld }, decisions });
+  if (r.type === 'sh:started') { state.proto = { runId: r.runId }; state.decisionIds = r.decisions; log('agent', `Protocol: run #${r.runId} with ${Object.keys(r.decisions).length} decisions recorded.`); }
+  else { state.proto = { error: r.message || 'The protocol could not be written.' }; state.decisionIds = {}; log('agent', 'Protocol not available: ' + state.proto.error); }
+  render(); loadSummary();
+}
+async function loadSummary() {
+  if (!hosted) return;
+  const r = await askHost({ type: 'sh:summary-request' });
+  if (r.type === 'sh:summary') { state.summary = r.summary; state.summaryError = ''; } else { state.summaryError = r.message || 'The numbers could not be loaded.'; }
+  render();
+}
+async function judge(id, verdict, reason, note) {
+  const decisionId = state.decisionIds[id]; if (!decisionId) return;
+  const r = await askHost({ type: 'sh:verdict-request', decisionId, verdict, reason, note });
+  if (r.type !== 'sh:verdict') { state.proto = { ...(state.proto || {}), note: r.message || 'The verdict could not be saved.' }; render(); return; }
+  state.verdicts[id] = { verdict: r.verdict, reason: r.reason, note: String(note || '').slice(0, 300) }; delete state.draft[id];
+  if (state.proto) delete state.proto.note;
+  log('person', `${id}: verdict ${r.verdict === 'agree' ? 'agree' : 'disagree (' + (REASONS[r.reason] || r.reason) + ')'}.`, id);
+  render(); loadSummary();
+}
+function verdictBox(a) {
+  const id = a.id, v = state.verdicts[id], d = state.draft[id];
+  if (!state.decisionIds[id]) return `<div class="verdict"><span class="note">Not recorded: the protocol is not available${state.proto && state.proto.error ? ' (' + esc(state.proto.error) + ')' : ''}.</span></div>`;
+  if (d) return `<div class="verdict"><b>Why do you disagree?</b><select data-reason="${esc(id)}" aria-label="Reason">${reasonsFor(a).map((k) => `<option value="${k}">${esc(REASONS[k])}</option>`).join('')}</select><input data-note="${esc(id)}" type="text" maxlength="300" placeholder="Note (optional)" aria-label="Note"><div class="ops"><button class="primary" data-act="v-save" data-id="${esc(id)}">Save verdict</button><button class="ghost" data-act="v-cancel" data-id="${esc(id)}">Cancel</button></div></div>`;
+  const now = v ? `<span class="pill ${v.verdict === 'agree' ? 'green' : 'red'}">${v.verdict === 'agree' ? ic('check') + ' You agree' : ic('x') + ' You disagree: ' + esc(REASONS[v.reason] || v.reason)}</span>` : '<span class="note">Does the decision above hold?</span>';
+  return `<div class="verdict">${now}<div class="ops"><button class="ghost" data-act="v-agree" data-id="${esc(id)}">${v ? 'Agree now' : 'I agree'}</button><button class="ghost" data-act="v-open" data-id="${esc(id)}">${v ? 'Disagree now' : 'I disagree'}</button></div></div>`;
+}
+function shadowResults() {
+  if (!hosted || !state.shadow) return '';
+  const S = state.summary;
+  if (!S) return `<div class="card rise"><h2>Shadow results</h2><p class="note">${state.summaryError ? esc(state.summaryError) : 'Loading the numbers …'}</p></div>`;
+  const pctOf = (n, d) => (d ? Math.round(100 * n / d) + ' %' : 'n/a');
+  const reasons = Object.entries(S.byReason).map(([k, n]) => `<li>${esc(REASONS[k] || k)}: <b>${n}</b></li>`).join('');
+  return `<div class="card rise"><h2>Shadow results (all runs)</h2>
+    ${S.floorMissed > 0 ? `<div class="banner redbar">${ic('alert')}<span><b>Stop: a floor did not hold ${S.floorMissed} time${S.floorMissed === 1 ? '' : 's'}.</b> The agent would have run something by itself that a person should have decided. Fix the rule before going on (abort criterion of the roadmap).</span></div>` : ''}
+    <div class="kpis"><div class="kpi purple"><span class="ico">${ic('list')}</span><div><b>${S.decisions}</b><span>decisions in ${S.runs} run${S.runs === 1 ? '' : 's'}</span></div></div>
+    <div class="kpi green"><span class="ico">${ic('check')}</span><div><b>${S.judged}</b><span>judged by you</span></div></div>
+    <div class="kpi grey"><span class="ico">${ic('user')}</span><div><b>${pctOf(S.agree, S.judged)}</b><span>you agreed</span></div></div>
+    <div class="kpi ${S.floorMissed > 0 ? 'red' : 'green'}"><span class="ico">${ic('lock')}</span><div><b>${S.floorMissed}</b><span>floors that did not hold (target 0)</span></div></div></div>
+    ${reasons ? `<p class="note" style="margin:0 0 6px">Why you disagreed:</p><ul class="plain">${reasons}</ul>` : ''}
+    <p class="note" style="margin:10px 0 0">The protocol is append-only in the shared database: a changed mind is a new verdict, the latest counts. ${S.auto} of the ${S.decisions} decisions were to run by itself.</p></div>`;
 }
 /** Reminder and escalation: only a message preview and an audit entry, never an approval. */
 function escalate() {
@@ -1269,7 +1327,7 @@ function onWindowResult(p) {
 /* ---------- views ---------- */
 function controls() {
   const on = state.auto.hitl;
-  return `<div class="card ctrl rise"><div class="sw"><button class="switch" id="hitl" type="button" role="switch" aria-checked="${on}" aria-label="Human in the loop"><i></i></button>
+  return `<div class="card ctrl rise"><div class="sw"><button class="switch" id="hitl" type="button" role="switch" aria-checked="${on}" aria-label="Human in the loop"${state.shadow ? ' disabled title="Shadow mode judges every plan as if human in the loop were off"' : ''}><i></i></button>
     <div><b>Human in the loop: ${on ? 'on' : 'off'}</b><span>${on ? 'Every plan waits for a person. The agent plans and proposes, a person decides.' : 'The agent runs low-risk plans by itself, as the autonomy matrix says. The floors stay: they cannot be switched off.'}</span></div></div>
     <div class="acts"><button class="primary" data-act="sweep">${ic('eye')} ${state.swept ? 'Sweep again' : 'Run a sweep'}</button><span class="clock" title="Simulated time">${ic('clock')}<b>${esc(clockText())}</b><button class="ghost" data-act="time" data-h="6">+6 h</button><button class="ghost" data-act="time" data-h="24">+1 day</button></span>${hosted ? `<button class="ghost" data-act="${state.shadow ? 'shadow-off' : 'shadow-load'}" id="shadow">${ic('eye')} ${state.shadow ? 'Back to demo findings' : 'Load live findings (shadow mode)'}</button>` : ''}<button class="ghost" data-act="pause">${ic(state.paused ? 'play' : 'pause')} ${state.paused ? 'Resume' : 'Pause the orchestrator'}</button></div></div>
     ${state.shadow ? `<div class="banner shadowbar">${ic('eye')}<span><b>Shadow mode.</b> Live findings from ${esc(state.shadow.adapter)} (fetched ${esc(state.shadow.fetchedAt.replace('T', ' '))} UTC, last ${state.shadow.hours} h): ${state.shadow.alerts} alerts, ${state.live.length} finding${state.live.length === 1 ? '' : 's'}, ${state.shadow.skipped} not matched by a rule, ${state.shadow.withheld} withheld. The orchestrator plans and decides, nothing is executed or approved. Customers the demo data does not know get assumed nights.</span></div>` : ''}${state.liveNote ? `<div class="banner">${ic('alert')}<span>${esc(state.liveNote)}</span></div>` : ''}
@@ -1305,7 +1363,7 @@ function planCard(a, i) {
       <div>${esc(a.why)}</div>${a.floors.length ? `<div class="chips">${floors}</div>` : ''}
       <div class="slot">${ic('clock')}<span>Window: <b>${w ? esc(slot(w)) : 'none found'}</b>${s.window ? ' (agreed)' : ''}</span>${a.window && a.window.moved ? `<span class="chip">moved: ${esc(a.window.moved)}</span>` : ''}</div>
       <div class="note">${esc(a.customer.text)}</div></div>
-    ${open ? waitBox(a, s) : ''}${lane(a, s)}${buttons.length ? `<div class="ops">${buttons.join('')}</div>` : ''}</article>`;
+    ${open ? waitBox(a, s) : ''}${state.shadow ? verdictBox(a) : ''}${lane(a, s)}${buttons.length ? `<div class="ops">${buttons.join('')}</div>` : ''}</article>`;
 }
 function plansView() {
   if (!state.swept) return `<div class="empty rise"><h2>No sweep yet</h2><p>The orchestrator does not wait for an alarm. A sweep looks ahead at what will go wrong soon and plans the work with the building blocks of this story:</p><ul><li>certificates that expire, patches that are open for weeks, disks that fill up, DNS records that point to the old address;</li><li>the plan and pre-check of the service request, the window policy of the hotline, the root cause where a finding comes back;</li><li>with human in the loop on, a person approves each plan; with it off, the agent runs the low-risk ones itself.</li></ul></div>`;
@@ -1340,7 +1398,7 @@ function outcomesView() {
   const row = (x, name) => `<tr><td class="tk">${esc(name)}</td><td>${x.n}</td><td>${bar(x.mttr, maxM)}<span class="mval">${fmtMin(x.mttr)}</span></td><td>${fmtPct(x.agentShare)}</td><td>${fmtPct(x.rollbackRate)}</td><td>${fmtMin(x.wait)}</td></tr>`;
   const head = (first) => `<thead><tr><th>${first}</th><th>Measures</th><th>Mean time to repair</th><th>By the agent</th><th>Rolled back</th><th>Waiting</th></tr></thead>`;
   const recent = list.slice().reverse().slice(0, 14).map((o) => `<tr><td class="tk">${esc(o.id)}</td><td>${esc(SRC[o.source])}</td><td>${esc(o.label || tlabel(o.template))}</td><td>${esc(o.customer)}</td><td><span class="pill ${o.result === 'done' ? 'green' : o.result === 'rolled-back' ? 'red' : 'grey'}">${esc(o.result)}</span></td><td>${o.by === 'agent' ? 'Agent' : 'Person'}</td><td>${fmtMin(o.durationMin)}</td>${o.floors.length ? `<td>${o.floors.map((f) => `<span class="chip floor">${esc(f)}</span>`).join(' ')}</td>` : '<td></td>'}</tr>`).join('');
-  return `<div class="banner rise">${ic('alert')}<span><b>Demo numbers.</b> The minutes are simulated and the findings are invented${state.history ? ', and the history below is invented too' : ''}. This tab shows how autonomy is measured, not how well it works.</span></div>
+  return `${shadowResults()}<div class="banner rise">${ic('alert')}<span><b>Demo numbers.</b> The minutes are simulated and the findings are invented${state.history ? ', and the history below is invented too' : ''}. This tab shows how autonomy is measured, not how well it works.</span></div>
   <div class="kpis rise">${tiles.map(([k, i, v, l]) => `<div class="kpi ${k}"><span class="ico">${ic(i)}</span><div><b>${esc(v)}</b><span>${l}</span></div></div>`).join('')}</div>
   <div class="card rise"><h2>By source</h2><table class="otab">${head('Source')}<tbody>${S.bySource.map((x) => row(x, SRC[x.key])).join('')}</tbody></table></div>
   <div class="card rise" style="--d:60ms"><h2>By task</h2><table class="otab">${head('Task')}<tbody>${S.byTemplate.map((x) => row(x, x.label)).join('')}</tbody></table></div>
@@ -1359,11 +1417,15 @@ function render() {
 document.addEventListener('click', (e) => {
   const sw = e.target.closest('#hitl'); if (sw) { setHitl(!state.auto.hitl); return; }
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.tab) { state.tab = b.dataset.tab; render(); return; }
+  if (b.dataset.tab) { state.tab = b.dataset.tab; render(); if (state.tab === 'outcomes' && state.shadow) loadSummary(); return; }
   const id = b.dataset.id;
   if (b.dataset.act === 'sweep') sweep();
   else if (b.dataset.act === 'pause') setPause(!state.paused);
   else if (b.dataset.act === 'shadow-load') loadShadow();
+  else if (b.dataset.act === 'v-agree') judge(id, 'agree', '', '');
+  else if (b.dataset.act === 'v-open') { state.draft[id] = true; render(); }
+  else if (b.dataset.act === 'v-cancel') { delete state.draft[id]; render(); }
+  else if (b.dataset.act === 'v-save') { const sel = document.querySelector(`[data-reason="${id}"]`), nt = document.querySelector(`[data-note="${id}"]`); /* an id is plain: letters, digits and . _ : - only */ judge(id, 'disagree', sel ? sel.value : '', nt ? nt.value : ''); }
   else if (b.dataset.act === 'shadow-off') leaveShadow();
   else if (b.dataset.act === 'time') advance(+b.dataset.h);
   else if (b.dataset.act === 'approve') approve(id);
@@ -1389,7 +1451,7 @@ window.addEventListener('message', (e) => {
   if (e.source === window.parent && e.data && typeof e.data.requestId === 'string' && pendingAsk.has(e.data.requestId)) { const done = pendingAsk.get(e.data.requestId); pendingAsk.delete(e.data.requestId); done(e.data); return; }
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, s0 = m.state;
-  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; state.hours = Math.max(0, Math.min(24 * 400, s0.hours | 0)); if (s0.shadow && Array.isArray(s0.live)) { state.shadow = s0.shadow; state.live = s0.live; } }
+  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; state.hours = Math.max(0, Math.min(24 * 400, s0.hours | 0)); if (s0.shadow && Array.isArray(s0.live)) { state.shadow = s0.shadow; state.live = s0.live; state.proto = s0.proto || null; state.decisionIds = s0.decisionIds && typeof s0.decisionIds === 'object' ? s0.decisionIds : {}; state.verdicts = s0.verdicts && typeof s0.verdicts === 'object' ? s0.verdicts : {}; state.summary = s0.summary || null; } }
   (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => { const p = h && h.payload; if (p && p.type === 'window-result') onWindowResult(p); else if (p && p.type === 'outcome') onOutcome(p.outcome); });
   Object.keys(state.items).forEach((id) => { if (state.items[id].running && !state.paused) schedule(id); });
   render();

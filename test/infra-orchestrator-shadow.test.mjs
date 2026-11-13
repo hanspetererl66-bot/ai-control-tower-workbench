@@ -5,6 +5,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 
 const ROOT = join(import.meta.dirname, '..');
+const plain = (x) => JSON.parse(JSON.stringify(x));
 const page = readFileSync(join(ROOT, 'examples/infra-orchestrator/index.html'), 'utf8');
 
 function load(hosted = true) {
@@ -53,7 +54,7 @@ test('shadow mode executes and approves nothing: no action buttons, no run start
   const p = load();
   try {
     await enter(p);
-    p.doc.querySelector('#hitl').click();
+    p.w.__io.setHitl(false);
     p.w.__io.finish();
     assert.equal(p.doc.querySelector('[data-act=approve]'), null);
     assert.equal(p.doc.querySelector('[data-act=hotline]'), null);
@@ -72,7 +73,6 @@ test('shadow mode: the decisions follow the same rules, and a customer the demo 
   const p = load();
   try {
     await enter(p);
-    p.doc.querySelector('#hitl').click();
     const a = Object.fromEntries(p.w.__io.assessments().map((x) => [x.id, x]));
     assert.equal(a['L-1'].mode, 'auto', 'low-risk certificate, no floor');
     assert.equal(a['L-2'].mode, 'approval', 'production patch: a floor');
@@ -115,5 +115,128 @@ test('shadow mode survives a trip to another Space; an answer nobody asked for i
     assert.equal(saved.live.length, 4);
     const q = load();
     try { q.send(saved); assert.equal(q.w.__io.state.shadow.adapter, 'zabbix'); assert.equal(q.doc.querySelectorAll('.plan').length, 4); } finally { q.close(); }
+  } finally { p.close(); }
+});
+
+/* ---- the protocol: decisions written down, a person's verdict, the numbers ---- */
+const req = (p, type) => p.posted.filter((m) => m.type === type).at(-1);
+const reply = async (p, type, body) => { p.answer({ ...body, requestId: req(p, type).requestId }); await p.tick(); };
+const IDS = { 'L-1': 101, 'L-2': 102, 'L-3': 103, 'L-4': 104 };
+const SUMMARY = (o = {}) => ({ type: 'sh:summary', summary: { runs: 1, decisions: 4, auto: 2, judged: 3, agree: 2, disagree: 1, floorMissed: 0, byReason: { 'wrong-window': 1 }, ...o } });
+async function recorded(p) { await enter(p); await reply(p, 'sh:start-request', { type: 'sh:started', runId: 7, decisions: IDS }); }
+
+test('shadow mode writes every decision of the agent to the protocol, judged as if human in the loop were off, whatever the switch says', async () => {
+  const p = load();
+  try {
+    assert.equal(p.w.__io.state.auto.hitl, true, 'the switch is on');
+    await enter(p);
+    const r = req(p, 'sh:start-request');
+    assert.deepEqual(plain(r.run), { adapter: 'zabbix', fetchedAt: '2026-11-13T08:30', alerts: 7, skipped: 3, withheld: 1 });
+    const by = Object.fromEntries(r.decisions.map((d) => [d.findingId, d]));
+    assert.equal(Object.keys(by).length, 4);
+    assert.equal(by['L-1'].mode, 'auto');
+    assert.equal(by['L-2'].mode, 'approval');
+    assert.deepEqual(plain(by['L-2'].floors), ['prod']);
+    assert.equal(by['L-2'].customerNeeded, true);
+    assert.equal(by['L-2'].customer, '', 'an unknown customer is not given an id');
+    assert.deepEqual([by['L-1'].host, by['L-1'].kind, by['L-1'].template, by['L-1'].env, by['L-1'].deadlineDays], ['gw-01', 'cert-expiry', 'renew-certificate', 'PRD', 14]);
+    assert.match(by['L-1'].windowStart, /^2026-11-\d\dT\d\d:\d\d$/);
+    assert.ok(by['L-1'].why.length > 5);
+    assert.equal(p.doc.querySelector('#hitl').disabled, true, 'the switch cannot be used in shadow mode');
+    await reply(p, 'sh:start-request', { type: 'sh:started', runId: 7, decisions: IDS });
+    assert.deepEqual(p.w.__io.state.decisionIds, IDS);
+    assert.match(p.doc.querySelector('#view').textContent, /Does the decision above hold\?/);
+    p.doc.querySelector('[data-tab=audit]').click();
+    assert.match(p.doc.body.textContent, /Protocol: run #7 with 4 decisions recorded/);
+    assert.ok(req(p, 'sh:summary-request'), 'the numbers are asked for');
+  } finally { p.close(); }
+});
+
+test('a verdict: agree is one click, disagree offers only the reasons that fit the decision, both go to the protocol and the numbers are refreshed', async () => {
+  const p = load();
+  try {
+    await recorded(p);
+    const plan = (id) => [...p.doc.querySelectorAll('.plan')].find((el) => el.textContent.includes(id));
+    plan('L-1').querySelector('[data-act=v-agree]').click();
+    assert.deepEqual(plain([req(p, 'sh:verdict-request').decisionId, req(p, 'sh:verdict-request').verdict]), [101, 'agree']);
+    await reply(p, 'sh:verdict-request', { type: 'sh:verdict', decisionId: 101, verdict: 'agree', reason: '' });
+    assert.match(plan('L-1').textContent, /You agree/);
+    assert.ok(req(p, 'sh:summary-request'));
+    // a decision to run by itself: "a floor did not hold" fits, "it could have run by itself" does not
+    plan('L-1').querySelector('[data-act=v-open]').click();
+    let opts = [...plan('L-1').querySelectorAll('[data-reason] option')].map((o) => o.value);
+    assert.ok(opts.includes('floor-missed') && !opts.includes('over-cautious'));
+    plan('L-1').querySelector('[data-reason]').value = 'floor-missed';
+    plan('L-1').querySelector('[data-note]').value = 'renewal needs the security team';
+    plan('L-1').querySelector('[data-act=v-save]').click();
+    assert.deepEqual(plain(['decisionId', 'verdict', 'reason', 'note'].map((k) => req(p, 'sh:verdict-request')[k])), [101, 'disagree', 'floor-missed', 'renewal needs the security team']);
+    await reply(p, 'sh:verdict-request', { type: 'sh:verdict', decisionId: 101, verdict: 'disagree', reason: 'floor-missed' });
+    assert.match(plan('L-1').textContent, /You disagree: A person should have decided/, 'a changed mind is a new verdict');
+    // a decision to wait for a person: the other way round
+    plan('L-4').querySelector('[data-act=v-open]').click();
+    opts = [...plan('L-4').querySelectorAll('[data-reason] option')].map((o) => o.value);
+    assert.ok(opts.includes('over-cautious') && !opts.includes('floor-missed'));
+    plan('L-4').querySelector('[data-act=v-cancel]').click();
+    assert.equal(plan('L-4').querySelector('[data-reason]'), null);
+    assert.deepEqual(p.errors, []);
+  } finally { p.close(); }
+});
+
+test('without the protocol (no database) the decisions are still shown, marked as not recorded, with no way to judge', async () => {
+  const p = load();
+  try {
+    await enter(p);
+    await reply(p, 'sh:start-request', { type: 'ct:error', message: 'The shadow protocol needs the desktop app and the shared database.' });
+    assert.equal(p.doc.querySelectorAll('.plan').length, 4);
+    assert.match(p.doc.querySelector('#view').textContent, /Not recorded: the protocol is not available \(The shadow protocol needs the desktop app/);
+    assert.equal(p.doc.querySelector('[data-act=v-agree]'), null);
+    assert.deepEqual(plain(p.w.__io.state.decisionIds), {});
+  } finally { p.close(); }
+});
+
+test('a verdict that cannot be saved is not shown as given', async () => {
+  const p = load();
+  try {
+    await recorded(p);
+    p.doc.querySelector('[data-act=v-agree]').click();
+    await reply(p, 'sh:verdict-request', { type: 'ct:error', message: 'unknown decision' });
+    assert.equal(Object.keys(p.w.__io.state.verdicts).length, 0);
+    assert.match(p.doc.body.textContent, /Does the decision above hold\?/);
+  } finally { p.close(); }
+});
+
+test('the numbers: judged, agreed, floors that did not hold; any floor that did not hold is a stop sign', async () => {
+  const p = load();
+  try {
+    await recorded(p);
+    await reply(p, 'sh:summary-request', SUMMARY());
+    p.doc.querySelector('[data-tab=outcomes]').click();
+    await reply(p, 'sh:summary-request', SUMMARY());
+    const t = p.doc.querySelector('#view').textContent;
+    assert.match(t, /Shadow results \(all runs\)/);
+    assert.match(t, /4decisions in 1 run[\s\S]*3judged by you[\s\S]*67 %you agreed[\s\S]*0floors that did not hold \(target 0\)/);
+    assert.match(t, /The window is wrong: 1/);
+    assert.equal(p.doc.querySelector('.redbar'), null, 'no stop sign at 0');
+    await reply(p, 'sh:summary-request', SUMMARY({ floorMissed: 2, byReason: { 'floor-missed': 2 } }));
+    p.doc.querySelector('[data-tab=audit]').click(); p.doc.querySelector('[data-tab=outcomes]').click();
+    await reply(p, 'sh:summary-request', SUMMARY({ floorMissed: 2, byReason: { 'floor-missed': 2 } }));
+    assert.match(p.doc.querySelector('.redbar').textContent, /Stop: a floor did not hold 2 times\./);
+    assert.match(p.doc.querySelector('.redbar').textContent, /abort criterion of the roadmap/);
+  } finally { p.close(); }
+});
+
+test('decisions and verdicts survive a trip to another Space; leaving shadow mode clears them', async () => {
+  const p = load();
+  try {
+    await recorded(p);
+    p.doc.querySelector('[data-act=v-agree]').click();
+    await reply(p, 'sh:verdict-request', { type: 'sh:verdict', decisionId: req(p, 'sh:verdict-request').decisionId, verdict: 'agree', reason: '' });
+    const saved = p.posted.filter((m) => m.type === 'wb:state').at(-1).state;
+    assert.deepEqual(plain(saved.decisionIds), IDS);
+    assert.equal(Object.keys(saved.verdicts).length, 1);
+    const q = load();
+    try { q.send(saved); assert.deepEqual(plain(q.w.__io.state.decisionIds), IDS); assert.match(q.doc.querySelector('#view').textContent, /You agree/); } finally { q.close(); }
+    p.doc.querySelector('#shadow').click();
+    assert.deepEqual(plain([p.w.__io.state.decisionIds, p.w.__io.state.verdicts, p.w.__io.state.proto]), [{}, {}, null]);
   } finally { p.close(); }
 });
