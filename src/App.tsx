@@ -96,6 +96,7 @@ import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-deli
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SALES_SPACE, SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
+import { DIAGRAM_NOTE, wantsDiagram } from './mermaid-diagram';
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignParent, placeSpace, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
@@ -953,7 +954,7 @@ export default function App() {
       blockedWebTool.current = false;
       const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
       const docContext = dockProject && dockFocus ? documentNote(dockProject, dockFocus.docKey) : '';
-      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '', !spaceRequested && wantsDiagram(text) ? DIAGRAM_NOTE : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
