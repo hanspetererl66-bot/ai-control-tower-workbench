@@ -591,7 +591,35 @@ export function makeLogic(D) {
     return pos;
   }
 
+  /** The figures that can be compared between the companies of the group (the "Figures per company" card). */
+  var METRICS = [
+    { id: 'arr', label: 'Per year', unit: 'EUR', pick: function (s) { return s.arr; } },
+    { id: 'pipeline', label: 'Weighted pipeline', unit: 'EUR', pick: function (s) { return s.pipeline.weighted; } },
+    { id: 'outstanding', label: 'Outstanding', unit: 'EUR, gross', pick: function (s) { return s.payment.exposureGross; } },
+    { id: 'overdue', label: 'Overdue', unit: 'EUR, gross', pick: function (s) { return s.payment.overdueGross; } },
+    { id: 'tickets', label: 'Open tickets', unit: '', pick: function (s) { return s.openTickets; } },
+    { id: 'heat', label: 'Heat', unit: 'of 100', pick: function (s) { return s.heat; } },
+  ];
+  /** One figure for every company, largest first; `pct` is the share of the largest (for the bar). An unknown id gives the first figure. */
+  function figures(metricId) {
+    var m = METRICS.filter(function (x) { return x.id === metricId; })[0] || METRICS[0];
+    var rows = D.entities.map(function (e) {
+      var s = summary(e.id), v = m.pick(s);
+      return { entity: e.id, node: resolve(e.id), name: e.name, short: e.short, value: v, text: m.id === 'tickets' || m.id === 'heat' ? String(v) : eurShort(v), level: s.level };
+    });
+    rows.sort(function (a, b) { return b.value - a.value || (a.short < b.short ? -1 : a.short > b.short ? 1 : 0); });
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([0]));
+    rows.forEach(function (r) { r.pct = max > 0 ? Math.round((r.value / max) * 100) : 0; });
+    return { metric: m.id, label: m.label, unit: m.unit, rows: rows, max: max, total: sum(rows, function (r) { return r.value; }), totalText: m.id === 'heat' ? '' : m.id === 'tickets' ? String(sum(rows, function (r) { return r.value; })) : eurShort(sum(rows, function (r) { return r.value; })) };
+  }
+  /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
+  function clampBox(left, top, w, h, W, H, pad) {
+    function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
+    return { left: fit(left, w, W), top: fit(top, h, H) };
+  }
+
   return {
+    metrics: METRICS, figures: figures, clampBox: clampBox,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,
