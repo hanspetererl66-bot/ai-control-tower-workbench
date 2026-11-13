@@ -7,6 +7,7 @@ import { speechSupported, type VoiceSettings } from '../voice';
 import type { Preferences } from '../preferences';
 import MemoryPanel, { type MemoryPanelProps } from './MemoryPanel';
 import DataAuditPanel from './DataAuditPanel';
+import MonitoringPanel from './MonitoringPanel';
 import GroupsPanel, { type GroupsPanelProps } from './GroupsPanel';
 import { TAB_HELP } from '../settings-help';
 import ChatPanel, { type ChatPanelProps } from './ChatPanel';
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'memory', title: 'Memory' },
   { id: 'groups', title: 'Groups' },
   { id: 'storage', title: 'Storage' },
+  { id: 'monitoring', title: 'Monitoring' },
   { id: 'data', title: 'Data & audit' },
   { id: 'general', title: 'General' },
 ] as const;
@@ -126,6 +128,7 @@ export default function SettingsDialog({
         {personalize && tab === 'assistant' && <AssistantPanel prefs={personalize.prefs} update={personalize.update} />}
         {personalize && tab === 'chat' && <ChatPanel {...personalize.chat} />}
         {personalize && tab === 'memory' && <MemoryPanel {...personalize.memory} spaces={personalize.spaces} />}
+        {personalize && tab === 'monitoring' && <MonitoringPanel />}
         {personalize && tab === 'data' && <DataAuditPanel />}
         {personalize && tab === 'groups' && <GroupsPanel {...personalize.groups} />}
         {personalize && tab === 'storage' && <StoragePanel prefs={personalize.prefs} update={personalize.update} syncAvailable={personalize.syncAvailable} sync={personalize.sync} onSave={personalize.onSyncSave} onLoad={personalize.onSyncLoad} />}

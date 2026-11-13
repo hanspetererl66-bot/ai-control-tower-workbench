@@ -5680,3 +5680,12 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .sov-tile-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
 .sov-tile:hover .sov-tile-icon, .sov-tile:focus-visible .sov-tile-icon { background: color-mix(in srgb, var(--accent) 20%, transparent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
 @media (prefers-reduced-motion: reduce) { .sov-tile-icon { transition: none; } }
+.settings-monitoring {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+}
+.settings-monitoring .voice-option {
+  display: grid;
+  gap: 4px;
+}

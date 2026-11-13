@@ -5,6 +5,8 @@ export const clip: (v: unknown, n: number) => string;
 export function toMinute(v: unknown): string;
 export function normalizeAlert(raw: unknown, hosts?: Record<string, unknown>): MonitoringAlert | null;
 export function normalizeAll(list: unknown, hosts?: Record<string, unknown>, limit?: number): MonitoringAlert[];
+export function checkBaseUrl(raw: unknown): string;
+export function checkToken(raw: unknown): string;
 export function assertReadOnly(adapter: unknown): MonitoringAdapter;
 export function createHttpJsonAdapter(opts: { baseUrl: string; token: string; fetchImpl?: typeof fetch; timeoutMs?: number }): MonitoringAdapter;
 export function adapterFromEnv(env: Record<string, string | undefined> | null | undefined, fetchImpl?: typeof fetch): MonitoringAdapter | null;
