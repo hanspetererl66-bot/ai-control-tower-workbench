@@ -10,7 +10,7 @@ const MAX_LAYOUT_CHARS = 30_000;
 /** Fields of every block, for the agent. Kept in step with space-layout.ts by a test. */
 export const SCHEMA_HELP = `Layout = { "version": 1, "datasets": [Dataset], "blocks": [Block] }
 Dataset = { "id": "d1", "name": "…", "columns": ["Month","Plan"], "rows": [["Jan","40"]] }  (all cells are strings; the first column is the label)
-  A dataset may have "source": {"kind":"joule","prompt":"…","asOf":"…","note":"…"} (the question Joule answered with this table): keep it exactly as it is, never make one up.
+  A dataset may have "source": {"kind":"joule","prompt":"…","asOf":"…","note":"…"} (the question Joule answered with this table) or {"kind":"file","name":"…","asOf":"…","note":"…"} (a file the person loaded): keep it exactly as it is, never make one up.
 In any text (also in key figures) a figure from a dataset can stand as a token {{d1.Plan:sum}} (dataset id, column name, then first|last|sum|count|max|min|avg): keep existing tokens as they are.
 Every block has "id" (keep the ids of blocks you do not change) and "type":
 - heading: text, sub, level (1 or 2)

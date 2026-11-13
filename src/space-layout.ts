@@ -25,8 +25,11 @@ export const CHART_KINDS = ['bar', 'stacked', 'line', 'area', 'donut'] as const;
 export type ChartKind = (typeof CHART_KINDS)[number];
 
 /** A table of text cells. Tables and charts point at a dataset, so several blocks can show the same numbers. */
-/** Where the numbers of a data set come from. Only "joule": a question that Joule answered with a table, at the time `asOf`. */
-export type DataSource = { kind: 'joule'; prompt: string; asOf: string; note: string };
+/** Where the numbers of a data set come from: "joule" is a question that Joule answered with a table, "file" a JSON or CSV file the person chose
+ * (only its name is kept, never the path), both at the time `asOf`. */
+export type DataSource =
+  | { kind: 'joule'; prompt: string; asOf: string; note: string }
+  | { kind: 'file'; name: string; asOf: string; note: string };
 export type Dataset = { id: string; name: string; columns: string[]; rows: string[][]; source?: DataSource };
 
 export type Kpi = { label: string; value: string; delta: string; tone: Tone; trend: string };
@@ -112,9 +115,12 @@ function normalizeDataset(raw: unknown, taken: Set<string>): Dataset | null {
   const id = typeof o.id === 'string' && ID.test(o.id) && !taken.has(o.id) ? o.id : freeId('d', taken);
   taken.add(id);
   const src = obj(o.source);
+  const asOf = typeof src.asOf === 'string' && AS_OF.test(src.asOf) ? src.asOf : '';
   const source: DataSource | undefined = src.kind === 'joule'
-    ? { kind: 'joule', prompt: clip(src.prompt, 600).trim(), asOf: typeof src.asOf === 'string' && AS_OF.test(src.asOf) ? src.asOf : '', note: line(src.note, 160) }
-    : undefined;
+    ? { kind: 'joule', prompt: clip(src.prompt, 600).trim(), asOf, note: line(src.note, 160) }
+    : src.kind === 'file'
+      ? { kind: 'file', name: line(src.name, 120).replace(/[\\/]/g, ''), asOf, note: line(src.note, 160) }
+      : undefined;
   return { id, name: line(o.name, 60) || id, columns, rows, ...(source ? { source } : {}) };
 }
 
