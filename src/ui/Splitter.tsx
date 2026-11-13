@@ -5,13 +5,14 @@ import { clampWidth, DEFAULT_WIDTHS, type PaneWidths } from '../pane-width';
  * A draggable divider between two panes. "list" sits at the right edge of the left list, "dock" at the left edge of the Joule dock.
  * Drag with the mouse, use the arrow keys, or double-click to go back to the default width.
  */
-export default function Splitter({ pane, width, onChange, onCommit }: { pane: keyof PaneWidths; width: number; onChange: (w: number) => void; onCommit: (w: number) => void }) {
+export default function Splitter({ pane, width, onChange, onCommit, side = 'left' }: { pane: keyof PaneWidths; width: number; onChange: (w: number) => void; onCommit: (w: number) => void; side?: 'left' | 'right' }) {
   const drag = useRef<{ x: number; w: number } | null>(null);
   const label = pane === 'list' ? 'Resize the list' : 'Resize the Joule panel';
-  const sign = pane === 'list' ? 1 : -1;
+  /* A list on the left grows when the divider moves right; a list docked on the right grows when it moves left. */
+  const sign = pane === 'list' ? (side === 'right' ? -1 : 1) : -1;
   return (
     <div
-      className={`splitter splitter-${pane}`}
+      className={`splitter splitter-${pane} ${pane === 'list' && side === 'right' ? 'splitter-list-right' : ''}`}
       role="separator"
       aria-orientation="vertical"
       aria-label={label}

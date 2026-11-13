@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { PRODUCT_TITLE } from '../product';
 import { relativeTime, type Space } from '../spaces';
-import type { SpacesView } from '../preferences';
+import { SPACES_DOCKS, type SpacesDock, type SpacesView } from '../preferences';
+import { DOCK_LABEL } from '../spaces-dock';
 import { spaceKey, treeNavigate, treeRows, type TreeRow } from '../spaces-tree';
 
 type Props = {
@@ -42,6 +43,9 @@ type Props = {
   /** How the list is drawn: cards, or a tree with one line per Space. The person's choice is kept in the settings. */
   view?: SpacesView;
   onViewChange?: (view: SpacesView) => void;
+  /** Which side of the window the list sits on, and the choice in the menu of the header. */
+  dock?: SpacesDock;
+  onDockChange?: (dock: SpacesDock) => void;
 };
 
 const COLLAPSED_KEY = 'werkbank.collapsedDomains';
@@ -57,8 +61,19 @@ function loadCollapsed(): string[] {
 /** `into`: the middle of a top-level card, dropping there makes the dragged Space a subspace of it. */
 type DropMark = { slug: string; after: boolean; into: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace, view = 'cards', onViewChange }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace, view = 'cards', onViewChange, dock = 'left', onDockChange }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
+  const [dockOpen, setDockOpen] = useState(false);
+  const dockRef = useRef<HTMLSpanElement>(null);
+  /* The dock menu closes on Escape and on a click anywhere else. */
+  useEffect(() => {
+    if (!dockOpen) return;
+    const onKey = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') { setDockOpen(false); dockRef.current?.querySelector('button')?.focus(); } };
+    const onDown = (event: MouseEvent) => { if (!dockRef.current?.contains(event.target as Node)) setDockOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDown);
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown); };
+  }, [dockOpen]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -391,6 +406,21 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             <button type="button" className={`icon-btn ${tree ? 'icon-btn-on' : ''}`} aria-pressed={tree} title="Tree: one line per Space, like a folder tree" aria-label="Show Spaces as a tree" onClick={() => onViewChange('tree')}><TreeIcon /></button>
           </span>
         )}
+        {onDockChange && (
+          <span className="dock-menu-wrap" ref={dockRef}>
+            <button type="button" className={`icon-btn ${dockOpen ? 'icon-btn-on' : ''}`} aria-haspopup="menu" aria-expanded={dockOpen} aria-label="Where the Spaces list sits" title="Move the Spaces list to another side" onClick={() => setDockOpen((v) => !v)}><DockIcon side={dock} /></button>
+            {dockOpen && (
+              <div className="dock-menu" role="menu" aria-label="Where the Spaces list sits">
+                {SPACES_DOCKS.map((side) => (
+                  <button key={side} type="button" role="menuitemradio" aria-checked={dock === side} className={`dock-item ${dock === side ? 'dock-item-on' : ''}`} onClick={() => { onDockChange(side); setDockOpen(false); }}>
+                    <DockIcon side={side} />
+                    <span>{DOCK_LABEL[side]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </span>
+        )}
         {onImportSpace && (
           <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
             Import
@@ -565,6 +595,16 @@ function TreeIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path d="M2 3h6M5 7.5h8M5 12h8M3.4 3v9M3.4 7.5H5M3.4 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** A window with the side the list sits on filled in. */
+function DockIcon({ side }: { side: SpacesDock }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2" y="2.6" width="12" height="10.8" rx="2" stroke="currentColor" strokeWidth="1.3" />
+      {side === 'left' ? <rect x="2" y="2.6" width="4.4" height="10.8" rx="1.4" fill="currentColor" /> : <rect x="9.6" y="2.6" width="4.4" height="10.8" rx="1.4" fill="currentColor" />}
     </svg>
   );
 }

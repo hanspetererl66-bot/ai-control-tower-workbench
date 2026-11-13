@@ -1,11 +1,12 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, CONTRASTS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, TONES,
+  ACCENT_PRESETS, APP_SCALES, CONTRASTS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
 import { sectionEffect } from '../settings-help';
+import { DOCK_LABEL } from '../spaces-dock';
 import { SPACE_SCALES } from '../space-scale';
 import { LAYOUT_LIST } from '../layouts';
 import { SKIN_LIST } from '../skins';
@@ -169,6 +170,10 @@ export function LookPanel({ prefs, update }: Common) {
         <Choice label="Text size in Spaces" value={prefs.spaceScale} options={SPACE_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, spaceScale: v }))} />
         <Choice label="Font" value={prefs.font} options={FONTS} show={(v) => FONT_NAMES[v]} onPick={(v) => update((p) => ({ ...p, font: v }))} />
         <Choice label="Density" value={prefs.density} options={DENSITIES} show={(v) => v[0].toUpperCase() + v.slice(1)} onPick={(v) => update((p) => ({ ...p, density: v }))} />
+      </Section>
+      <Section title="Spaces list" hint="How the list of Spaces looks and which side of the window it sits on. The same choice is in the header of the list.">
+        <Choice label="View" value={prefs.spacesView} options={SPACES_VIEWS} show={(v) => (v === 'tree' ? 'Tree' : 'Cards')} onPick={(v) => update((p) => ({ ...p, spacesView: v }))} />
+        <Choice label="Position" value={prefs.spacesDock} options={SPACES_DOCKS} show={(v) => DOCK_LABEL[v]} onPick={(v) => update((p) => ({ ...p, spacesDock: v }))} />
       </Section>
       <Section title="Accessibility" hint="High contrast makes lines and secondary text darker and focus rings thicker. Reduced motion switches animations off.">
         <Choice label="Contrast" value={prefs.contrast} options={CONTRASTS} show={(v) => (v === 'high' ? 'High' : 'Normal')} onPick={(v) => update((p) => ({ ...p, contrast: v }))} />
