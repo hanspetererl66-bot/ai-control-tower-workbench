@@ -52,6 +52,10 @@ Der Win-back hat keinen eigenen Stop, weil er im Reiter Autopilot lebt. Ein zwei
 
 Nach jedem PR: `npm run install:examples`; die App muss nur neu geladen werden, nicht neu gestartet, solange `src/` und `electron/` unverändert bleiben.
 
+## Stand (14.11.2026)
+
+Gebaut mit den Standardwerten (Namen wie vorgeschlagen, Variante A, Aufträge markieren und nach oben stellen, Nordlicht gesperrt) im Branch `feat/journey-stops`. Details und Grenzen in `docs/status/customer-360.md`.
+
 ## Nicht geprüft
 
 - Nichts davon ist gebaut oder in der App gesehen. Die Tabelle oben stammt aus `shared/journey.mjs` und den Daten der Spaces.
