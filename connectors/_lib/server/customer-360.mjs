@@ -686,6 +686,55 @@ export function makeLogic(D) {
     return out;
   }
 
+  /** A text on one line, cut at a word boundary with an ellipsis when it is longer than `max`. */
+  function clipText(text, max) {
+    var t = String(text).replace(/\s+/g, ' ').trim();
+    if (t.length <= max) return t;
+    var cut = t.slice(0, max), sp = cut.lastIndexOf(' ');
+    return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[ ,.;:]+$/, '') + '…';
+  }
+  /** How each company pays, measured from its paid invoices (the "Invoices and payment behaviour" card). Not a forecast. */
+  function behaviour() {
+    var rows = [];
+    D.entities.forEach(function (e) {
+      var inv = D.invoices.filter(function (i) { return i.entity === e.id; });
+      if (!inv.length) return;
+      var p = paymentOf(e.id);
+      var paid = inv.filter(function (i) { return i.status === 'Paid'; }).sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : a.dueOn > b.dueOn ? 1 : 0; });
+      var trend = null;
+      if (paid.length >= 6) {
+        var recent = paid.slice(-4), before = paid.slice(0, -4);
+        var delta = Math.round((sum(recent, function (i) { return i.daysLate; }) / recent.length - sum(before, function (i) { return i.daysLate; }) / before.length) * 10) / 10;
+        trend = { delta: delta, label: delta <= -2 ? 'better' : delta >= 2 ? 'worse' : 'steady' };
+      }
+      rows.push({
+        entity: e.id, short: e.short, name: e.name, node: resolve(e.id), invoices: inv.length, paid: paid.length, lateCount: p.lateCount, latePct: paid.length ? Math.round((p.lateCount / paid.length) * 100) : 0,
+        avgDaysLate: p.avgDaysLate, maxDaysLate: p.maxDaysLate, trend: trend, exposureGross: p.exposureGross, overdueGross: p.overdueGross, oldestOverdueDays: p.oldestOverdueDays, risk: p.risk,
+        points: paid.map(function (i) { return { id: i.id, due: i.dueOn, daysLate: i.daysLate, gross: i.grossEur, node: 'pay:' + e.id }; }),
+        overdue: p.overdue.map(function (i) { return { id: i.id, due: i.dueOn, daysLate: daysBetween(i.dueOn, ASOF), gross: i.grossEur, node: resolve(i.id) }; }),
+      });
+    });
+    var rank = { high: 3, medium: 2, low: 1, none: 0 };
+    rows.sort(function (a, b) { return b.exposureGross - a.exposureGross || rank[b.risk] - rank[a.risk] || b.avgDaysLate - a.avgDaysLate; });
+    return rows;
+  }
+  /** Invoices that are not paid yet, with the reason a document gives (a message that names the invoice) and an expected payment date by a stated rule of thumb. */
+  function openInvoices() {
+    var rows = D.invoices.filter(function (i) { return i.status !== 'Paid'; }).map(function (i) {
+      var p = paymentOf(i.entity), paidN = p.paid;
+      var sig = D.signals.filter(function (s) { return (s.about || []).indexOf(i.id) >= 0; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0] || null;
+      var avg = Math.max(0, Math.round(p.avgDaysLate));
+      var expectedOn = paidN ? addDays(i.dueOn, avg) : null;
+      return {
+        id: i.id, entity: i.entity, short: (ent(i.entity) || {}).short || i.entity, dueOn: i.dueOn, grossEur: i.grossEur, status: i.status, daysToDue: daysBetween(ASOF, i.dueOn), node: resolve(i.id),
+        reason: sig ? { signal: sig.id, kind: sig.kind, date: sig.date, text: clipText(sig.text, 200), node: resolve(sig.id) } : null,
+        expected: expectedOn ? { on: expectedOn, later: expectedOn < ASOF, avgDaysLate: avg, basedOn: paidN } : null,
+      };
+    });
+    rows.sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : a.dueOn > b.dueOn ? 1 : 0; });
+    return rows;
+  }
+
   /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
   function clampBox(left, top, w, h, W, H, pad) {
     function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
@@ -693,7 +742,7 @@ export function makeLogic(D) {
   }
 
   return {
-    metrics: METRICS, figures: figures, clampBox: clampBox, events: events, timeline: timeline, bucketEvents: bucketEvents, TL_KINDS: TL_KINDS,
+    metrics: METRICS, figures: figures, clampBox: clampBox, events: events, timeline: timeline, bucketEvents: bucketEvents, TL_KINDS: TL_KINDS, behaviour: behaviour, openInvoices: openInvoices,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,
