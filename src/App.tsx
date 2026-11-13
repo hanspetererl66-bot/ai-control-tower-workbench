@@ -81,6 +81,7 @@ import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
+import SpaceAnalysisView from './ui/SpaceAnalysisView';
 import OntologyManagerView from './ui/OntologyManagerView';
 import { buildGlossary } from './ontology-glossary';
 import { setTermsForDomain, setTermsForSpace, termsOn, type SpaceTermsControl } from './space-terms';
@@ -1729,7 +1730,9 @@ export default function App() {
       ) : view === 'hiring' ? (
         <HiringApprovals onBack={() => { setSelectedSpace(HIRING_SPACE); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenAnalysis={() => setView('spaceanalysis')} />
+      ) : view === 'spaceanalysis' ? (
+        <SpaceAnalysisView spaces={spaces} onBack={() => setView('admin')} onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'ontology' ? (
         <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} actor={identity?.email ?? ''} />
       ) : view === 'skillhealth' ? (
