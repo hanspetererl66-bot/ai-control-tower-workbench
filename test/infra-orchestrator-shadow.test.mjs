@@ -22,7 +22,7 @@ function load(hosted = true) {
 const F = (o = {}) => ({ id: 'L-1', customer: 'mi', customerName: 'Muster Industrie AG', host: 'gw-01', env: 'PRD', kind: 'cert-expiry', template: 'renew-certificate', deadlineDays: 14, signal: 'Certificate for edge expires in 5 days', evidence: 'Monitoring alert 1 at 2026-11-13 08:00 UTC on gw-01: Certificate for edge expires in 5 days', live: true, ...o });
 const FINDINGS = [F(), F({ id: 'L-2', customer: '', customerName: 'Kunde X GmbH', host: 'x-app01', kind: 'patch-age', template: 'patch-vm', deadlineDays: 30 }), F({ id: 'L-3', customer: 'hr', customerName: 'Hanseatic Retail GmbH', host: 'hr-qas01', env: 'QAS', kind: 'patch-age', template: 'patch-vm', deadlineDays: 25 }),
   F({ id: 'L-4', host: 'gw-02', deadlineDays: 1, signal: 'Certificate expires tomorrow' })];
-const REPLY = (findings = FINDINGS, o = {}) => ({ type: 'mon:findings', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-13T08:30', sinceHours: 24, alerts: 7, skipped: 3, withheld: 1, rulesDropped: 0, findings, ...o });
+const REPLY = (findings = FINDINGS, o = {}) => ({ type: 'mon:findings', source: 'live', adapter: 'zabbix', fetchedAt: '2026-11-13T08:30', sinceHours: 24, alerts: 7, skipped: 3, withheld: 1, rulesDropped: 0, unmatched: [], findings, ...o });
 const lastReq = (p) => p.posted.filter((m) => m.type === 'mon:findings-request').at(-1);
 const enter = async (p, reply = REPLY()) => { p.doc.querySelector('#shadow').click(); p.answer({ ...reply, requestId: lastReq(p).requestId }); await p.tick(); };
 
@@ -258,5 +258,30 @@ test('ignored rules are shown: no banner at 0, a banner with the number and the 
     p.doc.querySelector('#shadow').click();
     await enter(p, REPLY(FINDINGS, { rulesDropped: 1 }));
     assert.match([...p.doc.querySelectorAll('.banner')].map((b) => b.textContent).join(' '), /1 rule ignored\./, 'singular');
+  } finally { p.close(); }
+});
+
+test('the alerts that match no rule are shown with their wording, escaped; nothing is shown when there are none; the list survives a trip', async () => {
+  const p = load();
+  try {
+    await enter(p);
+    assert.equal(p.doc.querySelector('.unmatched'), null, 'no list, no box');
+    p.doc.querySelector('#shadow').click();
+    const unmatched = [{ id: 'U1', host: 'gw-02', severity: 'high', text: 'Zertifikat l\u00e4uft in 5 Tagen ab' }, { id: 'U2', host: 'srv-<b>x</b>', severity: 'low', text: '<img src=x onerror=alert(1)> Backup failed' }];
+    await enter(p, REPLY(FINDINGS, { skipped: 5, unmatched }));
+    const box = p.doc.querySelector('.unmatched');
+    assert.match(box.querySelector('summary').textContent, /5 alerts match no rule: show them/);
+    assert.match(box.textContent, /gw-02 · high · Zertifikat l\u00e4uft in 5 Tagen ab/);
+    assert.match(box.textContent, /… and 3 more\./, 'the list is cut, the count is not');
+    assert.equal(box.querySelector('img'), null, 'markup is shown as text, never run');
+    assert.match(box.textContent, /<img src=x onerror=alert\(1\)> Backup failed/);
+    assert.match(box.textContent, /text pattern on this wording/);
+    const saved = p.posted.filter((m) => m.type === 'wb:state').at(-1).state;
+    assert.equal(saved.shadow.unmatched.length, 2);
+    const q = load();
+    try { q.send(saved); assert.match(q.doc.querySelector('.unmatched summary').textContent, /5 alerts match no rule/); } finally { q.close(); }
+    p.doc.querySelector('#shadow').click();
+    await enter(p, REPLY(FINDINGS, { skipped: 1, unmatched: [unmatched[0]] }));
+    assert.match(p.doc.querySelector('.unmatched summary').textContent, /1 alert matches no rule: show it/, 'singular');
   } finally { p.close(); }
 });
