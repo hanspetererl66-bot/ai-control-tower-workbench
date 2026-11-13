@@ -168,3 +168,23 @@ test('next actions have a stable key: same order and count as the texts, one key
   assert.equal(first('C-2025-0041'), 'extension', 'a passed decision date with an offer');
   assert.equal(first('C-2023-0390'), 'invoice', 'an overdue invoice comes first');
 });
+
+test('mails: a mail that names an offer and a contract is about the contract the offer belongs to (H-202 hung on the wrong offer)', () => {
+  const offerOwner = new Map(data.cases.filter((c) => c.offer).map((c) => [c.offer.id, c]));
+  const problems = [];
+  for (const cu of data.customers) {
+    for (const m of cu.mails || []) {
+      if (!m.offerId || !m.contractId) continue;
+      const c = offerOwner.get(m.offerId);
+      if (!c) continue;
+      if (c.contractId !== m.contractId) problems.push(`${m.id}: offer ${m.offerId} belongs to ${c.contractId} (${c.product}), the mail says ${m.contractId}`);
+      if (c.customerId !== cu.id) problems.push(`${m.id}: offer ${m.offerId} belongs to another customer`);
+    }
+  }
+  assert.deepEqual(problems, []);
+  const h202 = data.customers.find((x) => x.id === 'hanse').mails.find((m) => m.id === 'H-202');
+  assert.equal(h202.contractId, 'C-2024-0611');
+  assert.match(h202.subject, /Commerce Cloud/);
+  assert.match(h202.snippet, /cap of 4 %/, 'the cap of the Commerce Cloud contract');
+  assert.equal(data.cases.find((c) => c.contractId === 'C-2024-0611').upliftCapPct, 4);
+});
