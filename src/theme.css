@@ -5488,6 +5488,27 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .om-map-list { margin: 0; padding: 0; list-style: none; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
 .om-map-list button { border: 0; background: transparent; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-align: left; }
 .om-map-list button:hover { text-decoration: underline; }
+.om-tour { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+.om-tour-step { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+.om-tour-body { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ink); }
+.om-tour-actions { display: flex; gap: 6px; align-items: center; }
+.om-tour-skip { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; padding: 4px 6px; }
+.om-tour-skip:hover { text-decoration: underline; }
+@media (max-width: 760px) { .om-tour { grid-template-columns: minmax(0, 1fr); } }
+.om-map-key { position: absolute; left: 10px; top: 10px; max-width: 250px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 92%, transparent); font-size: 12px; padding: 4px 6px; }
+.om-map-key ul { margin: 4px 0 2px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.om-map-key li { display: flex; align-items: center; gap: 6px; color: var(--ink); }
+.om-map-key-toggle { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; padding: 2px 4px; }
+.om-glyph { flex: none; }
+.om-key-red, .om-key-dash, .om-key-arrow { flex: none; width: 18px; height: 0; display: inline-block; }
+.om-key-red { border-top: 3px solid var(--om-bad); }
+.om-key-dash { border-top: 2px dashed var(--muted); }
+.om-key-arrow { border-top: 2px solid var(--muted); position: relative; }
+.om-key-arrow::after { content: ''; position: absolute; right: -1px; top: -5px; border-left: 6px solid var(--muted); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.om-map-sum { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; font-size: 13px; line-height: 1.4; background: color-mix(in srgb, var(--om-bad) 8%, var(--panel)); border: 1px solid color-mix(in srgb, var(--om-bad) 28%, var(--line)); }
+.om-map-starts { margin: 8px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.om-map-starts button { width: 100%; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+.om-map-starts button:hover, .om-map-starts button:focus-visible { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
 
 /* ---------- draggable dividers between the list, the work area and the Joule dock ---------- */
 .splitter { position: absolute; top: 0; bottom: 0; width: 10px; z-index: 20; cursor: col-resize; touch-action: none; outline: none; }
