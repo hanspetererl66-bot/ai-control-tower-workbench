@@ -71,7 +71,7 @@ import { addReport, loadReports, saveReports, fingerprint as agentVersion, type 
 import type { NetMessage } from './agent-network';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
-import { listSide, spacesDockClass } from './spaces-dock';
+import { listSide, showListSplitter, spacesDockClass } from './spaces-dock';
 import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
@@ -1966,7 +1966,7 @@ export default function App() {
         </main>
       )}
 
-      {hasList && <Splitter pane="list" side={listSide(view, prefs.spacesDock)} width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
+      {hasList && showListSplitter(view, prefs.spacesDock) && <Splitter pane="list" side={listSide(view, prefs.spacesDock)} width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && <Splitter pane="dock" width={paneWidths.dock} onChange={(w) => setPaneWidths((c) => ({ ...c, dock: w }))} onCommit={(w) => { const n = { ...paneWidths, dock: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && (
         <JouleDock
