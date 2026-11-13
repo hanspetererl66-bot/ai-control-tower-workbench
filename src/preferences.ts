@@ -82,8 +82,8 @@ export type StorageLocation = { id: string; name: string; purpose: (typeof PURPO
 export const SPACES_VIEWS = ['cards', 'tree'] as const;
 export type SpacesView = (typeof SPACES_VIEWS)[number];
 
-/** Which side of the window the Spaces list sits on. Top and bottom follow with a horizontal list. */
-export const SPACES_DOCKS = ['left', 'right'] as const;
+/** Which side of the window the Spaces list sits on. Left and right keep the list as a column; top and bottom turn it into a bar (domain tabs and chips). */
+export const SPACES_DOCKS = ['left', 'right', 'top', 'bottom'] as const;
 export type SpacesDock = (typeof SPACES_DOCKS)[number];
 
 /** What a profile bundles. */

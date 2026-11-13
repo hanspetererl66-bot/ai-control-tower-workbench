@@ -73,7 +73,7 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Accent colour', 'Changes the colour of buttons, selected tabs and highlights, in the app and in all Spaces.'],
   ['Text and layout', 'App text size zooms the whole window. Text size in Spaces scales only the Spaces. Density changes the spacing in lists and cards. Font changes the typeface of the app.'],
   ['Tips', 'Show tips switches the speech bubbles of the Ontology Manager on or off (the bubble itself also has Turn off tips). Size and the three colours change how the bubbles look at once; an empty colour follows the skin. The highlight is the tint and frame around the part a tip points at. Nothing else in the app changes.'],
-  ['Spaces list', 'View switches the list between cards with a description and a tree with one line per Space. Position puts the list on the left or on the right of the window. Both apply at once, only in the Spaces view, and change no Space.'],
+  ['Spaces list', 'View switches the list between cards with a description and a tree with one line per Space. Position puts the list on the left or on the right of the window as a column, or on top or at the bottom as a bar of domain tabs and Space chips (the view then has no cards or tree). Both apply at once, only in the Spaces view, and change no Space.'],
   ['Accessibility', 'High contrast and reduced motion apply at once and to every screen. They do not change any content.'],
   ['Start view', 'Decides what you see after the next start. It does not change the current session.'],
   ['Pinned Spaces', 'Pinned Spaces move to the top of the Spaces list in the order you pinned them.'],

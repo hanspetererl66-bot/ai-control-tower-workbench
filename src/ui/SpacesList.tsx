@@ -3,7 +3,8 @@ import { PRODUCT_TITLE } from '../product';
 import { sortByTitle } from '../space-order';
 import { relativeTime, type Space } from '../spaces';
 import { SPACES_DOCKS, type SpacesDock, type SpacesView } from '../preferences';
-import { DOCK_LABEL } from '../spaces-dock';
+import { DOCK_LABEL, isBarDock } from '../spaces-dock';
+import { barModel, chipOf } from '../spaces-bar';
 import { spaceKey, treeNavigate, treeRows, type TreeRow } from '../spaces-tree';
 
 type Props = {
@@ -66,6 +67,30 @@ type DropMark = { slug: string; after: boolean; into: boolean };
 
 export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, onSortAll, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace, view = 'cards', onViewChange, dock = 'left', onDockChange }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
+  const bar = isBarDock(dock);
+  /* The bar form: the tab the person clicked, and the open popover ('sub:<slug>', 'manage' or 'archived'). */
+  const [chosenDomain, setChosenDomain] = useState<string | null>(null);
+  const [barPop, setBarPop] = useState<string | null>(null);
+  useEffect(() => {
+    if (!barPop) return;
+    const onKey = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') setBarPop(null); };
+    const onDown = (event: MouseEvent) => { if (!(event.target as Element | null)?.closest?.('[data-pop]')) setBarPop(null); };
+    /* The subspace menu floats (position: fixed), so it would stay behind when the chip row scrolls or the window changes. */
+    const close = () => setBarPop(null);
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDown);
+    window.addEventListener('resize', close);
+    document.addEventListener('scroll', close, true);
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown); window.removeEventListener('resize', close); document.removeEventListener('scroll', close, true); };
+  }, [barPop]);
+  /* The chip row scrolls sideways (overflow), and that would cut off a menu inside it. So the menu is placed by hand next to its chip, above it for a bar at the bottom. */
+  const placeSubMenu = (el: HTMLDivElement | null) => {
+    const anchor = el?.parentElement?.getBoundingClientRect();
+    if (!el || !anchor) return;
+    el.style.left = `${Math.max(8, Math.min(anchor.left, window.innerWidth - el.offsetWidth - 8))}px`;
+    if (dock === 'bottom') { el.style.top = 'auto'; el.style.bottom = `${window.innerHeight - anchor.top + 6}px`; }
+    else { el.style.bottom = 'auto'; el.style.top = `${anchor.bottom + 6}px`; }
+  };
   const [dockOpen, setDockOpen] = useState(false);
   const dockRef = useRef<HTMLSpanElement>(null);
   /* The dock menu closes on Escape and on a click anywhere else. */
@@ -122,6 +147,16 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     const into = canNest(dragging, slug) && offset > 0.28 && offset < 0.72;
     const after = offset > 0.5;
     setMark((current) => (current?.slug === slug && current.after === after && current.into === into ? current : { slug, after, into }));
+  }
+
+  /** Over a chip of the bar: before or after it, by the horizontal half. A chip never takes a subspace (that is done with "Subspace of"). */
+  function overChip(event: DragEvent<HTMLButtonElement>, slug: string) {
+    if (!dragging) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const box = event.currentTarget.getBoundingClientRect();
+    const after = (event.clientX - box.left) / box.width > 0.5;
+    setMark((current) => (current?.slug === slug && current.after === after && !current.into ? current : { slug, after, into: false }));
   }
 
   /** A Space can become a subspace of a top-level Space; not one that has subspaces itself, not itself, not twice. */
@@ -283,6 +318,49 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
     </>
   );
 
+  /** The little menu in the header: where the Spaces list sits. The same in the column and in the bar. */
+  const renderDockMenu = () => (
+    onDockChange ? (
+          <span className="dock-menu-wrap" ref={dockRef}>
+            <button type="button" className={`icon-btn ${dockOpen ? 'icon-btn-on' : ''}`} aria-haspopup="menu" aria-expanded={dockOpen} aria-label="Where the Spaces list sits" title="Move the Spaces list to another side" onClick={() => setDockOpen((v) => !v)}><DockIcon side={dock} /></button>
+            {dockOpen && (
+              <div className="dock-menu" role="menu" aria-label="Where the Spaces list sits">
+                {SPACES_DOCKS.map((side) => (
+                  <button key={side} type="button" role="menuitemradio" aria-checked={dock === side} className={`dock-item ${dock === side ? 'dock-item-on' : ''}`} onClick={() => { onDockChange(side); setDockOpen(false); }}>
+                    <DockIcon side={side} />
+                    <span>{DOCK_LABEL[side]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </span>
+        ) : null
+  );
+
+  /** The dialog that asks before a Space is deleted for good. */
+  const renderConfirm = () => {
+    if (!confirmDelete) return null;
+    const target = [...spaces, ...archived].find((x) => x.slug === confirmDelete);
+    const subs = target ? subsOf(target.slug) : [];
+    if (!target) return null;
+    return (
+      <div className="scrim" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setConfirmDelete(null); }}>
+        <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="del-title" aria-describedby="del-text" onKeyDown={(event) => { if (event.key === 'Escape') setConfirmDelete(null); }}>
+          <h2 id="del-title" className="dialog-title">Delete “{target.title}”?</h2>
+          <p id="del-text" className="dialog-body">
+            This deletes the {isSub(target.slug) ? 'subspace' : 'Space'} and its page from this computer. It cannot be undone.
+            {subs.length > 0 && ` Its ${subs.length === 1 ? 'subspace' : `${subs.length} subspaces`} (${subs.map((x) => x.title).join(', ')}) will stay and move to the top level.`}
+            {' '}Tip: Share → Save as file keeps a copy first.
+          </p>
+          <div className="dialog-actions">
+            <button autoFocus className="dialog-btn dialog-btn-primary" onClick={() => setConfirmDelete(null)}>Cancel</button>
+            <button className="dialog-btn dialog-btn-danger" onClick={() => { const slug = confirmDelete; setConfirmDelete(null); onDeleteSpace?.(slug); }}>Delete for good</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const tree = view === 'tree';
   /** Arrow keys in the tree: Up and Down move, Right and Left open, close or step in and out (see spaces-tree.ts); Alt+Arrow still reorders. */
   function treeKey(event: KeyboardEvent<HTMLButtonElement>, slug: string) {
@@ -399,6 +477,164 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
         </Fragment>
   );
 
+  /** The bar form (docked on top or at the bottom): domains as tabs, the Spaces of the open domain as chips, subspaces on the chip, the rest in small menus. */
+  const model = bar ? barModel({ spaces: shown, domains: domains ?? [], domainOf: domainOf ?? (() => ''), parentOf: parentOf ?? (() => ''), selected, chosen: chosenDomain, searching: Boolean(needle) }) : null;
+  function chipKey(event: KeyboardEvent<HTMLButtonElement>, slug: string) {
+    if (event.altKey && onNudge && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) { event.preventDefault(); onNudge(slug, event.key === 'ArrowLeft' ? -1 : 1); return; }
+    if (event.altKey || event.ctrlKey || event.metaKey || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Home' && event.key !== 'End')) return;
+    const chips = [...(event.currentTarget.closest('.bar-chips')?.querySelectorAll<HTMLButtonElement>('[data-chip]') ?? [])];
+    const i = chips.indexOf(event.currentTarget);
+    const to = event.key === 'Home' ? 0 : event.key === 'End' ? chips.length - 1 : Math.max(0, Math.min(chips.length - 1, i + (event.key === 'ArrowRight' ? 1 : -1)));
+    event.preventDefault();
+    chips[to]?.focus();
+  }
+  const renderBar = () => {
+    const m = model!;
+    const titleOf = (slug: string) => spaces.find((x) => x.slug === slug)?.title ?? slug;
+    const open = chipOf(m.chips, selected);
+    const current = selected ? spaces.find((x) => x.slug === selected) : undefined;
+    const activeCount = m.tabs.find((t) => t.name === m.active)?.count ?? 0;
+    return (
+      <aside className={`list list-bar list-bar-${dock}`} aria-label="Spaces">
+        <div className="bar-row">
+          <span className="list-title">Spaces</span>
+          {!m.flat && (
+            <div className="bar-tabs" role="tablist" aria-label="Domains">
+              {m.tabs.map((t) => (renaming === t.name ? (
+                <form key={t.name} className="bar-tab-form" onSubmit={(event) => { event.preventDefault(); if (renameValue.trim() && onRenameDomain) onRenameDomain(t.name, renameValue); setRenaming(null); }}>
+                  <input autoFocus value={renameValue} maxLength={30} aria-label={`New name for ${t.name}`} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenaming(null); }} onBlur={() => setRenaming(null)} />
+                </form>
+              ) : (
+                <button
+                  key={t.name}
+                  type="button"
+                  role="tab"
+                  aria-selected={t.name === m.active}
+                  className={`bar-tab ${t.name === m.active ? 'bar-tab-on' : ''} ${overDomain === t.name ? 'bar-tab-over' : ''}`}
+                  onClick={() => { setChosenDomain(t.name); setBarPop(null); }}
+                  onDragOver={(event) => { if (dragging) { event.preventDefault(); setOverDomain(t.name); } }}
+                  onDragLeave={() => setOverDomain((cur) => (cur === t.name ? null : cur))}
+                  onDrop={(event) => dropOnDomain(event, t.name)}
+                >
+                  <span className="bar-tab-name">{t.name}</span>
+                  <span className="domain-count">{t.count}</span>
+                </button>
+              )))}
+              {onAddDomain && (adding ? (
+                <form className="bar-tab-form" onSubmit={(event) => { event.preventDefault(); if (newName.trim()) onAddDomain(newName); setNewName(''); setAdding(false); }}>
+                  <input autoFocus value={newName} maxLength={30} placeholder="Name of the domain" aria-label="Name of the new domain" onChange={(event) => setNewName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') { setAdding(false); setNewName(''); } }} />
+                </form>
+              ) : (
+                <button type="button" className="bar-tab bar-tab-add" title="New domain" aria-label="New domain" onClick={() => setAdding(true)}>+</button>
+              ))}
+            </div>
+          )}
+          {!m.flat && m.active && (onRenameDomain || (onDeleteDomain && activeCount === 0)) && (
+            <span className="bar-domain-tools">
+              {onRenameDomain && <button type="button" className="icon-btn" title="Rename this domain" aria-label={`Rename ${m.active}`} onClick={() => { setRenaming(m.active); setRenameValue(m.active); }}>✎</button>}
+              {onDeleteDomain && activeCount === 0 && <button type="button" className="icon-btn" title="Delete this empty domain" aria-label={`Delete ${m.active}`} onClick={() => onDeleteDomain(m.active)}>✕</button>}
+            </span>
+          )}
+          {m.flat && <span className="bar-count" role="status">{shown.length === 0 ? `No Spaces match “${query.trim()}”.` : `${shown.length} of ${spaces.length} shown`}</span>}
+          <span className="bar-spacer" />
+          {searchOpen && (
+            <input ref={searchRef} className="bar-search" type="search" value={query} placeholder="Search names and descriptions" aria-label="Search Spaces" onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') { setQuery(''); setSearchOpen(false); } }} />
+          )}
+          <button className={`icon-btn ${searchOpen ? 'icon-btn-on' : ''}`} title="Search Spaces" aria-label="Search Spaces" aria-expanded={searchOpen} onClick={toggleSearch}><SearchIcon /></button>
+          {onImportSpace && (
+            <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
+              Import
+              <input type="file" accept=".json,application/json" hidden aria-label="Import Space file" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ''; if (f) onImportSpace(f); }} />
+            </label>
+          )}
+          {archived.length > 0 && (
+            <span className="bar-pop-wrap" data-pop>
+              <button type="button" className={`ghost-btn ${barPop === 'archived' ? 'ghost-btn-on' : ''}`} aria-haspopup="menu" aria-expanded={barPop === 'archived'} onClick={() => setBarPop(barPop === 'archived' ? null : 'archived')}>Archived <span className="domain-count">{archived.length}</span></button>
+              {barPop === 'archived' && (
+                <div className="bar-pop bar-pop-archived" role="menu" aria-label="Archived Spaces">
+                  {archived.map((a) => (
+                    <div key={a.slug} className="bar-pop-line">
+                      <span className="archived-title" title={a.description || a.title}>{a.title}</span>
+                      {onRestoreSpace && <button className="ghost-btn small" onClick={() => onRestoreSpace(a.slug)} aria-label={`Restore ${a.title}`}>Restore</button>}
+                      {onDeleteSpace && <button className="mini-icon mini-icon-danger mini-icon-always" onClick={() => { setBarPop(null); setConfirmDelete(a.slug); }} aria-label={`Delete ${a.title}`} title="Delete this Space for good"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></button>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </span>
+          )}
+          {renderDockMenu()}
+        </div>
+        <div
+          className="bar-row bar-chips"
+          role="list"
+          aria-label={m.flat ? 'Search results' : `Spaces in ${m.active}`}
+          onDragOver={(event) => { if (dragging && !m.flat && m.active) event.preventDefault(); }}
+          onDrop={(event) => { if (!m.flat && m.active && event.target === event.currentTarget) dropOnDomain(event, m.active); }}
+        >
+          {m.chips.length === 0 && <span className="bar-empty">{m.flat ? '' : m.active ? 'No Spaces in this domain yet. Drag one here, or ask Joule to build one.' : 'No domain yet. Add one with +.'}</span>}
+          {m.chips.map((c) => {
+            const sp = spaces.find((x) => x.slug === c.slug);
+            if (!sp) return null;
+            const parentOn = open === c.slug && selected !== c.slug;
+            return (
+              <span key={c.slug} role="listitem" className="chip-wrap">
+                <button
+                  type="button"
+                  data-chip
+                  data-slug={c.slug}
+                  className={['chip', selected === c.slug ? 'chip-on' : '', parentOn ? 'chip-parent-on' : '', dragging === c.slug ? 'chip-dragging' : '', mark?.slug === c.slug && dragging !== c.slug ? (mark.after ? 'chip-drop-after' : 'chip-drop-before') : ''].filter(Boolean).join(' ')}
+                  aria-current={selected === c.slug ? 'true' : undefined}
+                  draggable={Boolean(onReorder)}
+                  title={sp.description ? `${sp.title}: ${sp.description}` : sp.title}
+                  onClick={() => { setBarPop(null); onSelect(c.slug); }}
+                  onDragStart={(event) => { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', c.slug); setDragging(c.slug); }}
+                  onDragOver={(event) => overChip(event, c.slug)}
+                  onDrop={(event) => dropOn(event, c.slug)}
+                  onDragEnd={endDrag}
+                  onKeyDown={(event) => chipKey(event, c.slug)}
+                >
+                  <span className="chip-icon"><SpaceIcon /></span>
+                  <span className="chip-title">{sp.title}</span>
+                  {pinned.includes(c.slug) && <span className="trow-pin" aria-hidden="true" title="Pinned">★</span>}
+                </button>
+                {c.subs.length > 0 && (
+                  <span className="chip-sub-wrap" data-pop>
+                    <button type="button" className={`chip-sub ${parentOn ? 'chip-sub-on' : ''}`} aria-haspopup="menu" aria-expanded={barPop === `sub:${c.slug}`} aria-label={`${c.subs.length} subspaces of ${sp.title}`} title={`${c.subs.length} subspaces`} onClick={() => setBarPop(barPop === `sub:${c.slug}` ? null : `sub:${c.slug}`)}>{c.subs.length} ▾</button>
+                    {barPop === `sub:${c.slug}` && (
+                      <div className="bar-pop bar-pop-float" role="menu" ref={placeSubMenu} aria-label={`Subspaces of ${sp.title}`}>
+                        {c.subs.map((sub) => (
+                          <button key={sub} type="button" role="menuitem" className={`bar-pop-item ${selected === sub ? 'bar-pop-item-on' : ''}`} aria-current={selected === sub ? 'true' : undefined} onClick={() => { setBarPop(null); onSelect(sub); }}>
+                            <SpaceIcon />
+                            <span>{titleOf(sub)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </span>
+                )}
+              </span>
+            );
+          })}
+          {current && (open || m.flat) && (
+            <span className="bar-pop-wrap bar-manage" data-pop>
+              <button type="button" className={`icon-btn ${barPop === 'manage' ? 'icon-btn-on' : ''}`} aria-haspopup="menu" aria-expanded={barPop === 'manage'} aria-label={`Manage ${current.title}`} title={`Rename, duplicate, archive, delete or pin ${current.title}`} onClick={() => setBarPop(barPop === 'manage' ? null : 'manage')}>⋯</button>
+              {barPop === 'manage' && (
+                <div className="bar-pop bar-pop-manage" role="group" aria-label={`Manage ${current.title}`}>
+                  <span className="bar-pop-title">{current.title}</span>
+                  {renderTools(current)}
+                  {renderExtras(current)}
+                </div>
+              )}
+            </span>
+          )}
+        </div>
+        {renderConfirm()}
+      </aside>
+    );
+  };
+  if (bar) return renderBar();
+
   return (
     <aside className={`list ${tree ? 'list-tree' : ''}`}>
       <div className="list-head">
@@ -415,21 +651,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             <button type="button" className="icon-btn" title="Sort all Spaces Z to A (you can still drag them afterwards)" aria-label="Sort Spaces Z to A" onClick={() => onSortAll(sortByTitle(spaces, 'desc'))}><SortIcon dir="desc" /></button>
           </span>
         )}
-        {onDockChange && (
-          <span className="dock-menu-wrap" ref={dockRef}>
-            <button type="button" className={`icon-btn ${dockOpen ? 'icon-btn-on' : ''}`} aria-haspopup="menu" aria-expanded={dockOpen} aria-label="Where the Spaces list sits" title="Move the Spaces list to another side" onClick={() => setDockOpen((v) => !v)}><DockIcon side={dock} /></button>
-            {dockOpen && (
-              <div className="dock-menu" role="menu" aria-label="Where the Spaces list sits">
-                {SPACES_DOCKS.map((side) => (
-                  <button key={side} type="button" role="menuitemradio" aria-checked={dock === side} className={`dock-item ${dock === side ? 'dock-item-on' : ''}`} onClick={() => { onDockChange(side); setDockOpen(false); }}>
-                    <DockIcon side={side} />
-                    <span>{DOCK_LABEL[side]}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </span>
-        )}
+        {renderDockMenu()}
         {onImportSpace && (
           <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
             Import
@@ -540,27 +762,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
           )}
         </section>
       )}
-      {confirmDelete && (() => {
-        const target = [...spaces, ...archived].find((x) => x.slug === confirmDelete);
-        const subs = target ? subsOf(target.slug) : [];
-        if (!target) return null;
-        return (
-          <div className="scrim" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setConfirmDelete(null); }}>
-            <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="del-title" aria-describedby="del-text" onKeyDown={(event) => { if (event.key === 'Escape') setConfirmDelete(null); }}>
-              <h2 id="del-title" className="dialog-title">Delete “{target.title}”?</h2>
-              <p id="del-text" className="dialog-body">
-                This deletes the {isSub(target.slug) ? 'subspace' : 'Space'} and its page from this computer. It cannot be undone.
-                {subs.length > 0 && ` Its ${subs.length === 1 ? 'subspace' : `${subs.length} subspaces`} (${subs.map((x) => x.title).join(', ')}) will stay and move to the top level.`}
-                {' '}Tip: Share → Save as file keeps a copy first.
-              </p>
-              <div className="dialog-actions">
-                <button autoFocus className="dialog-btn dialog-btn-primary" onClick={() => setConfirmDelete(null)}>Cancel</button>
-                <button className="dialog-btn dialog-btn-danger" onClick={() => { const slug = confirmDelete; setConfirmDelete(null); onDeleteSpace?.(slug); }}>Delete for good</button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {renderConfirm()}
     </aside>
   );
 }
@@ -622,10 +824,11 @@ function TreeIcon() {
 
 /** A window with the side the list sits on filled in. */
 function DockIcon({ side }: { side: SpacesDock }) {
+  const bar = side === 'left' ? { x: 2, y: 2.6, w: 4.4, h: 10.8 } : side === 'right' ? { x: 9.6, y: 2.6, w: 4.4, h: 10.8 } : side === 'top' ? { x: 2, y: 2.6, w: 12, h: 4 } : { x: 2, y: 9.4, w: 12, h: 4 };
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="2" y="2.6" width="12" height="10.8" rx="2" stroke="currentColor" strokeWidth="1.3" />
-      {side === 'left' ? <rect x="2" y="2.6" width="4.4" height="10.8" rx="1.4" fill="currentColor" /> : <rect x="9.6" y="2.6" width="4.4" height="10.8" rx="1.4" fill="currentColor" />}
+      <rect x={bar.x} y={bar.y} width={bar.w} height={bar.h} rx="1.4" fill="currentColor" />
     </svg>
   );
 }
