@@ -301,6 +301,8 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
             {proposal && (
               <div className="sd-proposal">
                 <p><b>{ds.source.kind === 'file' ? 'The file brings:' : ds.source.kind === 'database' ? 'The view brings:' : 'Joule proposes:'}</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
+                {proposal.basis && <p className="sd-hint"><b>Basis, as Joule says:</b> {proposal.basis}{typeof proposal.records === 'number' ? ` (${proposal.records} records)` : ''}</p>}
+                {ds.source.kind === 'joule' && <p className="sd-hint" role="note">Joule's figures are not checked. Compare them with the system before you apply.</p>}
                 {proposal.notes.map((n) => <p key={n} className="sd-hint">{n}</p>)}
                 <div className="sd-grid-wrap"><table className="sd-grid"><thead><tr>{proposal.columns.map((c, j) => <th key={j}>{c}</th>)}</tr></thead><tbody>{proposal.rows.slice(0, 8).map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
                 {proposal.rows.length > 8 && <p className="sd-hint">… and {proposal.rows.length - 8} more rows.</p>}
