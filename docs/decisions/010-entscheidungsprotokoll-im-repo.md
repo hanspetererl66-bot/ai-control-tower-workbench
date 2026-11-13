@@ -1,6 +1,6 @@
 # 010 Entscheidungsprotokoll im Repo
 
-- **Status:** vorgeschlagen
+- **Status:** entschieden
 - **Datum:** 13.11.2026
 - **Entscheider:** Hans-Peter
 
@@ -10,6 +10,6 @@
 
 **Grund:** Entscheidungen standen verstreut in `CLAUDE.md`, Statusnotizen, Konzepten und PR-Texten; offene Fragen gingen im Chat unter.
 
-**Folgen:** Wird zur Entscheidung, sobald der PR mit diesem Entwurf gemergt ist. Ein externes Wiki (zum Beispiel Notion) kann später daraus gespiegelt werden.
+**Folgen:** Entschieden am 13.11.2026 (Hans-Peter: "yes", Entwurf in PR #377 gemergt). Ein externes Wiki (zum Beispiel Notion) kann später daraus gespiegelt werden.
 
 **Quellen:** Dieses Verzeichnis.

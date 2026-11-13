@@ -5702,3 +5702,14 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
   display: grid;
   gap: 4px;
 }
+
+/* Ontology Manager: probable users of a term (found in registry, skills and spaces; suspected until a person decides). Tokens only. */
+.om-usage { margin: 14px 0 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.om-usage h4 { margin: 0 0 6px; }
+.om-usage-summary { margin: 6px 0; font-size: 13px; line-height: 1.5; }
+.om-usage-list { margin: 8px 0; }
+.om-usage-row { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.om-usage-row:last-child { border-bottom: 0; }
+.om-usage-evidence { margin: 0; font-size: 12px; color: var(--ink); line-height: 1.45; overflow-wrap: anywhere; }
+.om-usage-warn { color: var(--om-warn); font-size: 12px; }
+.om-usage-notes { margin: 10px 0 8px; padding-left: 18px; }

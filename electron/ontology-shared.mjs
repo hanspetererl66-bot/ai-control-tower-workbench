@@ -37,7 +37,7 @@ export function createSharedGovernance({ credentials, rpcImpl = supabaseRpc }) {
   };
 }
 
-const isEmpty = (g) => !Object.keys(g.ontologies).length && !g.bindings.length && !g.views.length && !g.plans.length && !Object.keys(g.termMeta ?? {}).length && !(g.questions ?? []).length;
+const isEmpty = (g) => !Object.keys(g.ontologies).length && !g.bindings.length && !g.views.length && !g.plans.length && !Object.keys(g.termMeta ?? {}).length && !(g.questions ?? []).length && !Object.keys(g.usageDecisions ?? {}).length;
 
 /**
  * Local file + shared database together. `save` writes the file first (it always works), then tries the database.

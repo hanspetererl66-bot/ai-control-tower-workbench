@@ -345,6 +345,8 @@ export interface AgentView { name: string; slugs: string[] }
 export type PlanStatus = 'draft' | 'asked' | 'approved' | 'rejected';
 export interface Plan { id: string; slug: string; term: string; change: string; status: PlanStatus; createdAt: string; asked: string[] }
 export interface OntologyMeta { owner: string; domain: string; approver: string }
+/** A person's decision about a found user of a term (key `<slug>|<term>|<kind>:<ref>`, see ontology-usage.ts). Found users are never stored, only these decisions. */
+export interface UsageDecision { decision: 'confirmed' | 'dismissed'; by: string; at: string }
 export interface Governance {
   version: number;
   ontologies: Record<string, OntologyMeta>;
@@ -355,9 +357,11 @@ export interface Governance {
   termMeta: Record<string, TermMeta>;
   /** Competency questions: what an ontology must be able to answer. */
   questions: Question[];
+  /** What people decided about found users of terms (confirmed or dismissed). Additive: older files have none. */
+  usageDecisions: Record<string, UsageDecision>;
 }
 
-export const emptyGovernance = (): Governance => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [], termMeta: {}, questions: [] });
+export const emptyGovernance = (): Governance => ({ version: 1, ontologies: {}, bindings: [], views: [], plans: [], termMeta: {}, questions: [], usageDecisions: {} });
 
 // ---------------------------------------------------------------- lifecycle, synonyms, mappings
 
@@ -666,6 +670,7 @@ export function mergeGovernance(base: Governance, extra: Partial<Governance>): G
     plans: [...base.plans, ...(extra.plans ?? [])],
     termMeta: { ...base.termMeta, ...(extra.termMeta ?? {}) },
     questions: [...base.questions, ...(extra.questions ?? [])],
+    usageDecisions: { ...(base.usageDecisions ?? {}), ...(extra.usageDecisions ?? {}) },
   };
 }
 
@@ -693,6 +698,7 @@ export function exampleGovernance(): Governance {
       { slug: 'werkbank_fin', term: 'Margin', kind: 'report', name: 'Monthly margin report' },
     ],
     views: [{ name: 'Finance Pre-Close agent', slugs: ['werkbank_fin'] }],
+    usageDecisions: {},
     plans: [],
   };
 }

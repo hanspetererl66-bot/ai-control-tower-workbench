@@ -25,9 +25,11 @@ const FILTERS: Array<{ id: TermFilter; label: string }> = [
  * when that cannot be read it shows the bundled Finance Pre-Close sample and says why. Owners, declared users, views
  * and plans are saved in `governance.json` next to the catalog; the catalog itself is only changed by the connector.
  */
-export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills }: {
+export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '' }: {
   data: OntologyData; onReload: () => void; onBack: () => void; onGovernance: (g: Governance) => void; saveNote: string;
   generate?: Generate; onStop?: () => void; ready: boolean; knownSkills: string[];
+  /** Who acts (the e-mail label of this window): written next to a decision about a found user. */
+  actor?: string;
 }) {
   const { ontologies, source, proposals, history, governance } = data;
   const [tab, setTab] = useState<Tab>('catalog');
@@ -74,7 +76,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
         ))}
       </nav>
 
-      {tab === 'catalog' && <Catalog ontologies={ontologies} gov={governance} onGovernance={onGovernance} focus={focus} onReload={onReload} onBack={onBack} loading={source.kind === 'loading'} />}
+      {tab === 'catalog' && <Catalog ontologies={ontologies} gov={governance} onGovernance={onGovernance} focus={focus} onReload={onReload} onBack={onBack} loading={source.kind === 'loading'} actor={actor} />}
       {tab === 'map' && <OntologyMap ontologies={ontologies} gov={governance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'questions' && <OntologyQuestions ontologies={ontologies} gov={governance} onGovernance={onGovernance} onOpen={(slug, term) => { setFocus({ slug, term }); setTab('catalog'); }} />}
       {tab === 'proposals' && <OntologyProposals proposals={proposals} ontologies={ontologies} generate={generate} onStop={onStop} ready={ready} onReload={onReload} />}
@@ -86,9 +88,9 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   );
 }
 
-function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loading }: {
+function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loading, actor }: {
   ontologies: Ontology[]; gov: Governance; onGovernance: (g: Governance) => void; focus: { slug: string; term: string } | null;
-  onReload: () => void; onBack: () => void; loading: boolean;
+  onReload: () => void; onBack: () => void; loading: boolean; actor: string;
 }) {
   const [slug, setSlug] = useState(focus?.slug ?? ontologies[0]?.slug ?? '');
   const [filter, setFilter] = useState<TermFilter>('all');
@@ -170,7 +172,7 @@ function Catalog({ ontologies, gov, onGovernance, focus, onReload, onBack, loadi
           <p className="om-foot">Showing {rows.length} of {onto.terms.length} terms</p>
         </section>
 
-        {selected && <OntologyDetails key={`${onto.slug}:${selected.id}`} onto={onto} term={selected} gov={gov} onGovernance={onGovernance} />}
+        {selected && <OntologyDetails key={`${onto.slug}:${selected.id}`} onto={onto} term={selected} gov={gov} onGovernance={onGovernance} ontologies={ontologies} actor={actor} />}
       </div>
     </>
   );
