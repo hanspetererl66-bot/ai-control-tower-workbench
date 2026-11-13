@@ -323,6 +323,20 @@ body{margin:0}
 .c3-fig td.figbar{width:55%}.c3-bar{height:9px;border-radius:99px;background:var(--line-2);overflow:hidden}.c3-bar i{display:block;height:100%;border-radius:99px;background:var(--purple)}
 .c3-bar i.high{background:var(--red)}.c3-bar i.medium{background:var(--amber)}.c3-bar i.low{background:var(--green)}
 .c3-tbl tr.row.sel td{background:var(--purple-dim)}
+.c3-tl svg{display:block;width:100%;height:auto}
+.c3-tl .tl-lane{fill:transparent}.c3-tl .tl-lane.alt{fill:var(--line-2);opacity:.45}
+.c3-tl .tl-axis{stroke:var(--line);stroke-width:1}.c3-tl .tl-grid{stroke:var(--line-2);stroke-width:1}
+.c3-tl .tl-txt{fill:var(--muted);font-size:11px;font-family:inherit}.c3-tl .tl-name{fill:var(--ink);font-size:12px;font-weight:600;font-family:inherit}
+.c3-tl .tl-today{stroke:var(--ink-2);stroke-width:1.2;stroke-dasharray:4 3}
+.c3-tl .tl-ev{cursor:pointer;outline:none}.c3-tl .tl-ev:hover .tl-shape,.c3-tl .tl-ev:focus-visible .tl-shape{stroke:var(--ink);stroke-width:2}
+.c3-tl .tl-shape.ok{fill:var(--green)}.c3-tl .tl-shape.info{fill:var(--purple)}.c3-tl .tl-shape.warn{fill:var(--amber)}.c3-tl .tl-shape.bad{fill:var(--red)}
+.c3-tl .tl-span{opacity:.55}
+.c3-tl .tl-cnt{fill:var(--ink-2);font-size:10px;font-weight:600;font-family:inherit}
+.c3-tlbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 8px}.c3-tlbar .sp{flex:1}
+.c3-tlpick{margin:10px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface)}
+.c3-tlpick .h{font-size:12px;color:var(--muted);margin:0 0 6px}.c3-tlpick button{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:5px 6px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-radius:6px}.c3-tlpick button:hover{background:var(--purple-dim)}
+.c3-tllist{display:none}.c3-tllist button{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:8px 4px;border:0;border-bottom:1px solid var(--line-2);background:transparent;color:var(--ink);cursor:pointer}
+.c3-tllist .d{color:var(--muted);font-size:11.5px;margin-right:6px}
 .c3-heat{display:flex;align-items:center;gap:8px;min-width:130px}
 .c3-heat .b{flex:1;height:7px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .c3-heat .b i{display:block;height:100%;border-radius:99px}
@@ -353,6 +367,7 @@ body{margin:0}
   .c3-stage canvas{position:relative;height:420px}
   .c3-story,.c3-detail,.c3-kpis{position:static;width:auto;max-width:none;margin:10px}
   .c3-grip{display:none}
+  .c3-tl svg,.c3-tlbar .rng{display:none}.c3-tllist{display:block}
   .c3-hint,.c3-legend{display:none}
   .c3-grid{grid-template-columns:1fr}.c3-list{columns:1}
 }
@@ -1129,6 +1144,80 @@ function makeLogic(D) {
     rows.forEach(function (r) { r.pct = max > 0 ? Math.round((r.value / max) * 100) : 0; });
     return { metric: m.id, label: m.label, unit: m.unit, rows: rows, max: max, total: sum(rows, function (r) { return r.value; }), totalText: m.id === 'heat' ? '' : m.id === 'tickets' ? String(sum(rows, function (r) { return r.value; })) : eurShort(sum(rows, function (r) { return r.value; })) };
   }
+  /** The things that happen to the companies, each with a date (the "Timeline" card). */
+  var TL_KINDS = [
+    { id: 'contract', label: 'Contracts', glyph: '▬' },
+    { id: 'invoice', label: 'Invoices', glyph: '●' },
+    { id: 'ticket', label: 'Tickets', glyph: '▲' },
+    { id: 'order', label: 'Orders', glyph: '■' },
+    { id: 'message', label: 'Messages', glyph: '◆' },
+    { id: 'deal', label: 'Deals', glyph: '★' },
+  ];
+  var TONE_RANK = { ok: 0, info: 1, warn: 2, bad: 3 };
+  /** One event per contract (a span from start to end), invoice (at its due date), ticket, order, message and deal (at its close date), oldest first. `node` is the graph node a click selects. */
+  function events() {
+    var out = [], gaps = o2c();
+    D.contracts.forEach(function (c) {
+      var r = renewalOf(c), p = product(c.product);
+      out.push({ id: c.id, kind: 'contract', entity: c.entity, date: c.start, end: c.end, tone: r.status === 'lapsed' ? 'bad' : r.status === 'near' ? 'warn' : 'ok', node: resolve(c.id),
+        title: c.id + ' · ' + (p ? p.name : c.product) + ' · ' + eur(c.annualEur) + ' EUR a year · ' + c.start + ' to ' + c.end + ' · ' + c.status });
+    });
+    D.invoices.forEach(function (i) {
+      var late = i.status === 'Paid' && i.daysLate > 0;
+      out.push({ id: i.id, kind: 'invoice', entity: i.entity, date: i.dueOn, tone: i.status === 'Overdue' ? 'bad' : i.status === 'Open' ? 'info' : late ? 'warn' : 'ok', node: i.status === 'Paid' ? 'pay:' + i.entity : resolve(i.id),
+        title: i.id + ' · due ' + i.dueOn + ' · ' + eur(i.grossEur) + ' EUR gross · ' + (i.status === 'Paid' ? 'paid ' + i.paidOn + (late ? ', ' + i.daysLate + ' days late' : '') : i.status.toLowerCase()) });
+    });
+    D.tickets.forEach(function (t) {
+      out.push({ id: t.id, kind: 'ticket', entity: t.entity, date: t.openedOn, tone: t.status === 'Resolved' ? 'ok' : t.severity === 'P1' || t.severity === 'P2' ? 'bad' : 'warn', node: resolve(t.id),
+        title: t.id + ' ' + t.severity + ' · opened ' + t.openedOn + ' · ' + t.status.toLowerCase() + ' · ' + t.title });
+    });
+    D.orders.forEach(function (o) {
+      var gap = gaps.filter(function (g) { return g.order === o.id; })[0];
+      out.push({ id: o.id, kind: 'order', entity: o.entity, date: o.orderedOn, tone: gap ? 'warn' : 'info', node: resolve(o.id), title: o.id + ' · ordered ' + o.orderedOn + ' · ' + eur(o.netEur) + ' EUR net · ' + o.title + (gap ? ' · ' + gap.text : '') });
+    });
+    D.signals.forEach(function (s) {
+      out.push({ id: s.id, kind: 'message', entity: s.entity, date: s.date, tone: 'info', node: resolve(s.id), title: s.id + ' · ' + s.kind + ' · ' + s.date + ' · ' + String(s.text).replace(/\s+/g, ' ').slice(0, 90) });
+    });
+    D.opportunities.forEach(function (o) {
+      out.push({ id: o.id, kind: 'deal', entity: o.entity, date: o.closeDate, tone: 'info', node: resolve(o.id), title: o.id + ' · expected ' + o.closeDate + ' · ' + eur(o.acvEur) + ' EUR · ' + o.title + ' · ' + o.stage + ' ' + o.probability + ' %' });
+    });
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1; });
+    return out;
+  }
+  /** The timeline for a period ('90d', '12m' = the last year and the next half year, 'all') and a set of kinds: one lane per company. */
+  function timeline(opts) {
+    opts = opts || {};
+    var ids = TL_KINDS.map(function (k) { return k.id; });
+    var kinds = Array.isArray(opts.kinds) ? opts.kinds.filter(function (k) { return ids.indexOf(k) >= 0; }) : ids;
+    var range = opts.range === '90d' || opts.range === 'all' ? opts.range : '12m';
+    var all = events(), from, to;
+    if (range === 'all') {
+      from = all.reduce(function (m, e) { return e.date < m ? e.date : m; }, ASOF); to = all.reduce(function (m, e) { var d = e.end || e.date; return d > m ? d : m; }, ASOF);
+    } else { from = addDays(ASOF, range === '90d' ? -90 : -365); to = addDays(ASOF, range === '90d' ? 90 : 180); }
+    var inWindow = all.filter(function (e) { return (e.end || e.date) >= from && e.date <= to; });
+    var counts = {}; ids.forEach(function (k) { counts[k] = inWindow.filter(function (e) { return e.kind === k; }).length; });
+    var shown = inWindow.filter(function (e) { return kinds.indexOf(e.kind) >= 0; });
+    return {
+      asOf: ASOF, range: range, from: from, to: to, days: Math.max(1, daysBetween(from, to)), kinds: TL_KINDS, active: kinds, counts: counts, total: shown.length,
+      lanes: D.entities.map(function (e) { return { entity: e.id, short: e.short, name: e.name, node: resolve(e.id), events: shown.filter(function (x) { return x.entity === e.id; }) }; }),
+    };
+  }
+  /** Events of one kind that lie within `gapDays` of each other become one mark with a count, so a crowded stretch stays readable. A contract is never merged. The mark has the worst tone of its events. */
+  function bucketEvents(list, gapDays) {
+    var out = [], open = {};
+    list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).forEach(function (e) {
+      var b = open[e.kind];
+      if (e.kind !== 'contract' && b && daysBetween(b.last, e.date) <= gapDays) {
+        b.events.push(e); b.count += 1; b.last = e.date; if (TONE_RANK[e.tone] > TONE_RANK[b.tone]) b.tone = e.tone;
+      } else {
+        b = { kind: e.kind, date: e.date, last: e.date, end: e.end || null, tone: e.tone, events: [e], count: 1 };
+        if (e.kind !== 'contract') open[e.kind] = b;
+        out.push(b);
+      }
+    });
+    return out;
+  }
+
   /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
   function clampBox(left, top, w, h, W, H, pad) {
     function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
@@ -1136,7 +1225,7 @@ function makeLogic(D) {
   }
 
   return {
-    metrics: METRICS, figures: figures, clampBox: clampBox,
+    metrics: METRICS, figures: figures, clampBox: clampBox, events: events, timeline: timeline, bucketEvents: bucketEvents, TL_KINDS: TL_KINDS,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,
@@ -1228,7 +1317,7 @@ function makeLogic(D) {
 
   // ---- story state -----------------------------------------------------------------------------------------------------------------
   var BEATS = L.beats(), ACTS = L.ACTS;
-  var S = { mode: 'story', i: -1, act: 0, sel: null, retr: null, custom: false, live: false, lastAct: 0, metric: 'arr' };
+  var S = { mode: 'story', i: -1, act: 0, sel: null, retr: null, custom: false, live: false, lastAct: 0, metric: 'arr', tlRange: '12m', tlOff: {}, tlPick: null };
   function actOfBeat(i) { return i < 0 ? 0 : BEATS[i].act; }
   var NEIGH = {};
   function neighIds(id) { return NEIGH[id] || (NEIGH[id] = L.neighbours(id)); }
@@ -1494,6 +1583,7 @@ function makeLogic(D) {
     html += '<div class="card"><div class="c3-h">Figures per company <span class="c3-sub">· click a row to find the company in the graph</span></div><div class="c3-mts" role="group" aria-label="Which figure">' + L.metrics.map(function (m) { return '<button type="button" data-metric="' + m.id + '" aria-pressed="' + (m.id === fg.metric) + '"' + (m.id === fg.metric ? ' class="on"' : '') + '>' + esc(m.label) + '</button>'; }).join('') + '</div>' +
       '<table class="c3-tbl c3-fig"><thead><tr><th>Company</th><th>' + esc(fg.label) + '</th><th class="n">' + esc(fg.unit || 'Number') + '</th></tr></thead><tbody>' + figRows + '</tbody></table>' +
       (fg.totalText ? '<div class="c3-note">Group total: ' + esc(fg.totalText) + (fg.unit ? ' ' + esc(fg.unit) : '') + '. The bar shows the share of the largest company.</div>' : '<div class="c3-note">Heat is a stated rule of thumb, not a model.</div>') + '</div>';
+    html += '<div class="card c3-tl" id="tlHost" style="margin-top:16px"></div>';
     html += '<div class="card" style="margin-top:16px"><div class="c3-h">Companies by heat</div><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">People</th><th class="n">Per year (EUR)</th><th class="n">Weighted pipeline (EUR)</th><th class="n">Outstanding (EUR, gross)</th><th>Heat</th></tr></thead><tbody>' + heat + '</tbody></table><div class="c3-note">Heat = payment record + renewal date + tickets + order gaps, 0 to 100. A stated rule of thumb (see data rules), not a forecast.</div></div>';
     if (S.mode === 'explore' || S.act === 2) {
       var ct = D.contracts.map(function (c) { var r = L.renewalOf(c); return row('contract:' + c.id, [{ h: '<b>' + esc(c.id) + '</b><div class="c3-why">' + esc(L.ent(c.entity).short) + ' · ' + esc(D.products.filter(function (p) { return p.id === c.product; })[0].name) + '</div>' }, { h: L.eur(c.annualEur), n: 1 }, { h: esc(r.decisionDate) + '<div class="c3-why">' + (r.status === 'lapsed' ? 'lapsed' : r.status === 'auto-renews' ? 'renews by itself' : r.daysToDecision + ' days') + '</div>' }]); }).join('');
@@ -1512,8 +1602,80 @@ function makeLogic(D) {
       }).join('');
       html += '<div class="card" style="margin-top:16px"><div class="c3-h">Proposals, ranked by amount at stake × urgency</div><div class="c3-recs">' + recs + '</div><div class="c3-note">Joule drafts on request. Nothing is written to any system; each proposal names who approves it. Ranking orders the list, it does not predict an outcome.</div></div>';
     }
-    $('below').innerHTML = html; markRows();
+    $('below').innerHTML = html; markRows(); renderTimeline();
   }
+  // ---- timeline: one lane per company, one mark per event; a click selects the node in the graph -----------------------------------------
+  var tlMarks = [];
+  function star(x, y, r) { var p = []; for (var i = 0; i < 10; i += 1) { var a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.45 : r; p.push((x + q * Math.cos(a)).toFixed(1) + ',' + (y + q * Math.sin(a)).toFixed(1)); } return 'M' + p.join('L') + 'Z'; }
+  function tlShape(kind, x, y, tone) {
+    var c = 'tl-shape ' + tone;
+    if (kind === 'invoice') return '<circle class="' + c + '" cx="' + x + '" cy="' + y + '" r="4.5"/>';
+    if (kind === 'ticket') return '<path class="' + c + '" d="M' + x + ',' + (y - 5.5) + 'L' + (x + 5.5) + ',' + (y + 4) + 'L' + (x - 5.5) + ',' + (y + 4) + 'Z"/>';
+    if (kind === 'order') return '<rect class="' + c + '" x="' + (x - 4) + '" y="' + (y - 4) + '" width="8" height="8" rx="1"/>';
+    if (kind === 'message') return '<path class="' + c + '" d="M' + x + ',' + (y - 5.5) + 'L' + (x + 5.5) + ',' + y + 'L' + x + ',' + (y + 5.5) + 'L' + (x - 5.5) + ',' + y + 'Z"/>';
+    return '<path class="' + c + '" d="' + star(x, y, 6.5) + '"/>';
+  }
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function renderTimeline() {
+    var host = $('tlHost'); if (!host) return;
+    var kinds = L.TL_KINDS.filter(function (k) { return !S.tlOff[k.id]; }).map(function (k) { return k.id; });
+    var T = L.timeline({ kinds: kinds, range: S.tlRange });
+    var RANGES = [['90d', '± 90 days'], ['12m', 'Last 12 months and next 6'], ['all', 'All']];
+    var bar = '<div class="c3-tlbar"><div class="c3-mts" role="group" aria-label="What to show" style="margin:0">' + T.kinds.map(function (k) {
+      var on = !S.tlOff[k.id]; return '<button type="button" data-tlkind="' + k.id + '" aria-pressed="' + on + '"' + (on ? ' class="on"' : '') + '>' + k.glyph + ' ' + esc(k.label) + ' ' + T.counts[k.id] + '</button>'; }).join('') +
+      '</div><span class="sp"></span><div class="c3-mts rng" role="group" aria-label="Period" style="margin:0">' + RANGES.map(function (r) { return '<button type="button" data-tlrange="' + r[0] + '" aria-pressed="' + (S.tlRange === r[0]) + '"' + (S.tlRange === r[0] ? ' class="on"' : '') + '>' + r[1] + '</button>'; }).join('') + '</div></div>';
+    // narrow screens get a list by date instead of the axis
+    var flat = []; T.lanes.forEach(function (ln) { ln.events.forEach(function (e) { flat.push(e); }); });
+    flat.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    var list = '<div class="c3-tllist">' + (flat.length ? flat.slice(0, 60).map(function (e) { return '<button type="button" data-node="' + esc(e.node) + '"><span class="d">' + esc(e.date) + '</span>' + esc(e.title) + '</button>'; }).join('') + (flat.length > 60 ? '<div class="c3-note">Showing the 60 most recent of ' + flat.length + ' events.</div>' : '') : '<div class="c3-note">Nothing in this period.</div>') + '</div>';
+    var W = Math.max(560, (host.clientWidth || 900) - 40), LEFT = 132, RIGHT = 14, TOP = 26, LANE = 40, PW = W - LEFT - RIGHT, H = TOP + LANE * T.lanes.length + 20;
+    var perDay = PW / T.days, gap = Math.max(1, Math.ceil(10 / perDay));
+    function xOf(d) { return Math.round((LEFT + Math.max(0, Math.min(T.days, L.daysBetween(T.from, d))) * perDay) * 10) / 10; }
+    tlMarks = [];
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Timeline: one lane per company. Each mark is a button that selects the node in the graph.">';
+    // month ticks
+    var step = T.days > 900 ? 6 : T.days > 400 ? 3 : 1, y0 = +T.from.slice(0, 4), m0 = +T.from.slice(5, 7) - 1;
+    for (var k = 0; k < 200; k += 1) {
+      var mm = (m0 + k) % 12, yy = y0 + Math.floor((m0 + k) / 12), d0 = yy + '-' + String(mm + 1).padStart(2, '0') + '-01';
+      if (d0 > T.to) break; if (d0 < T.from || k % step) continue;
+      var gx = xOf(d0); svg += '<line class="tl-grid" x1="' + gx + '" x2="' + gx + '" y1="' + (TOP - 4) + '" y2="' + (H - 18) + '"/><text class="tl-txt" x="' + (gx + 3) + '" y="' + (TOP - 9) + '">' + MONTHS[mm] + ' ' + String(yy).slice(2) + '</text>';
+    }
+    T.lanes.forEach(function (ln, li) {
+      var y = TOP + li * LANE;
+      svg += '<rect class="tl-lane' + (li % 2 ? ' alt' : '') + '" x="0" y="' + y + '" width="' + W + '" height="' + LANE + '"/>';
+      tlMarks.push({ node: ln.node, title: ln.name }); svg += '<g class="tl-ev" data-tlm="' + (tlMarks.length - 1) + '" tabindex="0" role="button" aria-label="' + esc(ln.name + ' in the graph') + '"><text class="tl-name" x="8" y="' + (y + 25) + '">' + esc(ln.short.length > 17 ? ln.short.slice(0, 16) + '…' : ln.short) + '</text><title>' + esc(ln.name) + '</title></g>';
+      L.bucketEvents(ln.events, gap).forEach(function (b) {
+        tlMarks.push(b);
+        var label = b.count > 1 ? b.count + ' ' + b.kind + 's, ' + b.date + ' to ' + b.last : b.events[0].title, inner;
+        if (b.kind === 'contract') {
+          var x1 = xOf(b.date), x2 = Math.max(x1 + 3, xOf(b.end));
+          inner = '<rect class="tl-shape tl-span ' + b.tone + '" x="' + x1 + '" y="' + (y + 6) + '" width="' + (x2 - x1) + '" height="7" rx="3"/>';
+        } else {
+          var cx = Math.round((xOf(b.date) + xOf(b.last)) / 2 * 10) / 10;
+          inner = tlShape(b.kind, cx, y + 27, b.tone) + (b.count > 1 ? '<text class="tl-cnt" x="' + (cx + 8) + '" y="' + (y + 31) + '">' + b.count + '</text>' : '');
+        }
+        svg += '<g class="tl-ev" data-tlm="' + (tlMarks.length - 1) + '" tabindex="0" role="button" aria-label="' + esc(label) + '">' + inner + '<title>' + esc(label) + '</title></g>';
+      });
+    });
+    var tx = xOf(T.asOf);
+    svg += '<line class="tl-today" x1="' + tx + '" x2="' + tx + '" y1="' + (TOP - 4) + '" y2="' + (H - 18) + '"/><text class="tl-txt" x="' + (tx + 4) + '" y="' + (H - 5) + '">as of ' + esc(T.asOf) + '</text></svg>';
+    var pick = '';
+    if (S.tlPick !== null && tlMarks[S.tlPick] && tlMarks[S.tlPick].events) { var pb = tlMarks[S.tlPick]; pick = '<div class="c3-tlpick"><div class="h">' + pb.count + ' ' + esc(pb.kind) + ' events, ' + esc(pb.date) + (pb.last !== pb.date ? ' to ' + esc(pb.last) : '') + '. Choose one.</div>' + pb.events.map(function (e) { return '<button type="button" data-node="' + esc(e.node) + '">' + esc(e.title) + '</button>'; }).join('') + '</div>'; }
+    host.innerHTML = '<div class="c3-h">Timeline <span class="c3-sub">· ' + T.total + ' events · click a mark to find it in the graph · colour: green fine, purple neutral, amber watch, red late or open problem</span></div>' + bar + (T.total ? svg : '<div class="c3-note">Nothing in this period for the chosen kinds.</div>') + pick + list +
+      '<div class="c3-note">Contracts run from start to end. Invoices stand at their due date, tickets at the day they were opened, deals at their expected close date. Marks of one kind that lie close together are merged and show a number.</div>';
+  }
+  /** A mark on the timeline: one event selects its node, a merged mark lists its events first. */
+  on(document, 'click', function (e) {
+    var g = e.target.closest ? e.target.closest('[data-tlm]') : null; if (!g) return;
+    var m = tlMarks[+g.getAttribute('data-tlm')]; if (!m) return;
+    if (m.events && m.count > 1) { S.tlPick = +g.getAttribute('data-tlm'); renderTimeline(); return; }
+    var node = m.events ? m.events[0].node : m.node; if (node) select(node);
+  });
+  on(document, 'keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute && e.target.getAttribute('data-tlm') !== null) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); e.stopPropagation(); }
+  });
+  var tlTimer = null;
+  on(window, 'resize', function () { clearTimeout(tlTimer); tlTimer = setTimeout(renderTimeline, 150); });
   /** The row of the selected node is marked in the tables under the graph. */
   function markRows() { var rows = document.querySelectorAll('#below tr.row'); for (var i = 0; i < rows.length; i += 1) rows[i].classList.toggle('sel', !!S.sel && rows[i].dataset.node === S.sel); }
   function renderNodeList() {
@@ -1570,6 +1732,8 @@ function makeLogic(D) {
   on(document, 'click', function (e) {
     var t = e.target.closest ? e.target.closest('button, tr.row') : null; if (!t) return;
     if (t.dataset.metric) { S.metric = t.dataset.metric; renderBelow(); return; }
+    if (t.dataset.tlkind) { S.tlOff[t.dataset.tlkind] = !S.tlOff[t.dataset.tlkind]; S.tlPick = null; renderTimeline(); return; }
+    if (t.dataset.tlrange) { S.tlRange = t.dataset.tlrange; S.tlPick = null; renderTimeline(); return; }
     if (t.dataset.node) { select(t.dataset.node); return; }
     if (t.dataset.actFirst !== undefined) { go(+t.dataset.actFirst); return; }
     if (t.dataset.q) { ask(t.dataset.q); return; }
