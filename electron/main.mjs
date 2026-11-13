@@ -1617,6 +1617,9 @@ ipcMain.handle('monitoring-config-test', () => obWrap(() => monitoringConfig.tes
 ipcMain.handle('shadow-start', (_event, run, decisions) => obWrap(() => workStore.shadowStart(run, decisions)));
 ipcMain.handle('shadow-verdict', (_event, decisionId, verdict, reason, note) => obWrap(() => workStore.shadowVerdict(decisionId, verdict, reason, note)));
 ipcMain.handle('shadow-summary', () => obWrap(() => workStore.shadowSummary()));
+ipcMain.handle('renewals-cases', () => obWrap(() => workStore.renewalsCases()));
+ipcMain.handle('renewals-case-save', (_event, args) => obWrap(() => workStore.renewalsCaseSave(args)));
+ipcMain.handle('renewals-case-reset', (_event, args) => obWrap(() => workStore.renewalsCaseReset(args)));
 ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
 ipcMain.handle('onboarding-handover', (_event, id, start) => obWrap(() => workStore.onboardingHandover(id, start)));
 ipcMain.handle('onboarding-set', (_event, id, step, status, note) => obWrap(() => workStore.onboardingSet(id, step, status, note)));
