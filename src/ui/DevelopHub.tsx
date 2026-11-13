@@ -138,7 +138,7 @@ export default function DevelopHub(props: Props) {
   }
 
   if (mode === 'sources') {
-    return <SourcesView generate={props.generate} onStop={props.onStop} ready={props.ready} onBack={() => setMode('hub')} onHandover={handOver} onOpenRegistry={props.onOpenRegistry} />;
+    return <SourcesView generate={props.generate} onStop={props.onStop} ready={props.ready} onBack={() => setMode('hub')} onHandover={handOver} onOpenRegistry={props.onOpenRegistry} onOpenConnectors={props.onOpenConnectors} />;
   }
 
   return (

@@ -5014,6 +5014,12 @@ textarea.studio-field { min-height: 120px; }
 .sx-q { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted); }
 .sx-qrow { display: flex; gap: 8px; }
 .sx-qrow input { flex: 1; font-weight: 400; }
+.sx-nature { display: block; font-size: 10px; font-weight: 400; opacity: .75; }
+.sx-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+.sx-chip { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 999px; padding: 3px 4px 3px 12px; font-size: 13px; }
+.sx-chip button { border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 999px; width: 22px; height: 22px; }
+.sx-chip button:hover { color: var(--ink); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.sx-detected { color: var(--accent); }
 .sx-listhead { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .sx-listhead h2 { margin-right: auto; }
 .sx-reqs { list-style: none; margin: 0; padding: 0; max-height: min(46vh, 460px); overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
