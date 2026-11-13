@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChatMarkdown } from './ChatMarkdown';
 import type { ToolCall } from '../acp';
 import type { MessageAttachment } from '../attachments';
+import { MAIL_HISTORY_NOTE } from '../mail-pick';
 import type { Space } from '../spaces';
 import { controlTowerViews, type ControlTowerView } from '../control-tower-views';
 import { collectSources, sourceSummary, type Source } from '../chat-sources';
@@ -59,13 +60,14 @@ export default function Chat({
             {m.attachments && m.attachments.length > 0 && (
               <div className="msg-attachments">
                 {m.attachments.map((attachment, attachmentIndex) => (
-                  <span key={`${attachment.name}-${attachmentIndex}`} className="msg-attachment">
+                  <span key={`${attachment.name}-${attachmentIndex}`} className="msg-attachment" title={attachment.inline ? MAIL_HISTORY_NOTE : undefined}>
                     <span aria-hidden="true">{attachment.kind === 'image' ? '▧' : '▤'}</span>
                     {attachment.name}
                   </span>
                 ))}
               </div>
             )}
+            {m.attachments?.some((attachment) => attachment.inline) && <div className="msg-attachment-note">{MAIL_HISTORY_NOTE}</div>}
             {m.text && <span>{m.text}</span>}
           </div>
         ) : (
