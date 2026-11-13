@@ -51,7 +51,7 @@ const events = (slug) => state('board@x.com', slug).events.map((e) => e.event);
 const day = (offset) => json(`select to_json((current_date + ${offset})::text)`);
 
 test('set up: the migrations install cleanly, twice', { skip }, () => {
-  sql('drop schema if exists control_tower, sub4me, skills, werkbank, recruiting cascade');
+  sql('drop schema if exists control_tower, sub4me, skills, werkbank, recruiting, renewals cascade');
   sql(`do $$ begin
     if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
     if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
@@ -1227,4 +1227,82 @@ test('Sub4Me close_ticket closes with a note, refuses a second time and an unkno
   for (const role of ['anon', 'authenticated']) {
     assert.match(rule(`set role ${role}; select public.sub4me_close_ticket(${q(open.id)}, '')`), /permission denied/, role);
   }
+});
+
+const RMIRA = 'mira.hoffmann@renewals.example';
+const RSVEN = 'sven.albrecht@renewals.example';
+const RMGR = 'vertrieb@renewals.example';
+const r_rcase = (id = 'R-C-2026-0012', extra = {}) => ({ status: 'running', stage: 'Prepared', log: [{ n: 1, actor: 'Autopilot', step: 'start', text: 'Started.' }], ...extra });
+const r_rsave = (actor, id, owner, st, rev, kind = 'renewal') => `select public.renewals_case_save(${q(actor)}, ${q(id)}, ${q(kind)}, ${q(owner)}, 'Muster Industrie AG', ${q(JSON.stringify(st))}::jsonb, ${rev})`;
+const r_rlist = (actor) => json(`select public.renewals_cases_list(${q(actor)})`);
+
+test('Renewals 050: owner saves and sees the case, others do not; the manager sees and only reads; the board admin does both', { skip }, () => {
+  const saved = json(r_rsave(RMIRA, 'R-C-2026-0012', 'Mira Hoffmann', r_rcase(), 0));
+  assert.equal(saved.rev, 1);
+  assert.equal(r_rlist(RMIRA).cases.length, 1);
+  assert.equal(r_rlist(RMIRA).me.owners[0], 'Mira Hoffmann');
+  assert.equal(r_rlist(RSVEN).cases.length, 0, 'another owner does not see it');
+  assert.match(rule(r_rsave(RSVEN, 'R-C-2026-0012', 'Mira Hoffmann', r_rcase(), 1)), /may not change/);
+  const m = r_rlist(RMGR);
+  assert.equal(m.cases.length, 1);
+  assert.equal(m.cases[0].canChange, false, 'the manager only reads');
+  assert.equal(m.me.manager, true);
+  assert.match(rule(r_rsave(RMGR, 'R-C-2026-0012', 'Mira Hoffmann', r_rcase(), 1)), /may not change/);
+  assert.equal(r_rlist('board@x.com').cases.length, 1, 'the board admin sees it');
+  assert.equal(json(r_rsave('board@x.com', 'R-C-2026-0012', 'Mira Hoffmann', r_rcase(), 1)).rev, 2, 'and may change it');
+  assert.equal(r_rlist('stranger@x.com').cases.length, 0);
+  assert.match(rule(r_rsave('stranger@x.com', 'R-C-2026-0099', 'Mira Hoffmann', r_rcase(), 0)), /may not change/);
+});
+
+test('Renewals 050: a stale revision is refused, the log lines go to the log once, and the log cannot be changed', { skip }, () => {
+  assert.match(rule(r_rsave(RMIRA, 'R-C-2026-0012', 'Mira Hoffmann', r_rcase(), 1)), /conflict/);
+  const st = r_rcase('x', { log: [{ n: 1, actor: 'Autopilot', step: 'start', text: 'Started.' }, { n: 2, actor: 'Autopilot', step: 'offer', text: 'Offer ready.' }] });
+  assert.equal(json(r_rsave(RMIRA, 'R-C-2026-0012', 'Mira Hoffmann', st, 2)).rev, 3);
+  assert.equal(sql("select count(*) from renewals.case_events e join renewals.cases c on c.id = e.case_pk where c.case_id = 'R-C-2026-0012'"), '2', 'each line once');
+  assert.match(rule("update renewals.case_events set message = 'x'"), /append only/);
+  assert.match(rule('delete from renewals.case_events'), /append only/);
+  assert.match(rule(r_rsave(RMIRA, 'R-C-2026-0050', 'Mira Hoffmann', r_rcase(), 3)), /no longer exists/);
+});
+
+test('Renewals 050: the state is checked', { skip }, () => {
+  const bad = (st) => rule(r_rsave(RMIRA, 'R-C-2026-0013', 'Mira Hoffmann', st, 0));
+  assert.match(bad(r_rcase('x', { status: 'weird' })), /invalid status/);
+  assert.match(bad({ status: 'running' }), /log/);
+  assert.match(bad(r_rcase('x', { log: [{ n: 1, actor: 'A', text: 'x'.repeat(601) }] })), /not valid/);
+  assert.match(bad(r_rcase('x', { log: Array.from({ length: 61 }, (_, i) => ({ n: i + 1, actor: 'A', text: 'x' })) })), /at most 60/);
+  assert.match(bad(r_rcase('x', { blob: 'x'.repeat(70000) })), /too large/);
+  assert.match(rule(r_rsave(RMIRA, 'bad id', 'Mira Hoffmann', r_rcase(), 0)), /invalid case id/);
+  assert.match(rule(r_rsave(RMIRA, 'R-C-2026-0013', 'Mira Hoffmann', r_rcase(), 0, 'other')), /kind/);
+  assert.match(rule(r_rsave('not-an-email', 'R-C-2026-0013', 'Mira Hoffmann', r_rcase(), 0)), /e-mail/);
+  assert.equal(sql("select count(*) from renewals.cases where case_id = 'R-C-2026-0013'"), '0', 'nothing was written');
+});
+
+test('Renewals 050: a win-back case is separate; a case of an owner without e-mail is unassigned and seen by manager and admin', { skip }, () => {
+  assert.equal(json(r_rsave(RMIRA, 'R-C-2026-0012', 'Mira Hoffmann', r_rcase('x', { status: 'lost' }), 0, 'winback')).kind, 'winback');
+  assert.equal(r_rlist(RMIRA).cases.length, 2, 'renewal and win-back side by side');
+  assert.equal(json(r_rsave('board@x.com', 'R-C-2026-0077', 'Unknown Person', r_rcase(), 0)).rev, 1);
+  const u = r_rlist(RMGR).cases.find((c) => c.caseId === 'R-C-2026-0077');
+  assert.equal(u.unassigned, true);
+  assert.equal(r_rlist(RMIRA).cases.some((c) => c.caseId === 'R-C-2026-0077'), false);
+});
+
+test('Renewals 050: a reset archives, keeps the log, and allows a new case', { skip }, () => {
+  assert.match(rule(`select public.renewals_case_reset(${q(RSVEN)}, 'R-C-2026-0012', 'renewal')`), /may not change/);
+  assert.match(rule(`select public.renewals_case_reset(${q(RMGR)}, 'R-C-2026-0012', 'renewal')`), /may not change/, 'the manager cannot reset');
+  assert.equal(json(`select public.renewals_case_reset(${q(RMIRA)}, 'R-C-2026-0012', 'renewal')`).archived, true);
+  assert.equal(r_rlist(RMIRA).cases.some((c) => c.caseId === 'R-C-2026-0012' && c.kind === 'renewal'), false);
+  assert.equal(sql("select count(*) from renewals.case_events e join renewals.cases c on c.id = e.case_pk where c.case_id = 'R-C-2026-0012' and c.kind = 'renewal'"), '3', 'two lines and the archive entry stay');
+  assert.match(rule(`select public.renewals_case_reset(${q(RMIRA)}, 'R-C-2026-0012', 'renewal')`), /no active case/);
+  assert.equal(json(r_rsave(RMIRA, 'R-C-2026-0012', 'Mira Hoffmann', r_rcase(), 0)).rev, 1, 'a new case starts again at 1');
+  assert.equal(sql("select count(*) from renewals.cases where case_id = 'R-C-2026-0012' and kind = 'renewal'"), '2');
+});
+
+test('Renewals 050: the API roles reach nothing, the service role may call the functions', { skip }, () => {
+  for (const role of ['anon', 'authenticated']) {
+    for (const t of ['cases', 'case_events', 'owner_email', 'manager']) assert.equal(sql(`select has_table_privilege(${q(role)}, ${q('renewals.' + t)}, 'select')`), 'f', `${role} ${t}`);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.renewals_cases_list(text)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.renewals_case_save(text,text,text,text,text,jsonb,integer)', 'execute')`), 'f', role);
+    assert.equal(sql(`select has_function_privilege(${q(role)}, 'public.renewals_case_reset(text,text,text)', 'execute')`), 'f', role);
+  }
+  assert.equal(sql("select has_function_privilege('service_role', 'public.renewals_case_save(text,text,text,text,text,jsonb,integer)', 'execute')"), 't');
 });
