@@ -5535,39 +5535,32 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .splitter-dock { right: calc(var(--dock-w, 380px) - 5px); }
 @media (max-width: 1040px) { .splitter { display: none; } }
 
-/* ---------- skill levels: three ways to look at them ---------- */
-.sgov-views { display: inline-flex; gap: 2px; padding: 3px; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); }
-.sgov-view { font: inherit; font-size: 12px; padding: 4px 12px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
-.sgov-view.on { background: var(--accent); color: #fff; font-weight: 600; }
-.sgov-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; align-items: stretch; margin: 0 0 14px; }
-.sgov-col-wrap { display: flex; align-items: stretch; min-width: 0; }
-.sgov-col { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 14px; background: var(--panel); }
-.sgov-col-0 { background: color-mix(in srgb, var(--accent) 3%, var(--panel)); }
-.sgov-col-1 { background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
-.sgov-col-2 { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
-.sgov-col header, .sgov-ring header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin-bottom: 8px; }
-.sgov-col header .sgov-reach, .sgov-ring header .sgov-reach { margin-left: 0; flex-basis: 100%; }
-.sgov-arrow { flex: none; width: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; color: var(--muted); }
-.sgov-arrow span { font-size: 22px; color: var(--accent); line-height: 1; }
-.sgov-arrow small { font-size: 10.5px; line-height: 1.25; }
-.sgov-arrow em { font-style: normal; font-size: 11px; font-weight: 600; color: var(--accent); }
-.sgov-board-steps { align-items: end; }
-.sgov-board-steps .sgov-col-wrap-0 .sgov-col { min-height: 110px; }
-.sgov-board-steps .sgov-col-wrap-1 .sgov-col { min-height: 170px; }
-.sgov-board-steps .sgov-col-wrap-2 .sgov-col { min-height: 230px; }
-.sgov-board-steps .sgov-col-wrap { align-items: flex-end; }
-.sgov-board-steps .sgov-arrow { align-self: center; }
-.sgov-rings { margin: 0 0 14px; }
-.sgov-ring { border: 1px solid var(--line); border-radius: 28px; padding: 14px 18px 16px; background: var(--panel); }
-.sgov-ring-2 { background: color-mix(in srgb, var(--accent) 6%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
-.sgov-ring-1 { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); margin-top: 12px; }
-.sgov-ring-0 { background: color-mix(in srgb, var(--accent) 16%, var(--panel)); margin-top: 12px; }
-.sgov-ring-gate { font-size: 11.5px; color: var(--muted); margin: -2px 0 8px; }
-.sgov-ring-gate em { font-style: normal; font-weight: 600; color: var(--accent); }
+/* ---------- skills: table with a side panel ---------- */
+.sgov-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; }
+.sgov-search, .sgov-toolbar select { font: inherit; font-size: 13px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; min-width: 0; }
+.sgov-search { flex: 1 1 200px; max-width: 320px; }
+.sgov-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; align-items: start; }
+.sgov-tablewrap { min-width: 0; border: 1px solid var(--line); border-radius: 12px; overflow: auto; max-height: 70vh; background: var(--panel); }
+.sgov-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sgov-table th { position: sticky; top: 0; z-index: 1; text-align: left; background: var(--panel); border-bottom: 1px solid var(--line); padding: 0; }
+.sgov-th { font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); background: none; border: 0; padding: 8px 12px; cursor: pointer; width: 100%; text-align: left; }
+.sgov-th:hover, .sgov-th:focus-visible { color: var(--ink); }
+.sgov-table td { padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.sgov-tr { cursor: pointer; }
+.sgov-tr:hover { background: color-mix(in srgb, var(--ink) 4%, var(--panel)); }
+.sgov-tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sgov-tr.on { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); box-shadow: inset 3px 0 0 var(--accent); }
+.sgov-td-name { max-width: 360px; }
+.sgov-skill-name { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.sgov-td-name small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sgov-table-empty { padding: 14px 12px; margin: 0; }
+.sgov-panel { position: relative; min-width: 0; max-height: 70vh; overflow: auto; }
+.sgov-close { position: absolute; top: 0; right: 0; z-index: 2; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--muted); font-size: 16px; line-height: 1; cursor: pointer; }
+.sgov-close:hover, .sgov-close:focus-visible { color: var(--ink); border-color: var(--accent); }
+@media (max-width: 1100px) { .sgov-layout { grid-template-columns: 1fr; } .sgov-tablewrap, .sgov-panel { max-height: none; } }
 .sgov-empty { border: 1px dashed var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; }
 .sgov-empty h3 { margin: 0; font-size: 15px; }
 .sgov-req-example { opacity: .85; border-style: dashed; }
-@media (max-width: 900px) { .sgov-board { grid-template-columns: 1fr; gap: 8px; } .sgov-col-wrap { flex-direction: column; } .sgov-arrow { width: auto; padding: 4px 0; flex-direction: row; gap: 8px; } .sgov-arrow span { transform: rotate(90deg); } }
 
 /* ---------- Skill Health Monitor: detail panel on double-click ---------- */
 .sh-dbl { cursor: default; }
