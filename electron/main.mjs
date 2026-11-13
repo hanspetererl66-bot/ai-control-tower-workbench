@@ -19,6 +19,7 @@ import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ensureGooseConfig } from '../shared/goose-config.mjs';
 import { createHotlineMail } from '../shared/hotline-mail.mjs';
+import { viewParams, viewTable } from '../shared/designer-db-views.mjs';
 import { adapterFromEnv, createMonitoringRead } from '../shared/monitoring-read.mjs';
 import { agentSecrets, createMonitoringConfig, takeMainOnlyEnv } from '../shared/monitoring-config.mjs';
 
@@ -1341,6 +1342,18 @@ ipcMain.handle('designer-pick-data-file', async () => {
     return { ok: true, name: basename(file), text: readFileSync(file, 'utf8') };
   } catch (error) {
     return { ok: false, detail: error?.message ?? String(error) };
+  }
+});
+
+/** A fixed, read-only database view for a data set in the Space Designer: the window names an id from the list and a number of days. */
+ipcMain.handle('designer-data-view', async (_event, id, days) => {
+  try {
+    const ask = viewParams(String(id ?? ''), days);
+    if (!ask) return { ok: false, detail: 'Unknown view.' };
+    const data = await workStore.observe(ask.view, ask.params);
+    return { ok: true, table: viewTable(String(id), data, days) };
+  } catch (error) {
+    return { ok: false, detail: String(error?.message ?? error).slice(0, 300) };
   }
 });
 
