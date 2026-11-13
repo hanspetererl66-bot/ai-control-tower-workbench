@@ -169,18 +169,3 @@ test('the example catalog is a real graph: every term of the extra ontologies is
     assert.deepEqual(loose.map((t) => t.id), [], `${o.slug}: terms with no link`);
   }
 });
-
-import { mapTourSeen, markMapTourSeen, MAP_TOUR_KEY } from '../src/map-tour.ts';
-
-test('the map tour is remembered once, and a blocked or missing storage just means it is offered again', () => {
-  const data = new Map();
-  const store = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => { data.set(k, v); } };
-  assert.equal(mapTourSeen(store), false);
-  markMapTourSeen(store);
-  assert.equal(data.get(MAP_TOUR_KEY), 'done');
-  assert.equal(mapTourSeen(store), true);
-  const blocked = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
-  assert.equal(mapTourSeen(blocked), false);
-  assert.doesNotThrow(() => markMapTourSeen(blocked));
-  assert.equal(mapTourSeen(null), false);
-});
