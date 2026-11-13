@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import OntologyUsers from './OntologyUsers';
 import {
   HEALTH_LABEL, MAX_MAPPINGS, MAX_SYNONYMS, PLAN_LABEL, STATUS_LABEL, TERM_STATUSES, addPlan, addSynonym, companyCodesIn, consumersOf, healthOf, impactOf, metaOf, newPlan,
   ownerLabel, planRequest, propLabel, removeSynonym, setPlanStatus, setTermMeta, statusOf,
@@ -8,7 +9,7 @@ import {
 const SYSTEMS = ['SAP S/4HANA', 'SAP SuccessFactors', 'IFRS 15', 'schema.org', 'FIBO', 'AWX', 'Other'];
 
 /** Details of one term: definition, owner, what hangs on it, who declares they use it, and a plan for changing it. */
-export default function OntologyDetails({ onto, term, gov, onGovernance }: { onto: Ontology; term: Term; gov: Governance; onGovernance: (g: Governance) => void }) {
+export default function OntologyDetails({ onto, term, gov, onGovernance, ontologies, actor = '' }: { onto: Ontology; term: Term; gov: Governance; onGovernance: (g: Governance) => void; ontologies?: readonly Ontology[]; actor?: string }) {
   const impact = useMemo(() => impactOf(onto, term.id), [onto, term.id]);
   const codes = useMemo(() => companyCodesIn(onto, impact), [onto, impact]);
   const consumers = useMemo(() => consumersOf(gov, onto, term.id, impact), [gov, onto, term.id, impact]);
@@ -72,6 +73,7 @@ export default function OntologyDetails({ onto, term, gov, onGovernance }: { ont
               {!c.direct && <span className="om-dim"> via {c.term}</span>}</li>
           ))}
         </ul>
+        {ontologies && <OntologyUsers onto={onto} term={term} ontologies={ontologies} gov={gov} onGovernance={onGovernance} actor={actor} />}
         {impact.ask.length > 0 && <p><span className="om-chip om-warn">Ask first</span> <b>{impact.ask.join(', ')}</b></p>}
         <p className="om-note-small">Only what is modelled here, and what people declared, counts. Anything else that uses the term is not listed.</p>
       </section>

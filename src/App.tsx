@@ -1705,7 +1705,7 @@ export default function App() {
       ) : view === 'admin' ? (
         <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
       ) : view === 'ontology' ? (
-        <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} />
+        <OntologyManagerView data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} actor={identity?.email ?? ''} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}

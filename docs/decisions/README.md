@@ -22,7 +22,7 @@ Hier steht, was entschieden ist, und was noch auf eine Entscheidung wartet. Eine
 | 007 | [Wissens-Feeder: nur erlaubte Quellen, robots.txt, keine Tarnung](007-wissens-feeder-nur-erlaubte-quellen-robots-txt.md) | entschieden | 11.11.2026 (Auftrag, PR #317) | Hans-Peter |
 | 008 | [Der Figma-Connector ist nur lesend](008-der-figma-connector-ist-nur-lesend.md) | entschieden | laut PR #314 | Hans-Peter |
 | 009 | [Ontology Manager: Kunden-Demo in drei Akten, Akt A zuerst](009-ontology-manager-kunden-demo-in-drei-akten-akt-a.md) | entschieden | 13.11.2026 | Hans-Peter |
-| 010 | [Entscheidungsprotokoll im Repo](010-entscheidungsprotokoll-im-repo.md) | vorgeschlagen | 13.11.2026 | Hans-Peter |
+| 010 | [Entscheidungsprotokoll im Repo](010-entscheidungsprotokoll-im-repo.md) | entschieden | 13.11.2026 | Hans-Peter |
 | 011 | [Downtime-Fenster: "größer als 2 h" oder "ab 2 h"?](011-downtime-fenster-groesser-als-2-h-oder-ab-2-h.md) | vorgeschlagen | 12.11.2026 (Workshop) | Kunde (Infrastruktur-Betrieb) |
 | 012 | [Kundenbenachrichtigung: welche Tasks werden gemeldet?](012-kundenbenachrichtigung-welche-tasks-werden.md) | vorgeschlagen | 12.11.2026 (PR #350) | Kunde (Infrastruktur-Betrieb) |
 | 013 | [TabPFN-Lizenz vor einer Kundendemo](013-tabpfn-lizenz-vor-einer-kundendemo.md) | vorgeschlagen | 13.11.2026 | Hans-Peter |
