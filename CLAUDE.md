@@ -7,6 +7,7 @@ Repo: `hanspetererl66-bot/ai-control-tower-workbench`. Stand dieser Datei: 09.11
 **Diese Datei ist bewusst kurz.** Verlauf (PRs, Branches, Merges) steht in `git log`. Die ausführlichen Statusnotizen je Thema (was gebaut ist, Grenzen, "Nicht getestet") liegen in `docs/status/` und werden nur gelesen, wenn das Thema dran ist.
 
 ## Arbeitsweise
+- Entscheidungen (und offene Fragen, die auf eine Entscheidung warten) stehen in `docs/decisions/` (Übersicht `README.md`, Vorlage `TEMPLATE.md`). Neue Entscheidung: eine Seite anlegen, Übersicht ergänzen.
 - Alles liegt auf `main`. Vor jeder Arbeit `git fetch --all` und Abstand zu `main` prüfen. Mergen nur auf Hans-Peters Wunsch.
 - Nach frischem Checkout zuerst `npm install` (sonst fehlen `n3` und `jsdom`, vier Testdateien schlagen fehl). SQL-Tests laufen nur mit `SKILL_SQL_TEST_DSN` (Wegwerf-Datenbank `*_test`), sonst werden sie übersprungen.
 - Parallele Claude-Fenster: Stand der Datei und Statusnotizen nach größeren Etappen nachführen, nur das Betroffene in `docs/status/`.
