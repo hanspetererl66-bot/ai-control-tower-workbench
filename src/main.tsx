@@ -43,6 +43,9 @@ declare global {
       monitoringAlerts?: (sinceHours: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailPreview?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailSend?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      renewalsCases?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      renewalsCaseSave?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
+      renewalsCaseReset?: (args: Record<string, unknown>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingList?: () => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingHandover?: (id: number, start: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       onboardingSet?: (id: number, step: string, status: string, note: string) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;

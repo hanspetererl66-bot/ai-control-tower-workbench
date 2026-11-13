@@ -13,6 +13,7 @@ import { createRecruitingHandlers, decideHire, decideProposal, releaseContract, 
 import { observeCall } from '../connectors/_lib/server/observability.mjs';
 import { saveInterviewRecord, saveAssessment, listAssessments } from '../connectors/_lib/server/interviews.mjs';
 import { publishPostingMock, releasePosting, sendBackPosting, withdrawPosting } from '../connectors/_lib/server/job-postings.mjs';
+import { casesList, caseSave, caseReset } from '../connectors/_lib/server/renewals-cases.mjs';
 import { RuleError, supabaseRpc } from '../connectors/_lib/server/runtime.mjs';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -156,6 +157,10 @@ export function createWorkStore({ file, readConnector, defaultEmail = '' }) {
     async shadowStart(run, decisions) { const { rpc, email } = connect(); return shadowStart(rpc, email, run, decisions); },
     async shadowVerdict(decisionId, verdict, reason, note) { const { rpc, email } = connect(); return shadowVerdict(rpc, email, decisionId, verdict, reason, note); },
     async shadowSummary() { const { rpc, email } = connect(); return shadowSummary(rpc, email); },
+    /** Renewals autopilot and win-back cases (migration 050): always as the stored e-mail. */
+    async renewalsCases() { const { rpc, email } = connect(); return casesList(rpc, email); },
+    async renewalsCaseSave(args) { const { rpc, email } = connect(); return caseSave(rpc, email, args); },
+    async renewalsCaseReset(args) { const { rpc, email } = connect(); return caseReset(rpc, email, args); },
     async onboardingList() { const { rpc, email } = connect(); return onboardingList(rpc, email); },
     async onboardingHandover(id, start) { const { rpc, email } = connect(); return onboardingHandover(rpc, email, id, start); },
     async onboardingSet(id, step, status, note) { const { rpc, email } = connect(); return onboardingSet(rpc, email, id, step, status, note); },
