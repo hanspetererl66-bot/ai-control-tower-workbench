@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL, buildMap, createSimulation, describeFocus, focusOf, layoutMap, linkWord, searchMap, startingPoints, visibleMap, type MapEdge, type MapKind, type MapNode } from '../graph-map';
-import { mapTourSeen, markMapTourSeen } from '../map-tour';
 import { cachedSuspected } from './useTermUsage';
 import { consumersOf, impactOf, ownerLabel, statusOf, type Governance, type Ontology, type TermStatus } from '../ontology-manager';
 
@@ -82,7 +81,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   const [query, setQuery] = useState('');
   const [sel, setSel] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
-  const [tour, setTour] = useState<number | null>(() => (mapTourSeen() ? null : 0));
+  const [tour, setTour] = useState<number | null>(null);
   const [key, setKey] = useState(true);
   const starts = useMemo(() => startingPoints(map, 4, depth), [map, depth]);
   const shown = useMemo(() => visibleMap(map, kinds, slug), [map, kinds, slug]);
@@ -470,7 +469,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   const steps: TourStep[] = starts.length ? ['overview', 'select', 'ask', 'try'] : ['overview', 'try'];
   const pick = (id: string) => { if (!shownIds.has(id)) { setKinds(new Set(ALL_KINDS)); setSlug('all'); } setSel(id); };
   const goTo = (i: number | null) => {
-    if (i === null || i >= steps.length) { setTour(null); markMapTourSeen(); return; }
+    if (i === null || i >= steps.length) { setTour(null); return; }
     const step = steps[i];
     if (step === 'overview') { setSel(null); setKinds(new Set(ALL_KINDS)); setSlug('all'); }
     else if ((step === 'select' || step === 'ask') && starts.length && !sel) pick(starts[0].node.id);
