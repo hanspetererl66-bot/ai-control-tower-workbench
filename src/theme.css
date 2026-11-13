@@ -5431,6 +5431,17 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .sd-field textarea { resize: vertical; }
 .sd-check { display: flex; gap: 8px; align-items: center; font-size: 13px; }
 .sd-hint { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+.sd-source { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.sd-source h3, .sd-values summary { margin: 0; font-size: 13px; font-weight: 650; }
+.sd-radio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); }
+.sd-proposal { display: grid; gap: 8px; border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--accent) 7%, transparent); font-size: 13px; }
+.sd-proposal p { margin: 0; }
+.sd-values { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.sd-values summary { cursor: pointer; }
+.sd-token { margin: 0; font-size: 13px; }
+.sd-token code { font-size: 12px; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.sd-issues { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 4px; }
+.sd-issues p { margin: 0; }
 .sd-list { display: flex; flex-direction: column; gap: 8px; }
 .sd-item { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px 10px; margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .sd-item legend { font-size: 11px; color: var(--muted); padding: 0 4px; }

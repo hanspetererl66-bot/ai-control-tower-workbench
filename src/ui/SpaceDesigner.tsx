@@ -4,10 +4,11 @@ import type { Preferences } from '../preferences';
 import { applySpacePrefs } from '../preferences-style';
 import { applySpaceScale, applySpaceTheme, type SpaceScale } from '../space-scale';
 import { diffLayouts, diffText, layoutPrompt, parseLayoutAnswer, type LayoutAnswer } from '../space-designer-ai';
+import { dataPrompt, diffDataset, nowMinute, parseDataAnswer, type DataAnswer } from '../space-designer-data';
 import { canRedo, canUndo, commit, parsePreviewMessage, redo, startHistory, undo, withPreview, type History } from '../space-designer-state';
 import {
-  BLOCK_INFO, CHART_KINDS, MAX_BLOCKS, MAX_COLUMNS, MAX_DATASETS, MAX_ROWS, TONES, addBlock, duplicateBlock, moveBlock, parseTable, pointBlockAt, removeBlock, setDataset, updateBlock,
-  type Block, type Dataset, type Layout, type Tone,
+  AGGREGATES, BLOCK_INFO, CHART_KINDS, MAX_BLOCKS, MAX_COLUMNS, MAX_DATASETS, MAX_ROWS, TONES, addBlock, duplicateBlock, moveBlock, parseTable, pointBlockAt, removeBlock, setDataset, updateBlock, datasetValue, makeToken, resolveLayout,
+  type Aggregate, type Block, type Dataset, type Layout, type Tone,
 } from '../space-layout';
 import { isDesignedPage, layoutFromHtml, renderSpacePage } from '../space-layout-render';
 import { LAYOUT_TEMPLATES } from '../space-layout-templates';
@@ -102,12 +103,46 @@ function ListEditor<T extends Record<string, unknown>>({ items, cols, blank, onC
   );
 }
 
+/** Numbers from a data set inside any text: pick the data set, column and function, see the figure and copy the token. */
+function ValuesHelper({ layout }: { layout: Layout }) {
+  const [dsId, setDsId] = useState('');
+  const [col, setCol] = useState('');
+  const [agg, setAgg] = useState<Aggregate>('first');
+  const [copied, setCopied] = useState('');
+  const issues = useMemo(() => resolveLayout(layout).issues, [layout]);
+  if (!layout.datasets.length) return null;
+  const ds = layout.datasets.find((d) => d.id === dsId) ?? layout.datasets[0];
+  const column = ds.columns.includes(col) ? col : ds.columns[0] ?? '';
+  const token = makeToken(ds.id, column, agg);
+  const value = datasetValue(ds, column, agg);
+  async function copy() {
+    try { await navigator.clipboard.writeText(token); setCopied('Copied. Paste it into any text.'); } catch { setCopied('Select the text above and copy it.'); }
+  }
+  return (
+    <details className="sd-values">
+      <summary>Numbers from data in texts</summary>
+      <p className="sd-hint">Write a token into any text, for example “We have {'{{'}d1.Tickets:sum{'}}'} open tickets.” The page shows the figure; a new fill from Joule changes every place at once.</p>
+      <Field label="Data set"><select value={ds.id} onChange={(e) => { setDsId(e.target.value); setCol(''); }}>{layout.datasets.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></Field>
+      <Field label="Column"><select value={column} onChange={(e) => setCol(e.target.value)}>{ds.columns.map((c) => <option key={c} value={c}>{c}</option>)}</select></Field>
+      <Field label="Value"><select value={agg} onChange={(e) => setAgg(e.target.value as Aggregate)}>{AGGREGATES.map((a) => <option key={a} value={a}>{a === 'first' ? 'first (a label or the first value)' : a === 'count' ? 'count (how many rows)' : a}</option>)}</select></Field>
+      <p className="sd-token"><code>{token}</code> → <b>{value ?? 'n/a'}</b></p>
+      <button type="button" className="ghost-btn" onClick={() => void copy()}>Copy the token</button>
+      {copied && <p className="sd-hint" role="status">{copied}</p>}
+      {issues.length > 0 && <div className="sd-issues" role="status"><p><b>Needs a look:</b></p>{issues.map((i) => <p key={i} className="sd-hint">{i}</p>)}</div>}
+    </details>
+  );
+}
+
 /** The data behind a table or chart: pick or create a dataset, edit cells, paste from a spreadsheet. */
-function DataEditor({ layout, block, onLayout }: { layout: Layout; block: Extract<Block, { type: 'table' | 'chart' }>; onLayout: (next: Layout) => void }) {
+function DataEditor({ layout, block, onLayout, generate, ready, title }: { layout: Layout; block: Extract<Block, { type: 'table' | 'chart' }>; onLayout: (next: Layout) => void; generate?: Generate; ready?: boolean; title: string }) {
   const ds = layout.datasets.find((d) => d.id === block.dataset);
   const [paste, setPaste] = useState('');
   const [note, setNote] = useState('');
+  const [filling, setFilling] = useState(false);
+  const [fillNote, setFillNote] = useState('');
+  const [proposal, setProposal] = useState<DataAnswer | null>(null);
   if (!ds) return <p className="sd-hint">No data yet.</p>;
+  const current: Dataset = ds;
   const users = layout.blocks.filter((b) => (b.type === 'table' || b.type === 'chart') && b.dataset === ds.id && b.id !== block.id).length;
   const put = (next: Dataset) => onLayout(setDataset(layout, next));
   const setCell = (r: number, c: number, v: string) => put({ ...ds, rows: ds.rows.map((row, i) => (i === r ? row.map((x, j) => (j === c ? v : x)) : row)) });
@@ -116,6 +151,23 @@ function DataEditor({ layout, block, onLayout }: { layout: Layout; block: Extrac
   const addCol = () => ds.columns.length < MAX_COLUMNS && put({ ...ds, columns: [...ds.columns, `Column ${ds.columns.length + 1}`], rows: ds.rows.map((r) => [...r, '']) });
   const delRow = (r: number) => put({ ...ds, rows: ds.rows.filter((_, i) => i !== r) });
   const delCol = (c: number) => ds.columns.length > 1 && put({ ...ds, columns: ds.columns.filter((_, j) => j !== c), rows: ds.rows.map((r) => r.filter((_, j) => j !== c)) });
+  async function fill() {
+    if (!generate || !current.source || !current.source.prompt.trim()) return;
+    setFilling(true); setFillNote(''); setProposal(null);
+    try {
+      const text = await generate(dataPrompt(title, current.name, current.columns, current.source.prompt), 'Space Designer data', 'space-designer-data');
+      if (!text) { setFillNote('Stopped.'); return; }
+      const answer = parseDataAnswer(text, current.columns);
+      if (!answer) setFillNote('Joule did not send a table I can read. Ask again, or say in other words which data you want.');
+      else if ('error' in answer) setFillNote(`Joule could not get the data: ${answer.error}`);
+      else setProposal(answer);
+    } catch (e) { setFillNote(msg(e)); } finally { setFilling(false); }
+  }
+  function applyFill() {
+    if (!proposal || !current.source) return;
+    put({ ...current, columns: proposal.columns, rows: proposal.rows, source: { ...current.source, asOf: nowMinute(), note: proposal.sources } });
+    setProposal(null); setFillNote('Applied. Undo brings back the numbers as they were.');
+  }
   const applyPaste = () => {
     const parsed = parseTable(paste);
     if (!parsed) { setNote('Nothing to read. Copy the cells in your spreadsheet, including the header row.'); return; }
@@ -159,6 +211,29 @@ function DataEditor({ layout, block, onLayout }: { layout: Layout; block: Extrac
         <button type="button" className="ghost-btn" onClick={addRow} disabled={ds.rows.length >= MAX_ROWS}>+ Row</button>
         <button type="button" className="ghost-btn" onClick={addCol} disabled={ds.columns.length >= MAX_COLUMNS}>+ Column</button>
       </div>
+      <div className="sd-source">
+        <h3>Where the numbers come from</h3>
+        <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={!ds.source} onChange={() => { const { source: _drop, ...rest } = ds; put(rest); setProposal(null); setFillNote(''); }} /> Typed or pasted</label>
+        <label className="sd-radio"><input type="radio" name={`src-${ds.id}`} checked={!!ds.source} onChange={() => put({ ...ds, source: ds.source ?? { kind: 'joule', prompt: '', asOf: '', note: '' } })} /> Joule query</label>
+        {ds.source && (
+          <>
+            <Area label="What Joule is asked (max. 600 characters)" rows={3} value={ds.source.prompt} onChange={(v) => put({ ...ds, source: { ...ds.source!, prompt: v.slice(0, 600) } })} />
+            <p className="sd-hint">Joule fills the columns {ds.columns.join(', ')}. Rename the headers above to change what is asked for. Joule reads with the connected tools only; it is asked not to change anything. The question runs only when you click Fill now.</p>
+            <button type="button" className="ghost-btn" onClick={() => void fill()} disabled={!ready || !generate || filling || !ds.source.prompt.trim()}>{filling ? 'Joule is working…' : ds.source.asOf ? 'Fill again' : 'Fill now'}</button>
+            {ds.source.asOf && <p className="sd-hint">Filled {ds.source.asOf.replace('T', ' ')} UTC{ds.source.note ? ` · ${ds.source.note}` : ''}. The page says so under the numbers.</p>}
+            {proposal && (
+              <div className="sd-proposal">
+                <p><b>Joule proposes:</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
+                {proposal.notes.map((n) => <p key={n} className="sd-hint">{n}</p>)}
+                <div className="sd-grid-wrap"><table className="sd-grid"><thead><tr>{proposal.columns.map((c, j) => <th key={j}>{c}</th>)}</tr></thead><tbody>{proposal.rows.slice(0, 8).map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
+                {proposal.rows.length > 8 && <p className="sd-hint">… and {proposal.rows.length - 8} more rows.</p>}
+                <div className="sd-item-actions"><button type="button" className="send-btn" onClick={applyFill}>Apply</button><button type="button" className="ghost-btn" onClick={() => setProposal(null)}>Discard</button></div>
+              </div>
+            )}
+            {fillNote && <p className="sd-hint" role="status">{fillNote}</p>}
+          </>
+        )}
+      </div>
       <Area label="Paste from a spreadsheet (replaces the cells)" rows={3} value={paste} onChange={setPaste} />
       <button type="button" className="ghost-btn" onClick={applyPaste} disabled={!paste.trim()}>Use pasted cells</button>
       {note && <p className="sd-hint" role="status">{note}</p>}
@@ -168,7 +243,7 @@ function DataEditor({ layout, block, onLayout }: { layout: Layout; block: Extrac
 }
 
 /** Fields of the selected block. */
-function Inspector({ layout, block, onLayout }: { layout: Layout; block: Block; onLayout: (next: Layout) => void }) {
+function Inspector({ layout, block, onLayout, generate, ready, title }: { layout: Layout; block: Block; onLayout: (next: Layout) => void; generate?: Generate; ready?: boolean; title: string }) {
   const up = (patch: Record<string, unknown>) => onLayout(updateBlock(layout, block.id, patch));
   switch (block.type) {
     case 'heading':
@@ -252,7 +327,7 @@ function Inspector({ layout, block, onLayout }: { layout: Layout; block: Block; 
         <Text label="Title" value={block.title} onChange={(v) => up({ title: v })} />
         <label className="sd-check"><input type="checkbox" checked={block.sortable} onChange={(e) => up({ sortable: e.target.checked })} /> Readers can sort by clicking a column</label>
         <label className="sd-check"><input type="checkbox" checked={block.totals} onChange={(e) => up({ totals: e.target.checked })} /> Add a totals row for number columns</label>
-        <DataEditor layout={layout} block={block} onLayout={onLayout} />
+        <DataEditor layout={layout} block={block} onLayout={onLayout} generate={generate} ready={ready} title={title} />
       </>;
     case 'chart':
       return <>
@@ -260,7 +335,7 @@ function Inspector({ layout, block, onLayout }: { layout: Layout; block: Block; 
         <Text label="Line below" value={block.sub} onChange={(v) => up({ sub: v })} />
         <Pick label="Chart type" value={block.kind} options={CHART_KINDS.map((k) => ({ value: k, label: { bar: 'Bars', stacked: 'Stacked bars', line: 'Lines', area: 'Areas', donut: 'Donut' }[k] }))} onChange={(v) => up({ kind: v })} />
         <p className="sd-hint">First column = labels, every other column = one series. A donut uses the first number column.</p>
-        <DataEditor layout={layout} block={block} onLayout={onLayout} />
+        <DataEditor layout={layout} block={block} onLayout={onLayout} generate={generate} ready={ready} title={title} />
       </>;
     case 'ask':
       return <>
@@ -497,7 +572,8 @@ export default function SpaceDesigner({ slug: initialSlug, spaces, domains, them
                       <button className="ghost-btn sd-danger" onClick={() => { const next = layout.blocks[index + 1] ?? layout.blocks[index - 1]; change(removeBlock(layout, block.id), next?.id ?? null); }}>Delete</button>
                     </div>
                   </div>
-                  <Inspector layout={layout} block={block} onLayout={(l) => change(l)} />
+                  <Inspector layout={layout} block={block} onLayout={(l) => change(l)} generate={generate} ready={ready} title={title} />
+                  <ValuesHelper layout={layout} />
                 </div>
               ) : (
                 <div className="sd-inspector">
@@ -510,7 +586,8 @@ export default function SpaceDesigner({ slug: initialSlug, spaces, domains, them
                     </select>
                   </Field>
                   <p className="sd-hint">Click a block in the preview or in the list to edit it. Drag blocks in the list to change the order.</p>
-                  <p className="sd-hint">Colours, text size and light or dark follow your settings. Nothing here is connected to live data: the numbers are the ones you enter.</p>
+                  <p className="sd-hint">Colours, text size and light or dark follow your settings. The numbers are the ones you enter, or the ones Joule filled in at the time shown under them; the page itself has no live connection.</p>
+                  <ValuesHelper layout={layout} />
                 </div>
               )
             ) : (
