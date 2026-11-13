@@ -28,3 +28,4 @@ Hier steht, was entschieden ist, und was noch auf eine Entscheidung wartet. Eine
 | 013 | [TabPFN-Lizenz vor einer Kundendemo](013-tabpfn-lizenz-vor-einer-kundendemo.md) | vorgeschlagen | 13.11.2026 | Hans-Peter |
 | 014 | [Ontology Akt A: offene Fragen der Konzeption](014-ontology-akt-a-offene-fragen-der-konzeption.md) | vorgeschlagen | 13.11.2026 | Hans-Peter |
 | 015 | [Wissens-Feeder: Seed-Lauf und rechtliche Fragen](015-wissens-feeder-seed-lauf-und-rechtliche-fragen.md) | vorgeschlagen | 11.11.2026 | Hans-Peter |
+| 016 | [Ontology Akt B: offene Fragen der Konzeption](016-ontology-akt-b-offene-fragen-der-konzeption.md) | vorgeschlagen | 13.11.2026 | Hans-Peter |
