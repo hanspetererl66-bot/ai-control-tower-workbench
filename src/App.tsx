@@ -6,7 +6,7 @@ import {
   writeAppearance,
   type AppearancePreference,
 } from './appearance';
-import type { ChatAttachment } from './attachments';
+import { historyAttachment, type ChatAttachment } from './attachments';
 import { isWebTool, webSearchNote, WEB_SEARCH_BLOCKED_NOTE } from './web-search';
 import { greetingFor } from './greeting';
 import { MAIL_LIST_SIZE, buildQuery, normalizeHits, normalizeMessage } from './mail-pick';
@@ -903,7 +903,7 @@ export default function App() {
         role: 'user',
         text: typed,
         tools: [],
-        attachments: attachments.map(({ name, kind, mimeType }) => ({ name, kind, mimeType })),
+        attachments: attachments.map(historyAttachment),
       },
       { role: 'agent', text: '', tools: [], startedAt },
     ]);

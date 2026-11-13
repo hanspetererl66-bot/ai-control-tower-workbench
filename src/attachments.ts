@@ -46,7 +46,14 @@ export type AttachmentPickerResult = {
   errors: string[];
 };
 
-export type MessageAttachment = Pick<ChatAttachment, 'name' | 'kind' | 'mimeType'>;
+/** What the chat history keeps of an attachment: its name, kind and type, never the text. `inline` marks one without a file (a mail). */
+export type MessageAttachment = Pick<ChatAttachment, 'name' | 'kind' | 'mimeType'> & { inline?: boolean };
+
+/** The history entry of an attachment: no text, no path. */
+export function historyAttachment(attachment: ChatAttachment): MessageAttachment {
+  const { name, kind, mimeType } = attachment;
+  return attachment.inline ? { name, kind, mimeType, inline: true } : { name, kind, mimeType };
+}
 
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

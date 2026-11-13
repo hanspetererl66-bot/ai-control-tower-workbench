@@ -1021,6 +1021,14 @@ button {
   margin-bottom: 7px;
 }
 
+.msg-attachment-note {
+  margin: -2px 0 7px;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.75;
+  white-space: normal;
+}
+
 .msg-attachment {
   display: inline-flex;
   align-items: center;
