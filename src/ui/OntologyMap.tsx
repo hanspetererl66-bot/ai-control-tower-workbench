@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL, buildMap, createSimulation, focusOf, layoutMap, searchMap, visibleMap, type MapEdge, type MapKind, type MapNode } from '../graph-map';
+import { CONSUMER_MAP_KINDS, MAP_KIND_LABEL, buildMap, createSimulation, describeFocus, focusOf, layoutMap, linkWord, searchMap, startingPoints, visibleMap, type MapEdge, type MapKind, type MapNode } from '../graph-map';
+import { mapTourSeen, markMapTourSeen } from '../map-tour';
 import { cachedSuspected } from './useTermUsage';
 import { consumersOf, impactOf, ownerLabel, statusOf, type Governance, type Ontology, type TermStatus } from '../ontology-manager';
 
@@ -11,6 +12,23 @@ const RADIUS: Record<MapKind, number> = { ontology: 17, class: 10, metric: 9, re
 const HEAT_START = 1, HEAT_STOP = 0.025, HEAT_DECAY = 0.985;
 
 interface Cam { k: number; x: number; y: number }
+
+type TourStep = 'overview' | 'select' | 'ask' | 'try';
+
+/** One shape of the key, drawn the same way as on the canvas. */
+function Glyph({ kind }: { kind: MapKind }) {
+  const color = kind === 'ontology' ? 'var(--ink)' : kind === 'class' ? 'var(--accent)' : kind === 'metric' ? 'var(--om-ok)' : kind === 'resource' ? 'var(--muted)' : 'var(--om-warn)';
+  const shape = SHAPE[kind];
+  return (
+    <svg className="om-glyph" viewBox="-12 -12 24 24" width="18" height="18" aria-hidden="true">
+      {shape === 'hex' && <polygon points="10,0 5,8.7 -5,8.7 -10,0 -5,-8.7 5,-8.7" fill={color} />}
+      {shape === 'round' && <rect x="-8" y="-8" width="16" height="16" rx="4" fill={color} />}
+      {shape === 'circle' && <circle r="8" fill={color} />}
+      {shape === 'square' && <rect x="-7" y="-7" width="14" height="14" fill={color} />}
+      {shape === 'diamond' && <polygon points="0,-10 10,0 0,10 -10,0" fill={color} />}
+    </svg>
+  );
+}
 
 function path(c: CanvasRenderingContext2D, shape: string, x: number, y: number, r: number) {
   c.beginPath();
@@ -64,6 +82,9 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   const [query, setQuery] = useState('');
   const [sel, setSel] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
+  const [tour, setTour] = useState<number | null>(() => (mapTourSeen() ? null : 0));
+  const [key, setKey] = useState(true);
+  const starts = useMemo(() => startingPoints(map, 4, depth), [map, depth]);
   const shown = useMemo(() => visibleMap(map, kinds, slug), [map, kinds, slug]);
   const shownIds = useMemo(() => new Set(shown.nodes.map((n) => n.id)), [shown]);
   const focus = useMemo(() => (sel && shownIds.has(sel) ? focusOf(shown, sel, depth) : null), [shown, shownIds, sel, depth]);
@@ -140,7 +161,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       if (k < 1.5 && sh.nodes.some((n) => n.slug === sg && n.kind === 'ontology')) {
         ctx.font = `600 ${Math.round(11 + 3 * Math.min(1, 1 / k))}px ${cs.fontFamily}`; ctx.textAlign = 'center';
         ctx.fillStyle = rgba(tint, 0.55 * intro);
-        ctx.fillText((sh.nodes.find((n) => n.slug === sg && n.kind === 'ontology') as MapNode).label.toUpperCase(), mx, my - rr + 16);
+        ctx.fillText((sh.nodes.find((n) => n.slug === sg && n.kind === 'ontology') as MapNode).label.replace(/\s*\(.*$/, '').toUpperCase(), mx, my - rr + 16); // the part in brackets ("draft, from the handbook") would run into the next area
       }
     });
 
@@ -157,6 +178,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       x: (1 - u) * (1 - u) * q.ax + 2 * (1 - u) * u * q.qx + u * u * q.bx, y: (1 - u) * (1 - u) * q.ay + 2 * (1 - u) * u * q.qy + u * u * q.by,
     });
     const lights: Array<{ q: ReturnType<typeof curve>; hot: boolean }> = [];
+    const linkWords: Array<{ q: ReturnType<typeof curve>; text: string }> = [];
     for (const e of sh.edges) {
       const q = curve(e), inF = focusKeys.has(`${e.from}>${e.to}`);
       const touchesHover = hv !== null && (e.from === hv || e.to === hv);
@@ -175,6 +197,8 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
         ctx.lineTo(p2.x + Math.cos(ang + 2.5) * r, p2.y + Math.sin(ang + 2.5) * r); ctx.lineTo(p2.x + Math.cos(ang - 2.5) * r, p2.y + Math.sin(ang - 2.5) * r); ctx.closePath(); ctx.fill();
       }
       if (!quiet && !e.weak && (inF || touchesHover)) lights.push({ q, hot: inF });
+      // the name of a link ("derived from") is shown for the links of the node under the pointer or the selected one
+      if (!e.weak && k > 0.55 && (touchesHover || (sl !== null && (e.from === sl || e.to === sl)))) linkWords.push({ q, text: linkWord(e.prop) });
     }
     ctx.globalAlpha = 1;
     // a change moves from the thing that is changed (to) to what depends on it (from)
@@ -235,6 +259,12 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
       ctx.fillStyle = l.strong ? col.ink : col.muted; ctx.fillText(l.n.label, l.x, l.y);
     }
     ctx.globalAlpha = 1;
+    ctx.font = `600 10px ${cs.fontFamily}`; ctx.textAlign = 'center';
+    for (const lw of linkWords) {
+      const p = at(lw.q, 0.5);
+      ctx.lineWidth = 4; ctx.strokeStyle = col.bg; ctx.strokeText(lw.text, p.x, p.y + 3);
+      ctx.fillStyle = col.accent; ctx.fillText(lw.text, p.x, p.y + 3);
+    }
 
     // small overview in the corner
     const mw = 132, mh = 88, mx0 = w - mw - 12, my0 = h - mh - 12;
@@ -436,6 +466,38 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
     return c;
   }, [map]);
 
+  // ---------- guided tour: four steps that also move the map, so a person sees what the words say
+  const steps: TourStep[] = starts.length ? ['overview', 'select', 'ask', 'try'] : ['overview', 'try'];
+  const pick = (id: string) => { if (!shownIds.has(id)) { setKinds(new Set(ALL_KINDS)); setSlug('all'); } setSel(id); };
+  const goTo = (i: number | null) => {
+    if (i === null || i >= steps.length) { setTour(null); markMapTourSeen(); return; }
+    const step = steps[i];
+    if (step === 'overview') { setSel(null); setKinds(new Set(ALL_KINDS)); setSlug('all'); }
+    else if ((step === 'select' || step === 'ask') && starts.length && !sel) pick(starts[0].node.id);
+    setTour(Math.max(0, i));
+  };
+  const orgCount = counts.ontology ?? 0, termCount = (counts.class ?? 0) + (counts.metric ?? 0);
+  const userCount = CONSUMER_MAP_KINDS.reduce((a, k) => a + (counts[k] ?? 0), 0);
+  const summary = focus ? describeFocus(map, focus, depth) : '';
+  const tourText = (step: TourStep): { title: string; text: string } => {
+    if (step === 'overview') return {
+      title: 'What you are looking at',
+      text: `${orgCount} ${orgCount === 1 ? 'vocabulary' : 'vocabularies'} (the coloured areas), ${termCount} terms and ${userCount} agents, skills, reports or spaces that rely on them. A line with an arrow means "is built on": if the term at the arrow's tip changes, the term at the other end is affected. The key in the corner explains each shape.`,
+    };
+    if (step === 'select') return {
+      title: selNode ? `You picked "${selNode.label}"` : 'Click a dot',
+      text: focus ? `${summary} Red dots and red lines are that chain; the small lights run the way a change travels.` : 'Click any dot to see what depends on it. Everything not affected fades out.',
+    };
+    if (step === 'ask') return {
+      title: 'Who needs to know',
+      text: `The panel on the right names the agents, skills and reports that use it${impact && impact.ask.length ? ` and the owners to ask first: ${impact.ask.join(', ')}` : ''}. "Open in the catalog" shows the full definition and lets you plan the change.`,
+    };
+    return {
+      title: 'Now you try',
+      text: 'Click another dot, or search for a term above. Drag a dot to move it, drag the background to pan, scroll to zoom. "Depth" sets how many steps the red chain follows. Esc clears the selection. The Guide button brings this back.',
+    };
+  };
+
   if (map.nodes.length === 0) return <section className="om-table"><p className="om-empty">Nothing to draw yet. The map appears once the catalog has terms.</p></section>;
 
   return (
@@ -458,12 +520,28 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
             {ontologies.map((o) => <option key={o.slug} value={o.slug}>{o.title}</option>)}
           </select>
         )}
+        {tour === null && <button className="om-filter" onClick={() => goTo(0)} aria-label="Show the guide to this map">? Guide</button>}
         <label className="om-map-depth">Depth
           <select className="om-select" value={depth} onChange={(e) => setDepth(Number(e.target.value))} aria-label="How many steps to follow">
             {[1, 2, 3, 4].map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </label>
       </div>
+
+      {tour !== null && (() => {
+        const i = Math.min(tour, steps.length - 1), t = tourText(steps[i]);
+        return (
+          <div className="om-tour" role="region" aria-label="Guide to the map" aria-live="polite">
+            <span className="om-tour-step">Step {i + 1} of {steps.length}</span>
+            <p className="om-tour-body"><b>{t.title}.</b> {t.text}</p>
+            <div className="om-tour-actions">
+              {i > 0 && <button className="om-filter" onClick={() => goTo(i - 1)}>Back</button>}
+              <button className="om-filter om-filter-on" onClick={() => goTo(i + 1)}>{i + 1 >= steps.length ? 'Done' : 'Next'}</button>
+              {i + 1 < steps.length && <button className="om-tour-skip" onClick={() => goTo(null)}>Skip</button>}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="om-map-stage">
         <div className="om-map-canvas" ref={wrap}>
@@ -477,14 +555,43 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
             <button className="om-filter" onClick={fit} aria-label="Fit the map">Fit</button>
             {!quiet && <button className="om-filter" onClick={rerun} aria-label="Let the map settle again">Replay</button>}
           </div>
-          <p className="om-map-hint">{hover ? map.nodes.find((n) => n.id === hover)?.label : 'Click a node: what hangs on it turns red and lights run along the links. Drag a node to move it, drag the background to pan, scroll to zoom.'}</p>
+          <div className="om-map-key" aria-label="Key to the map">
+            <button className="om-map-key-toggle" onClick={() => setKey(!key)} aria-expanded={key}>Key {key ? '−' : '+'}</button>
+            {key && (
+              <ul>
+                <li><Glyph kind="ontology" /> Ontology <span className="om-dim">a vocabulary</span></li>
+                <li><Glyph kind="class" /> Class <span className="om-dim">a thing, e.g. Customer</span></li>
+                <li><Glyph kind="metric" /> Metric <span className="om-dim">a certified number</span></li>
+                <li><Glyph kind="resource" /> Resource <span className="om-dim">dataset, check, code</span></li>
+                <li><Glyph kind="agent" /> User <span className="om-dim">agent, skill, report, space</span></li>
+                <li><i className="om-key-red" /> Red <span className="om-dim">affected by a change</span></li>
+                <li><i className="om-key-dash" /> Dashed <span className="om-dim">draft, deprecated or only suspected</span></li>
+                <li><i className="om-key-arrow" /> Arrow <span className="om-dim">"is built on"</span></li>
+              </ul>
+            )}
+          </div>
+          <p className="om-map-hint">{hover
+            ? `${map.nodes.find((n) => n.id === hover)?.label ?? ''} · ${MAP_KIND_LABEL[map.nodes.find((n) => n.id === hover)?.kind ?? 'class']}${hover === sel ? ' (selected)' : ' · click to see what depends on it'}`
+            : selNode ? `Red = affected if "${selNode.label}" changes. Click it again or press Esc to go back.` : 'Click a dot to see what depends on it. Drag the background to pan, scroll to zoom.'}</p>
         </div>
 
         <aside className="om-map-side" aria-live="polite">
           {!selNode && (
             <>
-              <h3>How to read this</h3>
-              <p className="om-note-small">Each shape is a kind of thing: hexagon = ontology, rounded square = class, circle = metric, square = resource (dataset, check, company code), diamond = agent, skill, report, workflow, feature or space that someone declared or confirmed uses a term; dashed = only suspected, found but not yet confirmed. A line means "derived from", "depends on" or "uses". Pick a node to see what breaks if it changes.</p>
+              <h3>Start here</h3>
+              <p className="om-note-small">Click any dot on the map, or try one of these. Each shows what would be affected if that term changed.</p>
+              {starts.length > 0 && (
+                <ul className="om-map-starts">
+                  {starts.map((sp) => (
+                    <li key={sp.node.id}>
+                      <button onClick={() => pick(sp.node.id)}>
+                        <b>{sp.node.label}</b>
+                        <span className="om-dim">{ontologies.find((o) => o.slug === sp.node.slug)?.title ?? sp.node.slug} · {sp.affected} affected{sp.users ? `, ${sp.users} in use` : ''}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p className="om-note-small">{map.nodes.length} nodes, {map.edges.filter((e) => !e.weak).length} links{CONSUMER_MAP_KINDS.some((k) => counts[k]) ? '' : '. No user is declared or confirmed yet: add them in the tab Use or find them in the catalog.'}{suspected.length ? ` ${suspected.length} suspected (dashed).` : ''}</p>
             </>
           )}
@@ -492,6 +599,7 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
             <>
               <p className="om-crumb">{MAP_KIND_LABEL[selNode.kind]}{selNode.type ? ` · ${selNode.type}` : ''} · {selOnt?.title ?? selNode.slug}</p>
               <h3>{selNode.label}</h3>
+              {summary && <p className="om-map-sum">{summary}</p>}
               {selNode.note && <p className="om-note-small">{selNode.note}</p>}
               {selOnt && (selNode.kind === 'class' || selNode.kind === 'metric') && <p className="om-note-small">Owner: {ownerLabel({ owner: selNode.owner })}</p>}
               {focus && (

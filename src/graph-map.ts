@@ -235,3 +235,57 @@ export function searchMap(map: GraphMap, query: string, limit = 8): MapNode[] {
     .sort((a, b) => Number(b.label.toLowerCase().startsWith(q)) - Number(a.label.toLowerCase().startsWith(q)) || b.degree - a.degree || a.label.localeCompare(b.label))
     .slice(0, limit);
 }
+
+// ---------------------------------------------------------------- guidance: where to start, and what a selection means in words
+export interface StartPoint {
+  node: MapNode;
+  /** How many other things hang on it (within `depth` steps). */
+  affected: number;
+  /** How many of those are agents, skills, reports, workflows, features or spaces. */
+  users: number;
+}
+
+const isTermKind = (k: MapKind) => k === 'class' || k === 'metric' || k === 'resource';
+
+/**
+ * The best places to click first: terms (not hubs or users) with the most things hanging on them, users counting double, so the
+ * first selection always shows something. At most one per ontology until every ontology has had its turn, then the rest by size.
+ */
+export function startingPoints(map: GraphMap, limit = 4, depth = 3): StartPoint[] {
+  const scored = map.nodes.filter((n) => isTermKind(n.kind)).map((node) => {
+    const f = focusOf(map, node.id, depth);
+    let users = 0;
+    for (const id of f.level.keys()) { const k = map.nodes.find((n) => n.id === id)?.kind; if (k && CONSUMER_MAP_KINDS.includes(k)) users++; }
+    return { node, affected: f.level.size - 1, users };
+  }).filter((s) => s.affected > 0)
+    .sort((a, b) => (b.affected + b.users) - (a.affected + a.users) || a.node.label.localeCompare(b.node.label));
+  const out: StartPoint[] = [], seen = new Set<string>();
+  for (const s of scored) if (!seen.has(s.node.slug) && out.length < limit) { out.push(s); seen.add(s.node.slug); }
+  for (const s of scored) if (out.length < limit && !out.includes(s)) out.push(s);
+  return out;
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** "6 things would be affected: 2 metrics, 1 report and 3 agents." for a focus; says plainly when nothing depends on it. */
+export function describeFocus(map: GraphMap, focus: MapFocus, depth = 3): string {
+  const root = map.nodes.find((n) => n.id === focus.root);
+  if (!root) return '';
+  const counts = new Map<MapKind, number>();
+  for (const id of focus.level.keys()) {
+    if (id === focus.root) continue;
+    const k = map.nodes.find((n) => n.id === id)?.kind;
+    if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  const total = [...counts.values()].reduce((a, b) => a + b, 0);
+  if (total === 0) return `Nothing depends on ${root.label} (within ${plural(depth, 'step')}). Changing it would not break anything that is on the map.`;
+  const parts = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => plural(n, MAP_KIND_LABEL[k].toLowerCase(), k === 'class' ? 'classes' : undefined));
+  const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
+  return `If ${root.label} changes, ${plural(total, 'other thing')} would be affected: ${list}.`;
+}
+
+/** The short name of a link the way a person reads it ("derived from"), shown on the map when a node is hovered. */
+export const LINK_WORDS: Record<string, string> = {
+  derivedFrom: 'derived from', dependsOn: 'depends on', measuredBy: 'measured by', appliesTo: 'applies to', uses: 'uses', partOf: 'part of', references: 'refers to', contains: 'contains',
+};
+export const linkWord = (prop: string): string => LINK_WORDS[prop] ?? prop;
