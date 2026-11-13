@@ -269,6 +269,7 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 .waitbox summary{cursor:pointer;color:var(--purple-deep);font-weight:600}
 .waitbox pre{white-space:pre-wrap;font:inherit;font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;margin:8px 0 0}
 .waitbox .mh2{margin-top:8px}
+.shadowbar{border-color:var(--purple-border);background:var(--purple-dim)}
 /* outcomes */
 .otab{border-collapse:collapse;width:100%;font-size:12px}
 .otab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px;padding:0 10px 8px 0;white-space:nowrap}
@@ -391,7 +392,7 @@ select,input[type=date],input[type=time]{font:inherit;font-size:13px;border:1px 
 </script>
 <!--story:end-->
 <main>
-  <p class="demo">Fictional findings and fixed rules. The orchestrator is simulated: no monitoring is read, nothing is executed, nothing is saved. Human in the loop is a switch; the floors stay.</p>
+  <p class="demo" id="demo">Fictional findings and fixed rules. The orchestrator is simulated: no monitoring is read, nothing is executed, nothing is saved. Human in the loop is a switch; the floors stay.</p>
   <h1>Orchestrator</h1>
   <p class="sub">A proactive agent that looks ahead, plans the work with the building blocks of this story and, with human in the loop off, runs the low-risk part by itself.</p>
   <div id="view" aria-live="polite"></div>
@@ -1110,14 +1111,25 @@ const orderOf = (list) => list.slice().sort((x, y) => x.finding.deadlineDays - y
 (() => {
 'use strict';
 const DATA = JSON.parse(document.getElementById('orch-data').textContent);
+const demoText = document.getElementById('demo').textContent;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const hosted = window.parent !== window;
-const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true, hours: 0 };
+const state = { tab: 'plans', swept: false, paused: false, auto: clone(DATA.autonomy), items: {}, audit: [], n: 0, external: [], history: true, hours: 0, shadow: null, live: [], liveNote: '' };
 const timers = {};
 const label = (t) => (DATA.templates.find((x) => x.id === t) || { label: t }).label;
-const cust = (id) => DATA.customers.find((c) => c.id === id);
+/** Shadow mode: the findings come from the live alerts. A customer the demo data does not know gets assumed nights, and the date is today. */
+const customersAll = () => {
+  const extra = [];
+  for (const f of state.live) {
+    const id = f.customer || 'unknown';
+    if (!DATA.customers.some((c) => c.id === id) && !extra.some((c) => c.id === id)) extra.push({ id, name: f.customerName || 'Unknown customer', sla: 'not known', days: [0, 1, 2, 3, 4, 5, 6], from: '22:00', until: '06:00', assumed: true });
+  }
+  return [...DATA.customers, ...extra];
+};
+const dataNow = () => (state.shadow ? { ...DATA, customers: customersAll(), asOf: state.shadow.fetchedAt.slice(0, 10) } : DATA);
+const cust = (id) => customersAll().find((c) => c.id === id) || { id, name: id, assumed: true };
 const P = {
   bot: '<rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16h6"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>', x: '<path d="m6 6 12 12M18 6 6 18"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -1130,17 +1142,18 @@ const ic = (n) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${P[n]}
 const PILL = { done: 'green', running: 'purple', ready: 'purple', 'waiting-approval': 'amber', 'waiting-customer': 'amber', 'rolled-back': 'red', rejected: 'grey' };
 const st = (id) => (state.items[id] = state.items[id] || {});
 const dayNow = () => Math.floor(state.hours / 24);
-const assessments = () => DATA.findings.map((f) => assess(DATA, state.auto, f, dayNow()));
+const findingsNow = () => (state.shadow ? state.live.map((f) => ({ ...f, customer: f.customer || 'unknown' })) : DATA.findings);
+const assessments = () => findingsNow().map((f) => assess(dataNow(), state.auto, f, dayNow()));
 const waitedH = (s) => Math.max(0, state.hours - (s.since || 0));
 const daysLeft = (a) => a.finding.deadlineDays - dayNow();
-const clockText = () => fmtMs(dayMs(DATA.asOf) + state.hours * HOUR_MS).replace('T', ' ');
+const clockText = () => fmtMs(dayMs(dataNow().asOf) + state.hours * HOUR_MS).replace('T', ' ');
 const find = (id) => assessments().find((a) => a.id === id);
-const ownOutcomes = () => assessments().map((a) => outcomeOf(DATA, a, st(a.id))).filter(Boolean);
+const ownOutcomes = () => assessments().map((a) => outcomeOf(dataNow(), a, st(a.id))).filter(Boolean);
 const allOutcomes = () => [...(state.history ? DATA.history : []), ...state.external, ...ownOutcomes()];
 const slot = (w) => { const [d, a] = w.start.split('T'), [e, b] = w.end.split('T'); return `${d} ${a}–${b}${e !== d ? ' (next day)' : ''}`; };
 
 function log(who, text, id) { state.n += 1; state.audit.push({ n: state.n, who, text, id: id || '' }); }
-function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history, hours: state.hours } }, '*'); }
+function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, swept: state.swept, paused: state.paused, auto: state.auto, items: state.items, audit: state.audit, n: state.n, external: state.external, history: state.history, hours: state.hours, shadow: state.shadow, live: state.live } }, '*'); }
 
 /* ---------- runs ---------- */
 function schedule(id) {
@@ -1163,9 +1176,32 @@ function start(id) {
   const a = find(id), s = st(id); if (!a || s.running) return;
   step(a, s); schedule(id);
 }
-function kick() { assessments().forEach((a) => { if (autoStarts(a, st(a.id), state.paused)) start(a.id); }); }
+function kick() { if (state.shadow) return; assessments().forEach((a) => { if (autoStarts(a, st(a.id), state.paused)) start(a.id); }); }
 
 /* ---------- actions ---------- */
+/* ---- shadow mode: live findings, planned and decided, nothing executed ---- */
+const pendingAsk = new Map(); let askSeq = 0;
+function askHost(msg) {
+  const requestId = 'shd' + (++askSeq);
+  window.parent.postMessage({ ...msg, requestId }, '*');
+  return new Promise((done) => { pendingAsk.set(requestId, done); setTimeout(() => { if (pendingAsk.delete(requestId)) done({ type: 'ct:error', message: 'No answer from the Werkbank.' }); }, 30000); });
+}
+async function loadShadow() {
+  if (!hosted) return;
+  state.liveNote = 'Loading live findings …'; render();
+  const a = await askHost({ type: 'mon:findings-request', sinceHours: 24 });
+  if (a.type !== 'mon:findings') { state.liveNote = (a.message || 'The live findings could not be loaded.') + ' The demo findings stay.'; render(); return; }
+  Object.keys(timers).forEach((id) => { clearTimeout(timers[id]); delete timers[id]; });
+  state.live = a.findings; state.shadow = { adapter: a.adapter, fetchedAt: a.fetchedAt, hours: a.sinceHours, alerts: a.alerts, skipped: a.skipped, withheld: a.withheld };
+  state.items = {}; state.hours = 0; state.liveNote = '';
+  log('person', `Shadow mode on: ${a.findings.length} live finding${a.findings.length === 1 ? '' : 's'} from ${a.adapter} (${a.alerts} alerts, ${a.skipped} not matched by a rule, ${a.withheld} withheld).`);
+  sweep();
+}
+function leaveShadow() {
+  state.shadow = null; state.live = []; state.items = {}; state.hours = 0; state.liveNote = ''; state.swept = false;
+  log('person', 'Shadow mode off: the demo findings are back.');
+  render();
+}
 /** Reminder and escalation: only a message preview and an audit entry, never an approval. */
 function escalate() {
   assessments().forEach((a) => {
@@ -1185,7 +1221,7 @@ function advance(h) {
 function sweep() {
   state.swept = true;
   const list = orderOf(assessments());
-  log('agent', `Sweep: looked at ${list.length} findings (certificates, patch age, disk trend, DNS) with today = ${DATA.asOf}.`);
+  log('agent', `Sweep: looked at ${list.length} findings (certificates, patch age, disk trend, DNS) with today = ${dataNow().asOf}${state.shadow ? ' (shadow mode: nothing is executed)' : ''}.`);
   list.forEach((a) => log('agent', `${a.id} ${a.finding.signal}. Plan: ${label(a.finding.template)} on ${a.finding.host}, window ${a.window ? slot(a.window) : 'none found'}. Decision: ${a.mode === 'auto' ? 'runs by itself' : 'waits for a person'}${a.customer.needed ? ', the customer has to agree the window first' : ''}. ${a.why}`, a.id));
   escalate(); kick(); render();
 }
@@ -1201,9 +1237,9 @@ function setPause(p) {
   if (!p) { assessments().forEach((a) => { if (st(a.id).running) schedule(a.id); }); kick(); }
   render();
 }
-function approve(id) { const a = find(id), s = st(id); if (!a || statusOf(a, s).key !== 'waiting-approval') return; s.approved = true; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.approvalMin; log('person', `${id}: approved.`, id); start(id); render(); }
+function approve(id) { const a = find(id), s = st(id); if (state.shadow || !a || statusOf(a, s).key !== 'waiting-approval') return; s.approved = true; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.approvalMin; log('person', `${id}: approved.`, id); start(id); render(); }
 function reject(id) { const s = st(id); s.waited = (s.waited || 0) + waitedH(s) * 60; s.rejected = true; s.running = false; log('person', `${id}: rejected, no action.`, id); render(); }
-function retry(id) { const a = find(id), s = st(id); if (!a || !s.rolledBack) return; s.rolledBack = false; s.approved = true; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.approvalMin; log('person', `${id}: new try approved.`, id); start(id); render(); }
+function retry(id) { const a = find(id), s = st(id); if (state.shadow || !a || !s.rolledBack) return; s.rolledBack = false; s.approved = true; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.approvalMin; log('person', `${id}: new try approved.`, id); start(id); render(); }
 function agree(id, w) {
   const a = find(id), s = st(id); if (!a) return;
   s.agreed = true; s.window = w || a.window; s.waited = (s.waited || 0) + waitedH(s) * 60 + DATA.timing.customerMin; s.since = state.hours;
@@ -1235,7 +1271,8 @@ function controls() {
   const on = state.auto.hitl;
   return `<div class="card ctrl rise"><div class="sw"><button class="switch" id="hitl" type="button" role="switch" aria-checked="${on}" aria-label="Human in the loop"><i></i></button>
     <div><b>Human in the loop: ${on ? 'on' : 'off'}</b><span>${on ? 'Every plan waits for a person. The agent plans and proposes, a person decides.' : 'The agent runs low-risk plans by itself, as the autonomy matrix says. The floors stay: they cannot be switched off.'}</span></div></div>
-    <div class="acts"><button class="primary" data-act="sweep">${ic('eye')} ${state.swept ? 'Sweep again' : 'Run a sweep'}</button><span class="clock" title="Simulated time">${ic('clock')}<b>${esc(clockText())}</b><button class="ghost" data-act="time" data-h="6">+6 h</button><button class="ghost" data-act="time" data-h="24">+1 day</button></span><button class="ghost" data-act="pause">${ic(state.paused ? 'play' : 'pause')} ${state.paused ? 'Resume' : 'Pause the orchestrator'}</button></div></div>
+    <div class="acts"><button class="primary" data-act="sweep">${ic('eye')} ${state.swept ? 'Sweep again' : 'Run a sweep'}</button><span class="clock" title="Simulated time">${ic('clock')}<b>${esc(clockText())}</b><button class="ghost" data-act="time" data-h="6">+6 h</button><button class="ghost" data-act="time" data-h="24">+1 day</button></span>${hosted ? `<button class="ghost" data-act="${state.shadow ? 'shadow-off' : 'shadow-load'}" id="shadow">${ic('eye')} ${state.shadow ? 'Back to demo findings' : 'Load live findings (shadow mode)'}</button>` : ''}<button class="ghost" data-act="pause">${ic(state.paused ? 'play' : 'pause')} ${state.paused ? 'Resume' : 'Pause the orchestrator'}</button></div></div>
+    ${state.shadow ? `<div class="banner shadowbar">${ic('eye')}<span><b>Shadow mode.</b> Live findings from ${esc(state.shadow.adapter)} (fetched ${esc(state.shadow.fetchedAt.replace('T', ' '))} UTC, last ${state.shadow.hours} h): ${state.shadow.alerts} alerts, ${state.live.length} finding${state.live.length === 1 ? '' : 's'}, ${state.shadow.skipped} not matched by a rule, ${state.shadow.withheld} withheld. The orchestrator plans and decides, nothing is executed or approved. Customers the demo data does not know get assumed nights.</span></div>` : ''}${state.liveNote ? `<div class="banner">${ic('alert')}<span>${esc(state.liveNote)}</span></div>` : ''}
     ${state.paused ? `<div class="banner pausebar">${ic('pause')}<span><b>Paused.</b> No autonomous run starts and running plans stand still until you resume.</span></div>` : ''}`;
 }
 function lane(a, s) {
@@ -1258,12 +1295,13 @@ function planCard(a, i) {
   if (k.key === 'waiting-customer') buttons.push(hosted ? `<button class="primary" data-act="hotline" data-id="${a.id}">${ic('phone')} Agree the window with the customer</button>` : `<button class="ghost" data-act="agree" data-id="${a.id}">Simulate: the customer agrees</button>`);
   if (k.key === 'waiting-approval') buttons.push(`<button class="primary" data-act="approve" data-id="${a.id}">${ic('check')} Approve and run</button><button class="ghost" data-act="reject" data-id="${a.id}">Reject</button>`);
   if (k.key === 'rolled-back') buttons.push(`<button class="primary" data-act="retry" data-id="${a.id}">Approve a new try</button><button class="ghost" data-act="reject" data-id="${a.id}">Reject</button>`);
-  if (k.key === 'ready') buttons.push(`<span class="note">${state.paused ? 'Waiting: the orchestrator is paused.' : 'Starts now.'}</span>`);
-  return `<article class="plan rise ${s.running ? 'run' : ''}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(a.id)} · ${esc(label(f.template))}</div><div class="who">${esc(c.name)} · ${esc(f.host)} · ${esc(f.env)}</div></div>
-    <div style="text-align:right"><span class="pill ${PILL[k.key]}">${esc(k.label)}</span><div class="note" style="margin-top:4px">${esc(k.who)}</div></div></div>
+  if (state.shadow) { buttons.length = 0; buttons.push(`<span class="pill ${a.mode === 'auto' ? 'purple' : 'amber'}">${ic('eye')} Shadow: ${a.customer.needed && !s.agreed ? 'would wait for the customer' : a.mode === 'auto' ? 'would run by itself' : 'would wait for a person'}</span><span class="note">Nothing is executed or approved.</span>`); }
+  else if (k.key === 'ready') buttons.push(`<span class="note">${state.paused ? 'Waiting: the orchestrator is paused.' : 'Starts now.'}</span>`);
+  return `<article class="plan rise ${s.running ? 'run' : ''}" style="--d:${i * 45}ms"><div class="top"><div><div class="id">${esc(a.id)} · ${esc(label(f.template))}</div><div class="who">${esc(c.name)} · ${esc(f.host)} · ${esc(f.env)}${c.assumed ? ' · <span class="chip">assumed nights</span>' : ''}</div></div>
+    <div style="text-align:right"><span class="pill ${state.shadow ? 'grey' : PILL[k.key]}">${esc(state.shadow ? 'Shadow' : k.label)}</span><div class="note" style="margin-top:4px">${esc(state.shadow ? 'Nothing is executed' : k.who)}</div></div></div>
     <div class="sig"><b>${esc(f.signal)}</b></div><div class="ev">${esc(f.evidence)}</div>
     <div class="dl ${hot ? 'hot' : ''}"><span>${over ? `Overdue by ${-left} day${left === -1 ? '' : 's'}` : `${left} day${left === 1 ? '' : 's'} left`}</span><span class="bar"><i style="--w:${over ? 100 : Math.max(6, 100 - Math.min(total, left) / total * 100)}%"></i></span><span>${esc(a.deadline)}</span></div>
-    <div class="decision"><div class="head"><span class="pill ${a.mode === 'auto' ? 'purple' : 'amber'}">${ic(a.mode === 'auto' ? 'bot' : 'user')} ${a.mode === 'auto' ? 'Runs by itself' : 'Waits for a person'}</span><span class="note">${esc(a.risk)} risk</span></div>
+    <div class="decision"><div class="head"><span class="pill ${a.mode === 'auto' ? 'purple' : 'amber'}">${ic(a.mode === 'auto' ? 'bot' : 'user')} ${state.shadow ? 'Would ' : ''}${a.mode === 'auto' ? (state.shadow ? 'run by itself' : 'Runs by itself') : (state.shadow ? 'wait for a person' : 'Waits for a person')}</span><span class="note">${esc(a.risk)} risk</span></div>
       <div>${esc(a.why)}</div>${a.floors.length ? `<div class="chips">${floors}</div>` : ''}
       <div class="slot">${ic('clock')}<span>Window: <b>${w ? esc(slot(w)) : 'none found'}</b>${s.window ? ' (agreed)' : ''}</span>${a.window && a.window.moved ? `<span class="chip">moved: ${esc(a.window.moved)}</span>` : ''}</div>
       <div class="note">${esc(a.customer.text)}</div></div>
@@ -1314,6 +1352,7 @@ function render() {
   const tabs = [['plans', 'Plans', 'list', waiting || ''], ['autonomy', 'Autonomy', 'sliders', ''], ['outcomes', 'Outcomes', 'clock', ''], ['audit', 'Audit log', 'shield', state.audit.length || '']];
   const body = state.tab === 'plans' ? plansView() : state.tab === 'autonomy' ? autonomyView() : state.tab === 'outcomes' ? outcomesView() : auditView();
   $('#view').innerHTML = `${controls()}<div class="tabs" role="group" aria-label="View">${tabs.map(([k, l, i, n]) => `<button type="button" data-tab="${k}" aria-pressed="${state.tab === k}">${ic(i)}${l}${n ? `<span class="n">${n}</span>` : ''}</button>`).join('')}</div>${body}`;
+  document.getElementById('demo').textContent = state.shadow ? 'Shadow mode: the findings come from the live monitoring (read only). The orchestrator plans and decides with the same rules; nothing is executed, nothing is approved. Human in the loop is a switch; the floors stay.' : demoText;
   save();
 }
 
@@ -1324,6 +1363,8 @@ document.addEventListener('click', (e) => {
   const id = b.dataset.id;
   if (b.dataset.act === 'sweep') sweep();
   else if (b.dataset.act === 'pause') setPause(!state.paused);
+  else if (b.dataset.act === 'shadow-load') loadShadow();
+  else if (b.dataset.act === 'shadow-off') leaveShadow();
   else if (b.dataset.act === 'time') advance(+b.dataset.h);
   else if (b.dataset.act === 'approve') approve(id);
   else if (b.dataset.act === 'reject') reject(id);
@@ -1345,9 +1386,10 @@ document.addEventListener('change', (e) => {
   render();
 });
 window.addEventListener('message', (e) => {
+  if (e.source === window.parent && e.data && typeof e.data.requestId === 'string' && pendingAsk.has(e.data.requestId)) { const done = pendingAsk.get(e.data.requestId); pendingAsk.delete(e.data.requestId); done(e.data); return; }
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
   const m = e.data, s0 = m.state;
-  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; state.hours = Math.max(0, Math.min(24 * 400, s0.hours | 0)); }
+  if (s0 && s0.auto && s0.items) { state.tab = s0.tab || 'plans'; state.swept = !!s0.swept; state.paused = !!s0.paused; state.auto = s0.auto; state.items = s0.items; state.audit = Array.isArray(s0.audit) ? s0.audit : []; state.n = s0.n || 0; state.external = Array.isArray(s0.external) ? s0.external : []; state.history = s0.history !== false; state.hours = Math.max(0, Math.min(24 * 400, s0.hours | 0)); if (s0.shadow && Array.isArray(s0.live)) { state.shadow = s0.shadow; state.live = s0.live; } }
   (Array.isArray(m.handoffs) ? m.handoffs : []).forEach((h) => { const p = h && h.payload; if (p && p.type === 'window-result') onWindowResult(p); else if (p && p.type === 'outcome') onOutcome(p.outcome); });
   Object.keys(state.items).forEach((id) => { if (state.items[id].running && !state.paused) schedule(id); });
   render();

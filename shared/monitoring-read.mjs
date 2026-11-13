@@ -19,6 +19,7 @@ const MAX_BYTES = 1_000_000;
 const TIMEOUT_MS = 10_000;
 const SEVERITY = { critical: 'critical', fatal: 'critical', disaster: 'critical', high: 'high', major: 'high', error: 'high', average: 'medium', medium: 'medium', warning: 'medium', warn: 'medium', low: 'low', minor: 'low', info: 'low', information: 'low' };
 const LEVEL = ['high', 'medium', 'low'];
+const ENVS = ['PRD', 'QAS', 'DEV'];
 
 /** Plain short text: no control characters or angle brackets, one line, cut to length. */
 export const clip = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n) : '');
@@ -171,17 +172,63 @@ export function readMap(file) {
   const hosts = {}, topology = {};
   for (const [h, m] of Object.entries(raw && typeof raw.hosts === 'object' && raw.hosts ? raw.hosts : {})) {
     if (!HOST.test(h) || !m || typeof m !== 'object') continue;
-    hosts[h] = { customer: clip(m.customer, 60), service: clip(m.service, 60), impact: LEVEL.includes(m.impact) ? m.impact : 'medium', customerFacing: m.customerFacing === true };
+    hosts[h] = { customer: clip(m.customer, 60), service: clip(m.service, 60), impact: LEVEL.includes(m.impact) ? m.impact : 'medium', customerFacing: m.customerFacing === true,
+      customerId: typeof m.customerId === 'string' && /^[a-z0-9]{1,12}$/.test(m.customerId) ? m.customerId : '', env: ENVS.includes(m.env) ? m.env : 'PRD' };
     const deps = (Array.isArray(m.dependsOn) ? m.dependsOn : []).filter((d) => typeof d === 'string' && HOST.test(d)).slice(0, 10);
     if (deps.length) topology[h] = deps;
   }
-  return { hosts, topology };
+  const rules = (Array.isArray(raw && raw.findingRules) ? raw.findingRules : []).slice(0, 30).map(cleanRule).filter(Boolean);
+  return { hosts, topology, rules };
+}
+
+
+/* ---- findings from live alerts (for the Orchestrator in shadow mode) ---- */
+
+/** The kinds of finding the Orchestrator knows, with the task that fixes them and a deadline in days when the rule gives none. */
+export const FINDING_KINDS = Object.freeze({
+  'cert-expiry': { template: 'renew-certificate', days: 14 },
+  'patch-age': { template: 'patch-vm', days: 30 },
+  'disk-trend': { template: 'move-vm', days: 7 },
+  'dns-stale': { template: 'update-dns-record', days: 14 },
+});
+const TEMPLATES = ['renew-certificate', 'patch-vm', 'move-vm', 'update-dns-record'];
+/** Alert texts with an instruction aimed at an AI assistant never become a finding (the same patterns as the Alerts Space). */
+const INJECTION = [/ignore (all |your )?(previous|prior) instructions/i, /\bai assistants?\b/i, /system prompt/i, /(restart|delete|shut ?down|disable) (every|all) [^.]*servers?/i];
+
+/** One rule of the local map: { match: text pattern, kind, template?, deadlineDays? }. Anything else is dropped. */
+function cleanRule(r) {
+  if (!r || typeof r !== 'object' || typeof r.match !== 'string' || r.match.length < 1 || r.match.length > 100 || !Object.hasOwn(FINDING_KINDS, r.kind)) return null;
+  try { new RegExp(r.match, 'i'); } catch { return null; }
+  const days = Number(r.deadlineDays);
+  return { match: r.match, kind: r.kind, template: TEMPLATES.includes(r.template) ? r.template : '', deadlineDays: Number.isInteger(days) && days >= 1 && days <= 365 ? days : 0 };
+}
+
+/**
+ * Alerts -> findings by the rules of the local map. An alert that matches no rule is no finding (counted); an alert with an instruction
+ * aimed at an AI assistant is withheld (counted); one finding per host and kind, the oldest alert wins.
+ */
+export function toFindings(alerts, rules = [], hosts = {}) {
+  const compiled = rules.map((r) => { try { return { ...r, re: new RegExp(r.match, 'i') }; } catch { return null; } }).filter(Boolean);
+  const seen = new Set(), findings = [];
+  let skipped = 0, withheld = 0;
+  for (const a of (Array.isArray(alerts) ? alerts : []).slice().sort((x, y) => String(x.at).localeCompare(String(y.at)) || String(x.id).localeCompare(String(y.id)))) {
+    if (INJECTION.some((p) => p.test(a.text))) { withheld++; continue; }
+    const rule = compiled.find((r) => r.re.test(a.text));
+    if (!rule) { skipped++; continue; }
+    const key = `${a.host}|${rule.kind}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const m = hosts[a.host] || {}, kind = FINDING_KINDS[rule.kind];
+    findings.push({ id: `L-${a.id}`.slice(0, 40), customer: m.customerId || '', customerName: clip(a.customer || m.customer, 60), host: a.host, env: ENVS.includes(m.env) ? m.env : 'PRD', kind: rule.kind,
+      template: rule.template || kind.template, deadlineDays: rule.deadlineDays || kind.days, signal: clip(a.text, 120), evidence: clip(`Monitoring alert ${a.id} at ${String(a.at).replace('T', ' ')} UTC on ${a.host}: ${a.text}`, 240), live: true });
+  }
+  return { findings, skipped, withheld };
 }
 
 /** adapter: an adapter or a function that returns one (or null) each time, so a changed setting needs no restart. */
 export function createMonitoringRead({ adapter, mapFile, now = () => new Date(), log = () => {} }) {
   const current = () => { const a = typeof adapter === 'function' ? adapter() : adapter; return a ? assertReadOnly(a) : null; };
-  return {
+  const self = {
     status() { try { const a = current(); return { configured: !!a, adapter: a ? a.name : '' }; } catch { return { configured: false, adapter: '' }; } },
     async alerts({ sinceHours } = {}) {
       const a = current();
@@ -195,5 +242,11 @@ export function createMonitoringRead({ adapter, mapFile, now = () => new Date(),
       log({ at: t.toISOString(), adapter: a.name, hours, alerts: alerts.length });
       return { source: 'live', adapter: a.name, fetchedAt: toMinute(t.toISOString()), sinceHours: hours, alerts, topology };
     },
+    /** The alerts as findings by the rules of the local map: what the Orchestrator plans in shadow mode. */
+    async findings({ sinceHours } = {}) {
+      const r = await self.alerts({ sinceHours }), map = readMap(mapFile);
+      return { source: 'live', adapter: r.adapter, fetchedAt: r.fetchedAt, sinceHours: r.sinceHours, alerts: r.alerts.length, ...toFindings(r.alerts, map.rules, map.hosts) };
+    },
   };
+  return self;
 }

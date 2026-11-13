@@ -1570,6 +1570,7 @@ const monitoring = createMonitoringRead({
   mapFile: join(ROOT, 'goose-home', 'monitoring-map.json'),
 });
 ipcMain.handle('monitoring-alerts', (_event, hours) => obWrap(() => monitoring.alerts({ sinceHours: hours })));
+ipcMain.handle('monitoring-findings', (_event, hours) => obWrap(() => monitoring.findings({ sinceHours: hours })));
 /** The Settings dialog: address and read token. The token goes in and never comes back out. */
 const monitoringConfig = createMonitoringConfig({
   store: { read: (name) => secretsFor(name), write: (name, values) => saveSecrets(name, values), forget: (name) => forgetConnectorSecrets(name) },

@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('host', {
   monitoringConfigSet: (baseUrl, token, adapter) => ipcRenderer.invoke('monitoring-config-set', { baseUrl, token, adapter }),
   monitoringConfigClear: () => ipcRenderer.invoke('monitoring-config-clear'),
   monitoringConfigTest: () => ipcRenderer.invoke('monitoring-config-test'),
+  monitoringFindings: (hours) => ipcRenderer.invoke('monitoring-findings', hours),
   monitoringAlerts: (hours) => ipcRenderer.invoke('monitoring-alerts', hours),
   hotlineMailPreview: (fields) => ipcRenderer.invoke('hotline-mail-preview', fields),
   hotlineMailSend: (fields) => ipcRenderer.invoke('hotline-mail-send', fields),

@@ -36,6 +36,23 @@ Gewählt im Reiter *Monitoring* der Einstellungen (Feld *Monitoring system*) ode
 - **Wenn der Token abgelehnt wird:** häufig leitet der Webserver den Header nicht weiter (bei Apache braucht es eine `SetEnvIf`-Regel für `Authorization`). Der Fehlertext nennt die Antwort von Zabbix ohne das Token.
 - **Belegt** (Dokumentation): Bearer-Header als Anmeldeweg ([Zabbix API 7.0](https://www.zabbix.com/documentation/7.0/en/manual/api)), `problem.get` mit `time_from` und `recent` ([Referenz](https://www.zabbix.com/documentation/current/en/manual/api/reference/problem/get)). **Nicht gegen die Dokumentation geprüft:** `trigger.get` mit `selectHosts` (aus der Kenntnis der API) und das genaue Verhalten in deiner Version. Nicht gegen ein echtes Zabbix getestet, nur mit Antworten, wie die API sie liefert (Zahlen als Zeichenketten).
 
+## Befunde für den Schattenbetrieb des Orchestrators (13.11.2026)
+Der Orchestrator kann im **Schattenmodus** auf echten Befunden planen (Knopf *Load live findings (shadow mode)*). Die Befunde entstehen aus den Live-Alarmen **nach Regeln deiner lokalen Zuordnung**, nicht durch Raten und ohne weitere Daten aus dem Monitoring (es bleibt bei den minimalen Feldern). Regeln in `goose-home/monitoring-map.json`:
+```json
+{ "findingRules": [
+  { "match": "certificate .* expires", "kind": "cert-expiry" },
+  { "match": "security patches? .* open", "kind": "patch-age", "deadlineDays": 21 },
+  { "match": "disk .* (full|9\\d ?%)", "kind": "disk-trend", "template": "move-vm" }
+],
+"hosts": { "gw-01": { "customer": "Muster Industrie AG", "customerId": "mi", "env": "PRD" } } }
+```
+- `match`: ein Muster (ohne Beachtung der Groß-/Kleinschreibung, höchstens 100 Zeichen) auf den Alarmtext. Passt kein Muster, ist der Alarm **kein Befund** (wird gezählt, nicht geraten). Höchstens 30 Regeln, ungültige werden verworfen.
+- `kind`: `cert-expiry` (Aufgabe *Zertifikat erneuern*, Frist 14 Tage), `patch-age` (*Patchen*, 30), `disk-trend` (*VM verschieben*, 7), `dns-stale` (*DNS ändern*, 14). `template` und `deadlineDays` sind optional und ersetzen die Vorgaben.
+- Je Host und Art **ein** Befund (der älteste Alarm). Alarme mit einer Anweisung an einen KI-Assistenten werden **nie** zu einem Befund (zurückgehalten und gezählt).
+- Je Host optional `customerId` (kurz, Buchstaben und Ziffern) und `env` (PRD, QAS, DEV; sonst PRD). Kennt die Demo die Kunden-Id (`mi`, `bp`, `nl`, `aw`, `ke`, `hr`), gelten deren Nächte und Regeln. **Sonst bekommt der Kunde angenommene Nächte (täglich 22:00 bis 06:00) und die Standard-Schwellen** und ist als *assumed nights* gekennzeichnet; echte Kundenregeln gibt es für die Werkbank noch nicht.
+- **Im Schattenmodus wird nichts ausgeführt oder freigegeben:** keine Knöpfe zum Freigeben, Wiederholen oder zur Kundenabsprache, kein Lauf startet, auch nicht mit ausgeschaltetem *Human in the loop*; auch ein direkter Aufruf wird abgewiesen. Pläne zeigen, was der Orchestrator *täte* ("would run by itself", "would wait for a person", "would wait for the customer"). Als Datum gilt heute (Abrufzeit), die Frist zählt ab dann.
+- **Noch nicht gebaut (Schritt 2 von Phase 2):** das Urteil einer Person je Plan und das unveränderliche Protokoll in Supabase.
+
 ## Im Space
 Knopf **Load live alerts** (nur in der App). Danach steht "live data" mit Adapter, Abrufzeit und Zeitraum da, die Alarme ersetzen die Demo-Daten und werden wie bisher bewertet und zu Vorfällen zusammengeführt (Abhängigkeiten aus der Zuordnung). **Reset to sample** bringt die Demo-Daten zurück; bei einem Fehler bleiben sie, mit dem Grund. Der Text wird weiter auf Anweisungen an KI-Assistenten geprüft (Quarantäne). **"Run in n8n" und "Ask Joule" sind aus, solange Live-Alarme da sind**: sie gehen nicht an den Chat.
 

@@ -36,6 +36,7 @@ declare global {
       monitoringConfigSet?: (baseUrl: string, token: string, adapter: string) => Promise<{ ok: true; data: { configured: boolean; source: string; baseUrl: string; tokenSet: boolean; adapter: string; adapters: Array<{ id: string; label: string; hint: string; tokenHint: string }> } } | { ok: false; error: string }>;
       monitoringConfigClear?: () => Promise<{ ok: true; data: { configured: boolean; source: string; baseUrl: string; tokenSet: boolean; adapter: string; adapters: Array<{ id: string; label: string; hint: string; tokenHint: string }> } } | { ok: false; error: string }>;
       monitoringConfigTest?: () => Promise<{ ok: true; data: { adapter: string; count: number } } | { ok: false; error: string }>;
+      monitoringFindings?: (sinceHours: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       monitoringAlerts?: (sinceHours: number) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailPreview?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;
       hotlineMailSend?: (fields: Record<string, string>) => Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: string }>;

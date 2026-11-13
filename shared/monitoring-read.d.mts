@@ -12,8 +12,13 @@ export function createHttpJsonAdapter(opts: { baseUrl: string; token: string; fe
 export function createZabbixAdapter(opts: { baseUrl: string; token: string; fetchImpl?: typeof fetch; timeoutMs?: number }): MonitoringAdapter;
 export const ADAPTERS: Record<string, (opts: { baseUrl: string; token: string; fetchImpl?: typeof fetch }) => MonitoringAdapter>;
 export function adapterFromEnv(env: Record<string, string | undefined> | null | undefined, fetchImpl?: typeof fetch): MonitoringAdapter | null;
-export function readMap(file: string): { hosts: Record<string, unknown>; topology: Record<string, string[]> };
+export interface FindingRule { match: string; kind: string; template: string; deadlineDays: number }
+export interface Finding { id: string; customer: string; customerName: string; host: string; env: 'PRD' | 'QAS' | 'DEV'; kind: string; template: string; deadlineDays: number; signal: string; evidence: string; live: true }
+export const FINDING_KINDS: Readonly<Record<string, { template: string; days: number }>>;
+export function toFindings(alerts: MonitoringAlert[], rules?: FindingRule[], hosts?: Record<string, any>): { findings: Finding[]; skipped: number; withheld: number };
+export function readMap(file: string): { hosts: Record<string, any>; topology: Record<string, string[]>; rules: FindingRule[] };
 export function createMonitoringRead(opts: { adapter: MonitoringAdapter | null | (() => MonitoringAdapter | null); mapFile: string; now?: () => Date; log?: (e: Record<string, unknown>) => void }): {
   status(): { configured: boolean; adapter: string };
   alerts(args?: { sinceHours?: number }): Promise<{ source: 'live'; adapter: string; fetchedAt: string; sinceHours: number; alerts: MonitoringAlert[]; topology: Record<string, string[]> }>;
+  findings(args?: { sinceHours?: number }): Promise<{ source: 'live'; adapter: string; fetchedAt: string; sinceHours: number; alerts: number; findings: Finding[]; skipped: number; withheld: number }>;
 };
