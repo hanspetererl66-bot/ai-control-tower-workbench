@@ -4171,6 +4171,15 @@ button {
 .develop-logo-n8n svg { width: 76px; height: 40px; }
 .develop-logo-n8n { color: #ea4b71; background: linear-gradient(150deg, #fff3f6, #fbd5df); }
 .develop-logo-agent { color: var(--accent); background: linear-gradient(150deg, #f6f2ff, #dccffa); }
+.develop-logo-agent-new { color: #6d28d9; background: linear-gradient(150deg, #f6f2ff, #dccffa); }
+.develop-logo-agent-ext { color: #4f46e5; background: linear-gradient(150deg, #f0f0ff, #cfd0fb); }
+.develop-logo-agent-int { color: #a21caf; background: linear-gradient(150deg, #fbf1fd, #efcdf5); }
+:root[data-theme="dark"] .develop-logo-agent-new { color: #b69cff; background: linear-gradient(150deg, rgb(139 92 246 / 30%), rgb(139 92 246 / 10%)); }
+:root[data-theme="dark"] .develop-logo-agent-ext { color: #a5a8ff; background: linear-gradient(150deg, rgb(99 102 241 / 30%), rgb(99 102 241 / 10%)); }
+:root[data-theme="dark"] .develop-logo-agent-int { color: #e9a1f3; background: linear-gradient(150deg, rgb(192 38 211 / 28%), rgb(192 38 211 / 10%)); }
+.develop-cards-three { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1100px; margin: 0 auto; }
+.develop-back { border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; margin-bottom: 6px; }
+@media (max-width: 900px) { .develop-cards-three { grid-template-columns: 1fr; } }
 .develop-logo-skills { color: var(--accent); background: linear-gradient(150deg, #f3f0ff, #d9d2f7); }
 .develop-logo-connectors { color: #0f766e; background: linear-gradient(150deg, #effcf9, #c4ece6); }
 .develop-logo-ontologies { color: #0041f0; background: linear-gradient(150deg, #eef2ff, #cdd8fb); }
