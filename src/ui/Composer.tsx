@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Agent, SessionExtension } from '../acp';
 import { MAX_CHAT_ATTACHMENTS, formatFileSize, isTableFile, type ChatAttachment } from '../attachments';
+import { mailToAttachment, type MailHit, type MailMessage } from '../mail-pick';
 import TableActions from './TableActions';
 import {
   applyExclusiveConnectorRequest,
@@ -64,6 +65,10 @@ type Props = {
   /** Mail this conversation (the @ button). Disabled while there is nothing to send. */
   onEmail?: () => void;
   canEmail?: boolean;
+  /** Read the Gmail inbox for the "E-mail…" entry of the + menu: the newest mails (or a Gmail search) and one mail in full. Missing without the Gmail connector. */
+  mail?: { search: (query: string) => Promise<MailHit[]>; read: (id: string) => Promise<MailMessage> };
+  /** Why "E-mail…" is switched off (no agent, no Gmail connector). */
+  mailHint?: string;
 };
 
 /** Whether the buttons under the input (Favorites, Suggested, …) are shown. */
@@ -79,6 +84,8 @@ export default function Composer({
   contextSlot,
   onEmail,
   canEmail,
+  mail,
+  mailHint,
   commands = [],
   onSend,
   onCreateTableSpace,
@@ -170,6 +177,13 @@ export default function Composer({
   const [modelOpen, setModelOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [sourcePick, setSourcePick] = useState<(typeof CONTEXT_SOURCES)[number]['id'] | null>(null);
+  // The picker for a mail from the inbox (the "E-mail…" entry).
+  const [mailOpen, setMailOpen] = useState(false);
+  const [mailQuery, setMailQuery] = useState('');
+  const [mailHits, setMailHits] = useState<MailHit[] | null>(null);
+  const [mailBusy, setMailBusy] = useState<string>('');
+  const [mailError, setMailError] = useState('');
+  const mailSeq = useRef(0);
   const [sourceValue, setSourceValue] = useState('');
   const [buttonsShown, setButtonsShown] = useState<boolean>(() => {
     try { return window.localStorage.getItem(BUTTONS_KEY) !== 'off'; } catch { return true; }
@@ -191,12 +205,58 @@ export default function Composer({
     setContextOpen(false);
   }
 
+  /** Loads the list of the mail picker: the newest mails of the inbox, or the result of a Gmail search. Late answers are dropped. */
+  async function loadMails(query: string) {
+    if (!mail) return;
+    const run = ++mailSeq.current;
+    setMailBusy('list');
+    setMailError('');
+    try {
+      const hits = await mail.search(query);
+      if (run === mailSeq.current) setMailHits(hits);
+    } catch (error) {
+      if (run === mailSeq.current) {
+        setMailHits([]);
+        setMailError(error instanceof Error ? error.message : 'The mails could not be read.');
+      }
+    } finally {
+      if (run === mailSeq.current) setMailBusy('');
+    }
+  }
+
+  async function openMail() {
+    if (!mail) return;
+    setSourcePick(null);
+    setMailOpen(true);
+    setMailQuery('');
+    setMailHits(null);
+    await loadMails('');
+  }
+
+  /** Reads the chosen mail and puts it into the chat as an attachment (the same list and limit as files). */
+  async function takeMail(id: string) {
+    if (!mail || mailBusy) return;
+    setMailBusy(id);
+    setMailError('');
+    try {
+      const message = await mail.read(id);
+      mergeAttachments({ files: [mailToAttachment(message)], errors: [] });
+      setMailOpen(false);
+      setContextOpen(false);
+    } catch (error) {
+      setMailError(error instanceof Error ? error.message : 'The mail could not be read.');
+    } finally {
+      setMailBusy('');
+    }
+  }
+
   // The popovers close on Escape or a click anywhere outside them.
   useEffect(() => {
     if (!integrationsOpen && !contextOpen) return;
     const close = () => {
       setIntegrationsOpen(false);
       setContextOpen(false);
+      setMailOpen(false);
     };
     const onPointer = (event: MouseEvent) => {
       const target = event.target as Node | null;
@@ -505,6 +565,7 @@ export default function Composer({
             onClick={() => {
               setContextOpen((value) => !value);
               setSourcePick(null);
+              setMailOpen(false);
               setIntegrationsOpen(false);
                     }}
             disabled={busy || preparingConnector}
@@ -520,11 +581,54 @@ export default function Composer({
               >
                 Files…
               </button>
+              <button
+                className="menu-item"
+                disabled={!mail}
+                title={mail ? 'Take one mail from your Gmail inbox into the chat' : mailHint || 'Connect Gmail under Connectors & Skills'}
+                onClick={() => { void openMail(); }}
+              >
+                E-mail…
+              </button>
               {CONTEXT_SOURCES.map((source) => (
-                <button key={source.id} className="menu-item" onClick={() => { setSourcePick(source.id); setSourceValue(''); }}>
+                <button key={source.id} className="menu-item" onClick={() => { setSourcePick(source.id); setSourceValue(''); setMailOpen(false); }}>
                   {source.label}
                 </button>
               ))}
+              {mailOpen && mail && (
+                <div className="mail-pick" aria-label="Pick a mail">
+                  <form className="context-form" onSubmit={(event) => { event.preventDefault(); void loadMails(mailQuery); }}>
+                    <input
+                      autoFocus
+                      className="context-input"
+                      aria-label="Search your mail"
+                      placeholder="Search, e.g. from:anna newer_than:7d"
+                      maxLength={200}
+                      value={mailQuery}
+                      onChange={(event) => setMailQuery(event.target.value)}
+                    />
+                    <button className="menu-item menu-item-action" type="submit" disabled={mailBusy === 'list'}>Search</button>
+                  </form>
+                  {mailError && <div className="mail-note mail-error" role="alert">{mailError}</div>}
+                  {mailBusy === 'list' && <div className="mail-note">Loading mails…</div>}
+                  {mailHits && mailHits.length === 0 && !mailBusy && !mailError && <div className="mail-note">No mails found.</div>}
+                  <ul className="mail-list">
+                    {(mailHits ?? []).map((hit) => (
+                      <li key={hit.id}>
+                        <button className="mail-hit" disabled={Boolean(mailBusy)} onClick={() => { void takeMail(hit.id); }}>
+                          <span className="mail-head">
+                            {hit.unread && <span className="mail-unread" aria-label="unread" title="unread" />}
+                            <span className="mail-from">{hit.from || '(unknown sender)'}</span>
+                            <span className="mail-date">{hit.date}</span>
+                          </span>
+                          <span className="mail-subject">{mailBusy === hit.id ? 'Adding…' : hit.subject}</span>
+                          {hit.snippet && <span className="mail-snippet">{hit.snippet}</span>}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mail-note">The mail text is sent to Joule&apos;s model provider, like an attached file.</div>
+                </div>
+              )}
               {sourcePick && (
                 <form
                   className="context-form"

@@ -2336,6 +2336,19 @@ button {
 
 /* Add-context menu behind the first "+" in the chat bar (own class: .context-menu is the fixed right-click menu) */
 .add-context-menu { min-width: 200px; }
+.mail-pick { width: min(440px, 80vw); border-top: 1px solid var(--line); margin-top: 4px; padding-top: 2px; }
+.mail-list { list-style: none; margin: 4px 0 0; padding: 0; max-height: 280px; overflow-y: auto; }
+.mail-hit { box-sizing: border-box; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 1px; width: 100%; text-align: left; padding: 6px 8px; border: 0; border-radius: 7px; background: none; color: var(--ink); font: inherit; font-size: 12.5px; cursor: pointer; }
+.mail-hit:hover:not(:disabled), .mail-hit:focus-visible { background: var(--line); }
+.mail-hit:disabled { opacity: 0.6; cursor: default; }
+.mail-head { display: flex; align-items: center; gap: 6px; min-width: 0; width: 100%; }
+.mail-from { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-date { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+.mail-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
+.mail-subject { display: block; width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-snippet { display: block; width: 100%; min-width: 0; color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-note { padding: 4px 8px; color: var(--muted); font-size: 11.5px; }
+.mail-error { color: var(--ink); }
 .context-form { display: flex; gap: 6px; align-items: center; padding: 6px 4px 2px; border-top: 1px solid var(--line); margin-top: 4px; }
 .context-input { flex: 1; min-width: 0; height: 28px; padding: 0 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 12.5px; }
 .context-form .menu-item { width: auto; padding: 5px 10px; }
