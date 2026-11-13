@@ -5,6 +5,7 @@
   --muted: #6b7280;
   --line: #e6e6ec;
   --accent: #6d28d9;
+  --rainbow-1: #e5484d; --rainbow-2: #f76b15; --rainbow-3: #e5b800; --rainbow-4: #30a46c; --rainbow-5: #0090ff; --rainbow-6: #8e4ec6;
   --send: #4f46e5;
   --user-bubble: #dbe6f7;
   --radius: 12px;
@@ -219,6 +220,7 @@
   --muted: #a0a2ac;
   --line: #30343e;
   --accent: #9b7aff;
+  --rainbow-1: #ff6369; --rainbow-2: #ff8b3e; --rainbow-3: #f5d90a; --rainbow-4: #3dd68c; --rainbow-5: #52a9ff; --rainbow-6: #b388eb;
   --send: #8059ee;
   --user-bubble: #292e38;
   --error: #ff777d;
@@ -4701,8 +4703,12 @@ textarea.studio-field { min-height: 120px; }
   border: 1px solid var(--line);
   border-radius: var(--radius-s, 10px);
   backdrop-filter: blur(6px);
-  pointer-events: none;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
+.study-badge:active { cursor: grabbing; }
+.study-badge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .study-bar {
   position: relative;
   display: block;
@@ -4718,8 +4724,8 @@ textarea.studio-field { min-height: 120px; }
   left: 0;
   width: 38%;
   border-radius: 999px;
-  background: var(--accent);
-  animation: study-slide 1.8s ease-in-out infinite;
+  background: var(--rainbow-1);
+  animation: study-slide 1.8s ease-in-out infinite, study-rainbow 6s linear infinite;
 }
 .study-name {
   font-size: 11px;
@@ -4728,12 +4734,21 @@ textarea.studio-field { min-height: 120px; }
   line-height: 1.3;
   white-space: nowrap;
 }
+/* The running bar glows through the colours of the rainbow, one after the other. */
+@keyframes study-rainbow {
+  0%, 100% { background: var(--rainbow-1); box-shadow: 0 0 8px var(--rainbow-1); }
+  17% { background: var(--rainbow-2); box-shadow: 0 0 8px var(--rainbow-2); }
+  33% { background: var(--rainbow-3); box-shadow: 0 0 8px var(--rainbow-3); }
+  50% { background: var(--rainbow-4); box-shadow: 0 0 8px var(--rainbow-4); }
+  67% { background: var(--rainbow-5); box-shadow: 0 0 8px var(--rainbow-5); }
+  83% { background: var(--rainbow-6); box-shadow: 0 0 8px var(--rainbow-6); }
+}
 @keyframes study-slide {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(263%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study-bar i { animation: none; width: 55%; }
+  .study-bar i { animation: none; width: 55%; background: var(--accent); }
 }
 
 /* Conversation name edited in place (double-click or More → Rename) */
