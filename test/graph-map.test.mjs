@@ -170,17 +170,40 @@ test('the example catalog is a real graph: every term of the extra ontologies is
   }
 });
 
-import { mapTourSeen, markMapTourSeen, MAP_TOUR_KEY } from '../src/map-tour.ts';
+// ---------------------------------------------------------------- sorted layout
+import { layoutLanes, LANES, laneIndexOf } from '../src/graph-map.ts';
 
-test('the map tour is remembered once, and a blocked or missing storage just means it is offered again', () => {
-  const data = new Map();
-  const store = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => { data.set(k, v); } };
-  assert.equal(mapTourSeen(store), false);
-  markMapTourSeen(store);
-  assert.equal(data.get(MAP_TOUR_KEY), 'done');
-  assert.equal(mapTourSeen(store), true);
-  const blocked = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
-  assert.equal(mapTourSeen(blocked), false);
-  assert.doesNotThrow(() => markMapTourSeen(blocked));
-  assert.equal(mapTourSeen(null), false);
+test('layoutLanes: one panel per ontology, every node inside its own panel and lane, nothing on top of anything', () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const lay = layoutLanes(map);
+  assert.equal(lay.panels.length, cat.ontologies.length);
+  assert.ok([...lay.x, ...lay.y].every(Number.isFinite));
+  map.nodes.forEach((n, i) => {
+    const p = lay.panels.find((q) => q.slug === n.slug);
+    assert.ok(lay.x[i] >= p.x && lay.x[i] <= p.x + p.w && lay.y[i] >= p.y && lay.y[i] <= p.y + p.h, `${n.label} inside ${p.title}`);
+    if (n.kind !== 'ontology') {
+      const lane = p.lanes.find((l) => l.id === LANES[laneIndexOf(n.kind)].id);
+      assert.ok(lane && lay.x[i] >= lane.x && lay.x[i] <= lane.x + lane.w, `${n.label} in its lane`);
+    }
+  });
+  const seen = new Set();
+  map.nodes.forEach((_, i) => { const k = `${Math.round(lay.x[i])},${Math.round(lay.y[i])}`; assert.ok(!seen.has(k), `two nodes at ${k}`); seen.add(k); });
+  for (let a = 0; a < lay.panels.length; a++) for (let b = a + 1; b < lay.panels.length; b++) {
+    const p = lay.panels[a], q = lay.panels[b];
+    assert.ok(p.x + p.w <= q.x || q.x + q.w <= p.x || p.y + p.h <= q.y || q.y + q.h <= p.y, `${p.title} and ${q.title} overlap`);
+  }
+  assert.deepEqual(Array.from(layoutLanes(map).x), Array.from(lay.x), 'same answer every time');
+});
+
+test('layoutLanes: lanes read left to right as data, terms, metrics, users, and the best connected stand on top', () => {
+  const cat = resolveCatalog({ ok: false, error: 'x' });
+  const map = buildMap(cat.ontologies, cat.governance);
+  const lay = layoutLanes(map);
+  const hr = lay.panels.find((p) => p.slug === 'werkbank_hr');
+  assert.deepEqual(hr.lanes.map((l) => l.id), ['source', 'term', 'metric', 'user']);
+  assert.ok(hr.lanes.every((l, i) => i === 0 || l.x >= hr.lanes[i - 1].x + hr.lanes[i - 1].w));
+  const terms = map.nodes.map((n, i) => ({ n, i })).filter(({ n }) => n.slug === 'werkbank_hr' && n.kind === 'class').sort((a, b) => lay.y[a.i] - lay.y[b.i]);
+  assert.ok(terms[0].n.degree >= terms[terms.length - 1].n.degree);
+  assert.ok(layoutLanes(buildMap([], emptyGovernance())).panels.length === 0);
 });

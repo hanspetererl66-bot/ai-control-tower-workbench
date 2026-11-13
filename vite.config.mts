@@ -298,6 +298,8 @@ function buildStamp(): string {
 export default defineConfig({
   define: { __BUILD_STAMP__: JSON.stringify(buildStamp()) },
   plugins: [react(), spacesApi(), skillsApi()],
+  // mermaid is loaded on demand (chat diagrams) and is huge: pre-bundling it made the dev server run out of memory (4 GB)
+  optimizeDeps: { exclude: ['mermaid'] },
   server: { port: 5273, strictPort: true },
   build: { outDir: 'dist/renderer', emptyOutDir: true },
 });
