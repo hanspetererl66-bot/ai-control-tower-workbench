@@ -72,6 +72,7 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Skin', 'Changes the whole palette of the app and of all Spaces at once: surfaces, text, lines and accent. The accent colour below still overrides the accent of the skin.'],
   ['Accent colour', 'Changes the colour of buttons, selected tabs and highlights, in the app and in all Spaces.'],
   ['Text and layout', 'App text size zooms the whole window. Text size in Spaces scales only the Spaces. Density changes the spacing in lists and cards. Font changes the typeface of the app.'],
+  ['Spaces list', 'View switches the list between cards with a description and a tree with one line per Space. Position puts the list on the left or on the right of the window. Both apply at once, only in the Spaces view, and change no Space.'],
   ['Accessibility', 'High contrast and reduced motion apply at once and to every screen. They do not change any content.'],
   ['Start view', 'Decides what you see after the next start. It does not change the current session.'],
   ['Pinned Spaces', 'Pinned Spaces move to the top of the Spaces list in the order you pinned them.'],

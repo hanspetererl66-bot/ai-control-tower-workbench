@@ -69,6 +69,10 @@ export type StorageLocation = { id: string; name: string; purpose: (typeof PURPO
 export const SPACES_VIEWS = ['cards', 'tree'] as const;
 export type SpacesView = (typeof SPACES_VIEWS)[number];
 
+/** Which side of the window the Spaces list sits on. Top and bottom follow with a horizontal list. */
+export const SPACES_DOCKS = ['left', 'right'] as const;
+export type SpacesDock = (typeof SPACES_DOCKS)[number];
+
 /** What a profile bundles. */
 export type ProfileSettings = {
   appearance: (typeof APPEARANCES)[number];
@@ -78,6 +82,8 @@ export type ProfileSettings = {
   layout: LayoutId;
   /** The Spaces list as cards or as a tree. */
   spacesView: SpacesView;
+  /** The side of the window the Spaces list sits on. */
+  spacesDock: SpacesDock;
   accent: string;
   appScale: number;
   spaceScale: number;
@@ -122,6 +128,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   skin: DEFAULT_SKIN,
   layout: DEFAULT_LAYOUT,
   spacesView: 'cards',
+  spacesDock: 'left',
   accent: '',
   appScale: 1,
   spaceScale: 1.15,
@@ -219,6 +226,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (isSkin(v.skin)) out.skin = v.skin;
   if (isLayout(v.layout)) out.layout = v.layout;
   if (SPACES_VIEWS.includes(v.spacesView as never)) out.spacesView = v.spacesView as SpacesView;
+  if (SPACES_DOCKS.includes(v.spacesDock as never)) out.spacesDock = v.spacesDock as SpacesDock;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
   if (typeof v.spaceScale === 'number' && Number.isFinite(v.spaceScale) && v.spaceScale >= 0.5 && v.spaceScale <= 1.5) out.spaceScale = parseSpaceScale(v.spaceScale);
@@ -297,8 +305,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat } = prefs;
-  return { appearance, skin, layout, spacesView, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
+  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat } = prefs;
+  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {

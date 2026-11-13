@@ -70,6 +70,7 @@ import { addReport, loadReports, saveReports, fingerprint as agentVersion, type 
 import type { NetMessage } from './agent-network';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
+import { listSide, spacesDockClass } from './spaces-dock';
 import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
@@ -1576,7 +1577,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''}`} style={{ ...(paneWidths.list !== DEFAULT_WIDTHS.list ? { '--list-w': `${paneWidths.list}px` } : {}), ...(paneWidths.dock !== DEFAULT_WIDTHS.dock ? { '--dock-w': `${paneWidths.dock}px` } : {}) } as React.CSSProperties}>
+    <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''} ${spacesDockClass(view, prefs.spacesDock)}`} style={{ ...(paneWidths.list !== DEFAULT_WIDTHS.list ? { '--list-w': `${paneWidths.list}px` } : {}), ...(paneWidths.dock !== DEFAULT_WIDTHS.dock ? { '--dock-w': `${paneWidths.dock}px` } : {}) } as React.CSSProperties}>
       <div className="study-badge" aria-hidden="true"><span className="study-bar"><i /></span><span className="study-name">JouleX Design Study</span></div>
       <Rail
         view={view}
@@ -1630,6 +1631,8 @@ export default function App() {
           onRestoreSpace={restoreOne}
           view={prefs.spacesView}
           onViewChange={(next) => updatePrefs((c) => ({ ...c, spacesView: next }))}
+          dock={prefs.spacesDock}
+          onDockChange={(next) => updatePrefs((c) => ({ ...c, spacesDock: next }))}
         />
       )}
       {view === 'manage' && (
@@ -1922,7 +1925,7 @@ export default function App() {
         </main>
       )}
 
-      {hasList && <Splitter pane="list" width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
+      {hasList && <Splitter pane="list" side={listSide(view, prefs.spacesDock)} width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && <Splitter pane="dock" width={paneWidths.dock} onChange={(w) => setPaneWidths((c) => ({ ...c, dock: w }))} onCommit={(w) => { const n = { ...paneWidths, dock: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && (
         <JouleDock
