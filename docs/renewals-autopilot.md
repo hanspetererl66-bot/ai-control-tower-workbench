@@ -15,15 +15,21 @@ Stand 13.11.2026. Neuer Reiter **Autopilot** im Space `examples/renewals/`.
 - Nach dem dritten Schritt meldet der Space `order-confirmed` (Bestellnummer, erste Rechnung) zurück; im Autopilot-Protokoll steht "Booked in Order-to-Cash: SO-…". Ein Knopf "Open Order-to-Cash" öffnet den Space.
 - "Draft with Joule" (am Tor Senden): Anfrage von höchstens 600 Zeichen, Gmail `create_draft` an die eigene Adresse, "do NOT send", keine Adresse in der Anfrage; einmal je Fall, im Protokoll vermerkt.
 
+## Schritt 3: Win-back als eigener Fall
+- Ein abgelaufener Vertrag (Status Lapsed) wird beim Start des Autopiloten nicht mehr als Renewal behandelt, sondern wird direkt ein Win-back-Fall. Sagt der Kunde ab, nennt man den Grund (Preis, Wettbewerber, Umfang, Budget, unbekannt); daraus entsteht ein Win-back-Fall mit diesem Grund.
+- Schritte: Analyse und Plan (Autopilot, Plan nach Grund, Angebot "Win-back entry price" aus den Optionen oder 15 % unter heute für 12 Monate), Plan freigeben mit Verantwortlichem (Person), erste Nachricht senden (Person, Entwurf mit Joule möglich), Antwort des Kunden, Auftrag. Ein Win-back braucht immer eine Person, auch im Modus Autopilot.
+- Gewonnen: Übergabe an Order-to-Cash (Software) wie beim Renewal, mit Rückmeldung der Bestellnummer. Nicht gewonnen: Fall geschlossen, nach sechs Monaten wieder ansehen.
+- Zustand (`wb`) wird wie der des Autopiloten über `wb:state` gehalten und beim Zurückkommen geprüft.
+
 ## Grenzen (ehrlich)
 - Senden, Unterschrift und Buchung sind **simuliert**; die Antwort des Kunden wird mit Knöpfen nachgespielt. Die Mail geht nie selbst raus: "Draft with Joule" bittet den Agenten um einen Gmail-Entwurf an die eigene Adresse (braucht den Connector `gmail-drafts` mit Google-Zugang, nicht getestet).
 - Zustand nur im Speicher des Hosts, nicht in der Datenbank; geht beim Schließen der App verloren.
 - Die Richtlinie ist die vorhandene Regel (`autoCheck`); keine Rabattstufen, keine Rollentrennung, keine echte Identität (Person = Verantwortlicher des Vertrags).
-- Win-back nach Absage ist nur ein Status, kein eigener Fall; Co-Terming, Zufriedenheit (CSAT) und Teil-/Gesamt-Churn je Kunde fehlen weiter (siehe `docs/renewals-konzept.md`).
+- Die Erinnerung nach 14 Tagen im Win-back ist nur ein Text, kein Scheduler-Job; Co-Terming, Zufriedenheit (CSAT) und Teil-/Gesamt-Churn je Kunde fehlen weiter (siehe `docs/renewals-konzept.md`).
 - Nicht getestet: Ansicht im echten Fenster (hell/dunkel, schmal), nur Tests mit jsdom.
 
 ## Nächste Schritte (Vorschlag)
 1. Verweis vom Dashboard auf den Vertrag; Briefing aus der Brücke im Schritt Brief.
 2. Nicht getestet: beide Spaces in der echten App mit dem Host (Übergabe, Warteschlange, Rückmeldung), und der Gmail-Entwurf mit Live-Diensten. Die Tests nutzen einen Ersatz-Host (jsdom).
-3. Win-back als eigener Fall; Erinnerung vor Ablauf der Angebotsgültigkeit (Scheduler).
+3. Erinnerungen (Angebotsgültigkeit, Win-back nach 14 Tagen) als Scheduler-Job.
 4. Zustand und Protokoll in der Datenbank (Migration, braucht Entscheidung zur Identität).

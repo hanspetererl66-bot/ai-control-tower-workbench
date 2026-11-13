@@ -7,7 +7,7 @@ import vm from 'node:vm';
 const ROOT = join(import.meta.dirname, '..');
 const page = readFileSync(join(ROOT, 'examples/renewals/index.html'), 'utf8');
 const data = JSON.parse(/<script type="application\/json" id="renewal-data">\s*([\s\S]*?)<\/script>/.exec(page)[1]);
-const L = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, options, apStart, apAct, apSummary, AP_STEPS })`);
+const L = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, options, apStart, apAct, apSummary, AP_STEPS, wbStart, wbAct, WB_REASONS })`);
 const AS_OF = data.asOf;
 const ctxOf = (c, mode = 'autopilot') => { const sig = L.signals(c, AS_OF); return { c, sig, opts: L.options(c, sig, data.rules), rules: data.rules, mode }; };
 const small = data.cases.find((c) => { const x = ctxOf(c); return x.sig.signals.every((s) => s.level === 'plus' || s.key === 'timing' || s.key === 'no-offer') && c.annualEur < data.rules.autoThresholdEur && c.status !== 'Lapsed' && x.opts.some((o) => o.withinCap); });
@@ -77,4 +77,48 @@ test('autopilot: every contract of the sample runs to a gate without error and t
   assert.equal(s.cases, data.cases.length);
   assert.equal(s.person + s.customer + s.done + s.stopped + s.lost, s.cases);
   assert.ok(s.person > 0 && s.customer > 0, 'some wait for a person, some for the customer');
+});
+
+const lapsed = data.cases.filter((c) => c.status === 'Lapsed');
+
+test('win-back: a decline records the reason; the win-back case analyses, plans and then waits for a person', () => {
+  const ctx = ctxOf(big), st = L.apStart(ctx), sent = L.apAct(L.apAct(st, 'approve', 'Anna', ctx), 'send', 'Anna', ctx);
+  const lost = L.apAct(sent, 'declined', 'Customer', ctx, 'competitor');
+  assert.equal(lost.status, 'lost');
+  assert.equal(lost.reason, 'competitor');
+  assert.match(lost.log.at(-1).text, /a competitor/);
+  assert.equal(L.apAct(sent, 'declined', 'Customer', ctx, 'nonsense').reason, 'unknown', 'an unknown reason is not kept');
+  const wb = L.wbStart(ctx, lost.reason);
+  assert.equal(wb.status, 'waiting-person');
+  assert.equal(wb.gate, 'approve');
+  assert.deepEqual(Array.from(wb.log, (e) => e.step), ['analyse', 'plan', 'approve']);
+  assert.match(wb.log[1].text, /Executive call first/);
+  assert.ok(wb.offer.annualEur > 0 && wb.offer.termMonths > 0);
+});
+
+test('win-back: approve (with an owner), send, answer; a win goes to the order, a no closes the case; nothing is skipped', () => {
+  const c = lapsed[0], ctx = ctxOf(c);
+  const wb = L.wbStart(ctx, 'unknown');
+  assert.equal(L.wbAct(wb, 'send', 'Anna', ctx), wb, 'no sending before the plan is approved');
+  assert.equal(L.wbAct(wb, 'won', 'Customer', ctx), wb, 'no answer before the message is out');
+  const ok = L.wbAct(wb, 'approve', 'Anna', ctx, 'Max Beispiel');
+  assert.equal(ok.gate, 'send');
+  assert.equal(ok.owner, 'Max Beispiel');
+  const out = L.wbAct(ok, 'send', 'Max Beispiel', ctx);
+  assert.equal(out.status, 'waiting-customer');
+  const won = L.wbAct(out, 'won', 'Customer', ctx);
+  assert.equal(won.status, 'done');
+  assert.match(won.log.at(-1).text, /Order-to-Cash/);
+  assert.equal(L.wbAct(out, 'lost', 'Customer', ctx).status, 'closed');
+  assert.equal(L.wbAct(wb, 'reject', 'Anna', ctx).status, 'stopped');
+  assert.equal(L.wbAct(wb, 'takeover', 'Anna', ctx).status, 'stopped');
+});
+
+test('win-back: every lapsed contract of the sample can start one, with the entry price from the options or 15 % below today', () => {
+  assert.equal(lapsed.length, 3);
+  for (const c of lapsed) {
+    const wb = L.wbStart(ctxOf(c), 'unknown');
+    assert.equal(wb.status, 'waiting-person', c.id);
+    assert.ok(wb.offer.annualEur > 0 && wb.offer.annualEur < c.annualEur * 1.01, c.id);
+  }
 });

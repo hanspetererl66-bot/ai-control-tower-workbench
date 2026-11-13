@@ -215,7 +215,7 @@ function apAct(st, action, who, ctx, arg) {
   if (st.status === 'waiting-customer') {
     if (action === 'signed') return apRun(apLog({ ...st, status: 'running', step: AP_STEP_INDEX.order }, 'Customer', 'negotiate', 'The customer signed the offer.'), { ...ctx, mode: st.mode });
     if (action === 'changes') return apRun(apLog({ ...st, status: 'running', gate: null, pick: null, step: AP_STEP_INDEX.offer, reasons: [] }, 'Customer', 'negotiate', 'The customer asks for changes: the autopilot builds a new offer and the policy check runs again.'), { ...ctx, mode: 'supervised' });
-    if (action === 'declined') return apLog({ ...st, status: 'lost', gate: null }, 'Customer', 'negotiate', 'The customer declined. A win-back case is opened for the account team.');
+    if (action === 'declined') { const reason = typeof arg === 'string' && WB_REASONS[arg] ? arg : 'unknown'; return apLog({ ...st, status: 'lost', gate: null, reason }, 'Customer', 'negotiate', `The customer declined${reason === 'unknown' ? '' : ' (' + WB_REASONS[reason].toLowerCase() + ')'}. A win-back case is opened for the account team.`); }
   }
   if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return apLog({ ...st, status: 'stopped', gate: null }, person, AP_STEPS[Math.min(st.step, AP_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
   return st;
@@ -226,4 +226,71 @@ function apSummary(states) {
   const auto = logs.filter((e) => e.actor === 'Autopilot').length, human = logs.filter((e) => e.actor !== 'Autopilot' && e.actor !== 'Customer').length;
   const by = (k) => list.filter((s) => s.status === k).length;
   return { cases: list.length, done: by('done'), person: by('waiting-person'), customer: by('waiting-customer'), stopped: by('stopped'), lost: by('lost'), auto, human, touchless: list.length ? Math.round((list.filter((s) => s.status === 'done' && !s.log.some((e) => e.actor !== 'Autopilot' && e.actor !== 'Customer')).length / list.length) * 100) : 0 };
+}
+/* ---------- Win-back: a case of its own for a lapsed contract or a declined renewal ----------
+   Always with a person: the plan and the first contact need a decision. Same shape as the autopilot state (plain data, a log). */
+const WB_STEPS = [
+  { id: 'analyse', name: 'Analyse', by: 'Autopilot' }, { id: 'plan', name: 'Plan', by: 'Autopilot' }, { id: 'approve', name: 'Plan approval', by: 'Person' },
+  { id: 'reach', name: 'Reach out', by: 'Person' }, { id: 'wait', name: 'Customer', by: 'Customer' }, { id: 'order', name: 'Order', by: 'Autopilot' },
+];
+const WB_REASONS = { price: 'The price', competitor: 'A competitor', scope: 'The scope does not fit', budget: 'No budget', unknown: 'Not known' };
+const WB_INDEX = Object.fromEntries(WB_STEPS.map((s, i) => [s.id, i]));
+/** The win-back offer: the entry price of the options if there is one, otherwise 15 % below today for 12 months (shorter and cheaper than a normal renewal). */
+function wbOffer(c, opts) {
+  const o = opts.find((x) => x.key === 'winback');
+  if (o) return o;
+  const cur = c.offer ? c.offer.currentAnnualEur : c.annualEur;
+  return { key: 'winback', name: 'Win-back entry price', annualEur: roundK(cur * 0.85), termMonths: 12, changePct: -15, withinCap: true };
+}
+/** What to try, from the reason the customer gave (or the state of the contract). */
+function wbPlan(reason) {
+  return ({
+    price: 'Lead with the entry price and show the value used so far; no further discount without the deal desk.',
+    competitor: 'Executive call first, then the battlecard; offer the entry price only as a bridge.',
+    scope: 'Offer a smaller scope that matches real usage, then grow it with usage.',
+    budget: 'Offer a 12-month entry term and invoice in two parts; revisit the budget in the next planning round.',
+  })[reason] || 'Ask the technical contact why the contract ended, then offer the entry price.';
+}
+const wbLog = (st, actor, step, text) => ({ ...st, log: [...st.log, { n: st.log.length + 1, actor, step, text }] });
+function wbRun(st, ctx) {
+  const { c, opts } = ctx;
+  let s = { ...st };
+  for (let guard = 0; guard < 10 && s.status === 'running'; guard++) {
+    const id = WB_STEPS[s.step].id;
+    if (id === 'analyse') {
+      const why = s.reason === 'unknown' ? (c.status === 'Lapsed' ? `The contract ended on ${c.end} without a renewal.` : 'The customer declined without a reason.') : `The customer named a reason: ${WB_REASONS[s.reason]}.`;
+      s = wbLog(s, 'Autopilot', id, `${why} Value at stake: ${eur(c.annualEur)} a year.`); s.step++;
+    } else if (id === 'plan') {
+      const o = wbOffer(c, opts);
+      s.offer = { name: o.name, annualEur: o.annualEur, termMonths: o.termMonths, changePct: o.changePct };
+      s = wbLog(s, 'Autopilot', id, `Plan: ${wbPlan(s.reason)} Offer: ${o.name}, ${eur(o.annualEur)} a year for ${o.termMonths} months (${o.changePct > 0 ? '+' : ''}${o.changePct} % against today).`); s.step++;
+    } else if (id === 'approve') { s.status = 'waiting-person'; s.gate = 'approve'; return wbLog(s, 'Autopilot', id, 'A win-back needs a person: approve the plan and the owner.'); }
+    else if (id === 'reach') { s.status = 'waiting-person'; s.gate = 'send'; return wbLog(s, 'Autopilot', id, 'The first message to the customer is ready as a draft. Waiting for a person to send it.'); }
+    else if (id === 'wait') { s.status = 'waiting-customer'; s.gate = null; return wbLog(s, 'Autopilot', id, 'Waiting for the answer of the customer. Follow up after 14 days.'); }
+    else if (id === 'order') { s = wbLog(s, 'Autopilot', id, `Won back. The renewal order for Order-to-Cash is prepared: ${s.offer.termMonths} months, entitlements, invoice.`); s.step++; s.status = 'done'; s.gate = null; }
+    else s.step++;
+  }
+  return s;
+}
+/** Starts a win-back. reason: one of WB_REASONS (the customer's reason; unknown for a lapsed contract). */
+function wbStart(ctx, reason, owner) {
+  return wbRun({ step: 0, status: 'running', gate: null, reason: WB_REASONS[reason] ? reason : 'unknown', owner: owner || ctx.c.owner, offer: null, sent: false, log: [] }, ctx);
+}
+/** approve (with an owner as arg), reject, send, won, lost, takeover. An action that does not fit changes nothing. */
+function wbAct(st, action, who, ctx, arg) {
+  const person = who || 'A person';
+  if (st.status === 'waiting-person' && st.gate === 'approve') {
+    if (action === 'approve') { const owner = typeof arg === 'string' && arg ? arg.slice(0, 60) : st.owner; return wbRun(wbLog({ ...st, status: 'running', gate: null, step: WB_INDEX.reach, owner }, person, 'approve', `Plan approved. Owner of the win-back: ${owner}.`), ctx); }
+    if (action === 'reject') return wbLog({ ...st, status: 'stopped', gate: null }, person, 'approve', 'Plan rejected: no win-back for now.');
+  }
+  if (st.status === 'waiting-person' && st.gate === 'send') {
+    if (action === 'send') return wbRun(wbLog({ ...st, status: 'running', gate: null, sent: true, step: WB_INDEX.wait }, person, 'reach', 'Message to the customer sent (simulated).'), ctx);
+    if (action === 'reject') return wbLog({ ...st, status: 'stopped', gate: null }, person, 'reach', 'Not sent: the case stays with the owner.');
+  }
+  if (st.status === 'waiting-customer') {
+    if (action === 'won') return wbRun(wbLog({ ...st, status: 'running', step: WB_INDEX.order }, 'Customer', 'wait', 'The customer accepts the win-back offer.'), ctx);
+    if (action === 'lost') return wbLog({ ...st, status: 'closed', gate: null }, 'Customer', 'wait', 'The customer stays away. The case is closed; look at it again in six months.');
+  }
+  if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return wbLog({ ...st, status: 'stopped', gate: null }, person, WB_STEPS[Math.min(st.step, WB_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
+  return st;
 }
