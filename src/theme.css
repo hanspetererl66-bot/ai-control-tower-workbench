@@ -4998,7 +4998,7 @@ textarea.studio-field { min-height: 120px; }
 .develop-fit-on .develop { width: 1240px; max-width: none; margin: 0; transform-origin: top left; }
 .develop-fit-on .develop-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: none; margin: 0; }
 
-/* ---------- Sources view (start from requirements) ---------- */
+/* ---------- Sources view (requirement collection) ---------- */
 .sx-steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
 .sx-steps li { display: flex; align-items: center; gap: 7px; padding: 4px 12px 4px 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); }
 .sx-steps li span { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line); font-size: 11px; }

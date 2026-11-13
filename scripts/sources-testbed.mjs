@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * A test bed with a known answer for "Start from requirements": a few invented requirements, voiced several times in
+ * A test bed with a known answer for "Requirement collection": a few invented requirements, voiced several times in
  * Slack and Jira, plus chatter. After it ran, load Slack and Jira in the app and compare with the expected table.
  *
  *   node scripts/sources-testbed.mjs --expect                          the expected answer
@@ -94,7 +94,7 @@ async function main() {
   }
   if (only !== 'slack') console.log('Jira issues:', (await createJira(d, { site: process.env.JIRA_SITE, email: process.env.JIRA_EMAIL, token: process.env.JIRA_API_TOKEN, project: get('--project') })).join(', '));
   if (only !== 'jira') console.log('Slack messages sent:', await createSlack(d, { token: process.env.SLACK_BOT_TOKEN, channel: get('--channel') }));
-  console.log('\nNow load both in the app (Develop, Start from requirements) and compare with:\n\n' + expectedTable(d));
+  console.log('\nNow load both in the app (Develop, Requirement collection) and compare with:\n\n' + expectedTable(d));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main().catch((e) => { console.error(`Stopped: ${e.message}`); process.exit(1); });

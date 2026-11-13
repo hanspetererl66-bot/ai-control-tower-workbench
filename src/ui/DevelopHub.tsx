@@ -148,9 +148,9 @@ export default function DevelopHub(props: Props) {
         <h1 className="develop-title">Develop</h1>
         <SharedSaveLine />
         <p className="develop-sub">Say what you want to achieve. Joule turns the goal into a draft, you refine and approve it.</p>
-        <section className="develop-card develop-card-wide" aria-label="Start from requirements">
+        <section className="develop-card develop-card-wide" aria-label="Requirement collection">
           <div className="develop-wide-text">
-            <span className="develop-card-title">Start from requirements</span>
+            <span className="develop-card-title">Requirement collection</span>
             <span className="develop-card-brand">from {SOURCES.map((s) => s.label).join(', ')}</span>
             <span className="develop-card-text">Read the requirements you already have, tick the ones that belong together, and let Joule cluster them and propose what each cluster is: an agent, a workflow, an extension of one, or a feature.</span>
           </div>
