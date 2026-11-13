@@ -1692,6 +1692,7 @@ export default function App() {
           selected={selectedSpace}
           onSelect={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           onReorder={(from, to, after) => changeSpaceOrder((current) => moveSpace(current, from, to, after))}
+          onSortAll={(slugs) => changeSpaceOrder(() => slugs)}
           onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
           pinned={prefs.pinnedSpaces}
           onTogglePin={(slug) => updatePrefs((c) => ({ ...c, pinnedSpaces: togglePin(c.pinnedSpaces, slug) }))}
