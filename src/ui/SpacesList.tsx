@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { PRODUCT_TITLE } from '../product';
 import { relativeTime, type Space } from '../spaces';
+import type { SpacesView } from '../preferences';
+import { spaceKey, treeNavigate, treeRows, type TreeRow } from '../spaces-tree';
 
 type Props = {
   spaces: Space[];
@@ -37,6 +39,9 @@ type Props = {
   onArchiveSpace?: (slug: string) => void;
   archived?: Space[];
   onRestoreSpace?: (slug: string) => void;
+  /** How the list is drawn: cards, or a tree with one line per Space. The person's choice is kept in the settings. */
+  view?: SpacesView;
+  onViewChange?: (view: SpacesView) => void;
 };
 
 const COLLAPSED_KEY = 'werkbank.collapsedDomains';
@@ -52,7 +57,7 @@ function loadCollapsed(): string[] {
 /** `into`: the middle of a top-level card, dropping there makes the dragged Space a subspace of it. */
 type DropMark = { slug: string; after: boolean; into: boolean };
 
-export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace }: Props) {
+export default function SpacesList({ spaces, selected, onSelect, onReorder, onNudge, pinned = [], onTogglePin, domains, domainOf, onPlace, parentOf, parentCandidates, onSetParent, onAddDomain, onRenameDomain, onDeleteDomain, onImportSpace, onRenameSpace, originalTitle, onDeleteSpace, onDuplicateSpace, onArchiveSpace, archived = [], onRestoreSpace, view = 'cards', onViewChange }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -144,12 +149,187 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
 
   const isSub = (slug: string) => Boolean(parentOf && parentOf(slug));
   const subsOf = (slug: string) => (parentOf ? spaces.filter((x) => parentOf(x.slug) === slug) : []);
-  const subKey = (slug: string) => `space:${slug}`;
+  const subKey = spaceKey;
   // While searching, hits are listed flat so a subspace is found even if its parent is not a hit.
-  const renderTree = (items: Space[]) => items.filter((x) => needle || !isSub(x.slug)).flatMap((x) => {
+  const renderTree = (items: Space[]) => tree
+    ? treeRows(items, (slug) => parentOf?.(slug) ?? '', collapsed, Boolean(needle)).flatMap((r) => { const x = items.find((y) => y.slug === r.slug); return x ? [renderRow(x, r)] : []; })
+    : items.filter((x) => needle || !isSub(x.slug)).flatMap((x) => {
     const subs = needle ? [] : items.filter((y) => parentOf?.(y.slug) === x.slug);
     return [renderCard(x, subs.length), ...(subs.length && !collapsed.includes(subKey(x.slug)) ? subs.map((y) => renderCard(y, 0)) : [])];
   });
+  /** The small buttons of a Space (rename, original name, duplicate, archive, delete, pin); shared by the card and the tree row. */
+  const renderTools = (s: Space) => (
+    <span className="card-tools">
+      {onRenameSpace && (
+        <span
+          role="button"
+          tabIndex={0}
+          className="mini-icon"
+          aria-label={`Rename ${s.title}`}
+          title={isSub(s.slug) ? 'Rename this subspace' : 'Rename this Space'}
+          onClick={(event) => { event.stopPropagation(); setRenamingSpace(s.slug); setSpaceName(s.title); }}
+          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setRenamingSpace(s.slug); setSpaceName(s.title); } }}
+        ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M11.3 2.3a1.6 1.6 0 0 1 2.3 2.3L5.4 12.8 2 13.6l.8-3.4z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg></span>
+      )}
+      {onRenameSpace && originalTitle && originalTitle(s.slug) !== s.title && (
+        <span
+          role="button"
+          tabIndex={0}
+          className="mini-icon"
+          aria-label={`Back to the original name of ${s.title}`}
+          title={`Back to “${originalTitle(s.slug)}”`}
+          onClick={(event) => { event.stopPropagation(); onRenameSpace(s.slug, ''); }}
+          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onRenameSpace(s.slug, ''); } }}
+        ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+      )}
+      {onDuplicateSpace && (
+        <span
+          role="button"
+          tabIndex={0}
+          className="mini-icon mini-icon-always"
+          aria-label={`Duplicate ${s.title}`}
+          title="Duplicate this Space (an editable copy)"
+          onClick={(event) => { event.stopPropagation(); onDuplicateSpace(s.slug); }}
+          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onDuplicateSpace(s.slug); } }}
+        ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M10.5 3.5v-.4A1.6 1.6 0 0 0 8.9 1.5H3.6A1.6 1.6 0 0 0 2 3.1v5.3a1.6 1.6 0 0 0 1.6 1.6h.4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg></span>
+      )}
+      {onArchiveSpace && (
+        <span
+          role="button"
+          tabIndex={0}
+          className="mini-icon mini-icon-always"
+          aria-label={`Archive ${s.title}`}
+          title="Archive this Space (hide it; restore it any time)"
+          onClick={(event) => { event.stopPropagation(); onArchiveSpace(s.slug); }}
+          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onArchiveSpace(s.slug); } }}
+        ><ArchiveIcon /></span>
+      )}
+      {onDeleteSpace && (
+        <span
+          role="button"
+          tabIndex={0}
+          className="mini-icon mini-icon-danger mini-icon-always"
+          aria-label={`Delete ${s.title}`}
+          title="Delete this Space"
+          onClick={(event) => { event.stopPropagation(); setConfirmDelete(s.slug); }}
+          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setConfirmDelete(s.slug); } }}
+        ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+      )}
+      {onTogglePin ? (
+        <span
+          role="button"
+          tabIndex={0}
+          className={`pin-btn ${pinned.includes(s.slug) ? 'pin-btn-on' : ''}`}
+          aria-pressed={pinned.includes(s.slug)}
+          aria-label={pinned.includes(s.slug) ? `Unpin ${s.title}` : `Pin ${s.title}`}
+          title={pinned.includes(s.slug) ? 'Unpin' : 'Pin to the top'}
+          onClick={(event) => { event.stopPropagation(); onTogglePin(s.slug); }}
+          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onTogglePin(s.slug); } }}
+        >{pinned.includes(s.slug) ? '★' : '☆'}</span>
+      ) : (
+        <span className="card-more" aria-hidden="true">···</span>
+      )}
+    </span>
+
+  );
+  /** What follows a Space when it is renamed or selected: the rename form and the "Subspace of" choice. */
+  const renderExtras = (s: Space) => (
+    <>
+          {onRenameSpace && renamingSpace === s.slug && (
+            <form className="domain-move space-rename" onSubmit={(event) => { event.preventDefault(); onRenameSpace(s.slug, spaceName); setRenamingSpace(null); }}>
+              <input autoFocus value={spaceName} maxLength={80} aria-label={`New name for ${s.title}`} onChange={(event) => setSpaceName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenamingSpace(null); }} />
+              <button type="submit" className="ghost-btn small" disabled={!spaceName.trim()}>Save</button>
+              <button type="button" className="ghost-btn small" onClick={() => setRenamingSpace(null)}>Cancel</button>
+            </form>
+          )}
+          {grouped && onSetParent && selected === s.slug && (() => {
+            const options = parentCandidates?.(s.slug) ?? [];
+            const current = parentOf?.(s.slug) ?? '';
+            const has = subsOf(s.slug).length > 0;
+            return (
+              <label className="domain-move">
+                <span>Subspace of</span>
+                <select
+                  value={current}
+                  disabled={has || (!options.length && !current)}
+                  onChange={(event) => onSetParent(s.slug, event.target.value)}
+                  aria-label={`Parent Space of ${s.title}`}
+                  title={has ? 'This Space has subspaces itself, so it stays on top level' : options.length || current ? 'Mark this Space as a subspace of another Space in the same domain' : 'No other top-level Space in this domain'}
+                >
+                  <option value="">None (top level)</option>
+                  {[...new Set([...(current ? [current] : []), ...options])].map((slug) => <option key={slug} value={slug}>{spaces.find((x) => x.slug === slug)?.title ?? slug}</option>)}
+                </select>
+              </label>
+            );
+          })()}
+    </>
+  );
+
+  const tree = view === 'tree';
+  /** Arrow keys in the tree: Up and Down move, Right and Left open, close or step in and out (see spaces-tree.ts); Alt+Arrow still reorders. */
+  function treeKey(event: KeyboardEvent<HTMLButtonElement>, slug: string) {
+    keyDown(event, slug);
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    const nodes = [...(event.currentTarget.closest('.list')?.querySelectorAll<HTMLButtonElement>('[data-tree-row]') ?? [])];
+    const rows: TreeRow[] = nodes.map((n) => ({ slug: n.dataset.slug ?? '', depth: n.dataset.depth === '1' ? 1 : 0, parent: n.dataset.parent ?? '', subCount: Number(n.dataset.subs ?? 0), expanded: n.dataset.expanded === 'true' }));
+    const move = treeNavigate(rows, nodes.indexOf(event.currentTarget), event.key);
+    if (!move) return;
+    event.preventDefault();
+    if (move.toggle) toggleCollapsed(subKey(move.toggle));
+    if (move.focus !== undefined) nodes[move.focus]?.focus();
+  }
+  /** One line per Space, like a folder tree: opener, icon, name; the buttons show on hover or focus. Same dragging, renaming and pinning as the card. */
+  const renderRow = (s: Space, row: TreeRow) => (
+    <Fragment key={s.slug}>
+      <button
+        type="button"
+        data-tree-row
+        data-slug={s.slug}
+        data-depth={row.depth}
+        data-parent={row.parent}
+        data-subs={row.subCount}
+        data-expanded={row.expanded}
+        className={[
+          'trow',
+          row.depth === 1 ? 'trow-sub' : '',
+          selected === s.slug ? 'trow-on' : '',
+          dragging === s.slug ? 'trow-dragging' : '',
+          mark?.slug === s.slug && dragging !== s.slug ? (mark.into ? 'card-drop-into' : mark.after ? 'card-drop-after' : 'card-drop-before') : '',
+        ].filter(Boolean).join(' ')}
+        aria-current={selected === s.slug ? 'true' : undefined}
+        draggable={Boolean(onReorder)}
+        title={s.description ? `${s.title}: ${s.description}` : s.title}
+        onClick={() => onSelect(s.slug)}
+        onDragStart={(event) => {
+          event.dataTransfer.effectAllowed = 'move';
+          event.dataTransfer.setData('text/plain', s.slug);
+          setDragging(s.slug);
+        }}
+        onDragOver={(event) => overCard(event, s.slug)}
+        onDrop={(event) => dropOn(event, s.slug)}
+        onDragEnd={endDrag}
+        onKeyDown={(event) => treeKey(event, s.slug)}
+      >
+        {row.subCount > 0 ? (
+          <span
+            role="button"
+            tabIndex={-1}
+            className="trow-open"
+            aria-expanded={row.expanded}
+            aria-label={`${row.expanded ? 'Hide' : 'Show'} the ${row.subCount} subspaces of ${s.title}`}
+            onClick={(event) => { event.stopPropagation(); toggleCollapsed(subKey(s.slug)); }}
+          >{row.expanded ? '▾' : '▸'}</span>
+        ) : <span className="trow-open trow-open-none" aria-hidden="true" />}
+        <span className="trow-icon"><SpaceIcon /></span>
+        <span className="trow-title">{s.title}</span>
+        {row.subCount > 0 && <span className="sub-count" title={`${row.subCount} subspaces`}>{row.subCount}</span>}
+        {pinned.includes(s.slug) && <span className="trow-pin" aria-hidden="true" title="Pinned">★</span>}
+        {renderTools(s)}
+      </button>
+      {renderExtras(s)}
+    </Fragment>
+  );
+
   const renderCard = (s: Space, subCount = 0) => (
 <Fragment key={s.slug}>
           <button
@@ -193,114 +373,24 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                 </span>
                 <span className="card-meta">Updated {relativeTime(s.updatedAt)}</span>
               </span>
-              <span className="card-tools">
-                {onRenameSpace && (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="mini-icon"
-                    aria-label={`Rename ${s.title}`}
-                    title={isSub(s.slug) ? 'Rename this subspace' : 'Rename this Space'}
-                    onClick={(event) => { event.stopPropagation(); setRenamingSpace(s.slug); setSpaceName(s.title); }}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setRenamingSpace(s.slug); setSpaceName(s.title); } }}
-                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M11.3 2.3a1.6 1.6 0 0 1 2.3 2.3L5.4 12.8 2 13.6l.8-3.4z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg></span>
-                )}
-                {onRenameSpace && originalTitle && originalTitle(s.slug) !== s.title && (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="mini-icon"
-                    aria-label={`Back to the original name of ${s.title}`}
-                    title={`Back to “${originalTitle(s.slug)}”`}
-                    onClick={(event) => { event.stopPropagation(); onRenameSpace(s.slug, ''); }}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onRenameSpace(s.slug, ''); } }}
-                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-                )}
-                {onDuplicateSpace && (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="mini-icon mini-icon-always"
-                    aria-label={`Duplicate ${s.title}`}
-                    title="Duplicate this Space (an editable copy)"
-                    onClick={(event) => { event.stopPropagation(); onDuplicateSpace(s.slug); }}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onDuplicateSpace(s.slug); } }}
-                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M10.5 3.5v-.4A1.6 1.6 0 0 0 8.9 1.5H3.6A1.6 1.6 0 0 0 2 3.1v5.3a1.6 1.6 0 0 0 1.6 1.6h.4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg></span>
-                )}
-                {onArchiveSpace && (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="mini-icon mini-icon-always"
-                    aria-label={`Archive ${s.title}`}
-                    title="Archive this Space (hide it; restore it any time)"
-                    onClick={(event) => { event.stopPropagation(); onArchiveSpace(s.slug); }}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onArchiveSpace(s.slug); } }}
-                  ><ArchiveIcon /></span>
-                )}
-                {onDeleteSpace && (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="mini-icon mini-icon-danger mini-icon-always"
-                    aria-label={`Delete ${s.title}`}
-                    title="Delete this Space"
-                    onClick={(event) => { event.stopPropagation(); setConfirmDelete(s.slug); }}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setConfirmDelete(s.slug); } }}
-                  ><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 4h11M6 4V2.6h4V4M4 4l.6 9.4h6.8L12 4M6.8 6.5v4.3M9.2 6.5v4.3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-                )}
-                {onTogglePin ? (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className={`pin-btn ${pinned.includes(s.slug) ? 'pin-btn-on' : ''}`}
-                    aria-pressed={pinned.includes(s.slug)}
-                    aria-label={pinned.includes(s.slug) ? `Unpin ${s.title}` : `Pin ${s.title}`}
-                    title={pinned.includes(s.slug) ? 'Unpin' : 'Pin to the top'}
-                    onClick={(event) => { event.stopPropagation(); onTogglePin(s.slug); }}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onTogglePin(s.slug); } }}
-                  >{pinned.includes(s.slug) ? '★' : '☆'}</span>
-                ) : (
-                  <span className="card-more" aria-hidden="true">···</span>
-                )}
-              </span>
+              {renderTools(s)}
             </span>
             {s.description && <span className="card-desc">{s.description}</span>}
           </button>
-          {onRenameSpace && renamingSpace === s.slug && (
-            <form className="domain-move space-rename" onSubmit={(event) => { event.preventDefault(); onRenameSpace(s.slug, spaceName); setRenamingSpace(null); }}>
-              <input autoFocus value={spaceName} maxLength={80} aria-label={`New name for ${s.title}`} onChange={(event) => setSpaceName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Escape') setRenamingSpace(null); }} />
-              <button type="submit" className="ghost-btn small" disabled={!spaceName.trim()}>Save</button>
-              <button type="button" className="ghost-btn small" onClick={() => setRenamingSpace(null)}>Cancel</button>
-            </form>
-          )}
-          {grouped && onSetParent && selected === s.slug && (() => {
-            const options = parentCandidates?.(s.slug) ?? [];
-            const current = parentOf?.(s.slug) ?? '';
-            const has = subsOf(s.slug).length > 0;
-            return (
-              <label className="domain-move">
-                <span>Subspace of</span>
-                <select
-                  value={current}
-                  disabled={has || (!options.length && !current)}
-                  onChange={(event) => onSetParent(s.slug, event.target.value)}
-                  aria-label={`Parent Space of ${s.title}`}
-                  title={has ? 'This Space has subspaces itself, so it stays on top level' : options.length || current ? 'Mark this Space as a subspace of another Space in the same domain' : 'No other top-level Space in this domain'}
-                >
-                  <option value="">None (top level)</option>
-                  {[...new Set([...(current ? [current] : []), ...options])].map((slug) => <option key={slug} value={slug}>{spaces.find((x) => x.slug === slug)?.title ?? slug}</option>)}
-                </select>
-              </label>
-            );
-          })()}
+          {renderExtras(s)}
         </Fragment>
   );
 
   return (
-    <aside className="list">
+    <aside className={`list ${tree ? 'list-tree' : ''}`}>
       <div className="list-head">
         <span className="list-title">Spaces</span>
+        {onViewChange && (
+          <span className="view-switch" role="group" aria-label="How the Spaces are listed">
+            <button type="button" className={`icon-btn ${tree ? '' : 'icon-btn-on'}`} aria-pressed={!tree} title="Cards: a card with a description for every Space" aria-label="Show Spaces as cards" onClick={() => onViewChange('cards')}><CardsIcon /></button>
+            <button type="button" className={`icon-btn ${tree ? 'icon-btn-on' : ''}`} aria-pressed={tree} title="Tree: one line per Space, like a folder tree" aria-label="Show Spaces as a tree" onClick={() => onViewChange('tree')}><TreeIcon /></button>
+          </span>
+        )}
         {onImportSpace && (
           <label className="ghost-btn" title="Install a Space file somebody sent you" style={{ cursor: 'pointer' }}>
             Import
@@ -384,7 +474,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
             })}
           </>
         ) : (
-          shown.map((x) => renderCard(x))
+          shown.map((x) => (tree ? renderRow(x, { slug: x.slug, depth: 0, parent: '', subCount: 0, expanded: false }) : renderCard(x)))
         )
       )}
       {archived.length > 0 && (
@@ -462,3 +552,19 @@ function SearchIcon() {
   );
 }
 
+function CardsIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2" y="2.2" width="12" height="4.6" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
+      <rect x="2" y="9.2" width="12" height="4.6" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+function TreeIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 3h6M5 7.5h8M5 12h8M3.4 3v9M3.4 7.5H5M3.4 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}

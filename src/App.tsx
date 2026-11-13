@@ -8,6 +8,7 @@ import {
 } from './appearance';
 import type { ChatAttachment } from './attachments';
 import { isWebTool, webSearchNote, WEB_SEARCH_BLOCKED_NOTE } from './web-search';
+import { greetingFor } from './greeting';
 import {
   archiveConversation as archiveConversationState,
   deleteConversation as deleteConversationState,
@@ -141,6 +142,8 @@ export default function App() {
     conversationState.items.find((conversation) => conversation.id === conversationState.selectedId) ??
     conversationState.items[0];
   const messages = selectedConversation?.messages ?? [];
+  // The line above an empty chat: picked once per conversation (time of day, now and then a light question), not on every render.
+  const greeting = useMemo(() => greetingFor(new Date(), Math.random), [conversationState.selectedId]);
   const title = selectedConversation?.title ?? 'New Conversation';
   const files = selectedConversation?.files ?? [];
   const webSearch = selectedConversation?.webSearch !== false;
@@ -1625,6 +1628,8 @@ export default function App() {
           onArchiveSpace={archiveOne}
           archived={archivedSpaces}
           onRestoreSpace={restoreOne}
+          view={prefs.spacesView}
+          onViewChange={(next) => updatePrefs((c) => ({ ...c, spacesView: next }))}
         />
       )}
       {view === 'manage' && (
@@ -1868,9 +1873,12 @@ export default function App() {
             <div className="empty">
               <WerkbankMark size={44} className="diamond" />
               <h2 className="empty-title">
-                How can I help
-                <br />
-                to get things done?
+                {greeting.lines.map((line, i) => (
+                  <span key={i}>
+                    {i > 0 && <br />}
+                    {line}
+                  </span>
+                ))}
               </h2>
               {suggestionBar}
               {composer}
