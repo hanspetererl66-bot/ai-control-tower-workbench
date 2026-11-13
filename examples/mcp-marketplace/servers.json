@@ -1,6 +1,6 @@
 {
   "asOf": "2026-10-20",
-  "note": "Facts about candidates come from public READMEs and docs on 2026-10-20 and were not run by us. The tool classes are our reading of the tool descriptions, not a statement of the publisher.",
+  "note": "Facts about candidates come from public READMEs and docs on 2026-10-20 and were not run by us. The tool classes are our reading of the tool descriptions, not a statement of the publisher. The SAP Docs entry was added on 2026-11-13 from public listings of the project.",
   "classes": {
     "read": "Reads only",
     "write": "Can change the system",
@@ -1366,6 +1366,96 @@
           "Support status: the author gives no guarantee that it keeps working, and the older repository is archived.",
           "Release asset: confirm the .mcpb exists, record version and checksum.",
           "Whose S-user is used, and what the second factor looks like in daily use."
+        ]
+      }
+    },
+    {
+      "id": "sap-docs",
+      "name": "SAP Docs",
+      "tagline": "Search SAP Help, SAP Community and developer docs, no login",
+      "category": "SAP knowledge",
+      "publisher": "marianfoo (community project)",
+      "license": "Apache-2.0",
+      "status": "candidate",
+      "statusLabel": "Candidate: not installed",
+      "source": "https://github.com/marianfoo/mcp-sap-docs",
+      "docs": "https://github.com/marianfoo/mcp-sap-docs",
+      "package": "hosted endpoint https://mcp-sap-docs.marianzeis.de/mcp (streamable HTTP) or self-hosted from the repository",
+      "version": "not checked",
+      "summary": "Gives an assistant search and full-text access to SAP documentation (UI5, CAP, Cloud SDK, ABAP, BTP) together with SAP Help and live SAP Community posts. No login. The author runs a public hosted endpoint; the same code can be run on your own computer or in Docker.",
+      "install": [
+        {
+          "label": "Hosted endpoint (button in this repository's README)",
+          "how": "Add SAP Docs MCP to Werkbank: https://getwerkbank.com/install-mcp/?name=sap-docs&config=... (streamable HTTP, URL https://mcp-sap-docs.marianzeis.de/mcp)",
+          "note": "The review dialog appears first. Search terms leave this computer and go to the author's server."
+        },
+        {
+          "label": "Self-hosted",
+          "how": "Clone the repository, run npm run setup, npm run build and npm run start:streamable (default port 3122), or build the Docker image",
+          "note": "Keeps queries on your side. The setup downloads the documentation sources. We did not run it."
+        }
+      ],
+      "tools": [
+        {
+          "name": "search",
+          "class": "read",
+          "what": "Hybrid search (keyword and semantic) across the offline docs and, if asked, online sources.",
+          "default": "on"
+        },
+        {
+          "name": "fetch",
+          "class": "read",
+          "what": "Full content of one result by the ID that search returned.",
+          "default": "on"
+        },
+        {
+          "name": "sap_community_search",
+          "class": "read",
+          "what": "Search SAP Community posts (blogs, discussions, solutions).",
+          "default": "on"
+        },
+        {
+          "name": "sap_help_search",
+          "class": "read",
+          "what": "Search the SAP Help Portal.",
+          "default": "on"
+        }
+      ],
+      "switches": [
+        {
+          "name": "MCP_VARIANT",
+          "default": "sap-docs",
+          "effect": "Self-hosted only: sap-docs (broad) or abap (ABAP-focused, separate hosted endpoint)."
+        },
+        {
+          "name": "MCP_PORT",
+          "default": "3122",
+          "effect": "Self-hosted only: port of the streamable HTTP server."
+        }
+      ],
+      "auth": [
+        "None for the hosted endpoint and for self-hosting"
+      ],
+      "assessment": {
+        "verdict": "Useful and low risk if no confidential text is searched",
+        "risk": "low",
+        "defaultRisk": "low",
+        "why": [
+          "Search and fetch only; nothing in SAP or in Werkbank changes.",
+          "No login and no secrets.",
+          "Open source under Apache-2.0 and it can be run on your own side.",
+          "Overlaps with the built-in Web Sources connector (SAP Help and SAP Community), but adds the developer documentation."
+        ],
+        "plan": [
+          "Compare answers with Web Sources on ten known questions before choosing one.",
+          "Use the hosted endpoint only for public questions; self-host if search terms can be confidential.",
+          "Treat returned text as data. A community post can contain instructions that must not be followed."
+        ],
+        "checks": [
+          "Hosted endpoint: who runs it, availability and what it logs. The author gives no guarantee.",
+          "Tool list: it differs by version and variant; confirm it after installing.",
+          "Content terms of the documentation sources (SAP Help, SAP Community).",
+          "Not run by us: the tool names come from public listings of the project."
         ]
       }
     },
