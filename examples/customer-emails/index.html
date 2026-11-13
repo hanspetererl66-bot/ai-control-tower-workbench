@@ -592,6 +592,7 @@ function makeJourney() {
     '.jr ol{display:flex;flex:1 1 420px;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}' +
     '.jr li{flex:1 1 130px;min-width:120px;border:1px solid var(--line);border-radius:12px;padding:6px 9px;background:var(--canvas)}' +
     '.jr li[aria-current="step"]{border-color:var(--purple);background:var(--purple-dim)}' +
+    '.jr li{transition:background-color .12s ease,border-color .12s ease}.jr li:hover:not([aria-current="step"]){background:var(--purple-light);border-color:var(--purple-border)}' +
     '.jr .jr-h{display:flex;gap:6px;align-items:baseline;font-weight:600;color:var(--ink)}.jr .jr-n{color:var(--purple);font-variant-numeric:tabular-nums}' +
     '.jr .jr-a{color:var(--muted);margin:1px 0 4px;font-size:11px}' +
     '.jr .jr-s{display:flex;flex-wrap:wrap;gap:4px}' +
