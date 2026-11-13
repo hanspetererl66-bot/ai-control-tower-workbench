@@ -64,6 +64,9 @@ export function accentVariants(hex: string): { light: string; dark: string; ligh
 const DENSITY = { compact: 0.75, normal: 1, roomy: 1.3 } as const;
 
 /** CSS for the app window. Empty settings give an empty string. */
+/** The small icons of the app: every svg that is 12 to 18 px wide. Bigger pictures (logos, diagrams, charts) keep their size. Spaces are separate pages and are not touched. */
+export const ICON_SELECTOR = [12, 13, 14, 15, 16, 17, 18].map((n) => `svg[width="${n}"]`).join(',');
+
 export function buildPreferenceCss(prefs: Preferences): string {
   const css: string[] = [...skinAppCss(prefs.skin ?? DEFAULT_SKIN), ...layoutAppCss(prefs.layout ?? DEFAULT_LAYOUT)];
   if (prefs.accent) {
@@ -74,6 +77,7 @@ export function buildPreferenceCss(prefs: Preferences): string {
   const stack = FONT_STACKS[prefs.font];
   if (stack) css.push(`html,body,button,input,textarea,select{font-family:${stack}}`);
   if (prefs.density !== 'normal') css.push(`:root{--dens:${DENSITY[prefs.density]}}`);
+  if (prefs.iconScale && prefs.iconScale !== 1) css.push(`${ICON_SELECTOR}{zoom:${prefs.iconScale}}`);
   if (prefs.contrast === 'high') {
     css.push(
       ':root{--line:#6b7280;--muted:#374151}',

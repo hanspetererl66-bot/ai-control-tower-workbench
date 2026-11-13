@@ -1,7 +1,7 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
+  ACCENT_PRESETS, APP_SCALES, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
@@ -168,6 +168,7 @@ export function LookPanel({ prefs, update }: Common) {
       </Section>
       <Section title="Text and layout">
         <Choice label="App text size" value={prefs.appScale} options={APP_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, appScale: v }))} />
+        <Choice label="Icon size" value={prefs.iconScale} options={ICON_SCALES} show={(v) => (v === 1 ? 'Standard' : v === 1.2 ? 'Large' : 'Extra large')} onPick={(v) => update((p) => ({ ...p, iconScale: v }))} />
         <Choice label="Text size in Spaces" value={prefs.spaceScale} options={SPACE_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, spaceScale: v }))} />
         <Choice label="Font" value={prefs.font} options={FONTS} show={(v) => FONT_NAMES[v]} onPick={(v) => update((p) => ({ ...p, font: v }))} />
         <Choice label="Density" value={prefs.density} options={DENSITIES} show={(v) => v[0].toUpperCase() + v.slice(1)} onPick={(v) => update((p) => ({ ...p, density: v }))} />
