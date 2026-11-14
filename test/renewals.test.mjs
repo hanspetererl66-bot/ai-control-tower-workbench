@@ -25,9 +25,9 @@ test('data and page are in sync with the Sub4Me sample data and the design syste
 });
 
 test('cases: all customers with SAP customer IDs, unique ids, decision date = end minus notice period', () => {
-  assert.deepEqual([...new Set(data.cases.map((c) => c.customerId))].sort(), ['hanse', 'lindenau', 'muster']);
+  assert.deepEqual([...new Set(data.cases.map((c) => c.customerId))].sort(), ['alpenwerke', 'hanse', 'lindenau', 'muster', 'rheinberg', 'seeland']);
   assert.equal(new Set(data.cases.map((c) => c.id)).size, data.cases.length);
-  assert.equal(new Set(data.cases.map((c) => c.sapCustomerId)).size, 3);
+  assert.equal(new Set(data.cases.map((c) => c.sapCustomerId)).size, 6);
   for (const c of data.cases) {
     assert.match(c.sapCustomerId, /^00\d{8}$/);
     assert.equal(logic.daysBetween(c.decisionDate, c.end), c.noticeDays, c.id);
@@ -120,7 +120,7 @@ test('page: the switch exists, is off by default and nothing is really sent', ()
 
 test('customer situation: escalation, payment, usage and growth are derived from the contracts', () => {
   const sit = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; customerSituation`);
-  assert.deepEqual(data.customers.map((c) => c.id).sort(), ['hanse', 'lindenau', 'muster']);
+  assert.deepEqual(data.customers.map((c) => c.id).sort(), ['alpenwerke', 'hanse', 'lindenau', 'muster', 'rheinberg', 'seeland']);
   const muster = sit(data.customers.find((c) => c.id === 'muster'), data.cases), hanse = sit(data.customers.find((c) => c.id === 'hanse'), data.cases);
   assert.equal(muster.primary.key, 'escalation');
   assert.ok(muster.list.some((s) => s.key === 'payment') && muster.list.some((s) => s.key === 'usage'));
@@ -129,6 +129,10 @@ test('customer situation: escalation, payment, usage and growth are derived from
   assert.ok(hanse.list.some((s) => s.key === 'growth'));
   assert.equal(muster.overdue.length, 1);
   assert.match(muster.talk, /escalation/);
+  const of = (id) => sit(data.customers.find((c) => c.id === id), data.cases);
+  assert.equal(of('rheinberg').primary.key, 'escalation', 'the stressed customer: executive escalation first');
+  assert.equal(of('alpenwerke').primary.key, 'growth', 'the sponsor customer: nothing wrong, room to sell more');
+  assert.equal(of('seeland').primary.key, 'usage', 'the retailer: usage fell after the peak season');
   const calm = sit({ id: 'x', escalation: null }, []);
   assert.equal(calm.primary.key, 'stable');
 });
@@ -219,4 +223,32 @@ test('the case detail draws the usage trend as a small line in tokens only', () 
   assert.match(html, /Usage over 6 months: 119 % to 90 %/);
   assert.match(html, /stroke="var\(--amber\)"/, 'a fall is drawn in the warning colour');
   assert.match(draw([40, 52, 66, 78, 90, 96]), /stroke="var\(--green\)"/);
+});
+
+test('six customers: three from the Sub4Me sample data and three that exist only here, each with its own story and a mix of colours', () => {
+  assert.equal(data.customers.length, 6);
+  assert.equal(data.cases.length, 37);
+  const count = (h) => data.cases.filter((c) => health(c.contractId).health === h).length;
+  assert.ok(count('green') >= 10 && count('yellow') >= 10 && count('red') >= 6, `${count('green')} green, ${count('yellow')} yellow, ${count('red')} red`);
+  for (const cu of data.customers) {
+    const mine = data.cases.filter((c) => c.customerId === cu.id);
+    assert.ok(mine.length >= 4, cu.id);
+    assert.ok(cu.mails.length >= 3, `${cu.id} has mails`);
+    // The mails of the three Sub4Me customers may also point at contracts outside the renewals; the new customers' mails always point at theirs.
+    if (['alpenwerke', 'rheinberg', 'seeland'].includes(cu.id)) for (const m of cu.mails) assert.ok(mine.some((c) => c.contractId === m.contractId && (!m.offerId || c.offer?.id === m.offerId)), `${m.id} points at a contract and an offer of ${cu.id}`);
+    assert.equal(cu.annualEur, mine.find((c) => c.customerAnnualEur !== undefined).customerAnnualEur);
+  }
+  const ids = new Set(data.cases.flatMap((c) => [c.contractId, c.offer?.id, ...c.tickets.map((t) => t.id), ...c.invoices.map((i) => i.id)]).filter(Boolean));
+  assert.equal(ids.size, data.cases.flatMap((c) => [c.contractId, c.offer?.id, ...c.tickets.map((t) => t.id), ...c.invoices.map((i) => i.id)]).filter(Boolean).length, 'every contract, offer, ticket and invoice id is unique');
+  // Rheinberg: the automatic renewal that is a trap (price rise above the cap, a competitor, a very high ticket).
+  const trap = health('C-2023-0610');
+  assert.equal(trap.health, 'red');
+  assert.deepEqual([...trap.signals.map((x) => x.key)].sort(), ['competitor', 'growth', 'ticket', 'timing', 'uplift']);
+  assert.equal(logic.upliftPct(byContract('C-2023-0610')), 9);
+  // Seeland: two weeks left and no offer; and a lapsed contract worth winning back.
+  assert.deepEqual([...health('C-2025-0712').signals.map((x) => x.key)], ['timing', 'no-offer']);
+  assert.equal(byContract('C-2022-0701').status, 'Lapsed');
+  // Alpenwerke: usage rising towards the licence, the offer is ready and within the cap.
+  assert.ok(health('C-2025-0710').signals.some((x) => x.key === 'trend-up'));
+  assert.ok(logic.upliftPct(byContract('C-2025-0710')) <= byContract('C-2025-0710').upliftCapPct);
 });

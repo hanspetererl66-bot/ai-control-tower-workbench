@@ -6,7 +6,7 @@ export const PRODUCT_TITLE = `${PRODUCT_NAME} Design Study`;
 export const FOOTER_TITLE = 'Joule Work X - Design Study';
 /** Cover sheet (click on the diamond in the rail): short name and the line below it. */
 export const COVER_NAME = 'Joule Work X';
-export const COVER_SUBTITLE = 'Futuristic Design Study';
+export const COVER_SUBTITLE = 'Futuristic Design Study 2026/2027';
 /** Second line under the title. */
 export const COVER_TAGLINE = 'Engineered as MVP';
 /** Status line on the cover: what this is and what it is not. */
