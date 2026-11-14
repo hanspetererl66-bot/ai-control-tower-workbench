@@ -4064,11 +4064,9 @@ button {
 }
 .memory-suggest span { flex: 1 1 260px; }
 
-/* Space titles are a strong purple, subspace titles a lighter one, so the two levels read apart. */
-.card:not(.card-sub) .card-title { color: #5b21b6; font-weight: 700; }
-.card-sub .card-title { color: #8b5cf6; font-weight: 600; }
-:root[data-theme="dark"] .card:not(.card-sub) .card-title { color: #b69cff; }
-:root[data-theme="dark"] .card-sub .card-title { color: #9a82e0; }
+/* Space titles are strong in the accent colour of the chosen skin, subspace titles a little lighter in weight, so the two levels read apart. */
+.card:not(.card-sub) .card-title { color: var(--accent-ink); font-weight: 700; }
+.card-sub .card-title { color: var(--accent-ink); font-weight: 600; }
 :root[data-theme="dark"] .ghost-btn:hover:not(:disabled) { background: rgb(255 255 255 / 8%); }
 
 .briefing-area {
@@ -6224,3 +6222,13 @@ select option { color: var(--ink); background: var(--panel); }
 .ovp-tile-outline i { background: transparent; border: 1.5px solid var(--line); }
 .ovp-tile-bold i { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-top: 4px solid var(--accent); }
 @media (max-width: 520px) { .looks { grid-template-columns: minmax(0, 1fr); } }
+
+/* The names of Spaces take the colour of the chosen skin (or of the custom accent). --accent-ink is that colour as text: the skin's accent,
+   or, with a custom accent, a variant that stays readable on the light and on the dark ground. The open row keeps the text colour:
+   it is already marked by its tint and its weight. */
+:root { --accent-ink: var(--accent); }
+.trow:not(.trow-on) .trow-title,
+.bar-chips .chip:not(.chip-on) .chip-title,
+.sov-card-title,
+.topbar-title-space { color: var(--accent-ink); }
+
