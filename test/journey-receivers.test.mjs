@@ -38,28 +38,3 @@ test('journey receivers: Collections opens the tab and the customer of the stop'
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
-
-test('journey receivers: Order-to-Cash opens the renewal orders and puts the customer of the stop first', async () => {
-  const p = await open('examples/order-to-cash-software/index.html');
-  p.restore([{ from: 'sales', payload: stopPayload('renewal-orders', 'hanse') }]);
-  assert.equal(p.q('[role=tab][aria-selected=true]').dataset.id, 'ren');
-  assert.match(p.q('#main').textContent, /Hanse Handelsgruppe AG first/);
-  assert.match(p.q('#main').textContent, /No renewal order for this customer has arrived yet/);
-  const order = (customer, contractId, n) => ({ type: 'renewal-order', contractId, customer, product: 'Product ' + n, end: '2027-01-31', offer: 'Renewal', annualEur: 10000 * n, termMonths: 12, changePct: 3 });
-  p.restore([{ from: 'renewals', payload: order('Muster Industrie AG', 'C-2026-0901', 1) }, { from: 'renewals', payload: order('Hanse Handelsgruppe AG', 'C-2026-0911', 2) }]);
-  const heads = p.qa('#main .card h2').map((h) => h.textContent);
-  assert.match(heads[0], /Hanse Handelsgruppe AG/, 'the journey customer comes first');
-  assert.match(heads[0], /journey customer/);
-  assert.doesNotMatch(heads[1], /journey customer/);
-  assert.match(p.q('#main').textContent, /Their renewal orders are marked below/);
-  assert.deepEqual(p.errors, []);
-  p.w.close();
-});
-
-test('journey receivers: a plain hand-over of an order (no journey) still opens the renewal orders, as before', async () => {
-  const p = await open('examples/order-to-cash-software/index.html');
-  p.restore([{ from: 'renewals', payload: { type: 'renewal-order', contractId: 'C-2026-0902', customer: 'Muster Industrie AG', product: 'Work Zone', end: '2026-12-31', offer: 'Renewal', annualEur: 12600, termMonths: 12, changePct: 0 } }]);
-  assert.equal(p.q('[role=tab][aria-selected=true]').dataset.id, 'ren');
-  assert.doesNotMatch(p.q('#main').textContent, /Sales journey:/);
-  p.w.close();
-});

@@ -15,23 +15,19 @@ const sales = JSON.parse(read('examples/sales/pipeline.json'));
 const mails = JSON.parse(read('examples/customer-emails/threads.json'));
 const c360 = makeLogic(JSON.parse(read('examples/customer-360/data-lindenau.json')));
 
-test('journey: the pages carry the current journey code (four draw the rail, Collections and Order-to-Cash only read the hand-over)', () => {
-  assert.equal(JOURNEY_PAGES.length, 6);
+test('journey: the pages carry the current journey code (four draw the rail or carry it, Collections only reads the hand-over)', () => {
+  assert.equal(JOURNEY_PAGES.length, 5);
   for (const page of JOURNEY_PAGES) assert.equal(embedJourney(read(page), makeJourney.toString()), read(page), `${page}: run npm run sync:mockups`);
-  for (const page of ['examples/collections/index.html', 'examples/order-to-cash-software/index.html']) assert.doesNotMatch(read(page), /J\.railHtml|J\.injectStyle/, `${page} does not draw the rail`);
+  assert.doesNotMatch(read('examples/collections/index.html'), /J\.railHtml|J\.injectStyle/, 'Collections does not draw the rail');
 });
 
-test('journey: Autopilot (Act), Renewal orders and Collections (Follow up) are stops, open for the three customers with data and not for Nordlicht', () => {
-  const want = { autopilot: ['act', 'renewals', 'autopilot'], 'renewal-orders': ['follow', 'order-to-cash-software', 'ren'], collections: ['follow', 'collections', 'list'] };
-  for (const [id, [step, space, tab]] of Object.entries(want)) {
-    const stop = J.stop(id);
-    assert.deepEqual([stop.step, stop.space, stop.tab], [step, space, tab], id);
-    for (const c of ['lindenau', 'muster', 'hanse']) assert.equal(J.available(stop, c), true, `${id} for ${c}`);
-    assert.equal(J.available(stop, 'nordlicht'), false, `${id} stays closed for Nordlicht`);
-  }
-  assert.deepEqual(J.STOPS.filter((x) => x.step === 'act').map((x) => x.id), ['autopilot', 'workflow', 'governance']);
-  assert.deepEqual(J.STOPS.filter((x) => x.step === 'follow').map((x) => x.id), ['payments', 'renewal-orders', 'collections']);
-  assert.equal(J.STOPS.length, 13 + 3);
+test('journey: Collections is a stop of Follow up, open for the three customers with data and not for Nordlicht', () => {
+  const stop = J.stop('collections');
+  assert.deepEqual([stop.step, stop.space, stop.tab], ['follow', 'collections', 'list']);
+  for (const c of ['lindenau', 'muster', 'hanse']) assert.equal(J.available(stop, c), true, c);
+  assert.equal(J.available(stop, 'nordlicht'), false);
+  assert.deepEqual(J.STOPS.filter((x) => x.step === 'follow').map((x) => x.id), ['payments', 'collections']);
+  assert.equal(J.STOPS.length, 10 + 1, 'the ten stops of main plus Collections');
 });
 
 test('journey: every stop is a Space that can be installed, every Sales stop is a tab of the Sales page, every step has a stop', () => {
@@ -71,8 +67,7 @@ test('journey: a stop is only open for a customer with sample data for it', () =
   assert.ok(!J.available(J.stop('c360'), 'muster') && !J.available(J.stop('c360'), 'hanse'));
   assert.ok(J.available(J.stop('mails'), 'muster') && !J.available(J.stop('mails'), 'hanse') && !J.available(J.stop('mails'), 'nordlicht'));
   assert.ok(!J.available(J.stop('pipeline'), 'nordlicht'), 'Nordlicht has no deals in Sales');
-  for (const k of ['muster', 'hanse', 'lindenau']) assert.ok(J.available(J.stop('renewals'), k) && J.available(J.stop('renewal-map'), k) && J.available(J.stop('renewal-actions'), k), `${k} has renewals`);
-  assert.ok(!J.available(J.stop('renewals'), 'nordlicht'), 'Nordlicht has no renewals');
+  for (const id of ['renewals', 'renewal-map', 'renewal-actions']) assert.equal(J.stop(id), null, `${id}: the renewal process is its own Space, not a stop of the Sales journey`);
   assert.ok(!J.available(J.stop('pipeline'), 'unknown'));
   for (const [k, c] of Object.entries(J.CUSTOMERS)) if (c.sales) assert.ok(sales.deals.some((d) => d.account === c.name), `${k} has deals in Sales`);
   for (const [k, c] of Object.entries(J.CUSTOMERS)) if (c.mail) assert.ok(mails.customers.some((m) => m.id === c.mail && m.name === c.name), `${k} has a mailbox`);

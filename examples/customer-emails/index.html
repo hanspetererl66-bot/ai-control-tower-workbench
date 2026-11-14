@@ -524,10 +524,10 @@ $('#asof').textContent = 'As of ' + dt(DATA.asOf) + ' · fictional data';
 // @journey-start
 function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true, o2c: true },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true, o2c: true },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true, o2c: true },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false, o2c: false },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -539,19 +539,14 @@ function makeJourney() {
   var STOPS = [
     { id: 'inbox', step: 'today', label: 'Inbox', space: 'sales', tab: 'inbox' },
     { id: 'meetings', step: 'today', label: 'Meetings', space: 'sales', tab: 'meetings' },
-    { id: 'renewals', step: 'today', label: 'Renewals due', space: 'renewals', tab: 'overview', needs: 'renewals' },
     { id: 'c360', step: 'understand', label: 'Customer 360', space: 'customer-360', needs: 'c360' },
     { id: 'mails', step: 'understand', label: 'E-mails', space: 'customer-emails', needs: 'mail' },
     { id: 'graph', step: 'understand', label: 'Deal graph', space: 'sales', tab: 'knowledge' },
-    { id: 'renewal-map', step: 'understand', label: 'Renewal map', space: 'renewals', tab: 'process', needs: 'renewals' },
     { id: 'pipeline', step: 'decide', label: 'Pipeline', space: 'sales', tab: 'pipeline' },
     { id: 'forecast', step: 'decide', label: 'Forecast', space: 'sales', tab: 'forecast' },
-    { id: 'renewal-actions', step: 'decide', label: 'Renewal actions', space: 'renewals', tab: 'nba', needs: 'renewals' },
-    { id: 'autopilot', step: 'act', label: 'Autopilot', space: 'renewals', tab: 'autopilot', needs: 'renewals' },
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
-    { id: 'renewal-orders', step: 'follow', label: 'Renewal orders', space: 'order-to-cash-software', tab: 'ren', needs: 'o2c' },
     { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
   ];
   /** Which step a Sales tab belongs to (for the highlighted step of the rail). */

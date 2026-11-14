@@ -22,7 +22,7 @@ Neue Quelle `renewals` in `buildGraph`, gelesen aus `examples/renewals/renewals.
 | **Tickets** | offene Tickets der drei Kunden, soweit noch nicht im Graph (Abgleich nach Id), Kante `ABOUT` zum Vertrag | wenige |
 | **Eskalationen** | als Eigenschaft am Kundenknoten (Stufe, seit, Thema, Verantwortlicher), sichtbar als Markierung; kein neuer Typ | 0 neue Knoten |
 
-Zusammen etwa +25 bis +30 Knoten und +50 Kanten, also gut 10 % mehr. Die Gesundheit berechnet das Skript mit der geteilten Logik der Renewals-Seite (`examples/renewals/logic.js`), sodass der Graph nie eine andere Farbe zeigt als die Seite. Ob das Skript sie ohne Umbau aufrufen kann, prüfe ich beim Bauen.
+Zusammen etwa +25 bis +30 Knoten und +50 Kanten, also gut 10 % mehr. **Gemessen beim Bauen (PR 1):** +29 Knoten (12 Verträge, 14 Rechnungen, 3 Tickets) und +34 Kanten (265 auf 294 Knoten, 630 auf 664 Kanten). Die Gesundheit berechnet das Skript mit der geteilten Logik der Renewals-Seite (`examples/renewals/logic.js`), sodass der Graph nie eine andere Farbe zeigt als die Seite. Ob das Skript sie ohne Umbau aufrufen kann, prüfe ich beim Bauen.
 
 **Auswirkungen:** Die Legende und die Farben der Typen bekommen den Eintrag `invoice`. Die Chat-Werkzeuge kennen neue Typen aus `NODE_TYPES`; die Typlisten in ihren Beschreibungen werden mitgezogen.
 

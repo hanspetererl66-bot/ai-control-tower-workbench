@@ -5,6 +5,7 @@
  *   npm run sync:knowledge-graph -- --check fail when the page is out of date
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import vm from 'node:vm';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildGraph, extractAutomationData } from '../connectors/_lib/server/graph.mjs';
@@ -17,6 +18,17 @@ const BLOCK = /(<script type="application\/json" id="kg-data">)([\s\S]*?)(<\/scr
 const MODEL_BLOCK = /(<script id="kg-model">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
+/** The renewal cases with the health the Renewals Space shows: calculated with the shared logic (examples/renewals/logic.js), the only place that knows the rules. */
+export function renewalsFromRepo() {
+  const data = JSON.parse(read('examples/renewals/renewals.json'));
+  const { signals } = vm.runInNewContext(`${read('examples/renewals/logic.js')}; ({ signals })`);
+  const cases = data.cases.map((c) => {
+    const sig = signals(c, data.asOf);
+    return { ...c, health: sig.health, days: sig.days, reasons: sig.signals.filter((x) => x.level !== 'plus').slice(0, 2).map((x) => x.text) };
+  });
+  return { asOf: data.asOf, cases, customers: data.customers };
+}
+
 export function sourcesFromRepo() {
   return {
     sub4me: extractSub4MeData(read('examples/sub4me/index.html')),
@@ -25,6 +37,7 @@ export function sourcesFromRepo() {
     automation: extractAutomationData(read('examples/automation-dashboard/index.html')),
     links: JSON.parse(read('examples/knowledge-graph/links.json')),
     sales: JSON.parse(read('examples/sales/pipeline.json')),
+    renewals: renewalsFromRepo(),
     communication: {
       calls: JSON.parse(read('examples/call-transcripts/calls.json')).calls.map((c) => ({ ...c, asOf: JSON.parse(read('examples/call-transcripts/calls.json')).asOf })),
       threads: JSON.parse(read('examples/customer-emails/threads.json')).threads,

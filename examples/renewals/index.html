@@ -398,6 +398,26 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .tabs button{font:inherit;font-size:13px;font-weight:500;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;padding:12px 14px 10px;cursor:pointer;margin-bottom:-1px}
 .tabs button:hover{color:var(--ink)}.tabs button[aria-selected=true]{color:var(--purple-ink);border-bottom-color:var(--purple);font-weight:650}
 .tabs button:focus-visible{outline:2px solid var(--purple);outline-offset:-2px;border-radius:6px}
+/* The renewal process: four numbered main steps, secondary views behind "More" */
+.tabs.rp{align-items:center;gap:8px 6px;padding:2px 0 12px}
+.tabs.rp .rp-step{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 14px;margin:0}
+.tabs.rp .rp-step:hover{border-color:var(--purple);color:var(--ink)}
+.tabs.rp .rp-step.on{border-color:var(--purple);background:var(--purple-dim);color:var(--purple-ink)}
+.rp-n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--purple-light);color:var(--purple-ink)}
+.tabs.rp .rp-step.on .rp-n{background:var(--purple);color:var(--surface)}
+.rp-arrow{color:var(--muted)}
+.rp-sub{display:inline-flex;gap:4px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line)}
+.rp-sub[hidden]{display:none}
+.rp-more{margin-left:auto;display:inline-flex;align-items:center;gap:2px}
+.rp-more-h{font-size:11px;color:var(--muted);margin-right:4px}
+.tabs.rp .rp-sec{font-size:12.5px;font-weight:500;color:var(--muted);padding:6px 10px;border:1px solid transparent;border-radius:999px;margin:0}
+.tabs.rp .rp-sec:hover{color:var(--ink)}
+.tabs.rp .rp-sec.on{color:var(--purple-ink);border-color:var(--purple-border);background:var(--purple-dim);font-weight:650}
+.an-row{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:10px;align-items:center;margin:6px 0;font-size:13px}
+.an-bar{display:block;height:8px;border-radius:99px;background:var(--line-2)}
+.an-bar i{display:block;height:100%;border-radius:99px;background:var(--purple)}
+.an-top{grid-template-columns:minmax(0,1fr) auto}.an-top small{color:var(--muted)}
+@media (max-width:640px){.tabs.rp .rp-more{margin-left:0}.rp-arrow{display:none}}
 .pg[hidden]{display:none}
 .pg:not([hidden]){animation:rn-fade .28s ease both}
 @keyframes rn-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -538,7 +558,7 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
   <details class="card intro">
     <summary><h2>What is this page?</h2><span class="hint">Fictional data · nothing is sent · click to show or hide</span></summary>
     <div class="body"><p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of three fictional customers: which renewals need a decision first, why, and what to do next. Everything is tied to a customer: pick one at the top, or keep “All customers”.</p>
-    <div class="cols"><div><h3>1. Today (start)</h3><p>Three numbers, the decisions of the next six weeks on a time line, what to do first (grouped), and the landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the customer.</p></div><div><h3>2. Renewal process</h3><p>The map of one customer: its contracts, and around them open tickets, invoices, mails and usage. Below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Next best action</h3><p>The one renewal to take care of first and the queue behind it.</p></div><div><h3>4. Radar and list</h3><p>The radar shows every contract on a time line, the list sorts them by decision date. Click a row for the signals behind its health, the price against the contract cap, the next actions and the approval. Sending and signing are simulated; “Start demo” walks through ten steps.</p></div></div>
+    <div class="cols"><div><h3>1. Renewal due</h3><p>Three numbers, the decisions of the next six weeks on a time line, and what to do first (grouped).</p></div><div><h3>2. Renewal map</h3><p>The landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the map of one customer: its contracts, and around them open tickets, invoices, mails and usage; below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Renewal action</h3><p>The one renewal to take care of first and the queue behind it (Next best action), and the Autopilot that runs the renewals and stops at the gates a person must decide. Sending and signing are simulated.</p></div><div><h3>4. Renewal analytics</h3><p>What the open renewals are worth, what could be lost, by month and the biggest risks; the full dashboard is the Space Renewal Analytics.</p></div><div><h3>More</h3><p>The radar shows every contract on a time line, “By decision date” sorts them and shows the signals, the price against the contract cap and the approval. “Start demo” walks through ten steps.</p></div></div>
     <details><summary class="t">Terms used on this page</summary><dl><dt>Decision date</dt><dd>Contract end minus the notice period: the last day to decide.</dd><dt>Notice period</dt><dd>How long before the end the customer or SAP must act.</dd><dt>Health</dt><dd>The worst of the signals: decision date, missing or expiring offer, price above the cap, competitor, usage, open tickets, overdue invoices.</dd><dt>Contract cap</dt><dd>The largest price rise the contract allows at renewal.</dd><dt>Retention</dt><dd>Expected chance that the customer renews, weighted by annual value.</dd><dt>Customer lifetime value</dt><dd>Expected value of the customer over the years if it stays.</dd><dt>Automatic renewal</dt><dd>Small renewals without a warning signal get an offer and an e-mail without a person (simulated).</dd></dl></details></div>
   </details>
   <div class="card guide" id="guide" aria-live="polite"></div>
@@ -550,7 +570,7 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     <button class="ghost spacer" id="to-analytics" type="button" title="Open the Renewal Analytics Space (sales manager view)">Manager view</button>
     <button class="ghost" id="reset" type="button">Reset demo</button>
   </div>
-  <nav class="tabs" id="tabs" role="tablist" aria-label="Renewal views"></nav>
+  <nav class="tabs rp" id="tabs" role="tablist" aria-label="Renewal process"></nav>
 
   <section class="pg" id="pg-overview" role="tabpanel" aria-labelledby="tab-overview">
     <div id="kpis"></div>
@@ -558,10 +578,10 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     <div class="card" id="kpi-detail" hidden></div>
     <div class="card" id="six"></div>
     <div class="card" id="today-groups"></div>
-    <div class="card land" id="land"></div>
   </section>
 
   <section class="pg" id="pg-process" role="tabpanel" aria-labelledby="tab-process" hidden>
+    <div class="card land" id="land"></div>
     <div class="cview" id="cust">
       <div class="cview-main">
         <div class="card" id="process"></div>
@@ -602,6 +622,9 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     </div>
     <div class="card" id="alt" hidden></div>
     <div class="card"><h2>Assumptions behind retention and lifetime value</h2><p class="sub" style="margin:0" id="assump"></p></div>
+  </section>
+  <section class="pg" id="pg-analytics" role="tabpanel" aria-labelledby="tab-analytics" hidden>
+    <div id="an"></div>
   </section>
   <section class="pg" id="pg-autopilot" role="tabpanel" aria-labelledby="tab-autopilot" hidden>
     <div id="ap"></div>
@@ -2197,7 +2220,12 @@ function renderAlt() {
 }
 /* ---------- tabs, customer context and entrance motion ---------- */
 const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const TABS = [['overview', 'Today'], ['autopilot', 'Autopilot'], ['process', 'Renewal process'], ['nba', 'Next best action'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
+/* The renewal process has four main steps; the rest is secondary and sits behind "More". Autopilot is the second view of step 3. */
+const TABS = [['overview', 'Renewal due'], ['process', 'Renewal map'], ['nba', 'Renewal action'], ['analytics', 'Renewal analytics'], ['autopilot', 'Autopilot'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
+const MAIN_STEPS = [['overview'], ['process'], ['nba', 'autopilot'], ['analytics']];
+const MORE_TABS = ['radar', 'list'];
+const stepOf = (t) => MAIN_STEPS.findIndex((g) => g.includes(t));
+const tabLabel = (id) => TABS.find(([x]) => x === id)[1];
 const WINDOW_DAYS = 42; /* "the next six weeks" */
 /* Entrance motion runs once per picture and key; later renders show the finished picture (no replay on every click). */
 const played = {};
@@ -2228,12 +2256,33 @@ function renderCtx() {
   on.textContent = state.owner === 'all' ? '' : 'Numbers, time line, lists and the radar show only the renewals of ' + state.owner + '. The customer pictures (landscape, customer map) still show every contract of the customer.';
 }
 function renderTabs() {
-  $('#tabs').innerHTML = TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-selected="${state.tab === id}" aria-controls="pg-${id}" tabindex="${state.tab === id ? 0 : -1}" data-tab="${id}">${label}</button>`).join('');
+  const cur = stepOf(state.tab), act = cur === 2;
+  const btn = (id, cls, extra = '') => `<button type="button" role="tab" class="${cls}" id="tab-${id}" aria-selected="${state.tab === id}" aria-controls="pg-${id}" tabindex="${state.tab === id ? 0 : -1}" data-tab="${id}"${extra}>`;
+  const main = MAIN_STEPS.map(([id], i) => `<button type="button" role="tab" class="rp-step${cur === i ? ' on' : ''}" id="tab-${id}" aria-selected="${cur === i}" aria-controls="pg-${id}" tabindex="${cur === i ? 0 : -1}" data-tab="${id}"><span class="rp-n">${i + 1}</span>${tabLabel(id)}</button>`).join('<span class="rp-arrow" aria-hidden="true">→</span>');
+  const sub = `<span class="rp-sub"${act ? '' : ' hidden'}><button type="button" role="tab" class="rp-sec${state.tab === 'nba' ? ' on' : ''}" id="sub-nba" aria-selected="${state.tab === 'nba'}" data-tab="nba">Next best action</button>${btn('autopilot', 'rp-sec' + (state.tab === 'autopilot' ? ' on' : ''))}Autopilot</button></span>`;
+  const more = `<span class="rp-more"><span class="rp-more-h">More</span>${MORE_TABS.map((id) => `${btn(id, 'rp-sec' + (state.tab === id ? ' on' : ''))}${tabLabel(id)}</button>`).join('')}</span>`;
+  $('#tabs').innerHTML = main + sub + more;
   TABS.forEach(([id]) => { $('#pg-' + id).hidden = state.tab !== id; });
   $('#tabs').querySelectorAll('button').forEach((b) => {
     b.onclick = () => setTab(b.dataset.tab);
-    b.onkeydown = (e) => { if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); const i = TABS.findIndex(([id]) => id === state.tab); setTab(TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length][0]); $('#tab-' + state.tab).focus(); };
+    b.onkeydown = (e) => { if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); const all = [...$('#tabs').querySelectorAll('button[role=tab]')].filter((x) => !x.closest('[hidden]')); const i = all.indexOf(b); const n = all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length]; setTab(n.dataset.tab); $('#tabs').querySelector(`[data-tab="${state.tab}"]:not([hidden])`)?.focus(); };
   });
+}
+/* ---------- step 4: the renewal analytics in short; the full dashboard is the Space Renewal Analytics ---------- */
+function renderAnalytics() {
+  const open = scoped().filter(live), val = (c) => c.annualEur, loss = (c) => Math.round(c.annualEur * (1 - c.pRet));
+  const total = open.reduce((a, c) => a + val(c), 0), lost = open.reduce((a, c) => a + loss(c), 0);
+  const months = {}; open.forEach((c) => { const m = String(c.decisionDate).slice(0, 7); months[m] = (months[m] || 0) + val(c); });
+  const mKeys = Object.keys(months).sort(), mMax = Math.max(1, ...Object.values(months));
+  const monthName = (m) => new Date(m + '-01T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const top = [...open].sort((a, b) => loss(b) - loss(a)).slice(0, 5);
+  const k = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="k">${l}</div></div>`;
+  $('#an').innerHTML = `<div class="card"><div class="bar"><h2 style="margin:0">Renewal analytics</h2><button type="button" class="ghost spacer" id="an-full" title="Open the Renewal Analytics Space (sales manager view)">Open the full dashboard</button></div>
+    <p class="sub">The short version for the chosen customer and account executive: what the open renewals are worth and what could be lost. The full dashboard (phases, team load, offers against the contract cap, competitors) is the Space Renewal Analytics.</p>
+    <div class="kpis" style="margin:12px 0">${k(eur(total), 'Open renewal value a year')}${k(eur(lost), 'Expected loss a year')}${k(open.filter((c) => !c.offer).length + ' of ' + open.length, 'Renewals without an offer')}${k(open.filter((c) => c.sig.days <= WINDOW_DAYS).length, 'Decision within six weeks')}</div></div>
+    <div class="layout"><div class="card"><h2>Value by decision month</h2><p class="sub">Annual value of the open renewals by the month their decision date falls in.</p>${mKeys.length ? mKeys.map((m) => `<div class="an-row"><span>${monthName(m)}</span><span class="an-bar"><i style="width:${Math.round(months[m] / mMax * 100)}%"></i></span><b>${eur(months[m])}</b></div>`).join('') : '<p class="sub">No open renewals in this view.</p>'}</div>
+    <div class="card"><h2>Biggest expected loss</h2><p class="sub">Annual value × (1 − expected retention).</p>${top.length ? top.map((c) => `<div class="an-row an-top"><span>${esc(shortName(c))} <small>${esc(c.customer)}</small></span><b>${eur(loss(c))}</b></div>`).join('') : '<p class="sub">Nothing at risk in this view.</p>'}</div></div>`;
+  $('#an-full').onclick = () => $('#to-analytics').click();
 }
 function setTab(t) { state.tab = t; renderAll(); }
 /* A renewal opens in the list (detail on the right); the customer context follows it. */
@@ -2398,8 +2447,8 @@ const byId = (id) => model.find((c) => c.id === id);
 const named = (id) => { const c = byId(id); return c ? `${c.customer} · ${c.product} · contract ${c.contractId} · SAP customer ID ${c.sapCustomerId}` : ''; };
 const cnt = (f) => model.filter(f).length;
 const STEPS = [
-  { t: 'Start: today', tab: 'overview', where: ['#six', '#today-groups'], area: 'Today (the start page)', x: 'The start page shows three numbers, the decisions of the next six weeks on a time line (the late ones on the left), what to do first as grouped cards, and all customers as a landscape: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Click a planet to open the customer.', data: () => { const w = model.filter((c) => live(c) && c.sig.days <= WINDOW_DAYS); return `${w.length} renewals decide within six weeks (${w.filter((c) => c.sig.days < 0).length} already late), ${eur(w.reduce((a, c) => a + c.annualEur, 0))} a year.`; }, on: () => {} },
-  { t: 'The renewal process', tab: 'process', where: ['#process'], area: 'Renewal process', x: 'This is how the renewal team works, from watching a contract to the signed order. Every contract of the three customers sits in exactly one phase today. The page below follows the same order: customers, radar, list, details.', data: () => `${model.length} contracts of 3 customers. In the offer phase: ${cnt((c) => c.ph.phase === 'offer')}, of which ${cnt((c) => c.ph.late)} are behind. With the customer (negotiate): ${cnt((c) => c.ph.phase === 'negotiate')}. Past the decision date: ${cnt((c) => c.ph.phase === 'decide')}.`, on: () => { state.status = 'all'; } },
+  { t: 'Start: today', tab: 'overview', where: ['#six', '#today-groups'], area: 'Renewal due (the start page)', x: 'The start page shows three numbers, the decisions of the next six weeks on a time line (the late ones on the left), and what to do first as grouped cards. The landscape of all customers is on the next step, the renewal map.', data: () => { const w = model.filter((c) => live(c) && c.sig.days <= WINDOW_DAYS); return `${w.length} renewals decide within six weeks (${w.filter((c) => c.sig.days < 0).length} already late), ${eur(w.reduce((a, c) => a + c.annualEur, 0))} a year.`; }, on: () => {} },
+  { t: 'The renewal map', tab: 'process', where: ['#land', '#process'], area: 'Renewal map', x: 'All customers as a landscape: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Below, this is how the renewal team works, from watching a contract to the signed order. Every contract of the three customers sits in exactly one phase today. Behind “More”: the radar and the list with the details.', data: () => `${model.length} contracts of 3 customers. In the offer phase: ${cnt((c) => c.ph.phase === 'offer')}, of which ${cnt((c) => c.ph.late)} are behind. With the customer (negotiate): ${cnt((c) => c.ph.phase === 'negotiate')}. Past the decision date: ${cnt((c) => c.ph.phase === 'decide')}.`, on: () => { state.status = 'all'; } },
   { t: 'One customer, one map', tab: 'process', where: ['#cmap-wrap'], area: 'Renewal map of Muster Industrie', x: 'Pick a customer and its renewal map opens: the contracts around the customer, each with the open tickets, invoices, mail and usage along its spoke. Below it the four tiles say where we stand; on the right are the details with the e-mail communication. Click a contract to see its signals.', data: () => DATA.customers.map((cu) => { const l = model.filter((c) => c.customerId === cu.id && live(c)); return `${cu.name.split(' ')[0]}: ${l.length} contracts, ${eur(l.reduce((a, c) => a + c.annualEur, 0))} a year`; }).join(' · '), on: () => { state.customer = 'muster'; } },
   { t: 'The renewal radar', tab: 'radar', where: ['#radar'], area: 'Renewal radar', x: 'Every contract of all three customers on one time line. The diamond is the decision date, the bar runs to the contract end, the dashed line is today. Red and yellow bars are the ones to look at first.', data: () => `${cnt((c) => c.health === 'red')} red, ${cnt((c) => c.health === 'yellow')} yellow, ${cnt((c) => c.health === 'green')} green. Lapsed contracts show only the diamond and a mark for the end.`, on: () => { state.customer = 'all'; } },
   { t: 'What is due first?', tab: 'list', where: ['#rows tr[aria-selected=true]', '#list'], area: 'Renewals by decision date', x: 'The list sorts the same contracts by decision date, earliest first. At the top: SuccessFactors at Muster Industrie. The decision date passed 17 days ago and the offer is still open, so the next action is a written extension and a signing date.', data: () => named('R-C-2025-0041'), on: () => { state.sel = 'R-C-2025-0041'; } },
@@ -2580,9 +2629,10 @@ function renderAutopilot() {
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
-  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); renderLand(); }
+  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); }
+  else if (state.tab === 'analytics') renderAnalytics();
   else if (state.tab === 'autopilot') renderAutopilot();
-  else if (state.tab === 'process') renderCustomerView();
+  else if (state.tab === 'process') { renderLand(); renderCustomerView(); }
   else if (state.tab === 'nba') { renderNba(); renderQueue(); }
   else if (state.tab === 'radar') { renderBar(); renderTimeline(); renderDetail(); }
   else { renderBar(); renderRows(); renderDetail(); renderAlt(); }
@@ -2604,10 +2654,10 @@ $('#assump').textContent = `Illustrative assumptions, not real figures: gross ma
 // @journey-start
 function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true, o2c: true },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true, o2c: true },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true, o2c: true },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false, o2c: false },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -2619,19 +2669,14 @@ function makeJourney() {
   var STOPS = [
     { id: 'inbox', step: 'today', label: 'Inbox', space: 'sales', tab: 'inbox' },
     { id: 'meetings', step: 'today', label: 'Meetings', space: 'sales', tab: 'meetings' },
-    { id: 'renewals', step: 'today', label: 'Renewals due', space: 'renewals', tab: 'overview', needs: 'renewals' },
     { id: 'c360', step: 'understand', label: 'Customer 360', space: 'customer-360', needs: 'c360' },
     { id: 'mails', step: 'understand', label: 'E-mails', space: 'customer-emails', needs: 'mail' },
     { id: 'graph', step: 'understand', label: 'Deal graph', space: 'sales', tab: 'knowledge' },
-    { id: 'renewal-map', step: 'understand', label: 'Renewal map', space: 'renewals', tab: 'process', needs: 'renewals' },
     { id: 'pipeline', step: 'decide', label: 'Pipeline', space: 'sales', tab: 'pipeline' },
     { id: 'forecast', step: 'decide', label: 'Forecast', space: 'sales', tab: 'forecast' },
-    { id: 'renewal-actions', step: 'decide', label: 'Renewal actions', space: 'renewals', tab: 'nba', needs: 'renewals' },
-    { id: 'autopilot', step: 'act', label: 'Autopilot', space: 'renewals', tab: 'autopilot', needs: 'renewals' },
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
-    { id: 'renewal-orders', step: 'follow', label: 'Renewal orders', space: 'order-to-cash-software', tab: 'ren', needs: 'o2c' },
     { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
   ];
   /** Which step a Sales tab belongs to (for the highlighted step of the rail). */
@@ -2710,20 +2755,13 @@ function makeJourney() {
 // @journey-end
 const J = makeJourney(); J.injectStyle(document);
 const jr = { customer: 'lindenau', note: '' };
-const JR_AT = { overview: ['today', 'renewals'], process: ['understand', 'renewal-map'], nba: ['decide', 'renewal-actions'], radar: ['decide', null], list: ['decide', null] };
 const JR_TAB = { today: 'overview', understand: 'process', decide: 'nba' };
 const jrCustomer = () => (state.customer !== 'all' && J.CUSTOMERS[state.customer] ? state.customer : jr.customer);
+/* The scope strip under the process bar: what the chosen customer and owner have at stake. */
 function renderJourney() {
-  const cust = jrCustomer(), all = state.customer === 'all', mine = (all ? model : model.filter((c) => c.customerId === cust)).filter(byOwner), open = mine.filter(live), [step, stop] = JR_AT[state.tab] || ['today', null];
-  $('#jr').innerHTML = J.railHtml({ customer: cust, step, stop },
-    [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]], jr.note);
-}
-function jrGo(stopId) {
-  const s = J.stop(stopId), cust = jrCustomer(); if (!s || !J.available(s, cust)) return;
-  if (s.space === 'renewals') { jr.note = ''; if (state.customer === 'all') state.customer = cust; setTab(s.tab); return; }
-  if (window.parent === window) { jr.note = 'Open this Space in the app to move to ' + s.label + '.'; renderJourney(); return; }
-  const c = state.sel ? byId(state.sel) : null;
-  window.parent.postMessage(J.handoff(s, { customer: cust, deal: c && c.contractId }), '*');
+  const cust = jrCustomer(), all = state.customer === 'all', mine = (all ? model : model.filter((c) => c.customerId === cust)).filter(byOwner), open = mine.filter(live);
+  const vals = [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]];
+  $('#jr').innerHTML = '<div class="jr-val">' + vals.map((v) => `<span>${esc(v[0])} <b>${esc(String(v[1]))}</b></span>`).join('') + (jr.note ? `<span class="jr-note">${esc(jr.note)}</span>` : '') + '</div>';
 }
 /* A hand-over from another Space of the journey (wb:restore): choose the customer and the view, open the renewal of a contract (deal). */
 function jrApply(j) {
@@ -2834,7 +2872,6 @@ window.addEventListener('message', (e) => {
   if (e.data.state) { applyState(e.data.state); applyStored(); renderAll(); }
   (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { if (h && h.payload && h.payload.type === 'order-confirmed') { if (h.from === 'order-to-cash-software') apConfirmed(h.payload); renderAll(); return; } const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
 });
-document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
 /* ---------- Storage of the autopilot and win-back cases in the shared database (rn:cases-request, migration 050) ----------
    The page never sees the key and never names the person: the app uses the stored e-mail. Every change of a case is saved after the render
    (one case at a time, with the revision the page last saw). If the database is missing or refuses, the page works from memory and says
