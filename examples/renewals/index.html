@@ -409,12 +409,12 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 /* The renewal process, big: the four main steps are large cards on one path, the one you are on is filled and pulses, the line to the next step flows.
    The first drawing plays an entrance; another step makes the line glide; "reduce motion" turns all of it off. */
 .tabs.rp{align-items:center;gap:10px 0;padding:6px 0 20px}
-.tabs.rp .rp-step{display:inline-flex;align-items:center;gap:12px;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--ink-2);background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 20px 12px 14px;margin:0;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease,color .16s ease}
+.tabs.rp .rp-step{display:inline-flex;align-items:center;gap:11px;font-size:15.3px;font-weight:700;letter-spacing:-.01em;color:var(--ink-2);background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:11px 18px 11px 13px;margin:0;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease,color .16s ease}
 .tabs.rp .rp-step:not(.on):hover{transform:translateY(-3px);border-color:var(--purple);color:var(--ink);box-shadow:var(--shadow)}
 .tabs.rp .rp-step.on{background:var(--purple);border-color:var(--purple);color:var(--surface);box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent);animation:rp-pulse 2.4s ease-in-out 1s infinite}
-.tabs.rp .rp-n{width:38px;height:38px;font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
+.tabs.rp .rp-n{width:34px;height:34px;font-size:15.3px;font-weight:750;font-variant-numeric:tabular-nums}
 .tabs.rp .rp-step.on .rp-n{background:var(--surface);color:var(--purple)}
-.rp-link{flex:0 0 46px;height:5px;border-radius:3px;background:var(--line);transform-origin:left center}
+.rp-link{flex:0 0 41px;height:4.5px;border-radius:3px;background:var(--line);transform-origin:left center}
 .rp-link.lit{background:var(--purple)}
 .rp-link.next{background:repeating-linear-gradient(90deg,var(--purple) 0 8px,transparent 8px 16px);background-size:16px 100%;animation:rp-flow .9s linear infinite}
 @keyframes rp-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -427,7 +427,7 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .rp-in .rp-link{animation:rp-draw .4s ease both;animation-delay:calc(var(--k) * 110ms - 80ms)}.rp-in .rp-link.next{animation:rp-draw .4s ease calc(var(--k) * 110ms - 80ms) both,rp-flow .9s linear 1s infinite}
 .rp-move .rp-step.on{animation:rp-pop .5s cubic-bezier(.2,.9,.3,1.3) .1s both,rp-pulse 2.4s ease-in-out 1s infinite}
 .rp-move .rp-link.go{animation:rp-draw .4s ease both;animation-delay:calc((var(--k) - var(--rp-from)) * 140ms - 60ms)}
-@media (max-width:760px){.rp-link{display:none}.tabs.rp{gap:8px}.tabs.rp .rp-step{flex:1 1 44%;font-size:15px}.tabs.rp .rp-n{width:32px;height:32px;font-size:15px}}
+@media (max-width:760px){.rp-link{display:none}.tabs.rp{gap:8px}.tabs.rp .rp-step{flex:1 1 44%;font-size:13.5px}.tabs.rp .rp-n{width:29px;height:29px;font-size:13.5px}}
 /* the seven phases of the renewal map: bigger, they come in one after the other, the one you filtered by is filled */
 #process .ph{position:relative;min-height:132px;padding:14px 14px 12px;gap:4px;border-radius:16px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease}
 #process .ph:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
