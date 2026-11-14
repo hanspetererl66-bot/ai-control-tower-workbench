@@ -1,11 +1,11 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
+  ACCENT_PRESETS, APP_SCALES, BACKGROUND_PATTERNS, BACKGROUND_TINTS, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
-import { contrastRatio } from '../preferences-style';
+import { BACKGROUND_PATTERN_CSS, contrastRatio } from '../preferences-style';
 import { sectionEffect } from '../settings-help';
 import { DOCK_LABEL } from '../spaces-dock';
 import { SPACE_SCALES } from '../space-scale';
@@ -164,6 +164,27 @@ export function LookPanel({ prefs, update }: Common) {
             <input type="color" value={prefs.accent || '#8056B8'} aria-label="Own accent colour" onChange={(e) => update((p) => ({ ...p, accent: e.target.value.toUpperCase() }))} />
             {custom && <small>{prefs.accent}</small>}
           </label>
+        </div>
+      </Section>
+      <Section title="App background" hint="Tint the background of the app with a colour from the palette or your own, and lay a fine pattern over it. The tint is only a light touch, so text stays readable in light and dark. Spaces keep the colours of the skin.">
+        <div className="prefs-row" role="radiogroup" aria-label="Background colour">
+          <button className={`ghost-btn ${!prefs.bgTint ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={!prefs.bgTint} onClick={() => update((p) => ({ ...p, bgTint: '' }))}>Skin</button>
+          {BACKGROUND_TINTS.map((t) => (
+            <button key={t.id} className={`prefs-swatch ${prefs.bgTint === t.hex.toUpperCase() ? 'prefs-swatch-on' : ''}`} style={{ background: t.hex }} role="radio" aria-checked={prefs.bgTint === t.hex.toUpperCase()} aria-label={t.name} title={t.name} onClick={() => update((p) => ({ ...p, bgTint: t.hex.toUpperCase() }))} />
+          ))}
+          <label className="prefs-row" style={{ margin: 0 }}>
+            <span>Own colour</span>
+            <input type="color" value={prefs.bgTint || '#5B7FB5'} aria-label="Own background colour" onChange={(e) => update((p) => ({ ...p, bgTint: e.target.value.toUpperCase() }))} />
+            {prefs.bgTint && !BACKGROUND_TINTS.some((t) => t.hex.toUpperCase() === prefs.bgTint) && <small>{prefs.bgTint}</small>}
+          </label>
+        </div>
+        <div className="prefs-row" role="radiogroup" aria-label="Background pattern">
+          {BACKGROUND_PATTERNS.map((id) => (
+            <button key={id} type="button" className={`ghost-btn ${prefs.bgPattern === id ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={prefs.bgPattern === id} onClick={() => update((p) => ({ ...p, bgPattern: id }))}>
+              <span aria-hidden="true" style={{ display: 'inline-block', width: 22, height: 14, marginRight: 6, verticalAlign: 'middle', border: '1px solid var(--line)', borderRadius: 3, background: 'var(--bg)', ...(id === 'none' ? {} : { backgroundImage: BACKGROUND_PATTERN_CSS[id].image, backgroundSize: id === 'dots' || id === 'grid' ? '8px 8px' : 'auto' }) }} />
+              {id === 'none' ? 'No pattern' : id[0].toUpperCase() + id.slice(1)}
+            </button>
+          ))}
         </div>
       </Section>
       <Section title="Text and layout">
