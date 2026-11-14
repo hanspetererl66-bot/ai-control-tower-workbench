@@ -106,7 +106,7 @@ Du trägst in den Einstellungen der App eine der Testadressen als deine E-Mail e
 
 ## Nicht geprüft
 
-- **In der echten App ausprobiert (13.11.2026, von Hans-Peter):** mit der Testadresse `mira.hoffmann@renewals.example` werden die Fälle gespeichert und sind nach einem Neustart der App wieder da. **Nicht ausprobiert:** der Vertriebsleiter (`vertrieb@renewals.example`, nur lesend), die Trennung zwischen Verantwortlichen, ein Reset (Archivieren), ein Revisionskonflikt, das eigene Konto als Board-Admin.
+- **In der echten App ausprobiert (13.11.2026, von Hans-Peter):** mit der Testadresse `mira.hoffmann@renewals.example` werden die Fälle gespeichert und sind nach einem Neustart der App wieder da. **Vertriebsleiter ausprobiert (14.11.2026, von Hans-Peter, in der Instanz mit Datenbankzugang, E-Mail `vertrieb@renewals.example`):** alle fünf Punkte stimmen: Hinweis "You see all cases and can only read them (sales manager)", Miras gespeicherte Fälle sind sichtbar, alle Schaltflächen und Auswahlfelder an den Fällen sind gesperrt, "Run autopilot" startet nichts, kein "Not saved". **Weiter nicht ausprobiert:** die Trennung zwischen zwei Verantwortlichen (ein Verantwortlicher sieht die Fälle eines anderen nicht), ein Reset (Archivieren), ein Revisionskonflikt, das eigene Konto als Board-Admin. Meine eigenen Versuche in einer Testinstanz aus diesem Checkout (14.11.2026) scheiterten, weil dort kein Datenbankzugang eingetragen war; sie sagen nichts über die Seite.
 - Die Seitenlogik ist außerdem mit einem Ersatz-Host im Headless-Browser (jsdom) getestet.
 - Die SQL-Tests zu Migration 050 sind nie gegen Postgres gelaufen.
 - Ob das eigene Konto in der Admin-Gruppe steht, ist nicht geprüft.
