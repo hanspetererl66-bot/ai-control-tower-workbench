@@ -355,6 +355,7 @@ th{font-size:10.2px}
 <body>
 <div class="demo">Mockup with fictional data. Nothing is recorded, transcribed or stored; no real call platform is connected. Customer names are made up.</div>
 <header>
+  <span id="wb-customer" data-wb-customer hidden></span>
   <div class="logo">Call <b>Transcripts</b></div>
   <span class="tag purple">Mockup</span>
   <span class="cust" id="cust"></span>
@@ -407,6 +408,7 @@ function kpis() {
 
 function custLine() {
   const all = [...new Set(DATA.calls.map((c) => c.customer))];
+  $('#wb-customer').textContent = state.customer === 'All' ? 'All customers' : state.customer;  // the host shows it in the top bar of every Space
   $('#cust').innerHTML = state.customer === 'All' ? 'Customers: <b>' + all.map(esc).join(', ') + '</b>' : 'Customer: <b>' + esc(state.customer) + '</b>';
 }
 function filters() {

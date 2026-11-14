@@ -10,16 +10,16 @@ const design = readFileSync(join(ROOT, 'examples/shared/design-system.css'), 'ut
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const block = (id) => { const a = html.indexOf(`<style id="${id}">`); return a < 0 ? '' : html.slice(a, html.indexOf('</style>', a)); };
 
-test('the text of the Space is 20 % larger: the page rules were scaled, the shared design system stays embedded unchanged and its sizes are scaled in one extra block', () => {
+test('the text of the Space is 20 % larger than the design system, then 15 % smaller again: the page rules were scaled twice, the shared design system stays embedded unchanged and its sizes are scaled in one extra block', () => {
   const page = html.replace(block('design-system'), '');
   const sizes = [...page.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1]));
   assert.ok(sizes.length > 80, 'many sizes');
-  assert.ok(Math.min(...sizes) >= 13.2, `the smallest text is 13.2 px (11 px x 1.2), found ${Math.min(...sizes)}`);
-  assert.match(html, /body\{margin:0;background:var\(--bg\);color:var\(--ink\);font:16\.8px\/1\.5 var\(--font\)\}/, 'the base size 14 px became 16.8 px');
-  assert.match(html, /\.hero h1\{margin:0;font-size:31\.2px;/, 'a sample rule: 26 px became 31.2 px (then raised again by the look)');
+  assert.ok(Math.min(...sizes) >= 11.2, `the smallest text is 11.2 px (11 px x 1.2 x 0.85), found ${Math.min(...sizes)}`);
+  assert.match(html, /body\{margin:0;background:var\(--bg\);color:var\(--ink\);font:14\.3px\/1\.5 var\(--font\)\}/, 'the base size 14 px became 16.8 px, then 14.3 px (15 % smaller)');
+  assert.match(html, /\.hero h1\{margin:0;font-size:26\.5px;/, 'a sample rule: 26 px became 31.2 px (then raised again by the look), then 26.5 px (15 % smaller)');
   assert.ok(html.includes(design.trim().slice(0, 200)), 'the design system is embedded as it is');
   const scaled = block('sm-scale');
-  for (const [sel, px] of [['.tag', 11], ['.sh', 13], ['.chd', 15], ['button.small', 12]]) assert.ok(scaled.includes(`${sel}{font-size:${(px * 1.2).toFixed(1).replace(/\.0$/, '')}px}`), `${sel} scaled`);
+  for (const [sel, px] of [['.tag', 11], ['.sh', 13], ['.chd', 15], ['button.small', 12]]) assert.ok(scaled.includes(`${sel}{font-size:${(px * 1.2 * 0.85).toFixed(1).replace(/\.0$/, '')}px}`), `${sel} scaled`);
 });
 
 test('the look: pill navigation, a hero with a drifting glow, cards that rise in one after the other and lift on hover, bars that grow; tokens only; reduced motion stops it all', () => {

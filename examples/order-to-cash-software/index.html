@@ -409,6 +409,7 @@ td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-n
 </head>
 <body>
 <header>
+  <span id="wb-customer" data-wb-customer hidden></span>
   <div><div class="logo">Order-to-<b>Cash</b> · Software</div><div class="sub">From the signed contract to cash and revenue: seven systems, one process, three places where a person decides</div></div>
   <div class="hr"><span class="tag amber">draft mode</span><span class="sub" id="sys"></span></div>
 </header>
@@ -841,6 +842,7 @@ td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-n
   document.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('nd')) { e.preventDefault(); S.sel = +e.target.getAttribute('data-id'); render(); var g = document.querySelector('.nd.sel'); if (g) g.focus(); }
   });
+  document.getElementById('wb-customer').textContent = D.customer.name;  // the host shows it in the top bar of every Space
   render();
 })();
 </script>

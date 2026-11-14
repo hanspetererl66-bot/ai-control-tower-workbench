@@ -626,6 +626,7 @@ button.jx-col[aria-pressed=true]{background:var(--acc-dim);box-shadow:inset 0 0 
 <body>
 <div class="demo">Mockup with fictional data. No CRM is connected and nothing is sent. Offers and contracts mirror the Sub4Me sample data; interest, lead and opportunity are made up. Names and domains are fictional.</div>
 <header>
+  <span id="wb-customer" data-wb-customer hidden></span>
   <div class="hl">
     <h1>Sales <b>Pipeline</b><span class="who"> – Account Executive Thomas Müller</span></h1>
     <p><span><b>E2E process:</b> from interest to contract</span></p>
@@ -1406,6 +1407,7 @@ const jrTab = () => { const t = ((document.querySelector('#tabs button[aria-sele
 const jrCustomer = () => { const d = D.deals.find((x) => x.id === state.sel); return (d && J.customerOfAccount(d.account)) || jr.customer; };
 function renderJourney() {
   const cust = jrCustomer(), tab = jrTab(), name = J.CUSTOMERS[cust].name, deals = D.deals.filter((d) => d.account === name);
+  $('#wb-customer').textContent = name;  // the host shows it in the top bar of every Space
   const open = deals.filter((d) => d.stage === 'opportunity' || d.stage === 'sell');
   const pending = ib.items.filter((x) => x.status === 'pending' && deals.some((d) => d.id === x.dealId)).length;
   const stopId = (J.STOPS.find((s) => s.space === 'sales' && s.tab === tab) || {}).id;

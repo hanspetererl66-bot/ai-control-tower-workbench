@@ -27,15 +27,33 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** The Ontology Manager tips: size and colours as CSS variables. Only what the person changed is set; the rest follows the skin. */
-export function tipCss(tips: Preferences['tips'] | undefined): string[] {
-  if (!tips) return [];
+/** The tip variables the person changed: size and the three colours. The rest follows the skin. */
+function tipVars(tips: Preferences['tips']): string[] {
   const vars: string[] = [];
   if (tips.size !== 'normal') vars.push(`--tip-size:${TIP_SIZE_PX[tips.size]}px`);
   if (tips.textColor) vars.push(`--tip-text:${tips.textColor}`);
   if (tips.bubbleColor) vars.push(`--tip-bg:${tips.bubbleColor}`);
   if (tips.highlightColor) vars.push(`--tip-mark:${tips.highlightColor}`);
+  return vars;
+}
+
+/** The tips (speech bubbles of the Ontology Manager and of Spaces with tips): size and colours as CSS variables. Only what the person changed is set; the rest follows the skin. */
+export function tipCss(tips: Preferences['tips'] | undefined): string[] {
+  if (!tips) return [];
+  const vars = tipVars(tips);
   return vars.length ? [`:root{${vars.join(';')}}`] : [];
+}
+
+/** What a Space with tips is told when it loads: the same variables, and --wb-tips: off when the tips are switched off (no value means on). */
+function spaceTipRules(tips: Preferences['tips'] | undefined): string[] {
+  if (!tips) return [];
+  const vars = [...tipVars(tips), ...(tips.enabled ? [] : ['--wb-tips:off'])];
+  return vars.length ? [`html:root{${vars.join(';')}}`] : [];
+}
+
+/** The live update of the tips for a Space that is already open: sent when the person changes the tips in Settings. */
+export function spaceTipsMessage(tips: Preferences['tips']): { type: 'ct:tips'; enabled: boolean; size: number | null; textColor: string; bubbleColor: string; highlightColor: string } {
+  return { type: 'ct:tips', enabled: tips.enabled, size: tips.size !== 'normal' ? TIP_SIZE_PX[tips.size] : null, textColor: tips.textColor, bubbleColor: tips.bubbleColor, highlightColor: tips.highlightColor };
 }
 
 /** Accent values for the light and dark theme. White text must stay readable on it; a light colour is darkened. */
@@ -93,7 +111,7 @@ export function buildPreferenceCss(prefs: Preferences): string {
 const MARK = 'werkbank-space-prefs';
 
 /** Spaces use the design-system tokens: the skin sets the whole palette, the accent then overrides --purple, --purple-mid, --purple-light and --purple-ink (the accent as text). Also reduces motion. */
-export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' | 'reduceMotion' | 'contrast' | 'font'> & { skin?: SkinId; layout?: LayoutId }): string {
+export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' | 'reduceMotion' | 'contrast' | 'font'> & { skin?: SkinId; layout?: LayoutId; tips?: Preferences['tips'] }): string {
   const rules: string[] = [...skinSpaceRules(prefs.skin ?? DEFAULT_SKIN), ...layoutSpaceRules(prefs.layout ?? DEFAULT_LAYOUT)];
   if (prefs.accent) {
     const a = accentVariants(prefs.accent);
@@ -102,6 +120,7 @@ export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' 
       `html:root[data-theme="dark"]{--purple:${a.dark};--purple-mid:${a.darkMid};--purple-light:${a.darkWash};--purple-ink:${a.darkInk}}`
     );
   }
+  rules.push(...spaceTipRules(prefs.tips));
   const stack = FONT_STACKS[prefs.font];
   if (stack) rules.push(`html body,html button,html input,html textarea,html select{font-family:${stack}}`);
   if (prefs.contrast === 'high') rules.push('html:root{--line:#6b7280;--muted:#374151}html:root[data-theme="dark"]{--line:#9ca3af;--muted:#e5e7eb}');

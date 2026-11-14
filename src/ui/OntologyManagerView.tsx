@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { BackArrow } from './AdminHero';
 import {
   HEALTH_LABEL, STATUS_LABEL, checkQuestion, filterTerms, healthOf, kpis, metaOf, ownerLabel, qualityFindings, setMeta, statusOf, usedLabel,
   type Governance, type Ontology, type OntologyData, type TermFilter,
@@ -58,7 +59,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   return (
     <main className="om" ref={root}>
       <header className="om-hero" data-guide="hero">
-        <button className="om-back" onClick={onBack} aria-label="Back to the Admin console">←</button>
+        <button className="om-back" onClick={onBack} aria-label="Back to the Admin console"><BackArrow /></button>
         <div className="om-hero-text">
           <p className="om-crumb">Admin console</p>
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
