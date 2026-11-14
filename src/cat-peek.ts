@@ -158,10 +158,11 @@ function points(g: Grid, list: ReadonlyArray<readonly [number, number]>, t: Tone
 /** Head, ears, fur shading and muzzle. */
 function drawHead(g: Grid, flick: Pose['flick']) {
   const filled: boolean[][] = Array.from({ length: VISIBLE_ROWS }, () => Array<boolean>(FACE_COLS).fill(false));
+  const head: boolean[][] = Array.from({ length: VISIBLE_ROWS }, () => Array<boolean>(FACE_COLS).fill(false));
   const set = (x: number, y: number) => { if (x >= 0 && y >= 0 && x < FACE_COLS && y < VISIBLE_ROWS) filled[y][x] = true; };
   // Head: a wide ellipse whose lower part is hidden behind the ledge.
   for (let y = 0; y < VISIBLE_ROWS; y++) for (let x = 0; x < FACE_COLS; x++) {
-    if (((x - CX) / 17.5) ** 2 + ((y - 22) / 18) ** 2 <= 1) set(x, y);
+    if (((x - CX) / 17.5) ** 2 + ((y - 22) / 18) ** 2 <= 1) { set(x, y); head[y][x] = true; }
   }
   // Ears (the flicked one sits one pixel lower).
   const ear = (side: 'left' | 'right') => {
@@ -180,7 +181,8 @@ function drawHead(g: Grid, flick: Pose['flick']) {
   });
   for (let y = 0; y < VISIBLE_ROWS; y++) for (let x = 0; x < FACE_COLS; x++) {
     if (!filled[y][x]) continue;
-    g[y][x] = edge(x, y) ? TONE.line : y < 9 ? TONE.dark : TONE.mid;
+    // Dark purple head, light purple ears (what sticks out of the head ellipse).
+    g[y][x] = edge(x, y) ? TONE.line : head[y][x] ? TONE.dark : TONE.light;
   }
   // Inner ears.
   for (const side of ['left', 'right'] as const) {
@@ -188,14 +190,13 @@ function drawHead(g: Grid, flick: Pose['flick']) {
     const o = side === 'left' ? 0 : FACE_COLS - 1;
     const dy = flick === side ? 1 : 0;
     const A: [number, number] = [o + m * 4.5, 8]; const B: [number, number] = [o + m * 5.5, 3 + dy]; const C: [number, number] = [o + m * 10, 6.5];
-    for (let y = 1; y < 10; y++) for (let x = 0; x < FACE_COLS; x++) if (inTriangle(x, y, A, B, C)) put(g, x, y, TONE.pink, TONE.dark);
+    for (let y = 1; y < 10; y++) for (let x = 0; x < FACE_COLS; x++) if (inTriangle(x, y, A, B, C)) put(g, x, y, TONE.pink, TONE.light);
   }
-  // Fur: lighter forehead, tabby stripes, pale muzzle and cheeks.
-  ellipse(g, CX, 13, 11, 5, TONE.mid, TONE.dark);
-  for (const [x, y0, y1] of [[17, 6, 10], [18, 6, 10], [13, 7, 9], [22, 7, 9], [9, 9, 10], [26, 9, 10]] as const) for (let y = y0; y <= y1; y++) put(g, x, y, TONE.dark, TONE.mid);
-  ellipse(g, CX, 22, 9, 5.5, TONE.pale, TONE.mid);
-  ellipse(g, CX - 11, 21, 4, 3, TONE.light, TONE.mid);
-  ellipse(g, CX + 11, 21, 4, 3, TONE.light, TONE.mid);
+  // Fur: tabby stripes, pale muzzle and softer cheeks on the dark purple head.
+  for (const [x, y0, y1] of [[17, 6, 10], [18, 6, 10], [13, 7, 9], [22, 7, 9], [9, 9, 10], [26, 9, 10]] as const) for (let y = y0; y <= y1; y++) put(g, x, y, TONE.line, TONE.dark);
+  ellipse(g, CX, 22, 9, 5.5, TONE.pale, TONE.dark);
+  ellipse(g, CX - 11, 21, 4, 3, TONE.mid, TONE.dark);
+  ellipse(g, CX + 11, 21, 4, 3, TONE.mid, TONE.dark);
   // Nose.
   points(g, [[17, 19], [18, 19], [16, 19], [19, 19], [17, 20], [18, 20]], TONE.pink);
   put(g, 17, 18, TONE.pink); put(g, 18, 18, TONE.pink);
@@ -240,8 +241,8 @@ function drawBrow(g: Grid, cx: number, slope: number, side: 1 | -1) {
   for (let i = -3; i <= 3; i++) {
     const outer = i * side;
     const y = 8 + (outer > 0 ? slope * (outer / 3) : -slope * (-outer / 3) * 0.5);
-    put(g, cx + i, y, TONE.line);
-    put(g, cx + i, y + 1, TONE.line);
+    put(g, cx + i, y, TONE.light);
+    put(g, cx + i, y + 1, TONE.light);
   }
 }
 
