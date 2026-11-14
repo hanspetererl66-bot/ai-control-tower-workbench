@@ -82,13 +82,13 @@ test('the RCA Space opens the alert on the system of the request and sends the r
 
 test('without an alert on that system the RCA Space says so and takes the closest incident of the customer', () => {
   const rca = load('infra-rca');
-  rca.send(null, [{ from: 'infra-ops', payload: { type: 'rca-request', task: { ...TASK, customer: 'mi', target: 'musind-int04' } } }]);
+  rca.send(null, [{ from: 'infra-ops', payload: { type: 'rca-request', task: { ...TASK, customer: 'mi', target: 'proxy-edge-01' } } }]);
   assert.match(rca.doc.body.textContent, /There is no alert on this system/);
 });
 
 test('the Hotline takes the request, asks for a window when the policy says so, and reports the confirmed window', () => {
   const hot = load('infra-hotline');
-  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1060', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1060', template: 'patch-vm', customer: 'mi', target: 'proxy-edge-01' } } }]);
   assert.match(hot.doc.body.textContent, /CHG-1060/);
   assert.match(hot.doc.body.textContent, /Waiting for the customer/);
   hot.doc.querySelector('[data-tab=hotline]').click();
@@ -114,7 +114,7 @@ test('the Hotline ignores a request for an unknown customer or task', () => {
 
 test('the Hotline previews the confirmation mail, sends it only through the host and shows that it was sent', async () => {
   const hot = load('infra-hotline');
-  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1060', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1060', template: 'patch-vm', customer: 'mi', target: 'proxy-edge-01' } } }]);
   hot.doc.querySelector('[data-tab=hotline]').click();
   hot.doc.querySelector('[data-call]').click();
   for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();
@@ -143,7 +143,7 @@ test('the Hotline previews the confirmation mail, sends it only through the host
 
 test('a cancelled dialog or an error leaves the mail unsent and says so', async () => {
   const hot = load('infra-hotline');
-  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1061', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.send(null, [{ from: 'infra-ops', payload: { type: 'window-request', hours: 6, task: { ...TASK, id: 'CHG-1061', template: 'patch-vm', customer: 'mi', target: 'proxy-edge-01' } } }]);
   hot.doc.querySelector('[data-tab=hotline]').click();
   hot.doc.querySelector('[data-call]').click();
   for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();
@@ -159,7 +159,7 @@ test('a cancelled dialog or an error leaves the mail unsent and says so', async 
 
 test('the Hotline reports back to whoever asked: the orchestrator gets its answer, the service request keeps its own', () => {
   const hot = load('infra-hotline');
-  hot.send(null, [{ from: 'infra-orchestrator', payload: { type: 'window-request', hours: 4, task: { ...TASK, id: 'F-807', template: 'patch-vm', customer: 'mi', target: 'musind-int04' } } }]);
+  hot.send(null, [{ from: 'infra-orchestrator', payload: { type: 'window-request', hours: 4, task: { ...TASK, id: 'F-807', template: 'patch-vm', customer: 'mi', target: 'proxy-edge-01' } } }]);
   hot.doc.querySelector('[data-tab=hotline]').click();
   hot.doc.querySelector('[data-call]').click();
   for (let i = 0; i < 12 && hot.doc.querySelector('[data-accept="1"]'); i++) hot.doc.querySelector('[data-accept="1"]').click();

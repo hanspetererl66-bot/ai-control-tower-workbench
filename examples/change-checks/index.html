@@ -470,6 +470,20 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
    "lastPatch": "2026-08-25"
   },
   {
+   "id": "proxy-edge-01",
+   "customer": "mi",
+   "env": "PRD",
+   "role": "Edge proxy",
+   "os": "Ubuntu 22.04",
+   "hyperscaler": "aws",
+   "region": "eu-central-1",
+   "dependsOn": null,
+   "pendingPatches": 0,
+   "criticalPatches": 0,
+   "lastBackup": "2026-10-21",
+   "lastPatch": "2026-09-22"
+  },
+  {
    "id": "bp-prd-db01",
    "customer": "bp",
    "env": "PRD",
@@ -831,6 +845,17 @@ h2{font-size:15px;margin:0 0 4px;letter-spacing:-.01em}h3{font-size:12px;margin:
    "issuer": "DigiTrust EU CA",
    "key": "RSA 3072",
    "notAfter": "2026-11-24"
+  },
+  {
+   "id": "mi-edge-prd",
+   "customer": "mi",
+   "name": "Server TLS edge.muster-industrie.example",
+   "vmIds": [
+    "proxy-edge-01"
+   ],
+   "issuer": "DigiTrust EU CA",
+   "key": "RSA 3072",
+   "notAfter": "2026-10-24"
   },
   {
    "id": "mi-ariba-gw",

@@ -235,7 +235,7 @@
   {
    "id": "F-801",
    "customer": "mi",
-   "host": "proxy-edge-01",
+   "host": "mi-prd-wd01",
    "env": "PRD",
    "kind": "cert-expiry",
    "template": "renew-certificate",

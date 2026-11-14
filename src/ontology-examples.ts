@@ -105,7 +105,7 @@ function sales(): Ontology {
 
 function itOps(): Ontology {
   const terms: Term[] = [
-    cls('Host', 'Host', 'A virtual machine at a customer.', ['proxy-edge-01', 'musind-int04', 'joule-gw-01']),
+    cls('Host', 'Host', 'A virtual machine at a customer.', ['proxy-edge-01', 'mon-prom-01', 'joule-gw-01']),
     cls('Alert', 'Alert', 'A signal from monitoring with a severity and a host.', ['A-506']),
     cls('Region', 'Region', 'A hosting region of a customer environment.', ['eu-central', 'eu-west']),
     cls('Certificate', 'Certificate', 'A TLS certificate with an expiry date.'),

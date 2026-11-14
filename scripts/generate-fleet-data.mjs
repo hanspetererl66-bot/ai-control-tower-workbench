@@ -61,11 +61,12 @@ const customers = NAMES.map(([name, region, tier, sap], i) => {
   return { id: slug, name, region, tier, sapCustomerId: sap ?? nextId(), vms };
 });
 
-// Demo case (IT Fleet → Infrastructure Operations): the Ariba integration VM of the Gold customer has a TLS certificate that
-// expires in 6 days. It is the certificate "mi-ariba-gw" of the Infrastructure Operations inventory. Set after the random draw so
-// nothing else in the file changes.
+// Demo case (IT Fleet → Infrastructure Operations): the edge proxy of the Gold customer has a TLS certificate that expires in
+// 5 days (2026-10-24, reference date 2026-10-19). It is the host of alert A-506 and of the incident INC-506, and the certificate
+// "mi-edge-prd" of the Infrastructure Operations inventory: one certificate runs through the whole story. Set after the random
+// draw so nothing else in the file changes (the VM keeps its place in the list, only its name and its certificate change).
 const demoVm = customers[0].vms.find((v) => v.name === 'musind-int04');
-if (demoVm) demoVm.cert = 6;
+if (demoVm) { demoVm.name = 'proxy-edge-01'; demoVm.cert = 5; }
 
 const A = infra.rules;
 const redShare = (c) => {
@@ -99,7 +100,7 @@ function lifeSciences() {
   return { id: c.id, name: c.name, region: c.region, tier: c.tier, sapCustomerId: c.sapCustomerId, trend, vms: vms.map((v) => [v.name, v.env, v.cpu, v.mem, v.disk, v.backup, v.patch, v.cert, v.reach]) };
 }
 const out = {
-  asOf: '2026-10-24',
+  asOf: '2026-10-19',
   note: 'Fictional customers and virtual machines, generated from a fixed seed (scripts/generate-fleet-data.mjs). Rules and task definitions are the same as in the Infra VM landscape Space.',
   rules: infra.rules,
   tasks: infra.tasks,
