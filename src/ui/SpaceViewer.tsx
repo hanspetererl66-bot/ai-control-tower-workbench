@@ -19,7 +19,7 @@ import { handleRenewalsMessage, RENEWALS_SPACE, type RenewalsDeps } from '../ren
 import { handleSpecMessage, SPEC_SPACE, type SpecDeps } from '../spec-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
-import { applySpacePrefs } from '../preferences-style';
+import { applySpacePrefs, spaceTipsMessage } from '../preferences-style';
 import { applySpaceTitle } from '../space-title';
 import type { Preferences } from '../preferences';
 import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
@@ -49,6 +49,7 @@ export default function SpaceViewer({
   onTextScale,
   theme = 'light',
   prefs,
+  onTips,
   onHandoff,
   onOpenView,
   onOpenSpace,
@@ -91,6 +92,8 @@ export default function SpaceViewer({
   theme?: 'light' | 'dark';
   /** Personal look (accent, font, contrast); optional. */
   prefs?: Preferences;
+  /** A Space with tips asked to switch them off ("Turn off tips" in its bubble): the app stores the setting. */
+  onTips?: (enabled: boolean) => void;
   /** The Space hands work to another Space (the host opens it). */
   onHandoff?: (handoff: Handoff) => void;
   /** The Space asks the app to open one of its own views (e.g. the Agent Studio). */
@@ -111,6 +114,13 @@ export default function SpaceViewer({
   terms?: SpaceTermsControl;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
+  // The tips are told to the page when it loads; a later change in Settings goes in a message, so the page keeps its state.
+  const tipsAtLoad = useRef(prefs?.tips);
+  const tipsChange = useRef(onTips);
+  tipsChange.current = onTips;
+  useEffect(() => {
+    if (prefs?.tips) frame.current?.contentWindow?.postMessage(spaceTipsMessage(prefs.tips), '*');
+  }, [prefs?.tips]);
   const loaded = useRef(false);
   const postTab = () => {
     if (!tabRequest || !loaded.current) return;
@@ -196,6 +206,7 @@ export default function SpaceViewer({
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
+      if (event.data && event.data.type === 'wb:tips' && typeof event.data.enabled === 'boolean') { tipsChange.current?.(event.data.enabled); return; }
       const handle = space.slug === CUSTOMER360_SPACE ? (data: unknown) => handleCustomer360Message(data, c360Ref.current ?? {})
         : space.slug === RENEWALS_SPACE ? (data: unknown) => handleRenewalsMessage(data, renewalsRef.current ?? {})
         : space.slug === SPEC_SPACE ? (data: unknown) => handleSpecMessage(data, specRef.current ?? {})
@@ -518,7 +529,7 @@ export default function SpaceViewer({
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(applySpaceTitle(html ?? '', space), theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, prefs) : themed); })(), textScale)))}
+          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(applySpaceTitle(html ?? '', space), theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, { ...prefs, tips: tipsAtLoad.current }) : themed); })(), textScale)))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"
