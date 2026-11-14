@@ -6234,3 +6234,13 @@ select option { color: var(--ink); background: var(--panel); }
 /* The names of skills, in the same colour: lists, tables, the picker in the chat. */
 .skill-name { color: var(--accent-ink); font-weight: 600; }
 
+
+/* Settings: nothing applies until Save (src/ui/SettingsDialog.tsx, src/settings-draft.ts) */
+.settings-foot { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding: 10px 18px; border-top: 1px solid var(--line); background: var(--panel); }
+.settings-foot-msg { flex: 1 1 220px; min-width: 0; font-size: 12px; color: var(--muted); }
+.settings-foot-dirty .settings-foot-msg { color: var(--ink); font-weight: 600; }
+.settings-foot-dirty .settings-foot-msg::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--accent); vertical-align: baseline; }
+.settings-foot .dialog-btn:disabled { opacity: .5; cursor: default; }
+.settings-foot .dialog-btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 650; }
+.settings-foot .dialog-btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+.settings-foot .dialog-btn-primary:disabled { background: var(--accent); }

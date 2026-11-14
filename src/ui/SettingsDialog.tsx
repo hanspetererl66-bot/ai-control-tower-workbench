@@ -1,10 +1,10 @@
 import { PRODUCT_TITLE } from '../product';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AppearancePreference, ResolvedTheme } from '../appearance';
 import { SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { speechSupported, type VoiceSettings } from '../voice';
-import type { Preferences } from '../preferences';
+import { sanitizePreferences, type Preferences } from '../preferences';
+import { applyDraft, changeSummary, isDirty } from '../settings-draft';
 import MemoryPanel, { type MemoryPanelProps } from './MemoryPanel';
 import DataAuditPanel from './DataAuditPanel';
 import MonitoringPanel from './MonitoringPanel';
@@ -78,21 +78,56 @@ export default function SettingsDialog({
 }) {
   const [tab, setTab] = useState<TabId>(personalize ? 'profiles' : 'general');
   const [large, setLarge] = useState(false);
+  // The draft: nothing the person changes here is applied until Save. `base` is what the draft started from.
+  const [draft, setDraft] = useState<Preferences | null>(personalize?.prefs ?? null);
+  const [base, setBase] = useState<Preferences | null>(personalize?.prefs ?? null);
+  const [asking, setAsking] = useState(false);
+  const dirty = !!personalize && !!draft && !!base && isDirty(base, draft);
+  const draftUpdate: PrefsUpdate = (change) => setDraft((d) => (d ? sanitizePreferences(change(d)) : d));
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+  // The settings changed from outside (saved, loaded from Supabase): follow them unless the person is in the middle of editing.
+  useEffect(() => {
+    if (!personalize || dirtyRef.current) return;
+    setDraft(personalize.prefs);
+    setBase(personalize.prefs);
+  }, [personalize?.prefs]);
+  const save = () => {
+    if (!personalize || !draft || !base) return;
+    const mine = draft, was = base;
+    personalize.update((current) => applyDraft(current, mine, was));
+    setBase(mine);
+    setAsking(false);
+  };
+  const discard = () => { if (base) setDraft(base); setAsking(false); };
+  const requestClose = () => { if (dirty) setAsking(true); else onClose(); };
+  const closeRef = useRef(requestClose);
+  closeRef.current = requestClose;
+  const askingRef = useRef(asking);
+  askingRef.current = asking;
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key !== 'Escape') return;
+      if (askingRef.current) setAsking(false); else closeRef.current();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose]);
+  }, []);
+  // What the dialog shows: the draft when there is one (Skin, Work, Assistant, Storage and the general settings), else what it was given.
+  const shownAppearance = personalize && draft ? draft.appearance : appearance;
+  const shownScale = personalize && draft ? (draft.spaceScale as SpaceScale) : spaceScale;
+  const pickAppearance = (value: AppearancePreference) => (personalize ? draftUpdate((c) => ({ ...c, appearance: value })) : onChange(value));
+  const pickScale = (value: SpaceScale) => (personalize ? draftUpdate((c) => ({ ...c, spaceScale: value })) : onSpaceScaleChange?.(value));
+  const panelPrefs = personalize && draft ? draft : (personalize?.prefs as Preferences);
+  const panelUpdate: PrefsUpdate = personalize ? draftUpdate : () => undefined;
 
-  const activeAppearanceCopy = appearance === 'system'
+  const activeAppearanceCopy = shownAppearance === 'system'
     ? `System currently resolves to ${resolvedTheme}.`
-    : `${appearance === 'dark' ? 'Dark' : 'Light'} appearance is active.`;
+    : `${shownAppearance === 'dark' ? 'Dark' : 'Light'} appearance is ${personalize && shownAppearance !== appearance ? 'selected (press Save to apply it)' : 'active'}.`;
 
   return (
     <div className="scrim settings-scrim" onMouseDown={(event) => {
-      if (event.target === event.currentTarget) onClose();
+      if (event.target === event.currentTarget) requestClose();
     }}>
       <section
         className={`dialog settings-dialog ${large ? 'settings-dialog-large' : ''}`}
@@ -108,7 +143,7 @@ export default function SettingsDialog({
           <button className="icon-btn settings-size" onClick={() => setLarge((v) => !v)} aria-pressed={large} title={large ? 'Smaller window' : 'Larger window'} aria-label={large ? 'Make the settings window smaller' : 'Make the settings window larger'}>
             {large ? '⤡' : '⤢'}
           </button>
-          <button className="icon-btn settings-close" onClick={onClose} aria-label="Close settings">
+          <button className="icon-btn settings-close" onClick={requestClose} aria-label="Close settings">
             <CloseIcon />
           </button>
         </header>
@@ -122,16 +157,16 @@ export default function SettingsDialog({
         )}
         <div className="prefs-body">
         {personalize && <TabIntro tab={tab} />}
-        {personalize && tab === 'profiles' && <ProfilesPanel prefs={personalize.prefs} update={personalize.update} />}
-        {personalize && tab === 'look' && <LookPanel prefs={personalize.prefs} update={personalize.update} />}
-        {personalize && tab === 'work' && <WorkPanel prefs={personalize.prefs} update={personalize.update} spaces={personalize.spaces} skills={personalize.skills} connectors={personalize.connectors} />}
-        {personalize && tab === 'assistant' && <AssistantPanel prefs={personalize.prefs} update={personalize.update} />}
+        {personalize && tab === 'profiles' && <ProfilesPanel prefs={panelPrefs} update={panelUpdate} />}
+        {personalize && tab === 'look' && <LookPanel prefs={panelPrefs} update={panelUpdate} />}
+        {personalize && tab === 'work' && <WorkPanel prefs={panelPrefs} update={panelUpdate} spaces={personalize.spaces} skills={personalize.skills} connectors={personalize.connectors} />}
+        {personalize && tab === 'assistant' && <AssistantPanel prefs={panelPrefs} update={panelUpdate} />}
         {personalize && tab === 'chat' && <ChatPanel {...personalize.chat} />}
         {personalize && tab === 'memory' && <MemoryPanel {...personalize.memory} spaces={personalize.spaces} />}
         {personalize && tab === 'monitoring' && <MonitoringPanel />}
         {personalize && tab === 'data' && <DataAuditPanel />}
         {personalize && tab === 'groups' && <GroupsPanel {...personalize.groups} />}
-        {personalize && tab === 'storage' && <StoragePanel prefs={personalize.prefs} update={personalize.update} syncAvailable={personalize.syncAvailable} sync={personalize.sync} onSave={personalize.onSyncSave} onLoad={personalize.onSyncLoad} />}
+        {personalize && tab === 'storage' && <StoragePanel prefs={panelPrefs} update={panelUpdate} syncAvailable={personalize.syncAvailable} sync={personalize.sync} onSave={personalize.onSyncSave} onLoad={personalize.onSyncLoad} />}
         {(!personalize || tab === 'general') && (
           <>
         <div className="settings-section">
@@ -144,24 +179,24 @@ export default function SettingsDialog({
             {OPTIONS.map((option) => (
               <button
                 key={option.id}
-                className={`appearance-option ${appearance === option.id ? 'appearance-option-on' : ''}`}
+                className={`appearance-option ${shownAppearance === option.id ? 'appearance-option-on' : ''}`}
                 role="radio"
-                aria-checked={appearance === option.id}
-                onClick={() => onChange(option.id)}
+                aria-checked={shownAppearance === option.id}
+                onClick={() => pickAppearance(option.id)}
               >
                 <span className="appearance-preview" data-preview={option.id} aria-hidden="true">
                   {option.id === 'system' ? <SystemIcon /> : option.id === 'light' ? <SunIcon /> : <MoonIcon />}
                 </span>
                 <span className="appearance-label">{option.title}</span>
                 <span className="appearance-description">{option.description}</span>
-                {appearance === option.id && (
+                {shownAppearance === option.id && (
                   <span className="appearance-check" aria-hidden="true">✓</span>
                 )}
               </button>
             ))}
           </div>
         </div>
-        {spaceScale !== undefined && onSpaceScaleChange && (
+        {(shownScale !== undefined && (onSpaceScaleChange || personalize)) && (
           <div className="settings-section settings-voice">
             <div className="settings-section-copy">
               <h4>Text size in Spaces</h4>
@@ -172,10 +207,10 @@ export default function SettingsDialog({
               {SPACE_SCALES.map((scale) => (
                 <button
                   key={scale}
-                  className={`ghost-btn ${spaceScale === scale ? 'ghost-btn-on' : ''}`}
+                  className={`ghost-btn ${shownScale === scale ? 'ghost-btn-on' : ''}`}
                   role="radio"
-                  aria-checked={spaceScale === scale}
-                  onClick={() => onSpaceScaleChange(scale)}
+                  aria-checked={shownScale === scale}
+                  onClick={() => pickScale(scale)}
                 >
                   {Math.round(scale * 100)}%
                 </button>
@@ -187,6 +222,24 @@ export default function SettingsDialog({
           </>
         )}
         </div>
+        {personalize && (
+          <footer className={`settings-foot ${dirty ? 'settings-foot-dirty' : ''}`} aria-label="Save the settings">
+            {asking ? (
+              <>
+                <span className="settings-foot-msg" role="alert">You have unsaved changes{base && draft ? ` (${changeSummary(base, draft)})` : ''}.</span>
+                <button className="dialog-btn dialog-btn-primary" type="button" onClick={() => { save(); onClose(); }}>Save and close</button>
+                <button className="dialog-btn" type="button" onClick={() => { discard(); onClose(); }}>Discard and close</button>
+                <button className="dialog-btn" type="button" onClick={() => setAsking(false)}>Keep editing</button>
+              </>
+            ) : (
+              <>
+                <span className="settings-foot-msg" role="status">{dirty && base && draft ? `Unsaved changes: ${changeSummary(base, draft)}.` : 'All changes saved.'}</span>
+                <button className="dialog-btn" type="button" onClick={discard} disabled={!dirty}>Discard</button>
+                <button className="dialog-btn dialog-btn-primary" type="button" onClick={save} disabled={!dirty}>Save</button>
+              </>
+            )}
+          </footer>
+        )}
       </section>
     </div>
   );
