@@ -596,6 +596,11 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
 .brief{border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:var(--radius-s);padding:10px 12px;background:var(--wash);margin-top:8px}
 .btxt{white-space:pre-wrap;font:inherit;font-size:12.5px;line-height:1.5;margin:6px 0;overflow-wrap:anywhere}
 details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;color:var(--purple-ink)}details.saw pre.btxt{background:var(--wash);border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 10px;max-height:240px;overflow:auto}
+.jr-val button.jr-pill{font:inherit;font-size:12.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--canvas);color:var(--muted);cursor:pointer;transition:border-color .15s,background-color .15s}
+.jr-val button.jr-pill b{color:var(--ink)}
+.jr-val button.jr-pill:hover{border-color:var(--purple);background:var(--purple-dim)}
+.jr-val button.jr-pill[aria-pressed=true]{border-color:var(--purple);background:var(--purple-dim);color:var(--purple-ink)}
+.jr-val button.jr-pill:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -2159,15 +2164,17 @@ const KPI_ROWS = {
   need: { title: 'Needs me now', list: (m) => m.filter(needsMe), extra: [['Why', (c) => c.reasons[0] || '']] },
   red: { title: 'Red renewals', list: (m) => m.filter(live).filter((c) => c.health === 'red'), extra: [['Why', (c) => (c.sig.signals.find((x) => x.level !== 'plus') || { text: '' }).text]] },
   due: { title: 'Decision within ' + DUE_DAYS + ' days', list: (m) => m.filter(live).filter((c) => c.sig.days <= DUE_DAYS), extra: [['Days left', (c) => (c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d ago' : c.sig.days + ' d')]] },
+  stake: { title: 'Renewals at stake (a year)', list: (m) => m.filter(live), sort: (a, b) => b.annualEur - a.annualEur, extra: [['Decision date', (c) => c.decisionDate]] },
   ret: { title: 'Expected retention', list: (m) => m.filter(live), extra: [['Retention', (c) => Math.round(c.pRet * 100) + ' %'], ['Expected a year', (c) => eur(c.annualEur * c.pRet)]] },
   clv: { title: 'Customer lifetime value', list: (m) => m.filter(live), extra: [['Lifetime value', (c) => eur(c.clv)]] },
   auto: { title: 'Handled automatically', list: (m) => m.filter((c) => c.autoRun && c.stage >= 3), extra: [['Stage', (c) => FLOW[c.stage]]] },
   signed: { title: 'Signed in this demo', list: (m) => m.filter((c) => c.stage === 4), extra: [['Signed value', (c) => eur(c.chosen.annualEur) + ' a year']] },
 };
+KPI_ROWS.six = { ...KPI_ROWS.due, title: 'Decision within six weeks', list: (m) => m.filter(live).filter((c) => c.sig.days <= WINDOW_DAYS) };
 function renderKpiDetail() {
   const el = $('#kpi-detail'), def = KPI_ROWS[state.kpi];
   if (!def) { el.hidden = true; return; }
-  const rows = def.list(scoped()).sort((a, b) => a.decisionDate.localeCompare(b.decisionDate));
+  const rows = def.list(scoped()).sort(def.sort || ((a, b) => a.decisionDate.localeCompare(b.decisionDate)));
   el.hidden = false;
   el.innerHTML = `<div class="head"><h2>${esc(def.title)}: ${rows.length}</h2><button class="ghost" id="kpi-close" type="button">Close</button></div><p class="sub">Click a row to open the renewal.</p>` +
     (rows.length ? `<div style="overflow:auto"><table><thead><tr><th>Customer</th><th>Product</th><th class="n">Annual value</th>${def.extra.map(([h]) => `<th>${esc(h)}</th>`).join('')}<th>Health</th></tr></thead><tbody>${rows.map((c) => `<tr data-id="${esc(c.id)}" tabindex="0"><td>${esc(c.customer)}</td><td>${esc(c.product)}</td><td class="n">${eur(c.annualEur)}</td>${def.extra.map(([, f]) => `<td>${esc(f(c))}</td>`).join('')}<td><span class="pill ${c.health}">${LABEL[c.health]}</span></td></tr>`).join('')}</tbody></table></div>` : '<p class="note">Nothing here at the moment.</p>');
@@ -2948,9 +2955,16 @@ const jrCustomer = () => (state.customer !== 'all' && J.CUSTOMERS[state.customer
 /* The scope strip under the process bar: what the chosen customer and owner have at stake. */
 function renderJourney() {
   const cust = jrCustomer(), all = state.customer === 'all', mine = (all ? model : model.filter((c) => c.customerId === cust)).filter(byOwner), open = mine.filter(live);
-  const vals = [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]];
-  $('#jr').innerHTML = '<div class="jr-val">' + vals.map((v) => `<span>${esc(v[0])} <b>${esc(String(v[1]))}</b></span>`).join('') + (jr.note ? `<span class="jr-note">${esc(jr.note)}</span>` : '') + '</div>';
+  const vals = [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0)), 'stake'], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length, 'six'], ['Red renewals', open.filter((c) => c.health === 'red').length, 'red']];
+  $('#jr').innerHTML = '<div class="jr-val">' + vals.map((v) => `<button type="button" class="jr-pill" data-jr="${v[2]}" aria-pressed="${state.kpi === v[2] && state.tab === 'overview'}" title="Show the renewals behind this figure">${esc(v[0])} <b>${esc(String(v[1]))}</b></button>`).join('') + (jr.note ? `<span class="jr-note">${esc(jr.note)}</span>` : '') + '</div>';
 }
+/* A figure of the scope strip opens the renewals behind it: the same list as a double-click on a box of the overview. A second click closes it. */
+function openKpi(key) {
+  state.kpi = state.kpi === key && state.tab === 'overview' ? null : key;
+  state.tab = 'overview'; renderAll();
+  if (state.kpi) $('#kpi-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('#jr').addEventListener('click', (e) => { const b = e.target.closest ? e.target.closest('[data-jr]') : null; if (b) openKpi(b.dataset.jr); });
 /* A hand-over from another Space of the journey (wb:restore): choose the customer and the view, open the renewal of a contract (deal). */
 function jrApply(j) {
   jr.customer = j.customer; jr.note = ''; state.customer = j.customer; state.csel = null; state.focus = null; state.sel = null;
