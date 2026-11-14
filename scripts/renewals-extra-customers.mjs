@@ -49,12 +49,12 @@ export const EXTRA_CUSTOMERS = [
     contracts: [
       { id: 'C-2023-0610', product: 'SAP S/4HANA for utilities', status: 'Renewal due', end: '2027-01-31', noticeDays: 90, autoRenew: true, annualEur: 780000, upliftCapPct: 3, termination: AUTO_TERMINATION, used: 5200, licensed: 5500, unit: 'users',
         offer: { id: 'OFF-2026-0611', annualEur: 850200, currentAnnualEur: 780000, discountPct: 0, validUntil: '2026-11-09', stage: 'Proposal sent', probabilityPct: 35, competitor: 'Oracle Utilities (evaluation)', nextStep: 'Executive call with the new CIO before the notice date', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk review open' },
-        tickets: [{ id: 'TKT-51022', title: 'Smart-meter data import drops 12 % of the readings (regulatory report due 2026-11-30)', priority: 'Very high', status: 'In processing' }] },
+        tickets: [{ id: 'TKT-51022', title: 'Smart-meter data import drops 12 % of the readings (regulatory report due 2026-11-30)', priority: 'Very high', status: 'In processing', created: '2026-10-09' }] },
       { id: 'C-2024-0620', product: 'SAP Customer Experience (CX)', status: 'Running', end: '2027-02-28', noticeDays: 60, autoRenew: false, annualEur: 210000, upliftCapPct: 3, termination: TERMINATION, used: 118, licensed: 200, unit: 'seats' },
       { id: 'C-2025-0640', product: 'SAP Analytics Cloud', status: 'Running', end: '2027-06-30', noticeDays: 60, autoRenew: false, annualEur: 64000, upliftCapPct: 3, termination: TERMINATION, used: 70, licensed: 80, unit: 'users' },
       { id: 'C-2026-0811', product: 'SAP Integration Suite (meter-data interfaces)', status: 'Running', end: '2026-12-31', noticeDays: 30, autoRenew: false, annualEur: 48000, upliftCapPct: 3, termination: TERMINATION, used: 9, licensed: 10, unit: 'interfaces',
         offer: { id: 'OFF-2026-0612', annualEur: 49440, currentAnnualEur: 48000, discountPct: 0, validUntil: '2026-11-25', stage: 'Negotiation', probabilityPct: 75, competitor: 'None', nextStep: 'Agree a payment plan for the open invoice, then sign', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
-        invoices: [{ id: 'INV-2026-51030', status: 'Overdue', grossEur: 57120, due: '2026-09-30' }] },
+        invoices: [{ id: 'INV-2026-51030', status: 'Overdue', grossEur: 57120, due: '2026-09-30', issued: '2026-08-31' }] },
     ],
   },
   {

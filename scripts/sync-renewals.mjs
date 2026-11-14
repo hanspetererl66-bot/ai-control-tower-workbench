@@ -29,6 +29,8 @@ const AI_PRODUCTS = new Set(['Joule copilots', 'BTP AI Core', 'SuccessFactors AI
 const sameProduct = (ticketProduct, contractProduct) => ticketProduct === contractProduct || contractProduct.startsWith(`${ticketProduct} (`);
 const OPEN_TICKET = (t) => !['Solution provided', 'Closed'].includes(t.status);
 const day = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+/** The invoices of the add-ons carry no issue date in the sample: 30 days before the due date, and never later than a few days before the data date (an open invoice exists already). */
+const issuedFor = (due) => { const a = addDays(due, -30), b = addDays(AS_OF, -5); return a < b ? a : b; };
 const addDays = (s, n) => new Date(day(s) + n * 86400000).toISOString().slice(0, 10);
 
 /** Customer context that is not in the contract data: escalations and other topics (fictional). */
@@ -88,16 +90,16 @@ const ADDONS = [
   { customerId: 'hanse', id: 'C-2026-0912', product: 'Commerce Cloud sandbox', annualEur: 21000, end: '2026-12-31', noticeDays: 30, used: 2, licensed: 2, unit: 'sandboxes', overdue: { id: 'INV-2026-30590', grossEur: 24990, due: '2026-09-30' } },
   { customerId: 'hanse', id: 'C-2026-0913', product: 'Integration Suite extra connectors', annualEur: 9800, end: '2027-06-30', noticeDays: 30, used: 7, licensed: 8, unit: 'connectors' },
   { customerId: 'lindenau', id: 'C-2026-0921', product: 'SuccessFactors e-signature add-on (21 CFR Part 11)', annualEur: 18600, end: '2027-02-28', noticeDays: 60, used: 38, licensed: 40, unit: 'signers',
-    tickets: [{ id: 'TKT-48235', title: 'e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)', priority: 'Medium', status: 'In processing' }],
+    tickets: [{ id: 'TKT-48235', title: 'e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)', priority: 'Medium', status: 'In processing', created: '2026-10-14' }],
     invoices: [{ id: 'INV-2026-40910', status: 'Open', grossEur: 22134, due: '2026-11-15' }] },
   { customerId: 'lindenau', id: 'C-2026-0922', product: 'Integration Suite connectors for laboratory systems', annualEur: 14400, end: '2026-12-31', noticeDays: 30, used: 5, licensed: 6, unit: 'connectors', overdue: { id: 'INV-2026-40890', grossEur: 17136, due: '2026-09-30' },
     tickets: [
-      { id: 'TKT-48231', title: 'Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB', priority: 'High', status: 'In processing' },
-      { id: 'TKT-48233', title: 'Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09', priority: 'Medium', status: 'Waiting for customer' },
+      { id: 'TKT-48231', title: 'Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB', priority: 'High', status: 'In processing', created: '2026-10-06' },
+      { id: 'TKT-48233', title: 'Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09', priority: 'Medium', status: 'Waiting for customer', created: '2026-10-08' },
     ],
     invoices: [{ id: 'INV-2026-40912', status: 'Overdue', grossEur: 2856, due: '2026-10-05' }] },
   { customerId: 'lindenau', id: 'C-2026-0923', product: 'BTP extra storage package (batch-record archive)', annualEur: 26400, end: '2027-04-30', noticeDays: 60, used: 6.1, licensed: 8, unit: 'TB',
-    tickets: [{ id: 'TKT-48237', title: 'Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance', priority: 'Low', status: 'Waiting for customer' }],
+    tickets: [{ id: 'TKT-48237', title: 'Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance', priority: 'Low', status: 'Waiting for customer', created: '2026-10-12' }],
     invoices: [{ id: 'INV-2026-40911', status: 'Open', grossEur: 31416, due: '2026-12-01' }] },
   // Demo story (illustrative): healthy and growing contracts, so the portfolio is not one shade of yellow.
   { customerId: 'muster', id: 'C-2026-0904', product: 'Joule copilot seats for Sales', annualEur: 96000, end: '2027-06-30', noticeDays: 60, used: 132, licensed: 120, unit: 'seats' },
@@ -138,8 +140,8 @@ export function buildRenewals() {
       const offer = c.offers.find((o) => o.contractId === k.id && o.type === 'Renewal') ?? (lapsed ? c.offers.find((o) => o.contractId === k.id) : null);
       if (!lapsed && k.end > HORIZON) continue;
       const isAi = /^AI units/.test(k.product);
-      const tickets = c.tickets.filter((t) => OPEN_TICKET(t) && (isAi ? AI_PRODUCTS.has(t.product) : sameProduct(t.product, k.product))).map((t) => ({ id: t.id, title: t.title, priority: t.priority, status: t.status }));
-      const invoices = c.invoices.filter((i) => i.contractId === k.id && ['Open', 'Overdue'].includes(i.status)).map((i) => ({ id: i.id, status: i.status, grossEur: i.grossEur, due: i.due }));
+      const tickets = c.tickets.filter((t) => OPEN_TICKET(t) && (isAi ? AI_PRODUCTS.has(t.product) : sameProduct(t.product, k.product))).map((t) => ({ id: t.id, title: t.title, priority: t.priority, status: t.status, created: t.created }));
+      const invoices = c.invoices.filter((i) => i.contractId === k.id && ['Open', 'Overdue'].includes(i.status)).map((i) => ({ id: i.id, status: i.status, grossEur: i.grossEur, due: i.due, issued: i.issued }));
       const active = c.contracts.filter((x) => x.status !== 'Expired');
       cases.push({
         customerSince: c.profile.customerSince, customerAnnualEur: active.reduce((a, x) => a + x.annualEur, 0),
@@ -159,7 +161,7 @@ export function buildRenewals() {
       contractId: a.id, product: a.product, status: 'Running', end: a.end, noticeDays: a.noticeDays, decisionDate: addDays(a.end, -a.noticeDays), autoRenew: false, annualEur: a.annualEur,
       upliftCapPct: 3, termination: 'Ends on the end date; renewal requires a new order.', used: a.used, licensed: a.licensed, unit: a.unit,
       owner: main.owner, csm: main.csm, customerOwner: main.customerOwner, offer: null, tickets: (a.tickets ?? []).map((t) => ({ ...t })),
-      invoices: [...(a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due }] : []), ...(a.invoices ?? []).map((i) => ({ ...i }))], addon: true,
+      invoices: [...(a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due, issued: issuedFor(a.overdue.due) }] : []), ...(a.invoices ?? []).map((i) => ({ ...i, issued: i.issued ?? issuedFor(i.due) }))], addon: true,
     });
   }
   for (const cu of EXTRA_CUSTOMERS) {
