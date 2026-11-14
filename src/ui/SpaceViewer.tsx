@@ -371,7 +371,7 @@ export default function SpaceViewer({
           <ListIcon />
         </button>
         <div className="topbar-stack">
-          <h1 className="topbar-title" title={space.title}>{space.title}</h1>
+          <h1 className="topbar-title topbar-title-space" title={space.title}>{space.title}</h1>
           <span className="topbar-sub">Updated {relativeTime(space.updatedAt)}</span>
         </div>
         {tools.customer && (
