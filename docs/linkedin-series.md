@@ -99,7 +99,7 @@ Die Sprecherrollen der neuen Posts sind im Produktionschat gegen die vorhandenen
 | 10 | zwei Gummistiefel, zwei weiße Handtücher mit blauem Logo | fährt Fahrrad mit rotem Schal im Wind | deutscher Hip-Hop |
 | 11 | – | steht auf einer Bühne, drei Scheinwerfer gehen nacheinander an und werfen Schatten, am Ende läuft eine Maus über die Bühne | Bongos und Ölfässer, leise beginnend, zum Ende lauter |
 | 12 | – | sitzt im Heißluftballon, am Boden verankert, vor der Wäscheleine rechts vorne, schwebt nach links oben | südafrikanisch |
-| 18 (Infra) | – | sitzt mit dem Rücken zum Betrachter an einer großen Konsole mit vielen Monitoren | Kraftwerk-Stil |
+| 14 (alt, Infra) | – | sitzt mit dem Rücken zum Betrachter an einer großen Konsole mit vielen Monitoren | Kraftwerk-Stil |
 
 Erzähler: Post 1 Ben (männlich), Post 2 Muriel (weiblich, energisch, großer Tonumfang), Post 3 weibliche britische Nachrichtensprecherin, ca. 35. Striche (–) bedeuten: in dieser Planung nicht festgelegt, siehe Voiceover-Datei und Video.
 
