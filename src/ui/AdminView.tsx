@@ -1,9 +1,9 @@
 /**
- * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Three tiles today: Ontology Manager, Solution register and
- * Skill Health Monitor; more can follow. Agent observability is not a tile here: it is a subspace of the AI Governance entry page (AI Control Tower). Hiring approvals is a Space of its own,
+ * Start page of the Joule Administration Console (rail label "Admin console"): the places for those who look after what is shared. Four tiles today: Ontology Manager, Solution register,
+ * Skill Health Monitor and Skills analytics (the analytics tabs of the Skill Marketplace Space); more can follow. Agent observability is not a tile here: it is a subspace of the AI Governance entry page (AI Control Tower). Hiring approvals is a Space of its own,
  * not part of Admin. Admin is not part of Develop.
  */
-export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void }) {
+export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills, onOpenSkillsAnalytics }: { onOpenOntology: () => void; onOpenRegistry: () => void; onOpenSkills: () => void; onOpenSkillsAnalytics?: () => void }) {
   return (
     <main className="develop develop-main adm">
       <h1 className="develop-title">Joule Administration Console</h1>
@@ -42,8 +42,34 @@ export default function AdminView({ onOpenOntology, onOpenRegistry, onOpenSkills
           </ul>
           <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkills}>Open Skill Health Monitor</button>
         </section>
+        {onOpenSkillsAnalytics && (
+          <section className="develop-card develop-card-block" aria-label="Skills analytics">
+            <span className="develop-logo adm-logo adm-logo-analytics" aria-hidden="true"><AnalyticsMark /></span>
+            <span className="develop-card-title">Skills analytics</span>
+            <span className="develop-card-brand">what skills bring</span>
+            <span className="develop-card-text">How the skills of the marketplace are used and what they bring: the overview, the ranking, the impact, governance, gaps and hints.</span>
+            <ul className="develop-blocks">
+              <li><span>See which skills are used and by whom</span></li>
+              <li><span>Find gaps and approvals that wait for a decision</span></li>
+            </ul>
+            <button className="dialog-btn dialog-btn-primary develop-go" onClick={onOpenSkillsAnalytics}>Open Skills analytics</button>
+          </section>
+        )}
       </div>
     </main>
+  );
+}
+
+/** Three bars of different height and a rising line over them: what the skills bring. */
+function AnalyticsMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <rect x="10" y="38" width="10" height="16" rx="3" fill="currentColor" opacity=".55" />
+      <rect x="27" y="28" width="10" height="26" rx="3" fill="currentColor" opacity=".75" />
+      <rect x="44" y="16" width="10" height="38" rx="3" fill="currentColor" />
+      <path d="M9 30l16-10 12 6 20-16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="57" cy="10" r="3.5" fill="currentColor" />
+    </svg>
   );
 }
 

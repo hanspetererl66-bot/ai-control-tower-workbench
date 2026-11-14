@@ -310,6 +310,10 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 .head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
 @media (max-width:760px){.tm{height:720px}}
+/* Yellow, a little stronger (same amber token, more of it): yellow VMs, tiles and pills read clearly next to green and red. */
+.vm.yellow{background:color-mix(in srgb,var(--amber) 22%,var(--surface));border-color:color-mix(in srgb,var(--amber) 55%,transparent)}
+.tile.yellow{background:color-mix(in srgb,var(--amber) 22%,var(--surface));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--amber) 55%,transparent)}
+.pill.yellow,.pill.planned{background:color-mix(in srgb,var(--amber) 22%,var(--surface));border-color:color-mix(in srgb,var(--amber) 55%,transparent);font-weight:650}
 </style>
 </head>
 <body>
