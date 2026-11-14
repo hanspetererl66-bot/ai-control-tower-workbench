@@ -1,3 +1,4 @@
+import AdminHero from './AdminHero';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { SkillSource } from '../skill-health-db';
 import {
@@ -78,14 +79,10 @@ export default function SkillHealthView({ catalog, actor, onCatalog, onBack, onR
 
   return (
     <main className="sh">
-      <header className="sh-head">
-        <button className="sh-back" onClick={onBack} aria-label="Back">←</button>
-        <div className="sh-head-text">
-          <h1>Skill Health Monitor</h1>
-          <p>{m.total} skills in the catalog · {m.live} in use · {m.openProposals} proposals waiting</p>
-        </div>
+      <AdminHero screen="Skill Health Monitor" lead="See which skills earn their place," accent="and which should go." onBack={onBack} backLabel="Back to the Admin console"
+        lede={`${m.total} skills in the catalog · ${m.live} in use · ${m.openProposals} proposals waiting`}>
         <Ring share={m.total ? m.live / m.total : 0} />
-      </header>
+      </AdminHero>
       <div className={`sh-source sh-source-${source.kind}`} role="status">
         <span>
           {source.kind === 'database' ? 'Live data from the shared database. Phase out, retire and restore are saved there; reviews, reminders and owner changes stay on this computer.'
