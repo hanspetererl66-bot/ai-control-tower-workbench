@@ -15,6 +15,8 @@ export const PREFERENCES_VERSION = 1;
 
 export const APPEARANCES = ['system', 'light', 'dark'] as const;
 export const APP_SCALES = [0.9, 1, 1.1, 1.25] as const;
+/** Size of the small icons (12 to 18 px) in the app, apart from the text: standard, large, extra large. */
+export const ICON_SCALES = [1, 1.2, 1.4] as const;
 export const FONTS = ['default', 'arial', 'system', 'readable', 'mono'] as const;
 export const DENSITIES = ['compact', 'normal', 'roomy'] as const;
 export const CONTRASTS = ['normal', 'high'] as const;
@@ -51,6 +53,10 @@ export type ChatTools = {
   readAloud: boolean;
   privacyBar: boolean;
   usage: boolean;
+  /** Terms of the ontology in the chat (marks, card, ask-back when a name means two things). Default off. */
+  terms: boolean;
+  /** Send the definitions of the terms in a message to the model with it. Default off: the text goes to the model provider. */
+  termsContext: boolean;
   /** Ask before an action that changes something (approval card). */
   askBeforeActions: boolean;
   /** Price per million tokens in EUR; 0 means no cost is shown. */
@@ -61,7 +67,7 @@ export type ChatTools = {
   /** Briefing cards (by id) and whole groups ("cat:<id>") under the chat that the person switched off. */
   hiddenBriefing: string[];
 };
-export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [], hiddenBriefing: [] };
+export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: false, usage: false, terms: false, termsContext: false, askBeforeActions: true, priceInPerM: 0, priceOutPerM: 0, hiddenStarters: [], hiddenBriefing: [] };
 /**
  * The tips of the Ontology Manager (speech bubbles that explain each part). `enabled` is the on/off switch; the colours are empty
  * (= follow the skin, light or dark) or one #RRGGBB value each: text, bubble (its fill) and highlight (the tint and frame around the part a tip points at).
@@ -78,8 +84,8 @@ export type StorageLocation = { id: string; name: string; purpose: (typeof PURPO
 export const SPACES_VIEWS = ['cards', 'tree'] as const;
 export type SpacesView = (typeof SPACES_VIEWS)[number];
 
-/** Which side of the window the Spaces list sits on. Top and bottom follow with a horizontal list. */
-export const SPACES_DOCKS = ['left', 'right'] as const;
+/** Which side of the window the Spaces list sits on. Left and right keep the list as a column; top and bottom turn it into a bar (domain tabs and chips). */
+export const SPACES_DOCKS = ['left', 'right', 'top', 'bottom'] as const;
 export type SpacesDock = (typeof SPACES_DOCKS)[number];
 
 /** What a profile bundles. */
@@ -95,6 +101,8 @@ export type ProfileSettings = {
   spacesDock: SpacesDock;
   accent: string;
   appScale: number;
+  /** One of ICON_SCALES. */
+  iconScale: number;
   spaceScale: number;
   font: (typeof FONTS)[number];
   density: (typeof DENSITIES)[number];
@@ -144,6 +152,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   spacesDock: 'left',
   accent: '',
   appScale: 1,
+  iconScale: 1,
   spaceScale: 1.15,
   font: 'default',
   density: 'normal',
@@ -225,6 +234,8 @@ export function sanitizeChatTools(value: unknown): ChatTools {
     readAloud: flag(v.readAloud, DEFAULT_CHAT_TOOLS.readAloud),
     privacyBar: flag(v.privacyBar, DEFAULT_CHAT_TOOLS.privacyBar),
     usage: flag(v.usage, DEFAULT_CHAT_TOOLS.usage),
+    terms: flag(v.terms, DEFAULT_CHAT_TOOLS.terms),
+    termsContext: flag(v.terms === true ? v.termsContext : false, DEFAULT_CHAT_TOOLS.termsContext),
     askBeforeActions: flag(v.askBeforeActions, DEFAULT_CHAT_TOOLS.askBeforeActions),
     priceInPerM: price(v.priceInPerM),
     priceOutPerM: price(v.priceOutPerM),
@@ -254,6 +265,7 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (SPACES_DOCKS.includes(v.spacesDock as never)) out.spacesDock = v.spacesDock as SpacesDock;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
+  if (ICON_SCALES.includes(v.iconScale as never)) out.iconScale = v.iconScale as number;
   if (typeof v.spaceScale === 'number' && Number.isFinite(v.spaceScale) && v.spaceScale >= 0.5 && v.spaceScale <= 1.5) out.spaceScale = parseSpaceScale(v.spaceScale);
   if (FONTS.includes(v.font as never)) out.font = v.font as ProfileSettings['font'];
   if (DENSITIES.includes(v.density as never)) out.density = v.density as ProfileSettings['density'];
@@ -333,8 +345,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
-  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
+  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
+  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -633,7 +645,7 @@ export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pi
 
 // ---------- back to the original ----------
 
-const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'appScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
 
 /** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
 export function resetLook<T extends Preferences>(prefs: T): T {

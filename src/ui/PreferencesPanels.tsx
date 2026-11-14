@@ -1,7 +1,7 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
+  ACCENT_PRESETS, APP_SCALES, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
@@ -168,6 +168,7 @@ export function LookPanel({ prefs, update }: Common) {
       </Section>
       <Section title="Text and layout">
         <Choice label="App text size" value={prefs.appScale} options={APP_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, appScale: v }))} />
+        <Choice label="Icon size" value={prefs.iconScale} options={ICON_SCALES} show={(v) => (v === 1 ? 'Standard' : v === 1.2 ? 'Large' : 'Extra large')} onPick={(v) => update((p) => ({ ...p, iconScale: v }))} />
         <Choice label="Text size in Spaces" value={prefs.spaceScale} options={SPACE_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, spaceScale: v }))} />
         <Choice label="Font" value={prefs.font} options={FONTS} show={(v) => FONT_NAMES[v]} onPick={(v) => update((p) => ({ ...p, font: v }))} />
         <Choice label="Density" value={prefs.density} options={DENSITIES} show={(v) => v[0].toUpperCase() + v.slice(1)} onPick={(v) => update((p) => ({ ...p, density: v }))} />
@@ -315,6 +316,10 @@ export function AssistantPanel({ prefs, update }: Common) {
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.askBeforeActions} onChange={(e) => setChat({ askBeforeActions: e.target.checked })} /><span>Ask before actions (approval card for anything that changes something)</span></label>
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.readAloud} onChange={(e) => setChat({ readAloud: e.target.checked })} /><span>Read aloud: “Listen” button under each answer</span></label>
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.privacyBar} onChange={(e) => setChat({ privacyBar: e.target.checked })} /><span>Privacy bar: web search, connectors and model in use</span></label>
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.terms} onChange={(e) => setChat({ terms: e.target.checked, ...(e.target.checked ? {} : { termsContext: false }) })} /><span>Terms: mark terms of the ontology in the chat, show their definition, and ask which meaning you want when a name exists in two ontologies</span></label>
+        {prefs.chat.terms && (
+          <label className="voice-option"><input type="checkbox" checked={prefs.chat.termsContext} onChange={(e) => setChat({ termsContext: e.target.checked })} /><span>Send the definitions of the terms in a message to the model together with it (up to 5; this text goes to the model provider)</span></label>
+        )}
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.usage} onChange={(e) => setChat({ usage: e.target.checked })} /><span>Usage and cost estimate for this conversation</span></label>
         {prefs.chat.usage && (
           <div className="prefs-row">

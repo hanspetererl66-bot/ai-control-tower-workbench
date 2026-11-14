@@ -112,3 +112,31 @@ test('bridge: the customer decides the Cognee dataset, an unknown customer is re
   const bad = await handleCustomer360Message({ type: 'c360:ask-request', requestId: 'l2', question: 'Q', customer: 'evil' }, { ask });
   assert.equal(bad.type, 'c360:error');
 });
+
+test('Lindenau: figures per company add up like the summaries (the same card as for Nordlicht)', () => {
+  const g = L.group();
+  for (const m of L.metrics) {
+    const f = L.figures(m.id);
+    assert.equal(f.rows.length, data.entities.length);
+    assert.ok(f.rows.every((r) => L.node(r.node)));
+  }
+  assert.equal(L.figures('overdue').total, g.summaries.reduce((a, s) => a + s.payment.overdueGross, 0));
+  assert.equal(L.figures('tickets').total, g.summaries.reduce((a, s) => a + s.openTickets, 0));
+});
+
+test('Lindenau: the timeline has an event for every dated record and each one leads to a node', () => {
+  const ev = L.events();
+  assert.equal(ev.length, data.contracts.length + data.invoices.length + data.tickets.length + data.orders.length + data.signals.length + data.opportunities.length);
+  for (const e of ev) assert.ok(e.node && L.node(e.node), `${e.id} -> ${e.node}`);
+  assert.equal(L.timeline({ range: 'all' }).total, ev.length);
+});
+
+test('Lindenau: payment behaviour and unpaid invoices work the same way (one company, five unpaid invoices)', () => {
+  const rows = L.behaviour();
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].invoices, data.invoices.length);
+  assert.equal(rows[0].risk, L.paymentOf(rows[0].entity).risk);
+  const open = L.openInvoices();
+  assert.equal(open.length, data.invoices.filter((i) => i.status !== 'Paid').length);
+  assert.ok(open.every((o) => L.node(o.node)));
+});

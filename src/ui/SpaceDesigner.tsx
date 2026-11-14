@@ -5,11 +5,12 @@ import { applySpacePrefs } from '../preferences-style';
 import { applySpaceScale, applySpaceTheme, type SpaceScale } from '../space-scale';
 import { diffLayouts, diffText, layoutPrompt, parseLayoutAnswer, type LayoutAnswer } from '../space-designer-ai';
 import { DAY_CHOICES, DB_VIEWS, dbView } from '../../shared/designer-db-views.mjs';
+import { fitImage, sniffImage } from '../space-designer-image';
 import { applyProposal, runSource } from '../space-designer-refresh';
 import { diffDataset, type DataAnswer } from '../space-designer-data';
 import { canRedo, canUndo, commit, parsePreviewMessage, redo, startHistory, undo, withPreview, type History } from '../space-designer-state';
 import {
-  AGGREGATES, BLOCK_INFO, CHART_KINDS, MAX_BLOCKS, MAX_COLUMNS, MAX_DATASETS, MAX_ROWS, TONES, addBlock, duplicateBlock, moveBlock, parseTable, pointBlockAt, removeBlock, setDataset, updateBlock, datasetValue, makeToken, resolveLayout,
+  AGGREGATES, BLOCK_INFO, CHART_KINDS, MAX_BLOCKS, MAX_IMAGES, MAX_IMAGE_BYTES, MAX_COLUMNS, MAX_DATASETS, MAX_ROWS, TONES, addBlock, duplicateBlock, moveBlock, parseTable, pointBlockAt, removeBlock, setDataset, updateBlock, datasetValue, makeToken, resolveLayout,
   type Aggregate, type Block, type Dataset, type Layout, type Tone,
 } from '../space-layout';
 import { isDesignedPage, layoutFromHtml, renderSpacePage } from '../space-layout-render';
@@ -45,7 +46,8 @@ function blockLine(b: Block): string {
     case 'text': case 'columns': case 'table': case 'chart': case 'progress': case 'steps': case 'timeline': case 'compare': case 'matrix': case 'accordion': return s(b.title);
     case 'callout': return s(b.title || b.text);
     case 'quote': return s(b.text);
-    case 'ask': return s(b.label);
+    case 'ask': case 'filter': case 'spacelink': return s(b.label);
+    case 'image': return s(b.caption || b.alt);
     case 'kpis': return `${b.items.length} figures`;
     default: return '';
   }
@@ -132,6 +134,54 @@ function ValuesHelper({ layout }: { layout: Layout }) {
       {copied && <p className="sd-hint" role="status">{copied}</p>}
       {issues.length > 0 && <div className="sd-issues" role="status"><p><b>Needs a look:</b></p>{issues.map((i) => <p key={i} className="sd-hint">{i}</p>)}</div>}
     </details>
+  );
+}
+
+/** Choose a picture file; it is shrunk here (see space-designer-image.ts) and kept inside the block. */
+function ImageEditor({ layout, block, up }: { layout: Layout; block: Extract<Block, { type: 'image' }>; up: (patch: Record<string, unknown>) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState('');
+  const others = layout.blocks.filter((b) => b.type === 'image' && b.src && b.id !== block.id).length;
+  const full = !block.src && others >= MAX_IMAGES;
+  async function choose() {
+    setBusy(true); setNote('');
+    try {
+      const r = await window.host?.designerPickImage?.();
+      if (!r || r.canceled) return;
+      if (!r.ok || !r.data) { setNote(r.detail || 'The picture could not be read.'); return; }
+      const bytes = Uint8Array.from(atob(r.data), (c) => c.charCodeAt(0));
+      if (sniffImage(bytes) === null) { setNote('This is not a PNG, JPEG, WebP or GIF picture.'); return; }
+      const bitmap = await createImageBitmap(new Blob([bytes], { type: `image/${r.kind ?? 'png'}` }));
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { setNote('This window cannot shrink pictures.'); return; }
+      const encode = (w: number, h: number, q: number): string => {
+        canvas.width = w; canvas.height = h;
+        ctx.clearRect(0, 0, w, h); ctx.drawImage(bitmap, 0, 0, w, h);
+        const webp = canvas.toDataURL('image/webp', q);
+        if (webp.startsWith('data:image/webp')) return webp;
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(bitmap, 0, 0, w, h); // no transparency in JPEG
+        return canvas.toDataURL('image/jpeg', q);
+      };
+      const fit = fitImage(bitmap.width, bitmap.height, encode);
+      bitmap.close();
+      if (!fit) { setNote(`This picture is too detailed to fit in ${Math.round(MAX_IMAGE_BYTES / 1000)} KB. Choose a simpler or smaller one.`); return; }
+      up({ src: fit.src });
+      setNote(`Shrunk to ${fit.width} × ${fit.height} px, ${Math.max(1, Math.round(fit.bytes / 1000))} KB. Location and camera data are not kept.${r.kind === 'gif' ? ' An animated picture shows its first frame.' : ''}`);
+    } catch (e) { setNote(msg(e)); } finally { setBusy(false); }
+  }
+  return (
+    <div className="sd-source">
+      {block.src && <img className="sd-img-prev" src={block.src} alt="" />}
+      <div className="sd-item-actions">
+        <button type="button" className="ghost-btn" onClick={() => void choose()} disabled={busy || full || !window.host?.designerPickImage}>{busy ? 'Shrinking…' : block.src ? 'Choose another picture…' : 'Choose picture…'}</button>
+        {block.src && <button type="button" className="ghost-btn" onClick={() => { up({ src: '' }); setNote(''); }}>Remove picture</button>}
+      </div>
+      {!window.host?.designerPickImage && <p className="sd-hint">Choosing a picture works in the desktop app.</p>}
+      {full && <p className="sd-hint">A page holds at most {MAX_IMAGES} pictures.</p>}
+      <p className="sd-hint">PNG, JPEG, WebP or GIF up to 10 MB. The picture is shrunk to at most {Math.round(MAX_IMAGE_BYTES / 1000)} KB and kept inside the page; nothing is loaded from the internet.</p>
+      {note && <p className="sd-hint" role="status">{note}</p>}
+    </div>
   );
 }
 
@@ -251,6 +301,8 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
             {proposal && (
               <div className="sd-proposal">
                 <p><b>{ds.source.kind === 'file' ? 'The file brings:' : ds.source.kind === 'database' ? 'The view brings:' : 'Joule proposes:'}</b> {diffDataset(ds, proposal)}{proposal.sources ? ` Source: ${proposal.sources}.` : ''}</p>
+                {proposal.basis && <p className="sd-hint"><b>Basis, as Joule says:</b> {proposal.basis}{typeof proposal.records === 'number' ? ` (${proposal.records} records)` : ''}</p>}
+                {ds.source.kind === 'joule' && <p className="sd-hint" role="note">Joule's figures are not checked. Compare them with the system before you apply.</p>}
                 {proposal.notes.map((n) => <p key={n} className="sd-hint">{n}</p>)}
                 <div className="sd-grid-wrap"><table className="sd-grid"><thead><tr>{proposal.columns.map((c, j) => <th key={j}>{c}</th>)}</tr></thead><tbody>{proposal.rows.slice(0, 8).map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
                 {proposal.rows.length > 8 && <p className="sd-hint">… and {proposal.rows.length - 8} more rows.</p>}
@@ -270,7 +322,7 @@ function DataEditor({ layout, block, onLayout, generate, ready, title }: { layou
 }
 
 /** Fields of the selected block. */
-function Inspector({ layout, block, onLayout, generate, ready, title }: { layout: Layout; block: Block; onLayout: (next: Layout) => void; generate?: Generate; ready?: boolean; title: string }) {
+function Inspector({ layout, block, onLayout, generate, ready, title, spaces = [], ownSlug = null }: { layout: Layout; block: Block; onLayout: (next: Layout) => void; generate?: Generate; ready?: boolean; title: string; spaces?: Space[]; ownSlug?: string | null }) {
   const up = (patch: Record<string, unknown>) => onLayout(updateBlock(layout, block.id, patch));
   switch (block.type) {
     case 'heading':
@@ -369,6 +421,38 @@ function Inspector({ layout, block, onLayout, generate, ready, title }: { layout
         <Text label="Button text" value={block.label} onChange={(v) => up({ label: v })} />
         <Area label="What Joule is asked (max. 600 characters)" value={block.prompt} onChange={(v) => up({ prompt: v.slice(0, 600) })} />
       </>;
+    case 'filter': {
+      const tables = layout.blocks.filter((b): b is Extract<Block, { type: 'table' }> => b.type === 'table');
+      const table = tables.find((t) => t.id === block.table);
+      const columns = layout.datasets.find((d) => d.id === table?.dataset)?.columns ?? [];
+      return <>
+        <Text label="Search box text" value={block.label} onChange={(v) => up({ label: v })} />
+        {tables.length === 0
+          ? <p className="sd-hint">Add a table block first; a filter works on a table.</p>
+          : <>
+            <Pick label="Table" value={block.table} options={tables.map((t, i) => ({ value: t.id, label: t.title || `Table ${i + 1}` }))} onChange={(v) => up({ table: v, column: '' })} />
+            <Pick label="Pick list for the column" value={block.column} options={[{ value: '', label: 'None, only the search box' }, ...columns.map((c) => ({ value: c, label: c }))]} onChange={(v) => up({ column: v })} />
+          </>}
+        <p className="sd-hint">The search box and the pick list hide the rows that do not match, in the page itself. A total row still adds up all rows.</p>
+      </>;
+    }
+    case 'image':
+      return <>
+        <ImageEditor layout={layout} block={block} up={up} />
+        <Text label="Description for people who cannot see it (required)" value={block.alt} onChange={(v) => up({ alt: v })} max={200} />
+        {block.src && !block.alt.trim() && <p className="sd-hint" role="alert">Describe what the picture shows; screen readers read this instead of the picture.</p>}
+        <Text label="Caption (optional)" value={block.caption} onChange={(v) => up({ caption: v })} max={200} />
+        <Pick label="Width" value={block.width} options={[{ value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium' }, { value: 'full', label: 'Full width' }] as const} onChange={(v) => up({ width: v })} />
+      </>;
+    case 'spacelink': {
+      const others = spaces.filter((x) => x.slug !== ownSlug);
+      return <>
+        <Text label="Button text" value={block.label} onChange={(v) => up({ label: v })} />
+        <Text label="Line beside the button" value={block.text} onChange={(v) => up({ text: v })} />
+        <Pick label="Opens" value={block.space} options={[{ value: '', label: 'Choose a Space…' }, ...(block.space && !others.some((x) => x.slug === block.space) ? [{ value: block.space, label: `${block.space} (not installed)` }] : []), ...others.map((x) => ({ value: x.slug, label: x.title }))]} onChange={(v) => up({ space: v })} />
+        <p className="sd-hint">The button only opens the other Space; nothing is sent to it.</p>
+      </>;
+    }
     case 'divider':
       return <p className="sd-hint">A thin line between two parts of the page. Nothing to set.</p>;
   }
@@ -505,7 +589,7 @@ export default function SpaceDesigner({ slug: initialSlug, spaces, domains, them
     try {
       const text = await generate(layoutPrompt(title, layout, request), 'Space Designer', 'space-designer');
       if (!text) { setJouleNote('Stopped.'); return; }
-      const answer = parseLayoutAnswer(text);
+      const answer = parseLayoutAnswer(text, layout);
       if (!answer) { setJouleNote('Joule did not send a layout I can read. Ask again, or say what should change in other words.'); return; }
       setProposal({ ...answer, text });
     } catch (e) { setJouleNote(msg(e)); } finally { setAsking(false); }
@@ -599,7 +683,7 @@ export default function SpaceDesigner({ slug: initialSlug, spaces, domains, them
                       <button className="ghost-btn sd-danger" onClick={() => { const next = layout.blocks[index + 1] ?? layout.blocks[index - 1]; change(removeBlock(layout, block.id), next?.id ?? null); }}>Delete</button>
                     </div>
                   </div>
-                  <Inspector layout={layout} block={block} onLayout={(l) => change(l)} generate={generate} ready={ready} title={title} />
+                  <Inspector layout={layout} block={block} onLayout={(l) => change(l)} generate={generate} ready={ready} title={title} spaces={spaces} ownSlug={slug} />
                   <ValuesHelper layout={layout} />
                 </div>
               ) : (

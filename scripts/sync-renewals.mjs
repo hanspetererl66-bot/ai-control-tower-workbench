@@ -24,6 +24,8 @@ export const AS_OF = '2026-10-19';
 /** Contracts ending later than this are not renewals yet. */
 export const HORIZON = '2027-12-31';
 const AI_PRODUCTS = new Set(['Joule copilots', 'BTP AI Core', 'SuccessFactors AI', 'Ariba AI', 'Document AI']);
+/** A ticket names the product, a contract may add a suffix in brackets ("SAP Advanced Track and Trace (serialization)"). */
+const sameProduct = (ticketProduct, contractProduct) => ticketProduct === contractProduct || contractProduct.startsWith(`${ticketProduct} (`);
 const OPEN_TICKET = (t) => !['Solution provided', 'Closed'].includes(t.status);
 const day = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
 const addDays = (s, n) => new Date(day(s) + n * 86400000).toISOString().slice(0, 10);
@@ -81,15 +83,27 @@ const ADDONS = [
   { customerId: 'hanse', id: 'C-2026-0911', product: 'SAP Analytics Cloud planning add-on', annualEur: 27900, end: '2027-03-31', noticeDays: 60, used: 96, licensed: 120, unit: 'users' },
   { customerId: 'hanse', id: 'C-2026-0912', product: 'Commerce Cloud sandbox', annualEur: 21000, end: '2026-12-31', noticeDays: 30, used: 2, licensed: 2, unit: 'sandboxes', overdue: { id: 'INV-2026-30590', grossEur: 24990, due: '2026-09-30' } },
   { customerId: 'hanse', id: 'C-2026-0913', product: 'Integration Suite extra connectors', annualEur: 9800, end: '2027-06-30', noticeDays: 30, used: 7, licensed: 8, unit: 'connectors' },
-  { customerId: 'lindenau', id: 'C-2026-0921', product: 'SuccessFactors e-signature add-on (21 CFR Part 11)', annualEur: 18600, end: '2027-02-28', noticeDays: 60, used: 38, licensed: 40, unit: 'signers' },
-  { customerId: 'lindenau', id: 'C-2026-0922', product: 'Integration Suite connectors for laboratory systems', annualEur: 14400, end: '2026-12-31', noticeDays: 30, used: 5, licensed: 6, unit: 'connectors', overdue: { id: 'INV-2026-40890', grossEur: 17136, due: '2026-09-30' } },
-  { customerId: 'lindenau', id: 'C-2026-0923', product: 'BTP extra storage package (batch-record archive)', annualEur: 26400, end: '2027-04-30', noticeDays: 60, used: 6.1, licensed: 8, unit: 'TB' },
+  { customerId: 'lindenau', id: 'C-2026-0921', product: 'SuccessFactors e-signature add-on (21 CFR Part 11)', annualEur: 18600, end: '2027-02-28', noticeDays: 60, used: 38, licensed: 40, unit: 'signers',
+    tickets: [{ id: 'TKT-48235', title: 'e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)', priority: 'Medium', status: 'In processing' }],
+    invoices: [{ id: 'INV-2026-40910', status: 'Open', grossEur: 22134, due: '2026-11-15' }] },
+  { customerId: 'lindenau', id: 'C-2026-0922', product: 'Integration Suite connectors for laboratory systems', annualEur: 14400, end: '2026-12-31', noticeDays: 30, used: 5, licensed: 6, unit: 'connectors', overdue: { id: 'INV-2026-40890', grossEur: 17136, due: '2026-09-30' },
+    tickets: [
+      { id: 'TKT-48231', title: 'Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB', priority: 'High', status: 'In processing' },
+      { id: 'TKT-48233', title: 'Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09', priority: 'Medium', status: 'Waiting for customer' },
+    ],
+    invoices: [{ id: 'INV-2026-40912', status: 'Overdue', grossEur: 2856, due: '2026-10-05' }] },
+  { customerId: 'lindenau', id: 'C-2026-0923', product: 'BTP extra storage package (batch-record archive)', annualEur: 26400, end: '2027-04-30', noticeDays: 60, used: 6.1, licensed: 8, unit: 'TB',
+    tickets: [{ id: 'TKT-48237', title: 'Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance', priority: 'Low', status: 'Waiting for customer' }],
+    invoices: [{ id: 'INV-2026-40911', status: 'Open', grossEur: 31416, due: '2026-12-01' }] },
 ];
 
 /** Renewal offers that are not in the Sub4Me sample data (illustrative): they give the manager dashboard more than one offer stage, a price above the cap and a second competitor. */
 const EXTRA_OFFERS = {
   'C-2026-0012': { id: 'OFF-2026-0530', annualEur: 360000, currentAnnualEur: 360000, discountPct: 0, validUntil: '2026-11-20', stage: 'Proposal sent', probabilityPct: 50, competitor: 'None', nextStep: 'Talk to the new head of procurement before the notice date on 2026-11-01', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
   'C-2024-0233': { id: 'OFF-2026-0531', annualEur: 656000, currentAnnualEur: 640000, discountPct: 0, validUntil: '2026-12-15', stage: 'Negotiation', probabilityPct: 75, competitor: 'None', nextStep: 'Commercial review with procurement by 2026-11-20', termMonths: 36, priceGuaranteeMonths: 36, approval: 'Deal desk approved' },
+  'C-2026-0051': { id: 'OFF-2026-0540', annualEur: 185400, currentAnnualEur: 180000, discountPct: 0, validUntil: '2026-11-30', stage: 'Negotiation', probabilityPct: 55, competitor: 'None', nextStep: 'Validation concept from Quality Assurance by 2026-11-06 (condition of the top-up)', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Pending deal desk' },
+  'C-2026-0922': { id: 'OFF-2026-0541', annualEur: 14832, currentAnnualEur: 14400, discountPct: 0, validUntil: '2026-11-20', stage: 'Proposal sent', probabilityPct: 65, competitor: 'None', nextStep: 'Clear the open tickets on the LIMS connector before the deadline', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
+  'C-2026-0921': { id: 'OFF-2026-0542', annualEur: 19158, currentAnnualEur: 18600, discountPct: 0, validUntil: '2026-12-15', stage: 'Proposal sent', probabilityPct: 70, competitor: 'None', nextStep: 'Confirm the meaning of the signature in the audit-trail export', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
   'C-2026-0044': { id: 'OFF-2026-0532', annualEur: 252000, currentAnnualEur: 240000, discountPct: 0, validUntil: '2026-11-27', stage: 'Negotiation', probabilityPct: 45, competitor: 'Microsoft Copilot (evaluation)', nextStep: 'Decide with the CFO whether to hold the contract cap', termMonths: 24, priceGuaranteeMonths: 24, approval: 'Pending deal desk (price above the contract cap)' },
 };
 
@@ -101,7 +115,7 @@ export function buildRenewals() {
       const offer = c.offers.find((o) => o.contractId === k.id && o.type === 'Renewal') ?? (lapsed ? c.offers.find((o) => o.contractId === k.id) : null);
       if (!lapsed && k.end > HORIZON) continue;
       const isAi = /^AI units/.test(k.product);
-      const tickets = c.tickets.filter((t) => OPEN_TICKET(t) && (isAi ? AI_PRODUCTS.has(t.product) : t.product === k.product)).map((t) => ({ id: t.id, title: t.title, priority: t.priority, status: t.status }));
+      const tickets = c.tickets.filter((t) => OPEN_TICKET(t) && (isAi ? AI_PRODUCTS.has(t.product) : sameProduct(t.product, k.product))).map((t) => ({ id: t.id, title: t.title, priority: t.priority, status: t.status }));
       const invoices = c.invoices.filter((i) => i.contractId === k.id && ['Open', 'Overdue'].includes(i.status)).map((i) => ({ id: i.id, status: i.status, grossEur: i.grossEur, due: i.due }));
       const active = c.contracts.filter((x) => x.status !== 'Expired');
       cases.push({
@@ -121,8 +135,8 @@ export function buildRenewals() {
       id: `R-${a.id}`, customerId: a.customerId, customer: main.customer, sapCustomerId: main.sapCustomerId, customerSince: main.customerSince, customerAnnualEur: main.customerAnnualEur,
       contractId: a.id, product: a.product, status: 'Running', end: a.end, noticeDays: a.noticeDays, decisionDate: addDays(a.end, -a.noticeDays), autoRenew: false, annualEur: a.annualEur,
       upliftCapPct: 3, termination: 'Ends on the end date; renewal requires a new order.', used: a.used, licensed: a.licensed, unit: a.unit,
-      owner: main.owner, csm: main.csm, customerOwner: main.customerOwner, offer: null, tickets: [],
-      invoices: a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due }] : [], addon: true,
+      owner: main.owner, csm: main.csm, customerOwner: main.customerOwner, offer: null, tickets: (a.tickets ?? []).map((t) => ({ ...t })),
+      invoices: [...(a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due }] : []), ...(a.invoices ?? []).map((i) => ({ ...i }))], addon: true,
     });
   }
   for (const c of cases) if (!c.offer && EXTRA_OFFERS[c.contractId]) c.offer = { ...EXTRA_OFFERS[c.contractId] };

@@ -19,11 +19,15 @@ async function open() {
 }
 const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 
-test('renewals: six tabs, the overview is the start page, only one panel is shown', async () => {
+test('renewals: four numbered steps, Autopilot as the second view of step 3, the rest behind More; the first step is the start page and only one panel is shown', async () => {
   const p = await open();
-  assert.deepEqual(p.qa('#tabs [role=tab]').map((b) => b.textContent), ['Today', 'Autopilot', 'Renewal process', 'Next best action', 'Renewal radar', 'By decision date']);
+  assert.deepEqual(p.qa('#tabs .rp-step').map((b) => b.textContent), ['1Renewal due', '2Renewal map', '3Renewal action', '4Renewal analytics']);
+  assert.deepEqual(p.qa('#tabs .rp-sub [role=tab]').map((b) => b.textContent), ['Next best action', 'Autopilot']);
+  assert.deepEqual(p.qa('#tabs .rp-more [role=tab]').map((b) => b.textContent), ['Renewal radar', 'By decision date']);
+  assert.equal(p.q('#tabs .rp-sub').hidden, true, 'the second view only shows while step 3 is open');
+  assert.equal(p.q('#tabs .rp-step[aria-selected=true]').textContent, '1Renewal due');
   assert.deepEqual(p.visible(), ['pg-overview']);
-  for (const [id, pg] of [['autopilot', 'pg-autopilot'], ['nba', 'pg-nba'], ['radar', 'pg-radar'], ['list', 'pg-list'], ['process', 'pg-process'], ['overview', 'pg-overview']]) { click(p.w, p.q('#tab-' + id)); assert.deepEqual(p.visible(), [pg], id); assert.equal(p.q('#tab-' + id).getAttribute('aria-selected'), 'true'); }
+  for (const [id, pg] of [['autopilot', 'pg-autopilot'], ['nba', 'pg-nba'], ['radar', 'pg-radar'], ['list', 'pg-list'], ['process', 'pg-process'], ['analytics', 'pg-analytics'], ['overview', 'pg-overview']]) { click(p.w, p.q('#tab-' + id)); assert.deepEqual(p.visible(), [pg], id); assert.equal(p.q('#tab-' + id).getAttribute('aria-selected'), 'true'); }
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
@@ -59,8 +63,9 @@ test('renewals today: three numbers first, the other four compact, then time lin
   const keys = [...new Set(live.filter((c) => !c.autoRun).map((c) => c.actionKeys[0]))];
   assert.equal(p.qa('#today-groups .qgrp').length, keys.length);
   assert.equal(p.qa('#today-groups .qrow').length, live.filter((c) => !c.autoRun).length);
-  // order on the page: numbers, time line, cards, landscape
-  const order = ['#kpis', '#six', '#today-groups', '#land'].map((s) => p.q(s));
+  // order on the page: numbers, time line, cards (the landscape moved to the renewal map)
+  const order = ['#kpis', '#six', '#today-groups'].map((s) => p.q(s));
+  assert.equal(p.q('#pg-overview #land'), null, 'the landscape is not on the start page any more');
   for (let i = 1; i < order.length; i++) assert.ok(order[i - 1].compareDocumentPosition(order[i]) & p.w.Node.DOCUMENT_POSITION_FOLLOWING, `${i}`);
   // double-click on a number opens the renewals behind it
   p.q('.kpi[data-k="need"]').dispatchEvent(new p.w.MouseEvent('dblclick', { bubbles: true }));
@@ -76,12 +81,13 @@ test('renewals today: three numbers first, the other four compact, then time lin
 
 test('renewals overview: every customer is a planet and every contract a dot; a click opens the customer or the renewal', async () => {
   const p = await open();
-  assert.equal(p.qa('#land .planet').length, data.customers.length);
+  click(p.w, p.q('#tab-process'));
+  assert.equal(p.qa('#pg-process #land .planet').length, data.customers.length);
   assert.equal(p.qa('#land .moon').length, data.cases.length);
   click(p.w, p.qa('#land .moon')[0]);
   assert.deepEqual(p.visible(), ['pg-list']);
   assert.ok(p.w.__state.sel);
-  click(p.w, p.q('#tab-overview'));
+  click(p.w, p.q('#tab-process'));
   click(p.w, p.qa('#land .planet')[1]);
   assert.deepEqual(p.visible(), ['pg-process']);
   assert.equal(p.w.__state.customer, data.customers[1].id);
@@ -147,21 +153,34 @@ test('renewals motion: entrance runs once per picture, with reduced motion nothi
   assert.doesNotMatch(html.replace(/<script type="application\/json"[\s\S]*?<\/script>/, ''), /\bfetch\(|XMLHttpRequest|localStorage|sessionStorage/);
 });
 
-test('renewals journey: the rail names the customer, a hand-over from Sales opens the renewal of the contract, stops in other Spaces hand over with the deal', async () => {
+test('renewals: the process bar replaces the Sales journey; a hand-over from another Space still opens the renewal of the contract', async () => {
   const p = await open();
-  const sent = [];
-  Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } });
-  assert.equal(p.q('.jr-who b').textContent, 'Lindenau Pharma AG');
-  assert.equal(p.q('.jr button[aria-current=true]').textContent, 'Renewals due');
+  assert.equal(p.q('.jr-who'), null, 'no Sales journey rail in this Space');
+  assert.equal(p.qa('[data-jr-stop]').length, 0);
+  assert.equal(p.q('#tabs').getAttribute('aria-label'), 'Renewal process');
   p.w.dispatchEvent(new p.w.MessageEvent('message', { data: { type: 'wb:restore', state: null, handoffs: [{ from: 'sales', payload: { journey: { customer: 'lindenau', step: 'decide', deal: 'C-2026-0051' } } }, { payload: { journey: { customer: 'evil', deal: 'C-2026-0051' } } }, { payload: { journey: { customer: 'nordlicht', step: 'decide' } } }] }, source: p.w.parent }));
   assert.deepEqual(p.visible(), ['pg-list']);
   assert.equal(p.w.__state.customer, 'lindenau');
   assert.equal(p.w.__state.sel, 'R-C-2026-0051', 'the renewal of the contract (deal id) opens');
-  click(p.w, p.q('.jr button[data-jr-stop=renewal-actions]'));
-  assert.deepEqual(p.visible(), ['pg-nba']);
-  click(p.w, p.q('.jr button[data-jr-stop=pipeline]'));
-  click(p.w, p.q('.jr button[data-jr-stop=mails]'));
-  assert.deepEqual(sent.filter((m) => m.type === 'wb:handoff').map((m) => [m.to, m.payload.journey.customer, m.payload.journey.deal]), [['sales', 'lindenau', 'C-2026-0051'], ['customer-emails', 'lindenau', 'C-2026-0051']]);
+  assert.deepEqual(p.errors, []);
+  p.w.close();
+});
+
+test('renewals: step 4 shows the analytics in short and hands over to the full dashboard', async () => {
+  const p = await open();
+  const sent = [];
+  Object.defineProperty(p.w, 'parent', { value: { postMessage: (m) => sent.push(m) } });
+  click(p.w, p.q('#tab-analytics'));
+  assert.deepEqual(p.visible(), ['pg-analytics']);
+  const model = p.w.__renewals(), live = model.filter((c) => c.status !== 'Lapsed' && c.stage < 4);
+  const eur = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  const text = p.q('#an').textContent;
+  assert.ok(text.includes(eur(live.reduce((a, c) => a + c.annualEur, 0))), 'the open value');
+  assert.ok(text.includes(eur(live.reduce((a, c) => a + Math.round(c.annualEur * (1 - c.pRet)), 0))), 'the expected loss');
+  assert.ok(p.qa('#an .an-top').length > 0 && p.qa('#an .an-top').length <= 5, 'the biggest expected losses');
+  assert.ok(p.qa('#an .an-bar').length > 0, 'value by decision month');
+  click(p.w, p.q('#an-full'));
+  assert.deepEqual(sent.filter((m) => m.type === 'wb:handoff').map((m) => [m.to, m.open]), [['renewals-analytics', true]]);
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
@@ -333,7 +352,7 @@ test('renewals me filter: one account executive narrows numbers, queue, time lin
   click(p.w, p.q('#tab-list')); assert.ok(p.qa('#rows tr[data-id]').length > 0 && p.qa('#rows tr[data-id]').every((r) => mine.some((c) => c.id === r.dataset.id)));
   click(p.w, p.q('#tab-radar')); assert.ok(p.qa('#tl .row').every((r) => mine.some((c) => c.id === r.dataset.id)));
   // the customer pictures keep showing the whole customer
-  click(p.w, p.q('#tab-overview'));
+  click(p.w, p.q('#tab-process'));
   assert.equal(p.qa('#land .planet').length, data.customers.length, 'every customer is still a planet');
   assert.equal(p.qa('#land .moon').length, data.cases.length, 'every contract is still a dot: the picture shows the whole customer');
   assert.equal(p.w.__renewals().length, model.length, 'the model itself is not narrowed');

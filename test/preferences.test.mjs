@@ -229,3 +229,23 @@ test('tips: contrast ratio is the WCAG one', () => {
   assert.equal(contrastRatio('#777777', '#777777'), 1);
   assert.ok(contrastRatio('#FFFFFF', '#FFEEAA') < 2);
 });
+
+test('icon size: only the three steps are accepted, the default is the standard size, and it is part of the look that goes back to the original', async () => {
+  const { ICON_SCALES, DEFAULT_PREFERENCES, profileSettingsOf } = await import('../src/preferences.ts');
+  assert.deepEqual([...ICON_SCALES], [1, 1.2, 1.4]);
+  assert.equal(DEFAULT_PREFERENCES.iconScale, 1);
+  assert.equal(sanitizePreferences({ iconScale: 1.2 }).iconScale, 1.2);
+  assert.equal(sanitizePreferences({ iconScale: 1.4 }).iconScale, 1.4);
+  for (const bad of [0, 0.5, 3, 1.3, '1.2', null, NaN, 'large']) assert.equal(sanitizePreferences({ iconScale: bad }).iconScale, 1, String(bad));
+  assert.equal(profileSettingsOf(sanitizePreferences({ iconScale: 1.4 })).iconScale, 1.4, 'a profile keeps it');
+});
+
+test('icon size: the style rule enlarges only the small icons (12 to 18 px), not logos or diagrams, and is absent at the standard size', async () => {
+  const { buildPreferenceCss, ICON_SELECTOR } = await import('../src/preferences-style.ts');
+  const css = (iconScale) => buildPreferenceCss({ ...sanitizePreferences({ iconScale }) });
+  assert.ok(!css(1).includes('zoom:'), 'nothing changes at the standard size');
+  const big = css(1.4);
+  assert.ok(big.includes(`${ICON_SELECTOR}{zoom:1.4}`));
+  for (const n of [12, 15, 18]) assert.ok(ICON_SELECTOR.includes(`svg[width="${n}"]`));
+  for (const n of [11, 19, 20, 64, 76]) assert.ok(!ICON_SELECTOR.includes(`svg[width="${n}"]`), `${n} px stays`);
+});
