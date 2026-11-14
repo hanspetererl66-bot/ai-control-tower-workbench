@@ -637,7 +637,7 @@ Lokal liegt alles in `localStorage` (`werkbank.preferences.v1`). Das Modell läs
 2. In Werkbank: Connectors & Skills, import `databricks.mcpb`, enter the workspace address and the token (Databricks: user icon, Settings, Developer, Access tokens). Optional: SQL warehouse id and a default Genie space id.
 3. In the chat: “Check the Databricks connection”, “Which Genie spaces do we have?”, “Ask Genie: ARR by customer”.
 
-Tools: `databricks_check_connection`, `databricks_list_genie_spaces`, `databricks_ask_genie` (text, SQL and result table), `databricks_run_sql` (one read-only statement, writes are refused), `databricks_describe_table`. At most 200 rows per call, the token is only sent to the configured workspace and never appears in results. Use a token of a user or service principal with read rights only.
+Tools: `databricks_check_connection`, `databricks_list_genie_spaces`, `databricks_ask_genie` (text, SQL and result table), `databricks_run_sql` (one read-only statement, writes are refused), `databricks_describe_table`, `databricks_append_result` (the only write: one row per scheduler run into an existing result table, fixed statement, bound values). At most 200 rows per call, the token is only sent to the configured workspace and never appears in results. Use a token of a user or service principal with read rights only.
 
 ## Jira connector (search, read, create, comment, change status)
 
