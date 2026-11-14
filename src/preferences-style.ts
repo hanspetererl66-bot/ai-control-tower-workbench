@@ -2,7 +2,7 @@
  * Turns the personal settings into CSS for the app and into a small override for Spaces.
  * Pure functions: the App only puts the result into a <style> element, so the output can be tested.
  */
-import { FONT_STACKS, TIP_SIZE_PX, type Preferences } from './preferences.ts';
+import { FONT_STACKS, TIP_SIZE_PX, type BackgroundPattern, type Preferences } from './preferences.ts';
 import { DEFAULT_LAYOUT, layoutAppCss, layoutSpaceRules, type LayoutId } from './layouts.ts';
 import { DEFAULT_SKIN, skinAppCss, skinSpaceRules, type SkinId } from './skins.ts';
 
@@ -79,6 +79,32 @@ export function accentVariants(hex: string): { light: string; dark: string; ligh
   };
 }
 
+/** The pattern strokes use the text colour at low strength, so they work on every skin, light and dark. */
+const PATTERN_INK = 'color-mix(in srgb, var(--ink) 11%, transparent)';
+export const BACKGROUND_PATTERN_CSS: Record<Exclude<BackgroundPattern, 'none'>, { image: string; size: string }> = {
+  dots: { image: `radial-gradient(circle, ${PATTERN_INK} 1.3px, transparent 1.7px)`, size: '22px 22px' },
+  grid: { image: `linear-gradient(${PATTERN_INK} 1px, transparent 1px), linear-gradient(90deg, ${PATTERN_INK} 1px, transparent 1px)`, size: '28px 28px' },
+  lines: { image: `repeating-linear-gradient(0deg, ${PATTERN_INK} 0 1px, transparent 1px 20px)`, size: 'auto' },
+  diagonal: { image: `repeating-linear-gradient(45deg, ${PATTERN_INK} 0 1px, transparent 1px 14px)`, size: 'auto' },
+};
+
+/** The ground the app draws its text on, tinted. Light: the grey secondary text must keep the contrast it has on the plain ground, so a dark hue is lightened until it does. Dark: the same, darkened. */
+export function tintedBackground(tint: string, dark: boolean): string {
+  const base = dark ? '#17191F' : '#F4F4F7', text = dark ? '#A0A2AC' : '#6B7280', ink = dark ? '#F2F3F6' : '#1C1C1E', goal = Math.max(4.4, Math.min(contrastRatio(text, base), 4.5));
+  let bg = mix(base, tint, dark ? 0.16 : 0.14);
+  for (let i = 0; i < 12 && (contrastRatio(text, bg) < goal || contrastRatio(ink, bg) < 4.5); i++) bg = mix(bg, dark ? '#000000' : '#FFFFFF', 0.12);
+  return bg;
+}
+
+/** The background tint is a light touch of the hue on the skin's own background; a pattern is a fine line or dot in the text colour. */
+export function backgroundCss(prefs: Pick<Preferences, 'bgTint' | 'bgPattern'>): string[] {
+  const css: string[] = [];
+  if (prefs.bgTint) css.push(`:root{--bg:${tintedBackground(prefs.bgTint, false)}}`, `:root[data-theme="dark"]{--bg:${tintedBackground(prefs.bgTint, true)}}`);
+  const pattern = prefs.bgPattern && prefs.bgPattern !== 'none' ? BACKGROUND_PATTERN_CSS[prefs.bgPattern] : null;
+  if (pattern) css.push(`body{background-image:${pattern.image};background-size:${pattern.size};background-attachment:fixed}`);
+  return css;
+}
+
 const DENSITY = { compact: 0.75, normal: 1, roomy: 1.3 } as const;
 
 /** CSS for the app window. Empty settings give an empty string. */
@@ -91,7 +117,7 @@ export function buildPreferenceCss(prefs: Preferences): string {
     const a = accentVariants(prefs.accent);
     css.push(`:root{--accent:${a.light};--send:${a.light}}`, `:root[data-theme="dark"]{--accent:${a.dark};--send:${a.dark}}`);
   }
-  css.push(...tipCss(prefs.tips));
+  css.push(...backgroundCss(prefs), ...tipCss(prefs.tips));
   const stack = FONT_STACKS[prefs.font];
   if (stack) css.push(`html,body,button,input,textarea,select{font-family:${stack}}`);
   if (prefs.density !== 'normal') css.push(`:root{--dens:${DENSITY[prefs.density]}}`);
