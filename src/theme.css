@@ -3725,21 +3725,24 @@ button {
   flex: none;
   display: inline-grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
-  font-size: 24px;
+  width: 22px;
+  height: 22px;
+  font-size: 21.6px;
   line-height: 1;
   color: var(--accent);
 }
 .domain-chev {
   transition: transform 0.12s ease;
 }
+/* The sign is drawn, not typed: the two glyphs (right and down triangle) came out in different shades, depending on the font. Open = the same triangle turned down. */
+.domain-chev svg { display: block; transition: transform 0.12s ease; }
+.domain-chev-open svg { transform: rotate(90deg); }
 .domain-toggle:hover .domain-chev,
 .domain-toggle:focus-visible .domain-chev {
   transform: scale(1.12);
 }
 @media (prefers-reduced-motion: reduce) {
-  .domain-chev { transition: none; }
+  .domain-chev, .domain-chev svg { transition: none; }
 }
 .domain-tools {
   display: flex;
