@@ -364,9 +364,9 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 @media (max-width:900px){.layout{grid-template-columns:1fr}.tl .axis{margin-left:130px}.tl .row{grid-template-columns:130px 1fr}}
 
 /* Health colours stay clear: red, yellow and green are the signal of this page; everything else is calm purple and grey. */
-:root{--red:#c0392b;--red-dim:rgba(192,57,43,.14);--red-border:rgba(192,57,43,.45);--amber:#b07a00;--amber-dim:rgba(224,163,0,.20);--amber-border:rgba(176,122,0,.50);--green:#1f8a5b;--green-dim:rgba(31,138,91,.16);--green-border:rgba(31,138,91,.45)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#ff8a80;--red-dim:rgba(255,138,128,.18);--red-border:rgba(255,138,128,.50);--amber:#ffc94d;--amber-dim:rgba(255,201,77,.18);--amber-border:rgba(255,201,77,.50);--green:#4fd69c;--green-dim:rgba(79,214,156,.17);--green-border:rgba(79,214,156,.48)}}
-:root[data-theme="dark"]{--red:#ff8a80;--red-dim:rgba(255,138,128,.18);--red-border:rgba(255,138,128,.50);--amber:#ffc94d;--amber-dim:rgba(255,201,77,.18);--amber-border:rgba(255,201,77,.50);--green:#4fd69c;--green-dim:rgba(79,214,156,.17);--green-border:rgba(79,214,156,.48)}
+:root{--red:#c0392b;--red-dim:rgba(192,57,43,.14);--red-border:rgba(192,57,43,.45);--amber:#b07a00;--amber-dim:rgba(224,163,0,.20);--amber-border:rgba(176,122,0,.50);--green:#1f8a5b;--green-dim:rgba(31,138,91,.16);--green-border:rgba(31,138,91,.45);--land-y:#e2b93e;--land-y-dim:rgba(242,200,70,.30)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#ff8a80;--red-dim:rgba(255,138,128,.18);--red-border:rgba(255,138,128,.50);--amber:#ffc94d;--amber-dim:rgba(255,201,77,.18);--amber-border:rgba(255,201,77,.50);--green:#4fd69c;--green-dim:rgba(79,214,156,.17);--green-border:rgba(79,214,156,.48);--land-y:#ffe08a;--land-y-dim:rgba(255,224,138,.24)}}
+:root[data-theme="dark"]{--red:#ff8a80;--red-dim:rgba(255,138,128,.18);--red-border:rgba(255,138,128,.50);--amber:#ffc94d;--amber-dim:rgba(255,201,77,.18);--amber-border:rgba(255,201,77,.50);--green:#4fd69c;--green-dim:rgba(79,214,156,.17);--green-border:rgba(79,214,156,.48);--land-y:#ffe08a;--land-y-dim:rgba(255,224,138,.24)}
 .demo{border-color:var(--line);background:var(--wash)}
 .tl .bar.red{background:var(--red);box-shadow:none;opacity:.55}.tl .bar.yellow{background:var(--amber);box-shadow:none;opacity:.55}.tl .bar.green{background:var(--green);box-shadow:none;opacity:.55}
 .legend .g{background:var(--green);border-color:var(--green)}.legend .y{background:var(--amber);border-color:var(--amber)}.legend .r{background:var(--red);border-color:var(--red)}
@@ -441,7 +441,7 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .pl-in .ph{animation:ph-rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 80ms + .1s)}
 @media (prefers-reduced-motion:reduce){.tabs.rp *,.tabs.rp,#process .ph,.pl-in .ph{animation:none!important;transition:none!important}}
 
-.rp-sub{display:inline-flex;gap:4px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line)}
+.rp-sub{display:inline-flex;gap:4px;margin-left:24px;padding-left:12px;border-left:1px solid var(--line);position:relative;z-index:1}
 .rp-sub[hidden]{display:none}
 .rp-more{margin-left:auto;display:inline-flex;align-items:center;gap:2px}
 .rp-more-h{font-size:11px;color:var(--muted);margin-right:4px}
@@ -485,13 +485,15 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
 .landsvg .oltxt{font-size:9px;fill:var(--purple);font-weight:650}
 .landsvg .sweep{fill:var(--purple);opacity:0}
 .landsvg .planet circle{stroke-width:2;cursor:pointer;transition:filter .2s ease}
-.landsvg .planet.green circle{fill:var(--green-dim);stroke:var(--green)}.landsvg .planet.amber circle{fill:var(--amber-dim);stroke:var(--amber)}.landsvg .planet.red circle{fill:var(--red-dim);stroke:var(--red)}
+.landsvg .planet.green circle{fill:var(--green-dim);stroke:var(--green)}.landsvg .planet.amber circle{fill:var(--land-y-dim);stroke:var(--land-y)}.landsvg .planet.red circle{fill:var(--red-dim);stroke:var(--red)}
 .landsvg .planet.on circle{stroke:var(--purple);stroke-width:3.5}
 .landsvg .planet:hover circle,.landsvg .planet:focus-visible circle{filter:drop-shadow(0 0 8px var(--purple))}.landsvg .planet:focus-visible{outline:none}
 .landsvg .pn{font-size:13px;font-weight:700;fill:var(--ink);pointer-events:none}.landsvg .pv{font-size:11px;fill:var(--ink-2);pointer-events:none}
+.landsvg .pm{font-size:9.5px;fill:var(--muted);pointer-events:none}.landsvg .pbadge circle{fill:var(--red);stroke:var(--surface);stroke-width:2;cursor:pointer}.landsvg .pbadge text{font-size:10px;font-weight:700;fill:var(--surface);pointer-events:none}
+#land .legend .y{background:var(--land-y);border-color:var(--land-y)}
 .landsvg .pcap{font-size:13px;font-weight:650;fill:var(--ink)}.landsvg .pcap2{font-size:11px;fill:var(--muted)}
 .landsvg .moon{transform:rotate(var(--a,0deg));cursor:pointer}.landsvg .moon circle{stroke-width:1.6;transition:stroke-width .15s ease}
-.landsvg .moon.red circle{fill:var(--red);stroke:var(--red)}.landsvg .moon.yellow circle{fill:var(--amber);stroke:var(--amber)}.landsvg .moon.green circle{fill:var(--green);stroke:var(--green)}
+.landsvg .moon.red circle{fill:var(--red);stroke:var(--red)}.landsvg .moon.yellow circle{fill:var(--land-y);stroke:var(--land-y)}.landsvg .moon.green circle{fill:var(--green);stroke:var(--green)}
 .landsvg .moon.lapsed circle{fill:var(--canvas);stroke:var(--muted);stroke-dasharray:2 2}
 .landsvg .moon:hover circle,.landsvg .moon:focus-visible circle{stroke-width:4;stroke:var(--purple)}.landsvg .moon:focus-visible{outline:none}
 .landsvg.enter .orbit{stroke-dasharray:1400;stroke-dashoffset:1400;animation:rn-draw 1.2s ease-out .1s forwards}
@@ -500,6 +502,15 @@ h3.grp{font-size:12px;font-weight:650;color:var(--muted);margin:16px 0 6px}
 .landsvg.enter .moon{animation:rn-sweep 1.3s cubic-bezier(.2,.8,.2,1) var(--d,0ms) both}
 .landsvg.enter .moon.soon.red circle{animation:rn-beat 1.3s ease-out 1.9s 3}
 .landsvg.enter .sweep{animation:rn-scan 1.9s ease-in-out .5s both}
+@keyframes rn-orbit{to{transform:rotate(calc(var(--a,0deg) + 360deg))}}
+@keyframes rn-halo{0%,100%{opacity:.25}50%{opacity:.7}}
+@media (prefers-reduced-motion:no-preference){
+.landsvg .moon{animation:rn-orbit var(--t,60s) linear infinite}
+.landsvg.enter .moon{animation:rn-sweep 1.3s cubic-bezier(.2,.8,.2,1) var(--d,0ms) both,rn-orbit var(--t,60s) linear calc(var(--d,0ms) + 1300ms) infinite}
+.landsvg:hover .moon,.landsvg:focus-within .moon{animation-play-state:paused}
+.landsvg .orbit.six{animation:rn-halo 4.5s ease-in-out infinite}
+.landsvg.enter .orbit.six{animation:rn-fade .8s ease .5s both,rn-halo 4.5s ease-in-out 1.4s infinite}
+}
 @keyframes rn-draw{to{stroke-dashoffset:0}}
 @keyframes rn-pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:none}}
 @keyframes rn-sweep{from{opacity:0;transform:rotate(calc(var(--a,0deg) - 150deg))}to{opacity:1;transform:rotate(var(--a,0deg))}}
@@ -2125,7 +2136,7 @@ const byAuto = (a, b) => (b.autoRun - a.autoRun) || (a.autoRun ? a.customer.loca
 const visible = () => model.filter((c) => (state.status === 'all' || c.health === state.status) && (state.customer === 'all' || c.customerId === state.customer) && byOwner(c) && (!state.phase || c.ph.phase === state.phase) && (!state.q || (c.product + ' ' + c.contractId + ' ' + c.customer).toLowerCase().includes(state.q.toLowerCase()))).sort(state.auto ? byAuto : () => 0);
 const autoTag = (c) => (c.autoRun ? ' <span class="pill auto" title="Handled by automatic renewal (simulated)">Auto</span>' : '');
 const live = (c) => c.status !== 'Lapsed' && c.stage < 4;
-function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c.customer)} · SAP customer ID ${esc(c.sapCustomerId)}</div><div style="margin-top:4px"><span class="pill ${c.health}">${LABEL[c.health]}</span> ${eur(c.annualEur)} a year</div><ul>${c.sig.signals.slice(0, 4).map((s) => `<li>${esc(s.text)}</li>`).join('')}</ul>`; }
+function tipHtml(c) { return `<h3>${esc(c.product)}</h3><div class="lim">${esc(c.customer)} · SAP customer ID ${esc(c.sapCustomerId)}</div><div style="margin-top:4px"><span class="pill ${c.health}">${LABEL[c.health]}</span> ${eur(c.annualEur)} a year</div><div class="lim" style="margin-top:4px">Decision ${esc(c.decisionDate)} (${c.sig.days < 0 ? 'passed ' + -c.sig.days + ' d ago' : 'in ' + c.sig.days + ' d'})</div><ul>${c.sig.signals.slice(0, 4).map((s) => `<li>${esc(s.text)}</li>`).join('')}</ul>`; }
 const tip = $('#tip');
 /** Puts a tooltip beside the pointer, never over it: right and below when it fits, otherwise left and/or above, so it does not hide the field that is hovered.
  *  (x, y) is the pointer, vw and vh the space the tooltip may use. */
@@ -2444,6 +2455,11 @@ function renderSix() {
 }
 
 /* ---------- overview: the landscape of all customers ---------- */
+function custTipHtml(id) {
+  const cu = DATA.customers.find((x) => x.id === id), s = custSit(cu), cases = model.filter((c) => c.customerId === id && live(c)), red = cases.filter((c) => c.health === 'red').length, yellow = cases.filter((c) => c.health === 'yellow').length;
+  const next = cases.slice().sort((a, b) => a.sig.days - b.sig.days)[0];
+  return `<h3>${esc(cu.name)}</h3><div class="lim">${cases.length} open renewals · ${eur(s.renewalEur)} a year at stake</div><div style="margin-top:4px">${red} red · ${yellow} yellow · ${cases.length - red - yellow} green</div>` + (next ? `<ul><li>Next decision: ${esc(shortName(next))}, ${next.sig.days < 0 ? 'passed ' + -next.sig.days + ' d ago' : 'in ' + next.sig.days + ' d'} (${esc(next.decisionDate)})</li></ul>` : '');
+}
 function renderLand() {
   const el = $('#land'), custs = DATA.customers, N = custs.length, W = 1000, H = 440, cy = 212;
   const sits = custs.map((cu) => custSit(cu)), maxEur = Math.max(1, ...sits.map((s) => s.renewalEur)), maxCase = Math.max(1, ...model.map((c) => c.annualEur));
@@ -2458,17 +2474,19 @@ function renderLand() {
       `<path class="sweep" style="transform-origin:${x}px ${cy}px" d="M${x} ${cy} L${(x + w).toFixed(1)} ${cy} A${w.toFixed(1)} ${w.toFixed(1)} 0 0 1 ${(x + w * Math.cos(a1)).toFixed(1)} ${(cy + w * Math.sin(a1)).toFixed(1)} Z"/>`;
     cases.forEach((c, j) => {
       const lapsed = c.status === 'Lapsed', d = c.sig.days, rr = lapsed ? outer(r0) : d < 0 ? r0 + 11 : orbit(r0, d), ang = Math.round(-90 + (360 / cases.length) * j + i * 23), mr = 4 + 6 * Math.sqrt(c.annualEur / maxCase);
-      svg += `<g class="moon ${lapsed ? 'lapsed' : c.health}${!lapsed && live(c) && d <= WINDOW_DAYS ? ' soon' : ''}" data-id="${esc(c.id)}" tabindex="0" role="button" aria-label="${esc(shortName(c) + ', ' + cu.name + ', ' + (lapsed ? 'lapsed' : LABEL[c.health]))}" style="--a:${ang}deg;--d:${450 + (i * 4 + j) * 70}ms;transform-origin:${x}px ${cy}px"><circle cx="${(x + rr).toFixed(1)}" cy="${cy}" r="${mr.toFixed(1)}"/></g>`;
+      svg += `<g class="moon ${lapsed ? 'lapsed' : c.health}${!lapsed && live(c) && d <= WINDOW_DAYS ? ' soon' : ''}" data-id="${esc(c.id)}" tabindex="0" role="button" aria-label="${esc(shortName(c) + ', ' + cu.name + ', ' + (lapsed ? 'lapsed' : LABEL[c.health]))}" style="--a:${ang}deg;--d:${450 + (i * 4 + j) * 70}ms;--t:${Math.round(26 + rr * 0.55 + j * 3)}s;transform-origin:${x}px ${cy}px"><circle cx="${(x + rr).toFixed(1)}" cy="${cy}" r="${mr.toFixed(1)}"/></g>`;
     });
     const red = cases.filter((c) => live(c) && c.health === 'red').length, next = cases.filter(live).sort((a, b) => a.sig.days - b.sig.days)[0], oy = cy + outer(r0) + 22;
-    svg += `<g class="planet ${SIT[s.primary.level]}${on ? ' on' : ''}" data-cust="${esc(cu.id)}" tabindex="0" role="button" aria-label="Open ${esc(cu.name)}" style="transform-origin:${x}px ${cy}px"><circle cx="${x}" cy="${cy}" r="${r0.toFixed(1)}"/><text class="pn" x="${x}" y="${cy - 2}" text-anchor="middle">${esc(cu.name.split(' ')[0])}</text><text class="pv" x="${x}" y="${cy + 15}" text-anchor="middle">${eurK(s.renewalEur)} €</text></g>` +
+    svg += `<g class="planet ${SIT[s.primary.level]}${on ? ' on' : ''}" data-cust="${esc(cu.id)}" tabindex="0" role="button" aria-label="Open ${esc(cu.name)}" style="transform-origin:${x}px ${cy}px"><circle cx="${x}" cy="${cy}" r="${r0.toFixed(1)}"/><text class="pn" x="${x}" y="${cy - 7}" text-anchor="middle">${esc(cu.name.split(' ')[0])}</text><text class="pv" x="${x}" y="${cy + 8}" text-anchor="middle">${eurK(s.renewalEur)} €</text><text class="pm" x="${x}" y="${cy + 21}" text-anchor="middle">${cases.filter(live).length} open</text></g>` +
+      (red ? `<g class="pbadge" data-cust="${esc(cu.id)}"><circle cx="${(x + r0 * 0.72).toFixed(1)}" cy="${(cy - r0 * 0.72).toFixed(1)}" r="9"/><text x="${(x + r0 * 0.72).toFixed(1)}" y="${(cy - r0 * 0.72 + 3.5).toFixed(1)}" text-anchor="middle">${red}</text></g>` : '') +
       `<text class="pcap" x="${x}" y="${oy}" text-anchor="middle">${esc(cu.name)}</text><text class="pcap2" x="${x}" y="${oy + 15}" text-anchor="middle">${cases.filter(live).length} renewals · ${red} red${next ? ' · next decision ' + (next.sig.days < 0 ? 'passed ' + -next.sig.days + ' d ago' : 'in ' + next.sig.days + ' d') : ''}</text>`;
   });
   el.innerHTML = `<div class="head"><div style="flex:1 1 320px"><h2>Renewal landscape</h2><p class="sub" style="margin:0">All customers at a glance. A planet is a customer (size = annual value, colour = its situation), a dot is a contract: the closer to the planet, the sooner the decision date. The dashed ring marks the next six weeks. Click a planet for the customer, a dot for the renewal.</p></div>${REDUCED ? '' : '<button class="ghost" id="land-replay" type="button">Replay</button>'}</div>` +
     `<svg class="landsvg${ent}" viewBox="0 0 ${W} ${H}" role="group" aria-label="Renewal landscape of all customers">${svg}</svg>` +
     `<div class="legend"><span><i class="g"></i>Green: on track</span><span><i class="y"></i>Yellow: needs attention</span><span><i class="r"></i>Red: act now</span><span><i class="lp"></i>Lapsed (outer ring)</span></div>`;
   el.querySelectorAll('.moon').forEach((g) => { activate(g, () => openRenewal(g.dataset.id)); hover(g, () => tipHtml(byId(g.dataset.id))); });
-  el.querySelectorAll('.planet').forEach((g) => activate(g, () => openCustomer(g.dataset.cust)));
+  el.querySelectorAll('.planet').forEach((g) => { activate(g, () => openCustomer(g.dataset.cust)); hover(g, () => custTipHtml(g.dataset.cust)); });
+  el.querySelectorAll('.pbadge').forEach((g) => { g.onclick = () => openCustomer(g.dataset.cust); });
   const rp = $('#land-replay'); if (rp) rp.onclick = () => { delete played.land; renderLand(); };
 }
 
