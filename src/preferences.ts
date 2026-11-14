@@ -99,6 +99,13 @@ export type StorageLocation = { id: string; name: string; purpose: (typeof PURPO
 export const SPACES_VIEWS = ['cards', 'tree'] as const;
 export type SpacesView = (typeof SPACES_VIEWS)[number];
 
+/** Layout of the Spaces overview page (the domains, and the Spaces inside a domain): tiles in a grid, one row per entry, or side-by-side columns. */
+export const OVERVIEW_LAYOUTS = ['grid', 'list', 'board'] as const;
+export type OverviewLayout = (typeof OVERVIEW_LAYOUTS)[number];
+/** Design of a single tile on that page: the soft classic card, a flat outline, or a bold card with an accent band. */
+export const TILE_STYLES = ['classic', 'outline', 'bold'] as const;
+export type TileStyle = (typeof TILE_STYLES)[number];
+
 /** Which side of the window the Spaces list sits on. Left and right keep the list as a column; top and bottom turn it into a bar (domain tabs and chips). */
 export const SPACES_DOCKS = ['left', 'right', 'top', 'bottom'] as const;
 export type SpacesDock = (typeof SPACES_DOCKS)[number];
@@ -112,6 +119,9 @@ export type ProfileSettings = {
   layout: LayoutId;
   /** The Spaces list as cards or as a tree. */
   spacesView: SpacesView;
+  /** Layout of the Spaces overview page and design of its tiles (see OVERVIEW_LAYOUTS, TILE_STYLES). */
+  overviewLayout: OverviewLayout;
+  tileStyle: TileStyle;
   /** The side of the window the Spaces list sits on. */
   spacesDock: SpacesDock;
   accent: string;
@@ -170,6 +180,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   skin: DEFAULT_SKIN,
   layout: DEFAULT_LAYOUT,
   spacesView: 'cards',
+  overviewLayout: 'grid',
+  tileStyle: 'classic',
   spacesDock: 'left',
   accent: '',
   bgTint: '',
@@ -286,6 +298,8 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (isSkin(v.skin)) out.skin = v.skin;
   if (isLayout(v.layout)) out.layout = v.layout;
   if (SPACES_VIEWS.includes(v.spacesView as never)) out.spacesView = v.spacesView as SpacesView;
+  if (OVERVIEW_LAYOUTS.includes(v.overviewLayout as never)) out.overviewLayout = v.overviewLayout as OverviewLayout;
+  if (TILE_STYLES.includes(v.tileStyle as never)) out.tileStyle = v.tileStyle as TileStyle;
   if (SPACES_DOCKS.includes(v.spacesDock as never)) out.spacesDock = v.spacesDock as SpacesDock;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
   if (v.bgTint === '' || (typeof v.bgTint === 'string' && HEX.test(v.bgTint))) out.bgTint = String(v.bgTint).toUpperCase();
@@ -372,8 +386,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
-  return { appearance, skin, layout, spacesView, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
+  const { appearance, skin, layout, spacesView, overviewLayout, tileStyle, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
+  return { appearance, skin, layout, spacesView, overviewLayout, tileStyle, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -672,7 +686,7 @@ export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pi
 
 // ---------- back to the original ----------
 
-const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'bgTint', 'bgPattern', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+const LOOK_KEYS = ['appearance', 'skin', 'layout', 'overviewLayout', 'tileStyle', 'accent', 'bgTint', 'bgPattern', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
 
 /** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
 export function resetLook<T extends Preferences>(prefs: T): T {

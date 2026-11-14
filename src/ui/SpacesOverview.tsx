@@ -4,6 +4,7 @@ import type { Space } from '../spaces';
 import { relativeTime, spaceHighlight } from '../spaces';
 import { countAt, freshSlugs } from '../overview-motion';
 import DomainIcon from './DomainIcon';
+import type { OverviewLayout, TileStyle } from '../preferences';
 
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const stagger = (i: number): CSSProperties => ({ ['--i' as string]: Math.min(i, 14) });
@@ -49,6 +50,8 @@ export default function SpacesOverview({
   onOpen,
   parentOf,
   onDesign,
+  layout = 'grid',
+  tileStyle = 'classic',
 }: {
   domains: OverviewDomain[];
   active: string | null;
@@ -57,6 +60,9 @@ export default function SpacesOverview({
   parentOf: (slug: string) => string;
   /** Opens the Space Designer with a new page. */
   onDesign?: () => void;
+  /** How the page is laid out and how a tile looks (Settings, Spaces overview). */
+  layout?: OverviewLayout;
+  tileStyle?: TileStyle;
 }) {
   const total = domains.reduce((n, d) => n + d.spaces.length, 0);
   const fresh = useMemo(() => freshSlugs(domains.flatMap((d) => d.spaces)), [domains]);
@@ -75,7 +81,7 @@ export default function SpacesOverview({
     const top = current.spaces.filter((s) => !parentOf(s.slug));
     const kids = (slug: string) => current.spaces.filter((s) => parentOf(s.slug) === slug);
     return (
-      <main className="main sov">
+      <main className="main sov" data-overview={layout} data-tile={tileStyle}>
         <div className="sov-inner">
           <button className="sov-back" onClick={() => { lastDomain.current = current.name; transition(() => onActive(null)); }}>← Alle Domains</button>
           <h1 className="sov-title sov-title-shared">{current.name}</h1>
@@ -111,7 +117,7 @@ export default function SpacesOverview({
   }
 
   return (
-    <main className="main sov">
+    <main className="main sov" data-overview={layout} data-tile={tileStyle}>
       <div className="sov-inner">
         <div className="sov-titlebar">
           <h1 className="sov-title">Spaces</h1>
@@ -133,7 +139,7 @@ export default function SpacesOverview({
                 </span>
                 <span className="sov-tile-count">{d.spaces.length} {d.spaces.length === 1 ? 'Space' : 'Spaces'}{news > 0 && <span className="sov-tile-new"> · {news} kürzlich geändert</span>}</span>
                 <span className="sov-tile-list">
-                  {top.slice(0, 4).map((s) => <span key={s.slug}>{s.title}</span>)}
+                  {top.map((s) => <span key={s.slug}>{s.title}</span>)}
                   {top.length > 4 && <span className="sov-more">+ {top.length - 4} weitere</span>}
                   {top.length === 0 && <span className="sov-more">noch leer</span>}
                 </span>

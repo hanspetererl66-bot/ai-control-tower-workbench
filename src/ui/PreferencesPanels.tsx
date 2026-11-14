@@ -1,7 +1,7 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, BACKGROUND_PATTERNS, BACKGROUND_TINTS, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
+  ACCENT_PRESETS, APP_SCALES, OVERVIEW_LAYOUTS, TILE_STYLES, BACKGROUND_PATTERNS, BACKGROUND_TINTS, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
@@ -36,6 +36,32 @@ export function Section({ title, hint, children }: { title: string; hint?: strin
     </div>
   );
 }
+
+/** Pictures instead of words: each option shows a small drawing of what it does (the drawings are in theme.css, class ovp-*). */
+function Looks<T extends string>({ label, value, options, onPick, kind }: { label: string; value: T; options: ReadonlyArray<{ id: T; name: string; text: string }>; onPick: (v: T) => void; kind: 'layout' | 'tile' }) {
+  return (
+    <div className="looks" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button key={o.id} type="button" role="radio" aria-checked={value === o.id} className={`look ${value === o.id ? 'look-on' : ''}`} onClick={() => onPick(o.id)}>
+          <span className={`ovp ovp-${kind}-${o.id}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
+          <b>{o.name}</b>
+          <small>{o.text}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const OVERVIEW_OPTIONS = [
+  { id: 'grid', name: 'Grid', text: 'Tiles side by side' },
+  { id: 'list', name: 'List', text: 'One row per entry' },
+  { id: 'board', name: 'Board', text: 'Columns, side by side' },
+] as const satisfies ReadonlyArray<{ id: (typeof OVERVIEW_LAYOUTS)[number]; name: string; text: string }>;
+const TILE_OPTIONS = [
+  { id: 'classic', name: 'Classic', text: 'Soft card with a glow' },
+  { id: 'outline', name: 'Outline', text: 'Flat, thin line' },
+  { id: 'bold', name: 'Bold', text: 'Accent band, big title' },
+] as const satisfies ReadonlyArray<{ id: (typeof TILE_STYLES)[number]; name: string; text: string }>;
 
 function Choice<T extends string | number>({ label, value, options, onPick, show }: { label: string; value: T; options: readonly T[]; onPick: (v: T) => void; show?: (v: T) => string }) {
   return (
@@ -218,6 +244,12 @@ export function LookPanel({ prefs, update }: Common) {
           <p>It points at a part of the page and says what it is for. The part it points at gets the highlight colour.</p>
         </div>
         <div className="prefs-row"><button className="ghost-btn" disabled={JSON.stringify(prefs.tips) === JSON.stringify(DEFAULT_TIPS)} onClick={() => update((p) => ({ ...p, tips: { ...DEFAULT_TIPS } }))}>Back to the original tips</button></div>
+      </Section>
+      <Section title="Spaces overview" hint="The page you land on when you open Spaces: the domains, and the Spaces inside a domain. Pick how the page is laid out and how a single tile looks. Both apply at once.">
+        <div className="prefs-row"><label>Page layout</label></div>
+        <Looks kind="layout" label="Page layout" value={prefs.overviewLayout} options={OVERVIEW_OPTIONS} onPick={(v) => update((p) => ({ ...p, overviewLayout: v }))} />
+        <div className="prefs-row"><label>Tile design</label></div>
+        <Looks kind="tile" label="Tile design" value={prefs.tileStyle} options={TILE_OPTIONS} onPick={(v) => update((p) => ({ ...p, tileStyle: v }))} />
       </Section>
       <Section title="Spaces list" hint="How the list of Spaces looks and which side of the window it sits on. The same choice is in the header of the list.">
         <Choice label="View" value={prefs.spacesView} options={SPACES_VIEWS} show={(v) => (v === 'tree' ? 'Tree' : 'Cards')} onPick={(v) => update((p) => ({ ...p, spacesView: v }))} />
