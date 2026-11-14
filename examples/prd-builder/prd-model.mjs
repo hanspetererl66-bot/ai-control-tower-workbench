@@ -25,9 +25,14 @@ function groupByEpic(issues) {
   return groups;
 }
 
+const SOURCE_NAME = { jira: 'Jira', linear: 'Linear', slack: 'Slack', notion: 'Notion' };
+const sourceOf = (i) => SOURCE_NAME[i.source || 'jira'] || 'Jira';
+const isNote = (i) => i.type === 'Note';
+
 function openQuestions(items, groups, selected) {
   const q = [];
   for (const i of items) {
+    if (isNote(i)) { q.push(`${i.key}: a note from ${sourceOf(i)}, not yet a requirement. Phrase it (As a ... I want ...) and add acceptance criteria.`); continue; }
     const d = parseDescription(i.description);
     if (!d.criteria.length) q.push(`${i.key}: no acceptance criteria yet. How do we know it is done?`);
     if (!i.priority) q.push(`${i.key}: no priority set.`);
@@ -44,18 +49,21 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   const chosen = issues.filter((i) => selected.has(i.key));
   const stories = chosen.filter((i) => i.type !== 'Epic');
   const L = [];
-  L.push(`# Product requirements: ${project}`, '', `Draft from Jira, ${today}. ${stories.length} requirements from ${chosen.length} tickets of project ${project}. Every requirement names its ticket.`, '');
+  const names = [...new Set(chosen.map(sourceOf))];
+  const notes = stories.filter(isNote);
+  L.push(`# Product requirements: ${project}`, '', names.length <= 1 && (names[0] || 'Jira') === 'Jira' ? `Draft from Jira, ${today}. ${stories.length} requirements from ${chosen.length} tickets of project ${project}. Every requirement names its ticket.` : `Draft from ${names.join(', ')}, ${today}. ${stories.length - notes.length} requirements and ${notes.length} notes from ${chosen.length} items of ${project}. Every entry names its source item; notes are quotes that still have to be phrased as requirements.`, '');
   const epicsChosen = groups.filter((g) => g.epic && (selected.has(g.epic.key) || g.items.some((s) => selected.has(s.key))));
   L.push('## 1. Overview', '');
   if (!epicsChosen.length && !stories.length) L.push('Nothing selected yet. Tick epics or stories on the left.', '');
-  for (const g of epicsChosen) L.push(`- **${g.epic.summary}** (${g.epic.key}): ${parseDescription(g.epic.description).need || 'no description'}`);
+  for (const g of epicsChosen) L.push(`- **${g.epic.summary}** (${g.epic.key}): ${parseDescription(g.epic.description).need || (g.epic.source && g.epic.source !== 'jira' ? 'from ' + sourceOf(g.epic) : 'no description')}`);
   if (epicsChosen.length) L.push('');
   L.push('## 2. Goals', '');
-  for (const g of epicsChosen) L.push(`- ${g.epic.summary}`);
-  if (!epicsChosen.length) L.push('- To be defined.');
+  const goalEpics = epicsChosen.filter((g) => g.epic.source !== 'slack' && g.epic.source !== 'notion');
+  for (const g of goalEpics) L.push(`- ${g.epic.summary}`);
+  if (!goalEpics.length) L.push('- To be defined.');
   L.push('', '## 3. Users', '');
   const roles = {};
-  for (const s of stories) { const r = roleOf(parseDescription(s.description).need) || 'unnamed role'; (roles[r] = roles[r] || []).push(s.key); }
+  for (const s of stories) { if (isNote(s)) continue; const r = roleOf(parseDescription(s.description).need) || 'unnamed role'; (roles[r] = roles[r] || []).push(s.key); }
   for (const [r, keys] of Object.entries(roles)) L.push(`- **${r}**: ${keys.join(', ')}`);
   if (!Object.keys(roles).length) L.push('- To be defined.');
   L.push('', '## 4. Requirements', '');
@@ -65,7 +73,14 @@ function buildPrd({ project, issues, selectedKeys, today }) {
     if (!items.length) continue;
     L.push(`### ${g.epic ? `${g.epic.summary} (${g.epic.key})` : 'No epic'}`, '');
     for (const s of items) {
-      n += 1; const d = parseDescription(s.description);
+      n += 1;
+      if (isNote(s)) {
+        L.push(`**R${n} · ${s.summary}** (${s.key}, note from ${sourceOf(s)})`, '');
+        String(s.description || '').split('\n').forEach((line) => L.push(`> ${line}`.trimEnd()));
+        L.push('', 'Not yet phrased as a requirement.', '');
+        continue;
+      }
+      const d = parseDescription(s.description);
       L.push(`**R${n} · ${s.summary}** (${s.key}, priority ${s.priority || 'not set'}, status ${s.status || 'unknown'})`, '');
       if (d.need) L.push(d.need, '');
       if (d.criteria.length) { L.push('Acceptance criteria:'); d.criteria.forEach((c) => L.push(`- ${c}`)); L.push(''); }
@@ -78,9 +93,9 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   L.push('', '## 6. Open questions', '');
   const q = openQuestions(stories, groups, selected);
   if (q.length) q.forEach((x) => L.push(`- ${x}`)); else L.push('- None found from the tickets alone.');
-  L.push('', '## 7. Source tickets', '');
-  chosen.forEach((i) => L.push(`- ${i.key} · ${i.type || 'Issue'} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}`));
+  L.push('', names.length <= 1 && (names[0] || 'Jira') === 'Jira' ? '## 7. Source tickets' : '## 7. Sources', '');
+  chosen.forEach((i) => L.push((i.source || 'jira') === 'jira' ? `- ${i.key} · ${i.type || 'Issue'} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}` : `- ${i.key} · ${i.type || 'Issue'} · ${sourceOf(i)} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}${i.url ? ' · ' + i.url : ''}`));
   return L.join('\n') + '\n';
 }
 // END-MODEL
-export { parseDescription, roleOf, groupByEpic, openQuestions, buildPrd, prioRank };
+export { parseDescription, roleOf, groupByEpic, openQuestions, buildPrd, prioRank, sourceOf, isNote };

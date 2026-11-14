@@ -1,12 +1,19 @@
 /**
- * Bridge between the sandboxed PRD Builder Space and the Jira connector.
- * The Space has no network, so it asks the app by postMessage. Only two read-only tools can be reached through here:
- * jira_list_projects and jira_read_backlog. Nothing in Jira is changed.
+ * Bridge between the sandboxed PRD Builder Space and the connectors of its sources: Jira, Linear, Slack and Notion.
+ * The Space has no network, so it asks the app by postMessage. Only these read-only tools can be reached through here:
+ * jira_list_projects, jira_read_backlog, linear_list_teams, linear_read_backlog, slack_list_channels, slack_read_channel,
+ * notion_search and notion_read_page. Nothing in the sources is changed (no posting, no comments, no write-back).
  */
 import { parseToolResult, type BridgeCall } from './sub4me-bridge.ts';
+import { fromLinear, fromNotion, fromSlack, notionChoices, notionId, SLACK_CHANNEL_ID, SLACK_CHANNEL_NAME, TEAM_KEY } from './prd-sources.ts';
 
 export const PRD_SPACE = 'prd-builder';
 export const JIRA_EXTENSION = 'jira';
+/** The extension (connector) that answers a tool: by the prefix of its name; `names` are the installed extensions, the first that matches wins. */
+export function prdExtensionFor(tool: string, names: string[]): string {
+  const source = /^(jira|linear|slack|notion)_/.exec(tool)?.[1] ?? 'jira';
+  return names.find((n) => n.toLowerCase().includes(source)) ?? source;
+}
 const PROJECT = /^[A-Za-z][A-Za-z0-9_]{1,19}$/;
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : '');
@@ -14,6 +21,74 @@ const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : 
 export async function handlePrdMessage(data: unknown, call: BridgeCall | undefined): Promise<Record<string, unknown> | null> {
   if (!isObject(data) || typeof data.type !== 'string' || !data.type.startsWith('prd:')) return null;
   const fail = (message: string) => ({ type: 'prd:error', message });
+  const noConnector = (name: string) => fail(`The ${name} connector is not connected yet. Import it under Connectors & Skills, or use the demo.`);
+  if (data.type === 'prd:linear-teams-request') {
+    if (!call) return noConnector('Linear');
+    try {
+      const { teams } = parseToolResult(await call('linear_list_teams', {}));
+      return { type: 'prd:linear-teams', teams: (Array.isArray(teams) ? teams : []).filter(isObject).slice(0, 50).map((t) => ({ key: str(t.key, 10), name: str(t.name, 80) })).filter((t) => TEAM_KEY.test(t.key)) };
+    } catch (e) { return fail(e instanceof Error ? e.message : String(e)); }
+  }
+  if (data.type === 'prd:slack-channels-request') {
+    if (!call) return noConnector('Slack');
+    try {
+      const { channels } = parseToolResult(await call('slack_list_channels', {}));
+      return { type: 'prd:slack-channels', channels: (Array.isArray(channels) ? channels : []).filter(isObject).filter((c) => c.member === true).slice(0, 100).map((c) => ({ id: str(c.id, 20), name: str(c.name, 80) })).filter((c) => SLACK_CHANNEL_ID.test(c.id)) };
+    } catch (e) { return fail(e instanceof Error ? e.message : String(e)); }
+  }
+  if (data.type === 'prd:source-request') {
+    const source = data.source;
+    if (source === 'linear') {
+      if (!call) return noConnector('Linear');
+      const team = typeof data.team === 'string' ? data.team.trim() : '';
+      if (!TEAM_KEY.test(team)) return fail('Use the Linear team key (the short code, for example ENG).');
+      try {
+        const r: any = parseToolResult(await call('linear_read_backlog', { team: team.toUpperCase() }));
+        const issues = fromLinear(r.issues);
+        return { type: 'prd:backlog', source: 'linear', project: `Linear ${team.toUpperCase()}`, issues, more: Array.isArray(r.issues) && r.issues.length >= 100 };
+      } catch (e) { return fail(e instanceof Error ? e.message : String(e)); }
+    }
+    if (source === 'slack') {
+      if (!call) return noConnector('Slack');
+      const raw = typeof data.channel === 'string' ? data.channel.trim() : '';
+      if (!SLACK_CHANNEL_ID.test(raw) && !SLACK_CHANNEL_NAME.test(raw)) return fail('Use a channel from the list, or its name (for example product-feedback).');
+      try {
+        let id = raw, name = raw.replace(/^#/, '');
+        if (!SLACK_CHANNEL_ID.test(raw)) {
+          const { channels } = parseToolResult(await call('slack_list_channels', { query: name }));
+          const hit = (Array.isArray(channels) ? channels : []).filter(isObject).find((c) => c.name === name);
+          if (!hit || !SLACK_CHANNEL_ID.test(str(hit.id, 20))) return fail(`Slack channel ${name} was not found. Pick one from the list.`);
+          id = str(hit.id, 20);
+        } else {
+          const { channels } = parseToolResult(await call('slack_list_channels', {}));
+          const hit = (Array.isArray(channels) ? channels : []).filter(isObject).find((c) => c.id === raw);
+          if (hit) name = str(hit.name, 80);
+        }
+        const r: any = parseToolResult(await call('slack_read_channel', { channel: id, limit: 50 }));
+        const issues = fromSlack(r.messages, name);
+        if (!issues.length) return fail(`No usable messages in #${name} (very short messages and thread replies are left out).`);
+        return { type: 'prd:backlog', source: 'slack', project: `Slack #${name}`, issues, more: false };
+      } catch (e) { return fail(e instanceof Error ? e.message : String(e)); }
+    }
+    if (source === 'notion') {
+      if (!call) return noConnector('Notion');
+      const query = typeof data.query === 'string' ? data.query.trim().slice(0, 300) : '';
+      if (!query) return fail('Search for a page by words, or paste the link of the page.');
+      try {
+        const id = notionId(query);
+        if (!id) {
+          const found = parseToolResult(await call('notion_search', { query, type: 'page', limit: 10 }));
+          const choices = notionChoices(found);
+          return choices.length ? { type: 'prd:notion-choices', choices } : fail(`Notion found no page for "${query.slice(0, 60)}". Is the page shared with the integration?`);
+        }
+        const page = parseToolResult(await call('notion_read_page', { id }));
+        const issues = fromNotion(page);
+        if (!issues.length) return fail('The page has no text sections to take over.');
+        return { type: 'prd:backlog', source: 'notion', project: `Notion ${issues[0].summary}`.slice(0, 100), issues, more: (page as any)?.truncated === true };
+      } catch (e) { return fail(e instanceof Error ? e.message : String(e)); }
+    }
+    return fail('Unknown source.');
+  }
   if (data.type === 'prd:projects-request') {
     if (!call) return fail('The Jira connector is not connected yet. Import it under Connectors & Skills, or use the demo backlog.');
     try {
@@ -31,7 +106,7 @@ export async function handlePrdMessage(data: unknown, call: BridgeCall | undefin
         parentKey: str(i.parentKey, 30) || null, parentSummary: str(i.parentSummary, 300) || null,
         labels: Array.isArray(i.labels) ? i.labels.filter((l: unknown): l is string => typeof l === 'string').slice(0, 10) : [], description: str(i.description, 1800),
       }));
-      return { type: 'prd:backlog', project: str(r.project, 20), issues, more: r.more === true };
+      return { type: 'prd:backlog', source: 'jira', project: str(r.project, 20), issues: issues.map((i: Record<string, unknown>) => ({ ...i, source: 'jira', url: '' })), more: r.more === true };
     } catch (e) { return fail(e instanceof Error ? e.message : String(e)); }
   }
   return null;
