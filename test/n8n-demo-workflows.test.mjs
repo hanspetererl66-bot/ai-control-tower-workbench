@@ -150,12 +150,13 @@ test('IT operations workflow: webhook and manual start, injected alert quarantin
   const p = Object.fromEntries(prio.map((i) => [i.json.id, i.json.priority]));
   assert.ok(p['A-501'] >= 70 && p['A-502'] >= 70, 'customer facing critical alerts are P1');
   assert.ok(p['A-503'] >= 35 && p['A-503'] < 70 && p['A-504'] >= 35 && p['A-504'] < 70, 'P2');
-  assert.ok(p['A-505'] < 35 && p['A-506'] < 35, 'P3');
+  assert.ok(p['A-506'] >= 35 && p['A-506'] < 70, 'a certificate with 5 days left is P2: the days left add 30 points');
+  assert.ok(p['A-505'] < 35, 'P3');
   const route = (v) => (v >= 70 ? 'P1: page on-call (draft)' : v >= 35 ? 'P2: open a ticket (draft)' : 'P3: watch, no action');
   const routed = prio.map((i) => ({ json: { ...i.json, route: route(i.json.priority) } }));
   const quarantined = guarded.filter((i) => i.json.flagged).map((i) => ({ json: { ...i.json, route: 'Quarantined', priority: 0 } }));
   const [digest] = await run('Build digest', [...routed, ...quarantined]);
-  assert.deepEqual({ ...digest.json.counts }, { p1: 2, p2: 2, p3: 2, quarantined: 1 });
+  assert.deepEqual({ ...digest.json.counts }, { p1: 2, p2: 3, p3: 1, quarantined: 1 });
   assert.match(digest.json.digest, /Nothing was paged/);
   const rules = wf.nodes.find((n) => n.name === 'Route by priority').parameters.rules.values;
   assert.deepEqual(rules.map((r) => [r.outputKey, r.conditions.conditions[0].operator.operation, r.conditions.conditions[0].rightValue]), [['p1', 'gte', 70], ['p2', 'gte', 35], ['p3', 'lt', 35]]);

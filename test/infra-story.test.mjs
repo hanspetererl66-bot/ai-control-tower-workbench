@@ -84,3 +84,9 @@ test('the bar starts with the SOP: one button asks the chat to read the two wiki
   assert.doesNotMatch(posted[0].prompt, /wikipedia/i, 'the SOP is internal, not from the public Wikipedia');
   assert.equal(open('it-fleet', false).doc.querySelector('.st-sop'), null, 'outside the host there is no chat to ask');
 });
+
+test('review 14.11.2026: the Spaces that are about Muster Industrie AG name the customer for the top bar, and the ticket of the story says how many days are left', () => {
+  for (const slug of ['it-infrastructure', 'it-operations', 'infra-rca']) assert.match(read(`examples/${slug}/index.html`), /<span id="wb-customer" data-wb-customer hidden>Muster Industrie AG<\/span>/, slug);
+  for (const slug of ORDER) assert.match(read(`examples/${slug}/index.html`), /reasons: \['TLS certificate \(Ariba integration\) expires in 6 days'\]/, `${slug}: the ticket of the story`);
+  assert.doesNotMatch(read('examples/shared/infra-story.html'), /reasons: \['TLS certificate expires in days'\]/);
+});

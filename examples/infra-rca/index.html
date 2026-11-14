@@ -375,6 +375,7 @@ ul.plain li svg.i{color:var(--green-ink);margin-top:2px}
 </style>
 </head>
 <body>
+<span id="wb-customer" data-wb-customer hidden>Muster Industrie AG</span>
 <!--story:start-->
 <style>
 #story{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 22px;background:var(--wash);border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}
@@ -402,7 +403,7 @@ ul.plain li svg.i{color:var(--green-ink);margin-top:2px}
     { slug: 'infra-ops-control', t: 'Auto-fix', x: 'The same path without the manual work: all customers, one customer, one red VM. One click opens a ticket, corrects the VM by the SOP steps, checks it, writes the customer an e-mail (preview) and closes the ticket.' },
     { slug: 'infra-orchestrator', t: 'Orchestrator', x: 'Proactive instead of reactive: the orchestrator agent (simulated) looks ahead at certificates, patches, disks and DNS, plans the work with the same building blocks and, with human in the loop switched off, runs the low-risk part by itself. High risk, production above low risk, customer agreement and freezes stay with people.' }
   ];
-  var TICKET = { type: 'ticket', id: 'OP-2090', customerId: 'musind', customerName: 'Muster Industrie AG', vm: 'musind-int04', kind: 'cert', priority: 'High', reasons: ['TLS certificate expires in days'], createdBy: 'Story: alert triage' };
+  var TICKET = { type: 'ticket', id: 'OP-2090', customerId: 'musind', customerName: 'Muster Industrie AG', vm: 'musind-int04', kind: 'cert', priority: 'High', reasons: ['TLS certificate (Ariba integration) expires in 6 days'], createdBy: 'Story: alert triage' };
   /* No address in the page (Spaces have no network): the chat gets the host and path and reads the page itself. The prompt stays under the 600 characters the host allows. */
   var SOP_PROMPT = 'Start of the Autonomous Operations story. With the tool read_wiki_page read the two SOP pages renew-tls-certificate and patch-vm of the Infra Wiki. For each: who does what in which step, where the approval is and what happens if a step fails. Then say which steps n8n and AWX automate. Answer in English.';
   var inHost = window.parent !== window;
