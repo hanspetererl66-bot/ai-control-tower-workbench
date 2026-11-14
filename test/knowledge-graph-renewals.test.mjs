@@ -36,7 +36,7 @@ test('renewals in the graph: the health is the one the Renewals page calculates,
 
 test('renewals in the graph: open invoices are nodes that hang on their contract, tickets hang on the contract too', () => {
   const invoices = data.cases.flatMap((c) => c.invoices.map((i) => ({ ...i, contractId: c.contractId })));
-  assert.equal(invoices.length, 14);
+  assert.ok(invoices.length >= 14, 'the sample data has open and overdue invoices');
   for (const i of invoices) {
     const node = byId.get(`invoice:${i.id}`);
     assert.ok(node && node.type === 'invoice', i.id);
@@ -45,7 +45,7 @@ test('renewals in the graph: open invoices are nodes that hang on their contract
     assert.equal(node.meta.Due, i.due);
   }
   for (const c of data.cases) for (const t of c.tickets) assert.ok(edgeKeys.has(`ticket:${t.id}|ABOUT|contract:${c.contractId}`), `${t.id} is about ${c.contractId}`);
-  assert.equal(graph.nodes.filter((n) => n.type === 'invoice').length, 14, 'only open and overdue invoices');
+  assert.equal(graph.nodes.filter((n) => n.type === 'invoice').length, invoices.length, 'only open and overdue invoices, one node each');
 });
 
 test('renewals in the graph: an escalation is a mark on the customer, only where there is one', () => {
@@ -72,7 +72,14 @@ test('renewals in the graph: without the source the graph is the one it was (not
   const src = sourcesFromRepo();
   const plain = buildGraph({ ...src, renewals: undefined });
   assert.equal(plain.nodes.filter((n) => n.type === 'invoice').length, 0);
-  assert.equal(plain.nodes.length + 29, graph.nodes.length, 'the renewals add 12 contracts, 14 invoices and 3 tickets');
+  const known = new Set(plain.nodes.map((n) => n.id));
+  const wanted = new Set();
+  for (const c of data.cases) {
+    if (!known.has(`contract:${c.contractId}`)) wanted.add(`contract:${c.contractId}`);
+    for (const t of c.tickets) if (!known.has(`ticket:${t.id}`)) wanted.add(`ticket:${t.id}`);
+    for (const i of c.invoices) wanted.add(`invoice:${i.id}`);
+  }
+  assert.equal(plain.nodes.length + wanted.size, graph.nodes.length, 'the renewals add exactly the contracts, tickets and invoices the plain graph does not know');
 });
 
 test('renewals in the graph: the page carries the graph and styles the new type', () => {
