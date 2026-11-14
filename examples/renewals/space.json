@@ -7,8 +7,7 @@
     "Fictional renewals derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. The decision date is the contract end minus the notice period.",
     "Health is the worst signal: decision date, missing or expiring offer, price rise above the contract cap, competitor, usage, open tickets and overdue invoices. Every signal is listed with its reason.",
     "Autopilot: the whole renewal runs step by step (watch, brief, offer, policy check, deal desk, send, customer, order). It works alone while a renewal is within policy and stops at a gate when a person has to decide: approve or change the offer, send the e-mail. Every step is logged. Sending, signing and the order are simulated. A lapsed contract or a declined renewal becomes a win-back case: analysis and plan by the autopilot, plan approval and first message by a person, then the order.",
-    "Next actions are rule-based and ordered. Outside the autopilot a person approves each step; sending and signing are simulated.",
-    "'Start demo' walks through ten steps from the start page to a signed renewal."
+    "Next actions are rule-based and ordered. Outside the autopilot a person approves each step; sending and signing are simulated."
   ],
   "prompt": "Bundled example: Renewals (static, data embedded by npm run sync:renewals).",
   "heading": "Renewal Process"
