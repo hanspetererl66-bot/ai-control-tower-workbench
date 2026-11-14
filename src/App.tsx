@@ -1879,6 +1879,7 @@ export default function App() {
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
+            prdDeps={space.slug === PRD_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             specDeps={space.slug === SPEC_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, exportDocx: window.host?.exportDocx } : undefined}
             renewalsDeps={space.slug === RENEWALS_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, cases: window.host?.renewalsCases && window.host.renewalsCaseSave && window.host.renewalsCaseReset ? { list: () => window.host!.renewalsCases!(), save: (args) => window.host!.renewalsCaseSave!(args), reset: (args) => window.host!.renewalsCaseReset!(args) } : undefined } : undefined}
             onOpenHiringTools={() => setView('hiring')}

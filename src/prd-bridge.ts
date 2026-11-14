@@ -5,6 +5,7 @@
  * notion_search and notion_read_page. Nothing in the sources is changed (no posting, no comments, no write-back).
  */
 import { parseToolResult, type BridgeCall } from './sub4me-bridge.ts';
+import { wrapBriefPrompt } from './renewals-bridge.ts';
 import { fromLinear, fromNotion, fromSlack, notionChoices, notionId, SLACK_CHANNEL_ID, SLACK_CHANNEL_NAME, TEAM_KEY } from './prd-sources.ts';
 
 export const PRD_SPACE = 'prd-builder';
@@ -19,8 +20,18 @@ const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : '');
 
 /** What the bridge may ask of the app besides the connectors: saving the confirmed document as a Word file (the person picks the place in a dialog). */
-export type PrdHost = { exportDocx?: (payload: { title: string; markdown: string }) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; bytes?: number }> };
+export type PrdHost = {
+  /** Runs one working prompt through the agent and returns its answer ('' = stopped). Missing without the agent. */
+  ask?: (prompt: string, title: string, session: string) => Promise<string>;
+  exportDocx?: (payload: { title: string; markdown: string }) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; bytes?: number }>;
+};
 export const MAX_DOC = 100_000;
+/** Refining the PRD with Joule: the agent answers one fixed kind of prompt, in a conversation of its own, without tools. */
+export const REFINE_START = /^You refine a product requirements document\./;
+export const MAX_REFINE_PROMPT = 16_000;
+export const MAX_REFINE_ANSWER = 16_000;
+export const REFINE_TITLE = 'PRD refinement';
+const REQUEST_ID = /^[A-Za-z0-9_-]{1,40}$/;
 
 /** The answer to a request to save the confirmed document as a Word file (the same for the PRD Builder and the Spec Builder). */
 export async function exportDocxReply(data: Record<string, unknown>, host: PrdHost | undefined, type: string): Promise<Record<string, unknown>> {
@@ -39,6 +50,22 @@ export async function handlePrdMessage(data: unknown, call: BridgeCall | undefin
   if (!isObject(data) || typeof data.type !== 'string' || !data.type.startsWith('prd:')) return null;
   const fail = (message: string) => ({ type: 'prd:error', message });
   if (data.type === 'prd:export-docx') return exportDocxReply(data, host, 'prd:exported');
+  if (data.type === 'prd:refine-request') {
+    const requestId = typeof data.requestId === 'string' && REQUEST_ID.test(data.requestId) ? data.requestId : null;
+    if (!requestId) return null;
+    const failRefine = (message: string) => ({ type: 'prd:refine-error', requestId, message });
+    try {
+      const prompt = typeof data.prompt === 'string' ? data.prompt : '';
+      if (!REFINE_START.test(prompt)) return failRefine('This request is not one the PRD Builder may send.');
+      if (prompt.length > MAX_REFINE_PROMPT) return failRefine('The document is too long to refine in one go.');
+      if (!host?.ask) return failRefine('The agent is not connected yet.');
+      // No session key: every refinement gets a conversation of its own, earlier ones do not flow into the next.
+      const text = await host.ask(wrapBriefPrompt(prompt), REFINE_TITLE, '');
+      const clean = String(text ?? '').replace(/\u0000/g, '').trim();
+      if (!clean) return failRefine('The refinement was stopped.');
+      return { type: 'prd:refine-answer', requestId, text: clean.slice(0, MAX_REFINE_ANSWER) };
+    } catch (e) { return failRefine(e instanceof Error ? e.message : String(e)); }
+  }
   const noConnector = (name: string) => fail(`The ${name} connector is not connected yet. Import it under Connectors & Skills, or use the demo.`);
   if (data.type === 'prd:linear-teams-request') {
     if (!call) return noConnector('Linear');

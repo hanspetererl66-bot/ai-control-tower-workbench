@@ -4,7 +4,7 @@ import { layoutFromHtml } from '../space-layout-render';
 import { refreshable, type RefreshHost } from '../space-designer-refresh';
 import { fetchSpaceHtml, relativeTime, type Space } from '../spaces';
 import { handleSalesMessage, handleSub4meMessage, SALES_SPACE, type BridgeCall } from '../sub4me-bridge';
-import { handlePrdMessage, PRD_SPACE } from '../prd-bridge';
+import { handlePrdMessage, PRD_SPACE, type PrdHost } from '../prd-bridge';
 import { CONTROL_TOWER_BRIDGE_SPACE, PRECLOSE_SPACE, handleControlTowerForecastMessage, handlePrecloseForecastMessage } from '../forecast-bridge';
 import { HOTLINE_SPACE, handleHotlineMailMessage, type HotlineMailHost } from '../hotline-mail-bridge';
 import { MONITORING_SPACE, SHADOW_SPACE, handleMonitoringMessage, type MonitoringHost } from '../monitoring-bridge';
@@ -40,6 +40,7 @@ export default function SpaceViewer({
   customer360Deps,
   renewalsDeps,
   specDeps,
+  prdDeps,
   salesKnowledgeDeps,
   onOpenHiringTools,
   onAsk,
@@ -75,6 +76,7 @@ export default function SpaceViewer({
   customer360Deps?: Customer360Deps;
   renewalsDeps?: RenewalsDeps;
   specDeps?: SpecDeps;
+  prdDeps?: PrdHost;
   salesKnowledgeDeps?: SalesKnowledgeDeps;
   /** Hiring Approvals Space: open the proposals and criteria screen. */
   onOpenHiringTools?: () => void;
@@ -184,6 +186,8 @@ export default function SpaceViewer({
   renewalsRef.current = renewalsDeps;
   const specRef = useRef(specDeps);
   specRef.current = specDeps;
+  const prdRef = useRef(prdDeps);
+  prdRef.current = prdDeps;
   const salesKnRef = useRef(salesKnowledgeDeps);
   salesKnRef.current = salesKnowledgeDeps;
   useEffect(() => {
@@ -195,7 +199,7 @@ export default function SpaceViewer({
         : space.slug === RENEWALS_SPACE ? (data: unknown) => handleRenewalsMessage(data, renewalsRef.current ?? {})
         : space.slug === SPEC_SPACE ? (data: unknown) => handleSpecMessage(data, specRef.current ?? {})
         : space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
-        : space.slug === PRD_SPACE ? (data: unknown, call: BridgeCall | undefined) => handlePrdMessage(data, call, { exportDocx: window.host?.exportDocx })
+        : space.slug === PRD_SPACE ? (data: unknown, call: BridgeCall | undefined) => handlePrdMessage(data, call, { exportDocx: window.host?.exportDocx, ...(prdRef.current ?? {}) })
         : space.slug === SALES_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handleSalesKnowledgeMessage(data, salesKnRef.current ?? {})) ?? handleSalesMessage(data, call)
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
         : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)
