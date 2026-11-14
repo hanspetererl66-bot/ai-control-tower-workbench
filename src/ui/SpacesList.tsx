@@ -714,7 +714,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                     onDrop={(event) => dropOnDomain(event, name)}
                   >
                     <button className="domain-toggle" aria-expanded={!isCollapsed} onClick={() => toggleCollapsed(name)}>
-                      <span className="domain-chev" aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+                      <span className={`domain-chev ${isCollapsed ? '' : 'domain-chev-open'}`} aria-hidden="true"><svg viewBox="0 0 10 10" width="16" height="16"><path d="M2 1.5 L8.6 5 L2 8.5 Z" fill="currentColor" /></svg></span>
                       {renaming === name ? null : <span className="domain-name">{name}</span>}
                       {renaming === name ? null : <span className="domain-count">{items.length}</span>}
                     </button>
