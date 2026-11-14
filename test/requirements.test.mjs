@@ -270,6 +270,8 @@ test('every source has a logo in the tabs, the chips and the requirement rows', 
   assert.match(view, /<SourceLogo id=\{s\.id\} \/>/, 'tabs');
   assert.match(view, /<SourceLogo id=\{id\} size=\{16\}/, 'chips');
   assert.match(view, /<SourceLogo id=\{r\.source\}/, 'rows');
-  assert.match(logo, /id === 'teams'/); assert.match(logo, /id === 'notion'/); assert.match(logo, /<ToolLogo id=\{id\} \/>/, 'the four marks of the Connectors page are reused');
+  const marks = readFileSync(new URL('../src/ui/BrandMark.tsx', import.meta.url), 'utf8');
+  for (const k of ['jira', 'slack', 'linear', 'figma', 'teams', 'notion']) assert.match(marks, new RegExp(`case '${k}'|default:`), k);
+  assert.match(logo, /<BrandMark id=\{id\} \/>/, 'one set of drawings for the Connectors page and the sources');
   assert.match(logo, /aria-hidden="true"/, 'decorative: the name stands next to it');
 });

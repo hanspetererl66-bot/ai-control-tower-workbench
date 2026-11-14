@@ -1,10 +1,10 @@
 /**
- * "Connect your tools": one card each for Jira, Slack, Linear and Figma on the Connectors page.
+ * "Connect your tools": one card each for Jira, Slack, Linear, Figma, Notion and Microsoft Teams on the Connectors page.
  * Pure logic only (what a card says, which state it is in, how a connection test is read);
  * the card itself is src/ui/ConnectTools.tsx.
  */
 
-export type ToolId = 'jira' | 'slack' | 'linear' | 'figma';
+export type ToolId = 'jira' | 'slack' | 'linear' | 'figma' | 'notion' | 'teams';
 
 export type ToolCard = {
   id: ToolId;
@@ -47,6 +47,20 @@ export const TOOL_CARDS: ToolCard[] = [
     writes: 'Nothing: the connector is read only. Even after you confirmed, it cannot change a Figma file.',
     key: 'Needs a personal access token from Figma (Settings, Security, Personal access tokens) with read scopes only.',
     addCommand: 'npm run connect:connectors -- --only figma',
+  },
+  {
+    id: 'notion', name: 'Notion',
+    reads: 'Reads pages and database rows that are shared with the integration, with filter and sorting.',
+    writes: 'Creates pages and changes properties or adds text only after you confirmed it. Nothing is deleted or archived.',
+    key: 'Needs the secret of an internal integration (notion.so/profile/integrations); share each page or database with it (Connections).',
+    addCommand: 'npm run connect:connectors -- --only notion',
+  },
+  {
+    id: 'teams', name: 'Microsoft Teams',
+    reads: 'Reads channel messages and threads for requirement collection.',
+    writes: 'Nothing: the connector is read only. Even after you confirmed, it cannot post or change anything in Teams.',
+    key: 'Needs an app registration (tenant, client id, secret) or an access token; see docs/teams.md.',
+    addCommand: 'npm run connect:connectors -- --only teams',
   },
 ];
 
