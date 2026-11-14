@@ -1,5 +1,6 @@
 /**
- * The Sales journey: one customer, one flow through four Spaces (Sales, Customer 360, E-mail, Renewals).
+ * The Sales journey: one customer, one flow through Spaces that show the rail (Sales, Customer 360, E-mail) and Spaces that only receive a stop
+ * (Collections: it carries this code to read the hand-over with parse() but does not draw the rail).
  *   Today -> Understand -> Decide -> Act -> Follow up
  * Each Space shows the same rail at the top. A click inside the same Space switches its own tab or view; a click on a stop in another
  * Space asks the app (the existing hand-over `wb:handoff`, see src/space-handoff.ts) to open that Space with the context:
@@ -11,10 +12,10 @@
  */
 export function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -34,6 +35,7 @@ export function makeJourney() {
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
+    { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
   ];
   /** Which step a Sales tab belongs to (for the highlighted step of the rail). */
   var TAB_STEP = { inbox: 'today', meetings: 'today', knowledge: 'understand', pipeline: 'decide', forecast: 'decide', workflow: 'act', governance: 'act', rules: 'act', payments: 'follow' };

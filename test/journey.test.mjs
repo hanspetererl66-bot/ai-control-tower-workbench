@@ -15,9 +15,19 @@ const sales = JSON.parse(read('examples/sales/pipeline.json'));
 const mails = JSON.parse(read('examples/customer-emails/threads.json'));
 const c360 = makeLogic(JSON.parse(read('examples/customer-360/data-lindenau.json')));
 
-test('journey: the three pages carry the current rail code', () => {
-  assert.equal(JOURNEY_PAGES.length, 4);
+test('journey: the pages carry the current journey code (four draw the rail or carry it, Collections only reads the hand-over)', () => {
+  assert.equal(JOURNEY_PAGES.length, 5);
   for (const page of JOURNEY_PAGES) assert.equal(embedJourney(read(page), makeJourney.toString()), read(page), `${page}: run npm run sync:mockups`);
+  assert.doesNotMatch(read('examples/collections/index.html'), /J\.railHtml|J\.injectStyle/, 'Collections does not draw the rail');
+});
+
+test('journey: Collections is a stop of Follow up, open for the three customers with data and not for Nordlicht', () => {
+  const stop = J.stop('collections');
+  assert.deepEqual([stop.step, stop.space, stop.tab], ['follow', 'collections', 'list']);
+  for (const c of ['lindenau', 'muster', 'hanse']) assert.equal(J.available(stop, c), true, c);
+  assert.equal(J.available(stop, 'nordlicht'), false);
+  assert.deepEqual(J.STOPS.filter((x) => x.step === 'follow').map((x) => x.id), ['payments', 'collections']);
+  assert.equal(J.STOPS.length, 10 + 1, 'the ten stops of main plus Collections');
 });
 
 test('journey: every stop is a Space that can be installed, every Sales stop is a tab of the Sales page, every step has a stop', () => {
