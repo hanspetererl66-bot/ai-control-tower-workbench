@@ -6150,3 +6150,61 @@ select:not([multiple]):not([size]):not(#wb-sel):not(:focus) {
 }
 select:not([multiple]):not([size]):not(#wb-sel):not(:focus):hover:not(:disabled) { border-color: color-mix(in srgb, var(--ink) 42%, var(--panel)); }
 select option { color: var(--ink); background: var(--panel); }
+
+/* ---- Spaces overview: three page layouts and three tile designs (Settings > Spaces overview) ---- */
+/* The tile list on a domain tile shows four entries (grid, list); the board has room for all of them. */
+.sov-tile-list > span:nth-child(n+5):not(.sov-more) { display: none; }
+.sov[data-overview="board"] .sov-tile-list > span:nth-child(n+5):not(.sov-more) { display: block; }
+.sov[data-overview="board"] .sov-more { display: none; }
+
+/* Layout: list = one row per entry */
+.sov[data-overview="list"] :is(.sov-grid, .sov-spaces) { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.sov[data-overview="list"] .sov-tile { min-height: 0; display: grid; grid-template-columns: 36px minmax(150px, 230px) minmax(0, 1fr); align-items: center; column-gap: 16px; row-gap: 0; padding: 12px 18px; }
+.sov[data-overview="list"] .sov-tile-icon { grid-row: 1 / 3; margin: 0; }
+.sov[data-overview="list"] .sov-tile-head, .sov[data-overview="list"] .sov-tile-count { grid-column: 2; }
+.sov[data-overview="list"] .sov-tile-list { grid-column: 3; grid-row: 1 / 3; flex-direction: row; flex-wrap: wrap; gap: 2px 14px; margin-top: 0; }
+.sov[data-overview="list"] .sov-card { min-height: 0; }
+@media (max-width: 760px) {
+  .sov[data-overview="list"] .sov-tile { grid-template-columns: 36px minmax(0, 1fr); }
+  .sov[data-overview="list"] .sov-tile-list { grid-column: 1 / -1; grid-row: auto; margin-top: 6px; }
+}
+
+/* Layout: board = columns side by side, sideways scrolling */
+.sov[data-overview="board"] :is(.sov-grid, .sov-spaces) { display: flex; gap: 16px; align-items: flex-start; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x proximity; }
+.sov[data-overview="board"] .sov-tile { flex: 0 0 280px; min-height: 240px; scroll-snap-align: start; }
+.sov[data-overview="board"] .sov-space { flex: 0 0 300px; scroll-snap-align: start; }
+
+/* Tile design: outline = flat, thin line, no glow */
+.sov[data-tile="outline"] :is(.sov-tile, .sov-card, .sov-kid) { background: transparent; box-shadow: none; border: 1.5px solid var(--line); }
+.sov[data-tile="outline"] :is(.sov-tile, .sov-card, .sov-kid)::before { display: none; }
+.sov[data-tile="outline"] :is(.sov-tile, .sov-card, .sov-kid):is(:hover, :focus-visible) { background: color-mix(in srgb, var(--accent) 5%, transparent); border-color: var(--accent); box-shadow: none; }
+.sov[data-tile="outline"] .sov-tile-icon { background: transparent; }
+.sov[data-tile="outline"] .sov-tile-count { color: var(--muted); }
+
+/* Tile design: bold = accent band on top, tinted card, big title, count as a pill */
+.sov[data-tile="bold"] :is(.sov-tile, .sov-card, .sov-kid) { background: color-mix(in srgb, var(--accent) 7%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-top: 5px solid var(--accent); box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--accent) 60%, transparent); }
+.sov[data-tile="bold"] :is(.sov-tile, .sov-card, .sov-kid):is(:hover, :focus-visible) { background: color-mix(in srgb, var(--accent) 13%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); border-top-color: var(--accent); box-shadow: 0 14px 26px -12px color-mix(in srgb, var(--accent) 60%, transparent); }
+.sov[data-tile="bold"] .sov-tile-name { font-size: 20px; font-weight: 750; letter-spacing: -0.01em; }
+.sov[data-tile="bold"] .sov-card-title { font-size: 17px; font-weight: 750; }
+.sov[data-tile="bold"] .sov-tile-count { align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); }
+
+/* Pickers in Settings: a small drawing of each option */
+.looks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 2px 0 14px; }
+.look { display: flex; flex-direction: column; gap: 3px; align-items: stretch; text-align: left; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.look b { font-size: 13px; }
+.look small { color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.look:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.look:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.look-on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.ovp { display: grid; gap: 4px; height: 56px; padding: 6px; margin-bottom: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; }
+.ovp i { display: block; border-radius: 3px; background: color-mix(in srgb, var(--accent) 28%, var(--panel)); }
+.ovp-layout-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+.ovp-layout-list { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+.ovp-layout-list i:nth-child(n+5), .ovp-layout-board i:nth-child(n+4), .ovp-tile-classic i:nth-child(n+4), .ovp-tile-outline i:nth-child(n+4), .ovp-tile-bold i:nth-child(n+4) { display: none; }
+.ovp-layout-board { grid-template-columns: repeat(3, 1fr); align-items: start; }
+.ovp-layout-board i:nth-child(1) { height: 100%; } .ovp-layout-board i:nth-child(2) { height: 62%; } .ovp-layout-board i:nth-child(3) { height: 80%; }
+.ovp-tile-classic, .ovp-tile-outline, .ovp-tile-bold { grid-template-columns: repeat(3, 1fr); }
+.ovp-tile-classic i { background: color-mix(in srgb, var(--bg) 55%, var(--panel)); border: 1px solid var(--line); box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--accent) 40%, transparent); }
+.ovp-tile-outline i { background: transparent; border: 1.5px solid var(--line); }
+.ovp-tile-bold i { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-top: 4px solid var(--accent); }
+@media (max-width: 520px) { .looks { grid-template-columns: minmax(0, 1fr); } }

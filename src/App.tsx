@@ -1895,6 +1895,8 @@ export default function App() {
             spaces: orderedSpaces.filter((x) => effectiveDomain(x, spaces, prefs) === name),
           }))}
           active={overviewDomain}
+          layout={prefs.overviewLayout}
+          tileStyle={prefs.tileStyle}
           onActive={setOverviewDomain}
           onOpen={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
