@@ -49,3 +49,14 @@ test('the name colour stays readable on every ground: every skin, light and dark
     for (const g of grounds.dark) assert.ok(contrastRatio(v.darkInk, g) >= 4.5, `${accent} dark ink on ${g}: ${contrastRatio(v.darkInk, g).toFixed(2)}`);
   }
 });
+
+test('the names of skills take the same colour: lists, tables, the picker in the chat, and the Skill Marketplace Space', () => {
+  assert.match(css, /\.skill-name \{ color: var\(--accent-ink\); font-weight: 600; \}/);
+  assert.match(read('src/ui/ManageView.tsx'), /className="row-title row-title-skill skill-name"/);
+  assert.match(read('src/ui/SkillGovernance.tsx'), /className="sgov-skill-name skill-name"/);
+  assert.match(read('src/ui/Composer.tsx'), /className="picker-name skill-name"><SkillIcon name=\{s\.name\} \/>\/\{s\.name\}/);
+  const health = read('src/ui/SkillHealthView.tsx');
+  assert.equal((health.match(/<span className="skill-name">\{[sx]\.name\}<\/span>/g) ?? []).length, 5, 'every skill name in Skill Health');
+  const market = read('examples/skill-marketplace/index.html');
+  assert.match(market, /\.s4m \.lbtn b,\.s4m article\.sk h3,\.s4m \.hit b,\.s4m \.pill,\.s4m \.smx-title\{color:var\(--purple-ink\)\}/, 'the Space uses its own accent text token, which the app moves with the skin');
+});

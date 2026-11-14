@@ -6231,4 +6231,6 @@ select option { color: var(--ink); background: var(--panel); }
 .bar-chips .chip:not(.chip-on) .chip-title,
 .sov-card-title,
 .topbar-title-space { color: var(--accent-ink); }
+/* The names of skills, in the same colour: lists, tables, the picker in the chat. */
+.skill-name { color: var(--accent-ink); font-weight: 600; }
 
