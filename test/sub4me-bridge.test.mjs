@@ -44,15 +44,15 @@ test('reports connector errors and a missing agent back to the page', async () =
   assert.throws(() => parseToolResult({ content: [{ type: 'text', text: 'not json' }] }), /unexpected/);
 });
 
-test('the Space only talks to its parent and the app only wires the bridge for the Renewals briefing, sub4me, the PRD builder, the Sales forecast, the two Controlling forecasts, the interview, hiring, observability, onboarding, hotline, monitoring and Customer 360 Spaces', () => {
+test('the Space only talks to its parent and the app only wires the bridge for the Renewals briefing, sub4me, the PRD builder, the Spec Builder, the Sales forecast, the two Controlling forecasts, the interview, hiring, observability, onboarding, hotline, monitoring and Customer 360 Spaces', () => {
   const html = readFileSync(join(import.meta.dirname, '..', 'examples/sub4me/index.html'), 'utf8');
   assert.match(html, /e\.source !== window\.parent/);
   assert.match(readFileSync(join(import.meta.dirname, '..', 'examples/sales/index.html'), 'utf8'), /e\.source !== window\.parent/);
   const app = readFileSync(join(import.meta.dirname, '..', 'src/App.tsx'), 'utf8');
-  assert.match(app, /bridgeEnabled=\{space\.slug === RENEWALS_SPACE \|\| space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE \|\| space\.slug === SALES_SPACE \|\| space\.slug === CONTROL_TOWER_BRIDGE_SPACE \|\| space\.slug === PRECLOSE_SPACE \|\| space\.slug === INTERVIEW_SPACE \|\| space\.slug === HIRING_SPACE \|\| space\.slug === OBSERVABILITY_SPACE \|\| space\.slug === ONBOARDING_SPACE \|\| space\.slug === HOTLINE_SPACE \|\| space\.slug === MONITORING_SPACE \|\| space\.slug === SHADOW_SPACE \|\| space\.slug === CUSTOMER360_SPACE\}/);
+  assert.match(app, /bridgeEnabled=\{space\.slug === RENEWALS_SPACE \|\| space\.slug === SUB4ME_SPACE \|\| space\.slug === PRD_SPACE \|\| space\.slug === SPEC_SPACE \|\| space\.slug === SALES_SPACE \|\| space\.slug === CONTROL_TOWER_BRIDGE_SPACE \|\| space\.slug === PRECLOSE_SPACE \|\| space\.slug === INTERVIEW_SPACE \|\| space\.slug === HIRING_SPACE \|\| space\.slug === OBSERVABILITY_SPACE \|\| space\.slug === ONBOARDING_SPACE \|\| space\.slug === HOTLINE_SPACE \|\| space\.slug === MONITORING_SPACE \|\| space\.slug === SHADOW_SPACE \|\| space\.slug === CUSTOMER360_SPACE\}/);
   const viewer = readFileSync(join(import.meta.dirname, '..', 'src/ui/SpaceViewer.tsx'), 'utf8');
   assert.match(viewer, /event\.source !== frame\.current\.contentWindow/);
-  for (const slug of ['control-tower', 'finance-preclose', 'recruiting-workbench', 'hiring-approvals', 'customer-360', 'renewals']) assert.match(readFileSync(join(import.meta.dirname, '..', 'examples', slug, 'index.html'), 'utf8'), /e\.source\s*!==\s*window\.parent/, slug);
+  for (const slug of ['control-tower', 'finance-preclose', 'recruiting-workbench', 'hiring-approvals', 'customer-360', 'renewals', 'prd-builder', 'spec-builder']) assert.match(readFileSync(join(import.meta.dirname, '..', 'examples', slug, 'index.html'), 'utf8'), /e\.source\s*!==\s*window\.parent/, slug);
 });
 
 test('enrich requests call only enrich_ticket and pass on the fields the Space renders', async () => {

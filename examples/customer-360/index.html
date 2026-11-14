@@ -257,7 +257,11 @@ body{margin:0}
 .c3-kpi .v{font-size:17px;font-weight:650;letter-spacing:-.02em;margin-top:1px}
 .c3-kpi .v.bad{color:var(--red)}
 .c3-hint{position:absolute;right:16px;top:14px;font-size:11px;color:var(--muted);padding:6px 10px}
-.c3-story{position:absolute;left:16px;bottom:16px;width:min(392px,40%);padding:16px 18px 14px;max-height:calc(100% - 100px);overflow:auto}
+.c3-story{position:absolute;left:16px;bottom:16px;width:min(392px,40%);padding:0;max-height:calc(100% - 100px);overflow:hidden;display:flex;flex-direction:column}
+.c3-story #story{padding:4px 18px 14px;overflow:auto;min-height:0}
+.c3-grip{flex:none;text-align:center;font-size:12px;line-height:1;letter-spacing:3px;color:var(--muted);padding:7px 0 3px;cursor:grab;touch-action:none;user-select:none;border-radius:var(--radius-s) var(--radius-s) 0 0}
+.c3-grip:hover,.c3-grip:focus-visible{color:var(--ink);background:color-mix(in srgb,var(--purple) 8%,transparent)}
+.c3-grip.drag{cursor:grabbing}
 .c3-kick{font-size:11px;font-weight:600;color:var(--purple-mid);letter-spacing:.01em}
 .c3-story h2{font-size:18px;font-weight:650;letter-spacing:-.015em;margin:3px 0 7px}
 .c3-story p{font-size:13px;line-height:1.55;color:var(--ink-2);margin:0 0 10px}
@@ -313,6 +317,33 @@ body{margin:0}
 .c3-tbl tr.row{cursor:pointer}
 .c3-tbl tr.row:hover td{background:var(--wash)}
 .c3-tbl td.n,.c3-tbl th.n{text-align:right}
+.c3-mts{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.c3-mts button{font:inherit;font-size:12px;font-weight:550;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--ink-2);cursor:pointer}
+.c3-mts button.on{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple-ink)}
+.c3-fig td.figbar{width:55%}.c3-bar{height:9px;border-radius:99px;background:var(--line-2);overflow:hidden}.c3-bar i{display:block;height:100%;border-radius:99px;background:var(--purple)}
+.c3-bar i.high{background:var(--red)}.c3-bar i.medium{background:var(--amber)}.c3-bar i.low{background:var(--green)}
+.c3-tbl tr.row.sel td{background:var(--purple-dim)}
+.c3-tl svg{display:block;width:100%;height:auto}
+.c3-tl .tl-lane{fill:transparent}.c3-tl .tl-lane.alt{fill:var(--line-2);opacity:.45}
+.c3-tl .tl-axis{stroke:var(--line);stroke-width:1}.c3-tl .tl-grid{stroke:var(--line-2);stroke-width:1}
+.c3-tl .tl-txt{fill:var(--muted);font-size:11px;font-family:inherit}.c3-tl .tl-name{fill:var(--ink);font-size:12px;font-weight:600;font-family:inherit}
+.c3-tl .tl-today{stroke:var(--ink-2);stroke-width:1.2;stroke-dasharray:4 3}
+.c3-tl .tl-ev{cursor:pointer;outline:none}.c3-tl .tl-ev:hover .tl-shape,.c3-tl .tl-ev:focus-visible .tl-shape{stroke:var(--ink);stroke-width:2}
+.c3-tl .tl-shape.ok{fill:var(--green)}.c3-tl .tl-shape.info{fill:var(--purple)}.c3-tl .tl-shape.warn{fill:var(--amber)}.c3-tl .tl-shape.bad{fill:var(--red)}
+.c3-tl .tl-span{opacity:.55}
+.c3-tl .tl-cnt{fill:var(--ink-2);font-size:10px;font-weight:600;font-family:inherit}
+.c3-tlbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 8px}.c3-tlbar .sp{flex:1}
+.c3-tlpick{margin:10px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface)}
+.c3-tlpick .h{font-size:12px;color:var(--muted);margin:0 0 6px}.c3-tlpick button{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:5px 6px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-radius:6px}.c3-tlpick button:hover{background:var(--purple-dim)}
+.c3-risk{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:600;border:1px solid var(--line);color:var(--ink-2)}
+.c3-risk.high{background:color-mix(in srgb,var(--red) 14%,transparent);border-color:color-mix(in srgb,var(--red) 40%,transparent);color:var(--red)}
+.c3-risk.medium{background:color-mix(in srgb,var(--amber) 16%,transparent);border-color:color-mix(in srgb,var(--amber) 45%,transparent);color:var(--ink)}
+.c3-risk.low{background:color-mix(in srgb,var(--green) 14%,transparent);border-color:color-mix(in srgb,var(--green) 40%,transparent);color:var(--ink)}
+.c3-pay .tl-hollow{fill:transparent;stroke:var(--red);stroke-width:2}.c3-pay .tl-zero{stroke:var(--ink-2);stroke-width:1}.c3-pay .tl-limit{stroke:var(--amber);stroke-width:1;stroke-dasharray:3 3}.c3-pay .tl-limit.hi{stroke:var(--red)}
+.c3-pay .why{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;line-height:1.45}
+.c3-pay .up{color:var(--red)}.c3-pay .down{color:var(--green)}
+.c3-tllist{display:none}.c3-tllist button{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;padding:8px 4px;border:0;border-bottom:1px solid var(--line-2);background:transparent;color:var(--ink);cursor:pointer}
+.c3-tllist .d{color:var(--muted);font-size:11.5px;margin-right:6px}
 .c3-heat{display:flex;align-items:center;gap:8px;min-width:130px}
 .c3-heat .b{flex:1;height:7px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .c3-heat .b i{display:block;height:100%;border-radius:99px}
@@ -342,6 +373,9 @@ body{margin:0}
   .c3-stage{height:auto}
   .c3-stage canvas{position:relative;height:420px}
   .c3-story,.c3-detail,.c3-kpis{position:static;width:auto;max-width:none;margin:10px}
+  .c3-grip{display:none}
+  .c3-tl svg,.c3-tlbar .rng{display:none}.c3-tllist{display:block}
+  .c3-pay .c3-payfig{display:none}
   .c3-hint,.c3-legend{display:none}
   .c3-grid{grid-template-columns:1fr}.c3-list{columns:1}
 }
@@ -366,22 +400,13 @@ body{margin:0}
 
   <div class="demo">Mockup with fictional data. This page changes nothing and calls no system. Facts come from the sample documents; a live question to Cognee goes through the app.</div>
 
-  <details class="intro">
-    <summary><h2>What is this page?</h2><span class="hint">How the picture is made</span></summary>
-    <div class="body">
-      <p>One customer group seen as a graph: companies, people, contracts, deals, orders, invoices, tickets and what people wrote. The facts live in text documents (one per node) that a knowledge engine (Cognee) reads. Each step of the story asks the documents one question; what comes back is lit up in the graph, with the lines that matched.</p>
-      <p><b>Retrieval here is local:</b> a keyword ranking over the same documents, so the page works without a server. Switch on "Ask Cognee live" to send a question to the real Cognee memory through the app (needs the Cognee connector and the corpus; see docs/customer-360.md).</p>
-      <p>The "heat" of a company is a stated rule of thumb (payment record, renewal date, tickets, order gaps), not a model. Statements that are conclusions, not facts, carry the mark Inference. All data is fictional.</p>
-    </div>
-  </details>
-
   <nav class="c3-acts" id="acts" aria-label="Story"></nav>
 
   <section class="c3-stage" id="stage" aria-label="Graph of the customer group">
     <canvas id="gl" role="img" aria-label="Three-dimensional graph of the customer group. Use the story panel or the node list to read it."></canvas>
     <div class="c3-kpis" id="kpis"></div>
     <div class="c3-hint c3-glass">Drag to turn · scroll to zoom · click a node</div>
-    <div class="c3-story c3-glass" id="story"></div>
+    <div class="c3-story c3-glass" id="storyBox"><div class="c3-grip" id="storyGrip" role="button" tabindex="0" aria-label="Move the story window: drag it, or use the arrow keys. Home puts it back." title="Drag to move · double-click to put it back"><span aria-hidden="true">⋯⋯⋯</span></div><div id="story"></div></div>
     <aside class="c3-detail c3-glass" id="detail" hidden></aside>
     <div class="c3-legend c3-glass" id="legend"></div>
     <div class="c3-tip c3-glass" id="tip" hidden></div>
@@ -416,10 +441,10 @@ body{margin:0}
   // @journey-start
 function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -431,17 +456,15 @@ function makeJourney() {
   var STOPS = [
     { id: 'inbox', step: 'today', label: 'Inbox', space: 'sales', tab: 'inbox' },
     { id: 'meetings', step: 'today', label: 'Meetings', space: 'sales', tab: 'meetings' },
-    { id: 'renewals', step: 'today', label: 'Renewals due', space: 'renewals', tab: 'overview', needs: 'renewals' },
     { id: 'c360', step: 'understand', label: 'Customer 360', space: 'customer-360', needs: 'c360' },
     { id: 'mails', step: 'understand', label: 'E-mails', space: 'customer-emails', needs: 'mail' },
     { id: 'graph', step: 'understand', label: 'Deal graph', space: 'sales', tab: 'knowledge' },
-    { id: 'renewal-map', step: 'understand', label: 'Renewal map', space: 'renewals', tab: 'process', needs: 'renewals' },
     { id: 'pipeline', step: 'decide', label: 'Pipeline', space: 'sales', tab: 'pipeline' },
     { id: 'forecast', step: 'decide', label: 'Forecast', space: 'sales', tab: 'forecast' },
-    { id: 'renewal-actions', step: 'decide', label: 'Renewal actions', space: 'renewals', tab: 'nba', needs: 'renewals' },
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
+    { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
   ];
   /** Which step a Sales tab belongs to (for the highlighted step of the rail). */
   var TAB_STEP = { inbox: 'today', meetings: 'today', knowledge: 'understand', pipeline: 'decide', forecast: 'decide', workflow: 'act', governance: 'act', rules: 'act', payments: 'follow' };
@@ -479,39 +502,80 @@ function makeJourney() {
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  var CSS = '.jr{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px 14px;padding:10px 16px;margin:0;background:var(--surface);border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}' +
-    '.jr-who{display:flex;flex-direction:column;justify-content:center;min-width:130px}.jr-who b{font-size:13px;color:var(--ink)}.jr-who span{color:var(--muted)}' +
-    '.jr ol{display:flex;flex:1 1 420px;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}' +
-    '.jr li{flex:1 1 130px;min-width:120px;border:1px solid var(--line);border-radius:12px;padding:6px 9px;background:var(--canvas)}' +
-    '.jr li[aria-current="step"]{border-color:var(--purple);background:var(--purple-dim)}' +
-    '.jr .jr-h{display:flex;gap:6px;align-items:baseline;font-weight:600;color:var(--ink)}.jr .jr-n{color:var(--purple);font-variant-numeric:tabular-nums}' +
-    '.jr .jr-a{color:var(--muted);margin:1px 0 4px;font-size:11px}' +
-    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:4px}' +
-    '.jr button{font:inherit;font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer}' +
-    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+  // The rail is big on purpose: five cards on one path. A dot per step (done = filled with a tick, now = large and pulsing, later = outline),
+  // a line that draws itself from step to step when the page opens (and from the old to the new step when the step changes), cards that
+  // rise one after the other, a lift on hover. "Reduce motion" turns all of it off; the resting state is the finished picture.
+  var CSS = '.jr{--g:14px;display:block;margin:0;padding:18px 22px 22px;background:var(--surface);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2)}' +
+    '.jr-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 0 18px}' +
+    '.jr-who{display:flex;flex-direction:column;min-width:0}.jr-who b{font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.15;color:var(--purple)}.jr-who span{color:var(--muted);font-size:12.5px;margin-top:2px}' +
+    '.jr-val{display:flex;gap:8px;flex-wrap:wrap}.jr-val span{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--canvas);font-size:12.5px;color:var(--muted)}.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}' +
+    '.jr-note{margin-left:auto;color:var(--muted);font-size:12px;max-width:46ch;text-align:right}' +
+    '.jr ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--g);list-style:none;margin:0;padding:0}' +
+    '.jr li{position:relative;display:flex;flex-direction:column;align-items:stretch}' +
+    '.jr-dot{position:relative;z-index:1;align-self:center;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin-bottom:12px;border:3px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}' +
+    '.jr li.done .jr-dot,.jr li.cur .jr-dot{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+    '.jr li.cur .jr-dot{transform:scale(1.18);box-shadow:0 0 0 6px var(--purple-dim);animation:jr-pulse 2.4s ease-in-out 1.2s infinite}' +
+    '.jr li:not(:first-child)::before{content:"";position:absolute;top:20px;left:calc(-1 * (var(--g) + 50%));width:calc(100% + var(--g));height:4px;border-radius:2px;background:var(--line);transform-origin:left center}' +
+    '.jr li.done::before,.jr li.cur::before{background:var(--purple)}' +
+    '.jr-card{flex:1;display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--canvas);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease}' +
+    '.jr li.done .jr-card{border-color:var(--purple-border)}' +
+    '.jr li.cur .jr-card{border:2px solid var(--purple);background:var(--purple-dim);padding:13px 15px;box-shadow:0 10px 24px color-mix(in srgb,var(--purple) 20%,transparent)}' +
+    '.jr li:hover .jr-card{transform:translateY(-3px);box-shadow:var(--shadow)}.jr li.cur:hover .jr-card{box-shadow:0 14px 30px color-mix(in srgb,var(--purple) 26%,transparent)}' +
+    '.jr .jr-h{font-size:18px;font-weight:750;letter-spacing:-.015em;line-height:1.2;color:var(--ink)}' +
+    '.jr .jr-a{color:var(--muted);font-size:13px;line-height:1.35}' +
+    '.jr-m{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.jr-m b{font-size:24px;font-weight:750;letter-spacing:-.02em;line-height:1.1;color:var(--purple);font-variant-numeric:tabular-nums}.jr-m span{font-size:12px;color:var(--muted)}' +
+    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}' +
+    '.jr button{font:inherit;font-size:13px;font-weight:550;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;transition:transform .12s ease,border-color .12s ease,background-color .12s ease,color .12s ease}' +
+    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink);transform:translateY(-1px)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
     '.jr button:disabled{opacity:.45;cursor:not-allowed}' +
-    '.jr-val{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--line);background:var(--canvas);font-size:12px;color:var(--muted)}' +
-    '.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}.jr-val .jr-note{margin-left:auto}' +
-    '@media (max-width:640px){.jr li{flex-basis:100%}}';
+    '@keyframes jr-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-popc{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1.18)}}' +
+    '@keyframes jr-draw{from{transform:scaleX(0)}to{transform:none}}' +
+    '@keyframes jr-drawy{from{transform:scaleY(0)}to{transform:none}}' +
+    '@keyframes jr-pulse{0%,100%{box-shadow:0 0 0 6px var(--purple-dim)}50%{box-shadow:0 0 0 13px color-mix(in srgb,var(--purple) 7%,transparent)}}' +
+    '.jr-in .jr-card{animation:jr-rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 90ms + .15s)}' +
+    '.jr-in .jr-dot{animation:jr-pop .5s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(var(--k) * 140ms)}' +
+    '.jr-in li.cur .jr-dot{animation:jr-popc .5s cubic-bezier(.2,.9,.3,1.3) calc(var(--k) * 140ms) both,jr-pulse 2.4s ease-in-out 1.6s infinite}' +
+    '.jr-in li::before{animation:jr-draw .5s ease both;animation-delay:calc(var(--k) * 140ms - 60ms)}' +
+    '.jr-move li.cur .jr-dot{animation:jr-popc .55s cubic-bezier(.2,.9,.3,1.3) .1s both,jr-pulse 2.4s ease-in-out 1s infinite}' +
+    '.jr-move li.go::before{animation:jr-draw .45s ease both;animation-delay:calc((var(--k) - var(--jr-from)) * 150ms - 100ms)}' +
+    '@media (max-width:760px){.jr{--gm:12px;padding:14px 14px 18px}.jr ol{grid-template-columns:1fr;gap:var(--gm)}.jr li{flex-direction:row;gap:14px;align-items:flex-start}.jr-dot{margin:0;align-self:flex-start}' +
+    '.jr li:not(:first-child)::before{display:none}.jr li:not(:last-child)::after{content:"";position:absolute;left:20px;top:44px;bottom:calc(-1 * var(--gm));width:4px;border-radius:2px;background:var(--line);transform-origin:top center}' +
+    '.jr li.done:not(:last-child)::after{background:var(--purple)}.jr-in li:not(:last-child)::after{animation:jr-drawy .5s ease both;animation-delay:calc(var(--k) * 140ms)}.jr-note{margin-left:0;text-align:left}}' +
+    '@media (prefers-reduced-motion:reduce){.jr *,.jr *::before,.jr *::after{animation:none!important;transition:none!important}}';
   function injectStyle(doc) {
     if (doc.getElementById('journey-style')) return;
     var st = doc.createElement('style'); st.id = 'journey-style'; st.textContent = CSS; doc.head.appendChild(st);
   }
+  /** The figures the pages pass in (a label and a value) belong to a step: they are shown big under that step. Others stay in the strip on top. */
+  var VALUE_STEP = [[/^Money in play/, 'decide'], [/^Due within/, 'today'], [/^Waiting for our answer/, 'today'], [/^Past the/, 'today'], [/^Deals with a risk/, 'understand'], [/^Open points/, 'understand'], [/^Waiting for your decision/, 'act']];
+  function stepOfValue(label) { for (var i = 0; i < VALUE_STEP.length; i++) if (VALUE_STEP[i][0].test(label)) return VALUE_STEP[i][1]; return null; }
+  /** Where the rail was drawn last (null = never): the first drawing plays the entrance, a later one with another step glides from the old step. */
+  var drawn = { idx: null };
   /**
-   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...] for the strip, note: optional text at the right.
+   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...], note: optional text at the right.
    * The stop that is shown on this page gets aria-current="true"; a stop the customer has no sample data for is disabled.
    */
   function railHtml(cur, values, note) {
     var c = CUSTOMERS[cur.customer] || CUSTOMERS.lindenau;
+    var idx = 0;
+    for (var q = 0; q < STEPS.length; q++) if (STEPS[q].id === cur.step) idx = q;
+    var mode = drawn.idx === null ? 'in' : drawn.idx !== idx ? 'move' : 'still', from = drawn.idx === null ? 0 : drawn.idx;
+    drawn.idx = idx;
+    var byStep = {}, rest = [];
+    (values || []).forEach(function (v) { var st = stepOfValue(String(v[0])); if (st) (byStep[st] = byStep[st] || []).push(v); else rest.push(v); });
     var steps = STEPS.map(function (st, i) {
       var stops = STOPS.filter(function (s) { return s.step === st.id; }).map(function (s) {
         var ok = available(s, cur.customer), here = cur.stop === s.id;
         return '<button type="button" data-jr-stop="' + esc(s.id) + '"' + (ok ? '' : ' disabled title="No sample data for ' + esc(c.name) + '"') + ' aria-current="' + here + '">' + esc(s.label) + '</button>';
       }).join('');
-      return '<li' + (cur.step === st.id ? ' aria-current="step"' : '') + '><div class="jr-h"><span class="jr-n">' + (i + 1) + '</span>' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div><div class="jr-s">' + stops + '</div></li>';
+      var metrics = (byStep[st.id] || []).slice(0, 2).map(function (v) { return '<div class="jr-m"><b>' + esc(v[1]) + '</b><span>' + esc(v[0]) + '</span></div>'; }).join('');
+      var state = i < idx ? 'done' : i === idx ? 'cur' : 'todo', go = mode === 'move' && idx > from && i > from && i <= idx ? ' go' : '';
+      return '<li class="' + state + go + '" style="--k:' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><div class="jr-dot" aria-hidden="true">' + (i < idx ? '&#10003;' : i + 1) + '</div><div class="jr-card"><div class="jr-h">' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div>' + metrics + '<div class="jr-s">' + stops + '</div></div></li>';
     }).join('');
-    var strip = values && values.length ? '<div class="jr-val">' + values.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div>' : '';
-    return '<nav class="jr" aria-label="Sales journey"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey</span></div><ol>' + steps + '</ol></nav>' + strip;
+    var strip = rest.length ? '<div class="jr-val">' + rest.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + '</div>' : '';
+    return '<nav class="jr jr-' + mode + '" style="--jr-from:' + from + '" aria-label="Sales journey"><div class="jr-top"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey · step ' + (idx + 1) + ' of ' + STEPS.length + ': ' + esc(STEPS[idx].label) + '</span></div>' + strip + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div><ol>' + steps + '</ol></nav>';
   }
   return { CUSTOMERS: CUSTOMERS, STEPS: STEPS, STOPS: STOPS, TAB_STEP: TAB_STEP, stop: stop, available: available, handoff: handoff, parse: parse, customerOfAccount: customerOfAccount, railHtml: railHtml, injectStyle: injectStyle };
 }
@@ -1106,7 +1170,158 @@ function makeLogic(D) {
     return pos;
   }
 
+  /** The figures that can be compared between the companies of the group (the "Figures per company" card). */
+  var METRICS = [
+    { id: 'arr', label: 'Per year', unit: 'EUR', pick: function (s) { return s.arr; } },
+    { id: 'pipeline', label: 'Weighted pipeline', unit: 'EUR', pick: function (s) { return s.pipeline.weighted; } },
+    { id: 'outstanding', label: 'Outstanding', unit: 'EUR, gross', pick: function (s) { return s.payment.exposureGross; } },
+    { id: 'overdue', label: 'Overdue', unit: 'EUR, gross', pick: function (s) { return s.payment.overdueGross; } },
+    { id: 'tickets', label: 'Open tickets', unit: '', pick: function (s) { return s.openTickets; } },
+    { id: 'heat', label: 'Heat', unit: 'of 100', pick: function (s) { return s.heat; } },
+  ];
+  /** One figure for every company, largest first; `pct` is the share of the largest (for the bar). An unknown id gives the first figure. */
+  function figures(metricId) {
+    var m = METRICS.filter(function (x) { return x.id === metricId; })[0] || METRICS[0];
+    var rows = D.entities.map(function (e) {
+      var s = summary(e.id), v = m.pick(s);
+      return { entity: e.id, node: resolve(e.id), name: e.name, short: e.short, value: v, text: m.id === 'tickets' || m.id === 'heat' ? String(v) : eurShort(v), level: s.level };
+    });
+    rows.sort(function (a, b) { return b.value - a.value || (a.short < b.short ? -1 : a.short > b.short ? 1 : 0); });
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([0]));
+    rows.forEach(function (r) { r.pct = max > 0 ? Math.round((r.value / max) * 100) : 0; });
+    return { metric: m.id, label: m.label, unit: m.unit, rows: rows, max: max, total: sum(rows, function (r) { return r.value; }), totalText: m.id === 'heat' ? '' : m.id === 'tickets' ? String(sum(rows, function (r) { return r.value; })) : eurShort(sum(rows, function (r) { return r.value; })) };
+  }
+  /** The things that happen to the companies, each with a date (the "Timeline" card). */
+  var TL_KINDS = [
+    { id: 'contract', label: 'Contracts', glyph: '▬' },
+    { id: 'invoice', label: 'Invoices', glyph: '●' },
+    { id: 'ticket', label: 'Tickets', glyph: '▲' },
+    { id: 'order', label: 'Orders', glyph: '■' },
+    { id: 'message', label: 'Messages', glyph: '◆' },
+    { id: 'deal', label: 'Deals', glyph: '★' },
+  ];
+  var TONE_RANK = { ok: 0, info: 1, warn: 2, bad: 3 };
+  /** One event per contract (a span from start to end), invoice (at its due date), ticket, order, message and deal (at its close date), oldest first. `node` is the graph node a click selects. */
+  function events() {
+    var out = [], gaps = o2c();
+    D.contracts.forEach(function (c) {
+      var r = renewalOf(c), p = product(c.product);
+      out.push({ id: c.id, kind: 'contract', entity: c.entity, date: c.start, end: c.end, tone: r.status === 'lapsed' ? 'bad' : r.status === 'near' ? 'warn' : 'ok', node: resolve(c.id),
+        title: c.id + ' · ' + (p ? p.name : c.product) + ' · ' + eur(c.annualEur) + ' EUR a year · ' + c.start + ' to ' + c.end + ' · ' + c.status });
+    });
+    D.invoices.forEach(function (i) {
+      var late = i.status === 'Paid' && i.daysLate > 0;
+      out.push({ id: i.id, kind: 'invoice', entity: i.entity, date: i.dueOn, tone: i.status === 'Overdue' ? 'bad' : i.status === 'Open' ? 'info' : late ? 'warn' : 'ok', node: i.status === 'Paid' ? 'pay:' + i.entity : resolve(i.id),
+        title: i.id + ' · due ' + i.dueOn + ' · ' + eur(i.grossEur) + ' EUR gross · ' + (i.status === 'Paid' ? 'paid ' + i.paidOn + (late ? ', ' + i.daysLate + ' days late' : '') : i.status.toLowerCase()) });
+    });
+    D.tickets.forEach(function (t) {
+      out.push({ id: t.id, kind: 'ticket', entity: t.entity, date: t.openedOn, tone: t.status === 'Resolved' ? 'ok' : t.severity === 'P1' || t.severity === 'P2' ? 'bad' : 'warn', node: resolve(t.id),
+        title: t.id + ' ' + t.severity + ' · opened ' + t.openedOn + ' · ' + t.status.toLowerCase() + ' · ' + t.title });
+    });
+    D.orders.forEach(function (o) {
+      var gap = gaps.filter(function (g) { return g.order === o.id; })[0];
+      out.push({ id: o.id, kind: 'order', entity: o.entity, date: o.orderedOn, tone: gap ? 'warn' : 'info', node: resolve(o.id), title: o.id + ' · ordered ' + o.orderedOn + ' · ' + eur(o.netEur) + ' EUR net · ' + o.title + (gap ? ' · ' + gap.text : '') });
+    });
+    D.signals.forEach(function (s) {
+      out.push({ id: s.id, kind: 'message', entity: s.entity, date: s.date, tone: 'info', node: resolve(s.id), title: s.id + ' · ' + s.kind + ' · ' + s.date + ' · ' + String(s.text).replace(/\s+/g, ' ').slice(0, 90) });
+    });
+    D.opportunities.forEach(function (o) {
+      out.push({ id: o.id, kind: 'deal', entity: o.entity, date: o.closeDate, tone: 'info', node: resolve(o.id), title: o.id + ' · expected ' + o.closeDate + ' · ' + eur(o.acvEur) + ' EUR · ' + o.title + ' · ' + o.stage + ' ' + o.probability + ' %' });
+    });
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1; });
+    return out;
+  }
+  /** The timeline for a period ('90d', '12m' = the last year and the next half year, 'all') and a set of kinds: one lane per company. */
+  function timeline(opts) {
+    opts = opts || {};
+    var ids = TL_KINDS.map(function (k) { return k.id; });
+    var kinds = Array.isArray(opts.kinds) ? opts.kinds.filter(function (k) { return ids.indexOf(k) >= 0; }) : ids;
+    var range = opts.range === '90d' || opts.range === 'all' ? opts.range : '12m';
+    var all = events(), from, to;
+    if (range === 'all') {
+      from = all.reduce(function (m, e) { return e.date < m ? e.date : m; }, ASOF); to = all.reduce(function (m, e) { var d = e.end || e.date; return d > m ? d : m; }, ASOF);
+    } else { from = addDays(ASOF, range === '90d' ? -90 : -365); to = addDays(ASOF, range === '90d' ? 90 : 180); }
+    var inWindow = all.filter(function (e) { return (e.end || e.date) >= from && e.date <= to; });
+    var counts = {}; ids.forEach(function (k) { counts[k] = inWindow.filter(function (e) { return e.kind === k; }).length; });
+    var shown = inWindow.filter(function (e) { return kinds.indexOf(e.kind) >= 0; });
+    return {
+      asOf: ASOF, range: range, from: from, to: to, days: Math.max(1, daysBetween(from, to)), kinds: TL_KINDS, active: kinds, counts: counts, total: shown.length,
+      lanes: D.entities.map(function (e) { return { entity: e.id, short: e.short, name: e.name, node: resolve(e.id), events: shown.filter(function (x) { return x.entity === e.id; }) }; }),
+    };
+  }
+  /** Events of one kind that lie within `gapDays` of each other become one mark with a count, so a crowded stretch stays readable. A contract is never merged. The mark has the worst tone of its events. */
+  function bucketEvents(list, gapDays) {
+    var out = [], open = {};
+    list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).forEach(function (e) {
+      var b = open[e.kind];
+      if (e.kind !== 'contract' && b && daysBetween(b.last, e.date) <= gapDays) {
+        b.events.push(e); b.count += 1; b.last = e.date; if (TONE_RANK[e.tone] > TONE_RANK[b.tone]) b.tone = e.tone;
+      } else {
+        b = { kind: e.kind, date: e.date, last: e.date, end: e.end || null, tone: e.tone, events: [e], count: 1 };
+        if (e.kind !== 'contract') open[e.kind] = b;
+        out.push(b);
+      }
+    });
+    return out;
+  }
+
+  /** A text on one line, cut at a word boundary with an ellipsis when it is longer than `max`. */
+  function clipText(text, max) {
+    var t = String(text).replace(/\s+/g, ' ').trim();
+    if (t.length <= max) return t;
+    var cut = t.slice(0, max), sp = cut.lastIndexOf(' ');
+    return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[ ,.;:]+$/, '') + '…';
+  }
+  /** How each company pays, measured from its paid invoices (the "Invoices and payment behaviour" card). Not a forecast. */
+  function behaviour() {
+    var rows = [];
+    D.entities.forEach(function (e) {
+      var inv = D.invoices.filter(function (i) { return i.entity === e.id; });
+      if (!inv.length) return;
+      var p = paymentOf(e.id);
+      var paid = inv.filter(function (i) { return i.status === 'Paid'; }).sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : a.dueOn > b.dueOn ? 1 : 0; });
+      var trend = null;
+      if (paid.length >= 6) {
+        var recent = paid.slice(-4), before = paid.slice(0, -4);
+        var delta = Math.round((sum(recent, function (i) { return i.daysLate; }) / recent.length - sum(before, function (i) { return i.daysLate; }) / before.length) * 10) / 10;
+        trend = { delta: delta, label: delta <= -2 ? 'better' : delta >= 2 ? 'worse' : 'steady' };
+      }
+      rows.push({
+        entity: e.id, short: e.short, name: e.name, node: resolve(e.id), invoices: inv.length, paid: paid.length, lateCount: p.lateCount, latePct: paid.length ? Math.round((p.lateCount / paid.length) * 100) : 0,
+        avgDaysLate: p.avgDaysLate, maxDaysLate: p.maxDaysLate, trend: trend, exposureGross: p.exposureGross, overdueGross: p.overdueGross, oldestOverdueDays: p.oldestOverdueDays, risk: p.risk,
+        points: paid.map(function (i) { return { id: i.id, due: i.dueOn, daysLate: i.daysLate, gross: i.grossEur, node: 'pay:' + e.id }; }),
+        overdue: p.overdue.map(function (i) { return { id: i.id, due: i.dueOn, daysLate: daysBetween(i.dueOn, ASOF), gross: i.grossEur, node: resolve(i.id) }; }),
+      });
+    });
+    var rank = { high: 3, medium: 2, low: 1, none: 0 };
+    rows.sort(function (a, b) { return b.exposureGross - a.exposureGross || rank[b.risk] - rank[a.risk] || b.avgDaysLate - a.avgDaysLate; });
+    return rows;
+  }
+  /** Invoices that are not paid yet, with the reason a document gives (a message that names the invoice) and an expected payment date by a stated rule of thumb. */
+  function openInvoices() {
+    var rows = D.invoices.filter(function (i) { return i.status !== 'Paid'; }).map(function (i) {
+      var p = paymentOf(i.entity), paidN = p.paid;
+      var sig = D.signals.filter(function (s) { return (s.about || []).indexOf(i.id) >= 0; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0] || null;
+      var avg = Math.max(0, Math.round(p.avgDaysLate));
+      var expectedOn = paidN ? addDays(i.dueOn, avg) : null;
+      return {
+        id: i.id, entity: i.entity, short: (ent(i.entity) || {}).short || i.entity, dueOn: i.dueOn, grossEur: i.grossEur, status: i.status, daysToDue: daysBetween(ASOF, i.dueOn), node: resolve(i.id),
+        reason: sig ? { signal: sig.id, kind: sig.kind, date: sig.date, text: clipText(sig.text, 200), node: resolve(sig.id) } : null,
+        expected: expectedOn ? { on: expectedOn, later: expectedOn < ASOF, avgDaysLate: avg, basedOn: paidN } : null,
+      };
+    });
+    rows.sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : a.dueOn > b.dueOn ? 1 : 0; });
+    return rows;
+  }
+
+  /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
+  function clampBox(left, top, w, h, W, H, pad) {
+    function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
+    return { left: fit(left, w, W), top: fit(top, h, H) };
+  }
+
   return {
+    metrics: METRICS, figures: figures, clampBox: clampBox, events: events, timeline: timeline, bucketEvents: bucketEvents, TL_KINDS: TL_KINDS, behaviour: behaviour, openInvoices: openInvoices,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,
@@ -1198,7 +1413,7 @@ function makeLogic(D) {
 
   // ---- story state -----------------------------------------------------------------------------------------------------------------
   var BEATS = L.beats(), ACTS = L.ACTS;
-  var S = { mode: 'story', i: -1, act: 0, sel: null, retr: null, custom: false, live: false, lastAct: 0 };
+  var S = { mode: 'story', i: -1, act: 0, sel: null, retr: null, custom: false, live: false, lastAct: 0, metric: 'arr', tlRange: '12m', tlOff: {}, tlPick: null, payEnt: null };
   function actOfBeat(i) { return i < 0 ? 0 : BEATS[i].act; }
   var NEIGH = {};
   function neighIds(id) { return NEIGH[id] || (NEIGH[id] = L.neighbours(id)); }
@@ -1250,7 +1465,7 @@ function makeLogic(D) {
     applyVisibility(); applyFocus(); fly({ tx: 0, ty: 0, tz: 0, dist: 1180, yaw: cam.yaw, pitch: -0.32 }, 1400); renderAll();
   }
   function select(id, fromGraph) {
-    S.sel = id; applyFocus();
+    S.sel = id; applyFocus(); markRows();
     var o = id ? RN[id] : null;
     if (o) { if (!visible(o) && S.mode === 'story') { /* a node of a later act: show it */ o.tvis = 1; } fly({ tx: o.x, ty: o.y, tz: o.z, dist: Math.min(cam.dist, 640) }, 1000); }
     renderDetail();
@@ -1451,7 +1666,7 @@ function makeLogic(D) {
     ['group', 'entity', 'contact', 'contract', 'product', 'opportunity', 'order', 'invoice', 'payments', 'ticket', 'signal', 'rec'].forEach(function (t) { var tt = L.TYPES[t]; out.push('<span><i style="background:' + TOK[tt.color] + '"></i>' + esc(tt.label) + '</span>'); });
     $('legend').innerHTML = out.join('');
   }
-  function row(id, cells) { return '<tr class="row" data-node="' + esc(id) + '">' + cells.map(function (c) { return '<td' + (c.n ? ' class="n"' : '') + '>' + c.h + '</td>'; }).join('') + '</tr>'; }
+  function row(id, cells) { return '<tr class="row" data-node="' + esc(id) + '">' + cells.map(function (c) { return '<td' + (c.n ? ' class="n"' : c.cls ? ' class="' + c.cls + '"' : '') + '>' + c.h + '</td>'; }).join('') + '</tr>'; }
   function renderBelow() {
     var g = L.group(), html = '';
     var heat = g.summaries.slice().sort(function (a, b) { return b.heat - a.heat; }).map(function (s) {
@@ -1459,7 +1674,14 @@ function makeLogic(D) {
       return row(L.resolve(s.entity), [{ h: '<b>' + esc(s.short) + '</b><div class="c3-why">' + esc(e.city + ' · ' + e.role) + '</div>' }, { h: L.eur(e.employees), n: 1 }, { h: L.eurShort(s.arr), n: 1 }, { h: L.eurShort(s.pipeline.weighted), n: 1 }, { h: L.eur(s.payment.exposureGross), n: 1 },
         { h: '<div class="c3-heat"><div class="b"><i class="' + s.level + '" style="width:' + s.heat + '%"></i></div><b>' + s.heat + '</b></div><div class="c3-why">' + esc(why || 'nothing special') + '</div>' }]);
     }).join('');
-    html += '<div class="card"><div class="c3-h">Companies by heat</div><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">People</th><th class="n">Per year (EUR)</th><th class="n">Weighted pipeline (EUR)</th><th class="n">Outstanding (EUR, gross)</th><th>Heat</th></tr></thead><tbody>' + heat + '</tbody></table><div class="c3-note">Heat = payment record + renewal date + tickets + order gaps, 0 to 100. A stated rule of thumb (see data rules), not a forecast.</div></div>';
+    var fg = L.figures(S.metric);
+    var figRows = fg.rows.map(function (r) { return row(r.node, [{ h: '<b>' + esc(r.short) + '</b>' }, { cls: 'figbar', h: '<div class="c3-bar" role="img" aria-label="' + esc(r.short + ': ' + r.text) + '"><i class="' + (fg.metric === 'heat' ? r.level : '') + '" style="width:' + r.pct + '%"></i></div>' }, { h: esc(r.text), n: 1 }]); }).join('');
+    html += '<div class="card"><div class="c3-h">Figures per company <span class="c3-sub">· click a row to find the company in the graph</span></div><div class="c3-mts" role="group" aria-label="Which figure">' + L.metrics.map(function (m) { return '<button type="button" data-metric="' + m.id + '" aria-pressed="' + (m.id === fg.metric) + '"' + (m.id === fg.metric ? ' class="on"' : '') + '>' + esc(m.label) + '</button>'; }).join('') + '</div>' +
+      '<table class="c3-tbl c3-fig"><thead><tr><th>Company</th><th>' + esc(fg.label) + '</th><th class="n">' + esc(fg.unit || 'Number') + '</th></tr></thead><tbody>' + figRows + '</tbody></table>' +
+      (fg.totalText ? '<div class="c3-note">Group total: ' + esc(fg.totalText) + (fg.unit ? ' ' + esc(fg.unit) : '') + '. The bar shows the share of the largest company.</div>' : '<div class="c3-note">Heat is a stated rule of thumb, not a model.</div>') + '</div>';
+    html += '<div class="card c3-tl" id="tlHost" style="margin-top:16px"></div>';
+    html += '<div class="card c3-tl c3-pay" id="payHost" style="margin-top:16px"></div>';
+    html += '<div class="card" style="margin-top:16px"><div class="c3-h">Companies by heat</div><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">People</th><th class="n">Per year (EUR)</th><th class="n">Weighted pipeline (EUR)</th><th class="n">Outstanding (EUR, gross)</th><th>Heat</th></tr></thead><tbody>' + heat + '</tbody></table><div class="c3-note">Heat = payment record + renewal date + tickets + order gaps, 0 to 100. A stated rule of thumb (see data rules), not a forecast.</div></div>';
     if (S.mode === 'explore' || S.act === 2) {
       var ct = D.contracts.map(function (c) { var r = L.renewalOf(c); return row('contract:' + c.id, [{ h: '<b>' + esc(c.id) + '</b><div class="c3-why">' + esc(L.ent(c.entity).short) + ' · ' + esc(D.products.filter(function (p) { return p.id === c.product; })[0].name) + '</div>' }, { h: L.eur(c.annualEur), n: 1 }, { h: esc(r.decisionDate) + '<div class="c3-why">' + (r.status === 'lapsed' ? 'lapsed' : r.status === 'auto-renews' ? 'renews by itself' : r.daysToDecision + ' days') + '</div>' }]); }).join('');
       var op = D.opportunities.map(function (o) { return row('opportunity:' + o.id, [{ h: '<b>' + esc(o.id) + '</b><div class="c3-why">' + esc(o.title) + '</div>' }, { h: L.eur(o.acvEur), n: 1 }, { h: esc(o.stage) + ' · ' + L.weighted(o) / o.acvEur * 100 + ' %' + (o.discountPct > D.rules.discountThresholdPct ? '<div class="c3-why">deal desk: ' + o.discountPct + ' % discount</div>' : '') }]); }).join('');
@@ -1477,8 +1699,140 @@ function makeLogic(D) {
       }).join('');
       html += '<div class="card" style="margin-top:16px"><div class="c3-h">Proposals, ranked by amount at stake × urgency</div><div class="c3-recs">' + recs + '</div><div class="c3-note">Joule drafts on request. Nothing is written to any system; each proposal names who approves it. Ranking orders the list, it does not predict an outcome.</div></div>';
     }
-    $('below').innerHTML = html;
+    $('below').innerHTML = html; markRows(); renderTimeline(); renderPay();
   }
+  // ---- timeline: one lane per company, one mark per event; a click selects the node in the graph -----------------------------------------
+  var tlMarks = [];
+  function star(x, y, r) { var p = []; for (var i = 0; i < 10; i += 1) { var a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.45 : r; p.push((x + q * Math.cos(a)).toFixed(1) + ',' + (y + q * Math.sin(a)).toFixed(1)); } return 'M' + p.join('L') + 'Z'; }
+  function tlShape(kind, x, y, tone) {
+    var c = 'tl-shape ' + tone;
+    if (kind === 'invoice') return '<circle class="' + c + '" cx="' + x + '" cy="' + y + '" r="4.5"/>';
+    if (kind === 'ticket') return '<path class="' + c + '" d="M' + x + ',' + (y - 5.5) + 'L' + (x + 5.5) + ',' + (y + 4) + 'L' + (x - 5.5) + ',' + (y + 4) + 'Z"/>';
+    if (kind === 'order') return '<rect class="' + c + '" x="' + (x - 4) + '" y="' + (y - 4) + '" width="8" height="8" rx="1"/>';
+    if (kind === 'message') return '<path class="' + c + '" d="M' + x + ',' + (y - 5.5) + 'L' + (x + 5.5) + ',' + y + 'L' + x + ',' + (y + 5.5) + 'L' + (x - 5.5) + ',' + y + 'Z"/>';
+    return '<path class="' + c + '" d="' + star(x, y, 6.5) + '"/>';
+  }
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function renderTimeline() {
+    var host = $('tlHost'); if (!host) return;
+    var kinds = L.TL_KINDS.filter(function (k) { return !S.tlOff[k.id]; }).map(function (k) { return k.id; });
+    var T = L.timeline({ kinds: kinds, range: S.tlRange });
+    var RANGES = [['90d', '± 90 days'], ['12m', 'Last 12 months and next 6'], ['all', 'All']];
+    var bar = '<div class="c3-tlbar"><div class="c3-mts" role="group" aria-label="What to show" style="margin:0">' + T.kinds.map(function (k) {
+      var on = !S.tlOff[k.id]; return '<button type="button" data-tlkind="' + k.id + '" aria-pressed="' + on + '"' + (on ? ' class="on"' : '') + '>' + k.glyph + ' ' + esc(k.label) + ' ' + T.counts[k.id] + '</button>'; }).join('') +
+      '</div><span class="sp"></span><div class="c3-mts rng" role="group" aria-label="Period" style="margin:0">' + RANGES.map(function (r) { return '<button type="button" data-tlrange="' + r[0] + '" aria-pressed="' + (S.tlRange === r[0]) + '"' + (S.tlRange === r[0] ? ' class="on"' : '') + '>' + r[1] + '</button>'; }).join('') + '</div></div>';
+    // narrow screens get a list by date instead of the axis
+    var flat = []; T.lanes.forEach(function (ln) { ln.events.forEach(function (e) { flat.push(e); }); });
+    flat.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    var list = '<div class="c3-tllist">' + (flat.length ? flat.slice(0, 60).map(function (e) { return '<button type="button" data-node="' + esc(e.node) + '"><span class="d">' + esc(e.date) + '</span>' + esc(e.title) + '</button>'; }).join('') + (flat.length > 60 ? '<div class="c3-note">Showing the 60 most recent of ' + flat.length + ' events.</div>' : '') : '<div class="c3-note">Nothing in this period.</div>') + '</div>';
+    var W = Math.max(560, (host.clientWidth || 900) - 40), LEFT = 132, RIGHT = 14, TOP = 26, LANE = 40, PW = W - LEFT - RIGHT, H = TOP + LANE * T.lanes.length + 20;
+    var perDay = PW / T.days, gap = Math.max(1, Math.ceil(10 / perDay));
+    function xOf(d) { return Math.round((LEFT + Math.max(0, Math.min(T.days, L.daysBetween(T.from, d))) * perDay) * 10) / 10; }
+    tlMarks = [];
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Timeline: one lane per company. Each mark is a button that selects the node in the graph.">';
+    // month ticks
+    var step = T.days > 900 ? 6 : T.days > 400 ? 3 : 1, y0 = +T.from.slice(0, 4), m0 = +T.from.slice(5, 7) - 1;
+    for (var k = 0; k < 200; k += 1) {
+      var mm = (m0 + k) % 12, yy = y0 + Math.floor((m0 + k) / 12), d0 = yy + '-' + String(mm + 1).padStart(2, '0') + '-01';
+      if (d0 > T.to) break; if (d0 < T.from || k % step) continue;
+      var gx = xOf(d0); svg += '<line class="tl-grid" x1="' + gx + '" x2="' + gx + '" y1="' + (TOP - 4) + '" y2="' + (H - 18) + '"/><text class="tl-txt" x="' + (gx + 3) + '" y="' + (TOP - 9) + '">' + MONTHS[mm] + ' ' + String(yy).slice(2) + '</text>';
+    }
+    T.lanes.forEach(function (ln, li) {
+      var y = TOP + li * LANE;
+      svg += '<rect class="tl-lane' + (li % 2 ? ' alt' : '') + '" x="0" y="' + y + '" width="' + W + '" height="' + LANE + '"/>';
+      tlMarks.push({ node: ln.node, title: ln.name }); svg += '<g class="tl-ev" data-tlm="' + (tlMarks.length - 1) + '" tabindex="0" role="button" aria-label="' + esc(ln.name + ' in the graph') + '"><text class="tl-name" x="8" y="' + (y + 25) + '">' + esc(ln.short.length > 17 ? ln.short.slice(0, 16) + '…' : ln.short) + '</text><title>' + esc(ln.name) + '</title></g>';
+      L.bucketEvents(ln.events, gap).forEach(function (b) {
+        tlMarks.push(b);
+        var label = b.count > 1 ? b.count + ' ' + b.kind + 's, ' + b.date + ' to ' + b.last : b.events[0].title, inner;
+        if (b.kind === 'contract') {
+          var x1 = xOf(b.date), x2 = Math.max(x1 + 3, xOf(b.end));
+          inner = '<rect class="tl-shape tl-span ' + b.tone + '" x="' + x1 + '" y="' + (y + 6) + '" width="' + (x2 - x1) + '" height="7" rx="3"/>';
+        } else {
+          var cx = Math.round((xOf(b.date) + xOf(b.last)) / 2 * 10) / 10;
+          inner = tlShape(b.kind, cx, y + 27, b.tone) + (b.count > 1 ? '<text class="tl-cnt" x="' + (cx + 8) + '" y="' + (y + 31) + '">' + b.count + '</text>' : '');
+        }
+        svg += '<g class="tl-ev" data-tlm="' + (tlMarks.length - 1) + '" tabindex="0" role="button" aria-label="' + esc(label) + '">' + inner + '<title>' + esc(label) + '</title></g>';
+      });
+    });
+    var tx = xOf(T.asOf);
+    svg += '<line class="tl-today" x1="' + tx + '" x2="' + tx + '" y1="' + (TOP - 4) + '" y2="' + (H - 18) + '"/><text class="tl-txt" x="' + (tx + 4) + '" y="' + (H - 5) + '">as of ' + esc(T.asOf) + '</text></svg>';
+    var pick = '';
+    if (S.tlPick !== null && tlMarks[S.tlPick] && tlMarks[S.tlPick].events) { var pb = tlMarks[S.tlPick]; pick = '<div class="c3-tlpick"><div class="h">' + pb.count + ' ' + esc(pb.kind) + ' events, ' + esc(pb.date) + (pb.last !== pb.date ? ' to ' + esc(pb.last) : '') + '. Choose one.</div>' + pb.events.map(function (e) { return '<button type="button" data-node="' + esc(e.node) + '">' + esc(e.title) + '</button>'; }).join('') + '</div>'; }
+    host.innerHTML = '<div class="c3-h">Timeline <span class="c3-sub">· ' + T.total + ' events · click a mark to find it in the graph · colour: green fine, purple neutral, amber watch, red late or open problem</span></div>' + bar + (T.total ? svg : '<div class="c3-note">Nothing in this period for the chosen kinds.</div>') + pick + list +
+      '<div class="c3-note">Contracts run from start to end. Invoices stand at their due date, tickets at the day they were opened, deals at their expected close date. Marks of one kind that lie close together are merged and show a number.</div>';
+  }
+  // ---- invoices and payment behaviour: measured from the paid invoices, not a forecast -----------------------------------------------------
+  var payMarks = [];
+  function renderPay() {
+    var host = $('payHost'); if (!host) return;
+    var rows = L.behaviour(), open = L.openInvoices(), P = D.rules.payment;
+    if (!rows.length) { host.innerHTML = ''; return; }
+    var ent = rows.filter(function (r) { return r.entity === S.payEnt; })[0] || rows[0];
+    function days(n) { return (n > 0 ? '+' : '') + (Math.round(n * 10) / 10) + ' d'; }
+    var table = rows.map(function (r) {
+      var tr = r.trend ? '<span class="' + (r.trend.label === 'worse' ? 'up' : r.trend.label === 'better' ? 'down' : '') + '">' + (r.trend.label === 'worse' ? '▲ worse' : r.trend.label === 'better' ? '▼ better' : '● steady') + ' (' + days(r.trend.delta) + ')</span>' : '<span class="c3-why" style="display:inline">too few invoices</span>';
+      return '<tr class="row' + (r.entity === ent.entity ? ' sel' : '') + '" data-node="' + esc(r.node) + '" data-payent="' + esc(r.entity) + '"><td><b>' + esc(r.short) + '</b></td><td class="n">' + r.invoices + '</td><td class="n">' + r.latePct + ' %</td><td class="n">' + days(r.avgDaysLate) + '</td><td class="n">' + days(r.maxDaysLate) + '</td><td>' + tr + '</td><td class="n">' + L.eur(r.exposureGross) + '</td><td class="n">' + (r.oldestOverdueDays ? r.oldestOverdueDays + ' d' : '–') + '</td><td><span class="c3-risk ' + (r.risk === 'none' ? '' : r.risk) + '">' + esc(r.risk) + '</span></td></tr>';
+    }).join('');
+    // chart for the chosen company: every paid invoice is a dot (due date, days late); an unpaid overdue invoice is a ring at the days it is late so far
+    var pts = ent.points, od = ent.overdue, all = pts.concat(od);
+    var W = Math.max(560, (host.clientWidth || 900) - 40), LEFT = 46, RIGHT = 16, TOP = 14, H = 230, BOT = 28, PW = W - LEFT - RIGHT, PH = H - TOP - BOT;
+    var lo = Math.min(-5, Math.floor(Math.min.apply(null, all.map(function (p) { return p.daysLate; }).concat([0])) / 5) * 5), hi = Math.max(P.highAvgDaysLate + 5, Math.ceil(Math.max.apply(null, all.map(function (p) { return p.daysLate; }).concat([0])) / 5) * 5);
+    var first = all.length ? all.reduce(function (m, p) { return p.due < m ? p.due : m; }, all[0].due) : D.asOf, last = all.length ? all.reduce(function (m, p) { return p.due > m ? p.due : m; }, all[0].due) : D.asOf, span = Math.max(1, L.daysBetween(first, last));
+    function px(d) { return Math.round((LEFT + (L.daysBetween(first, d) / span) * PW) * 10) / 10; }
+    function py(v) { return Math.round((TOP + (1 - (v - lo) / (hi - lo)) * PH) * 10) / 10; }
+    payMarks = [];
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Days late per invoice for ' + esc(ent.name) + '. Each dot is a button that selects the node in the graph.">';
+    for (var v = Math.ceil(lo / 10) * 10; v <= hi; v += 10) svg += '<line class="tl-grid" x1="' + LEFT + '" x2="' + (W - RIGHT) + '" y1="' + py(v) + '" y2="' + py(v) + '"/><text class="tl-txt" x="' + (LEFT - 6) + '" y="' + (py(v) + 4) + '" text-anchor="end">' + v + '</text>';
+    svg += '<line class="tl-zero" x1="' + LEFT + '" x2="' + (W - RIGHT) + '" y1="' + py(0) + '" y2="' + py(0) + '"/><text class="tl-txt" x="' + (LEFT + 4) + '" y="' + (py(0) - 4) + '">on time</text>';
+    svg += '<line class="tl-limit" x1="' + LEFT + '" x2="' + (W - RIGHT) + '" y1="' + py(P.mediumAvgDaysLate) + '" y2="' + py(P.mediumAvgDaysLate) + '"/><text class="tl-txt" x="' + (W - RIGHT) + '" y="' + (py(P.mediumAvgDaysLate) - 3) + '" text-anchor="end">' + P.mediumAvgDaysLate + ' days: a little late (average)</text>';
+    svg += '<line class="tl-limit hi" x1="' + LEFT + '" x2="' + (W - RIGHT) + '" y1="' + py(P.highAvgDaysLate) + '" y2="' + py(P.highAvgDaysLate) + '"/><text class="tl-txt" x="' + (W - RIGHT) + '" y="' + (py(P.highAvgDaysLate) - 3) + '" text-anchor="end">' + P.highAvgDaysLate + ' days: late (average)</text>';
+    svg += '<text class="tl-txt" x="' + LEFT + '" y="' + (H - 8) + '">' + esc(first) + '</text><text class="tl-txt" x="' + (W - RIGHT) + '" y="' + (H - 8) + '" text-anchor="end">due date ' + esc(last) + '</text>';
+    function tone(d) { return d <= 0 ? 'ok' : d < P.mediumAvgDaysLate ? 'info' : d < P.highAvgDaysLate ? 'warn' : 'bad'; }
+    pts.forEach(function (p) {
+      var lab = p.id + ' · due ' + p.due + ' · paid ' + (p.daysLate > 0 ? p.daysLate + ' days late' : p.daysLate < 0 ? -p.daysLate + ' days early' : 'on time') + ' · ' + L.eur(p.gross) + ' EUR gross';
+      payMarks.push(p); svg += '<g class="tl-ev" data-paym="' + (payMarks.length - 1) + '" tabindex="0" role="button" aria-label="' + esc(lab) + '"><circle class="tl-shape ' + tone(p.daysLate) + '" cx="' + px(p.due) + '" cy="' + py(p.daysLate) + '" r="5"/><title>' + esc(lab) + '</title></g>';
+    });
+    od.forEach(function (p) {
+      var lab = p.id + ' · due ' + p.due + ' · not paid, ' + p.daysLate + ' days late so far · ' + L.eur(p.gross) + ' EUR gross';
+      payMarks.push(p); svg += '<g class="tl-ev" data-paym="' + (payMarks.length - 1) + '" tabindex="0" role="button" aria-label="' + esc(lab) + '"><circle class="tl-hollow tl-shape" cx="' + px(p.due) + '" cy="' + py(Math.min(hi, p.daysLate)) + '" r="6"/><title>' + esc(lab) + '</title></g>';
+    });
+    svg += '</svg>';
+    var openRows = open.map(function (o) {
+      var due = o.status === 'Overdue' ? '<b class="up">' + (-o.daysToDue) + ' days overdue</b>' : o.daysToDue === 0 ? 'due today' : 'due in ' + o.daysToDue + ' days';
+      var why = o.reason ? '<span class="why">' + esc(o.reason.kind + ' ' + o.reason.date + ': ' + o.reason.text) + '</span>' : '';
+      var exp = o.expected ? (o.expected.later ? '<span class="why">Rule of thumb: later than ' + esc(o.short) + ' usually pays (' + days(o.expected.avgDaysLate) + ' on average).</span>' : '<span class="why">Rule of thumb: about ' + esc(o.expected.on) + ' (due date + ' + o.expected.avgDaysLate + ' days, the average of ' + o.expected.basedOn + ' paid invoices). Not a forecast.</span>') : '<span class="why">No paid invoices yet, so no rule of thumb.</span>';
+      return '<tr class="row" data-node="' + esc(o.node) + '"><td><b>' + esc(o.id) + '</b><div class="c3-why">' + esc(o.short) + ' · due ' + esc(o.dueOn) + '</div></td><td class="n">' + L.eur(o.grossEur) + '</td><td>' + due + why + exp + '</td></tr>';
+    }).join('');
+    host.innerHTML = '<div class="c3-h">Invoices and payment behaviour <span class="c3-sub">· measured from the paid invoices, not a forecast</span></div>' +
+      '<div style="overflow-x:auto"><table class="c3-tbl"><thead><tr><th>Company</th><th class="n">Invoices</th><th class="n">Paid late</th><th class="n">Average</th><th class="n">Worst</th><th>Trend</th><th class="n">Unpaid (EUR, gross)</th><th class="n">Oldest overdue</th><th>Risk</th></tr></thead><tbody>' + table + '</tbody></table></div>' +
+      '<div class="c3-note">Paid late = share of paid invoices that came after the due date. Average and worst are days after the due date (negative = early). Trend compares the last four paid invoices with the ones before. Risk follows the stated rule (average ≥ ' + P.mediumAvgDaysLate + ' days a little late, ≥ ' + P.highAvgDaysLate + ' days late, an invoice ' + P.highOverdueDays + ' days overdue).</div>' +
+      '<div class="c3-payfig"><div class="c3-h" style="margin-top:14px">' + esc(ent.name) + ': days late per invoice <span class="c3-sub">· click a row above to look at another company, a dot to find the invoice in the graph</span></div>' + svg + '<div class="c3-note">Dot colour: green on time or early, purple less than ' + P.mediumAvgDaysLate + ' days late, amber up to ' + (P.highAvgDaysLate - 1) + ' days, red ' + P.highAvgDaysLate + ' days or more. A ring is an unpaid invoice, drawn at the days it is late so far.</div></div>' +
+      (open.length ? '<div class="c3-h" style="margin-top:14px">Unpaid invoices, with the reason a document gives</div><table class="c3-tbl"><thead><tr><th>Invoice</th><th class="n">Gross (EUR)</th><th>Status</th></tr></thead><tbody>' + openRows + '</tbody></table>' : '<div class="c3-note">No unpaid invoices.</div>') +
+      '<div class="c3-note">A reason is shown only when a message in the sample documents names the invoice. A real forecast comes from the TabPFN service through the chat: <button type="button" class="small" id="bTab2">Forecast late payments in the chat</button></div>';
+  }
+  on(document, 'click', function (e) {
+    var g = e.target.closest ? e.target.closest('[data-paym]') : null; if (!g) return;
+    var m = payMarks[+g.getAttribute('data-paym')]; if (m && m.node) select(m.node);
+  });
+  on(document, 'keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute && e.target.getAttribute('data-paym') !== null) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); e.stopPropagation(); }
+  });
+  var payTimer = null;
+  on(window, 'resize', function () { clearTimeout(payTimer); payTimer = setTimeout(renderPay, 150); });
+  /** A mark on the timeline: one event selects its node, a merged mark lists its events first. */
+  on(document, 'click', function (e) {
+    var g = e.target.closest ? e.target.closest('[data-tlm]') : null; if (!g) return;
+    var m = tlMarks[+g.getAttribute('data-tlm')]; if (!m) return;
+    if (m.events && m.count > 1) { S.tlPick = +g.getAttribute('data-tlm'); renderTimeline(); return; }
+    var node = m.events ? m.events[0].node : m.node; if (node) select(node);
+  });
+  on(document, 'keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute && e.target.getAttribute('data-tlm') !== null) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); e.stopPropagation(); }
+  });
+  var tlTimer = null;
+  on(window, 'resize', function () { clearTimeout(tlTimer); tlTimer = setTimeout(renderTimeline, 150); });
+  /** The row of the selected node is marked in the tables under the graph. */
+  function markRows() { var rows = document.querySelectorAll('#below tr.row'); for (var i = 0; i < rows.length; i += 1) rows[i].classList.toggle('sel', !!S.sel && rows[i].dataset.node === S.sel); }
   function renderNodeList() {
     var by = {}; L.graph.nodes.forEach(function (n) { (by[n.type] = by[n.type] || []).push(n); });
     $('nodeCount').textContent = '· ' + L.graph.nodes.length + ' nodes, ' + L.graph.edges.length + ' connections';
@@ -1494,7 +1848,7 @@ function makeLogic(D) {
     var hits = r.hits.map(function (h) { var n = L.node(h.id); return '<div class="c3-hit">' + chip(h.id, n.label) + '<span>' + esc(clip([bestLine(h, r.terms)].concat((h.lines || []).filter(function (l) { return l !== bestLine(h, r.terms) && !/ is a (deal|company|person|contract|product|order|invoice|ticket) \(/.test(l); }).slice(0, 1)).join(' \u00b7 '), 260)) + (h.score != null ? ' <span style="color:var(--muted)">(' + h.score + ')</span>' : '') + '</span></div>'; }).join('');
     el.innerHTML = '<div class="card" style="margin:0">' + head + ans + hits + '</div>';
   }
-  function renderAll() { renderActs(); renderStory(); renderDetail(); renderBelow(); renderRes(); if (S.act > S.lastAct) S.lastAct = S.act; }
+  function renderAll() { renderActs(); renderStory(); if (typeof boxPos !== 'undefined' && boxPos) boxAt(boxPos.left, boxPos.top); renderDetail(); renderBelow(); renderRes(); if (S.act > S.lastAct) S.lastAct = S.act; }
 
   // ---- ask ---------------------------------------------------------------------------------------------------------------------------
   var pending = {};
@@ -1532,6 +1886,10 @@ function makeLogic(D) {
   // ---- events ------------------------------------------------------------------------------------------------------------------------
   on(document, 'click', function (e) {
     var t = e.target.closest ? e.target.closest('button, tr.row') : null; if (!t) return;
+    if (t.dataset.metric) { S.metric = t.dataset.metric; renderBelow(); return; }
+    if (t.dataset.tlkind) { S.tlOff[t.dataset.tlkind] = !S.tlOff[t.dataset.tlkind]; S.tlPick = null; renderTimeline(); return; }
+    if (t.dataset.tlrange) { S.tlRange = t.dataset.tlrange; S.tlPick = null; renderTimeline(); return; }
+    if (t.dataset.payent) { S.payEnt = t.dataset.payent; renderPay(); }
     if (t.dataset.node) { select(t.dataset.node); return; }
     if (t.dataset.actFirst !== undefined) { go(+t.dataset.actFirst); return; }
     if (t.dataset.q) { ask(t.dataset.q); return; }
@@ -1545,10 +1903,39 @@ function makeLogic(D) {
       case 'bNext': if (S.i >= BEATS.length - 1) explore(); else go(S.i + 1); break; case 'bBack': go(S.i - 1); break;
       case 'bClose': S.sel = null; applyFocus(); renderDetail(); break;
       case 'bAskJoule': { var n = L.node(S.sel); if (n) joule('Tell me what matters about ' + n.label + ' (' + n.sub + ') for the ' + D.group.name + ' account, based on the Customer 360 sample. Facts only; mark conclusions as inference.'); break; }
-      case 'bTab': joule('Predict late payments for the customer ' + D.forecast.customer + ' (' + D.forecast.company + ') with predict_late_payments and explain the result in two sentences.'); break;
+      case 'bTab': case 'bTab2': joule('Predict late payments for the customer ' + D.forecast.customer + ' (' + D.forecast.company + ') with predict_late_payments and explain the result in two sentences.'); break;
       case 'askBtn': ask($('askIn').value); break;
     }
   });
+  // ---- the story window can be moved inside the picture: drag the grip, or use the arrow keys on it; Home or a double click puts it back.
+  // The position is kept only while the page is open (a Space keeps nothing in the browser).
+  var storyBox = $('storyBox'), storyGrip = $('storyGrip'), boxPos = null;
+  function boxAt(left, top) {
+    var st = $('stage').getBoundingClientRect(), b = storyBox.getBoundingClientRect();
+    boxPos = L.clampBox(left, top, b.width, b.height, st.width, st.height, 8);
+    storyBox.style.left = boxPos.left + 'px'; storyBox.style.top = boxPos.top + 'px'; storyBox.style.bottom = 'auto';
+  }
+  function boxHome() { boxPos = null; storyBox.style.left = storyBox.style.top = storyBox.style.bottom = ''; }
+  function boxNow() { var st = $('stage').getBoundingClientRect(), b = storyBox.getBoundingClientRect(); return { left: b.left - st.left, top: b.top - st.top }; }
+  var grab = null;
+  on(storyGrip, 'pointerdown', function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    var p = boxNow(); grab = { x: e.clientX, y: e.clientY, left: p.left, top: p.top };
+    storyGrip.classList.add('drag'); try { storyGrip.setPointerCapture(e.pointerId); } catch (err) { /* the move still works without capture */ }
+    e.preventDefault();
+  });
+  on(storyGrip, 'pointermove', function (e) { if (grab) boxAt(grab.left + e.clientX - grab.x, grab.top + e.clientY - grab.y); });
+  function dropGrab() { grab = null; storyGrip.classList.remove('drag'); }
+  on(storyGrip, 'pointerup', dropGrab); on(storyGrip, 'pointercancel', dropGrab);
+  on(storyGrip, 'dblclick', boxHome);
+  on(storyGrip, 'keydown', function (e) {
+    var step = e.shiftKey ? 48 : 16, p = boxNow(), moved = true;
+    if (e.key === 'ArrowLeft') boxAt(p.left - step, p.top); else if (e.key === 'ArrowRight') boxAt(p.left + step, p.top);
+    else if (e.key === 'ArrowUp') boxAt(p.left, p.top - step); else if (e.key === 'ArrowDown') boxAt(p.left, p.top + step);
+    else if (e.key === 'Home') boxHome(); else moved = false;
+    if (moved) { e.preventDefault(); e.stopPropagation(); } // the arrow keys also turn the story pages: not while the window is being moved
+  });
+  on(window, 'resize', function () { if (boxPos) boxAt(boxPos.left, boxPos.top); });
   on($('askForm'), 'submit', function (e) { e.preventDefault(); ask($('askIn').value); });
   on($('askIn'), 'keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ask($('askIn').value); } });
   on(document, 'keydown', function (e) {

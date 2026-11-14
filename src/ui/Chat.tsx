@@ -12,6 +12,7 @@ import { privacySummary, type PrivacyInfo } from '../privacy-bar';
 import { compact, estimateUsage, euro } from '../usage';
 import type { ChatTools } from '../preferences';
 import { ReplySpeaker } from '../voice';
+import { MarkedText, TermCardLayer, type ChatTermsControl } from './ChatTerms';
 
 export type Message = {
   role: 'user' | 'agent';
@@ -21,6 +22,8 @@ export type Message = {
   startedAt?: number;
   completedAt?: number;
   spaceResult?: Space;
+  /** Terms of the ontology that went with this message: the meanings the person chose, and how many definitions were sent to the model. */
+  terms?: { chosen: string[]; sent: number };
 };
 
 export type ChatMeta = { privacy: PrivacyInfo; title: string };
@@ -34,6 +37,7 @@ export default function Chat({
   onSaveAsSpace,
   chatTools,
   meta,
+  terms,
 }: {
   messages: Message[];
   busy: boolean;
@@ -45,6 +49,8 @@ export default function Chat({
   onSaveAsSpace?: (index: number) => void;
   chatTools?: ChatTools;
   meta?: ChatMeta;
+  /** Terms of the ontology (marks and cards); not given: the chat looks as before. */
+  terms?: ChatTermsControl;
 }) {
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -53,6 +59,7 @@ export default function Chat({
 
   return (
     <div className="chat">
+      {terms && <TermCardLayer terms={terms} />}
       {chatTools && meta && (chatTools.privacyBar || chatTools.usage) && messages.length > 0 && <MetaStrip tools={chatTools} meta={meta} messages={messages} />}
       {messages.map((m, i) =>
         m.role === 'user' ? (
@@ -68,7 +75,13 @@ export default function Chat({
               </div>
             )}
             {m.attachments?.some((attachment) => attachment.inline) && <div className="msg-attachment-note">{MAIL_HISTORY_NOTE}</div>}
-            {m.text && <span>{m.text}</span>}
+            {m.text && (terms ? <MarkedText text={m.text} index={terms.index} /> : <span>{m.text}</span>)}
+            {m.terms && (m.terms.chosen.length > 0 || m.terms.sent > 0) && (
+              <div className="msg-terms" aria-label="Vocabulary used for this message">
+                {m.terms.chosen.map((c) => <span key={c} className="msg-terms-chip">{c}</span>)}
+                {m.terms.sent > 0 && <span className="msg-terms-chip" title="Definitions of these terms were sent to the model together with your message.">Vocabulary: {m.terms.sent} {m.terms.sent === 1 ? 'term' : 'terms'} sent</span>}
+              </div>
+            )}
           </div>
         ) : (
           <div key={i} className="msg-agent">
@@ -82,7 +95,7 @@ export default function Chat({
             {m.spaceResult && <SpaceResultCard space={m.spaceResult} onOpen={onOpenSpace} />}
             {m.text ? (
               <>
-                <ChatMarkdown text={m.text} />
+                <ChatMarkdown text={m.text} terms={terms?.index} />
                 {onOpenView && <ViewLinks tools={m.tools} onOpen={onOpenView} />}
                 <MessageActions
                   text={m.text}

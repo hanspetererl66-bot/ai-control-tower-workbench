@@ -49,3 +49,17 @@ export function codeLanguage(className?: string): string | null {
   const m = /(?:^|\s)language-([\w-]+)/.exec(className ?? '');
   return m ? m[1].toLowerCase() : null;
 }
+
+/** True when the person asks for a diagram (German or English), so the hint for the agent is only added then. */
+export function wantsDiagram(text: string): boolean {
+  return /\b(diagram(m|me|s)?|flow ?chart|flussdiagramm|ablaufdiagramm|ablaufplan|prozessdiagramm|gantt|sequenz\w*|sequence\s+diagram|zustandsdiagramm|state\s+(diagram|machine)|mermaid)\b/i.test(text);
+}
+
+/** The hint for the agent: how to write a diagram so the chat can draw it. Added to the prompt only when `wantsDiagram`. */
+export const DIAGRAM_NOTE = [
+  'DIAGRAM — the chat draws diagrams from Mermaid text. Write the diagram as one fenced code block with the language mermaid.',
+  'Use only these kinds: flowchart (TD or LR), gantt (with dateFormat YYYY-MM-DD), sequenceDiagram, stateDiagram-v2.',
+  'Keep labels short and put a label in double quotes if it contains brackets, colons or other special characters.',
+  'No init directive (%%{init}%%), no HTML, no links and no click handlers in the diagram; they are not drawn.',
+  'Put one sentence before or after the block that says what the diagram shows. Say plainly that the diagram is shown in this chat; do not claim that a file was created or that anything was sent to Figma.',
+].join('\n');

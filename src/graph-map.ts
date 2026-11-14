@@ -289,3 +289,91 @@ export const LINK_WORDS: Record<string, string> = {
   derivedFrom: 'derived from', dependsOn: 'depends on', measuredBy: 'measured by', appliesTo: 'applies to', uses: 'uses', partOf: 'part of', references: 'refers to', contains: 'contains',
 };
 export const linkWord = (prop: string): string => LINK_WORDS[prop] ?? prop;
+
+// ---------------------------------------------------------------- sorted layout: one panel per ontology, lanes left to right
+/** The lanes of a panel, in reading order: what feeds in, the terms, the numbers, and who uses them. */
+export const LANES: Array<{ id: string; label: string; hint: string; kinds: MapKind[] }> = [
+  { id: 'source', label: 'Data and checks', hint: 'where the numbers come from', kinds: ['resource'] },
+  { id: 'term', label: 'Terms', hint: 'the things the business talks about', kinds: ['class'] },
+  { id: 'metric', label: 'Metrics', hint: 'certified numbers', kinds: ['metric'] },
+  { id: 'user', label: 'Used by', hint: 'agents, skills, reports, spaces', kinds: CONSUMER_MAP_KINDS },
+];
+const laneOf = (k: MapKind): number => LANES.findIndex((l) => l.kinds.includes(k));
+
+export interface LanePanel {
+  slug: string; title: string;
+  x: number; y: number; w: number; h: number;
+  /** Left edge and width of each lane (absolute), with its label; empty lanes are left out. */
+  lanes: Array<{ id: string; label: string; hint: string; x: number; w: number }>;
+}
+export interface LaneLayout extends Positions { panels: LanePanel[] }
+
+const ROW = 28, LANE_W = 176, SUB_ROWS = 14, PAD = 18, HEAD = 62, GAP = 46;
+
+/**
+ * Every ontology gets its own panel; inside it the nodes stand in lanes from left to right (data and checks, terms, metrics, users),
+ * the best connected on top. Links then mostly run left to right, so it is easy to see what feeds what and who relies on it.
+ * Panels sit in a grid whose width suits the window. Deterministic and free of overlaps.
+ */
+export function layoutLanes(map: GraphMap): LaneLayout {
+  const slugs = [...new Set(map.nodes.map((n) => n.slug))];
+  const x = new Float64Array(map.nodes.length), y = new Float64Array(map.nodes.length);
+  const index = new Map(map.nodes.map((n, i) => [n.id, i]));
+  type Built = { slug: string; title: string; w: number; h: number; lanes: Array<{ id: string; label: string; hint: string; dx: number; w: number; members: MapNode[]; cols: number }>; hub: MapNode | undefined };
+  const built: Built[] = slugs.map((slug) => {
+    const own = map.nodes.filter((n) => n.slug === slug);
+    const hub = own.find((n) => n.kind === 'ontology');
+    const lanes: Built['lanes'] = [];
+    let dx = PAD;
+    LANES.forEach((lane) => {
+      const members = own.filter((n) => n.kind !== 'ontology' && laneOf(n.kind) === LANES.indexOf(lane))
+        .sort((a, b) => b.degree - a.degree || a.label.localeCompare(b.label));
+      if (!members.length) return;
+      const cols = Math.ceil(members.length / SUB_ROWS), w = cols * LANE_W;
+      lanes.push({ id: lane.id, label: lane.label, hint: lane.hint, dx, w, members, cols });
+      dx += w;
+    });
+    const w = Math.max(dx + PAD, 2 * LANE_W), rows = Math.max(1, ...lanes.map((l) => Math.min(SUB_ROWS, l.members.length)));
+    return { slug, title: hub?.label ?? slug, w, h: HEAD + rows * ROW + PAD, lanes, hub };
+  });
+
+  const place = (cols: number) => {
+    const colW: number[] = Array(cols).fill(0);
+    built.forEach((bp, i) => { colW[i % cols] = Math.max(colW[i % cols], bp.w); });
+    const colX = colW.map((_, c) => colW.slice(0, c).reduce((acc, w) => acc + w + GAP, 0));
+    const out: Array<{ b: Built; px: number; py: number }> = [];
+    let top = 0;
+    for (let r = 0; r * cols < built.length; r++) {
+      const row = built.slice(r * cols, r * cols + cols), rowH = Math.max(...row.map((bp) => bp.h));
+      row.forEach((bp, c) => out.push({ b: bp, px: colX[c], py: top }));
+      top += rowH + GAP;
+    }
+    const width = colW.reduce((acc, w) => acc + w, 0) + GAP * (cols - 1), height = top - GAP;
+    return { out, width, height };
+  };
+  // as many panels side by side as make the best use of a window about twice as wide as high
+  let best = place(1), bestScale = 0;
+  for (let c = 1; c <= Math.min(6, Math.max(1, built.length)); c++) {
+    const cand = place(c), scale = Math.min(2100 / cand.width, 1000 / cand.height);
+    if (scale > bestScale + 1e-9) { best = cand; bestScale = scale; }
+  }
+  const panels: LanePanel[] = [];
+  for (const { b, px, py } of best.out) {
+    panels.push({ slug: b.slug, title: b.title, x: px, y: py, w: b.w, h: b.h, lanes: b.lanes.map((l) => ({ id: l.id, label: l.label, hint: l.hint, x: px + l.dx, w: l.w })) });
+    if (b.hub) { const i = index.get(b.hub.id) as number; x[i] = px + PAD + 10; y[i] = py + 24; }
+    for (const l of b.lanes) l.members.forEach((n, k) => {
+      const i = index.get(n.id) as number, col = Math.floor(k / SUB_ROWS);
+      x[i] = px + l.dx + col * LANE_W + 12; y[i] = py + HEAD + (k % SUB_ROWS) * ROW + ROW / 2;
+    });
+  }
+  const top = best.height + GAP;
+  // centre the whole thing on the origin, as the force layout is
+  const x0 = Math.min(...panels.map((p) => p.x)), x1 = Math.max(...panels.map((p) => p.x + p.w)), y0 = 0, y1 = top - GAP;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  for (let i = 0; i < x.length; i++) { x[i] -= cx; y[i] -= cy; }
+  for (const p of panels) { p.x -= cx; p.y -= cy; for (const l of p.lanes) l.x -= cx; }
+  return { x, y, panels };
+}
+
+/** Which lane a kind of node stands in (index into `LANES`), or -1 for the ontology hub. */
+export const laneIndexOf = (kind: MapKind): number => laneOf(kind);

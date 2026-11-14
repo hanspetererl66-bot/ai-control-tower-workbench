@@ -146,3 +146,175 @@ test('customer 360: an answer without ids is matched to nodes by name', () => {
   assert.deepEqual(L.mentions('Nothing named here.'), []);
   assert.equal(L.mentions('Brandtmann and Xinv-2026-N0009x').length, 0, 'whole words only');
 });
+
+test('figures per company: one row per company, largest first, bars relative to the largest, numbers equal the summaries and the group', () => {
+  assert.deepEqual(L.metrics.map((m) => m.id), ['arr', 'pipeline', 'outstanding', 'overdue', 'tickets', 'heat']);
+  const g = L.group();
+  for (const m of L.metrics) {
+    const f = L.figures(m.id);
+    assert.equal(f.metric, m.id);
+    assert.equal(f.rows.length, data.entities.length, m.id);
+    const values = f.rows.map((r) => r.value);
+    assert.deepEqual([...values].sort((a, b) => b - a), values, `${m.id} is sorted, largest first`);
+    assert.equal(f.rows[0].pct, f.max > 0 ? 100 : 0);
+    for (const r of f.rows) {
+      assert.ok(r.pct >= 0 && r.pct <= 100);
+      assert.equal(r.node, L.resolve(r.entity), 'a click finds the node in the graph');
+      assert.ok(L.node(r.node), r.entity);
+    }
+  }
+  const byEntity = (id) => Object.fromEntries(L.figures(id).rows.map((r) => [r.entity, r.value]));
+  for (const s of g.summaries) {
+    assert.equal(byEntity('arr')[s.entity], s.arr);
+    assert.equal(byEntity('pipeline')[s.entity], s.pipeline.weighted);
+    assert.equal(byEntity('outstanding')[s.entity], s.payment.exposureGross);
+    assert.equal(byEntity('overdue')[s.entity], s.payment.overdueGross);
+    assert.equal(byEntity('tickets')[s.entity], s.openTickets);
+    assert.equal(byEntity('heat')[s.entity], s.heat);
+  }
+  assert.equal(L.figures('outstanding').total, g.summaries.reduce((a, s) => a + s.payment.exposureGross, 0));
+  assert.equal(L.figures('heat').totalText, '', 'a total of heat values means nothing');
+  assert.equal(L.figures('nope').metric, 'arr', 'an unknown figure gives the first one');
+});
+
+test('the story window stays inside the picture: positions are clamped, a window larger than the picture sits at the edge', () => {
+  assert.deepEqual(L.clampBox(100, 50, 300, 200, 1000, 700, 8), { left: 100, top: 50 });
+  assert.deepEqual(L.clampBox(-500, -500, 300, 200, 1000, 700, 8), { left: 8, top: 8 });
+  assert.deepEqual(L.clampBox(5000, 5000, 300, 200, 1000, 700, 8), { left: 692, top: 492 });
+  assert.deepEqual(L.clampBox(50, 50, 2000, 2000, 1000, 700, 8), { left: 8, top: 8 });
+});
+
+test('page: the story window has a grip with a label and keys, the figures card has one button per figure', () => {
+  assert.match(page, /id="storyBox"[^>]*>\s*<div class="c3-grip" id="storyGrip" role="button" tabindex="0" aria-label="Move the story window/);
+  assert.match(page, /on\(storyGrip, 'keydown'[\s\S]*e\.stopPropagation\(\)/, 'arrow keys that move the window do not turn the story pages');
+  assert.match(page, /\.c3-grip\{display:none\}/, 'on a narrow screen the window sits under the picture and is not moved');
+  assert.match(page, /Figures per company/);
+  assert.match(page, /data-metric="' \+ m\.id/);
+});
+
+test('page: the "What is this page?" box is gone and nothing points at it any more', () => {
+  assert.doesNotMatch(page, /<details class="intro"|<h2>What is this page\?/, 'the box itself (its styles belong to the shared design system and stay)');
+  assert.doesNotMatch(page, /see "What is this page\?"/, 'no text points at the box');
+  assert.match(page, /class="demo">Mockup with fictional data/, 'the note that the page is a mockup stays');
+});
+
+test('timeline events: one per contract, invoice, ticket, order, message and deal, dated, oldest first, and every click lands on a node of the graph', () => {
+  const ev = L.events();
+  const n = (list) => list.length;
+  assert.equal(ev.length, n(data.contracts) + n(data.invoices) + n(data.tickets) + n(data.orders) + n(data.signals) + n(data.opportunities));
+  assert.deepEqual(ev.map((e) => e.date), ev.map((e) => e.date).sort(), 'oldest first');
+  for (const e of ev) {
+    assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(e.date), e.id);
+    assert.ok(['ok', 'info', 'warn', 'bad'].includes(e.tone), e.id);
+    assert.ok(e.node && L.node(e.node), `${e.id} has a node (${e.node})`);
+    assert.ok(L.ent(e.entity), e.id);
+    if (e.kind === 'contract') assert.ok(e.end > e.date, e.id);
+  }
+  const inv = (id) => ev.find((e) => e.id === id);
+  const overdue = data.invoices.find((i) => i.status === 'Overdue');
+  assert.equal(inv(overdue.id).tone, 'bad');
+  assert.equal(inv(overdue.id).node, `invoice:${overdue.id}`);
+  const paid = data.invoices.find((i) => i.status === 'Paid');
+  assert.equal(inv(paid.id).node, `pay:${paid.entity}`, 'a paid invoice leads to the payment history of its company');
+});
+
+test('timeline: periods, kinds and one lane per company', () => {
+  const t = L.timeline({ range: '12m' });
+  assert.equal(t.lanes.length, data.entities.length);
+  assert.equal(t.from, L.timeline({ range: '12m' }).from);
+  assert.equal(L.daysBetween(t.from, t.asOf), 365);
+  assert.equal(L.daysBetween(t.asOf, t.to), 180);
+  assert.equal(L.daysBetween(L.timeline({ range: '90d' }).from, t.asOf), 90);
+  assert.equal(L.timeline({ range: 'nonsense' }).range, '12m');
+  const all = L.timeline({ range: 'all' });
+  assert.equal(all.total, L.events().length, 'all shows every event');
+  const only = L.timeline({ range: 'all', kinds: ['ticket'] });
+  assert.equal(only.total, data.tickets.length);
+  assert.ok(only.lanes.every((l) => l.events.every((e) => e.kind === 'ticket')));
+  assert.equal(L.timeline({ range: 'all', kinds: [] }).total, 0);
+  assert.equal(L.timeline({ range: 'all', kinds: ['nope'] }).total, 0, 'unknown kinds are ignored');
+  assert.deepEqual(Object.keys(all.counts).sort(), L.TL_KINDS.map((k) => k.id).sort());
+  const window = L.timeline({ range: '90d' });
+  for (const l of window.lanes) for (const e of l.events) assert.ok((e.end || e.date) >= window.from && e.date <= window.to);
+});
+
+test('timeline marks: events of one kind close together become one mark with a count and the worst colour; contracts never merge', () => {
+  const mk = (id, kind, date, tone, end) => ({ id, kind, date, tone, end, entity: 'x', node: 'n' });
+  const list = [mk('a', 'invoice', '2026-01-01', 'ok'), mk('b', 'invoice', '2026-01-05', 'bad'), mk('c', 'invoice', '2026-03-01', 'ok'), mk('t', 'ticket', '2026-01-02', 'warn'), mk('k1', 'contract', '2026-01-01', 'ok', '2027-01-01'), mk('k2', 'contract', '2026-01-02', 'ok', '2027-01-01')];
+  const b = L.bucketEvents(list, 10);
+  const inv = b.filter((m) => m.kind === 'invoice');
+  assert.equal(inv.length, 2);
+  assert.deepEqual([inv[0].count, inv[0].tone, inv[0].last], [2, 'bad', '2026-01-05']);
+  assert.equal(inv[1].count, 1);
+  assert.equal(b.filter((m) => m.kind === 'ticket').length, 1, 'a ticket is not merged with an invoice');
+  assert.equal(b.filter((m) => m.kind === 'contract').length, 2);
+  assert.equal(L.bucketEvents(list, 0).filter((m) => m.kind === 'invoice').length, 3, 'nothing merges when the gap is 0');
+});
+
+test('page: the timeline card has filters per kind and period, a list for narrow screens, keyboard use and no external code', () => {
+  assert.match(page, /id="tlHost"/);
+  assert.match(page, /data-tlkind="' \+ k\.id/);
+  assert.match(page, /data-tlrange="' \+ r\[0\]/);
+  assert.match(page, /role="button" aria-label="'/, 'every mark is a button with a label');
+  assert.match(page, /\.c3-tl svg,\.c3-tlbar \.rng\{display:none\}\.c3-tllist\{display:block\}/, 'under 860 px the list replaces the axis');
+});
+
+test('payment behaviour per company: measured from the paid invoices, the numbers equal paymentOf, the trend compares the last four with the rest', () => {
+  const rows = L.behaviour();
+  assert.ok(rows.length >= 1);
+  const withInvoices = new Set(data.invoices.map((i) => i.entity));
+  assert.deepEqual(new Set(rows.map((r) => r.entity)), withInvoices, 'a company without invoices has no row');
+  for (const r of rows) {
+    const p = L.paymentOf(r.entity);
+    assert.equal(r.invoices, data.invoices.filter((i) => i.entity === r.entity).length);
+    assert.equal(r.paid, p.paid);
+    assert.equal(r.avgDaysLate, p.avgDaysLate);
+    assert.equal(r.maxDaysLate, p.maxDaysLate);
+    assert.equal(r.exposureGross, p.exposureGross);
+    assert.equal(r.risk, p.risk);
+    assert.equal(r.latePct, r.paid ? Math.round((p.lateCount / r.paid) * 100) : 0);
+    assert.equal(r.points.length, r.paid);
+    assert.ok(r.points.every((x) => x.node === `pay:${r.entity}` && L.node(x.node)));
+    assert.ok(r.overdue.every((x) => x.daysLate > 0 && L.node(x.node)));
+    if (r.paid < 6) assert.equal(r.trend, null, 'too few invoices for a trend');
+  }
+  const sorted = rows.map((r) => r.exposureGross);
+  assert.deepEqual([...sorted].sort((a, b) => b - a), sorted, 'the most unpaid money first');
+  const worse = rows.find((r) => r.trend && r.trend.label === 'worse');
+  const paid = data.invoices.filter((i) => i.entity === worse.entity && i.status === 'Paid').sort((a, b) => (a.dueOn < b.dueOn ? -1 : 1));
+  const avg = (l) => l.reduce((a, i) => a + i.daysLate, 0) / l.length;
+  assert.equal(worse.trend.delta, Math.round((avg(paid.slice(-4)) - avg(paid.slice(0, -4))) * 10) / 10);
+  assert.ok(worse.trend.delta >= 2);
+});
+
+test('unpaid invoices: every one is listed, the reason is a message that names the invoice, the expected date is a rule of thumb from the paid invoices', () => {
+  const open = L.openInvoices();
+  assert.equal(open.length, data.invoices.filter((i) => i.status !== 'Paid').length);
+  assert.deepEqual(open.map((o) => o.dueOn), open.map((o) => o.dueOn).sort(), 'oldest first');
+  for (const o of open) {
+    assert.ok(L.node(o.node), o.id);
+    if (o.reason) {
+      const s = data.signals.find((x) => x.id === o.reason.signal);
+      assert.ok(s.about.includes(o.id), `${o.id}: the message names the invoice`);
+      assert.ok(o.reason.text.length <= 201);
+      assert.ok(L.node(o.reason.node));
+    }
+    const p = L.paymentOf(o.entity);
+    if (p.paid) {
+      assert.equal(o.expected.on, new Date(Date.parse(o.dueOn) + Math.max(0, Math.round(p.avgDaysLate)) * 86400000).toISOString().slice(0, 10), 'due date + the average delay of the paid invoices');
+      assert.equal(o.expected.basedOn, p.paid);
+      assert.equal(o.expected.later, o.expected.on < data.asOf, 'later = the usual delay has already passed');
+      assert.ok(o.expected.avgDaysLate >= 0, 'an early payer is not expected to pay before the due date');
+    } else assert.equal(o.expected, null);
+    if (o.status === 'Overdue') assert.ok(o.daysToDue < 0, `${o.id} is overdue, so its due date is in the past`);
+  }
+});
+
+test('page: the payment card has a table with a row per company, a chart with the thresholds from the data, the unpaid list, and says it is no forecast', () => {
+  assert.match(page, /id="payHost"/);
+  assert.match(page, /measured from the paid invoices, not a forecast/);
+  assert.match(page, /Not a forecast\./);
+  assert.match(page, /data-payent="' \+ esc\(r\.entity\)/);
+  assert.match(page, /P\.mediumAvgDaysLate[\s\S]*P\.highAvgDaysLate/, 'the lines come from the rules in the data, not from numbers in the page');
+  assert.match(page, /\.c3-pay \.c3-payfig\{display:none\}/);
+});

@@ -12,6 +12,14 @@ export function orderSpaces<T extends { slug: string }>(spaces: T[], order: stri
   return [...known, ...unknown];
 }
 
+/** The slugs in alphabetical order of the titles (numbers by value, upper and lower case alike); ties by slug. */
+export function sortByTitle<T extends { slug: string; title: string }>(spaces: T[], direction: 'asc' | 'desc'): string[] {
+  const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+  const sorted = [...spaces].sort((a, b) => collator.compare(a.title.trim(), b.title.trim()) || collator.compare(a.slug, b.slug));
+  if (direction === 'desc') sorted.reverse();
+  return sorted.map((space) => space.slug);
+}
+
 /** Move `from` next to `to` (before it, or after it when `after` is set). Returns a new list. */
 export function moveSpace(slugs: string[], from: string, to: string, after = false): string[] {
   if (from === to || !slugs.includes(from) || !slugs.includes(to)) return slugs;

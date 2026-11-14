@@ -1,10 +1,11 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, CONTRASTS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TONES,
+  ACCENT_PRESETS, APP_SCALES, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
+import { contrastRatio } from '../preferences-style';
 import { sectionEffect } from '../settings-help';
 import { DOCK_LABEL } from '../spaces-dock';
 import { SPACE_SCALES } from '../space-scale';
@@ -167,9 +168,35 @@ export function LookPanel({ prefs, update }: Common) {
       </Section>
       <Section title="Text and layout">
         <Choice label="App text size" value={prefs.appScale} options={APP_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, appScale: v }))} />
+        <Choice label="Icon size" value={prefs.iconScale} options={ICON_SCALES} show={(v) => (v === 1 ? 'Standard' : v === 1.2 ? 'Large' : 'Extra large')} onPick={(v) => update((p) => ({ ...p, iconScale: v }))} />
         <Choice label="Text size in Spaces" value={prefs.spaceScale} options={SPACE_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, spaceScale: v }))} />
         <Choice label="Font" value={prefs.font} options={FONTS} show={(v) => FONT_NAMES[v]} onPick={(v) => update((p) => ({ ...p, font: v }))} />
         <Choice label="Density" value={prefs.density} options={DENSITIES} show={(v) => v[0].toUpperCase() + v.slice(1)} onPick={(v) => update((p) => ({ ...p, density: v }))} />
+      </Section>
+      <Section title="Tips" hint="The speech bubbles in the Ontology Manager that explain each part. Switch them on or off here, and set their size and colours. An empty colour follows the skin (light or dark).">
+        <label className="voice-option">
+          <input type="checkbox" role="switch" checked={prefs.tips.enabled} onChange={(e) => update((p) => ({ ...p, tips: { ...p.tips, enabled: e.target.checked } }))} />
+          <span>Show tips {prefs.tips.enabled ? '(on)' : '(off)'}</span>
+        </label>
+        <Choice label="Tip text size" value={prefs.tips.size} options={TIP_SIZES} show={(v) => `${TIP_SIZE_PX[v]}px`} onPick={(v) => update((p) => ({ ...p, tips: { ...p.tips, size: v } }))} />
+        <div className="tip-colors">
+          {([['textColor', 'Text colour', '#1B1A22'], ['bubbleColor', 'Bubble colour', '#FFFFFF'], ['highlightColor', 'Highlight of the part it points at', '#8056B8']] as const).map(([key, label, sample]) => (
+            <label key={key}>
+              <span>{label}</span>
+              <input type="color" value={prefs.tips[key] || sample} aria-label={label} onChange={(e) => update((p) => ({ ...p, tips: { ...p.tips, [key]: e.target.value.toUpperCase() } }))} />
+              <button className="ghost-btn" disabled={!prefs.tips[key]} onClick={() => update((p) => ({ ...p, tips: { ...p.tips, [key]: '' } }))}>{prefs.tips[key] ? 'Reset' : 'Skin'}</button>
+            </label>
+          ))}
+        </div>
+        {prefs.tips.textColor && prefs.tips.bubbleColor && contrastRatio(prefs.tips.textColor, prefs.tips.bubbleColor) < 4.5 && (
+          <p className="tip-warn" role="status">Text and bubble colour are hard to read together ({contrastRatio(prefs.tips.textColor, prefs.tips.bubbleColor).toFixed(1)}:1, aim for 4.5:1 or more).</p>
+        )}
+        <div className="om-guide om-guide-below om-guide-static" role="note" aria-label="Preview of a tip" style={{ ['--arrow' as string]: '28px' }}>
+          <p className="om-guide-step">Tip 1 of 3</p>
+          <h3>This is how a tip looks</h3>
+          <p>It points at a part of the page and says what it is for. The part it points at gets the highlight colour.</p>
+        </div>
+        <div className="prefs-row"><button className="ghost-btn" disabled={JSON.stringify(prefs.tips) === JSON.stringify(DEFAULT_TIPS)} onClick={() => update((p) => ({ ...p, tips: { ...DEFAULT_TIPS } }))}>Back to the original tips</button></div>
       </Section>
       <Section title="Spaces list" hint="How the list of Spaces looks and which side of the window it sits on. The same choice is in the header of the list.">
         <Choice label="View" value={prefs.spacesView} options={SPACES_VIEWS} show={(v) => (v === 'tree' ? 'Tree' : 'Cards')} onPick={(v) => update((p) => ({ ...p, spacesView: v }))} />
@@ -289,6 +316,10 @@ export function AssistantPanel({ prefs, update }: Common) {
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.askBeforeActions} onChange={(e) => setChat({ askBeforeActions: e.target.checked })} /><span>Ask before actions (approval card for anything that changes something)</span></label>
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.readAloud} onChange={(e) => setChat({ readAloud: e.target.checked })} /><span>Read aloud: “Listen” button under each answer</span></label>
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.privacyBar} onChange={(e) => setChat({ privacyBar: e.target.checked })} /><span>Privacy bar: web search, connectors and model in use</span></label>
+        <label className="voice-option"><input type="checkbox" checked={prefs.chat.terms} onChange={(e) => setChat({ terms: e.target.checked, ...(e.target.checked ? {} : { termsContext: false }) })} /><span>Terms: mark terms of the ontology in the chat, show their definition, and ask which meaning you want when a name exists in two ontologies</span></label>
+        {prefs.chat.terms && (
+          <label className="voice-option"><input type="checkbox" checked={prefs.chat.termsContext} onChange={(e) => setChat({ termsContext: e.target.checked })} /><span>Send the definitions of the terms in a message to the model together with it (up to 5; this text goes to the model provider)</span></label>
+        )}
         <label className="voice-option"><input type="checkbox" checked={prefs.chat.usage} onChange={(e) => setChat({ usage: e.target.checked })} /><span>Usage and cost estimate for this conversation</span></label>
         {prefs.chat.usage && (
           <div className="prefs-row">

@@ -13,7 +13,7 @@ The connector `connectors/teams` reads Teams through Microsoft Graph. It only re
 
 ## Use
 
-Start from requirements, source "Microsoft Teams". Give a team and channel ("Sales / Requirements"), search words, or a link from "Copy link to message". The agent reads, merges repeated statements into one requirement with a count and quotes (like Slack and Notion), and the clusters add them up.
+Requirement collection, source "Microsoft Teams". Give a team and channel ("Sales / Requirements"), search words, or a link from "Copy link to message". The agent reads, merges repeated statements into one requirement with a count and quotes (like Slack and Notion), and the clusters add them up.
 
 ## Limits
 

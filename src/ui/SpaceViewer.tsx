@@ -16,6 +16,7 @@ import { handleDatabricksPrecloseMessage } from '../databricks-preclose-bridge';
 import { handleSalesKnowledgeMessage, type SalesKnowledgeDeps } from '../sales-knowledge-bridge';
 import { handleCustomer360Message, CUSTOMER360_SPACE, type Customer360Deps } from '../customer360-bridge';
 import { handleRenewalsMessage, RENEWALS_SPACE, type RenewalsDeps } from '../renewals-bridge';
+import { handleSpecMessage, SPEC_SPACE, type SpecDeps } from '../spec-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
@@ -24,7 +25,7 @@ import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, 
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
 import { applySpaceTerms, pageEntries, parseOpenTermMessage, type SpaceTermsControl } from '../space-terms';
 import { downloadSpaceFile, emailDraftUrl } from '../space-share';
-import { parseOpenViewMessage, type OpenableView } from '../space-open';
+import { parseOpenSpaceMessage, parseOpenViewMessage, type OpenableView } from '../space-open';
 import { parseHandoffMessage, parseStateMessage, restoreMessage, type Handoff, type IncomingHandoff } from '../space-handoff';
 
 /** Ask the space to show one of its tabs. `nonce` makes repeating the same tab count as a new request. */
@@ -38,6 +39,7 @@ export default function SpaceViewer({
   interviewDeps,
   customer360Deps,
   renewalsDeps,
+  specDeps,
   salesKnowledgeDeps,
   onOpenHiringTools,
   onAsk,
@@ -47,6 +49,7 @@ export default function SpaceViewer({
   prefs,
   onHandoff,
   onOpenView,
+  onOpenSpace,
   onSpaceState,
   savedState,
   incoming,
@@ -71,6 +74,7 @@ export default function SpaceViewer({
   interviewDeps?: InterviewDeps;
   customer360Deps?: Customer360Deps;
   renewalsDeps?: RenewalsDeps;
+  specDeps?: SpecDeps;
   salesKnowledgeDeps?: SalesKnowledgeDeps;
   /** Hiring Approvals Space: open the proposals and criteria screen. */
   onOpenHiringTools?: () => void;
@@ -88,6 +92,8 @@ export default function SpaceViewer({
   onHandoff?: (handoff: Handoff) => void;
   /** The Space asks the app to open one of its own views (e.g. the Agent Studio). */
   onOpenView?: (view: OpenableView) => void;
+  /** A page made in the Designer links to another Space (only its folder name comes over). */
+  onOpenSpace?: (slug: string) => void;
   /** The Space reports its working state so it survives a trip to another Space. */
   onSpaceState?: (state: Record<string, unknown>) => void;
   savedState?: Record<string, unknown>;
@@ -140,6 +146,8 @@ export default function SpaceViewer({
   handoffRef.current = onHandoff;
   const openViewRef = useRef(onOpenView);
   openViewRef.current = onOpenView;
+  const openSpaceRef = useRef(onOpenSpace);
+  openSpaceRef.current = onOpenSpace;
   const stateRef = useRef(onSpaceState);
   stateRef.current = onSpaceState;
   useEffect(() => {
@@ -149,6 +157,8 @@ export default function SpaceViewer({
       if (handoff) { handoffRef.current?.(handoff); return; }
       const openView = parseOpenViewMessage(event.data);
       if (openView) { openViewRef.current?.(openView); return; }
+      const openSpace = parseOpenSpaceMessage(event.data);
+      if (openSpace) { openSpaceRef.current?.(openSpace); return; }
       const state = parseStateMessage(event.data);
       if (state) stateRef.current?.(state);
     };
@@ -172,6 +182,8 @@ export default function SpaceViewer({
   c360Ref.current = customer360Deps;
   const renewalsRef = useRef(renewalsDeps);
   renewalsRef.current = renewalsDeps;
+  const specRef = useRef(specDeps);
+  specRef.current = specDeps;
   const salesKnRef = useRef(salesKnowledgeDeps);
   salesKnRef.current = salesKnowledgeDeps;
   useEffect(() => {
@@ -181,8 +193,9 @@ export default function SpaceViewer({
       if (!frame.current || event.source !== frame.current.contentWindow) return;
       const handle = space.slug === CUSTOMER360_SPACE ? (data: unknown) => handleCustomer360Message(data, c360Ref.current ?? {})
         : space.slug === RENEWALS_SPACE ? (data: unknown) => handleRenewalsMessage(data, renewalsRef.current ?? {})
+        : space.slug === SPEC_SPACE ? (data: unknown) => handleSpecMessage(data, specRef.current ?? {})
         : space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
-        : space.slug === PRD_SPACE ? handlePrdMessage
+        : space.slug === PRD_SPACE ? (data: unknown, call: BridgeCall | undefined) => handlePrdMessage(data, call, { exportDocx: window.host?.exportDocx })
         : space.slug === SALES_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handleSalesKnowledgeMessage(data, salesKnRef.current ?? {})) ?? handleSalesMessage(data, call)
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
         : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)

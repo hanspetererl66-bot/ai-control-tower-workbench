@@ -62,6 +62,8 @@ export default function RefreshDataDialog({ layout, space, host, onClose, onSave
               {it.proposal && (
                 <div className="sd-proposal">
                   <p><b>New:</b> {diffDataset(ds, it.proposal)}{it.proposal.sources ? ` Source: ${it.proposal.sources}.` : ''}</p>
+                  {it.proposal.basis && <p className="sd-hint"><b>Basis, as Joule says:</b> {it.proposal.basis}{typeof it.proposal.records === 'number' ? ` (${it.proposal.records} records)` : ''}</p>}
+                  {ds.source?.kind === 'joule' && <p className="sd-hint" role="note">Joule's figures are not checked. Compare them with the system before you apply.</p>}
                   {it.proposal.notes.map((n) => <p key={n} className="sd-hint">{n}</p>)}
                   <div className="sd-grid-wrap"><table className="sd-grid"><thead><tr>{it.proposal.columns.map((c, j) => <th key={j}>{c}</th>)}</tr></thead><tbody>{it.proposal.rows.slice(0, 5).map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
                   {it.proposal.rows.length > 5 && <p className="sd-hint">… and {it.proposal.rows.length - 5} more rows.</p>}
