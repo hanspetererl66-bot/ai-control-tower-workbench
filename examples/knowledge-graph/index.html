@@ -4968,6 +4968,52 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "customer:seeland-retail-group-ag",
+   "type": "customer",
+   "label": "Seeland Retail Group AG",
+   "meta": {
+    "SAP customer ID": "0010090644",
+    "Note": "Not part of the Sub4Me sample data, only in the Renewals Space"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2022-0701",
+   "type": "contract",
+   "label": "C-2022-0701",
+   "meta": {
+    "Product": "SAP Commerce Cloud",
+    "Status": "Expired",
+    "Annual value": "€310,000",
+    "Term": "ends 2026-06-30",
+    "Notice period": "90 days",
+    "Renewal decision": "2026-04-01 (201 days ago)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Lapsed on 2026-06-30; a reactivation offer (OFF-2026-0620) is open until 2026-11-20; Competitor in play: Shopify Plus (trial)"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2022-0701",
+    "decision": "2026-04-01",
+    "days": -201,
+    "health": "yellow",
+    "status": "Lapsed",
+    "annualEur": 310000,
+    "lapsed": true,
+    "offer": {
+     "id": "OFF-2026-0620",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-20"
+    }
+   }
+  },
+  {
    "id": "invoice:INV-2026-10708",
    "type": "invoice",
    "label": "INV-2026-10708",
@@ -5115,6 +5161,144 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Status": "Open",
     "Gross amount": "€22,491",
     "Due": "2026-11-04"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "customer:rheinberg-energie-gmbh",
+   "type": "customer",
+   "label": "Rheinberg Energie GmbH",
+   "meta": {
+    "SAP customer ID": "0010090627",
+    "Note": "Not part of the Sub4Me sample data, only in the Renewals Space",
+    "Escalation": "Executive since 2026-10-09: The smart-meter data import drops 12 % of the readings; the regulatory report is due on 2026-11-30. The new CIO asked for the root cause and a date."
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "escalation": {
+    "level": "Executive",
+    "since": "2026-10-09",
+    "owner": "Sabine Lenz"
+   }
+  },
+  {
+   "id": "contract:C-2023-0610",
+   "type": "contract",
+   "label": "C-2023-0610",
+   "meta": {
+    "Product": "SAP S/4HANA for utilities",
+    "Status": "Active",
+    "Annual value": "€780,000",
+    "Term": "ends 2027-01-31",
+    "Notice period": "90 days",
+    "Renewal decision": "2026-11-02 (in 14 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Very high ticket TKT-51022 is open: Smart-meter data import drops 12 % of the readings (regulatory report due 2026-11-30); Decision date 2026-11-02 is in 14 days (renews automatically unless changed)"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2023-0610",
+    "decision": "2026-11-02",
+    "days": 14,
+    "health": "red",
+    "status": "Renewal due",
+    "annualEur": 780000,
+    "offer": {
+     "id": "OFF-2026-0611",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-09"
+    }
+   }
+  },
+  {
+   "id": "ticket:TKT-51022",
+   "type": "ticket",
+   "label": "TKT-51022",
+   "meta": {
+    "Title": "Smart-meter data import drops 12 % of the readings (regulatory report due 2026-11-30)",
+    "Priority": "Very high",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2025-0712",
+   "type": "contract",
+   "label": "C-2025-0712",
+   "meta": {
+    "Product": "SAP Customer Data Cloud",
+    "Status": "Active",
+    "Annual value": "€185,000",
+    "Term": "ends 2027-01-31",
+    "Notice period": "90 days",
+    "Renewal decision": "2026-11-02 (in 14 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Decision date 2026-11-02 is in 14 days; No renewal offer yet"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2025-0712",
+    "decision": "2026-11-02",
+    "days": 14,
+    "health": "red",
+    "status": "Renewal due",
+    "annualEur": 185000
+   }
+  },
+  {
+   "id": "contract:C-2026-0811",
+   "type": "contract",
+   "label": "C-2026-0811",
+   "meta": {
+    "Product": "SAP Integration Suite (meter-data interfaces)",
+    "Status": "Active",
+    "Annual value": "€48,000",
+    "Term": "ends 2026-12-31",
+    "Notice period": "30 days",
+    "Renewal decision": "2026-12-01 (in 43 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Invoice INV-2026-51030 is overdue (€57,120, due 2026-09-30); Decision date 2026-12-01 is in 43 days"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0811",
+    "decision": "2026-12-01",
+    "days": 43,
+    "health": "red",
+    "status": "Running",
+    "annualEur": 48000,
+    "offer": {
+     "id": "OFF-2026-0612",
+     "stage": "Negotiation",
+     "validUntil": "2026-11-25"
+    }
+   }
+  },
+  {
+   "id": "invoice:INV-2026-51030",
+   "type": "invoice",
+   "label": "INV-2026-51030",
+   "meta": {
+    "Status": "Overdue",
+    "Gross amount": "€57,120",
+    "Due": "2026-09-30"
    },
    "view": {
     "space": "renewals",
@@ -5284,6 +5468,73 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "customer:alpenwerke-maschinenbau-ag",
+   "type": "customer",
+   "label": "Alpenwerke Maschinenbau AG",
+   "meta": {
+    "SAP customer ID": "0010090611",
+    "Note": "Not part of the Sub4Me sample data, only in the Renewals Space"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2024-0455",
+   "type": "contract",
+   "label": "C-2024-0455",
+   "meta": {
+    "Product": "SAP Signavio Process Transformation Suite",
+    "Status": "Active",
+    "Annual value": "€98,000",
+    "Term": "ends 2027-02-28",
+    "Notice period": "60 days",
+    "Renewal decision": "2026-12-30 (in 72 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-30 is in 72 days; No renewal offer yet"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2024-0455",
+    "decision": "2026-12-30",
+    "days": 72,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 98000
+   }
+  },
+  {
+   "id": "contract:C-2024-0620",
+   "type": "contract",
+   "label": "C-2024-0620",
+   "meta": {
+    "Product": "SAP Customer Experience (CX)",
+    "Status": "Active",
+    "Annual value": "€210,000",
+    "Term": "ends 2027-02-28",
+    "Notice period": "60 days",
+    "Renewal decision": "2026-12-30 (in 72 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Only 59 % of the seats are used: expect a smaller renewal; Decision date 2026-12-30 is in 72 days"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2024-0620",
+    "decision": "2026-12-30",
+    "days": 72,
+    "health": "red",
+    "status": "Running",
+    "annualEur": 210000
+   }
+  },
+  {
    "id": "contract:C-2026-0921",
    "type": "contract",
    "label": "C-2026-0921",
@@ -5371,6 +5622,65 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "view": {
     "space": "renewals",
     "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2025-0710",
+   "type": "contract",
+   "label": "C-2025-0710",
+   "meta": {
+    "Product": "SAP S/4HANA Cloud, private edition",
+    "Status": "Active",
+    "Annual value": "€520,000",
+    "Term": "ends 2027-03-31",
+    "Notice period": "90 days",
+    "Renewal decision": "2026-12-31 (in 73 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-31 is in 73 days"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2025-0710",
+    "decision": "2026-12-31",
+    "days": 73,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 520000,
+    "offer": {
+     "id": "OFF-2026-0610",
+     "stage": "Negotiation",
+     "validUntil": "2026-12-10"
+    }
+   }
+  },
+  {
+   "id": "contract:C-2025-0720",
+   "type": "contract",
+   "label": "C-2025-0720",
+   "meta": {
+    "Product": "SAP Emarsys Customer Engagement",
+    "Status": "Active",
+    "Annual value": "€120,000",
+    "Term": "ends 2027-04-30",
+    "Notice period": "60 days",
+    "Renewal decision": "2027-03-01 (in 133 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "60 % of the contacts (thousands) are used: be ready to right-size; Usage fell from 96 % to 60 % in 5 months"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2025-0720",
+    "decision": "2027-03-01",
+    "days": 133,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 120000
    }
   },
   {
@@ -5515,6 +5825,58 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "contract:C-2025-0640",
+   "type": "contract",
+   "label": "C-2025-0640",
+   "meta": {
+    "Product": "SAP Analytics Cloud",
+    "Status": "Active",
+    "Annual value": "€64,000",
+    "Term": "ends 2027-06-30",
+    "Notice period": "60 days",
+    "Renewal decision": "2027-05-01 (in 194 days)",
+    "Renewal health": "Green"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2025-0640",
+    "decision": "2027-05-01",
+    "days": 194,
+    "health": "green",
+    "status": "Running",
+    "annualEur": 64000
+   }
+  },
+  {
+   "id": "contract:C-2026-0803",
+   "type": "contract",
+   "label": "C-2026-0803",
+   "meta": {
+    "Product": "SAP Analytics Cloud",
+    "Status": "Active",
+    "Annual value": "€76,000",
+    "Term": "ends 2027-06-30",
+    "Notice period": "60 days",
+    "Renewal decision": "2027-05-01 (in 194 days)",
+    "Renewal health": "Green"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0803",
+    "decision": "2027-05-01",
+    "days": 194,
+    "health": "green",
+    "status": "Running",
+    "annualEur": 76000
+   }
+  },
+  {
    "id": "contract:C-2026-0904",
    "type": "contract",
    "label": "C-2026-0904",
@@ -5599,6 +5961,32 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "contract:C-2025-0731",
+   "type": "contract",
+   "label": "C-2025-0731",
+   "meta": {
+    "Product": "SAP Business Network (Ariba)",
+    "Status": "Active",
+    "Annual value": "€142,000",
+    "Term": "ends 2027-09-30",
+    "Notice period": "90 days",
+    "Renewal decision": "2027-07-02 (in 256 days)",
+    "Renewal health": "Green"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2025-0731",
+    "decision": "2027-07-02",
+    "days": 256,
+    "health": "green",
+    "status": "Running",
+    "annualEur": 142000
+   }
+  },
+  {
    "id": "contract:C-2026-0914",
    "type": "contract",
    "label": "C-2026-0914",
@@ -5624,6 +6012,32 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "status": "Running",
     "annualEur": 88000,
     "addon": true
+   }
+  },
+  {
+   "id": "contract:C-2026-0821",
+   "type": "contract",
+   "label": "C-2026-0821",
+   "meta": {
+    "Product": "SAP Commerce pricing add-on",
+    "Status": "Active",
+    "Annual value": "€36,000",
+    "Term": "ends 2027-08-31",
+    "Notice period": "30 days",
+    "Renewal decision": "2027-08-01 (in 286 days)",
+    "Renewal health": "Green"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0821",
+    "decision": "2027-08-01",
+    "days": 286,
+    "health": "green",
+    "status": "Running",
+    "annualEur": 36000
    }
   },
   {
@@ -8853,6 +9267,11 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "HAS_CONTRACT"
   },
   {
+   "source": "customer:seeland-retail-group-ag",
+   "target": "contract:C-2022-0701",
+   "type": "HAS_CONTRACT"
+  },
+  {
    "source": "invoice:INV-2026-10708",
    "target": "contract:C-2025-0041",
    "type": "INVOICE_FOR"
@@ -8923,6 +9342,31 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "INVOICE_FOR"
   },
   {
+   "source": "customer:rheinberg-energie-gmbh",
+   "target": "contract:C-2023-0610",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "ticket:TKT-51022",
+   "target": "contract:C-2023-0610",
+   "type": "ABOUT"
+  },
+  {
+   "source": "customer:seeland-retail-group-ag",
+   "target": "contract:C-2025-0712",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:rheinberg-energie-gmbh",
+   "target": "contract:C-2026-0811",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "invoice:INV-2026-51030",
+   "target": "contract:C-2026-0811",
+   "type": "INVOICE_FOR"
+  },
+  {
    "source": "customer:muster-industrie-ag",
    "target": "contract:C-2026-0902",
    "type": "HAS_CONTRACT"
@@ -8963,6 +9407,16 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "INVOICE_FOR"
   },
   {
+   "source": "customer:alpenwerke-maschinenbau-ag",
+   "target": "contract:C-2024-0455",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:rheinberg-energie-gmbh",
+   "target": "contract:C-2024-0620",
+   "type": "HAS_CONTRACT"
+  },
+  {
    "source": "customer:lindenau-pharma-ag",
    "target": "contract:C-2026-0921",
    "type": "HAS_CONTRACT"
@@ -8986,6 +9440,16 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "source": "invoice:INV-2026-10729",
    "target": "contract:C-2024-0233",
    "type": "INVOICE_FOR"
+  },
+  {
+   "source": "customer:alpenwerke-maschinenbau-ag",
+   "target": "contract:C-2025-0710",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:seeland-retail-group-ag",
+   "target": "contract:C-2025-0720",
+   "type": "HAS_CONTRACT"
   },
   {
    "source": "customer:lindenau-pharma-ag",
@@ -9018,6 +9482,16 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "HAS_CONTRACT"
   },
   {
+   "source": "customer:rheinberg-energie-gmbh",
+   "target": "contract:C-2025-0640",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:alpenwerke-maschinenbau-ag",
+   "target": "contract:C-2026-0803",
+   "type": "HAS_CONTRACT"
+  },
+  {
    "source": "customer:muster-industrie-ag",
    "target": "contract:C-2026-0904",
    "type": "HAS_CONTRACT"
@@ -9033,8 +9507,18 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "HAS_CONTRACT"
   },
   {
+   "source": "customer:alpenwerke-maschinenbau-ag",
+   "target": "contract:C-2025-0731",
+   "type": "HAS_CONTRACT"
+  },
+  {
    "source": "customer:hanse-handelsgruppe-ag",
    "target": "contract:C-2026-0914",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:seeland-retail-group-ag",
+   "target": "contract:C-2026-0821",
    "type": "HAS_CONTRACT"
   },
   {

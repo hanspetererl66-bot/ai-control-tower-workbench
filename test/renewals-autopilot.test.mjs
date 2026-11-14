@@ -118,7 +118,7 @@ test('win-back: approve (with an owner), send, answer; a win goes to the order, 
 });
 
 test('win-back: every lapsed contract of the sample can start one, with the entry price from the options or 15 % below today', () => {
-  assert.equal(lapsed.length, 3);
+  assert.equal(lapsed.length, 4, 'Ariba and Integration Suite at Lindenau and Hanse, Concur at Muster, Commerce Cloud at Seeland');
   for (const c of lapsed) {
     const wb = L.wbStart(ctxOf(c), 'unknown');
     assert.equal(wb.status, 'waiting-person', c.id);

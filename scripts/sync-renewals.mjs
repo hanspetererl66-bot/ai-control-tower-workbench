@@ -9,6 +9,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { embedDesignSystem } from './sync-design-system.mjs';
+import { EXTRA_CUSTOMERS, EXTRA_TRENDS } from './renewals-extra-customers.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const PAGE = 'examples/renewals/index.html';
@@ -35,6 +36,7 @@ export const CUSTOMERS = [
   { id: 'muster', owner: 'Nina Kessler', escalation: { level: 'Management', since: '2026-10-14', topic: 'The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week.', owner: 'Nina Kessler' }, topics: [{ kind: 'people', text: 'New head of procurement from 1 November: introduce the renewal plan early' }, { kind: 'commercial', text: 'Asked for a comparison of Joule units and Document AI units' }] },
   { id: 'hanse', owner: 'Tom Ahlers', escalation: null, topics: [{ kind: 'people', text: 'The Head of Controlling, who championed SAP Analytics Cloud, left in September; her successor has not been introduced yet' }, { kind: 'people', text: 'New CFO since September, reviews all software spend' }, { kind: 'commercial', text: 'Wants to bundle Commerce Cloud and Integration Suite into one contract' }] },
   { id: 'lindenau', owner: 'Jonas Weber', escalation: { level: 'Account team', since: '2026-10-12', topic: 'The 2608 upgrade blocks the validation run in QAS (batch release dump). Quality Assurance cannot release the upgrade to PRD before it is fixed.', owner: 'Jonas Weber' }, topics: [{ kind: 'compliance', text: 'Every AI use case needs a validation concept from Quality Assurance before productive use' }, { kind: 'commercial', text: 'Asks to bring supplier qualification for GxP suppliers into the Ariba renewal' }] },
+  ...EXTRA_CUSTOMERS.map(({ id, owner, escalation, topics }) => ({ id, owner, escalation, topics })),
 ];
 
 /** E-mail threads per customer for the Renewals Space: the threads of the E-Mail-Communication Space, plus fictional ones for Hanse. */
@@ -51,6 +53,8 @@ const LINDENAU_MAILS = [
 const snippetOf = (body) => { const ls = body.split('\n').map((l) => l.trim()).filter((l) => l && !/^(hello|hi|dear|thanks|thank you|best|kind regards|regards)\b/i.test(l) && !l.startsWith('>')); return (ls.find((l) => l.length > 30) ?? ls.sort((a, b) => b.length - a.length)[0] ?? '').slice(0, 190); };
 const cleanSnippet = (s) => (s.length < 12 ? '' : s);
 export function mailsFor(customerId, customerName) {
+  const extra = EXTRA_CUSTOMERS.find((c) => c.id === customerId);
+  if (extra) return extra.mails;
   if (customerId === 'hanse') return HANSE_MAILS;
   if (customerId === 'lindenau') return LINDENAU_MAILS;
   const { threads } = JSON.parse(read('examples/customer-emails/threads.json'));
@@ -124,6 +128,8 @@ const TRENDS = {
   'C-2026-0924': [40, 52, 66, 78, 90, 96],     // Lindenau, Joule for Quality pilot: a success, expand
 };
 
+for (const [id, series] of Object.entries(EXTRA_TRENDS)) TRENDS[id] = series;
+
 export function buildRenewals() {
   const cases = [];
   for (const c of sub4meCustomers()) {
@@ -155,6 +161,19 @@ export function buildRenewals() {
       owner: main.owner, csm: main.csm, customerOwner: main.customerOwner, offer: null, tickets: (a.tickets ?? []).map((t) => ({ ...t })),
       invoices: [...(a.overdue ? [{ id: a.overdue.id, status: 'Overdue', grossEur: a.overdue.grossEur, due: a.overdue.due }] : []), ...(a.invoices ?? []).map((i) => ({ ...i }))], addon: true,
     });
+  }
+  for (const cu of EXTRA_CUSTOMERS) {
+    const annual = cu.contracts.filter((k) => k.status !== 'Lapsed').reduce((a, k) => a + k.annualEur, 0);
+    for (const k of cu.contracts) {
+      cases.push({
+        customerSince: cu.since, customerAnnualEur: annual,
+        id: `R-${k.id}`, customerId: cu.id, customer: cu.name, sapCustomerId: cu.sapCustomerId,
+        contractId: k.id, product: k.product, status: k.status, end: k.end,
+        noticeDays: k.noticeDays, decisionDate: addDays(k.end, -k.noticeDays), autoRenew: k.autoRenew, annualEur: k.annualEur, upliftCapPct: k.upliftCapPct, termination: k.termination,
+        used: k.used, licensed: k.licensed, unit: k.unit, owner: cu.owner, csm: cu.csm, customerOwner: cu.customerOwner,
+        offer: k.offer ? { ...k.offer } : null, tickets: (k.tickets ?? []).map((t) => ({ ...t })), invoices: (k.invoices ?? []).map((i) => ({ ...i })),
+      });
+    }
   }
   for (const c of cases) if (!c.offer && EXTRA_OFFERS[c.contractId]) c.offer = { ...EXTRA_OFFERS[c.contractId] };
   for (const c of cases) if (TRENDS[c.contractId]) c.usageTrend = [...TRENDS[c.contractId].slice(0, -1), Math.round((c.used / c.licensed) * 100)];
