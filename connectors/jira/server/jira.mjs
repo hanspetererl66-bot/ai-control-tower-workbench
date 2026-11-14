@@ -83,6 +83,17 @@ export function createJiraHandlers({ env = process.env, fetchImpl = globalThis.f
     assignee: i.fields?.assignee?.displayName ?? null,
     updated: i.fields?.updated ?? null,
   });
+  /** The project key of a call: the explicit argument, else the configured default project. */
+  const projectOf = (args) => {
+    const given = String(args.project ?? '').trim();
+    const fallback = String(env.JIRA_DEFAULT_PROJECT ?? '').trim();
+    const project = (given || fallback).toUpperCase();
+    if (!project) throw new JiraError('project is required (a project key such as ABC) because no default project is set.');
+    if (!PROJECT.test(project)) {
+      throw new JiraError(given ? 'project must be a project key such as ABC.' : 'The default project is not a valid project key (for example ABC, no spaces or lower-case name). Change it in the connector settings.');
+    }
+    return project;
+  };
   const keyOf = (args) => {
     const key = String(args.key ?? '').trim().toUpperCase();
     if (!KEY.test(key)) throw new JiraError('key must look like ABC-123.');
@@ -92,7 +103,8 @@ export function createJiraHandlers({ env = process.env, fetchImpl = globalThis.f
   return {
     async jira_check_connection() {
       const me = await api('GET', '/rest/api/3/myself');
-      return { ok: true, user: me.displayName ?? me.emailAddress ?? 'unknown', site: config().site };
+      const defaultProject = String(env.JIRA_DEFAULT_PROJECT ?? '').trim().toUpperCase();
+      return { ok: true, user: me.displayName ?? me.emailAddress ?? 'unknown', site: config().site, ...(PROJECT.test(defaultProject) ? { default_project: defaultProject } : {}) };
     },
     async jira_list_projects() {
       const res = await api('GET', '/rest/api/3/project/search?maxResults=50&orderBy=key');
@@ -107,8 +119,7 @@ export function createJiraHandlers({ env = process.env, fetchImpl = globalThis.f
       return { count: (res.issues ?? []).length, issues: (res.issues ?? []).map(issueRow), more: res.isLast === false };
     },
     async jira_read_backlog(args) {
-      const project = String(args.project ?? '').trim().toUpperCase();
-      if (!PROJECT.test(project)) throw new JiraError('project must be a project key such as ABC.');
+      const project = projectOf(args);
       const max = Math.min(100, Math.max(1, Number.isInteger(args.max_results) ? args.max_results : 60));
       const res = await api('POST', '/rest/api/3/search/jql', { jql: `project = ${project} AND issuetype in (Epic, Story, Task, Bug) ORDER BY issuetype ASC, key ASC`, maxResults: max, fields: ['summary', 'status', 'issuetype', 'priority', 'parent', 'labels', 'description'] });
       return {
@@ -128,8 +139,7 @@ export function createJiraHandlers({ env = process.env, fetchImpl = globalThis.f
       return { ...issueRow(i), reporter: i.fields?.reporter?.displayName ?? null, created: i.fields?.created ?? null, labels: i.fields?.labels ?? [], description: clip(adfToText(i.fields?.description).trim(), 3000), comments };
     },
     async jira_create_issue(args) {
-      const project = String(args.project ?? '').trim().toUpperCase();
-      if (!PROJECT.test(project)) throw new JiraError('project must be a project key such as ABC.');
+      const project = projectOf(args);
       const summary = String(args.summary ?? '').trim();
       if (!summary || summary.length > 255) throw new JiraError('summary is required (at most 255 characters).');
       const fields = { project: { key: project }, summary, issuetype: { name: String(args.issue_type ?? 'Task').slice(0, 40) } };
@@ -174,9 +184,9 @@ export const TOOL_DEFINITIONS = [
   { name: 'jira_check_connection', description: 'Check the Jira connection (site, e-mail, API token) and show who the token belongs to.', inputSchema: obj({}) },
   { name: 'jira_list_projects', description: 'List the Jira projects (key, name) the account can see.', inputSchema: obj({}) },
   { name: 'jira_search_issues', description: 'Search issues with JQL, for example: project = ABC AND statusCategory != Done ORDER BY updated DESC. Returns key, summary, status, type, priority, assignee.', inputSchema: obj({ jql: { type: 'string' }, max_results: { type: 'integer', description: '1 to 50 (default 20).' } }, ['jql']) },
-  { name: 'jira_read_backlog', description: 'Read the backlog of a project for a requirements document: epics, stories, tasks and bugs with their parent epic, priority, labels and description (read only).', inputSchema: obj({ project: { type: 'string', description: 'Project key such as ABC.' }, max_results: { type: 'integer', description: 'At most 100 (default 60).' } }, ['project']) },
+  { name: 'jira_read_backlog', description: 'Read the backlog of a project for a requirements document: epics, stories, tasks and bugs with their parent epic, priority, labels and description (read only).', inputSchema: obj({ project: { type: 'string', description: 'Project key such as ABC. Optional when a default project is set in the connector settings.' }, max_results: { type: 'integer', description: 'At most 100 (default 60).' } }) },
   { name: 'jira_get_issue', description: 'Read one issue: description, labels and the last comments.', inputSchema: obj({ key: { type: 'string', description: 'Issue key such as ABC-123.' } }, ['key']) },
-  { name: 'jira_create_issue', description: 'Create an issue (this changes Jira). Ask the person before using it.', inputSchema: obj({ project: { type: 'string', description: 'Project key such as ABC.' }, summary: { type: 'string' }, description: { type: 'string' }, issue_type: { type: 'string', description: 'Task, Bug, Story … (default Task).' }, priority: { type: 'string' } }, ['project', 'summary']) },
+  { name: 'jira_create_issue', description: 'Create an issue (this changes Jira). Ask the person before using it.', inputSchema: obj({ project: { type: 'string', description: 'Project key such as ABC. Optional when a default project is set in the connector settings.' }, summary: { type: 'string' }, description: { type: 'string' }, issue_type: { type: 'string', description: 'Task, Bug, Story … (default Task).' }, priority: { type: 'string' } }, ['summary']) },
   { name: 'jira_add_comment', description: 'Add a comment to an issue (this changes Jira). Ask the person before using it.', inputSchema: obj({ key: { type: 'string' }, comment: { type: 'string' } }, ['key', 'comment']) },
   { name: 'jira_add_labels', description: 'Add labels to an issue; existing labels stay (this changes Jira). Ask the person before using it.', inputSchema: obj({ key: { type: 'string' }, labels: { type: 'array', items: { type: 'string' }, description: 'Labels without spaces, at most 10.' } }, ['key', 'labels']) },
   { name: 'jira_set_status', description: 'Move an issue to another status, for example "In Progress" or "Done" (this changes Jira). Ask the person before using it.', inputSchema: obj({ key: { type: 'string' }, status: { type: 'string' } }, ['key', 'status']) },

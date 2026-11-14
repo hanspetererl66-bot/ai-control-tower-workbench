@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "jira",
   "display_name": "Jira",
-  "version": "0.2.0",
-  "description": "Jira Cloud: search and read issues with JQL, create issues, comment, add labels and change status. Needs the site address, the account e-mail and an API token.",
+  "version": "0.3.0",
+  "description": "Jira Cloud: search and read issues with JQL, create issues, comment, add labels and change status. Needs the site address, the account e-mail and an API token; a default project key is optional.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -19,7 +19,8 @@
       "env": {
         "JIRA_SITE": "${user_config.jira_site}",
         "JIRA_EMAIL": "${user_config.jira_email}",
-        "JIRA_API_TOKEN": "${user_config.jira_api_token}"
+        "JIRA_API_TOKEN": "${user_config.jira_api_token}",
+        "JIRA_DEFAULT_PROJECT": "${user_config.jira_default_project}"
       }
     }
   },
@@ -80,6 +81,12 @@
       "description": "id.atlassian.com, Security, Create and manage API tokens, Create API token. Stored as a secret. The token acts with your rights in Jira.",
       "sensitive": true,
       "required": true
+    },
+    "jira_default_project": {
+      "type": "string",
+      "title": "Default project key",
+      "description": "Optional. The project key (not the project name) used when a request names no project, for example SCRUM. Capital letters, digits and underscores only. You find the key in the Jira address: .../projects/<KEY>/...",
+      "required": false
     }
   }
 }

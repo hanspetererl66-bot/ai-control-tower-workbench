@@ -101,3 +101,36 @@ test('read_backlog returns parent epic, labels and description text for a projec
   assert.match(body.jql, /^project = ABC /); assert.equal(calls[0].init.method, 'POST');
   await assert.rejects(h.jira_read_backlog({ project: 'x; DROP' }), JiraError);
 });
+
+test('a default project fills in a missing project and an explicit one wins', async () => {
+  const calls = [];
+  const withDefault = (answer) => createJiraHandlers({ env: { ...env, JIRA_DEFAULT_PROJECT: ' scrum ' }, fetchImpl: async (url, init) => { calls.push({ url, init }); return answer; } });
+  const created = await withDefault(json({ key: 'SCRUM-3' }, 201)).jira_create_issue({ summary: 'Ohne Projekt' });
+  assert.deepEqual(created, { created: true, key: 'SCRUM-3', url: 'https://firma.atlassian.net/browse/SCRUM-3' });
+  assert.equal(JSON.parse(calls[0].init.body).fields.project.key, 'SCRUM');
+  await withDefault(json({ isLast: true, issues: [] })).jira_read_backlog({});
+  assert.match(JSON.parse(calls[1].init.body).jql, /^project = SCRUM /);
+  await withDefault(json({ key: 'ABC-9' }, 201)).jira_create_issue({ project: 'abc', summary: 'Anderes Projekt' });
+  assert.equal(JSON.parse(calls[2].init.body).fields.project.key, 'ABC');
+  assert.equal(calls.length, 3);
+});
+
+test('without a default project the project stays required; an invalid default is explained', async () => {
+  const h = make(json({ key: 'X-1' }, 201));
+  await assert.rejects(h.jira_create_issue({ summary: 'a' }), /no default project is set/);
+  await assert.rejects(h.jira_read_backlog({}), /no default project is set/);
+  const bad = createJiraHandlers({ env: { ...env, JIRA_DEFAULT_PROJECT: 'MyjouleX Board' }, fetchImpl: async () => json({}) });
+  await assert.rejects(bad.jira_create_issue({ summary: 'a' }), /default project is not a valid project key/);
+  await assert.rejects(bad.jira_read_backlog({ project: 'x; DROP' }), /project must be a project key/);
+});
+
+test('check_connection reports a valid default project and the setting is optional in the manifest', async () => {
+  const h = createJiraHandlers({ env: { ...env, JIRA_DEFAULT_PROJECT: 'scrum' }, fetchImpl: async () => json({ displayName: 'Service' }) });
+  assert.deepEqual(await h.jira_check_connection(), { ok: true, user: 'Service', site: 'https://firma.atlassian.net', default_project: 'SCRUM' });
+  const manifest = JSON.parse(readFileSync(new URL('../connectors/jira/manifest.json', import.meta.url), 'utf8'));
+  assert.equal(manifest.user_config.jira_default_project.required, false);
+  assert.equal(manifest.server.mcp_config.env.JIRA_DEFAULT_PROJECT, '${user_config.jira_default_project}');
+  const required = (name) => TOOL_DEFINITIONS.find((t) => t.name === name).inputSchema.required;
+  assert.deepEqual(required('jira_create_issue'), ['summary']);
+  assert.deepEqual(required('jira_read_backlog'), []);
+});
