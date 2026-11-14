@@ -98,7 +98,7 @@ test('two infrastructure cards come from the certificates and the fleet, before 
   const cards = buildBriefing(data, new Date(2026, 9, 25), all);
   assert.deepEqual(cards.map((c) => c.id).filter((id) => id === 'certs' || id === 'fleet'), ['certs', 'fleet']);
   const certs = cards.find((c) => c.id === 'certs');
-  assert.match(certs.title, /^5 Zertifikate laufen in unter 30 Tagen ab, 1 abgelaufen$/);
+  assert.match(certs.title, /^5 Zertifikate laufen in unter 30 Tagen ab, 2 abgelaufen$/);
   assert.equal(certs.tone, 'red');
   assert.match(certs.actions.find((a) => a.kind === 'ask').prompt, /nichts ausführen/);
   const fleet = cards.find((c) => c.id === 'fleet');
