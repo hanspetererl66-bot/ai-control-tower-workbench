@@ -591,7 +591,158 @@ export function makeLogic(D) {
     return pos;
   }
 
+  /** The figures that can be compared between the companies of the group (the "Figures per company" card). */
+  var METRICS = [
+    { id: 'arr', label: 'Per year', unit: 'EUR', pick: function (s) { return s.arr; } },
+    { id: 'pipeline', label: 'Weighted pipeline', unit: 'EUR', pick: function (s) { return s.pipeline.weighted; } },
+    { id: 'outstanding', label: 'Outstanding', unit: 'EUR, gross', pick: function (s) { return s.payment.exposureGross; } },
+    { id: 'overdue', label: 'Overdue', unit: 'EUR, gross', pick: function (s) { return s.payment.overdueGross; } },
+    { id: 'tickets', label: 'Open tickets', unit: '', pick: function (s) { return s.openTickets; } },
+    { id: 'heat', label: 'Heat', unit: 'of 100', pick: function (s) { return s.heat; } },
+  ];
+  /** One figure for every company, largest first; `pct` is the share of the largest (for the bar). An unknown id gives the first figure. */
+  function figures(metricId) {
+    var m = METRICS.filter(function (x) { return x.id === metricId; })[0] || METRICS[0];
+    var rows = D.entities.map(function (e) {
+      var s = summary(e.id), v = m.pick(s);
+      return { entity: e.id, node: resolve(e.id), name: e.name, short: e.short, value: v, text: m.id === 'tickets' || m.id === 'heat' ? String(v) : eurShort(v), level: s.level };
+    });
+    rows.sort(function (a, b) { return b.value - a.value || (a.short < b.short ? -1 : a.short > b.short ? 1 : 0); });
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([0]));
+    rows.forEach(function (r) { r.pct = max > 0 ? Math.round((r.value / max) * 100) : 0; });
+    return { metric: m.id, label: m.label, unit: m.unit, rows: rows, max: max, total: sum(rows, function (r) { return r.value; }), totalText: m.id === 'heat' ? '' : m.id === 'tickets' ? String(sum(rows, function (r) { return r.value; })) : eurShort(sum(rows, function (r) { return r.value; })) };
+  }
+  /** The things that happen to the companies, each with a date (the "Timeline" card). */
+  var TL_KINDS = [
+    { id: 'contract', label: 'Contracts', glyph: '▬' },
+    { id: 'invoice', label: 'Invoices', glyph: '●' },
+    { id: 'ticket', label: 'Tickets', glyph: '▲' },
+    { id: 'order', label: 'Orders', glyph: '■' },
+    { id: 'message', label: 'Messages', glyph: '◆' },
+    { id: 'deal', label: 'Deals', glyph: '★' },
+  ];
+  var TONE_RANK = { ok: 0, info: 1, warn: 2, bad: 3 };
+  /** One event per contract (a span from start to end), invoice (at its due date), ticket, order, message and deal (at its close date), oldest first. `node` is the graph node a click selects. */
+  function events() {
+    var out = [], gaps = o2c();
+    D.contracts.forEach(function (c) {
+      var r = renewalOf(c), p = product(c.product);
+      out.push({ id: c.id, kind: 'contract', entity: c.entity, date: c.start, end: c.end, tone: r.status === 'lapsed' ? 'bad' : r.status === 'near' ? 'warn' : 'ok', node: resolve(c.id),
+        title: c.id + ' · ' + (p ? p.name : c.product) + ' · ' + eur(c.annualEur) + ' EUR a year · ' + c.start + ' to ' + c.end + ' · ' + c.status });
+    });
+    D.invoices.forEach(function (i) {
+      var late = i.status === 'Paid' && i.daysLate > 0;
+      out.push({ id: i.id, kind: 'invoice', entity: i.entity, date: i.dueOn, tone: i.status === 'Overdue' ? 'bad' : i.status === 'Open' ? 'info' : late ? 'warn' : 'ok', node: i.status === 'Paid' ? 'pay:' + i.entity : resolve(i.id),
+        title: i.id + ' · due ' + i.dueOn + ' · ' + eur(i.grossEur) + ' EUR gross · ' + (i.status === 'Paid' ? 'paid ' + i.paidOn + (late ? ', ' + i.daysLate + ' days late' : '') : i.status.toLowerCase()) });
+    });
+    D.tickets.forEach(function (t) {
+      out.push({ id: t.id, kind: 'ticket', entity: t.entity, date: t.openedOn, tone: t.status === 'Resolved' ? 'ok' : t.severity === 'P1' || t.severity === 'P2' ? 'bad' : 'warn', node: resolve(t.id),
+        title: t.id + ' ' + t.severity + ' · opened ' + t.openedOn + ' · ' + t.status.toLowerCase() + ' · ' + t.title });
+    });
+    D.orders.forEach(function (o) {
+      var gap = gaps.filter(function (g) { return g.order === o.id; })[0];
+      out.push({ id: o.id, kind: 'order', entity: o.entity, date: o.orderedOn, tone: gap ? 'warn' : 'info', node: resolve(o.id), title: o.id + ' · ordered ' + o.orderedOn + ' · ' + eur(o.netEur) + ' EUR net · ' + o.title + (gap ? ' · ' + gap.text : '') });
+    });
+    D.signals.forEach(function (s) {
+      out.push({ id: s.id, kind: 'message', entity: s.entity, date: s.date, tone: 'info', node: resolve(s.id), title: s.id + ' · ' + s.kind + ' · ' + s.date + ' · ' + String(s.text).replace(/\s+/g, ' ').slice(0, 90) });
+    });
+    D.opportunities.forEach(function (o) {
+      out.push({ id: o.id, kind: 'deal', entity: o.entity, date: o.closeDate, tone: 'info', node: resolve(o.id), title: o.id + ' · expected ' + o.closeDate + ' · ' + eur(o.acvEur) + ' EUR · ' + o.title + ' · ' + o.stage + ' ' + o.probability + ' %' });
+    });
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1; });
+    return out;
+  }
+  /** The timeline for a period ('90d', '12m' = the last year and the next half year, 'all') and a set of kinds: one lane per company. */
+  function timeline(opts) {
+    opts = opts || {};
+    var ids = TL_KINDS.map(function (k) { return k.id; });
+    var kinds = Array.isArray(opts.kinds) ? opts.kinds.filter(function (k) { return ids.indexOf(k) >= 0; }) : ids;
+    var range = opts.range === '90d' || opts.range === 'all' ? opts.range : '12m';
+    var all = events(), from, to;
+    if (range === 'all') {
+      from = all.reduce(function (m, e) { return e.date < m ? e.date : m; }, ASOF); to = all.reduce(function (m, e) { var d = e.end || e.date; return d > m ? d : m; }, ASOF);
+    } else { from = addDays(ASOF, range === '90d' ? -90 : -365); to = addDays(ASOF, range === '90d' ? 90 : 180); }
+    var inWindow = all.filter(function (e) { return (e.end || e.date) >= from && e.date <= to; });
+    var counts = {}; ids.forEach(function (k) { counts[k] = inWindow.filter(function (e) { return e.kind === k; }).length; });
+    var shown = inWindow.filter(function (e) { return kinds.indexOf(e.kind) >= 0; });
+    return {
+      asOf: ASOF, range: range, from: from, to: to, days: Math.max(1, daysBetween(from, to)), kinds: TL_KINDS, active: kinds, counts: counts, total: shown.length,
+      lanes: D.entities.map(function (e) { return { entity: e.id, short: e.short, name: e.name, node: resolve(e.id), events: shown.filter(function (x) { return x.entity === e.id; }) }; }),
+    };
+  }
+  /** Events of one kind that lie within `gapDays` of each other become one mark with a count, so a crowded stretch stays readable. A contract is never merged. The mark has the worst tone of its events. */
+  function bucketEvents(list, gapDays) {
+    var out = [], open = {};
+    list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).forEach(function (e) {
+      var b = open[e.kind];
+      if (e.kind !== 'contract' && b && daysBetween(b.last, e.date) <= gapDays) {
+        b.events.push(e); b.count += 1; b.last = e.date; if (TONE_RANK[e.tone] > TONE_RANK[b.tone]) b.tone = e.tone;
+      } else {
+        b = { kind: e.kind, date: e.date, last: e.date, end: e.end || null, tone: e.tone, events: [e], count: 1 };
+        if (e.kind !== 'contract') open[e.kind] = b;
+        out.push(b);
+      }
+    });
+    return out;
+  }
+
+  /** A text on one line, cut at a word boundary with an ellipsis when it is longer than `max`. */
+  function clipText(text, max) {
+    var t = String(text).replace(/\s+/g, ' ').trim();
+    if (t.length <= max) return t;
+    var cut = t.slice(0, max), sp = cut.lastIndexOf(' ');
+    return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[ ,.;:]+$/, '') + '…';
+  }
+  /** How each company pays, measured from its paid invoices (the "Invoices and payment behaviour" card). Not a forecast. */
+  function behaviour() {
+    var rows = [];
+    D.entities.forEach(function (e) {
+      var inv = D.invoices.filter(function (i) { return i.entity === e.id; });
+      if (!inv.length) return;
+      var p = paymentOf(e.id);
+      var paid = inv.filter(function (i) { return i.status === 'Paid'; }).sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : a.dueOn > b.dueOn ? 1 : 0; });
+      var trend = null;
+      if (paid.length >= 6) {
+        var recent = paid.slice(-4), before = paid.slice(0, -4);
+        var delta = Math.round((sum(recent, function (i) { return i.daysLate; }) / recent.length - sum(before, function (i) { return i.daysLate; }) / before.length) * 10) / 10;
+        trend = { delta: delta, label: delta <= -2 ? 'better' : delta >= 2 ? 'worse' : 'steady' };
+      }
+      rows.push({
+        entity: e.id, short: e.short, name: e.name, node: resolve(e.id), invoices: inv.length, paid: paid.length, lateCount: p.lateCount, latePct: paid.length ? Math.round((p.lateCount / paid.length) * 100) : 0,
+        avgDaysLate: p.avgDaysLate, maxDaysLate: p.maxDaysLate, trend: trend, exposureGross: p.exposureGross, overdueGross: p.overdueGross, oldestOverdueDays: p.oldestOverdueDays, risk: p.risk,
+        points: paid.map(function (i) { return { id: i.id, due: i.dueOn, daysLate: i.daysLate, gross: i.grossEur, node: 'pay:' + e.id }; }),
+        overdue: p.overdue.map(function (i) { return { id: i.id, due: i.dueOn, daysLate: daysBetween(i.dueOn, ASOF), gross: i.grossEur, node: resolve(i.id) }; }),
+      });
+    });
+    var rank = { high: 3, medium: 2, low: 1, none: 0 };
+    rows.sort(function (a, b) { return b.exposureGross - a.exposureGross || rank[b.risk] - rank[a.risk] || b.avgDaysLate - a.avgDaysLate; });
+    return rows;
+  }
+  /** Invoices that are not paid yet, with the reason a document gives (a message that names the invoice) and an expected payment date by a stated rule of thumb. */
+  function openInvoices() {
+    var rows = D.invoices.filter(function (i) { return i.status !== 'Paid'; }).map(function (i) {
+      var p = paymentOf(i.entity), paidN = p.paid;
+      var sig = D.signals.filter(function (s) { return (s.about || []).indexOf(i.id) >= 0; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0] || null;
+      var avg = Math.max(0, Math.round(p.avgDaysLate));
+      var expectedOn = paidN ? addDays(i.dueOn, avg) : null;
+      return {
+        id: i.id, entity: i.entity, short: (ent(i.entity) || {}).short || i.entity, dueOn: i.dueOn, grossEur: i.grossEur, status: i.status, daysToDue: daysBetween(ASOF, i.dueOn), node: resolve(i.id),
+        reason: sig ? { signal: sig.id, kind: sig.kind, date: sig.date, text: clipText(sig.text, 200), node: resolve(sig.id) } : null,
+        expected: expectedOn ? { on: expectedOn, later: expectedOn < ASOF, avgDaysLate: avg, basedOn: paidN } : null,
+      };
+    });
+    rows.sort(function (a, b) { return a.dueOn < b.dueOn ? -1 : a.dueOn > b.dueOn ? 1 : 0; });
+    return rows;
+  }
+
+  /** A window of size w x h that may be moved inside a stage of size W x H: the position is kept inside, `pad` away from the edge. A window larger than the stage sits at the pad. */
+  function clampBox(left, top, w, h, W, H, pad) {
+    function fit(v, size, total) { var hi = total - size - pad; return Math.round(Math.max(pad, Math.min(hi < pad ? pad : hi, v))); }
+    return { left: fit(left, w, W), top: fit(top, h, H) };
+  }
+
   return {
+    metrics: METRICS, figures: figures, clampBox: clampBox, events: events, timeline: timeline, bucketEvents: bucketEvents, TL_KINDS: TL_KINDS, behaviour: behaviour, openInvoices: openInvoices,
     ASOF: ASOF, TYPES: TYPES, EDGES: EDGES, ACTS: ACTS, graph: GRAPH, node: node, neighbours: neighbours, mentions: mentions, docs: DOCS, doc: function (id) { return DOC[id] || null; },
     paymentOf: paymentOf, renewalOf: renewalOf, pipeline: pipeline, weighted: weighted, o2c: o2c, summary: summary, group: group, recommendations: recommendations,
     retrieve: retrieve, beats: beats, layout: layout, tokens: tokens, eur: eur, eurShort: eurShort, daysBetween: daysBetween, resolve: resolve, ent: ent, contract: contract, by: by,

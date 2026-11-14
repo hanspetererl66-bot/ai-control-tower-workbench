@@ -9,10 +9,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { embedDesignSystem } from './sync-design-system.mjs';
 import { demoIssues } from './prd-demo-issues.mjs';
+import { fromLinear, fromNotion, fromSlack } from '../src/prd-sources.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = 'examples/prd-builder/index.html';
 const DATA = /(<script type="application\/json" id="prd-demo">)([\s\S]*?)(<\/script>)/;
+const MULTI = /(<script type="application\/json" id="prd-demo-multi">)([\s\S]*?)(<\/script>)/;
 const MODEL = /(<script id="prd-model">)([\s\S]*?)(<\/script>)/;
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
@@ -21,10 +23,16 @@ export function modelSource(source = read('examples/prd-builder/prd-model.mjs'))
   if (!m) throw new Error('prd-model.mjs has no BEGIN-MODEL / END-MODEL block');
   return m[1].trimEnd();
 }
-export function embedPrdBuilder(html, issues, source, css) {
-  if (!DATA.test(html) || !MODEL.test(html)) throw new Error(`${PAGE} needs <script id="prd-demo"> and <script id="prd-model">`);
+/** The demo answers of Linear, Slack and Notion, turned into issues the same way the app does it. */
+export function demoMulti() {
+  const d = JSON.parse(read('examples/prd-builder/demo-sources.json'));
+  return { linear: fromLinear(d.linear), slack: fromSlack(d.slack.messages, d.slack.channel), notion: fromNotion(d.notion) };
+}
+export function embedPrdBuilder(html, issues, source, css, multi = demoMulti()) {
+  if (!DATA.test(html) || !MODEL.test(html) || !MULTI.test(html)) throw new Error(`${PAGE} needs <script id="prd-demo">, <script id="prd-demo-multi"> and <script id="prd-model">`);
   const withData = html
     .replace(DATA, (_m, o, _b, c) => `${o}\n${JSON.stringify(issues, null, 1).replaceAll('<', '\\u003c')}\n${c}`)
+    .replace(MULTI, (_m, o, _b, c) => `${o}\n${JSON.stringify(multi, null, 1).replaceAll('<', '\\u003c')}\n${c}`)
     .replace(MODEL, (_m, o, _b, c) => `${o}\n${modelSource(source).replaceAll('</script', '<\\/script')}\n${c}`);
   return embedDesignSystem(withData, css);
 }

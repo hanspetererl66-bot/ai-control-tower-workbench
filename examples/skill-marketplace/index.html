@@ -444,9 +444,9 @@ details.intro .body{margin-top:8px}
   <button role="tab" data-tab="collections" aria-selected="false">Collections</button>
   <button role="tab" data-tab="catalog" aria-selected="false">Catalog</button>
   <button role="tab" data-tab="mine" aria-selected="false">My skills</button>
-  <button role="tab" data-tab="overview" aria-selected="false" data-group="insights">Insights</button>
+  <button role="tab" data-tab="overview" aria-selected="false" data-group="insights">Skills analytics</button>
 </nav>
-<nav class="subnav" id="subtabs" aria-label="Insights" hidden>
+<nav class="subnav" id="subtabs" aria-label="Skills analytics" hidden>
   <button data-tab="overview" aria-pressed="true">Overview</button>
   <button data-tab="ranking" aria-pressed="false">Ranking</button>
   <button data-tab="impact" aria-pressed="false">Impact</button>
@@ -8047,6 +8047,12 @@ details.intro .body{margin-top:8px}
     else if (t.hasAttribute('data-appr')) decide(t.getAttribute('data-appr'), t.getAttribute('data-ok') === '1', t.getAttribute('data-ok') === '1' ? 'Approved by hand.' : REJECT_REASONS[0]);
   });
   $('appr-auto').addEventListener('change', function(e){ W.auto = e.target.checked; if (W.auto) W.requests.forEach(scheduleAuto); persistW(); });
+  // The app can open one of the tabs (for example the tile "Skills analytics" in the Admin console opens the overview): only a known tab name is used.
+  var OPENABLE = ['discover', 'collections', 'catalog', 'mine'].concat(INSIGHTS);
+  window.addEventListener('message', function(e){
+    if (e.source !== window.parent || !e.data || e.data.type !== 'ct:open-tab' || typeof e.data.tab !== 'string' || OPENABLE.indexOf(e.data.tab) < 0) return;
+    go(e.data.tab);
+  });
   window.addEventListener('message', function(e){
     if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore' || !e.data.state) return;
     var st = e.data.state; if (!Array.isArray(st.requests)) return;

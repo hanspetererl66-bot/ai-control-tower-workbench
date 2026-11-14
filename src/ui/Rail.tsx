@@ -3,12 +3,12 @@ import type { AppearancePreference } from '../appearance';
 import { MODEL_PROVIDERS } from '../web-search';
 import SpinningDiamond from './SpinningDiamond';
 
-export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'hiring' | 'admin' | 'designer';
+export type View = 'chat' | 'spaces' | 'develop' | 'studio' | 'manage' | 'n8n' | 'scheduler' | 'skillhealth' | 'ontology' | 'registry' | 'hiring' | 'admin' | 'spaceanalysis' | 'designer';
 
 /** Screens that belong to Develop: the start page and the places it leads to. */
 const DEVELOP_VIEWS: View[] = ['develop', 'studio', 'manage', 'n8n'];
 /** Screens that belong to Admin: its start page and the tiles it leads to. */
-const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry', 'skillhealth'];
+const ADMIN_VIEWS: View[] = ['admin', 'ontology', 'registry', 'skillhealth', 'spaceanalysis'];
 
 export default function Rail({
   view,
@@ -95,7 +95,7 @@ export default function Rail({
         <button
           className={`rail-btn ${ADMIN_VIEWS.includes(view) ? 'rail-btn-on' : ''}`}
           onClick={() => onView('admin')}
-          title="Admin console: ontologies, the register of agents, workflows and features, and skill management"
+          title="Admin console: Ontology Manager, the register of agents, workflows and features, skill management and Space Analysis"
           aria-label="Admin console"
           aria-pressed={ADMIN_VIEWS.includes(view)}
         >

@@ -23,6 +23,7 @@ export const NODE_TYPES = {
   deal: 'Deal (lead / opportunity)',
   offer: 'Offer',
   ticket: 'Ticket',
+  invoice: 'Invoice',
   call: 'Call',
   thread: 'E-mail conversation',
   skill: 'Skill',
@@ -40,6 +41,7 @@ export const EDGE_TYPES = {
   OFFERED_FOR: { verb: 'offers', inverse: 'offered in' },
   RENEWS: { verb: 'renews', inverse: 'renewed by' },
   ABOUT: { verb: 'concerns', inverse: 'has ticket' },
+  INVOICE_FOR: { verb: 'invoices', inverse: 'invoiced by' },
   IN_FAMILY: { verb: 'belongs to', inverse: 'includes' },
   USES_TOOL: { verb: 'uses tool', inverse: 'used by' },
   PROVIDED_BY: { verb: 'provided by', inverse: 'provides', weak: true },
@@ -110,8 +112,9 @@ export function extractGraph(html) {
   return JSON.parse(match[1]);
 }
 
-/** sources: { sub4me, marketplace, controlTower, automation, links, communication?, sales? } (communication = { calls, threads } mockup data, sales = the Sales pipeline) */
-export function buildGraph({ sub4me, marketplace, controlTower, automation, links, communication, sales }) {
+/** sources: { sub4me, marketplace, controlTower, automation, links, communication?, sales?, renewals? } (communication = { calls, threads } mockup data, sales = the Sales pipeline,
+ *  renewals = { asOf, cases, customers } of the Renewals Space, each case with the health the page calculates: health, days, reasons) */
+export function buildGraph({ sub4me, marketplace, controlTower, automation, links, communication, sales, renewals }) {
   const nodes = new Map();
   const edges = [];
   const seen = new Set();
@@ -384,6 +387,48 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
     for (const [account, region] of Object.entries(links?.regions ?? {})) {
       const node = nodes.get(`customer:${slug(account)}`);
       if (node) { node.meta.Region = region; node.region = region; }
+    }
+  }
+
+  /* Renewals: every renewal case is a contract node (missing ones are added), with decision date and health; open invoices and tickets hang on it;
+     an escalation is a mark on the customer. The health is the one the Renewals Space shows (calculated by the shared logic, never here). */
+  if (renewals) {
+    const HEALTH = { red: 'Red', yellow: 'Yellow', green: 'Green' };
+    for (const c of renewals.cases ?? []) {
+      const cust = `customer:${slug(c.customer)}`;
+      if (!nodes.has(cust)) continue;
+      const cid = `contract:${c.contractId}`;
+      let node = nodes.get(cid);
+      if (!node) {
+        node = addNode(cid, 'contract', c.contractId, {
+          Product: c.product, Status: c.status === 'Lapsed' ? 'Expired' : 'Active', 'Annual value': money(c.annualEur), Term: `ends ${c.end}`, 'Notice period': `${c.noticeDays} days`,
+          ...(c.addon ? { Note: 'Add-on contract, fictional, only in the Renewals Space' } : {}),
+        }, { space: 'renewals', tab: 'process' });
+        addEdge(cust, cid, 'HAS_CONTRACT');
+      }
+      node.meta['Renewal decision'] = `${c.decisionDate} (${c.days < 0 ? `${-c.days} days ago` : `in ${c.days} days`})`;
+      node.meta['Renewal health'] = HEALTH[c.health] ?? c.health;
+      if (c.reasons?.length) node.meta['Renewal reasons'] = c.reasons.join('; ');
+      node.renewal = {
+        id: c.id, decision: c.decisionDate, days: c.days, health: c.health, status: c.status, annualEur: c.annualEur, ...(c.addon ? { addon: true } : {}), ...(c.status === 'Lapsed' ? { lapsed: true } : {}),
+        ...(c.offer ? { offer: { id: c.offer.id, stage: c.offer.stage, validUntil: c.offer.validUntil } } : {}),
+      };
+      for (const t of c.tickets ?? []) {
+        const tid = `ticket:${t.id}`;
+        addNode(tid, 'ticket', t.id, { Title: t.title, Priority: t.priority, Status: t.status }, { space: 'renewals', tab: 'process' });
+        addEdge(tid, cid, 'ABOUT');
+      }
+      for (const i of c.invoices ?? []) {
+        const iid = `invoice:${i.id}`;
+        addNode(iid, 'invoice', i.id, { Status: i.status, 'Gross amount': money(i.grossEur), Due: i.due }, { space: 'renewals', tab: 'process' });
+        addEdge(iid, cid, 'INVOICE_FOR');
+      }
+    }
+    for (const cu of renewals.customers ?? []) {
+      const node = cu.escalation ? nodes.get(`customer:${slug(cu.name)}`) : null;
+      if (!node) continue;
+      node.meta.Escalation = `${cu.escalation.level} since ${cu.escalation.since}: ${cu.escalation.topic}`;
+      node.escalation = { level: cu.escalation.level, since: cu.escalation.since, owner: cu.escalation.owner };
     }
   }
 

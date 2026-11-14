@@ -29,6 +29,7 @@ import Composer from './ui/Composer';
 import { chatMail, chatMailtoUrl } from './chat-mail';
 import ConversationList from './ui/ConversationList';
 import ManageView from './ui/ManageView';
+import { liveConnectors } from './connector-activity';
 import SidePanel, { memorySummary, type ContextItem, type GeneratedFile, type SidePanelTab } from './ui/SidePanel';
 import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
@@ -51,9 +52,11 @@ import { localTarget, newExtension } from './requirements';
 import { AGENTS_PULLED, PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
+import StudyBadge from './ui/StudyBadge';
 import Splitter from './ui/Splitter';
 import { DEFAULT_WIDTHS, loadWidths, saveWidths, type PaneWidths } from './pane-width';
-import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
+import { PRD_SPACE, prdExtensionFor } from './prd-bridge';
+import { SPEC_SPACE } from './spec-bridge';
 import { HIRING_SPACE } from './hiring-bridge';
 import { OBSERVABILITY_SPACE } from './observability-bridge';
 import { ONBOARDING_SPACE } from './onboarding-bridge';
@@ -71,7 +74,7 @@ import { addReport, loadReports, saveReports, fingerprint as agentVersion, type 
 import type { NetMessage } from './agent-network';
 import { ACTIVE_GROUP_KEY, createGroupClient, groupNote, loadIdentity, type GroupDetail, type Identity } from './groups';
 import SpacesList from './ui/SpacesList';
-import { listSide, spacesDockClass } from './spaces-dock';
+import { listSide, showListSplitter, spacesDockClass } from './spaces-dock';
 import SpacesOverview from './ui/SpacesOverview';
 import { createLocalGroupCall, GROUP_MODE_KEY } from './groups-local';
 import { deleteSpaceFolder, duplicateSpaceFolder, importSpaceFile } from './space-share';
@@ -81,8 +84,11 @@ import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
+import SpaceAnalysisView from './ui/SpaceAnalysisView';
 import OntologyManagerView from './ui/OntologyManagerView';
-import { buildGlossary } from './ontology-glossary';
+import { buildGlossary, buildIndex } from './ontology-glossary';
+import { choiceLabels, choose, pendingChoices, termContext, termsNote, type Ambiguity, type Choices } from './ontology-chat';
+import { AskBack, type ChatTermsControl } from './ui/ChatTerms';
 import { setTermsForDomain, setTermsForSpace, termsOn, type SpaceTermsControl } from './space-terms';
 import AdminView from './ui/AdminView';
 import HiringApprovals from './ui/HiringApprovals';
@@ -96,6 +102,7 @@ import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-deli
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
 import { SALES_SPACE, SUB4ME_EXTENSION, SUB4ME_SPACE, parseToolResult } from './sub4me-bridge';
+import { DIAGRAM_NOTE, wantsDiagram } from './mermaid-diagram';
 import { addDomain, archiveSpace, restoreSpace, splitArchived, applySpaceTitles, assignParent, placeSpace, assistantNote, deleteDomain, forgetSpace, renameSpace, domainNames, effectiveDomain, parentCandidates, parentOf, loadPreferences, pinFirst, renameDomain, savePreferences, sanitizePreferences, startSpace, togglePin, type Preferences } from './preferences';
 import { buildPreferenceCss } from './preferences-style';
 import { listSkills, type Skill } from './skills';
@@ -139,6 +146,8 @@ export default function App() {
   const [agentEpoch, setAgentEpoch] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Connectors with a tool call that is running right now (normalised names); shown in the connector list while an answer is being made. */
+  const [liveExt, setLiveExt] = useState<string[]>([]);
   const [conversationState, setConversationState] = useState(() =>
     loadConversationState(window.localStorage)
   );
@@ -397,7 +406,8 @@ export default function App() {
   const [ontologyFocus, setOntologyFocus] = useState<{ slug: string; term: string } | null>(null);
   const termsSpace = view === 'spaces' ? activeSpaces.find((x) => x.slug === selectedSpace) ?? null : null;
   const termsDomain = termsSpace ? effectiveDomain(termsSpace, spaces, prefs) : '';
-  const termsWanted = Boolean(termsSpace && termsOn(prefs, termsSpace.slug, termsDomain));
+  const spaceTermsWanted = Boolean(termsSpace && termsOn(prefs, termsSpace.slug, termsDomain));
+  const termsWanted = spaceTermsWanted || prefs.chat.terms;
   const termsRequested = useRef(false);
   useEffect(() => { if (view !== 'ontology') setOntologyFocus(null); }, [view]);
   useEffect(() => {
@@ -405,9 +415,15 @@ export default function App() {
     termsRequested.current = true;
     void loadOntologies();
   }, [termsWanted, ontologyData.source.kind, loadOntologies]);
-  const glossary = useMemo(() => (termsWanted && ontologyData.source.kind === 'catalog' ? buildGlossary(ontologyData.ontologies, ontologyData.governance) : null), [termsWanted, ontologyData]);
+  // While the catalog is read again the last good vocabulary stays (a gap would let a message go out without the ask-back).
+  const lastGlossary = useRef<ReturnType<typeof buildGlossary> | null>(null);
+  const glossary = useMemo(() => {
+    if (!termsWanted) return null;
+    if (ontologyData.source.kind === 'catalog') { lastGlossary.current = buildGlossary(ontologyData.ontologies, ontologyData.governance); return lastGlossary.current; }
+    return ontologyData.source.kind === 'loading' ? lastGlossary.current : null;
+  }, [termsWanted, ontologyData]);
   const termsControl: SpaceTermsControl | undefined = termsSpace ? {
-    on: termsWanted,
+    on: spaceTermsWanted,
     domain: termsDomain,
     domainOn: prefs.termDomains.includes(termsDomain),
     state: ontologyData.source.kind === 'catalog' ? 'ready' : ontologyData.source.kind === 'loading' ? 'loading' : 'unavailable',
@@ -415,8 +431,15 @@ export default function App() {
     glossary,
     onToggle: (on) => updatePrefs((c) => setTermsForSpace(c, termsSpace.slug, termsDomain, on)),
     onToggleDomain: (on) => updatePrefs((c) => setTermsForDomain(c, termsDomain, on)),
-    onOpen: (key) => { const at = key.indexOf('|'); setOntologyFocus({ slug: key.slice(0, at), term: key.slice(at + 1) }); setView('ontology'); },
+    onOpen: (key) => openTerm(key),
   } : undefined;
+  function openTerm(key: string) { const at = key.indexOf('|'); setOntologyFocus({ slug: key.slice(0, at), term: key.slice(at + 1) }); setView('ontology'); }
+  // Terms in the chat: marks and cards, and the ask-back when a name exists in two ontologies (choices are kept for this conversation).
+  const termIndex = useMemo(() => (glossary ? buildIndex(glossary) : null), [glossary]);
+  const chatTerms: ChatTermsControl | undefined = prefs.chat.terms && glossary && termIndex ? { glossary, index: termIndex, onOpen: openTerm } : undefined;
+  const [termChoices, setTermChoices] = useState<Choices>({});
+  const [termAsk, setTermAsk] = useState<Ambiguity[]>([]);
+  const [termHold, setTermHold] = useState('');
   const spaceScale = prefs.spaceScale as SpaceScale;
   function changeSpaceScale(scale: SpaceScale) {
     updatePrefs((c) => ({ ...c, spaceScale: scale }));
@@ -808,11 +831,13 @@ export default function App() {
         if (tc.toolName) toolNames.current.set(tc.id, tc.toolName);
         { const used = skillLoadedBy(tc, skillListRef.current.map((k) => k.name)); if (used) countSkillRun([used]); }
         tools.current = [...tools.current, tc];
+        setLiveExt(liveConnectors(tools.current));
         recordFiles(tc.id, tc);
         flush();
       },
       onToolUpdate: (id: string, patch: Partial<ToolCall>) => {
         tools.current = tools.current.map((t) => (t.id === id ? { ...t, ...patch } : t));
+        setLiveExt(liveConnectors(tools.current));
         recordFiles(id, patch);
         flush();
       },
@@ -923,6 +948,10 @@ export default function App() {
     tools.current = [];
     speaker.current?.stop();
     speaker.current = voiceRef.current.speak ? new ReplySpeaker(voiceRef.current.language) : null;
+    // Terms of the ontology: the meanings the person chose are shown on the message; the definitions go to the model only when that is switched on.
+    const termCtx = prefs.chat.terms && glossary && !options.plain && options.trigger !== 'schedule' && !runTarget ? termContext(typed, glossary, termChoices) : null;
+    const termLabels = termCtx && glossary ? choiceLabels(typed, glossary, termChoices) : [];
+    const termSent = prefs.chat.termsContext && termCtx ? termCtx : null;
     setMessages((prev) => [
       ...prev,
       {
@@ -930,6 +959,7 @@ export default function App() {
         text: typed,
         tools: [],
         attachments: attachments.map(historyAttachment),
+        ...(termLabels.length || termSent?.lines.length ? { terms: { chosen: termLabels, sent: termSent?.lines.length ?? 0 } } : {}),
       },
       { role: 'agent', text: '', tools: [], startedAt },
     ]);
@@ -953,7 +983,7 @@ export default function App() {
       blockedWebTool.current = false;
       const dockProject = view === 'studio' && dockFocus ? agentProjects.find((x) => x.id === dockFocus.projectId) ?? null : null;
       const docContext = dockProject && dockFocus ? documentNote(dockProject, dockFocus.docKey) : '';
-      const prompt = [historyGrounding, text, docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '']
+      const prompt = [historyGrounding, text, termSent ? termsNote(termSent) : '', docContext, assistantNote(prefs), harnessNote(harnessRef.current), personaNote(personas), currentMemoryNote(contextSpace, memoryFor(harnessRef.current, memory)), groupNote(activeGroup), webSearchNote(webSearch), grounding, spaceTarget, spaceRequested ? SPACE_BRIEF : '', !spaceRequested && wantsDiagram(text) ? DIAGRAM_NOTE : '']
         .filter(Boolean)
         .join('\n\n---\n');
       const attachedCsv = attachments.find((attachment) => attachment.name.toLowerCase().endsWith('.csv'));
@@ -1186,6 +1216,19 @@ export default function App() {
     void send(prompt);
   }
 
+  /** The Admin console tile "Skills analytics": the analytics tabs (overview, ranking, impact …) of the Skill Marketplace Space. */
+  function openSkillsAnalytics() {
+    if (!spaces.some((candidate) => candidate.slug === 'skill-marketplace')) {
+      setToast('The Skill Marketplace Space is not installed. Install it with: node scripts/install-example-space.mjs skill-marketplace');
+      setTimeout(() => setToast(null), 12000);
+      return;
+    }
+    setSelectedSpace('skill-marketplace');
+    setSpaceTab({ tab: 'overview', nonce: Date.now(), space: 'skill-marketplace' });
+    setSpacesHome(false);
+    setView('spaces');
+  }
+
   /** Open a Space (and optionally one of its tabs); used by spoken commands and briefing cards. */
   function navigateTo(target: { space: string; tab?: string; label?: string }) {
     const label = target.label ?? target.space;
@@ -1233,6 +1276,12 @@ export default function App() {
   }
 
   /** A Space hands work to another Space: queue it, open that Space unless told not to, and show the notice. */
+  /** A designed page links to another Space: open it, or say how to install it. Nothing is delivered to that Space. */
+  function openLinkedSpace(slug: string) {
+    if (!spaces.some((x) => x.slug === slug)) { setToast(missingSpaceNotice(slug)); setTimeout(() => setToast(null), 12000); return; }
+    setSelectedSpace(slug); setSpacesHome(false); setView('spaces');
+  }
+
   function handOff(fromSlug: string, handoff: Handoff) {
     const target = spaces.find((x) => x.slug === handoff.to);
     if (!target) { setToast(missingSpaceNotice(handoff.to)); setTimeout(() => setToast(null), 12000); return; }
@@ -1405,6 +1454,14 @@ export default function App() {
   /** In the docked chat, "yes, confirm" confirms the document on screen instead of going to the model. */
   const interceptSend = (typed: string, attachments: ChatAttachment[] = []) => {
     if (dockProject && dockFocus && attachments.length === 0 && isConfirmCommand(typed)) { confirmDockDoc(); return; }
+    // A name that exists in two ontologies is never guessed: the person chooses first (no model involved), the draft stays in the box.
+    if (prefs.chat.terms && !glossary && ontologyData.source.kind === 'loading') { setTermAsk([]); setTermHold('Reading the ontology vocabulary. Press Send again in a moment.'); return 'held' as const; }
+    setTermHold('');
+    if (prefs.chat.terms && glossary) {
+      const pending = pendingChoices(typed, glossary, termChoices);
+      if (pending.length) { setTermAsk(pending); return 'held' as const; }
+    }
+    setTermAsk([]);
     return send(typed, attachments);
   };
   const ideas = suggestFromConversation(messages.filter((m) => m.role === 'user').map((m) => m.text), memory, dismissedIdeas);
@@ -1453,7 +1510,10 @@ export default function App() {
     },
   } : undefined;
   const mailHint = !agent ? 'Joule is not connected yet.' : !gmailName ? 'Connect Gmail under Connectors & Skills.' : '';
+  const askPanel = <AskBack hold={termHold} pending={termAsk} onChoose={(a, key) => { setTermChoices((c) => choose(c, a, key)); setTermAsk((p) => p.filter((x) => x.id !== a.id)); }} />;
   const composer = (
+    <>
+    {askPanel}
     <Composer
       mail={mailPick}
       mailHint={mailHint}
@@ -1482,6 +1542,7 @@ export default function App() {
       catalogSkills={skillList}
       spaces={spaces}
     />
+    </>
   );
   const suggestionBar = memorySuggestion && (
     <div className="memory-suggest" role="status">
@@ -1531,6 +1592,8 @@ export default function App() {
     if (busy) return null;
     setContextSpace('');
     setDismissedIdeas([]);
+    setTermChoices({});
+    setTermAsk([]);
     const conversation = createConversation();
     setConversationState((state) => ({
       selectedId: conversation.id,
@@ -1618,7 +1681,7 @@ export default function App() {
 
   return (
     <div className={`app ${showDetails ? 'app-details' : ''} ${dockShown ? `app-dock app-dock-${view}` : ''} ${spacesDockClass(view, prefs.spacesDock)}`} style={{ ...(paneWidths.list !== DEFAULT_WIDTHS.list ? { '--list-w': `${paneWidths.list}px` } : {}), ...(paneWidths.dock !== DEFAULT_WIDTHS.dock ? { '--dock-w': `${paneWidths.dock}px` } : {}) } as React.CSSProperties}>
-      <div className="study-badge" aria-hidden="true"><span className="study-bar"><i /></span><span className="study-name">JouleX Design Study</span></div>
+      <StudyBadge />
       <Rail
         view={view}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -1649,6 +1712,7 @@ export default function App() {
           selected={selectedSpace}
           onSelect={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           onReorder={(from, to, after) => changeSpaceOrder((current) => moveSpace(current, from, to, after))}
+          onSortAll={(slugs) => changeSpaceOrder(() => slugs)}
           onNudge={(slug, direction) => changeSpaceOrder((current) => nudgeSpace(current, slug, direction))}
           pinned={prefs.pinnedSpaces}
           onTogglePin={(slug) => updatePrefs((c) => ({ ...c, pinnedSpaces: togglePin(c.pinnedSpaces, slug) }))}
@@ -1729,9 +1793,11 @@ export default function App() {
       ) : view === 'hiring' ? (
         <HiringApprovals onBack={() => { setSelectedSpace(HIRING_SPACE); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenAnalysis={() => setView('spaceanalysis')} onOpenSkillsAnalytics={openSkillsAnalytics} />
+      ) : view === 'spaceanalysis' ? (
+        <SpaceAnalysisView spaces={spaces} onBack={() => setView('admin')} onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'ontology' ? (
-        <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} actor={identity?.email ?? ''} />
+        <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} tipsOn={prefs.tips.enabled} onTipsOff={() => updatePrefs((c) => ({ ...c, tips: { ...c.tips, enabled: false } }))} actor={identity?.email ?? ''} />
       ) : view === 'skillhealth' ? (
         <SkillHealthView
           catalog={skillCatalog}
@@ -1761,6 +1827,7 @@ export default function App() {
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
           focus={manageFocus}
+          liveConnectors={busy ? liveExt : []}
         />
       ) : view === 'studio' ? (
         <AgentStudio
@@ -1827,15 +1894,18 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
+            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SPEC_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
-            renewalsDeps={space.slug === RENEWALS_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
+            prdDeps={space.slug === PRD_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
+            specDeps={space.slug === SPEC_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, exportDocx: window.host?.exportDocx } : undefined}
+            renewalsDeps={space.slug === RENEWALS_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, cases: window.host?.renewalsCases && window.host.renewalsCaseSave && window.host.renewalsCaseReset ? { list: () => window.host!.renewalsCases!(), save: (args) => window.host!.renewalsCaseSave!(args), reset: (args) => window.host!.renewalsCaseReset!(args) } : undefined } : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
             onHandoff={(handoff) => handOff(space.slug, handoff)}
             onOpenView={(next) => setView(next)}
+            onOpenSpace={space.designer ? (slug) => openLinkedSpace(slug) : undefined}
             terms={termsControl}
             onSpaceState={(state) => { spaceStates.current[space.slug] = state; }}
             savedState={spaceStates.current[space.slug]}
@@ -1843,7 +1913,7 @@ export default function App() {
             installedSpaces={space.slug === 'ai-control-tower' ? spaces.map((x) => x.slug) : undefined}
             studioAgents={space.slug === 'ai-control-tower' || space.slug === 'agent-registry' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
-            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? (extensionNames.find((n) => /jira/i.test(n)) ?? JIRA_EXTENSION) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
+            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? prdExtensionFor(tool, extensionNames) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
           <main className="main">
@@ -1938,6 +2008,7 @@ export default function App() {
                 onAsk={askFromSpace}
                 onSaveAsSpace={saveAnswerAsSpace}
                 chatTools={prefs.chat}
+                terms={chatTerms}
                 meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
                 onOpenSpace={(slug) => {
                   setSelectedSpace(slug);
@@ -1968,7 +2039,7 @@ export default function App() {
         </main>
       )}
 
-      {hasList && <Splitter pane="list" side={listSide(view, prefs.spacesDock)} width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
+      {hasList && showListSplitter(view, prefs.spacesDock) && <Splitter pane="list" side={listSide(view, prefs.spacesDock)} width={paneWidths.list} onChange={(w) => setPaneWidths((c) => ({ ...c, list: w }))} onCommit={(w) => { const n = { ...paneWidths, list: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && <Splitter pane="dock" width={paneWidths.dock} onChange={(w) => setPaneWidths((c) => ({ ...c, dock: w }))} onCommit={(w) => { const n = { ...paneWidths, dock: w }; setPaneWidths(n); saveWidths(n); }} />}
       {dockShown && (
         <JouleDock
@@ -1994,6 +2065,7 @@ export default function App() {
               onAsk={askFromSpace}
               onSaveAsSpace={saveAnswerAsSpace}
               chatTools={prefs.chat}
+              terms={chatTerms}
               meta={{ privacy: { webSearch, connectors: extensionNames, model: agent?.currentModel ?? '', mode }, title }}
               onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }}
             />

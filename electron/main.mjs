@@ -15,6 +15,7 @@ import { createSkillStore } from './skill-store.mjs';
 import { createOntologyStore } from './ontology-store.mjs';
 import { createGovernanceSync, createSharedGovernance } from './ontology-shared.mjs';
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
+import { docxFileName, markdownToDocx } from './docx.mjs';
 import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ensureGooseConfig } from '../shared/goose-config.mjs';
@@ -765,6 +766,26 @@ ipcMain.handle('skill-export', async (_event, dir) => {
   }
 });
 
+/** Save a document as Word: the page sends the Markdown, the person chooses where it goes (nothing is written without the dialog). */
+ipcMain.handle('document-export-docx', async (_event, payload) => {
+  try {
+    const title = typeof payload?.title === 'string' ? payload.title.slice(0, 200) : '';
+    const markdown = typeof payload?.markdown === 'string' ? payload.markdown : '';
+    if (!markdown.trim()) return { ok: false, detail: 'There is nothing to save.' };
+    const buffer = markdownToDocx(markdown, { title: title || 'Document' });
+    const picked = await dialog.showSaveDialog(mainWindow ?? undefined, {
+      title: 'Save as Word document',
+      defaultPath: join(app.getPath('downloads'), docxFileName(title)),
+      filters: [{ name: 'Word document', extensions: ['docx'] }],
+    });
+    if (picked.canceled || !picked.filePath) return { ok: false, canceled: true };
+    writeFileSync(picked.filePath, buffer);
+    return { ok: true, path: picked.filePath, bytes: buffer.length };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
+  }
+});
+
 ipcMain.handle('skill-import-open', async () => {
   const picked = await dialog.showOpenDialog(mainWindow ?? undefined, {
     title: 'Import skill',
@@ -1345,6 +1366,30 @@ ipcMain.handle('designer-pick-data-file', async () => {
   }
 });
 
+/** A picture for an image block in the Space Designer. The person picks it in the native dialog; the window gets the name, the kind
+ * (read from the first bytes, not from the name) and the bytes (max. 10 MB), never the path. The window shrinks it. */
+ipcMain.handle('designer-pick-image', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow ?? undefined, {
+      title: 'Choose a picture',
+      buttonLabel: 'Use picture',
+      properties: ['openFile'],
+      filters: [{ name: 'Pictures (PNG, JPEG, WebP, GIF)', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }],
+    });
+    if (result.canceled || result.filePaths.length === 0) return { ok: false, canceled: true };
+    const file = result.filePaths[0];
+    const size = statSync(file).size;
+    if (size > 10_000_000) return { ok: false, detail: `The file is ${(size / 1_000_000).toFixed(1)} MB; the limit is 10 MB.` };
+    const bytes = readFileSync(file);
+    const at = (i, ...v) => v.every((x, k) => bytes[i + k] === x);
+    const kind = at(0, 0x89, 0x50, 0x4e, 0x47) ? 'png' : at(0, 0xff, 0xd8, 0xff) ? 'jpeg' : at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50) ? 'webp' : at(0, 0x47, 0x49, 0x46, 0x38) ? 'gif' : null;
+    if (!kind) return { ok: false, detail: 'This is not a PNG, JPEG, WebP or GIF picture.' };
+    return { ok: true, name: basename(file), kind, data: bytes.toString('base64') };
+  } catch (error) {
+    return { ok: false, detail: error?.message ?? String(error) };
+  }
+});
+
 /** A fixed, read-only database view for a data set in the Space Designer: the window names an id from the list and a number of days. */
 ipcMain.handle('designer-data-view', async (_event, id, days) => {
   try {
@@ -1617,6 +1662,9 @@ ipcMain.handle('monitoring-config-test', () => obWrap(() => monitoringConfig.tes
 ipcMain.handle('shadow-start', (_event, run, decisions) => obWrap(() => workStore.shadowStart(run, decisions)));
 ipcMain.handle('shadow-verdict', (_event, decisionId, verdict, reason, note) => obWrap(() => workStore.shadowVerdict(decisionId, verdict, reason, note)));
 ipcMain.handle('shadow-summary', () => obWrap(() => workStore.shadowSummary()));
+ipcMain.handle('renewals-cases', () => obWrap(() => workStore.renewalsCases()));
+ipcMain.handle('renewals-case-save', (_event, args) => obWrap(() => workStore.renewalsCaseSave(args)));
+ipcMain.handle('renewals-case-reset', (_event, args) => obWrap(() => workStore.renewalsCaseReset(args)));
 ipcMain.handle('onboarding-list', () => obWrap(() => workStore.onboardingList()));
 ipcMain.handle('onboarding-handover', (_event, id, start) => obWrap(() => workStore.onboardingHandover(id, start)));
 ipcMain.handle('onboarding-set', (_event, id, step, status, note) => obWrap(() => workStore.onboardingSet(id, step, status, note)));

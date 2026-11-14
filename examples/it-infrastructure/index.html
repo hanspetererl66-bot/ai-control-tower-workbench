@@ -284,6 +284,11 @@ table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);
 .pill.urgent{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}.pill.planned{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}.pill.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
 .flow{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);flex-wrap:wrap}.flow b{color:var(--ink)}
 @media (max-width:860px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Yellow, a little stronger: the tone of a yellow VM, its pill and the legend reads clearly next to green and red (same amber token, more of it). */
+.vm.yellow{background:color-mix(in srgb,var(--amber) 22%,var(--surface));border-color:color-mix(in srgb,var(--amber) 55%,transparent);border-left-color:var(--amber)}
+.pill.yellow{background:color-mix(in srgb,var(--amber) 22%,var(--surface));border-color:color-mix(in srgb,var(--amber) 55%,transparent);font-weight:650}
+.legend .y{background:color-mix(in srgb,var(--amber) 30%,var(--surface));border-color:var(--amber)}
+.mini i.warn b{background:var(--amber)}
 </style>
 </head>
 <body>

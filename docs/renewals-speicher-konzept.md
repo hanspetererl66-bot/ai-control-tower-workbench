@@ -9,7 +9,7 @@ Stand: 13.11.2026. Konzept, noch nichts gebaut. Ergänzt `docs/renewals-prozessl
 3. **Testadressen:** vier Testadressen für die vier Verantwortlichen der Beispieldaten, dazu das eigene Konto als Admin.
 4. **Reset:** **archivieren**, nicht löschen. Die Geschichte bleibt.
 
-**Annahme, zu bestätigen:** Vertriebsleiter **lesen** alle Fälle, **ändern** sie aber nicht. Ändern (Tore, Kundenantwort, Reset) dürfen der Besitzer und Board-Admins.
+**Entschieden (13.11.2026):** Vertriebsleiter **lesen** alle Fälle, **ändern** sie aber nicht. Ändern (Tore, Kundenantwort, Reset) dürfen der Besitzer und Board-Admins.
 
 ## Ziel
 
@@ -29,10 +29,10 @@ Fälle, Protokolle und Stufen der Fälle gehen heute mit dem Schließen der App 
 |---|---|
 | `owner_email` | Name des Verantwortlichen zu E-Mail. Mit den **vier Testadressen** vorbefüllt (siehe unten). |
 | `manager` | E-Mails der Vertriebsleiter. Mit **einer Testadresse** vorbefüllt. |
-| `case` | ein Fall je Renewal und Art (`renewal` oder `winback`): Fall-Kennung, Besitzer (Name und E-Mail), Kunde, Status, der Zustand als `jsonb`, Revisionsnummer, wer und wann zuletzt geändert, `archived_at` |
-| `case_event` | jede Zeile des Protokolls, **nur anhängend** (ein Trigger verhindert Ändern und Löschen, wie bei `onboarding_event`) |
+| `cases` | ein Fall je Renewal und Art (`renewal` oder `winback`): Fall-Kennung, Besitzer (Name und E-Mail), Kunde, Status, der Zustand als `jsonb`, Revisionsnummer, wer und wann zuletzt geändert, `archived_at` |
+| `case_events` | jede Zeile des Protokolls, **nur anhängend** (ein Trigger verhindert Ändern und Löschen, wie bei `onboarding_event`) |
 
-Primärschlüssel von `case`: (Fall-Kennung, Art). Eine Renewal kann zuerst einen Autopilot-Fall haben und nach einer Absage einen Win-back-Fall.
+Die Tabellen heißen `cases` und `case_events` (`case` ist in SQL ein reserviertes Wort). Einen aktiven Fall je (Fall-Kennung, Art) erzwingt ein Teilindex (`cases_one_active`, nur nicht archivierte Zeilen); archivierte Fälle bleiben mit eigener Zeile. Eine Renewal kann zuerst einen Autopilot-Fall haben und nach einer Absage einen Win-back-Fall.
 
 **Testadressen** (reservierte Domain, kein echtes Postfach): `mira.hoffmann@renewals.example`, `sven.albrecht@renewals.example`, `clara.neumann@renewals.example`, `katrin.lindner@renewals.example`; Vertriebsleiter-Test: `vertrieb@renewals.example`. Das eigene Konto sieht alles, **wenn es in der Admin-Gruppe steht** (nicht geprüft).
 
@@ -41,7 +41,7 @@ Primärschlüssel von `case`: (Fall-Kennung, Art). Eine Renewal kann zuerst eine
 | Rolle | Sehen | Ändern (Tore, Kunde, Reset) |
 |---|---|---|
 | Verantwortlicher | nur Fälle, deren Besitzer seine E-Mail hat | dieselben |
-| Vertriebsleiter (`manager`) | alle | nein (Annahme) |
+| Vertriebsleiter (`manager`) | alle | nein (entschieden) |
 | Board-Admin | alle | ja |
 | E-Mail ohne Zuordnung | nichts | nein |
 
@@ -93,13 +93,23 @@ Du trägst in den Einstellungen der App eine der Testadressen als deine E-Mail e
 
 ## Offen
 
-1. **Vertriebsleiter lesen nur** (Annahme) oder dürfen sie auch ändern?
+1. ~~Vertriebsleiter lesen nur~~ entschieden: nur lesen.
 2. **Aufbewahrung:** Wie lange bleiben archivierte Fälle und Ereignisse?
 3. **Wer pflegt** die Zuordnung Name zu E-Mail und die Vertriebsleiter bei echten Daten? Heute von Hand im SQL-Editor.
 
+## Stand (13.11.2026)
+
+- Schritt 1 (Migration 050): angewendet, Kontrollabfrage ohne Beanstandung (PR #420).
+- Schritt 2 (Hostteil): PR #424, gemergt.
+- Schritt 3 (Seite): `examples/renewals/index.html`. Beim Start fragt die Seite die Fälle ab (`rn:cases-request`, Aktion `list`); danach speichert sie **nach jedem Zeichnen** jeden geänderten Fall einzeln mit der Revision (`save`), ein verschwundener Fall wird archiviert (`reset`). Pro Fall läuft immer nur eine Anfrage; ein abgelehnter Stand wird nicht in einer Schleife wiederholt. Bei einem Revisionskonflikt lädt die Seite neu (die Datenbank gewinnt). Ohne Datenbank oder ohne App arbeitet sie wie bisher im Speicher; mit Datenbank steht über dem Autopilot ein Hinweis (wer du bist, was du siehst) und bei einem Fehler "Not saved: <Grund>". Fälle, die der Mensch nicht ändern darf, sind sichtbar, aber gesperrt (Schaltflächen aus); "Run autopilot" startet nur eigene Fälle; "Reset" nur eigene.
+- Nach dem Merge braucht die App einen **Neustart**, und das Renewals-Space muss neu installiert werden (`npm run install:examples`). Beides ist geschehen (13.11.2026).
+
 ## Nicht geprüft
 
-- Nichts ist gebaut. Die Migration wäre gegen kein Postgres getestet.
+- **In der echten App ausprobiert (13.11.2026, von Hans-Peter):** mit der Testadresse `mira.hoffmann@renewals.example` werden die Fälle gespeichert und sind nach einem Neustart der App wieder da. **Vertriebsleiter ausprobiert (14.11.2026, von Hans-Peter, in der Instanz mit Datenbankzugang, E-Mail `vertrieb@renewals.example`):** alle fünf Punkte stimmen: Hinweis "You see all cases and can only read them (sales manager)", Miras gespeicherte Fälle sind sichtbar, alle Schaltflächen und Auswahlfelder an den Fällen sind gesperrt, "Run autopilot" startet nichts, kein "Not saved". **Trennung der Verantwortlichen in der Datenbank geprüft (14.11.2026, von Hans-Peter, mit einer nur lesenden Abfrage im SQL-Editor, die `renewals_cases_list` für sechs Testadressen aufruft):** Sven sieht keine Fälle von Mira, Ergebnis ok (Hans-Peter hat es mit diesen Worten gemeldet; Zahlen je Adresse habe ich nicht gesehen). Das prüft die Datenbankfunktion, nicht die App. **Weiter nicht ausprobiert:** die Trennung in der App selbst (mit `sven.albrecht@renewals.example` als E-Mail), ein Reset (Archivieren), ein Revisionskonflikt, das eigene Konto als Board-Admin. Die Abfrage liegt nicht im Repo. Meine eigenen Versuche in einer Testinstanz aus diesem Checkout (14.11.2026) scheiterten, weil dort kein Datenbankzugang eingetragen war; sie sagen nichts über die Seite.
+- Die Seitenlogik ist außerdem mit einem Ersatz-Host im Headless-Browser (jsdom) getestet.
+- Die SQL-Tests zu Migration 050 sind nie gegen Postgres gelaufen.
 - Ob das eigene Konto in der Admin-Gruppe steht, ist nicht geprüft.
-- Die Größe eines Falls mit Protokoll gegen die Grenze von 64 KB ist nicht gemessen.
-- Die Form der Aufrufe richtet sich nach Onboarding und Recruiting; ob alle Teile für diesen Fall passen, zeigt sich erst beim Bauen.
+- Ein Fall mit Protokoll ist im Test unter 20 KB (Grenze der Datenbank: 64 KB); mit sehr vielen Aktionen nicht gemessen.
+- Ein Fall, den die Seite im Speicher hat und der beim Neuladen in der Datenbank älter ist, wird von der Datenbank überschrieben, wenn ein Speichern vorher nicht gelang ("Not saved").
+- Der Besitzer eines Win-back-Falls ist in der Datenbank der Besitzer des Vertrags; ein später im Win-back gewählter Besitzer ändert die Zuordnung nicht.
