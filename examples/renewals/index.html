@@ -229,7 +229,7 @@ body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);
 main{max-width:1240px;margin:0 auto;padding:20px 24px 48px}
 .demo{margin:0 0 14px;padding:10px 14px;border:1px solid var(--amber-border);background:var(--amber-dim);color:var(--ink-2);border-radius:var(--radius-s);font-size:12px}
 h2{font-size:15px;font-weight:650;margin:0 0 4px}h3{font-size:13px;margin:0 0 4px}
-.sub{color:var(--muted);font-size:12px;margin:0 0 12px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 12px}.sub.bad{color:var(--bad)}
 .card{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .kpi{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -398,6 +398,61 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .tabs button{font:inherit;font-size:13px;font-weight:500;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;padding:12px 14px 10px;cursor:pointer;margin-bottom:-1px}
 .tabs button:hover{color:var(--ink)}.tabs button[aria-selected=true]{color:var(--purple-ink);border-bottom-color:var(--purple);font-weight:650}
 .tabs button:focus-visible{outline:2px solid var(--purple);outline-offset:-2px;border-radius:6px}
+/* The renewal process: four numbered main steps, secondary views behind "More" */
+.tabs.rp{align-items:center;gap:8px 6px;padding:2px 0 12px}
+.tabs.rp .rp-step{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 14px;margin:0}
+.tabs.rp .rp-step:hover{border-color:var(--purple);color:var(--ink)}
+.tabs.rp .rp-step.on{border-color:var(--purple);background:var(--purple-dim);color:var(--purple-ink)}
+.rp-n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--purple-light);color:var(--purple-ink)}
+.tabs.rp .rp-step.on .rp-n{background:var(--purple);color:var(--surface)}
+.rp-arrow{color:var(--muted)}
+/* The renewal process, big: the four main steps are large cards on one path, the one you are on is filled and pulses, the line to the next step flows.
+   The first drawing plays an entrance; another step makes the line glide; "reduce motion" turns all of it off. */
+.tabs.rp{align-items:center;gap:10px 0;padding:6px 0 20px}
+.tabs.rp .rp-step{display:inline-flex;align-items:center;gap:12px;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--ink-2);background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 20px 12px 14px;margin:0;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease,color .16s ease}
+.tabs.rp .rp-step:not(.on):hover{transform:translateY(-3px);border-color:var(--purple);color:var(--ink);box-shadow:var(--shadow)}
+.tabs.rp .rp-step.on{background:var(--purple);border-color:var(--purple);color:var(--surface);box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent);animation:rp-pulse 2.4s ease-in-out 1s infinite}
+.tabs.rp .rp-n{width:38px;height:38px;font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
+.tabs.rp .rp-step.on .rp-n{background:var(--surface);color:var(--purple)}
+.rp-link{flex:0 0 46px;height:5px;border-radius:3px;background:var(--line);transform-origin:left center}
+.rp-link.lit{background:var(--purple)}
+.rp-link.next{background:repeating-linear-gradient(90deg,var(--purple) 0 8px,transparent 8px 16px);background-size:16px 100%;animation:rp-flow .9s linear infinite}
+@keyframes rp-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes rp-pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+@keyframes rp-draw{from{transform:scaleX(0)}to{transform:none}}
+@keyframes rp-flow{to{background-position:16px 0}}
+@keyframes rp-pulse{0%,100%{box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent),0 0 0 0 color-mix(in srgb,var(--purple) 32%,transparent)}50%{box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent),0 0 0 9px color-mix(in srgb,var(--purple) 0%,transparent)}}
+.rp-in .rp-step{animation:rp-rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 110ms)}
+.rp-in .rp-step.on{animation:rp-rise .55s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 110ms) both,rp-pulse 2.4s ease-in-out 1.4s infinite}
+.rp-in .rp-link{animation:rp-draw .4s ease both;animation-delay:calc(var(--k) * 110ms - 80ms)}.rp-in .rp-link.next{animation:rp-draw .4s ease calc(var(--k) * 110ms - 80ms) both,rp-flow .9s linear 1s infinite}
+.rp-move .rp-step.on{animation:rp-pop .5s cubic-bezier(.2,.9,.3,1.3) .1s both,rp-pulse 2.4s ease-in-out 1s infinite}
+.rp-move .rp-link.go{animation:rp-draw .4s ease both;animation-delay:calc((var(--k) - var(--rp-from)) * 140ms - 60ms)}
+@media (max-width:760px){.rp-link{display:none}.tabs.rp{gap:8px}.tabs.rp .rp-step{flex:1 1 44%;font-size:15px}.tabs.rp .rp-n{width:32px;height:32px;font-size:15px}}
+/* the seven phases of the renewal map: bigger, they come in one after the other, the one you filtered by is filled */
+#process .ph{position:relative;min-height:132px;padding:14px 14px 12px;gap:4px;border-radius:16px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease}
+#process .ph:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+#process .ph .no{font-size:12px;letter-spacing:.02em;text-transform:uppercase;color:var(--purple-ink)}
+#process .ph b{font-size:15px;line-height:1.2}
+#process .ph .n{font-size:34px;font-weight:750;letter-spacing:-.02em;color:var(--purple)}
+#process .ph[aria-pressed=true]{border:2px solid var(--purple);padding:13px 13px 11px;box-shadow:0 10px 24px color-mix(in srgb,var(--purple) 22%,transparent)}
+#process .ph:not(:last-child):not([data-ph="winback"])::after{content:"›";position:absolute;right:-11px;top:50%;transform:translateY(-50%);font-size:22px;line-height:1;color:var(--purple);opacity:.7;pointer-events:none}
+#process .pl{gap:12px}
+@keyframes ph-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pl-in .ph{animation:ph-rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 80ms + .1s)}
+@media (prefers-reduced-motion:reduce){.tabs.rp *,.tabs.rp,#process .ph,.pl-in .ph{animation:none!important;transition:none!important}}
+
+.rp-sub{display:inline-flex;gap:4px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line)}
+.rp-sub[hidden]{display:none}
+.rp-more{margin-left:auto;display:inline-flex;align-items:center;gap:2px}
+.rp-more-h{font-size:11px;color:var(--muted);margin-right:4px}
+.tabs.rp .rp-sec{font-size:12.5px;font-weight:500;color:var(--muted);padding:6px 10px;border:1px solid transparent;border-radius:999px;margin:0}
+.tabs.rp .rp-sec:hover{color:var(--ink)}
+.tabs.rp .rp-sec.on{color:var(--purple-ink);border-color:var(--purple-border);background:var(--purple-dim);font-weight:650}
+.an-row{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:10px;align-items:center;margin:6px 0;font-size:13px}
+.an-bar{display:block;height:8px;border-radius:99px;background:var(--line-2)}
+.an-bar i{display:block;height:100%;border-radius:99px;background:var(--purple)}
+.an-top{grid-template-columns:minmax(0,1fr) auto}.an-top small{color:var(--muted)}
+@media (max-width:640px){.tabs.rp .rp-more{margin-left:0}.rp-arrow{display:none}}
 .pg[hidden]{display:none}
 .pg:not([hidden]){animation:rn-fade .28s ease both}
 @keyframes rn-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -535,12 +590,6 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
 <body>
 <div id="jr"></div>
 <main>
-  <details class="card intro">
-    <summary><h2>What is this page?</h2><span class="hint">Fictional data · nothing is sent · click to show or hide</span></summary>
-    <div class="body"><p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of three fictional customers: which renewals need a decision first, why, and what to do next. Everything is tied to a customer: pick one at the top, or keep “All customers”.</p>
-    <div class="cols"><div><h3>1. Today (start)</h3><p>Three numbers, the decisions of the next six weeks on a time line, what to do first (grouped), and the landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the customer.</p></div><div><h3>2. Renewal process</h3><p>The map of one customer: its contracts, and around them open tickets, invoices, mails and usage. Below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Next best action</h3><p>The one renewal to take care of first and the queue behind it.</p></div><div><h3>4. Radar and list</h3><p>The radar shows every contract on a time line, the list sorts them by decision date. Click a row for the signals behind its health, the price against the contract cap, the next actions and the approval. Sending and signing are simulated; “Start demo” walks through ten steps.</p></div></div>
-    <details><summary class="t">Terms used on this page</summary><dl><dt>Decision date</dt><dd>Contract end minus the notice period: the last day to decide.</dd><dt>Notice period</dt><dd>How long before the end the customer or SAP must act.</dd><dt>Health</dt><dd>The worst of the signals: decision date, missing or expiring offer, price above the cap, competitor, usage, open tickets, overdue invoices.</dd><dt>Contract cap</dt><dd>The largest price rise the contract allows at renewal.</dd><dt>Retention</dt><dd>Expected chance that the customer renews, weighted by annual value.</dd><dt>Customer lifetime value</dt><dd>Expected value of the customer over the years if it stays.</dd><dt>Automatic renewal</dt><dd>Small renewals without a warning signal get an offer and an e-mail without a person (simulated).</dd></dl></details></div>
-  </details>
   <div class="card guide" id="guide" aria-live="polite"></div>
   <div class="ctx" id="ctx">
     <label class="ctxsel">Customer <select id="customer" aria-label="Customer"></select></label>
@@ -550,7 +599,7 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     <button class="ghost spacer" id="to-analytics" type="button" title="Open the Renewal Analytics Space (sales manager view)">Manager view</button>
     <button class="ghost" id="reset" type="button">Reset demo</button>
   </div>
-  <nav class="tabs" id="tabs" role="tablist" aria-label="Renewal views"></nav>
+  <nav class="tabs rp" id="tabs" role="tablist" aria-label="Renewal process"></nav>
 
   <section class="pg" id="pg-overview" role="tabpanel" aria-labelledby="tab-overview">
     <div id="kpis"></div>
@@ -558,10 +607,10 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     <div class="card" id="kpi-detail" hidden></div>
     <div class="card" id="six"></div>
     <div class="card" id="today-groups"></div>
-    <div class="card land" id="land"></div>
   </section>
 
   <section class="pg" id="pg-process" role="tabpanel" aria-labelledby="tab-process" hidden>
+    <div class="card land" id="land"></div>
     <div class="cview" id="cust">
       <div class="cview-main">
         <div class="card" id="process"></div>
@@ -602,6 +651,9 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
     </div>
     <div class="card" id="alt" hidden></div>
     <div class="card"><h2>Assumptions behind retention and lifetime value</h2><p class="sub" style="margin:0" id="assump"></p></div>
+  </section>
+  <section class="pg" id="pg-analytics" role="tabpanel" aria-labelledby="tab-analytics" hidden>
+    <div id="an"></div>
   </section>
   <section class="pg" id="pg-autopilot" role="tabpanel" aria-labelledby="tab-autopilot" hidden>
     <div id="ap"></div>
@@ -985,7 +1037,20 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "owner": "Mira Hoffmann",
    "csm": "Jonas Weber",
    "customerOwner": "Anika Brandl",
-   "offer": null,
+   "offer": {
+    "id": "OFF-2026-0540",
+    "annualEur": 185400,
+    "currentAnnualEur": 180000,
+    "discountPct": 0,
+    "validUntil": "2026-11-30",
+    "stage": "Negotiation",
+    "probabilityPct": 55,
+    "competitor": "None",
+    "nextStep": "Validation concept from Quality Assurance by 2026-11-06 (condition of the top-up)",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Pending deal desk"
+   },
    "tickets": [
     {
      "id": "TKT-48097",
@@ -1148,14 +1213,46 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "owner": "Clara Neumann",
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
-   "offer": null,
-   "tickets": [],
+   "offer": {
+    "id": "OFF-2026-0541",
+    "annualEur": 14832,
+    "currentAnnualEur": 14400,
+    "discountPct": 0,
+    "validUntil": "2026-11-20",
+    "stage": "Proposal sent",
+    "probabilityPct": 65,
+    "competitor": "None",
+    "nextStep": "Clear the open tickets on the LIMS connector before the deadline",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [
+    {
+     "id": "TKT-48231",
+     "title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
+     "priority": "High",
+     "status": "In processing"
+    },
+    {
+     "id": "TKT-48233",
+     "title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
+     "priority": "Medium",
+     "status": "Waiting for customer"
+    }
+   ],
    "invoices": [
     {
      "id": "INV-2026-40890",
      "status": "Overdue",
      "grossEur": 17136,
      "due": "2026-09-30"
+    },
+    {
+     "id": "INV-2026-40912",
+     "status": "Overdue",
+     "grossEur": 2856,
+     "due": "2026-10-05"
     }
    ],
    "addon": true
@@ -1239,9 +1336,36 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "owner": "Clara Neumann",
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
-   "offer": null,
-   "tickets": [],
-   "invoices": [],
+   "offer": {
+    "id": "OFF-2026-0542",
+    "annualEur": 19158,
+    "currentAnnualEur": 18600,
+    "discountPct": 0,
+    "validUntil": "2026-12-15",
+    "stage": "Proposal sent",
+    "probabilityPct": 70,
+    "competitor": "None",
+    "nextStep": "Confirm the meaning of the signature in the audit-trail export",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [
+    {
+     "id": "TKT-48235",
+     "title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
+     "priority": "Medium",
+     "status": "In processing"
+    }
+   ],
+   "invoices": [
+    {
+     "id": "INV-2026-40910",
+     "status": "Open",
+     "grossEur": 22134,
+     "due": "2026-11-15"
+    }
+   ],
    "addon": true
   },
   {
@@ -1349,8 +1473,22 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
    "offer": null,
-   "tickets": [],
-   "invoices": [],
+   "tickets": [
+    {
+     "id": "TKT-48237",
+     "title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
+     "priority": "Low",
+     "status": "Waiting for customer"
+    }
+   ],
+   "invoices": [
+    {
+     "id": "INV-2026-40911",
+     "status": "Open",
+     "grossEur": 31416,
+     "due": "2026-12-01"
+    }
+   ],
    "addon": true
   },
   {
@@ -1439,7 +1577,14 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
    "offer": null,
-   "tickets": [],
+   "tickets": [
+    {
+     "id": "TKT-48188",
+     "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+     "priority": "High",
+     "status": "Waiting for customer"
+    }
+   ],
    "invoices": [
     {
      "id": "INV-2026-40104",
@@ -2122,10 +2267,12 @@ function renderCustPanel() {
   if (cs) { $('#cm-open').onclick = () => openRenewal(cs.id); $('#cm-clear').onclick = () => { state.csel = null; renderCustomerView(); }; }
   $('#cust-prep').onclick = () => send(`Prepare the renewal talk with ${cust.name}: situation ${s.list.map((x) => x.label).join(', ')}. ${s.tickets.length} open tickets (${s.byPrio['Very high']} very high), ${s.overdue.length} overdue invoices, ${eur(s.renewalEur)} a year up for renewal. ${e ? 'Escalation: ' + e.topic + ' ' : ''}Use the Sub4Me tools and the skill customer-call-prep. Please answer in English.`);
 }
+let phDrawn = false;
 function renderProcess() {
+  const first = !phDrawn; phDrawn = true;
   const el = $('#process'), here = state.csel ? model.find((c) => c.id === state.csel) : null, sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), cur = state.phase ? PHASES.find((p) => p.id === state.phase) : null;
   el.innerHTML = `<div class="bar" style="margin-bottom:4px"><h2 style="margin:0">Renewal process</h2>${state.phase ? '<button class="ghost" id="ph-clear" type="button">Show all phases</button>' : ''}</div><p class="sub">How the renewal team handles every contract of the three customers, in order. Each box counts the contracts that are in that phase today; click a box to filter the radar and the list below, and to read what happens there.</p>` +
-    `<div class="pl" role="group" aria-label="Renewal phases">${PHASES.map((p, i) => { const l = scoped().filter((c) => c.ph.phase === p.id), late = l.filter((c) => c.ph.late).length; return `<button type="button" class="ph${here && here.ph.phase === p.id ? ' here' : ''}" data-ph="${p.id}" aria-pressed="${state.phase === p.id}"><span class="no">${i + 1}${p.id === 'winback' ? ' · side path' : ''}</span><b>${esc(p.name)}</b><span class="n">${l.length}</span><small>${l.length ? eur(sum(l)) + ' a year' : 'none today'}</small>${late ? `<span class="late">${late} behind</span>` : ''}</button>`; }).join('')}</div>` +
+    `<div class="pl${first ? ' pl-in' : ''}" role="group" aria-label="Renewal phases">${PHASES.map((p, i) => { const l = scoped().filter((c) => c.ph.phase === p.id), late = l.filter((c) => c.ph.late).length; return `<button type="button" class="ph${here && here.ph.phase === p.id ? ' here' : ''}" data-ph="${p.id}" aria-pressed="${state.phase === p.id}" style="--k:${i}"><span class="no">${i + 1}${p.id === 'winback' ? ' · side path' : ''}</span><b>${esc(p.name)}</b><span class="n">${l.length}</span><small>${l.length ? eur(sum(l)) + ' a year' : 'none today'}</small>${late ? `<span class="late">${late} behind</span>` : ''}</button>`; }).join('')}</div>` +
     (cur ? `<dl class="pdesc"><dt>When</dt><dd>${esc(cur.when)}</dd><dt>Who</dt><dd>${esc(cur.who)}</dd><dt>What</dt><dd>${esc(cur.what)}</dd></dl>` : '<p class="note">The process runs left to right. A contract is "behind" when its offer should exist by now (90 days before the decision date) but does not.</p>');
   el.querySelectorAll('[data-ph]').forEach((b) => (b.onclick = () => { state.phase = state.phase === b.dataset.ph ? null : b.dataset.ph; renderAll(); }));
   const cl = $('#ph-clear'); if (cl) cl.onclick = () => { state.phase = null; renderAll(); };
@@ -2197,7 +2344,12 @@ function renderAlt() {
 }
 /* ---------- tabs, customer context and entrance motion ---------- */
 const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const TABS = [['overview', 'Today'], ['autopilot', 'Autopilot'], ['process', 'Renewal process'], ['nba', 'Next best action'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
+/* The renewal process has four main steps; the rest is secondary and sits behind "More". Autopilot is the second view of step 3. */
+const TABS = [['overview', 'Renewal due'], ['process', 'Renewal map'], ['nba', 'Renewal action'], ['analytics', 'Renewal analytics'], ['autopilot', 'Autopilot'], ['radar', 'Renewal radar'], ['list', 'By decision date']];
+const MAIN_STEPS = [['overview'], ['process'], ['nba', 'autopilot'], ['analytics']];
+const MORE_TABS = ['radar', 'list'];
+const stepOf = (t) => MAIN_STEPS.findIndex((g) => g.includes(t));
+const tabLabel = (id) => TABS.find(([x]) => x === id)[1];
 const WINDOW_DAYS = 42; /* "the next six weeks" */
 /* Entrance motion runs once per picture and key; later renders show the finished picture (no replay on every click). */
 const played = {};
@@ -2227,13 +2379,40 @@ function renderCtx() {
   const on = $('#owner-note'); on.hidden = state.owner === 'all';
   on.textContent = state.owner === 'all' ? '' : 'Numbers, time line, lists and the radar show only the renewals of ' + state.owner + '. The customer pictures (landscape, customer map) still show every contract of the customer.';
 }
+const rpDrawn = { idx: null };
 function renderTabs() {
-  $('#tabs').innerHTML = TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-selected="${state.tab === id}" aria-controls="pg-${id}" tabindex="${state.tab === id ? 0 : -1}" data-tab="${id}">${label}</button>`).join('');
+  const cur = stepOf(state.tab), act = cur === 2;
+  const btn = (id, cls, extra = '') => `<button type="button" role="tab" class="${cls}" id="tab-${id}" aria-selected="${state.tab === id}" aria-controls="pg-${id}" tabindex="${state.tab === id ? 0 : -1}" data-tab="${id}"${extra}>`;
+  // the first drawing plays the entrance; another main step makes the line glide from the old to the new step; the same step stays still
+  const mode = rpDrawn.idx === null ? 'in' : rpDrawn.idx !== cur ? 'move' : 'still', from = rpDrawn.idx === null ? 0 : rpDrawn.idx;
+  rpDrawn.idx = cur;
+  const main = MAIN_STEPS.map(([id], i) => `${i ? `<span class="rp-link${i <= cur ? ' lit' : ''}${i === cur + 1 ? ' next' : ''}${mode === 'move' && cur > from && i > from && i <= cur ? ' go' : ''}" style="--k:${i}" aria-hidden="true"></span>` : ''}<button type="button" role="tab" class="rp-step${cur === i ? ' on' : ''}" id="tab-${id}" aria-selected="${cur === i}" aria-controls="pg-${id}" tabindex="${cur === i ? 0 : -1}" data-tab="${id}" style="--k:${i}"><span class="rp-n">${i + 1}</span>${tabLabel(id)}</button>`).join('');
+  const sub = `<span class="rp-sub"${act ? '' : ' hidden'}><button type="button" role="tab" class="rp-sec${state.tab === 'nba' ? ' on' : ''}" id="sub-nba" aria-selected="${state.tab === 'nba'}" data-tab="nba">Next best action</button>${btn('autopilot', 'rp-sec' + (state.tab === 'autopilot' ? ' on' : ''))}Autopilot</button></span>`;
+  const more = `<span class="rp-more"><span class="rp-more-h">More</span>${MORE_TABS.map((id) => `${btn(id, 'rp-sec' + (state.tab === id ? ' on' : ''))}${tabLabel(id)}</button>`).join('')}</span>`;
+  $('#tabs').className = `tabs rp rp-${mode}`;
+  $('#tabs').style.setProperty('--rp-from', from);
+  $('#tabs').innerHTML = main + sub + more;
   TABS.forEach(([id]) => { $('#pg-' + id).hidden = state.tab !== id; });
   $('#tabs').querySelectorAll('button').forEach((b) => {
     b.onclick = () => setTab(b.dataset.tab);
-    b.onkeydown = (e) => { if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); const i = TABS.findIndex(([id]) => id === state.tab); setTab(TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length][0]); $('#tab-' + state.tab).focus(); };
+    b.onkeydown = (e) => { if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); const all = [...$('#tabs').querySelectorAll('button[role=tab]')].filter((x) => !x.closest('[hidden]')); const i = all.indexOf(b); const n = all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length]; setTab(n.dataset.tab); $('#tabs').querySelector(`[data-tab="${state.tab}"]:not([hidden])`)?.focus(); };
   });
+}
+/* ---------- step 4: the renewal analytics in short; the full dashboard is the Space Renewal Analytics ---------- */
+function renderAnalytics() {
+  const open = scoped().filter(live), val = (c) => c.annualEur, loss = (c) => Math.round(c.annualEur * (1 - c.pRet));
+  const total = open.reduce((a, c) => a + val(c), 0), lost = open.reduce((a, c) => a + loss(c), 0);
+  const months = {}; open.forEach((c) => { const m = String(c.decisionDate).slice(0, 7); months[m] = (months[m] || 0) + val(c); });
+  const mKeys = Object.keys(months).sort(), mMax = Math.max(1, ...Object.values(months));
+  const monthName = (m) => new Date(m + '-01T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const top = [...open].sort((a, b) => loss(b) - loss(a)).slice(0, 5);
+  const k = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="k">${l}</div></div>`;
+  $('#an').innerHTML = `<div class="card"><div class="bar"><h2 style="margin:0">Renewal analytics</h2><button type="button" class="ghost spacer" id="an-full" title="Open the Renewal Analytics Space (sales manager view)">Open the full dashboard</button></div>
+    <p class="sub">The short version for the chosen customer and account executive: what the open renewals are worth and what could be lost. The full dashboard (phases, team load, offers against the contract cap, competitors) is the Space Renewal Analytics.</p>
+    <div class="kpis" style="margin:12px 0">${k(eur(total), 'Open renewal value a year')}${k(eur(lost), 'Expected loss a year')}${k(open.filter((c) => !c.offer).length + ' of ' + open.length, 'Renewals without an offer')}${k(open.filter((c) => c.sig.days <= WINDOW_DAYS).length, 'Decision within six weeks')}</div></div>
+    <div class="layout"><div class="card"><h2>Value by decision month</h2><p class="sub">Annual value of the open renewals by the month their decision date falls in.</p>${mKeys.length ? mKeys.map((m) => `<div class="an-row"><span>${monthName(m)}</span><span class="an-bar"><i style="width:${Math.round(months[m] / mMax * 100)}%"></i></span><b>${eur(months[m])}</b></div>`).join('') : '<p class="sub">No open renewals in this view.</p>'}</div>
+    <div class="card"><h2>Biggest expected loss</h2><p class="sub">Annual value × (1 − expected retention).</p>${top.length ? top.map((c) => `<div class="an-row an-top"><span>${esc(shortName(c))} <small>${esc(c.customer)}</small></span><b>${eur(loss(c))}</b></div>`).join('') : '<p class="sub">Nothing at risk in this view.</p>'}</div></div>`;
+  $('#an-full').onclick = () => $('#to-analytics').click();
 }
 function setTab(t) { state.tab = t; renderAll(); }
 /* A renewal opens in the list (detail on the right); the customer context follows it. */
@@ -2398,8 +2577,8 @@ const byId = (id) => model.find((c) => c.id === id);
 const named = (id) => { const c = byId(id); return c ? `${c.customer} · ${c.product} · contract ${c.contractId} · SAP customer ID ${c.sapCustomerId}` : ''; };
 const cnt = (f) => model.filter(f).length;
 const STEPS = [
-  { t: 'Start: today', tab: 'overview', where: ['#six', '#today-groups'], area: 'Today (the start page)', x: 'The start page shows three numbers, the decisions of the next six weeks on a time line (the late ones on the left), what to do first as grouped cards, and all customers as a landscape: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Click a planet to open the customer.', data: () => { const w = model.filter((c) => live(c) && c.sig.days <= WINDOW_DAYS); return `${w.length} renewals decide within six weeks (${w.filter((c) => c.sig.days < 0).length} already late), ${eur(w.reduce((a, c) => a + c.annualEur, 0))} a year.`; }, on: () => {} },
-  { t: 'The renewal process', tab: 'process', where: ['#process'], area: 'Renewal process', x: 'This is how the renewal team works, from watching a contract to the signed order. Every contract of the three customers sits in exactly one phase today. The page below follows the same order: customers, radar, list, details.', data: () => `${model.length} contracts of 3 customers. In the offer phase: ${cnt((c) => c.ph.phase === 'offer')}, of which ${cnt((c) => c.ph.late)} are behind. With the customer (negotiate): ${cnt((c) => c.ph.phase === 'negotiate')}. Past the decision date: ${cnt((c) => c.ph.phase === 'decide')}.`, on: () => { state.status = 'all'; } },
+  { t: 'Start: today', tab: 'overview', where: ['#six', '#today-groups'], area: 'Renewal due (the start page)', x: 'The start page shows three numbers, the decisions of the next six weeks on a time line (the late ones on the left), and what to do first as grouped cards. The landscape of all customers is on the next step, the renewal map.', data: () => { const w = model.filter((c) => live(c) && c.sig.days <= WINDOW_DAYS); return `${w.length} renewals decide within six weeks (${w.filter((c) => c.sig.days < 0).length} already late), ${eur(w.reduce((a, c) => a + c.annualEur, 0))} a year.`; }, on: () => {} },
+  { t: 'The renewal map', tab: 'process', where: ['#land', '#process'], area: 'Renewal map', x: 'All customers as a landscape: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Below, this is how the renewal team works, from watching a contract to the signed order. Every contract of the three customers sits in exactly one phase today. Behind “More”: the radar and the list with the details.', data: () => `${model.length} contracts of 3 customers. In the offer phase: ${cnt((c) => c.ph.phase === 'offer')}, of which ${cnt((c) => c.ph.late)} are behind. With the customer (negotiate): ${cnt((c) => c.ph.phase === 'negotiate')}. Past the decision date: ${cnt((c) => c.ph.phase === 'decide')}.`, on: () => { state.status = 'all'; } },
   { t: 'One customer, one map', tab: 'process', where: ['#cmap-wrap'], area: 'Renewal map of Muster Industrie', x: 'Pick a customer and its renewal map opens: the contracts around the customer, each with the open tickets, invoices, mail and usage along its spoke. Below it the four tiles say where we stand; on the right are the details with the e-mail communication. Click a contract to see its signals.', data: () => DATA.customers.map((cu) => { const l = model.filter((c) => c.customerId === cu.id && live(c)); return `${cu.name.split(' ')[0]}: ${l.length} contracts, ${eur(l.reduce((a, c) => a + c.annualEur, 0))} a year`; }).join(' · '), on: () => { state.customer = 'muster'; } },
   { t: 'The renewal radar', tab: 'radar', where: ['#radar'], area: 'Renewal radar', x: 'Every contract of all three customers on one time line. The diamond is the decision date, the bar runs to the contract end, the dashed line is today. Red and yellow bars are the ones to look at first.', data: () => `${cnt((c) => c.health === 'red')} red, ${cnt((c) => c.health === 'yellow')} yellow, ${cnt((c) => c.health === 'green')} green. Lapsed contracts show only the diamond and a mark for the end.`, on: () => { state.customer = 'all'; } },
   { t: 'What is due first?', tab: 'list', where: ['#rows tr[aria-selected=true]', '#list'], area: 'Renewals by decision date', x: 'The list sorts the same contracts by decision date, earliest first. At the top: SuccessFactors at Muster Industrie. The decision date passed 17 days ago and the offer is still open, so the next action is a written extension and a signing date.', data: () => named('R-C-2025-0041'), on: () => { state.sel = 'R-C-2025-0041'; } },
@@ -2434,12 +2613,12 @@ function apSync(id) {
 /** True when the autopilot, not a person, brought the renewal to "Prepared". */
 const apPrepared = (c) => { const a = state.ap[c.id]; return !!a && (a.prevStage || 0) < 1; };
 function apStartAll() {
-  /* A lapsed contract is not a renewal any more: it goes straight to a win-back case. */
-  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id] && !state.wb[c.id]) { if (c.status === 'Lapsed') state.wb[c.id] = wbStart(apCtx(c.id), 'unknown'); else { state.ap[c.id] = { ...apStart(apCtx(c.id)), prevStage: state.stage[c.id] || 0 }; apSync(c.id); } }
+  /* A lapsed contract is not a renewal any more: it goes straight to a win-back case. With a database only the cases of this person start. */
+  for (const c of scoped().filter((x) => x.stage < 4)) if (!state.ap[c.id] && !state.wb[c.id] && can(c.id, c.status === 'Lapsed' ? 'winback' : 'renewal')) { if (c.status === 'Lapsed') state.wb[c.id] = wbStart(apCtx(c.id), 'unknown'); else { state.ap[c.id] = { ...apStart(apCtx(c.id)), prevStage: state.stage[c.id] || 0 }; apSync(c.id); } }
   compute(); renderAll();
 }
 function apDo(id, action, arg) {
-  const st = state.ap[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c) return;
+  const st = state.ap[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c || !can(id, 'renewal')) return;
   const who = ['signed', 'changes', 'declined'].includes(action) ? 'Customer' : c.owner;
   state.ap[id] = apAct(st, action, who, apCtx(id), arg);
   if (state.ap[id].status === 'lost' && st.status !== 'lost' && !state.wb[id]) state.wb[id] = wbStart(apCtx(id), state.ap[id].reason);
@@ -2463,15 +2642,15 @@ function apHandOver(id, open) {
 function apConfirmed(p) {
   if (!p || p.type !== 'order-confirmed' || typeof p.contractId !== 'string' || !/^SO-\d{3,8}$/.test(String(p.orderNo))) return;
   const c = DATA.cases.find((x) => x.contractId === p.contractId), w = c && state.wb[c.id];
-  if (w && w.handed && !w.booked) { state.wb[c.id] = wbLog({ ...w, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`); return; }
+  if (w && w.handed && !w.booked && can(c.id, 'winback')) { state.wb[c.id] = wbLog({ ...w, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`); return; }
   const st = c && state.ap[c.id];
-  if (!st || st.booked) return;
+  if (!st || st.booked || !can(c.id, 'renewal')) return;
   state.ap[c.id] = apLog({ ...st, booked: String(p.orderNo) }, 'Order management', 'order', `Order ${p.orderNo} booked in Order-to-Cash; invoice from ${String(p.invoiceFrom || '').slice(0, 10)}.`);
 }
 /* ---------- Win-back cases ---------- */
 const WB_STATUS = { running: ['Running', 'planned'], 'waiting-person': ['Waiting for you', 'yellow'], 'waiting-customer': ['Waiting for the customer', 'planned'], done: ['Won back', 'green'], stopped: ['Stopped', 'red'], closed: ['Closed, not won back', 'red'] };
 function wbDo(id, action, arg) {
-  const st = state.wb[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c) return;
+  const st = state.wb[id], c = DATA.cases.find((x) => x.id === id); if (!st || !c || !can(id, 'winback')) return;
   const who = ['won', 'lost'].includes(action) ? 'Customer' : st.owner;
   state.wb[id] = wbAct(st, action, who, apCtx(id), arg);
   if (state.wb[id].status === 'done' && !state.wb[id].handed) wbHandOver(id);
@@ -2546,6 +2725,7 @@ function renderAutopilot() {
   const by = (k) => started.filter((c) => state.ap[c.id].status === k);
   $('#ap').innerHTML = `<div class="card"><h2>Renewal autopilot</h2>
     <p class="sub">The autopilot watches, briefs, builds the offer, checks the policy, asks for approval, sends, waits for the customer and hands the signed renewal over to the order. It works alone while everything is within policy and stops at a gate when a person has to decide. Every step is written to a log. <b>Sending, signing and the order are simulated here.</b></p>
+    <p class="sub" id="ap-store"></p>
     <div class="aptop"><label class="sub">Mode <select id="ap-mode"><option value="autopilot"${state.apMode === 'autopilot' ? ' selected' : ''}>Autopilot: a person only at exceptions</option><option value="supervised"${state.apMode === 'supervised' ? ' selected' : ''}>Supervised: a person approves and sends every offer</option></select></label>
     <button class="primary" type="button" id="ap-run"${open ? '' : ' disabled'}>Run autopilot on ${open} open renewal${open === 1 ? '' : 's'}</button><button class="ghost" type="button" id="ap-reset"${started.length || wbs.length ? '' : ' disabled'}>Reset autopilot</button></div></div>
     <div class="kpis"><div class="kpi"><div class="v">${sum.person}</div><div class="k">Waiting for you</div><div class="s">gates that need a person</div></div><div class="kpi"><div class="v">${sum.customer}</div><div class="k">With the customer</div><div class="s">offer sent, answer open</div></div><div class="kpi"><div class="v">${sum.done}</div><div class="k">Done</div><div class="s">signed and handed to the order</div></div><div class="kpi"><div class="v">${sum.auto} : ${sum.human}</div><div class="k">Autopilot : person steps</div><div class="s">steps done alone against steps by people</div></div><div class="kpi"><div class="v">${sum.touchless} %</div><div class="k">Without a person</div><div class="s">of the finished cases</div></div><div class="kpi"><div class="v">${wbOpen}</div><div class="k">Win-back open</div><div class="s">lapsed or declined, still in play</div></div></div>
@@ -2555,27 +2735,34 @@ function renderAutopilot() {
     ${grp('Done', 'Signed and handed over to the Space Order-to-Cash (Software), where Order management books it. The booking itself is simulated.', by('done'))}
     ${grp('Stopped or declined', 'A person took over, rejected the offer, or the customer declined.', by('stopped').concat(by('lost')))}
     ${wbs.length ? `<div class="card"><h2>Win-back <span class="pill planned">${wbs.length}</span></h2><p class="sub">Lapsed contracts and declined renewals. A win-back always needs a person: the plan and the first message.</p>${wbs.map((c) => wbCase(c, state.wb[c.id])).join('')}</div>` : ''}`;
+  renderNote();
+  if (store.on) $('#ap').querySelectorAll('.apcase').forEach((el) => {
+    const wb = el.dataset.wb !== undefined, id = wb ? el.dataset.wb : el.dataset.case;
+    if (can(id, wb ? 'winback' : 'renewal')) return;
+    el.querySelectorAll('button, select').forEach((x) => { x.disabled = true; });
+  });
   $('#ap-mode').onchange = (e) => { state.apMode = e.target.value === 'supervised' ? 'supervised' : 'autopilot'; renderAll(); };
   $('#ap-run').onclick = apStartAll;
-  $('#ap-reset').onclick = () => { for (const c of scope) { const a = state.ap[c.id], prev = a ? a.prevStage || 0 : 0; delete state.ap[c.id]; delete state.wb[c.id]; if (prev) state.stage[c.id] = prev; else delete state.stage[c.id]; } compute(); renderAll(); };
+  $('#ap-reset').onclick = () => { for (const c of scope.filter((x) => can(x.id, 'renewal') && can(x.id, 'winback'))) { const a = state.ap[c.id], prev = a ? a.prevStage || 0 : 0; delete state.ap[c.id]; delete state.wb[c.id]; if (prev) state.stage[c.id] = prev; else delete state.stage[c.id]; } compute(); renderAll(); };
   $('#ap').querySelectorAll('[data-apa]').forEach((b) => { b.onclick = () => { const r = b.dataset.apa === 'declined' ? $('#ap').querySelector(`select[data-apreason="${b.dataset.id}"]`) : null; apDo(b.dataset.id, b.dataset.apa, r ? r.value : undefined); }; });
   $('#ap').querySelectorAll('select[data-apc]').forEach((el) => { el.onchange = () => apDo(el.dataset.apc, 'change', el.value); });
   $('#ap').querySelectorAll('[data-apdraft]').forEach((b) => { b.onclick = () => {
-    const id = b.dataset.apdraft, st = state.ap[id], ctx = apCtx(id), o = ctx.opts.find((x) => x.key === st.pick); if (!o || st.drafted) return;
+    const id = b.dataset.apdraft, st = state.ap[id], ctx = apCtx(id), o = ctx.opts.find((x) => x.key === st.pick); if (!o || st.drafted || !can(id, 'renewal')) return;
     send(apDraftAsk(ctx.c, o)); state.ap[id] = apLog({ ...st, drafted: true }, ctx.c.owner, 'send', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll();
   }; });
   $('#ap').querySelectorAll('[data-apopen]').forEach((b) => { b.onclick = () => apHandOver(b.dataset.apopen, true) || renderAll(); });
   $('#ap').querySelectorAll('[data-wba]').forEach((b) => { b.onclick = () => { const o = b.dataset.wba === 'approve' ? $('#ap').querySelector(`select[data-wbo="${b.dataset.id}"]`) : null; wbDo(b.dataset.id, b.dataset.wba, o ? o.value : undefined); }; });
-  $('#ap').querySelectorAll('[data-wbdraft]').forEach((b) => { b.onclick = () => { const id = b.dataset.wbdraft, st = state.wb[id]; if (!st || st.drafted) return; send(wbDraftAsk(DATA.cases.find((x) => x.id === id), st)); state.wb[id] = wbLog({ ...st, drafted: true }, st.owner, 'reach', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll(); }; });
+  $('#ap').querySelectorAll('[data-wbdraft]').forEach((b) => { b.onclick = () => { const id = b.dataset.wbdraft, st = state.wb[id]; if (!st || st.drafted || !can(id, 'winback')) return; send(wbDraftAsk(DATA.cases.find((x) => x.id === id), st)); state.wb[id] = wbLog({ ...st, drafted: true }, st.owner, 'reach', 'Asked Joule for a mail draft (not sent, see the chat).'); renderAll(); }; });
   $('#ap').querySelectorAll('[data-wbopen]').forEach((b) => { b.onclick = () => { wbHandOver(b.dataset.wbopen, true); renderAll(); }; });
   $('#ap').querySelectorAll('details[data-apd]').forEach((d) => { d.ontoggle = () => { state.apOpen[d.dataset.apd] = d.open; }; });
 }
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs(); renderGuide();
-  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); renderLand(); }
+  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); }
+  else if (state.tab === 'analytics') renderAnalytics();
   else if (state.tab === 'autopilot') renderAutopilot();
-  else if (state.tab === 'process') renderCustomerView();
+  else if (state.tab === 'process') { renderLand(); renderCustomerView(); }
   else if (state.tab === 'nba') { renderNba(); renderQueue(); }
   else if (state.tab === 'radar') { renderBar(); renderTimeline(); renderDetail(); }
   else { renderBar(); renderRows(); renderDetail(); renderAlt(); }
@@ -2597,10 +2784,10 @@ $('#assump').textContent = `Illustrative assumptions, not real figures: gross ma
 // @journey-start
 function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -2612,17 +2799,15 @@ function makeJourney() {
   var STOPS = [
     { id: 'inbox', step: 'today', label: 'Inbox', space: 'sales', tab: 'inbox' },
     { id: 'meetings', step: 'today', label: 'Meetings', space: 'sales', tab: 'meetings' },
-    { id: 'renewals', step: 'today', label: 'Renewals due', space: 'renewals', tab: 'overview', needs: 'renewals' },
     { id: 'c360', step: 'understand', label: 'Customer 360', space: 'customer-360', needs: 'c360' },
     { id: 'mails', step: 'understand', label: 'E-mails', space: 'customer-emails', needs: 'mail' },
     { id: 'graph', step: 'understand', label: 'Deal graph', space: 'sales', tab: 'knowledge' },
-    { id: 'renewal-map', step: 'understand', label: 'Renewal map', space: 'renewals', tab: 'process', needs: 'renewals' },
     { id: 'pipeline', step: 'decide', label: 'Pipeline', space: 'sales', tab: 'pipeline' },
     { id: 'forecast', step: 'decide', label: 'Forecast', space: 'sales', tab: 'forecast' },
-    { id: 'renewal-actions', step: 'decide', label: 'Renewal actions', space: 'renewals', tab: 'nba', needs: 'renewals' },
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
+    { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
   ];
   /** Which step a Sales tab belongs to (for the highlighted step of the rail). */
   var TAB_STEP = { inbox: 'today', meetings: 'today', knowledge: 'understand', pipeline: 'decide', forecast: 'decide', workflow: 'act', governance: 'act', rules: 'act', payments: 'follow' };
@@ -2660,59 +2845,93 @@ function makeJourney() {
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  var CSS = '.jr{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px 14px;padding:10px 16px;margin:0;background:var(--surface);border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}' +
-    '.jr-who{display:flex;flex-direction:column;justify-content:center;min-width:130px}.jr-who b{font-size:13px;color:var(--ink)}.jr-who span{color:var(--muted)}' +
-    '.jr ol{display:flex;flex:1 1 420px;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}' +
-    '.jr li{flex:1 1 130px;min-width:120px;border:1px solid var(--line);border-radius:12px;padding:6px 9px;background:var(--canvas)}' +
-    '.jr li[aria-current="step"]{border-color:var(--purple);background:var(--purple-dim)}' +
-    '.jr .jr-h{display:flex;gap:6px;align-items:baseline;font-weight:600;color:var(--ink)}.jr .jr-n{color:var(--purple);font-variant-numeric:tabular-nums}' +
-    '.jr .jr-a{color:var(--muted);margin:1px 0 4px;font-size:11px}' +
-    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:4px}' +
-    '.jr button{font:inherit;font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer}' +
-    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+  // The rail is big on purpose: five cards on one path. A dot per step (done = filled with a tick, now = large and pulsing, later = outline),
+  // a line that draws itself from step to step when the page opens (and from the old to the new step when the step changes), cards that
+  // rise one after the other, a lift on hover. "Reduce motion" turns all of it off; the resting state is the finished picture.
+  var CSS = '.jr{--g:14px;display:block;margin:0;padding:18px 22px 22px;background:var(--surface);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2)}' +
+    '.jr-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 0 18px}' +
+    '.jr-who{display:flex;flex-direction:column;min-width:0}.jr-who b{font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.15;color:var(--purple)}.jr-who span{color:var(--muted);font-size:12.5px;margin-top:2px}' +
+    '.jr-val{display:flex;gap:8px;flex-wrap:wrap}.jr-val span{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--canvas);font-size:12.5px;color:var(--muted)}.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}' +
+    '.jr-note{margin-left:auto;color:var(--muted);font-size:12px;max-width:46ch;text-align:right}' +
+    '.jr ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--g);list-style:none;margin:0;padding:0}' +
+    '.jr li{position:relative;display:flex;flex-direction:column;align-items:stretch}' +
+    '.jr-dot{position:relative;z-index:1;align-self:center;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin-bottom:12px;border:3px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}' +
+    '.jr li.done .jr-dot,.jr li.cur .jr-dot{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+    '.jr li.cur .jr-dot{transform:scale(1.18);box-shadow:0 0 0 6px var(--purple-dim);animation:jr-pulse 2.4s ease-in-out 1.2s infinite}' +
+    '.jr li:not(:first-child)::before{content:"";position:absolute;top:20px;left:calc(-1 * (var(--g) + 50%));width:calc(100% + var(--g));height:4px;border-radius:2px;background:var(--line);transform-origin:left center}' +
+    '.jr li.done::before,.jr li.cur::before{background:var(--purple)}' +
+    '.jr-card{flex:1;display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--canvas);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease}' +
+    '.jr li.done .jr-card{border-color:var(--purple-border)}' +
+    '.jr li.cur .jr-card{border:2px solid var(--purple);background:var(--purple-dim);padding:13px 15px;box-shadow:0 10px 24px color-mix(in srgb,var(--purple) 20%,transparent)}' +
+    '.jr li:hover .jr-card{transform:translateY(-3px);box-shadow:var(--shadow)}.jr li.cur:hover .jr-card{box-shadow:0 14px 30px color-mix(in srgb,var(--purple) 26%,transparent)}' +
+    '.jr .jr-h{font-size:18px;font-weight:750;letter-spacing:-.015em;line-height:1.2;color:var(--ink)}' +
+    '.jr .jr-a{color:var(--muted);font-size:13px;line-height:1.35}' +
+    '.jr-m{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.jr-m b{font-size:24px;font-weight:750;letter-spacing:-.02em;line-height:1.1;color:var(--purple);font-variant-numeric:tabular-nums}.jr-m span{font-size:12px;color:var(--muted)}' +
+    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}' +
+    '.jr button{font:inherit;font-size:13px;font-weight:550;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;transition:transform .12s ease,border-color .12s ease,background-color .12s ease,color .12s ease}' +
+    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink);transform:translateY(-1px)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
     '.jr button:disabled{opacity:.45;cursor:not-allowed}' +
-    '.jr-val{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--line);background:var(--canvas);font-size:12px;color:var(--muted)}' +
-    '.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}.jr-val .jr-note{margin-left:auto}' +
-    '@media (max-width:640px){.jr li{flex-basis:100%}}';
+    '@keyframes jr-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-popc{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1.18)}}' +
+    '@keyframes jr-draw{from{transform:scaleX(0)}to{transform:none}}' +
+    '@keyframes jr-drawy{from{transform:scaleY(0)}to{transform:none}}' +
+    '@keyframes jr-pulse{0%,100%{box-shadow:0 0 0 6px var(--purple-dim)}50%{box-shadow:0 0 0 13px color-mix(in srgb,var(--purple) 7%,transparent)}}' +
+    '.jr-in .jr-card{animation:jr-rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 90ms + .15s)}' +
+    '.jr-in .jr-dot{animation:jr-pop .5s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(var(--k) * 140ms)}' +
+    '.jr-in li.cur .jr-dot{animation:jr-popc .5s cubic-bezier(.2,.9,.3,1.3) calc(var(--k) * 140ms) both,jr-pulse 2.4s ease-in-out 1.6s infinite}' +
+    '.jr-in li::before{animation:jr-draw .5s ease both;animation-delay:calc(var(--k) * 140ms - 60ms)}' +
+    '.jr-move li.cur .jr-dot{animation:jr-popc .55s cubic-bezier(.2,.9,.3,1.3) .1s both,jr-pulse 2.4s ease-in-out 1s infinite}' +
+    '.jr-move li.go::before{animation:jr-draw .45s ease both;animation-delay:calc((var(--k) - var(--jr-from)) * 150ms - 100ms)}' +
+    '@media (max-width:760px){.jr{--gm:12px;padding:14px 14px 18px}.jr ol{grid-template-columns:1fr;gap:var(--gm)}.jr li{flex-direction:row;gap:14px;align-items:flex-start}.jr-dot{margin:0;align-self:flex-start}' +
+    '.jr li:not(:first-child)::before{display:none}.jr li:not(:last-child)::after{content:"";position:absolute;left:20px;top:44px;bottom:calc(-1 * var(--gm));width:4px;border-radius:2px;background:var(--line);transform-origin:top center}' +
+    '.jr li.done:not(:last-child)::after{background:var(--purple)}.jr-in li:not(:last-child)::after{animation:jr-drawy .5s ease both;animation-delay:calc(var(--k) * 140ms)}.jr-note{margin-left:0;text-align:left}}' +
+    '@media (prefers-reduced-motion:reduce){.jr *,.jr *::before,.jr *::after{animation:none!important;transition:none!important}}';
   function injectStyle(doc) {
     if (doc.getElementById('journey-style')) return;
     var st = doc.createElement('style'); st.id = 'journey-style'; st.textContent = CSS; doc.head.appendChild(st);
   }
+  /** The figures the pages pass in (a label and a value) belong to a step: they are shown big under that step. Others stay in the strip on top. */
+  var VALUE_STEP = [[/^Money in play/, 'decide'], [/^Due within/, 'today'], [/^Waiting for our answer/, 'today'], [/^Past the/, 'today'], [/^Deals with a risk/, 'understand'], [/^Open points/, 'understand'], [/^Waiting for your decision/, 'act']];
+  function stepOfValue(label) { for (var i = 0; i < VALUE_STEP.length; i++) if (VALUE_STEP[i][0].test(label)) return VALUE_STEP[i][1]; return null; }
+  /** Where the rail was drawn last (null = never): the first drawing plays the entrance, a later one with another step glides from the old step. */
+  var drawn = { idx: null };
   /**
-   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...] for the strip, note: optional text at the right.
+   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...], note: optional text at the right.
    * The stop that is shown on this page gets aria-current="true"; a stop the customer has no sample data for is disabled.
    */
   function railHtml(cur, values, note) {
     var c = CUSTOMERS[cur.customer] || CUSTOMERS.lindenau;
+    var idx = 0;
+    for (var q = 0; q < STEPS.length; q++) if (STEPS[q].id === cur.step) idx = q;
+    var mode = drawn.idx === null ? 'in' : drawn.idx !== idx ? 'move' : 'still', from = drawn.idx === null ? 0 : drawn.idx;
+    drawn.idx = idx;
+    var byStep = {}, rest = [];
+    (values || []).forEach(function (v) { var st = stepOfValue(String(v[0])); if (st) (byStep[st] = byStep[st] || []).push(v); else rest.push(v); });
     var steps = STEPS.map(function (st, i) {
       var stops = STOPS.filter(function (s) { return s.step === st.id; }).map(function (s) {
         var ok = available(s, cur.customer), here = cur.stop === s.id;
         return '<button type="button" data-jr-stop="' + esc(s.id) + '"' + (ok ? '' : ' disabled title="No sample data for ' + esc(c.name) + '"') + ' aria-current="' + here + '">' + esc(s.label) + '</button>';
       }).join('');
-      return '<li' + (cur.step === st.id ? ' aria-current="step"' : '') + '><div class="jr-h"><span class="jr-n">' + (i + 1) + '</span>' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div><div class="jr-s">' + stops + '</div></li>';
+      var metrics = (byStep[st.id] || []).slice(0, 2).map(function (v) { return '<div class="jr-m"><b>' + esc(v[1]) + '</b><span>' + esc(v[0]) + '</span></div>'; }).join('');
+      var state = i < idx ? 'done' : i === idx ? 'cur' : 'todo', go = mode === 'move' && idx > from && i > from && i <= idx ? ' go' : '';
+      return '<li class="' + state + go + '" style="--k:' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><div class="jr-dot" aria-hidden="true">' + (i < idx ? '&#10003;' : i + 1) + '</div><div class="jr-card"><div class="jr-h">' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div>' + metrics + '<div class="jr-s">' + stops + '</div></div></li>';
     }).join('');
-    var strip = values && values.length ? '<div class="jr-val">' + values.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div>' : '';
-    return '<nav class="jr" aria-label="Sales journey"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey</span></div><ol>' + steps + '</ol></nav>' + strip;
+    var strip = rest.length ? '<div class="jr-val">' + rest.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + '</div>' : '';
+    return '<nav class="jr jr-' + mode + '" style="--jr-from:' + from + '" aria-label="Sales journey"><div class="jr-top"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey · step ' + (idx + 1) + ' of ' + STEPS.length + ': ' + esc(STEPS[idx].label) + '</span></div>' + strip + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div><ol>' + steps + '</ol></nav>';
   }
   return { CUSTOMERS: CUSTOMERS, STEPS: STEPS, STOPS: STOPS, TAB_STEP: TAB_STEP, stop: stop, available: available, handoff: handoff, parse: parse, customerOfAccount: customerOfAccount, railHtml: railHtml, injectStyle: injectStyle };
 }
 // @journey-end
 const J = makeJourney(); J.injectStyle(document);
 const jr = { customer: 'lindenau', note: '' };
-const JR_AT = { overview: ['today', 'renewals'], process: ['understand', 'renewal-map'], nba: ['decide', 'renewal-actions'], radar: ['decide', null], list: ['decide', null] };
 const JR_TAB = { today: 'overview', understand: 'process', decide: 'nba' };
 const jrCustomer = () => (state.customer !== 'all' && J.CUSTOMERS[state.customer] ? state.customer : jr.customer);
+/* The scope strip under the process bar: what the chosen customer and owner have at stake. */
 function renderJourney() {
-  const cust = jrCustomer(), all = state.customer === 'all', mine = (all ? model : model.filter((c) => c.customerId === cust)).filter(byOwner), open = mine.filter(live), [step, stop] = JR_AT[state.tab] || ['today', null];
-  $('#jr').innerHTML = J.railHtml({ customer: cust, step, stop },
-    [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]], jr.note);
-}
-function jrGo(stopId) {
-  const s = J.stop(stopId), cust = jrCustomer(); if (!s || !J.available(s, cust)) return;
-  if (s.space === 'renewals') { jr.note = ''; if (state.customer === 'all') state.customer = cust; setTab(s.tab); return; }
-  if (window.parent === window) { jr.note = 'Open this Space in the app to move to ' + s.label + '.'; renderJourney(); return; }
-  const c = state.sel ? byId(state.sel) : null;
-  window.parent.postMessage(J.handoff(s, { customer: cust, deal: c && c.contractId }), '*');
+  const cust = jrCustomer(), all = state.customer === 'all', mine = (all ? model : model.filter((c) => c.customerId === cust)).filter(byOwner), open = mine.filter(live);
+  const vals = [[(all ? 'All customers' : J.CUSTOMERS[cust].name.split(' ')[0]) + (state.owner === 'all' ? '' : ' · ' + state.owner.split(' ')[0]) + ': renewals at stake (a year)', eur(open.reduce((a, c) => a + c.annualEur, 0))], ['Decision within six weeks', open.filter((c) => c.sig.days <= WINDOW_DAYS).length + ' of ' + open.length], ['Red renewals', open.filter((c) => c.health === 'red').length]];
+  $('#jr').innerHTML = '<div class="jr-val">' + vals.map((v) => `<span>${esc(v[0])} <b>${esc(String(v[1]))}</b></span>`).join('') + (jr.note ? `<span class="jr-note">${esc(jr.note)}</span>` : '') + '</div>';
 }
 /* A hand-over from another Space of the journey (wb:restore): choose the customer and the view, open the renewal of a contract (deal). */
 function jrApply(j) {
@@ -2788,6 +3007,7 @@ window.addEventListener('message', (e) => {
    Only what the person chose is kept. The host keeps it until the app closes; nothing is written to a disk or a server by this page. */
 function saveState() {
   if (window.parent === window) return;
+  persist();
   window.parent.postMessage({ type: 'wb:state', state: { tab: state.tab, customer: state.customer, status: state.status, phase: state.phase, owner: state.owner, sel: state.sel, csel: state.csel, stage: state.stage, ap: state.ap, wb: state.wb, apMode: state.apMode, option: state.option, asked: state.asked, groups: state.groups, briefs: state.briefs, stats: state.stats, auto: state.auto, jr: jr.customer } }, '*');
 }
 /** Takes a saved state over. Every value is checked against the data again; anything unknown is dropped. */
@@ -2819,11 +3039,109 @@ function applyState(st) {
 }
 window.addEventListener('message', (e) => {
   if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
-  if (e.data.state) { applyState(e.data.state); renderAll(); }
+  if (e.data.state) { applyState(e.data.state); applyStored(); renderAll(); }
   (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach((h) => { if (h && h.payload && h.payload.type === 'order-confirmed') { if (h.from === 'order-to-cash-software') apConfirmed(h.payload); renderAll(); return; } const j = J.parse(h && h.payload); if (j && J.CUSTOMERS[j.customer].renewals) jrApply(j); });
 });
-document.addEventListener('click', (e) => { const b = e.target.closest('[data-jr-stop],[data-jr-open]'); if (b) jrGo(b.dataset.jrStop || b.dataset.jrOpen); });
+/* ---------- Storage of the autopilot and win-back cases in the shared database (rn:cases-request, migration 050) ----------
+   The page never sees the key and never names the person: the app uses the stored e-mail. Every change of a case is saved after the render
+   (one case at a time, with the revision the page last saw). If the database is missing or refuses, the page works from memory and says
+   "Not saved: <reason>". Cases of other owners are shown but cannot be operated: managers read only. */
+const store = { on: false, me: null, rev: {}, saved: {}, failed: {}, busy: {}, can: {}, note: '', pending: {}, seq: 0, loading: false };
+const skey = (id, kind) => id + '|' + kind;
+const kindMap = (kind) => (kind === 'renewal' ? state.ap : state.wb);
+const ownerOf = (id) => (DATA.cases.find((x) => x.id === id) || {}).owner || '';
+/** May this person operate the case? Without a database everything is allowed (memory only); with one, the owner and board admins. */
+function can(id, kind) {
+  if (!store.on || !store.me) return true;
+  const k = skey(id, kind);
+  if (store.can[k] !== undefined) return store.can[k];
+  return store.me.admin === true || (Array.isArray(store.me.owners) && store.me.owners.includes(ownerOf(id)));
+}
+function storeAsk(action, payload) {
+  return new Promise((resolve) => {
+    if (!inHostAp()) { resolve({ ok: false, error: 'Not in the app.' }); return; }
+    const requestId = 'c' + (++store.seq);
+    const t = setTimeout(() => { delete store.pending[requestId]; resolve({ ok: false, error: 'The app did not answer.' }); }, 20000);
+    store.pending[requestId] = (m) => { clearTimeout(t); resolve(m); };
+    window.parent.postMessage({ type: 'rn:cases-request', requestId, action, ...payload }, '*');
+  });
+}
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (e.source !== window.parent || !d || d.type !== 'rn:cases-answer' || typeof d.requestId !== 'string') return;
+  const f = store.pending[d.requestId]; if (!f) return;
+  delete store.pending[d.requestId]; f(d.ok === true ? { ok: true, data: d.data || {} } : { ok: false, error: String(d.error || 'unknown error').slice(0, 200) });
+});
+/** Puts the last persisted copy of every case into the page (after loading, and after the host restored its memory copy). */
+function applyStored() {
+  const ids = new Set(DATA.cases.map((c) => c.id));
+  for (const [k, js] of Object.entries(store.saved)) {
+    const [id, kind] = k.split('|');
+    if (!ids.has(id)) continue;
+    let st; try { st = JSON.parse(js); } catch { continue; }
+    if (!(kind === 'renewal' ? apValid(st) : wbValid(st))) continue;
+    kindMap(kind)[id] = st;
+    if (kind === 'renewal') apSync(id);
+  }
+}
+async function loadCases() {
+  if (store.loading) return; store.loading = true;
+  const r = await storeAsk('list'); store.loading = false;
+  if (!r.ok) { store.on = false; store.note = inHostAp() ? 'Cases stay in memory only: ' + r.error : ''; if (inHostAp()) renderAll(); return; }
+  const data = r.data, ids = new Set(DATA.cases.map((c) => c.id));
+  store.on = true; store.me = data.me && typeof data.me === 'object' ? data.me : { owners: [], admin: false, manager: false };
+  store.rev = {}; store.saved = {}; store.failed = {}; store.can = {}; store.note = '';
+  let skipped = 0;
+  for (const c of Array.isArray(data.cases) ? data.cases : []) {
+    const kind = c && c.kind, st = c && c.state;
+    if (!c || !ids.has(c.caseId) || (kind !== 'renewal' && kind !== 'winback') || !(kind === 'renewal' ? apValid(st) : wbValid(st))) { skipped++; continue; }
+    const k = skey(c.caseId, kind);
+    store.rev[k] = Number.isInteger(c.rev) ? c.rev : 0; store.saved[k] = JSON.stringify(st); store.can[k] = c.canChange === true;
+  }
+  if (skipped) store.note = skipped + ' stored case(s) could not be read and are left out.';
+  applyStored(); compute(); renderAll();
+}
+async function saveCase(id, kind, st, js) {
+  const k = skey(id, kind); store.busy[k] = true;
+  const c = DATA.cases.find((x) => x.id === id);
+  const r = await storeAsk('save', { caseId: id, kind, owner: ownerOf(id), customer: c ? c.customer : '', state: st, expectedRev: store.rev[k] || 0 });
+  store.busy[k] = false;
+  if (r.ok) { store.rev[k] = Number.isInteger(r.data.rev) ? r.data.rev : (store.rev[k] || 0) + 1; store.saved[k] = js; store.can[k] = true; delete store.failed[k]; store.note = ''; }
+  else { store.failed[k] = js; store.note = 'Not saved: ' + r.error; if (/conflict/.test(r.error)) { renderAll(); loadCases(); return; } }
+  renderNote(); persist();
+}
+async function resetCase(id, kind) {
+  const k = skey(id, kind); store.busy[k] = true;
+  const r = await storeAsk('reset', { caseId: id, kind });
+  store.busy[k] = false;
+  if (r.ok || /no active case/.test(r.error)) { delete store.saved[k]; delete store.rev[k]; delete store.failed[k]; delete store.can[k]; store.note = ''; }
+  else { store.failed[k] = 'reset'; store.note = 'Not saved: ' + r.error; }
+  renderNote(); persist();
+}
+/** Writes what changed since the last save: one request per case, never two at once for the same case. */
+function persist() {
+  if (!store.on) return;
+  for (const kind of ['renewal', 'winback']) {
+    for (const [id, st] of Object.entries(kindMap(kind))) {
+      const k = skey(id, kind);
+      if (store.busy[k] || !can(id, kind)) continue;
+      const js = JSON.stringify(st);
+      if (store.saved[k] !== js && store.failed[k] !== js) saveCase(id, kind, st, js);
+    }
+  }
+  for (const k of Object.keys(store.saved)) {
+    const [id, kind] = k.split('|');
+    if (!kindMap(kind)[id] && !store.busy[k] && store.failed[k] !== 'reset' && can(id, kind)) resetCase(id, kind);
+  }
+}
+function renderNote() {
+  const el = $('#ap-store'); if (!el) return;
+  const me = store.me, role = !store.on ? '' : me && me.admin ? 'You see and operate all cases (board admin).' : me && me.manager ? 'You see all cases and can only read them (sales manager).' : me && me.owners && me.owners.length ? 'You see and operate your own cases (' + me.owners.join(', ') + ').' : 'No renewals are assigned to your e-mail: you see no cases.';
+  el.textContent = [store.on ? 'Cases are stored in the shared database. ' + role : '', store.note].filter(Boolean).join(' ');
+  el.className = 'sub' + (/^Not saved|^Cases stay/.test(store.note) ? ' bad' : '');
+}
 compute(); renderAll();
+loadCases();
 window.__renewals = () => model; window.__state = state; window.__go = go; window.__groupPrompt = groupPrompt; window.__briefPrompt = briefPrompt; window.__briefFacts = briefFacts;
 })();
 </script>

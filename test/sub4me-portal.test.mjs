@@ -19,7 +19,8 @@ test('the portal entry page: greeting, four quick actions, one simple ring and o
   const { w, errs } = open();
   await new Promise((r) => setTimeout(r, 200));
   const $ = (q) => w.document.querySelector(q), $$ = (q) => [...w.document.querySelectorAll(q)];
-  assert.match($('#hero .hero-title').textContent, /^Welcome back/);
+  assert.match($('#hero .hero-title').textContent, /^Welcome, Mr\. Miller\./);
+  assert.match($('#hero .hero-sub').textContent, /last login 2026-10-17/);
   assert.deepEqual($$('#hero .hero-acts button').map((b) => b.dataset.go), ['tickets', 'invoices', 'contracts', 'usage']);
   assert.equal($$('.ck-rings svg .arc').length, 2, 'the used share and its forecast, no ring per product');
   assert.equal($$('.ck-rings svg circle.trk').length, 1);

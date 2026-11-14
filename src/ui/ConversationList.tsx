@@ -26,8 +26,7 @@ export default function ConversationList({
 }: Props) {
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [menu, setMenu] = useState<ContextMenu | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -66,10 +65,6 @@ export default function ConversationList({
   }
 
   useEffect(() => {
-    setConfirmDelete(false);
-  }, [menu]);
-
-  useEffect(() => {
     if (!menu) return;
     const closeOutside = (event: PointerEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) setMenu(null);
@@ -103,7 +98,6 @@ export default function ConversationList({
 
   function conversationButton(conversation: ConversationRecord) {
     const selected = conversation.id === selectedId;
-    const confirming = confirmId === conversation.id;
     return (
       <div
         key={conversation.id}
@@ -134,17 +128,14 @@ export default function ConversationList({
             {conversation.archived ? <RestoreIcon /> : <ArchiveIcon />}
           </button>
           <button
-            className={`list-item-act list-item-act-danger ${confirming ? 'list-item-act-armed' : ''}`}
+            className="list-item-act list-item-act-danger"
             type="button"
             disabled={disabled}
-            title={confirming ? 'Click again to delete for good' : 'Delete conversation'}
-            aria-label={confirming ? `Confirm delete ${conversation.title}` : `Delete ${conversation.title}`}
-            onBlur={() => setConfirmId((id) => (id === conversation.id ? null : id))}
+            title="Delete conversation"
+            aria-label={`Delete ${conversation.title}`}
             onClick={(event) => {
               event.stopPropagation();
-              if (!confirming) { setConfirmId(conversation.id); return; }
-              setConfirmId(null);
-              onDelete(conversation.id);
+              setPendingDelete({ id: conversation.id, title: conversation.title });
             }}
           >
             <TrashIcon />
@@ -281,19 +272,28 @@ export default function ConversationList({
             {menu.archived ? 'Restore conversation' : 'Archive conversation'}
           </button>
           <button
-            className={`context-menu-item ${confirmDelete ? 'context-menu-item-danger' : ''}`}
+            className="context-menu-item"
             role="menuitem"
             onClick={() => {
-              if (!confirmDelete) {
-                setConfirmDelete(true);
-                return;
-              }
-              onDelete(menu.id);
+              const target = conversations.find((c) => c.id === menu.id);
+              setPendingDelete({ id: menu.id, title: target?.title ?? 'this conversation' });
               setMenu(null);
             }}
           >
-            {confirmDelete ? 'Click again to delete for good' : 'Delete conversation'}
+            Delete conversation
           </button>
+        </div>
+      )}
+      {pendingDelete && (
+        <div className="scrim" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingDelete(null); }}>
+          <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="conv-del-title" aria-describedby="conv-del-text" onKeyDown={(event) => { if (event.key === 'Escape') setPendingDelete(null); }}>
+            <h2 id="conv-del-title" className="dialog-title">Delete “{pendingDelete.title}”?</h2>
+            <p id="conv-del-text" className="dialog-body">This deletes the conversation and all its messages from this computer. It cannot be undone. Archive it instead if you may need it later.</p>
+            <div className="dialog-actions">
+              <button autoFocus className="dialog-btn dialog-btn-primary" onClick={() => setPendingDelete(null)}>Cancel</button>
+              <button className="dialog-btn dialog-btn-danger" onClick={() => { const id = pendingDelete.id; setPendingDelete(null); onDelete(id); }}>Delete for good</button>
+            </div>
+          </div>
         </div>
       )}
     </aside>

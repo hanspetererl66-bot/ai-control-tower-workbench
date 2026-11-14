@@ -102,6 +102,19 @@ export const BUILTIN_HARNESSES: HarnessProfile[] = [
     maxSteps: 15,
     answerForm: 'table',
   },
+  {
+    id: 'pre-close-slack',
+    name: 'Pre-close with Slack (read only)',
+    description: 'Month-end checks that may read Slack threads as evidence. Nothing is posted or changed.',
+    persona: 'You support the finance pre-close. Report differences and open items. You may read Slack channels and threads to find evidence and must name the channel and thread you used. Never post, reply or react in Slack, and do not post or approve anything yourself.',
+    connectors: ['ai-control-tower', 'slack'],
+    skills: [],
+    spaces: ['finance-preclose'],
+    memory: 'personal',
+    permission: 'read-only',
+    maxSteps: 15,
+    answerForm: 'table',
+  },
 ];
 
 const ID = /^[a-z0-9][a-z0-9_-]{0,39}$/;

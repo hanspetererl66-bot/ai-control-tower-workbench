@@ -1,10 +1,9 @@
 {
-  "title": "Renewals",
-  "description": "Renewals in six views: an overview of everything that decides in the next six weeks plus a landscape of all customers, an autopilot that runs the renewals and stops at the gates a person decides, the renewal process with an animated map per customer (tickets, invoices, mail, usage, details), the next best action, the renewal radar and the list by decision date. Decision dates, transparent health signals, price against the contract cap and an approval flow, with a guided demo.",
-  "domain": "Sales",
+  "title": "Renewal process",
+  "description": "The renewal process in four steps: 1 Renewal due (what decides in the next six weeks), 2 Renewal map (the landscape of all customers and the map of one customer), 3 Renewal action (next best action and the autopilot that runs the renewals and stops at the gates a person must decide), 4 Renewal analytics (what is at stake in short, the full dashboard is its own Space). Radar and list by decision date are secondary, behind More.",
+  "domain": "Renewals",
   "insights": [
-    "Start page: the renewals that decide in the next six weeks (and the ones already late) and the landscape of all customers: a planet is a customer, a dot is a contract, the closer to the planet the sooner the decision. Everything is tied to a customer chosen at the top.",
-    "Pick a customer and the renewal map opens: its contracts around it, with open tickets, invoices, mail and usage along each spoke, four tiles for where we stand, and the details with the e-mail communication on the right.",
+    "Four steps along the renewal process: Renewal due (the renewals that decide in the next six weeks and the late ones, what to do first), Renewal map (the landscape of all customers: a planet is a customer, a dot is a contract; pick a customer and its map opens with open tickets, invoices, mail and usage along each spoke), Renewal action (next best action and the autopilot), Renewal analytics (value, expected loss, by month, biggest risks).",
     "Fictional renewals derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. The decision date is the contract end minus the notice period.",
     "Health is the worst signal: decision date, missing or expiring offer, price rise above the contract cap, competitor, usage, open tickets and overdue invoices. Every signal is listed with its reason.",
     "Autopilot: the whole renewal runs step by step (watch, brief, offer, policy check, deal desk, send, customer, order). It works alone while a renewal is within policy and stops at a gate when a person has to decide: approve or change the offer, send the e-mail. Every step is logged. Sending, signing and the order are simulated. A lapsed contract or a declined renewal becomes a win-back case: analysis and plan by the autopilot, plan approval and first message by a person, then the order.",

@@ -232,6 +232,20 @@ h1{margin:0 0 4px;font-size:24px}
 .src{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
 .src input{width:150px}
 .src .st{font-size:12px;color:var(--muted)}
+.srcs{display:inline-flex;gap:2px;padding:3px;margin:0 0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.srcs button{font:inherit;font-size:12.5px;padding:5px 14px;border:0;border-radius:999px;background:none;color:var(--muted);cursor:pointer}
+.srcs button:hover{color:var(--ink)}
+.srcs button[aria-pressed=true]{background:var(--purple-dim);color:var(--purple-ink);font-weight:650}
+.choices{display:flex;flex-direction:column;gap:4px;margin:0 0 12px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.choices[hidden]{display:none}
+.choices button{font:inherit;font-size:13px;text-align:left;padding:6px 10px;border:1px solid transparent;border-radius:8px;background:none;color:var(--ink);cursor:pointer}
+.choices button:hover,.choices button:focus-visible{border-color:var(--purple);background:var(--purple-dim)}
+.parts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.parts:empty{display:none}
+.parts .part{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border:1px solid var(--purple-border);border-radius:999px;background:var(--purple-dim);font-size:12px;color:var(--purple-ink)}
+.parts .part button{font:inherit;width:20px;height:20px;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer;line-height:1}
+.parts .part button:hover,.parts .part button:focus-visible{color:var(--ink);background:var(--surface)}
+.tag.srctag{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
 .cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:16px;align-items:start}
 @media(max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
 .pane{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
@@ -252,6 +266,32 @@ h1{margin:0 0 4px;font-size:24px}
 textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
 .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .note{font-size:12px;color:var(--muted)}
+.edtools{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0 0 8px}
+.edtools button{font:inherit;font-size:12px;padding:4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer}
+.edtools button:hover:not(:disabled),.edtools button:focus-visible{border-color:var(--purple);color:var(--purple-ink)}
+.edtools button:disabled{opacity:.45;cursor:default}
+.edsep{width:1px;height:18px;background:var(--line);margin:0 4px}
+.outline{margin:0 0 8px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px 10px}
+.outline summary{cursor:pointer;font-size:12px;font-weight:650}
+.outline ol{list-style:none;margin:6px 0;padding:0;max-height:190px;overflow:auto}
+.outline li{display:flex;align-items:center;gap:4px;padding:2px 0}
+.outline .olink{flex:1;min-width:0;text-align:left;font:inherit;font-size:12.5px;border:0;background:none;color:var(--ink);cursor:pointer;padding:3px 4px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.outline .olink:hover,.outline .olink:focus-visible{background:var(--purple-dim);color:var(--purple-ink)}
+.outline .ob{font:inherit;font-size:12px;width:24px;height:24px;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted);cursor:pointer}
+.outline .ob:hover:not(:disabled),.outline .ob:focus-visible{border-color:var(--line);color:var(--ink)}
+.outline .ob:disabled{opacity:.35;cursor:default}
+.outline .addsec{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-2)}
+.outline select{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:3px 8px;background:var(--surface);color:var(--ink)}
+.acts.final{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.cfwrap{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--ink) 45%,transparent)}
+.cfwrap[hidden]{display:none}
+.cf{width:min(520px,100%);max-height:90vh;overflow:auto;padding:20px 22px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-lg)}
+.cf h3{margin:0 0 10px;font-size:16px}
+.cfl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 12px;font-size:13px}
+.cfl dt{color:var(--muted)}.cfl dd{margin:0;font-weight:600}
+.cfwarn{margin:0 0 12px;padding:10px 12px;border:1px solid var(--amber-border);border-radius:10px;background:var(--amber-dim);font-size:12.5px;color:var(--ink-2)}
+.cfwarn ul{margin:6px 0 0;padding-left:18px}
+.cfok{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;font-size:13px}
 .empty{color:var(--muted);font-size:13px;padding:10px 0}
 .err{color:var(--red);font-size:13px}
 </style>
@@ -259,15 +299,21 @@ textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui
 <body>
 <div class="wrap">
   <h1>PRD Builder</h1>
-  <p class="lead">Load the requirements of a Jira project, tick the ones that belong in the document, and get a product requirements document. Every requirement keeps its ticket key. Jira is only read, never changed.</p>
+  <p class="lead">Load requirements from Jira, Linear, Slack or Notion (one source or several), tick the ones that belong in the document, and get a product requirements document. Every entry keeps its source key. The sources are only read, never changed. Messages from Slack and sections of Notion pages come in as notes: quotes that still have to be phrased as requirements.</p>
 
+  <div class="srcs" role="group" aria-label="Source">
+    <button type="button" data-src="jira" aria-pressed="true">Jira</button><button type="button" data-src="linear" aria-pressed="false">Linear</button><button type="button" data-src="slack" aria-pressed="false">Slack</button><button type="button" data-src="notion" aria-pressed="false">Notion</button>
+  </div>
   <div class="src">
     <input id="proj" list="projs" placeholder="Project key, e.g. ABC" aria-label="Jira project key" maxlength="20">
-    <datalist id="projs"></datalist>
+    <datalist id="projs"></datalist><datalist id="teams"></datalist><datalist id="chans"></datalist>
     <button class="primary" id="load">Load from Jira</button>
     <button class="ghost" id="demo">Use demo backlog (Sales app)</button>
+    <button class="ghost" id="demoMulti">Use demo: Linear, Slack, Notion</button>
     <span class="st" id="status" role="status"></span>
   </div>
+  <div class="choices" id="choices" hidden></div>
+  <div class="parts" id="parts" aria-label="Loaded sources"></div>
 
   <div class="cols">
     <section class="pane card" aria-label="Requirements">
@@ -283,6 +329,22 @@ textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui
     </section>
     <section class="pane card" aria-label="Document">
       <h2>2 · The PRD</h2>
+      <div class="edtools" role="toolbar" aria-label="Edit the document">
+        <button type="button" data-ed="h2" title="Heading (toggles on the selected lines)">Heading</button>
+        <button type="button" data-ed="h3" title="Sub heading">Sub heading</button>
+        <button type="button" data-ed="bold" title="Bold (Ctrl or Cmd + B)"><b>B</b></button>
+        <button type="button" data-ed="bullet" title="Bullet list">• List</button>
+        <button type="button" data-ed="number" title="Numbered list">1. List</button>
+        <button type="button" data-ed="quote" title="Quote">Quote</button>
+        <span class="edsep" aria-hidden="true"></span>
+        <button type="button" id="undo" title="Undo (Ctrl or Cmd + Z)" disabled>Undo</button>
+        <button type="button" id="redo" title="Redo (Ctrl or Cmd + Shift + Z)" disabled>Redo</button>
+      </div>
+      <details class="outline" id="outlinebox" open>
+        <summary>Outline <span class="note" id="outlinecount"></span></summary>
+        <ol id="outline" aria-label="Sections of the document"></ol>
+        <label class="addsec">Add a section <select id="addsec" aria-label="Add a section"><option value="">Choose…</option><option value="goals">Goals</option><option value="nongoals">Non-goals</option><option value="assumptions">Assumptions</option><option value="metrics">Success metrics</option><option value="risks">Risks</option><option value="question">Open questions</option></select></label>
+      </details>
       <textarea class="prd" id="prd" spellcheck="false" aria-label="PRD draft (Markdown), editable"></textarea>
       <div class="acts">
         <button class="primary" id="refine">Refine with Joule</button>
@@ -290,10 +352,238 @@ textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui
         <button class="ghost" id="regen" hidden>Rebuild from selection</button>
         <span class="note" id="note">The draft follows your selection until you edit the text.</span>
       </div>
+      <div class="acts final" aria-label="Confirm and save">
+        <button class="primary" id="confirmBtn">Confirm the PRD…</button>
+        <button class="ghost" id="word" disabled title="Confirm the PRD first">Save as Word (.docx)</button>
+        <button class="ghost" id="tospec" disabled title="Confirm the PRD first">Continue with the specification</button>
+        <span class="note" id="confirmnote" role="status">Not confirmed yet. Confirm the document to save it as a Word file.</span>
+      </div>
+      <div class="cfwrap" id="cfwrap" hidden>
+        <div class="cf" role="dialog" aria-modal="true" aria-labelledby="cf-h">
+          <h3 id="cf-h">Confirm the PRD</h3>
+          <dl class="cfl" id="cffacts"></dl>
+          <div id="cfopen"></div>
+          <label class="cfok"><input type="checkbox" id="cfcheck"><span id="cfchecktext"></span></label>
+          <div class="acts"><button class="primary" id="cfyes" disabled>Confirm</button><button class="ghost" id="cfno">Back to editing</button></div>
+        </div>
+      </div>
     </section>
   </div>
 </div>
 
+<script type="application/json" id="prd-demo-multi">
+{
+ "linear": [
+  {
+   "key": "LIN-P-Pipeline-view",
+   "summary": "Pipeline view",
+   "type": "Epic",
+   "status": "",
+   "priority": "",
+   "parentKey": null,
+   "parentSummary": null,
+   "labels": [],
+   "description": "",
+   "source": "linear",
+   "url": ""
+  },
+  {
+   "key": "LIN-P-Mobile",
+   "summary": "Mobile",
+   "type": "Epic",
+   "status": "",
+   "priority": "",
+   "parentKey": null,
+   "parentSummary": null,
+   "labels": [],
+   "description": "",
+   "source": "linear",
+   "url": ""
+  },
+  {
+   "key": "SAL-41",
+   "summary": "Kanban view of the pipeline by stage",
+   "type": "Story",
+   "status": "Todo",
+   "priority": "High",
+   "parentKey": "LIN-P-Pipeline-view",
+   "parentSummary": "Pipeline view",
+   "labels": [
+    "pipeline"
+   ],
+   "description": "As a seller I want a kanban view of my pipeline by stage so that I see where deals get stuck.\n\nAcceptance criteria\n- One column per stage\n- Dragging a deal changes its stage\n- Totals per column",
+   "source": "linear",
+   "url": "https://linear.example/SAL-41"
+  },
+  {
+   "key": "SAL-42",
+   "summary": "Forecast by quarter",
+   "type": "Story",
+   "status": "In Progress",
+   "priority": "Medium",
+   "parentKey": "LIN-P-Pipeline-view",
+   "parentSummary": "Pipeline view",
+   "labels": [
+    "forecast"
+   ],
+   "description": "As a sales manager I want the forecast by quarter so that I can plan the team.\n\nAcceptance criteria\n- Weighted and unweighted value\n- Filter by owner",
+   "source": "linear",
+   "url": "https://linear.example/SAL-42"
+  },
+  {
+   "key": "SAL-47",
+   "summary": "Offline notes on the phone",
+   "type": "Story",
+   "status": "Todo",
+   "priority": "Low",
+   "parentKey": "LIN-P-Mobile",
+   "parentSummary": "Mobile",
+   "labels": [
+    "mobile"
+   ],
+   "description": "Sellers write notes after a visit without network and sync later.",
+   "source": "linear",
+   "url": "https://linear.example/SAL-47"
+  },
+  {
+   "key": "SAL-51",
+   "summary": "Export a customer list to CSV",
+   "type": "Story",
+   "status": "Todo",
+   "priority": "",
+   "parentKey": null,
+   "parentSummary": null,
+   "labels": [],
+   "description": "As an account executive I want to export a list so that I can share it.",
+   "source": "linear",
+   "url": "https://linear.example/SAL-51"
+  }
+ ],
+ "slack": [
+  {
+   "key": "SLACK-C-sales-feedback",
+   "summary": "Slack #sales-feedback",
+   "type": "Epic",
+   "status": "",
+   "priority": "",
+   "parentKey": null,
+   "parentSummary": null,
+   "labels": [],
+   "description": "",
+   "source": "slack",
+   "url": ""
+  },
+  {
+   "key": "SLACK-1763020800.000100",
+   "summary": "Three customers this week asked for a way to see all open offers of an account on one page.",
+   "type": "Note",
+   "status": "",
+   "priority": "",
+   "parentKey": "SLACK-C-sales-feedback",
+   "parentSummary": "Slack #sales-feedback",
+   "labels": [
+    "slack",
+    "#sales-feedback"
+   ],
+   "description": "Three customers this week asked for a way to see all open offers of an account on one page. Right now we click through four screens.",
+   "source": "slack",
+   "url": ""
+  },
+  {
+   "key": "SLACK-1763024400.000200",
+   "summary": "The quarterly forecast is still built by hand in a sheet.",
+   "type": "Note",
+   "status": "",
+   "priority": "",
+   "parentKey": "SLACK-C-sales-feedback",
+   "parentSummary": "Slack #sales-feedback",
+   "labels": [
+    "slack",
+    "#sales-feedback"
+   ],
+   "description": "The quarterly forecast is still built by hand in a sheet. If the app could do it, @U01SELLER and I would save half a day every month.",
+   "source": "slack",
+   "url": ""
+  },
+  {
+   "key": "SLACK-1763031600.000400",
+   "summary": "Mobile: notes after a visit get lost because there is no signal in the factory halls.",
+   "type": "Note",
+   "status": "",
+   "priority": "",
+   "parentKey": "SLACK-C-sales-feedback",
+   "parentSummary": "Slack #sales-feedback",
+   "labels": [
+    "slack",
+    "#sales-feedback"
+   ],
+   "description": "Mobile: notes after a visit get lost because there is no signal in the factory halls. Offline would help a lot, see SAL-47 (https://linear.example/SAL-47).",
+   "source": "slack",
+   "url": ""
+  }
+ ],
+ "notion": [
+  {
+   "key": "NOTION-0f5c1d2e",
+   "summary": "Quarterly planning: Sales Companion",
+   "type": "Epic",
+   "status": "",
+   "priority": "",
+   "parentKey": null,
+   "parentSummary": null,
+   "labels": [],
+   "description": "",
+   "source": "notion",
+   "url": "https://notion.example/Quarterly-planning-0f5c1d2e3a4b4c5d8e9f0a1b2c3d4e5f"
+  },
+  {
+   "key": "NOTION-0f5c1d2e-1",
+   "summary": "Goals",
+   "type": "Note",
+   "status": "",
+   "priority": "",
+   "parentKey": "NOTION-0f5c1d2e",
+   "parentSummary": "Quarterly planning: Sales Companion",
+   "labels": [
+    "notion"
+   ],
+   "description": "- Reduce the time to prepare a customer meeting from 45 to 15 minutes\n- One place for offers, contracts and open tickets of an account",
+   "source": "notion",
+   "url": "https://notion.example/Quarterly-planning-0f5c1d2e3a4b4c5d8e9f0a1b2c3d4e5f"
+  },
+  {
+   "key": "NOTION-0f5c1d2e-2",
+   "summary": "Customer requests",
+   "type": "Note",
+   "status": "",
+   "priority": "",
+   "parentKey": "NOTION-0f5c1d2e",
+   "parentSummary": "Quarterly planning: Sales Companion",
+   "labels": [
+    "notion"
+   ],
+   "description": "Two key accounts asked for a read-only portal view of their offers and contracts. They do not want to call their account executive for status.",
+   "source": "notion",
+   "url": "https://notion.example/Quarterly-planning-0f5c1d2e3a4b4c5d8e9f0a1b2c3d4e5f"
+  },
+  {
+   "key": "NOTION-0f5c1d2e-3",
+   "summary": "Risks",
+   "type": "Note",
+   "status": "",
+   "priority": "",
+   "parentKey": "NOTION-0f5c1d2e",
+   "parentSummary": "Quarterly planning: Sales Companion",
+   "labels": [
+    "notion"
+   ],
+   "description": "The data of contracts and offers sits in two systems. Until they are connected, numbers in the app can differ from the contract system by a few days.",
+   "source": "notion",
+   "url": "https://notion.example/Quarterly-planning-0f5c1d2e3a4b4c5d8e9f0a1b2c3d4e5f"
+  }
+ ]
+}
+</script>
 <script type="application/json" id="prd-demo">
 [
  {
@@ -573,9 +863,14 @@ function groupByEpic(issues) {
   return groups;
 }
 
+const SOURCE_NAME = { jira: 'Jira', linear: 'Linear', slack: 'Slack', notion: 'Notion' };
+const sourceOf = (i) => SOURCE_NAME[i.source || 'jira'] || 'Jira';
+const isNote = (i) => i.type === 'Note';
+
 function openQuestions(items, groups, selected) {
   const q = [];
   for (const i of items) {
+    if (isNote(i)) { q.push(`${i.key}: a note from ${sourceOf(i)}, not yet a requirement. Phrase it (As a ... I want ...) and add acceptance criteria.`); continue; }
     const d = parseDescription(i.description);
     if (!d.criteria.length) q.push(`${i.key}: no acceptance criteria yet. How do we know it is done?`);
     if (!i.priority) q.push(`${i.key}: no priority set.`);
@@ -592,18 +887,21 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   const chosen = issues.filter((i) => selected.has(i.key));
   const stories = chosen.filter((i) => i.type !== 'Epic');
   const L = [];
-  L.push(`# Product requirements: ${project}`, '', `Draft from Jira, ${today}. ${stories.length} requirements from ${chosen.length} tickets of project ${project}. Every requirement names its ticket.`, '');
+  const names = [...new Set(chosen.map(sourceOf))];
+  const notes = stories.filter(isNote);
+  L.push(`# Product requirements: ${project}`, '', names.length <= 1 && (names[0] || 'Jira') === 'Jira' ? `Draft from Jira, ${today}. ${stories.length} requirements from ${chosen.length} tickets of project ${project}. Every requirement names its ticket.` : `Draft from ${names.join(', ')}, ${today}. ${stories.length - notes.length} requirements and ${notes.length} notes from ${chosen.length} items of ${project}. Every entry names its source item; notes are quotes that still have to be phrased as requirements.`, '');
   const epicsChosen = groups.filter((g) => g.epic && (selected.has(g.epic.key) || g.items.some((s) => selected.has(s.key))));
   L.push('## 1. Overview', '');
   if (!epicsChosen.length && !stories.length) L.push('Nothing selected yet. Tick epics or stories on the left.', '');
-  for (const g of epicsChosen) L.push(`- **${g.epic.summary}** (${g.epic.key}): ${parseDescription(g.epic.description).need || 'no description'}`);
+  for (const g of epicsChosen) L.push(`- **${g.epic.summary}** (${g.epic.key}): ${parseDescription(g.epic.description).need || (g.epic.source && g.epic.source !== 'jira' ? 'from ' + sourceOf(g.epic) : 'no description')}`);
   if (epicsChosen.length) L.push('');
   L.push('## 2. Goals', '');
-  for (const g of epicsChosen) L.push(`- ${g.epic.summary}`);
-  if (!epicsChosen.length) L.push('- To be defined.');
+  const goalEpics = epicsChosen.filter((g) => g.epic.source !== 'slack' && g.epic.source !== 'notion');
+  for (const g of goalEpics) L.push(`- ${g.epic.summary}`);
+  if (!goalEpics.length) L.push('- To be defined.');
   L.push('', '## 3. Users', '');
   const roles = {};
-  for (const s of stories) { const r = roleOf(parseDescription(s.description).need) || 'unnamed role'; (roles[r] = roles[r] || []).push(s.key); }
+  for (const s of stories) { if (isNote(s)) continue; const r = roleOf(parseDescription(s.description).need) || 'unnamed role'; (roles[r] = roles[r] || []).push(s.key); }
   for (const [r, keys] of Object.entries(roles)) L.push(`- **${r}**: ${keys.join(', ')}`);
   if (!Object.keys(roles).length) L.push('- To be defined.');
   L.push('', '## 4. Requirements', '');
@@ -613,7 +911,14 @@ function buildPrd({ project, issues, selectedKeys, today }) {
     if (!items.length) continue;
     L.push(`### ${g.epic ? `${g.epic.summary} (${g.epic.key})` : 'No epic'}`, '');
     for (const s of items) {
-      n += 1; const d = parseDescription(s.description);
+      n += 1;
+      if (isNote(s)) {
+        L.push(`**R${n} · ${s.summary}** (${s.key}, note from ${sourceOf(s)})`, '');
+        String(s.description || '').split('\n').forEach((line) => L.push(`> ${line}`.trimEnd()));
+        L.push('', 'Not yet phrased as a requirement.', '');
+        continue;
+      }
+      const d = parseDescription(s.description);
       L.push(`**R${n} · ${s.summary}** (${s.key}, priority ${s.priority || 'not set'}, status ${s.status || 'unknown'})`, '');
       if (d.need) L.push(d.need, '');
       if (d.criteria.length) { L.push('Acceptance criteria:'); d.criteria.forEach((c) => L.push(`- ${c}`)); L.push(''); }
@@ -626,25 +931,106 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   L.push('', '## 6. Open questions', '');
   const q = openQuestions(stories, groups, selected);
   if (q.length) q.forEach((x) => L.push(`- ${x}`)); else L.push('- None found from the tickets alone.');
-  L.push('', '## 7. Source tickets', '');
-  chosen.forEach((i) => L.push(`- ${i.key} · ${i.type || 'Issue'} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}`));
+  L.push('', names.length <= 1 && (names[0] || 'Jira') === 'Jira' ? '## 7. Source tickets' : '## 7. Sources', '');
+  chosen.forEach((i) => L.push((i.source || 'jira') === 'jira' ? `- ${i.key} · ${i.type || 'Issue'} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}` : `- ${i.key} · ${i.type || 'Issue'} · ${sourceOf(i)} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}${i.url ? ' · ' + i.url : ''}`));
   return L.join('\n') + '\n';
 }
+
+// BEGIN-EDIT (also embedded into the Spec Builder page by npm run sync:spec-builder)
+/* ---- Editing helpers for the text area: the text and the selection in, the new text and selection out. ---- */
+const LIST_KIND = {
+  h2: { has: (l) => /^##\s/.test(l) && !/^###/.test(l), prefix: () => '## ' },
+  h3: { has: (l) => /^###\s/.test(l), prefix: () => '### ' },
+  bullet: { has: (l) => /^[-*]\s/.test(l), prefix: () => '- ' },
+  number: { has: (l) => /^\d+[.)]\s/.test(l), prefix: (i) => `${i + 1}. ` },
+  quote: { has: (l) => /^>\s?/.test(l), prefix: () => '> ' },
+};
+const ANY_PREFIX = /^(#{1,6}\s+|[-*]\s+|\d+[.)]\s+|>\s?)/;
+
+/** Heading, bullet, number or quote on the lines the selection touches; again on lines that already have it takes it off. */
+function toggleLines(text, start, end, kind) {
+  const k = LIST_KIND[kind]; if (!k) return { text, start, end };
+  const e = end > start && text[end - 1] === '\n' ? end - 1 : end;
+  const a = text.lastIndexOf('\n', start - 1) + 1; let b = text.indexOf('\n', e); if (b < 0) b = text.length;
+  const lines = text.slice(a, b).split('\n');
+  const filled = lines.filter((l) => l.trim());
+  const all = filled.length > 0 && filled.every((l) => k.has(l));
+  let n = 0;
+  const out = lines.map((l) => {
+    if (!l.trim()) return l;
+    if (all) return l.replace(ANY_PREFIX, '');
+    return k.prefix(n++) + l.replace(ANY_PREFIX, '');
+  }).join('\n');
+  return { text: text.slice(0, a) + out + text.slice(b), start: a, end: a + out.length };
+}
+
+/** **bold** around the selection (or a placeholder when nothing is selected); on text that is already bold it takes the marks off. */
+function toggleBold(text, start, end) {
+  const m = '**';
+  if (start >= 2 && text.slice(start - 2, start) === m && text.slice(end, end + 2) === m) return { text: text.slice(0, start - 2) + text.slice(start, end) + text.slice(end + 2), start: start - 2, end: end - 2 };
+  const sel = start === end ? 'bold text' : text.slice(start, end);
+  return { text: text.slice(0, start) + m + sel + m + text.slice(end), start: start + 2, end: start + 2 + sel.length };
+}
+
+/** The "## " sections of the document: the text before the first one stays where it is. */
+function sections(text) {
+  const heads = []; let pos = 0;
+  text.split('\n').forEach((line) => { const h = /^##\s+(.*\S)\s*$/.exec(line); if (h && !/^###/.test(line)) heads.push({ title: h[1].replace(/^\d+\.\s+/, ''), start: pos }); pos += line.length + 1; });
+  heads.forEach((h, i) => { h.end = i + 1 < heads.length ? heads[i + 1].start : text.length; });
+  return { pre: heads.length ? text.slice(0, heads[0].start) : text, list: heads };
+}
+/** Numbers the headings that carry a number ("## 4. Requirements") from 1 up in their order again. */
+function renumber(text) { let n = 0; return text.replace(/^##\s+\d+\.\s+(.*)$/gm, (_m, t) => `## ${++n}. ${t}`); }
+const chunkEnd = (t) => (t.endsWith('\n') ? t : t + '\n');
+function moveSection(text, i, dir) {
+  const { pre, list } = sections(text), j = i + dir;
+  if (i < 0 || j < 0 || i >= list.length || j >= list.length) return text;
+  const chunks = list.map((h) => chunkEnd(text.slice(h.start, h.end)));
+  [chunks[i], chunks[j]] = [chunks[j], chunks[i]];
+  return renumber(pre + chunks.join(''));
+}
+function deleteSection(text, i) {
+  const { pre, list } = sections(text); if (i < 0 || i >= list.length) return text;
+  return renumber(pre + list.filter((_h, k) => k !== i).map((h) => chunkEnd(text.slice(h.start, h.end))).join(''));
+}
+const TEMPLATES = {
+  goals: ['Goals', '- To be defined.'], nongoals: ['Non-goals', '- To be defined.'], assumptions: ['Assumptions', '- To be defined.'],
+  metrics: ['Success metrics', '- To be defined: how will we know it worked?'], risks: ['Risks', '- To be defined.'], question: ['Open questions', '- To be answered.'],
+};
+function addSection(text, key) {
+  const t = TEMPLATES[key]; if (!t) return text;
+  const base = text.replace(/\s+$/, '');
+  return renumber(`${base}\n\n## 99. ${t[0]}\n\n${t[1]}\n`);
+}
+
+/** What a person should see before confirming: title, number of requirements and sources, the open questions and the length. */
+function prdFacts(text) {
+  const t = String(text || ''), secs = sections(t);
+  const body = (re) => { const s = secs.list.find((h) => re.test(h.title)); return s ? t.slice(s.start, s.end).split('\n').slice(1).filter((l) => /^-\s/.test(l)).map((l) => l.replace(/^-\s+/, '').trim()) : []; };
+  const open = body(/^open questions?$/i).filter((l) => !/^none found/i.test(l));
+  const first = /^#\s+(.*\S)\s*$/m.exec(t);
+  return {
+    title: first ? first[1].replace(/^product requirements:\s*/i, '') : '', requirements: (t.match(/^\*\*R\d+ · /gm) || []).length,
+    notes: (t.match(/^\*\*R\d+ · [^\n]*\bnote from /gm) || []).length, sources: body(/^sources?$|^source tickets$/i).length, open, words: (t.match(/\S+/g) || []).length, sections: secs.list.length,
+  };
+}
+// END-EDIT
 </script>
 <script>
 (function(){
 var $=function(id){return document.getElementById(id);};
-var S={project:'',issues:[],sel:{},q:'',dirty:false};
+var S={project:'',issues:[],sel:{},q:'',dirty:false,src:'jira',parts:{},asked:{}};
+var SRC={jira:{label:'Jira',ph:'Project key, e.g. ABC',aria:'Jira project key',list:'projs',max:20},linear:{label:'Linear',ph:'Team key, e.g. ENG',aria:'Linear team key',list:'teams',max:10},slack:{label:'Slack',ph:'Channel, e.g. product-feedback',aria:'Slack channel',list:'chans',max:80},notion:{label:'Notion',ph:'Search words or page link',aria:'Notion search words or page link',list:'',max:300}};
 function today(){return new Date().toISOString().slice(0,10);}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function setStatus(t,err){var s=$('status');s.textContent=t||'';s.className='st'+(err?' err':'');}
 
-function build(){ $('prd').value=buildPrd({project:S.project||'Project',issues:S.issues,selectedKeys:Object.keys(S.sel).filter(function(k){return S.sel[k];}),today:today()}); S.dirty=false; $('regen').hidden=true; $('note').textContent='The draft follows your selection until you edit the text.'; }
+function build(){ $('prd').value=buildPrd({project:S.project||'Project',issues:S.issues,selectedKeys:Object.keys(S.sel).filter(function(k){return S.sel[k];}),today:today()}); S.dirty=false; $('regen').hidden=true; $('note').textContent='The draft follows your selection until you edit the text.'; docChanged(); }
 function onSelection(){ if(S.dirty){ $('regen').hidden=false; $('note').textContent='You edited the text. Press "Rebuild from selection" to start over from the tickets.'; } else build(); count(); }
 function count(){ var n=0,t=0; S.issues.forEach(function(i){ if(i.type!=='Epic'){t++; if(S.sel[i.key])n++;} }); $('count').textContent=t?n+' of '+t+' requirements selected':''; }
 
-function visible(i){ if(!S.q) return true; return (i.key+' '+i.summary+' '+(i.labels||[]).join(' ')).toLowerCase().indexOf(S.q)>=0; }
-function row(i){ return '<label class="row"><input type="checkbox" data-k="'+esc(i.key)+'"'+(S.sel[i.key]?' checked':'')+'><span class="k">'+esc(i.key)+'</span><span class="t">'+esc(i.summary)+'</span>'+(i.priority?'<span class="tag p-'+esc(i.priority)+'">'+esc(i.priority)+'</span>':'')+'</label>'; }
+function visible(i){ if(!S.q) return true; return (i.key+' '+i.summary+' '+(i.labels||[]).join(' ')+(i.type==='Note'?' '+(i.description||''):'')).toLowerCase().indexOf(S.q)>=0; }
+function row(i){ return '<label class="row"><input type="checkbox" data-k="'+esc(i.key)+'"'+(S.sel[i.key]?' checked':'')+'><span class="k">'+esc(i.key)+'</span><span class="t">'+esc(i.summary)+'</span>'+(i.type==='Note'?'<span class="tag srctag">note · '+esc(sourceOf(i))+'</span>':(i.priority?'<span class="tag p-'+esc(i.priority)+'">'+esc(i.priority)+'</span>':''))+'</label>'; }
 function tree(){
   var groups=groupByEpic(S.issues);
   if(!S.issues.length){ $('tree').innerHTML='<p class="empty">No tickets loaded yet. Load a Jira project or use the demo backlog.</p>'; count(); return; }
@@ -669,20 +1055,127 @@ function selectWhere(fn){ S.sel={}; S.issues.forEach(function(i){ if(i.type!=='E
 $('selAll').onclick=function(){selectWhere(function(){return true;});};
 $('selNone').onclick=function(){selectWhere(function(){return false;});};
 $('selHigh').onclick=function(){selectWhere(function(i){return i.priority==='High'||i.priority==='Highest';});};
-$('prd').addEventListener('input',function(){S.dirty=true;});
+$('prd').addEventListener('input',function(){ S.dirty=true; typed(); });
+
+/* ---------- editing: toolbar, undo and redo, outline ---------- */
+var H={stack:[],i:-1,timer:0};
+function cur(){ var t=$('prd'); return {v:t.value,s:t.selectionStart,e:t.selectionEnd}; }
+function snap(){ var c=cur(), top=H.stack[H.i]; if(top&&top.v===c.v){ top.s=c.s; top.e=c.e; return; } H.stack=H.stack.slice(0,H.i+1); H.stack.push(c); if(H.stack.length>100) H.stack.shift(); H.i=H.stack.length-1; }
+function histButtons(){ $('undo').disabled=H.i<=0; $('redo').disabled=H.i>=H.stack.length-1; }
+function typed(){ clearTimeout(H.timer); H.timer=setTimeout(function(){ snap(); histButtons(); },400); $('undo').disabled=false; docChanged(true); }
+function apply(r){ var t=$('prd'); t.value=r.text; t.focus(); t.setSelectionRange(r.start,r.end); S.dirty=true; snap(); histButtons(); docChanged(true); if(S.dirty){ $('regen').hidden=!S.issues.length; } }
+function restore(k){ if(k<0||k>=H.stack.length) return; clearTimeout(H.timer); H.i=k; var c=H.stack[k], t=$('prd'); t.value=c.v; t.focus(); t.setSelectionRange(c.s,c.e); S.dirty=true; histButtons(); docChanged(true); }
+function undo(){ clearTimeout(H.timer); snap(); restore(H.i-1); }
+function redo(){ restore(H.i+1); }
+function edit(kind){ var t=$('prd'); snap(); apply(kind==='bold'?toggleBold(t.value,t.selectionStart,t.selectionEnd):toggleLines(t.value,t.selectionStart,t.selectionEnd,kind)); }
+document.querySelector('.edtools').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button'):null; if(!b||b.disabled) return; if(b.dataset.ed) edit(b.dataset.ed); else if(b.id==='undo') undo(); else if(b.id==='redo') redo(); });
+$('prd').addEventListener('keydown',function(e){
+  var mod=e.metaKey||e.ctrlKey, k=(e.key||'').toLowerCase();
+  if(mod&&k==='z'){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); }
+  else if(mod&&k==='y'){ e.preventDefault(); redo(); }
+  else if(mod&&k==='b'){ e.preventDefault(); edit('bold'); }
+});
+var SECS=[];
+function outline(){
+  var sec=sections($('prd').value); SECS=sec.list;
+  $('outline').innerHTML=SECS.map(function(h,i){ return '<li><button type="button" class="olink" data-go="'+i+'" title="Go to this section">'+esc(h.title)+'</button><button type="button" class="ob" data-mv="-1" data-i="'+i+'" aria-label="Move up: '+esc(h.title)+'"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="ob" data-mv="1" data-i="'+i+'" aria-label="Move down: '+esc(h.title)+'"'+(i===SECS.length-1?' disabled':'')+'>↓</button><button type="button" class="ob" data-del="'+i+'" aria-label="Delete section: '+esc(h.title)+'" title="Delete">✕</button></li>'; }).join('');
+  $('outlinecount').textContent=SECS.length?SECS.length+' sections':'no sections yet';
+}
+$('outline').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null; if(!b||b.disabled) return; var t=$('prd');
+  if(b.dataset.go!==undefined){ var h=SECS[+b.dataset.go]; if(!h) return; var before=t.value.slice(0,h.start).split('\n').length-1, lh=parseFloat(getComputedStyle(t).lineHeight)||20; t.focus(); t.setSelectionRange(h.start,h.start+t.value.slice(h.start).split('\n')[0].length); t.scrollTop=Math.max(0,before*lh-24); return; }
+  snap();
+  if(b.dataset.mv!==undefined){ var i=+b.dataset.i; apply({text:moveSection(t.value,i,+b.dataset.mv),start:0,end:0}); t.setSelectionRange(0,0); }
+  else if(b.dataset.del!==undefined){ var gone=SECS[+b.dataset.del].title; apply({text:deleteSection(t.value,+b.dataset.del),start:0,end:0}); setStatus('Deleted the section "'+gone+'". Undo brings it back.'); }
+});
+$('addsec').addEventListener('change',function(e){ var k=e.target.value; if(!k) return; var t=$('prd'); snap(); var r=addSection(t.value,k); apply({text:r,start:r.length,end:r.length}); e.target.value=''; t.scrollTop=t.scrollHeight; });
+
+/* ---------- confirm and save as Word ---------- */
+S.confirmed=null;
+function docChanged(fromEdit){
+  outline();
+  if(S.confirmed&&S.confirmed.text!==$('prd').value){ S.confirmed=null; }
+  confirmUi(fromEdit);
+  if(!fromEdit){ H.stack=[]; H.i=-1; snap(); histButtons(); }
+}
+function confirmUi(){
+  var ok=!!S.confirmed;
+  $('word').disabled=!ok; $('word').title=ok?'Save the confirmed document as a Word file':'Confirm the PRD first';
+  $('tospec').disabled=!ok; $('tospec').title=ok?'Hand the confirmed PRD to the Spec Builder (functional specification and technical solution architecture)':'Confirm the PRD first';
+  $('confirmBtn').textContent=ok?'Confirm again…':'Confirm the PRD…';
+  if(ok) $('confirmnote').textContent='Confirmed '+S.confirmed.at+'. The Word file contains exactly this version. Any change asks for a new confirmation.';
+  else if(S.wasConfirmed) $('confirmnote').textContent='Changed after the confirmation: confirm the document again before saving it.';
+  else $('confirmnote').textContent='Not confirmed yet. Confirm the document to save it as a Word file.';
+}
+function openConfirm(){
+  var t=$('prd').value; if(!t.trim()){ setStatus('There is no document to confirm yet.',true); return; }
+  var f=prdFacts(t), n=f.open.length;
+  $('cffacts').innerHTML='<dt>Title</dt><dd>'+esc(f.title||'(none)')+'</dd><dt>Requirements</dt><dd>'+f.requirements+(f.notes?' (of them '+f.notes+' notes)':'')+'</dd><dt>Sources</dt><dd>'+f.sources+'</dd><dt>Sections</dt><dd>'+f.sections+'</dd><dt>Length</dt><dd>'+f.words+' words</dd><dt>Open questions</dt><dd>'+n+'</dd>';
+  $('cfopen').innerHTML=n?'<div class="cfwarn"><b>'+n+' open question'+(n>1?'s are':' is')+' still in the document.</b><ul>'+f.open.slice(0,5).map(function(q){return '<li>'+esc(q)+'</li>';}).join('')+(n>5?'<li>and '+(n-5)+' more</li>':'')+'</ul></div>':'';
+  $('cfchecktext').textContent=n?'I know about the open questions and confirm the document anyway.':'I have read the document and confirm it.';
+  $('cfcheck').checked=false; $('cfyes').disabled=true; $('cfwrap').hidden=false; $('cfcheck').focus();
+}
+function closeConfirm(){ $('cfwrap').hidden=true; $('confirmBtn').focus(); }
+$('confirmBtn').onclick=openConfirm;
+$('cfcheck').addEventListener('change',function(){ $('cfyes').disabled=!$('cfcheck').checked; });
+$('cfno').onclick=closeConfirm;
+$('cfyes').onclick=function(){ if(!$('cfcheck').checked) return; var d=new Date(); S.confirmed={text:$('prd').value,at:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}; S.wasConfirmed=true; $('cfwrap').hidden=true; confirmUi(); setStatus('Confirmed. You can save the document as a Word file now.'); $('word').focus(); };
+$('cfwrap').addEventListener('keydown',function(e){ if(e.key==='Escape'){ e.stopPropagation(); closeConfirm(); } });
+$('cfwrap').addEventListener('mousedown',function(e){ if(e.target===$('cfwrap')) closeConfirm(); });
+$('tospec').onclick=function(){
+  if(!S.confirmed) return; var f=prdFacts(S.confirmed.text), payload={type:'spec:from-prd',title:f.title||S.project||'PRD',markdown:S.confirmed.text};
+  if(JSON.stringify(payload).length>38000){ setStatus('The PRD is too long to hand over (more than 38 KB). Take out some requirements or sources.',true); return; }
+  if(window.parent===window){ setStatus('Open this Space in the app to continue with the specification.',true); return; }
+  window.parent.postMessage({type:'wb:handoff',to:'spec-builder',payload:payload,open:true,notice:'The confirmed PRD was handed to the Spec Builder.'},'*'); setStatus('Handed over to the Spec Builder.');
+};
+$('word').onclick=function(){ if(!S.confirmed) return; var f=prdFacts(S.confirmed.text); setStatus('Saving...'); window.parent.postMessage({type:'prd:export-docx',title:f.title||S.project||'PRD',markdown:S.confirmed.text,confirmed:true},'*'); };
 $('regen').onclick=function(){build();};
 
-function load(project,issues,label){ S.project=project; S.issues=issues; S.q=''; $('q').value=''; S.sel={}; issues.forEach(function(i){ S.sel[i.key]=true; }); tree(); build(); setStatus(label); }
-$('demo').onclick=function(){ var d; try{ d=JSON.parse($('prd-demo').textContent); }catch(e){ d=[]; } load('Sales Companion (demo)',d,'Demo backlog: '+d.length+' tickets, invented sample data.'); };
-$('load').onclick=function(){ var p=$('proj').value.trim(); if(!p){ setStatus('Enter the project key first.',true); return; } setStatus('Loading '+p.toUpperCase()+' from Jira...'); window.parent.postMessage({type:'prd:backlog-request',project:p},'*'); };
+/* Several sources can be loaded one after the other; loading a source again replaces its part. */
+function parts(){ $('parts').innerHTML=Object.keys(S.parts).map(function(k){ var p=S.parts[k]; return '<span class="part">'+esc(p.label)+' · '+p.issues.filter(function(i){return i.type!=='Epic';}).length+' items<button type="button" data-rm="'+esc(k)+'" aria-label="Remove '+esc(p.label)+' from the document" title="Remove">×</button></span>'; }).join(''); }
+function recompute(){
+  var all=[],names=[]; Object.keys(S.parts).forEach(function(k){ all=all.concat(S.parts[k].issues); names.push(S.parts[k].label); });
+  S.issues=all; S.project=names.join(' + ')||'Project'; S.q=''; $('q').value='';
+  var keys={}; all.forEach(function(i){ keys[i.key]=true; if(!(i.key in S.sel)) S.sel[i.key]=true; });
+  Object.keys(S.sel).forEach(function(k){ if(!keys[k]) delete S.sel[k]; });
+  tree(); build(); parts();
+}
+function load(project,issues,label,source){ source=source||'jira'; S.parts[source]={label:project,issues:issues}; recompute(); setStatus(label); }
+$('parts').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('[data-rm]'):null; if(!b) return; delete S.parts[b.dataset.rm]; recompute(); setStatus('Removed.'); });
+function setSource(id){
+  S.src=id; var c=SRC[id], inp=$('proj');
+  document.querySelectorAll('.srcs button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.src===id)); });
+  inp.placeholder=c.ph; inp.setAttribute('aria-label',c.aria); inp.maxLength=c.max; inp.value=''; if(c.list) inp.setAttribute('list',c.list); else inp.removeAttribute('list');
+  $('load').textContent='Load from '+c.label; $('choices').hidden=true; setStatus('');
+  if(id==='linear'&&!S.asked.linear){ S.asked.linear=true; window.parent.postMessage({type:'prd:linear-teams-request'},'*'); }
+  if(id==='slack'&&!S.asked.slack){ S.asked.slack=true; window.parent.postMessage({type:'prd:slack-channels-request'},'*'); }
+}
+document.querySelector('.srcs').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('[data-src]'):null; if(b) setSource(b.dataset.src); });
+$('choices').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('[data-id]'):null; if(!b) return; setStatus('Reading the page from Notion...'); window.parent.postMessage({type:'prd:source-request',source:'notion',query:b.dataset.id},'*'); });
+$('demo').onclick=function(){ var d; try{ d=JSON.parse($('prd-demo').textContent); }catch(e){ d=[]; } load('Sales Companion (demo)',d,'Demo backlog: '+d.length+' tickets, invented sample data.','jira'); };
+$('demoMulti').onclick=function(){ var d; try{ d=JSON.parse($('prd-demo-multi').textContent); }catch(e){ d={}; } var n=0; [['linear','Linear SAL (demo)'],['slack','Slack #sales-feedback (demo)'],['notion','Notion planning page (demo)']].forEach(function(p){ var l=Array.isArray(d[p[0]])?d[p[0]]:[]; if(l.length){ S.parts[p[0]]={label:p[1],issues:l}; n+=l.filter(function(i){return i.type!=='Epic';}).length; } }); recompute(); setStatus('Demo: '+n+' items from Linear, Slack and Notion, invented sample data.'); };
+$('load').onclick=function(){
+  var p=$('proj').value.trim(), c=SRC[S.src]; $('choices').hidden=true;
+  if(!p){ setStatus(S.src==='jira'?'Enter the project key first.':S.src==='linear'?'Enter the team key first.':S.src==='slack'?'Pick or enter a channel first.':'Enter search words or paste a page link first.',true); return; }
+  setStatus('Loading from '+c.label+'...');
+  if(S.src==='jira') window.parent.postMessage({type:'prd:backlog-request',project:p},'*');
+  else if(S.src==='linear') window.parent.postMessage({type:'prd:source-request',source:'linear',team:p},'*');
+  else if(S.src==='slack') window.parent.postMessage({type:'prd:source-request',source:'slack',channel:p},'*');
+  else window.parent.postMessage({type:'prd:source-request',source:'notion',query:p},'*');
+};
+$('proj').addEventListener('keydown',function(e){ if(e.key==='Enter') $('load').click(); });
 $('refine').onclick=function(){ if(!$('prd').value.trim()) return; window.parent.postMessage({type:'wb:ask',prompt:'Refine this product requirements document. Keep every ticket key and every acceptance criterion; improve wording, merge duplicates, and propose answers to the open questions as suggestions. Change nothing in Jira.\n\n'+$('prd').value.slice(0,12000)},'*'); };
 $('copy').onclick=function(){ var t=$('prd'); t.select(); var ok=false; try{ ok=document.execCommand('copy'); }catch(e){} setStatus(ok?'Copied.':'Select the text and copy it with Ctrl/Cmd+C.',!ok); };
 
 window.addEventListener('message',function(e){
   if(e.source!==window.parent) return; var d=e.data; if(!d||typeof d.type!=='string') return;
   if(d.type==='prd:projects'&&Array.isArray(d.projects)){ $('projs').innerHTML=d.projects.map(function(p){return '<option value="'+esc(p.key)+'">'+esc(p.name)+'</option>';}).join(''); }
-  if(d.type==='prd:backlog'&&Array.isArray(d.issues)){ load(String(d.project||''),d.issues.slice(0,100),'Loaded '+d.issues.length+' tickets from Jira'+(d.more?' (the first 100)':'')+'.'); }
-  if(d.type==='prd:error'){ setStatus(String(d.message||'Jira could not be read.'),true); }
+  if(d.type==='prd:linear-teams'&&Array.isArray(d.teams)){ $('teams').innerHTML=d.teams.map(function(t){return '<option value="'+esc(t.key)+'">'+esc(t.name)+'</option>';}).join(''); }
+  if(d.type==='prd:slack-channels'&&Array.isArray(d.channels)){ $('chans').innerHTML=d.channels.map(function(c){return '<option value="'+esc(c.name)+'">'+esc(c.name)+'</option>';}).join(''); }
+  if(d.type==='prd:notion-choices'&&Array.isArray(d.choices)){ $('choices').innerHTML=d.choices.map(function(c){return '<button type="button" data-id="'+esc(c.id)+'">'+esc(c.title)+'</button>';}).join(''); $('choices').hidden=false; setStatus('Pick the page to take over.'); }
+  if(d.type==='prd:backlog'&&Array.isArray(d.issues)){ var src=SRC[d.source]?d.source:'jira'; $('choices').hidden=true; var list=d.issues.slice(0,100).map(function(i){ i.source=src; return i; }); load(String(d.project||''),list,'Loaded '+list.filter(function(i){return i.type!=='Epic';}).length+' items from '+SRC[src].label+(d.more?' (not everything, the first part)':'')+'.',src); }
+  if(d.type==='prd:exported'){ if(d.ok) setStatus('Saved as Word: '+String(d.path||'')+(d.bytes?' ('+Math.max(1,Math.round(d.bytes/1024))+' KB)':'')+'.'); else if(d.canceled) setStatus('Saving was cancelled. Nothing was written.'); else setStatus(String(d.detail||'The file could not be saved.'),true); }
+  if(d.type==='prd:error'){ setStatus(String(d.message||'The source could not be read.'),true); }
 });
 window.parent.postMessage({type:'prd:projects-request'},'*');
 })();

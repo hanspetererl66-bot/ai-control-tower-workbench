@@ -202,3 +202,50 @@ test('text size in Spaces: every step is kept, old 130% and 150% move to 125%, n
   assert.equal(sanitizeForScale({ spaceScale: 1.3 }).spaceScale, 1.25);
   assert.equal(sanitizeForScale({}).spaceScale, DEFAULTS_FOR_SCALE.spaceScale);
 });
+
+// ---------------------------------------------------------------- tips (Ontology Manager speech bubbles)
+import { DEFAULT_TIPS, TIP_SIZE_PX, sanitizeTips } from '../src/preferences.ts';
+import { contrastRatio, tipCss } from '../src/preferences-style.ts';
+
+test('tips: defaults are on, normal size, colours follow the skin; broken values fall back', () => {
+  assert.deepEqual(sanitizePreferences({}).tips, DEFAULT_TIPS);
+  assert.deepEqual(sanitizeTips({ enabled: false, size: 'xlarge', textColor: '#abcdef', bubbleColor: 'red', highlightColor: '#12345' }),
+    { enabled: false, size: 'xlarge', textColor: '#ABCDEF', bubbleColor: '', highlightColor: '' });
+  assert.deepEqual(sanitizeTips({ enabled: 'no', size: 'huge' }), DEFAULT_TIPS);
+  assert.deepEqual(sanitizePreferences({ tips: { enabled: false } }).tips.enabled, false);
+});
+
+test('tips: only what was changed becomes a CSS variable, and the preview keeps the same values', () => {
+  assert.deepEqual(tipCss(DEFAULT_TIPS), []);
+  assert.equal(buildPreferenceCss(sanitizePreferences({})).includes('--tip-'), false);
+  const css = tipCss({ enabled: true, size: 'large', textColor: '#111111', bubbleColor: '#FFEEAA', highlightColor: '#00AA55' })[0];
+  assert.match(css, new RegExp(`--tip-size:${TIP_SIZE_PX.large}px`));
+  assert.match(css, /--tip-text:#111111/); assert.match(css, /--tip-bg:#FFEEAA/); assert.match(css, /--tip-mark:#00AA55/);
+  assert.match(buildPreferenceCss(sanitizePreferences({ tips: { size: 'small' } })), /--tip-size:12px/);
+});
+
+test('tips: contrast ratio is the WCAG one', () => {
+  assert.equal(Math.round(contrastRatio('#000000', '#FFFFFF')), 21);
+  assert.equal(contrastRatio('#777777', '#777777'), 1);
+  assert.ok(contrastRatio('#FFFFFF', '#FFEEAA') < 2);
+});
+
+test('icon size: only the three steps are accepted, the default is the standard size, and it is part of the look that goes back to the original', async () => {
+  const { ICON_SCALES, DEFAULT_PREFERENCES, profileSettingsOf } = await import('../src/preferences.ts');
+  assert.deepEqual([...ICON_SCALES], [1, 1.2, 1.4]);
+  assert.equal(DEFAULT_PREFERENCES.iconScale, 1);
+  assert.equal(sanitizePreferences({ iconScale: 1.2 }).iconScale, 1.2);
+  assert.equal(sanitizePreferences({ iconScale: 1.4 }).iconScale, 1.4);
+  for (const bad of [0, 0.5, 3, 1.3, '1.2', null, NaN, 'large']) assert.equal(sanitizePreferences({ iconScale: bad }).iconScale, 1, String(bad));
+  assert.equal(profileSettingsOf(sanitizePreferences({ iconScale: 1.4 })).iconScale, 1.4, 'a profile keeps it');
+});
+
+test('icon size: the style rule enlarges only the small icons (12 to 18 px), not logos or diagrams, and is absent at the standard size', async () => {
+  const { buildPreferenceCss, ICON_SELECTOR } = await import('../src/preferences-style.ts');
+  const css = (iconScale) => buildPreferenceCss({ ...sanitizePreferences({ iconScale }) });
+  assert.ok(!css(1).includes('zoom:'), 'nothing changes at the standard size');
+  const big = css(1.4);
+  assert.ok(big.includes(`${ICON_SELECTOR}{zoom:1.4}`));
+  for (const n of [12, 15, 18]) assert.ok(ICON_SELECTOR.includes(`svg[width="${n}"]`));
+  for (const n of [11, 19, 20, 64, 76]) assert.ok(!ICON_SELECTOR.includes(`svg[width="${n}"]`), `${n} px stays`);
+});

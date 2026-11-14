@@ -63,7 +63,7 @@ export interface Ontology {
 }
 
 const PROP_LABEL: Record<string, string> = {
-  derivedFrom: 'derived from', dependsOn: 'depends on', measuredBy: 'measured by', appliesTo: 'applies to',
+  derivedFrom: 'derived from', dependsOn: 'depends on', measuredBy: 'measured by', appliesTo: 'applies to', partOf: 'part of', references: 'refers to',
 };
 export const propLabel = (p: string): string => PROP_LABEL[p] ?? p;
 
@@ -709,6 +709,12 @@ export function exampleGovernance(): Governance {
       { slug: 'werkbank_fin', term: 'chk_dso', kind: 'skill', name: 'dso-plausibility' },
       { slug: 'werkbank_fin', term: 'Margin', kind: 'agent', name: 'Margin analyst' },
       { slug: 'werkbank_fin', term: 'Margin', kind: 'report', name: 'Monthly margin report' },
+      { slug: 'werkbank_fin', term: 'MarginAfterAccruals', kind: 'agent', name: 'Finance Pre-Close agent' },
+      { slug: 'werkbank_fin', term: 'OpenPOExposure', kind: 'agent', name: 'Finance Pre-Close agent' },
+      { slug: 'werkbank_fin', term: 'chk_po', kind: 'skill', name: 'accrual-check' },
+      { slug: 'werkbank_fin', term: 'DSO', kind: 'report', name: 'Pre-close pack' },
+      { slug: 'werkbank_fin', term: 'chk_margin', kind: 'report', name: 'Finance Pre-Close space' },
+      { slug: 'werkbank_fin', term: 'ds_invoices', kind: 'agent', name: 'Month-end close' },
     ],
     views: [{ name: 'Finance Pre-Close agent', slugs: ['werkbank_fin'] }],
     usageDecisions: {},

@@ -325,6 +325,21 @@ pre.cv .ln.hl-met{background:var(--green-dim)}pre.cv .ln.hl-partly{background:va
 .num{text-align:right;white-space:nowrap}
 textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
 .pick{margin:0 0 12px}
+.guide-wrap{max-width:1320px;margin:0 auto;padding:12px 22px 0}
+.guide{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:var(--radius-s);padding:12px 16px}
+.g-top{display:flex;align-items:center;gap:12px;margin:0 0 6px}
+.g-step{font-size:12px;color:var(--purple-ink)}
+.g-dots{display:inline-flex;gap:5px}
+.g-dots i{width:8px;height:8px;border-radius:50%;background:var(--line-2);border:1px solid var(--purple-border)}
+.g-dots i.on{background:var(--green);border-color:var(--green)}.g-dots i.cur{background:var(--purple);border-color:var(--purple)}
+.g-flash{color:var(--green-ink);font-weight:600;margin:0 0 4px}
+.g-title{margin:0 0 2px;font-size:15px}.g-todo{margin:0 0 2px;color:var(--ink)}.g-why{margin:0;color:var(--muted)}
+.guide .row{margin:10px 0 0}
+.tipb{width:18px;height:18px;border-radius:50%;border:1px solid var(--purple-border);background:var(--surface);color:var(--purple-ink);font:600 11px/1 var(--font);cursor:pointer;margin-left:6px;padding:0;vertical-align:middle}
+.tipb[aria-expanded=true]{background:var(--purple);color:var(--surface);border-color:var(--purple)}
+.tipline{border:1px solid var(--purple-border);background:var(--surface);border-radius:var(--radius-s);padding:9px 14px;color:var(--ink-2)}
+.tipx{font:inherit;font-size:12px;color:var(--purple-ink);background:none;border:0;cursor:pointer;text-decoration:underline;margin-left:6px}
+@media (max-width:640px){.guide-wrap{padding-left:16px;padding-right:16px}}
 @media (max-width:640px){header,nav,.demo,main,.intro-wrap{padding-left:16px;padding-right:16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
@@ -340,6 +355,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
 <div><h4>Our side first</h4><p>Before any contact the page checks complaints, the document flow, tickets and the contract. If we caused the delay (a disputed price, a pending credit memo), the advice is <b>clarify first</b>, not <b>remind</b>.</p></div>
 <div><h4>A person decides</h4><p>The agent only prepares calls, reminder drafts and escalations. The account owner releases them; an escalation needs the sales director. The reminder draft never mentions the forecast.</p></div>
 </div></details></div>
+<div id="guide"></div>
 <main id="main"></main>
 <script type="application/json" id="data">{"asOf":"2026-11-12","currency":"EUR","lateAfterDays":14,"company":"Nordwerk Software (fictional)","forecastNote":"Sample forecast: fictional numbers shaped like the TabPFN late-payment forecast (predict_late_payments). Not model output, not a credit assessment.","policy":{"highFrom":0.6,"mediumFrom":0.3,"escalateFromExposure":150000},"tools":{"read":"predict_late_payments","call":"create_task","reminder":"draft_email","escalate":"create_approval_request","clarify":"create_ticket","watch":"create_task"},"persons":{"sven":{"name":"Sven Albrecht","role":"Account Executive","can":{"call":true,"reminder":true,"clarify":true,"watch":true,"escalate":false}},"marlene":{"name":"Marlene Voss","role":"Sales Director","can":{"call":true,"reminder":true,"clarify":true,"watch":true,"escalate":true}},"claude":{"name":"Claude","role":"AI assistant","agent":true,"can":{"call":false,"reminder":false,"clarify":false,"watch":false,"escalate":false}},"agent":{"name":"Collections agent","role":"AI agent","agent":true,"can":{"call":false,"reminder":false,"clarify":false,"watch":false,"escalate":false}}},"customers":[{"id":"nordlicht","name":"Nordlicht Maschinenbau GmbH","contact":"Katrin Brandt","contactRole":"Head of Accounts Payable","since":2023,"history":[{"id":"INV-N-0001","due":"2024-07-31","paid":"2024-08-14","gross":99960},{"id":"INV-N-0002","due":"2024-10-31","paid":"2024-11-21","gross":99960},{"id":"INV-N-0003","due":"2025-01-31","paid":"2025-02-09","gross":99960},{"id":"INV-N-0004","due":"2025-05-01","paid":"2025-05-29","gross":99960},{"id":"INV-N-0005","due":"2025-07-31","paid":"2025-09-04","gross":99960},{"id":"INV-N-0006","due":"2025-10-31","paid":"2025-11-18","gross":99960},{"id":"INV-N-0007","due":"2026-01-31","paid":"2026-02-26","gross":99960},{"id":"INV-N-0008","due":"2026-05-01","paid":"2026-06-01","gross":99960}],"open":[{"id":"INV-2026-N0009","gross":99960,"due":"2026-10-31","p":0.93,"lo":14,"hi":30,"extra":["Already 12 days past due; the customer usually pays 2 to 4 weeks after the due date."]},{"id":"INV-2026-N0010","gross":99960,"due":"2026-11-14","p":0.84,"lo":15,"hi":31,"extra":["Same amount and the same payer as the invoice that is already late."]}],"checks":[{"source":"Customer 360","text":"No open complaint or escalation for this account.","ok":true},{"source":"Order-to-Cash","text":"Both invoices match order and delivery; no credit memo request pending.","ok":true},{"source":"Tickets","text":"No open ticket mentions these invoices.","ok":true},{"source":"Contract","text":"Contract C-2024-0820 active, payment terms 30 days net.","ok":true}],"note":"Reminders usually trigger payment within a week."},{"id":"kuestenlogistik","name":"Küstenlogistik AG","contact":"Jonas Petersen","contactRole":"Accounts Payable","since":2021,"history":[{"id":"INV-K-0001","due":"2025-01-31","paid":"2025-02-04","gross":148500},{"id":"INV-K-0002","due":"2025-03-31","paid":"2025-04-09","gross":148500},{"id":"INV-K-0003","due":"2025-05-31","paid":"2025-06-02","gross":148500},{"id":"INV-K-0004","due":"2025-07-31","paid":"2025-08-12","gross":148500},{"id":"INV-K-0005","due":"2025-10-01","paid":"2025-10-07","gross":148500},{"id":"INV-K-0006","due":"2025-12-01","paid":"2025-12-16","gross":148500}],"open":[{"id":"KL-2026-0412","gross":148500,"due":"2026-11-16","p":0.66,"lo":8,"hi":24,"extra":["The customer has questioned the price on this invoice; payment is probably on hold."]}],"checks":[{"source":"Customer 360","text":"No escalation on the account.","ok":true},{"source":"Order-to-Cash","text":"Invoice price is 2,400.00 EUR above the contract price; the credit memo request is not yet released.","ok":false},{"source":"Tickets","text":"Ticket T-5521 'Price differs from contract' is open since 3 Nov.","ok":false},{"source":"Contract","text":"Contract active, payment terms 30 days net.","ok":true}],"note":""},{"id":"lindenau","name":"Lindenau Pharma AG","contact":"Miriam Haas","contactRole":"Procurement","since":2022,"history":[{"id":"INV-L-0001","due":"2025-03-31","paid":"2025-04-01","gross":118000},{"id":"INV-L-0002","due":"2025-05-31","paid":"2025-06-03","gross":118000},{"id":"INV-L-0003","due":"2025-07-31","paid":"2025-07-31","gross":118000},{"id":"INV-L-0004","due":"2025-10-01","paid":"2025-10-09","gross":118000},{"id":"INV-L-0005","due":"2025-12-01","paid":"2025-12-17","gross":118000},{"id":"INV-L-0006","due":"2026-01-31","paid":"2026-02-12","gross":118000}],"open":[{"id":"LI-2026-0301","gross":118000,"due":"2026-12-01","p":0.37,"lo":3,"hi":19,"extra":["Since September the customer needs a purchase order number on every invoice; two of the last three invoices waited for one."]}],"checks":[{"source":"Customer 360","text":"No open complaint.","ok":true},{"source":"Order-to-Cash","text":"Invoice matches order and delivery.","ok":true},{"source":"Tickets","text":"No open ticket.","ok":true},{"source":"Contract","text":"The purchase order number is on the invoice.","ok":true}],"note":""},{"id":"muster","name":"Muster Industrie AG","contact":"Peter Lang","contactRole":"Finance","since":2019,"history":[{"id":"INV-M-0001","due":"2025-03-31","paid":"2025-03-28","gross":62000},{"id":"INV-M-0002","due":"2025-05-31","paid":"2025-05-29","gross":62000},{"id":"INV-M-0003","due":"2025-07-31","paid":"2025-07-26","gross":62000},{"id":"INV-M-0004","due":"2025-10-01","paid":"2025-09-30","gross":62000},{"id":"INV-M-0005","due":"2025-12-01","paid":"2025-11-27","gross":62000},{"id":"INV-M-0006","due":"2026-01-31","paid":"2026-01-28","gross":62000}],"open":[{"id":"MU-2026-0233","gross":62000,"due":"2026-11-20","p":0.07,"lo":-6,"hi":4,"extra":[]}],"checks":[{"source":"Customer 360","text":"No open complaint.","ok":true},{"source":"Order-to-Cash","text":"Invoice matches order and delivery.","ok":true},{"source":"Tickets","text":"No open ticket.","ok":true},{"source":"Contract","text":"Contract active, 30 days net.","ok":true}],"note":""},{"id":"hanse","name":"Hanse Handelsgruppe AG","contact":"Eva Lund","contactRole":"Finance","since":2020,"history":[{"id":"INV-H-0001","due":"2025-03-31","paid":"2025-03-29","gross":41300},{"id":"INV-H-0002","due":"2025-05-31","paid":"2025-05-27","gross":41300},{"id":"INV-H-0003","due":"2025-07-31","paid":"2025-07-31","gross":41300},{"id":"INV-H-0004","due":"2025-10-01","paid":"2025-09-28","gross":41300},{"id":"INV-H-0005","due":"2025-12-01","paid":"2025-11-26","gross":41300},{"id":"INV-H-0006","due":"2026-01-31","paid":"2026-01-30","gross":41300}],"open":[{"id":"HA-2026-0178","gross":41300,"due":"2026-11-25","p":0.09,"lo":-5,"hi":5,"extra":[]}],"checks":[{"source":"Customer 360","text":"No open complaint.","ok":true},{"source":"Order-to-Cash","text":"Invoice matches order and delivery.","ok":true},{"source":"Tickets","text":"No open ticket.","ok":true},{"source":"Contract","text":"Contract active, 30 days net.","ok":true}],"note":""}],"backtest":{"note":"Fictional sample: the last 90 days of invoices that the forecast had marked as likely late. Replace with real numbers before anyone reads this as model quality.","flagged":[{"id":"S-101","late":true},{"id":"S-102","late":true},{"id":"S-103","late":false},{"id":"S-104","late":true},{"id":"S-105","late":true},{"id":"S-106","late":true},{"id":"S-107","late":false},{"id":"S-108","late":true},{"id":"S-109","late":true},{"id":"S-110","late":false},{"id":"S-111","late":true},{"id":"S-112","late":true}],"missed":["S-201","S-202","S-203"]},"history":[{"t":"08:55","who":"agent","what":"Reads the open invoices of Sven's five accounts and asks for the late-payment forecast.","tool":"predict_late_payments","mode":"read"},{"t":"08:56","who":"agent","what":"Ranks the accounts by expected amount at risk.","tool":"","mode":"draft"},{"t":"08:57","who":"claude","what":"Checks complaints, document flow, tickets and contract of each account before suggesting contact.","tool":"customer_360, tickets","mode":"read"},{"t":"08:58","who":"agent","what":"Prepares proposals. Nothing is sent.","tool":"","mode":"draft"}]}</script>
 <script>
@@ -458,6 +474,34 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
       return { open: sum(all, function (i) { return i.gross; }), expected: sum(all, function (i) { return i.expected; }), soon: soon.length, soonAmount: sum(soon, function (i) { return i.gross; }),
         contact: rs.filter(function (r) { var p = plan(r.customer); return p.length && p[0].type !== 'watch'; }).length };
     }
+    // The guided walk-through: seven steps along the demo; each knows when the user has done it (from the page state), so the guide moves on by itself.
+    var GUIDE_STEPS = [
+      { id: 'list', tab: 'list', cid: 'nordlicht', actor: 'sven', title: 'Start with the ranking', todo: 'Open Nordlicht, the top row of the list.',
+        why: 'The list is sorted by the amount at risk, so you talk first to the customer where it matters most.', done: function (S) { return !!S.seen.why; } },
+      { id: 'why', tab: 'why', cid: 'nordlicht', actor: 'sven', title: 'Read why the forecast says this', todo: 'Read the reasons under each invoice. If one looks wrong, click "This assessment looks wrong".',
+        why: 'You see the reasons and can object. The forecast is advice, not a verdict.', done: function (S) { return !!S.seen.ours || Object.keys(S.wrong).length > 0; } },
+      { id: 'ours', tab: 'ours', cid: 'nordlicht', actor: 'sven', title: 'Check our side first', todo: 'Look at the four checks for Nordlicht (all clear), then choose Küstenlogistik at the top.',
+        why: 'The same signal can need two different answers: Küstenlogistik has two open problems on our side, so no reminder goes out.', done: function (S) { return S.tab === 'ours' && S.cid === 'kuestenlogistik'; } },
+      { id: 'release', tab: 'act', cid: 'nordlicht', actor: 'sven', title: 'Release the steps in order, as Sven', todo: 'Try to release P2 first (it is blocked), then release P1, then P2.',
+        why: 'A reminder after a call has a clear reference. Nothing is sent, the page only records the release.', done: function (S) { return !!(S.rel['nordlicht:P1'] && S.rel['nordlicht:P2']); } },
+      { id: 'claude', tab: 'act', cid: 'nordlicht', actor: 'claude', title: 'See that Claude cannot release', todo: 'You now act as Claude. Try to release a step. Optional: "Ask Claude to create the Gmail draft" (a draft only).',
+        why: 'Only a person decides. The agent and Claude prepare, they never release.', done: function (S) { return Object.keys(S.msg).some(function (k) { return S.msg[k].code === 'agent'; }); } },
+      { id: 'track', tab: 'track', cid: 'nordlicht', actor: 'sven', title: 'Was the forecast right?', todo: 'Open the Track record and look at how many marked invoices really paid late.',
+        why: 'Trust grows when you can check the forecast later. These numbers are a fictional sample, not model quality.', done: function (S) { return !!S.seen.track; } },
+      { id: 'rights', tab: 'rights', cid: 'nordlicht', actor: 'sven', title: 'Who may release what, and the audit trail', todo: 'Open Rights & audit: the rights table, seven attempts through one rule and the trail.',
+        why: 'Every release and every blocked attempt leaves a trace you can show later.', done: function (S) { return !!S.seen.rights; } }
+    ];
+    var guide = {
+      steps: GUIDE_STEPS,
+      fresh: function () { return { i: 0, hidden: false, done: {}, flash: '' }; },
+      /** Moves on while the current step is done; returns the title of the last finished step (or ''). */
+      advance: function (G, S) {
+        var last = '';
+        while (G.i < GUIDE_STEPS.length && GUIDE_STEPS[G.i].done(S)) { G.done[G.i] = true; last = GUIDE_STEPS[G.i].title; G.i++; }
+        if (last) G.flash = last;
+        return last;
+      }
+    };
     var SCRIPT = [
       ['claude', 'nordlicht', 'P1', 'Claude tries to create the call task itself'],
       ['agent', 'nordlicht', 'P2', 'The agent tries to release the reminder draft'],
@@ -476,19 +520,171 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
     }
     return { money: money, fmt: fmt, diff: diff, customer: customer, person: person, band: band, bandText: bandText, invoices: invoices, stats: stats, reasons: reasons,
       failing: failing, risk: risk, ranking: ranking, plan: plan, advice: advice, canRelease: canRelease, release: release, draft: draft, track: track,
-      totals: totals, attempts: attempts };
+      totals: totals, attempts: attempts, guide: guide };
   }
   // @logic-end
   var L = makeLogic(D);
+  // The Sales journey: this page does not draw the rail, it only reads the hand-over of a journey stop (shared/journey.mjs, copied by npm run sync:mockups)
+  // @journey-start
+function makeJourney() {
+  var CUSTOMERS = {
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
+  };
+  var STEPS = [
+    { id: 'today', label: 'Today', ask: 'What needs me now?' },
+    { id: 'understand', label: 'Understand', ask: 'Who is the customer, what was said?' },
+    { id: 'decide', label: 'Decide', ask: 'What do we do first?' },
+    { id: 'act', label: 'Act', ask: 'Prepare it, get it approved' },
+    { id: 'follow', label: 'Follow up', ask: 'Did it work?' },
+  ];
+  var STOPS = [
+    { id: 'inbox', step: 'today', label: 'Inbox', space: 'sales', tab: 'inbox' },
+    { id: 'meetings', step: 'today', label: 'Meetings', space: 'sales', tab: 'meetings' },
+    { id: 'c360', step: 'understand', label: 'Customer 360', space: 'customer-360', needs: 'c360' },
+    { id: 'mails', step: 'understand', label: 'E-mails', space: 'customer-emails', needs: 'mail' },
+    { id: 'graph', step: 'understand', label: 'Deal graph', space: 'sales', tab: 'knowledge' },
+    { id: 'pipeline', step: 'decide', label: 'Pipeline', space: 'sales', tab: 'pipeline' },
+    { id: 'forecast', step: 'decide', label: 'Forecast', space: 'sales', tab: 'forecast' },
+    { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
+    { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
+    { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
+    { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
+  ];
+  /** Which step a Sales tab belongs to (for the highlighted step of the rail). */
+  var TAB_STEP = { inbox: 'today', meetings: 'today', knowledge: 'understand', pipeline: 'decide', forecast: 'decide', workflow: 'act', governance: 'act', rules: 'act', payments: 'follow' };
+  var TAB = /^[a-z]{1,20}$/, DEAL = /^[A-Za-z0-9-]{1,30}$/, THREAD = /^T-[0-9]{1,4}$/, FOCUS = /^(group|entity|contact|contract|product|opportunity|order|invoice|pay|ticket|signal|rec):[A-Za-z0-9._-]{1,40}$/;
+
+  function stop(id) { for (var i = 0; i < STOPS.length; i++) if (STOPS[i].id === id) return STOPS[i]; return null; }
+  function customerOfAccount(name) { for (var k in CUSTOMERS) if (CUSTOMERS[k].name === name) return k; return null; }
+  /** A stop is open for a customer when the Space has sample data for him. */
+  function available(s, customer) {
+    var c = CUSTOMERS[customer];
+    if (!c || !s) return false;
+    if (s.space === 'sales') return c.sales;
+    return !!c[s.needs];
+  }
+  /** The hand-over for a stop in another Space. ctx: { customer, deal?, thread?, focus? }. */
+  function handoff(s, ctx) {
+    var j = { customer: ctx.customer, step: s.step };
+    if (s.tab) j.tab = s.tab;
+    if (ctx.deal && DEAL.test(ctx.deal)) j.deal = ctx.deal;
+    if (ctx.thread && THREAD.test(ctx.thread)) j.thread = ctx.thread;
+    if (ctx.focus && FOCUS.test(ctx.focus)) j.focus = ctx.focus;
+    return { type: 'wb:handoff', to: s.space, payload: { journey: j }, open: true, notice: 'Journey: ' + s.label + ' for ' + CUSTOMERS[ctx.customer].name };
+  }
+  /** Reads a journey from a hand-over payload: only known values pass, everything else is dropped. */
+  function parse(payload) {
+    var raw = payload && typeof payload === 'object' ? payload.journey : null;
+    if (!raw || typeof raw !== 'object' || typeof raw.customer !== 'string' || !CUSTOMERS[raw.customer]) return null;
+    var out = { customer: raw.customer, step: 'today' };
+    for (var i = 0; i < STEPS.length; i++) if (STEPS[i].id === raw.step) out.step = raw.step;
+    if (typeof raw.tab === 'string' && TAB.test(raw.tab)) out.tab = raw.tab;
+    if (typeof raw.deal === 'string' && DEAL.test(raw.deal)) out.deal = raw.deal;
+    if (typeof raw.thread === 'string' && THREAD.test(raw.thread)) out.thread = raw.thread;
+    if (typeof raw.focus === 'string' && FOCUS.test(raw.focus)) out.focus = raw.focus;
+    return out;
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  // The rail is big on purpose: five cards on one path. A dot per step (done = filled with a tick, now = large and pulsing, later = outline),
+  // a line that draws itself from step to step when the page opens (and from the old to the new step when the step changes), cards that
+  // rise one after the other, a lift on hover. "Reduce motion" turns all of it off; the resting state is the finished picture.
+  var CSS = '.jr{--g:14px;display:block;margin:0;padding:18px 22px 22px;background:var(--surface);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2)}' +
+    '.jr-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 0 18px}' +
+    '.jr-who{display:flex;flex-direction:column;min-width:0}.jr-who b{font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.15;color:var(--purple)}.jr-who span{color:var(--muted);font-size:12.5px;margin-top:2px}' +
+    '.jr-val{display:flex;gap:8px;flex-wrap:wrap}.jr-val span{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--canvas);font-size:12.5px;color:var(--muted)}.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}' +
+    '.jr-note{margin-left:auto;color:var(--muted);font-size:12px;max-width:46ch;text-align:right}' +
+    '.jr ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--g);list-style:none;margin:0;padding:0}' +
+    '.jr li{position:relative;display:flex;flex-direction:column;align-items:stretch}' +
+    '.jr-dot{position:relative;z-index:1;align-self:center;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin-bottom:12px;border:3px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}' +
+    '.jr li.done .jr-dot,.jr li.cur .jr-dot{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+    '.jr li.cur .jr-dot{transform:scale(1.18);box-shadow:0 0 0 6px var(--purple-dim);animation:jr-pulse 2.4s ease-in-out 1.2s infinite}' +
+    '.jr li:not(:first-child)::before{content:"";position:absolute;top:20px;left:calc(-1 * (var(--g) + 50%));width:calc(100% + var(--g));height:4px;border-radius:2px;background:var(--line);transform-origin:left center}' +
+    '.jr li.done::before,.jr li.cur::before{background:var(--purple)}' +
+    '.jr-card{flex:1;display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--canvas);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease}' +
+    '.jr li.done .jr-card{border-color:var(--purple-border)}' +
+    '.jr li.cur .jr-card{border:2px solid var(--purple);background:var(--purple-dim);padding:13px 15px;box-shadow:0 10px 24px color-mix(in srgb,var(--purple) 20%,transparent)}' +
+    '.jr li:hover .jr-card{transform:translateY(-3px);box-shadow:var(--shadow)}.jr li.cur:hover .jr-card{box-shadow:0 14px 30px color-mix(in srgb,var(--purple) 26%,transparent)}' +
+    '.jr .jr-h{font-size:18px;font-weight:750;letter-spacing:-.015em;line-height:1.2;color:var(--ink)}' +
+    '.jr .jr-a{color:var(--muted);font-size:13px;line-height:1.35}' +
+    '.jr-m{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.jr-m b{font-size:24px;font-weight:750;letter-spacing:-.02em;line-height:1.1;color:var(--purple);font-variant-numeric:tabular-nums}.jr-m span{font-size:12px;color:var(--muted)}' +
+    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}' +
+    '.jr button{font:inherit;font-size:13px;font-weight:550;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;transition:transform .12s ease,border-color .12s ease,background-color .12s ease,color .12s ease}' +
+    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink);transform:translateY(-1px)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+    '.jr button:disabled{opacity:.45;cursor:not-allowed}' +
+    '@keyframes jr-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-popc{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1.18)}}' +
+    '@keyframes jr-draw{from{transform:scaleX(0)}to{transform:none}}' +
+    '@keyframes jr-drawy{from{transform:scaleY(0)}to{transform:none}}' +
+    '@keyframes jr-pulse{0%,100%{box-shadow:0 0 0 6px var(--purple-dim)}50%{box-shadow:0 0 0 13px color-mix(in srgb,var(--purple) 7%,transparent)}}' +
+    '.jr-in .jr-card{animation:jr-rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 90ms + .15s)}' +
+    '.jr-in .jr-dot{animation:jr-pop .5s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(var(--k) * 140ms)}' +
+    '.jr-in li.cur .jr-dot{animation:jr-popc .5s cubic-bezier(.2,.9,.3,1.3) calc(var(--k) * 140ms) both,jr-pulse 2.4s ease-in-out 1.6s infinite}' +
+    '.jr-in li::before{animation:jr-draw .5s ease both;animation-delay:calc(var(--k) * 140ms - 60ms)}' +
+    '.jr-move li.cur .jr-dot{animation:jr-popc .55s cubic-bezier(.2,.9,.3,1.3) .1s both,jr-pulse 2.4s ease-in-out 1s infinite}' +
+    '.jr-move li.go::before{animation:jr-draw .45s ease both;animation-delay:calc((var(--k) - var(--jr-from)) * 150ms - 100ms)}' +
+    '@media (max-width:760px){.jr{--gm:12px;padding:14px 14px 18px}.jr ol{grid-template-columns:1fr;gap:var(--gm)}.jr li{flex-direction:row;gap:14px;align-items:flex-start}.jr-dot{margin:0;align-self:flex-start}' +
+    '.jr li:not(:first-child)::before{display:none}.jr li:not(:last-child)::after{content:"";position:absolute;left:20px;top:44px;bottom:calc(-1 * var(--gm));width:4px;border-radius:2px;background:var(--line);transform-origin:top center}' +
+    '.jr li.done:not(:last-child)::after{background:var(--purple)}.jr-in li:not(:last-child)::after{animation:jr-drawy .5s ease both;animation-delay:calc(var(--k) * 140ms)}.jr-note{margin-left:0;text-align:left}}' +
+    '@media (prefers-reduced-motion:reduce){.jr *,.jr *::before,.jr *::after{animation:none!important;transition:none!important}}';
+  function injectStyle(doc) {
+    if (doc.getElementById('journey-style')) return;
+    var st = doc.createElement('style'); st.id = 'journey-style'; st.textContent = CSS; doc.head.appendChild(st);
+  }
+  /** The figures the pages pass in (a label and a value) belong to a step: they are shown big under that step. Others stay in the strip on top. */
+  var VALUE_STEP = [[/^Money in play/, 'decide'], [/^Due within/, 'today'], [/^Waiting for our answer/, 'today'], [/^Past the/, 'today'], [/^Deals with a risk/, 'understand'], [/^Open points/, 'understand'], [/^Waiting for your decision/, 'act']];
+  function stepOfValue(label) { for (var i = 0; i < VALUE_STEP.length; i++) if (VALUE_STEP[i][0].test(label)) return VALUE_STEP[i][1]; return null; }
+  /** Where the rail was drawn last (null = never): the first drawing plays the entrance, a later one with another step glides from the old step. */
+  var drawn = { idx: null };
+  /**
+   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...], note: optional text at the right.
+   * The stop that is shown on this page gets aria-current="true"; a stop the customer has no sample data for is disabled.
+   */
+  function railHtml(cur, values, note) {
+    var c = CUSTOMERS[cur.customer] || CUSTOMERS.lindenau;
+    var idx = 0;
+    for (var q = 0; q < STEPS.length; q++) if (STEPS[q].id === cur.step) idx = q;
+    var mode = drawn.idx === null ? 'in' : drawn.idx !== idx ? 'move' : 'still', from = drawn.idx === null ? 0 : drawn.idx;
+    drawn.idx = idx;
+    var byStep = {}, rest = [];
+    (values || []).forEach(function (v) { var st = stepOfValue(String(v[0])); if (st) (byStep[st] = byStep[st] || []).push(v); else rest.push(v); });
+    var steps = STEPS.map(function (st, i) {
+      var stops = STOPS.filter(function (s) { return s.step === st.id; }).map(function (s) {
+        var ok = available(s, cur.customer), here = cur.stop === s.id;
+        return '<button type="button" data-jr-stop="' + esc(s.id) + '"' + (ok ? '' : ' disabled title="No sample data for ' + esc(c.name) + '"') + ' aria-current="' + here + '">' + esc(s.label) + '</button>';
+      }).join('');
+      var metrics = (byStep[st.id] || []).slice(0, 2).map(function (v) { return '<div class="jr-m"><b>' + esc(v[1]) + '</b><span>' + esc(v[0]) + '</span></div>'; }).join('');
+      var state = i < idx ? 'done' : i === idx ? 'cur' : 'todo', go = mode === 'move' && idx > from && i > from && i <= idx ? ' go' : '';
+      return '<li class="' + state + go + '" style="--k:' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><div class="jr-dot" aria-hidden="true">' + (i < idx ? '&#10003;' : i + 1) + '</div><div class="jr-card"><div class="jr-h">' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div>' + metrics + '<div class="jr-s">' + stops + '</div></div></li>';
+    }).join('');
+    var strip = rest.length ? '<div class="jr-val">' + rest.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + '</div>' : '';
+    return '<nav class="jr jr-' + mode + '" style="--jr-from:' + from + '" aria-label="Sales journey"><div class="jr-top"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey · step ' + (idx + 1) + ' of ' + STEPS.length + ': ' + esc(STEPS[idx].label) + '</span></div>' + strip + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div><ol>' + steps + '</ol></nav>';
+  }
+  return { CUSTOMERS: CUSTOMERS, STEPS: STEPS, STOPS: STOPS, TAB_STEP: TAB_STEP, stop: stop, available: available, handoff: handoff, parse: parse, customerOfAccount: customerOfAccount, railHtml: railHtml, injectStyle: injectStyle };
+}
+// @journey-end
+  var J = makeJourney();
 
   var TABS = [['list', 'Morning list'], ['why', 'Why'], ['ours', 'Our side'], ['act', 'Action'], '|', ['track', 'Track record'], ['rights', 'Rights & audit']];
-  var S = { tab: 'list', actor: 'sven', cid: 'nordlicht', rel: {}, msg: {}, wrong: {}, log: D.history.slice() };
+  var S = { tab: 'list', actor: 'sven', cid: 'nordlicht', rel: {}, msg: {}, wrong: {}, log: D.history.slice(), seen: {}, tip: '', g: L.guide.fresh() };
   var MODE = { task: ['', 'task'], read: ['ok', 'read'], draft: ['amber', 'draft'], write: ['blue', 'released'], blocked: ['bad', 'blocked'] };
   var TIP = { high: ['bad', '▲ likely late'], medium: ['amber', '◆ watch'], low: ['ok', '✓ on time'] };
 
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function ask(text) { if (window.parent !== window) window.parent.postMessage({ type: 'wb:ask', prompt: String(text).slice(0, 600) }, '*'); }
+  var TIPS = {
+    risk: ['Expected amount at risk', 'The open amount times the chance of a late payment. The list is sorted by it: 60% on a small invoice matters less than 30% on a big one.'],
+    range: ['Forecast range', 'The span of days in which payment will probably arrive. The marks show the due date and the line after which we call it late.'],
+    ours: ['Clarify first', 'If we caused the delay (a disputed price, a pending credit memo, an open ticket), no reminder goes out. First fix our side, then talk to the customer.'],
+    release: ['Release', 'Each step needs a person with the right to release it. An escalation needs the sales director. The agent and Claude can only propose.'],
+    track: ['Track record', 'How often the marked invoices were really paid late. Here a fictional sample, so it shows the layout and not the quality of a model.']
+  };
+  function tip(k) { return '<button type="button" class="tipb" data-act="tip" data-id="' + k + '" aria-expanded="' + (S.tip === k) + '" aria-label="What does this mean: ' + esc(TIPS[k][0]) + '?">i</button>'; }
   function m(n) { return L.money(n); }
   function who(id) { return L.person(id).name; }
   function tag(b) { return '<span class="tag ' + TIP[b][0] + '">' + TIP[b][1] + '</span>'; }
@@ -509,10 +705,10 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
     var h = '<h2>Good morning, ' + esc(who('sven').split(' ')[0]) + '</h2><p class="note">Open invoices of your ' + rs.length + ' accounts, as of ' + esc(L.fmt(D.asOf)) + '. Ranked by the expected amount at risk, not by percentage. Click an account to see why.</p>' +
       strip(D.tools.read, '{"customer":"all my accounts"}') +
       '<div class="kpis"><div class="kpi"><b>' + m(T.open) + '</b><span>open, ' + D.currency + '</span></div>' +
-      '<div class="kpi warn"><b>' + m(T.expected) + '</b><span>expected amount at risk, ' + D.currency + '</span></div>' +
+      '<div class="kpi warn"><b>' + m(T.expected) + '</b><span>expected amount at risk, ' + D.currency + tip('risk') + '</span></div>' +
       '<div class="kpi"><b>' + T.soon + ' invoices</b><span>due within 14 days or past due (' + m(T.soonAmount) + ' ' + D.currency + ')</span></div>' +
       '<div class="kpi"><b>' + T.contact + ' accounts</b><span>to contact today</span></div></div>' +
-      '<div class="card scroll"><table><thead><tr><th>Customer</th><th class="num">Open</th><th>Forecast</th><th class="num">Expected at risk</th><th>Next due</th><th>Advice</th></tr></thead><tbody>';
+      '<div class="card scroll"><table><thead><tr><th>Customer</th><th class="num">Open</th><th>Forecast</th><th class="num">Expected at risk' + tip('risk') + '</th><th>Next due</th><th>Advice</th></tr></thead><tbody>';
     rs.forEach(function (r) {
       var c = r.customer;
       h += '<tr class="click" tabindex="0" data-act="open" data-id="' + c.id + '"><td><b>' + esc(c.name) + '</b><div class="note" style="margin:0">' + r.invoices.length + ' open invoice' + (r.invoices.length > 1 ? 's' : '') + (r.overdue.length ? ', ' + r.overdue.length + ' past due' : '') + '</div></td>' +
@@ -531,7 +727,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
       var left = (lo + 10) / 55 * 100, w = Math.max(2, (hi - lo) / 55 * 100);
       h += '<div class="card"><div class="h" style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center"><b>' + esc(i.id) + '</b><span>' + m(i.gross) + ' ' + D.currency + '</span><span class="note" style="margin:0">' + esc(L.fmt(i.due)) + ', ' + when(i) + '</span>' + tag(i.band) +
         '<span class="tag">' + Math.round(i.p * 100) + '% chance of more than ' + D.lateAfterDays + ' days late</span></div>' +
-        '<p style="margin:10px 0 0">Probably paid <b>' + (i.lo < 0 ? Math.abs(i.lo) + ' days before' : i.lo + ' days after') + '</b> to <b>' + (i.hi < 0 ? Math.abs(i.hi) + ' days before' : i.hi + ' days after') + '</b> the due date.</p>' +
+        '<p style="margin:10px 0 0">Probably paid <b>' + (i.lo < 0 ? Math.abs(i.lo) + ' days before' : i.lo + ' days after') + '</b> to <b>' + (i.hi < 0 ? Math.abs(i.hi) + ' days before' : i.hi + ' days after') + '</b> the due date. ' + tip('range') + '</p>' +
         '<div class="rng" role="img" aria-label="Forecast range ' + i.lo + ' to ' + i.hi + ' days after the due date"><i class="' + cls + '" style="left:' + left + '%;width:' + w + '%"></i><b style="left:' + (10 / 55 * 100) + '%"></b><b style="left:' + ((10 + D.lateAfterDays) / 55 * 100) + '%"></b></div>' +
         '<div class="rnglab"><span style="left:' + (10 / 55 * 100) + '%">due date</span><span style="left:' + ((10 + D.lateAfterDays) / 55 * 100) + '%">+' + D.lateAfterDays + ' d</span></div><p class="note" style="margin:6px 0 0">Left mark: due date. Right mark: ' + D.lateAfterDays + ' days after it; later counts as late in this forecast.</p>' +
         '<h3>Why the forecast says this</h3><ul class="steps2">' + L.reasons(c, i).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
@@ -548,7 +744,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
   // ---------- Our side ----------
   function vOurs() {
     var c = L.customer(S.cid), bad = L.failing(c);
-    var h = pick() + '<h2>Is everything right on our side?</h2><p class="note">Checked before any contact with ' + esc(c.name) + '. A late payment that we caused needs an answer, not a reminder.</p>' + strip('customer_360, tickets, order_to_cash', JSON.stringify({ customer: c.id }));
+    var h = pick() + '<h2>Is everything right on our side? ' + tip('ours') + '</h2><p class="note">Checked before any contact with ' + esc(c.name) + '. A late payment that we caused needs an answer, not a reminder.</p>' + strip('customer_360, tickets, order_to_cash', JSON.stringify({ customer: c.id }));
     h += bad.length ? '<div class="verdict warn"><b>Clarify first</b>' + bad.length + ' of ' + c.checks.length + ' checks need attention. No reminder goes out while they are open.</div>'
       : '<div class="verdict ok"><b>Nothing on our side blocks contact</b>All ' + c.checks.length + ' checks are clear.</div>';
     h += '<div class="card scroll"><table><thead><tr><th>Status</th><th>Source</th><th>Check</th></tr></thead><tbody>' + c.checks.map(function (k) {
@@ -560,7 +756,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
   // ---------- Action ----------
   function vAct() {
     var c = L.customer(S.cid), ps = L.plan(c), n = ps.filter(function (p) { return S.rel[c.id + ':' + p.id]; }).length;
-    var h = pick() + '<h2>Proposals for ' + esc(c.name) + '</h2><p class="note">Prepared by the Collections agent. Nothing is sent. The person acting as <b>' + esc(who(S.actor)) + '</b> releases each step; switch the person at the top right.</p>';
+    var h = pick() + '<h2>Proposals for ' + esc(c.name) + ' ' + tip('release') + '</h2><p class="note">Prepared by the Collections agent. Nothing is sent. The person acting as <b>' + esc(who(S.actor)) + '</b> releases each step; switch the person at the top right.</p>';
     if (!ps.length) return h + '<div class="verdict none"><b>No action needed</b>The forecast is low and nothing is open on our side. The account stays on the morning list.</div>';
     ps.forEach(function (p) {
       var key = c.id + ':' + p.id, r = S.rel[key], msg = S.msg[key];
@@ -581,7 +777,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
   // ---------- Track record ----------
   function vTrack() {
     var t = L.track(), f = D.backtest.flagged;
-    return '<h2>Was the forecast right?</h2><p class="note"><span class="tag amber">fictional sample</span> ' + esc(D.backtest.note) + '</p>' +
+    return '<h2>Was the forecast right? ' + tip('track') + '</h2><p class="note"><span class="tag amber">fictional sample</span> ' + esc(D.backtest.note) + '</p>' +
       '<div class="kpis"><div class="kpi"><b>' + t.flagged + '</b><span>invoices marked likely late</span></div><div class="kpi"><b>' + t.late + '</b><span>were paid more than ' + D.lateAfterDays + ' days late</span></div>' +
       '<div class="kpi warn"><b>' + t.precision + '%</b><span>of the marks were right</span></div><div class="kpi"><b>' + t.missed + '</b><span>late invoices that were not marked</span></div></div>' +
       '<div class="card scroll"><table><thead><tr><th>Invoice</th><th>Marked likely late</th><th>Paid more than ' + D.lateAfterDays + ' days late</th></tr></thead><tbody>' + f.map(function (x) {
@@ -592,7 +788,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
   // ---------- Rights and audit ----------
   function vRights() {
     var types = ['call', 'reminder', 'clarify', 'watch', 'escalate'], ids = Object.keys(D.persons);
-    var h = '<h2>Who may release what</h2><p class="note">Rights are data in this mockup; in a real setup they come from the roles in your systems.</p><div class="card scroll"><table><thead><tr><th>Person</th>' +
+    var h = '<h2>Who may release what ' + tip('release') + '</h2><p class="note">Rights are data in this mockup; in a real setup they come from the roles in your systems.</p><div class="card scroll"><table><thead><tr><th>Person</th>' +
       types.map(function (t) { return '<th>' + t + '</th>'; }).join('') + '</tr></thead><tbody>' + ids.map(function (k) {
         var p = D.persons[k];
         return '<tr><td><b>' + esc(p.name) + '</b><div class="note" style="margin:0">' + esc(p.role) + '</div></td>' + types.map(function (t) { return '<td>' + sym(!!p.can[t]) + '</td>'; }).join('') + '</tr>';
@@ -607,6 +803,30 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
     return h;
   }
 
+  // ---------- Guide ----------
+  function vGuide() {
+    var G = S.g, st = L.guide.steps, n = st.length, h = '';
+    if (G.hidden) h = '<div class="guide-wrap"><button class="btn" data-act="gshow">Show guide</button></div>';
+    else {
+      h = '<div class="guide-wrap"><section class="guide" aria-label="Guided walk-through" aria-live="polite">';
+      var dots = st.map(function (x, k) { return '<i class="' + (G.done[k] ? 'on' : k === G.i ? 'cur' : '') + '"></i>'; }).join('');
+      if (G.i >= n) {
+        h += '<div class="g-top"><b class="g-step">Guide complete</b><span class="g-dots" aria-hidden="true">' + dots + '</span></div>' +
+          '<div class="g-flash">✓ ' + esc(G.flash) + '</div><p class="g-todo">You went through the whole flow: ranking, reasons, our side, release in order, who may release, track record and audit.</p>' +
+          '<div class="row"><button class="btn primary" data-act="gstart">Start again</button><button class="btn" data-act="ghide">Hide guide</button></div>';
+      } else {
+        var s = st[G.i];
+        h += '<div class="g-top"><b class="g-step">Step ' + (G.i + 1) + ' of ' + n + '</b><span class="g-dots" aria-hidden="true">' + dots + '</span></div>' +
+          (G.flash ? '<div class="g-flash">✓ Done: ' + esc(G.flash) + '</div>' : '') +
+          '<h3 class="g-title">' + esc(s.title) + '</h3><p class="g-todo">' + esc(s.todo) + '</p><p class="g-why">Why: ' + esc(s.why) + '</p>' +
+          '<div class="row"><button class="btn primary" data-act="ggo">Take me there</button><button class="btn" data-act="gback"' + (G.i === 0 ? ' disabled' : '') + '>Back</button><button class="btn" data-act="gnext">Next</button><button class="btn" data-act="ghide">Hide guide</button></div>';
+      }
+      h += '</section></div>';
+    }
+    if (S.tip) h += '<div class="guide-wrap"><div class="tipline" role="note"><b>' + esc(TIPS[S.tip][0]) + '.</b> ' + esc(TIPS[S.tip][1]) + ' <button type="button" class="tipx" data-act="tip" data-id="' + S.tip + '">Close</button></div></div>';
+    return h;
+  }
+
   var VIEWS = { list: vList, why: vWhy, ours: vOurs, act: vAct, track: vTrack, rights: vRights };
   function render() {
     $('#tabs').innerHTML = TABS.map(function (t) {
@@ -616,15 +836,25 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
       return '<button data-act="actor" data-id="' + k + '" aria-pressed="' + (S.actor === k) + '">' + esc(who(k)) + ' · ' + esc(L.person(k).role) + '</button>';
     }).join('');
     $('#sys').textContent = D.company;
+    S.seen[S.tab] = true; L.guide.advance(S.g, S);
+    $('#guide').innerHTML = vGuide();
     $('#main').innerHTML = VIEWS[S.tab]();
   }
   function act(a, id) {
-    if (a === 'tab') S.tab = id;
+    S.g.flash = '';
+    if (a === 'tip') S.tip = S.tip === id ? '' : id;
+    else if (a === 'ggo') { var gs = L.guide.steps[S.g.i]; if (gs) { S.tab = gs.tab; S.cid = gs.cid; S.actor = gs.actor; } }
+    else if (a === 'gnext') S.g.i = Math.min(L.guide.steps.length, S.g.i + 1);
+    else if (a === 'gback') S.g.i = Math.max(0, S.g.i - 1);
+    else if (a === 'ghide') S.g.hidden = true;
+    else if (a === 'gshow') S.g.hidden = false;
+    else if (a === 'gstart') { S.g = L.guide.fresh(); S.seen = {}; }
+    else if (a === 'tab') S.tab = id;
     else if (a === 'actor') S.actor = id;
     else if (a === 'cust') S.cid = id;
     else if (a === 'open') { S.cid = id; S.tab = 'why'; }
     else if (a === 'wrong') S.wrong[id] = true;
-    else if (a === 'reset') { S.rel = {}; S.msg = {}; S.wrong = {}; S.log = D.history.slice(); }
+    else if (a === 'reset') { S.rel = {}; S.msg = {}; S.wrong = {}; S.log = D.history.slice(); S.g = L.guide.fresh(); S.seen = {}; S.tip = ''; }
     else if (a === 'release') {
       var p = L.plan(L.customer(S.cid)).filter(function (x) { return x.id === id; })[0], key = S.cid + ':' + id;
       var r = L.release(S.rel, S.actor, S.cid, id);
@@ -641,6 +871,17 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
   });
   document.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('tr.click')) { e.preventDefault(); act('open', e.target.getAttribute('data-id')); }
+  });
+  // A hand-over from the Sales journey (wb:restore): choose the customer and open the stop's tab.
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent || !e.data || e.data.type !== 'wb:restore') return;
+    (Array.isArray(e.data.handoffs) ? e.data.handoffs : []).forEach(function (h) {
+      var j = J.parse(h && h.payload);
+      if (!j || !L.customer(j.customer)) return;
+      S.cid = j.customer;
+      S.tab = TABS.some(function (t) { return t[0] === j.tab; }) ? j.tab : 'list';
+      render();
+    });
   });
   render();
 })();
