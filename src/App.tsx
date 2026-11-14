@@ -120,7 +120,7 @@ import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
 import DevelopHub from './ui/DevelopHub';
 import { writeSpaceScale, type SpaceScale } from './space-scale';
-import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
+import { DEFAULT_VOICE, ReplySpeaker, startRecording, type Recording, type VoiceSettings } from './voice';
 import { parseNavCommand } from './voice-commands';
 
 const WORKDIR = window.host?.workspacePath ?? '';
@@ -145,6 +145,10 @@ function sharedNote(r: { ok: boolean; state?: 'synced' | 'local' | 'conflict'; d
 export default function App() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [agentEpoch, setAgentEpoch] = useState(0);
+  // The microphone of the live interview avatar: a Space asks for it, the app records and shows a badge while it is on.
+  const [interviewMic, setInterviewMic] = useState(false);
+  const interviewRec = useRef<Recording | null>(null);
+  function stopInterviewMic() { interviewRec.current?.cancel(); interviewRec.current = null; setInterviewMic(false); }
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   /** Connectors with a tool call that is running right now (normalised names); shown in the connector list while an answer is being made. */
@@ -1163,6 +1167,24 @@ export default function App() {
         return res.data ?? [];
       } : undefined,
       draft: agent && gmail ? (tool: string, args: Record<string, unknown>) => agent.callTool(`${gmail}__${tool}`, args) : undefined,
+      listen: (window as any).host?.voice?.transcribe ? {
+        start: async () => {
+          stopInterviewMic();
+          interviewRec.current = await startRecording(() => stopInterviewMic());
+          setInterviewMic(true);
+        },
+        stop: async () => {
+          const rec = interviewRec.current;
+          interviewRec.current = null;
+          setInterviewMic(false);
+          if (!rec) return '';
+          const { audio, mimeType } = await rec.stop();
+          const res = await (window as any).host.voice.transcribe(audio, mimeType);
+          if (!res?.ok) throw new Error(res?.detail ?? 'Speech recognition is not available.');
+          return String(res.text ?? '').trim();
+        },
+        cancel: stopInterviewMic,
+      } : undefined,
     };
   }
 
@@ -1567,6 +1589,7 @@ export default function App() {
     </p>
   );
   const space = activeSpaces.find((s) => s.slug === selectedSpace) ?? null;
+  useEffect(() => { if (space?.slug !== INTERVIEW_SPACE) stopInterviewMic(); }, [space?.slug]);
   const orderedSpaces = pinFirst(orderSpaces(activeSpaces, spaceOrder), prefs.pinnedSpaces);
 
   /** Reorder starting from what is on screen, so Spaces without a saved position get one too. */
@@ -1892,7 +1915,8 @@ export default function App() {
           onSaved={async (slug) => { await refreshSpaces(); setSelectedSpace(slug); setDesignSlug(slug); }}
         />
       ) : view === 'spaces' ? (
-        space ? (
+        space ? (<>
+          {interviewMic ? <div className="mic-badge" role="status" aria-live="polite">● Microphone is on · your voice is turned into text for the interview, no audio is kept</div> : null}
           <SpaceViewer
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
@@ -1925,7 +1949,7 @@ export default function App() {
             studioAgents={space.slug === 'ai-control-tower' || space.slug === 'agent-registry' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
             bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? prdExtensionFor(tool, extensionNames) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
-          />
+          /></>
         ) : (
           <main className="main">
             <div className="empty">

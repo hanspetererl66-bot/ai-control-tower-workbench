@@ -6,6 +6,8 @@
  *  - iv:save-request   the record for the hiring manager (main process, database; the agent has no tool for it).
  *  - iv:assess-save-request / iv:assess-list-request  one revision of the rubric assessment (application interview), and the saved revisions.
  *                      Main process, database, only for the hiring manager; the agent has no tool for either.
+ *  - iv:listen-probe / iv:listen-start / iv:listen-stop / iv:listen-cancel  the microphone of the live avatar. The app records between start and stop, turns the audio into text
+ *                      (speech service) and returns only the text. The audio is not kept. The app shows a badge while the microphone is on and stops it after two minutes.
  *  - iv:draft-request  the letter as a Gmail DRAFT. The Gmail connector cannot send; the hiring manager sends it from Gmail.
  * The interviewee's address is used for the draft only and is stored nowhere.
  */
@@ -23,6 +25,7 @@ const START: Record<string, RegExp> = {
   letter: /^Write two short paragraphs of a warm, personal thank-you letter/,
   assess: /^You rate one interview against a fixed rubric\./,
   thanks: /^Write one short sentence for a thank-you e-mail after a job interview\./,
+  turn: /^You are the interviewer avatar in a first online job interview for the job "/,
 };
 
 export type InterviewDeps = {
@@ -33,10 +36,12 @@ export type InterviewDeps = {
   listAssessments?: (requisition: string) => Promise<Record<string, unknown>[]>;
   /** The Gmail connector's create_draft. */
   draft?: BridgeCall;
+  /** Microphone and speech-to-text for the live avatar. The Space cannot reach the microphone; the app records only between start and stop and shows that it does. */
+  listen?: { start: () => Promise<void>; stop: () => Promise<string>; cancel: () => void };
 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-const TITLES: Record<string, string> = { check: 'Interview: task check', summary: 'Interview: summary', letter: 'Interview: letter', assess: 'Interview: rubric levels', thanks: 'Interview: thank-you line' };
+const TITLES: Record<string, string> = { check: 'Interview: task check', summary: 'Interview: summary', letter: 'Interview: letter', assess: 'Interview: rubric levels', thanks: 'Interview: thank-you line', turn: 'Interview: avatar turn' };
 
 /** What the agent is told on top of the prompt: no tools, JSON only. */
 export function wrapPrompt(prompt: string): string {
@@ -60,6 +65,21 @@ export async function handleInterviewMessage(data: unknown, deps: InterviewDeps)
       const text = await deps.ask(wrapPrompt(prompt), TITLES[kind], 'iv-' + session);
       if (!text) return fail('The check was stopped.');
       return { type: 'iv:ask-answer', requestId, kind, text: text.slice(0, 20000) };
+    }
+    if (data.type === 'iv:listen-probe') return { type: 'iv:listen-status', requestId, available: !!deps.listen };
+    if (data.type === 'iv:listen-start') {
+      if (!deps.listen) return fail('The microphone is available in the desktop app only. You can type instead.');
+      await deps.listen.start();
+      return { type: 'iv:listening', requestId };
+    }
+    if (data.type === 'iv:listen-stop') {
+      if (!deps.listen) return fail('The microphone is available in the desktop app only. You can type instead.');
+      const text = await deps.listen.stop();
+      return { type: 'iv:heard', requestId, text: String(text ?? '').slice(0, 3000) };
+    }
+    if (data.type === 'iv:listen-cancel') {
+      deps.listen?.cancel();
+      return { type: 'iv:listen-cancelled', requestId };
     }
     if (data.type === 'iv:save-request') {
       const requisition = typeof data.requisition === 'string' && REQUISITION.test(data.requisition) ? data.requisition : '';

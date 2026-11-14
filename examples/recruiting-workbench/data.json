@@ -1895,6 +1895,385 @@
           }
         ]
       }
+    },
+    "first": {
+      "note": "First interview with a live AI avatar (Mira). Questions and the facts she may use are approved by the hiring manager. She answers questions about the company only from the approved facts and says so when she does not know. The conversation is written down as text; no audio is kept. Fictional company.",
+      "notice": {
+        "title": "Before we start: a conversation with an AI avatar",
+        "points": [
+          "You are talking to an AI avatar, not to a person. The avatar asks questions that the hiring manager approved and can answer questions about the company and the next steps.",
+          "The conversation is recorded as text, word by word, with times. No audio and no video are kept. The hiring manager reads the text. Do not share health, family or other personal data.",
+          "If you speak, your voice goes from the app to a speech service that turns it into text, and the text goes to an AI model provider (OpenRouter, through Joule). You can type instead.",
+          "The avatar answers questions about the company only from facts the hiring manager approved. If it does not know, it says so and notes your question for a person.",
+          "The avatar does not rate you and does not decide. A person, the hiring manager, decides about every application. You can ask for a conversation with a person at any time."
+        ]
+      },
+      "process": [
+        {
+          "stage": "Online interview",
+          "text": "This conversation. The hiring manager reads the written record."
+        },
+        {
+          "stage": "In-person interview",
+          "text": "A conversation with the team on site, about 60 minutes. You meet the people you would work with."
+        },
+        {
+          "stage": "Final conversation",
+          "text": "A short talk with the head of the department about open questions and the start date."
+        },
+        {
+          "stage": "Offer",
+          "text": "If everything fits, you get an offer from a person in HR."
+        }
+      ],
+      "shared": [
+        {
+          "id": "s1",
+          "topic": "Company",
+          "keys": [
+            "company",
+            "hanse",
+            "who are you",
+            "about the company",
+            "business",
+            "what do you do"
+          ],
+          "text": "Hanse Logistik is a fictional logistics company with sites in Hamburg, Bremen and Köln. It moves goods for retail and industry customers by road and rail and runs its own warehouses."
+        },
+        {
+          "id": "s2",
+          "topic": "Size",
+          "keys": [
+            "how big",
+            "size",
+            "employees",
+            "people work",
+            "headcount"
+          ],
+          "text": "About 2,400 people work for Hanse Logistik, around 900 of them in Hamburg."
+        },
+        {
+          "id": "s3",
+          "topic": "Values",
+          "keys": [
+            "values",
+            "culture",
+            "how do you work",
+            "atmosphere",
+            "team spirit"
+          ],
+          "text": "Safety comes first at every site. Teams decide close to the work, and mistakes are talked about openly instead of hidden."
+        },
+        {
+          "id": "s4",
+          "topic": "Working hours",
+          "keys": [
+            "hours",
+            "working time",
+            "flexible",
+            "overtime",
+            "shift pattern",
+            "part-time",
+            "part time"
+          ],
+          "text": "Office roles work 38 hours a week with flexible start times. Warehouse roles work in shifts that are published four weeks ahead. Part-time is possible for most roles; ask the hiring manager for this job."
+        },
+        {
+          "id": "s5",
+          "topic": "Benefits",
+          "keys": [
+            "benefit",
+            "holiday",
+            "vacation",
+            "days off",
+            "pension",
+            "training",
+            "development",
+            "perks"
+          ],
+          "text": "30 days of holiday, a company pension plan, and a yearly training budget. Details are in the offer, which a person prepares."
+        },
+        {
+          "id": "s6",
+          "topic": "Pay",
+          "keys": [
+            "salary",
+            "pay",
+            "wage",
+            "money",
+            "earn",
+            "compensation"
+          ],
+          "text": "I cannot name pay. The pay range for the job is in the job posting, and the hiring manager talks about it with you in person."
+        },
+        {
+          "id": "s7",
+          "topic": "Process and timing",
+          "keys": [
+            "process",
+            "next step",
+            "what happens",
+            "how long",
+            "when will i hear",
+            "timeline",
+            "after this"
+          ],
+          "text": "After this conversation the hiring manager reads the written record. You hear from a person within about 7 days. Then come an in-person interview, a final conversation and, if everything fits, an offer."
+        },
+        {
+          "id": "s8",
+          "topic": "Data",
+          "keys": [
+            "data",
+            "privacy",
+            "delete",
+            "stored",
+            "recorded",
+            "record"
+          ],
+          "text": "The conversation is kept as text for the hiring manager. No audio and no video are kept. It holds no name and no e-mail address; a session code stands for you. You can ask a person to delete it."
+        }
+      ],
+      "jobs": {
+        "REQ-2201": {
+          "intro": "Welcome. I would like to learn how you lead a team on a shift. Then you can ask me anything about Hanse Logistik and the next steps.",
+          "questions": [
+            {
+              "id": "f1",
+              "topic": "Motivation",
+              "text": "What draws you to leading a shift, and why at a logistics company?"
+            },
+            {
+              "id": "f2",
+              "topic": "Leadership",
+              "text": "Tell me about a time you had to get a team moving when it was under pressure. What did you do?"
+            },
+            {
+              "id": "f3",
+              "topic": "Safety",
+              "text": "How do you make sure safety rules are followed when time is short?"
+            },
+            {
+              "id": "f4",
+              "topic": "Practical",
+              "text": "Which shifts could you work, and when could you start?"
+            }
+          ],
+          "knowledge": [
+            {
+              "id": "j1",
+              "topic": "The job",
+              "keys": [
+                "job",
+                "role",
+                "position",
+                "shift lead",
+                "responsib",
+                "day to day",
+                "tasks"
+              ],
+              "text": "The Warehouse Shift Lead in Hamburg leads a shift of about 12 people, plans who works at which gate, and is the contact for drivers and the transport planners."
+            },
+            {
+              "id": "j2",
+              "topic": "The team",
+              "keys": [
+                "team",
+                "manager",
+                "report",
+                "who would i work",
+                "colleagues"
+              ],
+              "text": "You report to the Head of Operations Hamburg. The shift team has forklift drivers, pickers and a deputy."
+            },
+            {
+              "id": "j3",
+              "topic": "Shifts",
+              "keys": [
+                "shift",
+                "night",
+                "early",
+                "late",
+                "weekend",
+                "rota",
+                "roster"
+              ],
+              "text": "The warehouse runs early, late and night shifts. Shift plans are published four weeks ahead, and weekends are shared in a rota."
+            },
+            {
+              "id": "j4",
+              "topic": "Training",
+              "keys": [
+                "licence",
+                "license",
+                "forklift",
+                "qualification",
+                "training",
+                "certificate"
+              ],
+              "text": "A forklift licence is helpful. Hanse Logistik pays for missing licences and for a leadership course in the first year."
+            }
+          ]
+        },
+        "REQ-2203": {
+          "intro": "Welcome. I would like to hear about your work with data. Then you can ask me anything about Hanse Logistik and the next steps.",
+          "questions": [
+            {
+              "id": "f1",
+              "topic": "Motivation",
+              "text": "What draws you to supply chain analysis, and why at Hanse Logistik?"
+            },
+            {
+              "id": "f2",
+              "topic": "Experience",
+              "text": "Tell me about an analysis you did that changed a decision. What was the data and what changed?"
+            },
+            {
+              "id": "f3",
+              "topic": "Method",
+              "text": "How do you check that a number is right before you share it?"
+            },
+            {
+              "id": "f4",
+              "topic": "Practical",
+              "text": "Which tools do you use for analysis, and when could you start?"
+            }
+          ],
+          "knowledge": [
+            {
+              "id": "j1",
+              "topic": "The job",
+              "keys": [
+                "job",
+                "role",
+                "position",
+                "analyst",
+                "responsib",
+                "day to day",
+                "tasks"
+              ],
+              "text": "The Supply Chain Analyst in Hamburg builds reports and forecasts on transport and warehouse data and helps planners decide where to add capacity."
+            },
+            {
+              "id": "j2",
+              "topic": "The team",
+              "keys": [
+                "team",
+                "manager",
+                "report",
+                "who would i work",
+                "colleagues"
+              ],
+              "text": "The analyst works in the planning team in Hamburg with four planners and one data engineer."
+            },
+            {
+              "id": "j3",
+              "topic": "Tools",
+              "keys": [
+                "tool",
+                "sql",
+                "python",
+                "excel",
+                "dashboard",
+                "stack",
+                "software",
+                "sap"
+              ],
+              "text": "The team works mainly with SQL and Excel, and uses SAP data. Python is welcome but not required."
+            },
+            {
+              "id": "j4",
+              "topic": "Remote work",
+              "keys": [
+                "remote",
+                "home office",
+                "hybrid",
+                "from home",
+                "office"
+              ],
+              "text": "The role is hybrid: about two days a week at home, three in the Hamburg office."
+            }
+          ]
+        },
+        "REQ-2206": {
+          "intro": "Welcome. I would like to learn about your work in payroll. Then you can ask me anything about Hanse Logistik and the next steps.",
+          "questions": [
+            {
+              "id": "f1",
+              "topic": "Motivation",
+              "text": "What draws you to payroll work, and why at Hanse Logistik?"
+            },
+            {
+              "id": "f2",
+              "topic": "Experience",
+              "text": "Tell me about a payroll run where something did not add up. How did you find the cause?"
+            },
+            {
+              "id": "f3",
+              "topic": "Care",
+              "text": "How do you handle confidential data and a colleague asking about someone else's pay?"
+            },
+            {
+              "id": "f4",
+              "topic": "Practical",
+              "text": "Which payroll systems do you know, and when could you start?"
+            }
+          ],
+          "knowledge": [
+            {
+              "id": "j1",
+              "topic": "The job",
+              "keys": [
+                "job",
+                "role",
+                "position",
+                "payroll",
+                "responsib",
+                "day to day",
+                "tasks"
+              ],
+              "text": "The Payroll Specialist in Hamburg runs the monthly payroll for about 900 people, answers questions from employees and works with HR and finance."
+            },
+            {
+              "id": "j2",
+              "topic": "The team",
+              "keys": [
+                "team",
+                "manager",
+                "report",
+                "who would i work",
+                "colleagues"
+              ],
+              "text": "The payroll team has five people in Hamburg and sits next to the HR service team."
+            },
+            {
+              "id": "j3",
+              "topic": "Systems",
+              "keys": [
+                "system",
+                "sap",
+                "successfactors",
+                "tool",
+                "software",
+                "datev"
+              ],
+              "text": "Payroll runs in SAP, with SuccessFactors for employee data. Training on both is part of the first months."
+            },
+            {
+              "id": "j4",
+              "topic": "Remote work",
+              "keys": [
+                "remote",
+                "home office",
+                "hybrid",
+                "from home",
+                "office"
+              ],
+              "text": "Payroll is mostly on site because of the confidential data. One day a week at home is possible after the first six months."
+            }
+          ]
+        }
+      }
     }
   }
 }
